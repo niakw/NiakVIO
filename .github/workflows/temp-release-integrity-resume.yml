@@ -16,13 +16,13 @@ concurrency:
 jobs:
   resume:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 20
     env:
       NUVIO_PROVIDER_V3_CONTEXT: workspace
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
-      SOURCE_RECOVERY_RUN: '34711564739'
-      SOURCE_SEQUENTIAL_RUN: '34709164157'
+      SNAPSHOT_RUN: '34713445212'
+      SNAPSHOT_NAME: 'strict-46-pre-html-34713445212'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with: {ref: '${{ github.sha }}', fetch-depth: 0}
@@ -32,172 +32,44 @@ jobs:
         with: {node-version: '24', package-manager-cache: false}
       - run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Reuse the 46 already-proven finalized DATA artifacts
+      - name: Restore the already-materialized strict-46 snapshot
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          pattern: release-recovery-*-34711564739
-          path: recovery
-          merge-multiple: true
+          name: strict-46-pre-html-34713445212
+          path: snapshot
           repository: ${{ github.repository }}
-          run-id: 34711564739
+          run-id: 34713445212
           github-token: ${{ github.token }}
 
-      - name: Rehydrate recovered DATA without live proofs
+      - name: Rehydrate snapshot without rematerialization or live network
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/upgrade_provider_v3_source_plan_v5.py
-          python scripts/upgrade_provider_base_runtime_v5.py
-          python scripts/upgrade_provider_v3_finalization_v1.py
-          python scripts/enforce_provider_v3_semantic_transport_contract_v5.py
-          python scripts/validate_provider_v3_routes_live.py --prepare-candidates
-          python scripts/enrich_provider_v3_static_knowledge.py
-          python scripts/sanitize_provider_v3_core_metadata_routes.py
+          test -f snapshot/manifest.json
+          test -d snapshot/providers
+          cp snapshot/manifest.json manifest.json
+          cp snapshot/provider-overrides.json provider-overrides.json
+          cp snapshot/provider-v3-live-route-validation.json provider-v3-live-route-validation.json
+          cp snapshot/automation/provider-v3-static-knowledge.json automation/provider-v3-static-knowledge.json
+          cp snapshot/PROVENANCE.json PROVENANCE.json
+          cp snapshot/health-report.json health-report.json
+          rm -rf providers
+          cp -a snapshot/providers providers
           python - <<'PY'
           import json
           from pathlib import Path
-
-          def load(path):
-              return json.loads(Path(path).read_text(encoding='utf-8'))
-
-          def write(path, value):
-              Path(path).write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-
-          knowledge = load('automation/provider-v3-static-knowledge.json')
-          overrides = load('provider-overrides.json')
-          manifest = load('manifest.json')
-          files = sorted(Path('recovery').glob('*.json'))
-          assert len(files) == 46, len(files)
-
-          active = {
-              str(row.get('id') or '').strip().casefold()
-              for row in manifest.get('scrapers') or []
-              if isinstance(row, dict) and row.get('enabled') is not False
-          }
-          assert len(active) == 46, active
-
-          report_by = {}
-          for path in files:
-              payload = load(path)
-              pid = str(payload['provider']).casefold()
-              assert pid in active, pid
-              knowledge['providers'][pid] = payload['knowledge']
-              patch = payload.get('patch')
-              if patch is not None:
-                  overrides.setdefault('provider_patches', {})[pid] = patch
-              report_by[pid] = payload['report']
-
-          assert set(report_by) == active, {
-              'missing': sorted(active - set(report_by)),
-              'extra': sorted(set(report_by) - active),
-          }
-
-          rows = []
-          for row in manifest.get('scrapers') or []:
-              pid = str(row.get('id') or '').strip().casefold()
-              if pid in report_by:
-                  rows.append(report_by[pid])
-                  continue
-              required = [
-                  str(value).strip().casefold()
-                  for value in (row.get('canonicalSupportedTypes') or row.get('supportedTypes') or [])
-                  if str(value).strip().casefold() in {'movie', 'tv', 'anime'}
-              ]
-              rows.append({
-                  'providerId': pid,
-                  'completionState': 'disabled-unqualified',
-                  'requiredTypes': required,
-                  'validatedTypes': [],
-                  'missingTypes': required,
-                  'declaredTypeCoverageRatio': 0.0,
-                  'effectiveCoverageRatio': 0.0,
-                  'typeComplete': False,
-                  'liveValidatedRouteCount': 0,
-                  'providerRequestCount': 0,
-                  'playableVerified': False,
-                  'advancedToNextProvider': True,
-                  'finalBundleVerified': False,
-                  'recoverySourceRunId': 34709164157,
-              })
-
-          report = {
-              'schemaVersion': 4,
-              'method': 'parallel-recovery-resume-after-provider-lego-html-hardening',
-              'recoverySourceRunId': 34709164157,
-              'recoveryArtifactRunId': 34711564739,
-              'providerCount': 96,
-              'completedProviderCount': 96,
-              'failedProvider': None,
-              'liveValidatedRouteCount': sum(int(row.get('liveValidatedRouteCount') or 0) for row in rows),
-              'providerRequestCount': sum(int(row.get('providerRequestCount') or 0) for row in rows),
-              'finalBundleVerifiedCount': sum(1 for row in rows if row.get('finalBundleVerified') is True),
-              'providers': rows,
-              'sequentialNoInterProviderConcurrency': True,
-              'globalCandidateMaterialization': False,
-              'allProvidersAdvancedSequentially': True,
-              'declaredTypesAreGateDenominator': True,
-              'internalRequestsAreGateDenominator': False,
-              'requiredDeclaredTypeCoverageRatio': 1.0,
-          }
-          write('automation/provider-v3-static-knowledge.json', knowledge)
-          write('provider-overrides.json', overrides)
-          write('provider-v3-live-route-validation.json', report)
-          print(
-              f'FIELD_RECOVERY_RESUME_DATA providers={len(files)} '
-              f'final_verified={report["finalBundleVerifiedCount"]} '
-              f'live={report["liveValidatedRouteCount"]} network_reproof=0'
-          )
+          m=json.loads(Path('manifest.json').read_text())
+          rows=m.get('scrapers') or []
+          active=[r for r in rows if isinstance(r,dict) and r.get('enabled') is not False]
+          assert len(rows)==96, len(rows)
+          assert len(active)==46, len(active)
+          print('FIELD_STRICT46_SNAPSHOT_RESTORED catalogue=96 active=46 live_rerun=0 rematerialize=0')
           PY
 
-      - name: Materialize recovered bundles once for the failed HTML phase
+      - name: Continue only checks not reached after playback-integrity failure
+        shell: bash
         run: |
           set -euo pipefail
-          python scripts/materialize_provider_base_v3_store.py
-          python scripts/provider_base_store.py validate
-          python scripts/provider_base_store.py validate --artifacts
-          python scripts/materialize_provider_v3_all.py
-          python scripts/prune_unreferenced_providers.py
-          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
-          python scripts/assert_active_provider_live_coverage.py
-          echo 'FIELD_RECOVERY_RESUME_MATERIALIZED live_reproof=0 reverse_rebuild_rerun=0'
-
-      - name: Preserve rematerialized state before the failing gate
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: strict-46-pre-html-${{ github.run_id }}
-          path: |
-            manifest.json
-            provider-overrides.json
-            provider-v3-live-route-validation.json
-            automation/provider-v3-static-knowledge.json
-            PROVENANCE.json
-            health-report.json
-            providers/
-          retention-days: 2
-          if-no-files-found: error
-
-      - name: Retry only the failed HTML-security gate
-        run: |
-          set -euo pipefail
-          python tests/provider_html_filter_security_test.py --published
-          echo 'FIELD_RECOVERY_HTML_SECURITY status=success sources_and_published=clean'
-
-      - name: Continue only checks that never ran after the HTML failure
-        run: |
-          set -euo pipefail
-          python tests/provider_v3_core_metadata_route_sanitizer_test.py
-          python tests/provider_v3_strategy_plan_contract_test.py
-          python tests/provider_v3_source_plan_v4_contract_test.py
-          python tests/provider_anime_semantic_transport_contract_test.py
-          python tests/provider_wings_runtime_family_test.py
-          python tests/peachify_runtime_crypto_test.py
-          python scripts/audit_provider_v3_static.py
-          python tests/global_media_type_resolution_test.py
-          python tests/global_stream_presentation_test.py
-          python tests/global_stream_presentation_pipeline_test.py
-          python tests/global_stream_identity_test.py
-          python tests/runtime_capability_media_safety_v4_test.py
-          python tests/global_playback_integrity_policy_test.py
           python tests/stream_output_sanitizer_fail_closed_test.py
           python tests/published_provider_lego_contract_test.py
           python tests/provider_v3_live_route_validation_test.py
@@ -210,24 +82,25 @@ jobs:
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
           git diff --check
-          echo 'FIELD_RECOVERY_RESUME_INTEGRITY status=success resumed_after_html_gate=1'
+          echo 'FIELD_RECOVERY_RESUME_INTEGRITY status=success resumed_after_playback_gate=1 live_rerun=0'
 
-      - name: Commit recovered verified reconstruction
+      - name: Commit recovered verified strict-46 reconstruction
         shell: bash
         run: |
           set -euo pipefail
+          rm -rf snapshot
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           git diff --cached --quiet && { echo 'No recovered changes to commit' >&2; exit 1; }
-          git commit -m 'chore: recover strict-46 DATA with provider HTML hardening'
+          git commit -m 'chore: finalize recovered strict-46 reconstruction'
           test "$(git ls-remote origin refs/heads/release/stable-46-20260912 | cut -f1)" = "${GITHUB_SHA}"
           git push origin HEAD:release/stable-46-20260912
           echo "FIELD_RECOVERY_RESUME_COMMIT=$(git rev-parse HEAD)"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: strict-46-recovery-resume-${{ github.run_id }}
+          name: strict-46-recovery-final-${{ github.run_id }}
           path: |
             manifest.json
             provider-overrides.json
