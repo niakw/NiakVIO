@@ -1,0 +1,66 @@
+name: TEMP Domain Refresh V3
+
+on:
+  push:
+    branches: ["fix/labs-5.21.44-20260912"]
+    paths: [".github/workflows/temp-domain-refresh-v3.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-domain-refresh-v3-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout latest .44
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+
+      - name: Apply Domain Refresh V3 migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_domain_refresh_publication_v3.py
+          python3 -m py_compile \
+            scripts/domain_refresh_transaction_v2.py \
+            scripts/upgrade_domain_refresh_publication_v3.py
+
+      - name: Domain Refresh contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/domain_refresh_publication_v3_test.py
+          python3 tests/domain_refresh_transaction_guard_test.py
+          python3 tests/domain_refresh_workflow_test.py
+          python3 tests/provider_v3_full_provider_contract_test.py
+          python3 tests/provider_base_layering_contract_test.py
+
+      - name: Commit durable transaction if green
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/domain_refresh_transaction_v2.py
+          if git diff --cached --quiet; then
+            echo 'FIELD_DOMAIN_REFRESH_V3_COMMIT changed=0'
+            exit 0
+          fi
+          git commit -m 'fix(domains): preserve source-qualified provider refs'
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin fix/labs-5.21.44-20260912
+            git rebase origin/fix/labs-5.21.44-20260912
+            if git push origin HEAD:fix/labs-5.21.44-20260912; then
+              echo "FIELD_DOMAIN_REFRESH_V3_COMMIT changed=1 attempt=$attempt sha=$(git rev-parse HEAD)"
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
