@@ -1,0 +1,75 @@
+name: TEMP Mugiwara season diagnostic
+
+on:
+  push:
+    branches: ["fix/labs-5.21.44-20260912"]
+    paths: [".github/workflows/temp-mugiwara-season-diag.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Diagnose Ragna and Hell Mode mapping
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/mugiwara_season_structure_diag.py --case ragna-s01e04 --tmdb 195459 --title 'Ragna Crimson' --year 2023 --season 1 --episode 4 | tee /tmp/ragna.txt
+          python3 scripts/mugiwara_season_structure_diag.py --case hell-mode-s02e10 --tmdb 280049 --title 'Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing' --year 2026 --season 2 --episode 10 | tee /tmp/hellmode.txt
+      - name: Persist safe diagnostic to MEMORY
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, pathlib
+          memory=pathlib.Path('MEMORY.md')
+          run=os.environ.get('GITHUB_RUN_ID','unknown')
+          marker=f"Mugiwara safe season diagnostic run `{run}`"
+          text=memory.read_text(encoding='utf-8')
+          if marker in text:
+              raise SystemExit(0)
+          rows=[]
+          for path in ('/tmp/ragna.txt','/tmp/hellmode.txt'):
+              p=pathlib.Path(path)
+              if not p.is_file():
+                  continue
+              for line in p.read_text(encoding='utf-8',errors='replace').splitlines():
+                  if line.startswith('FIELD_MUGIWARA_SEASON_DIAG '):
+                      rows.append(line.split(' ',1)[1])
+          block='\n## 2026-09-12 — Mugiwara season mapping diagnostic (.44)\n\n'
+          block+=f'- {marker}. Output is deliberately URL-safe: season ids/counts and selected index only; no media/player URLs.\n'
+          for row in rows:
+              block+=f'- `{row}`\n'
+          with memory.open('a',encoding='utf-8') as fh: fh.write(block)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add MEMORY.md
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'docs(memory): record Mugiwara season mapping diagnostic'
+          for i in 1 2 3 4 5; do
+            git fetch origin fix/labs-5.21.44-20260912
+            git rebase origin/fix/labs-5.21.44-20260912
+            if git push origin HEAD:fix/labs-5.21.44-20260912; then exit 0; fi
+            sleep 1
+          done
+          exit 1
