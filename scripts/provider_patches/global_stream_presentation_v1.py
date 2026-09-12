@@ -21,7 +21,7 @@ MANAGED_FIX_ID = "CORE.STREAM_PRESENTATION.V1"
 FACTS_PATH = Path(__file__).with_name("global_stream_facts_v1.py")
 IDENTITY_PATH = Path(__file__).with_name("global_stream_identity_v1.py")
 PROVIDER_CATALOG_PATH = Path(__file__).resolve().parents[2] / "provider_catalog.json"
-REVISION = "all-providers-client-projection-language-detail-v21"
+REVISION = "all-providers-client-projection-strongest-evidence-v22"
 
 
 def _apply_module(path: Path, module_name: str, text: str, context: dict[str, Any]) -> str:
@@ -123,9 +123,26 @@ function installJvmSafeStreamStringify(){try{var j=g&&g.JSON?g.JSON:(typeof JSON
 function req(a){var f=a[0],q=f&&typeof f==="object"&&!Array.isArray(f)?Object.assign({},f):{tmdbId:f,mediaType:a[1],season:a[2],episode:a[3]};q.tmdbId=s(q.tmdbId||q.id||f).replace(/^tmdb:/i,"").split(":")[0];q.mediaType=s(q.mediaType||q.type||a[1]||"movie").toLowerCase();q.title=s(q.title||q.name||q.label);q.year=Number(q.year||0)||0;q.season=Number(q.season||a[2]||0)||0;q.episode=Number(q.episode||a[3]||0)||0;return q}
 function urlFacts(r){var u=s(r&&r.url);if(!u)return"";try{u=decodeURIComponent(u)}catch(_e){}return u.replace(/[?#&=/_\\.\-]+/g," ")}
 function blob(r){return [r&&r.name,r&&r.title,r&&r.size,r&&r.description,r&&r.quality,r&&r.resolution,r&&r.height,r&&r.width,r&&r.label,r&&r.language,r&&r.codec,r&&r.audio,r&&r.sourceType,r&&r.releaseType,r&&r.format,r&&r.hdr,r&&r.videoTech,r&&r.bitDepth,r&&r.subtitles,r&&r.sourceLabel,r&&r.filename,r&&r.edition,r&&r.releaseGroup,r&&r.release_group,r&&r.bitrate,r&&r.container,r&&r.encode,r&&r.indexer,r&&r.network,urlFacts(r)].map(s).join(" ")}
-function quality(r){var v=meaningful(r&&r.quality)?s(r.quality):blob(r),u=v.toUpperCase();if(/(?:\b4K\b|\b2160P?\b|\bUHD\b)/.test(u))return"2160p";var m=u.match(/\b(1440|1080|720|576|540|480|360)P?\b/);if(m)return m[1]+"p";if(/\b(?:FULL[ ._-]?HD|FHD)\b/.test(u))return"1080p";if(/\bHD\b/.test(u))return"720p";if(/\bSD\b/.test(u))return"480p";var h=Number(r&&r.height||0);if(h>=2000)return"2160p";if(h>=1350)return"1440p";if(h>=900)return"1080p";if(h>=650)return"720p";if(h>=450)return"480p";return""}
+function quality(r){
+  var u=blob(r).toUpperCase(),best=0,m,re=/\b(2160|1440|1080|720|576|540|480|360)P?\b/g;
+  if(/(?:\b4K\b|\b2160P?\b|\bUHD\b)/.test(u))best=2160;
+  while((m=re.exec(u))!==null)best=Math.max(best,Number(m[1]||0));
+  if(/\b(?:FULL[ ._-]?HD|FHD)\b/.test(u))best=Math.max(best,1080);
+  if(/\bHD\b/.test(u))best=Math.max(best,720);
+  if(/\bSD\b/.test(u))best=Math.max(best,480);
+  var h=Number(r&&r.height||0);if(h>=2000)best=Math.max(best,2160);else if(h>=1350)best=Math.max(best,1440);else if(h>=900)best=Math.max(best,1080);else if(h>=650)best=Math.max(best,720);else if(h>=450)best=Math.max(best,480);
+  return best?String(best)+"p":"";
+}
 function language(r){var explicit=meaningful(r&&r.language)?s(r.language):"",all=blob(r),u=explicit.toUpperCase(),a=all.toUpperCase(),vfMode=s(c.providerLanguageMode).toLowerCase()==="vf";function isMulti(x){return /\bMULTI(?:[- ]?AUDIO|LANG(?:UE)?S?)?\b/.test(x)||/\bDUAL(?:[- ]?AUDIO)?\b/.test(x)}function isVost(x){return /\bVOSTFR\b/.test(x)||/\bVOST[ ._-]?FR\b/.test(x)||/\bVO[ ._-]?ST[ ._-]?FR\b/.test(x)}function isVfq(x){return /\bVFQ\b/.test(x)||/\bFR[ ._-]?CA\b/.test(x)||/\bFRENCH[ ._-]?(?:CANADA|CANADIAN|QUEBEC)\b/.test(x)||/\b(?:QUEBEC|QU[ÉE]B[ÉE]COIS)\b/.test(x)}function isVf(x){return /\b(?:VF|VFF|FR|FRA|FRE|FRENCH|FRANCAIS|FRANÇAIS|FR[ ._-]?FR)\b/.test(x)}function isVo(x){return /\bVO\b/.test(x)||/\bORIGINAL(?:[ ._-]?(?:AUDIO|LANG(?:UAGE)?))?\b/.test(x)||/\b(?:EN|ENG|ENGLISH)\b/.test(x)}var hasVost=isVost(a),hasVf=isVf(a)||isVfq(a);if(isMulti(u)||isMulti(a)||(hasVost&&hasVf))return vfMode?"MULTI (VF/VO)":"MULTI";if(isVost(u))return"VOSTFR";if(isVfq(u))return"VFQ";if(isVf(u))return"VF";if(isVo(u))return"VO";if(!u){if(hasVost)return"VOSTFR";if(hasVf)return"VF";if(isVo(a))return"VO"}return s(c.languageFallback)||(vfMode?"VF":"VO")}
-function detailedLanguage(r,fallback){var raw=s(r&&r.language),u=raw.toLowerCase().replace(/[_-]+/g," ").replace(/\s+/g," ").trim(),map={hi:"Hindi",hindi:"Hindi",ta:"Tamil",tamil:"Tamil",te:"Telugu",telugu:"Telugu",ml:"Malayalam",malayalam:"Malayalam",kn:"Kannada",kannada:"Kannada",bn:"Bengali",bengali:"Bengali",mr:"Marathi",marathi:"Marathi",pa:"Punjabi",punjabi:"Punjabi",gu:"Gujarati",gujarati:"Gujarati",ur:"Urdu",urdu:"Urdu",en:"English",eng:"English",english:"English",ja:"Japanese",jpn:"Japanese",japanese:"Japanese",ko:"Korean",kor:"Korean",korean:"Korean"};if(map[u])return map[u];if(/^(?:vf|vff|vfq|vostfr|vo|multi|multi audio|dual audio)$/i.test(u))return fallback||raw.toUpperCase();if(meaningful(raw)&&raw.length<=32&&/^[A-Za-zÀ-ÿ .()/-]+$/.test(raw))return raw;return fallback||""}
+function detailedLanguage(r,fallback){
+  var raw=s(r&&r.language),all=[raw,r&&r.name,r&&r.title,r&&r.label,r&&r.sourceLabel,r&&r.audio].map(s).join(" ").toLowerCase().replace(/[_-]+/g," ").replace(/\s+/g," ").trim();
+  var aliases=[["malayalam","Malayalam"],["kannada","Kannada"],["bengali","Bengali"],["punjabi","Punjabi"],["gujarati","Gujarati"],["japanese","Japanese"],["english","English"],["telugu","Telugu"],["marathi","Marathi"],["korean","Korean"],["hindi","Hindi"],["tamil","Tamil"],["urdu","Urdu"],["ml","Malayalam"],["kn","Kannada"],["bn","Bengali"],["pa","Punjabi"],["gu","Gujarati"],["ja","Japanese"],["jpn","Japanese"],["en","English"],["eng","English"],["te","Telugu"],["mr","Marathi"],["ko","Korean"],["kor","Korean"],["hi","Hindi"],["ta","Tamil"],["ur","Urdu"]];
+  for(var i=0;i<aliases.length;i++){var token=aliases[i][0].replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),rx=new RegExp("(?:^|[^a-z])"+token+"(?:[^a-z]|$)","i");if(rx.test(all))return aliases[i][1]}
+  var u=raw.toLowerCase().replace(/[_-]+/g," ").replace(/\s+/g," ").trim();
+  if(/^(?:vf|vff|vfq|vostfr|vo|multi|multi audio|dual audio)$/i.test(u))return fallback||raw.toUpperCase();
+  if(meaningful(raw)&&raw.length<=32&&/^[A-Za-zÀ-ÿ .()/-]+$/.test(raw))return raw;
+  return fallback||"";
+}
 function codec(r){var v=meaningful(r&&r.codec)?s(r.codec):blob(r),u=v.toUpperCase();if(/\b(?:HEVC|H[ ._-]?265|X265)\b/.test(u))return"HEVC";if(/\bAV1\b/.test(u))return"AV1";if(/\bVP9\b/.test(u))return"VP9";if(/\b(?:AVC|H[ ._-]?264|X264)\b/.test(u))return"AVC";return meaningful(r&&r.codec)?s(r.codec):""}
 function audioFacts(r){var u=(s(r&&r.audio)+" "+blob(r)).toUpperCase(),tech=[],codec="",ch="",cm=u.match(/\b(7\.1|5\.1|2\.1|2\.0|1\.0)\b/);if(cm)ch=cm[1];if(/\b(?:ATMOS|DOLBY ATMOS)\b/.test(u))tech.push("Dolby Atmos");if(/\bDTS[: ._-]?X\b/.test(u))tech.push("DTS:X");if(/\bTRUE[ ._-]?HD\b/.test(u))codec="TrueHD";else if(/\b(?:E-?AC-?3|DDP|DD\+)\b/.test(u))codec="E-AC3";else if(/\bAC-?3\b/.test(u))codec="AC3";else if(/\bDTS[- ]?HD\b/.test(u))codec="DTS-HD";else if(/\bDTS\b/.test(u))codec="DTS";else if(/\bAAC\b/.test(u))codec="AAC";else if(/\bFLAC\b/.test(u))codec="FLAC";else if(/\bOPUS\b/.test(u))codec="Opus";else if(meaningful(r&&r.audio)&&!tech.length)codec=s(r.audio);return{tech:uniq(tech),codec:codec,channels:ch}}
 function duration(r){var raw=r&&r.duration;if(typeof raw==="number"&&Number.isFinite(raw)&&raw>0)return raw>600?Math.round(raw/60):Math.round(raw);var d=s(raw),h=d.match(/(\d{1,2})\s*h(?:eures?)?\s*(\d{1,2})?/i);if(h)return Number(h[1])*60+Number(h[2]||0);var m=d.match(/(\d{1,4})\s*(?:min|minutes?)\b/i);if(m)return Number(m[1]);var x=blob(r).match(/\b(\d{1,3})\s*(?:min|minutes?)\b/i);return x?Number(x[1]):0}

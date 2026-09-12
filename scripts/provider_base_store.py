@@ -1335,11 +1335,49 @@ function _routeKind(route) {
   if (/\{(?:tmdb_?id|imdb_?id|id|slug|title)\}/i.test(value) || /\/(?:title|movie|film|series|tv|show|watch|media)(?:[/?#]|$)/i.test(value)) return "detail";
   return "ignore";
 }
+function _spv34RouteMediaCompatible(route, mediaType) {
+  const desired = _mediaNamespace(mediaType);
+  const source = _text(route);
+  const match = source.match(/(?:[?&](?:type|media|m)=)(movie|tv|series|anime)(?=&|#|$)/i);
+  if (!match) return true;
+  let actual = _text(match[1]).toLowerCase();
+  if (actual === "series" || actual === "anime") actual = "tv";
+  return actual === desired;
+}
+function _spv34RouteMediaCompatible(route, mediaType) {
+  const desired = _mediaNamespace(mediaType);
+  const source = _text(route);
+  const match = source.match(/(?:[?&](?:type|media|m)=)(movie|tv|series|anime)(?=&|#|$)/i);
+  if (!match) return true;
+  let actual = _text(match[1]).toLowerCase();
+  if (actual === "series" || actual === "anime") actual = "tv";
+  return actual === desired;
+}
+function _spv34RouteMediaCompatible(route, mediaType) {
+  const desired = _mediaNamespace(mediaType);
+  const source = _text(route);
+  const match = source.match(/(?:[?&](?:type|media|m)=)(movie|tv|series|anime)(?=&|#|$)/i);
+  if (!match) return true;
+  let actual = _text(match[1]).toLowerCase();
+  if (actual === "series" || actual === "anime") actual = "tv";
+  return actual === desired;
+}
+function _spv34RouteMediaCompatible(route, mediaType) {
+  const desired = _mediaNamespace(mediaType);
+  const source = _text(route);
+  const match = source.match(/(?:[?&](?:type|media|m)=)(movie|tv|series|anime)(?=&|#|$)/i);
+  if (!match) return true;
+  let actual = _text(match[1]).toLowerCase();
+  if (actual === "series" || actual === "anime") actual = "tv";
+  return actual === desired;
+}
 function _learnedUrls(kind, meta, mediaType, season, episode) {
   const out = [];
   const bases = kind === "api" ? _apiBases() : _searchBases();
   for (const route of NIAKVIO_PROVIDER_MODEL.routes || []) {
     if (_routeKind(route) !== kind) continue;
+    /* NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34 */
+    if (kind === "api" && !_spv34RouteMediaCompatible(route, mediaType)) continue;
     out.push(..._expandLearnedRoute(route, meta, mediaType, season, episode, bases));
   }
   return _uniq(out);

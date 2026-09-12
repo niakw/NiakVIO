@@ -41,13 +41,14 @@ GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_v1.py"
 GLOBAL_PROVIDER_RUNTIME_DISPATCH = "scripts/provider_patches/global_provider_runtime_dispatch_v1.py"
 GLOBAL_DESKTOP_RUNTIME_COMPAT = "scripts/provider_patches/desktop_runtime_compat_v1.py"
 GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_branding_v1.py"
-# NUVIO_STREAM_SANITIZER_V7_SELECTION
-GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v7.py"
+# NUVIO_STREAM_SANITIZER_V8_SELECTION
+GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v8.py"
 CORE_MANAGED_SANITIZER_SCRIPTS = {
     "scripts/provider_patches/stream_output_sanitizer.py",
     "scripts/provider_patches/stream_output_sanitizer_v5.py",
     "scripts/provider_patches/stream_output_sanitizer_v6.py",
     "scripts/provider_patches/stream_output_sanitizer_v7.py",
+    "scripts/provider_patches/stream_output_sanitizer_v8.py",
 }
 GLOBAL_MEDIA_TYPE_RESOLUTION = "scripts/provider_patches/global_media_type_resolution_v1.py"
 # Managed Core bricks are composed only at whole START/END boundaries; provider rows may supply data/options, never brick ownership.
@@ -65,6 +66,7 @@ GENERATED_CORE_TAIL_MARKERS = (
     "NUVIO_STREAM_OUTPUT_SANITIZER_UTF8_BOM_V5",
     "NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6",
     "NUVIO_STREAM_OUTPUT_CORRELATED_PLAYER_FALLBACK_V7",
+    "NUVIO_STREAM_OUTPUT_STRICT_PROBE_V8",
     "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",
     "NUVIO_GLOBAL_PROVIDER_EXECUTION_BUDGET_V1",
     "NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1",
