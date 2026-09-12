@@ -10,7 +10,7 @@ jobs:
   dispatch:
     runs-on: ubuntu-latest
     steps:
-      - name: Dispatch native Labs in parallel
+      - name: Dispatch missing TV Lab
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -18,8 +18,5 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh workflow run native-mobile-android-reader.yml --repo "$REPO" --ref "$REF"
-          gh workflow run native-mobile-ios-reader.yml --repo "$REPO" --ref "$REF" -f mode=full
-          gh workflow run native-desktop-reader-acceptance.yml --repo "$REPO" --ref "$REF"
-          gh workflow run native-corpus-device-targeted.yml --repo "$REPO" --ref "$REF" -f device=tv -f skip_native_builds=false
-          echo "FIELD_PARALLEL_NATIVE_LABS_DISPATCHED ref=$REF android=1 ios=1 desktop=1 tv=1"
+          gh workflow run native-corpus-device-targeted.yml --repo "$REPO" --ref "$REF" -f device=tv
+          echo "FIELD_PARALLEL_NATIVE_LABS_DISPATCHED ref=$REF tv=1 reason=repair_invalid_legacy_input"
