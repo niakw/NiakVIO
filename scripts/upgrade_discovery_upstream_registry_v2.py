@@ -20,8 +20,59 @@ NEW_CONST = 'SOURCES_PATH = ROOT / "sources.json"\nUPSTREAMS_PATH = ROOT / "engi
 OLD_LOAD = '    config = json.loads(SOURCES_PATH.read_text(encoding="utf-8"))\n    exclusions = config.get("exclusions", {})\n'
 NEW_LOAD = '    config = load_discovery_config()\n    exclusions = config.get("exclusions", {})\n'
 
-ANCHOR = '''def load_manifest_snapshot'''
-HELPER = '''# NIAKVIO_DISCOVERY_AUTHORITATIVE_UPSTREAM_REGISTRY_V2\ndef load_discovery_config() -> dict[str, Any]:\n    \"\"\"Compose local policy/exclusions with the current external registry.\n\n    External repositories are knowledge inputs only. This adapter intentionally\n    converts the authoritative list schema into the historical `manifest_urls`\n    shape consumed by the bounded discovery code without restoring upstream\n    ownership to `sources.json`.\n    \"\"\"\n    policy = json.loads(SOURCES_PATH.read_text(encoding=\"utf-8\"))\n    registry = json.loads(UPSTREAMS_PATH.read_text(encoding=\"utf-8\"))\n    rows = registry.get(\"upstreams\") if isinstance(registry, dict) else []\n    if not isinstance(rows, list):\n        raise ValueError(\"provider-upstreams.json: upstreams list required\")\n\n    upstreams: dict[str, dict[str, Any]] = {}\n    for row in rows:\n        if not isinstance(row, dict):\n            continue\n        source_id = str(row.get(\"id\") or \"\").strip()\n        if not source_id:\n            continue\n        branch = str(row.get(\"branch\") or \"main\").strip() or \"main\"\n        manifest = str(row.get(\"manifest\") or \"manifest.json\").strip().lstrip(\"/\") or \"manifest.json\"\n        repositories = []\n        for key in (\"repository\", \"fallback_repository\"):\n            repository = str(row.get(key) or \"\").strip().strip(\"/\")\n            if repository and repository not in repositories:\n                repositories.append(repository)\n        if not repositories:\n            raise ValueError(f\"provider-upstreams.json: {source_id} has no repository\")\n        upstreams[source_id] = {\n            \"manifest_urls\": [\n                f\"https://raw.githubusercontent.com/{repository}/{branch}/{manifest}\"\n                for repository in repositories\n            ],\n            \"repository\": repositories[0],\n            \"fallback_repository\": repositories[1] if len(repositories) > 1 else None,\n            \"branch\": branch,\n            \"manifest\": manifest,\n        }\n\n    if not upstreams:\n        raise ValueError(\"provider-upstreams.json: no usable upstreams\")\n    exclusions = policy.get(\"exclusions\") if isinstance(policy, dict) else {}\n    return {\n        \"exclusions\": exclusions if isinstance(exclusions, dict) else {},\n        \"upstreams\": upstreams,\n    }\n\n\ndef load_manifest_snapshot'''
+ANCHOR = 'def decode_static_obfuscated_strings(text: str) -> list[str]:\n'
+HELPER = '''# NIAKVIO_DISCOVERY_AUTHORITATIVE_UPSTREAM_REGISTRY_V2\ndef load_discovery_config() -> dict[str, Any]:
+    """Compose local policy/exclusions with the current external registry.
+
+    External repositories are knowledge inputs only. This adapter intentionally
+    converts the authoritative list schema into the historical `manifest_urls`
+    shape consumed by the bounded discovery code without restoring upstream
+    ownership to `sources.json`.
+    """
+    policy = json.loads(SOURCES_PATH.read_text(encoding="utf-8"))
+    registry = json.loads(UPSTREAMS_PATH.read_text(encoding="utf-8"))
+    rows = registry.get("upstreams") if isinstance(registry, dict) else []
+    if not isinstance(rows, list):
+        raise ValueError("provider-upstreams.json: upstreams list required")
+
+    upstreams: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        source_id = str(row.get("id") or "").strip()
+        if not source_id:
+            continue
+        branch = str(row.get("branch") or "main").strip() or "main"
+        manifest = str(row.get("manifest") or "manifest.json").strip().lstrip("/") or "manifest.json"
+        repositories = []
+        for key in ("repository", "fallback_repository"):
+            repository = str(row.get(key) or "").strip().strip("/")
+            if repository and repository not in repositories:
+                repositories.append(repository)
+        if not repositories:
+            raise ValueError(f"provider-upstreams.json: {source_id} has no repository")
+        upstreams[source_id] = {
+            "manifest_urls": [
+                f"https://raw.githubusercontent.com/{repository}/{branch}/{manifest}"
+                for repository in repositories
+            ],
+            "repository": repositories[0],
+            "fallback_repository": repositories[1] if len(repositories) > 1 else None,
+            "branch": branch,
+            "manifest": manifest,
+        }
+
+    if not upstreams:
+        raise ValueError("provider-upstreams.json: no usable upstreams")
+    exclusions = policy.get("exclusions") if isinstance(policy, dict) else {}
+    return {
+        "exclusions": exclusions if isinstance(exclusions, dict) else {},
+        "upstreams": upstreams,
+    }
+
+
+def decode_static_obfuscated_strings(text: str) -> list[str]:
+'''
 
 
 def patch() -> bool:
@@ -51,7 +102,7 @@ def validate(text: str | None = None) -> None:
         'UPSTREAMS_PATH = ROOT / "engine_v2" / "config" / "provider-upstreams.json"',
         'registry.get("upstreams")',
         'for key in ("repository", "fallback_repository")',
-        '"https://raw.githubusercontent.com/{repository}/{branch}/{manifest}"',
+        'f"https://raw.githubusercontent.com/{repository}/{branch}/{manifest}"',
         'config = load_discovery_config()',
     ):
         if needle not in value:
