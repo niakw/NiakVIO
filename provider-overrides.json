@@ -37,9 +37,9 @@
         ]
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/catalogue/{slug}/saison1/vostfr/episodes.js",
-        "/catalogue/{slug}/saison1/vf/episodes.js"
+        "/template-php/defaut/fetch.php",
+        "/catalogue/{slug}/saison{season}/{lang}/episodes.js",
+        "/catalogue/{slug}/film/{lang}/episodes.js"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/anime_sama_runtime_v1.py"
@@ -249,18 +249,33 @@
       "runtime_domain_replacements": {
         "anime-sama.to": "anime-sama.store"
       },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "anime",
+          "movie"
+        ],
+        "validated_types": [
+          "anime",
+          "movie"
+        ],
+        "missing_types": [],
+        "provider_request_count": 63,
+        "live_validated_route_count": 6,
+        "execution_plan_route_count": 3,
+        "runtime_derived_route_count": 5,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 0,
+        "safe_runtime_derived_routes_promoted": 0,
+        "runtime_observed_url_count": 20,
+        "runtime_observed_origin_count": 5,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
       }
     },
     "purstream": {
@@ -563,6 +578,34 @@
           "title",
           "mediaType"
         ]
+      },
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "movie",
+          "tv"
+        ],
+        "validated_types": [
+          "movie",
+          "tv"
+        ],
+        "missing_types": [],
+        "provider_request_count": 16,
+        "live_validated_route_count": 3,
+        "execution_plan_route_count": 3,
+        "runtime_derived_route_count": 0,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 0,
+        "safe_runtime_derived_routes_promoted": 0,
+        "runtime_observed_url_count": 4,
+        "runtime_observed_origin_count": 1,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
       }
     },
     "flemmix": {
@@ -837,6 +880,34 @@
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
         }
+      },
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "movie",
+          "tv"
+        ],
+        "validated_types": [
+          "movie",
+          "tv"
+        ],
+        "missing_types": [],
+        "provider_request_count": 2,
+        "live_validated_route_count": 1,
+        "execution_plan_route_count": 1,
+        "runtime_derived_route_count": 1,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 1,
+        "safe_runtime_derived_routes_promoted": 1,
+        "runtime_observed_url_count": 2,
+        "runtime_observed_origin_count": 1,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
       }
     },
     "uhdmovies": {
@@ -894,7 +965,14 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/?s={query}"
+        "/?s={query}",
+        "/search/{slug}/",
+        "/download-{slug}-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/",
+        "/download-{slug}-2014-english-audio-english-1080p-2160p-4k-hevc-bluray-esubs/",
+        "/download-{slug}-2014-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs/",
+        "/download-{slug}-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs/",
+        "/download-{slug}-hindi-1080p-2160p/",
+        "/download-el-caminoa-{slug}-movie-2019-english-audio-1080p-10bit-2160p-4k-hevc-bluray-web-dl-esubs/"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -1042,7 +1120,35 @@
         },
         "evidenceDestructive": false
       },
-      "runtime_domain_replacements": {}
+      "runtime_domain_replacements": {},
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "movie",
+          "tv"
+        ],
+        "validated_types": [
+          "movie",
+          "tv"
+        ],
+        "missing_types": [],
+        "provider_request_count": 198,
+        "live_validated_route_count": 69,
+        "execution_plan_route_count": 8,
+        "runtime_derived_route_count": 78,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 7,
+        "safe_runtime_derived_routes_promoted": 7,
+        "runtime_observed_url_count": 85,
+        "runtime_observed_origin_count": 2,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
+      }
     },
     "movieshunt": {
       "capability": "direct_media",
@@ -1266,7 +1372,33 @@
           ],
           "sourceRole": "catalog-search"
         }
-      ]
+      ],
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "movie"
+        ],
+        "validated_types": [
+          "movie"
+        ],
+        "missing_types": [],
+        "provider_request_count": 17,
+        "live_validated_route_count": 3,
+        "execution_plan_route_count": 1,
+        "runtime_derived_route_count": 2,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 0,
+        "safe_runtime_derived_routes_promoted": 0,
+        "runtime_observed_url_count": 3,
+        "runtime_observed_origin_count": 1,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
+      }
     },
     "zinkmovies": {
       "capability": "direct_media",
@@ -1297,6 +1429,7 @@
         "/?s={query}"
       ],
       "learned_routes": [
+        "/play/",
         "/?s={query}"
       ],
       "route_proof_version": 5,
@@ -1481,7 +1614,10 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/?s={query}"
+        "/?s={query}",
+        "/api/index.php?link=",
+        "/api/",
+        "/search.php?q={query}"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -1665,6 +1801,34 @@
         "partialCoverageFallback": [
           "tv"
         ]
+      },
+      "api_recipe": {
+        "proofModelVersion": 5,
+        "allowGenericFallback": true,
+        "base": "https://new2.vegamovies.futbol",
+        "searchRoute": "/search.php?q={imdbId}&page=1&per_page=15",
+        "searchRequest": {
+          "method": "GET",
+          "headers": {
+            "accept": "application/json, text/plain, */*",
+            "accept-language": "en-US,en;q=0.9",
+            "referer": "https://vegamovies.mq/",
+            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36"
+          }
+        },
+        "movieRoute": "/wp-json/wp/v2/posts/{id}",
+        "movieRequest": {
+          "method": "GET",
+          "headers": {
+            "accept": "application/json, text/plain, */*",
+            "accept-language": "en-US,en;q=0.9",
+            "referer": "https://vegamovies.mq/",
+            "user-agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36"
+          }
+        },
+        "partialCoverageFallback": [
+          "tv"
+        ]
       }
     },
     "hindmoviez": {
@@ -1675,7 +1839,7 @@
         "enabled": true
       },
       "learned_routes": [
-        "/wp-json/wp/v2/posts?search={imdbId}&per_page=100"
+        "/{slug}"
       ],
       "notes": [
         "Runtime route discovery removed: Discovery/Learning owns search/detail route recognition; provider JS consumes only learned_routes."
@@ -1876,6 +2040,34 @@
           "mv_ajax": "https://mvlink.blog/wp-admin/admin-ajax.php",
           "user_agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
         }
+      },
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "movie",
+          "tv"
+        ],
+        "validated_types": [
+          "movie",
+          "tv"
+        ],
+        "missing_types": [],
+        "provider_request_count": 27,
+        "live_validated_route_count": 9,
+        "execution_plan_route_count": 1,
+        "runtime_derived_route_count": 10,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 0,
+        "safe_runtime_derived_routes_promoted": 0,
+        "runtime_observed_url_count": 23,
+        "runtime_observed_origin_count": 13,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
       }
     },
     "4khdhub": {
@@ -1903,7 +2095,10 @@
         "4khdhub.click": "hdhub4u.bi"
       },
       "learned_routes": [
-        "/?s={query}"
+        "/?s={query}",
+        "/{slug}-movie-7978/",
+        "/{slug}-series-1385/",
+        "/el-camino-a-{slug}-movie-movie-1175/"
       ],
       "candidate_learned_routes": [
         "/?s={query}"
@@ -2064,7 +2259,35 @@
         },
         "evidenceDestructive": false
       },
-      "runtime_domain_replacements": {}
+      "runtime_domain_replacements": {},
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "movie",
+          "tv"
+        ],
+        "validated_types": [
+          "movie",
+          "tv"
+        ],
+        "missing_types": [],
+        "provider_request_count": 75,
+        "live_validated_route_count": 20,
+        "execution_plan_route_count": 4,
+        "runtime_derived_route_count": 35,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 3,
+        "safe_runtime_derived_routes_promoted": 3,
+        "runtime_observed_url_count": 37,
+        "runtime_observed_origin_count": 5,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
+      }
     },
     "persianstremio": {
       "capability": "api_stream_resolver",
@@ -2076,9 +2299,7 @@
       "official_api": "https://persianstremio.vercel.app",
       "learned_routes": [
         "/stream/movie/{id}.json",
-        "/stream/series/{id}:{season}:{episode}.json",
-        "/stream/movie/",
-        "/stream/series/"
+        "/stream/series/{id}:{season}:{episode}.json"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/persianstremio_runtime_v1.py"
@@ -2265,6 +2486,34 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "movie",
+          "tv"
+        ],
+        "validated_types": [
+          "movie",
+          "tv"
+        ],
+        "missing_types": [],
+        "provider_request_count": 4,
+        "live_validated_route_count": 2,
+        "execution_plan_route_count": 2,
+        "runtime_derived_route_count": 0,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 0,
+        "safe_runtime_derived_routes_promoted": 0,
+        "runtime_observed_url_count": 4,
+        "runtime_observed_origin_count": 1,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
       }
     },
     "desiflix": {
@@ -2281,7 +2530,9 @@
       "official_api": "https://manifest.desitvhub.eu.org",
       "learned_routes": [
         "/stream/movie/{id}.json",
-        "/stream/series/{id}:{season}:{episode}.json"
+        "/stream/series/{id}:{season}:{episode}.json",
+        "/series/english/b/{slug}-2008-S1(WWW.FLIXSIX.COM).mp4",
+        "/series/english/b/{slug}-2008-S5(WW.FLIXSIX.COM).mp4"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/desiflix_runtime_v1.py"
@@ -2475,7 +2726,35 @@
       },
       "official_hub": "https://desiflix.me",
       "runtime_domain_replacements": {},
-      "domain_substitutions": {}
+      "domain_substitutions": {},
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "movie",
+          "tv"
+        ],
+        "validated_types": [
+          "movie",
+          "tv"
+        ],
+        "missing_types": [],
+        "provider_request_count": 21,
+        "live_validated_route_count": 8,
+        "execution_plan_route_count": 4,
+        "runtime_derived_route_count": 7,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 2,
+        "safe_runtime_derived_routes_promoted": 2,
+        "runtime_observed_url_count": 9,
+        "runtime_observed_origin_count": 5,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
+      }
     },
     "kehflix": {
       "notes": [
@@ -2500,16 +2779,9 @@
       "learned_routes": [
         "/title/movie/{id}-{slug}",
         "/title/tv/{id}-{slug}",
-        "/player",
         "/api/streams/{media}?id&k",
         "/api/streams/episode?id&season&episode&k",
-        "/api/report",
-        "/api/track",
-        "/api/fp",
-        "/api/ad-link",
-        "/api/streams/working",
-        "/api/streams/dead",
-        "/api/streams/warm"
+        "/api/stream-gw"
       ],
       "core_options": {
         "hls_runtime_integrity": {
@@ -2714,6 +2986,36 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "validated_types": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "missing_types": [],
+        "provider_request_count": 35,
+        "live_validated_route_count": 6,
+        "execution_plan_route_count": 5,
+        "runtime_derived_route_count": 3,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 0,
+        "safe_runtime_derived_routes_promoted": 0,
+        "runtime_observed_url_count": 24,
+        "runtime_observed_origin_count": 4,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
       }
     },
     "4khdhubnew": {
@@ -2738,6 +3040,9 @@
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
       ],
       "learned_routes": [
+        "/player",
+        "/episode/",
+        "/",
         "/?tmdbId={tmdbId}&type=movie",
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
       ],
@@ -2865,7 +3170,16 @@
             "user-agent": "Mozilla/5.0 NiakVIO/3"
           }
         },
-        "base": "https://4khdhub.one"
+        "base": "https://4khdhub.one",
+        "directRoute": "/?tmdbId={tmdbId}&type=movie",
+        "directRequest": {
+          "method": "GET",
+          "headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
+            "accept-language": "fr-FR,fr,en-US,en",
+            "user-agent": "Mozilla/5.0 NiakVIO/3"
+          }
+        }
       },
       "candidate_api_recipe": {
         "proofModelVersion": 5,
@@ -2965,7 +3279,8 @@
       "learned_routes": [
         "/index.php?story={query}&do=search&subaction=search",
         "/play/{id}",
-        "/playlist/{id}.txt"
+        "/playlist/{id}.txt",
+        "/play/"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/allmovieland_runtime_v1.py"
@@ -3183,7 +3498,13 @@
         "/episodes",
         "/sources"
       ],
-      "learned_routes": [],
+      "learned_routes": [
+        "/api/frontend/anime/",
+        "/api/frontend/episode/",
+        "/episode/",
+        "/episodes",
+        "/sources"
+      ],
       "route_proof_version": 5,
       "route_proof": {
         "version": 5,
@@ -3517,7 +3838,35 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {},
-      "domain_substitutions": {}
+      "domain_substitutions": {},
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "anime",
+          "movie"
+        ],
+        "validated_types": [
+          "anime",
+          "movie"
+        ],
+        "missing_types": [],
+        "provider_request_count": 14,
+        "live_validated_route_count": 7,
+        "execution_plan_route_count": 5,
+        "runtime_derived_route_count": 2,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 0,
+        "safe_runtime_derived_routes_promoted": 0,
+        "runtime_observed_url_count": 8,
+        "runtime_observed_origin_count": 2,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
+      }
     },
     "animekai": {
       "capability": "mixed_embed_resolver",
@@ -3554,7 +3903,11 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/browser?keyword={query}"
+        "/browser?keyword={query}",
+        "/watch/{slug}",
+        "/watch/{slug}/ep-{episode}",
+        "/download/{slug}-tv/ep-1",
+        "/download/{slug}-tv/ep-2"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -3696,6 +4049,32 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "anime"
+        ],
+        "validated_types": [
+          "anime"
+        ],
+        "missing_types": [],
+        "provider_request_count": 36,
+        "live_validated_route_count": 16,
+        "execution_plan_route_count": 5,
+        "runtime_derived_route_count": 14,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 2,
+        "safe_runtime_derived_routes_promoted": 2,
+        "runtime_observed_url_count": 18,
+        "runtime_observed_origin_count": 3,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
       }
     },
     "animepahe": {
@@ -3920,14 +4299,14 @@
           "tv"
         ],
         "missing_types": [],
-        "provider_request_count": 10,
+        "provider_request_count": 12,
         "live_validated_route_count": 2,
         "execution_plan_route_count": 2,
         "runtime_derived_route_count": 3,
         "runtime_derived_routes_persisted": false,
         "safe_runtime_derived_route_count": 2,
         "safe_runtime_derived_routes_promoted": 2,
-        "runtime_observed_url_count": 6,
+        "runtime_observed_url_count": 7,
         "runtime_observed_origin_count": 1,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
@@ -4331,6 +4710,34 @@
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
         }
+      },
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "anime",
+          "movie"
+        ],
+        "validated_types": [
+          "anime",
+          "movie"
+        ],
+        "missing_types": [],
+        "provider_request_count": 2,
+        "live_validated_route_count": 1,
+        "execution_plan_route_count": 1,
+        "runtime_derived_route_count": 2,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 1,
+        "safe_runtime_derived_routes_promoted": 1,
+        "runtime_observed_url_count": 2,
+        "runtime_observed_origin_count": 1,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
       }
     },
     "animesultra": {
@@ -4347,30 +4754,30 @@
         "/api/v2/themoviedb?id={tmdbId}"
       ],
       "live_route_gate": {
-        "completion_state": "terminal-blocked",
-        "effective_coverage_ratio": 0.0,
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
         "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 0.0,
+        "declared_type_coverage_ratio": 1.0,
         "required_types": [
           "anime",
           "movie"
         ],
-        "validated_types": [],
-        "missing_types": [
+        "validated_types": [
           "anime",
           "movie"
         ],
-        "provider_request_count": 21,
-        "live_validated_route_count": 0,
-        "execution_plan_route_count": 6,
-        "runtime_derived_route_count": 0,
+        "missing_types": [],
+        "provider_request_count": 2,
+        "live_validated_route_count": 1,
+        "execution_plan_route_count": 1,
+        "runtime_derived_route_count": 1,
         "runtime_derived_routes_persisted": false,
-        "safe_runtime_derived_route_count": 0,
-        "safe_runtime_derived_routes_promoted": 0,
-        "runtime_observed_url_count": 16,
+        "safe_runtime_derived_route_count": 1,
+        "safe_runtime_derived_routes_promoted": 1,
+        "runtime_observed_url_count": 2,
         "runtime_observed_origin_count": 1,
         "runtime_observations_persisted_as_provider_data": false,
-        "blocked_plan_preserved": true,
+        "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
       },
@@ -4587,8 +4994,7 @@
         "/v4/search?query={query}",
         "/anime/search/?query={query}",
         "/animetsu.live/v2/api",
-        "/4/10829438?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/4/10829438"
+        "/4/10829438?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -4602,7 +5008,7 @@
           "anime"
         ],
         "missing_types": [],
-        "provider_request_count": 12,
+        "provider_request_count": 13,
         "live_validated_route_count": 6,
         "execution_plan_route_count": 5,
         "runtime_derived_route_count": 2,
@@ -4791,8 +5197,14 @@
       },
       "learned_routes": [
         "/?s={query}",
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/animes/{slug}/"
+        "/film/{slug}-0/",
+        "/tag/watch-{slug}-0/",
+        "/tag/watch-movie-{slug}-0-for-free/",
+        "/animes/{slug}-saison-3/",
+        "/tag/watch-{slug}/",
+        "/animes/{slug}/",
+        "/episode/{slug}-1-episode-1/",
+        "/episode/{slug}-2-saison-1-episode-1/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -4808,14 +5220,14 @@
           "movie"
         ],
         "missing_types": [],
-        "provider_request_count": 68,
-        "live_validated_route_count": 25,
-        "execution_plan_route_count": 7,
-        "runtime_derived_route_count": 24,
+        "provider_request_count": 76,
+        "live_validated_route_count": 32,
+        "execution_plan_route_count": 9,
+        "runtime_derived_route_count": 40,
         "runtime_derived_routes_persisted": false,
-        "safe_runtime_derived_route_count": 6,
-        "safe_runtime_derived_routes_promoted": 6,
-        "runtime_observed_url_count": 35,
+        "safe_runtime_derived_route_count": 8,
+        "safe_runtime_derived_routes_promoted": 8,
+        "runtime_observed_url_count": 43,
         "runtime_observed_origin_count": 1,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
@@ -5057,7 +5469,8 @@
       ],
       "learned_routes": [
         "/0:search?q={query}",
-        "/download.aspx"
+        "/download.aspx",
+        "/1:search"
       ],
       "domain_substitutions": {
         "1.animezey23112022.workers.dev": "1.animezeydl.workers.dev",
@@ -5260,7 +5673,43 @@
         "enabled": false
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/?s={query}",
+        "/anime/{slug}/",
+        "/anime/{slug}/film/",
+        "/anime/{slug}/episode-{episode}/",
+        "/anime/{slug}/saison-{season}/episode-{episode}/",
+        "/anime/{slug}/saison-{N}/{lang}/episode-{N}/",
+        "/anime/welcome-to-demon-school-iruma-kun/saison-4/",
+        "/anime/daemons-of-the-shadow-realm/saison-1/",
+        "/anime/jaadugar-a-witch-in-mongolia/saison-1/",
+        "/embed-l21zkze4ehw8.html",
+        "/anime/{slug}/film/vostfr/episode-1/",
+        "/anime/{slug}/film/vf/episode-1/",
+        "/covers/{slug}.webp",
+        "/anime/the-cat-and-the-dragon/saison-1/",
+        "/embed-pj0yadx0qgml.html",
+        "/anime//film/",
+        "/anime//episode-1/",
+        "/embed-29mie11dr16u.html",
+        "/anime/skeleton-knight-in-another-world/saison-2/",
+        "/embed-iwty13sq9p7t.html",
+        "/hls2/02/02880/l21zkze4ehw8_,n,l,.urlset/master.m3u8?t=gsYph0BiF7vO0R-UpJBF9LsIOhN9j7lfqKNbZ46eFXk%3D&s=1788627822&e=43200&v=&srv=bck-1493-u&i=0.4&sp=0&asn=8075",
+        "/hls2/02/02880/l21zkze4ehw8_n/index-v1-a1.m3u8?t=gsYph0BiF7vO0R-UpJBF9LsIOhN9j7lfqKNbZ46eFXk%3D&s=1788627822&e=43200&v=&srv=bck-1493-u&i=0.4&sp=0&asn=8075",
+        "/hls2/02/02736/uc1op54d766a_,n,l,.urlset/master.m3u8?t=ejXb_731I3rqE7qHmlJNgIokSJL_dLmdUUpmkO6b9Cg%3D&s=1788627880&e=43200&v=&srv=bck-1562-ant-s&i=0.4&sp=0&asn=8075",
+        "/hls2/02/02736/uc1op54d766a_n/index-v1-a1.m3u8?t=ejXb_731I3rqE7qHmlJNgIokSJL_dLmdUUpmkO6b9Cg%3D&s=1788627880&e=43200&v=&srv=bck-1562-ant-s&i=0.4&sp=0&asn=8075",
+        "/hls2/02/02880/29mie11dr16u_,n,l,.urlset/master.m3u8?t=5IHPe6gRDoaheXsE42PkPIm5NjLKd61u6mhhwgMXYGo%3D&s=1788627914&e=43200&v=&srv=bck-1493-u&i=0.4&sp=0&asn=8075",
+        "/hls2/02/02880/29mie11dr16u_n/index-v1-a1.m3u8?t=5IHPe6gRDoaheXsE42PkPIm5NjLKd61u6mhhwgMXYGo%3D&s=1788627914&e=43200&v=&srv=bck-1493-u&i=0.4&sp=0&asn=8075",
+        "/hls2/02/02593/iwty13sq9p7t_,n,l,.urlset/master.m3u8?t=wZ66Rggjgm87BjcOKRPBXY6QkzRWWt0kdPjS4HGzwlU%3D&s=1788627940&e=43200&v=&srv=bck-1493-u&i=0.4&sp=0&asn=8075",
+        "/hls2/02/02593/iwty13sq9p7t_n/index-v1-a1.m3u8?t=wZ66Rggjgm87BjcOKRPBXY6QkzRWWt0kdPjS4HGzwlU%3D&s=1788627940&e=43200&v=&srv=bck-1493-u&i=0.4&sp=0&asn=8075",
+        "/anime/episode-1/",
+        "/episode-",
+        "/episode-1/",
+        "/anime/{slug}/film/episode-1/",
+        "/anime/{slug}/movie/episode-1/",
+        "/anime/{slug}/episode-1/",
+        "/episode-\"",
+        "/api/v2/themoviedb?id={tmdbId}",
+        "/meta/series/tt12343534.json"
       ],
       "candidate_learned_routes": [
         "/?s={query}",
@@ -5665,6 +6114,7 @@
       "strict_identity": true,
       "official_api": "https://api.hlowb.com",
       "learned_routes": [
+        "/v0.1/system/getSecurityKey/1?channel=IndiaA&clientType=1&lang=en-US",
         "/film-api/v1.1.0/movie/searchByKeyword?channel=IndiaA&clientType=1&keyword={query}&lang=en-US&mode=1&packageName=com.external.castle&page=1&size=30",
         "/film-api/v1.9.9/movie?channel=IndiaA&clientType=1&lang=en-US&movieId={id}&packageName=com.external.castle",
         "/film-api/v2.0.1/movie/getVideo2?clientType=1&packageName=com.external.castle&channel=IndiaA&lang=en-US"
@@ -5721,14 +6171,14 @@
           "tv"
         ],
         "missing_types": [],
-        "provider_request_count": 23,
+        "provider_request_count": 19,
         "live_validated_route_count": 4,
         "execution_plan_route_count": 4,
         "runtime_derived_route_count": 0,
         "runtime_derived_routes_persisted": false,
         "safe_runtime_derived_route_count": 0,
         "safe_runtime_derived_routes_promoted": 0,
-        "runtime_observed_url_count": 9,
+        "runtime_observed_url_count": 7,
         "runtime_observed_origin_count": 1,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
@@ -6404,7 +6854,10 @@
       },
       "learned_routes": [
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/",
+        "/player",
+        "/episode/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -6577,7 +7030,16 @@
             "user-agent": "Mozilla/5.0 NiakVIO/3"
           }
         },
-        "base": "https://cinemm.com"
+        "base": "https://cinemm.com",
+        "directRoute": "/?tmdbId={tmdbId}&type=movie",
+        "directRequest": {
+          "method": "GET",
+          "headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
+            "accept-language": "fr-FR,fr,en-US,en",
+            "user-agent": "Mozilla/5.0 NiakVIO/3"
+          }
+        }
       },
       "candidate_api_recipe": {
         "proofModelVersion": 5,
@@ -6674,8 +7136,6 @@
         "anime"
       ],
       "learned_routes": [
-        "/film/{slug}/",
-        "/movie/{slug}/",
         "/api/v2/themoviedb?id={tmdbId}"
       ],
       "strict_html_identity": true,
@@ -6766,15 +7226,15 @@
           "tv"
         ],
         "missing_types": [],
-        "provider_request_count": 98,
-        "live_validated_route_count": 29,
-        "execution_plan_route_count": 7,
-        "runtime_derived_route_count": 30,
+        "provider_request_count": 3,
+        "live_validated_route_count": 1,
+        "execution_plan_route_count": 1,
+        "runtime_derived_route_count": 27,
         "runtime_derived_routes_persisted": false,
-        "safe_runtime_derived_route_count": 4,
-        "safe_runtime_derived_routes_promoted": 4,
-        "runtime_observed_url_count": 65,
-        "runtime_observed_origin_count": 7,
+        "safe_runtime_derived_route_count": 1,
+        "safe_runtime_derived_routes_promoted": 1,
+        "runtime_observed_url_count": 3,
+        "runtime_observed_origin_count": 1,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
@@ -7402,14 +7862,14 @@
           "movie"
         ],
         "missing_types": [],
-        "provider_request_count": 13,
-        "live_validated_route_count": 4,
-        "execution_plan_route_count": 2,
-        "runtime_derived_route_count": 2,
+        "provider_request_count": 2,
+        "live_validated_route_count": 1,
+        "execution_plan_route_count": 1,
+        "runtime_derived_route_count": 3,
         "runtime_derived_routes_persisted": false,
-        "safe_runtime_derived_route_count": 0,
-        "safe_runtime_derived_routes_promoted": 0,
-        "runtime_observed_url_count": 8,
+        "safe_runtime_derived_route_count": 1,
+        "safe_runtime_derived_routes_promoted": 1,
+        "runtime_observed_url_count": 2,
         "runtime_observed_origin_count": 1,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
@@ -7649,7 +8109,13 @@
         "/api/subtitles",
         "/api.reallyfast.xyz"
       ],
-      "learned_routes": [],
+      "learned_routes": [
+        "/api/challenge",
+        "/episode/",
+        "/api/resolve",
+        "/api/subtitles",
+        "/api.reallyfast.xyz"
+      ],
       "route_proof_version": 5,
       "route_proof": {
         "version": 5,
@@ -8157,7 +8623,13 @@
       ],
       "learned_routes": [
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/"
+        "/",
+        "/api/resolve?id={id}",
+        "/stream/getSources?id={id}",
+        "/episode/",
+        "/stream/s-3/",
+        "/stream/mal/",
+        "/stream/s-2/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -8368,8 +8840,7 @@
         "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
       ],
       "learned_routes": [
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -8383,14 +8854,14 @@
           "anime"
         ],
         "missing_types": [],
-        "provider_request_count": 4,
-        "live_validated_route_count": 2,
+        "provider_request_count": 15,
+        "live_validated_route_count": 12,
         "execution_plan_route_count": 1,
-        "runtime_derived_route_count": 2,
+        "runtime_derived_route_count": 14,
         "runtime_derived_routes_persisted": false,
         "safe_runtime_derived_route_count": 1,
         "safe_runtime_derived_routes_promoted": 1,
-        "runtime_observed_url_count": 4,
+        "runtime_observed_url_count": 14,
         "runtime_observed_origin_count": 1,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
@@ -8748,7 +9219,10 @@
         "new3.movies4u.clinic": "movies4u.band",
         "movies4u.review": "movies4u.band"
       },
-      "learned_routes": [],
+      "learned_routes": [
+        "/?s={query}",
+        "/episodes"
+      ],
       "candidate_learned_routes": [
         "/?s={query}",
         "/episodes"
@@ -9113,68 +9587,7 @@
         "/download-winners-and-{slug}-1983-hindi-480p-720p-1080p/",
         "/download-{slug}-hindi/",
         "/download-el-camino-a-{slug}-movie-2019-480p-720p-1080p/",
-        "/wp-content/uploads/2023/08/Download-{slug}-S01-Hindi-Dubbed-480p-720p-1080p.jpg",
-        "/wp-content/uploads/2019/10/Download-El-Camino-A-{slug}-Movie-English-720p.jpg",
-        "/download-attack-on-titan-part-2-2015-hindi-480p-720p-1080p/",
-        "/archives/132382",
-        "/archives/106762",
-        "/download-remember-yesterday-2022-english-480p-720p-1080p/",
-        "/download-mike-and-dave-need-wedding-dates-2016-hindi-480p-720p-1080p/",
-        "/download-armageddon-time-2022-hindi-english-480p-720p-1080p/",
-        "/download-air-bud-1997-hindi-480p-720p-1080p/",
-        "/download-primitive-war-2025-hindi-english-480p-720p-1080p/",
-        "/download-eighth-grade-2018-hindi-english-480p-720p-1080p/",
-        "/download-children-of-the-corn-iii-urban-harvest-1995-english-480p-720p/",
-        "/download-boiler-room-2000-hindi-480p-720p-1080p/",
-        "/download-alien-country-2024-english-480p-720p-1080p/",
-        "/download-titanic-how-it-really-sank-2009-english-480p-720p/",
-        "/download-hell-of-a-summer-2023-english-480p-720p-1080p/",
-        "/download-hereafter-2010-english-bluray-480p-720p-1080p/",
-        "/archives/108342",
-        "/archives/108345",
-        "/archives/103554",
-        "/archives/103556",
-        "/movies/",
-        "/download-the-girl-in-the-river-2026-english-480p-720p-1080p/",
-        "/download-splash-city-2026-english-480p-720p-1080p/",
-        "/download-dark-hollow-2026-english-480p-720p-1080p/",
-        "/download-come-with-me-2026-english-480p-720p-1080p/",
-        "/download-reindeer-games-2000-english-hindi-480p-720p-1080p/",
-        "/download-mayday-2026-english-spanish-480p-720p-1080p/",
-        "/download-death-note-relight-1-visions-of-a-god-2007-hindi-japanese-480p-720p-1080p/",
-        "/download-four-hands-two-sonatas-season-1-english-korean-720p-1080p/",
-        "/download-hamburger-hill-1987-english-480p-720p-1080p/",
-        "/download-solo-aka-alone-2018-spanish-480p-720p-1080p/",
-        "/archives/61780",
-        "/archives/61781",
-        "/archives/4043",
-        "/download-bangkok-breaking-heaven-and-hell-2024-hindi-english-thai-480p-720p-1080p/",
-        "/download-angel-di-maria-breaking-down-the-wall-season-1-spanish-english-720p-1080p/",
-        "/download-breaking-and-re-entering-2024-chinese-480p-720p-1080p/",
-        "/download-breaking-2022-hindi-english-480p-720p-1080p/",
-        "/download-breaking-dawn-season-1-hindi-720p-1080p/",
-        "/download-breaking-the-waves-1996-englis-480p-720p/",
-        "/download-breaking-surface-2020-hindi-swedish-480p-720p-1080p/",
-        "/download-the-ghost-station-2022-hindi-korean-480p-720p-1080p/",
-        "/download-avatar-the-last-airbender-hindi-480p-720p-1080p/",
-        "/movies/hollywood/",
-        "/download-margin-call-2011-english-hindi-480p-720p-1080p/",
-        "/download-we-bought-a-zoo-2011-english-480p-720p-1080p/",
-        "/download-diary-of-a-chambermaid-1964-french-480p-720p-1080p/",
-        "/download-the-diary-of-a-chambermaid-1946-english-480p-720p-1080p/",
-        "/download-pinocchio-unstrung-2026-english-480p-720p-1080p/",
-        "/download-diary-of-a-chambermaid-2015-french-480p-720p-1080p/",
-        "/download-camp-rock-2008-english-hindi-480p-720p-1080p/",
-        "/download-the-bridge-on-the-river-kwai-1957-hindi-english-480p-720p-1080p/",
-        "/download-teenage-mutant-ninja-turtles-mutant-mayhem-2023-hindi-480p-720p-1080p/",
-        "/download-batman-and-harley-quinn-2017-english-480p-720p-1080p/",
-        "/movies/latest-released/",
-        "/movies/hollywood/english-movies/",
-        "/download-badland-2019-hindi-english-480p-720p-1080p/",
-        "/download-scooby-doo-the-sword-and-the-scoob-2021-hindi-english-480p-720p-1080p/",
-        "/download-backrooms-2026-hindi-english-480p-720p-1080p/",
-        "/download-death-hunt-2022-hindi-english-480p-720p-1080p/",
-        "/download-anecdote-of-mountains-2026-hindi-480p-720p-1080p/"
+        "/download-{slug}-2025-english-hindi-480p-720p-1080p/"
       ],
       "candidate_learned_routes": [
         "/search/{query}",
@@ -9263,14 +9676,14 @@
         ],
         "missing_types": [],
         "provider_request_count": 198,
-        "live_validated_route_count": 70,
-        "execution_plan_route_count": 10,
-        "runtime_derived_route_count": 112,
+        "live_validated_route_count": 76,
+        "execution_plan_route_count": 9,
+        "runtime_derived_route_count": 138,
         "runtime_derived_routes_persisted": false,
-        "safe_runtime_derived_route_count": 9,
-        "safe_runtime_derived_routes_promoted": 9,
-        "runtime_observed_url_count": 121,
-        "runtime_observed_origin_count": 3,
+        "safe_runtime_derived_route_count": 8,
+        "safe_runtime_derived_routes_promoted": 8,
+        "runtime_observed_url_count": 106,
+        "runtime_observed_origin_count": 4,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
@@ -9745,12 +10158,13 @@
         "enabled": true
       },
       "learned_routes": [
-        "/api/search?q={query}",
         "/catalogue/{slug}/films",
-        "/catalogue/{slug}/episodes/saison1"
+        "/catalogue/{slug}/episodes/saison1",
+        "/catalogue/{slug}/episodes/saison",
+        "/api/search?q={query}"
       ],
       "live_route_gate": {
-        "completion_state": "validated-data-retained-final-bundle-unverified",
+        "completion_state": "declared-types-qualified",
         "effective_coverage_ratio": 1.0,
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
@@ -9763,24 +10177,19 @@
           "movie"
         ],
         "missing_types": [],
-        "provider_request_count": 48,
+        "provider_request_count": 39,
         "live_validated_route_count": 13,
         "execution_plan_route_count": 4,
-        "runtime_derived_route_count": 9,
+        "runtime_derived_route_count": 14,
         "runtime_derived_routes_persisted": false,
         "safe_runtime_derived_route_count": 0,
         "safe_runtime_derived_routes_promoted": 0,
-        "runtime_observed_url_count": 35,
-        "runtime_observed_origin_count": 4,
+        "runtime_observed_url_count": 25,
+        "runtime_observed_origin_count": 6,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
-        "sequential": true,
-        "final_bundle_verified": false,
-        "learn_required": true,
-        "provider_qualified": false,
-        "publication_authority": false,
-        "validated_route_data_retained": true
+        "sequential": true
       },
       "candidate_learned_routes": [
         "/catalogue/{slug}/films",
@@ -10079,7 +10488,12 @@
       "official_api": "https://api.nakios.store",
       "learned_routes": [
         "/api/sources/movie/{id}",
-        "/api/sources/tv/{id}/{season}/{episode}"
+        "/api/sources/tv/{id}/{season}/{episode}",
+        "/api/search/multi",
+        "/api/sources/movie/550",
+        "/api/search/multi?query={query}",
+        "/api/sources/movie/{tmdbId}",
+        "/api/sources/tv/{tmdbId}/{season}/{episode}"
       ],
       "identity_input": {
         "mode": "tmdb_direct",
@@ -10531,7 +10945,9 @@
         "/meta/series/tt12343534.json"
       ],
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/api/v2/themoviedb?id={tmdbId}",
+        "/search/{slug}/",
+        "/movie/{slug}"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -10764,7 +11180,50 @@
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/papadustream_site_runtime_v1.py"
-      ]
+      ],
+      "api_recipe": {
+        "proofModelVersion": 5,
+        "allowGenericFallback": false,
+        "base": "https://arm.haglund.dev",
+        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
+        "directRequest": {
+          "method": "GET",
+          "headers": {
+            "accept-language": "fr-FR,fr,en-US,en",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+          }
+        }
+      },
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "validated_types": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "missing_types": [],
+        "provider_request_count": 12,
+        "live_validated_route_count": 9,
+        "execution_plan_route_count": 3,
+        "runtime_derived_route_count": 11,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 3,
+        "safe_runtime_derived_routes_promoted": 3,
+        "runtime_observed_url_count": 12,
+        "runtime_observed_origin_count": 9,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
+      }
     },
     "peachify": {
       "capability": "mixed_embed_resolver",
@@ -10999,7 +11458,6 @@
       "official_api": "https://streamdata.vaplayer.ru",
       "learned_routes": [
         "/api.php?tmdb={id}&type={media}",
-        "/api.php?tmdb={id}&type={media}&season={season}&episode={episode}",
         "/api.php"
       ],
       "identity_input": {
@@ -11035,15 +11493,15 @@
           "tv"
         ],
         "missing_types": [],
-        "provider_request_count": 16,
-        "live_validated_route_count": 3,
-        "execution_plan_route_count": 3,
-        "runtime_derived_route_count": 0,
+        "provider_request_count": 28,
+        "live_validated_route_count": 12,
+        "execution_plan_route_count": 2,
+        "runtime_derived_route_count": 11,
         "runtime_derived_routes_persisted": false,
         "safe_runtime_derived_route_count": 0,
         "safe_runtime_derived_routes_promoted": 0,
-        "runtime_observed_url_count": 16,
-        "runtime_observed_origin_count": 2,
+        "runtime_observed_url_count": 13,
+        "runtime_observed_origin_count": 3,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
@@ -11164,31 +11622,6 @@
           }
         ]
       },
-      "api_recipe": {
-        "allowGenericFallback": false,
-        "episodeRequest": {
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "origin": "https://nextgencloudfabric.com",
-            "referer": "https://nextgencloudfabric.com/",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-          },
-          "method": "GET"
-        },
-        "episodeRoute": "https://streamdata.vaplayer.ru/api.php?tmdb={tmdbId}&type=tv&season={season}&episode={episode}",
-        "movieRequest": {
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "origin": "https://nextgencloudfabric.com",
-            "referer": "https://nextgencloudfabric.com/",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-          },
-          "method": "GET"
-        },
-        "movieRoute": "https://streamdata.vaplayer.ru/api.php?tmdb={tmdbId}&type=movie",
-        "proofModelVersion": 5,
-        "recipeKind": "typed-resolver-api"
-      },
       "candidate_api_recipe": {
         "proofModelVersion": 5,
         "allowGenericFallback": false,
@@ -11298,8 +11731,7 @@
         "/meta/series/tt12343534.json"
       ],
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/{slug}"
+        "/api/v2/themoviedb?id={tmdbId}"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -11475,6 +11907,34 @@
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
         }
+      },
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "anime",
+          "movie"
+        ],
+        "validated_types": [
+          "anime",
+          "movie"
+        ],
+        "missing_types": [],
+        "provider_request_count": 2,
+        "live_validated_route_count": 1,
+        "execution_plan_route_count": 1,
+        "runtime_derived_route_count": 5,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 1,
+        "safe_runtime_derived_routes_promoted": 1,
+        "runtime_observed_url_count": 2,
+        "runtime_observed_origin_count": 1,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
       }
     },
     "streamflix": {
@@ -11485,7 +11945,14 @@
         "enabled": false
       },
       "official_api": "https://api.streamflix.app",
-      "learned_routes": [],
+      "learned_routes": [
+        "/data.json",
+        "/config/config-streamflixapp.json",
+        "/api.streamflix.app",
+        "/api.js",
+        "/seasons/{season}/episodes",
+        "/episode{episode}.mkv"
+      ],
       "provider_lego_scripts": [
         "scripts/provider_patches/streamflix_runtime_v1.py"
       ],
@@ -11678,7 +12145,10 @@
         "tv",
         "anime"
       ],
-      "learned_routes": [],
+      "learned_routes": [
+        "/{slug}",
+        "/series/{slug}"
+      ],
       "core_options": {
         "desktop_runtime_compat": {
           "normalize_missing_episodes": true
@@ -11753,15 +12223,15 @@
           "tv"
         ],
         "missing_types": [],
-        "provider_request_count": 40,
-        "live_validated_route_count": 7,
+        "provider_request_count": 38,
+        "live_validated_route_count": 10,
         "execution_plan_route_count": 2,
-        "runtime_derived_route_count": 7,
+        "runtime_derived_route_count": 14,
         "runtime_derived_routes_persisted": false,
         "safe_runtime_derived_route_count": 0,
         "safe_runtime_derived_routes_promoted": 0,
-        "runtime_observed_url_count": 36,
-        "runtime_observed_origin_count": 4,
+        "runtime_observed_url_count": 25,
+        "runtime_observed_origin_count": 6,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
@@ -11947,20 +12417,6 @@
           ]
         },
         "evidenceDestructive": false
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "movieRoute": "https://streamzo.fr/embed/player.videasy.to/{id}",
-        "movieRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-            "accept-language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
-            "referer": "https://streamzo.fr/",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "toflix": {
@@ -11992,9 +12448,13 @@
         "api.toflix.site": "api.tfx05.lol"
       },
       "learned_routes": [
+        "/player",
         "/?tmdbId={tmdbId}&type=movie",
-        "/player?m=movie&id={tmdbId}",
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "//",
+        "/episode/",
+        "/",
+        "/player?m=movie&id={tmdbId}",
         "/player?m=tv&id={tmdbId}"
       ],
       "live_route_gate": {
@@ -12177,7 +12637,16 @@
             "user-agent": "Mozilla/5.0 NiakVIO/3"
           }
         },
-        "base": "https://api.tfx05.lol"
+        "base": "https://api.tfx05.lol",
+        "directRoute": "/?tmdbId={tmdbId}&type=movie",
+        "directRequest": {
+          "method": "GET",
+          "headers": {
+            "accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
+            "accept-language": "fr-FR,fr,en-US,en",
+            "user-agent": "Mozilla/5.0 NiakVIO/3"
+          }
+        }
       },
       "candidate_api_recipe": {
         "proofModelVersion": 5,
@@ -12276,31 +12745,7 @@
       "learned_routes": [
         "/seed?mediaId={id}",
         "/cdn/sources-with-title",
-        "/lamovie/sources-with-title",
-        "/m4uhd/sources-with-title",
-        "/vd/X0ZKRXB3VkFuajNmV2hGSmFZQU8wZzpwSld4UEZ1bzZxWTNuVXFSZnJsQ0RBaWpic0JUQ01MTUFiaEhUWE5HNnVZ/index-s2160p-v1-a1.m3u8",
-        "/vd/X0ZKRXB3VkFuajNmV2hGSmFZQU8wZzpwSld4UEZ1bzZxWTNuVXFSZnJsQ0RBaWpic0JUQ01MTUFiaEhUWE5HNnVZ/index-s1080p-v1-a1.m3u8",
-        "/vd/X0ZKRXB3VkFuajNmV2hGSmFZQU8wZzpwSld4UEZ1bzZxWTNuVXFSZnJsQ0RBaWpic0JUQ01MTUFiaEhUWE5HNnVZ/index-s480p-v1-a1.m3u8",
-        "/vd/X0ZKRXB3VkFuajNmV2hGSmFZQU8wZzpwSld4UEZ1bzZxWTNuVXFSZnJsQ0RBaWpic0JUQ01MTUFiaEhUWE5HNnVZ/index-s720p-v1-a1.m3u8",
-        "/r6/ma9yIsUHLd1oEUKmveBRD6CL9aSh9fi08J7f9fAYJaJBpCdYD0B-GAdVd7Zg6lACo8F67V8n20Xhl51_593TUkhcd9hFZcoR7LlT9DOAAq0slTZjhKqJapt6Dq7jqdYGFf9Z_L8IdXpyDJsvmSQGn5NfBmisKFsxcmff3eNEETzYsgKsXvNAYtY4LbNo74mcgDqsljw0_F9ocjFPncBGZEAzKIei4FVvrz8bhn56qyD_zSEKvabAZfGQIO4laN-4Ge1sK8w3NF6ZLOGZGaTKIDIPA7qVsJ0KlN_BKTarQfMsqY0NBWsh_xl3cOQd4ufbrWESo1OM_7jNaHJw-mCyww.m3u8",
-        "/vd/YjRtUlF5YURIODZhYlk2d3hKbDVwdzpXV0FGTkVJUk5JMTFhS1pzbWlBN1lSWHpfNmJYWWxvWjVWcDBmVjBELVlJ/index-s480p-v1-a1.m3u8",
-        "/vd/YjRtUlF5YURIODZhYlk2d3hKbDVwdzpXV0FGTkVJUk5JMTFhS1pzbWlBN1lSWHpfNmJYWWxvWjVWcDBmVjBELVlJ/index-s2160p-v1-a1.m3u8",
-        "/vd/YjRtUlF5YURIODZhYlk2d3hKbDVwdzpXV0FGTkVJUk5JMTFhS1pzbWlBN1lSWHpfNmJYWWxvWjVWcDBmVjBELVlJ/index-s1080p-v1-a1.m3u8",
-        "/vd/YjRtUlF5YURIODZhYlk2d3hKbDVwdzpXV0FGTkVJUk5JMTFhS1pzbWlBN1lSWHpfNmJYWWxvWjVWcDBmVjBELVlJ/index-s720p-v1-a1.m3u8",
-        "/r6/ma9yIsUHLd1oEUKmveBRD6CL9aSh9fi08J7f9fAYJaJBpCdYD0B-GAdVd7Zg6lACo8F67V8n20Xhl51_593TUkhcd9hFZcoR7LlT9DOAAq3o2AYXY--gNgO5_mT-onQgBmnM9kzRVGlbYZN2a8EFhh4ZorByF1QqIz3y2oLc3ZH1DPQiw4lxSnqqyxOFgVefkqdgLsSy347-YFIQHJDgotDdgrzkB61yOOgjaLqIvZUhjC5L0dXKY6B1ccSdDblJkrPobQZYIG6fOr4uwvk-yc2txYfCRCXRpZrvGXoKrP7LyaE6MBCvM5uoG30XyTjxCmHYq-VTOCjvGRgVG_bwNw.m3u8",
-        "/vd/T1A2YnNRVEIzVVVRaXBmaV9BbEE3QTphd2E4VlM0dTZuNGpBOExTU0k0TlhyS1JLaEdPOGlJcEVyWkQwbklKdWtv/index-s480p-v1-a1.m3u8",
-        "/vd/T1A2YnNRVEIzVVVRaXBmaV9BbEE3QTphd2E4VlM0dTZuNGpBOExTU0k0TlhyS1JLaEdPOGlJcEVyWkQwbklKdWtv/index-s720p-v1-a1.m3u8",
-        "/vd/T1A2YnNRVEIzVVVRaXBmaV9BbEE3QTphd2E4VlM0dTZuNGpBOExTU0k0TlhyS1JLaEdPOGlJcEVyWkQwbklKdWtv/index-s1080p-v1-a1.m3u8",
-        "/vd/YXlGR2Z0Y010TmlCMlB4MzhxWlA5QTp1UXFjM19ZUUxMelB4R0hSaWRPUDdDc3RTYlVQanh5aUJLM3d4bTBiX2lZ/index-s480p-v1-a1.m3u8",
-        "/vd/YXlGR2Z0Y010TmlCMlB4MzhxWlA5QTp1UXFjM19ZUUxMelB4R0hSaWRPUDdDc3RTYlVQanh5aUJLM3d4bTBiX2lZ/index-s720p-v1-a1.m3u8",
-        "/vd/YXlGR2Z0Y010TmlCMlB4MzhxWlA5QTp1UXFjM19ZUUxMelB4R0hSaWRPUDdDc3RTYlVQanh5aUJLM3d4bTBiX2lZ/index-s1080p-v1-a1.m3u8",
-        "/vd/ZVQwNjVpX1NpaU03c19ZRmdlenN0dzpDYmRtcXVwemhTRklWZGNtS1ZuVDhCb2FfbDlWVDdGLVRnaTdYT05STlNB/index-s720p-v1-a1.m3u8",
-        "/vd/ZVQwNjVpX1NpaU03c19ZRmdlenN0dzpDYmRtcXVwemhTRklWZGNtS1ZuVDhCb2FfbDlWVDdGLVRnaTdYT05STlNB/index-s2160p-v1-a1.m3u8",
-        "/vd/ZVQwNjVpX1NpaU03c19ZRmdlenN0dzpDYmRtcXVwemhTRklWZGNtS1ZuVDhCb2FfbDlWVDdGLVRnaTdYT05STlNB/index-s1080p-v1-a1.m3u8",
-        "/vd/ZVQwNjVpX1NpaU03c19ZRmdlenN0dzpDYmRtcXVwemhTRklWZGNtS1ZuVDhCb2FfbDlWVDdGLVRnaTdYT05STlNB/index-s480p-v1-a1.m3u8",
-        "/r6/ma9yIsUHLd1oEUKmveBRD6CL9aSh9fi08J7f9fAYJaJBpCdYD0B-GAdVd7Zg6lACo8F67V8n20Xhl51_593TUkhcd9hFZcoR7LlT9DOAAq1w4cHUWuKab880sETptIBQ5-_lu748gx7O67ccaeDUQqHTO9bp2zglrIT5deqYTYiuSTq9wkUY5QcJ-4kXKyRiEYsKsUJp92hn_ArYIoEihBiQDJ_a2ulLoEF6VSdaULUK-ANgN7Mo09GoAiYFtzsVgWkeg7zU4AfWyn1oOTaFU1AotCkNSRMmDEbvicFNWIXl_MQaEMcc4zVSWEjWnKnPrgymA4eHCTPHRK2T1g_4Iw.m3u8",
-        "/episode/",
-        "/sources-with-title"
+        "/lamovie/sources-with-title"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/videasy_runtime_v1.py"
@@ -12364,15 +12809,15 @@
           "tv"
         ],
         "missing_types": [],
-        "provider_request_count": 122,
-        "live_validated_route_count": 25,
-        "execution_plan_route_count": 4,
-        "runtime_derived_route_count": 25,
+        "provider_request_count": 48,
+        "live_validated_route_count": 11,
+        "execution_plan_route_count": 3,
+        "runtime_derived_route_count": 23,
         "runtime_derived_routes_persisted": false,
         "safe_runtime_derived_route_count": 0,
         "safe_runtime_derived_routes_promoted": 0,
-        "runtime_observed_url_count": 80,
-        "runtime_observed_origin_count": 6,
+        "runtime_observed_url_count": 16,
+        "runtime_observed_origin_count": 4,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
@@ -12550,8 +12995,7 @@
       },
       "learned_routes": [
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -12567,14 +13011,14 @@
           "tv"
         ],
         "missing_types": [],
-        "provider_request_count": 6,
+        "provider_request_count": 10,
         "live_validated_route_count": 3,
         "execution_plan_route_count": 2,
-        "runtime_derived_route_count": 3,
+        "runtime_derived_route_count": 4,
         "runtime_derived_routes_persisted": false,
         "safe_runtime_derived_route_count": 2,
         "safe_runtime_derived_routes_promoted": 2,
-        "runtime_observed_url_count": 4,
+        "runtime_observed_url_count": 6,
         "runtime_observed_origin_count": 1,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
@@ -12946,7 +13390,10 @@
         "/episode/",
         "/"
       ],
-      "learned_routes": [],
+      "learned_routes": [
+        "/api/movie/{tmdbId}",
+        "/api/tv/{tmdbId}/1/1"
+      ],
       "route_proof_version": 5,
       "route_proof": {
         "version": 5,
@@ -13098,7 +13545,35 @@
       },
       "notes": [
         "VidRock clean-v3 uses the live vidrock.ru TMDB-direct API and decrypts authenticated AES-256-GCM server tokens in NiakVIO-owned runtime code; the Cloudflare-blocked vidrock.net API remains knowledge/site authority only."
-      ]
+      ],
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "movie",
+          "tv"
+        ],
+        "validated_types": [
+          "movie",
+          "tv"
+        ],
+        "missing_types": [],
+        "provider_request_count": 29,
+        "live_validated_route_count": 11,
+        "execution_plan_route_count": 2,
+        "runtime_derived_route_count": 14,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 2,
+        "safe_runtime_derived_routes_promoted": 2,
+        "runtime_observed_url_count": 13,
+        "runtime_observed_origin_count": 5,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
+      }
     },
     "voiranime": {
       "capability": "mixed_embed_resolver",
@@ -13120,8 +13595,9 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/anime/{slug}/"
+        "/anime/{slug}/",
+        "/anime/{slug}/{episode}/",
+        "/api/v2/themoviedb?id={tmdbId}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -13137,15 +13613,15 @@
           "movie"
         ],
         "missing_types": [],
-        "provider_request_count": 32,
-        "live_validated_route_count": 6,
-        "execution_plan_route_count": 4,
-        "runtime_derived_route_count": 2,
+        "provider_request_count": 15,
+        "live_validated_route_count": 12,
+        "execution_plan_route_count": 3,
+        "runtime_derived_route_count": 12,
         "runtime_derived_routes_persisted": false,
-        "safe_runtime_derived_route_count": 0,
-        "safe_runtime_derived_routes_promoted": 0,
-        "runtime_observed_url_count": 18,
-        "runtime_observed_origin_count": 2,
+        "safe_runtime_derived_route_count": 1,
+        "safe_runtime_derived_routes_promoted": 1,
+        "runtime_observed_url_count": 15,
+        "runtime_observed_origin_count": 6,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
@@ -13363,6 +13839,19 @@
           ],
           "max_streams": 4
         }
+      },
+      "api_recipe": {
+        "proofModelVersion": 5,
+        "allowGenericFallback": false,
+        "base": "https://arm.haglund.dev",
+        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
+        "directRequest": {
+          "method": "GET",
+          "headers": {
+            "accept-language": "fr-FR,fr,en-US,en",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+          }
+        }
       }
     },
     "voiranime-homes": {
@@ -13575,6 +14064,34 @@
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
         }
+      },
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "anime",
+          "movie"
+        ],
+        "validated_types": [
+          "anime",
+          "movie"
+        ],
+        "missing_types": [],
+        "provider_request_count": 2,
+        "live_validated_route_count": 1,
+        "execution_plan_route_count": 1,
+        "runtime_derived_route_count": 2,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 1,
+        "safe_runtime_derived_routes_promoted": 1,
+        "runtime_observed_url_count": 2,
+        "runtime_observed_origin_count": 1,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
       }
     },
     "voiranime-rip": {
@@ -13600,7 +14117,7 @@
         "/api/v2/themoviedb?id={tmdbId}"
       ],
       "live_route_gate": {
-        "completion_state": "validated-data-retained-final-bundle-unverified",
+        "completion_state": "declared-types-qualified",
         "effective_coverage_ratio": 1.0,
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
@@ -13613,24 +14130,19 @@
           "movie"
         ],
         "missing_types": [],
-        "provider_request_count": 32,
-        "live_validated_route_count": 12,
-        "execution_plan_route_count": 5,
-        "runtime_derived_route_count": 9,
+        "provider_request_count": 2,
+        "live_validated_route_count": 1,
+        "execution_plan_route_count": 1,
+        "runtime_derived_route_count": 10,
         "runtime_derived_routes_persisted": false,
-        "safe_runtime_derived_route_count": 2,
-        "safe_runtime_derived_routes_promoted": 2,
-        "runtime_observed_url_count": 20,
-        "runtime_observed_origin_count": 3,
+        "safe_runtime_derived_route_count": 1,
+        "safe_runtime_derived_routes_promoted": 1,
+        "runtime_observed_url_count": 2,
+        "runtime_observed_origin_count": 1,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
-        "sequential": true,
-        "final_bundle_verified": false,
-        "learn_required": true,
-        "provider_qualified": false,
-        "publication_authority": false,
-        "validated_route_data_retained": true
+        "sequential": true
       },
       "candidate_learned_routes": [
         "/template-php/defaut/fetch.php",
@@ -14029,7 +14541,35 @@
           "site": "https://ipv4.vostfree.ws"
         }
       },
-      "official_site": "https://ipv4.vostfree.ws"
+      "official_site": "https://ipv4.vostfree.ws",
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "anime",
+          "movie"
+        ],
+        "validated_types": [
+          "anime",
+          "movie"
+        ],
+        "missing_types": [],
+        "provider_request_count": 2,
+        "live_validated_route_count": 1,
+        "execution_plan_route_count": 1,
+        "runtime_derived_route_count": 1,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 1,
+        "safe_runtime_derived_routes_promoted": 1,
+        "runtime_observed_url_count": 2,
+        "runtime_observed_origin_count": 1,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
+      }
     },
     "wookafr": {
       "capability": "mixed_embed_resolver",
@@ -14072,10 +14612,12 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/?s={query}",
         "/streaming/{slug}/",
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/streaming/series/{slug}/"
+        "/?s={query}",
+        "/streaming/series/{slug}/",
+        "/search/{slug}/",
+        "/streaming/aventure/{slug}/",
+        "/streaming/episodes/{slug}-saison-1-episode-1/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -14091,15 +14633,15 @@
           "tv"
         ],
         "missing_types": [],
-        "provider_request_count": 110,
-        "live_validated_route_count": 11,
-        "execution_plan_route_count": 4,
-        "runtime_derived_route_count": 7,
+        "provider_request_count": 52,
+        "live_validated_route_count": 22,
+        "execution_plan_route_count": 6,
+        "runtime_derived_route_count": 37,
         "runtime_derived_routes_persisted": false,
-        "safe_runtime_derived_route_count": 0,
-        "safe_runtime_derived_routes_promoted": 0,
-        "runtime_observed_url_count": 36,
-        "runtime_observed_origin_count": 6,
+        "safe_runtime_derived_route_count": 3,
+        "safe_runtime_derived_routes_promoted": 3,
+        "runtime_observed_url_count": 41,
+        "runtime_observed_origin_count": 12,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
@@ -14309,8 +14851,7 @@
         "/api/enc-movies-flix?text=cYW89aM"
       ],
       "learned_routes": [
-        "/db/flix/find?tmdb_id={tmdbId}&type=movie",
-        "/db/flix/find?tmdb_id={tmdbId}&type=tv"
+        "/db/flix/find?tmdb_id={tmdbId}&type=movie"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -14421,7 +14962,6 @@
       "api_recipe": {
         "proofModelVersion": 5,
         "allowGenericFallback": false,
-        "movieRoute": "https://enc-dec.app/db/flix/find?tmdb_id={tmdbId}&type=movie",
         "movieRequest": {
           "method": "GET",
           "headers": {
@@ -14499,6 +15039,34 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "movie",
+          "tv"
+        ],
+        "validated_types": [
+          "movie",
+          "tv"
+        ],
+        "missing_types": [],
+        "provider_request_count": 2,
+        "live_validated_route_count": 1,
+        "execution_plan_route_count": 1,
+        "runtime_derived_route_count": 4,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 1,
+        "safe_runtime_derived_routes_promoted": 1,
+        "runtime_observed_url_count": 2,
+        "runtime_observed_origin_count": 1,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
       }
     },
     "1shows": {
@@ -14522,7 +15090,8 @@
         "/api/file/",
         "/download/movie/",
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/file/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -14792,6 +15361,7 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
+        "/api",
         "/api/v2/themoviedb?id={id}",
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
       ],
@@ -14807,7 +15377,7 @@
           "anime"
         ],
         "missing_types": [],
-        "provider_request_count": 4,
+        "provider_request_count": 5,
         "live_validated_route_count": 4,
         "execution_plan_route_count": 3,
         "runtime_derived_route_count": 2,
@@ -14984,8 +15554,9 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/stream/getSources?id={id}",
-        "/player"
+        "/player",
+        "/?tmdbId={tmdbId}&type=movie",
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -15001,15 +15572,15 @@
           "tv"
         ],
         "missing_types": [],
-        "provider_request_count": 20,
-        "live_validated_route_count": 5,
-        "execution_plan_route_count": 2,
-        "runtime_derived_route_count": 3,
+        "provider_request_count": 8,
+        "live_validated_route_count": 2,
+        "execution_plan_route_count": 3,
+        "runtime_derived_route_count": 6,
         "runtime_derived_routes_persisted": false,
-        "safe_runtime_derived_route_count": 0,
-        "safe_runtime_derived_routes_promoted": 0,
-        "runtime_observed_url_count": 11,
-        "runtime_observed_origin_count": 2,
+        "safe_runtime_derived_route_count": 2,
+        "safe_runtime_derived_routes_promoted": 2,
+        "runtime_observed_url_count": 7,
+        "runtime_observed_origin_count": 1,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
@@ -15376,6 +15947,36 @@
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
         }
+      },
+      "live_route_gate": {
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
+        "required_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 1.0,
+        "required_types": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "validated_types": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "missing_types": [],
+        "provider_request_count": 3,
+        "live_validated_route_count": 1,
+        "execution_plan_route_count": 1,
+        "runtime_derived_route_count": 1,
+        "runtime_derived_routes_persisted": false,
+        "safe_runtime_derived_route_count": 1,
+        "safe_runtime_derived_routes_promoted": 1,
+        "runtime_observed_url_count": 3,
+        "runtime_observed_origin_count": 1,
+        "runtime_observations_persisted_as_provider_data": false,
+        "blocked_plan_preserved": false,
+        "declared_types_are_gate_denominator": true,
+        "sequential": true
       }
     },
     "animevost-fr": {
@@ -15400,7 +16001,8 @@
         "tv"
       ],
       "learned_routes": [
-        "/api/animes/search?q={query}"
+        "/api/animes/search?q={query}",
+        "/api/animes/{slug}"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/animevost_fr_runtime_v1.py"
@@ -15642,7 +16244,12 @@
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
       },
-      "learned_routes": [],
+      "learned_routes": [
+        "/player/index.php?data=",
+        "/play.zephyrix.top",
+        "/episode",
+        "/play"
+      ],
       "live_route_gate": {
         "completion_state": "terminal-blocked",
         "effective_coverage_ratio": 0.0,
@@ -16197,7 +16804,9 @@
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
       },
-      "learned_routes": [],
+      "learned_routes": [
+        "/api/v1"
+      ],
       "live_route_gate": {
         "completion_state": "terminal-unreachable",
         "effective_coverage_ratio": 0.0,
@@ -16386,8 +16995,19 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/?tmdbId={tmdbId}&type=movie",
+        "/api/file/",
         "/search.php?q={query}",
-        "/video/{id}"
+        "/video/natzr1pnbteetra",
+        "/video/{id}",
+        "/video/kszspgzgzb4p4ws",
+        "/video/ovauavh1c_c35z3",
+        "/video/awhpozpzcw7chnp",
+        "/video/vyepzher7fiqvce",
+        "/video/k1pkgddldmdgddd",
+        "/video/b1jvsyz1ye31vhs",
+        "/video/putqr78fuircgvu"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -16626,7 +17246,25 @@
         "/stream/series/",
         "/",
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/hindi/stream/movie/tt0816692.json",
+        "/bengali/stream/movie/tt0816692.json",
+        "/telugu/stream/movie/tt0816692.json",
+        "/kannada/stream/movie/tt0816692.json",
+        "/malayalam/stream/movie/tt0816692.json",
+        "/tamil/stream/movie/tt0816692.json",
+        "/kannada/stream/series/tt0903747:01:01.json",
+        "/malayalam/stream/series/tt0903747:01:01.json",
+        "/tamil/stream/series/tt0903747:01:01.json",
+        "/hindi/stream/series/tt0903747:01:01.json",
+        "/bengali/stream/series/tt0903747:01:01.json",
+        "/telugu/stream/series/tt0903747:01:01.json",
+        "/kannada/stream/series/tt11198330:03:01.json",
+        "/hindi/stream/series/tt11198330:03:01.json",
+        "/malayalam/stream/series/tt11198330:03:01.json",
+        "/telugu/stream/series/tt11198330:03:01.json",
+        "/tamil/stream/series/tt11198330:03:01.json",
+        "/bengali/stream/series/tt11198330:03:01.json"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -17006,7 +17644,45 @@
         "anime"
       ],
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/index.php?do=search&subaction=search&story={query}",
+        "/?do=search&subaction=search&story={query}",
+        "/?s={query}",
+        "/engine/ajax/search.php",
+        "/films/actions/",
+        "/engine/ajax/film_api.php?id=15136690",
+        "/embed-x6lx8bog5rd0.html",
+        "/embed-3dy2a45v9v5c.html",
+        "/proxy/",
+        "/films/epouvante-horreurs/",
+        "/engine/ajax/film_api.php?id=15118650",
+        "/embed-dgyorvc9klxf.html",
+        "/embed-d3o5y1m1zztr.html",
+        "/data/eps_9561.txt?v=59621158",
+        "/",
+        "/e/bmYa0d1HMYRU",
+        "/data/eps_15114545.txt?v=59621158",
+        "/e/vlfUDi2DVFLM",
+        "/films/aventures/",
+        "/films/animations/",
+        "/films/biopics/",
+        "/films/comedies/",
+        "/films/drames/",
+        "/films/documentaires/",
+        "/xfsearch/date-de-sortie/2024/",
+        "/xfsearch/lang/Allemand/",
+        "/xfsearch/lang/N%C3%A9erlandais/",
+        "/xfsearch/date-de-sortie/2025/",
+        "/xfsearch/date-de-sortie/2026/",
+        "/data/eps_9561.txt?v=59621159",
+        "/e/kVZaeSE7G2G2",
+        "/bping.php?vgd_l2type=dmola&vgd_oresf=one&cid=8CU7G8B38&ssld={%22QQNN%22:%22Pb%22%2C%22QQN75%22:%22Gm5O7mz%22%2C%22QQ8E%22:%22%22%2C%22QQQN%22:%22/K%22%2C%22QQl8E%22:%22%22}&mspa=1&wshp=0&vgd_cdv=O3435&vgd_setup=c21&prid=8PR11258V&hvsid=00001788634787287022727567362918&sc=VA&requrl=https://multiup.us&vgd_rpth=/ola&gdpr=0&r=1788634787288&vgd_cage=57&crid=342704488&vi=1788634787484219924&lf=6&vgd_tsce=L1343&vgd_oreqf=one&vgd_wlstp=0&ugd=0&cc=US&lper=100&wsip=170762594&vgd_asn=8075&vgd_len=555&vgd_end=1",
+        "/data/eps_15114545.txt?v=59621159",
+        "/film_api.php?id={id}",
+        "/engine/ajax/get_seasons.php?serie_tag=",
+        "/engine/ajax/film_api.php?id={id}",
+        "/embed-i7jlzamu3m0c.html",
+        "/api/v2/themoviedb?id={tmdbId}",
+        "/meta/series/tt12343534.json"
       ],
       "core_options": {
         "desktop_runtime_compat": {
@@ -17134,27 +17810,8 @@
       },
       "api_recipe": {
         "proofModelVersion": 5,
-        "allowGenericFallback": true,
-        "base": "https://french-stream.one",
-        "searchRoute": "/index.php",
-        "searchRequest": {
-          "method": "POST",
-          "headers": {
-            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "accept-language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
-            "content-type": "application/x-www-form-urlencoded",
-            "origin": "https://french-stream.one",
-            "referer": "https://french-stream.one/",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          },
-          "bodyKind": "form",
-          "body": {
-            "do": "search",
-            "subaction": "search",
-            "story": "{query}"
-          }
-        },
-        "movieRoute": "/engine/ajax/film_api.php?id={id}",
+        "allowGenericFallback": false,
+        "movieRoute": "https://french-stream.one/engine/ajax/film_api.php?id={id}",
         "movieRequest": {
           "method": "GET",
           "headers": {
@@ -17165,9 +17822,15 @@
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
         },
-        "partialCoverageFallback": [
-          "tv"
-        ]
+        "base": "https://arm.haglund.dev",
+        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
+        "directRequest": {
+          "method": "GET",
+          "headers": {
+            "accept-language": "fr-FR,fr,en-US,en",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+          }
+        }
       },
       "candidate_api_recipe": {
         "proofModelVersion": 5,
@@ -18145,7 +18808,9 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/search.php?q={query}"
+        "/?tmdbId={tmdbId}&type=movie",
+        "/search.php?q={query}",
+        "/movie/1755/{slug}_2014_English.xhtml"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -18159,14 +18824,14 @@
           "movie"
         ],
         "missing_types": [],
-        "provider_request_count": 3,
-        "live_validated_route_count": 2,
-        "execution_plan_route_count": 1,
-        "runtime_derived_route_count": 2,
+        "provider_request_count": 6,
+        "live_validated_route_count": 4,
+        "execution_plan_route_count": 3,
+        "runtime_derived_route_count": 4,
         "runtime_derived_routes_persisted": false,
-        "safe_runtime_derived_route_count": 1,
-        "safe_runtime_derived_routes_promoted": 1,
-        "runtime_observed_url_count": 3,
+        "safe_runtime_derived_route_count": 3,
+        "safe_runtime_derived_routes_promoted": 3,
+        "runtime_observed_url_count": 4,
         "runtime_observed_origin_count": 1,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
@@ -18342,7 +19007,9 @@
       "candidate_learned_routes": [
         "/player.moonflix.website"
       ],
-      "learned_routes": [],
+      "learned_routes": [
+        "/player.moonflix.website"
+      ],
       "route_proof_version": 5,
       "route_proof": {
         "version": 5,
@@ -18498,8 +19165,8 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/stream/series/",
-        "/stream/movie/"
+        "/?tmdbId={tmdbId}&type=movie",
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -18515,15 +19182,15 @@
           "tv"
         ],
         "missing_types": [],
-        "provider_request_count": 36,
-        "live_validated_route_count": 2,
+        "provider_request_count": 10,
+        "live_validated_route_count": 3,
         "execution_plan_route_count": 2,
-        "runtime_derived_route_count": 0,
+        "runtime_derived_route_count": 3,
         "runtime_derived_routes_persisted": false,
-        "safe_runtime_derived_route_count": 0,
-        "safe_runtime_derived_routes_promoted": 0,
-        "runtime_observed_url_count": 4,
-        "runtime_observed_origin_count": 2,
+        "safe_runtime_derived_route_count": 2,
+        "safe_runtime_derived_routes_promoted": 2,
+        "runtime_observed_url_count": 5,
+        "runtime_observed_origin_count": 1,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
@@ -19343,14 +20010,14 @@
           "tv"
         ],
         "missing_types": [],
-        "provider_request_count": 6,
+        "provider_request_count": 10,
         "live_validated_route_count": 3,
         "execution_plan_route_count": 2,
         "runtime_derived_route_count": 3,
         "runtime_derived_routes_persisted": false,
         "safe_runtime_derived_route_count": 2,
         "safe_runtime_derived_routes_promoted": 2,
-        "runtime_observed_url_count": 4,
+        "runtime_observed_url_count": 6,
         "runtime_observed_origin_count": 1,
         "runtime_observations_persisted_as_provider_data": false,
         "blocked_plan_preserved": false,
@@ -19718,33 +20385,34 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/{media}?id={tmdbId}&mode=json&sources={source}&hevc=1&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=movie",
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
       ],
       "live_route_gate": {
-        "completion_state": "terminal-blocked",
-        "effective_coverage_ratio": 0.0,
+        "completion_state": "declared-types-qualified",
+        "effective_coverage_ratio": 1.0,
         "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 0.0,
+        "declared_type_coverage_ratio": 1.0,
         "required_types": [
           "movie",
           "tv"
         ],
-        "validated_types": [],
-        "missing_types": [
+        "validated_types": [
           "movie",
           "tv"
         ],
-        "provider_request_count": 50,
-        "live_validated_route_count": 0,
-        "execution_plan_route_count": 1,
-        "runtime_derived_route_count": 10,
+        "missing_types": [],
+        "provider_request_count": 4,
+        "live_validated_route_count": 3,
+        "execution_plan_route_count": 2,
+        "runtime_derived_route_count": 13,
         "runtime_derived_routes_persisted": false,
-        "safe_runtime_derived_route_count": 0,
-        "safe_runtime_derived_routes_promoted": 0,
-        "runtime_observed_url_count": 46,
+        "safe_runtime_derived_route_count": 2,
+        "safe_runtime_derived_routes_promoted": 2,
+        "runtime_observed_url_count": 3,
         "runtime_observed_origin_count": 1,
         "runtime_observations_persisted_as_provider_data": false,
-        "blocked_plan_preserved": true,
+        "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
       },
@@ -19908,7 +20576,16 @@
         "/ophim/{media}/{id}/{season}/{episode}",
         "/flixhq/{media}/{id}/{season}/{episode}?server=upcloud",
         "/vidlink/{media}/{id}/{season}/{episode}",
-        "/rogflix/{media}/{id}/{season}/{episode}"
+        "/rogflix/{media}/{id}/{season}/{episode}",
+        "/primesrc/movie/{tmdbId}",
+        "/hollymoviehd/movie/{tmdbId}",
+        "/ophim/movie/{tmdbId}",
+        "/rogflix/movie/{tmdbId}",
+        "/flixhq/movie/{tmdbId}?server=upcloud",
+        "/vidlink/movie/{tmdbId}",
+        "/proxy",
+        "/streams",
+        "/source"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/vidnest_runtime_v1.py"
@@ -20142,7 +20819,9 @@
         "/satoru/{id}/{episode}",
         "/aniwave/{id}/{episode}/{media}/wave",
         "/aniwave/{id}/{episode}/{media}/pahe",
-        "/aniwave/{id}/{episode}/{media}/anya"
+        "/aniwave/{id}/{episode}/{media}/anya",
+        "/animeworld/{id}/server/my%20server",
+        "/streams"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/vidnest_anime_runtime_v1.py"
@@ -20357,6 +21036,10 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
+        "/?tmdbId={tmdbId}&type=movie",
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/embed/",
+        "/episode/",
         "/embed/{tmdbId}",
         "/embed/{tmdbId}/1-1",
         "/embed/{tmdbId}/3-1"
@@ -20834,7 +21517,13 @@
       "learned_routes": [
         "/api/series?query={query}",
         "/api/series/{id}",
-        "/playback/{episode}/manifest.mpd"
+        "/playback/{episode}/manifest.mpd",
+        "/api/series?limit=100",
+        "/api/series?query=X",
+        "/api/series/:id",
+        "/playback/subtitles/{id}--.ass",
+        "/playback/{id}/manifest.mpd",
+        "/api/episodes/{id}"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/waveanime_runtime_v1.py"
@@ -21025,7 +21714,9 @@
       "candidate_learned_routes": [
         "/play.xpass.top"
       ],
-      "learned_routes": [],
+      "learned_routes": [
+        "/play.xpass.top"
+      ],
       "route_proof_version": 5,
       "route_proof": {
         "version": 5,
