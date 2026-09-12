@@ -64,13 +64,13 @@ jobs:
           PY
           python3 scripts/materialize_provider_base_v3_store.py
           python3 tests/provider_clean_reconstruction_contract_test.py
-          unexpected="$(git status --porcelain | awk '{print $2}' | grep -Ev '^(provider-bases/|PROVENANCE\.json$)' || true)"
+          unexpected="$(git status --porcelain | awk '{print $2}' | grep -Ev '^(provider-bases/|PROVENANCE\.json$|scripts/provider_base_store\.py$)' || true)"
           if [ -n "$unexpected" ]; then
             echo "unexpected files changed by ProviderBase rematerialization:" >&2
             printf '%s\n' "$unexpected" >&2
             exit 1
           fi
-          echo "FIELD_BRAIN_BASE_REPAIR changed_files=$(git status --porcelain provider-bases PROVENANCE.json | wc -l) clean_contract=true"
+          echo "FIELD_BRAIN_BASE_REPAIR changed_files=$(git status --porcelain provider-bases PROVENANCE.json scripts/provider_base_store.py | wc -l) clean_contract=true"
       - name: Re-run the exact historical Brain preflight blocker set
         shell: bash
         run: |
@@ -109,13 +109,13 @@ jobs:
           python scripts/validate_override_pipeline.py --stage staging
           git diff --exit-code -- provider_catalog.json manifest.json providers/ provider-overrides.json
           echo 'FIELD_BRAIN_CURRENT_STAGE discovery=true stage_valid=true canonical_mutation=false'
-      - name: Commit generated clean ProviderBase store repair if green
+      - name: Commit generated clean ProviderBase source/store repair if green
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add provider-bases/ PROVENANCE.json
+          git add scripts/provider_base_store.py provider-bases/ PROVENANCE.json
           if git diff --cached --quiet; then
             echo 'FIELD_BRAIN_BASE_COMMIT changed=0'
             exit 0
