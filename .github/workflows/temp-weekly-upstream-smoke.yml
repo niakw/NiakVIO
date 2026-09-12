@@ -1,0 +1,77 @@
+name: TEMP Weekly Upstream Smoke
+
+on:
+  push:
+    branches: ["fix/labs-5.21.44-20260912"]
+    paths: [".github/workflows/temp-weekly-upstream-smoke.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: temp-weekly-upstream-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout .44 read-only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: { python-version: '3.12' }
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: { node-version: '24', package-manager-cache: false }
+      - name: Install locked runtime
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Resolve hubs and stage all three upstreams
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python scripts/resolve_provider_hubs.py --mode quick --include-disabled --workers 8 --timeout 8 --output health-output/provider-hub-report.json
+          python scripts/discover_candidates.py --require-all-upstreams
+          node engine_v2/scripts/validate-stage-against-catalog.mjs --catalog provider_catalog.json --stage staging/candidates.json
+      - name: Generate compare-only discovery report
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/report_new_upstream_providers.py \
+            --stage staging/candidates.json \
+            --catalog provider_catalog.json \
+            --sources sources.json \
+            --output health-output/upstream-provider-discovery.json \
+            --markdown health-output/upstream-provider-discovery.md
+          python3 tests/weekly_upstream_provider_discovery_test.py
+          python3 tests/brain_cron_full_coverage_test.py
+          git diff --exit-code -- provider_catalog.json manifest.json providers/ provider-overrides.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path('health-output/upstream-provider-discovery.json').read_text())
+          print('FIELD_WEEKLY_UPSTREAM_SMOKE '+json.dumps({
+            'configuredUpstreams':report.get('configuredUpstreams'),
+            'newProviderCount':report.get('newProviderCount'),
+            'interestingProviderCount':report.get('interestingProviderCount'),
+            'snapshotOnlyIgnored':len(report.get('snapshotOnlyNewProviderIdsIgnored') or []),
+            'catalogMutationAllowed':(report.get('policy') or {}).get('niakvioCatalogMutationAllowed'),
+            'automaticImportAllowed':(report.get('policy') or {}).get('automaticImportAllowed'),
+          },separators=(',',':'),sort_keys=True))
+          PY
+      - name: Upload evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: weekly-upstream-smoke-${{ github.run_id }}
+          path: |
+            health-output/upstream-provider-discovery.json
+            health-output/upstream-provider-discovery.md
+            health-output/provider-hub-report.json
+            staging/candidates.json
+            staging/manifests/
+          retention-days: 7
+          if-no-files-found: error
