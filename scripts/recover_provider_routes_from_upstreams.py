@@ -1202,6 +1202,64 @@ def _positive_provider_value_plans(route_data: list[dict[str, Any]]) -> list[dic
     return out[:12]
 
 
+
+# ROUTE_RECOVERY_MONOTONIC_PROOF_V23
+def _proof_v5_execution_authority(patch: dict[str, Any], model: dict[str, Any]) -> tuple[bool, dict[str, Any] | None]:
+    """Return an independently executable proof-v5 recipe, never a candidate.
+
+    A later repair probe that yields zero routes is negative evidence about that
+    probe only. It cannot erase a previously live-proven execution authority.
+    Candidate/static recipes remain fail-closed because they never enter here.
+    """
+    versions = []
+    for raw in (patch.get("route_proof_version"), model.get("routeProofVersion")):
+        try:
+            versions.append(int(raw or 0))
+        except (TypeError, ValueError):
+            versions.append(0)
+    recipe = patch.get("api_recipe") if isinstance(patch.get("api_recipe"), dict) else None
+    if recipe is None and isinstance(model.get("apiRecipe"), dict):
+        recipe = model.get("apiRecipe")
+    recipe_version = 0
+    if isinstance(recipe, dict):
+        try:
+            recipe_version = int(recipe.get("proofModelVersion") or 0)
+        except (TypeError, ValueError):
+            recipe_version = 0
+    if max(versions or [0]) < PROOF_VERSION or recipe_version < PROOF_VERSION:
+        return False, None
+    return True, copy.deepcopy(recipe)
+
+
+def _preserved_string_list(patch_value: object, model_value: object, limit: int) -> list[str]:
+    rows = patch_value if isinstance(patch_value, list) else model_value if isinstance(model_value, list) else []
+    return unique([str(value).strip() for value in rows if str(value).strip()], limit)
+
+# ROUTE_RECOVERY_MONOTONIC_STRUCTURED_AUTHORITY_V23_1
+def _proof_v5_plan_rows(patch_value: object, model_value: object, limit: int) -> list[dict[str, Any]]:
+    rows = patch_value if isinstance(patch_value, list) else model_value if isinstance(model_value, list) else []
+    return [
+        copy.deepcopy(row)
+        for row in rows
+        if isinstance(row, dict) and int(row.get("proofModelVersion") or 0) >= PROOF_VERSION
+    ][:limit]
+
+def _proof_v5_structured_authority(patch: dict[str, Any], model: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    versions: list[int] = []
+    for raw in (patch.get("route_proof_version"), model.get("routeProofVersion")):
+        try:
+            versions.append(int(raw or 0))
+        except (TypeError, ValueError):
+            versions.append(0)
+    if max(versions or [0]) < PROOF_VERSION:
+        return {}
+    out = {
+        "search": _proof_v5_plan_rows(patch.get("search_request_plan"), model.get("searchRequestPlan"), 6),
+        "providerValue": _proof_v5_plan_rows(patch.get("provider_value_plan"), model.get("providerValuePlan"), 12),
+        "externalIdentity": _proof_v5_plan_rows(patch.get("external_identity_plan"), model.get("externalIdentityPlan"), 4),
+    }
+    return {key: value for key, value in out.items() if value}
+
 def apply_recovery(report: dict[str, Any]) -> dict[str, Any]:
     overrides = load(OVERRIDES)
     knowledge = load(KNOWLEDGE)
@@ -1219,6 +1277,15 @@ def apply_recovery(report: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(patch, dict) or not isinstance(static_row, dict):
             continue
         model = static_row.get("model") if isinstance(static_row.get("model"), dict) else {}
+        preserve_existing_execution_authority, existing_proven_recipe = _proof_v5_execution_authority(patch, model)
+        existing_structured_authority = _proof_v5_structured_authority(patch, model)
+        preserve_existing_execution_authority = bool(preserve_existing_execution_authority or existing_structured_authority)
+        existing_search_request_plan = copy.deepcopy(existing_structured_authority.get("search") or [])
+        existing_provider_value_plan = copy.deepcopy(existing_structured_authority.get("providerValue") or [])
+        existing_external_identity_plan = copy.deepcopy(existing_structured_authority.get("externalIdentity") or [])
+        existing_proof_search_bases = _preserved_string_list(patch.get("proof_search_bases"), model.get("proofSearchBases"), 6)
+        existing_proof_detail_bases = _preserved_string_list(patch.get("proof_detail_bases"), model.get("proofDetailBases"), 6)
+        existing_proof_protected_hosts = _preserved_string_list(patch.get("proof_protected_hosts"), model.get("proofProtectedHosts"), 24)
         existing_routes = unique([
             *(patch.get("candidate_learned_routes") or []),
             *(patch.get("learned_routes") or []),
@@ -1240,6 +1307,9 @@ def apply_recovery(report: dict[str, Any]) -> dict[str, Any]:
         if proof_search_bases:
             patch["proof_search_bases"] = proof_search_bases
             model["proofSearchBases"] = proof_search_bases
+        elif preserve_existing_execution_authority and existing_proof_search_bases:
+            patch["proof_search_bases"] = copy.deepcopy(existing_proof_search_bases)
+            model["proofSearchBases"] = copy.deepcopy(existing_proof_search_bases)
         else:
             patch.pop("proof_search_bases", None)
             model.pop("proofSearchBases", None)
@@ -1247,6 +1317,9 @@ def apply_recovery(report: dict[str, Any]) -> dict[str, Any]:
         if proof_detail_bases:
             patch["proof_detail_bases"] = proof_detail_bases
             model["proofDetailBases"] = proof_detail_bases
+        elif preserve_existing_execution_authority and existing_proof_detail_bases:
+            patch["proof_detail_bases"] = copy.deepcopy(existing_proof_detail_bases)
+            model["proofDetailBases"] = copy.deepcopy(existing_proof_detail_bases)
         else:
             patch.pop("proof_detail_bases", None)
             model.pop("proofDetailBases", None)
@@ -1254,6 +1327,9 @@ def apply_recovery(report: dict[str, Any]) -> dict[str, Any]:
         if proof_protected_hosts:
             patch["proof_protected_hosts"] = proof_protected_hosts
             model["proofProtectedHosts"] = proof_protected_hosts
+        elif preserve_existing_execution_authority and existing_proof_protected_hosts:
+            patch["proof_protected_hosts"] = copy.deepcopy(existing_proof_protected_hosts)
+            model["proofProtectedHosts"] = copy.deepcopy(existing_proof_protected_hosts)
         else:
             patch.pop("proof_protected_hosts", None)
             model.pop("proofProtectedHosts", None)
@@ -1267,6 +1343,9 @@ def apply_recovery(report: dict[str, Any]) -> dict[str, Any]:
                 "requires_tmdb_before_run": True,
                 "required_fields": ["title", "mediaType"],
             }
+        elif preserve_existing_execution_authority and existing_search_request_plan:
+            patch["search_request_plan"] = copy.deepcopy(existing_search_request_plan)
+            model["searchRequestPlan"] = copy.deepcopy(existing_search_request_plan)
         else:
             patch.pop("search_request_plan", None)
             model.pop("searchRequestPlan", None)
@@ -1275,6 +1354,9 @@ def apply_recovery(report: dict[str, Any]) -> dict[str, Any]:
         if provider_value_plan:
             patch["provider_value_plan"] = copy.deepcopy(provider_value_plan)
             model["providerValuePlan"] = copy.deepcopy(provider_value_plan)
+        elif preserve_existing_execution_authority and existing_provider_value_plan:
+            patch["provider_value_plan"] = copy.deepcopy(existing_provider_value_plan)
+            model["providerValuePlan"] = copy.deepcopy(existing_provider_value_plan)
         else:
             patch.pop("provider_value_plan", None)
             model.pop("providerValuePlan", None)
@@ -1288,6 +1370,9 @@ def apply_recovery(report: dict[str, Any]) -> dict[str, Any]:
                 "requires_tmdb_before_run": True,
                 "required_fields": ["tmdbId", "mediaType"],
             }
+        elif preserve_existing_execution_authority and existing_external_identity_plan:
+            patch["external_identity_plan"] = copy.deepcopy(existing_external_identity_plan)
+            model["externalIdentityPlan"] = copy.deepcopy(existing_external_identity_plan)
         else:
             patch.pop("external_identity_plan", None)
             model.pop("externalIdentityPlan", None)
@@ -1302,6 +1387,7 @@ def apply_recovery(report: dict[str, Any]) -> dict[str, Any]:
         model["routes"] = runtime_routes
         model["routeData"] = route_data
         model["routeProofVersion"] = PROOF_VERSION
+        fresh_positive_execution = bool(recipe or execution_routes or proven_routes)
         model["routeProof"] = {
             "version": PROOF_VERSION,
             "authority": "observed-provider-http-request",
@@ -1311,12 +1397,22 @@ def apply_recovery(report: dict[str, Any]) -> dict[str, Any]:
             "genericExecutionRouteCount": len(execution_routes),
             "runtimePlanPreserved": preserved_baseline_plan,
             "runtimePlanRouteCount": len(runtime_routes),
+            "lastRepairProbe": {
+                "status": str(recovered.get("status") or "unknown"),
+                "positiveExecutionEvidence": fresh_positive_execution,
+            },
         }
+        if preserve_existing_execution_authority and recipe is None:
+            model["routeProof"]["executionAuthorityPreserved"] = True
         patch["route_proof_version"] = PROOF_VERSION
         patch["route_proof"] = copy.deepcopy(model["routeProof"])
         if recipe:
             patch["api_recipe"] = copy.deepcopy(recipe)
             model["apiRecipe"] = copy.deepcopy(recipe)
+            recipes += 1
+        elif preserve_existing_execution_authority and isinstance(existing_proven_recipe, dict):
+            patch["api_recipe"] = copy.deepcopy(existing_proven_recipe)
+            model["apiRecipe"] = copy.deepcopy(existing_proven_recipe)
             recipes += 1
         else:
             patch.pop("api_recipe", None)

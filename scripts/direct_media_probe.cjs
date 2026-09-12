@@ -104,6 +104,7 @@ function parseHls(text, baseUrl) {
     audio,
     segments,
     durationSeconds: durationEntries ? durationSeconds : null,
+    complete: lines.some((line) => /^#EXT-X-ENDLIST\s*$/i.test(line)),
   };
 }
 
@@ -158,6 +159,8 @@ async function probeHlsText(text, baseUrl, headers, options, depth = 0) {
 
   let videoSegment = null;
   let mediaDurationSeconds = parsed.durationSeconds;
+  let mediaDurationComplete = parsed.complete === true;
+  /* NIAKVIO_HLS_DURATION_COMPLETENESS_V1 */
   if (parsed.master) {
     const variantUrl = parsed.variants[0];
     try {
@@ -169,6 +172,7 @@ async function probeHlsText(text, baseUrl, headers, options, depth = 0) {
       if (!childProbe.playable) return { ...childProbe, hls_master: true, hls_variant_playable: false };
       videoSegment = true;
       mediaDurationSeconds = childProbe.media_duration_seconds ?? null;
+      mediaDurationComplete = childProbe.media_duration_complete === true;
     } catch (error) {
       return { playable: false, inconclusive: inconclusiveError(error), kind: sanitize(error?.name || error?.code || 'hls_variant_error'), hls_master: true, hls_variant_playable: false };
     }
@@ -212,6 +216,7 @@ async function probeHlsText(text, baseUrl, headers, options, depth = 0) {
     hls_external_audio_count: parsed.audio.length,
     hls_audio_playable: parsed.audio.length ? true : null,
     media_duration_seconds: mediaDurationSeconds,
+    media_duration_complete: mediaDurationComplete,
   };
 }
 

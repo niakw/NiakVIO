@@ -81,7 +81,28 @@ WRAPPER = r'''
   function isTv(){try{var ua=s(g.navigator&&g.navigator.userAgent);return /NuvioTV|Android TV/i.test(ua)||(g&&g.__NUVIO_TV_RUNTIME__===true)}catch(_e){return false}}
   function p2pReason(row){if(!row||typeof row!=="object")return"";var u=s(row.url).toLowerCase(),t=s(row.type||row.format||row.protocol).toLowerCase();if(/^(?:magnet|torrent|acestream|sop):/i.test(u))return"p2p_protocol";if(row.infoHash||row.infohash||row.magnet||row.torrent||row.peerId||row.peer_id)return"p2p_stream_field";if(/^(?:torrent|p2p|peer-to-peer|magnet|acestream|sopcast)$/i.test(t))return"p2p_stream_type";return""}
   function obviousNonMedia(row){var p2p=p2pReason(row);if(p2p)return p2p;var u=s(row&&row.url);if(!u)return"missing_url";if(!/^https?:\/\//i.test(u))return"invalid_url";var lower=u.toLowerCase();if(/(?:youtube\.com|youtube-nocookie\.com)\/(?:embed|watch)(?:\/|\?|$)/i.test(lower))return"video_page_url";if(/\/embed(?:\/|\?|#|$)/i.test(lower))return"embed_page_url";if(/\.(?:html?|php)(?:[?#]|$)/i.test(lower))return"html_page_url";if(/^https?:\/\/[^/]+\/\/www\./i.test(u))return"malformed_nested_url";return""}
-  function staticSafety(row){if(!row||typeof row!=="object")return{keep:false,reason:"invalid_row"};var obvious=obviousNonMedia(row);if(obvious)return{keep:false,reason:obvious};return{keep:true}}
+  /* NUVIO_RUNTIME_MEDIA_SAFETY_CORRELATED_PLAYER_FALLBACK_V1 */
+  function correlatedPlayerFallback(row){
+    if(!row||typeof row!=="object")return false;
+    var u=s(row.url),proof=row.__nuvioCorrelatedPlayerFallbackV1;
+    if(!proof||typeof proof!=="object"||s(proof.url)!==u||!/^https?:\/\//i.test(u))return false;
+    try{
+      var parsed=new URL(u),path=s(parsed.pathname).toLowerCase();
+      if(/\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path))return true;
+      if(/\/(?:shell|video|stream)(?:\.php|[/?#.-]|$)/i.test(path)){
+        var keys=[];parsed.searchParams.forEach(function(_v,k){keys.push(s(k).toLowerCase())});
+        return keys.some(function(k){return /^(?:videoid|video|vid|file|embed|player|stream|source)$/.test(k)});
+      }
+    }catch(_e){}
+    return false;
+  }
+  function staticSafety(row){
+    if(!row||typeof row!=="object")return{keep:false,reason:"invalid_row"};
+    var obvious=obviousNonMedia(row);
+    if(!obvious)return{keep:true};
+    if((obvious==="embed_page_url"||obvious==="html_page_url")&&correlatedPlayerFallback(row))return{keep:true,reason:"correlated_player_fallback"};
+    return{keep:false,reason:obvious};
+  }
   function rowHeaders(row,range){var out={},src=row&&row.headers&&typeof row.headers==="object"?row.headers:{};Object.keys(src).forEach(function(k){out[k]=s(src[k])});try{var bh=row&&row.behaviorHints&&row.behaviorHints.proxyHeaders&&row.behaviorHints.proxyHeaders.request;if(bh&&typeof bh==="object")Object.keys(bh).forEach(function(k){if(!(k in out))out[k]=s(bh[k])})}catch(_e){}if(range&&!Object.keys(out).some(function(k){return k.toLowerCase()==="range"}))out.Range="bytes=0-65535";if(!Object.keys(out).some(function(k){return k.toLowerCase()==="accept"}))out.Accept="application/vnd.apple.mpegurl,application/x-mpegURL,video/*,*/*";return out}
   function timeoutSignal(ms){try{if(typeof AbortSignal!=="undefined"&&AbortSignal.timeout)return AbortSignal.timeout(ms)}catch(_e){}return void 0}
   async function responseText(r){if(!r)return"";try{if(typeof r.text==="function")return s(await r.text())}catch(_e){}try{if(typeof r.arrayBuffer==="function"){var ab=await r.arrayBuffer();if(ab&&typeof TextDecoder!=="undefined")return s(new TextDecoder("utf-8").decode(new Uint8Array(ab)))}}catch(_e){}return""}
@@ -120,7 +141,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "maxDurationRatio": float(raw_options.get("max_duration_ratio") or 1.8),
         "durationIdentity": bool(raw_options.get("duration_identity", True)),
         "strictPlayback": bool(raw_options.get("strict_playback", False)),
-        "implementationRevision": "field-safety-v8-media-only-p2p-vod-duration",
+        "implementationRevision": "field-safety-v9-correlated-player-fallback",
     }
     payload = json.dumps(config, separators=(",", ":"), ensure_ascii=False)
     marker = "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:" + hashlib.sha256(payload.encode()).hexdigest()[:12]

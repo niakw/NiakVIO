@@ -430,9 +430,11 @@ async function probeStreams(root, streams, fixture, config) {
       : null;
     const minimumDurationRatio = Math.max(0.05, Number(config.policy?.minimum_duration_ratio || 0.55));
     const maximumDurationRatio = Math.max(minimumDurationRatio, Number(config.policy?.maximum_duration_ratio || 1.8));
-    const durationMismatch = durationRatio != null && (durationRatio < minimumDurationRatio || durationRatio > maximumDurationRatio);
+    const durationComplete = probe?.kind !== 'hls' || probe?.media_duration_complete === true;
+    /* NIAKVIO_HLS_DURATION_COMPLETENESS_V1 */
+    const durationMismatch = durationComplete && durationRatio != null && (durationRatio < minimumDurationRatio || durationRatio > maximumDurationRatio);
     if (durationMismatch) identity = { status: 'contradiction', reason: 'fixture_duration_mismatch' };
-    else if (identity.status === 'unknown' && durationRatio != null) identity = { status: 'match', reason: 'fixture_duration_match' };
+    else if (identity.status === 'unknown' && durationComplete && durationRatio != null) identity = { status: 'match', reason: 'fixture_duration_match' };
     const transportPlayable = Boolean(probe?.playable);
     results.push({
       ...summarizeStream(stream, index),
@@ -448,6 +450,7 @@ async function probeStreams(root, streams, fixture, config) {
       hls_segment_playable: probe?.hls_segment_playable ?? null,
       hls_audio_playable: probe?.hls_audio_playable ?? null,
       media_duration_seconds: mediaDurationSeconds,
+      media_duration_complete: probe?.media_duration_complete ?? null,
       expected_duration_seconds: expectedDurationSeconds,
       duration_ratio: durationRatio,
       duration_identity_mismatch: durationMismatch,

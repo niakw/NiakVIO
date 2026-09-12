@@ -885,3 +885,194 @@ Next execution order:
 - Western animation is not automatically anime; trusted identity is required.
 - Current 46-provider workbench and final five-Lab evidence must conform to this contract.
 
+
+## 2026-09-11 — Manual hub/runtime evidence (authoritative; do not ask user to repeat)
+
+This section is the durable authority for the manual hub/site/network evidence supplied during the active 46-provider recovery session. Do not ask the user to repeat any URL or DevTools trace recorded here. Re-validate live when needed, but preserve the hub as discovery authority and never overwrite a proven good hub with a guessed terminal domain.
+
+### Current recovery execution context
+
+- Active recovery branch for this session: `workbench/hub-matrix-46-20260911`; `main` remains untouched until strict runtime stability + the five mandatory Labs. This temporarily supersedes the older MEMORY topology note that said not to recreate a workbench.
+- Catalogue remains 96 total providers with 46 ON / 50 OFF for the active hub matrix.
+- Strict green means `playable_verified` on every required declared lane; structural/materialization green alone is not stream proof.
+- Last stable strict full set before the manual-hub wave: `movieshunt`, `playimdb`, `purstream`, `videasy` (4 full). Frenchstream movie produced one live `playable_verified` gain but its TV lane remained unresolved and a later movie retry timed out; treat it as partial/unstable until repeated proof.
+- User-path testing is the final gate, not the discovery strategy. Prefer hub/site/network contracts and exact player/API chains, then validate E2E in NiakVIO.
+- Never count an upstream merely because it returns a URL. Upstream comparison must pass the same playback/identity verification as local NiakVIO.
+
+### Movies4U — manual authority + discovered chain
+
+- Hub: `https://movies4u.band/`.
+- Hub exposes a `View Full Site` link through `https://tinyurl.com/rockybhaipro1`.
+- That redirect currently resolves to terminal site `https://new6.movies4u.clinic/`.
+- Search pattern confirmed manually: `https://new6.movies4u.clinic/search.html?q=house+of+the+dragon`.
+- Example work page confirmed: `https://new6.movies4u.clinic/reacher-season-1-4-multi-audio-complete-amazon-prime-web-series-web-dl/`.
+- Site is download-oriented, but deeper live tracing proved work page -> `m4ulinks.site/number/<id>` -> host families including `hubcloud.cx/drive/...` and `gdflix.dev/file/...`.
+- HubCloud path can continue through PixelServer (`pixel.hubcloud.cx`) and a `gamerxyt.com/dl.php?link=<...>` wrapper; the final `link` parameter must be unwrapped before returning media.
+- WordPress `/wp-json/wp/v2/search` is NOT trustworthy on the current terminal: it returned stale/cached Interstellar regardless of query.
+- Actual frontend lookup contract discovered: `/lookup.php?q=<title>&page=1&per_page=30`, returning hits with at least `post_title` and `permalink`. Interstellar, Breaking Bad, House of the Dragon and Reacher returned relevant top hits in direct probes.
+- TV pages group by season/quality and may send `Single Episodes` to `m4ulinks`; episode identity must be selected inside the deeper hop, not guessed from the outer page.
+- Do not reduce Movies4U to a blind domain replacement `new5 -> new6`; the old upstream is structurally obsolete because it still assumes the old search path.
+
+### Moonflix — manual authority + TMDB-direct contract
+
+- Official/community hub supplied by user: `https://t.me/s/Moonflix_official_Channel`.
+- Current terminal site is obtained from the latest Instagram-linked hub message: `https://moonflix.website`.
+- Site frontend is React.
+- Manual DevTools trace for The Odyssey proves TMDB ID is used directly.
+- Movie mapping endpoint example: `https://raw.githubusercontent.com/Watchout2025/api/refs/heads/main/hls/movie/1368337`.
+- The RAW document for TMDB movie `1368337` contains player URL `https://multimovies.rpmhub.site/#fcx9t5`.
+- Therefore current proven movie chain is: Telegram/Instagram discovery -> `moonflix.website` -> TMDB ID -> GitHub RAW `Watchout2025/api/.../hls/movie/<tmdbId>` -> MultiMovies hash player.
+- Direct guesses for TV paths around TMDB 1396 returned 404 during diagnostics; TV schema is unknown and must be learned from Moonflix frontend/network, not invented.
+
+### HDHub4U — manual authority and season-matching warning
+
+- Hub: `https://hdhub4u.bi/`.
+- Hub currently points to `https://new5.hdhub4u.cl/?utm=mn1`; strip UTM/tracking and store terminal as `https://new5.hdhub4u.cl/`.
+- Search example: `https://new5.hdhub4u.cl/search.html?q=house+of+the+dragon`.
+- Search can return multiple links covering different season combinations. The user observed two links for S1 and other links for S2/S3; selection MUST be exact/fail-closed on requested season.
+- Example S1 page: `https://new5.hdhub4u.cl/house-of-the-dragon-season-1-hindi-webrip-all-episodes/`.
+- Page exposes download/stream quality groups (e.g. 480p pack, 720p 10Bit HEVC, 1080p 10Bit HEVC) and single-episode rows such as `E01 – Drive | Instant | Watch`.
+- Outer-page links do not provide a sufficiently specific identity by themselves; follow the exact season/episode context before accepting a media target.
+
+### Flemmix — manual authority + live page/player matrix
+
+- Official address hub: `https://ww1.wiflix-adresses.fun/`.
+- Hub currently declares `https://flemmix.cloud` as the principal active domain (`Domaine actif - Utilisez toujours ce lien`).
+- Current terminal search request observed manually: `https://flemmix.cloud/index.php?do=search&subaction=search&search_start=0&full_search=0&story=house+of+the+dragon` (GET 200 in browser).
+- Example selected series page: `https://flemmix.cloud/serie-en-streaming/36342-game-of-thrones-house-of-the-dragon-saison-3.html`.
+- Search results can have several season-specific VF/VOSTFR entries; season matching must be explicit.
+- Manual DevTools player evidence included:
+  - Player family 1: `https://vidara.to/api/stream` POST 200.
+  - Player family 2: `https://entitlements.jwplayer.com/...json` GET 200 (metadata/entitlement request, not itself a stream).
+  - Player family 3: `https://luluvdo.com/player/jw8/translations/fr.json` GET 200 (translation asset, not itself a stream).
+- NiakVIO runner subsequently confirmed the exact season page is ~120 KB and contains explicit episode/language player controls (`ep1vs`, `ep1vf`, etc.) and direct `loadVideo(...)` embeds.
+- Confirmed embed host families on that page include `vidara.to`, `rebeccapracticeloss.com`, `luluvdo.com`, `flemmix.upns.pro`, `vidmoly.org`, and `firestream.site`.
+- Example page contains distinct embeds per episode and VF/VOSTFR groups, so the correct runtime model is page -> exact requested episode/language -> one or more player embeds -> media resolver.
+- Runner GET of the search URL returned only 18 bytes despite browser 200; do not assume search HTML is server-rendered/usable in the runner. Exact work pages are live and exploitable.
+- Existing MEMORY note claiming `flemmix.kim` authoritative is stale for this recovery session; hub authority now points to `flemmix.cloud`.
+
+### ToFlix — manual authority + current POST API contract
+
+- Official hub: `https://toflix.wiki/`.
+- Hub currently displays terminal domain in text (`#hero-heading`): `tfx08.lol`.
+- Terminal: `https://tfx08.lol/`.
+- Frontend framework: Next.js.
+- Current API endpoint observed manually: `https://api.tfx08.lol/toflix_api.php` via POST 200.
+- Movie content-details request observed for The Odyssey: body `{"api":"content_details","type":"movie","slug":"tmdb-1368337"}`.
+- Playback/session resolution request then observed to the same endpoint: body `{"api":"watch_session","action":"resolve","token":"7580ed4e40761939a974b3f28d9f60979032e1d2fd4f978b"}`.
+- This is a TMDB-direct current contract. Do NOT preserve the stale `tfx05.lol` GET recipe as execution authority.
+- Current NiakVIO DATA found during this session still contained stale `official_site=https://tfx05.lol`, `official_api=https://api.tfx05.lol`, and GET query recipes. It must be migrated to hub-derived `tfx08` + POST `content_details` -> `watch_session/resolve`, then live-validated.
+- Keep `toflix.wiki` as discovery authority so future `tfxNN` rotation can be learned instead of hard-frozen.
+
+### VegaMovies — manual authority + nexdrive download graph
+
+- Hub supplied/confirmed: `https://1vegamovies.tw/`, which redirects to current hub `https://1vegamovies.cfd/`.
+- Hub `View Full Site` currently leads to terminal `https://new2.vegamovies.futbol/`.
+- Search example: `https://new2.vegamovies.futbol/search.html?q=house+of+the+dragon`.
+- Search may return pages grouping several seasons together, plus separate season-specific pages. Matching must inspect exact title/season, not select first fuzzy result.
+- Example grouped work page: `https://new2.vegamovies.futbol/download-house-of-the-dragon-season-1-2-hindi-dubbed-org-all-episodes-480p-720p-1080p-bluray/`.
+- Page is download-oriented and groups links by exact season, audio/language, resolution, codec and per-episode/batch semantics.
+- Confirmed link host family: `https://nexdrive.fit/genxfm<id>/`.
+- Confirmed labels/semantics include `G-Direct [Instant]`, `V-Cloud [Resumable]`, and `Batch/Zip`, with multiple quality rows for S1/S2 including 480p, 720p, 1080p and 2160p/4K.
+- Examples supplied for S2 include nexdrive IDs `genxfm784776371280`, `genxfm784776380188`, `genxfm784776380189`, `genxfm784776371294`, `genxfm784776380194`, `genxfm784776380195`, `genxfm784776371279`, `genxfm784776380204`, `genxfm784776380205`, `genxfm784776371290`, `genxfm784776380216`, `genxfm784776380218`, `genxfm784776371299`.
+- Examples supplied for S1 include nexdrive IDs `genxfm784776336902`, `genxfm784776336901`, `genxfm784776336886`, `genxfm784776336887`, `genxfm784776336892`, `genxfm784776336893`, `genxfm784776336944`, `genxfm784776336946`.
+- Prefer episode-specific/direct/resumable paths for runtime extraction. Do not misclassify Batch/Zip archives as playable single-episode media.
+- Global catalogue language coverage may include Hindi/English here; language must be represented as stream facts/presentation, not used to fake French availability.
+
+### User-assistance contract for this recovery wave
+
+- The user is manually inspecting difficult providers in browser DevTools to supply authoritative hub/domain/search/player/API evidence. Treat these observations as high-value discovery evidence, then verify via GitHub Actions/runtime before publication.
+- Do not ask the user to repeat anything in this section. If a live check later contradicts an old value, record the new dated evidence here and preserve the hub/discovery relationship.
+
+### UHDMovies — manual authority + episode-specific protected-link graph
+
+- Discovery hub: `https://mmodlist.org/`; UHDMovies button uses `https://mmodlist.org/?type=uhdmovies` and currently leads to terminal `https://uhdmovies.autos/`.
+- Search example confirmed manually: `https://uhdmovies.autos/search/house+of+the+dragon`.
+- Search may return pages grouping multiple seasons as well as season-specific pages; matching must select the exact requested season.
+- Example season page supplied: `https://uhdmovies.autos/download-s01-e01-added-house-of-the-dragon-2022-season-1-english-audio-1080p-1080p-10bit-hevc-web-dl-esubs/`.
+- The page contains several release/quality groups for the same season, including 1080p x265/10-bit, 2160p SDR, 2160p HDR and other encodes. Each group exposes explicit Episode 1..10 links plus a separate `Zip / Pack` link.
+- Episode links are currently protected URLs on `https://cloud.unblockedgames.world/?sid=<opaque-token>`.
+- `Zip / Pack` is batch/archive semantics and MUST NOT be returned as a single playable episode stream.
+- Exact season/episode identity is available on the work page before resolving the protected link. Resolver must carry that identity through the hop instead of accepting arbitrary URLs from the page.
+- Prior NiakVIO desktop manual logs already showed the deeper UHDMovies chain after bypassing these protected links: `cloud.unblockedgames.world/?sid=...` -> `driveseed.org/file/<id>` -> `driveseed.org/zfile/<id>` (ResumeCloud) -> InstantLink hosts including `cdn.video-gen.xyz` and `cdn.video-plex.xyz`.
+- This manual evidence is authoritative for discovery/runtime repair; validate the exact current chain live before marking the lane green.
+
+### 2026-09-12 — Vostfree / NetMirror / Nakios / ZinkMovies manual authority
+
+#### Vostfree
+- Discovery hub supplied by user: `https://streaminganime.fr/site/6/vostfree`; its visit action currently leads to `https://ipv4.vostfree.ws/`.
+- Search is a POST to `https://ipv4.vostfree.ws/index.php?do=search` with DLE-style form fields including `do=search`, `subaction=search`, `search_start=0`, `full_search=0`, `result_from=1`, and `story=<query>`.
+- Example result/work page supplied: `https://ipv4.vostfree.ws/802-death-note-vf-ddl-streaming.html`.
+- The work page exposes explicit episode selectors (`Episode 01`, `Episode 02`, ...), and Episode 1 uses Sibnet player `https://video.sibnet.ru/c.php?videoid=3614913` (manual HTTP 200).
+- Runtime must select the exact episode from page semantics before resolving the player; do not infer episode identity from the player URL alone.
+
+#### NetMirror
+- Hub evidence supplied by user for `netmiror.com` currently exposes backup/server domain `https://net27.cc/`.
+- Current terminal API is TMDB-direct. Search example: `GET https://net27.cc/api/catalog/search-hybrid?q=house%20of%20the%20dragon`.
+- Title lookup example: `GET https://net27.cc/api/catalog/title/tv/94997` (TMDB 94997).
+- Embed resolution example supplied for HOTD S1E2: `GET /api/embed-tmdb/94997?type=tv&se=1&ep=2&...`; the browser returned HTTP 200.
+- The title response exposes multiple server/language choices. Preserve those as stream facts; exact S/E remains authoritative.
+
+#### Nakios
+- Discovery hub: `https://nakios.org/`, currently linking to `https://nakios.live/`.
+- Search frontend uses Livewire POST `https://nakios.live/livewire/update`; the supplied request updates search-component field `q`.
+- Example work page supplied: `https://nakios.live/movie/super-mario-galaxy-le-film`.
+- User observed some players taking ~3 minutes and recommends preferring Vidzy when available.
+- Proven media-side example: `v6.vidzy.cc/hls2/.../seg-8-v1-a1.ts?...` returned HTTP 200 in browser. Player preference may rank Vidzy higher, but no host may be accepted without terminal playback proof.
+
+#### ZinkMovies
+- Discovery hub supplied by user: `https://zinkmovies.org/`, currently routing to `https://new4.zinkmovies.foo/` through its Access Movies Portal CTA.
+- Search example: `https://new4.zinkmovies.foo/?s=house+of+the+dragon`.
+- Work page: `https://new4.zinkmovies.foo/tvshows/house-of-the-dragon-2022/`; it groups multiple seasons and qualities.
+- S1/S2/S3 quality links currently use `https://linkstore.zinkcloud.net/<id>/` (examples 6387..6401). Exact requested season must be selected before descending LinkStore.
+- These are download-link intermediates, not playable streams until a terminal media target passes the common playback verifier.
+
+### 2026-09-12 — UHDMovies live-chain follow-up
+- Live runner confirmed `uhdmovies.autos` search/detail pages and explicit Episode 1 anchors to `cloud.unblockedgames.world`; current Niak bundle still returns zero because its generic episodic helper ignores opaque cross-origin hrefs when S/E identity lives in anchor text.
+- Live protected chain was resolved structurally: protected GET -> first `form#landing` POST -> second `form#landing` POST -> `?go=<token>` cookie handoff -> meta refresh -> DriveSeed redirect -> `driveseed.org/file/<id>`.
+- Five distinct S01E01 protected links reached five distinct DriveSeed file IDs. Current Instant branches split across `cdn.video-plex.xyz` and `cdn.video-gen.xyz`; wrapper pages are not terminal media by themselves.
+- Current DriveSeed ResumeCloud `/zfile/<id>` contract changed: `Generate Cloud Link` is JavaScript POST with dynamic per-load `key`, `action`, `action_token`, and `x-token` hostname header. Page loads Cloudflare Turnstile and fresh-key POSTs with empty `action_token` return `Unknown error`.
+- Do not hardcode ephemeral keys and do not bypass/defeat Turnstile. Prefer independently exposed Instant branches and require terminal playback verification.
+- UHDMovies remains partial/manual authority, strict red until terminal media is proven.
+
+### 2026-09-12 — Manual-wave live follow-up: Nakios / Vostfree / ZinkMovies / NetMirror
+
+#### Nakios
+- Current live human chain was proved under GitHub runner: `https://nakios.live/` -> parse CSRF + `search-component` Livewire snapshot -> `POST /livewire/update` with query `mario` -> work result `/movie/super-mario-bros-le-film` -> work page -> Vidzy embed `https://vidzy.org/embed-8fyvbh1n8a6c.html` -> `https://s1.fsvid.lol/troll/master.m3u8`.
+- Terminal HLS probe returned HTTP 206, `Content-Type: application/vnd.apple.mpegurl`, and body beginning `#EXTM3U`. This is current terminal media proof for the movie lane.
+- Work pages serialize player families inside `wire:snapshot` (`videos` / `videosByVersion`), including Vidzy, Dood, Uqload, Luluvid and others. User observed some players may take ~3 minutes; Vidzy should be preferred when available, but only after live terminal validation.
+- Candidate provider Lego V1 exists in `scripts/provider_patches/nakios_livewire_runtime_v1.py`. First harness pass did not install into the lexical ProviderBase export; second pass proved the Lego is now invoked (`server_accessible=true`, HTTP 200) but still returned zero streams. Continue debugging the resolver; do not mark Nakios green yet.
+
+#### Vostfree
+- Current deterministic episode/player contract is present in the work page: `buttons_N` episode selector, alternating `player_N`/`content_player_N` rows; odd rows are Sibnet, even rows Uqload.
+- Episode 1 current tokens: Sibnet `3614913`, Uqload `t80ndeqk2sfb`. `templates/Animix/js/anime.js` currently constructs Sibnet as `https://video.sibnet.ru/shell.php?videoid=<token>` and Uqload as `https://uqload.io/embed-<token>.html`.
+- Runner followed Episode 1 Uqload to `https://uqload.vc/embed-t80ndeqk2sfb.html?...` with HTTP 200. No raw MP4/M3U8 appeared in plain HTML, so terminal media is not yet proved and the player requires a packed/obfuscated-player decoding step.
+- Direct `video.sibnet.ru/c.php?videoid=3614913` returned a tiny GIF in the runner, not playable media. Do not count that browser player request as terminal media.
+
+#### ZinkMovies
+- `linkstore.zinkcloud.net/6387/` is live and exposes multiple `new4.zinkcloud.net/file/<id>` intermediates. The first inspected file page is live but current download generation is gated by Cloudflare Turnstile / protected generation logic.
+- Current frontend references `generateDownloadLink(...)`, token generation, and server-handler flows for worker/GDFlix/HubCloud-style mirrors. Do not bypass Turnstile and do not count LinkStore/ZinkCloud intermediates as playable media without terminal playback proof.
+
+#### NetMirror
+- Current TV lane is already strict-positive in the Niak bundle (8 verified streams in the manual-wave run).
+- Standard Interstellar fixture is currently unavailable at the source itself: NetMirror marks TMDB 157336 `streamable:false` / Coming Soon.
+- Source movie capability is nevertheless live: Avatar (TMDB 19995) is currently `streamable:true`, and `/api/embed-tmdb/19995?type=movie` returns signed MP4 variants.
+- Running the current Niak NetMirror bundle with TMDB 19995 still returned zero and made no provider request (`server_accessible=false`), proving a real missing movie runtime route in addition to the Interstellar fixture mismatch. NetMirror remains partial, not full.
+
+### 2026-09-12 — AnimeSalt / AnimePahe manual authority
+
+#### AnimeSalt
+- Discovery hub supplied by user: `https://animesalt.ac/`; current terminal observed in browser is `https://animesalt.cx/`.
+- Search uses WordPress AJAX: `POST https://animesalt.cx/wp-admin/admin-ajax.php` with `action=action_tr_search_suggest`, a page/session nonce, `term=<query>`, and a visitor id. Nonce/visitor values are ephemeral and MUST NOT be hardcoded.
+- Example result/work page supplied: `https://animesalt.cx/series/death-note/?asq=ZGVhdGggbm90ZQ=`.
+- Season switch contract is explicit on the work page: `GET .../wp-admin/admin-ajax.php?action=action_select_season&season=<season>&post=<postId>`; Death Note exposes `data-post=1808`, season 1 and exact episode links such as `/episode/death-note-1x1/` through `/episode/death-note-1x37/`.
+- Episode identity is explicit in both visible labels and episode paths (`1xN`); select exact season/episode before player resolution.
+- Episode 1 player request observed manually: `POST https://as-cdn26.top/player/index.php?data=4524b5e84762d68528525a226797c4d2&do=getVideo` returned HTTP 200. The `data` token is runtime player/session content and MUST be learned from the episode page, not frozen.
+
+#### AnimePahe
+- Discovery source supplied by user: `https://theindex.moe/item/6128a375aa2f6e004d46d71d`, which points to `https://animepahe.com/`; current terminal redirects to `https://animepahe.pw/`.
+- Current search API: `GET https://animepahe.pw/api?m=search&q=<query>`; browser trace returned HTTP 200.
+- Example anime page supplied: `https://animepahe.pw/anime/08154ccc-aef5-84a3-59ff-2bd1c7430744`.
+- Episode menu exposes exact episode links as `/play/<anime-session>/<episode-session>` with visible labels `Episode 1`, `Episode 2`, ...; exact episode selection is explicit and must be preserved.
+- User observed terminal HLS on `vault-11.uwucdn.top/.../uwu.m3u8`, HTTP 200, with an HLS key path `mon.key`. HLS/key URLs are runtime outputs and MUST NOT be hardcoded in provider DATA.
+- This is strong manual playback evidence, but NiakVIO still requires dynamic extraction + common playback verification before the lane becomes strict green.

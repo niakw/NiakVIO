@@ -59,12 +59,16 @@ def patch() -> bool:
         "/stream/movie/{id}.json",
         "/stream/series/{id}:{season}:{episode}.json",
     ]
+    # Live CI evidence on 2026-09-12: the declared manifest host still
+    # answers but its IMDb routes intermittently stall, while the Worker
+    # mirror returns the same current addon catalogue promptly. Runtime order
+    # follows availability evidence; the official manifest remains fallback.
     _set_legos(
         desiflix,
         DESIFLIX,
         {
-            "base": "https://manifest.desitvhub.eu.org",
-            "fallbackBases": ["https://desiflix.stremioaddon.workers.dev"],
+            "base": "https://desiflix.stremioaddon.workers.dev",
+            "fallbackBases": ["https://manifest.desitvhub.eu.org"],
         },
     )
 
@@ -144,6 +148,12 @@ def validate() -> None:
         routes = [str(v) for v in row.get("learned_routes") or []]
         if not routes:
             raise AssertionError(f"{provider_id}: missing stable learned_routes")
+
+    desi_opts = patches["desiflix"].get("provider_lego_options", {}).get(DESIFLIX, {})
+    if desi_opts.get("base") != "https://desiflix.stremioaddon.workers.dev":
+        raise AssertionError("desiflix: responsive Worker must be primary runtime base")
+    if desi_opts.get("fallbackBases") != ["https://manifest.desitvhub.eu.org"]:
+        raise AssertionError("desiflix: official manifest fallback order mismatch")
 
     all_routes = patches["allmovieland"]["learned_routes"]
     if any("session" in str(v).lower() or "aws" in str(v).lower() for v in all_routes):

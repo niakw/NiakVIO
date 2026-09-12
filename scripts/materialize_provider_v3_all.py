@@ -253,19 +253,61 @@ def provider_model(
     # PROVIDER_V3_ROUTE_PROOF_AUTHORITY_V5
     patch_proof = int(patch.get("route_proof_version") or 0)
     static_proof = int(static_model.get("routeProofVersion") or 0)
+
+    def proof5_rows(value: object) -> list[dict[str, Any]]:
+        return [
+            dict(row) for row in (value or [])
+            if isinstance(row, dict) and int(row.get("proofModelVersion") or 0) >= 5
+        ] if isinstance(value, list) else []
+
+    patch_routes = [
+        str(value).strip() for value in (patch.get("learned_routes") or [])
+        if str(value).strip() and str(value).strip() != "/"
+    ]
+    patch_recipe = patch.get("api_recipe") if isinstance(patch.get("api_recipe"), dict) else None
+    patch_recipe_proof = int(patch_recipe.get("proofModelVersion") or 0) if isinstance(patch_recipe, dict) else 0
+    patch_search_plan = proof5_rows(patch.get("search_request_plan"))
+    patch_provider_value_plan = proof5_rows(patch.get("provider_value_plan"))
+    patch_external_identity_plan = proof5_rows(patch.get("external_identity_plan"))
+    # MATERIALIZER_EXECUTION_AUTHORITY_MONOTONIC_V25
+    patch_has_execution_authority = bool(
+        patch_proof >= 5 and (
+            patch_routes
+            or (patch_recipe is not None and patch_recipe_proof >= 5)
+            or patch_search_plan
+            or patch_provider_value_plan
+            or patch_external_identity_plan
+        )
+    )
     proof_version = max(patch_proof, static_proof)
     routes: list[str] = []
+    route_values = patch_routes if patch_has_execution_authority else [
+        *(patch.get("learned_routes") or []), *(static_model.get("routes") or [])
+    ]
     if proof_version >= 5:
-        for value in [*(patch.get("learned_routes") or []), *(static_model.get("routes") or [])]:
+        for value in route_values:
             item = str(value).strip()
             if item and item != "/" and item not in routes:
                 routes.append(item)
 
-    patch_recipe = patch.get("api_recipe") if isinstance(patch.get("api_recipe"), dict) else None
     static_recipe = static_model.get("apiRecipe") if isinstance(static_model.get("apiRecipe"), dict) else None
-    candidate_recipe = patch_recipe or static_recipe
+    candidate_recipe = patch_recipe if patch_recipe is not None else (None if patch_has_execution_authority else static_recipe)
     recipe_proof = int(candidate_recipe.get("proofModelVersion") or 0) if isinstance(candidate_recipe, dict) else 0
     api_recipe = candidate_recipe if proof_version >= 5 and recipe_proof >= 5 else None
+
+    def execution_list(patch_key: str, static_key: str) -> list[dict[str, Any]]:
+        if patch_has_execution_authority:
+            value = patch.get(patch_key)
+        else:
+            value = patch.get(patch_key) or static_model.get(static_key)
+        return [dict(row) for row in (value or []) if isinstance(row, dict)] if isinstance(value, list) else []
+
+    def execution_strings(patch_key: str, static_key: str, limit: int) -> list[str]:
+        if patch_has_execution_authority:
+            value = patch.get(patch_key)
+        else:
+            value = patch.get(patch_key) or static_model.get(static_key)
+        return [str(item).strip() for item in (value or []) if str(item).strip()][:limit] if isinstance(value, list) else []
 
     return {
         "knownSite": official_site,
@@ -285,42 +327,18 @@ def provider_model(
         "routes": routes,
         "apiRecipe": api_recipe,
         "routeProofVersion": proof_version,
-        "proofSearchBases": [
-            str(value).strip()
-            for value in (patch.get("proof_search_bases") or static_model.get("proofSearchBases") or [])
-            if str(value).strip()
-        ][:6],
+        "proofSearchBases": execution_strings("proof_search_bases", "proofSearchBases", 6),
         # PROVIDER_EXTERNAL_IDENTITY_BASE_V11
-        "proofDetailBases": [
-            str(value).strip()
-            for value in (patch.get("proof_detail_bases") or static_model.get("proofDetailBases") or [])
-            if str(value).strip()
-        ][:6],
+        "proofDetailBases": execution_strings("proof_detail_bases", "proofDetailBases", 6),
         # PROVIDER_SEARCH_REQUEST_PLAN_V14
-        "proofProtectedHosts": [
-            str(value).strip().casefold()
-            for value in (patch.get("proof_protected_hosts") or static_model.get("proofProtectedHosts") or [])
-            if str(value).strip()
-        ][:24],
-        "searchRequestPlan": [
-            dict(row)
-            for row in (patch.get("search_request_plan") or static_model.get("searchRequestPlan") or [])
-            if isinstance(row, dict)
-        ][:6],
+        "proofProtectedHosts": [value.casefold() for value in execution_strings("proof_protected_hosts", "proofProtectedHosts", 24)],
+        "searchRequestPlan": execution_list("search_request_plan", "searchRequestPlan")[:6],
         # PROVIDER_RESPONSE_VALUE_CORRELATION_V20
         # PROVIDER_CORRELATED_VALUE_PLAN_V18
         # PROVIDER_VALUE_CAUSAL_DEPTH_V20_5
-        "providerValuePlan": [
-            dict(row)
-            for row in (patch.get("provider_value_plan") or static_model.get("providerValuePlan") or [])
-            if isinstance(row, dict)
-        ][:12],
+        "providerValuePlan": execution_list("provider_value_plan", "providerValuePlan")[:12],
         # PROVIDER_STRUCTURED_EXTERNAL_ID_V13
-        "externalIdentityPlan": [
-            dict(row)
-            for row in (patch.get("external_identity_plan") or static_model.get("externalIdentityPlan") or [])
-            if isinstance(row, dict)
-        ][:4],
+        "externalIdentityPlan": execution_list("external_identity_plan", "externalIdentityPlan")[:4],
         "sourceRuntimeFamily": str(static_model.get("sourceRuntimeFamily") or "unknown"),
         "identityInput": identity_input(patch, routes, api_recipe),
         "strictIdentity": bool(patch.get("strict_identity", False)),
