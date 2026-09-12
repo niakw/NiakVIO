@@ -6,7 +6,8 @@ Domain Refresh is address authority, not provider repair. A successful run:
 2. persists that terminal in provider-overrides, provider-domain-history and provider-hubs;
 3. reconciles only domain-routing derivatives connected to the previous terminal;
 4. rebuilds the complete managed CONFIG DATA block for changed Provider v3 bundles;
-5. leaves every byte outside PROVIDER.*.CONFIG.V1 (including all Core Lego) unchanged.
+5. republishes changed bundles with their existing source-qualified namespace;
+6. leaves every byte outside PROVIDER.*.CONFIG.V1 (including all Core Lego) unchanged.
 
 Manifest/release version synchronization is intentionally performed by the workflow
 after this transaction, once the domain mutation and Provider CONFIG rebuild pass.
@@ -259,6 +260,22 @@ def _data_digest(data: dict[str, Any]) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
+# DOMAIN_REFRESH_SOURCE_QUALIFIED_PUBLICATION_V3
+def _safe_fragment(value: object) -> str:
+    import re
+    cleaned = re.sub(r"[^a-zA-Z0-9._-]+", "-", str(value or "").strip()).strip(".-")
+    return cleaned[:120] or "provider"
+
+
+def source_qualified_provider_name(provider_id: str, old_path: Path, digest: str) -> str:
+    """Retain the publisher/source namespace while rotating content hash."""
+    parts = old_path.stem.split("--")
+    source = parts[-2] if len(parts) >= 3 else "nuvio"
+    if source.endswith("-audit-quarantine"):
+        source = source[: -len("-audit-quarantine")] or "nuvio"
+    return f"{_safe_fragment(provider_id.casefold())}--{_safe_fragment(source)}--{digest[:16]}.js"
+
+
 def _generation(rows: list[dict[str, Any]]) -> str:
     aggregate = hashlib.sha256()
     for row in rows:
@@ -340,7 +357,7 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
 
         raw = after.encode("utf-8")
         digest = hashlib.sha256(raw).hexdigest()
-        new_rel = f"providers/{provider_id}-{digest[:16]}.js"
+        new_rel = f"providers/{source_qualified_provider_name(provider_id, old_path, digest)}"
         new_path = ROOT / new_rel
         new_path.write_bytes(raw)
         entry["filename"] = new_rel
