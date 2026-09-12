@@ -1229,3 +1229,36 @@ This section is the durable authority for the manual hub/site/network evidence s
 - Timing/evidence: no-timer A→B first stale result `0`, second result `1`, fast URL preserved; V33 fallback used 2 fetches, repeated dead provider stopped after 3 hard fetches, stalled network returned in about 1.4 s; provider timeout remains 25 s.
 - ProviderBase v3 reconstruction succeeded `96/96`, `unique_paths=96`, `reconstruction_required=0`, `provider_js_seed=false`, `upstream_js_seed=false`, runtime reader v10; `provider_base_layering_contract_test.py` passed.
 - Retry 11 failed only because the temporary workflow referenced nonexistent stale test `tests/provider_reconstruction_input_suite_test.py`; this is CI plumbing, not a Core/runtime regression. Retry 12 removed only that obsolete test reference. Retry 12 itself had no job because a checkpoint heredoc made the YAML invalid; retry 13 replaces it with YAML-safe base64 append and continues into all-96 bundle materialization.
+
+## 2026-09-12 — .44 full rebuild green + exact manual-TV live evidence
+
+- Work remains isolated to `fix/labs-5.21.44-20260912`; `main` remains untouched and no merge is authorized yet.
+- TEMP rebuild run `34720082372`, job `103624218582` completed success. ProviderBase rebuilt 96/96 with no provider/upstream JS seed; all 96 bundles materialized (`generation=8341fd44afe6c496`).
+- Published overrides were reapplied to all 96 refs and `--check` hit fixed point (`contract=7173d12a7b7aaf1e`). Global stream output guard passed 96/96; focused manual-TV/Core regressions remained green after rebuild.
+- Catalogue invariant after rebuild: manifest version 5.21.43, 96 rows, 46 enabled on this branch, 0 missing provider files; final published Provider CONFIG test passed 96.
+- Generated rebuild commit pushed: `5bc5c2098c47a5cb3b5b2661babfc5242dec217f`.
+- TEMP live manual-TV run `34720604970`: exact matrix results=24/24, playable=30, verified=30, contradictions=0, returned403Rows=0.
+  - hell-mode-s02e10 / anime-sama: state=completed raw=2 playable=2 verified=2 contradictions=0 stage=provider_returned_streams transport=none qualities=1080p languages=VOSTFR returned403=0.
+  - hell-mode-s02e10 / mugiwarastream: state=completed raw=8 playable=8 verified=8 contradictions=0 stage=provider_returned_streams transport=none qualities=1080p languages=VF returned403=0.
+  - hotd-s01e02 / castle: state=completed raw=4 playable=4 verified=4 contradictions=0 stage=provider_returned_streams transport=none qualities=720p languages=VO returned403=0.
+  - hotd-s01e02 / desiflix: state=completed raw=0 playable=0 verified=0 contradictions=0 stage=provider_network_exception transport=none qualities=none languages=none returned403=0.
+  - hotd-s01e02 / hindmoviez: state=completed raw=4 playable=2 verified=2 contradictions=0 stage=gate_runtime_plan_missing transport=none qualities=480p languages=Hindi/English returned403=0.
+  - hotd-s01e02 / moviebox: state=completed raw=0 playable=0 verified=0 contradictions=0 stage=provider_network_exception transport=movie,tv qualities=none languages=none returned403=0.
+  - hotd-s01e02 / persianstremio: state=completed raw=0 playable=0 verified=0 contradictions=0 stage=provider_network_http_error transport=none qualities=none languages=none returned403=0.
+  - hotd-s01e02 / purstream: state=completed raw=1 playable=1 verified=1 contradictions=0 stage=provider_returned_streams transport=none qualities=720p languages=VF returned403=0.
+  - hotd-s01e02 / vidrock: state=completed raw=2 playable=2 verified=2 contradictions=0 stage=provider_returned_streams transport=none qualities=1080p,720p languages=Original returned403=0.
+  - interstellar / castle: state=completed raw=2 playable=2 verified=2 contradictions=0 stage=provider_returned_streams transport=none qualities=720p languages=VO returned403=0.
+  - interstellar / desiflix: state=completed raw=0 playable=0 verified=0 contradictions=0 stage=provider_network_exception transport=none qualities=none languages=none returned403=0.
+  - interstellar / hindmoviez: state=completed raw=4 playable=0 verified=0 contradictions=0 stage=gate_runtime_plan_missing transport=none qualities=480p languages=Hindi/English returned403=0.
+  - interstellar / papadustream: state=completed raw=1 playable=1 verified=1 contradictions=0 stage=provider_returned_streams transport=none qualities=480p languages=VF returned403=0.
+  - interstellar / purstream: state=completed raw=1 playable=1 verified=1 contradictions=0 stage=provider_returned_streams transport=none qualities=720p languages=VF returned403=0.
+  - interstellar / streamzo: state=completed raw=1 playable=1 verified=1 contradictions=0 stage=provider_returned_streams transport=none qualities=none languages=VF returned403=0.
+  - interstellar / vidrock: state=completed raw=2 playable=2 verified=2 contradictions=0 stage=provider_returned_streams transport=none qualities=1080p,720p languages=Original returned403=0.
+  - mushoku-tensei-s03e11 / anime-sama: state=completed raw=2 playable=2 verified=2 contradictions=0 stage=provider_returned_streams transport=none qualities=1080p languages=VOSTFR returned403=0.
+  - mushoku-tensei-s03e11 / moviebox: state=completed raw=0 playable=0 verified=0 contradictions=0 stage=gate_type_capability transport=none qualities=none languages=none returned403=0.
+  - mushoku-tensei-s03e11 / mugiwarastream: state=completed raw=0 playable=0 verified=0 contradictions=0 stage=provider_network_http_error transport=none qualities=none languages=none returned403=0.
+  - mushoku-tensei-s03e11 / papadustream: state=completed raw=0 playable=0 verified=0 contradictions=0 stage=provider_network_zero_result transport=none qualities=none languages=none returned403=0.
+  - mushoku-tensei-s03e11 / purstream: state=completed raw=0 playable=0 verified=0 contradictions=0 stage=gate_type_capability transport=none qualities=none languages=none returned403=0.
+  - mushoku-tensei-s03e11 / streamzo: state=completed raw=0 playable=0 verified=0 contradictions=0 stage=provider_network_http_error transport=none qualities=none languages=none returned403=0.
+  - ragna-crimson-s01e04 / anime-sama: state=completed raw=2 playable=1 verified=1 contradictions=0 stage=provider_returned_streams transport=none qualities=720p languages=MULTI (VF/VO),VOSTFR returned403=0.
+  - ragna-crimson-s01e04 / mugiwarastream: state=completed raw=1 playable=1 verified=1 contradictions=0 stage=provider_returned_streams transport=none qualities=720p languages=VOSTFR returned403=0.
