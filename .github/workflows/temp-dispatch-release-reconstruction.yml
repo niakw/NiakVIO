@@ -16,6 +16,8 @@ jobs:
           fetch-depth: 1
       - name: Validate workflow ownership contract
         run: python tests/provider_v3_workflow_ownership_test.py
+      - name: Validate finalizer upgrader is idempotent on current owner
+        run: python scripts/upgrade_provider_v3_finalization_v1.py
       - name: Dispatch exact official reconstruction workflow
         env:
           GH_TOKEN: ${{ github.token }}
