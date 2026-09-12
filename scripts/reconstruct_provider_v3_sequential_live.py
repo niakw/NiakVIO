@@ -224,8 +224,19 @@ def run_until_qualified(
     for task_index, task in enumerate(provider["tasks"], start=1):
         if is_qualified(evaluation):
             break
-        used_tasks.append(copy.deepcopy(task))
         semantic_type = str(task.get("semantic_type") or "").strip().casefold()
+        already_validated = {
+            str(value or "").strip().casefold() for value in evaluation.get("validatedTypes") or []
+        }
+        if semantic_type in already_validated:
+            print(
+                "FIELD_PROVIDER_FIXTURE_SKIPPED_TYPE_ALREADY_PROVED "
+                f"provider={provider['provider_id']} fixture={task.get('fixture_slug')} "
+                f"semantic_type={semantic_type}",
+                flush=True,
+            )
+            continue
+        used_tasks.append(copy.deepcopy(task))
         for attempt in range(1, LIVE_PROBE_ATTEMPTS + 1):
             result = run_task(task, timeout)
             result["fixture_slug"] = task.get("fixture_slug")

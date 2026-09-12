@@ -54,6 +54,20 @@ from validate_provider_v3_routes_live import (
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MIN_COVERAGE = 0.75  # diagnostic compatibility only; type gate is always 100%.
+# PROVIDER_V3_SEMANTIC_FIXTURE_FALLBACKS_V1
+# A declared lane is a provider capability, not a promise that one particular
+# title is in catalogue today. Targeted fixtures stay first; these independent
+# fallbacks are attempted only while the semantic type is still unproved.
+SEMANTIC_FIXTURE_FALLBACKS = {
+    "movie": ("interstellar", "sinners-2025", "mon-ninja-et-moi-3", "colony-2021"),
+    "tv": ("breaking-bad-s01e01", "revenant-s01e01"),
+    "anime": (
+        "jujutsu-kaisen-s01e01",
+        "mushoku-tensei-s01e01",
+        "failure-frame-s01e01",
+        "hell-teacher-nube-2025-s01e01",
+    ),
+}
 # PROVIDER_V3_HTTP_BLOCK_CLASSIFICATION_V1
 # 451 is an explicit policy/jurisdiction block. It is never positive route
 # proof, but a 451-only traversal is terminal-blocked rather than broken.
@@ -139,15 +153,22 @@ def build_provider_queue() -> tuple[list[dict[str, Any]], int]:
                 selected.append(row)
 
         for media_type in supported:
-            # A provider-targeted fixture is stronger than the generic fallback.
-            # In particular, anime-specialized providers use an anime feature film
-            # for canonical movie proof instead of being forced through Interstellar.
-            if any(existing["semantic_type"] == media_type for existing in selected):
-                continue
-            slug = REPRESENTATIVE[media_type]
-            row = by_slug.get(slug)
-            if row is not None and all(existing["slug"] != slug for existing in selected):
-                selected.append(row)
+            # Provider-targeted fixtures stay first. If none exists, keep the
+            # canonical representative first for backward-compatible ordering.
+            if not any(existing["semantic_type"] == media_type for existing in selected):
+                slug = REPRESENTATIVE[media_type]
+                row = by_slug.get(slug)
+                if row is not None and all(existing["slug"] != slug for existing in selected):
+                    selected.append(row)
+
+            # Then append independent catalogue fallbacks. The runner skips them
+            # once this semantic type has current-run proof, so healthy providers
+            # do not pay extra traffic. A missing title therefore cannot alone
+            # classify an entire declared lane as broken.
+            for slug in SEMANTIC_FIXTURE_FALLBACKS.get(media_type, ()):
+                row = by_slug.get(slug)
+                if row is not None and all(existing["slug"] != slug for existing in selected):
+                    selected.append(row)
 
         for row in fixtures:
             if not row["providers"] and row["semantic_type"] in supported:
