@@ -1,0 +1,79 @@
+name: TEMP - Fix Bounded Live Retry
+on:
+  push:
+    branches: [release/stable-46-20260912]
+    paths: [.github/workflows/temp-fix-live-retry.yml]
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: release/stable-46-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Add bounded per-fixture live retries
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/reconstruct_provider_v3_sequential_live.py')
+          text = path.read_text(encoding='utf-8')
+
+          anchor = 'ROOT = Path(__file__).resolve().parents[1]\n'
+          insert = '''ROOT = Path(__file__).resolve().parents[1]\n\n# PROVIDER_V3_BOUNDED_LIVE_RETRY_V1\n# Providers can be intermittently reachable or rate-limited. Current-run proof\n# remains mandatory, but each fixture may be retried a small bounded number of\n# times before the active-provider gate fails. No historical proof is credited.\ndef _live_probe_attempts() -> int:\n    try:\n        value = int(str(os.environ.get("PROVIDER_V3_LIVE_PROBE_ATTEMPTS") or "3"))\n    except ValueError:\n        value = 3\n    return max(1, min(value, 3))\n\n\nLIVE_PROBE_ATTEMPTS = _live_probe_attempts()\n'''
+          if 'PROVIDER_V3_BOUNDED_LIVE_RETRY_V1' not in text:
+              if text.count(anchor) != 1:
+                  raise SystemExit('ROOT anchor mismatch')
+              text = text.replace(anchor, insert, 1)
+
+          old = '''    for task_index, task in enumerate(provider["tasks"], start=1):\n        result = run_task(task, timeout)\n        result["fixture_slug"] = task.get("fixture_slug")\n        result["fixture"] = copy.deepcopy(task.get("fixture") or {})\n        rows.append(result)\n        used_tasks.append(copy.deepcopy(task))\n        evaluation = credit_verified_playable_chains(\n            evaluate_provider(provider["provider_id"], model, rows, minimum), rows\n        )\n        http_counts = Counter(int(fetch.get("status") or 0) for fetch in result.get("fetches") or [])\n        http_summary = ",".join(f"{status}:{count}" for status, count in sorted(http_counts.items())) or "none"\n        print(\n            "FIELD_PROVIDER_SEQUENTIAL_PROBE "\n            f"provider={provider['provider_id']} fixture={task.get('fixture_slug')} "\n            f"step={task_index}/{len(provider['tasks'])} task_status={result.get('status')} "\n            f"http_statuses={http_summary} "\n            f"declared_types={','.join(evaluation['requiredTypes']) or 'none'} "\n            f"validated_types={','.join(evaluation['validatedTypes']) or 'none'} "\n            f"missing_types={','.join(evaluation['missingTypes']) or 'none'} "\n            f"type_coverage={evaluation['declaredTypeCoverageRatio']:.3f} target=1.000 "\n            f"requests={evaluation['providerRequestCount']} "\n            f"live={evaluation['liveValidatedRouteCount']}",\n            flush=True,\n        )\n        if is_qualified(evaluation):\n            break\n'''
+          new = '''    for task_index, task in enumerate(provider["tasks"], start=1):\n        if is_qualified(evaluation):\n            break\n        used_tasks.append(copy.deepcopy(task))\n        semantic_type = str(task.get("semantic_type") or "").strip().casefold()\n        for attempt in range(1, LIVE_PROBE_ATTEMPTS + 1):\n            result = run_task(task, timeout)\n            result["fixture_slug"] = task.get("fixture_slug")\n            result["fixture"] = copy.deepcopy(task.get("fixture") or {})\n            result["probe_attempt"] = attempt\n            rows.append(result)\n            evaluation = credit_verified_playable_chains(\n                evaluate_provider(provider["provider_id"], model, rows, minimum), rows\n            )\n            http_counts = Counter(int(fetch.get("status") or 0) for fetch in result.get("fetches") or [])\n            http_summary = ",".join(f"{status}:{count}" for status, count in sorted(http_counts.items())) or "none"\n            print(\n                "FIELD_PROVIDER_SEQUENTIAL_PROBE "\n                f"provider={provider['provider_id']} fixture={task.get('fixture_slug')} "\n                f"step={task_index}/{len(provider['tasks'])} "\n                f"attempt={attempt}/{LIVE_PROBE_ATTEMPTS} task_status={result.get('status')} "\n                f"http_statuses={http_summary} "\n                f"declared_types={','.join(evaluation['requiredTypes']) or 'none'} "\n                f"validated_types={','.join(evaluation['validatedTypes']) or 'none'} "\n                f"missing_types={','.join(evaluation['missingTypes']) or 'none'} "\n                f"type_coverage={evaluation['declaredTypeCoverageRatio']:.3f} target=1.000 "\n                f"requests={evaluation['providerRequestCount']} "\n                f"live={evaluation['liveValidatedRouteCount']}",\n                flush=True,\n            )\n            if is_qualified(evaluation) or semantic_type in {\n                str(value or "").strip().casefold() for value in evaluation.get("validatedTypes") or []\n            }:\n                break\n'''
+          if old not in text:
+              raise SystemExit('candidate retry anchor missing')
+          text = text.replace(old, new, 1)
+
+          old = '''    for task_index, task in enumerate(used_tasks, start=1):\n        final_task = copy.deepcopy(task)\n        final_task["filename"] = final_filename\n        result = run_task(final_task, timeout)\n        result["fixture_slug"] = final_task.get("fixture_slug")\n        result["fixture"] = copy.deepcopy(final_task.get("fixture") or {})\n        rows.append(result)\n        evaluation = credit_verified_playable_chains(\n            evaluate_provider(provider["provider_id"], live_model, rows, minimum), rows\n        )\n        http_counts = Counter(int(fetch.get("status") or 0) for fetch in result.get("fetches") or [])\n        http_summary = ",".join(f"{status}:{count}" for status, count in sorted(http_counts.items())) or "none"\n        print(\n            "FIELD_PROVIDER_FINAL_PROBE "\n            f"provider={provider['provider_id']} fixture={final_task.get('fixture_slug')} "\n            f"step={task_index}/{len(used_tasks)} task_status={result.get('status')} "\n            f"http_statuses={http_summary} "\n            f"validated_types={','.join(evaluation.get('validatedTypes') or []) or 'none'} "\n            f"missing_types={','.join(evaluation.get('missingTypes') or []) or 'none'} "\n            f"requests={evaluation.get('providerRequestCount', 0)} "\n            f"live={evaluation.get('liveValidatedRouteCount', 0)}",\n            flush=True,\n        )\n'''
+          new = '''    for task_index, task in enumerate(used_tasks, start=1):\n        final_task = copy.deepcopy(task)\n        final_task["filename"] = final_filename\n        semantic_type = str(final_task.get("semantic_type") or "").strip().casefold()\n        for attempt in range(1, LIVE_PROBE_ATTEMPTS + 1):\n            result = run_task(final_task, timeout)\n            result["fixture_slug"] = final_task.get("fixture_slug")\n            result["fixture"] = copy.deepcopy(final_task.get("fixture") or {})\n            result["probe_attempt"] = attempt\n            rows.append(result)\n            evaluation = credit_verified_playable_chains(\n                evaluate_provider(provider["provider_id"], live_model, rows, minimum), rows\n            )\n            http_counts = Counter(int(fetch.get("status") or 0) for fetch in result.get("fetches") or [])\n            http_summary = ",".join(f"{status}:{count}" for status, count in sorted(http_counts.items())) or "none"\n            print(\n                "FIELD_PROVIDER_FINAL_PROBE "\n                f"provider={provider['provider_id']} fixture={final_task.get('fixture_slug')} "\n                f"step={task_index}/{len(used_tasks)} attempt={attempt}/{LIVE_PROBE_ATTEMPTS} "\n                f"task_status={result.get('status')} http_statuses={http_summary} "\n                f"validated_types={','.join(evaluation.get('validatedTypes') or []) or 'none'} "\n                f"missing_types={','.join(evaluation.get('missingTypes') or []) or 'none'} "\n                f"requests={evaluation.get('providerRequestCount', 0)} "\n                f"live={evaluation.get('liveValidatedRouteCount', 0)}",\n                flush=True,\n            )\n            validated = {\n                str(value or "").strip().casefold() for value in evaluation.get("validatedTypes") or []\n            }\n            bad_status = result.get("status") in {\n                "wrong_content", "runtime_error", "invalid_probe_output", "probe_error"\n            }\n            if semantic_type in validated and not bad_status:\n                break\n'''
+          if old not in text:
+              raise SystemExit('final retry anchor missing')
+          text = text.replace(old, new, 1)
+
+          old = '''    wrong_only_types = (wrong_types & required_types) - playable_types\n    runtime_error = any(\n        row.get("status") in {"runtime_error", "invalid_probe_output", "probe_error"}\n        for row in rows\n    )\n    verified = is_qualified(evaluation) and not wrong_only_types and not runtime_error\n'''
+          new = '''    non_wrong_types = {\n        str(row.get("semantic_type") or "").strip().casefold()\n        for row in rows\n        if row.get("status") not in {"wrong_content", "runtime_error", "invalid_probe_output", "probe_error"}\n    }\n    wrong_only_types = (wrong_types & required_types) - playable_types - non_wrong_types\n    runtime_error_types = {\n        str(row.get("semantic_type") or "").strip().casefold()\n        for row in rows\n        if row.get("status") in {"runtime_error", "invalid_probe_output", "probe_error"}\n    }\n    runtime_recovered_types = {\n        str(row.get("semantic_type") or "").strip().casefold()\n        for row in rows\n        if row.get("status") not in {"runtime_error", "invalid_probe_output", "probe_error"}\n    }\n    runtime_error = bool((runtime_error_types & required_types) - runtime_recovered_types)\n    verified = is_qualified(evaluation) and not wrong_only_types and not runtime_error\n'''
+          if old not in text:
+              raise SystemExit('retry recovery anchor missing')
+          text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+
+          test = Path('tests/provider_v3_sequential_reconstruction_contract_test.py')
+          source = test.read_text(encoding='utf-8')
+          anchor = 'assert "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE" in source\n'
+          extra = '''assert "PROVIDER_V3_BOUNDED_LIVE_RETRY_V1" in source\nassert "LIVE_PROBE_ATTEMPTS = _live_probe_attempts()" in source\nassert source.count("for attempt in range(1, LIVE_PROBE_ATTEMPTS + 1):") >= 2\nassert 'result["probe_attempt"] = attempt' in source\nassert "runtime_recovered_types" in source\n'''
+          if 'PROVIDER_V3_BOUNDED_LIVE_RETRY_V1' not in source:
+              if source.count(anchor) != 1:
+                  raise SystemExit('retry contract anchor missing')
+              source = source.replace(anchor, anchor + extra, 1)
+          test.write_text(source, encoding='utf-8')
+          PY
+      - name: Validate retry contract
+        run: |
+          python -m py_compile scripts/reconstruct_provider_v3_sequential_live.py
+          python tests/provider_v3_sequential_reconstruction_contract_test.py
+          python tests/provider_v3_finalization_plan_test.py
+          python tests/active_provider_live_coverage_test.py
+          git diff --check
+      - name: Commit bounded retry
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/reconstruct_provider_v3_sequential_live.py tests/provider_v3_sequential_reconstruction_contract_test.py
+          git diff --cached --quiet && { echo 'No durable changes'; exit 1; }
+          git commit -m 'fix(reconstruct): retry volatile live fixtures before fail'
+          git push origin HEAD:release/stable-46-20260912
