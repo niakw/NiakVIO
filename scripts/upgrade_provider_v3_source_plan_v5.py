@@ -20,6 +20,7 @@ import upgrade_route_proof_dataflow_safety_v2 as route_dataflow_safety
 import upgrade_kehflix_terminal_domain_v1 as kehflix_terminal
 import upgrade_signed_player_api_v1 as signed_player_api
 import upgrade_provider_auxiliary_metadata_filter_v1 as auxiliary_metadata_filter
+import upgrade_provider_terminal_media_block_v1 as terminal_media_block
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_STORE = ROOT / "scripts" / "provider_base_store.py"
@@ -45,6 +46,8 @@ def main() -> int:
     batch_routes_v2.validate()
     auxiliary_metadata_changed = auxiliary_metadata_filter.patch()
     auxiliary_metadata_filter.validate()
+    terminal_media_block_changed = terminal_media_block.patch()
+    terminal_media_block.validate()
 
     # proof-v5 request-spec/recovery migrations are applied immediately before
     # this gate by the full reconstruction/publication workflows. Apply the
@@ -106,6 +109,7 @@ def main() -> int:
         f"batchRoutesChanged={str(batch_routes_changed).lower()} "
         f"batchRoutesV2Changed={str(batch_routes_v2_changed).lower()} "
         f"auxiliaryMetadataChanged={str(auxiliary_metadata_changed).lower()} "
+        f"terminalMediaBlockChanged={str(terminal_media_block_changed).lower()} "
         f"routeSafetyChanged={str(route_safety_changed).lower()} "
         f"kehflixTerminalChanged={str(kehflix_overrides_changed or kehflix_knowledge_changed).lower()} "
         f"signedPlayerChanged={str(signed_player_changed).lower()}"
