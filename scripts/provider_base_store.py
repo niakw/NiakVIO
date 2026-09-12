@@ -2243,11 +2243,13 @@ function _strictHtmlIdentityOk(html, meta, mediaType) {
 /* NIAKVIO_PROVIDER_EPISODE_HOP_V22 */
 function _spv22EpisodeMarker(rawUrl, season, episode) {
   let path = "";
-  try { path = decodeURIComponent(new URL(_text(rawUrl)).pathname || "").toLowerCase(); }
+  try { const parsed = new URL(_text(rawUrl)); path = decodeURIComponent((parsed.pathname || "") + (parsed.search || "")).toLowerCase(); }
   catch (_) { return { marked: false, matches: false, strength: 0 }; }
   const wantedSeason = Math.max(1, Number(season) || 1);
   const wantedEpisode = Math.max(1, Number(episode) || 1);
   const patterns = [
+    { re: /[?&](?:season|s)=0*(\d{1,3})[^#]{0,120}?[&](?:episode|ep|e)=0*(\d{1,4})(?:[&#]|$)/i, strength: 5 },
+    { re: /[?&](?:episode|ep|e)=0*(\d{1,4})[^#]{0,120}?[&](?:season|s)=0*(\d{1,3})(?:[&#]|$)/i, strength: 5, reversed: true },
     { re: /(?:^|[-_/])s(?:eason|aison)?[-_ ]*0*(\d{1,3})[-_ /]*(?:e|ep|episode)[-_ ]*0*(\d{1,4})(?:[-_/.]|$)/i, strength: 4 },
     { re: /(?:season|saison)[-_ /]*0*(\d{1,3})[^?#]{0,80}?(?:episode|ep)[-_ /]*0*(\d{1,4})(?:[-_/.]|$)/i, strength: 4 },
     { re: /(?:^|[-_/])0*(\d{1,3})x0*(\d{1,4})(?:[-_/.]|$)/i, strength: 4 },
@@ -2256,9 +2258,11 @@ function _spv22EpisodeMarker(rawUrl, season, episode) {
   for (const row of patterns) {
     const match = path.match(row.re);
     if (!match) continue;
+    const actualSeason = row.reversed ? Number(match[2]) : Number(match[1]);
+    const actualEpisode = row.reversed ? Number(match[1]) : Number(match[2]);
     return {
       marked: true,
-      matches: Number(match[1]) === wantedSeason && Number(match[2]) === wantedEpisode,
+      matches: actualSeason === wantedSeason && actualEpisode === wantedEpisode,
       strength: row.strength
     };
   }
@@ -2279,6 +2283,27 @@ function _spv22EpisodeMarker(rawUrl, season, episode) {
     strength: 2
   };
   return { marked: false, matches: false, strength: 0 };
+}
+/* NIAKVIO_PROVIDER_EPISODE_IDENTITY_GUARD_V22_1 */
+function _spv221EpisodeTableState(html, base, season, episode) {
+  const source = _embeddedText(html).slice(0, 1048576);
+  let baseUrl;
+  try { baseUrl = new URL(_text(base)); } catch (_) { return { marked: false, matches: false }; }
+  const re = /\b(?:href|data-href|data-url|data-link)\s*=\s*(["'])([^"']{1,1200})\1/gi;
+  let match, scanned = 0, marked = false, matches = false;
+  while ((match = re.exec(source)) !== null && scanned++ < 700) {
+    const absolute = _absolute(match[2], baseUrl.toString());
+    if (!absolute) continue;
+    let parsed;
+    try { parsed = new URL(absolute); } catch (_) { continue; }
+    if (parsed.origin !== baseUrl.origin || !/^https?:$/i.test(parsed.protocol)) continue;
+    const marker = _spv22EpisodeMarker(parsed.toString(), season, episode);
+    if (!marker.marked) continue;
+    marked = true;
+    if (marker.matches) matches = true;
+    if (matches) break;
+  }
+  return { marked, matches };
 }
 function _spv22EpisodeLinks(html, base, season, episode) {
   const source = _embeddedText(html).slice(0, 1048576);
@@ -2367,9 +2392,17 @@ async function _resolveHtml(meta, mediaType, season, episode) {
       const response = await _fetch(detailUrl);
       const html = await response.text();
       if (!_strictHtmlIdentityOk(html, meta, mediaType)) continue;
-      const episodeHop = await _spv22ResolveEpisodeHop(html, response.url || detailUrl, mediaType, season, episode);
+      const resolvedDetailUrl = response.url || detailUrl;
+      const detailEpisodeMarker = _spv22EpisodeMarker(resolvedDetailUrl, season, episode);
+      if (mediaType !== "movie" && season != null && episode != null && detailEpisodeMarker.marked && !detailEpisodeMarker.matches) continue;
+      const episodeTableState = mediaType !== "movie" && season != null && episode != null
+        ? _spv221EpisodeTableState(html, resolvedDetailUrl, season, episode)
+        : { marked: false, matches: false };
+      if (episodeTableState.marked && !episodeTableState.matches && !(detailEpisodeMarker.marked && detailEpisodeMarker.matches)) continue;
+      const episodeHop = await _spv22ResolveEpisodeHop(html, resolvedDetailUrl, mediaType, season, episode);
       if (episodeHop.length) return episodeHop.slice(0, 40);
-      const explicitPlayers = _spv15ExplicitPlayerAttrs(html, response.url || detailUrl);
+      if (episodeTableState.marked && !(detailEpisodeMarker.marked && detailEpisodeMarker.matches)) continue;
+      const explicitPlayers = _spv15ExplicitPlayerAttrs(html, resolvedDetailUrl);
       if (explicitPlayers.length) {
         const explicitCrawled = await _crawlDirectMedia(explicitPlayers, response.url || detailUrl, 3);
         if (explicitCrawled.length) return explicitCrawled.slice(0, 40);
@@ -2675,6 +2708,33 @@ function _spv212Titles(meta) {
   }
   return out.slice(0, 4);
 }
+/* NIAKVIO_PROVIDER_MOVIE_CATALOGUE_IDENTITY_V21_10 */
+function _spv211MovieCatalogueEquivalent(actual, expected, meta) {
+  const wantedYear = Number(meta && (meta.year || meta.releaseYear || meta.release_year));
+  const noise = new Set([
+    "stream", "streaming", "watch", "regarder", "online", "gratuit", "free",
+    "vf", "vff", "vfq", "vostfr", "vo", "multi", "french", "francais",
+    "hd", "fhd", "fullhd", "uhd", "4k", "2160p", "1440p", "1080p", "720p"
+  ]);
+  function presentationOnly(value) {
+    const parts = _text(value).split("-").filter(Boolean);
+    if (!parts.length) return false;
+    return parts.every(part => {
+      if (noise.has(part)) return true;
+      if (/^(?:19|20)\d{2}$/.test(part)) {
+        return Number.isFinite(wantedYear) && wantedYear > 1800 && Number(part) === wantedYear;
+      }
+      return false;
+    });
+  }
+  for (const wanted of expected) {
+    if (!wanted) continue;
+    if (actual === wanted) return true;
+    if (actual.startsWith(wanted + "-") && presentationOnly(actual.slice(wanted.length + 1))) return true;
+    if (actual.endsWith("-" + wanted) && presentationOnly(actual.slice(0, -(wanted.length + 1)))) return true;
+  }
+  return false;
+}
 function _spv211CandidateIdentityScore(title, href, meta, mediaType, season) {
   const actual = _spv212Slug(title);
   if (!actual) return 0;
@@ -2685,6 +2745,7 @@ function _spv211CandidateIdentityScore(title, href, meta, mediaType, season) {
   const context = _text(title) + " " + _text(href);
 
   if (lane === "movie") {
+    if (!exact && !_spv211MovieCatalogueEquivalent(actual, expected, meta)) return -10000;
     if (!exact && /(?:^|[\s/_-])(?:saison|season|episode|ep)[\s._-]*\d{1,3}\b/i.test(context)) return -10000;
     const wantedYear = Number(meta && (meta.year || meta.releaseYear || meta.release_year));
     const years = context.match(/\b(?:19|20)\d{2}\b/g) || [];

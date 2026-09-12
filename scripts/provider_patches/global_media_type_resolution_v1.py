@@ -57,16 +57,18 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             semantic_types.append(item)
     payload = {
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
-        "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 60_000)), 120_000)),
-        "tvProviderTimeoutMs": max(5_000, min(int(cfg.get("tv_provider_timeout_ms", 60_000)), 120_000)),
+        "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 25_000)), 120_000)),
+        "tvProviderTimeoutMs": max(5_000, min(int(cfg.get("tv_provider_timeout_ms", 25_000)), 120_000)),
         "supersedeSettleMs": max(100, min(int(cfg.get("supersede_settle_ms", 1200)), 3000)),
+        "fetchSliceMs": max(100, min(int(cfg.get("fetch_slice_ms", 7_000)), 15_000)),
+        "maxHardFailures": max(2, min(int(cfg.get("max_hard_failures", 3)), 8)),
         "semanticTypes": semantic_types,
         "requestTypeAliases": {
             str(key).strip().lower(): str(value).strip().lower()
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-data-contract-launch-gate-v31-pre-network-semantic-gate",
+        "revision": "tmdb-data-contract-launch-gate-v33-25s-isolated-failfast",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -480,6 +482,8 @@ async function resolve(a){
 /* NUVIO_PROVIDER_LATEST_REQUEST_OWNS_FETCH_V2 */
 var requestSerial=0;
 function providerTimeoutError(){var e=new Error("nuvio_provider_timeout");e.name="TimeoutError";e.code="NUVIO_PROVIDER_TIMEOUT";e.__nuvioProviderTimeout=true;return e}
+function providerFetchTimeoutError(){var e=new Error("nuvio_provider_fetch_timeout");e.name="TimeoutError";e.code="NUVIO_PROVIDER_FETCH_TIMEOUT";e.__nuvioProviderFetchTimeout=true;return e}
+function providerFailFastError(status){var e=new Error("nuvio_provider_fail_fast"+(status?"_http_"+status:""));e.name="NetworkError";e.code="NUVIO_PROVIDER_FAIL_FAST";e.__nuvioProviderFailFast=true;return e}
 function providerStaleError(){var e=new Error("nuvio_provider_superseded");e.name="AbortError";e.code="NUVIO_PROVIDER_SUPERSEDED";e.__nuvioProviderStale=true;return e}
 function tokenOwns(token){try{return !token||!g||g.__nuvioProviderRequestToken===token}catch(_){return false}}
 function abortController(controller){try{if(controller&&typeof controller.abort==="function")controller.abort()}catch(_){}}
@@ -497,36 +501,58 @@ function requestAbortPromise(controller,requestToken){
 async function settlePrior(promise){if(!promise||typeof promise.then!=="function")return;try{if(typeof setTimeout!=="function"){await Promise.resolve();return}await Promise.race([promise,new Promise(function(resolve){setTimeout(resolve,Number(c.supersedeSettleMs||1200))})])}catch(_){}}
 function deadlineExpired(deadline){var n=Number(deadline);return Number.isFinite(n)&&n>0&&Date.now()>=n}
 function tvRuntime(){try{var ua=s(g&&g.navigator&&g.navigator.userAgent);return /NuvioTV|Android TV/i.test(ua)||(g&&g.__NUVIO_TV_RUNTIME__===true)}catch(_){return false}}
-function providerBudgetMs(){return tvRuntime()?Number(c.tvProviderTimeoutMs||60000):Number(c.providerTimeoutMs||60000)}
+function providerBudgetMs(){return tvRuntime()?Number(c.tvProviderTimeoutMs||25000):Number(c.providerTimeoutMs||25000)}
+function providerFetchSliceMs(){var n=Number(c.fetchSliceMs||7000);return Number.isFinite(n)?Math.max(100,Math.min(n,15000)):7000}
+function hardHttpStatus(status){var n=Number(status||0);return n===400||n===401||n===403||n===408||n===410||n===425||n===429||n===451||n>=500}
 function budgetedFetch(original,deadline,requestToken,requestController){
   if(typeof original!=="function")return original;
   var base=original.__nuvioProviderExecutionBudgetBase||original;
+  var hardFailures=0,lastHardStatus=0,failFast=false;
+  function publishState(){try{if(g&&tokenOwns(requestToken))g.__nuvioProviderFailureState={hardFailures:hardFailures,lastStatus:lastHardStatus,failFast:failFast===true}}catch(_){}}
+  function noteFailure(status){hardFailures+=1;lastHardStatus=Number(status||0)||0;if(hardFailures>=Number(c.maxHardFailures||3))failFast=true;publishState()}
+  function noteAlive(){hardFailures=0;lastHardStatus=0;failFast=false;publishState()}
   var wrapped=async function(){
     if(!tokenOwns(requestToken))throw providerStaleError();
     if(deadlineExpired(deadline))throw providerTimeoutError();
+    if(failFast)throw providerFailFastError(lastHardStatus);
     var args=Array.prototype.slice.call(arguments),remaining=deadline>0?Math.max(1,deadline-Date.now()):0;
-    if(remaining>0&&args.length>=1){
-      var init=args[1]&&typeof args[1]==="object"?Object.assign({},args[1]):{};
-      if(!init.signal&&requestController&&requestController.signal)init.signal=requestController.signal;
-      if(!init.signal){try{if(typeof AbortSignal!=="undefined"&&AbortSignal.timeout)init.signal=AbortSignal.timeout(remaining)}catch(_){}}
-      args[1]=init;
+    var slice=remaining>0?Math.min(remaining,providerFetchSliceMs()):providerFetchSliceMs();
+    var init=args[1]&&typeof args[1]==="object"?Object.assign({},args[1]):{};
+    var fetchController=null,parentSignal=null,parentAbort=null;
+    try{fetchController=typeof AbortController!=="undefined"?new AbortController():null}catch(_){fetchController=null}
+    if(requestController&&requestController.signal&&fetchController){
+      parentSignal=requestController.signal;
+      parentAbort=function(){abortController(fetchController)};
+      try{if(parentSignal.aborted)parentAbort();else if(typeof parentSignal.addEventListener==="function")parentSignal.addEventListener("abort",parentAbort,{once:true})}catch(_){}
     }
+    if(!init.signal&&fetchController&&fetchController.signal)init.signal=fetchController.signal;
+    if(!init.signal&&requestController&&requestController.signal)init.signal=requestController.signal;
+    if(!init.signal){try{if(typeof AbortSignal!=="undefined"&&AbortSignal.timeout)init.signal=AbortSignal.timeout(slice)}catch(_){} }
+    if(args.length>=1)args[1]=init;
     if(!tokenOwns(requestToken))throw providerStaleError();
     var timer=null;
     var timeoutPromise=new Promise(function(_resolve,reject){
-      if(typeof setTimeout!=="function"||remaining<=0)return;
-      timer=setTimeout(function(){abortController(requestController);reject(providerTimeoutError())},remaining);
+      if(typeof setTimeout!=="function"||slice<=0)return;
+      timer=setTimeout(function(){abortController(fetchController);reject(providerFetchTimeoutError())},slice);
     });
     var value,abortPromise=requestAbortPromise(requestController,requestToken);
     try{
-      value=(typeof setTimeout==="function"&&remaining>0)
+      value=(typeof setTimeout==="function"&&slice>0)
         ? await Promise.race([base.apply(this,args),timeoutPromise,abortPromise])
         : await Promise.race([base.apply(this,args),abortPromise]);
+    }catch(error){
+      if(error&&(error.__nuvioProviderStale||error.__nuvioProviderTimeout))throw error;
+      noteFailure(0);
+      if(failFast)throw providerFailFastError(lastHardStatus);
+      throw error;
     }finally{
       try{if(timer!=null&&typeof clearTimeout==="function")clearTimeout(timer)}catch(_){}
+      try{if(parentSignal&&parentAbort&&typeof parentSignal.removeEventListener==="function")parentSignal.removeEventListener("abort",parentAbort)}catch(_){}
     }
     if(!tokenOwns(requestToken))throw providerStaleError();
     if(deadlineExpired(deadline))throw providerTimeoutError();
+    var status=Number(value&&value.status||0);
+    if(status&&hardHttpStatus(status))noteFailure(status);else if(status>=200&&status<500)noteAlive();
     return value;
   };
   try{
@@ -538,6 +564,12 @@ function budgetedFetch(original,deadline,requestToken,requestController){
   }
   return wrapped;
 }
+async function invokeNativeWithBudget(native,self,args,requestController,requestToken){
+  var pending=native.apply(self,args);
+  pending=Promise.resolve(pending);
+  if(!requestController)return await pending;
+  return await Promise.race([pending,requestAbortPromise(requestController,requestToken)]);
+}
 function install(o,k){
   if(!o||typeof o[k]!=="function"||o[k].__nuvioMediaTypeResolutionV1)return false;
   var native=o[k];
@@ -548,7 +580,7 @@ function install(o,k){
     if(providerEvent!=="launch")return [];
 
     var requestToken=0,requestDeadline=0,hadFetch=false,previousFetch,fetchBase,budgetFetchInstalled=false;
-    var requestController=null,priorController=null,priorDone=null,resolveDone=null,invocationDone=null;
+    var requestController=null,priorController=null,priorDone=null,resolveDone=null,invocationDone=null,requestTimer=null;
     try{
       // Capture the prior invocation before claiming the global token/fetch slot.
       // The previous fetch wrapper stays installed during settlement grace, so a
@@ -574,6 +606,7 @@ function install(o,k){
       if(!tokenOwns(requestToken))return [];
       requestDeadline=Date.now()+providerBudgetMs();
       try{requestController=typeof AbortController!=="undefined"?new AbortController():null}catch(_){requestController=null}
+      try{if(requestController&&typeof setTimeout==="function")requestTimer=setTimeout(function(){abortController(requestController)},Math.max(1,requestDeadline-Date.now()))}catch(_){}
       if(g){
         g.__nuvioProviderDeadlineMs=requestDeadline;
         g.__nuvioProviderAbortController=requestController;
@@ -602,7 +635,7 @@ function install(o,k){
         }
       }
 
-      var value=await native.apply(this,a);
+      var value=await invokeNativeWithBudget(native,this,a,requestController,requestToken);
       if(deadlineExpired(requestDeadline))return [];
       if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
       if(!hasProviderOutput(value))return [];
@@ -627,7 +660,7 @@ function install(o,k){
       if(rerun){
         if(verified.__nuvioContext)verified.__nuvioContext.requestToken=requestToken;
         if(g)g.__nuvioMediaContext=verified.__nuvioContext||null;
-        value=await native.apply(this,verified);
+        value=await invokeNativeWithBudget(native,this,verified,requestController,requestToken);
         if(deadlineExpired(requestDeadline))return [];
         if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
         if(!hasProviderOutput(value))return [];
@@ -641,9 +674,10 @@ function install(o,k){
       }
       return value;
     }catch(error){
-      if(error&&(error.__nuvioProviderTimeout||error.__nuvioProviderStale))return [];
+      if(error&&(error.__nuvioProviderTimeout||error.__nuvioProviderStale||error.__nuvioProviderFailFast||error.__nuvioProviderFetchTimeout))return [];
       throw error;
     }finally{
+      try{if(requestTimer!=null&&typeof clearTimeout==="function")clearTimeout(requestTimer)}catch(_){}
       try{if(typeof resolveDone==="function")resolveDone()}catch(_){}
       try{
         if(g){
@@ -653,6 +687,7 @@ function install(o,k){
             if(Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"))delete g.__nuvioMediaContext;
             if(budgetFetchInstalled){if(hadFetch&&typeof fetchBase==="function")g.fetch=fetchBase;else if(!hadFetch)delete g.fetch}
             if(Object.prototype.hasOwnProperty.call(g,"__nuvioProviderDeadlineMs"))delete g.__nuvioProviderDeadlineMs;
+            if(Object.prototype.hasOwnProperty.call(g,"__nuvioProviderFailureState"))delete g.__nuvioProviderFailureState;
             if(g.__nuvioProviderAbortController===requestController)delete g.__nuvioProviderAbortController;
             if(g.__nuvioProviderInvocationDone===invocationDone)delete g.__nuvioProviderInvocationDone;
             if(Object.prototype.hasOwnProperty.call(g,"__nuvioProviderRequestToken"))delete g.__nuvioProviderRequestToken;

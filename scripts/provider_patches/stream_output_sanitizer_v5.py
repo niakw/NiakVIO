@@ -237,7 +237,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     if(/(?:\b4K\b|\b2160P?\b|\bUHD\b)/.test(source))return"2160p";
     var m=source.match(/\b(1440|1080|720|576|540|480|360)P?\b/);return m?m[1]+"p":"";
   }
-  function recoverQuality(stream,text,url){if(!stream||typeof stream!=="object"||meaningfulQuality(stream.quality))return;var q=qualityFromHls(text,url);if(q)stream.quality=q;else try{delete stream.quality}catch(_e){}}
+  function recoverQuality(stream,text,url){if(!stream||typeof stream!=="object")return;var q=qualityFromHls(text,url);if(q){stream.quality=q;return}if(!meaningfulQuality(stream.quality))try{delete stream.quality}catch(_e){}}
   function repairedHlsUrl(text){
     return "data:application/vnd.apple.mpegurl;charset=utf-8,"+encodeURIComponent(String(text||""));
   }
