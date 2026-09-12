@@ -1,0 +1,143 @@
+name: TEMP - Active 46 Candidate To Final Proof Matrix
+
+on:
+  push:
+    branches: [release/stable-46-20260912]
+    paths: ['.github/workflows/temp-active46-final-proof-matrix.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  scope:
+    runs-on: ubuntu-latest
+    outputs:
+      providers: ${{ steps.scope.outputs.providers }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {ref: '${{ github.sha }}', fetch-depth: 1}
+      - id: scope
+        name: Assert exact current active 46 and emit matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+          manifest=json.loads(Path('manifest.json').read_text())
+          rows=manifest.get('providers') or []
+          enabled=[]
+          for row in rows:
+              if not isinstance(row, dict):
+                  continue
+              pid=str(row.get('id') or row.get('providerId') or row.get('provider_id') or '').strip()
+              if not pid:
+                  continue
+              disabled=row.get('disabled') is True or row.get('enabled') is False
+              if not disabled:
+                  enabled.append(pid)
+          expected=['anime-sama','purstream','flemmix','uhdmovies','movieshunt','hindmoviez','4khdhub','persianstremio','desiflix','kehflix','anikototv','animekai','animesalt','animesama-co','animesultra','animetsu','animevostfr','castle','coflix','french-manga','kurage','moviesmod','mugiwarastream','neko-sama','papadustream','playimdb','sekai','streamzo','videasy','vidfast','vidrock','voiranime','voiranime-homes','voiranime-rip','vostfree','wookafr','yflix','allanime','allwish','anime-ultime','animevost-fr','fullanime','mallumv','moviebox','showbox','vidlove']
+          assert len(enabled)==46, (len(enabled), enabled)
+          assert set(enabled)==set(expected), {'missing':sorted(set(expected)-set(enabled)),'extra':sorted(set(enabled)-set(expected))}
+          print('providers='+json.dumps(expected,separators=(',',':')))
+          print('FIELD_ACTIVE46_MATRIX_SCOPE count=46')
+          PY
+
+  prove:
+    needs: scope
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        provider: ${{ fromJSON(needs.scope.outputs.providers) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      TARGET_PROVIDER: ${{ matrix.provider }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {ref: '${{ github.sha }}', fetch-depth: 1}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Apply exact reconstruction preparation
+        run: |
+          python scripts/upgrade_provider_v3_source_plan_v5.py
+          python scripts/upgrade_provider_base_runtime_v5.py
+          python scripts/upgrade_provider_v3_finalization_v1.py
+          python scripts/enforce_provider_v3_semantic_transport_contract_v5.py
+          python scripts/validate_provider_v3_routes_live.py --prepare-candidates
+          python scripts/enrich_provider_v3_static_knowledge.py
+          python scripts/sanitize_provider_v3_core_metadata_routes.py
+      - name: Prove one active provider candidate to final
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os, sys
+          from pathlib import Path
+          ROOT=Path.cwd()
+          sys.path.insert(0,str(ROOT/'scripts'))
+          from reconstruct_provider_v3_sequential_live import (
+              build_provider_queue, materialize_one, run_until_qualified,
+              is_qualified, finalize_provider, prove_final_bundle,
+              terminal_state, KNOWLEDGE, OVERRIDES,
+          )
+
+          pid=os.environ['TARGET_PROVIDER']
+          def load(path): return json.loads(Path(path).read_text(encoding='utf-8'))
+          def write(path,value): Path(path).write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+
+          queue,count=build_provider_queue()
+          assert count==96
+          provider=next(row for row in queue if row['provider_id']==pid)
+          assert provider.get('enabled') is not False, provider
+          knowledge=load(KNOWLEDGE)
+          overrides=load(OVERRIDES)
+          static_row=knowledge['providers'][pid]
+          model=static_row['model']
+          model['canonicalSupportedTypes']=list(provider.get('supported_types') or [])
+          patch=(overrides.get('provider_patches') or {}).get(pid) or {}
+
+          candidate=materialize_one(pid)
+          candidate_file=str(candidate.get('file') or '')
+          assert candidate_file
+          for task in provider['tasks']:
+              task['filename']=candidate_file
+          rows,evaluation,used_tasks=run_until_qualified(provider,model,0.75,50)
+          if not is_qualified(evaluation):
+              state,origin=terminal_state(evaluation,model,patch,8)
+              raise SystemExit(
+                  f'ACTIVE46_CANDIDATE_RED provider={pid} state={state} '
+                  f'missing={evaluation.get("missingTypes")} validated={evaluation.get("validatedTypes")}'
+              )
+
+          finalize_provider(pid,provider,knowledge,overrides,evaluation,'declared-types-qualified',[])
+          write(KNOWLEDGE,knowledge)
+          write(OVERRIDES,overrides)
+          final=materialize_one(pid)
+          final_file=str(final.get('file') or '')
+          assert final_file
+          proof=prove_final_bundle(provider,model,used_tasks,final_file,0.75,50)
+          summary={
+              'provider':pid,
+              'candidateValidated':evaluation.get('validatedTypes'),
+              'candidateMissing':evaluation.get('missingTypes'),
+              'finalVerified':proof.get('verified'),
+              'finalValidated':proof.get('validatedTypes'),
+              'finalMissing':proof.get('missingTypes'),
+              'wrongContentOnlyTypes':proof.get('wrongContentOnlyTypes'),
+              'runtimeErrorOnlyTypes':proof.get('runtimeErrorOnlyTypes'),
+              'candidateFile':candidate_file,
+              'finalFile':final_file,
+          }
+          print('FIELD_ACTIVE46_PROVIDER_PROOF '+json.dumps(summary,sort_keys=True))
+          assert proof.get('verified') is True, summary
+          assert not proof.get('wrongContentOnlyTypes'), summary
+          assert not proof.get('runtimeErrorOnlyTypes'), summary
+          PY
