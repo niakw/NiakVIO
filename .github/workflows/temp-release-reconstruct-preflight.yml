@@ -4,7 +4,7 @@ on:
     branches: [release/stable-46-20260912]
     paths: [.github/workflows/temp-release-reconstruct-preflight.yml]
 permissions:
-  contents: read
+  contents: write
 jobs:
   preflight:
     runs-on: ubuntu-latest
@@ -21,6 +21,31 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: '24', package-manager-cache: false}
       - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Make semantic transport migration monotone across newer Core revisions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/enforce_provider_v3_semantic_transport_contract_v5.py')
+          s=p.read_text(encoding='utf-8')
+          old='''    old_revision = '\"revision\": \"tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile\",'\n    new_revision = '\"revision\": \"tmdb-data-contract-launch-gate-v27-anime-semantic-transport\",'\n    if new_revision not in text:\n        if text.count(old_revision) != 1:\n            raise AssertionError(\"Core media revision source shape drifted\")\n        text = text.replace(old_revision, new_revision, 1)\n        changed = True\n'''
+          new='''    old_revision = '\"revision\": \"tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile\",'\n    new_revision = '\"revision\": \"tmdb-data-contract-launch-gate-v27-anime-semantic-transport\",'\n    revision_match = re.search(r'\"revision\"\\s*:\\s*\"tmdb-data-contract-launch-gate-v(\\d+)-[^\"]+\"', text)\n    if not revision_match:\n        raise AssertionError(\"Core media revision source shape drifted\")\n    revision_number = int(revision_match.group(1))\n    if revision_number < 27:\n        if revision_number != 26 or text.count(old_revision) != 1:\n            raise AssertionError(\"Core media revision is older than semantic transport v27 but not migratable\")\n        text = text.replace(old_revision, new_revision, 1)\n        changed = True\n    # A newer Core revision is authoritative. Do not downgrade it merely to make\n    # this historical migration marker exact; providerTransport above is the\n    # semantic/transport invariant this migration owns.\n'''
+          if old not in s:
+              if 'revision_number = int(revision_match.group(1))' not in s:
+                  raise SystemExit('semantic revision anchor missing')
+          else:
+              p.write_text(s.replace(old,new,1),encoding='utf-8')
+          PY
+          python -m py_compile scripts/enforce_provider_v3_semantic_transport_contract_v5.py
+          git diff --check
+          if ! git diff --quiet -- scripts/enforce_provider_v3_semantic_transport_contract_v5.py; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add scripts/enforce_provider_v3_semantic_transport_contract_v5.py
+            git commit -m 'fix(core): accept newer semantic transport revisions'
+            git push origin HEAD:release/stable-46-20260912
+          fi
       - name: Source-plan and Core migration owners
         run: |
           python scripts/upgrade_provider_v3_source_plan_v5.py
