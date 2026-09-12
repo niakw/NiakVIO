@@ -19,6 +19,12 @@ assert "prove_final_bundle(" in source
 assert "refusing to materialize or advance to provider" in source
 assert "active_coverage_main()" in source
 assert '"globalCandidateMaterialization": False' in source
+assert 'provider.get("enabled") is False' in source
+assert '"disabled-unqualified"' in source
+assert "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE" in source
+validator_source = (ROOT / "scripts" / "validate_provider_v3_routes_sequential.py").read_text(encoding="utf-8")
+assert '"enabled": manifest_row.get("enabled") is not False' in validator_source
+assert 'completion_state = "disabled-unqualified"' in validator_source
 
 loop_at = source.index("for index, provider in enumerate(queue, start=1):")
 candidate_materialize_at = source.index("candidate_materialized = materialize_one(provider_id)", loop_at)

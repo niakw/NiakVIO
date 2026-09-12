@@ -67,9 +67,9 @@ def patch_validator() -> bool:
     # blocked/unreachable plans survive because those failures may be environmental.
     if '"executionPlanRetainsFailedLive"' not in text:
         old_meta = '        "executionPlanRetainsAttemptedNon2xx": True,\n'
-        new_meta = '''        "executionPlanRetainsAttemptedNon2xx": completion_state in {"terminal-blocked", "terminal-unreachable"},
+        new_meta = '''        "executionPlanRetainsAttemptedNon2xx": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"},
         "executionPlanRetainsFailedLive": False,
-        "blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
+        "blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"},
 '''
         text = once(text, old_meta, new_meta, "failed-live-recognition-metadata")
         changed = True
@@ -184,7 +184,7 @@ def validate_validator(text: str) -> None:
         'row.get("validationState") != "failed-live"',
         'row.get("validationState") == "live-validated"',
         '"executionPlanRetainsFailedLive": False',
-        '"blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"}',
+        '"blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}',
     ):
         if needle not in text:
             raise AssertionError(f"validator preserve-DATA contract missing: {needle}")

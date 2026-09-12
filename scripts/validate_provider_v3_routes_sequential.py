@@ -166,6 +166,7 @@ def build_provider_queue() -> tuple[list[dict[str, Any]], int]:
             "provider_id": provider_id,
             "provider_name": str(manifest_row.get("name") or manifest_row.get("id") or provider_id),
             "filename": filename,
+            "enabled": manifest_row.get("enabled") is not False,
             "supported_types": supported,
             "tasks": tasks,
         })
@@ -966,7 +967,7 @@ def finalize_provider(
         and "{" in str(row.get("route") or "")
         and "}" in str(row.get("route") or "")
     ]
-    if completion_state in {"terminal-blocked", "terminal-unreachable"}:
+    if completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}:
         execution_plan_rows = stable_candidate_rows
     elif completion_state == "declared-types-qualified":
         # PROVIDER_V3_FAILED_LIVE_NOT_EXECUTION_DATA_V2
@@ -1026,7 +1027,7 @@ def finalize_provider(
     execution_plan_set = set(model.get("routes") or [])
     # PROVIDER_V3_ROUTE_PROOF_AUTHORITY_V5
     candidate_model_recipe = model.get("candidateApiRecipe")
-    blocked_recipe_plan = completion_state in {"terminal-blocked", "terminal-unreachable"}
+    blocked_recipe_plan = completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}
     if blocked_recipe_plan and isinstance(candidate_model_recipe, dict):
         model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)
     else:
@@ -1074,9 +1075,9 @@ def finalize_provider(
         "declaredTypesAreGateDenominator": True,
         "internalRequestsAreNotGateDenominator": True,
         "executionPlanRouteCount": len(model.get("routes") or []),
-        "executionPlanRetainsAttemptedNon2xx": completion_state in {"terminal-blocked", "terminal-unreachable"},
+        "executionPlanRetainsAttemptedNon2xx": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"},
         "executionPlanRetainsFailedLive": False,
-        "blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
+        "blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"},
         "runtimeDerivedRouteCount": len(runtime_derived_rows),
         "runtimeDerivedRoutesPersisted": False,
         "safeRuntimeDerivedRouteCount": len(safe_runtime_derived_rows),
@@ -1086,7 +1087,7 @@ def finalize_provider(
         "runtimeObservedUrlCount": len(runtime_observed_urls),
         "runtimeObservedOriginCount": len(runtime_observed_origins),
         "runtimeObservationsPersistedAsProviderData": False,
-        "blockedPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
+        "blockedPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"},
         "sequentialProviderGate": True,
         "advancedToNextProvider": True,
         "originEvidence": origin_evidence,
@@ -1174,7 +1175,7 @@ def finalize_provider(
             "runtime_observed_url_count": len(runtime_observed_urls),
             "runtime_observed_origin_count": len(runtime_observed_origins),
             "runtime_observations_persisted_as_provider_data": False,
-            "blocked_plan_preserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
+            "blocked_plan_preserved": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"},
             "declared_types_are_gate_denominator": True,
             "sequential": True,
         }
@@ -1265,6 +1266,14 @@ def main() -> int:
             elif origins and origin_evidence and not any(row.get("reachable") for row in origin_evidence):
                 completion_state = "terminal-unreachable"
                 passed = True
+            elif provider.get("enabled") is False:
+                completion_state = "disabled-unqualified"
+                passed = True
+                print(
+                    "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE "
+                    f"provider={provider_id} missing={','.join(evaluation['missingTypes']) or 'none'}",
+                    flush=True,
+                )
             else:
                 failure = {
                     **evaluation,

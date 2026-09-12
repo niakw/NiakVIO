@@ -438,6 +438,15 @@ def main() -> int:
                 evaluation, model, patch, origin_timeout
             )
 
+        if completion_state is None and provider.get("enabled") is False:
+            completion_state = "disabled-unqualified"
+            print(
+                "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE "
+                f"provider={provider_id} phase=candidate "
+                f"missing={','.join(evaluation.get('missingTypes') or []) or 'none'}",
+                flush=True,
+            )
+
         if completion_state is None:
             failure = {
                 **evaluation,
@@ -487,25 +496,51 @@ def main() -> int:
                 timeout,
             )
             if not final_proof.get("verified"):
-                failure = {
-                    **evaluation,
-                    "completionState": completion_state,
-                    "originEvidence": origin_evidence,
-                    "advancedToNextProvider": False,
-                    "finalBundleVerified": False,
-                    "finalBundleProof": final_proof,
-                    "candidateBundleFile": candidate_filename,
-                    "candidateBundleSha256": candidate_materialized.get("sha256"),
-                    "finalBundleFile": final_filename,
-                    "finalBundleSha256": materialized.get("sha256"),
-                }
-                report_rows.append(failure)
-                checkpoint(output_path, report_rows, totals, index - 1, minimum, provider_id)
-                raise SystemExit(
-                    f"{provider_id}: candidate DATA proved all declared types but final bundle did not; "
-                    f"missing={','.join(final_proof.get('missingTypes') or []) or 'unknown'}; "
-                    f"refusing to materialize or advance to provider {index + 1}"
-                )
+                if provider.get("enabled") is False:
+                    previous_state = completion_state
+                    completion_state = "disabled-unqualified"
+                    finalize_provider(
+                        provider_id, provider, knowledge, overrides, evaluation,
+                        completion_state, origin_evidence,
+                    )
+                    write(knowledge_path, knowledge)
+                    write(overrides_path, overrides)
+                    materialized = materialize_one(provider_id)
+                    final_filename = str(materialized.get("file") or "")
+                    if not final_filename:
+                        raise SystemExit(f"{provider_id}: disabled demotion materialization produced no file")
+                    final_proof = {
+                        **final_proof,
+                        "verified": False,
+                        "reason": "disabled-final-bundle-unverified",
+                        "demotedFrom": previous_state,
+                    }
+                    print(
+                        "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE "
+                        f"provider={provider_id} phase=final-proof "
+                        f"wrong_content={','.join(final_proof.get('wrongContentOnlyTypes') or []) or 'none'}",
+                        flush=True,
+                    )
+                else:
+                    failure = {
+                        **evaluation,
+                        "completionState": completion_state,
+                        "originEvidence": origin_evidence,
+                        "advancedToNextProvider": False,
+                        "finalBundleVerified": False,
+                        "finalBundleProof": final_proof,
+                        "candidateBundleFile": candidate_filename,
+                        "candidateBundleSha256": candidate_materialized.get("sha256"),
+                        "finalBundleFile": final_filename,
+                        "finalBundleSha256": materialized.get("sha256"),
+                    }
+                    report_rows.append(failure)
+                    checkpoint(output_path, report_rows, totals, index - 1, minimum, provider_id)
+                    raise SystemExit(
+                        f"{provider_id}: candidate DATA proved all declared types but final bundle did not; "
+                        f"missing={','.join(final_proof.get('missingTypes') or []) or 'unknown'}; "
+                        f"refusing to materialize or advance to provider {index + 1}"
+                    )
         else:
             final_proof = {
                 "verified": False,

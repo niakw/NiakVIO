@@ -39,7 +39,7 @@ def patch() -> bool:
         and str(row.get("route") or "").strip()
         and row.get("liveDerived")
     ]
-    if completion_state in {"terminal-blocked", "terminal-unreachable"}:
+    if completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}:
 '''
     new_rows = '''    runtime_derived_rows = [
         copy.deepcopy(row)
@@ -62,7 +62,7 @@ def patch() -> bool:
         and "{" in str(row.get("route") or "")
         and "}" in str(row.get("route") or "")
     ]
-    if completion_state in {"terminal-blocked", "terminal-unreachable"}:
+    if completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}:
 '''
     text = once(text, old_rows, new_rows, "safe-runtime-derived-classification")
 

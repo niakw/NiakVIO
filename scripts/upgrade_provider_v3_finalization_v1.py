@@ -59,7 +59,7 @@ def patch_finalizer() -> bool:
         and str(row.get("route") or "").strip()
         and row.get("liveDerived")
     ]
-    if completion_state in {"terminal-blocked", "terminal-unreachable"}:
+    if completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}:
         execution_plan_rows = stable_candidate_rows
     elif completion_state == "declared-types-qualified":
         execution_plan_rows = [
@@ -129,7 +129,7 @@ def patch_finalizer() -> bool:
     execution_plan_set = set(model.get("routes") or [])
     # PROVIDER_V3_ROUTE_PROOF_AUTHORITY_V5
     candidate_model_recipe = model.get("candidateApiRecipe")
-    blocked_recipe_plan = completion_state in {"terminal-blocked", "terminal-unreachable"}
+    blocked_recipe_plan = completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}
     if blocked_recipe_plan and isinstance(candidate_model_recipe, dict):
         model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)
     else:
@@ -199,7 +199,7 @@ def patch_finalizer() -> bool:
         "runtimeObservedUrlCount": len(runtime_observed_urls),
         "runtimeObservedOriginCount": len(runtime_observed_origins),
         "runtimeObservationsPersistedAsProviderData": False,
-        "blockedPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
+        "blockedPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"},
         "sequentialProviderGate": True,
 '''
     text = once(text, old_recognition, new_recognition, "route-recognition-plan-fields")
@@ -230,7 +230,7 @@ def patch_finalizer() -> bool:
             "runtime_observed_url_count": len(runtime_observed_urls),
             "runtime_observed_origin_count": len(runtime_observed_origins),
             "runtime_observations_persisted_as_provider_data": False,
-            "blocked_plan_preserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
+            "blocked_plan_preserved": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"},
             "declared_types_are_gate_denominator": True,
             "sequential": True,
 '''
@@ -304,7 +304,7 @@ def validate_finalizer(text: str) -> None:
         'runtimeObservationsPersistedAsProviderData": False',
         'execution_plan_set = set(model.get("routes") or [])',
         'PROVIDER_V3_ROUTE_PROOF_AUTHORITY_V5',
-        'blocked_recipe_plan = completion_state in {"terminal-blocked", "terminal-unreachable"}',
+        'blocked_recipe_plan = completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}',
         'model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)',
         'patch["api_recipe"] = copy.deepcopy(candidate_recipe)',
         'filter_recipe_by_live_routes(candidate_model_recipe, live_set)',
