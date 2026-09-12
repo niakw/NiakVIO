@@ -67,7 +67,8 @@ assert "PlatformPlaybackDataSourceFactory.create" not in mobile
 assert "sourceHeaders = headers.orEmpty()" in mobile
 assert "Auto mode intentionally emits null" in mobile
 assert 'Intent().setClassName(' in mobile
-assert '"com.nuviodebug.com"' in mobile
+assert "context.packageName," in mobile
+assert '"com.nuviodebug.com",\n                MainActivity::class.java.name' not in mobile
 assert "MainActivity::class.java.name" in mobile
 assert "Intent(context, MainActivity::class.java)" not in mobile
 assert "getLaunchIntentForPackage(context.packageName)" not in mobile
