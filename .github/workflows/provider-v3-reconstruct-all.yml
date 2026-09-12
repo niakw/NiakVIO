@@ -136,8 +136,8 @@ jobs:
           # No 96-provider candidate materialization occurs before this loop.
           python scripts/reconstruct_provider_v3_sequential_live.py --minimum-coverage 0.75
 
-          # Dynamic global invariant. Current manifest has 63 enabled providers,
-          # therefore this run must prove 63/63 live-qualified before publication.
+          # Dynamic global invariant: the current canonical manifest decides the
+          # enabled-provider count; every enabled row must be live-qualified.
           python scripts/assert_active_provider_live_coverage.py
           python - <<'PY'
           import json
@@ -175,14 +175,14 @@ jobs:
           rows=m.get("scrapers") or []
           active=sum(1 for row in rows if row.get("enabled") is not False)
           assert len(rows)==96, len(rows)
-          assert active==63, active
+          assert 0 < active <= 96, active
           assert r.get("providerCount")==96, r.get("providerCount")
           assert r.get("context")=="workspace", r.get("context")
           assert r.get("publication") is False
           assert r.get("mainTouched") is False
           assert all(str(x.get("filename") or "").startswith("providers/") for x in rows)
           print(
-              "FIELD_MANUAL_RECONSTRUCTION providers=96 active=63 context=workspace "
+              f"FIELD_MANUAL_RECONSTRUCTION providers=96 active={active} context=workspace "
               f"mainTouched=false liveRoutes={live.get('liveValidatedRouteCount', 0)}"
           )
           PY
