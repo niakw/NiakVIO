@@ -1,6 +1,6 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-12T04:41:35.531786+00:00",
+  "generated_at": "2026-09-12T18:28:03.837779+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 96,
   "status_counts": {
@@ -8,8 +8,8 @@
     "reachable": 1,
     "blocked": 12,
     "degraded": 1,
-    "no_streams": 29,
-    "provider_unreachable": 40,
+    "no_streams": 28,
+    "provider_unreachable": 41,
     "runtime_error": 0,
     "unavailable": 11,
     "excluded": 0
@@ -229,7 +229,7 @@
     },
     {
       "id": "flemmix",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2145,7 +2145,7 @@
     },
     {
       "id": "animesalt",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3006,7 +3006,7 @@
     },
     {
       "id": "moviesmod",
-      "status": "unavailable",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -3536,18 +3536,14 @@
     },
     {
       "id": "sekai",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "cdndirector.dailymotion.com"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "4.mugiwara.one": {
           "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
@@ -3920,26 +3916,39 @@
     },
     {
       "id": "vidrock",
-      "status": "degraded",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "dreadnought.flamingo-e55.workers.dev"
+      ],
       "response_categories": [
-        "endpoint_reachable"
+        "playable"
       ],
       "host_health": {
         "cdn1.ngcorp.dad": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
-          "last_category": "endpoint_reachable",
+          "last_checked_at": "2026-09-12T18:28:03.837779+00:00",
+          "last_category": "not_returned",
           "reachable": false,
-          "http_status": 200,
-          "latency_ms": 344,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "hls",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "dreadnought.flamingo-e55.workers.dev": {
+          "last_checked_at": "2026-09-12T18:28:03.837779+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 434,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       },
@@ -4117,7 +4126,7 @@
     },
     {
       "id": "wookafr",
-      "status": "no_streams",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 1,
@@ -4662,7 +4671,7 @@
     },
     {
       "id": "moviebox",
-      "status": "no_streams",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -4702,14 +4711,16 @@
     },
     {
       "id": "netmirror",
-      "status": "provider_unreachable",
+      "status": "degraded",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
-      "response_categories": [],
+      "response_categories": [
+        "blocked"
+      ],
       "host_health": {
         "bcdnw.hakunaymatata.com": {
           "last_checked_at": "2026-08-14T17:16:54.235250+00:00",
@@ -4734,15 +4745,15 @@
           "consecutive_blocked": 0
         },
         "bcdnxw.hakunaymatata.com": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-12T18:28:03.837779+00:00",
           "last_category": "blocked",
           "reachable": false,
           "http_status": 429,
-          "latency_ms": 349,
+          "latency_ms": 179,
           "kind": "html",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
-          "consecutive_blocked": 1
+          "consecutive_blocked": 2
         }
       },
       "activation_eligible": false,
