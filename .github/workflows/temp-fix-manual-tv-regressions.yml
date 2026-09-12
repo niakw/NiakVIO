@@ -1,4 +1,4 @@
-# retry-11: clean-v3 ProviderBase layering contract aligned; rerun full rebuild
+# retry-12: remove stale ProviderBase reconstruction test path; continue 96-bundle rebuild
 name: TEMP Fix manual TV regressions
 
 on:
@@ -22,6 +22,43 @@ jobs:
         with:
           ref: fix/labs-5.21.44-20260912
           fetch-depth: 0
+
+      - name: Persist retry 11 checkpoint to MEMORY
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! grep -q '34719876807' MEMORY.md; then
+            cat >> MEMORY.md <<'EOF'
+
+## 2026-09-12 — .44 manual-TV recovery retry 11
+
+- Work remains isolated to `fix/labs-5.21.44-20260912`; `main` is untouched and must not be merged until final user approval.
+- TEMP workflow run `34719876807`, job `103623640566`: all focused Core/manual-TV regressions passed together before rebuild.
+- Verified contracts: movie catalogue identity V21.10; episode identity guard V22.1; no-timer native runtime; provider execution fail-fast V33; manual-TV aggregate contract; latest-request cancellation; native AbortSignal-ignorant cancellation; HLS quality recovery; fail-closed stream sanitizer; direct normalization; Core runtime non-regression.
+- Timing/evidence: no-timer A→B first stale result `0`, second result `1`, fast URL preserved; V33 fallback used 2 fetches, repeated dead provider stopped after 3 hard fetches, stalled network returned in about 1.4 s; provider timeout remains 25 s.
+- ProviderBase v3 reconstruction succeeded `96/96`, `unique_paths=96`, `reconstruction_required=0`, `provider_js_seed=false`, `upstream_js_seed=false`, runtime reader v10; `provider_base_layering_contract_test.py` passed.
+- Retry 11 failed only because the temporary workflow referenced nonexistent stale test `tests/provider_reconstruction_input_suite_test.py`; this is CI plumbing, not a Core/runtime regression. Retry 12 removes only that obsolete test reference and continues into all-96 bundle materialization.
+EOF
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add MEMORY.md
+            git commit -m "docs(memory): checkpoint .44 TV recovery retry 11"
+            for attempt in 1 2 3 4 5; do
+              git fetch origin fix/labs-5.21.44-20260912
+              git rebase origin/fix/labs-5.21.44-20260912
+              if git push origin HEAD:fix/labs-5.21.44-20260912; then
+                echo "FIELD_MEMORY_CHECKPOINT retry11=written attempt=$attempt sha=$(git rev-parse HEAD)"
+                break
+              fi
+              if [ "$attempt" = 5 ]; then
+                echo 'retry11 MEMORY checkpoint push failed' >&2
+                exit 1
+              fi
+              sleep 1
+            done
+          else
+            echo 'FIELD_MEMORY_CHECKPOINT retry11=already-present'
+          fi
 
       - name: Apply durable common fixes
         shell: bash
@@ -54,7 +91,6 @@ jobs:
           set -euo pipefail
           python3 scripts/materialize_provider_base_v3_store.py
           python3 tests/provider_base_layering_contract_test.py
-          python3 tests/provider_reconstruction_input_suite_test.py
 
       - name: Rebuild all 96 bundles
         shell: bash
