@@ -1,0 +1,25 @@
+name: TEMP parallel native Labs dispatch
+on:
+  push:
+    branches: ["fix/labs-5.21.44-20260912"]
+    paths: [".github/workflows/temp-parallel-native-labs-dispatch.yml"]
+permissions:
+  actions: write
+  contents: read
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch native Labs in parallel
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          REF: fix/labs-5.21.44-20260912
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run native-mobile-android-reader.yml --repo "$REPO" --ref "$REF"
+          gh workflow run native-mobile-ios-reader.yml --repo "$REPO" --ref "$REF" -f mode=full
+          gh workflow run native-desktop-reader-acceptance.yml --repo "$REPO" --ref "$REF"
+          gh workflow run native-corpus-device-targeted.yml --repo "$REPO" --ref "$REF" -f device=tv -f skip_native_builds=false
+          echo "FIELD_PARALLEL_NATIVE_LABS_DISPATCHED ref=$REF android=1 ios=1 desktop=1 tv=1"
