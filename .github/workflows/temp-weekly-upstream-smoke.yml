@@ -1,4 +1,4 @@
-# registry-v2 retry after stable local insertion anchor
+# registry-v2 retry: discovery + compare report both read provider-upstreams.json
 name: TEMP Weekly Upstream Smoke
 
 on:
@@ -29,13 +29,19 @@ jobs:
         with: { node-version: '24', package-manager-cache: false }
       - name: Install locked runtime
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Apply authoritative upstream registry repair
+      - name: Apply authoritative upstream registry repairs
         shell: bash
         run: |
           set -euo pipefail
           python3 scripts/upgrade_discovery_upstream_registry_v2.py
+          python3 scripts/upgrade_weekly_upstream_report_registry_v2.py
           python3 tests/discovery_upstream_registry_v2_test.py
-          python3 -m py_compile scripts/discover_candidates.py scripts/upgrade_discovery_upstream_registry_v2.py
+          python3 tests/weekly_upstream_provider_discovery_test.py
+          python3 -m py_compile \
+            scripts/discover_candidates.py \
+            scripts/report_new_upstream_providers.py \
+            scripts/upgrade_discovery_upstream_registry_v2.py \
+            scripts/upgrade_weekly_upstream_report_registry_v2.py
       - name: Resolve hubs and stage all three upstreams
         shell: bash
         run: |
@@ -71,7 +77,7 @@ jobs:
           },separators=(',',':'),sort_keys=True))
           PY
       - name: Upload evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: weekly-upstream-smoke-${{ github.run_id }}
           path: |
@@ -82,18 +88,18 @@ jobs:
             staging/manifests/
           retention-days: 7
           if-no-files-found: error
-      - name: Commit durable registry repair if green
+      - name: Commit durable registry repairs if green
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add scripts/discover_candidates.py
+          git add scripts/discover_candidates.py scripts/report_new_upstream_providers.py
           if git diff --cached --quiet; then
             echo 'FIELD_DISCOVERY_REGISTRY_V2_COMMIT changed=0'
             exit 0
           fi
-          git commit -m 'fix(discovery): read authoritative provider upstream registry'
+          git commit -m 'fix(discovery): use authoritative provider upstream registry'
           for attempt in 1 2 3 4 5 6; do
             git fetch origin fix/labs-5.21.44-20260912
             git rebase origin/fix/labs-5.21.44-20260912
