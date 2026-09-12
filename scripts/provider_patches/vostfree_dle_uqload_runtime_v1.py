@@ -16,6 +16,7 @@ WRAPPER = r'''
   "use strict";
   function s(v){return String(v==null?"":v).trim()}
   function ent(v){return s(v).replace(/&quot;/g,'"').replace(/&#039;|&#39;/g,"'").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/\\\//g,"/")}
+  function visible(v){var x=s(v),o="",tag=false;for(var i=0;i<x.length;i++){var ch=x.charAt(i);if(ch==="<"){tag=true;o+=" ";continue}if(tag){if(ch===">")tag=false;continue}o+=ch}return o.replace(/\s+/g," ").trim()}
   function slug(v){return s(v).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")}
   function hdr(ref,accept){return {"User-Agent":c.ua,"Accept":accept||"*/*","Referer":ref||c.site+"/"}}
   function argsOf(a){
@@ -42,7 +43,7 @@ WRAPPER = r'''
   }
   function content(text,id){
     var re=new RegExp("<div\\s+id=[\"']content_player_"+id+"[\"'][^>]*>([\\s\\S]*?)<\\/div>","i"),m=re.exec(text||"");
-    return s((m&&m[1]||"").replace(/<[^>]+>/g," "));
+    return visible(m&&m[1]||"");
   }
   function uqToken(text,episode){
     var startRe=new RegExp("<div\\s+id=[\"']buttons_"+episode+"[\"'][^>]*>","i"),sm=startRe.exec(text||"");if(!sm)return "";
