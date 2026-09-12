@@ -2,9 +2,10 @@
 '''Create the canonical 96 ProviderBase v3 store from the owned common skeleton.
 
 Before importing the ProviderBase generator, apply the deterministic execution
-route sanitizer and the cumulative common runtime upgrades. This ordering
-guarantees that all 96 generated bundles use the same repaired DATA/runtime
-contract and Core-owned catalogue identity policy.
+route sanitizer, cumulative common runtime upgrades, and the fail-closed HTML
+text hardening pass. This ordering guarantees that all 96 generated bundles use
+the same repaired DATA/runtime contract, Core-owned catalogue identity policy,
+and no regex-based HTML stripping.
 '''
 from __future__ import annotations
 
@@ -25,6 +26,7 @@ def prepare_runtime() -> None:
         ROOT / "scripts" / "sanitize_provider_v3_execution_routes_v1.py",
         ROOT / "scripts" / "upgrade_provider_base_runtime_v5.py",
         ROOT / "scripts" / "upgrade_provider_base_runtime_v10.py",
+        ROOT / "scripts" / "harden_provider_base_html_text.py",
     )
     for script in commands:
         subprocess.run([sys.executable, str(script)], cwd=ROOT, check=True)
@@ -128,12 +130,14 @@ def main() -> int:
     store["materialized_at"] = now
     store["runtime_reader_version"] = CURRENT_RUNTIME_READER_VERSION
     store["execution_route_sanitizer_version"] = 1
+    store["html_text_hardening"] = "deterministic-scanner-v1"
 
     PROVENANCE.write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         f"FIELD_PROVIDER_BASE_V3_STORE providers={len(created)} "
         f"unique_paths={len(unique)} reconstruction_required=0 "
-        f"provider_js_seed=false upstream_js_seed=false runtime_reader=v{CURRENT_RUNTIME_READER_VERSION} route_sanitizer=v1"
+        f"provider_js_seed=false upstream_js_seed=false runtime_reader=v{CURRENT_RUNTIME_READER_VERSION} "
+        "route_sanitizer=v1 html_text_hardening=deterministic-scanner-v1"
     )
     return 0
 
