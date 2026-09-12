@@ -26,13 +26,13 @@ async function getStreams(tmdbId, mediaType) {
 module.exports = { getStreams };
 '''
 
-# The canonical media owner is now V31: V30's unified cancellation budget plus
-# the pre-network semantic gate. Keep this assertion explicit so cancellation is
-# never tested against an older owner while avoiding a stale V30-only contract.
+# V33 keeps V31/V32 latest-request cancellation, restores the 25 s provider
+# budget, and adds isolated per-fetch fail-fast without allowing stale fallback.
 source = PATCH.read_text(encoding="utf-8")
 for needle in (
-    "tmdb-data-contract-launch-gate-v31-pre-network-semantic-gate",
+    "tmdb-data-contract-launch-gate-v33-25s-isolated-failfast",
     "function requestAbortPromise(controller,requestToken)",
+    "function invokeNativeWithBudget(native,self,args,requestController,requestToken)",
     "Promise.race([base.apply(this,args),timeoutPromise,abortPromise])",
     "Promise.race([base.apply(this,args),abortPromise])",
     'if(type==="movie"&&!hasMovie&&!hasAnime)return null;',
@@ -46,6 +46,8 @@ patched = mod.apply(
         "semantic_types": ["movie"],
         "provider_timeout_ms": 10_000,
         "tv_provider_timeout_ms": 10_000,
+        "fetch_slice_ms": 5_000,
+        "max_hard_failures": 3,
         "supersede_settle_ms": 1_000,
     },
 )
@@ -87,4 +89,4 @@ with tempfile.TemporaryDirectory() as tmp:
     test.write_text(runner, encoding="utf-8")
     subprocess.run(["node", str(test), str(provider)], check=True, timeout=5)
 
-print("provider native abort-ignorant cancellation contract passed on media fast-gate v31")
+print("provider native abort-ignorant cancellation contract passed on media fail-fast v33")
