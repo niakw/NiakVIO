@@ -15,6 +15,7 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
 required = {
+    "NUVIO_PROVIDER_SECURITY_HARDENING_V1",
     "NUVIO_PROVIDER_QUARANTINE_V1",
     "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
     "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
@@ -31,12 +32,17 @@ assert required <= set(module.DERIVED_BASE_MARKERS)
 
 valid = b"module.exports={getStreams:async()=>[]};\n"
 module.assert_base_layering(valid, "synthetic")
-# Legacy current provider logic may already contain idempotent source-level
-# security normalization. It is not a Core/routing/quarantine layer.
-module.assert_base_layering(
-    b"/* NUVIO_PROVIDER_SECURITY_HARDENING_V1:legacy */\n" + valid,
-    "synthetic-security-normalized",
-)
+
+# Security hardening is a publication/composed layer. It must never be accepted
+# as a seed for the clean common ProviderBase, even if older tests called it
+# "source-level normalization".
+security_contaminated = b"/* NUVIO_PROVIDER_SECURITY_HARDENING_V1:legacy */\n" + valid
+try:
+    module.assert_base_layering(security_contaminated, "synthetic-security-normalized")
+except ValueError as exc:
+    assert "NUVIO_PROVIDER_SECURITY_HARDENING_V1" in str(exc), exc
+else:
+    raise AssertionError("security hardening derived layer accepted in clean ProviderBase")
 
 contaminated_tail = (
     valid
@@ -47,7 +53,6 @@ cleaned_tail, stripped_tail = module.clean_base_from_published("synthetic-tail",
 assert stripped_tail is True
 assert cleaned_tail == valid.rstrip()
 module.assert_base_layering(cleaned_tail, "synthetic-tail")
-
 
 for marker in sorted(required):
     contaminated = (f"/* {marker} */\n").encode() + valid
