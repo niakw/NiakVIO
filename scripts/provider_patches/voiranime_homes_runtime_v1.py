@@ -50,7 +50,7 @@ WRAPPER = r'''
   function headers(referer,accept){var h={"User-Agent":c.userAgent,"Accept":accept||"*/*","Accept-Language":"fr-FR,fr;q=0.9,en;q=0.7"};if(referer)h.Referer=referer;return h}
   async function text(url,init){try{var r=await g.fetch(url,Object.assign({redirect:"follow"},init||{}));if(!r||!r.ok)return null;return {text:await r.text(),url:r.url||url}}catch(_e){return null}}
   function absolute(u,base){try{return new URL(s(u).replace(/&amp;/gi,"&").replace(/\\\//g,"/"),base).toString()}catch(_e){return""}}
-  function cleanLabel(raw){return s(raw).replace(/<[^>]+>/g," ").replace(/&(?:nbsp|amp);/gi," ").replace(/\s+/g," ")}
+  function cleanLabel(raw){var x=s(raw),o="",tag=false;for(var i=0;i<x.length;i++){var ch=x.charAt(i);if(ch==="<"){tag=true;o+=" ";continue}if(tag){if(ch===">")tag=false;continue}o+=ch}return o.replace(/&(?:nbsp|amp);/gi," ").replace(/\s+/g," ").trim()}
   function movieChapter(rootHtml,rootUrl,q){
     var target=slug(q.title),best="",bestScore=-1,m,re=/<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
     while((m=re.exec(rootHtml||""))!==null){
