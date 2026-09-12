@@ -119,9 +119,26 @@ def credit_verified_playable_chains(
     return evaluation
 
 
+# PROVIDER_V3_POSITIVE_OUTPUT_QUALIFICATION_V4
 def is_qualified(evaluation: dict[str, Any]) -> bool:
-    """All declared types need live evidence; HTTP success or direct output is mandatory."""
+    """Every declared lane needs current-run identity-verified playable output.
+
+    Successful route traversal is useful chain evidence, but ``no_streams`` (or
+    merely raw/unverified output) can never qualify a semantic lane by itself.
+    """
     if not should_pass(evaluation):
+        return False
+    required = {
+        str(value or "").strip().casefold()
+        for value in evaluation.get("requiredTypes") or []
+        if str(value or "").strip()
+    }
+    playable = {
+        str(value or "").strip().casefold()
+        for value in evaluation.get("playableChainValidatedTypes") or []
+        if str(value or "").strip()
+    }
+    if not required <= playable:
         return False
     if evaluation.get("directOutputOnly"):
         return True
