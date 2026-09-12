@@ -1,3 +1,4 @@
+# V34 candidate live rerun: evidence only; MEMORY persistence is handled separately after result inspection.
 name: TEMP Live manual TV validation
 
 on:
@@ -6,7 +7,7 @@ on:
     paths: [".github/workflows/temp-live-manual-tv-validation.yml"]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: temp-live-manual-tv-validation-${{ github.ref }}
@@ -20,11 +21,11 @@ jobs:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
     steps:
-      - name: Checkout .44 branch
+      - name: Checkout exact .44 candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: fix/labs-5.21.44-20260912
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -44,6 +45,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          echo "FIELD_MANUAL_TV_CANDIDATE sha=$(git rev-parse HEAD)"
           python3 - <<'PY'
           import concurrent.futures
           import json
@@ -90,8 +92,8 @@ jobs:
           for path in sorted(outdir.glob('*.json')):
               results.append(json.loads(path.read_text(encoding='utf-8')))
           aggregate = {
-              'schemaVersion': 1,
-              'mode': 'exact-manual-tv-live-evidence',
+              'schemaVersion': 2,
+              'mode': 'exact-manual-tv-live-evidence-v34',
               'caseCount': len(cases),
               'resultCount': len(results),
               'infraFailures': [{'case': r['case'], 'provider': r['provider'], 'code': r['code']} for r in failures],
@@ -113,76 +115,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: manual-tv-live-evidence-${{ github.run_id }}
+          name: manual-tv-live-v34-evidence-${{ github.run_id }}
           path: |
             automation/manual-tv-live-results-20260912.json
             automation/manual-tv-live-results-20260912/*.json
           retention-days: 14
           if-no-files-found: warn
-
-      - name: Persist rebuild and live checkpoint to MEMORY
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import json
-          import os
-          import pathlib
-
-          memory = pathlib.Path('MEMORY.md')
-          run_id = os.environ.get('GITHUB_RUN_ID', 'unknown')
-          marker = f"TEMP live manual-TV run `{run_id}`"
-          if marker in memory.read_text(encoding='utf-8'):
-              raise SystemExit(0)
-          aggregate_path = pathlib.Path('automation/manual-tv-live-results-20260912.json')
-          if aggregate_path.is_file():
-              data = json.loads(aggregate_path.read_text(encoding='utf-8'))
-              rows = data.get('results') or []
-              live_summary = (
-                  f"- {marker}: exact matrix results={data.get('resultCount')}/{data.get('caseCount')}, "
-                  f"playable={data.get('playableRows')}, verified={data.get('verifiedRows')}, "
-                  f"contradictions={data.get('contradictions')}, returned403Rows={data.get('returned403Rows')}.\n"
-              )
-              for row in rows:
-                  live_summary += (
-                      f"  - {row.get('case')} / {row.get('provider')}: state={row.get('probeState')} "
-                      f"raw={row.get('raw',0)} playable={row.get('playable',0)} verified={row.get('verified',0)} "
-                      f"contradictions={row.get('contradictions',0)} stage={row.get('debugStage','')} "
-                      f"transport={','.join(row.get('transportTypesObserved') or []) or 'none'} "
-                      f"qualities={','.join(row.get('qualities') or []) or 'none'} "
-                      f"languages={','.join(row.get('languages') or []) or 'none'} "
-                      f"returned403={row.get('returned403Rows',0)}.\n"
-                  )
-          else:
-              live_summary = f"- {marker}: aggregate evidence missing; inspect workflow failure before retry.\n"
-          block = (
-              "\n## 2026-09-12 — .44 full rebuild green + exact manual-TV live evidence\n\n"
-              "- Work remains isolated to `fix/labs-5.21.44-20260912`; `main` remains untouched and no merge is authorized yet.\n"
-              "- TEMP rebuild run `34720082372`, job `103624218582` completed success. ProviderBase rebuilt 96/96 with no provider/upstream JS seed; all 96 bundles materialized (`generation=8341fd44afe6c496`).\n"
-              "- Published overrides were reapplied to all 96 refs and `--check` hit fixed point (`contract=7173d12a7b7aaf1e`). Global stream output guard passed 96/96; focused manual-TV/Core regressions remained green after rebuild.\n"
-              "- Catalogue invariant after rebuild: manifest version 5.21.43, 96 rows, 46 enabled on this branch, 0 missing provider files; final published Provider CONFIG test passed 96.\n"
-              "- Generated rebuild commit pushed: `5bc5c2098c47a5cb3b5b2661babfc5242dec217f`.\n"
-              + live_summary
-          )
-          with memory.open('a', encoding='utf-8') as handle:
-              handle.write(block)
-          PY
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add MEMORY.md
-          if git diff --cached --quiet; then
-            echo 'FIELD_MEMORY_LIVE_CHECKPOINT changed=0'
-            exit 0
-          fi
-          git commit -m "docs(memory): checkpoint .44 rebuild and live TV evidence"
-          for attempt in 1 2 3 4 5 6; do
-            git fetch origin fix/labs-5.21.44-20260912
-            git rebase origin/fix/labs-5.21.44-20260912
-            if git push origin HEAD:fix/labs-5.21.44-20260912; then
-              echo "FIELD_MEMORY_LIVE_CHECKPOINT changed=1 attempt=$attempt sha=$(git rev-parse HEAD)"
-              exit 0
-            fi
-            sleep 1
-          done
-          exit 1
