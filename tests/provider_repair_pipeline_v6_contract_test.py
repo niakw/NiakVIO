@@ -35,6 +35,7 @@ for old, new in replacements.items():
 compat_replacements = {
     "    'active-but-broken',": "    '\"activationAuthority\": \"hub-lab-matrix-46\"',",
     "    'enabled = True',": "    'enabled = provider in target_hubs',",
+    "    'def off_evidence_ok(patch: dict) -> bool:',": "    'def off_evidence_ok(patch: dict, expected_enabled: bool) -> bool:',",
 }
 for old, new in compat_replacements.items():
     if source.count(old) != 1:
