@@ -6,22 +6,23 @@ generated ephemeral instrumentation test:
 
 * the generic production-player entry marker is FIELD_NATIVE_PLAYER_ENTRY; the later
   request-contract augmenter owns the sole enriched FIELD_NATIVE_PLAYER_BEGIN marker;
-* NuvioMobile's reader probe starts the production MainActivity class explicitly.
-  This avoids launcher-alias/package-resolution drift while still exercising the
-  separately installed official androidApp debug APK.
+* NuvioMobile's reader probe starts the production MainActivity class explicitly in
+  the exact application package under instrumentation. This avoids launcher-alias
+  drift without hard-coding an applicationId that can change between client builds.
 """
 from __future__ import annotations
 
-MOBILE_DEBUG_PACKAGE = "com.nuviodebug.com"
 GENERIC_BEGIN = "FIELD_NATIVE_PLAYER_BEGIN client="
 GENERIC_ENTRY = "FIELD_NATIVE_PLAYER_ENTRY client="
 ENTRY_SUFFIX = " entry=nuvio-production-player"
 MOBILE_CONTEXT_LAUNCH = "context.packageManager.getLaunchIntentForPackage(context.packageName)"
-MOBILE_DEBUG_LAUNCH = (
-    'context.packageManager.getLaunchIntentForPackage("' + MOBILE_DEBUG_PACKAGE + '")'
-)
 MOBILE_EXPLICIT_SET_CLASS = "Intent().setClassName("
+MOBILE_EXPLICIT_CONTEXT_PACKAGE = "context.packageName,"
 MOBILE_EXPLICIT_MAIN_ACTIVITY = "MainActivity::class.java.name"
+MOBILE_LEGACY_EXPLICIT_LAUNCH = '''Intent().setClassName(
+                "com.nuviodebug.com",
+                MainActivity::class.java.name,
+            )'''
 
 
 def finalize_source(source: str, client: str) -> str:
@@ -39,21 +40,22 @@ def finalize_source(source: str, client: str) -> str:
     source = source.replace(GENERIC_BEGIN, GENERIC_ENTRY, 1)
 
     if client == "mobile":
-        # The current reader generator launches NuvioMobile's real MainActivity
-        # explicitly. Older harnesses used packageManager launcher resolution and
-        # then rewrote that package; keeping that rewrite here made the Lab fail
-        # before a single provider executed after NuvioMobile adopted icon aliases.
+        # The reader must launch NuvioMobile's real MainActivity explicitly while
+        # staying inside the exact package installed for instrumentation. A fixed
+        # package literal made the Lab drift from the client it had actually built.
         explicit_set_class_count = source.count(MOBILE_EXPLICIT_SET_CLASS)
+        explicit_context_count = source.count(MOBILE_EXPLICIT_CONTEXT_PACKAGE)
         explicit_main_count = source.count(MOBILE_EXPLICIT_MAIN_ACTIVITY)
-        explicit_package_count = source.count('"' + MOBILE_DEBUG_PACKAGE + '"')
-        if explicit_set_class_count != 1 or explicit_main_count != 1 or explicit_package_count < 1:
+        if explicit_set_class_count != 1 or explicit_context_count < 1 or explicit_main_count != 1:
             raise ValueError(
                 "expected exactly one explicit mobile MainActivity setClassName launch probe, "
-                f"found setClassName={explicit_set_class_count} mainActivity={explicit_main_count} "
-                f"debugPackage={explicit_package_count}"
+                f"found setClassName={explicit_set_class_count} contextPackage={explicit_context_count} "
+                f"mainActivity={explicit_main_count}"
             )
-        if MOBILE_CONTEXT_LAUNCH in source or MOBILE_DEBUG_LAUNCH in source:
+        if MOBILE_CONTEXT_LAUNCH in source:
             raise ValueError("obsolete mobile package-launch probe survived code generation")
+        if MOBILE_LEGACY_EXPLICIT_LAUNCH in source:
+            raise ValueError("hard-coded mobile debug package survived code generation")
 
     if any(
         GENERIC_BEGIN in line and ENTRY_SUFFIX in line
@@ -67,8 +69,9 @@ def finalize_source(source: str, client: str) -> str:
         raise ValueError("FIELD_NATIVE_PLAYER_ENTRY was not materialized")
     if client == "mobile" and (
         MOBILE_EXPLICIT_SET_CLASS not in source
+        or MOBILE_EXPLICIT_CONTEXT_PACKAGE not in source
         or MOBILE_EXPLICIT_MAIN_ACTIVITY not in source
-        or ('"' + MOBILE_DEBUG_PACKAGE + '"') not in source
+        or MOBILE_LEGACY_EXPLICIT_LAUNCH in source
     ):
-        raise ValueError("official NuvioMobile MainActivity setClassName launch was not materialized")
+        raise ValueError("instrumented-package NuvioMobile MainActivity setClassName launch was not materialized")
     return source
