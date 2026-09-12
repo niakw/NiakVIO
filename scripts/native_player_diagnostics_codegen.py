@@ -156,11 +156,11 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
         val terminalStateRef = AtomicReference<String?>(null)
         var activity: MainActivity? = null
         return try {
-            // Start the official production MainActivity explicitly. The package launcher
-            // currently points to an icon-alias subclass; the Lab must observe the actual
-            // player host, not depend on launcher-alias resolution in instrumentation.
+            // Start the official production MainActivity explicitly inside the exact package
+            // under instrumentation. applicationId can differ between official client
+            // revisions/build variants, so the Lab must not hard-code a debug package.
             val intent = Intent().setClassName(
-                "com.nuviodebug.com",
+                context.packageName,
                 MainActivity::class.java.name,
             )
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
