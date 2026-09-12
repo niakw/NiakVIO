@@ -1,0 +1,53 @@
+name: TEMP - Release Regression Retry
+on:
+  push:
+    branches: [release/stable-46-20260912]
+    paths: [.github/workflows/temp-release-regression-retry.yml]
+permissions:
+  contents: read
+jobs:
+  retry:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NIAKVIO_QUICK_YIELD_TIMEOUT: '120'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {ref: '${{ github.sha }}', fetch-depth: 0}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24'}
+      - name: Materialize target providers
+        run: |
+          python scripts/materialize_provider_v3_one.py desiflix
+          python scripts/materialize_provider_v3_one.py hindmoviez
+      - name: Run three strict retries per declared lane
+        run: |
+          python - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path.cwd()/'scripts'))
+          import audit_provider_quick_yield as q
+          tasks,_=q.build_tasks()
+          targets={('desiflix','movie'),('desiflix','tv'),('hindmoviez','movie'),('hindmoviez','tv')}
+          bad=[]
+          for pid,lane in sorted(targets):
+              t=next(x for x in tasks if x['provider_id']==pid and x['semantic_type']==lane)
+              results=[]
+              for attempt in range(1,4):
+                  r=q.run(t); results.append(r)
+                  print('REGRESSION_RETRY',pid,lane,'attempt',attempt,json.dumps({k:r.get(k) for k in ('status','raw','playable','verified','contradictions','debug_stage','duration_ms')},ensure_ascii=False,default=str))
+                  print('REGRESSION_FETCHES',pid,lane,'attempt',attempt,json.dumps(r.get('debug_fetches',[]),ensure_ascii=False,default=str)[:120000])
+              greens=sum(1 for r in results if r.get('status')=='playable_verified' and int(r.get('verified') or 0)>0 and int(r.get('contradictions') or 0)==0)
+              print('REGRESSION_SUMMARY',pid,lane,'green_attempts',greens,'of',len(results))
+              if greens==0: bad.append((pid,lane))
+          if bad: raise SystemExit('no green retry for '+','.join(f'{p}:{l}' for p,l in bad))
+          PY
+      - name: Structural guards
+        run: |
+          python tests/provider_runtime_dispatch_v1_test.py
+          python tests/provider_hub_registry_test.py
+          python tests/global_stream_output_guard_test.py
