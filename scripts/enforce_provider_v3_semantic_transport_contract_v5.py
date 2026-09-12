@@ -137,11 +137,18 @@ def patch_media_transport() -> bool:
         changed = True
     old_revision = '"revision": "tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile",'
     new_revision = '"revision": "tmdb-data-contract-launch-gate-v27-anime-semantic-transport",'
-    if new_revision not in text:
-        if text.count(old_revision) != 1:
-            raise AssertionError("Core media revision source shape drifted")
+    revision_match = re.search(r'"revision"\s*:\s*"tmdb-data-contract-launch-gate-v(\d+)-[^"]+"', text)
+    if not revision_match:
+        raise AssertionError("Core media revision source shape drifted")
+    revision_number = int(revision_match.group(1))
+    if revision_number < 27:
+        if revision_number != 26 or text.count(old_revision) != 1:
+            raise AssertionError("Core media revision is older than semantic transport v27 but not migratable")
         text = text.replace(old_revision, new_revision, 1)
         changed = True
+    # A newer Core revision is authoritative. Do not downgrade it merely to make
+    # this historical migration marker exact; providerTransport above is the
+    # semantic/transport invariant this migration owns.
     path.write_text(text, encoding="utf-8")
     return changed
 
