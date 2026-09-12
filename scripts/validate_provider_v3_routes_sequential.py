@@ -1026,16 +1026,20 @@ def finalize_provider(
     execution_plan_set = set(model.get("routes") or [])
     # PROVIDER_V3_ROUTE_PROOF_AUTHORITY_V5
     candidate_model_recipe = model.get("candidateApiRecipe")
-    filtered_model_recipe = (
-        filter_recipe_by_live_routes(candidate_model_recipe, live_set)
-        if isinstance(candidate_model_recipe, dict)
-        else None
-    )
-    if isinstance(filtered_model_recipe, dict):
-        filtered_model_recipe["proofModelVersion"] = 5
-        model["apiRecipe"] = filtered_model_recipe
+    blocked_recipe_plan = completion_state in {"terminal-blocked", "terminal-unreachable"}
+    if blocked_recipe_plan and isinstance(candidate_model_recipe, dict):
+        model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)
     else:
-        model.pop("apiRecipe", None)
+        filtered_model_recipe = (
+            filter_recipe_by_live_routes(candidate_model_recipe, live_set)
+            if isinstance(candidate_model_recipe, dict)
+            else None
+        )
+        if isinstance(filtered_model_recipe, dict):
+            filtered_model_recipe["proofModelVersion"] = 5
+            model["apiRecipe"] = filtered_model_recipe
+        else:
+            model.pop("apiRecipe", None)
     model["routeProofVersion"] = 5
 
     model["routeRecognition"] = {
@@ -1136,16 +1140,19 @@ def finalize_provider(
         if isinstance(patch.get("api_recipe"), dict) and not isinstance(patch.get("candidate_api_recipe"), dict):
             patch["candidate_api_recipe"] = copy.deepcopy(patch["api_recipe"])
         candidate_recipe = patch.get("candidate_api_recipe") if isinstance(patch.get("candidate_api_recipe"), dict) else patch.get("api_recipe")
-        filtered_patch_recipe = (
-            filter_recipe_by_live_routes(candidate_recipe, live_set)
-            if isinstance(candidate_recipe, dict)
-            else None
-        )
-        if isinstance(filtered_patch_recipe, dict):
-            filtered_patch_recipe["proofModelVersion"] = 5
-            patch["api_recipe"] = filtered_patch_recipe
+        if blocked_recipe_plan and isinstance(candidate_recipe, dict):
+            patch["api_recipe"] = copy.deepcopy(candidate_recipe)
         else:
-            patch.pop("api_recipe", None)
+            filtered_patch_recipe = (
+                filter_recipe_by_live_routes(candidate_recipe, live_set)
+                if isinstance(candidate_recipe, dict)
+                else None
+            )
+            if isinstance(filtered_patch_recipe, dict):
+                filtered_patch_recipe["proofModelVersion"] = 5
+                patch["api_recipe"] = filtered_patch_recipe
+            else:
+                patch.pop("api_recipe", None)
         patch["route_proof_version"] = 5
         patch["live_route_gate"] = {
             "completion_state": completion_state,
