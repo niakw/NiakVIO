@@ -1,4 +1,4 @@
-name: TEMP - Diagnose current Kurage tRPC
+name: TEMP - Fix current Kurage tRPC
 
 on:
   push:
@@ -6,64 +6,27 @@ on:
     paths: [.github/workflows/temp-fix-kurage-current.yml]
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
   TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
 
 jobs:
-  diagnose:
+  fix:
     runs-on: ubuntu-latest
-    timeout-minutes: 70
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
-        with: {ref: fix/labs-5.21.44-20260912}
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - uses: actions/setup-node@v4
         with: {node-version: '24'}
 
-      - name: Inspect binding and direct tRPC shape
-        run: |
-          python - <<'PY'
-          import json, urllib.parse, urllib.request
-          from pathlib import Path
-          d=json.loads(Path('provider-overrides.json').read_text())
-          row=(d.get('provider_patches') or {}).get('kurage') or {}
-          print('KURAGE_OVERRIDE_BEFORE',json.dumps({
-            'published_types':row.get('published_types'),
-            'provider_lego_scripts':row.get('provider_lego_scripts'),
-            'requiredLanes':((row.get('repair_disposition') or {}).get('requiredLanes')),
-          },sort_keys=True))
-          inp={
-            '0':{'json':{'id':108465}},
-            '1':{'json':{'animeId':108465,'episode':1,'language':'sub'}},
-            '2':{'json':{'animeId':108465,'episode':1,'language':'dub'}},
-          }
-          url='https://kurage.live/api/trpc/catalog.anilistInfo,episodes.source,episodes.source?batch=1&input='+urllib.parse.quote(json.dumps(inp,separators=(',',':')))
-          req=urllib.request.Request(url,headers={
-            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145 Safari/537.36',
-            'Accept':'application/json, text/plain, */*',
-            'Origin':'https://kurage.live','Referer':'https://kurage.live/',
-            'trpc-accept':'application/json','x-trpc-source':'nextjs-react',
-          })
-          with urllib.request.urlopen(req,timeout=30) as r:
-            data=json.load(r); print('KURAGE_TRPC_HTTP',r.status)
-          def shape(v,depth=0):
-            if depth>8:return '<depth>'
-            if isinstance(v,list):return [shape(x,depth+1) for x in v[:4]]
-            if isinstance(v,dict):return {str(k):shape(x,depth+1) for k,x in list(v.items())[:30]}
-            if isinstance(v,str):
-              if v.startswith('http'):
-                z=urllib.parse.urlsplit(v)
-                return {'$url':{'host':z.hostname,'path':z.path,'queryKeys':sorted(urllib.parse.parse_qs(z.query).keys())}}
-              return v[:160]
-            return v
-          print('KURAGE_TRPC_SHAPE',json.dumps(shape(data),ensure_ascii=False,sort_keys=True))
-          PY
-
-      - name: Bind owned runtime in workspace and rematerialize
+      - name: Bind Kurage clean runtime and rematerialize Hub46
         run: |
           python - <<'PY'
           import json
@@ -76,28 +39,51 @@ jobs:
           p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
           PY
           python scripts/materialize_provider_v3_all.py
-          grep -q 'NIAKVIO_KURAGE_RUNTIME_V1' providers/kurage.js
-          echo KURAGE_RUNTIME_BOUND=yes
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path('manifest.json').read_text());row=next(x for x in m['scrapers'] if str(x['id']).lower()=='kurage')
+          path=Path(row['filename']);print('KURAGE_FILE',path)
+          assert path.exists(),path
+          assert 'NIAKVIO_KURAGE_RUNTIME_V1' in path.read_text(encoding='utf-8'),path
+          d=json.loads(Path('provider-v3-materialization.json').read_text());assert len(d.get('providers') or [])==46
+          print('KURAGE_RUNTIME_BOUND=yes HUB46=46')
+          PY
 
-      - name: Execute exact Mushoku fixture with route trace
+      - name: Exact Mushoku terminal proof
         run: |
           python - <<'PY'
-          import json,subprocess,sys
+          import json,sys
           from pathlib import Path
-          sys.path.insert(0,'scripts');import run_provider_upstream_parity as p;import run_provider_upstream_parity_v3 as v3
+          sys.path.insert(0,'scripts');import run_provider_upstream_parity_v3 as v3
+          m=json.loads(Path('manifest.json').read_text());row=next(x for x in m['scrapers'] if str(x['id']).lower()=='kurage')
           f={'tmdbId':'94664','mediaType':'anime','category':'anime','title':'Mushoku Tensei: Jobless Reincarnation','year':2021,'season':1,'episode':1}
-          ctx=p.context_for(f);ctx['routeProofTrace']=True;ctx['networkLimits']['maxFetches']=40;ctx['networkLimits']['maxDistinctHosts']=16
-          cp=subprocess.run(['node','scripts/provider_worker.cjs','providers/kurage.js',json.dumps(f,separators=(',',':')),json.dumps(ctx,separators=(',',':'))],capture_output=True,text=True,timeout=90)
-          r={}
-          for line in cp.stdout.splitlines():
-            if line.startswith('NUVIO_HEALTH_RESULT='):
-              r=json.loads(line.split('=',1)[1])
-          def net(x):
-            out=[]
-            for n in x.get('network_observations') or []:
-              if not isinstance(n,dict):continue
-              out.append({k:n.get(k) for k in ('stage','host','method','path_pattern','status','content_type','proof_url','response_value_hints','error_code') if n.get(k) not in (None,[],{})})
-            return out
-          print('KURAGE_LOCAL_RAW',json.dumps({'count':r.get('stream_count'),'raw':r.get('raw_stream_count'),'statuses':r.get('provider_server_http_statuses'),'network':net(r)},sort_keys=True))
-          print('KURAGE_LOCAL_V3',json.dumps(v3._run_verified(Path('providers/kurage.js'),f,40),sort_keys=True))
+          r=v3._run_verified(Path(row['filename']),f,40)
+          print('KURAGE_EXACT',json.dumps(r,sort_keys=True))
+          assert int(r.get('stream_count') or 0)>=1,r
+          assert r.get('terminal_verified') is True,r
           PY
+
+      - name: Full32 Kurage regression recheck
+        run: |
+          python scripts/run_provider_upstream_parity_v3.py \
+            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
+            --samples-per-lane 32 --workers 1 --timeout 25 \
+            --seed 20260914-kurage-fixed \
+            --out /tmp/kurage-v3.json --provider kurage
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/kurage-v3.json'))
+          print('KURAGE_FULL32',json.dumps({'counts':d.get('statusCounts'),'regressions':d.get('certainRegressions')},sort_keys=True))
+          assert 'kurage' not in (d.get('certainRegressions') or []),d
+          PY
+
+      - name: Commit verified Kurage repair
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add provider-overrides.json providers/ manifest.json provider-v3-materialization.json scripts/provider_patches/kurage_runtime_v1.py
+          if git diff --cached --quiet; then echo 'No Kurage diff'; exit 1; fi
+          git commit -m 'fix: restore Kurage tRPC proxy runtime'
+          git pull --rebase origin fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
