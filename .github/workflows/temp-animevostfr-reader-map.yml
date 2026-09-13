@@ -1,0 +1,98 @@
+name: TEMP - AnimeVOSTFR exact reader map
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-animevostfr-reader-map.yml]
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  map:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: fix/labs-5.21.44-20260912}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Map every Tokyo Ghoul S01E01 reader and compare upstream output
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re,sys,tempfile,urllib.parse,urllib.request,urllib.error,subprocess
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          import run_provider_upstream_parity_v2 as p2
+
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145 Safari/537.36'
+          def get(url,ref=None,limit=2*1024*1024):
+            h={'User-Agent':UA,'Accept':'text/html,application/json,*/*'}
+            if ref:h['Referer']=ref
+            req=urllib.request.Request(url,headers=h)
+            try:
+              with urllib.request.urlopen(req,timeout=18) as r:return r.status,r.headers,r.read(limit),r.url
+            except urllib.error.HTTPError as e:return e.code,e.headers,e.read(65536),url
+            except Exception as e:return None,{},str(e).encode(),url
+          ep='https://animevostfr.org/episode/tokyo-ghoul-1x1/'
+          st,hd,b,final=get(ep,'https://animevostfr.org/animes/tokyo-ghoul/')
+          html=b.decode('utf-8','replace')
+          trem=[]
+          for pat in [r'(?:src|data-src)\s*=\s*["\']([^"\']*(?:trembed|trid=)[^"\']*)["\']',r'<iframe[^>]+src=["\']([^"\']+)["\']']:
+            for x in re.findall(pat,html,re.I):
+              u=urllib.parse.urljoin(final,x.replace('&amp;','&'))
+              if u.startswith('http') and u not in trem:trem.append(u)
+          print('ANIMEVOSTFR_READER_ENTRY_COUNT '+str(len(trem)))
+          rows=[]
+          for i,u in enumerate(trem[:20]):
+            st1,h1,b1,f1=get(u,ep); txt=b1.decode('utf-8','replace')
+            iframe=''
+            m=re.search(r'<iframe[^>]+src=["\']([^"\']+)',txt,re.I)
+            if m:iframe=urllib.parse.urljoin(f1,m.group(1).replace('&amp;','&'))
+            if not iframe:
+              m=re.search(r'(?:data-src|src|href)\s*=\s*["\'](https?://[^"\']+)',txt,re.I)
+              if m:iframe=m.group(1)
+            info={'idx':i,'entryHost':urllib.parse.urlsplit(u).netloc,'entryPath':urllib.parse.urlsplit(u).path,'entryQueryKeys':sorted(urllib.parse.parse_qs(urllib.parse.urlsplit(u).query).keys()),'entryStatus':st1}
+            if iframe:
+              iu=urllib.parse.urlsplit(iframe); info.update({'playerHost':iu.netloc,'playerPath':iu.path})
+              st2,h2,b2,f2=get(iframe,ep); ptxt=b2.decode('utf-8','replace'); info['playerStatus']=st2
+              vid=''
+              for pat in [r'videoid[=:"\']+\s*(\d+)',r'/video(\d+)',r'videoid=(\d+)']:
+                mm=re.search(pat,ptxt,re.I)
+                if mm:vid=mm.group(1);break
+              if vid:info['videoId']=vid
+              refs=[]
+              for x in re.findall(r'https?://[^"\'<>\s]+(?:\.mp4|\.m3u8)[^"\'<>\s]*',ptxt,re.I):
+                if x not in refs:refs.append(x)
+              if refs:
+                info['directRefs']=[]
+                for x in refs[:4]:
+                  xu=urllib.parse.urlsplit(x); ps,ph,pb,pf=get(x,iframe,65536)
+                  info['directRefs'].append({'host':xu.netloc,'path':xu.path,'status':ps,'contentType':ph.get('content-type','') if hasattr(ph,'get') else ''})
+            rows.append(info)
+          print('ANIMEVOSTFR_READER_MAP '+json.dumps(rows,ensure_ascii=False,separators=(',',':')))
+
+          ups,errs=p2.upstream_catalog(); assert not errs,errs
+          with tempfile.TemporaryDirectory() as td:
+            q=Path(td)/'animevostfr.js';q.write_bytes(p.get_bytes(ups['animevostfr']['url']))
+            f={'tmdbId':'61374','mediaType':'tv','type':'tv','season':1,'episode':1,'title':'Tokyo Ghoul','year':2014}
+            cmd=['node','scripts/provider_worker.cjs',str(q),json.dumps(f,separators=(',',':')),json.dumps(p.context_for(f),separators=(',',':'))]
+            cp=subprocess.run(cmd,capture_output=True,text=True,timeout=70)
+            payload={}
+            for line in cp.stdout.splitlines():
+              if line.startswith('NUVIO_HEALTH_RESULT='):payload=json.loads(line.split('=',1)[1])
+            streams=[]
+            for s in payload.get('streams') or []:
+              if not isinstance(s,dict):continue
+              u=urllib.parse.urlsplit(str(s.get('url') or ''))
+              streams.append({'name':s.get('name'),'title':s.get('title'),'host':u.netloc,'path':u.path,'headers':sorted((s.get('headers') or {}).keys()) if isinstance(s.get('headers'),dict) else []})
+            print('ANIMEVOSTFR_UPSTREAM_STREAM_MAP '+json.dumps({'count':payload.get('stream_count'),'streams':streams},ensure_ascii=False,separators=(',',':')))
+          PY
