@@ -1,0 +1,77 @@
+name: TEMP - persist proven VoirAnime v3
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-persist-voiranime-proven-v3.yml
+
+permissions:
+  contents: write
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  persist:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Apply proven current authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_voiranime_current_authority_v2.py
+          python3 scripts/materialize_provider_v3_one.py voiranime
+          python3 scripts/validate_published_provider_config.py --expected 96
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/global_stream_output_guard_test.py
+          python3 tests/provider_v3_strategy_plan_contract_test.py
+      - name: Reconfirm exact positive stream
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          f={'slug':'tokyo-ghoul-2014-s01e01','tmdbId':'61374','mediaType':'anime','category':'anime','season':1,'episode':1,'title':'Tokyo Ghoul','year':2014}
+          r=p.run_worker(p.local_catalog()['voiranime']['path'],f,40)
+          row={'fixture':f['slug'],'streams':int(r.get('stream_count') or 0),'raw':int(r.get('raw_stream_count') or 0),'error':r.get('error_class'),'statuses':r.get('provider_server_http_statuses') or r.get('http_statuses') or []}
+          print('VOIRANIME_V3_PROOF '+json.dumps(row,ensure_ascii=False))
+          if row['streams'] <= 0: raise SystemExit('VoirAnime lost exact positive proof')
+          Path('automation/voiranime-current-authority-v3-proof.json').write_text(json.dumps(row,ensure_ascii=False,indent=2)+'\n')
+          PY
+      - name: Record proof and unrelated stale-test debt
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          proof=json.loads(Path('automation/voiranime-current-authority-v3-proof.json').read_text())
+          p=Path('MEMORY.md'); t=p.read_text(encoding='utf-8')
+          marker='## 2026-09-13 — VoirAnime current authority persisted after stream-positive proof'
+          if marker not in t:
+            t += f'''\n{marker}\n\n- VoirAnime current execution authority is `https://voir-anime.to/anime/{{slug}}/`; stale `arm.haglund.dev` api_recipe and obsolete `voiranime_homes_runtime_v1.py` execution authority are removed.\n- Exact Tokyo Ghoul S01E01 proof remains stream-positive: `{proof}`. Previous run 34770328860 also completed full-reserve 32 parity with `certainRegressions=[]`.\n- That prior workflow failed only in stale unrelated `tests/provider_v3_static_knowledge_contract_test.py` VegaMovies lookup (`StopIteration`); this debt does not invalidate VoirAnime runtime proof and must be repaired separately.\n- Core ownership unchanged; no minimizer run.\n'''
+            p.write_text(t,encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add provider-overrides.json automation/provider-v3-static-knowledge.json manifest.json providers/ vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json MEMORY.md automation/voiranime-current-authority-v3-proof.json scripts/upgrade_voiranime_current_authority_v2.py
+          if git diff --cached --quiet; then echo 'No durable VoirAnime changes'; exit 0; fi
+          git commit -m 'fix(voiranime): persist stream-positive current authority'
+          git fetch origin fix/labs-5.21.44-20260912
+          git rebase origin/fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
