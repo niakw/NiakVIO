@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 3,
+  "method": "rotating-hub46-upstream-parity",
+  "scopeProviderCount": 46,
+  "matchedUpstreamProviders": 1,
+  "testedProviders": 1,
+  "samplesPerLane": 32,
+  "seed": "20260914-streamzo-current",
+  "statusCounts": {
+    "FULL": 1
+  },
+  "certainRegressions": [],
+  "resampleProviders": [],
+  "missingUpstreamProviders": [],
+  "upstreamManifestErrors": [],
+  "providerDownloadErrors": [],
+  "providers": [
+    {
+      "providerId": "streamzo",
+      "upstreamSource": "gowaru",
+      "status": "FULL",
+      "lanes": [
+        {
+          "lane": "movie",
+          "status": "POSITIVE",
+          "samples": [
+            {
+              "fixture": "avengers-infinity-war-2018",
+              "tmdbId": "299536",
+              "classification": "both_ok",
+              "upstream": {
+                "ok": true,
+                "stream_count": 1,
+                "raw_stream_count": 1,
+                "timeout": false,
+                "server_accessible": true,
+                "server_success": true,
+                "http_statuses": [
+                  200
+                ],
+                "error_class": null
+              },
+              "niakvio": {
+                "ok": true,
+                "stream_count": 1,
+                "raw_stream_count": 1,
+                "timeout": false,
+                "server_accessible": true,
+                "server_success": true,
+                "http_statuses": [
+                  200
+                ],
+                "error_class": null
+              }
+            }
+          ],
+          "sampleCount": 1,
+          "candidateCount": 32
+        },
+        {
+          "lane": "tv",
+          "status": "POSITIVE",
+          "samples": [
+            {
+              "fixture": "the-flash-2014-s01e01",
+              "tmdbId": "60735",
+              "classification": "both_ok",
+              "upstream": {
+                "ok": true,
+                "stream_count": 1,
+                "raw_stream_count": 1,
+                "timeout": false,
+                "server_accessible": true,
+                "server_success": true,
+                "http_statuses": [
+                  200
+                ],
+                "error_class": null
+              },
+              "niakvio": {
+                "ok": true,
+                "stream_count": 1,
+                "raw_stream_count": 1,
+                "timeout": false,
+                "server_accessible": true,
+                "server_success": true,
+                "http_statuses": [
+                  200
+                ],
+                "error_class": null
+              }
+            }
+          ],
+          "sampleCount": 1,
+          "candidateCount": 32
+        },
+        {
+          "lane": "anime",
+          "status": "POSITIVE",
+          "samples": [
+            {
+              "fixture": "black-clover-2017-s01e01",
+              "tmdbId": "73223",
+              "classification": "catalog_miss_both",
+              "upstream": {
+                "ok": true,
+                "stream_count": 0,
+                "raw_stream_count": 0,
+                "timeout": false,
+                "server_accessible": true,
+                "server_success": true,
+                "http_statuses": [
+                  200
+                ],
+                "error_class": null
+              },
+              "niakvio": {
+                "ok": true,
+                "stream_count": 0,
+                "raw_stream_count": 0,
+                "timeout": false,
+                "server_accessible": true,
+                "server_success": true,
+                "http_statuses": [
+                  200
+                ],
+                "error_class": null
+              }
+            },
+            {
+              "fixture": "high-school-of-the-dead-2010-s01e01",
+              "tmdbId": "56998",
+              "classification": "both_ok",
+              "upstream": {
+                "ok": true,
+                "stream_count": 2,
+                "raw_stream_count": 2,
+                "timeout": false,
+                "server_accessible": true,
+                "server_success": true,
+                "http_statuses": [
+                  200
+                ],
+                "error_class": null
+              },
+              "niakvio": {
+                "ok": true,
+                "stream_count": 1,
+                "raw_stream_count": 1,
+                "timeout": false,
+                "server_accessible": true,
+                "server_success": true,
+                "http_statuses": [
+                  200
+                ],
+                "error_class": null
+              }
+            }
+          ],
+          "sampleCount": 2,
+          "candidateCount": 32
+        }
+      ]
+    }
+  ]
+}

@@ -6914,7 +6914,8 @@
       "notes": [
         "StreamZo is configured through shared Core catalogue/target-media capabilities; no provider-specific recovery engine is allowed.",
         "Core resolves TMDB identity/type first and passes canonical metadata to generic catalogue recovery.",
-        "Current site contract uses /{slug} for movies and /series/{slug} for series, then data-embed/data-src player wrappers; stale /api/mirrors/film is not authoritative."
+        "Current site contract uses /{slug} for movies and /series/{slug} for series, then data-embed/data-src player wrappers; stale /api/mirrors/film is not authoritative.",
+        "NIAKVIO_STREAMZO_SUGGEST_AUTHORITY_V1: /api/web/suggest exact href replaces stale generated-slug execution."
       ],
       "capability": "mixed_embed_resolver",
       "official_hub": null,
@@ -7148,7 +7149,7 @@
           }
         }
       },
-      "route_data_state": "repair",
+      "route_data_state": "on",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -7156,34 +7157,34 @@
         "activationAuthority": "hub-lab-matrix-46",
         "declaredHub": null,
         "forcedEnabled": true,
-        "routeDataState": "repair",
+        "routeDataState": "on",
         "requiredLanes": [
-          "anime",
           "movie",
-          "tv"
+          "tv",
+          "anime"
         ],
         "currentVerifiedLanes": [
           "movie",
-          "tv"
+          "tv",
+          "anime"
         ],
         "exactLockedLanes": [],
         "provenLanes": [
           "movie",
-          "tv"
-        ],
-        "missingLanes": [
+          "tv",
           "anime"
         ],
-        "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "missingLanes": [],
+        "completeCapabilityProof": true,
+        "recoveryStatus": "current-suggest-runtime-full32",
         "provenRouteCount": 5,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
-          "declared_lane_unproven",
-          "quick_gate-runtime-plan-missing",
-          "quick_provider-returned-streams",
-          "recovery_proven"
+          "current_suggest_exact_href",
+          "exact_tv_positive",
+          "exact_anime_positive",
+          "full32_no_certain_regression"
         ],
         "laneStatuses": {
           "anime": [
@@ -7210,8 +7211,12 @@
             "referer": "https://streamzo.fr/",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
           }
-        }
-      }
+        },
+        "referer": "https://streamzo.fr"
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/streamzo_runtime_v1.py"
+      ]
     },
     "videasy": {
       "notes": [
