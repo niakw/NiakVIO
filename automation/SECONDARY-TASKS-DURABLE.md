@@ -18,6 +18,19 @@ Last audited against the active repair branch: 2026-09-13.
   - Measure resulting bundle sizes and ensure minimization does not change runtime semantics, provider identity evidence, headers, routes, timers, or Core/Provider ownership.
   - Keep source-qualified/content-hashed filenames synchronized with manifests/projections after minimization.
 
+- **Exact 46 evidence classification**
+  - Produce/maintain a nominative list for all 46 current Hub/Lab providers with the first proven blocker: domain/hub resolution, metadata identity, search/detail route, API/player extraction, anti-bot/network, stream transport, content identity, native player, or unknown/opaque.
+  - Maintain a separate explicit list of genuinely opaque / not safely analyzable providers with the reason for each. `0 streams` alone is not opaque.
+  - Preserve the discovery-vs-execution boundary: registry/hub presence is knowledge only, never proof that an execution route is valid.
+  - Telegram (`t.me`, `telegram.me`, `telegram.dog`) remains discovery-only; Domain Refresh may use it to discover a domain, but ProviderBase must never execute search/API/media routes against Telegram.
+  - Keep Allwish fail-closed until title/work identity is actually proved; HLS-looking output alone is insufficient.
+
+- **Cross-runtime/provider follow-ups**
+  - Recheck PlayIMDb, VidEasy and Papadustream across Desktop/TV/Mobile after raw-TMDB/runtime repairs; historical TV-positive/Desktop-or-iOS-zero evidence is runtime divergence, not provider death.
+  - Recheck Frenchstream extraction vs HLS transport; previous extraction existed while transport returned 403.
+  - Keep known manual/provider-specific evidence (AnimeSalt/AnimePahe/Nakios/Vostfree/ZinkMovies/UHDMovies/NetMirror/etc.) as route knowledge, but require dynamic extraction + common playback verification before strict green.
+  - Reader/player failures must remain classified separately from provider extraction failures.
+
 - **Hub-46 native transport**
   - Keep global catalogue at 96 providers while Labs use the exact physical 46-provider scope.
   - Finish native workflow wiring to `native-hub46/manifest.json`, including iOS and explicit Desktop/Android consistency.
@@ -30,6 +43,9 @@ Last audited against the active repair branch: 2026-09-13.
   - Mobile iOS / NuvioMobile.
   - Desktop macOS / NuvioDesktop.
   - Desktop Windows / NuvioDesktop.
+  - Record the exact NiakVIO candidate SHA and exact NuvioTV/NuvioMobile/NuvioDesktop refs used by every final Lab.
+  - Android Mobile must not reuse the older invalid evidence where client UI launch failed / Brain evidence was incomplete.
+  - Desktop macOS/Windows evidence that predates raw-TMDB/runtime fixes is not final evidence for affected direct-TMDB providers.
   - Keep official client behavior observational; do not patch official Nuvio clients merely to make Labs green.
 
 - **Desktop/runtime robustness**
@@ -54,13 +70,16 @@ Last audited against the active repair branch: 2026-09-13.
 
 - **Domain Refresh**
   - Keep full-CONFIG transaction semantics, source authority, source-qualified filenames/content hashes, Core/Lego invariance, cycle/rollback safety and idempotence.
-  - Maintain synthetic A→B domain-change proof and projection/version synchronization.
+  - Maintain synthetic A→B domain-change proof, including generic logo/icon/favicon old-host -> new-host reconciliation where applicable, and projection/version synchronization.
+  - Prove domain-only refresh leaves ProviderBase/Core bytes unchanged.
   - Do not regress to official-site-only mutation.
 
 - **Brain / Learning / scheduled discovery**
   - Weekly upstream/provider discovery stays read-only and scheduled; it must report new candidates without mutating catalogue/manifests/providers.
+  - Verify an actual scheduled execution/artifact, not only the unit-test/schedule definition, before marking operational watch closed.
   - Learning/Brain proposals must consume current provider truth and must not treat telemetry/materialization green as live-stream proof.
-  - Verify scheduled execution and artifacts on the stabilized branch/final candidate when possible.
+  - Perform/review the older requested real multi-day Brain differential evidence: learned providers, repairs, regressions, and state preservation across days.
+  - Preserve the international provider-discovery infrastructure and XLSX/CSV/JSON candidate artifacts; future refreshes should keep country balance and substantial UHD/4K representation.
 
 - **Repository hygiene / temporary automation**
   - Remove obsolete `temp-*.yml` workflows after extracting useful evidence.
@@ -84,6 +103,7 @@ Last audited against the active repair branch: 2026-09-13.
   - Preserve provider logo work: 72×32 and 96×40 compressed WebP assets; missing logos use generated first-letter fallback where required.
   - Active-provider presentation must derive from manifests/current provider truth rather than a hand-maintained stale list.
   - Revalidate branding, language labels and quality metadata after final materialization.
+  - Verify actual visible provider-logo propagation in the official Nuvio UI/Labs; asset-contract tests alone do not close the old UI request, and official Nuvio repos must not be patched just to force a green result.
 
 - **Security / final certification**
   - Run CodeQL/security workflows on the final frozen SHA.
@@ -93,4 +113,4 @@ Last audited against the active repair branch: 2026-09-13.
 
 ## Completion gate
 
-This ledger is not complete merely because provider yield improves. Final completion requires: provider REGRESSION/ZERO work resolved or precisely classified; final provider bundles minimized and fixed-point stable; Hub-46 regenerated on the final provider SHA; all five Labs executed against that same frozen candidate; manifests/projections consistent; security gates complete; documentation and `MEMORY.md` current; obsolete TEMP workflows removed; and every remaining open item explicitly recorded with evidence/reason.
+This ledger is not complete merely because provider yield improves. Final completion requires: provider REGRESSION/ZERO work resolved or precisely classified; all 46 current Hub/Lab providers have a defensible blocker/green/opaque classification; final provider bundles minimized and fixed-point stable; Hub-46 regenerated on the final provider SHA; all five Labs executed against that same frozen candidate with exact client refs; visible UI/logo and reader/player-vs-provider distinctions verified; manifests/projections consistent; scheduled watch and Brain multi-day evidence reviewed; security gates complete; documentation and `MEMORY.md` current; obsolete TEMP workflows removed; and every remaining open item explicitly recorded with evidence/reason.
