@@ -1,0 +1,71 @@
+name: TEMP - AnimeVOSTFR upstream output integrity
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-animevostfr-upstream-output-integrity.yml]
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Inspect exact upstream outputs and terminal reachability
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,subprocess,sys,tempfile,urllib.parse,urllib.request,urllib.error
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          import run_provider_upstream_parity_v2 as p2
+          upstreams,errors=p2.upstream_catalog(); assert not errors,errors
+          up=upstreams['animevostfr']
+          cases=[
+            ('movie',{'tmdbId':'1061474','mediaType':'movie','category':'movie','title':'Superman','year':2025}),
+            ('anime',{'tmdbId':'61374','mediaType':'tv','type':'tv','season':1,'episode':1,'title':'Tokyo Ghoul','year':2014}),
+          ]
+          with tempfile.TemporaryDirectory() as td:
+            q=Path(td)/'animevostfr.js';q.write_bytes(p.get_bytes(up['url']))
+            for lane,f in cases:
+              cmd=['node','scripts/provider_worker.cjs',str(q),json.dumps(f,separators=(',',':')),json.dumps(p.context_for(f),separators=(',',':'))]
+              cp=subprocess.run(cmd,capture_output=True,text=True,timeout=70)
+              payload={}
+              for line in cp.stdout.splitlines():
+                if line.startswith('NUVIO_HEALTH_RESULT='): payload=json.loads(line.split('=',1)[1])
+              rows=[]
+              for s in payload.get('streams') or []:
+                if not isinstance(s,dict): continue
+                raw=str(s.get('url') or '')
+                try:
+                  u=urllib.parse.urlsplit(raw); safe={'host':u.netloc,'path':u.path,'queryKeys':sorted(urllib.parse.parse_qs(u.query).keys())}
+                except Exception:safe={'raw':raw[:120]}
+                probe={}
+                if raw.startswith(('http://','https://')):
+                  h={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36','Accept':'*/*'}
+                  ref=(s.get('headers') or {}).get('Referer') if isinstance(s.get('headers'),dict) else None
+                  if ref:h['Referer']=str(ref)
+                  try:
+                    req=urllib.request.Request(raw,headers=h)
+                    with urllib.request.urlopen(req,timeout=15) as r:
+                      b=r.read(65536); probe={'status':r.status,'contentType':r.headers.get('content-type',''),'bytesSample':len(b),'finalHost':urllib.parse.urlsplit(r.url).netloc,'extm3u':b.lstrip().startswith(b'#EXTM3U')}
+                  except urllib.error.HTTPError as e:probe={'status':e.code,'contentType':e.headers.get('content-type','')}
+                  except Exception as e:probe={'error':type(e).__name__+': '+str(e)[:120]}
+                rows.append({'name':s.get('name'),'title':s.get('title'),'quality':s.get('quality'),'url':safe,'probe':probe})
+              out={'lane':lane,'streamCount':payload.get('stream_count'),'rawCount':payload.get('raw_stream_count'),'streams':rows,'statuses':payload.get('provider_server_http_statuses')}
+              print('ANIMEVOSTFR_UPSTREAM_OUTPUT '+json.dumps(out,ensure_ascii=False,separators=(',',':')))
+          PY
