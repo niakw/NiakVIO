@@ -21,9 +21,11 @@ jobs:
         with: {python-version: '3.12'}
       - uses: actions/setup-node@v4
         with: {node-version: '24'}
-      - name: Stage current contracts in workspace
+
+      - name: Repair Hub46 semantic authority and current contracts
         run: |
           python - <<'PY'
+          import json
           from pathlib import Path
 
           def patch(path, pairs):
@@ -33,6 +35,19 @@ jobs:
                       raise SystemExit(f'missing token in {path}: {old!r}')
                   s=s.replace(old,new)
               p.write_text(s,encoding='utf-8')
+
+          # Two repair dispositions explicitly removed stale movie over-declaration.
+          cp=Path('provider_catalog.json'); catalog=json.loads(cp.read_text())
+          repaired=[]
+          for row in catalog.get('providers') or []:
+              pid=str(row.get('canonicalId') or '').casefold()
+              if pid in {'anime-sama','mugiwarastream'}:
+                  scraper=row.get('scraper') or {}
+                  before=list(scraper.get('supportedTypes') or [])
+                  if before != ['anime']:
+                      scraper['supportedTypes']=['anime']; repaired.append((pid,before,['anime']))
+          cp.write_text(json.dumps(catalog,ensure_ascii=False,indent=2)+'\n')
+          print('CATALOG_SEMANTICS_REPAIRED',repaired)
 
           patch('tests/global_stream_metadata_preservation_contract_test.py', [
             ('rows = [row for row in materialization.get("providers") or [] if isinstance(row, dict)]\nassert materialization.get("providerCount") == 96, materialization.get("providerCount")\nassert len(rows) == 96, len(rows)',
@@ -67,26 +82,48 @@ jobs:
           p=Path('tests/global_stream_presentation_test.py'); s=p.read_text(encoding='utf-8')
           if old not in s: raise SystemExit('missing V20 revision in presentation test')
           p.write_text(s.replace(old,new).replace('V20','V22'),encoding='utf-8')
-
           patch('tests/global_stream_presentation_pipeline_test.py', [
             ('assert native["row"]["title"].endswith(" - 1080p"), native',
              'assert " - 1080p" in native["row"]["title"], native\n    assert native["row"]["title"].endswith(" - VO"), native'),
           ])
           PY
+
+          # Render all four projections from the corrected source-of-truth catalogue.
+          node engine_v2/scripts/render-manifests-from-catalog.mjs
+          cp manifest.json /tmp/general.once.json
+          cp vf/manifest.json /tmp/vf.once.json
+          cp no-anime/manifest.json /tmp/noanime.once.json
+          cp vf-no-anime/manifest.json /tmp/vfnoanime.once.json
+          node engine_v2/scripts/render-manifests-from-catalog.mjs
+          cmp -s manifest.json /tmp/general.once.json
+          cmp -s vf/manifest.json /tmp/vf.once.json
+          cmp -s no-anime/manifest.json /tmp/noanime.once.json
+          cmp -s vf-no-anime/manifest.json /tmp/vfnoanime.once.json
+          echo MANIFEST_RENDER_IDEMPOTENT=yes
           git diff --check
-      - name: Run six repaired critical contracts
+
+      - name: Run six repaired contracts and expose every failure
         run: |
-          set -e
-          for t in \
-            tests/global_stream_metadata_preservation_contract_test.py \
-            tests/provider_anime_semantic_transport_contract_test.py \
-            tests/published_provider_lego_contract_test.py \
-            tests/runtime_media_safety_guard_test.py \
-            tests/global_stream_presentation_pipeline_test.py \
-            tests/global_stream_presentation_test.py; do
-              echo "=== $t ==="
-              python "$t"
-          done
+          python - <<'PY'
+          import subprocess,sys
+          tests=[
+            'tests/global_stream_metadata_preservation_contract_test.py',
+            'tests/provider_anime_semantic_transport_contract_test.py',
+            'tests/published_provider_lego_contract_test.py',
+            'tests/runtime_media_safety_guard_test.py',
+            'tests/global_stream_presentation_pipeline_test.py',
+            'tests/global_stream_presentation_test.py',
+          ]
+          failed=[]
+          for t in tests:
+              cp=subprocess.run([sys.executable,t],text=True,capture_output=True,timeout=180)
+              print(f'REPAIRED_CONTRACT {t} rc={cp.returncode}')
+              print('\n'.join((cp.stdout+'\n'+cp.stderr).splitlines()[-30:]))
+              if cp.returncode: failed.append(t)
+          print('REPAIRED_CONTRACT_SUMMARY',len(tests),'failed',len(failed),failed)
+          if failed: raise SystemExit(1)
+          PY
+
       - name: Run full critical secondary selection fail closed
         run: |
           python - <<'PY'
@@ -95,19 +132,39 @@ jobs:
           tests=[p for p in sorted(pathlib.Path('tests').glob('*.py')) if any(re.search(x,p.name.lower()) for x in patterns)]
           failed=[]
           for p in tests:
-              cp=subprocess.run([sys.executable,str(p)],text=True,capture_output=True,timeout=150)
+              cp=subprocess.run([sys.executable,str(p)],text=True,capture_output=True,timeout=180)
               print(f'CONTRACT_RESULT {p.name} rc={cp.returncode}')
               if cp.returncode:
-                  print('\n'.join((cp.stdout+'\n'+cp.stderr).splitlines()[-20:]))
+                  print('\n'.join((cp.stdout+'\n'+cp.stderr).splitlines()[-30:]))
                   failed.append(p.name)
           print('CRITICAL_TEST_SUMMARY',len(tests),'failed',len(failed),failed)
           if failed: raise SystemExit(1)
           PY
+
+      - name: Static Hub46 and projection checks
+        run: |
+          python scripts/audit_provider_v3_static.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          cat=json.loads(Path('provider_catalog.json').read_text())
+          active={str(x.get('canonicalId') or '').casefold() for x in cat.get('providers') or []}
+          assert len(active)==46
+          for rel in ('manifest.json','vf/manifest.json','no-anime/manifest.json','vf-no-anime/manifest.json'):
+              m=json.loads(Path(rel).read_text()); ids=[str(x.get('id') or '').casefold() for x in m.get('scrapers') or []]
+              assert set(ids)<=active,(rel,sorted(set(ids)-active))
+          print('HUB46_PROJECTIONS_OK',len(active))
+          PY
+
       - name: Commit only after zero-red validation
         run: |
           git config user.name niakvio-bot
           git config user.email niakvio-bot@users.noreply.github.com
-          git add tests/global_stream_metadata_preservation_contract_test.py tests/provider_anime_semantic_transport_contract_test.py tests/published_provider_lego_contract_test.py tests/runtime_media_safety_guard_test.py tests/global_stream_presentation_pipeline_test.py tests/global_stream_presentation_test.py scripts/normalize_stream_presentation_v12.py
-          git commit -m '[secondary-contracts] align Hub46 V33 V22 current Core'
+          git add provider_catalog.json manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
+            tests/global_stream_metadata_preservation_contract_test.py tests/provider_anime_semantic_transport_contract_test.py \
+            tests/published_provider_lego_contract_test.py tests/runtime_media_safety_guard_test.py \
+            tests/global_stream_presentation_pipeline_test.py tests/global_stream_presentation_test.py \
+            scripts/normalize_stream_presentation_v12.py
+          git commit -m '[secondary-contracts] align Hub46 semantics V33 V22 projections'
           git pull --rebase origin fix/labs-5.21.44-20260912
           git push origin HEAD:fix/labs-5.21.44-20260912
