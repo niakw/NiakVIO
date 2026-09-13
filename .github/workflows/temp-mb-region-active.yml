@@ -1,0 +1,34 @@
+name: TEMP - MovieBox Region Active
+on:
+  push:
+    branches: ["fix/labs-5.21.44-20260912"]
+    paths: [".github/workflows/temp-mb-region-active.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Count active authority
+        run: |
+          python3 - <<'PY'
+          import json
+          rows=json.load(open('manifest.json')).get('scrapers') or []
+          on=[r for r in rows if r.get('enabled') is not False]
+          off=[r for r in rows if r.get('enabled') is False]
+          print(f'FIELD_MANIFEST_ACTIVE total={len(rows)} enabled={len(on)} disabled={len(off)}')
+          print('FIELD_MANIFEST_ACTIVE_IDS '+','.join(str(r.get('id')) for r in on))
+          PY
+      - name: Compare MovieBox regions
+        run: |
+          node - <<'NODE'
+          const API='https://h5-api.aoneroom.com/wefeed-h5api-bff', origin='https://moviebox.ph';
+          const UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/148 Safari/537.36';
+          async function one(tz){let token='';const H={'User-Agent':UA,'Referer':origin+'/','Origin':origin,'X-Client-Info':JSON.stringify({timezone:tz}),'X-Request-Lang':'en','Accept':'application/json','Content-Type':'application/json'};async function req(url,opt={}){const headers={...H,...(opt.headers||{})};if(token)headers.Authorization='Bearer '+token;const r=await fetch(url,{...opt,headers,signal:AbortSignal.timeout(8000)});const xu=r.headers.get('x-user');if(xu)try{token=JSON.parse(xu).token||token}catch{};const t=await r.text();let j={};try{j=JSON.parse(t)}catch{};return{r,j}};await req(API+'/home?host=moviebox.ph');const s=await req(API+'/subject/search',{method:'POST',body:JSON.stringify({keyword:'Interstellar',page:1,perPage:20})});const a=s.j?.data?.items||s.j?.data?.list||[];const exact=a.filter(x=>String(x?.title||'').toLowerCase()==='interstellar');console.log('FIELD_MB_REGION timezone='+tz+' rows='+a.length+' exact='+exact.length);if(!exact.length)return;const x=exact[0],dom=await req(API+'/media-player/get-domain'),domain=String(dom.j?.data||'').replace(/\/$/,'');const ref=domain+'/spa/videoPlayPage/movies/'+x.detailPath+'?id='+x.subjectId+'&type=/movie/detail&detailSe=0&detailEp=0&lang=en';const p=await req(domain+'/wefeed-h5api-bff/subject/play?subjectId='+x.subjectId+'&se=0&ep=0&detailPath='+encodeURIComponent(x.detailPath),{headers:{Referer:ref,Origin:domain,'X-Source':''}});const d=p.j?.data||{},sets=[...(d.streams||[]),...(d.hls||[]),...(d.dash||[])];const meta=sets.slice(0,4).map(y=>Object.fromEntries(Object.entries(y||{}).filter(([k])=>!/url|path|file|token|key|sign/i.test(k))));console.log('FIELD_MB_REGION_PLAY timezone='+tz+' hasResource='+Boolean(d.hasResource)+' rows='+sets.length+' metadata64='+Buffer.from(JSON.stringify(meta)).toString('base64'))}
+          (async()=>{for(const tz of ['Europe/Paris','UTC','Asia/Dhaka'])await one(tz)})().catch(e=>{console.error(e);process.exit(1)});
+          NODE
