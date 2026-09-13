@@ -1512,3 +1512,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - AllWish remains catalogued/enabled by scope policy, but fresh ZERO15 adaptive proof exhausted the current global movie/TV corpus with zero streams. Historical manual evidence also showed fixture-invariant very short wrong-content media across unrelated works.
 - Therefore old `playable_verified`/complete-capability claims are invalidated: `route_data_state=repair`, no current verified/proven lanes, movie+TV missing. Historical route knowledge is retained only as diagnostic evidence.
 - Runtime remains fail-closed until a fresh identity-safe terminal media proof exists. Workspace materialization did not run the final-stage minimizer.
+
+## 2026-09-13 — full32 regression wave: VoirAnime anime recovered
+
+- VoirAnime anime regression was repaired with a current-site provider Lego layered over the existing movie resolver: current series page -> requested chapter -> `LECTEUR` selector -> external iframe -> shared bounded direct-media crawler.
+- The anime V2 captures/delegates the previous movie resolver; Core remains the only final runtime dispatcher and terminal validation owner. Workspace materialization did not minimize.
+- Exact Tokyo Ghoul S01E01 proof: `{"provider": "voiranime", "lane": "anime", "fixture": "tokyo-ghoul-2014-s01e01", "streams": 2, "raw": 2, "statuses": [200, 206, 404], "accessible": true, "success": true, "error": null, "timeout": false}`.
+- Recent-reserve parity has no certain `upstream_ok_niakvio_ko`: summary `null`.

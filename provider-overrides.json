@@ -13582,7 +13582,11 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "https://voir-anime.to/anime/{slug}/"
+        "https://voir-anime.to/anime/{slug}/",
+        "/?s={query}",
+        "/anime/{slug}/",
+        "/anime/{slug}/{episode}/",
+        "/anime/{slug}/{episode}/?host={reader}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -13625,7 +13629,8 @@
         "/engine/ajax/search.php",
         "/index.php?newsid={id}",
         "/engine/ajax/manga_episodes_api.php?id={id}",
-        "https://voir-anime.to/anime/{slug}/"
+        "https://voir-anime.to/anime/{slug}/",
+        "/anime/{slug}/{episode}/?host={reader}"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -13745,7 +13750,7 @@
           }
         }
       },
-      "route_data_state": "repair",
+      "route_data_state": "on",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -13753,27 +13758,27 @@
         "activationAuthority": "hub-lab-matrix-46",
         "declaredHub": "https://voiranime.org.uk/",
         "forcedEnabled": true,
-        "routeDataState": "repair",
+        "routeDataState": "on",
         "requiredLanes": [
           "anime",
           "movie"
         ],
-        "currentVerifiedLanes": [],
-        "exactLockedLanes": [],
-        "provenLanes": [],
-        "missingLanes": [
-          "anime",
-          "movie"
+        "currentVerifiedLanes": [
+          "anime"
         ],
-        "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "exactLockedLanes": [],
+        "provenLanes": [
+          "anime"
+        ],
+        "missingLanes": [],
+        "completeCapabilityProof": true,
+        "recoveryStatus": "current-anime-v2-stream-positive",
         "provenRouteCount": 7,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
-          "declared_lane_unproven",
-          "quick_provider-network-zero-result",
-          "recovery_proven"
+          "exact_regression_recovered",
+          "full32_no_certain_regression"
         ],
         "laneStatuses": {
           "anime": [
@@ -13807,13 +13812,26 @@
       },
       "notes": [
         "NIAKVIO_PROVIDER_VOIRANIME_HOMES_AUTHORITY_V21_10: official hub https://voiranime.org.uk/ resolves to https://voiranime.homes; reuse the proven voiranime-homes DLE DATA path (search -> provider-local newsid -> episodes API). Signed Vidzy/player URLs are runtime output only and are never persisted.",
-        "NIAKVIO_VOIRANIME_DUAL_RUNTIME_V1: canonical voiranime uses .homes DLE for anime and voir-anime.to root->FILM chapter for movie; capabilities unchanged."
+        "NIAKVIO_VOIRANIME_DUAL_RUNTIME_V1: canonical voiranime uses .homes DLE for anime and voir-anime.to root->FILM chapter for movie; capabilities unchanged.",
+        "VoirAnime anime V2 uses the current voir-anime.to series/chapter/LECTEUR contract and delegates non-anime requests to the existing movie resolver; Core owns terminal validation."
       ],
       "proof_search_bases": [
         "https://voir-anime.to"
       ],
-      "provider_lego_scripts": [],
-      "provider_lego_options": {}
+      "provider_lego_scripts": [
+        "scripts/provider_patches/voiranime_homes_runtime_v1.py",
+        "scripts/provider_patches/voiranime_anime_runtime_v2.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/voiranime_homes_runtime_v1.py": {
+          "movie_site": "https://voir-anime.to",
+          "max_streams": 4
+        },
+        "scripts/provider_patches/voiranime_anime_runtime_v2.py": {
+          "base": "https://voir-anime.to",
+          "maxStreams": 4
+        }
+      }
     },
     "voiranime-homes": {
       "capability": "mixed_embed_resolver",
