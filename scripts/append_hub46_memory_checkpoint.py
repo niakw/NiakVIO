@@ -69,7 +69,7 @@ def main() -> int:
     if MARKER in current:
         print("FIELD_MEMORY_CHECKPOINT status=already-present")
         return 0
-    MEMORY.write_text(current.rstrip() + CHECKPOINT + "\n", encoding="utf-8")
+    MEMORY.write_text(current.rstrip() + CHECKPOINT.rstrip() + "\n", encoding="utf-8")
     print("FIELD_MEMORY_CHECKPOINT status=written")
     return 0
 
