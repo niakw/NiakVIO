@@ -1,4 +1,4 @@
-name: TEMP Streamflix timerless Desktop validation
+name: TEMP - Rotating corpus integration and validation
 
 on:
   push:
@@ -10,9 +10,9 @@ permissions:
   contents: write
 
 jobs:
-  patch-test-dispatch:
+  integrate-test-dispatch:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       REF: fix/labs-5.21.44-20260912
     steps:
@@ -20,194 +20,241 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: fix/labs-5.21.44-20260912
-          fetch-depth: 1
+          fetch-depth: 2
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: '24'
           package-manager-cache: false
 
-      - name: Patch Streamflix timer globals defensively
+      - name: Wire rotating catalogue corpus into Labs and Repair
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
-          path = Path('providers/streamflix.js')
-          text = path.read_text(encoding='utf-8')
-          lines = text.splitlines()
+          def read(path):
+              return Path(path).read_text(encoding='utf-8')
 
-          clear_count = 0
-          for index, line in enumerate(lines):
-              if line.strip() == 'clearTimeout(overallTimeout);':
-                  indent = line[:len(line) - len(line.lstrip())]
-                  lines[index] = indent + 'clearOverallTimeout();'
-                  clear_count += 1
-          if clear_count != 3:
-              raise SystemExit(f'expected exactly three direct Streamflix clearTimeout calls, got {clear_count}')
+          def write(path, text):
+              Path(path).write_text(text, encoding='utf-8')
 
-          timeout_indexes = [
-              index for index, line in enumerate(lines)
-              if line.strip() == 'const overallTimeout = setTimeout(() => {'
-          ]
-          if len(timeout_indexes) != 1:
-              raise SystemExit(f'expected exactly one direct Streamflix setTimeout block, got {len(timeout_indexes)}')
+          def replace_once(text, old, new, label):
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected 1 anchor, got {count}')
+              return text.replace(old, new, 1)
 
-          index = timeout_indexes[0]
-          indent = lines[index][:len(lines[index]) - len(lines[index].lstrip())]
-          expected_tail = [
-              'try { ws.close(); } catch {}',
-              "reject(new Error('WebSocket timeout'));",
-              '}, 30000);',
-          ]
-          actual_tail = [lines[index + offset].strip() for offset in range(1, 4)]
-          if actual_tail != expected_tail:
-              raise SystemExit(f'unexpected Streamflix timeout block tail: {actual_tail!r}')
+          # 1) Every native client can resolve broad rotating fixtures, while the
+          # legacy regression corpus remains authoritative on duplicate slugs.
+          path = 'scripts/prepare_native_corpus_validation.py'
+          text = read(path)
+          anchor = 'from native_media_type_contract import fixture_runtime_media_type  # noqa: E402\nCORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"'
+          replacement = 'from native_media_type_contract import fixture_runtime_media_type  # noqa: E402\nfrom rotating_corpus import fixture_by_slug as rotating_fixture_by_slug  # noqa: E402\nCORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"'
+          if 'from rotating_corpus import fixture_by_slug as rotating_fixture_by_slug' not in text:
+              text = replace_once(text, anchor, replacement, 'prepare import')
+          pattern = re.compile(r'def fixture_by_slug\(slug: str\) -> dict:\n.*?\n\ndef manifest_providers', re.S)
+          repl = '''def fixture_by_slug(slug: str) -> dict:\n    try:\n        return rotating_fixture_by_slug(slug)\n    except KeyError as error:\n        raise SystemExit(str(error)) from error\n\n\ndef manifest_providers'''
+          text, count = pattern.subn(repl, text, count=1)
+          if count != 1:
+              raise SystemExit(f'prepare fixture resolver patch count={count}')
+          write(path, text)
 
-          replacement = [
-              indent + "const overallTimeout = typeof setTimeout === 'function'",
-              indent + '  ? setTimeout(() => {',
-              indent + '      try { ws.close(); } catch {}',
-              indent + "      reject(new Error('WebSocket timeout'));",
-              indent + '    }, 30000)',
-              indent + '  : null;',
-              '',
-              indent + 'function clearOverallTimeout() {',
-              indent + "  if (overallTimeout !== null && typeof clearTimeout === 'function') {",
-              indent + '    clearTimeout(overallTimeout);',
-              indent + '  }',
-              indent + '}',
-          ]
-          lines[index:index + 4] = replacement
-          patched = '\n'.join(lines) + '\n'
+          # 2) iOS full/learning Labs use the same per-run rotating sample.
+          path = 'scripts/prepare_native_ios_reader_acceptance.py'
+          text = read(path)
+          if 'from rotating_corpus import select_fixtures' not in text:
+              text = replace_once(
+                  text,
+                  'from pathlib import Path\n',
+                  'from pathlib import Path\n\nfrom rotating_corpus import select_fixtures\n',
+                  'ios rotation import',
+              )
+          pattern = re.compile(r'def fixture_rows\(\) -> list\[dict\]:\n.*?\n\ndef kotlin_fixture_list', re.S)
+          repl = '''def fixture_rows() -> list[dict]:\n    rows = []\n    for kind in ("movie", "tv", "anime"):\n        selected = select_fixtures(kind, count=1, provider="ios-native")\n        if len(selected) != 1:\n            raise SystemExit(f"missing rotating fixture for {kind}")\n        fixture = selected[0]\n        rows.append(\n            {\n                "slug": fixture["slug"],\n                "tmdbId": str(fixture.get("tmdbId") or ""),\n                "mediaType": kind,\n                "season": fixture.get("season"),\n                "episode": fixture.get("episode"),\n            }\n        )\n    return rows\n\n\ndef kotlin_fixture_list'''
+          text, count = pattern.subn(repl, text, count=1)
+          if count != 1:
+              raise SystemExit(f'ios fixture_rows patch count={count}')
+          write(path, text)
 
-          if 'const overallTimeout = setTimeout(() => {' in patched:
-              raise SystemExit('unguarded Streamflix setTimeout remains')
-          if patched.count('clearTimeout(overallTimeout);') != 1:
-              raise SystemExit('expected only the guarded clearTimeout implementation to remain')
-          if "typeof setTimeout === 'function'" not in patched or "typeof clearTimeout === 'function'" not in patched:
-              raise SystemExit('timer capability guards missing after patch')
+          # 3) Brain/Repair keeps targeted fixtures first, then adds a deterministic
+          # per-provider/per-run random sample. Next run naturally changes works.
+          path = 'scripts/validate_provider_v3_routes_sequential.py'
+          text = read(path)
+          if 'from rotating_corpus import default_seed, select_fixtures' not in text:
+              text = replace_once(
+                  text,
+                  'from provider_route_proof import filter_recipe_by_live_routes\n',
+                  'from provider_route_proof import filter_recipe_by_live_routes\nfrom rotating_corpus import default_seed, select_fixtures\n',
+                  'repair rotation import',
+              )
+          anchor = '''            for slug in SEMANTIC_FIXTURE_FALLBACKS.get(media_type, ()):\n                row = by_slug.get(slug)\n                if row is not None and all(existing["slug"] != slug for existing in selected):\n                    selected.append(row)\n\n        for row in fixtures:'''
+          replacement = '''            for slug in SEMANTIC_FIXTURE_FALLBACKS.get(media_type, ()):\n                row = by_slug.get(slug)\n                if row is not None and all(existing["slug"] != slug for existing in selected):\n                    selected.append(row)\n\n            # PROVIDER_V3_ROTATING_CATALOGUE_SAMPLE_V1\n            # A clean no-stream result is catalogue uncertainty, not broken-lane\n            # proof. Add a bounded per-provider sample whose order changes with\n            # each run. The reconstructor stops this lane only on playable proof.\n            for rotated_fixture in select_fixtures(\n                media_type, count=3, seed=default_seed(), provider=provider_id\n            ):\n                slug = str(rotated_fixture.get("slug") or "")\n                if not slug or any(existing["slug"] == slug for existing in selected):\n                    continue\n                fixture = copy.deepcopy(rotated_fixture)\n                fixture.pop("slug", None)\n                fixture.pop("lane", None)\n                selected.append({\n                    "slug": slug,\n                    "providers": set(),\n                    "fixture": fixture,\n                    "semantic_type": media_type,\n                })\n\n        for row in fixtures:'''
+          if 'PROVIDER_V3_ROTATING_CATALOGUE_SAMPLE_V1' not in text:
+              text = replace_once(text, anchor, replacement, 'repair rotating candidates')
 
-          path.write_text(patched, encoding='utf-8')
+          # RESAMPLE must preserve stable provider DATA exactly like an environmental
+          # block: exploratory catalogue misses are never authority to prune routes.
+          old_set = '{"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}'
+          new_set = '{"terminal-blocked", "terminal-unreachable", "disabled-unqualified", "resample-required"}'
+          text = text.replace(old_set, new_set)
+          write(path, text)
+
+          # 4) Reconstruction may skip only a lane with playable+identity proof.
+          # Route HTTP success without streams is not a reason to stop sampling.
+          path = 'scripts/reconstruct_provider_v3_sequential_live.py'
+          text = read(path)
+          text = text.replace('evaluation.get("validatedTypes") or []\n        }\n        if semantic_type in already_validated:', 'evaluation.get("playableChainValidatedTypes") or []\n        }\n        if semantic_type in already_validated:', 1)
+          marker = '''            if is_qualified(evaluation) or semantic_type in {\n                str(value or "").strip().casefold() for value in evaluation.get("validatedTypes") or []\n            }:\n                break'''
+          replacement = '''            if is_qualified(evaluation) or semantic_type in {\n                str(value or "").strip().casefold() for value in evaluation.get("playableChainValidatedTypes") or []\n            }:\n                break'''
+          text = replace_once(text, marker, replacement, 'repair playable-only break')
+
+          helper_anchor = '\n\ndef prove_final_bundle(\n'
+          helper = '''\n\ndef resample_required_lanes(\n    rows: list[dict[str, Any]],\n    evaluation: dict[str, Any],\n) -> list[str]:\n    """Return unproved lanes whose sampled works all ended as clean no-streams."""\n    required = {\n        str(value or "").strip().casefold()\n        for value in evaluation.get("requiredTypes") or []\n        if str(value or "").strip()\n    }\n    playable = {\n        str(value or "").strip().casefold()\n        for value in evaluation.get("playableChainValidatedTypes") or []\n        if str(value or "").strip()\n    }\n    missing = required - playable\n    if not missing:\n        return []\n    clean: set[str] = set()\n    for media_type in missing:\n        lane_rows = [\n            row for row in rows\n            if str(row.get("semantic_type") or "").strip().casefold() == media_type\n        ]\n        if not lane_rows or any(row.get("status") != "no_streams" for row in lane_rows):\n            continue\n        http_error = any(\n            int(fetch.get("status") or 0) >= 400\n            for row in lane_rows\n            for fetch in row.get("fetches") or []\n            if isinstance(fetch, dict)\n        )\n        if not http_error:\n            clean.add(media_type)\n    return sorted(missing) if missing <= clean else []\n\n\ndef prove_final_bundle(\n'''
+          if 'def resample_required_lanes(' not in text:
+              text = replace_once(text, helper_anchor, helper, 'resample helper')
+
+          main_anchor = '''        if completion_state is None:\n            completion_state, origin_evidence = terminal_state(\n                evaluation, model, patch, origin_timeout\n            )\n\n        if completion_state is None and provider.get("enabled") is False:'''
+          main_replacement = '''        if completion_state is None:\n            completion_state, origin_evidence = terminal_state(\n                evaluation, model, patch, origin_timeout\n            )\n\n        if completion_state is None and provider.get("enabled") is not False:\n            resample_lanes = resample_required_lanes(_rows, evaluation)\n            if resample_lanes:\n                completion_state = "resample-required"\n                print(\n                    "FIELD_PROVIDER_RESAMPLE_REQUIRED "\n                    f"provider={provider_id} lanes={','.join(resample_lanes)} "\n                    "reason=clean_zero_stream_catalogue_sample next_action=rotate_fixture",\n                    flush=True,\n                )\n\n        if completion_state is None and provider.get("enabled") is False:'''
+          if 'FIELD_PROVIDER_RESAMPLE_REQUIRED' not in text:
+              text = replace_once(text, main_anchor, main_replacement, 'resample completion')
+          write(path, text)
+
+          # 5) iOS RESULT carries the real mediaType even when fixture slugs rotate.
+          path = 'scripts/gate_native_declared_provider_matrix.py'
+          text = read(path)
+          anchor = '''                    if r[0] in provider_ids:\n                        lane_outcomes[r] = merge_outcome(lane_outcomes[r], outcome)\n                    elif r[0] in disabled_ids:'''
+          replacement = '''                    if r[0] in provider_ids:\n                        completed.add(r)\n                        lane_outcomes[r] = merge_outcome(lane_outcomes[r], outcome)\n                    elif r[0] in disabled_ids:'''
+          if 'completed.add(r)\n                        lane_outcomes[r]' not in text:
+              text = replace_once(text, anchor, replacement, 'ios dynamic completion')
+          write(path, text)
+
+          # 6) Manual/default native suites rotate too; workflows may still pass an
+          # explicit target list, which remains authoritative.
+          for path in (\n              'scripts/run_native_corpus_desktop_suite.sh',\n              'scripts/run_native_corpus_mobile_suite.sh',\n              'scripts/run_native_corpus_tv_suite.sh',\n          ):
+              text = read(path)
+              old = 'DEFAULT_FIXTURES=(interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01)'
+              if old in text:
+                  new = '''DEFAULT_FIXTURES=()\nwhile IFS= read -r fixture; do\n  [[ -n "$fixture" ]] && DEFAULT_FIXTURES+=("$fixture")\ndone < <(python3 "${NIAKVIO}/scripts/rotating_corpus.py" select --lane all --count-per-lane 1)\n[[ ${#DEFAULT_FIXTURES[@]} -eq 3 ]] || { echo "rotating corpus must select movie/tv/anime" >&2; exit 2; }'''
+                  text = text.replace(old, new, 1)
+              write(path, text)
+
+          # 7) Desktop official Lab selects one rotating work per lane per run.
+          path = '.github/workflows/native-desktop-reader-acceptance.yml'
+          text = read(path)
+          old = '          FIXTURES=(interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01)'
+          new = '''          FIXTURES=()\n          while IFS= read -r fixture; do\n            [[ -n "$fixture" ]] && FIXTURES+=("$fixture")\n          done < <(python3 "$GITHUB_WORKSPACE/niakvio/scripts/rotating_corpus.py" select --lane all --count-per-lane 1)\n          [[ ${#FIXTURES[@]} -eq 3 ]] || { echo "rotating corpus must select exactly three lanes" >&2; exit 2; }'''
+          text = replace_once(text, old, new, 'desktop workflow fixtures')
+          old_fallback = "            printf '%s\\n' interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01 > \"$FIXTURE_FILE\""
+          new_fallback = '''            python3 "$GITHUB_WORKSPACE/niakvio/scripts/rotating_corpus.py" select --lane all --count-per-lane 1 > "$FIXTURE_FILE"'''
+          text = replace_once(text, old_fallback, new_fallback, 'desktop diagnosis fallback')
+          write(path, text)
+
+          # 8) Android TV + Mobile jobs export the same rotating trio to the suite,
+          # prebuild and later diagnosis steps.
+          path = '.github/workflows/native-mobile-android-reader.yml'
+          text = read(path)
+          tv_old = '          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams 2 --initial'
+          tv_new = '''          ROTATED_FIXTURES="$(python3 niakvio/scripts/rotating_corpus.py select --lane all --count-per-lane 1 | paste -sd' ' -)"\n          test "$(wc -w <<<"$ROTATED_FIXTURES")" -eq 3\n          PRIMARY_FIXTURE="${ROTATED_FIXTURES%% *}"\n          {\n            echo "NIAKVIO_REPRESENTATIVE_FIXTURES=$ROTATED_FIXTURES"\n            echo "NIAKVIO_TARGET_FIXTURES=$ROTATED_FIXTURES"\n            echo "NIAKVIO_PRIMARY_FIXTURE=$PRIMARY_FIXTURE"\n          } >> "$GITHUB_ENV"\n          echo "FIELD_ROTATING_CORPUS client=tv fixtures=$ROTATED_FIXTURES"\n          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture "$PRIMARY_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams 2 --initial'''
+          text = replace_once(text, tv_old, tv_new, 'android tv selector')
+          mobile_old = '          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams all --initial'
+          mobile_new = '''          ROTATED_FIXTURES="$(python3 niakvio/scripts/rotating_corpus.py select --lane all --count-per-lane 1 | paste -sd' ' -)"\n          test "$(wc -w <<<"$ROTATED_FIXTURES")" -eq 3\n          PRIMARY_FIXTURE="${ROTATED_FIXTURES%% *}"\n          {\n            echo "NIAKVIO_REPRESENTATIVE_FIXTURES=$ROTATED_FIXTURES"\n            echo "NIAKVIO_TARGET_FIXTURES=$ROTATED_FIXTURES"\n            echo "NIAKVIO_PRIMARY_FIXTURE=$PRIMARY_FIXTURE"\n          } >> "$GITHUB_ENV"\n          echo "FIELD_ROTATING_CORPUS client=mobile fixtures=$ROTATED_FIXTURES"\n          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture "$PRIMARY_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams all --initial'''
+          text = replace_once(text, mobile_old, mobile_new, 'android mobile selector')
+          fixed_targets = '          NIAKVIO_TARGET_FIXTURES: "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"\n'
+          if text.count(fixed_targets) != 2:
+              raise SystemExit(f'android fixed target count={text.count(fixed_targets)}')
+          text = text.replace(fixed_targets, '')
+          fixed_primary = '          NIAKVIO_PRIMARY_FIXTURE: interstellar\n'
+          if text.count(fixed_primary) != 4:
+              raise SystemExit(f'android fixed primary count={text.count(fixed_primary)}')
+          text = text.replace(fixed_primary, '')
+          write(path, text)
+
+          print('rotation integration patch complete')
           PY
-          node --check providers/streamflix.js
 
-      - name: Add and execute timerless Streamflix regression test
+      - name: Add integration contract tests
         shell: bash
         run: |
           set -euo pipefail
-          cat > tests/streamflix_timerless_runtime_test.cjs <<'NODE'
-          'use strict';
+          cat > tests/provider_rotating_repair_contract_test.py <<'PY'
+          #!/usr/bin/env python3
+          from pathlib import Path
+          ROOT = Path(__file__).resolve().parents[1]
+          sequential = (ROOT / 'scripts/validate_provider_v3_routes_sequential.py').read_text(encoding='utf-8')
+          reconstruct = (ROOT / 'scripts/reconstruct_provider_v3_sequential_live.py').read_text(encoding='utf-8')
+          desktop = (ROOT / '.github/workflows/native-desktop-reader-acceptance.yml').read_text(encoding='utf-8')
+          android = (ROOT / '.github/workflows/native-mobile-android-reader.yml').read_text(encoding='utf-8')
+          ios = (ROOT / 'scripts/prepare_native_ios_reader_acceptance.py').read_text(encoding='utf-8')
+          prep = (ROOT / 'scripts/prepare_native_corpus_validation.py').read_text(encoding='utf-8')
 
-          const assert = require('node:assert/strict');
-          const fs = require('node:fs');
-          const path = require('node:path');
-          const vm = require('node:vm');
+          assert 'PROVIDER_V3_ROTATING_CATALOGUE_SAMPLE_V1' in sequential
+          assert 'select_fixtures(' in sequential
+          assert 'evaluation.get("playableChainValidatedTypes")' in reconstruct
+          assert 'FIELD_PROVIDER_RESAMPLE_REQUIRED' in reconstruct
+          assert 'completion_state = "resample-required"' in reconstruct
+          assert '"resample-required"' in sequential
+          assert 'rotating_corpus.py" select --lane all --count-per-lane 1' in desktop
+          assert 'FIELD_ROTATING_CORPUS client=tv' in android
+          assert 'FIELD_ROTATING_CORPUS client=mobile' in android
+          assert 'NIAKVIO_TARGET_FIXTURES: "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"' not in android
+          assert 'from rotating_corpus import select_fixtures' in ios
+          assert 'rotating_fixture_by_slug' in prep
+          print('provider rotating Repair/Lab integration contract tests passed')
+          PY
 
-          const providerPath = path.resolve(__dirname, '../providers/streamflix.js');
-          const source = fs.readFileSync(providerPath, 'utf8');
-          const errors = [];
-
-          class FailingWebSocket {
-            close() {}
-            send() {}
-            set onopen(fn) { this._onopen = fn; }
-            set onmessage(fn) { this._onmessage = fn; }
-            set onclose(fn) { this._onclose = fn; }
-            set onerror(fn) {
-              this._onerror = fn;
-              Promise.resolve().then(() => fn(new Error('expected websocket failure')));
-            }
-          }
-
-          function response(json) {
-            return {
-              ok: true,
-              status: 200,
-              statusText: 'OK',
-              json: async () => json,
-            };
-          }
-
-          async function fetchMock(url) {
-            const value = String(url);
-            if (value.includes('api.themoviedb.org')) {
-              return response({ name: 'Timerless Show', first_air_date: '2024-01-01' });
-            }
-            if (value.endsWith('/data.json')) {
-              return response({
-                data: [{
-                  moviename: 'Timerless Show',
-                  moviekey: 'timerless-show',
-                  movieduration: '1 Season',
-                }],
-              });
-            }
-            if (value.endsWith('/config/config-streamflixapp.json')) {
-              return response({ premium: ['https://cdn.example/'], movies: [] });
-            }
-            throw new Error(`unexpected fetch ${value}`);
-          }
-
-          const moduleBox = { exports: {} };
-          const sandbox = {
-            module: moduleBox,
-            exports: moduleBox.exports,
-            require(specifier) {
-              if (specifier === 'cheerio-without-node-native') return {};
-              throw new Error(`unexpected require ${specifier}`);
-            },
-            fetch: fetchMock,
-            WebSocket: FailingWebSocket,
-            console: {
-              log() {},
-              warn() {},
-              error(...args) { errors.push(args.map(String).join(' ')); },
-            },
-          };
-
-          // Intentionally DO NOT expose setTimeout or clearTimeout in this runtime.
-          vm.createContext(sandbox);
-          vm.runInContext(source, sandbox, { filename: providerPath });
-
-          (async () => {
-            const streams = await moduleBox.exports.getStreams('12345', 'tv', 1, 1);
-            assert.equal(Array.isArray(streams), true);
-            assert.equal(streams.length, 1, 'expected the normal TV fallback stream');
-            assert.match(streams[0].url, /timerless-show\/s1\/episode1\.mkv$/);
-
-            const websocketFailure = errors.find(line => line.includes('WebSocket failed, using fallback:')) || '';
-            assert.match(websocketFailure, /WebSocket error/);
-            assert.doesNotMatch(websocketFailure, /setTimeout is not defined|clearTimeout is not defined|ReferenceError/);
-            assert.equal(errors.some(line => /setTimeout is not defined|clearTimeout is not defined/.test(line)), false);
-
-            process.stdout.write('PASS streamflix timerless runtime: normal WebSocket fallback, no timer ReferenceError\n');
-          })().catch(error => {
-            console.error(error);
-            process.exitCode = 1;
-          });
-          NODE
-
+      - name: Run focused regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            scripts/rotating_corpus.py \
+            scripts/gate_native_declared_provider_matrix.py \
+            scripts/prepare_native_corpus_validation.py \
+            scripts/prepare_native_ios_reader_acceptance.py \
+            scripts/validate_provider_v3_routes_sequential.py \
+            scripts/reconstruct_provider_v3_sequential_live.py
+          python3 tests/rotating_corpus_test.py
+          python3 tests/native_provider_resample_status_test.py
+          python3 tests/provider_rotating_repair_contract_test.py
+          python3 tests/provider_v3_sequential_live_gate_test.py
+          python3 tests/provider_v3_final_transient_fixture_fallback_test.py
+          bash -n scripts/run_native_corpus_desktop_suite.sh
+          bash -n scripts/run_native_corpus_mobile_suite.sh
+          bash -n scripts/run_native_corpus_tv_suite.sh
+          node --check providers/streamflix.js
           node tests/streamflix_timerless_runtime_test.cjs
 
-      - name: Commit Streamflix fix and regression test
+      - name: Commit rotating corpus integration
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add providers/streamflix.js tests/streamflix_timerless_runtime_test.cjs
+          git add \
+            scripts/prepare_native_corpus_validation.py \
+            scripts/prepare_native_ios_reader_acceptance.py \
+            scripts/validate_provider_v3_routes_sequential.py \
+            scripts/reconstruct_provider_v3_sequential_live.py \
+            scripts/gate_native_declared_provider_matrix.py \
+            scripts/run_native_corpus_desktop_suite.sh \
+            scripts/run_native_corpus_mobile_suite.sh \
+            scripts/run_native_corpus_tv_suite.sh \
+            .github/workflows/native-desktop-reader-acceptance.yml \
+            .github/workflows/native-mobile-android-reader.yml \
+            tests/provider_rotating_repair_contract_test.py
           git diff --cached --check
           if git diff --cached --quiet; then
-            echo 'No Streamflix changes to commit' >&2
+            echo 'No integration changes to commit' >&2
             exit 1
           fi
-          git commit -m "fix(streamflix): tolerate missing desktop timer globals"
+          git commit -m "feat(labs): rotate catalogue misses before provider repair"
           git push origin HEAD:"$REF"
-          echo "STREAMFLIX_FIX_SHA=$(git rev-parse HEAD)"
+          echo "ROTATING_CORPUS_INTEGRATION_SHA=$(git rev-parse HEAD)"
 
-      - name: Dispatch official Desktop Lab on patched ref
+      - name: Dispatch fresh native Labs on patched ref
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -215,4 +262,6 @@ jobs:
         run: |
           set -euo pipefail
           gh workflow run native-desktop-reader-acceptance.yml --repo "$REPO" --ref "$REF"
-          echo "FIELD_STREAMFLIX_DESKTOP_LAB_DISPATCHED ref=$REF macos=1 windows=1"
+          gh workflow run native-mobile-android-reader.yml --repo "$REPO" --ref "$REF"
+          gh workflow run native-mobile-ios-reader.yml --repo "$REPO" --ref "$REF"
+          echo "FIELD_ROTATING_NATIVE_LABS_DISPATCHED desktop=1 android_tv_mobile=1 ios=1 ref=$REF"
