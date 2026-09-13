@@ -44,4 +44,6 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add MEMORY.md
           git commit -m 'docs(memory): persist complete secondary-task ledger'
+          git fetch origin fix/labs-5.21.44-20260912
+          git rebase origin/fix/labs-5.21.44-20260912
           git push origin HEAD:fix/labs-5.21.44-20260912
