@@ -1,4 +1,4 @@
-name: TEMP - batch priority provider repair v2
+name: TEMP - batch priority provider repair v3
 
 on:
   push:
@@ -33,69 +33,40 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Preflight current repair architecture
+      - name: Preflight monotonic migrations and current architecture
         shell: bash
         run: |
           set -euo pipefail
           test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
-          python3 -m py_compile \
-            scripts/upgrade_provider_disabled_fast_advance_v1.py \
-            scripts/upgrade_provider_v3_source_plan_v5.py \
-            scripts/run_provider_repair_fast_targeted_v20.py \
-            scripts/run_provider_upstream_parity_v3.py
           python3 scripts/upgrade_provider_v3_source_plan_v5.py
           python3 scripts/upgrade_provider_disabled_fast_advance_v1.py
+          python3 scripts/upgrade_stream_sanitizer_v7_selection.py
           python3 tests/provider_v3_sequential_reconstruction_contract_test.py
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/native_adaptive_catalog_contract_test.py
           python3 tests/provider_upstream_parity_v3_test.py
           node scripts/provider_worker.cjs --self-test-response-wrapper
           node scripts/provider_worker.cjs --self-test-fixture-fallback
 
-      - name: Persist exact proven regression queue from wide parity run 34763697601
+      - name: Build proven regression and deep-ZERO ledgers
         shell: bash
         run: |
           set -euo pipefail
-          cat > automation/provider-priority-repair-queue.txt <<'EOF'
-          animesama-co
-          animevost-fr
-          animevostfr
-          french-manga
-          kurage
-          playimdb
-          sekai
-          streamzo
-          uhdmovies
-          voiranime
-          voiranime-homes
-          voiranime-rip
-          EOF
-          sed -i 's/^          //' automation/provider-priority-repair-queue.txt
-          cat > automation/provider-priority-zero-queue.txt <<'EOF'
-          4khdhub
-          allanime
-          allwish
-          anikototv
-          anime-ultime
-          animesalt
-          animetsu
-          flemmix
-          fullanime
-          moviebox
-          moviesmod
-          showbox
-          vidfast
-          vidlove
-          vostfree
-          EOF
-          sed -i 's/^          //' automation/provider-priority-zero-queue.txt
-          echo 'REGRESSION_QUEUE:'; cat automation/provider-priority-repair-queue.txt
-          echo 'ZERO_DEEP_12_UPSTREAM_ZERO:'; cat automation/provider-priority-zero-queue.txt
+          printf '%s\n' \
+            animesama-co animevost-fr animevostfr french-manga kurage playimdb \
+            sekai streamzo uhdmovies voiranime voiranime-homes voiranime-rip \
+            > automation/provider-priority-repair-queue.txt
+          printf '%s\n' \
+            4khdhub allanime allwish anikototv anime-ultime animesalt animetsu flemmix \
+            fullanime moviebox moviesmod showbox vidfast vidlove vostfree \
+            > automation/provider-priority-zero-queue.txt
 
       - name: Repair all 12 certain regressions in one transaction
         id: repair
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t providers < <(grep -v '^$' automation/provider-priority-repair-queue.txt)
+          mapfile -t providers < automation/provider-priority-repair-queue.txt
           args=()
           for provider in "${providers[@]}"; do args+=(--provider "$provider"); done
           python3 scripts/run_provider_repair_fast_targeted_v20.py \
@@ -107,7 +78,7 @@ jobs:
             "${args[@]}"
           echo 'mutated=true' >> "$GITHUB_OUTPUT"
 
-      - name: Regenerate projections and run structural/global Core guards
+      - name: Rebuild projections and run non-minifier guards
         if: steps.repair.outputs.mutated == 'true'
         shell: bash
         run: |
@@ -118,13 +89,14 @@ jobs:
           python3 tests/global_core_runtime_ownership_test.py
           python3 tests/recent_global_lab_corpus_policy_test.py
           python3 tests/native_catalog_miss_rotation_test.py
+          python3 tests/native_adaptive_catalog_contract_test.py
 
-      - name: Post-repair targeted parity for the repaired providers
+      - name: Post-repair parity on repaired provider set only
         if: steps.repair.outputs.mutated == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t providers < <(grep -v '^$' automation/provider-priority-repair-queue.txt)
+          mapfile -t providers < automation/provider-priority-repair-queue.txt
           args=()
           for provider in "${providers[@]}"; do args+=(--provider "$provider"); done
           python3 scripts/run_provider_upstream_parity_v3.py \
@@ -141,7 +113,7 @@ jobs:
           print('BATCH_POST_REGRESSIONS', ','.join(d.get('certainRegressions') or []) or 'none')
           PY
 
-      - name: Persist provider batch checkpoint in MEMORY
+      - name: Persist successful batch in MEMORY
         if: steps.repair.outputs.mutated == 'true'
         shell: bash
         run: |
@@ -150,17 +122,16 @@ jobs:
           import json, os
           from pathlib import Path
           post=json.loads(Path('automation/provider-upstream-parity-batch-post.json').read_text())
-          queue=[x.strip() for x in Path('automation/provider-priority-repair-queue.txt').read_text().splitlines() if x.strip()]
-          zeros=[x.strip() for x in Path('automation/provider-priority-zero-queue.txt').read_text().splitlines() if x.strip()]
-          marker='## 2026-09-13 — provider REGRESSION batch v2'
-          memory=Path('MEMORY.md')
-          text=memory.read_text(encoding='utf-8')
+          queue=Path('automation/provider-priority-repair-queue.txt').read_text().split()
+          zeros=Path('automation/provider-priority-zero-queue.txt').read_text().split()
+          p=Path('MEMORY.md'); text=p.read_text(encoding='utf-8')
+          marker='## 2026-09-13 — provider REGRESSION batch v3'
           if marker not in text:
-              text += f'''\n{marker}\n\n- Run `{os.environ.get('GITHUB_RUN_ID','')}` repairs the 12 certain regression provider IDs from wide parity run `34763697601` in one transaction: `{', '.join(queue)}`.\n- The 15 ZERO providers `{', '.join(zeros)}` were already deep-rotated to 12 parity samples/lane and remained upstream-zero/local-zero; they stay priority debt but are not blindly mutated without upstream-positive evidence.\n- Post-repair targeted parity (4 samples/lane, same deterministic seed) counts: `{post.get('statusCounts',{})}`; remaining certain regressions: `{', '.join(post.get('certainRegressions') or []) or 'none'}`.\n- No JS minimizer was run in this repair loop. NiakVIO minimization remains a final-stage operation after functional/provider/Core stabilization.\n'''
-              memory.write_text(text, encoding='utf-8')
+              text += f'''\n{marker}\n\n- Run `{os.environ.get('GITHUB_RUN_ID','')}`: one transaction over the 12 certain regressions from parity run `34763697601`: `{', '.join(queue)}`.\n- The deep-ZERO set `{', '.join(zeros)}` remained upstream-zero/local-zero at 12 parity samples/lane; do not blindly mutate them without upstream-positive evidence.\n- Post-repair targeted parity counts: `{post.get('statusCounts',{})}`; remaining certain regressions: `{', '.join(post.get('certainRegressions') or []) or 'none'}`.\n- No minimizer in the repair loop. Final NiakVIO minimization remains after functional stabilization.\n'''
+              p.write_text(text, encoding='utf-8')
           PY
 
-      - name: Commit only successful batch repair
+      - name: Commit successful repair transaction
         if: steps.repair.outputs.mutated == 'true'
         shell: bash
         run: |
@@ -170,7 +141,7 @@ jobs:
           git add -A
           git reset .github/workflows/temp-batch-priority-provider-repair.yml
           if git diff --cached --quiet; then
-            echo 'No durable batch changes to commit'
+            echo 'No durable changes to commit'
             exit 0
           fi
           git commit -m 'fix(providers): batch repair current parity regressions'
@@ -178,11 +149,11 @@ jobs:
           git rebase origin/fix/labs-5.21.44-20260912
           git push origin HEAD:fix/labs-5.21.44-20260912
 
-      - name: Upload batch evidence
+      - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: batch-priority-provider-repair-v2-${{ github.run_id }}
+          name: batch-priority-provider-repair-v3-${{ github.run_id }}
           retention-days: 14
           if-no-files-found: warn
           path: |
