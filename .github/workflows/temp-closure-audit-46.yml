@@ -3,8 +3,9 @@ name: TEMP - Closure Audit 46
 on:
   workflow_dispatch:
   push:
-    branches:
-      - fix/labs-5.21.44-20260912
+    branches: ["fix/labs-5.21.44-20260912"]
+    paths:
+      - ".github/workflows/temp-closure-audit-46.yml"
 
 permissions:
   contents: read
@@ -15,80 +16,77 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Focused provider closure snapshot
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: MovieBox authoritative migration in workspace
         shell: bash
         run: |
           set -euo pipefail
-          exec > >(tee closure-audit-46.txt) 2>&1
-          echo '=== HEAD ==='
-          git rev-parse HEAD
-
-          echo '=== TARGET AUTHORITY ==='
+          python3 scripts/upgrade_moviebox_hub46_runtime_v1.py
           python3 - <<'PY'
-          import json, pathlib, re
-          targets=('moviebox','ctgmovies','hindmoviez','anime-sama','mugiwarastream','papadustream')
-          def wanted(x):
-              s=str(x or '').lower()
-              return any(t in s for t in targets)
-          for fn in ('manifest.json','provider-overrides.json','provider-hubs.json','engine_v2/config/provider-upstreams.json'):
-              p=pathlib.Path(fn)
-              if not p.exists():
-                  print('MISSING',fn); continue
-              try: data=json.loads(p.read_text())
-              except Exception as e: print('JSONERR',fn,e); continue
-              print('\nFILE',fn)
-              if fn=='manifest.json':
-                  for row in data.get('scrapers',[]):
-                      if wanted(row.get('id')) or wanted(row.get('name')):
-                          print('MANIFEST',json.dumps(row,ensure_ascii=False,sort_keys=True))
-                          f=pathlib.Path(row.get('filename',''))
-                          if f.is_file():
-                              txt=f.read_text(errors='replace')
-                              print('BUNDLE',row.get('id'),'file=',f,'bytes=',len(txt),'setTimeout=',txt.count('setTimeout'))
-                              for needle in ('moviiebox','moviebox.yachts','uwu.eat-peach','net27.cc','hindmovie','papadustream'):
-                                  i=txt.lower().find(needle.lower())
-                                  if i>=0: print('BUNDLE_SNIP',row.get('id'),needle,repr(txt[max(0,i-500):i+1200]))
-              elif fn=='provider-overrides.json':
-                  for k,v in (data.get('provider_patches') or {}).items():
-                      if wanted(k): print('OVERRIDE',k,json.dumps(v,ensure_ascii=False,sort_keys=True))
-              elif isinstance(data,dict):
-                  for k,v in data.items():
-                      if wanted(k) or wanted(v): print('ENTRY',k,json.dumps(v,ensure_ascii=False,sort_keys=True)[:12000])
-              elif isinstance(data,list):
-                  for v in data:
-                      if wanted(v): print('ENTRY',json.dumps(v,ensure_ascii=False,sort_keys=True)[:12000])
+          import json
+          p=json.load(open('provider-overrides.json'))['provider_patches']['moviebox']
+          assert p['manifest_overrides']['enabled'] is True
+          assert p['capability']=='direct_media'
+          assert p['repair_disposition']['quarantined'] is False
+          assert p['repair_disposition']['provenLanes']==[]
+          assert p['live_route_gate']['validated_types']==[]
+          assert p['provider_lego_scripts']==['scripts/provider_patches/moviebox_peach_runtime_v1.py']
+          print('FIELD_MOVIEBOX_MIGRATION staged=1 proof_faked=0')
           PY
-
-          echo '=== TARGET SOURCE REFERENCES ==='
-          grep -R -n -E 'moviebox|moviiebox|CTGMOVIES|ctgmovies|hindmoviez|HindMoviez|uwu\.eat-peach|moviebox\.yachts|net27\.cc' \
-            scripts tests engine_v2 engine-v2 automation .github 2>/dev/null | head -1000 || true
-
-          echo '=== TARGET TEST/SCRIPT CANDIDATES ==='
-          find scripts tests -type f | grep -Ei '(provider|native|live|route|stream|moviebox|hindmovie|ctg|timeout|settlement)' | sort | head -800 || true
-
-          echo '=== CONTRACT TESTS ==='
-          for t in \
-            tests/native_runtime_settlement_contract_test.py \
-            tests/provider_no_timer_runtime_test.py \
-            tests/provider_execution_failfast_v33_test.py \
-            tests/core_runtime_nonregression_contract_test.py \
-            tests/stream_quality_recovery_tv_test.py \
-            tests/stream_output_sanitizer_fail_closed_test.py \
-            tests/manual_tv_live_regressions_v34_test.py; do
-            if test -f "$t"; then echo RUN "$t"; python3 "$t"; fi
-          done
-
-          echo '=== TEMP COUNT ==='
-          find .github/workflows -maxdepth 1 -type f -printf '%f\n' | grep -E '^temp-' | sort || true
-          echo "temp_count=$(find .github/workflows -maxdepth 1 -type f -printf '%f\n' | grep -Ec '^temp-' || true)"
-
-      - name: Upload audit
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: closure-audit-46-${{ github.run_id }}
-          path: closure-audit-46.txt
-          if-no-files-found: error
+      - name: MovieBox crypto contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/peachify_runtime_crypto_test.py
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0,'scripts')
+          sys.path.insert(0,'scripts/provider_patches')
+          import moviebox_peach_runtime_v1 as m
+          out=m.apply('globalThis.getStreams=async()=>[];')
+          assert 'NIAKVIO_MOVIEBOX_PEACH_RUNTIME_V1' in out
+          assert 'provider:"moviebox"' in out
+          assert 'uwu.eat-peach.sbs' in out and '"path":"moviebox"' in out
+          open('/tmp/moviebox-live.js','w').write(out)
+          print('FIELD_MOVIEBOX_ADAPTER contract=ok')
+          PY
+      - name: Live MovieBox movie and TV proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat >/tmp/probe.cjs <<'NODE'
+          const fs=require('fs');
+          const vm=require('vm');
+          const code=fs.readFileSync('/tmp/moviebox-live.js','utf8');
+          vm.runInThisContext(code,{filename:'moviebox-live.js'});
+          async function check(label,args){
+            globalThis.__nuvioMediaContext={tmdbId:String(args[0]),canonicalMediaType:args[1],season:args[2],episode:args[3]};
+            const started=Date.now();
+            const rows=await Promise.race([
+              globalThis.getStreams(...args),
+              new Promise((_,rej)=>setTimeout(()=>rej(new Error('probe-hard-timeout-25000')),25000))
+            ]);
+            console.log('FIELD_MOVIEBOX_LIVE',label,'duration_ms='+ (Date.now()-started),'count='+rows.length);
+            for(const r of rows.slice(0,5)) console.log('FIELD_MOVIEBOX_ROW',label,JSON.stringify({url:r.url,quality:r.quality,language:r.language,name:r.name,provider:r.provider}));
+            if(!rows.length) throw new Error(label+': no streams');
+            if(!rows.some(r=>/^https?:\/\//i.test(String(r.url||'')))) throw new Error(label+': no direct media URL');
+            return rows;
+          }
+          (async()=>{
+            await check('movie',['157336','movie']);
+            await check('tv',['1396','tv',1,1]);
+            console.log('FIELD_MOVIEBOX_LIVE_PROOF lanes=movie,tv status=positive hard_timeout_ms=25000');
+          })().catch(e=>{console.error('FIELD_MOVIEBOX_LIVE_PROOF status=failed',e);process.exit(1)});
+          NODE
+          node /tmp/probe.cjs
+      - name: Core contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/native_runtime_settlement_contract_test.py
+          python3 tests/provider_no_timer_runtime_test.py
+          python3 tests/provider_execution_failfast_v33_test.py
+          python3 tests/stream_quality_recovery_tv_test.py
