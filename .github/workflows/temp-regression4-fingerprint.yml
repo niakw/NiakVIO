@@ -1,0 +1,89 @@
+name: TEMP - Fingerprint four current regressions
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-regression4-fingerprint.yml]
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  fingerprint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Exact upstream/local fingerprints and active config
+        run: |
+          python - <<'PY'
+          import json,subprocess,tempfile,urllib.request,urllib.parse,re,sys
+          from pathlib import Path
+          sys.path.insert(0,'scripts')
+          import run_provider_upstream_parity as base
+          import audit_upstream_stream_fingerprints_v1 as fp
+          root=Path('.')
+          manifest=json.loads(Path('manifest.json').read_text())
+          local={str(r['id']).lower():r for r in manifest['scrapers']}
+          overrides=json.loads(Path('provider-overrides.json').read_text())
+          material=json.loads(Path('provider-v3-materialization.json').read_text())
+          reports={str(r.get('provider','')).lower():r for r in material.get('providers') or []}
+          fixtures={
+            'mugiwarastream':[{'tmdbId':'80020','mediaType':'anime','category':'anime','title':'Super Dragon Ball Heroes','year':2018,'season':1,'episode':1}],
+            'streamzo':[{'tmdbId':'100088','mediaType':'tv','title':'The Last of Us','year':2023,'season':1,'episode':1},{'tmdbId':'240411','mediaType':'anime','category':'anime','title':'Dan Da Dan','year':2024,'season':1,'episode':1}],
+            'animesama-co':[{'tmdbId':'1233413','mediaType':'movie','title':'Sinners','year':2025},{'tmdbId':'45782','mediaType':'anime','category':'anime','title':'Sword Art Online','year':2012,'season':1,'episode':1}],
+            'voiranime-rip':[{'tmdbId':'299536','mediaType':'movie','title':'Avengers: Infinity War','year':2018},{'tmdbId':'240411','mediaType':'anime','category':'anime','title':'Dan Da Dan','year':2024,'season':1,'episode':1}],
+          }
+          upstream_manifest=json.load(urllib.request.urlopen(urllib.request.Request('https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/manifest.json',headers={'User-Agent':'NiakVIO-Diag/1'}),timeout=30))
+          ups={str(r['id']).lower():r for r in upstream_manifest['scrapers']}
+          def run(path,fixture,upstream=False):
+              f=dict(fixture)
+              if upstream and f.get('mediaType')=='anime': f['mediaType']='tv';f['type']='tv';f.pop('category',None)
+              cmd=['node','scripts/provider_worker.cjs',str(path),json.dumps(f,separators=(',',':')),json.dumps(base.context_for(fixture),separators=(',',':'))]
+              cp=subprocess.run(cmd,text=True,capture_output=True,timeout=65)
+              result={}
+              for line in cp.stdout.splitlines():
+                  if line.startswith('NUVIO_HEALTH_RESULT='):
+                      try: result=json.loads(line.split('=',1)[1])
+                      except: pass
+              return result
+          with tempfile.TemporaryDirectory() as td:
+              td=Path(td)
+              for pid,fs in fixtures.items():
+                  p=(overrides.get('provider_patches') or {}).get(pid) or {}
+                  r=reports.get(pid) or {}
+                  print('REG4_CONFIG',pid,json.dumps({'types':local[pid].get('canonicalSupportedTypes'),'published':p.get('published_types'),'lego':p.get('provider_lego_scripts'),'route_data_state':p.get('route_data_state'),'fixIds':r.get('fixIds')},sort_keys=True))
+                  urow=ups[pid];url=urllib.parse.urljoin('https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/',urow['filename'])
+                  upath=td/(pid+'.js');upath.write_bytes(urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'NiakVIO-Diag/1'}),timeout=30).read())
+                  lpath=Path(local[pid]['filename'])
+                  for f in fs:
+                      ur=run(upath,f,True);lr=run(lpath,f,False)
+                      def shapes(res):
+                          out=[]
+                          for s in res.get('streams') or []:
+                              if isinstance(s,dict):
+                                  z=fp.fingerprint_stream(s)
+                                  if z and z not in out:out.append(z)
+                          return out
+                      summary={'fixture':f['title'],'upstream':{'raw':ur.get('raw_stream_count'),'count':ur.get('stream_count'),'statuses':ur.get('provider_server_http_statuses'),'shapes':shapes(ur)},'niak':{'raw':lr.get('raw_stream_count'),'count':lr.get('stream_count'),'statuses':lr.get('provider_server_http_statuses'),'shapes':shapes(lr)},'localNetwork':(lr.get('network_observations') or [])[:20]}
+                      # redact request URLs down to origin/path only
+                      for obs in summary['localNetwork']:
+                          if isinstance(obs,dict):
+                              for key in ('url','requestUrl','finalUrl'):
+                                  raw=str(obs.get(key) or '')
+                                  if raw:
+                                      try:
+                                          x=urllib.parse.urlsplit(raw);obs[key]=f'{x.scheme}://{x.hostname}{x.path}'
+                                      except:obs[key]='<redacted>'
+                      print('REG4_EXACT '+pid+' '+json.dumps(summary,sort_keys=True))
+          PY
