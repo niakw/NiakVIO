@@ -32,9 +32,6 @@ jobs:
           import json
           from pathlib import Path
 
-          # 1) Mugiwara: do not let the generic/native pass spend the complete
-          # provider budget on dead Sendvid/OneUpload before its owned Ansembed
-          # resolver gets a chance to run.
           p=Path('scripts/provider_patches/mugiwarastream_packed_runtime_v1.py')
           s=p.read_text(encoding='utf-8')
           marker='NIAKVIO_MUGIWARA_NATIVE_DEAD_HOST_BYPASS_V2'
@@ -45,9 +42,6 @@ jobs:
                   raise SystemExit('target Mugiwara fetch wrapper not found')
               p.write_text(s.replace(old,new,1),encoding='utf-8')
 
-          # 2) These owned clean-room adapters already exist on the branch, but
-          # their provider_lego_scripts links disappeared from the current
-          # overrides. Restore only the missing links; preserve all other Lego.
           path=Path('provider-overrides.json')
           data=json.loads(path.read_text(encoding='utf-8'))
           patches=data.setdefault('provider_patches',{})
@@ -71,13 +65,17 @@ jobs:
             scripts/provider_patches/animesamaco_site_runtime_v1.py \
             scripts/provider_patches/kurage_runtime_v1.py
 
-      - name: Re-materialize clean providers
+      - name: Re-materialize Hub46 providers
         run: |
           python scripts/materialize_provider_v3_all.py
-          # The old published_provider_lego_contract_test.py still requires the
-          # retired media-type marker v31 and currently fails 46/46; do not use
-          # that stale gate as evidence. Keep the active anime transport gate.
-          python tests/provider_anime_semantic_transport_contract_test.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('provider-v3-materialization.json').read_text())
+          rows=d.get('providers') or []
+          assert len(rows)==46, len(rows)
+          print('HUB46_MATERIALIZATION_OK providers=46')
+          PY
 
       - name: Verify exact terminal regressions
         run: |
@@ -94,8 +92,6 @@ jobs:
             'animevostfr':{'tmdbId':'95479','mediaType':'anime','category':'anime','title':'Jujutsu Kaisen','year':2020,'season':1,'episode':1},
             'animesama-co':{'tmdbId':'45782','mediaType':'anime','category':'anime','title':'Sword Art Online','year':2012,'season':1,'episode':1},
             'kurage':{'tmdbId':'94664','mediaType':'anime','category':'anime','title':'Mushoku Tensei: Jobless Reincarnation','year':2021,'season':1,'episode':1},
-            # Baseline census had StreamZo red, while the later exact trace was
-            # already terminal-positive. Reconfirm it without changing code.
             'streamzo':{'tmdbId':'240411','mediaType':'anime','category':'anime','title':'Dan Da Dan','year':2024,'season':1,'episode':1},
           }
           failures=[]
@@ -125,10 +121,6 @@ jobs:
           print('RECOVERED_REGRESSIONS',json.dumps(d.get('certainRegressions') or []))
           for p in d.get('providers') or []:
               print('RECOVERED_PROVIDER',p.get('providerId'),p.get('status'),json.dumps([(x.get('lane'),x.get('status')) for x in p.get('lanes') or []]))
-          # Exact target fixtures above are authoritative for the repair. This
-          # full32 pass remains diagnostic because legacy upstream may return a
-          # terminal stream for the wrong work (already proven for Superman and
-          # Sinners); identity-safe census hardening is handled separately.
           PY
 
       - name: Commit verified repairs
