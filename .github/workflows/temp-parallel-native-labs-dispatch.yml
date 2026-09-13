@@ -1,4 +1,4 @@
-name: TEMP - Validate and Dispatch Hub46 Parity
+name: TEMP - Retry Hub46 Parity After Cleanup
 
 on:
   push:
@@ -26,10 +26,11 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Validate rotating Hub-46 parity contracts
+      - name: Validate security and rotating Hub-46 parity contracts
         shell: bash
         run: |
           set -euo pipefail
+          python3 tests/workflow_security_policy_test.py
           python3 -m py_compile scripts/run_provider_upstream_parity_v2.py scripts/run_provider_upstream_parity_v3.py scripts/rotating_corpus.py
           python3 tests/provider_upstream_parity_v3_test.py
           python3 tests/rotating_corpus_test.py
