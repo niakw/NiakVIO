@@ -2,6 +2,8 @@ export const DEVICES = Object.freeze(["worker", "mobile", "desktop", "tv"]);
 export const CANONICAL_MEDIA_TYPES = Object.freeze(["movie", "tv", "anime"]);
 
 const SERIES_ALIASES = new Set(["series", "show", "other"]);
+const QUALITY_PLACEHOLDER = /^(?:0|auto|automatic|source|original|default|unknown|inconnue?|n\/a|na|none|null|undefined|-)$/i;
+const QUALITY_RANK = Object.freeze({ "240p": 240, "360p": 360, "480p": 480, "576p": 576, "720p": 720, "1080p": 1080, "1440p": 1440, "2160p": 2160 });
 
 export function normalizeMediaType(value) {
   const raw = String(value ?? "").trim().toLowerCase();
@@ -71,9 +73,14 @@ export function normalizeStreamCandidate(raw = {}, context = {}) {
     raw.requestHeaders,
     raw.headers,
   );
-  const subtitles = Array.isArray(raw.subtitles)
-    ? raw.subtitles.map(normalizeSubtitle).filter(Boolean)
-    : [];
+  const subtitleRows = Array.isArray(raw.subtitles)
+    ? raw.subtitles
+    : Array.isArray(raw.extCaptions)
+      ? raw.extCaptions
+      : Array.isArray(raw.captions)
+        ? raw.captions
+        : [];
+  const subtitles = subtitleRows.map(normalizeSubtitle).filter(Boolean);
   const behaviorHints = mergePlainObjects(nested?.behaviorHints, raw.behaviorHints);
 
   return {
@@ -81,10 +88,10 @@ export function normalizeStreamCandidate(raw = {}, context = {}) {
     name: textOrNull(raw.name),
     description: textOrNull(raw.description),
     url,
-    quality: normalizeQualityLabel(raw.quality ?? raw.resolution),
+    quality: inferQualityLabel(raw, url),
     size: scalarOrNull(raw.size),
-    language: textOrNull(raw.language ?? raw.lang ?? raw.audioLanguage ?? raw.audio_language),
-    codec: textOrNull(raw.codec ?? raw.videoCodec ?? raw.video_codec),
+    language: extractLanguageLabel(raw),
+    codec: textOrNull(raw.codec ?? raw.codecName ?? raw.videoCodec ?? raw.video_codec),
     audio: textOrNull(raw.audio ?? raw.audioCodec ?? raw.audio_codec),
     duration: normalizeDurationMinutes(raw.duration ?? raw.durationMinutes ?? raw.duration_minutes ?? raw.runtime ?? raw.runtimeMinutes ?? raw.runtime_minutes),
     sourceType: textOrNull(raw.sourceType ?? raw.source_type),
@@ -156,8 +163,8 @@ function normalizeSubtitle(value) {
   if (!url) return null;
   return {
     url,
-    language: textOrNull(value.language) ?? "Unknown",
-    name: textOrNull(value.name),
+    language: textOrNull(value.language ?? value.lanName ?? value.langName ?? value.lan ?? value.lang) ?? "Unknown",
+    name: textOrNull(value.name ?? value.label),
     headers: mergeHeaders(
       nested?.behaviorHints?.proxyHeaders?.request,
       value.behaviorHints?.proxyHeaders?.request,
@@ -229,13 +236,63 @@ function numberOrNull(value) {
   return Number.isFinite(number) ? number : null;
 }
 
-function normalizeQualityLabel(value) {
+function preciseQualityLabel(value, allowBare = true) {
+  if (Array.isArray(value)) {
+    const values = value.map((item) => preciseQualityLabel(item, true)).filter(Boolean);
+    return values.sort((a, b) => (QUALITY_RANK[b] || 0) - (QUALITY_RANK[a] || 0))[0] || null;
+  }
+  if (typeof value === "number") {
+    const height = Math.round(value);
+    return [2160, 1440, 1080, 720, 576, 480, 360, 240].includes(height) ? `${height}p` : null;
+  }
   const text = textOrNull(value);
-  if (!text) return null;
-  if (/^(?:4k|uhd|2160p?)$/i.test(text)) return "2160p";
-  const resolution = text.match(/(?:^|\b)(2160|1440|1080|720|576|480)p?(?:\b|$)/i);
-  if (resolution) return `${resolution[1]}p`;
-  return text;
+  if (!text || QUALITY_PLACEHOLDER.test(text)) return null;
+  if (/\b(?:4K|UHD)\b/i.test(text)) return "2160p";
+  if (/\b(?:QHD|2K)\b/i.test(text)) return "1440p";
+  if (/\b(?:FHD|FULL[ ._-]?HD)\b/i.test(text)) return "1080p";
+  const dimensions = text.match(/(?:^|[^0-9])(\d{3,4})\s*[x×]\s*(2160|1440|1080|720|576|480|360|240)(?:[^0-9]|$)/i);
+  if (dimensions) return `${dimensions[2]}p`;
+  const tagged = text.match(/(?:^|[^0-9])(2160|1440|1080|720|576|480|360|240)\s*p(?:[^0-9]|$)/i);
+  if (tagged) return `${tagged[1]}p`;
+  if (allowBare) {
+    const bare = text.match(/^\s*(2160|1440|1080|720|576|480|360|240)\s*$/i);
+    if (bare) return `${bare[1]}p`;
+  }
+  return null;
+}
+
+function inferQualityLabel(raw, url) {
+  for (const value of [raw.height, raw.videoHeight, raw.video_height, raw.resolution, raw.resolutions]) {
+    const exact = preciseQualityLabel(value, true);
+    if (exact) return exact;
+  }
+  const explicit = textOrNull(raw.quality);
+  const exact = preciseQualityLabel(explicit, true);
+  if (exact) return exact;
+  for (const value of [raw.label, raw.sourceLabel, raw.source_label, raw.filename, raw.fileName, raw.file_name, raw.name, raw.title, raw.description]) {
+    const hinted = preciseQualityLabel(value, false);
+    if (hinted) return hinted;
+  }
+  const urlHint = preciseQualityLabel(url, false);
+  if (urlHint) return urlHint;
+  return explicit && /^(?:HD|SD)$/i.test(explicit) ? explicit.toUpperCase() : null;
+}
+
+function normalizeQualityLabel(value) {
+  const exact = preciseQualityLabel(value, true);
+  if (exact) return exact;
+  const text = textOrNull(value);
+  return text && /^(?:HD|SD)$/i.test(text) ? text.toUpperCase() : null;
+}
+
+function extractLanguageLabel(raw) {
+  const nestedAudio = isPlainObject(raw.audio) ? raw.audio : null;
+  const nestedTrack = isPlainObject(raw.track) ? raw.track : null;
+  return textOrNull(
+    raw.language ?? raw.lang ?? raw.audioLanguage ?? raw.audio_language ??
+    raw.audioTrack ?? raw.audio_track ?? raw.playerLanguage ?? raw.player_language ?? raw.dub ??
+    nestedAudio?.language ?? nestedAudio?.lang ?? nestedTrack?.language ?? nestedTrack?.lang
+  );
 }
 
 function normalizeDurationMinutes(value) {
