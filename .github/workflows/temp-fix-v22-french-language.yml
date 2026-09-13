@@ -45,9 +45,16 @@ jobs:
           p=Path('tests/global_stream_presentation_test.py'); s=p.read_text(encoding='utf-8')
           if old not in s: raise SystemExit('missing V20 presentation test revision')
           s=s.replace(old,new).replace('V20','V22')
-          s=s.replace('assert row["title"] == "Purstream - 4K", row','assert row["title"] == "Purstream - 4K - MULTI (VF/VO)", row')
-          s=s.replace('assert vf["title"] == "Coflix - 1080p"','assert vf["title"] == "Coflix - 1080p - VF"')
-          s=s.replace('assert desktop_native["row"]["title"] == "Cineby - 1080p", desktop_native','assert desktop_native["row"]["title"] == "Cineby - 1080p - VO", desktop_native')
+          replacements={
+            'assert row["title"] == "Purstream - 4K", row':'assert row["title"] == "Purstream - 4K - MULTI (VF/VO)", row',
+            'assert vf["title"] == "Coflix - 1080p"':'assert vf["title"] == "Coflix - 1080p - VF"',
+            'assert url_quality["title"].endswith(" - 1080p"), url_quality':'assert url_quality["title"] == "Kehflix - 1080p - VF", url_quality',
+            'assert numeric_height["title"].endswith(" - 4K"), numeric_height':'assert numeric_height["title"].endswith(" - 4K - VO"), numeric_height',
+            'assert desktop_native["row"]["title"] == "Cineby - 1080p", desktop_native':'assert desktop_native["row"]["title"] == "Cineby - 1080p - VO", desktop_native',
+          }
+          for a,b in replacements.items():
+              if a not in s: raise SystemExit(f'missing presentation assertion: {a}')
+              s=s.replace(a,b)
           p.write_text(s,encoding='utf-8')
           p=Path('tests/global_stream_presentation_pipeline_test.py'); s=p.read_text(encoding='utf-8')
           old_assert='assert native["row"]["title"].endswith(" - 1080p"), native'
