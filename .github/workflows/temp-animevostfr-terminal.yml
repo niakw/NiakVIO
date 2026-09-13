@@ -1,0 +1,74 @@
+name: Temp AnimeVOSTFR terminal trace
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-animevostfr-terminal.yml
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NUVIO_PROVIDER_V3_CONTEXT: workspace
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Inspect anime-only contract and materialize
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('provider-overrides.json').read_text())
+          row=data['provider_patches']['animevostfr']
+          keep={k:row.get(k) for k in ('published_types','provider_lego_scripts','provider_lego_options','route_data_state','repair_disposition','notes')}
+          print('ANIMEVOSTFR_CONTRACT '+json.dumps(keep,ensure_ascii=False,separators=(',',':')))
+          assert row.get('published_types') == ['anime'], row.get('published_types')
+          PY
+          python3 scripts/materialize_provider_v3_one.py animevostfr
+      - name: Trace terminal Sibnet only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, subprocess, sys
+          from pathlib import Path
+          root=Path.cwd()
+          sys.path.insert(0,str((root/'scripts').resolve()))
+          import run_provider_upstream_parity as p
+          fixture={'tmdbId':'13916','mediaType':'anime','category':'anime','title':'Death Note','year':2006,'season':1,'episode':1}
+          context=p.context_for(fixture)
+          context['routeProofTrace']=True
+          path=p.local_catalog()['animevostfr']['path']
+          cp=subprocess.run(['node',str(root/'scripts/provider_worker.cjs'),str(path),json.dumps(fixture,separators=(',',':')),json.dumps(context,separators=(',',':'))],cwd=root,capture_output=True,text=True,timeout=65,check=False)
+          result=None
+          for line in cp.stdout.splitlines():
+              if line.startswith('NUVIO_HEALTH_RESULT='):
+                  result=json.loads(line.split('=',1)[1])
+          if not isinstance(result,dict):
+              print(cp.stdout); print(cp.stderr); raise SystemExit('worker_no_result')
+          observations=result.get('network_observations') or []
+          sib=[row for row in observations if 'sibnet' in str(row.get('host') or '').lower()]
+          print('ANIMEVOSTFR_TRACE_SUMMARY '+json.dumps({'raw':result.get('raw_stream_count'),'streams':result.get('stream_count'),'statuses':result.get('provider_server_http_statuses'),'hosts':result.get('provider_server_hosts')},ensure_ascii=False,separators=(',',':')))
+          print('ANIMEVOSTFR_SIBNET_TRACE '+json.dumps(sib,ensure_ascii=False,separators=(',',':')))
+          if cp.stderr.strip(): print('ANIMEVOSTFR_STDERR '+cp.stderr.strip())
+          assert sib, 'no Sibnet terminal observation'
+          PY
