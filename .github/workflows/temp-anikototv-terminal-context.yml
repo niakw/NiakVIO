@@ -1,0 +1,94 @@
+name: Temp AniKoto terminal context
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-anikototv-terminal-context.yml
+
+permissions:
+  contents: write
+
+jobs:
+  targeted-anikoto:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Stage durable AniKoto runtime and rebuild active bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_anikototv_megaplay_aes_v3.py
+          python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          root = Path.cwd()
+          sys.path.insert(0, str(root / 'scripts'))
+          from apply_provider_overrides import apply_overrides
+
+          provider = root / 'providers' / 'anikototv--nuvio--ca869a8ec86d1a68.js'
+          original = provider.read_bytes()
+          rebuilt, applied = apply_overrides('anikototv', original, phase='discovery')
+          provider.write_bytes(rebuilt)
+          print('ANIKOTO_REBUILD bytes_before=', len(original), 'bytes_after=', len(rebuilt))
+          print('ANIKOTO_REBUILD_APPLIED', applied)
+          PY
+          python3 -m py_compile scripts/provider_patches/anikototv_runtime_v2.py scripts/upgrade_anikototv_megaplay_aes_v3.py
+          node --check providers/anikototv--nuvio--ca869a8ec86d1a68.js
+
+      - name: Exact Death Note S01E01 terminal proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          fixture='{"label":"Death Note S01E01","tmdbId":"13916","mediaType":"anime","category":"anime","season":1,"episode":1,"title":"Death Note","year":2006}'
+          context='{"platform":"macos","locale":"en-US","maxSettingsProfiles":1,"singleProfileZeroStreamPreflight":true,"fixtureMetadata":{"name":"Death Note","title":"Death Note","first_air_date":"2006-10-04","canonicalMediaType":"anime"}}'
+          node scripts/provider_worker.cjs providers/anikototv--nuvio--ca869a8ec86d1a68.js "$fixture" "$context" | tee /tmp/anikoto-death-note.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          raw = Path('/tmp/anikoto-death-note.json').read_text(encoding='utf-8').strip().splitlines()
+          payload = json.loads(raw[-1])
+          print('ANIKOTO_EXACT_RESULT', json.dumps({
+              'ok': payload.get('ok'),
+              'raw_stream_count': payload.get('raw_stream_count'),
+              'stream_count': payload.get('stream_count'),
+              'provider_server_http_statuses': payload.get('provider_server_http_statuses'),
+              'hosts': payload.get('provider_server_hosts'),
+              'streams': payload.get('streams'),
+          }, ensure_ascii=False))
+          observations = payload.get('network_observations') or []
+          terminal = [row for row in observations if str(row.get('host') or '').lower() == 'fetch.nexabloom.top']
+          print('ANIKOTO_NEXABLOOM_OBSERVATIONS', json.dumps(terminal, ensure_ascii=False))
+          assert payload.get('ok') is True, payload
+          assert int(payload.get('raw_stream_count') or 0) > 0, payload
+          assert int(payload.get('stream_count') or 0) > 0, payload
+          assert terminal, 'no fetch.nexabloom.top terminal observation'
+          assert any(200 <= int(row.get('status') or 0) < 300 for row in terminal), terminal
+          assert not any(int(row.get('status') or 0) == 403 for row in terminal), terminal
+          streams = payload.get('streams') or []
+          assert any('fetch.nexabloom.top' in str(row.get('url') or '') for row in streams), streams
+          print('ANIKOTO_DEATH_NOTE_TERMINAL_PROOF=PASS')
+          PY
+
+      - name: Persist only verified AniKoto changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/provider_patches/anikototv_runtime_v2.py provider-overrides.json providers/anikototv--nuvio--ca869a8ec86d1a68.js
+          if git diff --cached --quiet; then
+            echo 'ANIKOTO_VERIFIED_NO_DIFF=true'
+            exit 0
+          fi
+          git commit -m 'fix: carry AniKoto MegaPlay context to terminal HLS'
+          git push origin HEAD:fix/labs-5.21.44-20260912
