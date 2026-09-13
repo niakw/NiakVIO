@@ -18,66 +18,60 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
 
-      - name: Probe exact Stremio stream routes
-        shell: bash
-        run: |
-          set -euo pipefail
-          node - <<'NODE'
-          const base='https://stremio-moviebox-1.onrender.com';
-          const cases=[
-            ['movie-tmdb',base+'/stream/movie/tmdb:157336.json'],
-            ['movie-imdb',base+'/stream/movie/tt0816692.json'],
-            ['tv-tmdb-series',base+'/stream/series/tmdb:1396:1:1.json'],
-            ['tv-imdb-series',base+'/stream/series/tt0903747:1:1.json'],
-            ['tv-tmdb-tv',base+'/stream/tv/tmdb:1396:1:1.json'],
-            ['tv-imdb-tv',base+'/stream/tv/tt0903747:1:1.json'],
-          ];
-          (async()=>{
-            for(const [label,url] of cases){
-              const started=Date.now();
-              try{
-                const r=await fetch(url,{headers:{'User-Agent':'Mozilla/5.0','Accept':'application/json'},signal:AbortSignal.timeout(20000)});
-                const body=await r.text(); let j={}; try{j=JSON.parse(body)}catch{}
-                const rows=Array.isArray(j?.streams)?j.streams:[];
-                const direct=rows.filter(x=>/^https?:\/\//i.test(String(x?.url||'')));
-                console.log('FIELD_MB_STREMIO label='+label+' status='+r.status+' duration_ms='+(Date.now()-started)+' rows='+rows.length+' direct='+direct.length+' body64='+Buffer.from(body.slice(0,1800)).toString('base64'));
-              }catch(e){console.log('FIELD_MB_STREMIO label='+label+' error='+String(e)+' duration_ms='+(Date.now()-started))}
-            }
-          })().catch(e=>{console.error(e);process.exit(1)});
-          NODE
-
-      - name: Probe H5 direct TMDB lookup semantics
+      - name: Prove TMDB public page title lookup and MovieBox H5 chain
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
           const API='https://h5-api.aoneroom.com/wefeed-h5api-bff';
-          const H={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/148 Safari/537.36','Referer':'https://moviebox.ph/','Origin':'https://moviebox.ph','X-Client-Info':'{"timezone":"Asia/Dhaka"}','X-Request-Lang':'en','Accept':'application/json','Content-Type':'application/json'};let token='';
-          async function req(url,opt={}){const headers={...H,...(opt.headers||{})};if(token)headers.Authorization='Bearer '+token;const r=await fetch(url,{...opt,headers,signal:AbortSignal.timeout(10000)});const xu=r.headers.get('x-user');if(xu)try{token=JSON.parse(xu).token||token}catch{};const t=await r.text();let j={};try{j=JSON.parse(t)}catch{};return{r,j,t}}
+          const UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/148 Safari/537.36';
+          let token='';
+          function decodeHtml(s){return String(s||'').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>').trim()}
+          async function tmdbTitle(tmdbId,type){
+            const kind=type==='movie'?'movie':'tv';
+            const url=`https://www.themoviedb.org/${kind}/${encodeURIComponent(tmdbId)}?language=en-US`;
+            const r=await fetch(url,{headers:{'User-Agent':UA,'Accept':'text/html,application/xhtml+xml,*/*','Accept-Language':'en-US,en;q=0.9'},redirect:'follow',signal:AbortSignal.timeout(7000)});
+            const html=await r.text();
+            const patterns=[
+              /<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i,
+              /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i,
+              /<title[^>]*>([^<]+)<\/title>/i,
+            ];
+            let title='';for(const re of patterns){const m=re.exec(html);if(m&&m[1]){title=decodeHtml(m[1]).replace(/\s*[—|-]\s*The Movie Database.*$/i,'').replace(/\s*\(\d{4}\)\s*$/,'').trim();if(title)break}}
+            console.log('FIELD_MB_TMDB type='+type+' id='+tmdbId+' status='+r.status+' title64='+Buffer.from(title).toString('base64')+' bytes='+html.length);
+            if(!r.ok||!title)throw Error('tmdb-title-'+type);
+            return title;
+          }
+          function baseHeaders(origin='https://moviebox.ph'){return {'User-Agent':UA,'Referer':origin+'/','Origin':origin,'X-Client-Info':'{"timezone":"Europe/Paris"}','X-Request-Lang':'en','Accept':'application/json','Content-Type':'application/json'}}
+          async function req(url,opt={}){const headers={...baseHeaders(),...(opt.headers||{})};if(token)headers.Authorization='Bearer '+token;const r=await fetch(url,{...opt,headers,signal:AbortSignal.timeout(7000)});const xu=r.headers.get('x-user');if(xu)try{token=JSON.parse(xu).token||token}catch{};const text=await r.text();let json={};try{json=JSON.parse(text)}catch{};return{r,json,text}}
           function rows(j){const d=j?.data||{};return Array.isArray(d.items)?d.items:Array.isArray(d.list)?d.list:[]}
+          async function resolve(tmdbId,type,se,ep){
+            const started=Date.now();
+            const [title,boot]=await Promise.all([tmdbTitle(tmdbId,type),req(API+'/home?host=moviebox.ph')]);
+            if(!boot.r.ok||!token)throw Error('moviebox-bootstrap');
+            const s=await req(API+'/subject/search',{method:'POST',body:JSON.stringify({keyword:title,page:1,perPage:20})});
+            const items=rows(s.json);const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+            const exact=items.find(x=>norm(x?.title)===norm(title))||items.find(x=>norm(x?.title).includes(norm(title))||norm(title).includes(norm(x?.title)));
+            console.log('FIELD_MB_SEARCH type='+type+' title64='+Buffer.from(title).toString('base64')+' status='+s.r.status+' rows='+items.length+' exact='+Boolean(exact));
+            if(!exact)throw Error('moviebox-no-exact-'+type);
+            const id=String(exact.subjectId||''),detail=String(exact.detailPath||'');
+            const dom=await req(API+'/media-player/get-domain');const domain=String(dom.json?.data||'').replace(/\/$/,'');if(!domain)throw Error('moviebox-no-domain');
+            const ref=domain+'/spa/videoPlayPage/movies/'+detail+'?id='+encodeURIComponent(id)+'&type=/movie/detail&detailSe='+se+'&detailEp='+ep+'&lang=en';
+            const p=await req(domain+'/wefeed-h5api-bff/subject/play?subjectId='+encodeURIComponent(id)+'&se='+se+'&ep='+ep+'&detailPath='+encodeURIComponent(detail),{headers:{Referer:ref,Origin:domain,'X-Source':''}});
+            const d=p.json?.data||{}, all=[...(Array.isArray(d.streams)?d.streams:[]),...(Array.isArray(d.hls)?d.hls:[]),...(Array.isArray(d.dash)?d.dash:[])];
+            const direct=all.filter(x=>/^https?:\/\//i.test(String(x?.url||x?.path||'')));
+            console.log('FIELD_MB_FROM_TMDB type='+type+' tmdb='+tmdbId+' play='+p.r.status+' has='+Boolean(d.hasResource)+' direct='+direct.length+' qualities='+[...new Set(all.map(x=>x.resolutions||x.quality).filter(Boolean))].join(',')+' duration_ms='+(Date.now()-started));
+            if(!d.hasResource||!direct.length)throw Error('moviebox-no-stream-'+type);
+            return direct;
+          }
           (async()=>{
-            const boot=await req(API+'/home?host=moviebox.ph');console.log('FIELD_MB_H5_BOOT status='+boot.r.status+' token='+Boolean(token));
-            const bodies=[
-              ['keyword-number',{keyword:'157336',page:1,perPage:20}],
-              ['keyword-tmdb',{keyword:'tmdb:157336',page:1,perPage:20}],
-              ['tmdbId-field',{tmdbId:'157336',page:1,perPage:20}],
-              ['subject-tmdb-field',{keyword:'',tmdbId:'157336',page:1,perPage:20}],
-            ];
-            for(const [label,body] of bodies){
-              const x=await req(API+'/subject/search',{method:'POST',body:JSON.stringify(body)});const a=rows(x.j);
-              console.log('FIELD_MB_H5_LOOKUP label='+label+' status='+x.r.status+' rows='+a.length+' sample64='+Buffer.from(JSON.stringify(a.slice(0,3))).toString('base64'));
-            }
-            const qs=[
-              API+'/subject/detail?tmdbId=157336',
-              API+'/detail?tmdbId=157336',
-              API+'/subject?tmdbId=157336',
-              API+'/subject/search?tmdbId=157336',
-            ];
-            for(const url of qs){const x=await req(url);console.log('FIELD_MB_H5_GET url='+url+' status='+x.r.status+' body64='+Buffer.from(x.t.slice(0,1200)).toString('base64'))}
-          })().catch(e=>{console.error(e);process.exit(1)});
+            token='';const movie=await resolve('157336','movie',0,0);
+            token='';const tv=await resolve('1396','tv',1,1);
+            console.log('FIELD_MB_TMDB_ONLY_PROOF movie='+movie.length+' tv='+tv.length+' secret_embedded=false budget_ms=25000');
+          })().catch(e=>{console.error('FIELD_MB_TMDB_ONLY_ERROR',e);process.exit(1)});
           NODE
 
-      - name: Lock already-fixed contracts
+      - name: Lock exact 25s and disabled debt contracts
         shell: bash
         run: |
           set -euo pipefail
