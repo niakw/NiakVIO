@@ -3,7 +3,7 @@
 
   <p><a href="README.md">English</a> · <strong>Français</strong></p>
   <h3>Une seule couche providers maintenue pour Nuvio.</h3>
-  <p><strong>96 Provider Objects · VO / VF · TV / Mobile / Desktop</strong></p>
+  <p><strong>46 Provider Objects Hub · VO / VF · TV / Mobile / Desktop</strong></p>
   <p>Installez un seul repository providers. Gardez un large catalogue pendant que NiakVIO gère maintenance structurée, changements de domaines, validation et publications cache-safe.</p>
 </div>
 
@@ -44,7 +44,7 @@ Une couche providers est simple tant que tout reste statique. Le vrai problème 
 
 NiakVIO est construit autour de ce problème.
 
-- **96 Provider Objects restent dans le census** — les providers désactivés ou non résolus ne sont pas supprimés silencieusement pour améliorer un taux de réussite.
+- **46 Provider Objects Hub restent dans le census** — les providers désactivés ou non résolus ne sont pas supprimés silencieusement pour améliorer un taux de réussite.
 - **Projections VO et VF** — un catalogue maintenu avec des manifests dédiés au français.
 - **Une seule couche providers** — évite d’empiler plusieurs packs qui doublonnent le même rôle.
 - **Connaissance structurée** — routes, sémantique des requêtes, identité média et domaines officiels vivent hors des bundles JS opaques publiés.
@@ -117,7 +117,7 @@ Un provider ou manifest autonome peut très bien convenir. NiakVIO prend surtout
 | Capacité | Provider / manifest brut | NiakVIO |
 | --- | --- | --- |
 | Installation | Un ou plusieurs manifests providers | Une couche stable avec projections générales/VF |
-| Maintenance catalogue | Principalement manuelle | 96 Provider Objects conservés et audités |
+| Maintenance catalogue | Principalement manuelle | 46 Provider Objects Hub conservés et audités |
 | Source durable | Souvent le JS publié lui-même | ProviderBase v3 + DATA structurée + Lego Provider/Core détenus |
 | Connaissance routes | Souvent enfouie dans le code | Routes/requêtes/provenance structurées |
 | Rotation domaines | Changement manuel/statique | Découverte hub officiel + refresh `official_site` borné |
@@ -145,7 +145,7 @@ Une preuve Desktop ne vaut jamais automatiquement preuve Android/iOS/TV. Les Lab
 <!-- NIAKVIO_NATIVE_ADAPTIVE_LAB_DOCS_V1 -->
 ### Scope d’acceptation native et échantillonnage adaptatif
 
-Le catalogue maintenu reste **96 Provider Objects**. L’acceptation native finale utilise le scope physique explicite **Hub-46** défini par `automation/evidence/hub-lab-matrix-46.json` ; les lignes désactivées ou hors scope restent visibles comme dette de maintenance et ne sont pas supprimées artificiellement du catalogue.
+Le catalogue maintenu reste **46 Provider Objects Hub**. L’acceptation native finale utilise le scope physique explicite **Hub-46** défini par `automation/evidence/hub-lab-matrix-46.json` ; les lignes désactivées ou hors scope restent visibles comme dette de maintenance et ne sont pas supprimées artificiellement du catalogue.
 
 Le corpus Lab ordinaire n’est pas un batch fixe. `.github/triggers/rotating-popular-corpus.json` porte exactement trois réserves globales récentes — **movie, TV et anime** — actuellement 32 œuvres par lane, bornées de 2010 à l’année civile précédente. Une campagne native démarre avec exactement **1 film + 1 épisode TV + 1 épisode anime**. Un provider/lane ne passe à une autre œuvre de la même réserve qu’après un résultat propre `0 streams`. Une preuve positive arrête la rotation ; une erreur runtime/load/timeout/transport/player/identité s’arrête et reste visible au lieu d’être masquée par un changement de fixture.
 

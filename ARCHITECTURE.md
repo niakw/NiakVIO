@@ -10,7 +10,7 @@ NiakVIO sépare trois responsabilités :
 - **NiakVIO** : reconnaissance, composition, vérification, Learning et publication ;
 - **clients Nuvio officiels** : surfaces d’exécution et de preuve par plateforme.
 
-Le catalogue de travail couvre **les 96 Provider Objects**, providers désactivés compris. Un zéro flux, une route inconnue ou un stream cassé ne suffit jamais à déclarer un provider mort.
+Le catalogue exécutable couvre **46 Provider Objects Hub**. Les providers hors Hub ne sont plus des lignes OFF : seuls leurs ProviderBase historiques restent archivés sous `provider-bases/`. Un zéro flux, une route inconnue ou un stream cassé ne suffit jamais à déclarer un provider mort.
 
 ## 2. Source de vérité Provider v3
 

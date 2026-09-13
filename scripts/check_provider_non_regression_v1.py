@@ -14,7 +14,7 @@ DEFAULT_OUT = ROOT / "automation" / "provider-non-regression-gate.json"
 DEFAULT_INVALIDATIONS = ROOT / "automation" / "provider-proof-invalidations.json"
 CURRENT_MANIFEST = ROOT / "manifest.json"
 CURRENT_OVERRIDES = ROOT / "provider-overrides.json"
-EXPECTED = 96
+EXPECTED = 46
 HISTORY = ("5.21.0", "5.21.16", "5.21.36")
 GREEN = "🟢"
 

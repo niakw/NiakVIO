@@ -97,7 +97,7 @@ ProviderBase v3 + structured DATA + owned Lego + NiakVIO-safe minimizer
 
 Une reconstruction complète :
 
-- couvre les 96 Provider Objects ;
+- couvre les 46 Provider Objects Hub ;
 - s’exécute uniquement sur une branche non-main ;
 - ne seed jamais depuis les bundles publiés/upstream ;
 - valide sécurité/type/plan/minimizer ;

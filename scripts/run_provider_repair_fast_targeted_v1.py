@@ -150,7 +150,7 @@ def write_summary(
         "schemaVersion": 3,
         "publicationAllowed": False,
         "fullPortfolioGateRequired": True,
-        "catalogueProviderCount": 96,
+        "catalogueProviderCount": 46,
         "targetedProviders": targets,
         "targetedProviderCount": len(targets),
         "maxAttemptsPerTask": attempts,

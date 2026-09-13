@@ -31,7 +31,7 @@ RECOVERY = ROOT / "automation" / "provider-route-recovery-v6-targeted.json"
 QUICK = ROOT / "provider-v3-quick-yield.json"
 OUTPUT = ROOT / "automation" / "provider-repair-disposition.json"
 HUB_MATRIX = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
-EXPECTED = 96
+EXPECTED = 46
 TERMINAL = {"terminal-blocked", "terminal-unreachable"}
 
 

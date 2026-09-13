@@ -3,7 +3,7 @@
 
   <p><strong>English</strong> · <a href="README.fr.md">Français</a></p>
   <h3>One maintained provider layer for Nuvio.</h3>
-  <p><strong>96 Provider Objects · VO / VF · TV / Mobile / Desktop</strong></p>
+  <p><strong>46 Hub Provider Objects · VO / VF · TV / Mobile / Desktop</strong></p>
   <p>Install one provider repository. Keep a broad catalogue while NiakVIO handles structured maintenance, domain changes, validation and cache-safe releases.</p>
 </div>
 
@@ -44,7 +44,7 @@ A provider layer is easy while everything is static. The real maintenance proble
 
 NiakVIO is built around that problem.
 
-- **96 Provider Objects stay in the census** — disabled or unresolved providers are not silently removed to improve a success rate.
+- **46 Hub Provider Objects stay in the census** — disabled or unresolved providers are not silently removed to improve a success rate.
 - **VO and VF projections** — one maintained catalogue with dedicated French-focused manifests.
 - **One provider layer** — avoid stacking several provider packs that duplicate the same role.
 - **Structured provider knowledge** — routes, request semantics, identity rules and official-domain evidence live outside opaque published bundles.
@@ -117,7 +117,7 @@ A standalone provider or manifest can be perfectly useful. NiakVIO becomes valua
 | Capability | Raw provider / standalone manifest | NiakVIO |
 | --- | --- | --- |
 | Installation | One or several provider manifests | One stable provider layer with general/VF projections |
-| Catalogue maintenance | Mostly manual | 96 Provider Objects retained and audited |
+| Catalogue maintenance | Mostly manual | 46 Hub Provider Objects retained and audited |
 | Durable source | Often the published JS itself | ProviderBase v3 + structured DATA + owned Provider/Core Lego |
 | Route knowledge | Usually embedded in provider code | Structured route/request/provenance data |
 | Domain rotation | Manual/static URL changes | Official-hub discovery + bounded `official_site` refresh |
@@ -145,7 +145,7 @@ A Desktop result does not automatically count as Android/iOS/TV evidence. Labs c
 <!-- NIAKVIO_NATIVE_ADAPTIVE_LAB_DOCS_V1 -->
 ### Native acceptance scope and adaptive sampling
 
-The maintained catalogue remains **96 Provider Objects**. Final native acceptance uses the explicit physical **Hub-46** scope from `automation/evidence/hub-lab-matrix-46.json`; disabled or out-of-scope catalogue rows remain visible maintenance debt and are not silently deleted.
+The maintained catalogue remains **46 Hub Provider Objects**. Final native acceptance uses the explicit physical **Hub-46** scope from `automation/evidence/hub-lab-matrix-46.json`; disabled or out-of-scope catalogue rows remain visible maintenance debt and are not silently deleted.
 
 The ordinary Lab corpus is not a fixed batch. `.github/triggers/rotating-popular-corpus.json` owns exactly three recent global reserves — **movie, TV and anime** — currently 32 works per lane, constrained to 2010 through the previous calendar year. A native campaign starts with exactly **1 movie + 1 TV episode + 1 anime episode**. A provider/lane advances to another work from the same reserve only after a clean `0 streams` result. Positive proof stops rotation; runtime/load/timeout/transport/player/identity failures stop and remain visible instead of being rotated away.
 

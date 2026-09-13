@@ -73,7 +73,7 @@ def baseline_lock_errors(
     require_exact_bundle: bool = True,
 ) -> list[str]:
     errors: list[str] = []
-    expected_count = int(locks.get("catalogueProviderCount") or 96)
+    expected_count = int(locks.get("catalogueProviderCount") or 46)
     manifest_rows = rows(manifest)
     if len(manifest_rows) != expected_count:
         errors.append(f"catalogue count mismatch: {len(manifest_rows)} != {expected_count}")

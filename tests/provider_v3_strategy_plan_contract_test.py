@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Provider v3 strategy-to-executable-plan contract for the full 96 catalogue.
+"""Provider v3 strategy-to-executable-plan contract for the hub-only 46 catalogue.
 
 Catalogue membership and activation are separate concerns:
-- all 96 canonical Provider Objects remain present for census/recoverability;
-- exactly the 46 providers in ``hub-lab-matrix-46.json`` are enabled targets;
-- the remaining 50 providers stay disabled and Repair must not widen the set;
+- only the 46 hub Provider Objects remain in the executable catalogue;
+- the 46 providers in ``hub-lab-matrix-46.json`` are the complete executable catalogue;
+- non-hub providers survive only as historical ProviderBase bytes and Repair must not resurrect them;
 - a provider with executable LIVE DATA/recipe/Lego is directly executable;
 - a provider without a currently executable plan is accepted only when Repair V6
   attached an audited ``routeDataState=repair`` or ``routeDataState=off``
@@ -167,9 +167,9 @@ def main() -> int:
     targets = hub46_targets()
 
     rows = manifest.get("scrapers") or []
-    assert len(rows) == 96, f"expected full 96-provider catalogue, got {len(rows)}"
+    assert len(rows) == 46, f"expected hub-only 46-provider catalogue, got {len(rows)}"
     ids = [cid(row.get("id")) for row in rows]
-    assert len(set(ids)) == 96, "provider ids must be unique after canonical case-fold"
+    assert len(set(ids)) == 46, "provider ids must be unique after canonical case-fold"
     missing_targets = sorted(targets - set(ids))
     assert not missing_targets, f"hub46 targets missing from catalogue: {missing_targets}"
 

@@ -273,7 +273,7 @@ def main() -> int:
         "mode": args.mode,
         "publicationAllowed": False,
         "mainWritesAllowed": False,
-        "catalogueProviderCount": 96,
+        "catalogueProviderCount": 46,
         "skippedAlreadyGreenProviders": sorted(skipped),
         "targetedProviderCount": len(targets),
         "targetedProviders": targets,

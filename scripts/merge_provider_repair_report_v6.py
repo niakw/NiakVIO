@@ -121,8 +121,8 @@ def main() -> int:
         if retained > 0:
             lkg_retained_rows += retained
             lkg_augmented_providers.append(key)
-    if len(rows) != 96:
-        raise SystemExit(f"merged provider rows={len(rows)}, expected=96")
+    if len(rows) != 46:
+        raise SystemExit(f"merged provider rows={len(rows)}, expected=46")
 
     merged_rows = []
     typed_recipe_sanitized = []
@@ -136,8 +136,8 @@ def main() -> int:
     proven = [row for row in merged_rows if row.get("routes")]
     merged = dict(baseline)
     merged.update({
-        "providerCount": 96,
-        "catalogueProviderCount": 96,
+        "providerCount": 46,
+        "catalogueProviderCount": 46,
         "providersWithProvenRoutes": len(proven),
         "provenRouteCount": sum(len(row.get("routes") or []) for row in merged_rows),
         "simpleApiRecipeCount": sum(1 for row in merged_rows if isinstance(row.get("apiRecipe"), dict)),

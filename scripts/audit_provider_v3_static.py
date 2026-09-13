@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only audit of the exact 96 Provider v3 bytes; never reconstructs."""
+"""Read-only audit of the exact 46 hub Provider v3 bytes; never reconstructs."""
 from __future__ import annotations
 import hashlib, json, re
 from pathlib import Path
@@ -14,7 +14,7 @@ def canon(v): return str(v or "").strip().casefold()
 
 manifest=load(ROOT/"manifest.json"); overrides=load(ROOT/"provider-overrides.json"); material=load(ROOT/"provider-v3-materialization.json"); static=load(ROOT/"automation/provider-v3-static-knowledge.json")
 rows=manifest.get("scrapers") or []; reports=material.get("providers") or []
-assert len(rows)==96 and len(reports)==96, (len(rows),len(reports))
+assert len(rows)==46 and len(reports)==46, (len(rows),len(reports))
 rb={canon(r.get("provider")):r for r in reports if isinstance(r,dict)}
 patches=overrides.get("provider_patches") or {}; capabilities=overrides.get("provider_capabilities") or {}; static_rows=static.get("providers") or {}; seen=set()
 
@@ -88,5 +88,5 @@ for row in rows:
     assert data==expected_data, pid
 
 assert set(rb)==seen
-assert material.get("providerCount")==96 and material.get("expectedProviderCount")==96
-print(f"PROVIDER_V3_STATIC_AUDIT_OK providers=96 reconstruction=false filename_stage={stage} structured_data=current")
+assert material.get("providerCount")==46 and material.get("expectedProviderCount")==46
+print(f"PROVIDER_V3_STATIC_AUDIT_OK providers=46 reconstruction=false filename_stage={stage} structured_data=current")

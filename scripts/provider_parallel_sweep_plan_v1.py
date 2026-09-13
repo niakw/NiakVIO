@@ -30,7 +30,7 @@ SKIP = ROOT / "automation" / "provider-repair-skip.json"
 RECENT = ROOT / "automation" / "provider-sweep-recent-v1.json"
 TRIGGER = ROOT / "automation" / "provider-fast-trigger.json"
 LEARN_HANDOFF = ROOT / "automation" / "provider-repair-learn-handoff-v1.json"
-EXPECTED = 96
+EXPECTED = 46
 
 
 def cid(value: object) -> str:
