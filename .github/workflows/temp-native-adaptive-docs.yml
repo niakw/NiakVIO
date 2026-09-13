@@ -1,0 +1,47 @@
+name: TEMP - native adaptive Lab docs
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-native-adaptive-docs.yml
+
+permissions:
+  contents: write
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply and verify durable native Lab documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_native_lab_docs_v1.py
+          python3 tests/native_adaptive_lab_docs_test.py
+          python3 tests/recent_global_lab_corpus_policy_test.py
+          python3 tests/native_adaptive_catalog_contract_test.py
+          python3 tests/native_hub46_transport_manifest_test.py
+      - name: Commit docs only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md README.fr.md VALIDATION.md
+          if git diff --cached --quiet; then
+            echo 'Docs already current'
+            exit 0
+          fi
+          git commit -m 'docs(labs): document Hub-46 adaptive 1+1+1 acceptance'
+          git fetch origin fix/labs-5.21.44-20260912
+          git rebase origin/fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
