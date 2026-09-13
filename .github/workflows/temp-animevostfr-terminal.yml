@@ -6,6 +6,7 @@ on:
       - fix/labs-5.21.44-20260912
     paths:
       - .github/workflows/temp-animevostfr-terminal.yml
+      - scripts/fix_animevostfr_anime_only.py
 
 permissions:
   contents: read
@@ -30,18 +31,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Inspect anime-only contract and materialize
+      - name: Enforce anime-only contract and materialize
         shell: bash
         run: |
           set -euo pipefail
+          python3 scripts/fix_animevostfr_anime_only.py
           python3 - <<'PY'
           import json
           from pathlib import Path
-          data=json.loads(Path('provider-overrides.json').read_text())
-          row=data['provider_patches']['animevostfr']
-          keep={k:row.get(k) for k in ('published_types','provider_lego_scripts','provider_lego_options','route_data_state','repair_disposition','notes')}
-          print('ANIMEVOSTFR_CONTRACT '+json.dumps(keep,ensure_ascii=False,separators=(',',':')))
-          assert row.get('published_types') == ['anime'], row.get('published_types')
+          row=json.loads(Path('provider-overrides.json').read_text())['provider_patches']['animevostfr']
+          disp=row.get('repair_disposition') or {}
+          print('ANIMEVOSTFR_CONTRACT '+json.dumps({'published_types':row.get('published_types'),'requiredLanes':disp.get('requiredLanes'),'missingLanes':disp.get('missingLanes'),'laneStatuses':disp.get('laneStatuses'),'route_data_state':row.get('route_data_state')},ensure_ascii=False,separators=(',',':')))
+          assert row.get('published_types') == ['anime']
+          assert disp.get('requiredLanes') == ['anime']
+          assert 'movie' not in json.dumps(row.get('published_types'))
           PY
           python3 scripts/materialize_provider_v3_one.py animevostfr
       - name: Trace terminal Sibnet only
