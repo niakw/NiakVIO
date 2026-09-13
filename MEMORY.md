@@ -1506,3 +1506,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Exact Tokyo Ghoul S01E01 proof remains stream-positive: `{'fixture': 'tokyo-ghoul-2014-s01e01', 'streams': 2, 'raw': 2, 'error': None, 'statuses': [200, 206, 404]}`. Previous run 34770328860 also completed full-reserve 32 parity with `certainRegressions=[]`.
 - That prior workflow failed only in stale unrelated `tests/provider_v3_static_knowledge_contract_test.py` VegaMovies lookup (`StopIteration`); this debt does not invalidate VoirAnime runtime proof and must be repaired separately.
 - Core ownership unchanged; no minimizer run.
+
+## 2026-09-13 — AllWish stale playable proof invalidated
+
+- AllWish remains catalogued/enabled by scope policy, but fresh ZERO15 adaptive proof exhausted the current global movie/TV corpus with zero streams. Historical manual evidence also showed fixture-invariant very short wrong-content media across unrelated works.
+- Therefore old `playable_verified`/complete-capability claims are invalidated: `route_data_state=repair`, no current verified/proven lanes, movie+TV missing. Historical route knowledge is retained only as diagnostic evidence.
+- Runtime remains fail-closed until a fresh identity-safe terminal media proof exists. Workspace materialization did not run the final-stage minimizer.

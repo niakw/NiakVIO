@@ -15521,19 +15521,19 @@
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
       ],
       "live_route_gate": {
-        "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
+        "completion_state": "stream-capability-unproven",
+        "effective_coverage_ratio": 0.0,
         "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "declared_type_coverage_ratio": 0.0,
         "required_types": [
           "movie",
           "tv"
         ],
-        "validated_types": [
+        "validated_types": [],
+        "missing_types": [
           "movie",
           "tv"
         ],
-        "missing_types": [],
         "provider_request_count": 8,
         "live_validated_route_count": 2,
         "execution_plan_route_count": 3,
@@ -15662,7 +15662,7 @@
       "manifest_overrides": {
         "enabled": true
       },
-      "route_data_state": "on",
+      "route_data_state": "repair",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -15670,41 +15670,62 @@
         "activationAuthority": "hub-lab-matrix-46",
         "declaredHub": "https://t.me/s/allwishme",
         "forcedEnabled": true,
-        "routeDataState": "on",
+        "routeDataState": "repair",
         "requiredLanes": [
           "movie",
           "tv"
         ],
-        "currentVerifiedLanes": [
-          "movie",
-          "tv"
-        ],
+        "currentVerifiedLanes": [],
         "exactLockedLanes": [],
-        "provenLanes": [
+        "provenLanes": [],
+        "missingLanes": [
           "movie",
           "tv"
         ],
-        "missingLanes": [],
-        "completeCapabilityProof": true,
-        "recoveryStatus": "no-proven-route",
+        "completeCapabilityProof": false,
+        "recoveryStatus": "stale-stream-proof-invalidated",
         "provenRouteCount": 0,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
-          "all_declared_lanes_live_proven"
+          "fresh_full_corpus_zero",
+          "historical_wrong_content",
+          "fixture_invariant_short_media",
+          "stale_playable_verified_invalidated"
         ],
         "laneStatuses": {
           "movie": [
-            "playable_verified"
+            "unproven",
+            "fresh_corpus_zero",
+            "historical_wrong_content"
           ],
           "tv": [
-            "playable_verified"
+            "unproven",
+            "fresh_corpus_zero",
+            "historical_wrong_content"
           ]
         },
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {},
-      "domain_substitutions": {}
+      "domain_substitutions": {},
+      "notes": [
+        "Fresh 2026-09-13 adaptive corpus proof is zero on all declared lanes; previous playable_verified lane claims are invalidated.",
+        "Historical manual cross-fixture evidence returned the same very short media for unrelated works, so it is wrong-content/fixture-invariant evidence, not a valid stream proof.",
+        "Route knowledge is retained for diagnosis, but activation does not imply live capability proof; runtime must fail closed until fresh identity-safe media proof exists."
+      ],
+      "current_stream_proof": {
+        "schemaVersion": 1,
+        "authority": "zero15-adaptive-2026-09-13",
+        "streamPositive": false,
+        "testedLanes": [
+          "movie",
+          "tv"
+        ],
+        "globalCorpusExhausted": true,
+        "historicalWrongContent": true,
+        "requiresFreshIdentitySafePositive": true
+      }
     },
     "anime-ultime": {
       "capability": "mixed_embed_resolver",
