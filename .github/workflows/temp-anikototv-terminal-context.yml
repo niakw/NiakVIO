@@ -6,6 +6,7 @@ on:
       - fix/labs-5.21.44-20260912
     paths:
       - .github/workflows/temp-anikototv-terminal-context.yml
+      - scripts/upgrade_anikototv_megaplay_aes_v3.py
 
 permissions:
   contents: read
@@ -54,9 +55,7 @@ jobs:
           context=p.context_for(fixture)
           context['routeProofTrace']=True
           path=p.local_catalog()['anikototv']['path']
-          print('ANIKOTO_MATERIALIZED_PATH',path)
           cp=subprocess.run(['node',str(root/'scripts/provider_worker.cjs'),str(path),json.dumps(fixture,separators=(',',':')),json.dumps(context,separators=(',',':'))],cwd=root,capture_output=True,text=True,timeout=65,check=False)
-          print('ANIKOTO_WORKER_RC',cp.returncode)
           result=None
           for line in cp.stdout.splitlines():
               if line.startswith('NUVIO_HEALTH_RESULT='):
@@ -69,10 +68,9 @@ jobs:
           useful=[]
           for row in observations:
               host=str(row.get('host') or '').lower()
-              if host in {'megaplay.buzz','fetch.nexabloom.top','cdn.imgnex.top','ncdn.imgnex.top'} or 'nexa' in host or 'imgnex' in host:
+              if host == 'megaplay.buzz' or (host and host not in {'anikototv.to','api.themoviedb.org'} and not row.get('infrastructure')):
                   useful.append(row)
-          print('ANIKOTO_TRACE_SUMMARY '+json.dumps({'raw':result.get('raw_stream_count'),'streams':result.get('stream_count'),'statuses':result.get('provider_server_http_statuses'),'hosts':result.get('provider_server_hosts')},ensure_ascii=False,separators=(',',':')))
-          print('ANIKOTO_TERMINAL_TRACE '+json.dumps(useful,ensure_ascii=False,separators=(',',':')))
-          if cp.stderr.strip(): print('ANIKOTO_WORKER_STDERR '+cp.stderr.strip())
-          assert any(str(row.get('host') or '').lower()=='fetch.nexabloom.top' for row in useful), useful
+          print('ANIKOTO_V5_TRACE_SUMMARY '+json.dumps({'raw':result.get('raw_stream_count'),'streams':result.get('stream_count'),'statuses':result.get('provider_server_http_statuses'),'hosts':result.get('provider_server_hosts')},ensure_ascii=False,separators=(',',':')))
+          print('ANIKOTO_V5_TRACE '+json.dumps(useful,ensure_ascii=False,separators=(',',':')))
+          assert any(str(row.get('host') or '').lower()=='megaplay.buzz' and '/stream/getSources' in str(row.get('proof_url') or '') for row in useful), useful
           PY
