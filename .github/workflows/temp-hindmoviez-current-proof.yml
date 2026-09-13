@@ -1,0 +1,68 @@
+name: TEMP - HindMoviez current proof
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-hindmoviez-current-proof.yml]
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NUVIO_PROVIDER_V3_CONTEXT: workspace
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: fix/labs-5.21.44-20260912}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Materialize HindMoviez and validate contracts
+        run: |
+          set -euo pipefail
+          python3 scripts/materialize_provider_v3_one.py hindmoviez
+          python3 scripts/validate_published_provider_config.py --expected 96
+          python3 tests/global_core_runtime_ownership_test.py
+      - name: Run strict current parity on both declared lanes
+        run: |
+          set -euo pipefail
+          python3 scripts/run_provider_upstream_parity_v3.py --provider hindmoviez --samples-per-lane 32 --workers 1 --timeout 25 --seed 20260913-hindmoviez-current --out automation/hindmoviez-current-parity.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('automation/hindmoviez-current-parity.json').read_text())
+          rows=[]
+          for p in d.get('providers') or []:
+            for lane in p.get('lanes') or []:
+              rows.append({k:lane.get(k) for k in ('lane','status','upstreamPositive','niakPositive','compared','certainRegression','reason')})
+          print('HINDMOVIEZ_CURRENT_PARITY '+json.dumps({'summary':d.get('summary'),'lanes':rows},ensure_ascii=False,separators=(',',':')))
+          PY
+      - name: Exact multi-fixture worker observations
+        run: |
+          python3 - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          path=p.local_catalog()['hindmoviez']['path']
+          fixtures=[
+            {'slug':'interstellar-2014','tmdbId':'157336','mediaType':'movie','category':'movie','title':'Interstellar','year':2014},
+            {'slug':'dune-part-two-2024','tmdbId':'693134','mediaType':'movie','category':'movie','title':'Dune: Part Two','year':2024},
+            {'slug':'deadpool-wolverine-2024','tmdbId':'533535','mediaType':'movie','category':'movie','title':'Deadpool & Wolverine','year':2024},
+            {'slug':'arcane-s01e01','tmdbId':'94605','mediaType':'tv','category':'tv','season':1,'episode':1,'title':'Arcane','year':2021},
+            {'slug':'loki-s01e01','tmdbId':'84958','mediaType':'tv','category':'tv','season':1,'episode':1,'title':'Loki','year':2021},
+            {'slug':'house-of-the-dragon-s01e01','tmdbId':'94997','mediaType':'tv','category':'tv','season':1,'episode':1,'title':'House of the Dragon','year':2022},
+          ]
+          out=[]
+          for f in fixtures:
+            r=p.run_worker(path,f,35)
+            out.append({'fixture':f['slug'],'lane':f['mediaType'],'streams':int(r.get('stream_count') or 0),'raw':int(r.get('raw_stream_count') or 0),'statuses':r.get('provider_server_http_statuses') or r.get('http_statuses') or [],'hosts':r.get('provider_server_hosts') or [],'error':r.get('error_class')})
+          print('HINDMOVIEZ_EXACT_OBS '+json.dumps(out,ensure_ascii=False,separators=(',',':')))
+          PY
