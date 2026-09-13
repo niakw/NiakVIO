@@ -1,0 +1,79 @@
+name: TEMP - Finalize Hub46 provider-old contract
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - scripts/finalize_hub46_provider_old_contract.py
+      - .github/workflows/temp-finalize-hub46-provider-old.yml
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    if: ${{ !contains(github.event.head_commit.message, '[hub46-old-final]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Finalize provider-old contract and checkpoint memory
+        run: python scripts/finalize_hub46_provider_old_contract.py
+
+      - name: Prove prune is idempotent under provider-old layout
+        run: python scripts/prune_to_hub46_catalog.py
+
+      - name: Prove archive separation is idempotent
+        run: python scripts/archive_nonhub_providerbases.py
+
+      - name: Audit exact retained Provider v3 bytes
+        run: python scripts/audit_provider_v3_static.py
+
+      - name: Final exact scope assertion
+        run: |
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          root=Path('.')
+          matrix=json.loads((root/'automation/evidence/hub-lab-matrix-46.json').read_text())
+          want_manifest={str(r['manifestId']).strip().lower().replace('_','-') for r in matrix['rows']}
+          want_registry={str(r['registryId']).strip().lower().replace('_','-') for r in matrix['rows']}
+          manifest=json.loads((root/'manifest.json').read_text())
+          rows=manifest['scrapers']
+          got={str(r['id']).strip().lower().replace('_','-') for r in rows}
+          assert len(rows)==46 and got==want_manifest and all(r.get('enabled') is True for r in rows)
+          catalog=json.loads((root/'provider_catalog.json').read_text())
+          c={str(r['canonicalId']).strip().lower().replace('_','-') for r in catalog['providers']}
+          assert c==want_registry and len(c)==46
+          disp=json.loads((root/'automation/provider-repair-disposition.json').read_text())
+          assert disp['catalogueProviderCount']==46 and disp['enabledProviderCount']==46
+          assert disp['disabledProviderCount']==0 and disp['disabledProviders']==[]
+          def slug(p): return re.sub(r'--base--[0-9a-f]+\.js$','',p.name.lower())
+          active={slug(p) for p in (root/'provider-bases').glob('*--base--*.js')}
+          old={slug(p) for p in (root/'provider-old').glob('*--base--*.js')}
+          assert active==want_registry and len(active)==46
+          assert len(old)==50 and not (active & old)
+          for pid in old:
+              assert not any((root/'providers').glob(pid+'-*.js')),pid
+          print('FINAL_HUB46_SCOPE_OK manifest=46 catalog=46 active_bases=46 provider_old=50 disabled=0')
+          PY
+
+      - name: Commit durable contract
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No final contract changes to commit'
+            exit 0
+          fi
+          git commit -m '[hub46-old-final] make provider-old archive durable'
+          git pull --rebase origin fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
