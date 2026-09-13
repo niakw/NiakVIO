@@ -1,0 +1,115 @@
+name: TEMP - AniKotoTV MegaPlay AES v3 proof
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths:
+      - scripts/upgrade_anikototv_megaplay_aes_v3.py
+      - .github/workflows/temp-anikototv-aes-v3-proof.yml
+
+permissions:
+  contents: write
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NUVIO_PROVIDER_V3_CONTEXT: workspace
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Stage current AniKoto contract plus AES envelope decoder
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_anikototv_megaplay_runtime_v2.py
+          python3 scripts/upgrade_anikototv_megaplay_aes_v3.py
+          python3 scripts/materialize_provider_v3_one.py anikototv
+          python3 scripts/validate_published_provider_config.py --expected 96
+          python3 tests/provider_v3_final_stage_minimizer_gate_test.py
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/provider_v3_strategy_plan_contract_test.py
+      - name: Require Death Note terminal stream
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          f={'tmdbId':'13916','mediaType':'anime','category':'anime','title':'Death Note','year':2006,'season':1,'episode':1}
+          r=p.run_worker(p.local_catalog()['anikototv']['path'],f,65)
+          row={'streams':int(r.get('stream_count') or 0),'raw':int(r.get('raw_stream_count') or 0),'statuses':r.get('http_statuses') or [],'accessible':r.get('server_accessible'),'success':r.get('server_success'),'error':r.get('error_class')}
+          print('ANIKOTOTV_AES_V3_EXACT '+json.dumps(row,separators=(',',':')))
+          Path('automation/anikototv-aes-v3-proof.json').write_text(json.dumps(row,indent=2)+'\n')
+          if row['streams']<=0: raise SystemExit('AniKotoTV Death Note remains zero after AES V3')
+          PY
+      - name: Recent reserve parity
+        run: |
+          set -euo pipefail
+          python3 scripts/run_provider_upstream_parity_v3.py \
+            --provider anikototv --samples-per-lane 32 --workers 1 --timeout 25 \
+            --seed 20260913-anikoto-aes-v3 \
+            --out automation/anikototv-aes-v3-parity.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('automation/anikototv-aes-v3-parity.json').read_text());bad=[]
+          for p in d.get('providers') or []:
+            for lane in p.get('lanes') or []:
+              if lane.get('status')=='REGRESSION':bad.append(f"{p.get('providerId')}:{lane.get('lane')}")
+          print('ANIKOTOTV_AES_V3_PARITY '+json.dumps({'summary':d.get('summary'),'bad':bad},separators=(',',':')))
+          if bad:raise SystemExit('certain parity regression after AniKoto repair: '+','.join(bad))
+          PY
+      - name: Promote and reconfirm
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('provider-overrides.json');d=json.loads(p.read_text());r=d['provider_patches']['anikototv'];r['route_data_state']='on';disp=r.get('repair_disposition')
+          if not isinstance(disp,dict):disp={};r['repair_disposition']=disp
+          disp.update({'routeDataState':'on','currentVerifiedLanes':['anime'],'provenLanes':['anime'],'missingLanes':[],'completeCapabilityProof':True,'recoveryStatus':'megaplay-aes-v3-stream-positive','terminalState':None,'quarantined':False,'reasonCodes':['death_note_exact_positive','megaplay_aes_v3','full32_no_certain_regression']})
+          p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+          PY
+          python3 scripts/materialize_provider_v3_one.py anikototv
+          python3 scripts/validate_published_provider_config.py --expected 96
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/provider_v3_strategy_plan_contract_test.py
+          python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          f={'tmdbId':'13916','mediaType':'anime','category':'anime','title':'Death Note','year':2006,'season':1,'episode':1}
+          r=p.run_worker(p.local_catalog()['anikototv']['path'],f,65);n=int(r.get('stream_count') or 0)
+          print(f'ANIKOTOTV_AES_V3_RECONFIRM streams={n}')
+          if n<=0:raise SystemExit('AniKoto positive lost after promotion')
+          PY
+      - name: Record durable evidence and commit
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          proof=json.loads(Path('automation/anikototv-aes-v3-proof.json').read_text());parity=json.loads(Path('automation/anikototv-aes-v3-parity.json').read_text())
+          m=Path('MEMORY.md');t=m.read_text(encoding='utf-8');marker='## 2026-09-13 — AniKotoTV MegaPlay AES V3 recovery'
+          if marker not in t:
+            t+=f'''\n{marker}\n\n- AniKotoTV current chain is search AJAX -> series -> episode -> server -> MegaPlay. MegaPlay now returns encrypted `enc` instead of `sources.file`; V3 decodes the base64url AES-256-CBC envelope provider-side with CryptoJS, already a supported runtime capability.\n- Core still owns terminal media validation; no WASM/browser/client workaround was added. Exact Death Note S01E01 proof: `{json.dumps(proof,ensure_ascii=False)}`.\n- Recent-reserve parity summary after repair: `{json.dumps(parity.get('summary'),ensure_ascii=False)}`. Workspace materialization did not minimize.\n''';m.write_text(t,encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add provider-overrides.json manifest.json providers/ vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json scripts/provider_patches/anikototv_runtime_v2.py scripts/upgrade_anikototv_megaplay_runtime_v2.py scripts/upgrade_anikototv_megaplay_aes_v3.py automation/anikototv-aes-v3-proof.json automation/anikototv-aes-v3-parity.json MEMORY.md
+          git commit -m 'fix(anikoto): decode current MegaPlay AES source envelope'
+          git fetch origin fix/labs-5.21.44-20260912
+          git rebase origin/fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
