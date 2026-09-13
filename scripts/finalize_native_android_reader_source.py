@@ -7,8 +7,8 @@ generated ephemeral instrumentation test:
 * the generic production-player entry marker is FIELD_NATIVE_PLAYER_ENTRY; the later
   request-contract augmenter owns the sole enriched FIELD_NATIVE_PLAYER_BEGIN marker;
 * NuvioMobile's reader probe starts the production MainActivity class explicitly in
-  the exact application package under instrumentation. This avoids launcher-alias
-  drift without hard-coding an applicationId that can change between client builds.
+  the application package that owns that class. Instrumentation context/package names
+  can refer to the test APK, so they are not authoritative for the target component.
 """
 from __future__ import annotations
 
@@ -18,6 +18,7 @@ ENTRY_SUFFIX = " entry=nuvio-production-player"
 MOBILE_CONTEXT_LAUNCH = "context.packageManager.getLaunchIntentForPackage(context.packageName)"
 MOBILE_EXPLICIT_SET_CLASS = "Intent().setClassName("
 MOBILE_EXPLICIT_CONTEXT_PACKAGE = "context.packageName,"
+MOBILE_EXPLICIT_TARGET_PACKAGE = "MainActivity::class.java.packageName,"
 MOBILE_EXPLICIT_MAIN_ACTIVITY = "MainActivity::class.java.name"
 MOBILE_LEGACY_EXPLICIT_LAUNCH = '''Intent().setClassName(
                 "com.nuviodebug.com",
@@ -40,18 +41,19 @@ def finalize_source(source: str, client: str) -> str:
     source = source.replace(GENERIC_BEGIN, GENERIC_ENTRY, 1)
 
     if client == "mobile":
-        # The reader must launch NuvioMobile's real MainActivity explicitly while
-        # staying inside the exact package installed for instrumentation. A fixed
-        # package literal made the Lab drift from the client it had actually built.
+        # Instrumentation can expose the test APK package via context.packageName.
+        # The production MainActivity class itself is the authoritative source for
+        # the target package, independent of applicationId/build-variant drift.
         explicit_set_class_count = source.count(MOBILE_EXPLICIT_SET_CLASS)
         explicit_context_count = source.count(MOBILE_EXPLICIT_CONTEXT_PACKAGE)
         explicit_main_count = source.count(MOBILE_EXPLICIT_MAIN_ACTIVITY)
-        if explicit_set_class_count != 1 or explicit_context_count < 1 or explicit_main_count != 1:
+        if explicit_set_class_count != 1 or explicit_context_count != 1 or explicit_main_count != 1:
             raise ValueError(
-                "expected exactly one explicit mobile MainActivity setClassName launch probe, "
+                "expected exactly one generated mobile MainActivity setClassName launch probe, "
                 f"found setClassName={explicit_set_class_count} contextPackage={explicit_context_count} "
                 f"mainActivity={explicit_main_count}"
             )
+        source = source.replace(MOBILE_EXPLICIT_CONTEXT_PACKAGE, MOBILE_EXPLICIT_TARGET_PACKAGE, 1)
         if MOBILE_CONTEXT_LAUNCH in source:
             raise ValueError("obsolete mobile package-launch probe survived code generation")
         if MOBILE_LEGACY_EXPLICIT_LAUNCH in source:
@@ -69,9 +71,10 @@ def finalize_source(source: str, client: str) -> str:
         raise ValueError("FIELD_NATIVE_PLAYER_ENTRY was not materialized")
     if client == "mobile" and (
         MOBILE_EXPLICIT_SET_CLASS not in source
-        or MOBILE_EXPLICIT_CONTEXT_PACKAGE not in source
+        or MOBILE_EXPLICIT_TARGET_PACKAGE not in source
         or MOBILE_EXPLICIT_MAIN_ACTIVITY not in source
+        or MOBILE_EXPLICIT_CONTEXT_PACKAGE in source
         or MOBILE_LEGACY_EXPLICIT_LAUNCH in source
     ):
-        raise ValueError("instrumented-package NuvioMobile MainActivity setClassName launch was not materialized")
+        raise ValueError("target-package NuvioMobile MainActivity setClassName launch was not materialized")
     return source
