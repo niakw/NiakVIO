@@ -18,57 +18,43 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
 
-      - name: HindMoviez current authority and evidence
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import json, pathlib
-          d=json.load(open('provider-overrides.json'))['provider_patches']['hindmoviez']
-          print('FIELD_HIND_OVERRIDE='+json.dumps(d,ensure_ascii=False,sort_keys=True))
-          m=json.load(open('manifest.json'))['scrapers']
-          row=next(x for x in m if str(x.get('id','')).casefold()=='hindmoviez')
-          print('FIELD_HIND_MANIFEST='+json.dumps(row,ensure_ascii=False,sort_keys=True))
-          for fn in ('automation/evidence/hub-lab-matrix-46.json','automation/provider-v3-static-knowledge.json'):
-              p=pathlib.Path(fn)
-              if not p.exists(): continue
-              data=json.load(open(p))
-              text=json.dumps(data,ensure_ascii=False)
-              key='hindmoviez'
-              i=text.casefold().find(key)
-              print('FIELD_HIND_SOURCE',fn, text[max(0,i-2500):i+9000] if i>=0 else 'not-found')
-          PY
-
-      - name: Prove public TMDB page external IMDb identity
+      - name: Prove public Wikidata TMDB to IMDb bridge
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
-          const cases=[['movie','157336'],['tv','1396'],['movie','27205'],['movie','603']];
-          const UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/148 Safari/537.36';
-          (async()=>{
-            for(const [type,id] of cases){
-              const r=await fetch(`https://www.themoviedb.org/${type}/${id}?language=en-US`,{headers:{'User-Agent':UA,'Accept':'text/html,application/xhtml+xml,*/*'},signal:AbortSignal.timeout(7000)});
-              const h=await r.text();
-              const ids=[...h.matchAll(/(?:imdb\.com\/title\/|"imdb_id"\s*:\s*")(tt\d+)/gi)].map(x=>x[1]);
-              console.log('FIELD_TMDB_IMDB type='+type+' tmdb='+id+' status='+r.status+' imdb='+[...new Set(ids)].slice(0,4).join(',')+' bytes='+h.length);
-            }
-          })().catch(e=>{console.error(e);process.exit(1)});
+          const UA='NiakVIO/5.21.44 contact=https://github.com/niakw/NiakVIO';
+          async function resolve(tmdb,type){
+            const prop=type==='movie'?'P4947':'P4983';
+            const q=`SELECT ?imdb WHERE { ?item wdt:${prop} "${tmdb}"; wdt:P345 ?imdb. } LIMIT 3`;
+            const url='https://query.wikidata.org/sparql?format=json&query='+encodeURIComponent(q);
+            const started=Date.now();
+            const r=await fetch(url,{headers:{'User-Agent':UA,'Accept':'application/sparql-results+json'},signal:AbortSignal.timeout(7000)});
+            const j=await r.json();const ids=(j?.results?.bindings||[]).map(x=>x?.imdb?.value).filter(x=>/^tt\d+$/.test(String(x)));
+            console.log('FIELD_WIKIDATA_IMDB type='+type+' tmdb='+tmdb+' status='+r.status+' imdb='+ids.join(',')+' duration_ms='+(Date.now()-started));
+            if(!ids.length)throw Error('missing imdb '+type+' '+tmdb);return ids[0];
+          }
+          (async()=>{const a=await resolve('157336','movie'),b=await resolve('1396','tv');if(a!=='tt0816692'||b!=='tt0903747')throw Error('identity mismatch '+a+' '+b);console.log('FIELD_HIND_IDENTITY_BRIDGE status=positive movie='+a+' tv='+b+' secret=false')})().catch(e=>{console.error(e);process.exit(1)});
           NODE
 
-      - name: HindMoviez endpoint smoke from representative IMDb identities
+      - name: Prove current HindMoviez chain endpoints
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
-          const urls=['https://hindmovie.icu/wp-json/wp/v2/posts','https://hindmovie.fit/wp-json/wp/v2/posts'];
-          const ids=['tt0816692','tt0903747','tt1375666','tt0133093'];
-          (async()=>{
-            for(const base of urls)for(const imdb of ids){
-              const u=base+'?search='+encodeURIComponent(imdb)+'&per_page=10';
-              try{const r=await fetch(u,{headers:{'User-Agent':'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36','Accept':'application/json'},signal:AbortSignal.timeout(7000)});const t=await r.text();let a=[];try{a=JSON.parse(t)}catch{};const s=JSON.stringify(a);const mv=[...s.matchAll(/https?:\/\/mvlink\.blog\/(?:web\/)?\d+/gi)].map(x=>x[0]);console.log('FIELD_HIND_API base='+base+' imdb='+imdb+' status='+r.status+' rows='+(Array.isArray(a)?a.length:0)+' mvlinks='+[...new Set(mv)].length+' body64='+Buffer.from(t.slice(0,1200)).toString('base64'))}catch(e){console.log('FIELD_HIND_API base='+base+' imdb='+imdb+' error='+String(e))}
-            }
-          })().catch(e=>{console.error(e);process.exit(1)});
+          const UA='Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36';
+          async function text(url,opt={}){const r=await fetch(url,{...opt,redirect:'follow',headers:{'User-Agent':UA,'Accept':'text/html,application/xhtml+xml,application/json,*/*','Referer':opt.referer||'https://hindmovie.fit/'},signal:AbortSignal.timeout(7000)});return {r,t:await r.text()}}
+          function urls(s,re){return [...String(s).replace(/\\\//g,'/').matchAll(re)].map(x=>x[0])}
+          function b64url(s){return Buffer.from(s).toString('base64url')}
+          async function one(imdb,type,se,ep){
+            const api=await text('https://hindmovie.icu/wp-json/wp/v2/posts?search='+encodeURIComponent(imdb)+'&per_page=100');let rows=[];try{rows=JSON.parse(api.t)}catch{};const raw=JSON.stringify(rows);let mv=urls(raw,/https?:\/\/mvlink\.blog\/(?:web\/)?\d+/gi);mv=[...new Set(mv)].filter(u=>type==='tv'?/\/web\//i.test(u):!/\/web\//i.test(u));
+            console.log('FIELD_HIND_CHAIN type='+type+' stage=catalog status='+api.r.status+' rows='+rows.length+' mv='+mv.length);if(!mv.length)throw Error('no mv '+type);
+            const page=await text(mv[0],{referer:'https://hindmovie.fit/'});const tag=new RegExp('S0*'+se+'E0*'+ep+'(?:[^0-9]|$)','i');let names=[...page.t.matchAll(/[A-Za-z0-9._+()\[\] -]{12,260}\.(?:mkv|mp4|avi)/gi)].map(x=>x[0].replace(/\s+/g,' '));if(type==='tv')names=names.filter(x=>tag.test(x));names=[...new Set(names)];console.log('FIELD_HIND_CHAIN type='+type+' stage=mv status='+page.r.status+' files='+names.length);if(!names.length)throw Error('no file '+type);
+            const body='action=hindshare_sign&d='+encodeURIComponent(b64url(names[0]));const sig=await fetch('https://mvlink.blog/wp-admin/admin-ajax.php',{method:'POST',headers:{'User-Agent':UA,'Referer':mv[0],'X-Requested-With':'XMLHttpRequest','Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Accept':'application/json,text/plain,*/*'},body,signal:AbortSignal.timeout(7000)});const st=await sig.text();let sj={};try{sj=JSON.parse(st)}catch{};const hs=String(sj?.data?.url||'');console.log('FIELD_HIND_CHAIN type='+type+' stage=sign status='+sig.status+' hshare='+Boolean(hs));if(!/^https?:\/\/hshare\.ink\//i.test(hs))throw Error('no hshare '+type);
+            const hp=await text(hs,{referer:mv[0]});const hc=urls(hp.t,/https?:\/\/hcloud\.ink\/[^\s"'<>\\]+/gi)[0]||'';console.log('FIELD_HIND_CHAIN type='+type+' stage=hshare status='+hp.r.status+' hcloud='+Boolean(hc));if(!hc)throw Error('no hcloud '+type);
+            const cp=await text(hc,{referer:hs});const final=urls(cp.t,/https?:\/\/[A-Za-z0-9.-]+\.workers\.dev\/[^\s"'<>\\]+/gi).filter(u=>/[?&]file=/i.test(u));console.log('FIELD_HIND_CHAIN type='+type+' stage=hcloud status='+cp.r.status+' direct='+final.length);if(!final.length)throw Error('no direct '+type);return final;
+          }
+          (async()=>{const m=await one('tt0816692','movie',1,1);const t=await one('tt0903747','tv',1,1);console.log('FIELD_HIND_FULL_PROOF movie='+m.length+' tv='+t.length+' budget_ms=25000')})().catch(e=>{console.error('FIELD_HIND_FULL_ERROR',e);process.exit(1)});
           NODE
 
       - name: Lock repaired core contracts
