@@ -25,7 +25,9 @@ jobs:
       - name: Repair semantic source, tests and renderer
         run: |
           python - <<'PY'
-          import json, copy
+          import copy
+          import json
+          import re
           from pathlib import Path
 
           def patch(path, pairs):
@@ -36,8 +38,6 @@ jobs:
                   s=s.replace(old,new)
               p.write_text(s,encoding='utf-8')
 
-          # Derive canonical semantic types from the existing catalogue, except
-          # the two rows whose repair disposition explicitly removed movie.
           old_catalog=json.loads(Path('provider_catalog.json').read_text())
           semantics={}
           for row in old_catalog.get('providers') or []:
@@ -62,8 +62,6 @@ jobs:
               else: row.pop('canonicalSupportedTypes',None)
           root_path.write_text(json.dumps(root,ensure_ascii=False,indent=2)+'\n')
 
-          # VF membership stays authoritative, but every provider row mirrors the
-          # current repaired root metadata/bundle filename before catalogue bootstrap.
           vf_path=Path('vf/manifest.json'); vf=json.loads(vf_path.read_text())
           root_by={str(r.get('id') or '').casefold():r for r in root.get('scrapers') or []}
           vf_rows=[]
@@ -118,39 +116,28 @@ jobs:
              'assert " - 1080p" in native["row"]["title"], native\n    assert native["row"]["title"].endswith(" - VO"), native'),
           ])
 
-          # Renderer transport aliases: anime and TV semantic lanes must expose
-          # both Nuvio episodic aliases TV + series, never an artificial movie.
-          patch('engine_v2/src/provider-catalog.mjs', [(
-'''  if (semantic.includes("anime")) {
-    const aliases = [];
-    // Nuvio may transport episodic anime as TV/series. Movie is never a
-    // generic anime alias: only canonical movie capability may select it.
-    if (!semantic.includes("tv")) aliases.push("tv");
-    if (aliases.length) {
-      copy.canonicalSupportedTypes = [...semantic];
-      copy.supportedTypes = [...semantic, ...aliases];
-    } else {
-      delete copy.canonicalSupportedTypes;
-    }
-  } else {
-    delete copy.canonicalSupportedTypes;
-  }''',
-'''  const aliases = [];
-  // Nuvio transports episodic semantic lanes as TV/series. Movie is never a
-  // generic anime alias: only canonical movie capability may select it.
-  if (semantic.includes("anime") && !semantic.includes("tv")) aliases.push("tv");
-  const projectedTransport = [...semantic, ...aliases];
-  if (projectedTransport.includes("tv") && !projectedTransport.includes("series")) aliases.push("series");
-  if (aliases.length) {
-    copy.canonicalSupportedTypes = [...semantic];
-    copy.supportedTypes = [...semantic, ...aliases];
-  } else {
-    delete copy.canonicalSupportedTypes;
-  }''')])
+          renderer=Path('engine_v2/src/provider-catalog.mjs')
+          text=renderer.read_text(encoding='utf-8')
+          pattern=re.compile(r'  if \(semantic\.includes\("anime"\)\) \{.*?\n  \} else \{\n    delete copy\.canonicalSupportedTypes;\n  \}',re.S)
+          replacement=(
+              '  const aliases = [];\n'
+              '  // Nuvio transports episodic semantic lanes as TV/series. Movie is never a\n'
+              '  // generic anime alias: only canonical movie capability may select it.\n'
+              '  if (semantic.includes("anime") && !semantic.includes("tv")) aliases.push("tv");\n'
+              '  const projectedTransport = [...semantic, ...aliases];\n'
+              '  if (projectedTransport.includes("tv") && !projectedTransport.includes("series")) aliases.push("series");\n'
+              '  if (aliases.length) {\n'
+              '    copy.canonicalSupportedTypes = [...semantic];\n'
+              '    copy.supportedTypes = [...semantic, ...aliases];\n'
+              '  } else {\n'
+              '    delete copy.canonicalSupportedTypes;\n'
+              '  }'
+          )
+          text2,count=pattern.subn(replacement,text,count=1)
+          if count!=1: raise SystemExit(f'renderer semantic projector match count={count}')
+          renderer.write_text(text2,encoding='utf-8')
           PY
 
-          # Rebuild source-of-truth catalogue from the CURRENT repaired manifest
-          # so bundle hashes/versions cannot regress, then render all projections.
           node engine_v2/scripts/bootstrap-provider-catalog.mjs
           node engine_v2/scripts/render-manifests-from-catalog.mjs
           cp manifest.json /tmp/general.once.json
@@ -208,7 +195,9 @@ jobs:
           for rel in ('manifest.json','vf/manifest.json','no-anime/manifest.json','vf-no-anime/manifest.json'):
               m=json.loads(Path(rel).read_text()); ids=[str(x.get('id') or '').casefold() for x in m.get('scrapers') or []]
               assert set(ids)<=active,(rel,sorted(set(ids)-active))
-          assert not ({'dulourd','movix','nakios','toflix','frenchstream'} & {str(x.get('id') or '').casefold() for x in json.loads(Path('vf-no-anime/manifest.json').read_text()).get('scrapers') or []})
+          archived={'dulourd','movix','nakios','toflix','frenchstream'}
+          vfno={str(x.get('id') or '').casefold() for x in json.loads(Path('vf-no-anime/manifest.json').read_text()).get('scrapers') or []}
+          assert not (archived & vfno),sorted(archived & vfno)
           print('HUB46_PROJECTIONS_OK',len(active))
           PY
 
