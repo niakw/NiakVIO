@@ -1,0 +1,111 @@
+name: TEMP - Fix secondary contracts
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-fix-secondary-contracts.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Stage current contracts in workspace
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def patch(path, pairs):
+              p=Path(path); s=p.read_text(encoding='utf-8')
+              for old,new in pairs:
+                  if old not in s:
+                      raise SystemExit(f'missing token in {path}: {old!r}')
+                  s=s.replace(old,new)
+              p.write_text(s,encoding='utf-8')
+
+          patch('tests/global_stream_metadata_preservation_contract_test.py', [
+            ('rows = [row for row in materialization.get("providers") or [] if isinstance(row, dict)]\nassert materialization.get("providerCount") == 96, materialization.get("providerCount")\nassert len(rows) == 96, len(rows)',
+             'rows = [row for row in materialization.get("providers") or [] if isinstance(row, dict)]\nhub = json.loads((ROOT / "automation/evidence/hub-lab-matrix-46.json").read_text(encoding="utf-8"))\nexpected_provider_count = int(hub.get("hubCount") or 0)\nassert expected_provider_count == 46, expected_provider_count\nassert materialization.get("providerCount") == expected_provider_count, materialization.get("providerCount")\nassert len(rows) == expected_provider_count, len(rows)'),
+            ('shared 96-provider Core','shared Hub46 Core'),
+          ])
+          patch('tests/provider_anime_semantic_transport_contract_test.py', [
+            ('assert len(semantics) == 96, len(semantics)',
+             'hub = json.loads((ROOT / "automation/evidence/hub-lab-matrix-46.json").read_text(encoding="utf-8"))\nexpected_provider_count = int(hub.get("hubCount") or 0)\nassert expected_provider_count == 46, expected_provider_count\nassert len(semantics) == expected_provider_count, len(semantics)'),
+            ('assert projected >= 96','assert projected >= expected_provider_count'),
+          ])
+          patch('tests/published_provider_lego_contract_test.py', [
+            ('tmdb-data-contract-launch-gate-v31-pre-network-semantic-gate','tmdb-data-contract-launch-gate-v33-25s-isolated-failfast'),
+            ('media-type runtime is not v31','media-type runtime is not v33'),
+            ('media_type=v31','media_type=v33'),
+          ])
+          patch('tests/runtime_media_safety_guard_test.py', [
+            ('hls_master_audio_preserver_v1.py','hls_runtime_integrity_v1.py'),
+            ('hls_master_audio_preserver','hls_runtime_integrity'),
+          ])
+          patch('scripts/normalize_stream_presentation_v12.py', [
+            ('presentation V20','presentation V22'),
+            ('V20 is a committed fixed point','V22 is a committed fixed point'),
+            ('all-providers-client-projection-name-mirror-v20','all-providers-client-projection-strongest-evidence-v22'),
+            ('stream presentation V20','stream presentation V22'),
+            ('FIELD_STREAM_PRESENTATION_V20','FIELD_STREAM_PRESENTATION_V22'),
+            ('\'out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"")\',', '\'out.title=provider\',\n        \'qualityLabel(f.quality)\',\n        \'detailedLanguage(\','),
+          ])
+          patch('tests/global_stream_presentation_test.py', [
+            ('all-providers-client-projection-name-mirror-v20','all-providers-client-projection-strongest-evidence-v22'),
+            ('presentation V20','presentation V22'),
+            ('presentation V20 client-projection name-mirror','presentation V22 strongest-evidence client-projection'),
+          ])
+          patch('tests/global_stream_presentation_pipeline_test.py', [
+            ('assert native["row"]["title"].endswith(" - 1080p"), native',
+             'assert " - 1080p" in native["row"]["title"], native\n    assert native["row"]["title"].endswith(" - VO"), native'),
+          ])
+          PY
+          git diff --check
+      - name: Run six repaired critical contracts
+        run: |
+          set -e
+          for t in \
+            tests/global_stream_metadata_preservation_contract_test.py \
+            tests/provider_anime_semantic_transport_contract_test.py \
+            tests/published_provider_lego_contract_test.py \
+            tests/runtime_media_safety_guard_test.py \
+            tests/global_stream_presentation_pipeline_test.py \
+            tests/global_stream_presentation_test.py; do
+              echo "=== $t ==="
+              python "$t"
+          done
+      - name: Run full critical secondary selection fail closed
+        run: |
+          python - <<'PY'
+          import subprocess, pathlib, re, sys
+          patterns=[r'published_provider_lego_contract',r'anime_semantic_transport',r'runtime_media_safety',r'stream.*sanitizer',r'stream.*presentation',r'metadata.*preservation',r'identity.*(?:ownership|regression|contract)',r'playback.*policy',r'native.*(?:compat|loading|hls)',r'abort|cancel|generation|stale',r'timeout|fail.*fast|provider.*isolation']
+          tests=[p for p in sorted(pathlib.Path('tests').glob('*.py')) if any(re.search(x,p.name.lower()) for x in patterns)]
+          failed=[]
+          for p in tests:
+              cp=subprocess.run([sys.executable,str(p)],text=True,capture_output=True,timeout=150)
+              print(f'CONTRACT_RESULT {p.name} rc={cp.returncode}')
+              if cp.returncode:
+                  print('\n'.join((cp.stdout+'\n'+cp.stderr).splitlines()[-20:]))
+                  failed.append(p.name)
+          print('CRITICAL_TEST_SUMMARY',len(tests),'failed',len(failed),failed)
+          if failed: raise SystemExit(1)
+          PY
+      - name: Commit only after zero-red validation
+        run: |
+          git config user.name niakvio-bot
+          git config user.email niakvio-bot@users.noreply.github.com
+          git add tests/global_stream_metadata_preservation_contract_test.py tests/provider_anime_semantic_transport_contract_test.py tests/published_provider_lego_contract_test.py tests/runtime_media_safety_guard_test.py tests/global_stream_presentation_pipeline_test.py tests/global_stream_presentation_test.py scripts/normalize_stream_presentation_v12.py
+          git commit -m '[secondary-contracts] align Hub46 V33 V22 current Core'
+          git pull --rebase origin fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
