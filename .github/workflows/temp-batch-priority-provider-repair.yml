@@ -1,0 +1,236 @@
+name: TEMP - batch priority provider repair
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-batch-priority-provider-repair.yml
+
+permissions:
+  contents: write
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NIAKVIO_PARITY_WORKERS: '8'
+  NIAKVIO_PARITY_TIMEOUT: '25'
+  NIAKVIO_PARITY_SEED: '20260913'
+
+jobs:
+  batch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Preflight parity and minimizer contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 -m py_compile scripts/run_provider_upstream_parity_v3.py scripts/run_provider_repair_fast_targeted_v20.py scripts/provider_v3_minimizer.py
+          python3 tests/provider_upstream_parity_v3_test.py
+          python3 tests/provider_v3_minimizer_preview_test.py
+          node scripts/provider_worker.cjs --self-test-response-wrapper
+          node scripts/provider_worker.cjs --self-test-fixture-fallback
+
+      - name: Baseline Hub-46 parity with wider rotation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/run_provider_upstream_parity_v3.py \
+            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
+            --samples-per-lane 6 \
+            --seed "$NIAKVIO_PARITY_SEED" \
+            --out automation/provider-upstream-parity-batch-pre.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('automation/provider-upstream-parity-batch-pre.json').read_text())
+          print('BATCH_PRE_COUNTS', d.get('statusCounts', {}))
+          print('BATCH_PRE_REGRESSIONS', ','.join(d.get('certainRegressions') or []) or 'none')
+          zeros=[r.get('providerId') for r in d.get('providers') or [] if r.get('status')=='ZERO']
+          print('BATCH_PRE_ZERO', ','.join(zeros) or 'none')
+          Path('automation/provider-priority-zero-queue.txt').write_text('\n'.join(x for x in zeros if x)+'\n' if zeros else '', encoding='utf-8')
+          PY
+
+      - name: Deep rotate ZERO providers up to 12 samples per lane
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t zeros < <(grep -v '^$' automation/provider-priority-zero-queue.txt || true)
+          if [ "${#zeros[@]}" -eq 0 ]; then
+            cp automation/provider-upstream-parity-batch-pre.json automation/provider-upstream-parity-batch-zero-deep.json
+            echo 'No ZERO providers to deepen'
+            exit 0
+          fi
+          args=()
+          for provider in "${zeros[@]}"; do args+=(--provider "$provider"); done
+          python3 scripts/run_provider_upstream_parity_v3.py \
+            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
+            --samples-per-lane 12 \
+            --seed "$NIAKVIO_PARITY_SEED" \
+            --out automation/provider-upstream-parity-batch-zero-deep.json \
+            "${args[@]}"
+
+      - name: Build one multi-provider repair queue
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          pre=json.loads(Path('automation/provider-upstream-parity-batch-pre.json').read_text())
+          deep=json.loads(Path('automation/provider-upstream-parity-batch-zero-deep.json').read_text())
+          queue=[]
+          for src in (pre.get('certainRegressions') or [], deep.get('certainRegressions') or []):
+              for p in src:
+                  if p and p not in queue:
+                      queue.append(p)
+          Path('automation/provider-priority-repair-queue.txt').write_text('\n'.join(queue)+'\n' if queue else '', encoding='utf-8')
+          print('BATCH_REPAIR_QUEUE', ','.join(queue) or 'none')
+          print('BATCH_ZERO_DEEP_COUNTS', deep.get('statusCounts', {}))
+          PY
+
+      - name: Repair all certain regressions in one transaction
+        id: repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t providers < <(grep -v '^$' automation/provider-priority-repair-queue.txt || true)
+          if [ "${#providers[@]}" -eq 0 ]; then
+            echo 'No certain regression after deep rotation; no mutation performed'
+            echo 'mutated=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          args=()
+          for provider in "${providers[@]}"; do args+=(--provider "$provider"); done
+          python3 scripts/run_provider_repair_fast_targeted_v20.py \
+            --skip-file automation/provider-repair-planner-authorized-skip.json \
+            --attempts 3 \
+            --workers 8 \
+            --timeout 55 \
+            --defer-global-guard \
+            "${args[@]}"
+          echo 'mutated=true' >> "$GITHUB_OUTPUT"
+
+      - name: Regenerate derived manifests and enforce 96-provider structure
+        if: steps.repair.outputs.mutated == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_language_manifests.py
+          python3 scripts/validate_published_provider_config.py --expected 96
+          python3 tests/global_stream_output_guard_test.py
+
+      - name: Enforce JS minimization and fixed point after batch repair
+        if: steps.repair.outputs.mutated == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/provider_v3_minimizer_preview_test.py
+          python3 scripts/provider_v3_minimizer.py \
+            --syntax-check \
+            --published-fixed-point \
+            --output automation/provider-v3-minimizer-batch.json
+
+      - name: Post-repair full Hub-46 parity on identical samples
+        if: steps.repair.outputs.mutated == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/run_provider_upstream_parity_v3.py \
+            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
+            --samples-per-lane 6 \
+            --seed "$NIAKVIO_PARITY_SEED" \
+            --out automation/provider-upstream-parity-batch-post.json
+
+      - name: Require REGRESSION or ZERO improvement, never worsening regressions
+        if: steps.repair.outputs.mutated == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          pre=json.loads(Path('automation/provider-upstream-parity-batch-pre.json').read_text())
+          post=json.loads(Path('automation/provider-upstream-parity-batch-post.json').read_text())
+          pc=pre.get('statusCounts') or {}; qc=post.get('statusCounts') or {}
+          pre_r=int(pc.get('REGRESSION',0)); post_r=int(qc.get('REGRESSION',0))
+          pre_z=int(pc.get('ZERO',0)); post_z=int(qc.get('ZERO',0))
+          print(f'BATCH_COMPARE regression={pre_r}->{post_r} zero={pre_z}->{post_z}')
+          if post_r > pre_r:
+              raise SystemExit('batch repair worsened certain regression count')
+          if not (post_r < pre_r or post_z < pre_z):
+              raise SystemExit('batch repair produced no REGRESSION/ZERO status improvement on identical rotation')
+          PY
+
+      - name: Persist successful batch checkpoint in MEMORY
+        if: steps.repair.outputs.mutated == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          pre=json.loads(Path('automation/provider-upstream-parity-batch-pre.json').read_text())
+          post=json.loads(Path('automation/provider-upstream-parity-batch-post.json').read_text())
+          deep=json.loads(Path('automation/provider-upstream-parity-batch-zero-deep.json').read_text())
+          queue=[x.strip() for x in Path('automation/provider-priority-repair-queue.txt').read_text().splitlines() if x.strip()]
+          mini=json.loads(Path('automation/provider-v3-minimizer-batch.json').read_text())
+          section='\n## 2026-09-13 — batch REGRESSION + ZERO repair wave\n\n'
+          section += f"- Workflow run: `{os.environ.get('GITHUB_RUN_ID','')}` on `fix/labs-5.21.44-20260912`; `main` untouched.\n"
+          section += f"- One multi-provider repair queue: `{', '.join(queue)}`.\n"
+          section += f"- Pre parity counts (fixed seed, 6 samples/lane): `{pre.get('statusCounts',{})}`.\n"
+          section += f"- Deep ZERO rotation counts (up to 12 samples/lane): `{deep.get('statusCounts',{})}`.\n"
+          section += f"- Post parity counts on identical seed/samples: `{post.get('statusCounts',{})}`.\n"
+          section += f"- JS minimizer gate: providers={mini.get('provider_count')} production_enabled={mini.get('production_enabled')} terser_allowed={mini.get('terser_allowed')} published_fixed_point=true; totals={mini.get('totals',{})}.\n"
+          section += '- Wrong-title/type/S/E output remains fail-closed; a ZERO is not promoted unless live upstream evidence proves a local regression.\n'
+          with Path('MEMORY.md').open('a', encoding='utf-8') as f: f.write(section)
+          PY
+
+      - name: Commit only a proven improving batch
+        if: steps.repair.outputs.mutated == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git reset .github/workflows/temp-batch-priority-provider-repair.yml
+          if git diff --cached --quiet; then
+            echo 'No durable batch changes to commit'
+            exit 0
+          fi
+          git commit -m 'fix(providers): batch repair parity regressions and zero discoveries'
+          git fetch origin fix/labs-5.21.44-20260912
+          git rebase origin/fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
+
+      - name: Upload batch evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: batch-priority-provider-repair-${{ github.run_id }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            automation/provider-upstream-parity-batch-pre.json
+            automation/provider-upstream-parity-batch-zero-deep.json
+            automation/provider-upstream-parity-batch-post.json
+            automation/provider-priority-zero-queue.txt
+            automation/provider-priority-repair-queue.txt
+            automation/provider-repair-fast-targeted.json
+            automation/provider-repair-fast-yield.json
+            automation/provider-repair-fast-summary.json
+            automation/provider-v3-minimizer-batch.json
