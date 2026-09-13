@@ -40,24 +40,27 @@ jobs:
           python tests/domain_refresh_workflow_test.py
           python tests/domain_refresh_transaction_guard_test.py
           python tests/provider_v3_workflow_ownership_test.py
-      - name: Commit durable Lab transport fix and self-remove TEMP workflow
+      - name: Commit non-workflow Hub-46 transport bytes
         shell: bash
         run: |
           set -euo pipefail
-          rm -f .github/workflows/temp-hub46-transport-v2.yml
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          # GitHub Actions tokens cannot update workflow files without the workflows
+          # permission. Those three reviewed edits are applied through the repository
+          # API after this run. Restore them here so this commit contains only normal
+          # repository files and can be pushed with contents:write.
+          git restore \
+            .github/workflows/native-desktop-reader-acceptance.yml \
+            .github/workflows/native-mobile-android-reader.yml \
+            .github/workflows/native-mobile-ios-reader.yml
           git add \
             scripts/resolve_native_repository.sh \
             scripts/run_native_corpus_desktop_suite.sh \
             scripts/run_native_corpus_mobile_suite.sh \
             scripts/run_native_corpus_tv_suite.sh \
-            .github/workflows/native-desktop-reader-acceptance.yml \
-            .github/workflows/native-mobile-android-reader.yml \
-            .github/workflows/native-mobile-ios-reader.yml \
-            native-hub46/manifest.json \
-            .github/workflows/temp-hub46-transport-v2.yml
+            native-hub46/manifest.json
           git commit -m 'fix(labs): use immutable terminal Hub-46 manifest transport'
           git pull --rebase origin fix/labs-5.21.44-20260912
           git push origin HEAD:fix/labs-5.21.44-20260912
-          echo 'FIELD_NATIVE_HUB46_TRANSPORT_COMMIT committed=true temp_workflow_removed=true provider_sha=b18342a12b88af1825de8765ecb8011ceb5b78aa'
+          echo 'FIELD_NATIVE_HUB46_TRANSPORT_COMMIT committed=true workflow_edits_pending_api=true provider_sha=b18342a12b88af1825de8765ecb8011ceb5b78aa'
