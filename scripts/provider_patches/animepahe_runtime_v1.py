@@ -20,8 +20,8 @@ function origin(u){try{return new URL(s(u)).origin}catch(_e){return""}}
 function aliases(md){var out=[md&&md.title,md&&md.name,md&&md.original_title,md&&md.original_name],a=md&&md.alternative_titles&&(md.alternative_titles.results||md.alternative_titles.titles);if(Array.isArray(a))for(var i=0;i<a.length;i++)out.push(a[i]&&(a[i].title||a[i].name));var seen={},r=[];for(var j=0;j<out.length;j++){var x=s(out[j]);if(!x||seen[x])continue;seen[x]=1;r.push(x)}return r.slice(0,10)}
 function req(args){var first=args[0],obj=first&&typeof first==="object"&&!Array.isArray(first)?first:null,ctx={};try{ctx=g&&g.__nuvioMediaContext||{}}catch(_e){}var md=(obj&&(obj.tmdbMetadata||obj.tmdb_metadata||obj.metadata))||ctx.tmdbMetadata||{};var canonical=s((obj&&obj.canonicalMediaType)||ctx.canonicalMediaType||(obj&&obj.mediaType)||args[1]).toLowerCase();if(canonical!=="anime")return null;var ns=s((obj&&obj.tmdbNamespace)||ctx.tmdbNamespace).toLowerCase();if(ns!=="movie"&&ns!=="tv")ns="tv";var season=Number((obj&&obj.season)!=null?obj.season:args[2])||1,episode=Number((obj&&obj.episode)!=null?obj.episode:args[3])||1;var imdb=s((obj&&(obj.imdbId||obj.imdb_id))||ctx.imdbId||(md.external_ids&&md.external_ids.imdb_id));return{md:md,namespace:ns,season:season,episode:episode,imdbId:imdb,aliases:aliases(md)}}
 function headers(ref,accept){var h={"User-Agent":c.userAgent,"Accept":accept||"text/html,application/json,*/*","Accept-Language":"en-US,en;q=0.9"};if(ref)h.Referer=ref;return h}
-async function jsonGet(url,ref){try{var r=await g.fetch(url,{headers:headers(ref||c.base+"/","application/json,text/plain,*/*")});if(!r||!r.ok)return null;return await r.json()}catch(_e){return null}}
-async function textPayload(url,ref){try{var r=await g.fetch(url,{headers:headers(ref||c.base+"/")});if(!r||!r.ok)return null;return{body:await r.text(),url:r.url||url}}catch(_e){return null}}
+async function jsonGet(url,ref){try{var r=await g.fetch(url,{headers:headers(ref||c.base+"/","application/json,text/plain,*/*"),credentials:"include",redirect:"follow"});if(!r||!r.ok)return null;return await r.json()}catch(_e){return null}}
+async function textPayload(url,ref){try{var r=await g.fetch(url,{headers:headers(ref||c.base+"/"),credentials:"include",redirect:"follow"});if(!r||!r.ok)return null;return{body:await r.text(),url:r.url||url}}catch(_e){return null}}
 function titleScore(row,titles){var t=norm(row&&row.title),best=-1;if(!t)return best;for(var i=0;i<titles.length;i++){var q=norm(titles[i]);if(!q)continue;if(t===q)best=Math.max(best,300);else if(t.indexOf(q)>=0||q.indexOf(t)>=0)best=Math.max(best,170);else{var words=s(titles[i]).toLowerCase().split(/[^a-z0-9]+/),hits=0;for(var j=0;j<words.length;j++){var w=norm(words[j]);if(w.length>=3&&t.indexOf(w)>=0)hits++}best=Math.max(best,hits*18)}}return best}
 function chooseAnime(data,titles){var rows=arr(data&&data.data).map(function(row){return{row:row,score:titleScore(row,titles)}}).filter(function(x){return x.score>=36&&s(x.row&&x.row.session)});rows.sort(function(a,b){return b.score-a.score});return rows.length?rows[0].row:null}
 function chooseEpisode(data,target){var rows=arr(data&&data.data),want=Number(target);for(var i=0;i<rows.length;i++){if(Number(rows[i]&&rows[i].episode)===want&&s(rows[i]&&rows[i].session))return rows[i]}return null}
@@ -54,7 +54,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "provider": "animepahe",
         "name": "AnimePahe",
         "maxPages": 4,
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 NiakVIO/3",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
     }
     cfg.update(dict(options or {}))
     js = WRAPPER.replace("CONFIG_PLACEHOLDER", json.dumps(cfg, ensure_ascii=False, separators=(",", ":")))

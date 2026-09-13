@@ -67,8 +67,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "maxCandidates": max(2, min(int(cfg.get("max_candidates", 10)), 20)),
         "timeoutMs": max(2500, min(int(cfg.get("timeout_ms", 6500)), 12000)),
         "preserveOriginal": bool(cfg.get("preserve_original", True)),
-        "defaultUserAgent": str(cfg.get("default_user_agent") or ""),
-        "implementationRevision": "scoped-playback-context-v8-media-first-candidates",
+        "defaultUserAgent": str(cfg.get("default_user_agent") or "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"),
+        "implementationRevision": "scoped-playback-context-v9-browser-default-ua",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"

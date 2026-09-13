@@ -3654,10 +3654,10 @@
         "/ajax/server?get={id}"
       ],
       "provider_lego_scripts": [
-        "scripts/provider_patches/anikototv_runtime_v1.py"
+        "scripts/provider_patches/anikototv_runtime_v2.py"
       ],
       "provider_lego_options": {
-        "scripts/provider_patches/anikototv_runtime_v1.py": {
+        "scripts/provider_patches/anikototv_runtime_v2.py": {
           "mirrors": [
             "https://anikototv.to",
             "https://anikoto.cz",
@@ -3868,7 +3868,10 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      }
+      },
+      "notes": [
+        "AniKoto runtime v2 is the durable authority for browser-like MegaPlay/CDN transport; no anti-bot token is fabricated and terminal 403 remains fail-closed."
+      ]
     },
     "animekai": {
       "capability": "mixed_embed_resolver",

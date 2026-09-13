@@ -1534,3 +1534,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Prefer concrete correction -> targeted proof -> full non-regression -> persistence, then move to the next open ZERO/regression.
 - Never treat historical quarantine/repair labels alone as current regressions; current evidence wins.
 - During the active `fix/labs-5.21.44-20260912` repair pass, do not touch `main` unless a later explicit publication step authorizes it.
+
+## 2026-09-13 — scoped CDN/browser transport batch v1
+
+- Applied browser-compatible transport without anti-bot circumvention: Core media enrichment now supplies a modern Chrome UA only when a row omitted User-Agent; explicit provider headers remain authoritative; scoped cookie jar + Referer/Origin + redirect-follow remain intact.
+- AniKoto execution authority is runtime v2; AnimePahe uses Chrome UA + credentials/include + redirect-follow; AnimeVOSTFR uses credentials/include + redirect-follow and carries Referer/Origin/User-Agent while remaining anime-only.
+- AnimeSalt receives the shared browser playback context on rebuilt bytes, but no cf_clearance/Turnstile/challenge token is fabricated. Any remaining site/CDN 403 stays fail-closed and must be classified external/runner-blocked rather than surfaced as playable.
+- Targeted post-rebuild JJK probe summary: `{"anikototv": {"error_class": null, "http_statuses": [], "ok": true, "raw_stream_count": 0, "server_accessible": false, "server_success": false, "stream_count": 0, "timeout": false}, "animepahe": {"error_class": null, "http_statuses": [], "ok": true, "raw_stream_count": 0, "server_accessible": false, "server_success": false, "stream_count": 0, "timeout": false}, "animesalt": {"error_class": null, "http_statuses": [200, 403], "ok": true, "raw_stream_count": 0, "server_accessible": true, "server_success": true, "stream_count": 0, "timeout": false}, "animevostfr": {"error_class": null, "http_statuses": [200], "ok": true, "raw_stream_count": 0, "server_accessible": true, "server_success": true, "stream_count": 0, "timeout": false}}`.
+
