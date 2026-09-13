@@ -6,11 +6,18 @@ semantic lane this harness rotates through the recent global pool and stops earl
 as soon as it gets useful positive evidence. Clean zero/zero samples are reported
 as catalogue misses and never promoted to repair regressions.
 
+A returned HTTP URL is *not* media proof. Many upstream providers return HTML
+player pages (Sibnet shell.php, Sendvid/Uqload embeds, etc.) as if they were
+streams. V3 therefore performs a tiny bounded terminal probe on every candidate
+and counts it positive only when the response is demonstrably media: HLS, a
+video/audio content type, an MP4 signature, or an MPEG-TS segment. This keeps the
+regression ledger fail-closed and prevents player-page false positives.
+
 The only certain NiakVIO regression class is ``upstream_ok_niakvio_ko``: the
-reference upstream returned streams for the exact same work/lane while the local
-provider did not. The diagnostic reserve can span the complete 32-title global
-lane, but it remains adaptive: it never consumes the remaining candidates after a
-useful positive/negative parity proof has been obtained.
+reference upstream returned terminal-verified media for the exact same work/lane
+while the local provider did not. The diagnostic reserve can span the complete
+32-title global lane, but it remains adaptive: it never consumes the remaining
+candidates after a useful positive/negative parity proof has been obtained.
 """
 from __future__ import annotations
 
@@ -18,7 +25,11 @@ import argparse
 import concurrent.futures
 import json
 import os
+import subprocess
 import tempfile
+import urllib.error
+import urllib.parse
+import urllib.request
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -32,6 +43,9 @@ DEFAULT_SCOPE = ROOT / "automation/evidence/hub-lab-matrix-46.json"
 DEFAULT_OUT = ROOT / "automation/provider-upstream-parity-v3.json"
 LANES = ("movie", "tv", "anime")
 MAX_SAMPLES_PER_LANE = 32
+PROBE_BYTES = 4096
+MAX_TERMINAL_CANDIDATES = 4
+DEFAULT_PROBE_TIMEOUT = 12
 
 
 def cid(value: object) -> str:
@@ -76,6 +90,161 @@ def fixture_payload(row: dict[str, Any], lane: str, *, upstream: bool) -> dict[s
     return fixture
 
 
+def _worker_raw(path: Path, fixture: dict[str, Any], timeout: int) -> dict[str, Any]:
+    """Run the hardened worker while retaining stream candidates in memory.
+
+    URLs are never copied into the persisted parity report. They exist only long
+    enough to perform the bounded terminal media probe below.
+    """
+    cmd = [
+        "node",
+        str(parity.WORKER),
+        str(path),
+        json.dumps(fixture, separators=(",", ":")),
+        json.dumps(parity.context_for(fixture), separators=(",", ":")),
+    ]
+    try:
+        completed = subprocess.run(
+            cmd,
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "stream_count": 0, "timeout": True, "error_class": "timeout", "streams": []}
+
+    result: dict[str, Any] | None = None
+    for line in completed.stdout.splitlines():
+        if line.startswith("NUVIO_HEALTH_RESULT="):
+            try:
+                value = json.loads(line.split("=", 1)[1])
+                if isinstance(value, dict):
+                    result = value
+            except json.JSONDecodeError:
+                pass
+    if not isinstance(result, dict):
+        return {"ok": False, "stream_count": 0, "timeout": False, "error_class": "worker_no_result", "streams": []}
+    return result
+
+
+def _safe_headers(value: object) -> dict[str, str]:
+    headers: dict[str, str] = {}
+    if isinstance(value, dict):
+        for raw_key, raw_value in list(value.items())[:30]:
+            key = str(raw_key or "").strip()
+            if not key or raw_value is None:
+                continue
+            # Transport-controlled headers are intentionally not inherited.
+            if key.casefold() in {"host", "content-length", "connection", "transfer-encoding", "cookie"}:
+                continue
+            headers[key] = str(raw_value)[:2000]
+    headers.setdefault(
+        "User-Agent",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+    )
+    headers.setdefault("Accept", "*/*")
+    headers.setdefault("Accept-Language", "en-US,en;q=0.8")
+    headers["Range"] = f"bytes=0-{PROBE_BYTES - 1}"
+    return headers
+
+
+def _media_kind(url: str, content_type: str, body: bytes) -> str | None:
+    ctype = str(content_type or "").split(";", 1)[0].strip().casefold()
+    lower_url = str(url or "").casefold()
+    sample = body[:PROBE_BYTES]
+    text_head = sample.lstrip()[:64].upper()
+
+    if b"#EXTM3U" in sample[:PROBE_BYTES].upper():
+        return "hls"
+    if ctype in {
+        "application/vnd.apple.mpegurl",
+        "application/x-mpegurl",
+        "audio/mpegurl",
+        "audio/x-mpegurl",
+    }:
+        return "hls"
+    if ctype.startswith("video/"):
+        return "video"
+    if ctype.startswith("audio/") and not ctype.startswith("audio/mpegurl"):
+        return "audio"
+    if b"ftyp" in sample[:128]:
+        return "mp4"
+    # MPEG-TS packets start with 0x47 every 188 bytes. Two sync bytes are enough
+    # for this tiny diagnostic range; it is deliberately conservative.
+    if len(sample) >= 189 and sample[0] == 0x47 and sample[188] == 0x47:
+        return "mpegts"
+    # Extension alone is never sufficient for HLS: a WAF can return HTML under
+    # a .m3u8 URL. For direct MP4, accept extension only with a non-text body.
+    if urllib.parse.urlsplit(lower_url).path.endswith(".mp4") and ctype and not ctype.startswith("text/"):
+        return "mp4"
+    if text_head.startswith(b"<HTML") or text_head.startswith(b"<!DOCTYPE"):
+        return None
+    return None
+
+
+def _probe_terminal(stream: dict[str, Any], timeout: int) -> dict[str, Any]:
+    url = str(stream.get("url") or "").strip()
+    if not url.startswith(("http://", "https://")):
+        return {"verified": False, "kind": None, "status": None, "reason": "invalid_url"}
+
+    request = urllib.request.Request(url, headers=_safe_headers(stream.get("headers")), method="GET")
+    try:
+        with urllib.request.urlopen(request, timeout=max(3, min(DEFAULT_PROBE_TIMEOUT, timeout))) as response:
+            status = int(response.getcode() or 0)
+            final_url = str(response.geturl() or url)
+            content_type = str(response.headers.get("content-type") or "")
+            body = response.read(PROBE_BYTES)
+        kind = _media_kind(final_url, content_type, body)
+        return {
+            "verified": bool(kind and 200 <= status < 400),
+            "kind": kind,
+            "status": status,
+            "reason": "media" if kind else "non_media_response",
+        }
+    except urllib.error.HTTPError as exc:
+        return {"verified": False, "kind": None, "status": int(exc.code), "reason": "http_error"}
+    except Exception as exc:
+        return {"verified": False, "kind": None, "status": None, "reason": type(exc).__name__[:80]}
+
+
+def _run_verified(path: Path, fixture: dict[str, Any], timeout: int) -> dict[str, Any]:
+    raw = _worker_raw(path, fixture, timeout)
+    if raw.get("timeout"):
+        return {"ok": False, "stream_count": 0, "candidate_stream_count": 0, "raw_stream_count": 0, "timeout": True, "error_class": "timeout"}
+
+    candidates = [row for row in raw.get("streams") or [] if isinstance(row, dict)]
+    terminal_rows: list[dict[str, Any]] = []
+    for stream in candidates[:MAX_TERMINAL_CANDIDATES]:
+        terminal_rows.append(_probe_terminal(stream, timeout))
+        if terminal_rows[-1].get("verified"):
+            # One terminal-verified media candidate is sufficient for parity.
+            break
+
+    verified = [row for row in terminal_rows if row.get("verified")]
+    error_details = raw.get("error_details") if isinstance(raw.get("error_details"), dict) else {}
+    return {
+        "ok": bool(raw.get("ok")),
+        "stream_count": len(verified),
+        "candidate_stream_count": int(raw.get("stream_count") or 0),
+        "raw_stream_count": int(raw.get("raw_stream_count") or 0),
+        "timeout": False,
+        "server_accessible": bool(raw.get("provider_server_accessible")),
+        "server_success": bool(raw.get("provider_server_successful_response")),
+        "http_statuses": [
+            int(value) for value in raw.get("provider_server_http_statuses") or []
+            if isinstance(value, int)
+        ][:12],
+        "terminal_verified": bool(verified),
+        "terminal_kinds": sorted({str(row.get("kind")) for row in verified if row.get("kind")}),
+        "terminal_statuses": sorted({int(row["status"]) for row in terminal_rows if isinstance(row.get("status"), int)}),
+        "terminal_reasons": sorted({str(row.get("reason")) for row in terminal_rows if row.get("reason")}),
+        "error_class": str(error_details.get("code") or error_details.get("name") or "")[:120] or None,
+    }
+
+
 def technical(result: dict[str, Any]) -> bool:
     if result.get("timeout"):
         return True
@@ -94,6 +263,17 @@ def classify_pair(upstream: dict[str, Any], local: dict[str, Any]) -> str:
         return "upstream_ok_niakvio_ko"
     if not up and lo:
         return "niakvio_ok_upstream_ko"
+
+    # A provider returning player/embed candidates without terminal media proof
+    # is not a positive upstream authority and therefore cannot create a certain
+    # NiakVIO regression.
+    up_candidates = int(upstream.get("candidate_stream_count") or 0) > 0
+    lo_candidates = int(local.get("candidate_stream_count") or 0) > 0
+    if up_candidates and not up:
+        return "upstream_candidate_unverified"
+    if lo_candidates and not lo:
+        return "niakvio_candidate_unverified"
+
     up_technical = technical(upstream)
     lo_technical = technical(local)
     if not up_technical and not lo_technical:
@@ -125,8 +305,8 @@ def run_lane(
     for candidate in candidates:
         up_fixture = fixture_payload(candidate, lane, upstream=True)
         local_fixture = fixture_payload(candidate, lane, upstream=False)
-        upstream = parity.run_worker(upstream_path, up_fixture, timeout)
-        local = parity.run_worker(local_path, local_fixture, timeout)
+        upstream = _run_verified(upstream_path, up_fixture, timeout)
+        local = _run_verified(local_path, local_fixture, timeout)
         classification = classify_pair(upstream, local)
         samples.append({
             "fixture": candidate["slug"],
@@ -147,7 +327,7 @@ def run_lane(
         status = "REGRESSION"
     elif any(value in {"both_ok", "niakvio_ok_upstream_ko"} for value in classes):
         status = "POSITIVE"
-    elif classes and all(value == "catalog_miss_both" for value in classes):
+    elif classes and all(value in {"catalog_miss_both", "upstream_candidate_unverified", "niakvio_candidate_unverified"} for value in classes):
         status = "RESAMPLE"
     else:
         status = "TECHNICAL_UNRESOLVED"
@@ -294,8 +474,9 @@ def main() -> int:
     regressions = [row["providerId"] for row in rows if row.get("status") == "REGRESSION"]
     resample = [row["providerId"] for row in rows if row.get("status") == "RESAMPLE"]
     payload = {
-        "schemaVersion": 3,
-        "method": "rotating-hub46-upstream-parity",
+        "schemaVersion": 4,
+        "method": "rotating-hub46-upstream-parity-terminal-verified",
+        "terminalMediaRequired": True,
         "scopeProviderCount": len(scoped),
         "matchedUpstreamProviders": len(provider_ids),
         "testedProviders": len(rows),
