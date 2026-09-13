@@ -1,4 +1,4 @@
-name: TEMP - Dispatch Unified Fixed Hub46 Native Labs
+name: TEMP - Materialize Exact Hub46 Native Manifest
 
 on:
   push:
@@ -7,12 +7,12 @@ on:
 
 permissions:
   actions: write
-  contents: read
+  contents: write
 
 jobs:
-  validate-dispatch:
+  patch-test-dispatch:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     env:
       REF: fix/labs-5.21.44-20260912
       NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json
@@ -21,26 +21,115 @@ jobs:
         with:
           ref: fix/labs-5.21.44-20260912
           fetch-depth: 2
-          persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Validate unified rotating Hub-46 head
+
+      - name: Materialize physical Hub-46 manifest and patch native consumers
         shell: bash
         run: |
           set -euo pipefail
-          python3 tests/workflow_security_policy_test.py
-          python3 tests/native_rotating_fixture_consumers_test.py
+          python3 scripts/generate_hub46_manifest.py
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path('.')
+          scoped = '''TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
+          if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO}/manifest-hub46.json" ]]; then
+            TARGET_MANIFEST="manifest-hub46.json"
+            echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=$TARGET_MANIFEST providers=46 authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
+          fi'''
+          base = 'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"'
+          for name in ('run_native_corpus_desktop_suite.sh', 'run_native_corpus_mobile_suite.sh', 'run_native_corpus_tv_suite.sh'):
+              path = root / 'scripts' / name
+              text = path.read_text(encoding='utf-8')
+              if 'FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE' not in text:
+                  if text.count(base) != 1:
+                      raise SystemExit(f'{name}: TARGET_MANIFEST anchor count={text.count(base)}')
+                  text = text.replace(base, scoped, 1)
+              path.write_text(text, encoding='utf-8')
+
+          desktop = root / 'scripts/run_native_corpus_desktop_suite.sh'
+          text = desktop.read_text(encoding='utf-8')
+          legacy_start = '  EXPECTED_MINUTES="$(python3 - "$fixture" "$NIAKVIO/.github/triggers/nuvio-client-lab.json" <<\'PY\'\n'
+          legacy_end = ')" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }\n'
+          if legacy_start in text:
+              start = text.index(legacy_start)
+              end = text.index(legacy_end, start) + len(legacy_end)
+              replacement = '''  EXPECTED_MINUTES="$(PYTHONPATH="${NIAKVIO}/scripts" python3 - "$fixture" <<'PY'
+          import sys
+          from rotating_corpus import fixture_by_slug
+          print(int(fixture_by_slug(sys.argv[1]).get("expectedDurationMinutes") or 0))
+          PY
+          )" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
+          '''
+              text = text[:start] + replacement + text[end:]
+          if '.github/triggers/nuvio-client-lab.json" <<\'PY\'' in text:
+              raise SystemExit('desktop legacy fixture duration lookup survived')
+          desktop.write_text(text, encoding='utf-8')
+
+          ios = root / 'scripts/run_native_corpus_ios_suite.sh'
+          text = ios.read_text(encoding='utf-8')
+          anchor = 'MANIFEST_URL="${NIAKVIO_MANIFEST_URL:?NIAKVIO_MANIFEST_URL is required}"'
+          if 'FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=manifest-hub46.json' not in text:
+              if text.count(anchor) != 1:
+                  raise SystemExit(f'iOS manifest URL anchor count={text.count(anchor)}')
+              replacement = anchor + '''
+          if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO_ROOT}/manifest-hub46.json" ]]; then
+            SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
+            SOURCE_SHA="${GITHUB_SHA:-$(git -C "$NIAKVIO_ROOT" rev-parse HEAD)}"
+            MANIFEST_URL="https://raw.githubusercontent.com/${SOURCE_REPOSITORY}/${SOURCE_SHA}/manifest-hub46.json"
+            echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=manifest-hub46.json providers=46 authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
+          fi'''
+              text = text.replace(anchor, replacement, 1)
+          ios.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Validate exact Hub-46 native execution contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_hub46_manifest.py --check
+          python3 tests/native_hub46_manifest_test.py
           python3 tests/native_hub46_scope_contract_test.py
+          python3 tests/native_rotating_fixture_consumers_test.py
           python3 tests/rotating_corpus_test.py
           python3 tests/native_provider_resample_status_test.py
           python3 tests/provider_upstream_parity_v3_test.py
+          python3 tests/workflow_security_policy_test.py
           node tests/streamflix_timerless_runtime_test.cjs
           bash -n scripts/run_native_corpus_desktop_suite.sh
           bash -n scripts/run_native_corpus_mobile_suite.sh
           bash -n scripts/run_native_corpus_tv_suite.sh
-      - name: Dispatch all exact Hub-46 native acceptance workflows
+          bash -n scripts/run_native_corpus_ios_suite.sh
+          python3 - <<'PY'
+          import json
+          data=json.load(open('manifest-hub46.json', encoding='utf-8'))
+          rows=data.get('scrapers') or []
+          assert len(rows)==46, len(rows)
+          assert all(str(row.get('filename') or '').startswith('providers/') for row in rows)
+          print('FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE_CHECK providers=46 root_relative=true')
+          PY
+
+      - name: Commit physical Hub-46 execution fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest-hub46.json \
+            scripts/run_native_corpus_desktop_suite.sh \
+            scripts/run_native_corpus_mobile_suite.sh \
+            scripts/run_native_corpus_tv_suite.sh \
+            scripts/run_native_corpus_ios_suite.sh
+          git diff --cached --check
+          git commit -m "fix(labs): load exact Hub-46 manifest in native clients"
+          git pull --rebase origin "$REF"
+          git push origin HEAD:"$REF"
+          echo "FIELD_HUB46_PHYSICAL_MANIFEST_COMMIT sha=$(git rev-parse HEAD) providers=46"
+
+      - name: Dispatch all five native platforms on committed Hub-46 head
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -48,8 +137,13 @@ jobs:
         run: |
           set -euo pipefail
           HEAD="$(git rev-parse HEAD)"
-          echo "FIELD_UNIFIED_HUB46_HEAD sha=$HEAD providers=46"
+          for attempt in $(seq 1 15); do
+            REMOTE="$(git ls-remote origin "refs/heads/$REF" | awk '{print $1}')"
+            [[ "$REMOTE" = "$HEAD" ]] && break
+            sleep 1
+          done
+          test "$(git ls-remote origin "refs/heads/$REF" | awk '{print $1}')" = "$HEAD"
           for wf in native-desktop-reader-acceptance.yml native-mobile-android-reader.yml native-mobile-ios-reader.yml; do
             gh workflow run "$wf" --repo "$REPO" --ref "$REF"
           done
-          echo "FIELD_UNIFIED_HUB46_NATIVE_LABS_DISPATCHED workflows=3 platforms=5 providers=46 branch=$REF sha=$HEAD"
+          echo "FIELD_HUB46_NATIVE_LABS_DISPATCHED workflows=3 platforms=5 providers=46 branch=$REF sha=$HEAD"
