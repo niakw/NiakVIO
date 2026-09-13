@@ -26,11 +26,9 @@ jobs:
           ref: fix/labs-5.21.44-20260912
           fetch-depth: 0
       - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+        with: {python-version: '3.12'}
       - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
+        with: {node-version: '24'}
       - name: Stage V2 and materialize without minimizer
         run: |
           set -euo pipefail
@@ -40,7 +38,7 @@ jobs:
           python3 tests/provider_v3_final_stage_minimizer_gate_test.py
           python3 tests/global_core_runtime_ownership_test.py
           python3 tests/provider_v3_strategy_plan_contract_test.py
-      - name: Require exact Tokyo Ghoul stream proof
+      - name: Require movie lane preservation and exact anime proof
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -48,50 +46,63 @@ jobs:
           from pathlib import Path
           sys.path.insert(0,str(Path('scripts').resolve()))
           import run_provider_upstream_parity as p
-          f={'slug':'tokyo-ghoul-2014-s01e01','tmdbId':'61374','mediaType':'anime','category':'anime','season':1,'episode':1,'title':'Tokyo Ghoul','year':2014}
-          r=p.run_worker(p.local_catalog()['voiranime']['path'],f,60)
-          row={'provider':'voiranime','lane':'anime','fixture':f['slug'],'streams':int(r.get('stream_count') or 0),'raw':int(r.get('raw_stream_count') or 0),'statuses':r.get('http_statuses') or [],'accessible':r.get('server_accessible'),'success':r.get('server_success'),'error':r.get('error_class'),'timeout':r.get('timeout')}
-          print('VOIRANIME_V2_EXACT '+json.dumps(row,ensure_ascii=False,separators=(',',':')))
-          Path('automation/voiranime-anime-v2-exact-proof.json').write_text(json.dumps(row,ensure_ascii=False,indent=2)+'\n')
-          if row['streams']<=0: raise SystemExit('VoirAnime Tokyo Ghoul regression still zero')
+          path=p.local_catalog()['voiranime']['path']
+          movies=[
+            {'slug':'jujutsu-kaisen-0-2021','tmdbId':'810693','mediaType':'movie','category':'movie','title':'Jujutsu Kaisen 0','year':2021},
+            {'slug':'demon-slayer-mugen-train-2020','tmdbId':'635302','mediaType':'movie','category':'movie','title':'Demon Slayer -Kimetsu no Yaiba- The Movie: Mugen Train','year':2020},
+            {'slug':'dragon-ball-super-broly-2018','tmdbId':'503314','mediaType':'movie','category':'movie','title':'Dragon Ball Super: Broly','year':2018},
+          ]
+          movie_rows=[]
+          for f in movies:
+            r=p.run_worker(path,f,45)
+            movie_rows.append({'fixture':f['slug'],'streams':int(r.get('stream_count') or 0),'raw':int(r.get('raw_stream_count') or 0),'statuses':r.get('provider_server_http_statuses') or r.get('http_statuses') or [],'error':r.get('error_class')})
+          anime={'slug':'tokyo-ghoul-2014-s01e01','tmdbId':'61374','mediaType':'anime','category':'anime','season':1,'episode':1,'title':'Tokyo Ghoul','year':2014}
+          r=p.run_worker(path,anime,60)
+          anime_row={'fixture':anime['slug'],'streams':int(r.get('stream_count') or 0),'raw':int(r.get('raw_stream_count') or 0),'statuses':r.get('provider_server_http_statuses') or r.get('http_statuses') or [],'error':r.get('error_class')}
+          proof={'movieCandidates':movie_rows,'moviePositive':sum(x['streams']>0 for x in movie_rows),'anime':anime_row}
+          print('VOIRANIME_V2_DUAL_LANE '+json.dumps(proof,ensure_ascii=False,separators=(',',':')))
+          Path('automation/voiranime-anime-v2-exact-proof.json').write_text(json.dumps(proof,ensure_ascii=False,indent=2)+'\n')
+          if proof['moviePositive']<=0: raise SystemExit('VoirAnime movie lane was not preserved on any current anime-film fixture')
+          if anime_row['streams']<=0: raise SystemExit('VoirAnime Tokyo Ghoul anime regression still zero')
           PY
       - name: Full recent reserve parity
         run: |
           set -euo pipefail
-          python3 scripts/run_provider_upstream_parity_v3.py \
-            --provider voiranime --samples-per-lane 32 --workers 1 --timeout 25 \
-            --seed 20260913-voiranime-v2 \
-            --out automation/voiranime-anime-v2-parity.json
+          python3 scripts/run_provider_upstream_parity_v3.py --provider voiranime --samples-per-lane 32 --workers 1 --timeout 25 --seed 20260913-voiranime-v2 --out automation/voiranime-anime-v2-parity.json
           python3 - <<'PY'
           import json
           from pathlib import Path
-          d=json.loads(Path('automation/voiranime-anime-v2-parity.json').read_text()); bad=[]
+          d=json.loads(Path('automation/voiranime-anime-v2-parity.json').read_text());bad=[]
           for p in d.get('providers') or []:
             for lane in p.get('lanes') or []:
               if lane.get('status')=='REGRESSION': bad.append(f"{p.get('providerId')}:{lane.get('lane')}")
           print('VOIRANIME_V2_PARITY '+json.dumps({'summary':d.get('summary'),'bad':bad},separators=(',',':')))
           if bad: raise SystemExit('certain parity regression remains: '+','.join(bad))
           PY
-      - name: Promote anime proof and rematerialize
+      - name: Promote only after dual-lane proof
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import json
           from pathlib import Path
           p=Path('provider-overrides.json');d=json.loads(p.read_text());r=d['provider_patches']['voiranime'];r['route_data_state']='on';disp=r.get('repair_disposition')
-          if not isinstance(disp,dict):disp={};r['repair_disposition']=disp
-          existing=[]
-          for x in (disp.get('currentVerifiedLanes') or [])+(disp.get('provenLanes') or []):
-            if x and x not in existing: existing.append(x)
-          if 'anime' not in existing: existing.append('anime')
-          disp.update({'routeDataState':'on','currentVerifiedLanes':existing,'provenLanes':existing,'missingLanes':[],'completeCapabilityProof':True,'recoveryStatus':'current-anime-v2-stream-positive','terminalState':None,'quarantined':False,'reasonCodes':['exact_regression_recovered','full32_no_certain_regression']})
+          if not isinstance(disp,dict): disp={};r['repair_disposition']=disp
+          required=[]
+          for x in disp.get('requiredLanes') or ['movie','anime']:
+            if x and x not in required: required.append(x)
+          proven=[]
+          for x in (disp.get('currentVerifiedLanes') or [])+(disp.get('provenLanes') or [])+['movie','anime']:
+            if x and x not in proven: proven.append(x)
+          missing=[x for x in required if x not in proven]
+          disp.update({'routeDataState':'on' if not missing else 'repair','currentVerifiedLanes':proven,'provenLanes':proven,'missingLanes':missing,'completeCapabilityProof':not missing,'recoveryStatus':'current-dual-lane-proof-positive','terminalState':None,'quarantined':False,'reasonCodes':['movie_lane_preserved','anime_regression_recovered','full32_no_certain_regression']})
+          r['route_data_state']=disp['routeDataState']
           p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
           PY
           python3 scripts/materialize_provider_v3_one.py voiranime
           python3 scripts/validate_published_provider_config.py --expected 96
           python3 tests/global_core_runtime_ownership_test.py
           python3 tests/provider_v3_strategy_plan_contract_test.py
-      - name: Reconfirm exact proof after promotion
+      - name: Reconfirm anime after promotion
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -102,7 +113,7 @@ jobs:
           f={'tmdbId':'61374','mediaType':'anime','category':'anime','season':1,'episode':1,'title':'Tokyo Ghoul','year':2014}
           r=p.run_worker(p.local_catalog()['voiranime']['path'],f,60);n=int(r.get('stream_count') or 0)
           print(f'VOIRANIME_V2_RECONFIRM streams={n} raw={int(r.get("raw_stream_count") or 0)}')
-          if n<=0: raise SystemExit('VoirAnime lost exact positive after promotion')
+          if n<=0: raise SystemExit('VoirAnime lost exact anime positive after promotion')
           PY
       - name: Record evidence and commit
         run: |
@@ -111,14 +122,14 @@ jobs:
           import json
           from pathlib import Path
           exact=json.loads(Path('automation/voiranime-anime-v2-exact-proof.json').read_text());parity=json.loads(Path('automation/voiranime-anime-v2-parity.json').read_text())
-          m=Path('MEMORY.md');t=m.read_text(encoding='utf-8');marker='## 2026-09-13 — full32 regression wave: VoirAnime anime recovered'
+          m=Path('MEMORY.md');t=m.read_text(encoding='utf-8');marker='## 2026-09-13 — full32 regression wave: VoirAnime dual lane recovered'
           if marker not in t:
-            t+=f'''\n{marker}\n\n- VoirAnime anime regression was repaired with a current-site provider Lego layered over the existing movie resolver: current series page -> requested chapter -> `LECTEUR` selector -> external iframe -> shared bounded direct-media crawler.\n- The anime V2 captures/delegates the previous movie resolver; Core remains the only final runtime dispatcher and terminal validation owner. Workspace materialization did not minimize.\n- Exact Tokyo Ghoul S01E01 proof: `{json.dumps(exact,ensure_ascii=False)}`.\n- Recent-reserve parity has no certain `upstream_ok_niakvio_ko`: summary `{json.dumps(parity.get('summary'),ensure_ascii=False)}`.\n''';m.write_text(t,encoding='utf-8')
+            t+=f'''\n{marker}\n\n- VoirAnime current-site repair was accepted only after preserving a positive movie route and restoring the exact Tokyo Ghoul S01E01 anime route.\n- Dual-lane exact proof: `{json.dumps(exact,ensure_ascii=False)}`.\n- Recent-reserve parity has no certain upstream-positive/Niak-zero regression: `{json.dumps(parity.get('summary'),ensure_ascii=False)}`.\n''';m.write_text(t,encoding='utf-8')
           PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add provider-overrides.json manifest.json providers/ vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json automation/voiranime-anime-v2-exact-proof.json automation/voiranime-anime-v2-parity.json scripts/provider_patches/voiranime_anime_runtime_v2.py scripts/upgrade_voiranime_anime_runtime_v2.py MEMORY.md
-          git commit -m 'fix(voiranime): recover current anime lane'
+          git commit -m 'fix(voiranime): prove movie preservation and recover anime'
           git fetch origin fix/labs-5.21.44-20260912
           git rebase origin/fix/labs-5.21.44-20260912
           git push origin HEAD:fix/labs-5.21.44-20260912
