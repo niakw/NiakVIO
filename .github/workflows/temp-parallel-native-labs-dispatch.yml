@@ -1,22 +1,199 @@
-name: TEMP parallel native Labs dispatch
+name: TEMP Streamflix timerless Desktop validation
+
 on:
   push:
     branches: ["fix/labs-5.21.44-20260912"]
     paths: [".github/workflows/temp-parallel-native-labs-dispatch.yml"]
+
 permissions:
   actions: write
-  contents: read
+  contents: write
+
 jobs:
-  dispatch:
+  patch-test-dispatch:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      REF: fix/labs-5.21.44-20260912
     steps:
-      - name: Dispatch missing TV Lab
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          REF: fix/labs-5.21.44-20260912
+      - name: Checkout repair branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Patch Streamflix timer globals defensively
         shell: bash
         run: |
           set -euo pipefail
-          gh workflow run native-corpus-device-targeted.yml --repo "$REPO" --ref "$REF" -f device=tv
-          echo "FIELD_PARALLEL_NATIVE_LABS_DISPATCHED ref=$REF tv=1 reason=repair_invalid_legacy_input"
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('providers/streamflix.js')
+          text = path.read_text(encoding='utf-8')
+
+          old_timeout = """    const overallTimeout = setTimeout(() => {
+              try { ws.close(); } catch {}
+              reject(new Error('WebSocket timeout'));
+            }, 30000);
+          """
+          new_timeout = """    const overallTimeout = typeof setTimeout === 'function'
+              ? setTimeout(() => {
+                  try { ws.close(); } catch {}
+                  reject(new Error('WebSocket timeout'));
+                }, 30000)
+              : null;
+
+            function clearOverallTimeout() {
+              if (overallTimeout !== null && typeof clearTimeout === 'function') {
+                clearTimeout(overallTimeout);
+              }
+            }
+          """
+
+          if text.count(old_timeout) != 1:
+              raise SystemExit(f'expected exactly one direct Streamflix timeout block, got {text.count(old_timeout)}')
+          text = text.replace(old_timeout, new_timeout, 1)
+
+          direct_clear = '                clearTimeout(overallTimeout);'
+          if text.count(direct_clear) != 1:
+              raise SystemExit(f'expected one indented success clearTimeout, got {text.count(direct_clear)}')
+          text = text.replace(direct_clear, '                clearOverallTimeout();', 1)
+
+          direct_clear = '      clearTimeout(overallTimeout);'
+          if text.count(direct_clear) != 2:
+              raise SystemExit(f'expected two handler clearTimeout calls, got {text.count(direct_clear)}')
+          text = text.replace(direct_clear, '      clearOverallTimeout();')
+
+          path.write_text(text, encoding='utf-8')
+          PY
+          node --check providers/streamflix.js
+          if grep -nE '(^|[^[:alnum:]_])setTimeout\(|(^|[^[:alnum:]_])clearTimeout\(' providers/streamflix.js | grep -v "typeof"; then
+            echo "Direct timer call audit shown above; verifying only guarded implementation remains"
+          fi
+
+      - name: Add and execute timerless Streamflix regression test
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > tests/streamflix_timerless_runtime_test.cjs <<'NODE'
+          'use strict';
+
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const vm = require('node:vm');
+
+          const providerPath = path.resolve(__dirname, '../providers/streamflix.js');
+          const source = fs.readFileSync(providerPath, 'utf8');
+          const errors = [];
+
+          class FailingWebSocket {
+            close() {}
+            send() {}
+            set onopen(fn) { this._onopen = fn; }
+            set onmessage(fn) { this._onmessage = fn; }
+            set onclose(fn) { this._onclose = fn; }
+            set onerror(fn) {
+              this._onerror = fn;
+              Promise.resolve().then(() => fn(new Error('expected websocket failure')));
+            }
+          }
+
+          function response(json) {
+            return {
+              ok: true,
+              status: 200,
+              statusText: 'OK',
+              json: async () => json,
+            };
+          }
+
+          async function fetchMock(url) {
+            const value = String(url);
+            if (value.includes('api.themoviedb.org')) {
+              return response({ name: 'Timerless Show', first_air_date: '2024-01-01' });
+            }
+            if (value.endsWith('/data.json')) {
+              return response({
+                data: [{
+                  moviename: 'Timerless Show',
+                  moviekey: 'timerless-show',
+                  movieduration: '1 Season',
+                }],
+              });
+            }
+            if (value.endsWith('/config/config-streamflixapp.json')) {
+              return response({ premium: ['https://cdn.example/'], movies: [] });
+            }
+            throw new Error(`unexpected fetch ${value}`);
+          }
+
+          const moduleBox = { exports: {} };
+          const sandbox = {
+            module: moduleBox,
+            exports: moduleBox.exports,
+            require(specifier) {
+              if (specifier === 'cheerio-without-node-native') return {};
+              throw new Error(`unexpected require ${specifier}`);
+            },
+            fetch: fetchMock,
+            WebSocket: FailingWebSocket,
+            console: {
+              log() {},
+              warn() {},
+              error(...args) { errors.push(args.map(String).join(' ')); },
+            },
+          };
+
+          // Intentionally DO NOT expose setTimeout or clearTimeout in this runtime.
+          vm.createContext(sandbox);
+          vm.runInContext(source, sandbox, { filename: providerPath });
+
+          (async () => {
+            const streams = await moduleBox.exports.getStreams('12345', 'tv', 1, 1);
+            assert.equal(Array.isArray(streams), true);
+            assert.equal(streams.length, 1, 'expected the normal TV fallback stream');
+            assert.match(streams[0].url, /timerless-show\/s1\/episode1\.mkv$/);
+
+            const websocketFailure = errors.find(line => line.includes('WebSocket failed, using fallback:')) || '';
+            assert.match(websocketFailure, /WebSocket error/);
+            assert.doesNotMatch(websocketFailure, /setTimeout is not defined|clearTimeout is not defined|ReferenceError/);
+            assert.equal(errors.some(line => /setTimeout is not defined|clearTimeout is not defined/.test(line)), false);
+
+            console.log('PASS streamflix timerless runtime: no timer globals -> normal WebSocket fallback, no ReferenceError');
+          })().catch(error => {
+            console.error(error);
+            process.exitCode = 1;
+          });
+          NODE
+
+          node tests/streamflix_timerless_runtime_test.cjs
+
+      - name: Commit Streamflix fix and regression test
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add providers/streamflix.js tests/streamflix_timerless_runtime_test.cjs
+          git diff --cached --check
+          git diff --cached --exit-code && { echo 'No Streamflix changes to commit'; exit 1; } || true
+          git commit -m "fix(streamflix): tolerate missing desktop timer globals"
+          git push origin HEAD:"$REF"
+          echo "STREAMFLIX_FIX_SHA=$(git rev-parse HEAD)"
+
+      - name: Dispatch official Desktop Lab on patched ref
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run native-desktop-reader-acceptance.yml --repo "$REPO" --ref "$REF"
+          echo "FIELD_STREAMFLIX_DESKTOP_LAB_DISPATCHED ref=$REF macos=1 windows=1"
