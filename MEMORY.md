@@ -1479,3 +1479,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - A provider advances to another random/deterministic candidate from the **same lane only** when the current runtime call completes normally with `0 streams` and no error. Positive result stops rotation for that provider/lane. Runtime/load/timeout/player/transport/identity contradiction is not a catalogue miss and must stop/report rather than rotating it away.
 - `scripts/rotating_corpus.py` keeps old regression fixtures addressable by exact slug for targeted diagnostics but excludes them from the three global recent pools, so old/2026 works cannot silently become ordinary Lab samples.
 - `scripts/native_catalog_miss_rotation.py` is the shared clean-miss planner. Fallback runs must shrink to the clean-zero provider allowlist instead of retesting providers that were already positive or errored.
+
+## 2026-09-13 — adaptive Lab fallback wired across five Labs
+
+- Desktop macOS/Windows, Android Mobile and Android TV now run the three initial global seeds (1 movie + 1 TV + 1 anime), then use `native_catalog_miss_rotation.py` plus a shrinking provider allowlist. Only provider/lane pairs that returned a clean `0 streams` without an error advance to another random/deterministic work from the same global list.
+- Fallback work is not a fixed batch and has no hard-coded “6 samples” rule. Positive providers and providers with runtime/load/timeout/transport/player/identity errors are not repeated to hide failures.
+- iOS embeds the same three recent global pools as an interleaved reserve and tracks terminal provider+lane pairs in-process: clean zero continues to the next same-lane fixture; positive or exception stops that provider/lane.
+- The adaptive runners reuse the current native session/emulator and restage only the clean-miss provider allowlist, reducing extra workload relative to rerunning the full 46 on every fallback title.

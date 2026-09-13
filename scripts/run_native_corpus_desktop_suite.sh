@@ -136,6 +136,14 @@ PY
   echo "FIELD_NATIVE_CORPUS_DESKTOP_STATUS os=$HOST_OS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader_observed=$OBSERVED_READER_STATUS blocking=false stream_scope=$STREAM_SCOPE"
 done
 
+# Adaptive catalogue fallback is not a fixed batch. Each current fixture is
+# evaluated once; only clean-zero providers advance to another title in the same
+# global lane. Positive/error providers disappear from the retry allowlist.
+export NIAKVIO_TARGET_MANIFEST="$TARGET_MANIFEST"
+export NIAKVIO_RESOLVED_MANIFEST_URL="$MANIFEST_URL"
+export NIAKVIO_RESOLVED_ALLOW_LOCAL="$ALLOW_LOCAL_MANIFEST"
+bash "${NIAKVIO}/scripts/run_native_adaptive_catalog_fallbacks.sh" desktop "${FIXTURES[@]}" || SOFT_FAILURES=$((SOFT_FAILURES+1))
+
 for fixture in "${FIXTURES[@]}"; do
   LOG="${WORKSPACE}/desktop-native-corpus-${HOST_OS}-${fixture}.log"
   if [[ ! -s "$LOG" ]]; then

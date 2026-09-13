@@ -158,6 +158,14 @@ for fixture in "${FIXTURES[@]}"; do
   echo "FIELD_NATIVE_CORPUS_MOBILE_STATUS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader_observed=$OBSERVED_READER_STATUS blocking=false stream_scope=$STREAM_SCOPE frontend_dir=$FRONT_DIR"
 done
 
+# One-at-a-time adaptive fallback. Reuse the same emulator/app/Gradle task;
+# only providers with a clean zero-stream result are restaged for the next title.
+export NIAKVIO_TARGET_MANIFEST="$TARGET_MANIFEST"
+export NIAKVIO_RESOLVED_MANIFEST_URL="$MANIFEST_URL"
+export NIAKVIO_RESOLVED_ALLOW_LOCAL="$ALLOW_LOCAL_MANIFEST"
+export NIAKVIO_MOBILE_TASK="$MOBILE_TASK"
+bash "${NIAKVIO}/scripts/run_native_adaptive_catalog_fallbacks.sh" mobile "${FIXTURES[@]}" || SOFT_FAILURES=$((SOFT_FAILURES+1))
+
 for fixture in "${FIXTURES[@]}"; do
   LOG="${WORKSPACE}/mobile-native-corpus-${fixture}.log"
   if [[ ! -s "$LOG" ]]; then

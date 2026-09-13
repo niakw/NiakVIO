@@ -203,6 +203,14 @@ for fixture in "${FIXTURES[@]}"; do
   echo "FIELD_NATIVE_CORPUS_TV_STATUS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader_observed=$OBSERVED_READER_STATUS blocking=false stream_scope=$STREAM_SCOPE frontend_dir=$FRONT_DIR"
 done
 
+# One-at-a-time adaptive fallback. Keep the current emulator boot; only clean
+# zero-stream providers advance to another recent title from the same global lane.
+export NIAKVIO_TARGET_MANIFEST="$TARGET_MANIFEST"
+export NIAKVIO_RESOLVED_MANIFEST_URL="$MANIFEST_URL"
+export NIAKVIO_RESOLVED_ALLOW_LOCAL="$ALLOW_LOCAL_MANIFEST"
+export NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES="$ROUTE_TIMEOUT_MINUTES"
+bash "${NIAKVIO}/scripts/run_native_adaptive_catalog_fallbacks.sh" tv "${FIXTURES[@]}" || SOFT_FAILURES=$((SOFT_FAILURES+1))
+
 for fixture in "${FIXTURES[@]}"; do
   LOG="${WORKSPACE}/tv-native-corpus-${fixture}.log"
   if [[ ! -s "$LOG" ]]; then

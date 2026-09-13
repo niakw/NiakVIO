@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from rotating_corpus import select_fixtures
+from rotating_corpus import rotated_candidates, select_fixtures
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / ".github" / "triggers" / "nuvio-client-lab.json"
@@ -221,14 +221,17 @@ private suspend fun runLab(manifestUrl: String) {
         val index = fixturesForRun.indexOfFirst { it.slug == resumeFixture }
         if (index >= 0) fixturesForRun.drop(index) else fixturesForRun
     } else fixturesForRun
-    println("FIELD_NATIVE_CORPUS_IOS_BEGIN mode=$mode fixtures=${resumedFixtures.size} providers=${iosProviders.size} target=$targetProvider provider_timeout_ms=$providerTimeoutMs player_timeout_ms=$playerTimeoutMs resume_fixture=$resumeFixture resume_after=$resumeAfterProvider")
+    println("FIELD_NATIVE_CORPUS_IOS_BEGIN mode=$mode reserve_fixtures=${resumedFixtures.size} initial_per_lane=1 fixed_batch=false providers=${iosProviders.size} target=$targetProvider provider_timeout_ms=$providerTimeoutMs player_timeout_ms=$playerTimeoutMs resume_fixture=$resumeFixture resume_after=$resumeAfterProvider")
 
+    val terminalProviders = mutableSetOf<String>()
     resumedFixtures.forEach { fixture ->
         val selectedBase = iosProviders.filter { provider ->
-            provider.supportedTypes.any { type ->
+            val key = provider.id.lowercase() + "|" + fixture.mediaType
+            key !in terminalProviders && provider.supportedTypes.any { type ->
                 normalizedType(type) == fixture.mediaType
             }
         }
+        if (selectedBase.isEmpty()) return@forEach
         val selected = if (!learning && fixture.slug == resumeFixture && resumeAfterProvider.isNotBlank()) {
             val resumeIndex = selectedBase.indexOfFirst { it.id.equals(resumeAfterProvider, ignoreCase = true) }
             if (resumeIndex >= 0) {
@@ -294,6 +297,12 @@ private suspend fun runLab(manifestUrl: String) {
                         state = "completed",
                     ),
                 )
+                val providerLaneKey = info.id.lowercase() + "|" + fixture.mediaType
+                if (rows.isEmpty()) {
+                    println("FIELD_NATIVE_IOS_CATALOG_MISS fixture=${fixture.slug} provider=${info.id} type=${fixture.mediaType} action=rotate_same_lane")
+                } else {
+                    terminalProviders += providerLaneKey
+                }
                 rows.firstOrNull()?.let { row ->
                     val (playerState, durationSeconds, host) = probeProductionPlayer(row, playerTimeoutMs)
                     emit(
@@ -312,6 +321,7 @@ private suspend fun runLab(manifestUrl: String) {
                 }
                 println("FIELD_NATIVE_IOS_PROVIDER_END fixture=${fixture.slug} provider=${info.id} state=completed duration_ms=${startedAt.elapsedNow().inWholeMilliseconds}")
             } catch (error: Throwable) {
+                terminalProviders += info.id.lowercase() + "|" + fixture.mediaType
                 println("FIELD_NATIVE_IOS_PROVIDER_END fixture=${fixture.slug} provider=${info.id} state=${if (error is TimeoutCancellationException) "timeout" else "error"} duration_ms=${startedAt.elapsedNow().inWholeMilliseconds}")
                 emit(
                     "FIELD_NATIVE_IOS_RESULT",
@@ -353,21 +363,27 @@ fun startNiakvioIosLabIfRequested() {
 '''
 
 def fixture_rows() -> list[dict]:
+    # Embed the three global pools as an interleaved reserve. Full iOS execution
+    # starts with one movie/TV/anime candidate and only reaches later candidates
+    # for provider+lane pairs that returned a clean zero. There is no fixed batch.
+    pools = {kind: rotated_candidates(kind, provider="ios-native") for kind in ("movie", "tv", "anime")}
+    if any(not rows for rows in pools.values()):
+        raise SystemExit("missing iOS rotating global fixture pool")
     rows = []
-    for kind in ("movie", "tv", "anime"):
-        selected = select_fixtures(kind, count=1, provider="ios-native")
-        if len(selected) != 1:
-            raise SystemExit(f"missing rotating fixture for {kind}")
-        fixture = selected[0]
-        rows.append(
-            {
-                "slug": fixture["slug"],
-                "tmdbId": str(fixture.get("tmdbId") or ""),
-                "mediaType": kind,
-                "season": fixture.get("season"),
-                "episode": fixture.get("episode"),
-            }
-        )
+    for index in range(max(len(values) for values in pools.values())):
+        for kind in ("movie", "tv", "anime"):
+            if index >= len(pools[kind]):
+                continue
+            fixture = pools[kind][index]
+            rows.append(
+                {
+                    "slug": fixture["slug"],
+                    "tmdbId": str(fixture.get("tmdbId") or ""),
+                    "mediaType": kind,
+                    "season": fixture.get("season"),
+                    "episode": fixture.get("episode"),
+                }
+            )
     return rows
 
 
