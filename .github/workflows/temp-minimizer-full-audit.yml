@@ -1,0 +1,64 @@
+name: TEMP - full Provider v3 minimizer audit
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-minimizer-full-audit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run full minimizer contract suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/provider_v3_minimizer_contract_test.py
+          python3 tests/provider_v3_minimizer_preview_test.py
+          python3 tests/provider_v3_minimizer_published_test.py
+          python3 tests/provider_byte_stability_contract_test.py
+          python3 scripts/provider_v3_minimizer.py \
+            --syntax-check \
+            --published-fixed-point \
+            --output automation/provider-v3-minimizer-full-audit.json
+      - name: Prove reverse reconstruction remains byte-identical
+        run: python3 scripts/verify_provider_v3_reverse_rebuild.py
+      - name: Summarize size and safety
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('automation/provider-v3-minimizer-full-audit.json').read_text())
+          t=d['totals']
+          print('MINIMIZER_FULL_AUDIT',
+                'providers='+str(d['provider_count']),
+                'bytes='+str(t['bytes_before']),
+                'post='+str(t['bytes_after']),
+                'further_saved='+str(t['saved_bytes']),
+                'templates='+str(t['skipped_templates']),
+                'production='+str(d['production_enabled']).lower(),
+                'terser='+str(d['terser_allowed']).lower())
+          PY
+      - name: Upload audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: provider-v3-minimizer-full-audit-${{ github.run_id }}
+          path: automation/provider-v3-minimizer-full-audit.json
+          retention-days: 14
