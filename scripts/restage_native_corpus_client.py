@@ -19,13 +19,6 @@ CORPUS_PATH = ROOT / ".github/triggers/nuvio-client-lab.json"
 DEFAULT_PR_PROVIDER_LIMIT = 4
 RUNTIME_ERROR_SENTINEL = "__NIAKVIO_RUNTIME_ERROR__"
 
-# Nuvio Desktop/Mobile/TV currently catch JavaScript exceptions raised by
-# getStreams() inside their official QuickJS runtime and deliberately materialize
-# them as an empty array. That behavior is fine for the applications, but it makes
-# a diagnostic Lab unable to distinguish a legitimate empty provider response from
-# a Core/runtime incompatibility. This test-only wrapper preserves the exception as
-# a harmless synthetic result. The collection/runtime gates recognize the sentinel
-# before treating it as media evidence. No production provider bundle is modified.
 RUNTIME_TRAP_HELPER = r'''
     private fun trapRuntimeErrors(code: String): String = code + """
 ;/* NIAKVIO_NATIVE_RUNTIME_ERROR_TRAP */
@@ -104,17 +97,58 @@ def _fixture_provider_ids(slug: str) -> list[str]:
     raise SystemExit(f"unknown or malformed native corpus fixture: {slug}")
 
 
-def staged_providers(manifest_path: str, provider: str | None = None, fixture: str | None = None) -> list[dict]:
+def _provider_file_ids(path: str | None) -> list[str]:
+    if not path:
+        return []
+    candidate = Path(path)
+    if not candidate.is_absolute():
+        candidate = Path(os.environ.get("GITHUB_WORKSPACE") or ROOT) / candidate
+    if not candidate.is_file():
+        raise SystemExit(f"provider allowlist file missing: {candidate}")
+    ids = []
+    seen: set[str] = set()
+    for raw in candidate.read_text(encoding="utf-8").splitlines():
+        value = raw.strip()
+        key = value.casefold()
+        if value and key not in seen:
+            seen.add(key)
+            ids.append(value)
+    if not ids:
+        raise SystemExit(f"provider allowlist file is empty: {candidate}")
+    return ids
+
+
+def staged_providers(
+    manifest_path: str,
+    provider: str | None = None,
+    fixture: str | None = None,
+    provider_file: str | None = None,
+) -> list[dict]:
     staged = selected_manifest.staged_manifest_providers(manifest_path)
+    allowlist = _provider_file_ids(provider_file)
+    if allowlist:
+        by_id = {str(row.get("id") or "").strip().casefold(): row for row in staged}
+        filtered = [by_id[key] for value in allowlist if (key := value.casefold()) in by_id]
+        missing = [value for value in allowlist if value.casefold() not in by_id]
+        if missing:
+            raise SystemExit("provider allowlist references missing manifest ids: " + ",".join(missing))
+        if fixture:
+            fixture_row = corpus.fixture_by_slug(fixture)
+            declared = {
+                str(row.get("id") or "").strip().casefold()
+                for row in selected_manifest.select_declared_type(staged, fixture_row)
+            }
+            filtered = [row for row in filtered if str(row.get("id") or "").strip().casefold() in declared]
+        if not filtered:
+            raise SystemExit(f"provider allowlist selected no providers for fixture={fixture or 'unknown'}")
+        return filtered
+
     mode = str(provider or "").strip().casefold()
     if mode == "declared-type":
         if not fixture:
             raise SystemExit("declared-type provider selection requires a fixture")
         return selected_manifest.select_declared_type(staged, corpus.fixture_by_slug(fixture))
     if _is_pull_request() and not provider and fixture:
-        # Manual/legacy fixture canaries stay bounded on PRs. Canonical acceptance
-        # now uses declared-type and therefore never repeats a provider on a second
-        # work of the same media type.
         wanted = _fixture_provider_ids(fixture)
         by_id = {str(row.get("id") or "").strip().casefold(): row for row in staged}
         filtered = [by_id[key] for value in wanted if (key := value.casefold()) in by_id]
@@ -128,7 +162,6 @@ def staged_providers(manifest_path: str, provider: str | None = None, fixture: s
 
 
 def preserve_runtime_errors(source: str, client: str) -> str:
-    """Instrument only the generated diagnostic source, never published JS."""
     helper_anchor = "    private fun b64(value: Any?): String ="
     if source.count(helper_anchor) != 1:
         raise SystemExit(f"unable to add {client} runtime-error trap: helper anchor count={source.count(helper_anchor)}")
@@ -163,14 +196,16 @@ def main() -> int:
     parser.add_argument("target", choices=("desktop", "mobile", "tv"))
     parser.add_argument("--fixture", required=True)
     parser.add_argument("--workspace", required=True)
-    parser.add_argument("--provider", default="", help="exact provider id, or declared-type for canonical one-fixture-per-type coverage")
+    parser.add_argument("--provider", default="", help="exact provider id, or declared-type for canonical lane coverage")
+    parser.add_argument("--provider-file", default="", help="newline-separated exact provider ids; used by clean-miss adaptive rotation")
     parser.add_argument("--player-probes", type=int, default=1, help="number of returned streams played by the native reader (1-4)")
     parser.add_argument("--manifest", default="manifest.json", help="same in-repository manifest used during initial preparation")
     args = parser.parse_args()
     fixture = corpus.fixture_by_slug(args.fixture)
     provider = args.provider.strip() or None
+    provider_file = args.provider_file.strip() or None
     manifest_path = str(selected_manifest._manifest_path(args.manifest).relative_to(ROOT))
-    providers = staged_providers(manifest_path, provider, args.fixture)
+    providers = staged_providers(manifest_path, provider, args.fixture, provider_file)
     workspace = Path(args.workspace).resolve()
     probes = max(1, min(args.player_probes, 4))
 
@@ -200,11 +235,12 @@ def main() -> int:
 
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(collector_test(source, args.target), encoding="utf-8")
-    pr_bounded = _is_pull_request() and provider is None
+    pr_bounded = _is_pull_request() and provider is None and provider_file is None
+    source_mode = f"provider-file:{provider_file}" if provider_file else (provider or ('fixture' if pr_bounded else 'all'))
     print(
         f"FIELD_NATIVE_CORPUS_RESTAGED_ISOLATED target={args.target} fixture={args.fixture} "
-        f"tmdb={fixture.get('tmdbId')} provider={provider or ('fixture' if pr_bounded else 'all')} "
-        f"providers={len(providers)} player_probes={probes} manifest={manifest_path} "
+        f"tmdb={fixture.get('tmdbId')} provider={source_mode} providers={len(providers)} "
+        f"player_probes={probes} manifest={manifest_path} "
         f"ci_mode={'pr-bounded' if pr_bounded else 'deep'} provider_limit={_pr_provider_limit() if pr_bounded else 0} "
         f"runtime_error_trap={RUNTIME_ERROR_SENTINEL}"
     )
