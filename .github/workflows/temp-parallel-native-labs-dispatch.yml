@@ -50,6 +50,6 @@ jobs:
           HEAD="$(git rev-parse HEAD)"
           echo "FIELD_UNIFIED_HUB46_HEAD sha=$HEAD providers=46"
           for wf in native-desktop-reader-acceptance.yml native-mobile-android-reader.yml native-mobile-ios-reader.yml; do
-            gh workflow run "$wf" --repo "$REPO" --ref "$HEAD"
+            gh workflow run "$wf" --repo "$REPO" --ref "$REF"
           done
-          echo "FIELD_UNIFIED_HUB46_NATIVE_LABS_DISPATCHED workflows=3 platforms=5 providers=46 sha=$HEAD"
+          echo "FIELD_UNIFIED_HUB46_NATIVE_LABS_DISPATCHED workflows=3 platforms=5 providers=46 branch=$REF sha=$HEAD"
