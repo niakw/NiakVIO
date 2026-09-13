@@ -50,19 +50,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          marker='## 2026-09-13 — adaptive native Lab global corpus'
-          if ! grep -Fq "$marker" MEMORY.md; then
-            cat >> MEMORY.md <<'EOF'
-
-## 2026-09-13 — adaptive native Lab global corpus
-
-- Mandatory Lab sampling policy: exactly three global recent fixture pools — `movie`, `tv`, `anime` — each containing several dozen works. Canonical range is 2010 through current-year-1 (2025 for the 2026 campaign).
-- Native Labs execute **one work at a time per lane**, never a fixed batch of 6. The corpus is a reserve, not a batch.
-- A provider advances to another random/deterministic candidate from the **same lane only** when the current runtime call completes normally with `0 streams` and no error. Positive result stops rotation for that provider/lane. Runtime/load/timeout/player/transport/identity contradiction is not a catalogue miss and must stop/report rather than rotating it away.
-- `scripts/rotating_corpus.py` keeps old regression fixtures addressable by exact slug for targeted diagnostics but excludes them from the three global recent pools, so old/2026 works cannot silently become ordinary Lab samples.
-- `scripts/native_catalog_miss_rotation.py` is the shared clean-miss planner. Fallback runs must shrink to the clean-zero provider allowlist instead of retesting providers that were already positive or errored.
-EOF
-          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('MEMORY.md')
+          marker = '## 2026-09-13 — adaptive native Lab global corpus'
+          text = path.read_text(encoding='utf-8')
+          if marker not in text:
+              text += '''\n## 2026-09-13 — adaptive native Lab global corpus\n\n- Mandatory Lab sampling policy: exactly three global recent fixture pools — `movie`, `tv`, `anime` — each containing several dozen works. Canonical range is 2010 through current-year-1 (2025 for the 2026 campaign).\n- Native Labs execute **one work at a time per lane**, never a fixed batch of 6. The corpus is a reserve, not a batch.\n- A provider advances to another random/deterministic candidate from the **same lane only** when the current runtime call completes normally with `0 streams` and no error. Positive result stops rotation for that provider/lane. Runtime/load/timeout/player/transport/identity contradiction is not a catalogue miss and must stop/report rather than rotating it away.\n- `scripts/rotating_corpus.py` keeps old regression fixtures addressable by exact slug for targeted diagnostics but excludes them from the three global recent pools, so old/2026 works cannot silently become ordinary Lab samples.\n- `scripts/native_catalog_miss_rotation.py` is the shared clean-miss planner. Fallback runs must shrink to the clean-zero provider allowlist instead of retesting providers that were already positive or errored.\n'''
+              path.write_text(text, encoding='utf-8')
+          PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add .github/triggers/rotating-popular-corpus.json MEMORY.md
