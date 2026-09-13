@@ -18,9 +18,9 @@ concurrency:
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 env:
-  NIAKVIO_REPRESENTATIVE_FIXTURES: "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
   NIAKVIO_SKIP_ANDROID_PREBUILD: "1"
   NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "25000"
+  NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json
 
 jobs:
   resolve_tv:
@@ -118,7 +118,7 @@ jobs:
             ~/.android/adb*
             ~/.android/debug.keystore
           key: avd-v5-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
-      - name: Checkout latest official NuvioTV HEAD, inject TMDB key and stage first route
+      - name: Checkout latest official NuvioTV HEAD, inject TMDB key and stage first rotating route
         shell: bash
         env:
           NUVIO_TV_SHA: ${{ needs.resolve_tv.outputs.tv_sha }}
@@ -140,23 +140,30 @@ jobs:
           assert line.startswith("TMDB_API_KEY=") and len(line.split("=", 1)[1]) > 0
           print("NIAKVIO_TV_TMDB_BUILD_CONFIG_READY non_empty=true value_redacted=true")
           PY
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams 2 --initial
+          ROTATED_FIXTURES="$(python3 niakvio/scripts/rotating_corpus.py select --lane all --count-per-lane 1 | paste -sd' ' -)"
+          test "$(wc -w <<<"$ROTATED_FIXTURES")" -eq 3
+          PRIMARY_FIXTURE="${ROTATED_FIXTURES%% *}"
+          {
+            echo "NIAKVIO_REPRESENTATIVE_FIXTURES=$ROTATED_FIXTURES"
+            echo "NIAKVIO_TARGET_FIXTURES=$ROTATED_FIXTURES"
+            echo "NIAKVIO_PRIMARY_FIXTURE=$PRIMARY_FIXTURE"
+          } >> "$GITHUB_ENV"
+          echo "FIELD_ROTATING_CORPUS client=tv fixtures=$ROTATED_FIXTURES scope=46"
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture "$PRIMARY_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams 2 --initial
       - name: Prebuild TV reader once before QEMU
         shell: bash
         env:
           NIAKVIO_TARGET_MANIFEST: manifest.json
           NIAKVIO_TARGET_PROVIDER: declared-type
-          NIAKVIO_PRIMARY_FIXTURE: interstellar
           NIAKVIO_PRIMARY_STREAM_SCOPE: "2"
         run: bash niakvio/scripts/prebuild_native_android_reader_suite.sh tv
       - name: Enable KVM
         run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
       - name: Prime Android adb server
         run: bash niakvio/scripts/prime_android_lab_adb.sh
-      - name: Execute movie TV anime in one TV boot
+      - name: Execute rotating movie TV anime in one TV boot
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
-          NIAKVIO_TARGET_FIXTURES: "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
           NIAKVIO_TARGET_PROVIDER: declared-type
           NIAKVIO_TARGET_MANIFEST: manifest.json
           NIAKVIO_READER_ACCEPTANCE: "1"
@@ -164,7 +171,6 @@ jobs:
           NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: "45"
           NIAKVIO_TV_CHECKPOINT_DIR: ${{ github.workspace }}/native-evidence/tv/checkpoints
           NIAKVIO_TV_RESUME_CHECKPOINT_DIR: ${{ github.workspace }}/native-evidence/tv/checkpoints
-          NIAKVIO_PRIMARY_FIXTURE: interstellar
           NIAKVIO_PRIMARY_STREAM_SCOPE: "2"
           NIAKVIO_REGRESSION_STREAM_SCOPE: "2"
         with:
@@ -178,7 +184,7 @@ jobs:
           emulator-boot-timeout: 600
           emulator-options: ${{ steps.avd-cache.outputs.cache-hit == 'true' && '-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' || '-no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' }}
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
-      - name: Verify exhaustive TV provider matrix
+      - name: Verify exhaustive TV Hub-46 provider matrix
         shell: bash
         run: |
           set -euo pipefail
@@ -186,6 +192,7 @@ jobs:
             --client tv \
             --manifest niakvio/manifest.json \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
+            --scope-matrix niakvio/automation/evidence/hub-lab-matrix-46.json \
             "$GITHUB_WORKSPACE"/tv-native-corpus-*.log
       - name: Diagnose complete TV evidence
         if: always()
@@ -237,7 +244,7 @@ jobs:
             ~/.android/adb*
             ~/.android/debug.keystore
           key: avd-v5-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2
-      - name: Checkout latest official NuvioMobile HEAD and stage first route
+      - name: Checkout latest official NuvioMobile HEAD and stage first rotating route
         shell: bash
         env:
           NUVIO_MOBILE_SHA: ${{ needs.resolve_mobile.outputs.mobile_sha }}
@@ -246,27 +253,33 @@ jobs:
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
           git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
           touch nuvio-mobile/local.properties
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams all --initial
+          ROTATED_FIXTURES="$(python3 niakvio/scripts/rotating_corpus.py select --lane all --count-per-lane 1 | paste -sd' ' -)"
+          test "$(wc -w <<<"$ROTATED_FIXTURES")" -eq 3
+          PRIMARY_FIXTURE="${ROTATED_FIXTURES%% *}"
+          {
+            echo "NIAKVIO_REPRESENTATIVE_FIXTURES=$ROTATED_FIXTURES"
+            echo "NIAKVIO_TARGET_FIXTURES=$ROTATED_FIXTURES"
+            echo "NIAKVIO_PRIMARY_FIXTURE=$PRIMARY_FIXTURE"
+          } >> "$GITHUB_ENV"
+          echo "FIELD_ROTATING_CORPUS client=mobile fixtures=$ROTATED_FIXTURES scope=46"
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture "$PRIMARY_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams all --initial
       - name: Prebuild Mobile Android reader once before QEMU
         shell: bash
         env:
           NIAKVIO_TARGET_MANIFEST: manifest.json
           NIAKVIO_TARGET_PROVIDER: declared-type
-          NIAKVIO_PRIMARY_FIXTURE: interstellar
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
         run: bash niakvio/scripts/prebuild_native_android_reader_suite.sh mobile
       - name: Enable KVM
         run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
       - name: Prime Android adb server
         run: bash niakvio/scripts/prime_android_lab_adb.sh
-      - name: Execute movie TV anime in one Mobile Android boot
+      - name: Execute rotating movie TV anime in one Mobile Android boot
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
-          NIAKVIO_TARGET_FIXTURES: "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
           NIAKVIO_TARGET_PROVIDER: declared-type
           NIAKVIO_TARGET_MANIFEST: manifest.json
           NIAKVIO_READER_ACCEPTANCE: "1"
-          NIAKVIO_PRIMARY_FIXTURE: interstellar
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
           NIAKVIO_REGRESSION_STREAM_SCOPE: all
         with:
@@ -280,7 +293,7 @@ jobs:
           emulator-boot-timeout: 600
           emulator-options: ${{ steps.avd-cache.outputs.cache-hit == 'true' && '-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' || '-no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' }}
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_mobile_suite.sh"
-      - name: Verify exhaustive Mobile Android provider matrix
+      - name: Verify exhaustive Mobile Android Hub-46 provider matrix
         shell: bash
         run: |
           set -euo pipefail
@@ -288,6 +301,7 @@ jobs:
             --client mobile \
             --manifest niakvio/manifest.json \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
+            --scope-matrix niakvio/automation/evidence/hub-lab-matrix-46.json \
             "$GITHUB_WORKSPACE"/mobile-native-corpus-*.log
       - name: Diagnose complete Mobile Android evidence
         if: always()
