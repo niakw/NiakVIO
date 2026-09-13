@@ -7,6 +7,17 @@ an enabled Hub-46 native matrix fail merely because an OFF route times out.
 Every enabled provider must appear on at least one representative
 movie/tv/anime route, and every declared enabled route must begin and reach an
 explicit terminal observation (result/error/skipped/watchdog timeout).
+
+Provider health is deliberately separated from catalogue sampling:
+- FULL: every declared lane returned at least one stream on the sampled work;
+- PARTIAL: at least one lane is positive and at least one other lane has a
+  technical/error outcome that needs targeted repair;
+- RESAMPLE: every still-unproved lane ended cleanly with zero streams. This is
+  catalogue uncertainty, not a repair verdict; another work must be sampled;
+- ZERO: no lane has positive proof and at least one lane has a technical/error
+  outcome. It needs individual diagnosis/repair.
+
+A clean zero-stream result must therefore never be silently folded into ZERO.
 """
 from __future__ import annotations
 
@@ -14,10 +25,12 @@ import argparse
 import base64
 import json
 import re
+from collections import Counter, defaultdict
 from pathlib import Path
 
 TYPES = ("movie", "tv", "anime")
 FIELD_RE = re.compile(r"([A-Za-z0-9_]+)=([^\s]+)")
+OUTCOME_PRIORITY = {"unobserved": 0, "catalog_miss": 1, "technical_error": 2, "positive": 3}
 
 
 def fields(line: str) -> dict[str, str]:
@@ -35,6 +48,49 @@ def decode64(value: str) -> str:
 
 def route(provider: str, media_type: str) -> tuple[str, str]:
     return (provider.casefold(), media_type.casefold())
+
+
+def merge_outcome(current: str, incoming: str) -> str:
+    """Keep positive proof once observed; otherwise retain the strongest problem."""
+    if current == "positive" or incoming == "positive":
+        return "positive"
+    return incoming if OUTCOME_PRIORITY.get(incoming, 0) >= OUTCOME_PRIORITY.get(current, 0) else current
+
+
+def provider_status(lane_outcomes: dict[str, str]) -> str:
+    values = list(lane_outcomes.values())
+    if values and all(value == "positive" for value in values):
+        return "FULL"
+    positive = sum(value == "positive" for value in values)
+    unresolved = [value for value in values if value != "positive"]
+    # RESAMPLE is intentionally checked before PARTIAL/ZERO: a clean catalogue
+    # miss is not a technical defect even when another lane already works.
+    if unresolved and all(value == "catalog_miss" for value in unresolved):
+        return "RESAMPLE"
+    if positive:
+        return "PARTIAL"
+    return "ZERO"
+
+
+def parse_ios_result(line: str) -> tuple[str, str, str] | None:
+    marker = "FIELD_NATIVE_IOS_RESULT "
+    if not line.startswith(marker):
+        return None
+    try:
+        payload = json.loads(line[len(marker):].strip())
+    except Exception:
+        return None
+    provider = str(payload.get("provider") or "").strip()
+    media_type = str(payload.get("mediaType") or "").strip().casefold()
+    state = str(payload.get("state") or "").strip().casefold()
+    count = int(payload.get("count") or 0)
+    if not provider or media_type not in TYPES:
+        return None
+    if state == "completed":
+        outcome = "positive" if count > 0 else "catalog_miss"
+    else:
+        outcome = "technical_error"
+    return provider, media_type, outcome
 
 
 def main() -> int:
@@ -84,6 +140,7 @@ def main() -> int:
     begun: set[tuple[str, str]] = set()
     completed: set[tuple[str, str]] = set()
     observed_disabled: set[tuple[str, str]] = set()
+    lane_outcomes: dict[tuple[str, str], str] = defaultdict(lambda: "unobserved")
     readable = 0
 
     for log in args.logs:
@@ -97,6 +154,14 @@ def main() -> int:
             line = raw[marker:].strip()
 
             if args.client == "ios":
+                parsed = parse_ios_result(line)
+                if parsed:
+                    provider, media_type, outcome = parsed
+                    r = route(provider, media_type)
+                    if r[0] in provider_ids:
+                        lane_outcomes[r] = merge_outcome(lane_outcomes[r], outcome)
+                    elif r[0] in disabled_ids:
+                        observed_disabled.add(r)
                 if line.startswith("FIELD_NATIVE_IOS_PROVIDER_BEGIN "):
                     f = fields(line)
                     provider = f.get("provider", "")
@@ -127,15 +192,34 @@ def main() -> int:
                     elif r[0] in disabled_ids: observed_disabled.add(r)
                 continue
 
-            if line.startswith("FIELD_NATIVE_RESULT ") or line.startswith("FIELD_NATIVE_ERROR ") or line.startswith("FIELD_NATIVE_PROVIDER_SKIPPED "):
+            if line.startswith("FIELD_NATIVE_RESULT "):
                 f = fields(line)
                 provider = decode64(f.get("provider64", "")) or f.get("provider", "")
                 media_type = f.get("request_type", "")
                 client = f.get("client", "")
                 if client == args.client and provider and media_type:
                     r = route(provider, media_type)
-                    if r[0] in provider_ids: completed.add(r)
-                    elif r[0] in disabled_ids: observed_disabled.add(r)
+                    count = int(f.get("count") or 0)
+                    outcome = "positive" if count > 0 else "catalog_miss"
+                    if r[0] in provider_ids:
+                        completed.add(r)
+                        lane_outcomes[r] = merge_outcome(lane_outcomes[r], outcome)
+                    elif r[0] in disabled_ids:
+                        observed_disabled.add(r)
+                continue
+
+            if line.startswith("FIELD_NATIVE_ERROR ") or line.startswith("FIELD_NATIVE_PROVIDER_SKIPPED "):
+                f = fields(line)
+                provider = decode64(f.get("provider64", "")) or f.get("provider", "")
+                media_type = f.get("request_type", "")
+                client = f.get("client", "")
+                if client == args.client and provider and media_type:
+                    r = route(provider, media_type)
+                    if r[0] in provider_ids:
+                        completed.add(r)
+                        lane_outcomes[r] = merge_outcome(lane_outcomes[r], "technical_error")
+                    elif r[0] in disabled_ids:
+                        observed_disabled.add(r)
 
     if readable == 0:
         print(f"FIELD_NATIVE_DECLARED_MATRIX state=infra_error client={args.client} reason=no_readable_log")
@@ -157,6 +241,24 @@ def main() -> int:
         f"missing_providers={len(missing_providers)} missing_begin={len(missing_begin)} "
         f"missing_end={len(missing_end)} unexpected={len(unexpected)} observed_disabled={len(observed_disabled)}"
     )
+
+    status_counts: Counter[str] = Counter()
+    for provider in sorted(provider_ids):
+        lanes = sorted(media_type for p, media_type in expected if p == provider)
+        outcomes = {media_type: lane_outcomes[(provider, media_type)] for media_type in lanes}
+        status = provider_status(outcomes)
+        status_counts[status] += 1
+        lane_text = ",".join(f"{media_type}:{outcomes[media_type]}" for media_type in lanes)
+        print(
+            "FIELD_NATIVE_PROVIDER_STATUS "
+            f"client={args.client} provider={display.get(provider, provider)} status={status} lanes={lane_text}"
+        )
+    print(
+        "FIELD_NATIVE_PROVIDER_STATUS_SUMMARY "
+        f"client={args.client} total={len(provider_ids)} FULL={status_counts['FULL']} "
+        f"PARTIAL={status_counts['PARTIAL']} RESAMPLE={status_counts['RESAMPLE']} ZERO={status_counts['ZERO']}"
+    )
+
     for provider in missing_providers[:120]:
         print(f"FIELD_NATIVE_DECLARED_MATRIX_FAILURE reason=missing_provider provider={display.get(provider, provider)}")
     for provider, media_type in missing_begin[:240]:
