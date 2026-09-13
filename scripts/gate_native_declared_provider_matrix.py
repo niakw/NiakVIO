@@ -28,6 +28,7 @@ import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
 TYPES = ("movie", "tv", "anime")
 FIELD_RE = re.compile(r"([A-Za-z0-9_]+)=([^\s]+)")
 OUTCOME_PRIORITY = {"unobserved": 0, "catalog_miss": 1, "technical_error": 2, "positive": 3}
@@ -55,7 +56,7 @@ def load_scope_ids(scope_path: Path | None) -> set[str] | None:
     path = scope_path
     if path is None and raw_env:
         candidate = Path(raw_env)
-        path = candidate if candidate.is_absolute() else Path.cwd() / candidate
+        path = candidate if candidate.is_absolute() else ROOT / candidate
     if path is None:
         return None
     data = json.loads(path.read_text(encoding="utf-8"))
@@ -84,8 +85,6 @@ def provider_status(lane_outcomes: dict[str, str]) -> str:
         return "FULL"
     positive = sum(value == "positive" for value in values)
     unresolved = [value for value in values if value != "positive"]
-    # RESAMPLE is intentionally checked before PARTIAL/ZERO: a clean catalogue
-    # miss is not a technical defect even when another lane already works.
     if unresolved and all(value == "catalog_miss" for value in unresolved):
         return "RESAMPLE"
     if positive:
