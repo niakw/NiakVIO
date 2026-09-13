@@ -1,0 +1,75 @@
+name: TEMP - CDN exact proofs
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-cdn-exact-proofs.yml
+
+permissions:
+  contents: read
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run exact manual-evidence fixtures
+        run: |
+          python - <<'PY'
+          import json, sys
+          from pathlib import Path
+          sys.path.insert(0, 'scripts')
+          import run_provider_upstream_parity as p
+          local=p.local_catalog()
+          fixtures={
+            'anikototv': {'tmdbId':'13916','mediaType':'anime','category':'anime','title':'Death Note','year':2006,'season':1,'episode':1},
+            'animepahe': {'tmdbId':'13916','mediaType':'anime','category':'anime','title':'Death Note','year':2006,'season':1,'episode':1},
+            'animesalt': {'tmdbId':'13916','mediaType':'anime','category':'anime','title':'Death Note','year':2006,'season':1,'episode':1},
+            'animevostfr': {'tmdbId':'31911','mediaType':'anime','category':'anime','title':'Fullmetal Alchemist: Brotherhood','year':2009,'season':1,'episode':1},
+          }
+          out={}
+          for pid,fixture in fixtures.items():
+              row=local.get(pid)
+              if not row:
+                  out[pid]={'error':'missing_manifest_entry'}
+                  continue
+              result=p.run_worker(row['path'], fixture, 55)
+              result['filename']=str(row['entry'].get('filename') or '')
+              out[pid]=result
+          print('CDN_EXACT_RESULTS='+json.dumps(out, sort_keys=True))
+          Path('/tmp/cdn-exact.json').write_text(json.dumps(out, indent=2))
+          PY
+
+      - name: Assert rebuilt runtime markers
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          manifest=json.loads(Path('manifest.json').read_text())
+          rows={str(r.get('id','')).lower():r for r in manifest.get('scrapers',[])}
+          checks={
+            'anikototv':['NIAKVIO_ANIKOTOTV_RUNTIME_V2','Chrome/145.0.0.0'],
+            'animepahe':['NIAKVIO_ANIMEPAHE_RUNTIME_V1','credentials:"include"','Chrome/145.0.0.0'],
+            'animevostfr':['NIAKVIO_ANIMEVOSTFR_RUNTIME_V1','credentials="include"','playbackHeaders'],
+            'animesalt':['scoped-playback-context-v9-browser-default-ua','Chrome/145.0.0.0'],
+          }
+          for pid,needles in checks.items():
+              path=Path(rows[pid]['filename'])
+              text=path.read_text(errors='replace')
+              for needle in needles:
+                  assert needle in text,(pid,needle,path)
+              print('RUNTIME_MARKERS_OK',pid,path)
+          PY
