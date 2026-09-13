@@ -1,0 +1,159 @@
+name: TEMP - PlayIMDb proof-v5 restore
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-playimdb-proof-v5-restore.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  restore-and-prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          ref: fix/labs-5.21.44-20260912
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install locked runtime dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Restore active PlayIMDb proof-v5 authority
+        run: |
+          set -euo pipefail
+          python scripts/restore_playimdb_proof_v5.py
+          python tests/playimdb_proof_v5_authority_test.py
+
+      - name: Materialize PlayIMDb only
+        run: |
+          set -euo pipefail
+          python scripts/materialize_provider_v3_one.py playimdb
+
+      - name: Synchronize PlayIMDb row into current projections
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import copy, json
+          from pathlib import Path
+          root = Path('.')
+          manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
+          rows = {str(row.get('id') or '').strip().casefold(): row for row in manifest.get('scrapers', [])}
+          source = rows['playimdb']
+          targets = [
+              root / 'vf' / 'manifest.json',
+              root / 'no-anime' / 'manifest.json',
+              root / 'vf-no-anime' / 'manifest.json',
+              root / 'manifest-hub46.json',
+          ]
+          for path in targets:
+              if not path.is_file():
+                  continue
+              data = json.loads(path.read_text(encoding='utf-8'))
+              found = False
+              updated = []
+              for row in data.get('scrapers', []):
+                  if str(row.get('id') or '').strip().casefold() == 'playimdb':
+                      updated.append(copy.deepcopy(source))
+                      found = True
+                  else:
+                      updated.append(row)
+              if found:
+                  data['scrapers'] = updated
+                  path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+                  print(f'FIELD_PLAYIMDB_PROJECTION_SYNC path={path} found=true')
+              else:
+                  print(f'FIELD_PLAYIMDB_PROJECTION_SYNC path={path} found=false')
+          hub = json.loads((root / 'manifest-hub46.json').read_text(encoding='utf-8'))
+          ids = [str(row.get('id') or '').strip().casefold() for row in hub.get('scrapers', [])]
+          assert len(ids) == 46 and len(set(ids)) == 46 and 'playimdb' in ids
+          print('FIELD_PLAYIMDB_HUB46_SYNC providers=46 playimdb=present')
+          PY
+
+      - name: Validate structural contracts after one-provider materialization
+        run: |
+          set -euo pipefail
+          python tests/playimdb_proof_v5_authority_test.py
+          python scripts/validate_published_provider_config.py --expected 96
+          python tests/global_stream_output_guard_test.py
+          python tests/provider_js_lego_ownership_test.py
+
+      - name: Prove Oppenheimer movie and HOTD S1E1 TV live
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROVIDER="$(python - <<'PY'
+          import json
+          m=json.load(open('manifest.json', encoding='utf-8'))
+          row=next(r for r in m['scrapers'] if str(r.get('id','')).casefold()=='playimdb')
+          print(row['filename'])
+          PY
+          )"
+          python scripts/rotating_corpus.py fixture oppenheimer > /tmp/oppenheimer.json
+          python scripts/rotating_corpus.py fixture house-of-the-dragon-s01e01 > /tmp/hotd.json
+          set +e
+          timeout 80s node scripts/nuvio_tv_probe_tmdb_ci.cjs "$PROVIDER" "$(cat /tmp/oppenheimer.json)" '{}' > /tmp/playimdb-movie.out 2>/tmp/playimdb-movie.err
+          MOVIE_RC=$?
+          timeout 80s node scripts/nuvio_tv_probe_tmdb_ci.cjs "$PROVIDER" "$(cat /tmp/hotd.json)" '{}' > /tmp/playimdb-tv.out 2>/tmp/playimdb-tv.err
+          TV_RC=$?
+          set -e
+          cat /tmp/playimdb-movie.err >&2 || true
+          cat /tmp/playimdb-tv.err >&2 || true
+          cat /tmp/playimdb-movie.out
+          cat /tmp/playimdb-tv.out
+          python - "$MOVIE_RC" "$TV_RC" <<'PY'
+          import json, sys
+          from pathlib import Path
+          def result(path):
+              for line in reversed(Path(path).read_text(encoding='utf-8').splitlines()):
+                  try: row=json.loads(line)
+                  except Exception: continue
+                  if isinstance(row,dict) and 'raw_stream_count' in row: return row
+              raise SystemExit(f'no probe result: {path}')
+          movie=result('/tmp/playimdb-movie.out')
+          tv=result('/tmp/playimdb-tv.out')
+          for lane,row in [('movie',movie),('tv',tv)]:
+              raw=int(row.get('raw_stream_count') or 0)
+              playable=int(row.get('playable_stream_count') or 0)
+              verified=int(row.get('content_verified_count') or row.get('identity_verified_count') or 0)
+              contradictions=int(row.get('identity_contradiction_count') or 0)
+              stage=((row.get('debug') or {}).get('stage') or '')
+              print(f'FIELD_PLAYIMDB_LIVE lane={lane} raw={raw} playable={playable} verified={verified} contradictions={contradictions} stage={stage}')
+              if raw < 1 or playable < 1 or verified < 1 or contradictions:
+                  raise SystemExit(f'PlayIMDb {lane} strict proof failed')
+          if int(sys.argv[1]) != 0 or int(sys.argv[2]) != 0:
+              raise SystemExit(f'probe exit codes movie={sys.argv[1]} tv={sys.argv[2]}')
+          PY
+
+      - name: Commit proven PlayIMDb repair and self-remove TEMP workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/temp-playimdb-proof-v5-restore.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add provider-overrides.json manifest.json manifest-hub46.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json providers/ .github/workflows/temp-playimdb-proof-v5-restore.yml
+          if git diff --cached --quiet; then
+            echo 'FIELD_PLAYIMDB_REPAIR_COMMIT changed=false'
+            exit 0
+          fi
+          git commit -m 'fix(playimdb): restore typed resolver execution authority'
+          git pull --rebase origin fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
+          echo 'FIELD_PLAYIMDB_REPAIR_COMMIT changed=true temp_workflow_removed=true'
