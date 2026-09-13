@@ -29,6 +29,7 @@ import finalize_native_android_reader_source as reader_source_finalizer  # noqa:
 import prepare_native_corpus_client as client_prepare  # noqa: E402
 import prepare_native_corpus_validation as corpus  # noqa: E402
 from audit_native_client_checkout import audit_checkout  # noqa: E402
+from rotating_corpus import fixture_by_slug as rotating_fixture_by_slug  # noqa: E402
 from native_client_test_bootstrap import (  # noqa: E402
     enable_mobile_device_tests,
     enable_tv_tests,
@@ -60,15 +61,12 @@ def _pr_stream_limit() -> int:
 
 
 def fixture_row(slug: str) -> dict:
-    data = json.loads(CORPUS_PATH.read_text(encoding="utf-8"))
-    for row in data.get("fixtures", []):
-        if isinstance(row, dict) and str(row.get("slug") or "") == slug:
-            fixture = row.get("fixture")
-            providers = row.get("providers")
-            if not isinstance(fixture, dict) or not isinstance(providers, list):
-                break
-            return {"slug": slug, "fixture": {"slug": slug, **fixture}, "providers": providers}
-    raise SystemExit(f"unknown or malformed native reader fixture: {slug}")
+    try:
+        fixture = rotating_fixture_by_slug(slug)
+    except KeyError as error:
+        raise SystemExit(str(error)) from error
+    clean = {key: value for key, value in fixture.items() if key not in {"lane"}}
+    return {"slug": slug, "fixture": clean, "providers": []}
 
 
 def select_providers(manifest_path: str, slug: str, provider: str | None) -> list[dict]:

@@ -25,6 +25,7 @@ CANONICAL = {"movie", "tv", "anime"}
 TRANSPORT = CANONICAL | {"series"}
 
 from native_media_type_contract import canonical_media_type, fixture_media_type  # noqa: E402
+from rotating_corpus import fixture_by_slug as rotating_fixture_by_slug  # noqa: E402
 
 
 def canonical_type(value: object) -> str:
@@ -35,11 +36,11 @@ def canonical_type(value: object) -> str:
 
 
 def fixture(slug: str) -> dict:
-    data = json.loads(CORPUS.read_text(encoding="utf-8"))
-    for row in data.get("fixtures", []):
-        if isinstance(row, dict) and str(row.get("slug") or "") == slug and isinstance(row.get("fixture"), dict):
-            return row["fixture"]
-    raise SystemExit(f"unknown native corpus fixture: {slug}")
+    try:
+        row = rotating_fixture_by_slug(slug)
+    except KeyError as error:
+        raise SystemExit(str(error)) from error
+    return {key: value for key, value in row.items() if key not in {"slug", "lane"}}
 
 
 def manifest_types(path: Path) -> dict[str, list[str]]:
