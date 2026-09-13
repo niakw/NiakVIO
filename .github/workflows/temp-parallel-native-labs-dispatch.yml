@@ -11,7 +11,7 @@ jobs:
   dispatch:
     runs-on: ubuntu-latest
     steps:
-      - name: Dispatch native acceptance workflows on repair ref
+      - name: Dispatch five native platforms on repair ref
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -20,11 +20,11 @@ jobs:
         run: |
           set -euo pipefail
           for wf in \
-            native-device-corpus-acceptance.yml \
-            native-mobile-reader-acceptance.yml \
-            native-desktop-reader-acceptance.yml
+            native-desktop-reader-acceptance.yml \
+            native-mobile-android-reader.yml \
+            native-mobile-ios-reader.yml
           do
             echo "Dispatching $wf on $REF"
             gh workflow run "$wf" --repo "$REPO" --ref "$REF"
           done
-          echo "FIELD_PARALLEL_NATIVE_LABS_DISPATCHED=3"
+          echo "FIELD_PARALLEL_NATIVE_LABS_DISPATCHED workflows=3 platforms=5 providers=46"
