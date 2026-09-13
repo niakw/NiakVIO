@@ -1,0 +1,71 @@
+name: TEMP - MovieBox non-WASM backend probe
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-moviebox-nonwasm-backend-probe.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe current AIO MovieBox alternate backend without exposing credentials
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re,urllib.parse,urllib.request,urllib.error
+          src_url='https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/moviebox.js'
+          ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36'
+          def fetch(url,headers=None):
+              h={'User-Agent':ua,'Accept':'application/json,text/plain,*/*'};h.update(headers or {})
+              q=urllib.request.Request(url,headers=h)
+              try:
+                  with urllib.request.urlopen(q,timeout=20) as r:return r.status,r.headers,r.read(2*1024*1024),r.url
+              except urllib.error.HTTPError as e:return e.code,e.headers,e.read(65536),url
+          st,hd,b,final=fetch(src_url)
+          text=b.decode('utf-8','replace')
+          # Extract the encoded pengu config from the public upstream source, but never print it.
+          m=re.search(r"CINESCRAPE_BASE=['\"](https://pengu\.uk/[^'\"]+)['\"]",text)
+          if not m:
+              # Obfuscated builds still leave the literal URL in source.
+              m=re.search(r'(https://pengu\.uk/%7B%22source_moviebox%22[^\'\"\s]+)',text)
+          if not m: raise SystemExit('MovieBox pengu backend not found in current upstream source')
+          base=m.group(1).rstrip('/')
+          print('MOVIEBOX_NONWASM_SOURCE backend=pengu source_status='+str(st)+' config_exposed=false')
+          tests=[
+              ('movie','/stream/movie/tt0816692.json'),
+              ('tv','/stream/series/tt11198330:1:1.json'),
+          ]
+          positive=0
+          for lane,path in tests:
+              status,headers,raw,url=fetch(base+path,{'Referer':'https://moviebox.yachts/','Origin':'https://moviebox.yachts'})
+              ct=headers.get('content-type','')
+              out={'lane':lane,'status':status,'contentType':ct,'bytes':len(raw),'streamCount':0,'mediaHosts':[]}
+              try:
+                  data=json.loads(raw.decode('utf-8','replace'))
+                  streams=data.get('streams') if isinstance(data,dict) else None
+                  if isinstance(streams,list):
+                      media=[]
+                      for row in streams:
+                          if isinstance(row,dict): u=str(row.get('url') or row.get('file') or row.get('src') or '')
+                          else: u=str(row or '')
+                          if u.startswith(('http://','https://')):media.append(u)
+                      out['streamCount']=len(media)
+                      out['mediaHosts']=sorted({urllib.parse.urlsplit(u).netloc for u in media})[:12]
+                      if media: positive+=1
+                  out['keys']=sorted(data.keys())[:30] if isinstance(data,dict) else []
+              except Exception:
+                  out['prefix']=raw.decode('utf-8','replace')[:160].replace('\n',' ')
+              print('MOVIEBOX_NONWASM_PROBE '+json.dumps(out,ensure_ascii=False,separators=(',',':')))
+          print('MOVIEBOX_NONWASM_POSITIVE_LANES='+str(positive))
+          PY
