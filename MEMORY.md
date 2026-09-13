@@ -1542,3 +1542,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - AnimeSalt receives the shared browser playback context on rebuilt bytes, but no cf_clearance/Turnstile/challenge token is fabricated. Any remaining site/CDN 403 stays fail-closed and must be classified external/runner-blocked rather than surfaced as playable.
 - Targeted post-rebuild JJK probe summary: `{"anikototv": {"error_class": null, "http_statuses": [], "ok": true, "raw_stream_count": 0, "server_accessible": false, "server_success": false, "stream_count": 0, "timeout": false}, "animepahe": {"error_class": null, "http_statuses": [], "ok": true, "raw_stream_count": 0, "server_accessible": false, "server_success": false, "stream_count": 0, "timeout": false}, "animesalt": {"error_class": null, "http_statuses": [200, 403], "ok": true, "raw_stream_count": 0, "server_accessible": true, "server_success": true, "stream_count": 0, "timeout": false}, "animevostfr": {"error_class": null, "http_statuses": [200], "ok": true, "raw_stream_count": 0, "server_accessible": true, "server_success": true, "stream_count": 0, "timeout": false}}`.
 
+## 2026-09-14 — Hub46 executable catalogue / provider-old archive
+
+- Executable catalogue is now **exactly the 46 providers** from `automation/evidence/hub-lab-matrix-46.json`; the former 50 non-hub providers are no longer OFF rows and are absent from active manifests/catalogue/overrides/static knowledge/materialization/repair disposition.
+- `automation/provider-repair-disposition.json` now carries **46 catalogue / 46 enabled / 0 disabled**; generated `providers/` bundles for the former non-hub set were removed.
+- Historical non-hub ProviderBase bytes were preserved byte-for-byte but physically moved out of active reconstruction: **46 provider slugs remain in `provider-bases/`, 50 historical provider slugs live in `provider-old/`**. The archive migration moved 951 files with Git rename semantics.
+- Durable migration/verification scripts: `scripts/prune_to_hub46_catalog.py` and `scripts/archive_nonhub_providerbases.py`. A replay of the prune now archives non-hub bases to `provider-old/` rather than resurrecting an OFF catalogue.
+- Evidence: catalogue-prune run `34786010735` and ProviderBase archive run `34786047300` both green on `fix/labs-5.21.44-20260912`. **main was not modified.**
+

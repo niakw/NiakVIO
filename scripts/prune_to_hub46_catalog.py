@@ -3,7 +3,7 @@
 
 The 50 providers outside automation/evidence/hub-lab-matrix-46.json are removed
 from active catalogue/config/materialization/repair projections. Their historical
-ProviderBase bytes under provider-bases/ are deliberately preserved.
+ProviderBase bytes are deliberately preserved under provider-old/.
 
 This script is idempotent and must never modify main implicitly.
 """
@@ -272,7 +272,7 @@ def verify(keep_manifest: set[str], keep_registry: set[str], excluded: set[str])
     assert disposition.get("disabledProviderCount") == 0 and not disposition.get("disabledProviders")
 
     for slug in excluded:
-        assert any((ROOT / "provider-bases").glob(f"{slug}--base--*.js")), f"missing historical ProviderBase for {slug}"
+        assert any((ROOT / "provider-old").glob(f"{slug}--base--*.js")), f"missing historical ProviderBase for {slug}"
         assert not any((ROOT / "providers").glob(f"{slug}-*.js")), f"excluded generated bundle remains for {slug}"
 
 
@@ -313,6 +313,22 @@ def main() -> int:
     filter_named_provider_lists(ROOT / "automation/provider-repair-v6-summary.json", keep_registry)
 
     deleted = delete_excluded_generated_bundles(excluded)
+
+    # Historical non-hub ProviderBase bytes belong outside the active reconstruction store.
+    archive = ROOT / "provider-old"
+    archive.mkdir(parents=True, exist_ok=True)
+    for base in sorted((ROOT / "provider-bases").glob("*--base--*.js")):
+        slug = re.sub(r"--base--[0-9a-f]+\.js$", "", base.name.casefold())
+        if slug in keep_registry:
+            continue
+        target = archive / base.name
+        if target.exists():
+            if target.read_bytes() != base.read_bytes():
+                raise SystemExit(f"provider-old collision with different bytes: {base.name}")
+            base.unlink()
+        else:
+            base.rename(target)
+
     patch_contract_counts()
     update_docs()
 
@@ -321,7 +337,7 @@ def main() -> int:
     if not excluded:
         all_bases = {
             re.sub(r"--base--[0-9a-f]+\.js$", "", p.name.casefold())
-            for p in (ROOT / "provider-bases").glob("*--base--*.js")
+            for p in (ROOT / "provider-old").glob("*--base--*.js")
         }
         excluded = all_bases - keep_registry
 
