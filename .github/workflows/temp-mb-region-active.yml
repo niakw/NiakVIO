@@ -1,34 +1,356 @@
 name: TEMP - MovieBox Region Active
+
 on:
   push:
     branches: ["fix/labs-5.21.44-20260912"]
     paths: [".github/workflows/temp-mb-region-active.yml"]
   workflow_dispatch:
+
 permissions:
-  contents: read
+  contents: write
+
 jobs:
-  probe:
+  patch:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
-      - name: Count active authority
+      - name: Apply general language quality and enabled-only materializer contracts
+        shell: bash
         run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p=Path('engine_v2/src/stream-presentation.mjs')
+          s=p.read_text()
+          old='    quality: normalizeQuality(stream.quality ?? stream.resolution),'
+          assert old in s
+          s=s.replace(old,'    quality: inferQuality(stream),',1)
+          anchor='export function normalizeQuality(value) {'
+          assert anchor in s
+          helper=r'''const QUALITY_PLACEHOLDER = /^(?:0|auto|automatic|source|original|default|unknown|inconnue?|n\/a|na|none|null|undefined|-)$/i;
+const QUALITY_RANK = {"240p":240,"360p":360,"480p":480,"576p":576,"720p":720,"1080p":1080,"1440p":1440,"2160p":2160};
+
+function qualityFromHeight(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return null;
+  const height = Math.round(number);
+  return [2160,1440,1080,720,576,480,360,240].includes(height) ? `${height}p` : null;
+}
+
+function preciseQuality(value, allowBare = true) {
+  if (Array.isArray(value)) {
+    const rows = value.map((item) => preciseQuality(item, true)).filter(Boolean);
+    return rows.sort((a,b) => (QUALITY_RANK[b] || 0) - (QUALITY_RANK[a] || 0))[0] || null;
+  }
+  if (typeof value === "number") return qualityFromHeight(value);
+  const text = useful(value);
+  if (!text || QUALITY_PLACEHOLDER.test(text)) return null;
+  if (/\b(?:4K|UHD)\b/i.test(text)) return "2160p";
+  if (/\b(?:QHD|2K)\b/i.test(text)) return "1440p";
+  if (/\b(?:FHD|FULL[ ._-]?HD)\b/i.test(text)) return "1080p";
+  const dimensions = text.match(/(?:^|[^0-9])(\d{3,4})\s*[x×]\s*(2160|1440|1080|720|576|480|360|240)(?:[^0-9]|$)/i);
+  if (dimensions) return `${dimensions[2]}p`;
+  const tagged = text.match(/(?:^|[^0-9])(2160|1440|1080|720|576|480|360|240)\s*p(?:[^0-9]|$)/i);
+  if (tagged) return `${tagged[1]}p`;
+  if (allowBare) {
+    const bare = text.match(/^\s*(2160|1440|1080|720|576|480|360|240)\s*$/i);
+    if (bare) return `${bare[1]}p`;
+  }
+  return null;
+}
+
+export function inferQuality(stream = {}) {
+  for (const value of [stream.height, stream.videoHeight, stream.video_height, stream.resolution, stream.resolutions]) {
+    const exact = preciseQuality(value, true);
+    if (exact) return exact;
+  }
+  const explicit = useful(stream.quality);
+  const exactExplicit = preciseQuality(explicit, true);
+  if (exactExplicit) return exactExplicit;
+  for (const value of [stream.sourceLabel, stream.label, stream.filename, stream.fileName, stream.name, stream.title, stream.description, stream.url]) {
+    const exact = preciseQuality(value, false);
+    if (exact) return exact;
+  }
+  if (explicit && /^(?:HD|SD)$/i.test(explicit)) return explicit.toUpperCase();
+  return null;
+}
+
+function naturalLanguageLabel(value) {
+  const raw = useful(value);
+  if (!raw) return null;
+  const aliases = {
+    hi:"Hindi", hindi:"Hindi", en:"English", eng:"English", english:"English",
+    ja:"Japanese", jpn:"Japanese", japanese:"Japanese", ko:"Korean", kor:"Korean", korean:"Korean",
+    es:"Spanish", spa:"Spanish", spanish:"Spanish", de:"German", deu:"German", ger:"German", german:"German",
+    it:"Italian", ita:"Italian", italian:"Italian", pt:"Portuguese", por:"Portuguese", portuguese:"Portuguese",
+    ar:"Arabic", ara:"Arabic", arabic:"Arabic", tr:"Turkish", tur:"Turkish", turkish:"Turkish",
+    ru:"Russian", rus:"Russian", russian:"Russian", zh:"Chinese", zho:"Chinese", chi:"Chinese", chinese:"Chinese",
+    ta:"Tamil", tam:"Tamil", tamil:"Tamil", te:"Telugu", tel:"Telugu", telugu:"Telugu",
+    ml:"Malayalam", mal:"Malayalam", malayalam:"Malayalam", bn:"Bengali", ben:"Bengali", bengali:"Bengali",
+  };
+  const parts = raw.split(/\s*(?:\/|,|\+|\||;)\s*/).map((part) => clean(part)).filter(Boolean);
+  const mapped = parts.map((part) => aliases[String(part).toLowerCase()] || part);
+  return uniq(mapped).join(" / ") || null;
+}
+
+'''
+          s=s.replace(anchor,helper+anchor,1)
+          old='''  if (isVost(upper)) return "VOSTFR";
+  if (isMulti(upper)) return vfProvider ? "MULTI (VF/VO)" : "MULTI";
+  if (isVfq(upper)) return isVost(hints) && vfProvider ? "MULTI (VF/VO)" : "VFQ";
+  if (isVf(upper)) return isVost(hints) && vfProvider ? "MULTI (VF/VO)" : "VF";
+  if (isVo(upper)) return "VO";
+'''
+          new='''  if (isVost(upper) && (isVf(upper) || isMulti(upper))) return vfProvider ? "MULTI (VF/VO)" : "MULTI";
+  if (isVost(upper)) return "VOSTFR";
+  if (isMulti(upper)) return vfProvider ? "MULTI (VF/VO)" : "MULTI";
+  const natural = naturalLanguageLabel(explicit);
+  if (natural && /\s\/\s/.test(natural)) return natural;
+  if (isVfq(upper)) return isVost(hints) && vfProvider ? "MULTI (VF/VO)" : "VFQ";
+  if (isVf(upper)) return isVost(hints) && vfProvider ? "MULTI (VF/VO)" : "VF";
+  if (isVo(upper)) return "VO";
+  if (natural) return natural;
+'''
+          assert old in s
+          s=s.replace(old,new,1)
+          old='  return vfProvider ? "VF" : "VO";'
+          assert old in s
+          s=s.replace(old,'  return null;',1)
+          old='''export function normalizeQuality(value) {
+  const text = useful(value);
+  if (!text) return null;
+  if (/^(?:4k|uhd|2160p?)$/i.test(text)) return "2160p";
+  const match = text.match(/(?:^|\\b)(2160|1440|1080|720|576|480)p?(?:\\b|$)/i);
+  return match ? `${match[1]}p` : text;
+}'''
+          new='''export function normalizeQuality(value) {
+  const exact = preciseQuality(value, true);
+  if (exact) return exact;
+  const text = useful(value);
+  return text && /^(?:HD|SD)$/i.test(text) ? text.toUpperCase() : null;
+}'''
+          assert old in s
+          s=s.replace(old,new,1)
+          p.write_text(s)
+
+          p=Path('engine_v2/src/contracts.mjs')
+          s=p.read_text()
+          old='    quality: normalizeQualityLabel(raw.quality ?? raw.resolution),'
+          assert old in s
+          s=s.replace(old,'    quality: inferQualityLabel(raw, url),',1)
+          old='    language: textOrNull(raw.language ?? raw.lang ?? raw.audioLanguage ?? raw.audio_language),'
+          assert old in s
+          s=s.replace(old,'    language: extractLanguageLabel(raw),',1)
+          anchor='function normalizeQualityLabel(value) {'
+          assert anchor in s
+          helper=r'''const QUALITY_PLACEHOLDER = /^(?:0|auto|automatic|source|original|default|unknown|inconnue?|n\/a|na|none|null|undefined|-)$/i;
+const QUALITY_RANK = {"240p":240,"360p":360,"480p":480,"576p":576,"720p":720,"1080p":1080,"1440p":1440,"2160p":2160};
+
+function preciseQualityLabel(value, allowBare = true) {
+  if (Array.isArray(value)) {
+    const values = value.map((item) => preciseQualityLabel(item, true)).filter(Boolean);
+    return values.sort((a,b) => (QUALITY_RANK[b] || 0) - (QUALITY_RANK[a] || 0))[0] || null;
+  }
+  if (typeof value === "number") {
+    const height = Math.round(value);
+    return [2160,1440,1080,720,576,480,360,240].includes(height) ? `${height}p` : null;
+  }
+  const text = textOrNull(value);
+  if (!text || QUALITY_PLACEHOLDER.test(text)) return null;
+  if (/\b(?:4K|UHD)\b/i.test(text)) return "2160p";
+  if (/\b(?:QHD|2K)\b/i.test(text)) return "1440p";
+  if (/\b(?:FHD|FULL[ ._-]?HD)\b/i.test(text)) return "1080p";
+  const dimensions = text.match(/(?:^|[^0-9])(\d{3,4})\s*[x×]\s*(2160|1440|1080|720|576|480|360|240)(?:[^0-9]|$)/i);
+  if (dimensions) return `${dimensions[2]}p`;
+  const tagged = text.match(/(?:^|[^0-9])(2160|1440|1080|720|576|480|360|240)\s*p(?:[^0-9]|$)/i);
+  if (tagged) return `${tagged[1]}p`;
+  if (allowBare) {
+    const bare = text.match(/^\s*(2160|1440|1080|720|576|480|360|240)\s*$/i);
+    if (bare) return `${bare[1]}p`;
+  }
+  return null;
+}
+
+function inferQualityLabel(raw, url) {
+  for (const value of [raw.height, raw.videoHeight, raw.video_height, raw.resolution, raw.resolutions]) {
+    const exact = preciseQualityLabel(value, true);
+    if (exact) return exact;
+  }
+  const explicit = textOrNull(raw.quality);
+  const exact = preciseQualityLabel(explicit, true);
+  if (exact) return exact;
+  for (const value of [raw.label, raw.sourceLabel, raw.source_label, raw.filename, raw.fileName, raw.file_name, raw.name, raw.title, raw.description]) {
+    const hinted = preciseQualityLabel(value, false);
+    if (hinted) return hinted;
+  }
+  const urlHint = preciseQualityLabel(url, false);
+  if (urlHint) return urlHint;
+  return explicit && /^(?:HD|SD)$/i.test(explicit) ? explicit.toUpperCase() : null;
+}
+
+function extractLanguageLabel(raw) {
+  const nestedAudio = isPlainObject(raw.audio) ? raw.audio : null;
+  const nestedTrack = isPlainObject(raw.track) ? raw.track : null;
+  return textOrNull(
+    raw.language ?? raw.lang ?? raw.audioLanguage ?? raw.audio_language ??
+    raw.audioTrack ?? raw.audio_track ?? raw.playerLanguage ?? raw.player_language ?? raw.dub ??
+    nestedAudio?.language ?? nestedAudio?.lang ?? nestedTrack?.language ?? nestedTrack?.lang
+  );
+}
+
+'''
+          s=s.replace(anchor,helper+anchor,1)
+          old='''function normalizeQualityLabel(value) {
+  const text = textOrNull(value);
+  if (!text) return null;
+  if (/^(?:4k|uhd|2160p?)$/i.test(text)) return "2160p";
+  const resolution = text.match(/(?:^|\\b)(2160|1440|1080|720|576|480)p?(?:\\b|$)/i);
+  if (resolution) return `${resolution[1]}p`;
+  return text;
+}'''
+          new='''function normalizeQualityLabel(value) {
+  const exact = preciseQualityLabel(value, true);
+  if (exact) return exact;
+  const text = textOrNull(value);
+  return text && /^(?:HD|SD)$/i.test(text) ? text.toUpperCase() : null;
+}'''
+          assert old in s
+          s=s.replace(old,new,1)
+          p.write_text(s)
+
+          p=Path('engine_v2/tests/stream-presentation.test.mjs')
+          s=p.read_text()
+          anchor='''assert.deepEqual(buildBadgeIds({ quality: "2160p", language: "VFQ", codec: "AVC", subtitles: [] }), ["4k-ultra-hd", "avc", "vfq"]);'''
+          assert anchor in s
+          block=r'''
+
+const playerMetadata = normalizeStreamCandidate({
+  name: "Reader",
+  url: "https://media.example/master.m3u8",
+  quality: "0",
+  height: 1080,
+  audioTrack: "Hindi/English",
+}, { providerId: "reader" });
+const playerPresented = presentStreamCandidate(playerMetadata, { mediaType: "movie" }, { id: "reader", name: "Reader", languages: [] });
+assert.equal(playerPresented.quality, "1080p");
+assert.equal(playerPresented.language, "Hindi / English");
+assert.match(playerPresented.description, /Hindi \/ English/);
+
+const hintedQuality = presentStreamCandidate({
+  name: "Reader",
+  url: "https://media.example/master.m3u8",
+  quality: "HD",
+  sourceLabel: "Server FHD 1920x1080",
+}, { mediaType: "movie" }, { id: "reader", name: "Reader", languages: [] });
+assert.equal(hintedQuality.quality, "1080p");
+
+const badQuality = presentStreamCandidate({ name: "Reader", url: "https://media.example/master.m3u8", quality: "0" }, { mediaType: "movie" }, { id: "reader", name: "Reader", languages: ["fr"] });
+assert.equal(badQuality.quality, null);
+assert.equal(badQuality.language, null);
+
+const explicitNatural = presentStreamCandidate({ name: "Reader", url: "https://media.example/a.mp4", language: "Japanese" }, { mediaType: "movie" }, { id: "reader", name: "Reader", languages: ["fr"] });
+assert.equal(explicitNatural.language, "Japanese");
+'''
+          s=s.replace(anchor,anchor+block,1)
+          p.write_text(s)
+
+          p=Path('scripts/materialize_provider_v3_all.py')
+          s=p.read_text()
+          old='''    project_manifest_path: Path | None = None,
+    project_ids: list[str] | None = None,
+) -> dict[str, Any]:'''
+          new='''    project_manifest_path: Path | None = None,
+    project_ids: list[str] | None = None,
+    enabled_only: bool = False,
+) -> dict[str, Any]:'''
+          assert old in s
+          s=s.replace(old,new,1)
+          anchor='''    if len(set(ids)) != EXPECTED_PROVIDER_COUNT:
+        raise ValueError("global v3 manifest contains duplicate provider ids")
+'''
+          insert='''    if len(set(ids)) != EXPECTED_PROVIDER_COUNT:
+        raise ValueError("global v3 manifest contains duplicate provider ids")
+
+    selected_rows = [row for row in rows if (not enabled_only or row.get("enabled") is not False)]
+    if enabled_only and not selected_rows:
+        raise ValueError("enabled-only materialization selected zero providers")
+'''
+          assert anchor in s
+          s=s.replace(anchor,insert,1)
+          old='for index, entry in enumerate(rows, start=1):'
+          assert old in s
+          s=s.replace(old,'for index, entry in enumerate(selected_rows, start=1):',1)
+          old='f"index={index} total={len(rows)} provider={provider_id}",'
+          assert old in s
+          s=s.replace(old,'f"index={index} total={len(selected_rows)} provider={provider_id}",',1)
+          old='''        "providerCount": len(report_rows),
+        "expectedProviderCount": EXPECTED_PROVIDER_COUNT,'''
+          new='''        "scope": "enabled-only" if enabled_only else "global",
+        "providerCount": len(report_rows),
+        "expectedProviderCount": len(selected_rows) if enabled_only else EXPECTED_PROVIDER_COUNT,
+        "globalProviderCount": len(rows),'''
+          assert old in s
+          s=s.replace(old,new,1)
+          old='''        "publication": context in {"release", "main"},
+        "mainTouched": context == "main",'''
+          new='''        "publication": (not enabled_only) and context in {"release", "main"},
+        "mainTouched": (not enabled_only) and context == "main",'''
+          assert old in s
+          s=s.replace(old,new,1)
+          old='    parser.add_argument("--project-ids", default="")'
+          assert old in s
+          s=s.replace(old,old+'\n    parser.add_argument("--enabled-only", action="store_true")',1)
+          old='''        project_ids=project_ids,
+    )'''
+          new='''        project_ids=project_ids,
+        enabled_only=args.enabled_only,
+    )'''
+          assert old in s
+          s=s.replace(old,new,1)
+          old='''        f"providers={report['providerCount']} generation={report['generation'][:16]} "
+        "devices=tv,mobile,desktop"'''
+          new='''        f"providers={report['providerCount']} generation={report['generation'][:16]} "
+        f"scope={report.get('scope','global')} devices=tv,mobile,desktop"'''
+          assert old in s
+          s=s.replace(old,new,1)
+          p.write_text(s)
+
+          print('FIELD_PATCH_GENERAL_METADATA active_only=ready')
+          PY
+
+      - name: Validate focused Core contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node engine_v2/tests/stream-presentation.test.mjs
+          python3 tests/core_runtime_nonregression_contract_test.py
+          python3 tests/native_runtime_settlement_contract_test.py
+          python3 tests/provider_no_timer_runtime_test.py
+          python3 -m py_compile scripts/materialize_provider_v3_all.py
           python3 - <<'PY'
           import json
           rows=json.load(open('manifest.json')).get('scrapers') or []
           on=[r for r in rows if r.get('enabled') is not False]
           off=[r for r in rows if r.get('enabled') is False]
-          print(f'FIELD_MANIFEST_ACTIVE total={len(rows)} enabled={len(on)} disabled={len(off)}')
-          print('FIELD_MANIFEST_ACTIVE_IDS '+','.join(str(r.get('id')) for r in on))
+          assert (len(rows),len(on),len(off)) == (96,46,50), (len(rows),len(on),len(off))
+          print('FIELD_ACTIVE_REBUILD_SCOPE global=96 enabled=46 disabled=50')
           PY
-      - name: Compare MovieBox regions
+
+      - name: Commit general metadata and enabled-only scope
+        shell: bash
         run: |
-          node - <<'NODE'
-          const API='https://h5-api.aoneroom.com/wefeed-h5api-bff', origin='https://moviebox.ph';
-          const UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/148 Safari/537.36';
-          async function one(tz){let token='';const H={'User-Agent':UA,'Referer':origin+'/','Origin':origin,'X-Client-Info':JSON.stringify({timezone:tz}),'X-Request-Lang':'en','Accept':'application/json','Content-Type':'application/json'};async function req(url,opt={}){const headers={...H,...(opt.headers||{})};if(token)headers.Authorization='Bearer '+token;const r=await fetch(url,{...opt,headers,signal:AbortSignal.timeout(8000)});const xu=r.headers.get('x-user');if(xu)try{token=JSON.parse(xu).token||token}catch{};const t=await r.text();let j={};try{j=JSON.parse(t)}catch{};return{r,j}};await req(API+'/home?host=moviebox.ph');const s=await req(API+'/subject/search',{method:'POST',body:JSON.stringify({keyword:'Interstellar',page:1,perPage:20})});const a=s.j?.data?.items||s.j?.data?.list||[];const exact=a.filter(x=>String(x?.title||'').toLowerCase()==='interstellar');console.log('FIELD_MB_REGION timezone='+tz+' rows='+a.length+' exact='+exact.length);if(!exact.length)return;const x=exact[0],dom=await req(API+'/media-player/get-domain'),domain=String(dom.j?.data||'').replace(/\/$/,'');const ref=domain+'/spa/videoPlayPage/movies/'+x.detailPath+'?id='+x.subjectId+'&type=/movie/detail&detailSe=0&detailEp=0&lang=en';const p=await req(domain+'/wefeed-h5api-bff/subject/play?subjectId='+x.subjectId+'&se=0&ep=0&detailPath='+encodeURIComponent(x.detailPath),{headers:{Referer:ref,Origin:domain,'X-Source':''}});const d=p.j?.data||{},sets=[...(d.streams||[]),...(d.hls||[]),...(d.dash||[])];const meta=sets.slice(0,4).map(y=>Object.fromEntries(Object.entries(y||{}).filter(([k])=>!/url|path|file|token|key|sign/i.test(k))));console.log('FIELD_MB_REGION_PLAY timezone='+tz+' hasResource='+Boolean(d.hasResource)+' rows='+sets.length+' metadata64='+Buffer.from(JSON.stringify(meta)).toString('base64'))}
-          (async()=>{for(const tz of ['Europe/Paris','UTC','Asia/Dhaka'])await one(tz)})().catch(e=>{console.error(e);process.exit(1)});
-          NODE
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add engine_v2/src/stream-presentation.mjs engine_v2/src/contracts.mjs engine_v2/tests/stream-presentation.test.mjs scripts/materialize_provider_v3_all.py
+          git diff --cached --check
+          git commit -m 'fix(core): derive reader metadata and scope active rebuild'
+          git pull --rebase origin fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
+          echo "FIELD_GENERAL_METADATA_COMMIT sha=$(git rev-parse HEAD)"
