@@ -1,0 +1,108 @@
+name: TEMP - ZERO2 worker trace
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-zero2-worker-trace.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Trace staged runtime and direct chains
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_moviebox_anikoto_current_contract_v1.py
+          python3 scripts/materialize_provider_v3_one.py moviebox
+          python3 scripts/materialize_provider_v3_one.py anikototv
+          python3 - <<'PY'
+          import json,re,subprocess,sys,urllib.parse,urllib.request,urllib.error
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+
+          def scrub_obs(row):
+              if not isinstance(row,dict): return row
+              out={}
+              for k,v in row.items():
+                  if k in {'url','requestUrl','finalUrl','location'} and isinstance(v,str):
+                      try:
+                          u=urllib.parse.urlsplit(v); out[k]=(u.scheme+'://'+u.netloc+u.path)[:240]
+                      except Exception: out[k]=v[:240]
+                  elif k in {'body','responseBody','text'}: continue
+                  elif isinstance(v,(str,int,float,bool)) or v is None: out[k]=v
+              return out
+
+          fixtures=[
+            ('moviebox',{'tmdbId':'94997','mediaType':'tv','title':'House of the Dragon','year':2022,'season':1,'episode':1}),
+            ('anikototv',{'tmdbId':'13916','mediaType':'anime','category':'anime','title':'Death Note','year':2006,'season':1,'episode':1}),
+          ]
+          cat=p.local_catalog()
+          for pid,f in fixtures:
+              cmd=['node',str(Path('scripts/provider_worker.cjs')),str(cat[pid]['path']),json.dumps(f,separators=(',',':')),json.dumps(p.context_for(f),separators=(',',':'))]
+              cp=subprocess.run(cmd,capture_output=True,text=True,timeout=70)
+              payload=None
+              for line in cp.stdout.splitlines():
+                  if line.startswith('NUVIO_HEALTH_RESULT='):
+                      payload=json.loads(line.split('=',1)[1])
+              if not payload:
+                  print('TRACE_WORKER '+pid+' NO_RESULT stderr='+cp.stderr[:300]); continue
+              out={k:payload.get(k) for k in ['ok','stream_count','raw_stream_count','provider_server_hosts','provider_server_http_statuses','provider_server_accessible','provider_server_successful_response','error_details']}
+              out['network_observations']=[scrub_obs(x) for x in (payload.get('network_observations') or [])]
+              print('TRACE_WORKER '+pid+' '+json.dumps(out,ensure_ascii=False,separators=(',',':')))
+
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145 Safari/537.36'
+          def get(url,headers=None,limit=2*1024*1024):
+              h={'User-Agent':UA,'Accept':'application/json,text/html,*/*'}; h.update(headers or {})
+              q=urllib.request.Request(url,headers=h)
+              with urllib.request.urlopen(q,timeout=18) as r:return r.status,r.headers,r.read(limit),r.url
+
+          # MovieBox: classify the direct src and one response behind it.
+          st,hd,b,final=get('https://vidsrcme.ru/vs_src.php?type=tv&id=94997&season=1&episode=1',{'Referer':'https://vidsrcme.ru/'})
+          data=json.loads(b.decode()); src=str(data.get('src') or '')
+          u=urllib.parse.urlsplit(src)
+          print('TRACE_MOVIEBOX_SRC '+json.dumps({'status':st,'host':u.netloc,'path':u.path,'queryKeys':sorted(urllib.parse.parse_qs(u.query).keys())},separators=(',',':')))
+          try:
+              st2,h2,b2,final2=get(src,{'Referer':'https://vidsrcme.ru/','Origin':'https://vidsrcme.ru'})
+              fu=urllib.parse.urlsplit(final2); ct=h2.get('content-type','')
+              info={'status':st2,'contentType':ct,'finalHost':fu.netloc,'finalPath':fu.path,'bytes':len(b2)}
+              text=b2.decode('utf-8','replace')
+              if 'mpegurl' in ct.lower() or '#EXTM3U' in text[:100]: info['hls']=True; info['prefix']=text[:180].replace('\n',' | ')
+              else:
+                  info['hls']=False
+                  info['m3u8Refs']=[urllib.parse.urlsplit(x).netloc+urllib.parse.urlsplit(x).path for x in re.findall(r'https?://[^"\' <]+\.m3u8[^"\' <]*',text)[:8]]
+                  info['iframeRefs']=[x[:180] for x in re.findall(r'<iframe[^>]+src=["\']([^"\']+)',text,re.I)[:8]]
+              print('TRACE_MOVIEBOX_SRC_FETCH '+json.dumps(info,ensure_ascii=False,separators=(',',':')))
+          except Exception as e: print('TRACE_MOVIEBOX_SRC_FETCH '+json.dumps({'error':type(e).__name__+': '+str(e)[:180]},separators=(',',':')))
+
+          # Anikoto: current series/episode/server chain.
+          ah={'X-Requested-With':'XMLHttpRequest','Referer':'https://anikototv.to/'}
+          ep='https://anikototv.to/watch/death-note-fc8mq/ep-1'
+          st,hd,b,final=get(ep,{'Referer':'https://anikototv.to/'})
+          html=b.decode('utf-8','replace'); ids=re.findall(r'data-id=["\']([^"\']+)',html,re.I)
+          aid=ids[0] if ids else ''
+          print('TRACE_ANIKOTO_AID '+json.dumps({'status':st,'aid':aid,'idCount':len(ids)},separators=(',',':')))
+          if aid:
+              for path in ['/ajax/episode/list/'+aid,'/ajax/episode/list?id='+aid]:
+                  try:
+                      s,h,b,u=get('https://anikototv.to'+path,ah); txt=b.decode('utf-8','replace')
+                      print('TRACE_ANIKOTO_EP_LIST '+json.dumps({'path':path,'status':s,'bytes':len(b),'prefix':txt[:220].replace('\n',' '),'dataEpId':re.findall(r'data-ep-id=["\']([^"\']+)',txt,re.I)[:6],'dataIds':re.findall(r'data-ids=["\']([^"\']+)',txt,re.I)[:6]},ensure_ascii=False,separators=(',',':')))
+                  except Exception as e: print('TRACE_ANIKOTO_EP_LIST '+json.dumps({'path':path,'error':type(e).__name__+': '+str(e)[:120]},separators=(',',':')))
+          PY
