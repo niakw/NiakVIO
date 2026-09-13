@@ -7,7 +7,8 @@ on:
       - main
     paths:
       - '.github/workflows/provider-upstream-parity.yml'
-      - 'scripts/run_provider_upstream_parity_v2.py'
+      - 'scripts/run_provider_upstream_parity_v3.py'
+      - 'scripts/rotating_corpus.py'
       - 'scripts/provider_worker.cjs'
       - 'scripts/network_guard.cjs'
 
@@ -21,10 +22,14 @@ concurrency:
 jobs:
   parity:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json
+      NIAKVIO_PARITY_SAMPLES_PER_LANE: '3'
+      NIAKVIO_PARITY_WORKERS: '8'
+      NIAKVIO_PARITY_TIMEOUT: '25'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -36,25 +41,55 @@ jobs:
         with: {node-version: '24', package-manager-cache: false}
       - name: Security policy preflight
         run: python3 tests/workflow_security_policy_test.py
-      - name: Validate hardened parity harness
+      - name: Validate rotating Hub-46 parity harness
         run: |
           set -euo pipefail
           test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
-          python -m py_compile scripts/run_provider_upstream_parity_v2.py
+          python3 -m py_compile scripts/run_provider_upstream_parity_v2.py scripts/run_provider_upstream_parity_v3.py scripts/rotating_corpus.py
+          python3 tests/provider_upstream_parity_v3_test.py
           node scripts/provider_worker.cjs --self-test-response-wrapper
           node scripts/provider_worker.cjs --self-test-fixture-fallback
-      - name: Compare current NiakVIO with all three upstreams
-        env:
-          NIAKVIO_PARITY_WORKERS: '8'
-          NIAKVIO_PARITY_TIMEOUT: '25'
+      - name: Compare current Hub-46 NiakVIO with upstreams using rotating catalogue samples
         run: |
           set -euo pipefail
-          python scripts/run_provider_upstream_parity_v2.py
+          python3 scripts/run_provider_upstream_parity_v3.py \
+            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
+            --out automation/provider-upstream-parity-v3.json
+      - name: Publish parity summary
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          path = Path('automation/provider-upstream-parity-v3.json')
+          print('## Rotating Hub-46 upstream parity')
+          print()
+          if not path.is_file():
+              print('- Report was not produced.')
+              raise SystemExit(0)
+          data = json.loads(path.read_text(encoding='utf-8'))
+          counts = data.get('statusCounts') or {}
+          print(f"- Scope: **{data.get('scopeProviderCount', 0)}** providers")
+          print(f"- Matched upstream: **{data.get('matchedUpstreamProviders', 0)}**")
+          print(f"- Tested: **{data.get('testedProviders', 0)}**")
+          print(f"- FULL: **{counts.get('FULL', 0)}**")
+          print(f"- PARTIAL: **{counts.get('PARTIAL', 0)}**")
+          print(f"- RESAMPLE: **{counts.get('RESAMPLE', 0)}**")
+          print(f"- ZERO: **{counts.get('ZERO', 0)}**")
+          print(f"- Certain Niak regressions: **{counts.get('REGRESSION', 0)}**")
+          regressions = data.get('certainRegressions') or []
+          resample = data.get('resampleProviders') or []
+          if regressions:
+              print('- Manual repair queue: `' + ', '.join(regressions) + '`')
+          if resample:
+              print('- Deferred for another catalogue sample: `' + ', '.join(resample) + '`')
+          PY
       - name: Upload parity evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: provider-upstream-parity-${{ github.run_id }}
-          path: automation/provider-upstream-parity.json
+          name: provider-upstream-parity-v3-${{ github.run_id }}
+          path: automation/provider-upstream-parity-v3.json
           if-no-files-found: warn
           retention-days: 14
