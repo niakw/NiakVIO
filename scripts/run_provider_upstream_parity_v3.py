@@ -2,13 +2,15 @@
 """Rotating upstream-vs-NiakVIO parity for the active Hub-46 campaign.
 
 A title is a catalogue sample, never a provider-health verdict. For each declared
-semantic lane this harness rotates through several popular works and stops early
-only when it gets useful positive evidence. Clean zero/zero samples are reported
+semantic lane this harness rotates through the recent global pool and stops early
+as soon as it gets useful positive evidence. Clean zero/zero samples are reported
 as catalogue misses and never promoted to repair regressions.
 
 The only certain NiakVIO regression class is ``upstream_ok_niakvio_ko``: the
 reference upstream returned streams for the exact same work/lane while the local
-provider did not.
+provider did not. The diagnostic reserve can span the complete 32-title global
+lane, but it remains adaptive: it never consumes the remaining candidates after a
+useful positive/negative parity proof has been obtained.
 """
 from __future__ import annotations
 
@@ -29,6 +31,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SCOPE = ROOT / "automation/evidence/hub-lab-matrix-46.json"
 DEFAULT_OUT = ROOT / "automation/provider-upstream-parity-v3.json"
 LANES = ("movie", "tv", "anime")
+MAX_SAMPLES_PER_LANE = 32
 
 
 def cid(value: object) -> str:
@@ -186,8 +189,6 @@ def one_provider(
     elif lane_states and all(value == "POSITIVE" for value in lane_states):
         status = "FULL"
     elif "POSITIVE" in lane_states:
-        # Clean misses do not become repair debt. If every unresolved lane is a
-        # catalogue miss, the provider is waiting for another sample.
         unresolved = [value for value in lane_states if value != "POSITIVE"]
         status = "RESAMPLE" if unresolved and all(value == "RESAMPLE" for value in unresolved) else "PARTIAL"
     elif lane_states and all(value == "RESAMPLE" for value in lane_states):
@@ -240,7 +241,7 @@ def main() -> int:
         if pid not in upstreams and (not requested or pid in requested)
     )
     seed = str(args.seed if args.seed is not None else default_seed())
-    sample_count = max(1, min(12, int(args.samples_per_lane)))
+    sample_count = max(1, min(MAX_SAMPLES_PER_LANE, int(args.samples_per_lane)))
     rows: list[dict[str, Any]] = []
     download_errors: list[dict[str, str]] = []
 
@@ -308,8 +309,7 @@ def main() -> int:
         "providerDownloadErrors": download_errors,
         "providers": rows,
     }
-    out = args.out
-    out_path = Path(out)
+    out_path = Path(args.out)
     if not out_path.is_absolute():
         out_path = ROOT / out_path
     out_path.parent.mkdir(parents=True, exist_ok=True)
