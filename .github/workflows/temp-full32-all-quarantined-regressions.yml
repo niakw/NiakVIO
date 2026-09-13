@@ -1,0 +1,72 @@
+name: TEMP - full32 all quarantined regressions
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-full32-all-quarantined-regressions.yml
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Full-reserve parity for all nine quarantined providers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/provider_upstream_parity_v3_test.py
+          providers=(animesama-co animevostfr french-manga kurage sekai streamzo voiranime voiranime-homes voiranime-rip)
+          args=()
+          for p in "${providers[@]}"; do args+=(--provider "$p"); done
+          python3 scripts/run_provider_upstream_parity_v3.py \
+            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
+            --samples-per-lane 32 \
+            --workers 9 \
+            --timeout 25 \
+            --seed 20260913-all-nine-quarantine \
+            --out automation/provider-upstream-parity-full32-all-nine-quarantine.json \
+            "${args[@]}"
+      - name: Summarize exact lane debt
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('automation/provider-upstream-parity-full32-all-nine-quarantine.json').read_text())
+          print('FULL32_NINE_COUNTS '+json.dumps(d.get('statusCounts') or {},sort_keys=True))
+          print('FULL32_NINE_REGRESSIONS '+(','.join(d.get('certainRegressions') or []) or 'none'))
+          for row in d.get('providers') or []:
+              lanes=[]
+              for lane in row.get('lanes') or []:
+                  proof=next((s for s in lane.get('samples') or [] if s.get('classification') in {'upstream_ok_niakvio_ko','both_ok','niakvio_ok_upstream_ko'}),None)
+                  lanes.append({'lane':lane.get('lane'),'status':lane.get('status'),'samples':lane.get('sampleCount'),'fixture':(proof or {}).get('fixture'),'class':(proof or {}).get('classification')})
+              print('FULL32_NINE_PROVIDER '+json.dumps({'provider':row.get('providerId'),'status':row.get('status'),'lanes':lanes},ensure_ascii=False,sort_keys=True))
+          PY
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full32-all-nine-quarantine-${{ github.run_id }}
+          path: automation/provider-upstream-parity-full32-all-nine-quarantine.json
+          retention-days: 14
+          if-no-files-found: warn
