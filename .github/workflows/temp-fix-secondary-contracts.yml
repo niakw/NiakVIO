@@ -53,19 +53,21 @@ jobs:
             ('hls_master_audio_preserver_v1.py','hls_runtime_integrity_v1.py'),
             ('hls_master_audio_preserver','hls_runtime_integrity'),
           ])
-          patch('scripts/normalize_stream_presentation_v12.py', [
-            ('presentation V20','presentation V22'),
-            ('V20 is a committed fixed point','V22 is a committed fixed point'),
-            ('all-providers-client-projection-name-mirror-v20','all-providers-client-projection-strongest-evidence-v22'),
-            ('stream presentation V20','stream presentation V22'),
-            ('FIELD_STREAM_PRESENTATION_V20','FIELD_STREAM_PRESENTATION_V22'),
-            ('\'out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"")\',', '\'out.title=provider\',\n        \'qualityLabel(f.quality)\',\n        \'detailedLanguage(\','),
-          ])
-          patch('tests/global_stream_presentation_test.py', [
-            ('all-providers-client-projection-name-mirror-v20','all-providers-client-projection-strongest-evidence-v22'),
-            ('presentation V20','presentation V22'),
-            ('presentation V20 client-projection name-mirror','presentation V22 strongest-evidence client-projection'),
-          ])
+
+          p=Path('scripts/normalize_stream_presentation_v12.py'); s=p.read_text(encoding='utf-8')
+          old='all-providers-client-projection-name-mirror-v20'; new='all-providers-client-projection-strongest-evidence-v22'
+          if old not in s: raise SystemExit('missing V20 revision in normalizer')
+          s=s.replace(old,new)
+          title_old='\'out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"")\','
+          title_new='\'out.title=provider\',\n        \'qualityLabel(f.quality)\',\n        \'detailedLanguage(\','
+          if title_old not in s: raise SystemExit('missing old V20 title token')
+          s=s.replace(title_old,title_new).replace('V20','V22')
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('tests/global_stream_presentation_test.py'); s=p.read_text(encoding='utf-8')
+          if old not in s: raise SystemExit('missing V20 revision in presentation test')
+          p.write_text(s.replace(old,new).replace('V20','V22'),encoding='utf-8')
+
           patch('tests/global_stream_presentation_pipeline_test.py', [
             ('assert native["row"]["title"].endswith(" - 1080p"), native',
              'assert " - 1080p" in native["row"]["title"], native\n    assert native["row"]["title"].endswith(" - VO"), native'),
