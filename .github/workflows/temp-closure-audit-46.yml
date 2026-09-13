@@ -15,46 +15,21 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
-      - name: Probe public MovieBox H5 chain
+      - name: Prove MovieBox public H5 movie and TV lanes
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
           const API='https://h5-api.aoneroom.com/wefeed-h5api-bff';
-          const baseHeaders={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/148 Safari/537.36','Referer':'https://moviebox.ph/','Origin':'https://moviebox.ph','X-Client-Info':'{"timezone":"Asia/Dhaka"}','X-Request-Lang':'en','Accept':'application/json','Content-Type':'application/json'};
-          let token='';
-          async function request(url,opt={}){
-            const headers={...baseHeaders,...(opt.headers||{})}; if(token) headers.Authorization='Bearer '+token;
-            const r=await fetch(url,{...opt,headers,signal:AbortSignal.timeout(8000)});
-            const xu=r.headers.get('x-user'); if(xu){try{const j=JSON.parse(xu);if(j.token) token=j.token}catch{}}
-            const text=await r.text(); let json=null; try{json=JSON.parse(text)}catch{}
-            console.log('FIELD_MOVIEBOX_H5_HTTP status='+r.status+' bytes='+text.length+' token='+Boolean(token)+' host='+new URL(url).host);
-            return {r,text,json};
-          }
-          function listFrom(j){const d=j?.data||{}; return Array.isArray(d?.items)?d.items:Array.isArray(d?.list)?d.list:[]}
-          (async()=>{
-            const boot=await request(API+'/home?host=moviebox.ph'); if(!boot.r.ok) throw new Error('bootstrap '+boot.r.status);
-            let movie=false,tv=false;
-            for(const c of [{title:'Interstellar',se:1,ep:1,type:'movie'},{title:'Breaking Bad',se:1,ep:1,type:'tv'}]){
-              const s=await request(API+'/subject/search',{method:'POST',body:JSON.stringify({keyword:c.title,page:1,perPage:20})});
-              if(!s.r.ok) continue; const rows=listFrom(s.json); console.log('FIELD_MOVIEBOX_H5_SEARCH type='+c.type+' rows='+rows.length);
-              const wanted=rows.find(x=>String(x?.title||'').toLowerCase()===c.title.toLowerCase())||rows[0]; if(!wanted) continue;
-              const id=String(wanted.subjectId||''); const detail=String(wanted.detailPath||''); if(!id||!detail) continue;
-              const dom=await request(API+'/media-player/get-domain'); let domain=String(dom.json?.data||'https://netfilm.world').replace(/\/$/,'');
-              const referer=domain+'/spa/videoPlayPage/movies/'+detail+'?id='+encodeURIComponent(id)+'&type=/movie/detail&detailSe='+c.se+'&detailEp='+c.ep+'&lang=en';
-              const play=domain+'/wefeed-h5api-bff/subject/play?subjectId='+encodeURIComponent(id)+'&se='+c.se+'&ep='+c.ep+'&detailPath='+encodeURIComponent(detail);
-              const p=await request(play,{headers:{Referer:referer,Origin:domain,'X-Source':''}}); const d=p.json?.data||{};
-              const streams=Array.isArray(d.streams)?d.streams:[]; const hls=Array.isArray(d.hls)?d.hls:[]; const dash=Array.isArray(d.dash)?d.dash:[]; const direct=[...streams,...hls,...dash].filter(x=>/^https?:\/\//i.test(String(x?.url||x?.path||'')));
-              console.log('FIELD_MOVIEBOX_H5_PLAY type='+c.type+' hasResource='+Boolean(d.hasResource)+' streams='+streams.length+' hls='+hls.length+' dash='+dash.length+' direct='+direct.length+' qualities='+[...new Set(streams.map(x=>x.resolutions).filter(Boolean))].join(','));
-              if(d.hasResource && direct.length){if(c.type==='movie') movie=true; else tv=true;}
-            }
-            console.log('FIELD_MOVIEBOX_H5_SUMMARY movie='+movie+' tv='+tv+' secret_embedded=false');
-            if(!movie||!tv) process.exit(2);
-          })().catch(e=>{console.error('FIELD_MOVIEBOX_H5_ERROR',e.name+':'+e.message);process.exit(1)});
+          const H={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/148 Safari/537.36','Referer':'https://moviebox.ph/','Origin':'https://moviebox.ph','X-Client-Info':'{"timezone":"Asia/Dhaka"}','X-Request-Lang':'en','Accept':'application/json','Content-Type':'application/json'}; let token='';
+          async function req(url,opt={}){const headers={...H,...(opt.headers||{})};if(token)headers.Authorization='Bearer '+token;const r=await fetch(url,{...opt,headers,signal:AbortSignal.timeout(8000)});const xu=r.headers.get('x-user');if(xu)try{token=JSON.parse(xu).token||token}catch{};const t=await r.text();let j={};try{j=JSON.parse(t)}catch{};return {r,j,t}}
+          function rows(j){const d=j?.data||{};return Array.isArray(d.items)?d.items:Array.isArray(d.list)?d.list:[]}
+          async function prove(title,type,se,ep){const s=await req(API+'/subject/search',{method:'POST',body:JSON.stringify({keyword:title,page:1,perPage:20})});const a=rows(s.j);const exact=a.find(x=>String(x?.title||'').toLowerCase()===title.toLowerCase())||a[0];console.log('FIELD_MB_SEARCH type='+type+' status='+s.r.status+' rows='+a.length+' exact='+Boolean(exact));if(!exact)return false;const id=String(exact.subjectId||''),detail=String(exact.detailPath||'');const dom=await req(API+'/media-player/get-domain');const domain=String(dom.j?.data||'https://netfilm.world').replace(/\/$/,'');const ref=domain+'/spa/videoPlayPage/movies/'+detail+'?id='+encodeURIComponent(id)+'&type=/movie/detail&detailSe='+se+'&detailEp='+ep+'&lang=en';const p=await req(domain+'/wefeed-h5api-bff/subject/play?subjectId='+encodeURIComponent(id)+'&se='+se+'&ep='+ep+'&detailPath='+encodeURIComponent(detail),{headers:{Referer:ref,Origin:domain,'X-Source':''}});const d=p.j?.data||{}, streams=Array.isArray(d.streams)?d.streams:[],hls=Array.isArray(d.hls)?d.hls:[],dash=Array.isArray(d.dash)?d.dash:[];const direct=[...streams,...hls,...dash].filter(x=>/^https?:\/\//i.test(String(x?.url||x?.path||'')));console.log('FIELD_MB_PLAY type='+type+' status='+p.r.status+' se='+se+' ep='+ep+' has='+Boolean(d.hasResource)+' direct='+direct.length+' qualities='+[...new Set(streams.map(x=>x.resolutions).filter(Boolean))].join(','));return Boolean(d.hasResource&&direct.length)}
+          (async()=>{const b=await req(API+'/home?host=moviebox.ph');console.log('FIELD_MB_BOOT status='+b.r.status+' token='+Boolean(token));if(!b.r.ok)throw Error('bootstrap');let movie=await prove('Interstellar','movie',0,0);if(!movie)movie=await prove('Interstellar','movie',1,1);const tv=await prove('Breaking Bad','tv',1,1);console.log('FIELD_MB_PROOF movie='+movie+' tv='+tv+' secret_embedded=false');if(!movie||!tv)process.exit(2)})().catch(e=>{console.error(e);process.exit(1)});
           NODE
-      - name: Enabled-only native matrix regression
+      - name: Lock CTGMOVIES isolation and 25s settlement
         if: always()
-        run: python3 tests/native_declared_matrix_enabled_only_test.py
-      - name: Preserve Core 25 second settlement contract
-        if: always()
-        run: python3 tests/native_runtime_settlement_contract_test.py
+        shell: bash
+        run: |
+          python3 tests/native_declared_matrix_enabled_only_test.py
+          python3 tests/native_runtime_settlement_contract_test.py
