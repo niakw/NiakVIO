@@ -1,8 +1,8 @@
 {
   "schemaVersion": 3,
-  "sourceSha": "e39858602d32fbf5fab7c2663224d4eb293b408d",
+  "sourceSha": "e936461a168ba840640fb196bd27b6cf43b791ea",
   "context": "workspace",
-  "generation": "9bea0bb30e608afa47b9789b75ceeba62b479a007614ffe0673ffcb3026b5e0e",
+  "generation": "b4b42a33777047588597aff3746275ea74cd3e980da44ab806dff3ffc404927c",
   "providerCount": 46,
   "expectedProviderCount": 46,
   "providers": [
@@ -2235,8 +2235,8 @@
     },
     {
       "provider": "kurage",
-      "file": "providers/kurage-9ed1196147e17d6a.js",
-      "sha256": "9ed1196147e17d6a6303fe6a757ba47012088ced5fa36c662f20f387e4843b71",
+      "file": "providers/kurage-8c8b8bc023c67454.js",
+      "sha256": "8c8b8bc023c674543628053ff5d3fd4a8a9ff0256260e04f45b89c252b031271",
       "providerDataSha256": "8f4bb358726959fa0ffa8040faa9d0066f8979224a3999ea484402e1d553aba3",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -2245,6 +2245,7 @@
         "CORE.MEDIA_ENRICHMENT.V1",
         "CORE.MEDIA_TYPE_RESOLUTION.V1",
         "CORE.PROVIDER_BRANDING.V1",
+        "CORE.PROVIDER_RUNTIME_DISPATCH.V1",
         "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
         "CORE.RUNTIME_COMPAT.V1",
         "CORE.RUNTIME_MEDIA_SAFETY.V4",
@@ -2252,10 +2253,17 @@
         "CORE.STREAM_IDENTITY.V1",
         "CORE.STREAM_PRESENTATION.V1",
         "CORE.STREAM_SANITIZER.V6",
-        "PROVIDER.KURAGE.CONFIG.V1"
+        "PROVIDER.KURAGE.CONFIG.V1",
+        "PROVIDER.KURAGE.RUNTIME.V1"
       ],
-      "coreCount": 12,
+      "coreCount": 13,
       "applied": [
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/kurage_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.KURAGE.RUNTIME.V1"
+        },
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
@@ -2291,6 +2299,12 @@
           "path": "scripts/provider_patches/global_runtime_compat_v1.py",
           "phase": "discovery",
           "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_runtime_dispatch_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_runtime_dispatch"
         },
         {
           "type": "patch_script",
