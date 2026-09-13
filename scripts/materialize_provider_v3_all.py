@@ -44,6 +44,30 @@ DEFAULT_OUT = ROOT / "providers"
 DEFAULT_REPORT = ROOT / "provider-v3-materialization.json"
 EXPECTED_PROVIDER_COUNT = 96
 
+# PROVIDER_V3_FINAL_STAGE_MINIMIZER_GATE_V1
+FINAL_MINIMIZER_ENV = "NIAKVIO_PROVIDER_V3_FINAL_MINIMIZE"
+
+def materialization_context() -> str:
+    context = str(os.environ.get("NUVIO_PROVIDER_V3_CONTEXT") or "workspace").strip().casefold()
+    if context not in {"workspace", "release", "main"}:
+        raise ValueError(f"invalid NUVIO_PROVIDER_V3_CONTEXT: {context}")
+    return context
+
+def final_minimizer_enabled(context: str | None = None) -> bool:
+    current = str(context or materialization_context()).strip().casefold()
+    raw = str(os.environ.get(FINAL_MINIMIZER_ENV) or "").strip().casefold()
+    false_values = {"", "0", "false", "no", "off"}
+    true_values = {"1", "true", "yes", "on"}
+    if raw not in false_values | true_values:
+        raise ValueError(f"invalid {FINAL_MINIMIZER_ENV}: {raw}")
+    requested = raw in true_values
+    if requested and current not in {"release", "main"}:
+        raise ValueError(
+            f"{FINAL_MINIMIZER_ENV}=1 is forbidden in {current} context; "
+            "minimization is final-stage only"
+        )
+    return requested and current in {"release", "main"}
+
 
 def load(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
@@ -443,6 +467,9 @@ def materialize_all(
     if not isinstance(patches, dict) or not isinstance(capabilities, dict):
         raise ValueError("provider override maps required")
 
+    context = materialization_context()
+    minimize_enabled = final_minimizer_enabled(context)
+
     rows = [
         row for row in manifest.get("scrapers") or []
         if isinstance(row, dict) and canonical_id(str(row.get("id") or ""))
@@ -553,19 +580,32 @@ def materialize_all(
         if core_fix_positions and min(core_fix_positions) <= boundary_at:
             raise ValueError(f"{provider_id}: Core Lego found before Core boundary")
 
-        minimized = minimize_text(text)
-        validate_transform(text, minimized.text)
-        text = minimized.text
-        bundle = text.encode("utf-8")
+        minimizer_report = {
+            "enabled": False,
+            "savedBytes": 0,
+            "transformedLines": 0,
+            "skippedReason": "final-stage-only",
+        }
+        if minimize_enabled:
+            minimized = minimize_text(text)
+            validate_transform(text, minimized.text)
+            text = minimized.text
+            minimizer_report = {
+                "enabled": True,
+                "savedBytes": minimized.saved_bytes,
+                "transformedLines": minimized.transformed_lines,
+                "skippedReason": minimized.skipped_reason,
+            }
 
-        # Prove minimization kept Lego ownership and envelope byte-addressable.
-        minimized_fix_ids = validate_managed_fixes(text)
-        if minimized_fix_ids != fix_ids:
-            raise ValueError(f"{provider_id}: minimizer changed managed Lego ownership")
-        if text.count("/* BEGIN NIAKVIO_PROVIDER */") != 1 or text.count("/* END NIAKVIO_PROVIDER */") != 1:
-            raise ValueError(f"{provider_id}: minimizer changed Provider v3 envelope")
-        if text.count(boundary) != 1:
-            raise ValueError(f"{provider_id}: minimizer changed Core boundary")
+            # Prove final-stage minimization kept Lego ownership and envelope byte-addressable.
+            minimized_fix_ids = validate_managed_fixes(text)
+            if minimized_fix_ids != fix_ids:
+                raise ValueError(f"{provider_id}: minimizer changed managed Lego ownership")
+            if text.count("/* BEGIN NIAKVIO_PROVIDER */") != 1 or text.count("/* END NIAKVIO_PROVIDER */") != 1:
+                raise ValueError(f"{provider_id}: minimizer changed Provider v3 envelope")
+            if text.count(boundary) != 1:
+                raise ValueError(f"{provider_id}: minimizer changed Core boundary")
+        bundle = text.encode("utf-8")
 
         digest = hashlib.sha256(bundle).hexdigest()
         filename = f"{provider_id}-{digest[:16]}.js"
@@ -597,12 +637,7 @@ def materialize_all(
             "devices": ["tv", "mobile", "desktop"],
             "legacyProviderJsExecuted": False,
             "upstreamJsExecuted": False,
-            "minimizer": {
-                "enabled": True,
-                "savedBytes": minimized.saved_bytes,
-                "transformedLines": minimized.transformed_lines,
-                "skippedReason": minimized.skipped_reason,
-            },
+            "minimizer": minimizer_report,
         })
 
     generation = aggregate.hexdigest()

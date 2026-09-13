@@ -387,14 +387,30 @@ def materialize_one(provider_id: str) -> dict[str, object]:
     if core_fix_positions and min(core_fix_positions) <= boundary_at:
         raise ValueError(f"{provider_id}: Core Lego found before Core boundary")
 
-    minimized = allmat.minimize_text(text)
-    allmat.validate_transform(text, minimized.text)
-    text = minimized.text
+    # PROVIDER_V3_FINAL_STAGE_MINIMIZER_GATE_V1
+    context = allmat.materialization_context()
+    minimize_enabled = allmat.final_minimizer_enabled(context)
+    minimizer_report = {
+        "enabled": False,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": "final-stage-only",
+    }
+    if minimize_enabled:
+        minimized = allmat.minimize_text(text)
+        allmat.validate_transform(text, minimized.text)
+        text = minimized.text
+        minimizer_report = {
+            "enabled": True,
+            "savedBytes": minimized.saved_bytes,
+            "transformedLines": minimized.transformed_lines,
+            "skippedReason": minimized.skipped_reason,
+        }
+        if allmat.validate_managed_fixes(text) != fix_ids:
+            raise ValueError(f"{provider_id}: minimizer changed managed Lego ownership")
+        if text.count(boundary) != 1:
+            raise ValueError(f"{provider_id}: minimizer changed Core boundary")
     bundle = text.encode("utf-8")
-    if allmat.validate_managed_fixes(text) != fix_ids:
-        raise ValueError(f"{provider_id}: minimizer changed managed Lego ownership")
-    if text.count(boundary) != 1:
-        raise ValueError(f"{provider_id}: minimizer changed Core boundary")
 
     digest = hashlib.sha256(bundle).hexdigest()
     filename = f"{provider_id}-{digest[:16]}.js"
@@ -422,12 +438,7 @@ def materialize_one(provider_id: str) -> dict[str, object]:
         "upstreamJsExecuted": False,
         "staticAuthorityReconciledProviders": authority_changed,
         "domainSubstitutionReconciledProviders": changed_domains,
-        "minimizer": {
-            "enabled": True,
-            "savedBytes": minimized.saved_bytes,
-            "transformedLines": minimized.transformed_lines,
-            "skippedReason": minimized.skipped_reason,
-        },
+        "minimizer": minimizer_report,
     }
     print(
         "FIELD_PROVIDER_V3_ONE_MATERIALIZED "
