@@ -1,4 +1,4 @@
-name: TEMP - batch priority provider repair v3
+name: TEMP - batch priority provider repair v4
 
 on:
   push:
@@ -48,20 +48,24 @@ jobs:
           node scripts/provider_worker.cjs --self-test-response-wrapper
           node scripts/provider_worker.cjs --self-test-fixture-fallback
 
-      - name: Build proven regression and deep-ZERO ledgers
+      - name: Build salvage batch and exception ledgers
         shell: bash
         run: |
           set -euo pipefail
+          # v3 proved that exactly two active upstream-positive lanes remained lost:
+          # animevostfr:anime and voiranime:anime. Do not let those two discard the
+          # other ten provider repairs; preserve them as one exception sub-batch.
           printf '%s\n' \
-            animesama-co animevost-fr animevostfr french-manga kurage playimdb \
-            sekai streamzo uhdmovies voiranime voiranime-homes voiranime-rip \
+            animesama-co animevost-fr french-manga kurage playimdb \
+            sekai streamzo uhdmovies voiranime-homes voiranime-rip \
             > automation/provider-priority-repair-queue.txt
+          printf '%s\n' animevostfr voiranime > automation/provider-priority-exception-queue.txt
           printf '%s\n' \
             4khdhub allanime allwish anikototv anime-ultime animesalt animetsu flemmix \
             fullanime moviebox moviesmod showbox vidfast vidlove vostfree \
             > automation/provider-priority-zero-queue.txt
 
-      - name: Repair all 12 certain regressions in one transaction
+      - name: Repair the 10 salvageable regressions in one transaction
         id: repair
         shell: bash
         run: |
@@ -91,7 +95,7 @@ jobs:
           python3 tests/native_catalog_miss_rotation_test.py
           python3 tests/native_adaptive_catalog_contract_test.py
 
-      - name: Post-repair parity on repaired provider set only
+      - name: Post-repair parity on the 10-provider salvage batch
         if: steps.repair.outputs.mutated == 'true'
         shell: bash
         run: |
@@ -109,11 +113,11 @@ jobs:
           import json
           from pathlib import Path
           d=json.loads(Path('automation/provider-upstream-parity-batch-post.json').read_text())
-          print('BATCH_POST_COUNTS', d.get('statusCounts', {}))
-          print('BATCH_POST_REGRESSIONS', ','.join(d.get('certainRegressions') or []) or 'none')
+          print('SALVAGE_POST_COUNTS', d.get('statusCounts', {}))
+          print('SALVAGE_POST_REGRESSIONS', ','.join(d.get('certainRegressions') or []) or 'none')
           PY
 
-      - name: Persist successful batch in MEMORY
+      - name: Persist successful salvage batch in MEMORY
         if: steps.repair.outputs.mutated == 'true'
         shell: bash
         run: |
@@ -123,15 +127,16 @@ jobs:
           from pathlib import Path
           post=json.loads(Path('automation/provider-upstream-parity-batch-post.json').read_text())
           queue=Path('automation/provider-priority-repair-queue.txt').read_text().split()
+          exceptions=Path('automation/provider-priority-exception-queue.txt').read_text().split()
           zeros=Path('automation/provider-priority-zero-queue.txt').read_text().split()
           p=Path('MEMORY.md'); text=p.read_text(encoding='utf-8')
-          marker='## 2026-09-13 — provider REGRESSION batch v3'
+          marker='## 2026-09-13 — provider REGRESSION salvage batch v4'
           if marker not in text:
-              text += f'''\n{marker}\n\n- Run `{os.environ.get('GITHUB_RUN_ID','')}`: one transaction over the 12 certain regressions from parity run `34763697601`: `{', '.join(queue)}`.\n- The deep-ZERO set `{', '.join(zeros)}` remained upstream-zero/local-zero at 12 parity samples/lane; do not blindly mutate them without upstream-positive evidence.\n- Post-repair targeted parity counts: `{post.get('statusCounts',{})}`; remaining certain regressions: `{', '.join(post.get('certainRegressions') or []) or 'none'}`.\n- No minimizer in the repair loop. Final NiakVIO minimization remains after functional stabilization.\n'''
+              text += f'''\n{marker}\n\n- Run `{os.environ.get('GITHUB_RUN_ID','')}` salvages the 10-provider batch `{', '.join(queue)}` after v3 proved exactly two active upstream-positive losses: `animevostfr:anime` and `voiranime:anime`. Those two remain a separate paired exception batch; ten improvements are no longer discarded because of them.\n- Deep-ZERO providers remain `{', '.join(zeros)}`; 12 parity samples/lane were upstream-zero/local-zero, so no blind repair is authorized.\n- Post-repair targeted parity counts on the 10-provider batch: `{post.get('statusCounts',{})}`; remaining certain regressions in that batch: `{', '.join(post.get('certainRegressions') or []) or 'none'}`.\n- No minimizer ran here; final NiakVIO minimization stays after functional stabilization.\n'''
               p.write_text(text, encoding='utf-8')
           PY
 
-      - name: Commit successful repair transaction
+      - name: Commit successful salvage transaction
         if: steps.repair.outputs.mutated == 'true'
         shell: bash
         run: |
@@ -144,7 +149,7 @@ jobs:
             echo 'No durable changes to commit'
             exit 0
           fi
-          git commit -m 'fix(providers): batch repair current parity regressions'
+          git commit -m 'fix(providers): salvage ten parity regression repairs'
           git fetch origin fix/labs-5.21.44-20260912
           git rebase origin/fix/labs-5.21.44-20260912
           git push origin HEAD:fix/labs-5.21.44-20260912
@@ -153,13 +158,14 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: batch-priority-provider-repair-v3-${{ github.run_id }}
+          name: batch-priority-provider-repair-v4-${{ github.run_id }}
           retention-days: 14
           if-no-files-found: warn
           path: |
             automation/provider-upstream-parity-batch-post.json
             automation/provider-priority-zero-queue.txt
             automation/provider-priority-repair-queue.txt
+            automation/provider-priority-exception-queue.txt
             automation/provider-repair-fast-targeted.json
             automation/provider-repair-fast-yield.json
             automation/provider-repair-fast-summary.json
