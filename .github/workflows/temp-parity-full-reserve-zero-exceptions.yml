@@ -1,0 +1,99 @@
+name: TEMP - full reserve ZERO and exception parity
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-parity-full-reserve-zero-exceptions.yml
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NIAKVIO_PARITY_WORKERS: '16'
+  NIAKVIO_PARITY_TIMEOUT: '25'
+  NIAKVIO_PARITY_SEED: '20260913-full32'
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Validate full-reserve adaptive parity contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/provider_upstream_parity_v3_test.py
+          python3 tests/recent_global_lab_corpus_policy_test.py
+          python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path('scripts').resolve()))
+          import run_provider_upstream_parity_v3 as p
+          assert p.MAX_SAMPLES_PER_LANE == 32
+          print('PARITY_FULL_RESERVE_CONTRACT_OK max_samples_per_lane=32 early_stop=true')
+          PY
+
+      - name: Scan deep-ZERO plus active-loss exceptions through all 32 recent candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          providers=(
+            4khdhub allanime allwish anikototv anime-ultime animesalt animetsu flemmix
+            fullanime moviebox moviesmod showbox vidfast vidlove vostfree
+            animevostfr voiranime kurage
+          )
+          args=()
+          for provider in "${providers[@]}"; do args+=(--provider "$provider"); done
+          python3 scripts/run_provider_upstream_parity_v3.py \
+            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
+            --samples-per-lane 32 \
+            --workers 16 \
+            --timeout 25 \
+            --seed "$NIAKVIO_PARITY_SEED" \
+            --out automation/provider-upstream-parity-full32-zero-exceptions.json \
+            "${args[@]}"
+
+      - name: Summarize actionable proofs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('automation/provider-upstream-parity-full32-zero-exceptions.json')
+          d=json.loads(p.read_text())
+          print('FULL32_COUNTS', d.get('statusCounts', {}))
+          print('FULL32_REGRESSIONS', ','.join(d.get('certainRegressions') or []) or 'none')
+          print('FULL32_RESAMPLE', ','.join(d.get('resampleProviders') or []) or 'none')
+          for row in d.get('providers') or []:
+              lanes=[]
+              for lane in row.get('lanes') or []:
+                  samples=lane.get('samples') or []
+                  proof=next((s for s in samples if s.get('classification') in {'upstream_ok_niakvio_ko','both_ok','niakvio_ok_upstream_ko'}), None)
+                  lanes.append(f"{lane.get('lane')}:{lane.get('status')}:{len(samples)}:{(proof or {}).get('fixture','none')}")
+              print('FULL32_PROVIDER', row.get('providerId'), row.get('status'), ';'.join(lanes))
+          PY
+
+      - name: Upload full-reserve evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full32-zero-exception-parity-${{ github.run_id }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: automation/provider-upstream-parity-full32-zero-exceptions.json
