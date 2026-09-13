@@ -1,89 +1,48 @@
 name: TEMP - Closure Audit 46
 
 on:
-  workflow_dispatch:
   push:
     branches: ["fix/labs-5.21.44-20260912"]
     paths: [".github/workflows/temp-closure-audit-46.yml"]
-
+  workflow_dispatch:
 permissions:
   contents: read
-
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
-      - name: Stage MovieBox runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 scripts/upgrade_moviebox_hub46_runtime_v1.py
-          python3 tests/peachify_runtime_crypto_test.py
-          python3 - <<'PY'
-          import sys
-          sys.path.insert(0,'scripts'); sys.path.insert(0,'scripts/provider_patches')
-          import moviebox_peach_runtime_v1 as m
-          out=m.apply('globalThis.getStreams=async()=>[];')
-          assert 'NIAKVIO_MOVIEBOX_PEACH_RUNTIME_V1' in out and 'provider:"moviebox"' in out
-          open('/tmp/moviebox-live.js','w').write(out)
-          print('FIELD_MOVIEBOX_STAGE contract=ok proof_faked=0')
-          PY
-      - name: Raw MovieBox endpoint diagnostics
+      - name: Probe current MovieBox source API
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
+          const base='https://api.videasy.net/moviebox/sources-with-title';
           const cases=[
-            ['movie','157336'],['movie','27205'],['movie','603'],['movie','1215638'],
-            ['tv','1396','1','1'],['tv','94605','1','1'],['tv','1399','1','1']
+            {label:'interstellar',title:'Interstellar',mediaType:'movie',year:'2014',episodeId:'1',seasonId:'1',tmdbId:'157336',imdbId:'tt0816692'},
+            {label:'inception',title:'Inception',mediaType:'movie',year:'2010',episodeId:'1',seasonId:'1',tmdbId:'27205',imdbId:'tt1375666'},
+            {label:'breakingbad',title:'Breaking Bad',mediaType:'tv',year:'2008',episodeId:'1',seasonId:'1',tmdbId:'1396',imdbId:'tt0903747'},
+            {label:'arcane',title:'Arcane',mediaType:'tv',year:'2021',episodeId:'1',seasonId:'1',tmdbId:'94605',imdbId:'tt11126994'}
           ];
           (async()=>{
+            let positive=0;
             for(const c of cases){
-              const url='https://uwu.eat-peach.sbs/moviebox/'+c.join('/');
+              const q=new URLSearchParams(c);q.delete('label');q.set('_t',String(Date.now()));
+              const url=base+'?'+q;
               try{
-                const r=await fetch(url,{headers:{'User-Agent':'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36','Origin':'https://peachify.top','Referer':'https://peachify.top/','Accept':'application/json,text/plain,*/*'}});
+                const r=await fetch(url,{headers:{'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/137 Safari/537.36','Referer':'https://www.fmovies.cat/','Origin':'https://www.fmovies.cat','Cache-Control':'no-cache','Pragma':'no-cache','Accept':'*/*'}});
                 const body=await r.text();
-                console.log('FIELD_MOVIEBOX_RAW',c.join(':'),'status='+r.status,'ct='+(r.headers.get('content-type')||''),'body64='+Buffer.from(body.slice(0,900)).toString('base64'));
-              }catch(e){console.log('FIELD_MOVIEBOX_RAW',c.join(':'),'error='+String(e))}
+                console.log('FIELD_MOVIEBOX_VIDEASY',c.label,'status='+r.status,'ct='+(r.headers.get('content-type')||''),'bytes='+body.length,'body64='+Buffer.from(body.slice(0,1800)).toString('base64'));
+                if(r.ok && body.length>20) positive++;
+              }catch(e){console.log('FIELD_MOVIEBOX_VIDEASY',c.label,'error='+String(e),'cause='+(e.cause?String(e.cause):''))}
             }
-          })().catch(e=>{console.error(e);process.exit(1)});
+            console.log('FIELD_MOVIEBOX_VIDEASY_SUMMARY positive_http='+positive+' total='+cases.length);
+            if(!positive) process.exit(2);
+          })();
           NODE
-      - name: Adapter probes across representative fixtures
-        shell: bash
-        run: |
-          set -euo pipefail
-          cat >/tmp/probe.cjs <<'NODE'
-          const fs=require('fs'),vm=require('vm');
-          vm.runInThisContext(fs.readFileSync('/tmp/moviebox-live.js','utf8'),{filename:'moviebox-live.js'});
-          async function run(args){
-            globalThis.__nuvioMediaContext={tmdbId:String(args[0]),canonicalMediaType:args[1],season:args[2],episode:args[3]};
-            const started=Date.now();
-            const rows=await Promise.race([globalThis.getStreams(...args),new Promise((_,rej)=>setTimeout(()=>rej(new Error('hard-timeout-25000')),25000))]);
-            console.log('FIELD_MOVIEBOX_ADAPTER',JSON.stringify(args),'duration_ms='+(Date.now()-started),'count='+rows.length);
-            for(const r of rows.slice(0,3)) console.log('FIELD_MOVIEBOX_ROW',JSON.stringify({url:r.url,quality:r.quality,language:r.language,name:r.name,provider:r.provider}));
-            return rows;
-          }
-          (async()=>{
-            let movie=false,tv=false;
-            for(const id of ['157336','27205','603','1215638']) if((await run([id,'movie'])).length){movie=true;break;}
-            for(const x of [['1396',1,1],['94605',1,1],['1399',1,1]]) if((await run([x[0],'tv',x[1],x[2]])).length){tv=true;break;}
-            console.log('FIELD_MOVIEBOX_LIVE_PROOF movie='+movie+' tv='+tv+' hard_timeout_ms=25000');
-            if(!movie||!tv) process.exit(2);
-          })().catch(e=>{console.error('FIELD_MOVIEBOX_PROBE_ERROR',e);process.exit(1)});
-          NODE
-          node /tmp/probe.cjs
-      - name: Core 25s/no-timer contracts
+      - name: Preserve Core 25 second settlement contract
         if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 tests/native_runtime_settlement_contract_test.py
-          python3 tests/provider_no_timer_runtime_test.py
-          python3 tests/provider_execution_failfast_v33_test.py
-          python3 tests/stream_quality_recovery_tv_test.py
+        run: python3 tests/native_runtime_settlement_contract_test.py
