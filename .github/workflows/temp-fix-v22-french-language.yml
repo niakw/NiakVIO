@@ -29,11 +29,37 @@ jobs:
           p.write_text(s.replace(old,new),encoding='utf-8')
           PY
           git diff --check
+      - name: Stage current V22 contracts for validation only
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          old='all-providers-client-projection-name-mirror-v20'
+          new='all-providers-client-projection-strongest-evidence-v22'
+          p=Path('scripts/normalize_stream_presentation_v12.py'); s=p.read_text(encoding='utf-8')
+          if old not in s: raise SystemExit('missing V20 normalizer revision')
+          s=s.replace(old,new)
+          title_old='\'out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"")\','
+          title_new='\'out.title=provider\',\n        \'qualityLabel(f.quality)\',\n        \'detailedLanguage(\','
+          if title_old not in s: raise SystemExit('missing V20 title token')
+          p.write_text(s.replace(title_old,title_new).replace('V20','V22'),encoding='utf-8')
+          p=Path('tests/global_stream_presentation_test.py'); s=p.read_text(encoding='utf-8')
+          if old not in s: raise SystemExit('missing V20 presentation test revision')
+          s=s.replace(old,new).replace('V20','V22')
+          s=s.replace('assert row["title"] == "Purstream - 4K", row','assert row["title"] == "Purstream - 4K - MULTI (VF/VO)", row')
+          s=s.replace('assert vf["title"] == "Coflix - 1080p"','assert vf["title"] == "Coflix - 1080p - VF"')
+          s=s.replace('assert desktop_native["row"]["title"] == "Cineby - 1080p", desktop_native','assert desktop_native["row"]["title"] == "Cineby - 1080p - VO", desktop_native')
+          p.write_text(s,encoding='utf-8')
+          p=Path('tests/global_stream_presentation_pipeline_test.py'); s=p.read_text(encoding='utf-8')
+          old_assert='assert native["row"]["title"].endswith(" - 1080p"), native'
+          new_assert='assert " - 1080p" in native["row"]["title"], native\n    assert native["row"]["title"].endswith(" - VO"), native'
+          if old_assert not in s: raise SystemExit('missing old pipeline title assertion')
+          p.write_text(s.replace(old_assert,new_assert),encoding='utf-8')
+          PY
       - name: Run V22 presentation contracts
         run: |
           python tests/global_stream_presentation_test.py
           python tests/global_stream_presentation_pipeline_test.py
-      - name: Commit Core fix
+      - name: Commit Core fix only
         run: |
           git config user.name niakvio-bot
           git config user.email niakvio-bot@users.noreply.github.com
