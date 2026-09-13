@@ -1,0 +1,76 @@
+name: TEMP - build recent global Lab corpus
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-build-recent-global-lab-corpus.yml
+
+permissions:
+  contents: write
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build 3 x 32 recent global lists from TMDB
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 scripts/build_recent_global_lab_corpus.py \
+            --min-year 2010 \
+            --max-year 2025 \
+            --per-lane 32 \
+            --output .github/triggers/rotating-popular-corpus.json
+      - name: Validate corpus and clean-miss policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/recent_global_lab_corpus_policy_test.py
+          python3 tests/native_catalog_miss_rotation_test.py
+          test "$(python3 scripts/rotating_corpus.py select --lane all --count-per-lane 1 | wc -l | tr -d ' ')" = "3"
+          for lane in movie tv anime; do
+            test "$(python3 scripts/rotating_corpus.py pool --lane "$lane" | wc -l | tr -d ' ')" -ge 20
+          done
+      - name: Persist corpus and MEMORY checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker='## 2026-09-13 — adaptive native Lab global corpus'
+          if ! grep -Fq "$marker" MEMORY.md; then
+            cat >> MEMORY.md <<'EOF'
+
+## 2026-09-13 — adaptive native Lab global corpus
+
+- Mandatory Lab sampling policy: exactly three global recent fixture pools — `movie`, `tv`, `anime` — each containing several dozen works. Canonical range is 2010 through current-year-1 (2025 for the 2026 campaign).
+- Native Labs execute **one work at a time per lane**, never a fixed batch of 6. The corpus is a reserve, not a batch.
+- A provider advances to another random/deterministic candidate from the **same lane only** when the current runtime call completes normally with `0 streams` and no error. Positive result stops rotation for that provider/lane. Runtime/load/timeout/player/transport/identity contradiction is not a catalogue miss and must stop/report rather than rotating it away.
+- `scripts/rotating_corpus.py` keeps old regression fixtures addressable by exact slug for targeted diagnostics but excludes them from the three global recent pools, so old/2026 works cannot silently become ordinary Lab samples.
+- `scripts/native_catalog_miss_rotation.py` is the shared clean-miss planner. Fallback runs must shrink to the clean-zero provider allowlist instead of retesting providers that were already positive or errored.
+EOF
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/triggers/rotating-popular-corpus.json MEMORY.md
+          if git diff --cached --quiet; then
+            echo 'No corpus change'
+            exit 0
+          fi
+          git commit -m 'feat(labs): publish three recent adaptive global fixture pools'
+          git fetch origin fix/labs-5.21.44-20260912
+          git rebase origin/fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
