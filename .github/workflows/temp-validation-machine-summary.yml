@@ -1,0 +1,30 @@
+name: TEMP - validation machine summary
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-validation-machine-summary.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate machine summary against live repository contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/validation_machine_summary_current_test.py
+          python3 tests/recent_global_lab_corpus_policy_test.py
+          python3 tests/native_hub46_transport_manifest_test.py
