@@ -1486,3 +1486,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Fallback work is not a fixed batch and has no hard-coded “6 samples” rule. Positive providers and providers with runtime/load/timeout/transport/player/identity errors are not repeated to hide failures.
 - iOS embeds the same three recent global pools as an interleaved reserve and tracks terminal provider+lane pairs in-process: clean zero continues to the next same-lane fixture; positive or exception stops that provider/lane.
 - The adaptive runners reuse the current native session/emulator and restage only the clean-miss provider allowlist, reducing extra workload relative to rerunning the full 46 on every fallback title.
+
+## 2026-09-13 — adaptive matrix gate follows global corpus lanes
+
+- The native declared-provider matrix no longer requires three static representative fixture slugs. Any adaptive fallback fixture is resolved through `rotating_corpus.fixture_by_slug()` + `canonical_lane()` to `movie|tv|anime`; the old `fixture_by_type` map is compatibility-only for historical targeted evidence.
+- This prevents fallback titles from being misclassified/unobserved and prevents old fixed samples such as Breaking Bad 2008 from becoming an ordinary Lab prerequisite.
+- The synthetic matrix contract itself now uses the exact Hub-46 scope and recent global fixture pools, matching final acceptance instead of asserting stale 96/static-fixture output.

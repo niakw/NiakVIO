@@ -28,6 +28,8 @@ import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from rotating_corpus import canonical_lane, fixture_by_slug
+
 ROOT = Path(__file__).resolve().parents[1]
 TYPES = ("movie", "tv", "anime")
 FIELD_RE = re.compile(r"([A-Za-z0-9_]+)=([^\s]+)")
@@ -49,6 +51,25 @@ def decode64(value: str) -> str:
 
 def route(provider: str, media_type: str) -> tuple[str, str]:
     return (provider.casefold(), media_type.casefold())
+
+
+# NATIVE_MATRIX_ADAPTIVE_FIXTURE_V1
+def fixture_lane(slug: str, legacy_fixture_by_type: dict[str, str]) -> str:
+    """Resolve any global/adaptive fixture to movie|tv|anime.
+
+    Exact historical regression slugs remain supported by rotating_corpus, while
+    the legacy three-fixture mapping is only a compatibility fallback.
+    """
+    value = str(slug or "").strip()
+    if not value:
+        return ""
+    try:
+        return canonical_lane(fixture_by_slug(value))
+    except (KeyError, ValueError):
+        return next(
+            (kind for kind in TYPES if str(legacy_fixture_by_type.get(kind) or "") == value),
+            "",
+        )
 
 
 def load_scope_ids(scope_path: Path | None) -> set[str] | None:
@@ -160,9 +181,9 @@ def main() -> int:
         if len(provider_ids) != len(scope_ids):
             raise SystemExit(f"scope mismatch: providers={len(provider_ids)} expected={len(scope_ids)}")
 
-    missing_fixture_types = [kind for kind in TYPES if not str(fixture_by_type.get(kind) or "").strip()]
-    if missing_fixture_types:
-        raise SystemExit("missing representative fixture mapping for: " + ",".join(missing_fixture_types))
+    # Adaptive Labs no longer require one hard-coded representative slug per
+    # type. The three global pools in rotating-popular-corpus.json are authoritative;
+    # fixture_by_type remains accepted only for old targeted evidence.
     providers_without_route = sorted(
         display[key] for key in provider_ids if not any(p == key for p, _ in expected)
     )
@@ -207,7 +228,7 @@ def main() -> int:
                     f = fields(line)
                     provider = f.get("provider", "")
                     fixture = f.get("fixture", "")
-                    media_type = next((kind for kind in TYPES if str(fixture_by_type.get(kind) or "") == fixture), "")
+                    media_type = fixture_lane(fixture, fixture_by_type)
                     if provider and media_type:
                         r = route(provider, media_type)
                         if r[0] in provider_ids: completed.add(r)
