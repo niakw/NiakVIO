@@ -1,4 +1,4 @@
-name: TEMP - Hub46 native scope integration
+name: TEMP - Validate and Dispatch Hub46 Native Labs
 
 on:
   push:
@@ -6,10 +6,11 @@ on:
     paths: [".github/workflows/temp-parallel-native-labs-dispatch.yml"]
 
 permissions:
-  contents: write
+  actions: write
+  contents: read
 
 jobs:
-  integrate:
+  validate-dispatch:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -20,33 +21,43 @@ jobs:
         with:
           ref: fix/labs-5.21.44-20260912
           fetch-depth: 2
+          persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Apply exact Hub-46 execution scope
+      - name: Validate rotating Hub-46 contracts
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m py_compile scripts/temp_apply_hub46_native_scope.py
-          python3 scripts/temp_apply_hub46_native_scope.py
-      - name: Run focused scope and rotation tests
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 -m py_compile scripts/prepare_native_corpus_client.py scripts/gate_native_declared_provider_matrix.py scripts/prepare_native_ios_reader_acceptance.py
+          python3 -m py_compile scripts/rotating_corpus.py scripts/prepare_native_corpus_client.py scripts/gate_native_declared_provider_matrix.py scripts/prepare_native_ios_reader_acceptance.py scripts/validate_provider_v3_routes_sequential.py scripts/reconstruct_provider_v3_sequential_live.py
           python3 tests/native_hub46_scope_contract_test.py
           python3 tests/rotating_corpus_test.py
           python3 tests/native_provider_resample_status_test.py
+          python3 tests/provider_rotating_repair_contract_test.py
+          python3 tests/provider_v3_sequential_live_gate_test.py
           python3 tests/provider_v3_final_transient_fixture_fallback_test.py
           node tests/streamflix_timerless_runtime_test.cjs
-      - name: Commit exact Hub-46 execution scope
+          bash -n scripts/run_native_corpus_desktop_suite.sh
+          bash -n scripts/run_native_corpus_mobile_suite.sh
+          bash -n scripts/run_native_corpus_tv_suite.sh
+          ruby -e 'require "yaml"; ARGV.each { |f| YAML.load_file(f, aliases: true); puts "YAML_OK #{f}" }' \
+            .github/workflows/native-desktop-reader-acceptance.yml \
+            .github/workflows/native-mobile-android-reader.yml \
+            .github/workflows/native-mobile-ios-reader.yml
+      - name: Dispatch exact Hub-46 native acceptance workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add scripts/prepare_native_corpus_client.py scripts/gate_native_declared_provider_matrix.py scripts/prepare_native_ios_reader_acceptance.py
-          git diff --cached --check
-          git commit -m "fix(labs): enforce exact Hub-46 execution scope"
-          git push origin HEAD:"$REF"
+          for wf in \
+            native-desktop-reader-acceptance.yml \
+            native-mobile-android-reader.yml \
+            native-mobile-ios-reader.yml
+          do
+            echo "Dispatching $wf on $REF"
+            gh workflow run "$wf" --repo "$REPO" --ref "$REF"
+          done
+          echo "FIELD_HUB46_ROTATING_NATIVE_LABS_DISPATCHED workflows=3 platforms=5 providers=46 ref=$REF"
