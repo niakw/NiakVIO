@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
-"""Deterministic rotating catalogue corpus shared by Labs and Brain/Repair.
+"""Deterministic adaptive catalogue corpus shared by Labs and Brain/Repair.
 
-A declared provider lane is a technical capability. A particular title is only a
-catalogue sample. Therefore a successful runtime call returning zero streams is a
-CATALOG_MISS and must rotate to another title rather than failing the lane.
+Canonical native-Lab policy:
+- exactly three global pools: movie, tv, anime;
+- every global fixture year is 2010..(current year - 1);
+- select one fixture at a time;
+- rotate only after a clean runtime success with zero streams;
+- technical/runtime/identity errors stop rotation and remain visible.
+
+The older regression corpus remains addressable by exact slug for targeted probes,
+but it never contaminates the three global recent pools.
 """
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import hashlib
 import json
 import os
@@ -19,6 +26,11 @@ ROOT = Path(__file__).resolve().parents[1]
 ROTATING_CORPUS = ROOT / ".github/triggers/rotating-popular-corpus.json"
 REGRESSION_CORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"
 LANES = ("movie", "tv", "anime")
+MIN_GLOBAL_YEAR = 2010
+
+
+def max_global_year() -> int:
+    return dt.datetime.now(dt.timezone.utc).year - 1
 
 
 def _load(path: Path) -> dict[str, Any]:
@@ -35,7 +47,7 @@ def canonical_lane(fixture: dict[str, Any]) -> str:
     return "movie"
 
 
-def _normalize_row(row: dict[str, Any]) -> dict[str, Any] | None:
+def _normalize_row(row: dict[str, Any], lane_hint: str | None = None) -> dict[str, Any] | None:
     if not isinstance(row, dict):
         return None
     if isinstance(row.get("fixture"), dict):
@@ -48,29 +60,81 @@ def _normalize_row(row: dict[str, Any]) -> dict[str, Any] | None:
         return None
     fixture["slug"] = slug
     fixture["lane"] = canonical_lane(fixture)
+    if lane_hint and fixture["lane"] != lane_hint:
+        raise ValueError(f"fixture lane mismatch: expected={lane_hint} slug={slug} actual={fixture['lane']}")
     return fixture
 
 
-def all_fixtures() -> list[dict[str, Any]]:
-    # Regression fixtures win on duplicate slugs because they may carry identity
-    # collision aliases/duration constraints that the broad discovery pool omits.
-    merged: dict[str, dict[str, Any]] = {}
+def _global_lists() -> dict[str, list[dict[str, Any]]]:
+    data = _load(ROTATING_CORPUS)
+    if int(data.get("schema_version") or 1) >= 2 and isinstance(data.get("lists"), dict):
+        raw_lists = data["lists"]
+        if set(raw_lists) != set(LANES):
+            raise ValueError(f"global corpus must expose exactly {LANES}; got {sorted(raw_lists)}")
+        result: dict[str, list[dict[str, Any]]] = {}
+        upper = max_global_year()
+        for lane in LANES:
+            rows: list[dict[str, Any]] = []
+            for raw in raw_lists.get(lane) or []:
+                row = _normalize_row(raw, lane)
+                if not row:
+                    continue
+                year = int(row.get("year") or 0)
+                if not MIN_GLOBAL_YEAR <= year <= upper:
+                    raise ValueError(f"global fixture outside {MIN_GLOBAL_YEAR}-{upper}: {row['slug']} year={year}")
+                if lane != "movie":
+                    if int(row.get("season") or 0) <= 0 or int(row.get("episode") or 0) <= 0:
+                        raise ValueError(f"episodic global fixture requires season/episode: {row['slug']}")
+                rows.append(row)
+            if not rows:
+                raise ValueError(f"empty global corpus lane: {lane}")
+            result[lane] = rows
+        return result
+
+    # Backward-compatible read for a pre-v2 branch checkout. Old rows are filtered
+    # to policy years, but canonical publication must migrate to schema v2.
+    result = {lane: [] for lane in LANES}
+    upper = max_global_year()
+    for raw in data.get("fixtures", []):
+        row = _normalize_row(raw)
+        if not row:
+            continue
+        year = int(row.get("year") or 0)
+        if MIN_GLOBAL_YEAR <= year <= upper:
+            result[row["lane"]].append(row)
+    return result
+
+
+def global_fixtures() -> list[dict[str, Any]]:
+    lists = _global_lists()
+    return [dict(row) for lane in LANES for row in lists[lane]]
+
+
+def regression_fixtures() -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
     for raw in _load(REGRESSION_CORPUS).get("fixtures", []):
         row = _normalize_row(raw)
         if row:
-            merged[row["slug"]] = row
-    for raw in _load(ROTATING_CORPUS).get("fixtures", []):
-        row = _normalize_row(raw)
-        if row and row["slug"] not in merged:
-            merged[row["slug"]] = row
+            rows.append(row)
+    return rows
+
+
+def all_fixtures() -> list[dict[str, Any]]:
+    # Global fixtures win duplicate slugs so exact lookup used by native Labs sees
+    # the same recent-row metadata as the adaptive pool. Regression-only fixtures
+    # remain available for explicit targeted diagnostics.
+    merged: dict[str, dict[str, Any]] = {row["slug"]: row for row in regression_fixtures()}
+    for row in global_fixtures():
+        merged[row["slug"]] = row
     return list(merged.values())
 
 
-def fixtures_by_lane(lane: str) -> list[dict[str, Any]]:
+def fixtures_by_lane(lane: str, *, global_only: bool = True) -> list[dict[str, Any]]:
     value = str(lane).strip().casefold()
     if value not in LANES:
         raise ValueError(f"unknown lane: {lane}")
-    rows = [row for row in all_fixtures() if row["lane"] == value]
+    source = global_fixtures() if global_only else all_fixtures()
+    rows = [row for row in source if row["lane"] == value]
     return sorted(rows, key=lambda row: row["slug"])
 
 
@@ -104,7 +168,7 @@ def rotated_candidates(
 ) -> list[dict[str, Any]]:
     resolved_seed = str(seed if seed is not None else default_seed())
     excluded = {str(value).strip() for value in exclude if str(value).strip()}
-    rows = [row for row in fixtures_by_lane(lane) if row["slug"] not in excluded]
+    rows = [row for row in fixtures_by_lane(lane, global_only=True) if row["slug"] not in excluded]
     return sorted(rows, key=lambda row: (_rank(resolved_seed, lane, provider, row["slug"]), row["slug"]))
 
 
@@ -136,13 +200,10 @@ def classify_outcome(*, runtime_ok: bool, stream_count: int, runtime_error: bool
 
 
 def main() -> int:
-    # Windows TextIO defaults to CRLF. Git Bash command substitution/read keeps
-    # the carriage return, which corrupts fixture slugs and generated log names.
-    # Force the CLI transport to LF on every platform.
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(newline="\n")
 
-    parser = argparse.ArgumentParser(description="Select deterministic rotating NiakVIO catalogue fixtures")
+    parser = argparse.ArgumentParser(description="Select adaptive NiakVIO global Lab fixtures")
     sub = parser.add_subparsers(dest="command", required=True)
 
     select = sub.add_parser("select")
@@ -154,12 +215,26 @@ def main() -> int:
     select.add_argument("--exclude", action="append", default=[])
     select.add_argument("--json", action="store_true")
 
+    pool = sub.add_parser("pool")
+    pool.add_argument("--lane", choices=LANES, required=True)
+    pool.add_argument("--seed", default=None)
+    pool.add_argument("--provider", default="")
+    pool.add_argument("--json", action="store_true")
+
     show = sub.add_parser("fixture")
     show.add_argument("slug")
 
     args = parser.parse_args()
     if args.command == "fixture":
         print(json.dumps(fixture_by_slug(args.slug), ensure_ascii=False, sort_keys=True))
+        return 0
+    if args.command == "pool":
+        rows = rotated_candidates(args.lane, seed=args.seed, provider=args.provider)
+        if args.json:
+            print(json.dumps(rows, ensure_ascii=False, indent=2))
+        else:
+            for row in rows:
+                print(row["slug"])
         return 0
 
     lanes = LANES if args.lane == "all" else (args.lane,)
