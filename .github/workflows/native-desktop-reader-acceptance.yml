@@ -97,7 +97,7 @@ jobs:
       # native runtime precondition, not a source/runtime patch.
       LC_NUMERIC: C
       NIAKVIO_TARGET_PROVIDER: declared-type
-      NIAKVIO_TARGET_MANIFEST: manifest.json
+      NIAKVIO_TARGET_MANIFEST: native-hub46/manifest.json
       NIAKVIO_PRIMARY_STREAM_SCOPE: all
       NIAKVIO_REGRESSION_STREAM_SCOPE: all
       NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json
@@ -134,7 +134,7 @@ jobs:
           INITIAL_FIXTURE="$(python3 niakvio/scripts/rotating_corpus.py select --lane movie --count-per-lane 1 | head -n 1)"
           test -n "$INITIAL_FIXTURE"
           echo "FIELD_ROTATING_CORPUS client=desktop phase=initial fixture=$INITIAL_FIXTURE"
-          python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture "$INITIAL_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type
+          python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture "$INITIAL_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest native-hub46/manifest.json --provider declared-type
 
       - name: Install official Windows WebView2 build dependency
         if: matrix.os_name == 'windows'
@@ -204,7 +204,7 @@ jobs:
           set -euo pipefail
           python3 niakvio/scripts/gate_native_declared_provider_matrix.py \
             --client desktop \
-            --manifest niakvio/manifest.json \
+            --manifest niakvio/native-hub46/manifest.json \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
             --scope-matrix niakvio/automation/evidence/hub-lab-matrix-46.json \
             "$GITHUB_WORKSPACE"/desktop-native-corpus-${{ matrix.os_name }}-*.log
