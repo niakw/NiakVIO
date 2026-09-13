@@ -13582,8 +13582,7 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/anime/{slug}/"
+        "https://voir-anime.to/anime/{slug}/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -13625,7 +13624,8 @@
         "/anime/jujutsu-kaisen-vf/",
         "/engine/ajax/search.php",
         "/index.php?newsid={id}",
-        "/engine/ajax/manga_episodes_api.php?id={id}"
+        "/engine/ajax/manga_episodes_api.php?id={id}",
+        "https://voir-anime.to/anime/{slug}/"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -13786,7 +13786,7 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {
-        "voiranime.diy": "voiranime.homes",
+        "voiranime.diy": "voir-anime.to",
         "voiranime.homes": "voir-anime.to",
         "voiranime.store": "voir-anime.to",
         "voiranime.com": "voir-anime.to"
@@ -13812,33 +13812,8 @@
       "proof_search_bases": [
         "https://voir-anime.to"
       ],
-      "provider_lego_scripts": [
-        "scripts/provider_patches/voiranime_homes_runtime_v1.py"
-      ],
-      "provider_lego_options": {
-        "scripts/provider_patches/voiranime_homes_runtime_v1.py": {
-          "site": "https://voiranime.homes",
-          "movie_site": "https://voir-anime.to",
-          "language_order": [
-            "vf",
-            "vostfr"
-          ],
-          "max_streams": 4
-        }
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
-      }
+      "provider_lego_scripts": [],
+      "provider_lego_options": {}
     },
     "voiranime-homes": {
       "capability": "mixed_embed_resolver",
@@ -23063,6 +23038,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
+        "https://voir-anime.to",
         "https://video.sibnet.ru",
         "https://vidmoly.to",
         "https://my.mail.ru",
@@ -23080,7 +23056,6 @@
         "https://arm.haglund.dev",
         "https://v3-cinemeta.strem.io",
         "https://kitsu.io",
-        "https://voir-anime.to",
         "https://lodash.com",
         "https://openjsf.org",
         "http://underscorejs.org",

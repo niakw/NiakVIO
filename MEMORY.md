@@ -1499,3 +1499,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Accepted providers: `animevost-fr, playimdb, uhdmovies`. Quarantined providers: `animesama-co, animevostfr, french-manga, kurage, sekai, streamzo, voiranime, voiranime-homes, voiranime-rip`. Quarantined lanes: `{'animesama-co': ['anime'], 'animevostfr': ['anime'], 'french-manga': ['anime'], 'kurage': ['anime'], 'sekai': ['anime'], 'streamzo': ['anime', 'movie'], 'voiranime': ['anime'], 'voiranime-homes': ['anime', 'movie'], 'voiranime-rip': ['anime']}`.
 - Acceptance requires both the strict representative yield gate and a 12-candidate-per-lane recent-corpus parity pass. RESAMPLE/technical-only rows are not silently reclassified as regressions.
 - No NiakVIO minimizer ran in this repair loop.
+
+## 2026-09-13 — VoirAnime current authority persisted after stream-positive proof
+
+- VoirAnime current execution authority is `https://voir-anime.to/anime/{slug}/`; stale `arm.haglund.dev` api_recipe and obsolete `voiranime_homes_runtime_v1.py` execution authority are removed.
+- Exact Tokyo Ghoul S01E01 proof remains stream-positive: `{'fixture': 'tokyo-ghoul-2014-s01e01', 'streams': 2, 'raw': 2, 'error': None, 'statuses': [200, 206, 404]}`. Previous run 34770328860 also completed full-reserve 32 parity with `certainRegressions=[]`.
+- That prior workflow failed only in stale unrelated `tests/provider_v3_static_knowledge_contract_test.py` VegaMovies lookup (`StopIteration`); this debt does not invalidate VoirAnime runtime proof and must be repaired separately.
+- Core ownership unchanged; no minimizer run.

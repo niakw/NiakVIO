@@ -274140,6 +274140,7 @@
         "officialApi": null,
         "fixedApi": null,
         "origins": [
+          "https://voir-anime.to",
           "https://voiranime.homes",
           "https://voiranime.org.uk",
           "https://video.sibnet.ru",
@@ -274155,15 +274156,13 @@
           "https://lecteurvideo.com",
           "https://wookafr.center",
           "https://up4fun.top",
-          "https://kitsu.io",
-          "https://voir-anime.to"
+          "https://kitsu.io"
         ],
         "observedUrls": [
           "https://voir-anime.to/"
         ],
         "routes": [
-          "/api/v2/themoviedb?id={tmdbId}",
-          "/anime/{slug}/"
+          "https://voir-anime.to/anime/{slug}/"
         ],
         "sourceRuntimeFamily": "wordpress-search-episode",
         "sourceKnowledgeRef": "c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2",
@@ -274573,12 +274572,11 @@
         },
         "identityInput": {
           "mode": "catalog_search",
+          "requiresTmdbBeforeRun": true,
           "requiredFields": [
             "title",
-            "year",
             "mediaType"
-          ],
-          "requiresTmdbBeforeRun": true
+          ]
         },
         "supportedTypes": [
           "movie",
@@ -275911,19 +275909,6 @@
           "voiranime.homes": "voir-anime.to",
           "voiranime.store": "voir-anime.to",
           "voiranime.com": "voir-anime.to"
-        },
-        "apiRecipe": {
-          "proofModelVersion": 5,
-          "allowGenericFallback": false,
-          "base": "https://arm.haglund.dev",
-          "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-          "directRequest": {
-            "method": "GET",
-            "headers": {
-              "accept-language": "fr-FR,fr,en-US,en",
-              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-            }
-          }
         }
       },
       "knowledge": {
