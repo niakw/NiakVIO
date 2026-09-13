@@ -1,0 +1,135 @@
+name: TEMP - MovieBox + Anikoto current contract
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths:
+      - scripts/provider_patches/moviebox_vidsrcme_runtime_v1.py
+      - scripts/upgrade_moviebox_anikoto_current_contract_v1.py
+      - .github/workflows/temp-moviebox-anikoto-current-contract.yml
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Stage both current contracts and materialize without minimizer
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_moviebox_anikoto_current_contract_v1.py
+          python3 scripts/materialize_provider_v3_one.py moviebox
+          python3 scripts/materialize_provider_v3_one.py anikototv
+          python3 scripts/validate_published_provider_config.py --expected 96
+          python3 tests/provider_v3_final_stage_minimizer_gate_test.py
+          python3 tests/global_core_runtime_ownership_test.py
+      - name: Require stream-positive exact fixtures
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          fixtures={
+            'moviebox':[
+              {'slug':'interstellar-2014','tmdbId':'157336','mediaType':'movie','title':'Interstellar','year':2014},
+              {'slug':'house-of-the-dragon-2022-s01e01','tmdbId':'94997','mediaType':'tv','title':'House of the Dragon','year':2022,'season':1,'episode':1},
+            ],
+            'anikototv':[
+              {'slug':'death-note-2006-s01e01','tmdbId':'13916','mediaType':'anime','category':'anime','title':'Death Note','year':2006,'season':1,'episode':1},
+            ],
+          }
+          local=p.local_catalog(); proof={}
+          failures=[]
+          for pid,rows in fixtures.items():
+            proof[pid]=[]
+            for f in rows:
+              r=p.run_worker(local[pid]['path'],f,55)
+              row={'fixture':f['slug'],'streams':int(r.get('stream_count') or 0),'raw':int(r.get('raw_stream_count') or 0),'error':r.get('error_class'),'statuses':r.get('http_statuses') or []}
+              proof[pid].append(row)
+              print('ZERO2_EXACT_PROOF '+pid+' '+json.dumps(row,ensure_ascii=False,separators=(',',':')))
+              if row['streams'] <= 0: failures.append(pid+':'+f['slug'])
+          Path('automation/moviebox-anikoto-current-contract-proof.json').write_text(json.dumps(proof,ensure_ascii=False,indent=2)+'\n')
+          if failures:
+            raise SystemExit('stream-positive proof failed: '+','.join(failures))
+          PY
+      - name: Promote proof state only after all exact positives
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('provider-overrides.json'); d=json.loads(p.read_text()); patches=d['provider_patches']
+          mb=patches['moviebox']; ak=patches['anikototv']
+          mb['route_data_state']='on'; mb['repair_disposition'].update({
+            'routeDataState':'on','currentVerifiedLanes':['movie','tv'],'provenLanes':['movie','tv'],'missingLanes':[],
+            'completeCapabilityProof':True,'recoveryStatus':'stream-positive-current-contract','quarantined':False,
+            'reasonCodes':['current_contract_stream_positive']})
+          ak['route_data_state']='on'; disp=ak.get('repair_disposition')
+          if isinstance(disp,dict): disp.update({'routeDataState':'on','currentVerifiedLanes':['anime'],'provenLanes':['anime'],'recoveryStatus':'stream-positive-current-contract','reasonCodes':['current_contract_stream_positive']})
+          p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+          skp=Path('automation/provider-v3-static-knowledge.json'); sk=json.loads(skp.read_text()); rows=sk.get('providers') or {}
+          mm=((rows.get('moviebox') or {}).get('model') or {}); mm.update({'strategy':'api_stream_resolver','knownSite':'https://moviebox.yachts','officialSite':'https://moviebox.yachts','routes':['/vs_src.php?type={mediaType}&id={tmdbId}','/vs_src.php?type=tv&id={tmdbId}&season={season}&episode={episode}'],'routeProofVersion':5,'sourceRuntimeFamily':'moviebox-vidsrcme-tmdb-direct-v1'})
+          am=((rows.get('anikototv') or {}).get('model') or {}); am['routes']=['/ajax/anime/search?keyword={query}','/watch/{slug}','/ajax/episode/list/{id}','/ajax/server/list?servers={id}','/ajax/server?get={id}']; am['routeProofVersion']=5
+          skp.write_text(json.dumps(sk,ensure_ascii=False,indent=2)+'\n')
+          PY
+          python3 scripts/materialize_provider_v3_one.py moviebox
+          python3 scripts/materialize_provider_v3_one.py anikototv
+          python3 scripts/validate_published_provider_config.py --expected 96
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/provider_v3_strategy_plan_contract_test.py
+      - name: Reconfirm after proof-state promotion
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          cat=p.local_catalog()
+          fs=[
+            ('moviebox',{'tmdbId':'157336','mediaType':'movie','title':'Interstellar','year':2014}),
+            ('moviebox',{'tmdbId':'94997','mediaType':'tv','title':'House of the Dragon','year':2022,'season':1,'episode':1}),
+            ('anikototv',{'tmdbId':'13916','mediaType':'anime','category':'anime','title':'Death Note','year':2006,'season':1,'episode':1}),
+          ]
+          for pid,f in fs:
+            r=p.run_worker(cat[pid]['path'],f,55); n=int(r.get('stream_count') or 0)
+            print('ZERO2_RECONFIRM '+pid+' streams='+str(n)+' statuses='+json.dumps(r.get('http_statuses') or []))
+            if n<=0: raise SystemExit(pid+' lost positive after promotion')
+          PY
+      - name: Record memory and commit one transaction
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('MEMORY.md'); t=p.read_text(encoding='utf-8')
+          marker='## 2026-09-13 — MovieBox + Anikoto current-contract recovery'
+          if marker not in t:
+            t += f'''\n{marker}\n\n- MovieBox historical `non_playable_html_output` quarantine was superseded by the independently observed current `vidsrcme.ru/vs_src.php` TMDB-direct JSON resolver, but only after movie + TV stream-positive proof. No upstream JavaScript is executed.\n- AnikotoTV current search authority is `/ajax/anime/search?keyword={{query}}`; the JSON `result.html` payload is parsed before candidate selection. The old `/search?keyword=` execution route was stale.\n- Both providers were materialized in `workspace` context with the final-stage minimizer disabled; Core still owns timeout/cancellation, HTTP/media fail-closed and final output validation.\n'''
+            p.write_text(t,encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add provider-overrides.json automation/provider-v3-static-knowledge.json manifest.json providers/ vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json scripts/provider_patches/moviebox_vidsrcme_runtime_v1.py scripts/provider_patches/anikototv_runtime_v1.py scripts/upgrade_moviebox_anikoto_current_contract_v1.py automation/moviebox-anikoto-current-contract-proof.json MEMORY.md
+          if git diff --cached --quiet; then echo 'No durable ZERO2 changes'; exit 0; fi
+          git commit -m 'fix(providers): recover MovieBox and Anikoto current contracts'
+          git fetch origin fix/labs-5.21.44-20260912
+          git rebase origin/fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
