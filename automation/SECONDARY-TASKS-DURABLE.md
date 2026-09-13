@@ -1,6 +1,7 @@
 # NiakVIO — durable secondary task ledger
 
 This file is a durable anti-forgetting ledger for secondary work. `MEMORY.md` remains the recovery source of truth and must mirror this ledger at every checkpoint.
+Last audited against the active repair branch: 2026-09-13.
 
 ## Priority rule
 
