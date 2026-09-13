@@ -53,8 +53,8 @@ jobs:
             'assert desktop_native["row"]["title"] == "Cineby - 1080p", desktop_native':'assert desktop_native["row"]["title"] == "Cineby - 1080p - VO", desktop_native',
           }
           for a,b in replacements.items():
-              if a not in s: raise SystemExit(f'missing presentation assertion: {a}')
-              s=s.replace(a,b)
+              if a in s: s=s.replace(a,b)
+              elif b not in s: raise SystemExit(f'missing presentation assertion: {a}')
           p.write_text(s,encoding='utf-8')
           p=Path('tests/global_stream_presentation_pipeline_test.py'); s=p.read_text(encoding='utf-8')
           old_assert='assert native["row"]["title"].endswith(" - 1080p"), native'
