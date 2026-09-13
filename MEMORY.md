@@ -1519,3 +1519,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The anime V2 captures/delegates the previous movie resolver; Core remains the only final runtime dispatcher and terminal validation owner. Workspace materialization did not minimize.
 - Exact Tokyo Ghoul S01E01 proof: `{"provider": "voiranime", "lane": "anime", "fixture": "tokyo-ghoul-2014-s01e01", "streams": 2, "raw": 2, "statuses": [200, 206, 404], "accessible": true, "success": true, "error": null, "timeout": false}`.
 - Recent-reserve parity has no certain `upstream_ok_niakvio_ko`: summary `null`.
+
+## 2026-09-13 — Anime-Sama / Mugiwara movie overdeclaration removed
+
+- Anime-Sama and Mugiwara now publish semantic `anime` only. `tv`/`series` remain transport aliases; `movie` is not advertised after wrong-content/unproven repair evidence.
+- Live post-rebuild evidence: `{"anime-sama": {"movie": {"streams": 0, "raw": 0, "statuses": [200, 404], "error": null}, "anime": {"streams": 2, "raw": 2, "statuses": [200, 404], "error": null}}, "mugiwarastream": {"movie": {"streams": 0, "raw": 0, "statuses": [200], "error": null}, "anime": {"streams": 3, "raw": 3, "statuses": [200], "error": null}}}`. Movie calls fail closed; anime positivity independently controls `on` vs `repair`.

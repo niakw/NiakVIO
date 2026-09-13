@@ -14,17 +14,15 @@
     "anime-sama": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://anime-sama.wiki/",
-      "official_site": "https://anime-sama.store",
+      "official_site": "https://anime-sama.to",
       "manifest_overrides": {
         "enabled": true
       },
       "domain_substitutions": {
         "animes-sama.fr": "anime-sama.store",
-        "anime-sama.fr": "anime-sama.store",
-        "anime-sama.to": "anime-sama.store"
+        "anime-sama.fr": "anime-sama.store"
       },
       "published_types": [
-        "movie",
         "anime"
       ],
       "identity_input": {
@@ -58,7 +56,8 @@
         }
       },
       "notes": [
-        "Provider v3 runtime is a NiakVIO-owned catalogue/episodes.js Lego derived from the current upstream contract; upstream JavaScript is not embedded or executed."
+        "Provider v3 runtime is a NiakVIO-owned catalogue/episodes.js Lego derived from the current upstream contract; upstream JavaScript is not embedded or executed.",
+        "Semantic movie support removed: current repair evidence did not prove identity-safe movie output; TV/series remain transport aliases for anime only."
       ],
       "candidate_learned_routes": [
         "/template-php/defaut/fetch.php",
@@ -202,7 +201,7 @@
           }
         }
       },
-      "route_data_state": "repair",
+      "route_data_state": "on",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -210,10 +209,9 @@
         "activationAuthority": "hub-lab-matrix-46",
         "declaredHub": "https://anime-sama.wiki/",
         "forcedEnabled": true,
-        "routeDataState": "repair",
+        "routeDataState": "on",
         "requiredLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "currentVerifiedLanes": [
           "anime"
@@ -222,33 +220,26 @@
         "provenLanes": [
           "anime"
         ],
-        "missingLanes": [
-          "movie"
-        ],
-        "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "missingLanes": [],
+        "completeCapabilityProof": true,
+        "recoveryStatus": "anime-positive-movie-overdeclaration-removed",
         "provenRouteCount": 9,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
-          "declared_lane_unproven",
           "quick_provider-returned-streams",
           "quick_provider-returned-wrong-content",
-          "recovery_proven"
+          "recovery_proven",
+          "movie_overdeclaration_removed"
         ],
         "laneStatuses": {
           "anime": [
             "playable_verified"
-          ],
-          "movie": [
-            "wrong_content"
           ]
         },
         "evidenceDestructive": false
       },
-      "runtime_domain_replacements": {
-        "anime-sama.to": "anime-sama.store"
-      },
+      "runtime_domain_replacements": {},
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
         "effective_coverage_ratio": 1.0,
@@ -288,7 +279,8 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "referer": "https://anime-sama.to"
       }
     },
     "purstream": {
@@ -10300,7 +10292,7 @@
           "mediaType"
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "on",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -10308,34 +10300,31 @@
         "activationAuthority": "hub-lab-matrix-46",
         "declaredHub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
         "forcedEnabled": true,
-        "routeDataState": "repair",
+        "routeDataState": "on",
         "requiredLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
-        "currentVerifiedLanes": [],
+        "currentVerifiedLanes": [
+          "anime"
+        ],
         "exactLockedLanes": [],
-        "provenLanes": [],
-        "missingLanes": [
-          "anime",
-          "movie"
+        "provenLanes": [
+          "anime"
         ],
-        "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "missingLanes": [],
+        "completeCapabilityProof": true,
+        "recoveryStatus": "anime-positive-movie-overdeclaration-removed",
         "provenRouteCount": 18,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
-          "declared_lane_unproven",
           "quick_provider-network-http-error",
           "quick_provider-network-zero-result",
-          "recovery_proven"
+          "recovery_proven",
+          "movie_overdeclaration_removed"
         ],
         "laneStatuses": {
           "anime": [
-            "no_streams"
-          ],
-          "movie": [
             "no_streams"
           ]
         },
@@ -10422,7 +10411,13 @@
           "base": "https://www.mugiwara-no-streaming.com",
           "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
-      }
+      },
+      "published_types": [
+        "anime"
+      ],
+      "notes": [
+        "Semantic movie support removed: current repair evidence did not prove identity-safe movie output; TV/series remain transport aliases for anime only."
+      ]
     },
     "nakios": {
       "capability": "api_stream_resolver",
