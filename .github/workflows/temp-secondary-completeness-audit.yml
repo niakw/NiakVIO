@@ -1,0 +1,63 @@
+name: TEMP - Secondary completeness audit
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-secondary-completeness-audit.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: fix/labs-5.21.44-20260912}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Inventory stale 96/v31 and secondary contracts
+        run: |
+          echo '=== STALE_V31 ==='
+          grep -RIn --exclude-dir=.git -E 'v31|tmdb-data-contract-launch-gate-v31' tests scripts .github/workflows || true
+          echo '=== HARD_96_ASSERTIONS ==='
+          grep -RIn --exclude-dir=.git -E '(== *96|!= *96|EXPECTED_PROVIDER_COUNT *= *96|providers=96|expected=96|all 96|96 Provider)' tests scripts .github/workflows automation MEMORY.md || true
+          echo '=== TIMEOUT_ABORT_FAILFAST ==='
+          grep -RIn --exclude-dir=.git -E '25.?s|25000|timeout.*25|AbortSignal|abort|generation|stale|fail.?fast|dead provider|403|429' tests scripts | head -n 500 || true
+          echo '=== QUALITY_PRESENTATION_LANGUAGE ==='
+          grep -RIn --exclude-dir=.git -E 'HLS.*quality|quality.*HLS|verified.*quality|presentation|language|dialect|stream title|metadata preservation' tests scripts | head -n 500 || true
+          echo '=== TIMER_DESKTOP ==='
+          grep -RIn --exclude-dir=.git -E 'setTimeout|clearTimeout|timer|desktop' tests scripts/provider_patches scripts | head -n 500 || true
+          echo '=== MATCHING_TEST_FILES ==='
+          find tests -maxdepth 1 -type f | sort | grep -Ei '(timeout|abort|cancel|generation|stale|fail|media|safety|identity|presentation|metadata|quality|language|playback|desktop|native|timer|provider_lego|material)' || true
+
+      - name: Run current critical contract tests
+        run: |
+          python - <<'PY'
+          import subprocess, pathlib, re, sys
+          tests=[]
+          patterns=[
+            r'published_provider_lego_contract', r'anime_semantic_transport',
+            r'runtime_media_safety', r'stream.*sanitizer', r'stream.*presentation',
+            r'metadata.*preservation', r'identity.*(?:ownership|regression|contract)',
+            r'playback.*policy', r'native.*(?:compat|loading|hls)',
+            r'abort|cancel|generation|stale', r'timeout|fail.*fast|provider.*isolation',
+          ]
+          for p in sorted(pathlib.Path('tests').glob('*.py')):
+            n=p.name.lower()
+            if any(re.search(x,n) for x in patterns): tests.append(p)
+          print('CRITICAL_TEST_SELECTION',len(tests),*[p.name for p in tests],sep='\n')
+          results=[]
+          for p in tests:
+            cp=subprocess.run([sys.executable,str(p)],text=True,capture_output=True,timeout=120)
+            tail='\n'.join((cp.stdout+'\n'+cp.stderr).splitlines()[-12:])
+            print(f'CONTRACT_RESULT {p.name} rc={cp.returncode}')
+            if tail: print(tail)
+            results.append((p.name,cp.returncode))
+          failed=[n for n,rc in results if rc]
+          print('CRITICAL_TEST_SUMMARY',len(results),'failed',len(failed),failed)
+          # Diagnostic run: do not stop before all selected contracts execute.
+          PY
