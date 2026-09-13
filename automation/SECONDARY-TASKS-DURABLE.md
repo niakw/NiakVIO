@@ -8,10 +8,12 @@ Last audited against the active repair branch: 2026-09-13.
 1. Provider yield first: resolve current `REGRESSION` cases in batches by shared root cause, then widen `ZERO` sampling and repair every newly proven upstream-positive/local-zero case.
 2. Do not manufacture green by shrinking the 96-provider catalogue or by accepting wrong title/type/season/episode media. Wrong media is worse than zero; keep fail-closed identity and media integrity.
 3. Secondary tasks below remain mandatory and must not be silently dropped while provider repair is active.
+4. Runtime/client compatibility adaptations are **Core-global Lego**, never provider-by-provider hacks: timers (`setTimeout`/`clearTimeout`), HTTP/403 fail-closed policy, stale-generation suppression, execution budgets and client-runtime portability belong after the global Core boundary. Provider Lego may supply provider-specific transport/data/options only.
 
 ## Secondary tasks — mandatory
 
-- **JavaScript minimization/minification**
+- **JavaScript minimization/minification — FINAL STAGE only**
+  - Do **not** use minification as a routine provider-repair or intermediate runtime gate. Stabilize provider yield, global Core/runtime behavior and the candidate first; run minimization near the very end, before final fixed-point/release certification.
   - Production bundles must go through the NiakVIO Provider v3 minimizer (`scripts/provider_v3_minimizer.py`), not Terser.
   - Preserve managed Lego markers/comments/structure and deterministic reverse reconstruction.
   - Re-run minimizer/fixed-point/byte-stability tests after batch provider changes and before the final Hub-46 freeze/publication candidate.
@@ -49,7 +51,9 @@ Last audited against the active repair branch: 2026-09-13.
   - Keep official client behavior observational; do not patch official Nuvio clients merely to make Labs green.
 
 - **Desktop/runtime robustness**
-  - Audit active provider bundles for direct `setTimeout` / `clearTimeout` assumptions and guarantee Desktop-safe timer handling, not only StreamFlix.
+  - Desktop/runtime fixes are Core-global. `CORE.RUNTIME_COMPAT.V1` owns timer shims and URL/fetch portability for every composed bundle; do not add StreamFlix/Movix/provider-specific timer hacks.
+  - Audit direct provider `setTimeout` / `clearTimeout` usage only to prove the global shim covers it; provider code must not become the owner of client-runtime compatibility.
+  - 403/404/410 and terminal media validity are Core-global sanitizer policy; never patch a named provider merely to hide a forbidden/dead returned row.
   - Preserve Core timeout at 25 s unless a later explicit decision changes it.
   - Preserve navigation A→B→C generation isolation even when fetch ignores AbortSignal.
   - Preserve stale-request suppression and no reinjection from superseded generations.
