@@ -218,17 +218,19 @@ Un échec appartenant au client Nuvio/OS ne doit jamais devenir une réparation 
 
 ## 10. Domain Refresh
 
-`.github/workflows/domain-refresh.yml` est une exception de maintenance DATA très bornée :
+`.github/workflows/domain-refresh.yml` est une exception de maintenance d’adresse très bornée. Son autorité transactionnelle est `scripts/domain_refresh_transaction_v2.py` :
 
-- résolution quotidienne des hubs officiels ;
-- champ provider autorisé : `official_site` ;
-- aucun changement de route/API/Core ;
-- mise à jour CONFIG seulement ;
-- structure du provider identique hors CONFIG ;
-- filename content-addressed et projections/hashes rafraîchis si les bytes CONFIG changent ;
-- publication directe sur `main` uniquement pour cette transaction explicitement bornée, puis Quick est relancé.
+- les hubs/channels/redirects officiels servent à découvrir le terminal courant ; un hub reste une source d’adresse et ne devient jamais un backend d’exécution provider ;
+- `official_site`, le registre `provider-hubs.json` et l’historique de domaines sont synchronisés avec la nouvelle autorité ;
+- seules les substitutions/remplacements de domaine connectés à l’ancien terminal peuvent suivre la rotation ; une route/API métier indépendante reste inchangée ;
+- le **CONFIG Provider complet** est reconstruit depuis la DATA structurée pour les providers modifiés ; l’ancien updater partiel `officialSite`-only n’est pas une autorité de publication ;
+- ProviderBase, Lego `PROVIDER.*` hors CONFIG et Lego `CORE.*` doivent rester byte-identical ;
+- le filename garde son namespace source-qualified et tourne uniquement par content hash lorsque les bytes CONFIG changent ;
+- activation, projections, versions cache-safe, hashes et release integrity sont resynchronisés ;
+- DNS/HTTP terminal est une observation postérieure à la résolution autoritative : un 403, anti-bot ou timeout CI ne rétablit pas silencieusement l’ancien domaine ;
+- publication directe sur `main` n’est autorisée que pour cette transaction bornée, après CAS sur le SHA de base, puis Quick est relancé.
 
-Le hub sert à localiser l’instance officielle ; il ne remplace pas le protocole business du provider.
+Le contrat est fail-closed sur rollback/cycle, terminal social/template, dérive d’activation et toute mutation hors CONFIG. Les preuves synthétiques A→B et d’ownership sont portées notamment par `tests/domain_refresh_workflow_test.py`, `tests/domain_refresh_transaction_guard_test.py` et `tests/provider_v3_workflow_ownership_test.py`.
 
 ## 11. Cinq Native Labs
 
@@ -305,7 +307,7 @@ Le stripping HTML générique par regexp est interdit. Les findings CodeQL sur c
 8. Quick/Deep ne réparent ni ne reconstruisent et ne finalisent pas une release en routine.
 9. `release-finalize.yml` ne modifie que la transaction release de bytes déjà acceptés.
 10. Learning ne publie pas directement.
-11. Domain Refresh reste CONFIG `official_site`-only.
+11. Domain Refresh ne modifie que l’autorité d’adresse et ses dérivées de domaine, puis reconstruit le CONFIG complet sans changer ProviderBase/Core ni les routes/API métier indépendantes.
 12. Les cinq Labs restent séparés et observationnels.
 13. Aucun Lab ne corrige un bug du repo Nuvio pour obtenir un vert.
 14. Mauvais média jouable = échec.
