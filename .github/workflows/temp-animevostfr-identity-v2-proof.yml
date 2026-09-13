@@ -1,0 +1,126 @@
+name: TEMP - AnimeVOSTFR identity v2 proof
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths:
+      - scripts/upgrade_animevostfr_identity_v2.py
+      - .github/workflows/temp-animevostfr-identity-v2-proof.yml
+
+permissions:
+  contents: write
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NUVIO_PROVIDER_V3_CONTEXT: workspace
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Stage identity-safe runtime and materialize
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_animevostfr_identity_v2.py
+          python3 scripts/materialize_provider_v3_one.py animevostfr
+          python3 scripts/validate_published_provider_config.py --expected 96
+          python3 tests/provider_v3_final_stage_minimizer_gate_test.py
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/provider_v3_strategy_plan_contract_test.py
+      - name: Require anime positive and movie fail-closed
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          cat=p.local_catalog(); path=cat['animevostfr']['path']
+          anime={'tmdbId':'61374','mediaType':'anime','category':'anime','season':1,'episode':1,'title':'Tokyo Ghoul','year':2014}
+          movie={'tmdbId':'1061474','mediaType':'movie','category':'movie','title':'Superman','year':2025}
+          ar=p.run_worker(path,anime,60); mr=p.run_worker(path,movie,45)
+          proof={
+            'anime':{'streams':int(ar.get('stream_count') or 0),'raw':int(ar.get('raw_stream_count') or 0),'statuses':ar.get('http_statuses') or [],'error':ar.get('error_class')},
+            'movie':{'streams':int(mr.get('stream_count') or 0),'raw':int(mr.get('raw_stream_count') or 0),'statuses':mr.get('http_statuses') or [],'error':mr.get('error_class')},
+          }
+          print('ANIMEVOSTFR_IDENTITY_V2_EXACT '+json.dumps(proof,separators=(',',':')))
+          manifest=json.loads(Path('manifest.json').read_text())
+          row=next(x for x in manifest.get('scrapers') or [] if x.get('id')=='animevostfr')
+          types=row.get('canonicalSupportedTypes') or row.get('supportedTypes') or []
+          print('ANIMEVOSTFR_IDENTITY_V2_TYPES '+json.dumps(types,separators=(',',':')))
+          if proof['anime']['streams'] <= 0: raise SystemExit('Tokyo Ghoul anime remains zero')
+          if proof['movie']['streams'] != 0: raise SystemExit('movie lane did not fail closed')
+          if 'movie' in types or 'anime' not in types: raise SystemExit('published types still advertise invalid movie lane')
+          Path('automation/animevostfr-identity-v2-proof.json').write_text(json.dumps({'proof':proof,'publishedTypes':types},indent=2)+'\n')
+          PY
+      - name: Recent reserve parity on authoritative anime lane
+        run: |
+          set -euo pipefail
+          python3 scripts/run_provider_upstream_parity_v3.py \
+            --provider animevostfr --samples-per-lane 32 --workers 1 --timeout 25 \
+            --seed 20260913-animevostfr-v2 \
+            --out automation/animevostfr-identity-v2-parity.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('automation/animevostfr-identity-v2-parity.json').read_text()); bad=[]
+          for p in d.get('providers') or []:
+            for lane in p.get('lanes') or []:
+              if lane.get('status')=='REGRESSION': bad.append(f"{p.get('providerId')}:{lane.get('lane')}")
+          print('ANIMEVOSTFR_IDENTITY_V2_PARITY '+json.dumps({'summary':d.get('summary'),'bad':bad},separators=(',',':')))
+          if bad: raise SystemExit('certain anime parity regression remains: '+','.join(bad))
+          PY
+      - name: Promote anime lane and reconfirm
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('provider-overrides.json');d=json.loads(p.read_text());r=d['provider_patches']['animevostfr'];r['route_data_state']='on';disp=r.get('repair_disposition')
+          if not isinstance(disp,dict):disp={};r['repair_disposition']=disp
+          disp.update({'routeDataState':'on','currentVerifiedLanes':['anime'],'provenLanes':['anime'],'missingLanes':[],'completeCapabilityProof':True,'recoveryStatus':'anime-identity-v2-stream-positive','terminalState':None,'quarantined':False,'reasonCodes':['anime_exact_positive','movie_identity_contradiction_removed','full32_no_certain_anime_regression']})
+          r['current_stream_proof']['animeLane']='stream_positive'
+          p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+          PY
+          python3 scripts/materialize_provider_v3_one.py animevostfr
+          python3 scripts/validate_published_provider_config.py --expected 96
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/provider_v3_strategy_plan_contract_test.py
+          python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          f={'tmdbId':'61374','mediaType':'anime','category':'anime','season':1,'episode':1,'title':'Tokyo Ghoul','year':2014}
+          r=p.run_worker(p.local_catalog()['animevostfr']['path'],f,60);n=int(r.get('stream_count') or 0)
+          print(f'ANIMEVOSTFR_IDENTITY_V2_RECONFIRM streams={n}')
+          if n<=0: raise SystemExit('anime positive lost after promotion')
+          PY
+      - name: Record durable evidence and commit
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          proof=json.loads(Path('automation/animevostfr-identity-v2-proof.json').read_text());parity=json.loads(Path('automation/animevostfr-identity-v2-parity.json').read_text())
+          m=Path('MEMORY.md');t=m.read_text(encoding='utf-8');marker='## 2026-09-13 — AnimeVOSTFR regression reclassified and anime lane recovered'
+          if marker not in t:
+            t+=f'''\n{marker}\n\n- Full32 `movie:Superman` was a false regression signal: current upstream selected `/animes/neon-genesis-evangelion/` and returned a valid Sibnet MP4 for the wrong work. Per NiakVIO identity policy and anime↔TV aliasing rules, AnimeVOSTFR no longer publishes a movie lane.\n- The genuine anime regression was season-selection related: NiakVIO had reached `tokyo-ghoul-4-episode-1` for requested S01E01. Identity V2 recognizes `1x1` and explicit season-episode forms and rejects conflicting seasons.\n- Exact proof after repair: `{json.dumps(proof,ensure_ascii=False)}`. Recent-reserve parity summary: `{json.dumps(parity.get('summary'),ensure_ascii=False)}`.\n- Core ownership and workspace no-minimizer invariants remained unchanged.\n''';m.write_text(t,encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add provider-overrides.json manifest.json providers/ vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json scripts/provider_patches/animevostfr_runtime_v1.py scripts/upgrade_animevostfr_identity_v2.py automation/animevostfr-identity-v2-proof.json automation/animevostfr-identity-v2-parity.json MEMORY.md
+          git commit -m 'fix(animevostfr): enforce anime-only identity-safe runtime'
+          git fetch origin fix/labs-5.21.44-20260912
+          git rebase origin/fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
