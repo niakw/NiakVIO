@@ -91,8 +91,9 @@ jobs:
           set -euo pipefail
           python tests/playimdb_proof_v5_authority_test.py
           python scripts/validate_published_provider_config.py --expected 96
-          python tests/global_stream_output_guard_test.py
           python tests/provider_js_lego_ownership_test.py
+          python tests/global_playback_integrity_policy_test.py
+          python tests/global_stream_output_guard_test.py
 
       - name: Prove Oppenheimer movie and HOTD S1E1 TV live
         shell: bash
