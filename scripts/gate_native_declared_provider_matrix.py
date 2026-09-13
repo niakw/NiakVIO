@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Fail closed unless a native Lab traversed the complete declared Provider matrix.
+"""Fail closed unless a native Lab traversed the complete enabled Provider matrix.
 
-The matrix is derived from the current manifest ``supportedTypes`` transport
-surface instead of freezing historical route totals. Every provider must appear
-on at least one representative movie/tv/anime route, and every declared route
-must begin and reach an explicit terminal observation
-(result/error/skipped/watchdog timeout).
+The quality/certification denominator is the published active set, not every
+catalogue row. Disabled providers remain valid repair telemetry but cannot make
+an enabled Hub-46 native matrix fail merely because an OFF route times out.
+Every enabled provider must appear on at least one representative
+movie/tv/anime route, and every declared enabled route must begin and reach an
+explicit terminal observation (result/error/skipped/watchdog timeout).
 """
 from __future__ import annotations
 
@@ -51,11 +52,15 @@ def main() -> int:
     expected: set[tuple[str, str]] = set()
     provider_ids: set[str] = set()
     display: dict[str, str] = {}
+    disabled_ids: set[str] = set()
     for row in manifest.get("scrapers") or []:
         provider = str(row.get("id") or "").strip()
         if not provider:
             continue
         key = provider.casefold()
+        if row.get("enabled") is not True:
+            disabled_ids.add(key)
+            continue
         provider_ids.add(key)
         display[key] = provider
         declared = {
@@ -74,10 +79,11 @@ def main() -> int:
         display[key] for key in provider_ids if not any(p == key for p, _ in expected)
     )
     if providers_without_route:
-        raise SystemExit("providers without movie/tv/anime route: " + ",".join(providers_without_route))
+        raise SystemExit("enabled providers without movie/tv/anime route: " + ",".join(providers_without_route))
 
     begun: set[tuple[str, str]] = set()
     completed: set[tuple[str, str]] = set()
+    observed_disabled: set[tuple[str, str]] = set()
     readable = 0
 
     for log in args.logs:
@@ -96,17 +102,18 @@ def main() -> int:
                     provider = f.get("provider", "")
                     media_type = f.get("type", "")
                     if provider and media_type:
-                        begun.add(route(provider, media_type))
+                        r = route(provider, media_type)
+                        if r[0] in provider_ids: begun.add(r)
+                        elif r[0] in disabled_ids: observed_disabled.add(r)
                 elif line.startswith("FIELD_NATIVE_IOS_PROVIDER_END "):
                     f = fields(line)
                     provider = f.get("provider", "")
                     fixture = f.get("fixture", "")
-                    media_type = next(
-                        (kind for kind in TYPES if str(fixture_by_type.get(kind) or "") == fixture),
-                        "",
-                    )
+                    media_type = next((kind for kind in TYPES if str(fixture_by_type.get(kind) or "") == fixture), "")
                     if provider and media_type:
-                        completed.add(route(provider, media_type))
+                        r = route(provider, media_type)
+                        if r[0] in provider_ids: completed.add(r)
+                        elif r[0] in disabled_ids: observed_disabled.add(r)
                 continue
 
             if line.startswith("FIELD_NATIVE_PROVIDER_BEGIN "):
@@ -115,20 +122,20 @@ def main() -> int:
                 media_type = f.get("request_type", "")
                 client = f.get("client", "")
                 if client == args.client and provider and media_type:
-                    begun.add(route(provider, media_type))
+                    r = route(provider, media_type)
+                    if r[0] in provider_ids: begun.add(r)
+                    elif r[0] in disabled_ids: observed_disabled.add(r)
                 continue
 
-            if (
-                line.startswith("FIELD_NATIVE_RESULT ")
-                or line.startswith("FIELD_NATIVE_ERROR ")
-                or line.startswith("FIELD_NATIVE_PROVIDER_SKIPPED ")
-            ):
+            if line.startswith("FIELD_NATIVE_RESULT ") or line.startswith("FIELD_NATIVE_ERROR ") or line.startswith("FIELD_NATIVE_PROVIDER_SKIPPED "):
                 f = fields(line)
                 provider = decode64(f.get("provider64", "")) or f.get("provider", "")
                 media_type = f.get("request_type", "")
                 client = f.get("client", "")
                 if client == args.client and provider and media_type:
-                    completed.add(route(provider, media_type))
+                    r = route(provider, media_type)
+                    if r[0] in provider_ids: completed.add(r)
+                    elif r[0] in disabled_ids: observed_disabled.add(r)
 
     if readable == 0:
         print(f"FIELD_NATIVE_DECLARED_MATRIX state=infra_error client={args.client} reason=no_readable_log")
@@ -144,29 +151,22 @@ def main() -> int:
     state = "passed" if not missing_begin and not missing_end and not missing_providers and not unexpected else "failed"
     print(
         "FIELD_NATIVE_DECLARED_MATRIX "
-        f"state={state} client={args.client} providers={len(provider_ids)} "
+        f"state={state} client={args.client} providers={len(provider_ids)} disabled={len(disabled_ids)} "
         f"routes={len(expected)} movie={counts['movie']} tv={counts['tv']} anime={counts['anime']} "
         f"begun={len(begun & expected)} completed={len(completed & expected)} "
         f"missing_providers={len(missing_providers)} missing_begin={len(missing_begin)} "
-        f"missing_end={len(missing_end)} unexpected={len(unexpected)}"
+        f"missing_end={len(missing_end)} unexpected={len(unexpected)} observed_disabled={len(observed_disabled)}"
     )
     for provider in missing_providers[:120]:
         print(f"FIELD_NATIVE_DECLARED_MATRIX_FAILURE reason=missing_provider provider={display.get(provider, provider)}")
     for provider, media_type in missing_begin[:240]:
-        print(
-            "FIELD_NATIVE_DECLARED_MATRIX_FAILURE "
-            f"reason=missing_begin provider={display.get(provider, provider)} type={media_type}"
-        )
+        print(f"FIELD_NATIVE_DECLARED_MATRIX_FAILURE reason=missing_begin provider={display.get(provider, provider)} type={media_type}")
     for provider, media_type in missing_end[:240]:
-        print(
-            "FIELD_NATIVE_DECLARED_MATRIX_FAILURE "
-            f"reason=missing_terminal provider={display.get(provider, provider)} type={media_type}"
-        )
+        print(f"FIELD_NATIVE_DECLARED_MATRIX_FAILURE reason=missing_terminal provider={display.get(provider, provider)} type={media_type}")
     for provider, media_type in unexpected[:120]:
-        print(
-            "FIELD_NATIVE_DECLARED_MATRIX_FAILURE "
-            f"reason=undeclared_route provider={display.get(provider, provider)} type={media_type}"
-        )
+        print(f"FIELD_NATIVE_DECLARED_MATRIX_FAILURE reason=undeclared_route provider={display.get(provider, provider)} type={media_type}")
+    for provider, media_type in sorted(observed_disabled)[:120]:
+        print(f"FIELD_NATIVE_DISABLED_TELEMETRY provider={provider} type={media_type} excluded_from_quality_gate=true")
     return 0 if state == "passed" else 1
 
 
