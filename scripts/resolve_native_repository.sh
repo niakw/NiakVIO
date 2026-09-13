@@ -52,8 +52,7 @@ resolve_native_repository() {
   # Prefer the exact SHA-pinned public repository whenever the selected manifest is
   # a tracked unchanged root file. This is closest to what a real Nuvio user loads.
   local pinned=false
-  if [[ "$TARGET_MANIFEST" != */* ]] \
-    && git -C "$NIAKVIO" ls-files --error-unmatch "$TARGET_MANIFEST" >/dev/null 2>&1 \
+  if git -C "$NIAKVIO" ls-files --error-unmatch "$TARGET_MANIFEST" >/dev/null 2>&1 \
     && git -C "$NIAKVIO" cat-file -e "$SOURCE_SHA:$TARGET_MANIFEST" 2>/dev/null \
     && git -C "$NIAKVIO" diff --quiet "$SOURCE_SHA" -- "$TARGET_MANIFEST"; then
     pinned=true
