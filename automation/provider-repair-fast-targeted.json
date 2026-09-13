@@ -1,0 +1,2088 @@
+{
+  "schemaVersion": 5,
+  "method": "upstream-provider-runtime-exact-http-proof",
+  "providerCount": 3,
+  "catalogueProviderCount": 96,
+  "historicalUpstreamMappedCount": 3,
+  "niakvioNativeCount": 0,
+  "providersWithProvenRoutes": 3,
+  "provenRouteCount": 44,
+  "simpleApiRecipeCount": 1,
+  "statusCounts": {
+    "proven": 3
+  },
+  "durationMs": 7538,
+  "maxAttemptsPerTask": 3,
+  "staticCandidatesExecutable": false,
+  "requestSpecModel": "ROUTE_RECOVERY_REQUEST_SPEC_V1",
+  "proofRequirements": [
+    "provider-js-executed",
+    "exact-sanitized-request-observed",
+    "successful-provider-http-response",
+    "fixture-or-prior-response-dataflow-for-dynamic-placeholders"
+  ],
+  "providers": [
+    {
+      "providerId": "animevost-fr",
+      "sourceId": "gowaru",
+      "status": "proven",
+      "source": {
+        "kind": "upstream-current",
+        "sourceId": "gowaru",
+        "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+        "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+      },
+      "routeCount": 18,
+      "routes": [
+        "/api/animes/search?q={query}",
+        "/api/animes/search?q=Guerra+de+magia",
+        "/api/animes/search?q=Sorcery+Fight",
+        "/api/animes/search?q=JJK",
+        "/api/animes/search?q=Pern%C3%ADkov%C3%BD+t%C3%A1ta",
+        "/api/animes/search?q=Halvale+teele",
+        "/api/animes/search?q=Na+putu+prema+dolje",
+        "/api/animes/search?q=Tot%C3%A1l+sz%C3%ADv%C3%A1s",
+        "/api/animes/search?q=Br%C4%99stantis+blogis",
+        "/api/animes/search?q=P%C4%81rk%C4%81pt+robe%C5%BEu",
+        "/api/animes/search?q=Kriva+pota",
+        "/api/animes/search?q=BB",
+        "/api/animes/search?q=BrBa",
+        "/api/animes/search?q=Egrilik+sari",
+        "/api/animes/search?q=Maison+du+dragon",
+        "/api/animes/search?q=Casa+do+Drag%C3%A3o",
+        "/api/animes/search?q=HOTD",
+        "/api/animes/search?q=The+House+That+Dragons+Built"
+      ],
+      "executionRouteCount": 1,
+      "executionRoutes": [
+        "/api/animes/search?q={query}"
+      ],
+      "routeData": [
+        {
+          "route": "/api/animes/search?q={query}",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "anime",
+          "fixture": "jujutsu-kaisen-s01e01",
+          "requestIndex": 3,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 9
+        },
+        {
+          "route": "/api/animes/search?q=Guerra+de+magia",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "anime",
+          "fixture": "jujutsu-kaisen-s01e01",
+          "requestIndex": 6,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 9
+        },
+        {
+          "route": "/api/animes/search?q=Sorcery+Fight",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "anime",
+          "fixture": "jujutsu-kaisen-s01e01",
+          "requestIndex": 7,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 9
+        },
+        {
+          "route": "/api/animes/search?q=JJK",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "anime",
+          "fixture": "jujutsu-kaisen-s01e01",
+          "requestIndex": 8,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 9
+        },
+        {
+          "route": "/api/animes/search?q={query}",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "breaking-bad-s01e01",
+          "requestIndex": 3,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 16
+        },
+        {
+          "route": "/api/animes/search?q=Pern%C3%ADkov%C3%BD+t%C3%A1ta",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "breaking-bad-s01e01",
+          "requestIndex": 5,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 16
+        },
+        {
+          "route": "/api/animes/search?q=Halvale+teele",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "breaking-bad-s01e01",
+          "requestIndex": 6,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 16
+        },
+        {
+          "route": "/api/animes/search?q=Na+putu+prema+dolje",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "breaking-bad-s01e01",
+          "requestIndex": 7,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 16
+        },
+        {
+          "route": "/api/animes/search?q=Tot%C3%A1l+sz%C3%ADv%C3%A1s",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "breaking-bad-s01e01",
+          "requestIndex": 8,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 16
+        },
+        {
+          "route": "/api/animes/search?q=Br%C4%99stantis+blogis",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "breaking-bad-s01e01",
+          "requestIndex": 10,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 16
+        },
+        {
+          "route": "/api/animes/search?q=P%C4%81rk%C4%81pt+robe%C5%BEu",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "breaking-bad-s01e01",
+          "requestIndex": 11,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 16
+        },
+        {
+          "route": "/api/animes/search?q=Kriva+pota",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "breaking-bad-s01e01",
+          "requestIndex": 13,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 16
+        },
+        {
+          "route": "/api/animes/search?q=BB",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "breaking-bad-s01e01",
+          "requestIndex": 14,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 16
+        },
+        {
+          "route": "/api/animes/search?q=BrBa",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "breaking-bad-s01e01",
+          "requestIndex": 15,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 16
+        },
+        {
+          "route": "/api/animes/search?q=Egrilik+sari",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "breaking-bad-s01e01",
+          "requestIndex": 16,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 16
+        },
+        {
+          "route": "/api/animes/search?q={query}",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "house-of-the-dragon-s03e01",
+          "requestIndex": 3,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 10
+        },
+        {
+          "route": "/api/animes/search?q=Maison+du+dragon",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "house-of-the-dragon-s03e01",
+          "requestIndex": 5,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 10
+        },
+        {
+          "route": "/api/animes/search?q=Casa+do+Drag%C3%A3o",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "house-of-the-dragon-s03e01",
+          "requestIndex": 7,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 10
+        },
+        {
+          "route": "/api/animes/search?q=HOTD",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "house-of-the-dragon-s03e01",
+          "requestIndex": 9,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 10
+        },
+        {
+          "route": "/api/animes/search?q=The+House+That+Dragons+Built",
+          "origin": "https://animevost.fr",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "house-of-the-dragon-s03e01",
+          "requestIndex": 10,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "application/json, text/html, */*",
+              "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream-current",
+            "sourceId": "gowaru",
+            "url": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/animevost-fr.js",
+            "sha256": "840398fd8f09a85cd1914777f259eff200061c2958873285c022a978d349c8be"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 10
+        }
+      ],
+      "apiRecipe": null,
+      "tasks": [
+        {
+          "fixture": "jujutsu-kaisen-s01e01",
+          "semanticType": "anime",
+          "workerStatus": "ok",
+          "streamCount": 0,
+          "rawStreamCount": 0,
+          "serverAccessible": true,
+          "serverSuccess": true,
+          "providerRequestCount": 7,
+          "provenRouteCount": 4,
+          "error": null
+        },
+        {
+          "fixture": "breaking-bad-s01e01",
+          "semanticType": "tv",
+          "workerStatus": "ok",
+          "streamCount": 0,
+          "rawStreamCount": 0,
+          "serverAccessible": true,
+          "serverSuccess": true,
+          "providerRequestCount": 14,
+          "provenRouteCount": 11,
+          "error": null
+        },
+        {
+          "fixture": "house-of-the-dragon-s03e01",
+          "semanticType": "tv",
+          "workerStatus": "ok",
+          "streamCount": 0,
+          "rawStreamCount": 0,
+          "serverAccessible": true,
+          "serverSuccess": true,
+          "providerRequestCount": 8,
+          "provenRouteCount": 5,
+          "error": null
+        }
+      ]
+    },
+    {
+      "providerId": "playimdb",
+      "sourceId": "aio",
+      "status": "proven",
+      "source": {
+        "kind": "upstream",
+        "sourceId": "aio",
+        "sha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
+        "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/playimdb.js",
+        "wantedSha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
+        "capturedAt": "2026-09-01T19:53:09+00:00",
+        "currentSha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
+        "mode": "lkg-current-byte-exact"
+      },
+      "routeCount": 2,
+      "routes": [
+        "/api.php?tmdb={tmdbId}&type=movie",
+        "/api.php?tmdb={tmdbId}&type=tv&season={season}&episode={episode}"
+      ],
+      "executionRouteCount": 0,
+      "executionRoutes": [],
+      "routeData": [
+        {
+          "route": "/api.php?tmdb={tmdbId}&type=movie",
+          "origin": "https://streamdata.vaplayer.ru",
+          "role": "api",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 1,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept-language": "fr-FR,fr,en-US,en",
+              "origin": "https://nextgencloudfabric.com",
+              "referer": "https://nextgencloudfabric.com/",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json; charset=utf-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/playimdb.js",
+            "wantedSha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 3,
+          "taskRawStreamCount": 3,
+          "taskLastRequestIndex": 1
+        },
+        {
+          "route": "/api.php?tmdb={tmdbId}&type=tv&season={season}&episode={episode}",
+          "origin": "https://streamdata.vaplayer.ru",
+          "role": "api",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "breaking-bad-s01e01",
+          "requestIndex": 2,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept-language": "fr-FR,fr,en-US,en",
+              "origin": "https://nextgencloudfabric.com",
+              "referer": "https://nextgencloudfabric.com/",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json; charset=utf-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/playimdb.js",
+            "wantedSha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 3,
+          "taskRawStreamCount": 3,
+          "taskLastRequestIndex": 2
+        },
+        {
+          "route": "/api.php?tmdb={tmdbId}&type=tv&season={season}&episode={episode}",
+          "origin": "https://streamdata.vaplayer.ru",
+          "role": "api",
+          "method": "GET",
+          "semanticType": "tv",
+          "fixture": "house-of-the-dragon-s03e01",
+          "requestIndex": 2,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept-language": "fr-FR,fr,en-US,en",
+              "origin": "https://nextgencloudfabric.com",
+              "referer": "https://nextgencloudfabric.com/",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "application/json; charset=utf-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/playimdb.js",
+            "wantedSha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 3,
+          "taskRawStreamCount": 3,
+          "taskLastRequestIndex": 2
+        }
+      ],
+      "apiRecipe": {
+        "proofModelVersion": 5,
+        "allowGenericFallback": false,
+        "movieRoute": "https://streamdata.vaplayer.ru/api.php?tmdb={tmdbId}&type=movie",
+        "movieRequest": {
+          "method": "GET",
+          "headers": {
+            "accept-language": "fr-FR,fr,en-US,en",
+            "origin": "https://nextgencloudfabric.com",
+            "referer": "https://nextgencloudfabric.com/",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+          }
+        },
+        "episodeRoute": "https://streamdata.vaplayer.ru/api.php?tmdb={tmdbId}&type=tv&season={season}&episode={episode}",
+        "episodeRequest": {
+          "method": "GET",
+          "headers": {
+            "accept-language": "fr-FR,fr,en-US,en",
+            "origin": "https://nextgencloudfabric.com",
+            "referer": "https://nextgencloudfabric.com/",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+          }
+        },
+        "recipeKind": "typed-resolver-api"
+      },
+      "tasks": [
+        {
+          "fixture": "interstellar",
+          "semanticType": "movie",
+          "workerStatus": "ok",
+          "streamCount": 3,
+          "rawStreamCount": 3,
+          "serverAccessible": true,
+          "serverSuccess": true,
+          "providerRequestCount": 1,
+          "provenRouteCount": 1,
+          "error": null
+        },
+        {
+          "fixture": "breaking-bad-s01e01",
+          "semanticType": "tv",
+          "workerStatus": "ok",
+          "streamCount": 3,
+          "rawStreamCount": 3,
+          "serverAccessible": true,
+          "serverSuccess": true,
+          "providerRequestCount": 1,
+          "provenRouteCount": 1,
+          "error": null
+        },
+        {
+          "fixture": "house-of-the-dragon-s03e01",
+          "semanticType": "tv",
+          "workerStatus": "ok",
+          "streamCount": 3,
+          "rawStreamCount": 3,
+          "serverAccessible": true,
+          "serverSuccess": true,
+          "providerRequestCount": 1,
+          "provenRouteCount": 1,
+          "error": null
+        }
+      ]
+    },
+    {
+      "providerId": "uhdmovies",
+      "sourceId": "aio",
+      "status": "proven",
+      "source": {
+        "kind": "upstream",
+        "sourceId": "aio",
+        "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+        "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+        "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+        "capturedAt": "2026-09-01T19:53:09+00:00",
+        "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+        "mode": "lkg-current-byte-exact"
+      },
+      "routeCount": 24,
+      "routes": [
+        "/?s={query}",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2VFWnVKeGJrNXpsZ2dmdS93TjhBb1dRR1YrWXFiQ0dINnFWWDhlOS9OcldSd0gxeU5YLzlhKzVaRlRyUVRqekx2VkIxcWYvYmEzQmFxTlJVbXRVSXJ3dlZMUm1STENTWURsRXZ0V2h2czAxbVhhdDRhMTAyd1FaSmVDT20vazJTVC9vZWJUUkt1OHJJc1FzaUVKeHZhNw%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2NITHNrd0UyT1g0Vzd3cUo4bmpLczdzTkhwdlJtTnNQdHBGbG9uUHhxYnRRMU9mZFFsUHUzTktBUG14WFFyOHppeDRzYlV1WFFTNzc2ZWJqdjIxYXQvRW96ajAvd1oydG5PU3Zvc1pseGhFSGxWOGh3eVRqZXQrdzUrdUZ5QmNMTWpCUTBhMDZjOEhWQkh2Zzd0ckFDUQ%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2ZlQUdHcnFPTjlZZWV1V0IvOVE0RVcvZDMwZkI3d3dNZUNRVHBEV0xtZHZrcm9YeEVmVXN5MDd6OUZpTE14V0RsVmdtZGg0UkVTR2JHaENOa1RpK3A0ZFhoZDJOU2IreXlzM0t4dmplSm1GRllQcytXTFF1Uyt3UjJNbElPd2NTb09rcWxLakg3M0xUYW0xVDhrRGg4UA%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2ZQeFBCOEZzc3Y3UzB6YlE5Z3BsSG1aYlZaMm5nZTNyZVN4K1FiR3FVWTdCaTNYMHQyK1ZIbS9sNHNDS2RVQy80QlpidUxxbGFyTWI4dlNaS0t4MlJBRjhrRlYzekRUMHpPd09EYUJXNFJZVUYybzRLTEtXTTVDTldSc3oxNFoyWGNvcDQxcGpncEZtQm1nb1dicUhiNw%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2RUSjdFUGhmQi9SMUQyRWNCV211MzF2N3pBaVlWbk1xaFBEc1RvNWx6TlZ5RzRmcC9IUmpaZHJGQ3kwRXl2Uk5hZ2Niam5aRVR5UVJiNlZPY1M0VlhOVkxPNXgvblBhaTNwUDRuRzNEM0FkTGxNVklxeXNXY3pJUlIwNGxQSWVtemRDQk5JalgwbloxcWp1R2tISXhYRw%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2Q5WDkvUVRsR29TSGhGNVp6aC8reGZSMHFxbDB4Uy85elQ5a1A1eFBOY1hDMXh4S2RSRmQ0dWxhOXNVQ0ZwL2l4TkpraTdXVU9LR2pJMWdTRHM5d1B6Qk5pV2tPS1Y0S2tPdk4rMng0cHdJNHFZdUhobFlycERRSXNzTVNJLzhRRHcwb01KRzZNQ0xCN2U2STM1VnhQZQ%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2U4TmRlaFVYYXhHNnJXamV4dDV1K1JhVjBFeW5JN29KTHpnYS9QTWZKMHc5T2czWWNNMXNsbVVSMTRadER1dHIzOEpobG1mdXozSXdqVDBpYnRVQVlPTlpuaGNRQytzaWF3ajR4Zjlsa3JPQ21nakEyNXU2V0NoTmU0eVNKYSs3TDZtZWsrd1ovTWdhOCtHTDR3YURVNA%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2NDZ0JSMFhFTlM1VGlrT1hFWFN3Qml1aEdYL0s0OUR0TDRRT2QyTXNRTk1xU3l5bzNUcm0vckNya1U1YUhoQkJDNUlBMm9YZFJBc1FmT3cvNTZhTkJWY1NjZXRSWTlWY0p2V3BEWWJsR21naVJaTVljUnNjQkc4T2xDL3ArWVVTUzh4SGt4RUtHZ3IvcmUyUWg2NUhCNg%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2MvN3oyUWxxcDN3K0YyT051OTVEcysyWHpMUm5MbERvTFkrZklPZUZaS21BMTRtWlJvdklCWHdBVFBHY2F6VUhlakVQNlcrQzBvc0ZsWkVlTVhOUU1rbEw1d3pSNFFwajhMcXlaTjh5b3M0czhLUEJMQ3Q0cDlzYnhTcnNqdzFBNnhYaEpqdjdxUUVZUXhBVjUxbmpsWA%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2RWTW9vS1dHV0UwTDY3Zjd6UDJZc240Y0FWcUNVbDFPMkVYSXVFTmc1TjZxSUVIWkNweXJiUm9sdkd1TU0wWmx1Z2FRWEJjVnNncWV5MUF4OS9kVGw1YVpOTlUzaG5lOHRMZml3d016QU1jcFhPMHN2V2lqbkM2MjR6QXRxQnhpT0ZCOURGMm80M3VkS1Iya21vd2NLNw%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2NXT0xuYjNlOUxFTjRmcFQzMHdqd2JUNzhZYzVkbUFKcExDbmNqM3ZaV1lLcjdqcG5pem02UUJSbGJUWGkvNUdiZGRJd0ZVMGRyclVQZWc2N2lVZjBVYjhYa3kwbmZXNW5sQit3N3VIbmUzWGNuMitkTFU5VVdxUGRQR2ZSMW1UTXRWWHdHSFl4STZWZFlDSFRLQ3JsSQ%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2RxV3ZHRllCam9MZ1M1cGZHbGFyUjlMVjFWOURvRURFUXYvdjNwQVhieTk5clcwaCtzb1VwT1VqcnlsVElIb1VSZzV2bkZBQyt2RS9HYVZ0TzJVN1pzbUtaa0hpSFpTUC9CeGRLVkdrRkU1SXdLalVxWlBac3hHVHM4bjlmOTZZejN6cTIvUGVBWWd4U29kalE5YjRyTA%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2NhUzV6MVQrSFJDdXRraXJDTWYvK1EyZURWMTFoM2pjWTRiekFoZ2I2MVJRRXE3M3NHUnk0d2tLU0l5UjZ1WVhBNDRLaVQ2d1lSK0d6dytJRUJMWG1kdk9kSXR6L3d1RUpTME4rRVRVQmVkU3JHRDhkWGZZRGJHaEljcHNWRWNGNEFiM1I0T2pNdUtlUG9tVkQrQ242Wg%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2RxVXZyOU1GT2FzL3RFdVF2T2dnWGRUbHBIb2s5b3JpOXNLZnVqMTh3NzN5REdUam44ZmlpclU0TG15bUg5L0U2elNFelhwZk9zU1RoamdlNXVMYUgxLzJ5SmdxMmhRa3RpYmpidlgrMVNCOHVMQWh0QWhtdjNkTUlXRXhEQXQ2TzA3cE16UXR6ZnlGckdiZXVKS05xVw%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2NJdXk3TzJuVW44V1ZLcURoSG1OWllUYk1PTmJ0MjVTK2xKVm15Z1lrWFNaYzNTVnRUVTJxd3daQWZmbElndng5L0FoWmlUR2t0N0xJVFNUSXhrMGhZbG5kZUJQN1JOMU5JRjNSemJaQ3lhTVgvUGg0eUNyZWlycjFDSXk1aHg1dUJFT2QzQ0JSekZ2aXRUbGdrRDNQcw%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2RPdUFEUGVySGtodDNOZGVzUGtnZHBvMTZxV0pvSzFRdFpZNnI3QnBQSTNsK3NzbU1BZTh6N2ZscG1OSFVKdVZybXlZZlF4dXEzR2hOK3NaY3RIWUlvdDFLay9aeEJYRmdxNno1WENyVXY3czBZdG02ekE2bW40VVRFaVQ3WHgrRVhsVmhraitRbVIxb3lZaTQzQ3B2MA%3D%3D",
+        "/",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2ZvQjdSd0hlZWZrUmhTcDBoZ0s5YmlBcDVRUFIwQU15a25sRHFOTnJEZkluaEt1c1AvSHhTSFVqRVp1MC9FRXhCUnNyS1B0UnI0ZExYRm8zcXdGZW9lQ1V3R3R0N0dwUW1aRHd1YmNaZzdKWmxuSC9tZEVKL2ZUbFp6OUJLY2llUjVtMnpWL2I5UVpudTEwQW1wK0IyVA%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2VMcnk0MWQ0K3JycGR2VUY0VlVCcUZCWVp5eGhNWUJQRmoxcDNWeU5IVkU1cXhkRm5NRm81TGZCTnVwRHZKWkZNbHJxajRVMG5MTysxVHdtekFvMG5zYXBpZFNnSURQTDRBdmRZdFp3cmgyZWx5ZnZJQjVYUStQeFpnNGV2M1JBRDFtT3hBVFZOTTBucGZ4MlJMdHE3Vg%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2ZZZFk0SHhBbnIxTmwwSTFXeFgyNkk2YlNOVFZqUHBIK3VoWUgxRGw5MWZMVXJJblNRR1dzeGtGNFB3MHkrWjJEeFNkbUwvQ2NKNlJkNko1Mk42ZHRhMEM1QmZTOG9tb1l5TFJyUnRtTEZxR3NVZXB4RVBZc3Jxa3FWRFF1dzhEbXpYTjFOc2dRWm5TSkYxZnVySVc0OQ%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2Y2SC8ySjNWMWRybFM5VzI4MDlHWFgrTVI2NS9LTHJJUExiV01zTDFUaTBXRU1jbHlUeTQ2Wk04R0ovU0hIOTl3djQxM1dnaTA0UmYvNGZLZm4zRWlORkxCQkVJTktwYVhBQ2t2bUp0OEx1a3ROOXVhQkZyRFYwQzRaYVF4c1BGUzBiVVIvYmhDZ2xkSHV1Z2RRdDk3YQ%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2Zwekd0SVd1RzZLbEx5NTdSSEtMMW9OdWhtcWEvZXVGenNxVFAvcndaNUxETnJ0b1hoWXc2RTlNRElMS1VGa1hZMDQrbjVyYmEzOUh3aTRYMTVQR3IzWC9jUXFCa0o1MVVSMS8vTW1BVkJsSWFJTXJvN2pDMkU0ZmU0cU5kYzdDSFBpalJ4OGcwaUFERUhyN0dJMk1VRQ%3D%3D",
+        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2MyQmFJVlNBUHVueG95UzlNbTBpRDBFQmtqZUN0a0o5UGhxUldWd0NmUmZoRFpIZWRHbWl4Zkp3YmtpeUdrZ1BTSG1UdVRGbm5sTTRXNlhHUytaekdUVnUwd0ttTXNrNlMwU3U0c2d2N1RzdDdpUFRWK0hCMGdqKzc0ODdXYlVhbWNvTGV1Qisxa1FUdDQwZStRNG05Mg%3D%3D"
+      ],
+      "executionRouteCount": 1,
+      "executionRoutes": [
+        "/?s={query}"
+      ],
+      "routeData": [
+        {
+          "route": "/?s={query}",
+          "origin": "https://uhdmovies.autos",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 1,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2VFWnVKeGJrNXpsZ2dmdS93TjhBb1dRR1YrWXFiQ0dINnFWWDhlOS9OcldSd0gxeU5YLzlhKzVaRlRyUVRqekx2VkIxcWYvYmEzQmFxTlJVbXRVSXJ3dlZMUm1STENTWURsRXZ0V2h2czAxbVhhdDRhMTAyd1FaSmVDT20vazJTVC9vZWJUUkt1OHJJc1FzaUVKeHZhNw%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 5,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2NITHNrd0UyT1g0Vzd3cUo4bmpLczdzTkhwdlJtTnNQdHBGbG9uUHhxYnRRMU9mZFFsUHUzTktBUG14WFFyOHppeDRzYlV1WFFTNzc2ZWJqdjIxYXQvRW96ajAvd1oydG5PU3Zvc1pseGhFSGxWOGh3eVRqZXQrdzUrdUZ5QmNMTWpCUTBhMDZjOEhWQkh2Zzd0ckFDUQ%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 6,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2ZlQUdHcnFPTjlZZWV1V0IvOVE0RVcvZDMwZkI3d3dNZUNRVHBEV0xtZHZrcm9YeEVmVXN5MDd6OUZpTE14V0RsVmdtZGg0UkVTR2JHaENOa1RpK3A0ZFhoZDJOU2IreXlzM0t4dmplSm1GRllQcytXTFF1Uyt3UjJNbElPd2NTb09rcWxLakg3M0xUYW0xVDhrRGg4UA%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 7,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2ZQeFBCOEZzc3Y3UzB6YlE5Z3BsSG1aYlZaMm5nZTNyZVN4K1FiR3FVWTdCaTNYMHQyK1ZIbS9sNHNDS2RVQy80QlpidUxxbGFyTWI4dlNaS0t4MlJBRjhrRlYzekRUMHpPd09EYUJXNFJZVUYybzRLTEtXTTVDTldSc3oxNFoyWGNvcDQxcGpncEZtQm1nb1dicUhiNw%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 8,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2RUSjdFUGhmQi9SMUQyRWNCV211MzF2N3pBaVlWbk1xaFBEc1RvNWx6TlZ5RzRmcC9IUmpaZHJGQ3kwRXl2Uk5hZ2Niam5aRVR5UVJiNlZPY1M0VlhOVkxPNXgvblBhaTNwUDRuRzNEM0FkTGxNVklxeXNXY3pJUlIwNGxQSWVtemRDQk5JalgwbloxcWp1R2tISXhYRw%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 9,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2Q5WDkvUVRsR29TSGhGNVp6aC8reGZSMHFxbDB4Uy85elQ5a1A1eFBOY1hDMXh4S2RSRmQ0dWxhOXNVQ0ZwL2l4TkpraTdXVU9LR2pJMWdTRHM5d1B6Qk5pV2tPS1Y0S2tPdk4rMng0cHdJNHFZdUhobFlycERRSXNzTVNJLzhRRHcwb01KRzZNQ0xCN2U2STM1VnhQZQ%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 10,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2U4TmRlaFVYYXhHNnJXamV4dDV1K1JhVjBFeW5JN29KTHpnYS9QTWZKMHc5T2czWWNNMXNsbVVSMTRadER1dHIzOEpobG1mdXozSXdqVDBpYnRVQVlPTlpuaGNRQytzaWF3ajR4Zjlsa3JPQ21nakEyNXU2V0NoTmU0eVNKYSs3TDZtZWsrd1ovTWdhOCtHTDR3YURVNA%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 11,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2NDZ0JSMFhFTlM1VGlrT1hFWFN3Qml1aEdYL0s0OUR0TDRRT2QyTXNRTk1xU3l5bzNUcm0vckNya1U1YUhoQkJDNUlBMm9YZFJBc1FmT3cvNTZhTkJWY1NjZXRSWTlWY0p2V3BEWWJsR21naVJaTVljUnNjQkc4T2xDL3ArWVVTUzh4SGt4RUtHZ3IvcmUyUWg2NUhCNg%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 12,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2MvN3oyUWxxcDN3K0YyT051OTVEcysyWHpMUm5MbERvTFkrZklPZUZaS21BMTRtWlJvdklCWHdBVFBHY2F6VUhlakVQNlcrQzBvc0ZsWkVlTVhOUU1rbEw1d3pSNFFwajhMcXlaTjh5b3M0czhLUEJMQ3Q0cDlzYnhTcnNqdzFBNnhYaEpqdjdxUUVZUXhBVjUxbmpsWA%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 13,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2RWTW9vS1dHV0UwTDY3Zjd6UDJZc240Y0FWcUNVbDFPMkVYSXVFTmc1TjZxSUVIWkNweXJiUm9sdkd1TU0wWmx1Z2FRWEJjVnNncWV5MUF4OS9kVGw1YVpOTlUzaG5lOHRMZml3d016QU1jcFhPMHN2V2lqbkM2MjR6QXRxQnhpT0ZCOURGMm80M3VkS1Iya21vd2NLNw%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 14,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2NXT0xuYjNlOUxFTjRmcFQzMHdqd2JUNzhZYzVkbUFKcExDbmNqM3ZaV1lLcjdqcG5pem02UUJSbGJUWGkvNUdiZGRJd0ZVMGRyclVQZWc2N2lVZjBVYjhYa3kwbmZXNW5sQit3N3VIbmUzWGNuMitkTFU5VVdxUGRQR2ZSMW1UTXRWWHdHSFl4STZWZFlDSFRLQ3JsSQ%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 15,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2RxV3ZHRllCam9MZ1M1cGZHbGFyUjlMVjFWOURvRURFUXYvdjNwQVhieTk5clcwaCtzb1VwT1VqcnlsVElIb1VSZzV2bkZBQyt2RS9HYVZ0TzJVN1pzbUtaa0hpSFpTUC9CeGRLVkdrRkU1SXdLalVxWlBac3hHVHM4bjlmOTZZejN6cTIvUGVBWWd4U29kalE5YjRyTA%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 16,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2NhUzV6MVQrSFJDdXRraXJDTWYvK1EyZURWMTFoM2pjWTRiekFoZ2I2MVJRRXE3M3NHUnk0d2tLU0l5UjZ1WVhBNDRLaVQ2d1lSK0d6dytJRUJMWG1kdk9kSXR6L3d1RUpTME4rRVRVQmVkU3JHRDhkWGZZRGJHaEljcHNWRWNGNEFiM1I0T2pNdUtlUG9tVkQrQ242Wg%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 17,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2RxVXZyOU1GT2FzL3RFdVF2T2dnWGRUbHBIb2s5b3JpOXNLZnVqMTh3NzN5REdUam44ZmlpclU0TG15bUg5L0U2elNFelhwZk9zU1RoamdlNXVMYUgxLzJ5SmdxMmhRa3RpYmpidlgrMVNCOHVMQWh0QWhtdjNkTUlXRXhEQXQ2TzA3cE16UXR6ZnlGckdiZXVKS05xVw%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 18,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2NJdXk3TzJuVW44V1ZLcURoSG1OWllUYk1PTmJ0MjVTK2xKVm15Z1lrWFNaYzNTVnRUVTJxd3daQWZmbElndng5L0FoWmlUR2t0N0xJVFNUSXhrMGhZbG5kZUJQN1JOMU5JRjNSemJaQ3lhTVgvUGg0eUNyZWlycjFDSXk1aHg1dUJFT2QzQ0JSekZ2aXRUbGdrRDNQcw%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 19,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2RPdUFEUGVySGtodDNOZGVzUGtnZHBvMTZxV0pvSzFRdFpZNnI3QnBQSTNsK3NzbU1BZTh6N2ZscG1OSFVKdVZybXlZZlF4dXEzR2hOK3NaY3RIWUlvdDFLay9aeEJYRmdxNno1WENyVXY3czBZdG02ekE2bW40VVRFaVQ3WHgrRVhsVmhraitRbVIxb3lZaTQzQ3B2MA%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 20,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "POST",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 21,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "POST",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "content-type": "application/x-www-form-urlencoded",
+              "referer": "https://cloud.unblockedgames.world/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2VFWnVKeGJrNXpsZ2dmdS93TjhBb1dRR1YrWXFiQ0dINnFWWDhlOS9OcldSd0gxeU5YLzlhKzVaRlRyUVRqekx2VkIxcWYvYmEzQmFxTlJVbXRVSXJ3dlZMUm1STENTWURsRXZ0V2h2czAxbVhhdDRhMTAyd1FaSmVDT20vazJTVC9vZWJUUkt1OHJJc1FzaUVKeHZhNw==",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            },
+            "bodyKind": "form",
+            "body": {
+              "_wp_http": "a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2VFWnVKeGJrNXpsZ2dmdS93TjhBb1dRR1YrWXFiQ0dINnFWWDhlOS9OcldSd0gxeU5YLzlhKzVaRlRyUVRqekx2VkIxcWYvYmEzQmFxTlJVbXRVSXJ3dlZMUm1STENTWURsRXZ0V2h2czAxbVhhdDRhMTAyd1Fa"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "form",
+          "proofBodyValues": {
+            "_wp_http": "a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2VFWnVKeGJrNXpsZ2dmdS93TjhBb1dRR1YrWXFiQ0dINnFWWDhlOS9OcldSd0gxeU5YLzlhKzVaRlRyUVRqekx2VkIxcWYvYmEzQmFxTlJVbXRVSXJ3dlZMUm1STENTWURsRXZ0V2h2czAxbVhhdDRhMTAyd1Fa"
+          },
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2ZvQjdSd0hlZWZrUmhTcDBoZ0s5YmlBcDVRUFIwQU15a25sRHFOTnJEZkluaEt1c1AvSHhTSFVqRVp1MC9FRXhCUnNyS1B0UnI0ZExYRm8zcXdGZW9lQ1V3R3R0N0dwUW1aRHd1YmNaZzdKWmxuSC9tZEVKL2ZUbFp6OUJLY2llUjVtMnpWL2I5UVpudTEwQW1wK0IyVA%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 22,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2VMcnk0MWQ0K3JycGR2VUY0VlVCcUZCWVp5eGhNWUJQRmoxcDNWeU5IVkU1cXhkRm5NRm81TGZCTnVwRHZKWkZNbHJxajRVMG5MTysxVHdtekFvMG5zYXBpZFNnSURQTDRBdmRZdFp3cmgyZWx5ZnZJQjVYUStQeFpnNGV2M1JBRDFtT3hBVFZOTTBucGZ4MlJMdHE3Vg%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 24,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2ZZZFk0SHhBbnIxTmwwSTFXeFgyNkk2YlNOVFZqUHBIK3VoWUgxRGw5MWZMVXJJblNRR1dzeGtGNFB3MHkrWjJEeFNkbUwvQ2NKNlJkNko1Mk42ZHRhMEM1QmZTOG9tb1l5TFJyUnRtTEZxR3NVZXB4RVBZc3Jxa3FWRFF1dzhEbXpYTjFOc2dRWm5TSkYxZnVySVc0OQ%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 25,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2Y2SC8ySjNWMWRybFM5VzI4MDlHWFgrTVI2NS9LTHJJUExiV01zTDFUaTBXRU1jbHlUeTQ2Wk04R0ovU0hIOTl3djQxM1dnaTA0UmYvNGZLZm4zRWlORkxCQkVJTktwYVhBQ2t2bUp0OEx1a3ROOXVhQkZyRFYwQzRaYVF4c1BGUzBiVVIvYmhDZ2xkSHV1Z2RRdDk3YQ%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 27,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2Zwekd0SVd1RzZLbEx5NTdSSEtMMW9OdWhtcWEvZXVGenNxVFAvcndaNUxETnJ0b1hoWXc2RTlNRElMS1VGa1hZMDQrbjVyYmEzOUh3aTRYMTVQR3IzWC9jUXFCa0o1MVVSMS8vTW1BVkJsSWFJTXJvN2pDMkU0ZmU0cU5kYzdDSFBpalJ4OGcwaUFERUhyN0dJMk1VRQ%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 28,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        },
+        {
+          "route": "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2MyQmFJVlNBUHVueG95UzlNbTBpRDBFQmtqZUN0a0o5UGhxUldWd0NmUmZoRFpIZWRHbWl4Zkp3YmtpeUdrZ1BTSG1UdVRGbm5sTTRXNlhHUytaekdUVnUwd0ttTXNrNlMwU3U0c2d2N1RzdDdpUFRWK0hCMGdqKzc0ODdXYlVhbWNvTGV1Qisxa1FUdDQwZStRNG05Mg%3D%3D",
+          "origin": "https://cloud.unblockedgames.world",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 32,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-language": "en-US,en;q=0.9",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
+            "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 0,
+          "taskRawStreamCount": 0,
+          "taskLastRequestIndex": 38
+        }
+      ],
+      "apiRecipe": null,
+      "tasks": [
+        {
+          "fixture": "interstellar",
+          "semanticType": "movie",
+          "workerStatus": "ok",
+          "streamCount": 0,
+          "rawStreamCount": 0,
+          "serverAccessible": true,
+          "serverSuccess": true,
+          "providerRequestCount": 38,
+          "provenRouteCount": 35,
+          "error": null
+        },
+        {
+          "fixture": "breaking-bad-s01e01",
+          "semanticType": "tv",
+          "workerStatus": "ok",
+          "streamCount": 0,
+          "rawStreamCount": 0,
+          "serverAccessible": false,
+          "serverSuccess": false,
+          "providerRequestCount": 0,
+          "provenRouteCount": 0,
+          "error": null
+        },
+        {
+          "fixture": "house-of-the-dragon-s03e01",
+          "semanticType": "tv",
+          "workerStatus": "ok",
+          "streamCount": 0,
+          "rawStreamCount": 0,
+          "serverAccessible": false,
+          "serverSuccess": false,
+          "providerRequestCount": 0,
+          "provenRouteCount": 0,
+          "error": null
+        }
+      ]
+    }
+  ]
+}

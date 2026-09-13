@@ -1105,13 +1105,36 @@ def finalize_provider(
     # Coverage proof, runtime traversal evidence and persistent Provider DATA are
     # distinct layers. Dynamic landing/gateway URLs may prove a type without
     # becoming fixed routes in the next bundle.
+    # PROVIDER_V3_CANDIDATE_EXECUTION_AUTHORITY_FINALIZATION_V1
+    # Finalization must start from the routes that the candidate bundle actually
+    # executed, not from every historical/static candidateRouteData row. Proof-v5
+    # provider overrides are the current execution authority used by the materializer;
+    # widening from stale/internal candidate rows here can make a playable candidate
+    # turn into wrong_content after rematerialization (AnimeKai class regression).
+    patch_route_proof = int(patch.get("route_proof_version") or 0) if isinstance(patch, dict) else 0
+    patch_execution_routes = unique(
+        patch.get("learned_routes") or [] if isinstance(patch, dict) else [],
+        256,
+    )
+    candidate_execution_order = (
+        patch_execution_routes
+        if patch_route_proof >= 5
+        else unique(model.get("routes") or [], 256)
+    )
+    candidate_execution_set = set(candidate_execution_order)
+    candidate_execution_rank = {
+        route: index for index, route in enumerate(candidate_execution_order)
+    }
     stable_candidate_rows = [
         copy.deepcopy(row)
         for row in evaluation["candidateRouteData"]
         if isinstance(row, dict)
-        and str(row.get("route") or "").strip()
+        and str(row.get("route") or "").strip() in candidate_execution_set
         and not row.get("liveDerived")
     ]
+    stable_candidate_rows.sort(
+        key=lambda row: candidate_execution_rank.get(str(row.get("route") or "").strip(), 10**9)
+    )
     runtime_derived_rows = [
         copy.deepcopy(row)
         for row in evaluation["candidateRouteData"]

@@ -133,13 +133,26 @@ def build_tasks() -> tuple[list[dict[str, Any]], int]:
     return tasks, provider_count
 
 
+# PROVIDER_AUXILIARY_METADATA_FILTER_V1
+# These origins provide Core/identity metadata used to resolve a title. They are
+# not Provider execution authority and must never validate, unblock, or create
+# Provider routes. In particular, a successful IMDb->MAL lookup must not mask a
+# 403-only traversal of the actual anime provider origin.
+NON_PROVIDER_METADATA_HOSTS = {
+    "api.themoviedb.org",
+    "www.themoviedb.org",
+    "id-mapping-api-malid.hf.space",
+    "api.jikan.moe",
+}
+
+
 def provider_fetch(row: dict[str, Any]) -> bool:
     url = str(row.get("final_url") or row.get("url") or "")
     try:
         host = (urllib.parse.urlsplit(url).hostname or "").casefold()
     except ValueError:
         host = ""
-    return host not in {"api.themoviedb.org", "www.themoviedb.org"}
+    return host not in NON_PROVIDER_METADATA_HOSTS
 
 
 def run_task(task: dict[str, Any], timeout: int) -> dict[str, Any]:

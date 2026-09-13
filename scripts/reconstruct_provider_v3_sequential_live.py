@@ -68,6 +68,15 @@ def _live_probe_attempts() -> int:
 LIVE_PROBE_ATTEMPTS = _live_probe_attempts()
 
 
+# PROVIDER_V3_DISABLED_FAST_ADVANCE_V1
+def skip_disabled_live_qualification(provider: dict[str, Any]) -> bool:
+    """Return true when release reconstruction should fast-advance an OFF provider."""
+    if provider.get("enabled") is not False:
+        return False
+    audit = str(os.environ.get("PROVIDER_V3_AUDIT_DISABLED_LIVE") or "").strip().casefold()
+    return audit not in {"1", "true", "yes", "on"}
+
+
 # PROVIDER_V3_ADAPTIVE_LIVE_RETRY_V1
 TRANSIENT_LIVE_HTTP_STATUSES = {0, 408, 425, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525, 526}
 
@@ -660,33 +669,53 @@ def main() -> int:
             flush=True,
         )
 
-        _rows, evaluation, used_tasks = run_until_qualified(provider, model, minimum, timeout)
-        completion_state = "declared-types-qualified" if is_qualified(evaluation) else None
-        origin_evidence: list[dict[str, Any]] = []
-        if completion_state is None:
-            completion_state, origin_evidence = terminal_state(
-                evaluation, model, patch, origin_timeout
+        disabled_fast_advance = skip_disabled_live_qualification(provider)
+        if disabled_fast_advance:
+            # OFF rows retain their durable Provider DATA. No live request is made
+            # and no historical proof is credited into the active release gate.
+            _rows: list[dict[str, Any]] = []
+            evaluation = credit_verified_playable_chains(
+                evaluate_provider(provider_id, model, [], minimum), []
             )
-
-        if completion_state is None and provider.get("enabled") is not False:
-            resample_lanes = resample_required_lanes(_rows, evaluation)
-            if resample_lanes:
-                completion_state = "resample-required"
-                print(
-                    "FIELD_PROVIDER_RESAMPLE_REQUIRED "
-                    f"provider={provider_id} lanes={','.join(resample_lanes)} "
-                    "reason=clean_zero_stream_catalogue_sample next_action=rotate_fixture",
-                    flush=True,
-                )
-
-        if completion_state is None and provider.get("enabled") is False:
+            evaluation["qualificationSkipped"] = True
+            evaluation["disabledByActivationMatrix"] = True
+            used_tasks: list[dict[str, Any]] = []
             completion_state = "disabled-unqualified"
+            origin_evidence: list[dict[str, Any]] = []
             print(
-                "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE "
-                f"provider={provider_id} phase=candidate "
+                "FIELD_PROVIDER_DISABLED_FAST_ADVANCE "
+                f"provider={provider_id} network_qualification=false "
                 f"missing={','.join(evaluation.get('missingTypes') or []) or 'none'}",
                 flush=True,
             )
+        else:
+            _rows, evaluation, used_tasks = run_until_qualified(provider, model, minimum, timeout)
+            completion_state = "declared-types-qualified" if is_qualified(evaluation) else None
+            origin_evidence: list[dict[str, Any]] = []
+            if completion_state is None:
+                completion_state, origin_evidence = terminal_state(
+                    evaluation, model, patch, origin_timeout
+                )
+
+            if completion_state is None and provider.get("enabled") is not False:
+                resample_lanes = resample_required_lanes(_rows, evaluation)
+                if resample_lanes:
+                    completion_state = "resample-required"
+                    print(
+                        "FIELD_PROVIDER_RESAMPLE_REQUIRED "
+                        f"provider={provider_id} lanes={','.join(resample_lanes)} "
+                        "reason=clean_zero_stream_catalogue_sample next_action=rotate_fixture",
+                        flush=True,
+                    )
+
+            if completion_state is None and provider.get("enabled") is False:
+                completion_state = "disabled-unqualified"
+                print(
+                    "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE "
+                    f"provider={provider_id} phase=candidate "
+                    f"missing={','.join(evaluation.get('missingTypes') or []) or 'none'}",
+                    flush=True,
+                )
 
         if completion_state is None:
             failure = {
@@ -709,19 +738,23 @@ def main() -> int:
                 f"refusing to materialize or advance to provider {index + 1}"
             )
 
-        finalize_provider(
-            provider_id,
-            provider,
-            knowledge,
-            overrides,
-            evaluation,
-            completion_state,
-            origin_evidence,
-        )
-        write(knowledge_path, knowledge)
-        write(overrides_path, overrides)
-
-        materialized = materialize_one(provider_id)
+        if disabled_fast_advance:
+            # Structural materialization remains real, but skipped OFF providers do
+            # not overwrite durable DATA with an empty current-run evaluation.
+            materialized = materialize_one(provider_id)
+        else:
+            finalize_provider(
+                provider_id,
+                provider,
+                knowledge,
+                overrides,
+                evaluation,
+                completion_state,
+                origin_evidence,
+            )
+            write(knowledge_path, knowledge)
+            write(overrides_path, overrides)
+            materialized = materialize_one(provider_id)
         final_filename = str(materialized.get("file") or "")
         if not final_filename:
             raise SystemExit(f"{provider_id}: final one-provider materialization produced no file")

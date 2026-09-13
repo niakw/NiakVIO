@@ -1,0 +1,1060 @@
+{
+  "schemaVersion": 8,
+  "targetedProviderCount": 3,
+  "targetedProviders": [
+    "animevost-fr",
+    "playimdb",
+    "uhdmovies"
+  ],
+  "skippedAlreadyGreenProviders": [],
+  "taskCount": 6,
+  "rawProviderCount": 1,
+  "playableProviderCount": 1,
+  "acceptedPlayableProviderCount": 1,
+  "verifiedProviderCount": 1,
+  "wrongContentProviderCount": 0,
+  "rawProviders": [
+    "playimdb"
+  ],
+  "playableProviders": [
+    "playimdb"
+  ],
+  "acceptedPlayableProviders": [
+    "playimdb"
+  ],
+  "verifiedProviders": [
+    "playimdb"
+  ],
+  "wrongContentProviders": [],
+  "upstreamPositiveRepresentativePairs": [
+    [
+      "playimdb",
+      "movie"
+    ],
+    [
+      "playimdb",
+      "tv"
+    ]
+  ],
+  "preservedUpstreamPositivePairs": [
+    [
+      "playimdb",
+      "movie"
+    ],
+    [
+      "playimdb",
+      "tv"
+    ]
+  ],
+  "contradictedUpstreamPositivePairs": [],
+  "lostUpstreamPositivePairs": [],
+  "statusCounts": {
+    "no_streams": 4,
+    "playable_verified": 2
+  },
+  "debugStageCounts": {
+    "provider_network_http_error": 2,
+    "provider_network_zero_result": 2,
+    "provider_returned_streams": 2
+  },
+  "rows": [
+    {
+      "provider_id": "animevost-fr",
+      "provider_name": "🇫🇷 AnimeVOST.fr",
+      "semantic_type": "anime",
+      "fixture_title": "Jujutsu Kaisen",
+      "status": "no_streams",
+      "debug_stage": "provider_network_zero_result",
+      "debug_model": {
+        "strategy": "api_stream_resolver",
+        "source_runtime_family": "catalogue-html-embed",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "anime",
+          "tv"
+        ],
+        "route_count": 1,
+        "route_kinds": [
+          "search"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://animevost.fr",
+        "official_hub": null,
+        "official_api": "https://animevost.fr"
+      },
+      "debug_fetch_count": 5,
+      "debug_provider_fetch_count": 4,
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/95479?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/95479?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 96
+        },
+        {
+          "url": "https://animevost.fr/api/animes/search?q=Jujutsu%20Kaisen",
+          "response_url": "https://animevost.fr/api/animes/search?q=Jujutsu%20Kaisen",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 295
+        },
+        {
+          "url": "https://animevost.fr/api/animes/search?q=%E5%91%AA%E8%A1%93%E5%BB%BB%E6%88%A6",
+          "response_url": "https://animevost.fr/api/animes/search?q=%E5%91%AA%E8%A1%93%E5%BB%BB%E6%88%A6",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 211
+        },
+        {
+          "url": "https://animevost.fr/api/animes/search?q=%E5%92%92%E6%9C%AF%E5%9B%9E%E6%88%98",
+          "response_url": "https://animevost.fr/api/animes/search?q=%E5%92%92%E6%9C%AF%E5%9B%9E%E6%88%98",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 202
+        },
+        {
+          "url": "https://animevost.fr/api/animes/search?q=%E5%92%92%E6%9C%AF%E5%9B%9E%E6%88%98%20%E7%AC%AC%E4%B8%80%E5%AD%A3",
+          "response_url": "https://animevost.fr/api/animes/search?q=%E5%92%92%E6%9C%AF%E5%9B%9E%E6%88%98%20%E7%AC%AC%E4%B8%80%E5%AD%A3",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 206
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 1046
+    },
+    {
+      "provider_id": "animevost-fr",
+      "provider_name": "🇫🇷 AnimeVOST.fr",
+      "semantic_type": "tv",
+      "fixture_title": "Breaking Bad",
+      "status": "no_streams",
+      "debug_stage": "provider_network_zero_result",
+      "debug_model": {
+        "strategy": "api_stream_resolver",
+        "source_runtime_family": "catalogue-html-embed",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "anime",
+          "tv"
+        ],
+        "route_count": 1,
+        "route_kinds": [
+          "search"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://animevost.fr",
+        "official_hub": null,
+        "official_api": "https://animevost.fr"
+      },
+      "debug_fetch_count": 5,
+      "debug_provider_fetch_count": 4,
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/1396?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/1396?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 110
+        },
+        {
+          "url": "https://animevost.fr/api/animes/search?q=Breaking%20Bad",
+          "response_url": "https://animevost.fr/api/animes/search?q=Breaking%20Bad",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 463
+        },
+        {
+          "url": "https://animevost.fr/api/animes/search?q=B%C9%99db%C9%99xt",
+          "response_url": "https://animevost.fr/api/animes/search?q=B%C9%99db%C9%99xt",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 209
+        },
+        {
+          "url": "https://animevost.fr/api/animes/search?q=%D0%92%20%D0%BE%D0%B1%D1%83%D0%B2%D0%BA%D0%B8%D1%82%D0%B5%20%D0%BD%D0%B0%20%D0%A1%D0%B0%D1%82%D0%B0%D0%BD%D0%B0%D1%82%D0%B0",
+          "response_url": "https://animevost.fr/api/animes/search?q=%D0%92%20%D0%BE%D0%B1%D1%83%D0%B2%D0%BA%D0%B8%D1%82%D0%B5%20%D0%BD%D0%B0%20%D0%A1%D0%B0%D1%82%D0%B0%D0%BD%D0%B0%D1%82%D0%B0",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 204
+        },
+        {
+          "url": "https://animevost.fr/api/animes/search?q=Breaking%20Bad%3A%20A%20Qu%C3%ADmica%20do%20Mal",
+          "response_url": "https://animevost.fr/api/animes/search?q=Breaking%20Bad%3A%20A%20Qu%C3%ADmica%20do%20Mal",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 209
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 1217
+    },
+    {
+      "provider_id": "playimdb",
+      "provider_name": "▶️ PlayIMDb",
+      "semantic_type": "movie",
+      "fixture_title": "Interstellar",
+      "status": "playable_verified",
+      "debug_stage": "provider_returned_streams",
+      "debug_model": {
+        "strategy": "direct_media",
+        "source_runtime_family": "tmdb-direct-api",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 5,
+        "route_kinds": [
+          "api",
+          "detail",
+          "player"
+        ],
+        "has_api_recipe": true,
+        "official_site": "https://nextgencloudfabric.com",
+        "official_hub": null,
+        "official_api": "https://streamdata.vaplayer.ru"
+      },
+      "debug_fetch_count": 17,
+      "debug_provider_fetch_count": 16,
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/movie/157336?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/movie/157336?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 160
+        },
+        {
+          "url": "https://streamdata.vaplayer.ru/api.php?tmdb=157336&type=movie",
+          "response_url": "https://streamdata.vaplayer.ru/api.php?tmdb=157336&type=movie",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 444
+        },
+        {
+          "url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BYhL6aRVSHzgicJU_FWdoiWmS2qnN6tsNnDkkGfEJjyhOUDRSd8ALOR0TGh.mYzzHeHlR6IZ0TvslSCbAVINxr5C7T8hSKxHNS3R6KLThwVzuBsRqwl5UEauAyWutBFqgUCovfmugj463xK641HojU6BnON9KxeXe9anVESEGiceUOQz5Flnte6nMVQTylO9bN_Tpm.XUtsqu5t.BTGY6mK3hl58xyERnaTJHjugP9t0hSsRz2CWSvgG_zcwXDS_aAXsEnF6n3HsbNNKQ4AZMaPg.jNpUc2buApl0gr0YdU1c5kwbybphxaXFIq.f7P8mv9qVlTP3TCtE_wDXP8H5QQEAAA--/master.m3u8",
+          "response_url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BYhL6aRVSHzgicJU_FWdoiWmS2qnN6tsNnDkkGfEJjyhOUDRSd8ALOR0TGh.mYzzHeHlR6IZ0TvslSCbAVINxr5C7T8hSKxHNS3R6KLThwVzuBsRqwl5UEauAyWutBFqgUCovfmugj463xK641HojU6BnON9KxeXe9anVESEGiceUOQz5Flnte6nMVQTylO9bN_Tpm.XUtsqu5t.BTGY6mK3hl58xyERnaTJHjugP9t0hSsRz2CWSvgG_zcwXDS_aAXsEnF6n3HsbNNKQ4AZMaPg.jNpUc2buApl0gr0YdU1c5kwbybphxaXFIq.f7P8mv9qVlTP3TCtE_wDXP8H5QQEAAA--/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 445
+        },
+        {
+          "url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3PyXKCMAAA0F9KWFR6VAiKTVqyJzcgTC0ERhmmLF9fj._4jlEUnYIwhvBwCGHQNm0bRW2SVHXwdnj4cCrGrSSL8G6r9nNhgoJYBRamC9oM8EXFEn3ufhPBPFpebAKikHQl_MpB3KSSK4W4UwmWWQNrKKXK3Frz4q_ZZYqvHrnUItsRw7gVZJsNEzas_QM3YC7x7iqVol8lbovkbiW719L7kfWI1B5V.FpOeIgN7YigA81Fvz5pHr8wd6XRPxsd.82ONCPeXYxYp1Y8Qhaip.zQWey3iSnCzUgvJMCTAVaXffJS2XrnSt5KcQruIL6yIdudRt_vy1Lnj7FWs5RagErTouQg.QcWdFDqQQEAAA--/master.m3u8",
+          "response_url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3PyXKCMAAA0F9KWFR6VAiKTVqyJzcgTC0ERhmmLF9fj._4jlEUnYIwhvBwCGHQNm0bRW2SVHXwdnj4cCrGrSSL8G6r9nNhgoJYBRamC9oM8EXFEn3ufhPBPFpebAKikHQl_MpB3KSSK4W4UwmWWQNrKKXK3Frz4q_ZZYqvHrnUItsRw7gVZJsNEzas_QM3YC7x7iqVol8lbovkbiW719L7kfWI1B5V.FpOeIgN7YigA81Fvz5pHr8wd6XRPxsd.82ONCPeXYxYp1Y8Qhaip.zQWey3iSnCzUgvJMCTAVaXffJS2XrnSt5KcQruIL6yIdudRt_vy1Lnj7FWs5RagErTouQg.QcWdFDqQQEAAA--/master.m3u8",
+          "method": "GET",
+          "status": 404,
+          "content_type": "text/html",
+          "duration_ms": 714
+        },
+        {
+          "url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BYhL6aRVSHzgicJU_FWdoiWmS2qnN6tsNnDkkGfEJjyhOUDRSd8ALOR0TGh.mYzzHeHlR6IZ0TvslSCbAVINxr5C7T8hSKxHNS3R6KLThwVzuBsRqwl5UEauAyWutBFqgUCovfmugj463xK641HojU6BnON9KxeXe9anVESEGiceUOQz5Flnte6nMVQTylO9bN_Tpm.XUtsqu5t.BTGY6mK3hl58xyERnaTJHjugP9t0hSsRz2CWSvgG_zcwXDS_aAXsEnF6n3HsbNNKQ4AZMaPg.jNpUc2buApl0gr0YdU1c5kwbybphxaXFIq.f7P8mv9qVlTP3TCtE_wDXP8H5QQEAAA--/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "response_url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BYhL6aRVSHzgicJU_FWdoiWmS2qnN6tsNnDkkGfEJjyhOUDRSd8ALOR0TGh.mYzzHeHlR6IZ0TvslSCbAVINxr5C7T8hSKxHNS3R6KLThwVzuBsRqwl5UEauAyWutBFqgUCovfmugj463xK641HojU6BnON9KxeXe9anVESEGiceUOQz5Flnte6nMVQTylO9bN_Tpm.XUtsqu5t.BTGY6mK3hl58xyERnaTJHjugP9t0hSsRz2CWSvgG_zcwXDS_aAXsEnF6n3HsbNNKQ4AZMaPg.jNpUc2buApl0gr0YdU1c5kwbybphxaXFIq.f7P8mv9qVlTP3TCtE_wDXP8H5QQEAAA--/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 247
+        },
+        {
+          "url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OS3KCMAAA0CsFSBjtrihRtDA1f7ILJGPKz9RiRU7fvhM8A9OmTZy1aQSTNGo2DhibAouiJm5jg95ojBajdEQV3pnRXyhAjybeQCfCgwGUMY4.7G57pF8bSLiHIhpoPSLYxvmvFQTzPJzsAS6tGqTorrDMRWmFX0WPg1Qi6CR_GhlBx6rCdUPWRHxhqx54xxMnstoq7bnsgeuudw38s5wGUx79mSubsk7_f4aby8mLyuXSSr0XGN_YGM5mzeb2NY_VIXwyXCdU3lC5J3GVECQm_.1k.CE5KWrhfcnnuFKne9Odesox0czjiwgz7dHKpnJp5Fa56R2QSWdCFE_CcSH4XOgVbP8AlU8m3UEBAAA-/master.m3u8",
+          "response_url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OS3KCMAAA0CsFSBjtrihRtDA1f7ILJGPKz9RiRU7fvhM8A9OmTZy1aQSTNGo2DhibAouiJm5jg95ojBajdEQV3pnRXyhAjybeQCfCgwGUMY4.7G57pF8bSLiHIhpoPSLYxvmvFQTzPJzsAS6tGqTorrDMRWmFX0WPg1Qi6CR_GhlBx6rCdUPWRHxhqx54xxMnstoq7bnsgeuudw38s5wGUx79mSubsk7_f4aby8mLyuXSSr0XGN_YGM5mzeb2NY_VIXwyXCdU3lC5J3GVECQm_.1k.CE5KWrhfcnnuFKne9Odesox0czjiwgz7dHKpnJp5Fa56R2QSWdCFE_CcSH4XOgVbP8AlU8m3UEBAAA-/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 899
+        },
+        {
+          "url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OS3KCMAAA0CsFSBjtrihRtDA1f7ILJGPKz9RiRU7fvhM8A9OmTZy1aQSTNGo2DhibAouiJm5jg95ojBajdEQV3pnRXyhAjybeQCfCgwGUMY4.7G57pF8bSLiHIhpoPSLYxvmvFQTzPJzsAS6tGqTorrDMRWmFX0WPg1Qi6CR_GhlBx6rCdUPWRHxhqx54xxMnstoq7bnsgeuudw38s5wGUx79mSubsk7_f4aby8mLyuXSSr0XGN_YGM5mzeb2NY_VIXwyXCdU3lC5J3GVECQm_.1k.CE5KWrhfcnnuFKne9Odesox0czjiwgz7dHKpnJp5Fa56R2QSWdCFE_CcSH4XOgVbP8AlU8m3UEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "response_url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OS3KCMAAA0CsFSBjtrihRtDA1f7ILJGPKz9RiRU7fvhM8A9OmTZy1aQSTNGo2DhibAouiJm5jg95ojBajdEQV3pnRXyhAjybeQCfCgwGUMY4.7G57pF8bSLiHIhpoPSLYxvmvFQTzPJzsAS6tGqTorrDMRWmFX0WPg1Qi6CR_GhlBx6rCdUPWRHxhqx54xxMnstoq7bnsgeuudw38s5wGUx79mSubsk7_f4aby8mLyuXSSr0XGN_YGM5mzeb2NY_VIXwyXCdU3lC5J3GVECQm_.1k.CE5KWrhfcnnuFKne9Odesox0czjiwgz7dHKpnJp5Fa56R2QSWdCFE_CcSH4XOgVbP8AlU8m3UEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 558
+        },
+        {
+          "url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BYhL6aRVSHzgicJU_FWdoiWmS2qnN6tsNnDkkGfEJjyhOUDRSd8ALOR0TGh.mYzzHeHlR6IZ0TvslSCbAVINxr5C7T8hSKxHNS3R6KLThwVzuBsRqwl5UEauAyWutBFqgUCovfmugj463xK641HojU6BnON9KxeXe9anVESEGiceUOQz5Flnte6nMVQTylO9bN_Tpm.XUtsqu5t.BTGY6mK3hl58xyERnaTJHjugP9t0hSsRz2CWSvgG_zcwXDS_aAXsEnF6n3HsbNNKQ4AZMaPg.jNpUc2buApl0gr0YdU1c5kwbybphxaXFIq.f7P8mv9qVlTP3TCtE_wDXP8H5QQEAAA--/master.m3u8",
+          "response_url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BYhL6aRVSHzgicJU_FWdoiWmS2qnN6tsNnDkkGfEJjyhOUDRSd8ALOR0TGh.mYzzHeHlR6IZ0TvslSCbAVINxr5C7T8hSKxHNS3R6KLThwVzuBsRqwl5UEauAyWutBFqgUCovfmugj463xK641HojU6BnON9KxeXe9anVESEGiceUOQz5Flnte6nMVQTylO9bN_Tpm.XUtsqu5t.BTGY6mK3hl58xyERnaTJHjugP9t0hSsRz2CWSvgG_zcwXDS_aAXsEnF6n3HsbNNKQ4AZMaPg.jNpUc2buApl0gr0YdU1c5kwbybphxaXFIq.f7P8mv9qVlTP3TCtE_wDXP8H5QQEAAA--/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 326
+        },
+        {
+          "url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OS3KCMAAA0CsFSBjtrihRtDA1f7ILJGPKz9RiRU7fvhM8A9OmTZy1aQSTNGo2DhibAouiJm5jg95ojBajdEQV3pnRXyhAjybeQCfCgwGUMY4.7G57pF8bSLiHIhpoPSLYxvmvFQTzPJzsAS6tGqTorrDMRWmFX0WPg1Qi6CR_GhlBx6rCdUPWRHxhqx54xxMnstoq7bnsgeuudw38s5wGUx79mSubsk7_f4aby8mLyuXSSr0XGN_YGM5mzeb2NY_VIXwyXCdU3lC5J3GVECQm_.1k.CE5KWrhfcnnuFKne9Odesox0czjiwgz7dHKpnJp5Fa56R2QSWdCFE_CcSH4XOgVbP8AlU8m3UEBAAA-/master.m3u8",
+          "response_url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OS3KCMAAA0CsFSBjtrihRtDA1f7ILJGPKz9RiRU7fvhM8A9OmTZy1aQSTNGo2DhibAouiJm5jg95ojBajdEQV3pnRXyhAjybeQCfCgwGUMY4.7G57pF8bSLiHIhpoPSLYxvmvFQTzPJzsAS6tGqTorrDMRWmFX0WPg1Qi6CR_GhlBx6rCdUPWRHxhqx54xxMnstoq7bnsgeuudw38s5wGUx79mSubsk7_f4aby8mLyuXSSr0XGN_YGM5mzeb2NY_VIXwyXCdU3lC5J3GVECQm_.1k.CE5KWrhfcnnuFKne9Odesox0czjiwgz7dHKpnJp5Fa56R2QSWdCFE_CcSH4XOgVbP8AlU8m3UEBAAA-/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 829
+        },
+        {
+          "url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BYhL6aRVSHzgicJU_FWdoiWmS2qnN6tsNnDkkGfEJjyhOUDRSd8ALOR0TGh.mYzzHeHlR6IZ0TvslSCbAVINxr5C7T8hSKxHNS3R6KLThwVzuBsRqwl5UEauAyWutBFqgUCovfmugj463xK641HojU6BnON9KxeXe9anVESEGiceUOQz5Flnte6nMVQTylO9bN_Tpm.XUtsqu5t.BTGY6mK3hl58xyERnaTJHjugP9t0hSsRz2CWSvgG_zcwXDS_aAXsEnF6n3HsbNNKQ4AZMaPg.jNpUc2buApl0gr0YdU1c5kwbybphxaXFIq.f7P8mv9qVlTP3TCtE_wDXP8H5QQEAAA--/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "response_url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BYhL6aRVSHzgicJU_FWdoiWmS2qnN6tsNnDkkGfEJjyhOUDRSd8ALOR0TGh.mYzzHeHlR6IZ0TvslSCbAVINxr5C7T8hSKxHNS3R6KLThwVzuBsRqwl5UEauAyWutBFqgUCovfmugj463xK641HojU6BnON9KxeXe9anVESEGiceUOQz5Flnte6nMVQTylO9bN_Tpm.XUtsqu5t.BTGY6mK3hl58xyERnaTJHjugP9t0hSsRz2CWSvgG_zcwXDS_aAXsEnF6n3HsbNNKQ4AZMaPg.jNpUc2buApl0gr0YdU1c5kwbybphxaXFIq.f7P8mv9qVlTP3TCtE_wDXP8H5QQEAAA--/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 543
+        },
+        {
+          "url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OS3KCMAAA0CsFSBjtrihRtDA1f7ILJGPKz9RiRU7fvhM8A9OmTZy1aQSTNGo2DhibAouiJm5jg95ojBajdEQV3pnRXyhAjybeQCfCgwGUMY4.7G57pF8bSLiHIhpoPSLYxvmvFQTzPJzsAS6tGqTorrDMRWmFX0WPg1Qi6CR_GhlBx6rCdUPWRHxhqx54xxMnstoq7bnsgeuudw38s5wGUx79mSubsk7_f4aby8mLyuXSSr0XGN_YGM5mzeb2NY_VIXwyXCdU3lC5J3GVECQm_.1k.CE5KWrhfcnnuFKne9Odesox0czjiwgz7dHKpnJp5Fa56R2QSWdCFE_CcSH4XOgVbP8AlU8m3UEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "response_url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OS3KCMAAA0CsFSBjtrihRtDA1f7ILJGPKz9RiRU7fvhM8A9OmTZy1aQSTNGo2DhibAouiJm5jg95ojBajdEQV3pnRXyhAjybeQCfCgwGUMY4.7G57pF8bSLiHIhpoPSLYxvmvFQTzPJzsAS6tGqTorrDMRWmFX0WPg1Qi6CR_GhlBx6rCdUPWRHxhqx54xxMnstoq7bnsgeuudw38s5wGUx79mSubsk7_f4aby8mLyuXSSr0XGN_YGM5mzeb2NY_VIXwyXCdU3lC5J3GVECQm_.1k.CE5KWrhfcnnuFKne9Odesox0czjiwgz7dHKpnJp5Fa56R2QSWdCFE_CcSH4XOgVbP8AlU8m3UEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 1752
+        },
+        {
+          "url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BYhL6aRVSHzgicJU_FWdoiWmS2qnN6tsNnDkkGfEJjyhOUDRSd8ALOR0TGh.mYzzHeHlR6IZ0TvslSCbAVINxr5C7T8hSKxHNS3R6KLThwVzuBsRqwl5UEauAyWutBFqgUCovfmugj463xK641HojU6BnON9KxeXe9anVESEGiceUOQz5Flnte6nMVQTylO9bN_Tpm.XUtsqu5t.BTGY6mK3hl58xyERnaTJHjugP9t0hSsRz2CWSvgG_zcwXDS_aAXsEnF6n3HsbNNKQ4AZMaPg.jNpUc2buApl0gr0YdU1c5kwbybphxaXFIq.f7P8mv9qVlTP3TCtE_wDXP8H5QQEAAA--/master.m3u8",
+          "response_url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BYhL6aRVSHzgicJU_FWdoiWmS2qnN6tsNnDkkGfEJjyhOUDRSd8ALOR0TGh.mYzzHeHlR6IZ0TvslSCbAVINxr5C7T8hSKxHNS3R6KLThwVzuBsRqwl5UEauAyWutBFqgUCovfmugj463xK641HojU6BnON9KxeXe9anVESEGiceUOQz5Flnte6nMVQTylO9bN_Tpm.XUtsqu5t.BTGY6mK3hl58xyERnaTJHjugP9t0hSsRz2CWSvgG_zcwXDS_aAXsEnF6n3HsbNNKQ4AZMaPg.jNpUc2buApl0gr0YdU1c5kwbybphxaXFIq.f7P8mv9qVlTP3TCtE_wDXP8H5QQEAAA--/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 373
+        },
+        {
+          "url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OS3KCMAAA0CsFSBjtrihRtDA1f7ILJGPKz9RiRU7fvhM8A9OmTZy1aQSTNGo2DhibAouiJm5jg95ojBajdEQV3pnRXyhAjybeQCfCgwGUMY4.7G57pF8bSLiHIhpoPSLYxvmvFQTzPJzsAS6tGqTorrDMRWmFX0WPg1Qi6CR_GhlBx6rCdUPWRHxhqx54xxMnstoq7bnsgeuudw38s5wGUx79mSubsk7_f4aby8mLyuXSSr0XGN_YGM5mzeb2NY_VIXwyXCdU3lC5J3GVECQm_.1k.CE5KWrhfcnnuFKne9Odesox0czjiwgz7dHKpnJp5Fa56R2QSWdCFE_CcSH4XOgVbP8AlU8m3UEBAAA-/master.m3u8",
+          "response_url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OS3KCMAAA0CsFSBjtrihRtDA1f7ILJGPKz9RiRU7fvhM8A9OmTZy1aQSTNGo2DhibAouiJm5jg95ojBajdEQV3pnRXyhAjybeQCfCgwGUMY4.7G57pF8bSLiHIhpoPSLYxvmvFQTzPJzsAS6tGqTorrDMRWmFX0WPg1Qi6CR_GhlBx6rCdUPWRHxhqx54xxMnstoq7bnsgeuudw38s5wGUx79mSubsk7_f4aby8mLyuXSSr0XGN_YGM5mzeb2NY_VIXwyXCdU3lC5J3GVECQm_.1k.CE5KWrhfcnnuFKne9Odesox0czjiwgz7dHKpnJp5Fa56R2QSWdCFE_CcSH4XOgVbP8AlU8m3UEBAAA-/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 1050
+        },
+        {
+          "url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BYhL6aRVSHzgicJU_FWdoiWmS2qnN6tsNnDkkGfEJjyhOUDRSd8ALOR0TGh.mYzzHeHlR6IZ0TvslSCbAVINxr5C7T8hSKxHNS3R6KLThwVzuBsRqwl5UEauAyWutBFqgUCovfmugj463xK641HojU6BnON9KxeXe9anVESEGiceUOQz5Flnte6nMVQTylO9bN_Tpm.XUtsqu5t.BTGY6mK3hl58xyERnaTJHjugP9t0hSsRz2CWSvgG_zcwXDS_aAXsEnF6n3HsbNNKQ4AZMaPg.jNpUc2buApl0gr0YdU1c5kwbybphxaXFIq.f7P8mv9qVlTP3TCtE_wDXP8H5QQEAAA--/master.m3u8",
+          "response_url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BYhL6aRVSHzgicJU_FWdoiWmS2qnN6tsNnDkkGfEJjyhOUDRSd8ALOR0TGh.mYzzHeHlR6IZ0TvslSCbAVINxr5C7T8hSKxHNS3R6KLThwVzuBsRqwl5UEauAyWutBFqgUCovfmugj463xK641HojU6BnON9KxeXe9anVESEGiceUOQz5Flnte6nMVQTylO9bN_Tpm.XUtsqu5t.BTGY6mK3hl58xyERnaTJHjugP9t0hSsRz2CWSvgG_zcwXDS_aAXsEnF6n3HsbNNKQ4AZMaPg.jNpUc2buApl0gr0YdU1c5kwbybphxaXFIq.f7P8mv9qVlTP3TCtE_wDXP8H5QQEAAA--/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 462
+        },
+        {
+          "url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BYhL6aRVSHzgicJU_FWdoiWmS2qnN6tsNnDkkGfEJjyhOUDRSd8ALOR0TGh.mYzzHeHlR6IZ0TvslSCbAVINxr5C7T8hSKxHNS3R6KLThwVzuBsRqwl5UEauAyWutBFqgUCovfmugj463xK641HojU6BnON9KxeXe9anVESEGiceUOQz5Flnte6nMVQTylO9bN_Tpm.XUtsqu5t.BTGY6mK3hl58xyERnaTJHjugP9t0hSsRz2CWSvgG_zcwXDS_aAXsEnF6n3HsbNNKQ4AZMaPg.jNpUc2buApl0gr0YdU1c5kwbybphxaXFIq.f7P8mv9qVlTP3TCtE_wDXP8H5QQEAAA--/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "response_url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BYhL6aRVSHzgicJU_FWdoiWmS2qnN6tsNnDkkGfEJjyhOUDRSd8ALOR0TGh.mYzzHeHlR6IZ0TvslSCbAVINxr5C7T8hSKxHNS3R6KLThwVzuBsRqwl5UEauAyWutBFqgUCovfmugj463xK641HojU6BnON9KxeXe9anVESEGiceUOQz5Flnte6nMVQTylO9bN_Tpm.XUtsqu5t.BTGY6mK3hl58xyERnaTJHjugP9t0hSsRz2CWSvgG_zcwXDS_aAXsEnF6n3HsbNNKQ4AZMaPg.jNpUc2buApl0gr0YdU1c5kwbybphxaXFIq.f7P8mv9qVlTP3TCtE_wDXP8H5QQEAAA--/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 252
+        },
+        {
+          "url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OS3KCMAAA0CsFSBjtrihRtDA1f7ILJGPKz9RiRU7fvhM8A9OmTZy1aQSTNGo2DhibAouiJm5jg95ojBajdEQV3pnRXyhAjybeQCfCgwGUMY4.7G57pF8bSLiHIhpoPSLYxvmvFQTzPJzsAS6tGqTorrDMRWmFX0WPg1Qi6CR_GhlBx6rCdUPWRHxhqx54xxMnstoq7bnsgeuudw38s5wGUx79mSubsk7_f4aby8mLyuXSSr0XGN_YGM5mzeb2NY_VIXwyXCdU3lC5J3GVECQm_.1k.CE5KWrhfcnnuFKne9Odesox0czjiwgz7dHKpnJp5Fa56R2QSWdCFE_CcSH4XOgVbP8AlU8m3UEBAAA-/master.m3u8",
+          "response_url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OS3KCMAAA0CsFSBjtrihRtDA1f7ILJGPKz9RiRU7fvhM8A9OmTZy1aQSTNGo2DhibAouiJm5jg95ojBajdEQV3pnRXyhAjybeQCfCgwGUMY4.7G57pF8bSLiHIhpoPSLYxvmvFQTzPJzsAS6tGqTorrDMRWmFX0WPg1Qi6CR_GhlBx6rCdUPWRHxhqx54xxMnstoq7bnsgeuudw38s5wGUx79mSubsk7_f4aby8mLyuXSSr0XGN_YGM5mzeb2NY_VIXwyXCdU3lC5J3GVECQm_.1k.CE5KWrhfcnnuFKne9Odesox0czjiwgz7dHKpnJp5Fa56R2QSWdCFE_CcSH4XOgVbP8AlU8m3UEBAAA-/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 1013
+        },
+        {
+          "url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OS3KCMAAA0CsFSBjtrihRtDA1f7ILJGPKz9RiRU7fvhM8A9OmTZy1aQSTNGo2DhibAouiJm5jg95ojBajdEQV3pnRXyhAjybeQCfCgwGUMY4.7G57pF8bSLiHIhpoPSLYxvmvFQTzPJzsAS6tGqTorrDMRWmFX0WPg1Qi6CR_GhlBx6rCdUPWRHxhqx54xxMnstoq7bnsgeuudw38s5wGUx79mSubsk7_f4aby8mLyuXSSr0XGN_YGM5mzeb2NY_VIXwyXCdU3lC5J3GVECQm_.1k.CE5KWrhfcnnuFKne9Odesox0czjiwgz7dHKpnJp5Fa56R2QSWdCFE_CcSH4XOgVbP8AlU8m3UEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "response_url": "https://startupmomentumengine.site/GjGw9I28T/pl/H4sIAAAAAAAAAw3OS3KCMAAA0CsFSBjtrihRtDA1f7ILJGPKz9RiRU7fvhM8A9OmTZy1aQSTNGo2DhibAouiJm5jg95ojBajdEQV3pnRXyhAjybeQCfCgwGUMY4.7G57pF8bSLiHIhpoPSLYxvmvFQTzPJzsAS6tGqTorrDMRWmFX0WPg1Qi6CR_GhlBx6rCdUPWRHxhqx54xxMnstoq7bnsgeuudw38s5wGUx79mSubsk7_f4aby8mLyuXSSr0XGN_YGM5mzeb2NY_VIXwyXCdU3lC5J3GVECQm_.1k.CE5KWrhfcnnuFKne9Odesox0czjiwgz7dHKpnJp5Fa56R2QSWdCFE_CcSH4XOgVbP8AlU8m3UEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 415
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "raw": 2,
+      "playable": 2,
+      "verified": 2,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 9856
+    },
+    {
+      "provider_id": "playimdb",
+      "provider_name": "▶️ PlayIMDb",
+      "semantic_type": "tv",
+      "fixture_title": "Breaking Bad",
+      "status": "playable_verified",
+      "debug_stage": "provider_returned_streams",
+      "debug_model": {
+        "strategy": "direct_media",
+        "source_runtime_family": "tmdb-direct-api",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 5,
+        "route_kinds": [
+          "api",
+          "detail",
+          "player"
+        ],
+        "has_api_recipe": true,
+        "official_site": "https://nextgencloudfabric.com",
+        "official_hub": null,
+        "official_api": "https://streamdata.vaplayer.ru"
+      },
+      "debug_fetch_count": 24,
+      "debug_provider_fetch_count": 22,
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/1396?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/1396?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 117
+        },
+        {
+          "url": "https://streamdata.vaplayer.ru/api.php?tmdb=1396&type=tv&season=1&episode=1",
+          "response_url": "https://streamdata.vaplayer.ru/api.php?tmdb=1396&type=tv&season=1&episode=1",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 413
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw2OwXKCMBQAf.kRQKVHC2KhSZtIEpJbDDhYAqLTCubry.xxZ3Y2CRpIguZsohgi2EZtsmvii71sQ4MAdpc3cdQvO3R5O7i9zgRnfUyVTBD2K5V4UDQvJ8.fNBAgj_vFoMNN5uxeec2bPC6.Un0lvrjr7MBazj6sEDc6Tg.TFR0ThavklBKpb9WI59XL9kf_EYRnE9h1YY54PinTF7XN53nt93og37R3XEqnS8TASvcsgSiRFk_rMyB1H7K8wybtXgx.FRt0fAb2yetpY0dHqNcH6jE0I19KtFTnoAvN..8GC7bBLovwaANaEWXraTjVCkoUeSUFPqWupFK82sz5MhSi8d1Ve0j.AY.hkqpBAQAA/master.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw2OwXKCMBQAf.kRQKVHC2KhSZtIEpJbDDhYAqLTCubry.xxZ3Y2CRpIguZsohgi2EZtsmvii71sQ4MAdpc3cdQvO3R5O7i9zgRnfUyVTBD2K5V4UDQvJ8.fNBAgj_vFoMNN5uxeec2bPC6.Un0lvrjr7MBazj6sEDc6Tg.TFR0ThavklBKpb9WI59XL9kf_EYRnE9h1YY54PinTF7XN53nt93og37R3XEqnS8TASvcsgSiRFk_rMyB1H7K8wybtXgx.FRt0fAb2yetpY0dHqNcH6jE0I19KtFTnoAvN..8GC7bBLovwaANaEWXraTjVCkoUeSUFPqWupFK82sz5MhSi8d1Ve0j.AY.hkqpBAQAA/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 416
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BSKb2ryaShxNs0AuRPwimVCFxEqc1rr7dwJmTOJuuXEZMZzNiO5IifE1XmXnrOmOvlr5b2WLYsrscWC8KePCNeHGFvS5oA3EuNZr2gnzMJlIqtr4SiI4CydGEIdVLWEp0Whw.4DrOrxLtCb_JJyiuj_KeNCEfbCGrOjpt.ryGZMqPip_rPuyq4t.A.SbWU9WB9u3gJxufP02CVzzxSa0wqO.MyuVCFcuhjXzW2ON2EUW1k7K.wXKKrITCbUXPHiVqqZTSnIhfNwhm2BwWEelnx9zcDlNiQZiL0sHs9vRS4FGcc93Gr9__g2pICCWiSkfXKBaoCONaEPeABmV_K2srREEBAAA-/master.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BSKb2ryaShxNs0AuRPwimVCFxEqc1rr7dwJmTOJuuXEZMZzNiO5IifE1XmXnrOmOvlr5b2WLYsrscWC8KePCNeHGFvS5oA3EuNZr2gnzMJlIqtr4SiI4CydGEIdVLWEp0Whw.4DrOrxLtCb_JJyiuj_KeNCEfbCGrOjpt.ryGZMqPip_rPuyq4t.A.SbWU9WB9u3gJxufP02CVzzxSa0wqO.MyuVCFcuhjXzW2ON2EUW1k7K.wXKKrITCbUXPHiVqqZTSnIhfNwhm2BwWEelnx9zcDlNiQZiL0sHs9vRS4FGcc93Gr9__g2pICCWiSkfXKBaoCONaEPeABmV_K2srREEBAAA-/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 719
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAwXBXVeDIBgA4L8EqDuzu5ziZMMOHy9O7xAqN9Fjy2ru1_c8e.9t7C2KbJ84vPMu8knvvN1_IBKn1r50N3noLhS9B7.oZrAc2NwVg3Jkqd7KfWzQIDSVu24eDrqQWT.ZUudBNtO6U9PnXeEBy221_eTuTflA9XV91tRIEQVbF6nhhCU1Wc78JhAHPMFluXQEz74wErZvzDEF3SynFi3G5C0R8_JtSgmOJNxStjVzu1ldZ2oMuYxcpBqIe0hPEh6VR_IPSjN2R6Z6WK8nIsc2sKsKXdVj.msL_.On8HVGVGtCKYRaeCwSyNlRPV.fdZ7NOqo2MfKYHwdiyKMQ2DA4rKjd1gw0Sv8BHimn_kEBAAA-/master.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAwXBXVeDIBgA4L8EqDuzu5ziZMMOHy9O7xAqN9Fjy2ru1_c8e.9t7C2KbJ84vPMu8knvvN1_IBKn1r50N3noLhS9B7.oZrAc2NwVg3Jkqd7KfWzQIDSVu24eDrqQWT.ZUudBNtO6U9PnXeEBy221_eTuTflA9XV91tRIEQVbF6nhhCU1Wc78JhAHPMFluXQEz74wErZvzDEF3SynFi3G5C0R8_JtSgmOJNxStjVzu1ldZ2oMuYxcpBqIe0hPEh6VR_IPSjN2R6Z6WK8nIsc2sKsKXdVj.msL_.On8HVGVGtCKYRaeCwSyNlRPV.fdZ7NOqo2MfKYHwdiyKMQ2DA4rKjd1gw0Sv8BHimn_kEBAAA-/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 813
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw2OwXKCMBQAf.kRQKVHC2KhSZtIEpJbDDhYAqLTCubry.xxZ3Y2CRpIguZsohgi2EZtsmvii71sQ4MAdpc3cdQvO3R5O7i9zgRnfUyVTBD2K5V4UDQvJ8.fNBAgj_vFoMNN5uxeec2bPC6.Un0lvrjr7MBazj6sEDc6Tg.TFR0ThavklBKpb9WI59XL9kf_EYRnE9h1YY54PinTF7XN53nt93og37R3XEqnS8TASvcsgSiRFk_rMyB1H7K8wybtXgx.FRt0fAb2yetpY0dHqNcH6jE0I19KtFTnoAvN..8GC7bBLovwaANaEWXraTjVCkoUeSUFPqWupFK82sz5MhSi8d1Ve0j.AY.hkqpBAQAA/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw2OwXKCMBQAf.kRQKVHC2KhSZtIEpJbDDhYAqLTCubry.xxZ3Y2CRpIguZsohgi2EZtsmvii71sQ4MAdpc3cdQvO3R5O7i9zgRnfUyVTBD2K5V4UDQvJ8.fNBAgj_vFoMNN5uxeec2bPC6.Un0lvrjr7MBazj6sEDc6Tg.TFR0ThavklBKpb9WI59XL9kf_EYRnE9h1YY54PinTF7XN53nt93og37R3XEqnS8TASvcsgSiRFk_rMyB1H7K8wybtXgx.FRt0fAb2yetpY0dHqNcH6jE0I19KtFTnoAvN..8GC7bBLovwaANaEWXraTjVCkoUeSUFPqWupFK82sz5MhSi8d1Ve0j.AY.hkqpBAQAA/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 742
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAwXBXVeDIBgA4L8EqDuzu5ziZMMOHy9O7xAqN9Fjy2ru1_c8e.9t7C2KbJ84vPMu8knvvN1_IBKn1r50N3noLhS9B7.oZrAc2NwVg3Jkqd7KfWzQIDSVu24eDrqQWT.ZUudBNtO6U9PnXeEBy221_eTuTflA9XV91tRIEQVbF6nhhCU1Wc78JhAHPMFluXQEz74wErZvzDEF3SynFi3G5C0R8_JtSgmOJNxStjVzu1ldZ2oMuYxcpBqIe0hPEh6VR_IPSjN2R6Z6WK8nIsc2sKsKXdVj.msL_.On8HVGVGtCKYRaeCwSyNlRPV.fdZ7NOqo2MfKYHwdiyKMQ2DA4rKjd1gw0Sv8BHimn_kEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAwXBXVeDIBgA4L8EqDuzu5ziZMMOHy9O7xAqN9Fjy2ru1_c8e.9t7C2KbJ84vPMu8knvvN1_IBKn1r50N3noLhS9B7.oZrAc2NwVg3Jkqd7KfWzQIDSVu24eDrqQWT.ZUudBNtO6U9PnXeEBy221_eTuTflA9XV91tRIEQVbF6nhhCU1Wc78JhAHPMFluXQEz74wErZvzDEF3SynFi3G5C0R8_JtSgmOJNxStjVzu1ldZ2oMuYxcpBqIe0hPEh6VR_IPSjN2R6Z6WK8nIsc2sKsKXdVj.msL_.On8HVGVGtCKYRaeCwSyNlRPV.fdZ7NOqo2MfKYHwdiyKMQ2DA4rKjd1gw0Sv8BHimn_kEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 372
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BSKb2ryaShxNs0AuRPwimVCFxEqc1rr7dwJmTOJuuXEZMZzNiO5IifE1XmXnrOmOvlr5b2WLYsrscWC8KePCNeHGFvS5oA3EuNZr2gnzMJlIqtr4SiI4CydGEIdVLWEp0Whw.4DrOrxLtCb_JJyiuj_KeNCEfbCGrOjpt.ryGZMqPip_rPuyq4t.A.SbWU9WB9u3gJxufP02CVzzxSa0wqO.MyuVCFcuhjXzW2ON2EUW1k7K.wXKKrITCbUXPHiVqqZTSnIhfNwhm2BwWEelnx9zcDlNiQZiL0sHs9vRS4FGcc93Gr9__g2pICCWiSkfXKBaoCONaEPeABmV_K2srREEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BSKb2ryaShxNs0AuRPwimVCFxEqc1rr7dwJmTOJuuXEZMZzNiO5IifE1XmXnrOmOvlr5b2WLYsrscWC8KePCNeHGFvS5oA3EuNZr2gnzMJlIqtr4SiI4CydGEIdVLWEp0Whw.4DrOrxLtCb_JJyiuj_KeNCEfbCGrOjpt.ryGZMqPip_rPuyq4t.A.SbWU9WB9u3gJxufP02CVzzxSa0wqO.MyuVCFcuhjXzW2ON2EUW1k7K.wXKKrITCbUXPHiVqqZTSnIhfNwhm2BwWEelnx9zcDlNiQZiL0sHs9vRS4FGcc93Gr9__g2pICCWiSkfXKBaoCONaEPeABmV_K2srREEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 2789
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BSKb2ryaShxNs0AuRPwimVCFxEqc1rr7dwJmTOJuuXEZMZzNiO5IifE1XmXnrOmOvlr5b2WLYsrscWC8KePCNeHGFvS5oA3EuNZr2gnzMJlIqtr4SiI4CydGEIdVLWEp0Whw.4DrOrxLtCb_JJyiuj_KeNCEfbCGrOjpt.ryGZMqPip_rPuyq4t.A.SbWU9WB9u3gJxufP02CVzzxSa0wqO.MyuVCFcuhjXzW2ON2EUW1k7K.wXKKrITCbUXPHiVqqZTSnIhfNwhm2BwWEelnx9zcDlNiQZiL0sHs9vRS4FGcc93Gr9__g2pICCWiSkfXKBaoCONaEPeABmV_K2srREEBAAA-/master.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BSKb2ryaShxNs0AuRPwimVCFxEqc1rr7dwJmTOJuuXEZMZzNiO5IifE1XmXnrOmOvlr5b2WLYsrscWC8KePCNeHGFvS5oA3EuNZr2gnzMJlIqtr4SiI4CydGEIdVLWEp0Whw.4DrOrxLtCb_JJyiuj_KeNCEfbCGrOjpt.ryGZMqPip_rPuyq4t.A.SbWU9WB9u3gJxufP02CVzzxSa0wqO.MyuVCFcuhjXzW2ON2EUW1k7K.wXKKrITCbUXPHiVqqZTSnIhfNwhm2BwWEelnx9zcDlNiQZiL0sHs9vRS4FGcc93Gr9__g2pICCWiSkfXKBaoCONaEPeABmV_K2srREEBAAA-/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 353
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAwXBXVeDIBgA4L8EqDuzu5ziZMMOHy9O7xAqN9Fjy2ru1_c8e.9t7C2KbJ84vPMu8knvvN1_IBKn1r50N3noLhS9B7.oZrAc2NwVg3Jkqd7KfWzQIDSVu24eDrqQWT.ZUudBNtO6U9PnXeEBy221_eTuTflA9XV91tRIEQVbF6nhhCU1Wc78JhAHPMFluXQEz74wErZvzDEF3SynFi3G5C0R8_JtSgmOJNxStjVzu1ldZ2oMuYxcpBqIe0hPEh6VR_IPSjN2R6Z6WK8nIsc2sKsKXdVj.msL_.On8HVGVGtCKYRaeCwSyNlRPV.fdZ7NOqo2MfKYHwdiyKMQ2DA4rKjd1gw0Sv8BHimn_kEBAAA-/master.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAwXBXVeDIBgA4L8EqDuzu5ziZMMOHy9O7xAqN9Fjy2ru1_c8e.9t7C2KbJ84vPMu8knvvN1_IBKn1r50N3noLhS9B7.oZrAc2NwVg3Jkqd7KfWzQIDSVu24eDrqQWT.ZUudBNtO6U9PnXeEBy221_eTuTflA9XV91tRIEQVbF6nhhCU1Wc78JhAHPMFluXQEz74wErZvzDEF3SynFi3G5C0R8_JtSgmOJNxStjVzu1ldZ2oMuYxcpBqIe0hPEh6VR_IPSjN2R6Z6WK8nIsc2sKsKXdVj.msL_.On8HVGVGtCKYRaeCwSyNlRPV.fdZ7NOqo2MfKYHwdiyKMQ2DA4rKjd1gw0Sv8BHimn_kEBAAA-/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 542
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BSKb2ryaShxNs0AuRPwimVCFxEqc1rr7dwJmTOJuuXEZMZzNiO5IifE1XmXnrOmOvlr5b2WLYsrscWC8KePCNeHGFvS5oA3EuNZr2gnzMJlIqtr4SiI4CydGEIdVLWEp0Whw.4DrOrxLtCb_JJyiuj_KeNCEfbCGrOjpt.ryGZMqPip_rPuyq4t.A.SbWU9WB9u3gJxufP02CVzzxSa0wqO.MyuVCFcuhjXzW2ON2EUW1k7K.wXKKrITCbUXPHiVqqZTSnIhfNwhm2BwWEelnx9zcDlNiQZiL0sHs9vRS4FGcc93Gr9__g2pICCWiSkfXKBaoCONaEPeABmV_K2srREEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BSKb2ryaShxNs0AuRPwimVCFxEqc1rr7dwJmTOJuuXEZMZzNiO5IifE1XmXnrOmOvlr5b2WLYsrscWC8KePCNeHGFvS5oA3EuNZr2gnzMJlIqtr4SiI4CydGEIdVLWEp0Whw.4DrOrxLtCb_JJyiuj_KeNCEfbCGrOjpt.ryGZMqPip_rPuyq4t.A.SbWU9WB9u3gJxufP02CVzzxSa0wqO.MyuVCFcuhjXzW2ON2EUW1k7K.wXKKrITCbUXPHiVqqZTSnIhfNwhm2BwWEelnx9zcDlNiQZiL0sHs9vRS4FGcc93Gr9__g2pICCWiSkfXKBaoCONaEPeABmV_K2srREEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 385
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAwXBXVeDIBgA4L8EqDuzu5ziZMMOHy9O7xAqN9Fjy2ru1_c8e.9t7C2KbJ84vPMu8knvvN1_IBKn1r50N3noLhS9B7.oZrAc2NwVg3Jkqd7KfWzQIDSVu24eDrqQWT.ZUudBNtO6U9PnXeEBy221_eTuTflA9XV91tRIEQVbF6nhhCU1Wc78JhAHPMFluXQEz74wErZvzDEF3SynFi3G5C0R8_JtSgmOJNxStjVzu1ldZ2oMuYxcpBqIe0hPEh6VR_IPSjN2R6Z6WK8nIsc2sKsKXdVj.msL_.On8HVGVGtCKYRaeCwSyNlRPV.fdZ7NOqo2MfKYHwdiyKMQ2DA4rKjd1gw0Sv8BHimn_kEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAwXBXVeDIBgA4L8EqDuzu5ziZMMOHy9O7xAqN9Fjy2ru1_c8e.9t7C2KbJ84vPMu8knvvN1_IBKn1r50N3noLhS9B7.oZrAc2NwVg3Jkqd7KfWzQIDSVu24eDrqQWT.ZUudBNtO6U9PnXeEBy221_eTuTflA9XV91tRIEQVbF6nhhCU1Wc78JhAHPMFluXQEz74wErZvzDEF3SynFi3G5C0R8_JtSgmOJNxStjVzu1ldZ2oMuYxcpBqIe0hPEh6VR_IPSjN2R6Z6WK8nIsc2sKsKXdVj.msL_.On8HVGVGtCKYRaeCwSyNlRPV.fdZ7NOqo2MfKYHwdiyKMQ2DA4rKjd1gw0Sv8BHimn_kEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 447
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw2OwXKCMBQAf.kRQKVHC2KhSZtIEpJbDDhYAqLTCubry.xxZ3Y2CRpIguZsohgi2EZtsmvii71sQ4MAdpc3cdQvO3R5O7i9zgRnfUyVTBD2K5V4UDQvJ8.fNBAgj_vFoMNN5uxeec2bPC6.Un0lvrjr7MBazj6sEDc6Tg.TFR0ThavklBKpb9WI59XL9kf_EYRnE9h1YY54PinTF7XN53nt93og37R3XEqnS8TASvcsgSiRFk_rMyB1H7K8wybtXgx.FRt0fAb2yetpY0dHqNcH6jE0I19KtFTnoAvN..8GC7bBLovwaANaEWXraTjVCkoUeSUFPqWupFK82sz5MhSi8d1Ve0j.AY.hkqpBAQAA/master.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw2OwXKCMBQAf.kRQKVHC2KhSZtIEpJbDDhYAqLTCubry.xxZ3Y2CRpIguZsohgi2EZtsmvii71sQ4MAdpc3cdQvO3R5O7i9zgRnfUyVTBD2K5V4UDQvJ8.fNBAgj_vFoMNN5uxeec2bPC6.Un0lvrjr7MBazj6sEDc6Tg.TFR0ThavklBKpb9WI59XL9kf_EYRnE9h1YY54PinTF7XN53nt93og37R3XEqnS8TASvcsgSiRFk_rMyB1H7K8wybtXgx.FRt0fAb2yetpY0dHqNcH6jE0I19KtFTnoAvN..8GC7bBLovwaANaEWXraTjVCkoUeSUFPqWupFK82sz5MhSi8d1Ve0j.AY.hkqpBAQAA/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 1021
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw2OwXKCMBQAf.kRQKVHC2KhSZtIEpJbDDhYAqLTCubry.xxZ3Y2CRpIguZsohgi2EZtsmvii71sQ4MAdpc3cdQvO3R5O7i9zgRnfUyVTBD2K5V4UDQvJ8.fNBAgj_vFoMNN5uxeec2bPC6.Un0lvrjr7MBazj6sEDc6Tg.TFR0ThavklBKpb9WI59XL9kf_EYRnE9h1YY54PinTF7XN53nt93og37R3XEqnS8TASvcsgSiRFk_rMyB1H7K8wybtXgx.FRt0fAb2yetpY0dHqNcH6jE0I19KtFTnoAvN..8GC7bBLovwaANaEWXraTjVCkoUeSUFPqWupFK82sz5MhSi8d1Ve0j.AY.hkqpBAQAA/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw2OwXKCMBQAf.kRQKVHC2KhSZtIEpJbDDhYAqLTCubry.xxZ3Y2CRpIguZsohgi2EZtsmvii71sQ4MAdpc3cdQvO3R5O7i9zgRnfUyVTBD2K5V4UDQvJ8.fNBAgj_vFoMNN5uxeec2bPC6.Un0lvrjr7MBazj6sEDc6Tg.TFR0ThavklBKpb9WI59XL9kf_EYRnE9h1YY54PinTF7XN53nt93og37R3XEqnS8TASvcsgSiRFk_rMyB1H7K8wybtXgx.FRt0fAb2yetpY0dHqNcH6jE0I19KtFTnoAvN..8GC7bBLovwaANaEWXraTjVCkoUeSUFPqWupFK82sz5MhSi8d1Ve0j.AY.hkqpBAQAA/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 4258
+        },
+        {
+          "url": "https://api.themoviedb.org/3/tv/1396/season/1/episode/1?language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/1396/season/1/episode/1?language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 184
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BSKb2ryaShxNs0AuRPwimVCFxEqc1rr7dwJmTOJuuXEZMZzNiO5IifE1XmXnrOmOvlr5b2WLYsrscWC8KePCNeHGFvS5oA3EuNZr2gnzMJlIqtr4SiI4CydGEIdVLWEp0Whw.4DrOrxLtCb_JJyiuj_KeNCEfbCGrOjpt.ryGZMqPip_rPuyq4t.A.SbWU9WB9u3gJxufP02CVzzxSa0wqO.MyuVCFcuhjXzW2ON2EUW1k7K.wXKKrITCbUXPHiVqqZTSnIhfNwhm2BwWEelnx9zcDlNiQZiL0sHs9vRS4FGcc93Gr9__g2pICCWiSkfXKBaoCONaEPeABmV_K2srREEBAAA-/master.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BSKb2ryaShxNs0AuRPwimVCFxEqc1rr7dwJmTOJuuXEZMZzNiO5IifE1XmXnrOmOvlr5b2WLYsrscWC8KePCNeHGFvS5oA3EuNZr2gnzMJlIqtr4SiI4CydGEIdVLWEp0Whw.4DrOrxLtCb_JJyiuj_KeNCEfbCGrOjpt.ryGZMqPip_rPuyq4t.A.SbWU9WB9u3gJxufP02CVzzxSa0wqO.MyuVCFcuhjXzW2ON2EUW1k7K.wXKKrITCbUXPHiVqqZTSnIhfNwhm2BwWEelnx9zcDlNiQZiL0sHs9vRS4FGcc93Gr9__g2pICCWiSkfXKBaoCONaEPeABmV_K2srREEBAAA-/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 334
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw2OwXKCMBQAf.kRQKVHC2KhSZtIEpJbDDhYAqLTCubry.xxZ3Y2CRpIguZsohgi2EZtsmvii71sQ4MAdpc3cdQvO3R5O7i9zgRnfUyVTBD2K5V4UDQvJ8.fNBAgj_vFoMNN5uxeec2bPC6.Un0lvrjr7MBazj6sEDc6Tg.TFR0ThavklBKpb9WI59XL9kf_EYRnE9h1YY54PinTF7XN53nt93og37R3XEqnS8TASvcsgSiRFk_rMyB1H7K8wybtXgx.FRt0fAb2yetpY0dHqNcH6jE0I19KtFTnoAvN..8GC7bBLovwaANaEWXraTjVCkoUeSUFPqWupFK82sz5MhSi8d1Ve0j.AY.hkqpBAQAA/master.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw2OwXKCMBQAf.kRQKVHC2KhSZtIEpJbDDhYAqLTCubry.xxZ3Y2CRpIguZsohgi2EZtsmvii71sQ4MAdpc3cdQvO3R5O7i9zgRnfUyVTBD2K5V4UDQvJ8.fNBAgj_vFoMNN5uxeec2bPC6.Un0lvrjr7MBazj6sEDc6Tg.TFR0ThavklBKpb9WI59XL9kf_EYRnE9h1YY54PinTF7XN53nt93og37R3XEqnS8TASvcsgSiRFk_rMyB1H7K8wybtXgx.FRt0fAb2yetpY0dHqNcH6jE0I19KtFTnoAvN..8GC7bBLovwaANaEWXraTjVCkoUeSUFPqWupFK82sz5MhSi8d1Ve0j.AY.hkqpBAQAA/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 370
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAwXBXVeDIBgA4L8EqDuzu5ziZMMOHy9O7xAqN9Fjy2ru1_c8e.9t7C2KbJ84vPMu8knvvN1_IBKn1r50N3noLhS9B7.oZrAc2NwVg3Jkqd7KfWzQIDSVu24eDrqQWT.ZUudBNtO6U9PnXeEBy221_eTuTflA9XV91tRIEQVbF6nhhCU1Wc78JhAHPMFluXQEz74wErZvzDEF3SynFi3G5C0R8_JtSgmOJNxStjVzu1ldZ2oMuYxcpBqIe0hPEh6VR_IPSjN2R6Z6WK8nIsc2sKsKXdVj.msL_.On8HVGVGtCKYRaeCwSyNlRPV.fdZ7NOqo2MfKYHwdiyKMQ2DA4rKjd1gw0Sv8BHimn_kEBAAA-/master.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAwXBXVeDIBgA4L8EqDuzu5ziZMMOHy9O7xAqN9Fjy2ru1_c8e.9t7C2KbJ84vPMu8knvvN1_IBKn1r50N3noLhS9B7.oZrAc2NwVg3Jkqd7KfWzQIDSVu24eDrqQWT.ZUudBNtO6U9PnXeEBy221_eTuTflA9XV91tRIEQVbF6nhhCU1Wc78JhAHPMFluXQEz74wErZvzDEF3SynFi3G5C0R8_JtSgmOJNxStjVzu1ldZ2oMuYxcpBqIe0hPEh6VR_IPSjN2R6Z6WK8nIsc2sKsKXdVj.msL_.On8HVGVGtCKYRaeCwSyNlRPV.fdZ7NOqo2MfKYHwdiyKMQ2DA4rKjd1gw0Sv8BHimn_kEBAAA-/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 936
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BSKb2ryaShxNs0AuRPwimVCFxEqc1rr7dwJmTOJuuXEZMZzNiO5IifE1XmXnrOmOvlr5b2WLYsrscWC8KePCNeHGFvS5oA3EuNZr2gnzMJlIqtr4SiI4CydGEIdVLWEp0Whw.4DrOrxLtCb_JJyiuj_KeNCEfbCGrOjpt.ryGZMqPip_rPuyq4t.A.SbWU9WB9u3gJxufP02CVzzxSa0wqO.MyuVCFcuhjXzW2ON2EUW1k7K.wXKKrITCbUXPHiVqqZTSnIhfNwhm2BwWEelnx9zcDlNiQZiL0sHs9vRS4FGcc93Gr9__g2pICCWiSkfXKBaoCONaEPeABmV_K2srREEBAAA-/master.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BSKb2ryaShxNs0AuRPwimVCFxEqc1rr7dwJmTOJuuXEZMZzNiO5IifE1XmXnrOmOvlr5b2WLYsrscWC8KePCNeHGFvS5oA3EuNZr2gnzMJlIqtr4SiI4CydGEIdVLWEp0Whw.4DrOrxLtCb_JJyiuj_KeNCEfbCGrOjpt.ryGZMqPip_rPuyq4t.A.SbWU9WB9u3gJxufP02CVzzxSa0wqO.MyuVCFcuhjXzW2ON2EUW1k7K.wXKKrITCbUXPHiVqqZTSnIhfNwhm2BwWEelnx9zcDlNiQZiL0sHs9vRS4FGcc93Gr9__g2pICCWiSkfXKBaoCONaEPeABmV_K2srREEBAAA-/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 469
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAwXBXVeDIBgA4L8EqDuzu5ziZMMOHy9O7xAqN9Fjy2ru1_c8e.9t7C2KbJ84vPMu8knvvN1_IBKn1r50N3noLhS9B7.oZrAc2NwVg3Jkqd7KfWzQIDSVu24eDrqQWT.ZUudBNtO6U9PnXeEBy221_eTuTflA9XV91tRIEQVbF6nhhCU1Wc78JhAHPMFluXQEz74wErZvzDEF3SynFi3G5C0R8_JtSgmOJNxStjVzu1ldZ2oMuYxcpBqIe0hPEh6VR_IPSjN2R6Z6WK8nIsc2sKsKXdVj.msL_.On8HVGVGtCKYRaeCwSyNlRPV.fdZ7NOqo2MfKYHwdiyKMQ2DA4rKjd1gw0Sv8BHimn_kEBAAA-/master.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAwXBXVeDIBgA4L8EqDuzu5ziZMMOHy9O7xAqN9Fjy2ru1_c8e.9t7C2KbJ84vPMu8knvvN1_IBKn1r50N3noLhS9B7.oZrAc2NwVg3Jkqd7KfWzQIDSVu24eDrqQWT.ZUudBNtO6U9PnXeEBy221_eTuTflA9XV91tRIEQVbF6nhhCU1Wc78JhAHPMFluXQEz74wErZvzDEF3SynFi3G5C0R8_JtSgmOJNxStjVzu1ldZ2oMuYxcpBqIe0hPEh6VR_IPSjN2R6Z6WK8nIsc2sKsKXdVj.msL_.On8HVGVGtCKYRaeCwSyNlRPV.fdZ7NOqo2MfKYHwdiyKMQ2DA4rKjd1gw0Sv8BHimn_kEBAAA-/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 705
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw2OwXKCMBQAf.kRQKVHC2KhSZtIEpJbDDhYAqLTCubry.xxZ3Y2CRpIguZsohgi2EZtsmvii71sQ4MAdpc3cdQvO3R5O7i9zgRnfUyVTBD2K5V4UDQvJ8.fNBAgj_vFoMNN5uxeec2bPC6.Un0lvrjr7MBazj6sEDc6Tg.TFR0ThavklBKpb9WI59XL9kf_EYRnE9h1YY54PinTF7XN53nt93og37R3XEqnS8TASvcsgSiRFk_rMyB1H7K8wybtXgx.FRt0fAb2yetpY0dHqNcH6jE0I19KtFTnoAvN..8GC7bBLovwaANaEWXraTjVCkoUeSUFPqWupFK82sz5MhSi8d1Ve0j.AY.hkqpBAQAA/master.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw2OwXKCMBQAf.kRQKVHC2KhSZtIEpJbDDhYAqLTCubry.xxZ3Y2CRpIguZsohgi2EZtsmvii71sQ4MAdpc3cdQvO3R5O7i9zgRnfUyVTBD2K5V4UDQvJ8.fNBAgj_vFoMNN5uxeec2bPC6.Un0lvrjr7MBazj6sEDc6Tg.TFR0ThavklBKpb9WI59XL9kf_EYRnE9h1YY54PinTF7XN53nt93og37R3XEqnS8TASvcsgSiRFk_rMyB1H7K8wybtXgx.FRt0fAb2yetpY0dHqNcH6jE0I19KtFTnoAvN..8GC7bBLovwaANaEWXraTjVCkoUeSUFPqWupFK82sz5MhSi8d1Ve0j.AY.hkqpBAQAA/master.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 864
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BSKb2ryaShxNs0AuRPwimVCFxEqc1rr7dwJmTOJuuXEZMZzNiO5IifE1XmXnrOmOvlr5b2WLYsrscWC8KePCNeHGFvS5oA3EuNZr2gnzMJlIqtr4SiI4CydGEIdVLWEp0Whw.4DrOrxLtCb_JJyiuj_KeNCEfbCGrOjpt.ryGZMqPip_rPuyq4t.A.SbWU9WB9u3gJxufP02CVzzxSa0wqO.MyuVCFcuhjXzW2ON2EUW1k7K.wXKKrITCbUXPHiVqqZTSnIhfNwhm2BwWEelnx9zcDlNiQZiL0sHs9vRS4FGcc93Gr9__g2pICCWiSkfXKBaoCONaEPeABmV_K2srREEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw3OW3KDIBQA0C2BSKb2ryaShxNs0AuRPwimVCFxEqc1rr7dwJmTOJuuXEZMZzNiO5IifE1XmXnrOmOvlr5b2WLYsrscWC8KePCNeHGFvS5oA3EuNZr2gnzMJlIqtr4SiI4CydGEIdVLWEp0Whw.4DrOrxLtCb_JJyiuj_KeNCEfbCGrOjpt.ryGZMqPip_rPuyq4t.A.SbWU9WB9u3gJxufP02CVzzxSa0wqO.MyuVCFcuhjXzW2ON2EUW1k7K.wXKKrITCbUXPHiVqqZTSnIhfNwhm2BwWEelnx9zcDlNiQZiL0sHs9vRS4FGcc93Gr9__g2pICCWiSkfXKBaoCONaEPeABmV_K2srREEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 580
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAwXBXVeDIBgA4L8EqDuzu5ziZMMOHy9O7xAqN9Fjy2ru1_c8e.9t7C2KbJ84vPMu8knvvN1_IBKn1r50N3noLhS9B7.oZrAc2NwVg3Jkqd7KfWzQIDSVu24eDrqQWT.ZUudBNtO6U9PnXeEBy221_eTuTflA9XV91tRIEQVbF6nhhCU1Wc78JhAHPMFluXQEz74wErZvzDEF3SynFi3G5C0R8_JtSgmOJNxStjVzu1ldZ2oMuYxcpBqIe0hPEh6VR_IPSjN2R6Z6WK8nIsc2sKsKXdVj.msL_.On8HVGVGtCKYRaeCwSyNlRPV.fdZ7NOqo2MfKYHwdiyKMQ2DA4rKjd1gw0Sv8BHimn_kEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAwXBXVeDIBgA4L8EqDuzu5ziZMMOHy9O7xAqN9Fjy2ru1_c8e.9t7C2KbJ84vPMu8knvvN1_IBKn1r50N3noLhS9B7.oZrAc2NwVg3Jkqd7KfWzQIDSVu24eDrqQWT.ZUudBNtO6U9PnXeEBy221_eTuTflA9XV91tRIEQVbF6nhhCU1Wc78JhAHPMFluXQEz74wErZvzDEF3SynFi3G5C0R8_JtSgmOJNxStjVzu1ldZ2oMuYxcpBqIe0hPEh6VR_IPSjN2R6Z6WK8nIsc2sKsKXdVj.msL_.On8HVGVGtCKYRaeCwSyNlRPV.fdZ7NOqo2MfKYHwdiyKMQ2DA4rKjd1gw0Sv8BHimn_kEBAAA-/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 375
+        },
+        {
+          "url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw2OwXKCMBQAf.kRQKVHC2KhSZtIEpJbDDhYAqLTCubry.xxZ3Y2CRpIguZsohgi2EZtsmvii71sQ4MAdpc3cdQvO3R5O7i9zgRnfUyVTBD2K5V4UDQvJ8.fNBAgj_vFoMNN5uxeec2bPC6.Un0lvrjr7MBazj6sEDc6Tg.TFR0ThavklBKpb9WI59XL9kf_EYRnE9h1YY54PinTF7XN53nt93og37R3XEqnS8TASvcsgSiRFk_rMyB1H7K8wybtXgx.FRt0fAb2yetpY0dHqNcH6jE0I19KtFTnoAvN..8GC7bBLovwaANaEWXraTjVCkoUeSUFPqWupFK82sz5MhSi8d1Ve0j.AY.hkqpBAQAA/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "response_url": "https://quietmidnightgardeningideas.site/J5aAmhrzk/pl/H4sIAAAAAAAAAw2OwXKCMBQAf.kRQKVHC2KhSZtIEpJbDDhYAqLTCubry.xxZ3Y2CRpIguZsohgi2EZtsmvii71sQ4MAdpc3cdQvO3R5O7i9zgRnfUyVTBD2K5V4UDQvJ8.fNBAgj_vFoMNN5uxeec2bPC6.Un0lvrjr7MBazj6sEDc6Tg.TFR0ThavklBKpb9WI59XL9kf_EYRnE9h1YY54PinTF7XN53nt93og37R3XEqnS8TASvcsgSiRFk_rMyB1H7K8wybtXgx.FRt0fAb2yetpY0dHqNcH6jE0I19KtFTnoAvN..8GC7bBLovwaANaEWXraTjVCkoUeSUFPqWupFK82sz5MhSi8d1Ve0j.AY.hkqpBAQAA/7a67bab9038b6ca38d13b08cead24c49/index.m3u8",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/vnd.apple.mpegurl",
+          "duration_ms": 610
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "raw": 3,
+      "playable": 3,
+      "verified": 3,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 13912
+    },
+    {
+      "provider_id": "uhdmovies",
+      "provider_name": "📺 UHDMovies",
+      "semantic_type": "movie",
+      "fixture_title": "Interstellar",
+      "status": "no_streams",
+      "debug_stage": "provider_network_http_error",
+      "debug_model": {
+        "strategy": "html_scraper",
+        "source_runtime_family": "catalogue-form-html",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 1,
+        "route_kinds": [
+          "search"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://uhdmovies.autos",
+        "official_hub": "https://mmodlist.org/",
+        "official_api": null
+      },
+      "debug_fetch_count": 22,
+      "debug_provider_fetch_count": 21,
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/movie/157336?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/movie/157336?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 134
+        },
+        {
+          "url": "https://uhdmovies.autos/?s=Interstellar",
+          "response_url": "https://uhdmovies.autos/search/Interstellar",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 183
+        },
+        {
+          "url": "https://uhdmovies.autos/search/Interstellar/",
+          "response_url": "https://uhdmovies.autos/search/Interstellar/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 39
+        },
+        {
+          "url": "https://uhdmovies.autos/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.autos/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 27
+        },
+        {
+          "url": "https://uhdmovies.autos/download-interstellar-2014-english-audio-english-1080p-2160p-4k-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.autos/download-interstellar-2014-english-audio-english-1080p-2160p-4k-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 27
+        },
+        {
+          "url": "https://uhdmovies.autos/download-interstellar-2014-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.autos/download-interstellar-2014-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 23
+        },
+        {
+          "url": "https://uhdmovies.autos/download-the-source-aka-ourika-2024-season-1-hindi-1080p/",
+          "response_url": "https://uhdmovies.autos/download-the-source-aka-ourika-2024-season-1-hindi-1080p/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 27
+        },
+        {
+          "url": "https://uhdmovies.autos/download-the-wolf-pack-2019-hindi-1080p/",
+          "response_url": "https://uhdmovies.autos/download-the-wolf-pack-2019-hindi-1080p/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 27
+        },
+        {
+          "url": "https://uhdmovies.autos/download-hi-venus-2022-season-1-hindi-audio-1080p-x264-1080p-hevc-web-dl-esub/",
+          "response_url": "https://uhdmovies.autos/download-hi-venus-2022-season-1-hindi-audio-1080p-x264-1080p-hevc-web-dl-esub/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 32
+        },
+        {
+          "url": "https://uhdmovies.autos/download-thanksgiving-2023-english-audio-2160p-4k-1080p-x264-hevc-hdr-dovi-web-dl-esubs/",
+          "response_url": "https://uhdmovies.autos/download-thanksgiving-2023-english-audio-2160p-4k-1080p-x264-hevc-hdr-dovi-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 37
+        },
+        {
+          "url": "https://uhdmovies.autos/download-night-teeth-2021-hindi-english-1080p-10bit-hdr-web-dl-esubs/",
+          "response_url": "https://uhdmovies.autos/download-night-teeth-2021-hindi-english-1080p-10bit-hdr-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 49
+        },
+        {
+          "url": "https://uhdmovies.autos/download-the-suicide-squad-2021-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.autos/download-the-suicide-squad-2021-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 27
+        },
+        {
+          "url": "https://uhdmovies.autos/download-joker-2019-dual-audio-hindi-english-2160p-4k-1080p-10bit-1080p-x264-remux-hdr-dovi-bluray-esubs/",
+          "response_url": "https://uhdmovies.autos/download-joker-2019-dual-audio-hindi-english-2160p-4k-1080p-10bit-1080p-x264-remux-hdr-dovi-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 33
+        },
+        {
+          "url": "https://uhdmovies.autos/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.autos/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 25
+        },
+        {
+          "url": "https://uhdmovies.autos/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.autos/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 29
+        },
+        {
+          "url": "https://uhdmovies.autos/download-the-source-aka-ourika-2024-season-1-hindi-1080p/",
+          "response_url": "https://uhdmovies.autos/download-the-source-aka-ourika-2024-season-1-hindi-1080p/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 25
+        },
+        {
+          "url": "https://uhdmovies.autos/download-the-wolf-pack-2019-hindi-1080p/",
+          "response_url": "https://uhdmovies.autos/download-the-wolf-pack-2019-hindi-1080p/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 24
+        },
+        {
+          "url": "https://uhdmovies.autos/download-joker-2019-dual-audio-hindi-english-2160p-4k-1080p-10bit-1080p-x264-remux-hdr-dovi-bluray-esubs/",
+          "response_url": "https://uhdmovies.autos/download-joker-2019-dual-audio-hindi-english-2160p-4k-1080p-10bit-1080p-x264-remux-hdr-dovi-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 24
+        },
+        {
+          "url": "https://uhdmovies.autos/download-the-shawshank-redemption-1994-dual-audio-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs-2/",
+          "response_url": "https://uhdmovies.autos/download-the-shawshank-redemption-1994-dual-audio-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs-2/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 29
+        },
+        {
+          "url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs%2F",
+          "response_url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs%2F",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 698
+        },
+        {
+          "url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs%2F&",
+          "response_url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs%2F&",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 994
+        },
+        {
+          "url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-the-source-aka-ourika-2024-season-1-hindi-1080p%2F",
+          "response_url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-the-source-aka-ourika-2024-season-1-hindi-1080p%2F",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 795
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 3438
+    },
+    {
+      "provider_id": "uhdmovies",
+      "provider_name": "📺 UHDMovies",
+      "semantic_type": "tv",
+      "fixture_title": "Breaking Bad",
+      "status": "no_streams",
+      "debug_stage": "provider_network_http_error",
+      "debug_model": {
+        "strategy": "html_scraper",
+        "source_runtime_family": "catalogue-form-html",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 1,
+        "route_kinds": [
+          "search"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://uhdmovies.autos",
+        "official_hub": "https://mmodlist.org/",
+        "official_api": null
+      },
+      "debug_fetch_count": 21,
+      "debug_provider_fetch_count": 20,
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/1396?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/1396?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 132
+        },
+        {
+          "url": "https://uhdmovies.autos/?s=Breaking%20Bad",
+          "response_url": "https://uhdmovies.autos/search/Breaking%20Bad",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 113
+        },
+        {
+          "url": "https://uhdmovies.autos/download-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.autos/download-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 39
+        },
+        {
+          "url": "https://uhdmovies.autos/download-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.autos/download-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 28
+        },
+        {
+          "url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs%2F",
+          "response_url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs%2F",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 1133
+        },
+        {
+          "url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs%2F&",
+          "response_url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs%2F&",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 1002
+        },
+        {
+          "url": "https://uhdmovies.autos/download-breaking-bad-hindi-1080p-2160p/",
+          "response_url": "https://uhdmovies.autos/download-breaking-bad-hindi-1080p-2160p/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 36
+        },
+        {
+          "url": "https://uhdmovies.autos/download-breaking-bad-hindi-1080p-2160p/",
+          "response_url": "https://uhdmovies.autos/download-breaking-bad-hindi-1080p-2160p/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 59
+        },
+        {
+          "url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-breaking-bad-hindi-1080p-2160p%2F",
+          "response_url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-breaking-bad-hindi-1080p-2160p%2F",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 883
+        },
+        {
+          "url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-breaking-bad-hindi-1080p-2160p%2F&",
+          "response_url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-breaking-bad-hindi-1080p-2160p%2F&",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 836
+        },
+        {
+          "url": "https://uhdmovies.autos/download-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "response_url": "https://uhdmovies.autos/download-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 30
+        },
+        {
+          "url": "https://uhdmovies.autos/download-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "response_url": "https://uhdmovies.autos/download-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 28
+        },
+        {
+          "url": "https://uhdmovies.autos/download-xo-kitty-2023-season-03-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "response_url": "https://uhdmovies.autos/download-xo-kitty-2023-season-03-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 31
+        },
+        {
+          "url": "https://uhdmovies.autos/download-sins-ofkujo-2026-season-01-multi-audio-hindi-english-japanese-1080p-x264-web-dl-esubs/",
+          "response_url": "https://uhdmovies.autos/download-sins-ofkujo-2026-season-01-multi-audio-hindi-english-japanese-1080p-x264-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 37
+        },
+        {
+          "url": "https://uhdmovies.autos/download-it-takes-a-village-2026-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "response_url": "https://uhdmovies.autos/download-it-takes-a-village-2026-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 39
+        },
+        {
+          "url": "https://uhdmovies.autos/download-agent-from-above-2026-season-01-dual-audio-hindi-chinese-tamil-telugu-1080p-x264-hevc-hdr-dovi-web-dl-esubs/",
+          "response_url": "https://uhdmovies.autos/download-agent-from-above-2026-season-01-dual-audio-hindi-chinese-tamil-telugu-1080p-x264-hevc-hdr-dovi-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 54
+        },
+        {
+          "url": "https://uhdmovies.autos/download-joy-of-life-2019-season-1-dual-audio-hindi-chinese-1080p-x264-web-dl-esubs/",
+          "response_url": "https://uhdmovies.autos/download-joy-of-life-2019-season-1-dual-audio-hindi-chinese-1080p-x264-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 38
+        },
+        {
+          "url": "https://uhdmovies.autos/download-goat-2160p-bluray-movie-download-goat-2026-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "response_url": "https://uhdmovies.autos/download-goat-2160p-bluray-movie-download-goat-2026-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 26
+        },
+        {
+          "url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs%2F",
+          "response_url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs%2F",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 956
+        },
+        {
+          "url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs%2F&",
+          "response_url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs%2F&",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 801
+        },
+        {
+          "url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-xo-kitty-2023-season-03-dual-audio-hindi-english-1080p-x264-web-dl-esubs%2F",
+          "response_url": "https://uhdmovies.autos/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.autos%2Fdownload-xo-kitty-2023-season-03-dual-audio-hindi-english-1080p-x264-web-dl-esubs%2F",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 845
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 7284
+    }
+  ],
+  "upstreamPositiveAccounting": {
+    "policy": "lost-upstream-positive-lanes-must-be-disabled-repair-or-off",
+    "activeLostPairs": [],
+    "repairDebtPairs": [],
+    "offDebtPairs": [],
+    "unaccountedPairs": [],
+    "gatePassed": true
+  }
+}

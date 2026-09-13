@@ -1492,3 +1492,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The native declared-provider matrix no longer requires three static representative fixture slugs. Any adaptive fallback fixture is resolved through `rotating_corpus.fixture_by_slug()` + `canonical_lane()` to `movie|tv|anime`; the old `fixture_by_type` map is compatibility-only for historical targeted evidence.
 - This prevents fallback titles from being misclassified/unobserved and prevents old fixed samples such as Breaking Bad 2008 from becoming an ordinary Lab prerequisite.
 - The synthetic matrix contract itself now uses the exact Hub-46 scope and recent global fixture pools, matching final acceptance instead of asserting stale 96/static-fixture output.
+
+## 2026-09-13 — fail-closed batch quarantine repair v1
+
+- Run `34766893110` replaces the all-targets-or-nothing Repair retry loop with a fail-closed batch quarantine transaction. Requested providers are repaired together; any provider with an explicit lost upstream-positive lane or certain recent-corpus parity regression is removed, the workspace is hard-reset to the pre-attempt SHA, and the remaining providers are retried together. Failed-provider mutations never survive.
+- Accepted providers: `animevost-fr, playimdb, uhdmovies`. Quarantined providers: `animesama-co, animevostfr, french-manga, kurage, sekai, streamzo, voiranime, voiranime-homes, voiranime-rip`. Quarantined lanes: `{'animesama-co': ['anime'], 'animevostfr': ['anime'], 'french-manga': ['anime'], 'kurage': ['anime'], 'sekai': ['anime'], 'streamzo': ['anime', 'movie'], 'voiranime': ['anime'], 'voiranime-homes': ['anime', 'movie'], 'voiranime-rip': ['anime']}`.
+- Acceptance requires both the strict representative yield gate and a 12-candidate-per-lane recent-corpus parity pass. RESAMPLE/technical-only rows are not silently reclassified as regressions.
+- No NiakVIO minimizer ran in this repair loop.

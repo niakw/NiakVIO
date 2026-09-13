@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 2,
+  "baselineSha": "9040a4fc7d240a67e8d42ea83ed5f0ec038b5ca3",
+  "requestedProviders": [
+    "animesama-co",
+    "animevost-fr",
+    "animevostfr",
+    "french-manga",
+    "kurage",
+    "playimdb",
+    "sekai",
+    "streamzo",
+    "uhdmovies",
+    "voiranime",
+    "voiranime-homes",
+    "voiranime-rip"
+  ],
+  "acceptedProviders": [
+    "animevost-fr",
+    "playimdb",
+    "uhdmovies"
+  ],
+  "quarantinedProviders": [
+    "animesama-co",
+    "animevostfr",
+    "french-manga",
+    "kurage",
+    "sekai",
+    "streamzo",
+    "voiranime",
+    "voiranime-homes",
+    "voiranime-rip"
+  ],
+  "quarantinedLanes": {
+    "animesama-co": [
+      "anime"
+    ],
+    "animevostfr": [
+      "anime"
+    ],
+    "french-manga": [
+      "anime"
+    ],
+    "kurage": [
+      "anime"
+    ],
+    "sekai": [
+      "anime"
+    ],
+    "streamzo": [
+      "anime",
+      "movie"
+    ],
+    "voiranime": [
+      "anime"
+    ],
+    "voiranime-homes": [
+      "anime",
+      "movie"
+    ],
+    "voiranime-rip": [
+      "anime"
+    ]
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "providers": [
+        "animesama-co",
+        "animevost-fr",
+        "animevostfr",
+        "french-manga",
+        "kurage",
+        "playimdb",
+        "sekai",
+        "streamzo",
+        "uhdmovies",
+        "voiranime",
+        "voiranime-homes",
+        "voiranime-rip"
+      ],
+      "repairReturnCode": 1,
+      "targetGatePassed": false,
+      "strictLostPairs": [
+        [
+          "animesama-co",
+          "anime"
+        ],
+        [
+          "animevostfr",
+          "anime"
+        ],
+        [
+          "kurage",
+          "anime"
+        ],
+        [
+          "sekai",
+          "anime"
+        ],
+        [
+          "voiranime",
+          "anime"
+        ],
+        [
+          "voiranime-rip",
+          "anime"
+        ]
+      ],
+      "quarantineReason": "strict_yield_loss",
+      "quarantinedProviders": [
+        "animesama-co",
+        "animevostfr",
+        "kurage",
+        "sekai",
+        "voiranime",
+        "voiranime-rip"
+      ]
+    },
+    {
+      "round": 2,
+      "providers": [
+        "animevost-fr",
+        "french-manga",
+        "playimdb",
+        "streamzo",
+        "uhdmovies",
+        "voiranime-homes"
+      ],
+      "repairReturnCode": 0,
+      "targetGatePassed": true,
+      "strictLostPairs": [],
+      "parityReturnCode": 0,
+      "parityStatusCounts": {
+        "FULL": 1,
+        "REGRESSION": 3,
+        "RESAMPLE": 2
+      },
+      "parityRegressionPairs": [
+        [
+          "french-manga",
+          "anime"
+        ],
+        [
+          "streamzo",
+          "anime"
+        ],
+        [
+          "streamzo",
+          "movie"
+        ],
+        [
+          "voiranime-homes",
+          "anime"
+        ],
+        [
+          "voiranime-homes",
+          "movie"
+        ]
+      ],
+      "quarantinedProviders": [
+        "french-manga",
+        "streamzo",
+        "voiranime-homes"
+      ]
+    },
+    {
+      "round": 3,
+      "providers": [
+        "animevost-fr",
+        "playimdb",
+        "uhdmovies"
+      ],
+      "repairReturnCode": 0,
+      "targetGatePassed": true,
+      "strictLostPairs": [],
+      "parityReturnCode": 0,
+      "parityStatusCounts": {
+        "FULL": 1,
+        "RESAMPLE": 2
+      },
+      "parityRegressionPairs": [],
+      "quarantinedProviders": []
+    }
+  ],
+  "strictYieldGatePreserved": true,
+  "recentParityGatePreserved": true,
+  "paritySamplesPerLane": 12,
+  "failedCandidateMutationsPreserved": false
+}

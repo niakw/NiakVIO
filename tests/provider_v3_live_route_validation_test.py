@@ -9,10 +9,18 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from validate_provider_v3_routes_live import (  # noqa: E402
+    provider_fetch,
     recipe_is_live,
     route_matches_url,
     validate_and_promote,
 )
+
+# Auxiliary metadata/identity calls are not Provider HTTP evidence. A 200 from
+# IMDb->MAL or Jikan must not mask an actual provider-origin 403/451 block.
+assert not provider_fetch({"url": "https://api.themoviedb.org/3/tv/1/external_ids"})
+assert not provider_fetch({"url": "https://id-mapping-api-malid.hf.space/api/resolve?id=tt1234567&s=1&e=1"})
+assert not provider_fetch({"url": "https://api.jikan.moe/v4/anime/1"})
+assert provider_fetch({"url": "https://anizone.to/anime?search=Failure%20Frame"})
 
 
 assert route_matches_url(
