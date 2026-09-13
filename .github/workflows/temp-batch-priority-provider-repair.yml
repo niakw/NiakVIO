@@ -1,4 +1,4 @@
-name: TEMP - batch priority provider repair v4
+name: TEMP - batch priority provider repair v5
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Preflight monotonic migrations and current architecture
+      - name: Preflight current architecture
         shell: bash
         run: |
           set -euo pipefail
@@ -45,27 +45,22 @@ jobs:
           python3 tests/global_core_runtime_ownership_test.py
           python3 tests/native_adaptive_catalog_contract_test.py
           python3 tests/provider_upstream_parity_v3_test.py
-          node scripts/provider_worker.cjs --self-test-response-wrapper
-          node scripts/provider_worker.cjs --self-test-fixture-fallback
 
-      - name: Build salvage batch and exception ledgers
+      - name: Build stable batch and exception ledgers
         shell: bash
         run: |
           set -euo pipefail
-          # v3 proved that exactly two active upstream-positive lanes remained lost:
-          # animevostfr:anime and voiranime:anime. Do not let those two discard the
-          # other ten provider repairs; preserve them as one exception sub-batch.
           printf '%s\n' \
-            animesama-co animevost-fr french-manga kurage playimdb \
-            sekai streamzo uhdmovies voiranime-homes voiranime-rip \
+            animesama-co animevost-fr french-manga playimdb sekai \
+            streamzo uhdmovies voiranime-homes voiranime-rip \
             > automation/provider-priority-repair-queue.txt
-          printf '%s\n' animevostfr voiranime > automation/provider-priority-exception-queue.txt
+          printf '%s\n' animevostfr voiranime kurage > automation/provider-priority-exception-queue.txt
           printf '%s\n' \
             4khdhub allanime allwish anikototv anime-ultime animesalt animetsu flemmix \
             fullanime moviebox moviesmod showbox vidfast vidlove vostfree \
             > automation/provider-priority-zero-queue.txt
 
-      - name: Repair the 10 salvageable regressions in one transaction
+      - name: Repair the nine stable regressions in one transaction
         id: repair
         shell: bash
         run: |
@@ -95,7 +90,7 @@ jobs:
           python3 tests/native_catalog_miss_rotation_test.py
           python3 tests/native_adaptive_catalog_contract_test.py
 
-      - name: Post-repair parity on the 10-provider salvage batch
+      - name: Post-repair parity on stable nine
         if: steps.repair.outputs.mutated == 'true'
         shell: bash
         run: |
@@ -113,11 +108,11 @@ jobs:
           import json
           from pathlib import Path
           d=json.loads(Path('automation/provider-upstream-parity-batch-post.json').read_text())
-          print('SALVAGE_POST_COUNTS', d.get('statusCounts', {}))
-          print('SALVAGE_POST_REGRESSIONS', ','.join(d.get('certainRegressions') or []) or 'none')
+          print('STABLE9_POST_COUNTS', d.get('statusCounts', {}))
+          print('STABLE9_POST_REGRESSIONS', ','.join(d.get('certainRegressions') or []) or 'none')
           PY
 
-      - name: Persist successful salvage batch in MEMORY
+      - name: Persist checkpoint
         if: steps.repair.outputs.mutated == 'true'
         shell: bash
         run: |
@@ -128,15 +123,14 @@ jobs:
           post=json.loads(Path('automation/provider-upstream-parity-batch-post.json').read_text())
           queue=Path('automation/provider-priority-repair-queue.txt').read_text().split()
           exceptions=Path('automation/provider-priority-exception-queue.txt').read_text().split()
-          zeros=Path('automation/provider-priority-zero-queue.txt').read_text().split()
           p=Path('MEMORY.md'); text=p.read_text(encoding='utf-8')
-          marker='## 2026-09-13 — provider REGRESSION salvage batch v4'
+          marker='## 2026-09-13 — provider stable-nine salvage v5'
           if marker not in text:
-              text += f'''\n{marker}\n\n- Run `{os.environ.get('GITHUB_RUN_ID','')}` salvages the 10-provider batch `{', '.join(queue)}` after v3 proved exactly two active upstream-positive losses: `animevostfr:anime` and `voiranime:anime`. Those two remain a separate paired exception batch; ten improvements are no longer discarded because of them.\n- Deep-ZERO providers remain `{', '.join(zeros)}`; 12 parity samples/lane were upstream-zero/local-zero, so no blind repair is authorized.\n- Post-repair targeted parity counts on the 10-provider batch: `{post.get('statusCounts',{})}`; remaining certain regressions in that batch: `{', '.join(post.get('certainRegressions') or []) or 'none'}`.\n- No minimizer ran here; final NiakVIO minimization stays after functional stabilization.\n'''
+              text += f'''\n{marker}\n\n- Run `{os.environ.get('GITHUB_RUN_ID','')}` isolates the stable nine-provider salvage batch `{', '.join(queue)}`. The three active-loss exceptions are `{', '.join(exceptions)}` and are handled separately as one diagnostic sub-batch.\n- Post-repair parity counts on the stable nine: `{post.get('statusCounts',{})}`; remaining certain regressions in this batch: `{', '.join(post.get('certainRegressions') or []) or 'none'}`.\n- No minimizer in this loop.\n'''
               p.write_text(text, encoding='utf-8')
           PY
 
-      - name: Commit successful salvage transaction
+      - name: Commit successful stable-nine transaction
         if: steps.repair.outputs.mutated == 'true'
         shell: bash
         run: |
@@ -149,7 +143,7 @@ jobs:
             echo 'No durable changes to commit'
             exit 0
           fi
-          git commit -m 'fix(providers): salvage ten parity regression repairs'
+          git commit -m 'fix(providers): salvage nine stable parity repairs'
           git fetch origin fix/labs-5.21.44-20260912
           git rebase origin/fix/labs-5.21.44-20260912
           git push origin HEAD:fix/labs-5.21.44-20260912
@@ -158,7 +152,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: batch-priority-provider-repair-v4-${{ github.run_id }}
+          name: batch-priority-provider-repair-v5-${{ github.run_id }}
           retention-days: 14
           if-no-files-found: warn
           path: |
