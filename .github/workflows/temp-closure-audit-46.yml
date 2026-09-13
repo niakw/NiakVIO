@@ -12,31 +12,54 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
-      - name: Resolve current HindMoviez signed-player chain
+
+      - name: Execute source MovieBox and HindMoviez runtimes from TMDB identity
         shell: bash
         run: |
           set -euo pipefail
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0,'scripts')
+          sys.path.insert(0,'scripts/provider_patches')
+          import moviebox_h5_runtime_v1 as mb
+          import hindmoviez_runtime_v1 as hm
+          open('/tmp/moviebox-runtime.js','w').write(mb.apply('globalThis.getStreams=async()=>[];'))
+          open('/tmp/hindmoviez-runtime.js','w').write(hm.apply('globalThis.getStreams=async()=>[];'))
+          print('FIELD_SOURCE_RUNTIME_BUILD moviebox=ok hindmoviez=ok')
+          PY
           node - <<'NODE'
-          const UA='Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36';
-          async function fetchT(url,opt={}){const r=await fetch(url,{...opt,redirect:'follow',headers:{'User-Agent':UA,'Accept':opt.accept||'text/html,application/xhtml+xml,application/json,*/*','Referer':opt.referer||'https://hindmovie.fit/',...(opt.headers||{})},signal:AbortSignal.timeout(7000)});return{r,t:await r.text()}}
-          function links(s){return [...String(s).replace(/\\\//g,'/').matchAll(/https?:\/\/[^\s"'<>\\]+/gi)].map(x=>x[0])}
-          async function one(imdb,type,se,ep){
-            const a=await fetchT('https://hindmovie.icu/wp-json/wp/v2/posts?search='+imdb+'&per_page=100');const rows=JSON.parse(a.t);let mv=[...new Set(links(JSON.stringify(rows)).filter(x=>/mvlink\.blog\/(?:web\/)?\d+/i.test(x)))].filter(x=>type==='tv'?/\/web\//.test(x):!/\/web\//.test(x));if(!mv.length)throw Error('no mv');
-            const p=await fetchT(mv[0]);const tag=new RegExp('S0*'+se+'E0*'+ep+'(?:[^0-9]|$)','i');let names=[...p.t.matchAll(/[A-Za-z0-9._+()\[\] -]{12,260}\.(?:mkv|mp4|avi)/gi)].map(x=>x[0].replace(/\s+/g,' '));if(type==='tv')names=names.filter(x=>tag.test(x));names=[...new Set(names)];if(!names.length)throw Error('no name');
-            const d=Buffer.from(names[0]).toString('base64url');const sig=await fetch('https://mvlink.blog/wp-admin/admin-ajax.php',{method:'POST',headers:{'User-Agent':UA,'Referer':mv[0],'X-Requested-With':'XMLHttpRequest','Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Accept':'application/json,text/plain,*/*'},body:'action=hindshare_sign&d='+encodeURIComponent(d),signal:AbortSignal.timeout(7000)});const st=await sig.text();let sj={};try{sj=JSON.parse(st)}catch{};const signed=String(sj?.data?.url||'');console.log('FIELD_HIND_SIGN type='+type+' status='+sig.status+' signed64='+Buffer.from(signed).toString('base64'));if(!/^https?:\/\//.test(signed))throw Error('no signed');
-            const s1=await fetchT(signed,{referer:mv[0]});const l1=links(s1.t);console.log('FIELD_HIND_SIGNED_PAGE type='+type+' status='+s1.r.status+' final='+s1.r.url+' links64='+Buffer.from(JSON.stringify(l1.slice(0,40))).toString('base64'));
-            let candidates=[...new Set(l1.filter(x=>/hcloud|workers\.dev|direct|redirect/i.test(x)))];if(!candidates.length)candidates=[s1.r.url];
-            for(const c of candidates.slice(0,8)){try{const z=await fetchT(c,{referer:signed});const zs=links(z.t);const direct=[...new Set(zs.filter(x=>/workers\.dev/i.test(x)||/[?&]file=/i.test(x)))];console.log('FIELD_HIND_CANDIDATE type='+type+' url64='+Buffer.from(c).toString('base64')+' status='+z.r.status+' final64='+Buffer.from(z.r.url).toString('base64')+' direct64='+Buffer.from(JSON.stringify(direct.slice(0,12))).toString('base64'));if(direct.length)return direct}catch(e){console.log('FIELD_HIND_CANDIDATE_ERROR type='+type+' url64='+Buffer.from(c).toString('base64')+' error='+String(e))}}
-            return [];
+          const fs=require('fs'),vm=require('vm');
+          async function run(file,label,cases){
+            delete globalThis.__niakvioProviderRuntimeResolverV1;
+            delete globalThis.__nuvioMediaContext;
+            delete globalThis.__nuvioCoreGetTmdbDataV1;
+            vm.runInThisContext(fs.readFileSync(file,'utf8'),{filename:file});
+            const resolver=globalThis.__niakvioProviderRuntimeResolverV1;
+            if(!resolver||typeof resolver.resolve!=='function')throw Error(label+' resolver missing');
+            for(const x of cases){
+              const started=Date.now();
+              const rows=await resolver.resolve(x.args,{});
+              const ms=Date.now()-started;
+              console.log('FIELD_SOURCE_RUNTIME provider='+label+' type='+x.type+' duration_ms='+ms+' count='+(Array.isArray(rows)?rows.length:-1)+' qualities='+[...new Set((rows||[]).map(r=>r.quality).filter(Boolean))].join(',')+' languages='+[...new Set((rows||[]).map(r=>r.language).filter(Boolean))].join(','));
+              if(!Array.isArray(rows)||!rows.length)throw Error(label+' '+x.type+' no streams');
+              if(ms>=25000)throw Error(label+' '+x.type+' exceeded 25s: '+ms);
+              if(!rows.every(r=>/^https?:\/\//i.test(String(r.url||''))))throw Error(label+' '+x.type+' non-http row');
+            }
           }
-          (async()=>{const m=await one('tt0816692','movie',1,1),t=await one('tt0903747','tv',1,1);console.log('FIELD_HIND_DRIFT_PROOF movie='+m.length+' tv='+t.length);if(!m.length||!t.length)process.exit(2)})().catch(e=>{console.error(e);process.exit(1)});
+          (async()=>{
+            await run('/tmp/moviebox-runtime.js','moviebox',[{type:'movie',args:['157336','movie']},{type:'tv',args:['1396','tv',1,1]}]);
+            await run('/tmp/hindmoviez-runtime.js','hindmoviez',[{type:'movie',args:['157336','movie']},{type:'tv',args:['1396','tv',1,1]}]);
+          })().catch(e=>{console.error('FIELD_SOURCE_RUNTIME_ERROR',e);process.exit(1)});
           NODE
-      - name: Lock identity bridge and core contracts
+
+      - name: Core settlement and enabled-only quality denominator
         shell: bash
         run: |
           set -euo pipefail
@@ -44,3 +67,59 @@ jobs:
           python3 tests/native_runtime_settlement_contract_test.py
           python3 tests/native_declared_matrix_enabled_only_test.py
           python3 tests/provider_no_timer_runtime_test.py
+          python3 tests/provider_execution_failfast_v33_test.py
+
+      - name: Brain and weekly operational contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/weekly_upstream_provider_discovery_test.py
+          python3 tests/brain_cron_full_coverage_test.py
+          python3 tests/native_lab_nonblocking_contract_test.py
+          python3 - <<'PY'
+          from pathlib import Path
+          weekly=Path('.github/workflows/weekly-upstream-provider-discovery.yml').read_text()
+          brain=Path('.github/workflows/brain-learning-lab.yml').read_text()
+          assert 'schedule:' in weekly and 'cron:' in weekly
+          assert 'schedule:' in brain and 'cron:' in brain
+          print('FIELD_SCHEDULES weekly=present brain=present')
+          PY
+
+      - name: Domain branding language and quality contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== CANDIDATE TESTS ==='
+          mapfile -t tests < <(find tests -maxdepth 1 -type f -name '*.py' | sort | grep -Ei '(domain|logo|branding|language|quality|vostfr|vf|presentation|metadata)' || true)
+          printf '%s\n' "${tests[@]}"
+          failures=0
+          for t in "${tests[@]}"; do
+            echo "RUN $t"
+            if ! timeout 90 python3 "$t"; then
+              echo "FIELD_FOCUSED_TEST_FAILURE file=$t"
+              failures=$((failures+1))
+            fi
+          done
+          echo "FIELD_FOCUSED_TEST_SUMMARY total=${#tests[@]} failures=$failures"
+          test "$failures" -eq 0
+
+      - name: Static invariants for MovieBox Hind and 25s
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_moviebox_hub46_runtime_v1.py
+          python3 scripts/upgrade_anime_only_capability_v35.py
+          python3 - <<'PY'
+          import json
+          d=json.load(open('provider-overrides.json'))['provider_patches']
+          mb=d['moviebox']; hm=d['hindmoviez']
+          assert mb['provider_lego_scripts']==['scripts/provider_patches/moviebox_h5_runtime_v1.py']
+          assert set(mb['published_types'])=={'movie','tv'}
+          assert hm['provider_lego_scripts']==['scripts/provider_patches/hindmoviez_runtime_v1.py']
+          assert set(hm['published_types'])=={'movie','tv'}
+          a=d['anime-sama']; m=d['mugiwarastream']
+          assert 'movie' not in a['published_types'] and 'movie' not in m['published_types']
+          lab=open('scripts/nuvio_client_lab.cjs').read()
+          assert 'const DEFAULT_TIMEOUT_MS = 25_000;' in lab and '70_000' not in lab
+          print('FIELD_STATIC_INVARIANTS moviebox=ok hindmoviez=ok anime_only=ok timeout_ms=25000')
+          PY
