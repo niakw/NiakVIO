@@ -1,0 +1,76 @@
+name: TEMP - trio requestSpec diagnosis
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-trio-requestspec-diag.yml
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Recover trio and print sanitized executable DATA
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/recover_provider_routes_from_upstreams.py \
+            --workers 3 --timeout 55 --attempts 2 \
+            --out automation/trio-requestspec-recovery.json \
+            --provider animevostfr --provider kurage --provider voiranime
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('automation/trio-requestspec-recovery.json').read_text())
+          for p in d.get('providers') or []:
+              pid=p.get('providerId')
+              print('TRIO_RECOVERY_SUMMARY '+json.dumps({
+                  'provider':pid,
+                  'status':p.get('status'),
+                  'routes':p.get('routes'),
+                  'executionRoutes':p.get('executionRoutes'),
+                  'preferredExecutionRoutes':p.get('preferredExecutionRoutes'),
+                  'simpleApiRecipe':p.get('simpleApiRecipe'),
+                  'searchRequestPlan':p.get('searchRequestPlan'),
+                  'providerValuePlan':p.get('providerValuePlan'),
+              },ensure_ascii=False,sort_keys=True))
+              for r in p.get('routeData') or []:
+                  route=str(r.get('route') or '')
+                  if pid=='animevostfr' and not any(x in route for x in ('episode','trembed','?s=','/animes/')): continue
+                  if pid=='kurage' and not any(x in route for x in ('trpc','cinemeta','themoviedb','anilist')): continue
+                  if pid=='voiranime' and not any(x in route for x in ('/anime/','vidoza','vidmoly','savefiles','supervideo')): continue
+                  safe={k:r.get(k) for k in (
+                      'route','origin','role','method','semanticType','fixture','requestIndex',
+                      'providerValueCorrelation','requestSpec','requestSpecReusable',
+                      'requestSpecSubstitutions','requestSpecResidue','proofBodyKind','proofBodyValues',
+                      'status','contentType','terminalEvidence','terminalStreamCount'
+                  ) if k in r}
+                  print('TRIO_ROUTE_DATA '+json.dumps({'provider':pid,'row':safe},ensure_ascii=False,sort_keys=True))
+          PY
+      - name: Upload exact recovery report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trio-requestspec-${{ github.run_id }}
+          path: automation/trio-requestspec-recovery.json
+          retention-days: 14
+          if-no-files-found: error
