@@ -176,10 +176,18 @@ function getEpisodesFromWebSocket(movieKey, totalSeasons = 1) {
     let expectedResponses = 0;
     let responsesReceived = 0;
 
-    const overallTimeout = setTimeout(() => {
-      try { ws.close(); } catch {}
-      reject(new Error('WebSocket timeout'));
-    }, 30000);
+    const overallTimeout = typeof setTimeout === 'function'
+      ? setTimeout(() => {
+          try { ws.close(); } catch {}
+          reject(new Error('WebSocket timeout'));
+        }, 30000)
+      : null;
+
+    function clearOverallTimeout() {
+      if (overallTimeout !== null && typeof clearTimeout === 'function') {
+        clearTimeout(overallTimeout);
+      }
+    }
 
     function sendSeasonRequest(season) {
       const payload = {
@@ -231,7 +239,7 @@ function getEpisodesFromWebSocket(movieKey, totalSeasons = 1) {
                 responsesReceived = 0;
                 sendSeasonRequest(currentSeason);
               } else {
-                clearTimeout(overallTimeout);
+                clearOverallTimeout();
                 try { ws.close(); } catch {}
                 resolve(seasonsData);
               }
@@ -274,12 +282,12 @@ function getEpisodesFromWebSocket(movieKey, totalSeasons = 1) {
     };
 
     ws.onerror = function (err) {
-      clearTimeout(overallTimeout);
+      clearOverallTimeout();
       reject(new Error('WebSocket error'));
     };
 
     ws.onclose = function () {
-      clearTimeout(overallTimeout);
+      clearOverallTimeout();
     };
   });
 }
