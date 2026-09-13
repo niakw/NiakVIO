@@ -17,14 +17,14 @@ jobs:
         with: {python-version: '3.12'}
       - uses: actions/setup-node@v4
         with: {node-version: '24'}
-      - name: Preserve VF normalization for generic French tokens
+      - name: Preserve normalized French language fallbacks
         run: |
           python - <<'PY'
           from pathlib import Path
           p=Path('scripts/provider_patches/global_stream_presentation_v1.py')
           s=p.read_text(encoding='utf-8')
           old='  var u=raw.toLowerCase().replace(/[_-]+/g," ").replace(/\\s+/g," ").trim();\n  if(/^(?:vf|vff|vfq|vostfr|vo|multi|multi audio|dual audio)$/i.test(u))return fallback||raw.toUpperCase();'
-          new='  var u=raw.toLowerCase().replace(/[_-]+/g," ").replace(/\\s+/g," ").trim();\n  if(/^(?:fr|fra|fre|french|francais|français|fr fr)$/i.test(u))return fallback||"VF";\n  if(/^(?:vf|vff|vfq|vostfr|vo|multi|multi audio|dual audio)$/i.test(u))return fallback||raw.toUpperCase();'
+          new='  var u=raw.toLowerCase().replace(/[_-]+/g," ").replace(/\\s+/g," ").trim();\n  if(/^(?:(?:fr|fra|fre|french|francais|français|fr fr)(?:\\s|$)|fr ca(?:\\s|$))/i.test(u))return fallback||"VF";\n  if(/^(?:vf|vff|vfq|vostfr|vo|multi|multi audio|dual audio)$/i.test(u))return fallback||raw.toUpperCase();'
           if old not in s: raise SystemExit('V22 detailedLanguage token missing')
           p.write_text(s.replace(old,new),encoding='utf-8')
           PY
@@ -64,6 +64,6 @@ jobs:
           git config user.name niakvio-bot
           git config user.email niakvio-bot@users.noreply.github.com
           git add scripts/provider_patches/global_stream_presentation_v1.py
-          git commit -m '[presentation-v22] normalize generic French tokens to VF'
+          git commit -m '[presentation-v22] preserve normalized French VF/VFQ tokens'
           git pull --rebase origin fix/labs-5.21.44-20260912
           git push origin HEAD:fix/labs-5.21.44-20260912
