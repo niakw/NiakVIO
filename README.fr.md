@@ -142,6 +142,15 @@ Chaque client/device est une frontière de compatibilité indépendante :
 
 Une preuve Desktop ne vaut jamais automatiquement preuve Android/iOS/TV. Les Labs consomment les clients officiels tels quels : une erreur upstream de compilation, dépendance, packaging, runtime, player ou QuickJS reste visible au lieu d’être patchée dans NiakVIO uniquement pour fabriquer une CI verte.
 
+<!-- NIAKVIO_NATIVE_ADAPTIVE_LAB_DOCS_V1 -->
+### Scope d’acceptation native et échantillonnage adaptatif
+
+Le catalogue maintenu reste **96 Provider Objects**. L’acceptation native finale utilise le scope physique explicite **Hub-46** défini par `automation/evidence/hub-lab-matrix-46.json` ; les lignes désactivées ou hors scope restent visibles comme dette de maintenance et ne sont pas supprimées artificiellement du catalogue.
+
+Le corpus Lab ordinaire n’est pas un batch fixe. `.github/triggers/rotating-popular-corpus.json` porte exactement trois réserves globales récentes — **movie, TV et anime** — actuellement 32 œuvres par lane, bornées de 2010 à l’année civile précédente. Une campagne native démarre avec exactement **1 film + 1 épisode TV + 1 épisode anime**. Un provider/lane ne passe à une autre œuvre de la même réserve qu’après un résultat propre `0 streams`. Une preuve positive arrête la rotation ; une erreur runtime/load/timeout/transport/player/identité s’arrête et reste visible au lieu d’être masquée par un changement de fixture.
+
+Les fixtures historiques de `.github/triggers/nuvio-client-lab.json` restent disponibles pour les diagnostics de régression ciblés, mais ne sont plus l’autorité d’échantillonnage global ordinaire.
+
 ---
 
 ## Sous le capot

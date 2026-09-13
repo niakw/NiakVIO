@@ -38,11 +38,12 @@ Workflows :
 - `.github/workflows/native-desktop-reader-acceptance.yml` ;
 - `.github/workflows/native-corpus-device-targeted.yml` pour les diagnostics ciblés.
 
-La liste des fixtures est centralisée dans `.github/triggers/nuvio-client-lab.json`. Le trigger de validation complète est `.github/triggers/full-native-lab-validation.json`.
+<!-- NIAKVIO_NATIVE_ADAPTIVE_LAB_DOCS_V1 -->
+Le corpus global ordinaire est défini par `.github/triggers/rotating-popular-corpus.json` : exactement trois réserves `movie`, `tv`, `anime`, actuellement 32 œuvres chacune, de 2010 à l’année civile précédente. `.github/triggers/nuvio-client-lab.json` conserve les fixtures de régression ciblées/historiques. Le trigger de validation complète reste `.github/triggers/full-native-lab-validation.json`.
 
 ### Couverture dérivée, jamais figée
 
-Le catalogue reste **96 providers**. Le nombre de routes natives est calculé depuis le `manifest.json` courant et ses `supportedTypes` ; il ne doit pas être recopié comme constante historique dans la documentation.
+Le catalogue reste **96 providers**. La campagne d’acceptation native finale utilise actuellement le scope physique **Hub-46** dérivé de `automation/evidence/hub-lab-matrix-46.json` et transporté par `native-hub46/manifest.json`. Les 50 autres lignes ne disparaissent pas du catalogue : elles restent séparées du dénominateur physique du Lab. Le nombre de routes est calculé depuis le scope courant et ses `supportedTypes` ; il ne doit pas être recopié comme constante historique.
 
 La distinction est obligatoire :
 
@@ -79,6 +80,12 @@ Les Labs doivent utiliser le comportement officiel observé. Ils peuvent ajouter
 Un tel défaut reste une preuve externe rouge. Le rendre vert artificiellement détruirait précisément l’information que le Lab doit fournir.
 
 Chaque provider est borné individuellement ; un timeout devient une observation, pas une boucle infinie de retry.
+
+### Rotation adaptative des œuvres
+
+Une exécution native commence par une seule œuvre de chaque réserve globale : **1 movie + 1 TV + 1 anime**. Le reste des 32 œuvres/lane est une réserve, pas un batch. Seul un provider/lane qui a terminé normalement avec `0 streams` avance vers une autre œuvre de la même lane. Dès qu’un flux positif est prouvé, ce provider/lane sort de la rotation. Une erreur technique, un timeout, un échec de chargement/player/transport ou une contradiction d’identité ne déclenche jamais une rotation destinée à cacher l’erreur.
+
+Le gate final doit agréger ces essais successifs par provider/lane : `FULL`, `PARTIAL`, `RESAMPLE` et `ZERO` décrivent des preuves distinctes ; un clean miss de catalogue n’est pas une régression.
 
 ## Cycle Provider v3
 
