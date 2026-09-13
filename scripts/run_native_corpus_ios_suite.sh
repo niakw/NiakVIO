@@ -6,11 +6,11 @@ NIAKVIO_ROOT="${NIAKVIO_ROOT:-$WORKSPACE/niakvio}"
 NUVIO_MOBILE_ROOT="${NUVIO_MOBILE_ROOT:-$WORKSPACE/nuvio-mobile}"
 DERIVED="${NIAKVIO_IOS_DERIVED_DATA:-$WORKSPACE/ios-derived}"
 MANIFEST_URL="${NIAKVIO_MANIFEST_URL:?NIAKVIO_MANIFEST_URL is required}"
-if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO_ROOT}/manifest-hub46.json" ]]; then
+if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO_ROOT}/native-hub46/manifest.json" ]]; then
   SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
   SOURCE_SHA="${GITHUB_SHA:-$(git -C "$NIAKVIO_ROOT" rev-parse HEAD)}"
-  MANIFEST_URL="https://raw.githubusercontent.com/${SOURCE_REPOSITORY}/${SOURCE_SHA}/manifest-hub46.json"
-  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=manifest-hub46.json providers=46 authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
+  MANIFEST_URL="https://raw.githubusercontent.com/${SOURCE_REPOSITORY}/${SOURCE_SHA}/native-hub46/manifest.json"
+  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=native-hub46/manifest.json providers=46 authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
 fi
 MODE="${NIAKVIO_IOS_LAB_MODE:-full}"
 TARGET_PROVIDER="${NIAKVIO_IOS_TARGET_PROVIDER:-}"
@@ -116,13 +116,6 @@ PY
   xcrun simctl bootstatus "$UDID" -b
   xcrun simctl install "$UDID" "$APP"
 
-  # Full 96/214 corpus runs may legitimately need many per-route watchdog resumes.
-  # The restart budget is therefore route-scale (240) rather than a small infra retry cap.
-  # CoreSimulatorBridge defaults to a 120s launch retry window. On fresh
-  # macOS runners the first iOS boot can spend longer than that in app/runtime
-  # initialization even after bootstatus is terminal, causing simctl to detach
-  # just as the Lab begins. Keep this launch-only allowance separate from the
-  # provider/player probe budgets.
   defaults write com.apple.CoreSimulatorBridge LaunchRetryTimeout -float "$LAUNCH_RETRY_TIMEOUT_SECONDS" || true
   xcrun simctl spawn "$UDID" defaults write com.apple.CoreSimulatorBridge LaunchRetryTimeout -float "$LAUNCH_RETRY_TIMEOUT_SECONDS" || true
   echo "FIELD_NATIVE_IOS_SIM_LAUNCH_TIMEOUT seconds=$LAUNCH_RETRY_TIMEOUT_SECONDS mode=$MODE"
