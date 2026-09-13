@@ -35,3 +35,4 @@ jobs:
           git pull --rebase origin fix/labs-5.21.44-20260912
           git push origin HEAD:fix/labs-5.21.44-20260912
           echo "FIELD_MEMORY_CHECKPOINT status=committed sha=$(git rev-parse HEAD)"
+# retry: clean EOF writer
