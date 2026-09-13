@@ -1,0 +1,111 @@
+name: TEMP - persist VoirAnime current authority v2
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-persist-voiranime-current-authority-v2.yml
+
+permissions:
+  contents: write
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Apply A/B-proven authority and materialize
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_voiranime_current_authority_v2.py
+          python3 scripts/materialize_provider_v3_one.py voiranime
+          python3 scripts/validate_published_provider_config.py --expected 96
+          python3 tests/global_core_runtime_ownership_test.py
+      - name: Exact Tokyo Ghoul proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          c=p.local_catalog()['voiranime']
+          f={'slug':'tokyo-ghoul-2014-s01e01','tmdbId':'61374','mediaType':'anime','category':'anime','season':1,'episode':1,'title':'Tokyo Ghoul','year':2014}
+          r=p.run_worker(c['path'],f,40)
+          row={'streams':int(r.get('stream_count') or 0),'raw':int(r.get('raw_stream_count') or 0),'error':r.get('error_class'),'hosts':r.get('provider_server_hosts'),'statuses':r.get('provider_server_http_statuses') or r.get('http_statuses')}
+          print('VOIRANIME_EXACT_PROOF '+json.dumps(row,ensure_ascii=False))
+          if row['streams']<=0: raise SystemExit('VoirAnime exact proof failed')
+          Path('automation/voiranime-current-authority-v2-proof.json').write_text(json.dumps(row,ensure_ascii=False,indent=2)+'\n')
+          PY
+      - name: Full-reserve adaptive parity must have no certain VoirAnime regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/run_provider_upstream_parity_v3.py \
+            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
+            --samples-per-lane 32 --workers 4 --timeout 25 --seed 20260913-voiranime-v2 \
+            --out automation/voiranime-current-authority-v2-parity.json --provider voiranime
+          python3 - <<'PY'
+          import json
+          d=json.load(open('automation/voiranime-current-authority-v2-parity.json'))
+          print('VOIRANIME_PARITY',d.get('statusCounts'),d.get('certainRegressions'))
+          if d.get('certainRegressions'): raise SystemExit('VoirAnime remains regression')
+          PY
+      - name: Non-minifier structural guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/global_stream_output_guard_test.py
+          python3 tests/provider_v3_strategy_plan_contract_test.py
+          python3 tests/provider_v3_static_knowledge_contract_test.py
+          python3 tests/native_adaptive_catalog_contract_test.py
+      - name: Persist proof and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          proof=json.load(open('automation/voiranime-current-authority-v2-proof.json'))
+          parity=json.load(open('automation/voiranime-current-authority-v2-parity.json'))
+          p=Path('MEMORY.md'); t=p.read_text(encoding='utf-8')
+          marker='## 2026-09-13 — VoirAnime current authority v2 proven'
+          if marker not in t:
+              t += f'''\n{marker}\n\n- Run `{os.environ.get('GITHUB_RUN_ID','')}` persists the A/B-proven current VoirAnime authority `https://voir-anime.to/anime/{{slug}}/`; stale `arm.haglund.dev` api_recipe and obsolete `voiranime_homes_runtime_v1.py` authority are removed.\n- Exact Tokyo Ghoul S01E01 proof: `{proof}`. Full-reserve parity counts: `{parity.get('statusCounts')}`, certain regressions: `{parity.get('certainRegressions')}`.\n- Global Core ownership remains unchanged; no minimizer was run.\n'''
+              p.write_text(t,encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add provider-overrides.json automation/provider-v3-static-knowledge.json manifest.json providers/ vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json MEMORY.md automation/voiranime-current-authority-v2-*.json
+          git add scripts/upgrade_voiranime_current_authority_v2.py
+          if git diff --cached --quiet; then echo 'No durable changes'; exit 0; fi
+          git commit -m 'fix(voiranime): persist current site execution authority'
+          git fetch origin fix/labs-5.21.44-20260912
+          git rebase origin/fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: voiranime-current-authority-v2-${{ github.run_id }}
+          path: |
+            automation/voiranime-current-authority-v2-proof.json
+            automation/voiranime-current-authority-v2-parity.json
+          retention-days: 14
+          if-no-files-found: warn
