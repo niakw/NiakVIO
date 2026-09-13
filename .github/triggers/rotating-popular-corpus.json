@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "purpose": "Rotating catalogue discovery corpus. A clean zero-stream result is a catalogue miss, never by itself a technical provider failure.",
+  "selection": {
+    "mode": "deterministic_seeded_rotation",
+    "default_per_lane": 1,
+    "clean_miss_action": "rotate_next_pass",
+    "technical_error_action": "repair",
+    "positive_action": "retain_proof",
+    "exhaustion_action": "catalogue_unproven_not_broken"
+  },
+  "fixtures": [
+    {"slug":"interstellar","tmdbId":"157336","mediaType":"movie","category":"movie","title":"Interstellar","year":2014},
+    {"slug":"inception","tmdbId":"27205","mediaType":"movie","category":"movie","title":"Inception","year":2010},
+    {"slug":"the-dark-knight","tmdbId":"155","mediaType":"movie","category":"movie","title":"The Dark Knight","year":2008},
+    {"slug":"fight-club","tmdbId":"550","mediaType":"movie","category":"movie","title":"Fight Club","year":1999},
+    {"slug":"the-matrix","tmdbId":"603","mediaType":"movie","category":"movie","title":"The Matrix","year":1999},
+    {"slug":"pulp-fiction","tmdbId":"680","mediaType":"movie","category":"movie","title":"Pulp Fiction","year":1994},
+    {"slug":"the-shawshank-redemption","tmdbId":"278","mediaType":"movie","category":"movie","title":"The Shawshank Redemption","year":1994},
+    {"slug":"the-godfather","tmdbId":"238","mediaType":"movie","category":"movie","title":"The Godfather","year":1972},
+    {"slug":"parasite-2019","tmdbId":"496243","mediaType":"movie","category":"movie","title":"Parasite","year":2019},
+    {"slug":"dune-part-two","tmdbId":"693134","mediaType":"movie","category":"movie","title":"Dune: Part Two","year":2024},
+    {"slug":"oppenheimer","tmdbId":"872585","mediaType":"movie","category":"movie","title":"Oppenheimer","year":2023},
+    {"slug":"joker-2019","tmdbId":"475557","mediaType":"movie","category":"movie","title":"Joker","year":2019},
+
+    {"slug":"breaking-bad-s01e01","tmdbId":"1396","mediaType":"tv","category":"tv","title":"Breaking Bad","year":2008,"season":1,"episode":1},
+    {"slug":"game-of-thrones-s01e01","tmdbId":"1399","mediaType":"tv","category":"tv","title":"Game of Thrones","year":2011,"season":1,"episode":1},
+    {"slug":"stranger-things-s01e01","tmdbId":"66732","mediaType":"tv","category":"tv","title":"Stranger Things","year":2016,"season":1,"episode":1},
+    {"slug":"better-call-saul-s01e01","tmdbId":"60059","mediaType":"tv","category":"tv","title":"Better Call Saul","year":2015,"season":1,"episode":1},
+    {"slug":"dark-s01e01","tmdbId":"70523","mediaType":"tv","category":"tv","title":"Dark","year":2017,"season":1,"episode":1},
+    {"slug":"chernobyl-s01e01","tmdbId":"87108","mediaType":"tv","category":"tv","title":"Chernobyl","year":2019,"season":1,"episode":1},
+    {"slug":"arcane-s01e01","tmdbId":"94605","mediaType":"tv","category":"tv","title":"Arcane","year":2021,"season":1,"episode":1},
+    {"slug":"the-last-of-us-s01e01","tmdbId":"100088","mediaType":"tv","category":"tv","title":"The Last of Us","year":2023,"season":1,"episode":1},
+    {"slug":"the-boys-s01e01","tmdbId":"76479","mediaType":"tv","category":"tv","title":"The Boys","year":2019,"season":1,"episode":1},
+    {"slug":"squid-game-s01e01","tmdbId":"93405","mediaType":"tv","category":"tv","title":"Squid Game","year":2021,"season":1,"episode":1},
+    {"slug":"wednesday-s01e01","tmdbId":"119051","mediaType":"tv","category":"tv","title":"Wednesday","year":2022,"season":1,"episode":1},
+    {"slug":"house-of-the-dragon-s01e01","tmdbId":"94997","mediaType":"tv","category":"tv","title":"House of the Dragon","year":2022,"season":1,"episode":1},
+
+    {"slug":"jujutsu-kaisen-s01e01","tmdbId":"95479","mediaType":"anime","category":"anime","title":"Jujutsu Kaisen","year":2020,"season":1,"episode":1},
+    {"slug":"demon-slayer-s01e01","tmdbId":"85937","mediaType":"anime","category":"anime","title":"Demon Slayer: Kimetsu no Yaiba","year":2019,"season":1,"episode":1},
+    {"slug":"attack-on-titan-s01e01","tmdbId":"1429","mediaType":"anime","category":"anime","title":"Attack on Titan","year":2013,"season":1,"episode":1},
+    {"slug":"naruto-s01e01","tmdbId":"46260","mediaType":"anime","category":"anime","title":"Naruto","year":2002,"season":1,"episode":1},
+    {"slug":"death-note-s01e01","tmdbId":"13916","mediaType":"anime","category":"anime","title":"Death Note","year":2006,"season":1,"episode":1},
+    {"slug":"my-hero-academia-s01e01","tmdbId":"65930","mediaType":"anime","category":"anime","title":"My Hero Academia","year":2016,"season":1,"episode":1},
+    {"slug":"mushoku-tensei-s01e01","tmdbId":"94664","mediaType":"anime","category":"anime","title":"Mushoku Tensei: Jobless Reincarnation","year":2021,"season":1,"episode":1},
+    {"slug":"chainsaw-man-s01e01","tmdbId":"114410","mediaType":"anime","category":"anime","title":"Chainsaw Man","year":2022,"season":1,"episode":1},
+    {"slug":"one-piece-s01e01","tmdbId":"37854","mediaType":"anime","category":"anime","title":"One Piece","year":1999,"season":1,"episode":1},
+    {"slug":"spy-x-family-s01e01","tmdbId":"120089","mediaType":"anime","category":"anime","title":"SPY x FAMILY","year":2022,"season":1,"episode":1},
+    {"slug":"fullmetal-alchemist-brotherhood-s01e01","tmdbId":"31911","mediaType":"anime","category":"anime","title":"Fullmetal Alchemist: Brotherhood","year":2009,"season":1,"episode":1}
+  ]
+}
