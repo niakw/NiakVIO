@@ -1,6 +1,6 @@
 name: TEMP - trace Kurage upstream contract
 
-# corrected exact full32 fixture id
+# final response-shape trace for clean-room NiakVIO adapter
 on:
   push:
     branches:
@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Trace exact upstream requests for HOTD
+      - name: Trace exact upstream requests and tRPC response for HOTD
         shell: bash
         run: |
           set -euo pipefail
@@ -35,13 +35,15 @@ jobs:
             console.log('KURAGE_TRACE_REQUEST '+JSON.stringify(row));
             const res=await nativeFetch(input,init);
             console.log('KURAGE_TRACE_RESPONSE '+JSON.stringify({url,status:res.status,type:res.headers.get('content-type')}));
+            if(url.includes('/api/trpc/')){
+              try{const body=await res.clone().text();console.log('KURAGE_TRPC_BODY '+body.slice(0,16000));}catch(e){console.log('KURAGE_TRPC_BODY_ERROR '+String(e))}
+            }
             return res;
           };
           const mod=require('/tmp/kurage-upstream.js');
           const fn=mod.getStreams||globalThis.getStreams;
           if(typeof fn!=='function') throw new Error('getStreams missing');
           (async()=>{
-            // Exact full32 fixture: High School of the Dead, TMDB TV 56998, S01E01.
             const rows=await fn('56998','tv',1,1);
             console.log('KURAGE_TRACE_RESULT '+JSON.stringify({count:Array.isArray(rows)?rows.length:-1,rows:(rows||[]).slice(0,3)}));
           })().catch(e=>{console.error(e&&e.stack||e);process.exit(1)});
