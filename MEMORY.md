@@ -1471,3 +1471,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Minimizer sequencing corrected: the NiakVIO-safe Provider v3 minimizer is a **final-stage** operation/gate after provider yield and global runtime behavior are stabilized. Do not put minification in ordinary repair loops. Terser remains forbidden; final minimization must preserve STARTFIX/CLOSEFIX/FIXDATA/Core boundaries, deterministic reverse rebuild and byte fixed point.
 - The temporary full-minimizer audit started during repair was stopped/deleted from the active workflow set; its stale byte-stability test references were corrected, but the authoritative full minimizer/reverse-rebuild audit is deferred to final stabilization as requested.
 - `tests/vf_recovery_profiles_test.py` currently carries stale provider-profile assumptions (`streamzo` patch list) and is not evidence for Core ownership; it is tracked as separate test-maintenance debt instead of weakening the global runtime contract.
+
+## 2026-09-13 — adaptive native Lab global corpus
+
+- Mandatory Lab sampling policy: exactly three global recent fixture pools — `movie`, `tv`, `anime` — each containing several dozen works. Canonical range is 2010 through current-year-1 (2025 for the 2026 campaign).
+- Native Labs execute **one work at a time per lane**, never a fixed batch of 6. The corpus is a reserve, not a batch.
+- A provider advances to another random/deterministic candidate from the **same lane only** when the current runtime call completes normally with `0 streams` and no error. Positive result stops rotation for that provider/lane. Runtime/load/timeout/player/transport/identity contradiction is not a catalogue miss and must stop/report rather than rotating it away.
+- `scripts/rotating_corpus.py` keeps old regression fixtures addressable by exact slug for targeted diagnostics but excludes them from the three global recent pools, so old/2026 works cannot silently become ordinary Lab samples.
+- `scripts/native_catalog_miss_rotation.py` is the shared clean-miss planner. Fallback runs must shrink to the clean-zero provider allowlist instead of retesting providers that were already positive or errored.

@@ -1,51 +1,989 @@
 {
-  "schema_version": 1,
-  "purpose": "Rotating catalogue discovery corpus. A clean zero-stream result is a catalogue miss, never by itself a technical provider failure.",
+  "schema_version": 2,
+  "purpose": "Three recent global Lab pools. One title at a time; rotate only after a clean zero-stream result.",
   "selection": {
-    "mode": "deterministic_seeded_rotation",
-    "default_per_lane": 1,
-    "clean_miss_action": "rotate_next_pass",
-    "technical_error_action": "repair",
-    "positive_action": "retain_proof",
+    "mode": "deterministic_seeded_one_at_a_time",
+    "min_year": 2010,
+    "max_year": 2025,
+    "global_lists": [
+      "movie",
+      "tv",
+      "anime"
+    ],
+    "initial_per_lane": 1,
+    "clean_miss_action": "same_lane_next_random_candidate",
+    "technical_error_action": "stop_and_report",
+    "identity_contradiction_action": "stop_and_report",
+    "positive_action": "stop_and_retain_proof",
+    "fixed_batch_size": null,
     "exhaustion_action": "catalogue_unproven_not_broken"
   },
-  "fixtures": [
-    {"slug":"interstellar","tmdbId":"157336","mediaType":"movie","category":"movie","title":"Interstellar","year":2014},
-    {"slug":"inception","tmdbId":"27205","mediaType":"movie","category":"movie","title":"Inception","year":2010},
-    {"slug":"the-dark-knight","tmdbId":"155","mediaType":"movie","category":"movie","title":"The Dark Knight","year":2008},
-    {"slug":"fight-club","tmdbId":"550","mediaType":"movie","category":"movie","title":"Fight Club","year":1999},
-    {"slug":"the-matrix","tmdbId":"603","mediaType":"movie","category":"movie","title":"The Matrix","year":1999},
-    {"slug":"pulp-fiction","tmdbId":"680","mediaType":"movie","category":"movie","title":"Pulp Fiction","year":1994},
-    {"slug":"the-shawshank-redemption","tmdbId":"278","mediaType":"movie","category":"movie","title":"The Shawshank Redemption","year":1994},
-    {"slug":"the-godfather","tmdbId":"238","mediaType":"movie","category":"movie","title":"The Godfather","year":1972},
-    {"slug":"parasite-2019","tmdbId":"496243","mediaType":"movie","category":"movie","title":"Parasite","year":2019},
-    {"slug":"dune-part-two","tmdbId":"693134","mediaType":"movie","category":"movie","title":"Dune: Part Two","year":2024},
-    {"slug":"oppenheimer","tmdbId":"872585","mediaType":"movie","category":"movie","title":"Oppenheimer","year":2023},
-    {"slug":"joker-2019","tmdbId":"475557","mediaType":"movie","category":"movie","title":"Joker","year":2019},
-
-    {"slug":"breaking-bad-s01e01","tmdbId":"1396","mediaType":"tv","category":"tv","title":"Breaking Bad","year":2008,"season":1,"episode":1},
-    {"slug":"game-of-thrones-s01e01","tmdbId":"1399","mediaType":"tv","category":"tv","title":"Game of Thrones","year":2011,"season":1,"episode":1},
-    {"slug":"stranger-things-s01e01","tmdbId":"66732","mediaType":"tv","category":"tv","title":"Stranger Things","year":2016,"season":1,"episode":1},
-    {"slug":"better-call-saul-s01e01","tmdbId":"60059","mediaType":"tv","category":"tv","title":"Better Call Saul","year":2015,"season":1,"episode":1},
-    {"slug":"dark-s01e01","tmdbId":"70523","mediaType":"tv","category":"tv","title":"Dark","year":2017,"season":1,"episode":1},
-    {"slug":"chernobyl-s01e01","tmdbId":"87108","mediaType":"tv","category":"tv","title":"Chernobyl","year":2019,"season":1,"episode":1},
-    {"slug":"arcane-s01e01","tmdbId":"94605","mediaType":"tv","category":"tv","title":"Arcane","year":2021,"season":1,"episode":1},
-    {"slug":"the-last-of-us-s01e01","tmdbId":"100088","mediaType":"tv","category":"tv","title":"The Last of Us","year":2023,"season":1,"episode":1},
-    {"slug":"the-boys-s01e01","tmdbId":"76479","mediaType":"tv","category":"tv","title":"The Boys","year":2019,"season":1,"episode":1},
-    {"slug":"squid-game-s01e01","tmdbId":"93405","mediaType":"tv","category":"tv","title":"Squid Game","year":2021,"season":1,"episode":1},
-    {"slug":"wednesday-s01e01","tmdbId":"119051","mediaType":"tv","category":"tv","title":"Wednesday","year":2022,"season":1,"episode":1},
-    {"slug":"house-of-the-dragon-s01e01","tmdbId":"94997","mediaType":"tv","category":"tv","title":"House of the Dragon","year":2022,"season":1,"episode":1},
-
-    {"slug":"jujutsu-kaisen-s01e01","tmdbId":"95479","mediaType":"anime","category":"anime","title":"Jujutsu Kaisen","year":2020,"season":1,"episode":1},
-    {"slug":"demon-slayer-s01e01","tmdbId":"85937","mediaType":"anime","category":"anime","title":"Demon Slayer: Kimetsu no Yaiba","year":2019,"season":1,"episode":1},
-    {"slug":"attack-on-titan-s01e01","tmdbId":"1429","mediaType":"anime","category":"anime","title":"Attack on Titan","year":2013,"season":1,"episode":1},
-    {"slug":"naruto-s01e01","tmdbId":"46260","mediaType":"anime","category":"anime","title":"Naruto","year":2002,"season":1,"episode":1},
-    {"slug":"death-note-s01e01","tmdbId":"13916","mediaType":"anime","category":"anime","title":"Death Note","year":2006,"season":1,"episode":1},
-    {"slug":"my-hero-academia-s01e01","tmdbId":"65930","mediaType":"anime","category":"anime","title":"My Hero Academia","year":2016,"season":1,"episode":1},
-    {"slug":"mushoku-tensei-s01e01","tmdbId":"94664","mediaType":"anime","category":"anime","title":"Mushoku Tensei: Jobless Reincarnation","year":2021,"season":1,"episode":1},
-    {"slug":"chainsaw-man-s01e01","tmdbId":"114410","mediaType":"anime","category":"anime","title":"Chainsaw Man","year":2022,"season":1,"episode":1},
-    {"slug":"one-piece-s01e01","tmdbId":"37854","mediaType":"anime","category":"anime","title":"One Piece","year":1999,"season":1,"episode":1},
-    {"slug":"spy-x-family-s01e01","tmdbId":"120089","mediaType":"anime","category":"anime","title":"SPY x FAMILY","year":2022,"season":1,"episode":1},
-    {"slug":"fullmetal-alchemist-brotherhood-s01e01","tmdbId":"31911","mediaType":"anime","category":"anime","title":"Fullmetal Alchemist: Brotherhood","year":2009,"season":1,"episode":1}
-  ]
+  "lists": {
+    "movie": [
+      {
+        "slug": "superman-2025",
+        "tmdbId": "1061474",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Superman",
+        "year": 2025
+      },
+      {
+        "slug": "deadpool-wolverine-2024",
+        "tmdbId": "533535",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Deadpool & Wolverine",
+        "year": 2024
+      },
+      {
+        "slug": "oppenheimer-2023",
+        "tmdbId": "872585",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Oppenheimer",
+        "year": 2023
+      },
+      {
+        "slug": "avatar-the-way-of-water-2022",
+        "tmdbId": "76600",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Avatar: The Way of Water",
+        "year": 2022
+      },
+      {
+        "slug": "spider-man-no-way-home-2021",
+        "tmdbId": "634649",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Spider-Man: No Way Home",
+        "year": 2021
+      },
+      {
+        "slug": "soul-2020",
+        "tmdbId": "508442",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Soul",
+        "year": 2020
+      },
+      {
+        "slug": "avengers-endgame-2019",
+        "tmdbId": "299534",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Avengers: Endgame",
+        "year": 2019
+      },
+      {
+        "slug": "avengers-infinity-war-2018",
+        "tmdbId": "299536",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Avengers: Infinity War",
+        "year": 2018
+      },
+      {
+        "slug": "spider-man-homecoming-2017",
+        "tmdbId": "315635",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Spider-Man: Homecoming",
+        "year": 2017
+      },
+      {
+        "slug": "deadpool-2016",
+        "tmdbId": "293660",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Deadpool",
+        "year": 2016
+      },
+      {
+        "slug": "avengers-age-of-ultron-2015",
+        "tmdbId": "99861",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Avengers: Age of Ultron",
+        "year": 2015
+      },
+      {
+        "slug": "interstellar-2014",
+        "tmdbId": "157336",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Interstellar",
+        "year": 2014
+      },
+      {
+        "slug": "the-wolf-of-wall-street-2013",
+        "tmdbId": "106646",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "The Wolf of Wall Street",
+        "year": 2013
+      },
+      {
+        "slug": "the-avengers-2012",
+        "tmdbId": "24428",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "The Avengers",
+        "year": 2012
+      },
+      {
+        "slug": "captain-america-the-first-avenger-2011",
+        "tmdbId": "1771",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Captain America: The First Avenger",
+        "year": 2011
+      },
+      {
+        "slug": "inception-2010",
+        "tmdbId": "27205",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Inception",
+        "year": 2010
+      },
+      {
+        "slug": "sinners-2025",
+        "tmdbId": "1233413",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Sinners",
+        "year": 2025
+      },
+      {
+        "slug": "dune-part-two-2024",
+        "tmdbId": "693134",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Dune: Part Two",
+        "year": 2024
+      },
+      {
+        "slug": "barbie-2023",
+        "tmdbId": "346698",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Barbie",
+        "year": 2023
+      },
+      {
+        "slug": "the-batman-2022",
+        "tmdbId": "414906",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "The Batman",
+        "year": 2022
+      },
+      {
+        "slug": "dune-2021",
+        "tmdbId": "438631",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Dune",
+        "year": 2021
+      },
+      {
+        "slug": "tenet-2020",
+        "tmdbId": "577922",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Tenet",
+        "year": 2020
+      },
+      {
+        "slug": "joker-2019",
+        "tmdbId": "475557",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Joker",
+        "year": 2019
+      },
+      {
+        "slug": "black-panther-2018",
+        "tmdbId": "284054",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Black Panther",
+        "year": 2018
+      },
+      {
+        "slug": "guardians-of-the-galaxy-vol-2-2017",
+        "tmdbId": "283995",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Guardians of the Galaxy Vol. 2",
+        "year": 2017
+      },
+      {
+        "slug": "captain-america-civil-war-2016",
+        "tmdbId": "271110",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Captain America: Civil War",
+        "year": 2016
+      },
+      {
+        "slug": "mad-max-fury-road-2015",
+        "tmdbId": "76341",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Mad Max: Fury Road",
+        "year": 2015
+      },
+      {
+        "slug": "guardians-of-the-galaxy-2014",
+        "tmdbId": "118340",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Guardians of the Galaxy",
+        "year": 2014
+      },
+      {
+        "slug": "iron-man-3-2013",
+        "tmdbId": "68721",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Iron Man 3",
+        "year": 2013
+      },
+      {
+        "slug": "django-unchained-2012",
+        "tmdbId": "68718",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Django Unchained",
+        "year": 2012
+      },
+      {
+        "slug": "thor-2011",
+        "tmdbId": "10195",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Thor",
+        "year": 2011
+      },
+      {
+        "slug": "shutter-island-2010",
+        "tmdbId": "11324",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Shutter Island",
+        "year": 2010
+      }
+    ],
+    "tv": [
+      {
+        "slug": "adolescence-2025-s01e01",
+        "tmdbId": "249042",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Adolescence",
+        "year": 2025,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 66
+      },
+      {
+        "slug": "fallout-2024-s01e01",
+        "tmdbId": "106379",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Fallout",
+        "year": 2024,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 75
+      },
+      {
+        "slug": "the-last-of-us-2023-s01e01",
+        "tmdbId": "100088",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "The Last of Us",
+        "year": 2023,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 81
+      },
+      {
+        "slug": "wednesday-2022-s01e01",
+        "tmdbId": "119051",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Wednesday",
+        "year": 2022,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 60
+      },
+      {
+        "slug": "squid-game-2021-s01e01",
+        "tmdbId": "93405",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Squid Game",
+        "year": 2021,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 61
+      },
+      {
+        "slug": "the-queen-s-gambit-2020-s01e01",
+        "tmdbId": "87739",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "The Queen's Gambit",
+        "year": 2020,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 59
+      },
+      {
+        "slug": "the-boys-2019-s01e01",
+        "tmdbId": "76479",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "The Boys",
+        "year": 2019,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 62
+      },
+      {
+        "slug": "elite-2018-s01e01",
+        "tmdbId": "76669",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Elite",
+        "year": 2018,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 57
+      },
+      {
+        "slug": "money-heist-2017-s01e01",
+        "tmdbId": "71446",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Money Heist",
+        "year": 2017,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 90
+      },
+      {
+        "slug": "stranger-things-2016-s01e01",
+        "tmdbId": "66732",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Stranger Things",
+        "year": 2016,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 48
+      },
+      {
+        "slug": "better-call-saul-2015-s01e01",
+        "tmdbId": "60059",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Better Call Saul",
+        "year": 2015,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 54
+      },
+      {
+        "slug": "the-flash-2014-s01e01",
+        "tmdbId": "60735",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "The Flash",
+        "year": 2014,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 44
+      },
+      {
+        "slug": "peaky-blinders-2013-s01e01",
+        "tmdbId": "60574",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Peaky Blinders",
+        "year": 2013,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 57
+      },
+      {
+        "slug": "arrow-2012-s01e01",
+        "tmdbId": "1412",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Arrow",
+        "year": 2012,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 43
+      },
+      {
+        "slug": "game-of-thrones-2011-s01e01",
+        "tmdbId": "1399",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Game of Thrones",
+        "year": 2011,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 62
+      },
+      {
+        "slug": "the-walking-dead-2010-s01e01",
+        "tmdbId": "1402",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "The Walking Dead",
+        "year": 2010,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 68
+      },
+      {
+        "slug": "it-welcome-to-derry-2025-s01e01",
+        "tmdbId": "200875",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "IT: Welcome to Derry",
+        "year": 2025,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 54
+      },
+      {
+        "slug": "shgun-2024-s01e01",
+        "tmdbId": "126308",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Shōgun",
+        "year": 2024,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 71
+      },
+      {
+        "slug": "silo-2023-s01e01",
+        "tmdbId": "125988",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Silo",
+        "year": 2023,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 62
+      },
+      {
+        "slug": "house-of-the-dragon-2022-s01e01",
+        "tmdbId": "94997",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "House of the Dragon",
+        "year": 2022,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 66
+      },
+      {
+        "slug": "wandavision-2021-s01e01",
+        "tmdbId": "85271",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "WandaVision",
+        "year": 2021,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 31
+      },
+      {
+        "slug": "dark-desire-2020-s01e01",
+        "tmdbId": "105214",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Dark Desire",
+        "year": 2020,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 40
+      },
+      {
+        "slug": "the-mandalorian-2019-s01e01",
+        "tmdbId": "82856",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "The Mandalorian",
+        "year": 2019,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 41
+      },
+      {
+        "slug": "cobra-kai-2018-s01e01",
+        "tmdbId": "77169",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Cobra Kai",
+        "year": 2018,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 29
+      },
+      {
+        "slug": "riverdale-2017-s01e01",
+        "tmdbId": "69050",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Riverdale",
+        "year": 2017,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 47
+      },
+      {
+        "slug": "lucifer-2016-s01e01",
+        "tmdbId": "63174",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Lucifer",
+        "year": 2016,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 43
+      },
+      {
+        "slug": "mr-robot-2015-s01e01",
+        "tmdbId": "62560",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Mr. Robot",
+        "year": 2015,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 65
+      },
+      {
+        "slug": "the-100-2014-s01e01",
+        "tmdbId": "48866",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "The 100",
+        "year": 2014,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 42
+      },
+      {
+        "slug": "vikings-2013-s01e01",
+        "tmdbId": "44217",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Vikings",
+        "year": 2013,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 47
+      },
+      {
+        "slug": "pablo-escobar-the-drug-lord-2012-s01e01",
+        "tmdbId": "43348",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Pablo Escobar: The Drug Lord",
+        "year": 2012,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 45
+      },
+      {
+        "slug": "black-mirror-2011-s01e01",
+        "tmdbId": "42009",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Black Mirror",
+        "year": 2011,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 44
+      },
+      {
+        "slug": "sherlock-2010-s01e01",
+        "tmdbId": "19885",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "Sherlock",
+        "year": 2010,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 88
+      }
+    ],
+    "anime": [
+      {
+        "slug": "sakamoto-days-2025-s01e01",
+        "tmdbId": "207332",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "SAKAMOTO DAYS",
+        "year": 2025,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "solo-leveling-2024-s01e01",
+        "tmdbId": "127532",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Solo Leveling",
+        "year": 2024,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "frieren-beyond-journey-s-end-2023-s01e01",
+        "tmdbId": "209867",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Frieren: Beyond Journey's End",
+        "year": 2023,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 26
+      },
+      {
+        "slug": "spy-x-family-2022-s01e01",
+        "tmdbId": "120089",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "SPY x FAMILY",
+        "year": 2022,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 25
+      },
+      {
+        "slug": "record-of-ragnarok-2021-s01e01",
+        "tmdbId": "114868",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Record of Ragnarok",
+        "year": 2021,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "jujutsu-kaisen-2020-s01e01",
+        "tmdbId": "95479",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "JUJUTSU KAISEN",
+        "year": 2020,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "demon-slayer-kimetsu-no-yaiba-2019-s01e01",
+        "tmdbId": "85937",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Demon Slayer: Kimetsu no Yaiba",
+        "year": 2019,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 23
+      },
+      {
+        "slug": "super-dragon-ball-heroes-2018-s01e01",
+        "tmdbId": "80020",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Super Dragon Ball Heroes",
+        "year": 2018,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 9
+      },
+      {
+        "slug": "boruto-naruto-next-generations-2017-s01e01",
+        "tmdbId": "70881",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Boruto: Naruto Next Generations",
+        "year": 2017,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "my-hero-academia-2016-s01e01",
+        "tmdbId": "65930",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "My Hero Academia",
+        "year": 2016,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "dragon-ball-super-2015-s01e01",
+        "tmdbId": "62715",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Dragon Ball Super",
+        "year": 2015,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "the-seven-deadly-sins-2014-s01e01",
+        "tmdbId": "62104",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "The Seven Deadly Sins",
+        "year": 2014,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "attack-on-titan-2013-s01e01",
+        "tmdbId": "1429",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Attack on Titan",
+        "year": 2013,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "sword-art-online-2012-s01e01",
+        "tmdbId": "45782",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Sword Art Online",
+        "year": 2012,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 23
+      },
+      {
+        "slug": "hunter-x-hunter-2011-s01e01",
+        "tmdbId": "46298",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Hunter x Hunter",
+        "year": 2011,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "high-school-of-the-dead-2010-s01e01",
+        "tmdbId": "56998",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "High School of the Dead",
+        "year": 2010,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "gachiakuta-2025-s01e01",
+        "tmdbId": "256721",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Gachiakuta",
+        "year": 2025,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "dan-da-dan-2024-s01e01",
+        "tmdbId": "240411",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Dan Da Dan",
+        "year": 2024,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "mashle-magic-and-muscles-2023-s01e01",
+        "tmdbId": "204832",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "MASHLE: MAGIC AND MUSCLES",
+        "year": 2023,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 23
+      },
+      {
+        "slug": "chainsaw-man-2022-s01e01",
+        "tmdbId": "114410",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Chainsaw Man",
+        "year": 2022,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 26
+      },
+      {
+        "slug": "mushoku-tensei-jobless-reincarnation-2021-s01e01",
+        "tmdbId": "94664",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Mushoku Tensei: Jobless Reincarnation",
+        "year": 2021,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "tonikawa-over-the-moon-for-you-2020-s01e01",
+        "tmdbId": "100049",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "TONIKAWA: Over the Moon for You",
+        "year": 2020,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "dr-stone-2019-s01e01",
+        "tmdbId": "86031",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Dr. STONE",
+        "year": 2019,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "darling-in-the-franxx-2018-s01e01",
+        "tmdbId": "76121",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "DARLING in the FRANXX",
+        "year": 2018,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "black-clover-2017-s01e01",
+        "tmdbId": "73223",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Black Clover",
+        "year": 2017,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "konosuba-god-s-blessing-on-this-wonderful-world-2016-s01e01",
+        "tmdbId": "65844",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "KONOSUBA - God's blessing on this wonderful world!",
+        "year": 2016,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "one-punch-man-2015-s01e01",
+        "tmdbId": "63926",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "One-Punch Man",
+        "year": 2015,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "tokyo-ghoul-2014-s01e01",
+        "tmdbId": "61374",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Tokyo Ghoul",
+        "year": 2014,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 26
+      },
+      {
+        "slug": "golden-time-2013-s01e01",
+        "tmdbId": "67389",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Golden Time",
+        "year": 2013,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "high-school-dxd-2012-s01e01",
+        "tmdbId": "45950",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "High School DxD",
+        "year": 2012,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "steins-gate-2011-s01e01",
+        "tmdbId": "42509",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Steins;Gate",
+        "year": 2011,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 24
+      },
+      {
+        "slug": "maid-sama-2010-s01e01",
+        "tmdbId": "65648",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Maid Sama!",
+        "year": 2010,
+        "season": 1,
+        "episode": 1,
+        "expectedDurationMinutes": 25
+      }
+    ]
+  }
 }
