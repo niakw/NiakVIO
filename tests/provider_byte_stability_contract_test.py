@@ -19,9 +19,9 @@ assert not (ROOT / "engine_v2/scripts/terser-clean.mjs").exists()
 
 # Terser/generic formatter ownership must stay absent from publication/runtime
 # paths. Production Provider v3 minimization is owned exclusively by the
-# conservative scripts/provider_v3_minimizer.py fixed-point contract; this raw
-# byte-stability helper still guarantees that already-owned provider/Core regions
-# are never silently rewritten by legacy purification code.
+# conservative scripts/provider_v3_minimizer.py final-stage fixed-point contract;
+# this raw byte-stability helper guarantees that already-owned provider/Core
+# regions are never silently rewritten by legacy purification code.
 critical_paths = (
     ROOT / "scripts/provider_byte_stability.py",
     ROOT / "scripts/reapply_published_overrides.py",
@@ -66,8 +66,8 @@ assert first_report["bytesSaved"] == 0
 assert second_report["candidateSha256"] == first_report["candidateSha256"]
 
 text = first.decode("utf-8")
-assert text.count("/* START NIAKVIO_FIX:CORE.TEST.RAW_BYTES.V1 */") == 1
-assert text.count("/* END NIAKVIO_FIX:CORE.TEST.RAW_BYTES.V1 */") == 1
-assert "NIAKVIO_FIX_DATA_PAYLOAD:CORE.TEST.RAW_BYTES.V1:" in text
+assert text.count("/* STARTFIX:CORE.TEST.RAW_BYTES.V1 */") == 1
+assert text.count("/* CLOSEFIX:CORE.TEST.RAW_BYTES.V1 */") == 1
+assert "/* FIXDATA:CORE.TEST.RAW_BYTES.V1:" in text
 
 print("raw provider byte-stability contract passed")
