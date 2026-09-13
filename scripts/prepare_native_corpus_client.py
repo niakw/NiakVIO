@@ -37,6 +37,41 @@ from native_client_test_bootstrap import (  # noqa: E402
 MATERIALIZED_SENTINEL = ROOT / ".native-provider-overrides-materialized"
 
 
+def provider_scope_ids() -> set[str] | None:
+    """Optional exact provider scope for a native Lab campaign.
+
+    The scope file is repository-local JSON. Hub matrices expose provider ids via
+    ``rows[].manifestId`` (or ``rows[].provider`` for compatible inventories).
+    When configured, this is an execution allowlist, not merely a reporting filter.
+    """
+    raw = os.environ.get("NIAKVIO_PROVIDER_SCOPE_MATRIX", "").strip()
+    if not raw:
+        return None
+    candidate = Path(raw)
+    scope_path = candidate if candidate.is_absolute() else ROOT / candidate
+    scope_path = scope_path.resolve()
+    try:
+        scope_path.relative_to(ROOT.resolve())
+    except ValueError as error:
+        raise SystemExit(f"native provider scope must live inside repository: {raw}") from error
+    if not scope_path.is_file():
+        raise SystemExit(f"native provider scope not found: {scope_path}")
+    data = json.loads(scope_path.read_text(encoding="utf-8"))
+    rows = data.get("rows") if isinstance(data.get("rows"), list) else []
+    ids = {
+        str(row.get("manifestId") or row.get("provider") or "").strip().casefold()
+        for row in rows if isinstance(row, dict)
+        if str(row.get("manifestId") or row.get("provider") or "").strip()
+    }
+    expected = int(data.get("hubCount") or data.get("providerCount") or len(ids))
+    if not ids or len(ids) != expected:
+        raise SystemExit(
+            f"native provider scope invalid: ids={len(ids)} expected={expected} file={scope_path}"
+        )
+    print(f"FIELD_NATIVE_PROVIDER_SCOPE file={scope_path.relative_to(ROOT)} providers={len(ids)}")
+    return ids
+
+
 def _materialization_requested() -> bool:
     return os.environ.get("NIAKVIO_MATERIALIZE_NATIVE", "0").strip() == "1"
 
@@ -128,6 +163,7 @@ def manifest_providers(manifest_path: str | Path) -> list[dict]:
     ensure_materialized_provider_transaction()
     manifest_file = _manifest_path(manifest_path)
     data = json.loads(manifest_file.read_text(encoding="utf-8"))
+    scope_ids = provider_scope_ids()
     providers: list[dict] = []
     seen: set[str] = set()
     for row in data.get("scrapers", []):
@@ -137,6 +173,8 @@ def manifest_providers(manifest_path: str | Path) -> list[dict]:
         filename = str(row.get("filename") or "").strip()
         key = provider_id.casefold()
         if not provider_id or not filename or key in seen:
+            continue
+        if scope_ids is not None and key not in scope_ids:
             continue
         seen.add(key)
         providers.append(
@@ -156,6 +194,14 @@ def manifest_providers(manifest_path: str | Path) -> list[dict]:
         )
     if not providers:
         raise SystemExit(f"selected manifest contains no stageable providers: {manifest_file}")
+    if scope_ids is not None:
+        missing = sorted(scope_ids - seen)
+        if missing:
+            raise SystemExit(
+                "native provider scope references provider(s) absent from manifest: " + ",".join(missing)
+            )
+        if len(providers) != len(scope_ids):
+            raise SystemExit(f"native provider scope mismatch: staged={len(providers)} expected={len(scope_ids)}")
     return providers
 
 

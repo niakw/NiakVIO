@@ -50,6 +50,27 @@ def route(provider: str, media_type: str) -> tuple[str, str]:
     return (provider.casefold(), media_type.casefold())
 
 
+def load_scope_ids(scope_path: Path | None) -> set[str] | None:
+    raw_env = __import__("os").environ.get("NIAKVIO_PROVIDER_SCOPE_MATRIX", "").strip()
+    path = scope_path
+    if path is None and raw_env:
+        candidate = Path(raw_env)
+        path = candidate if candidate.is_absolute() else Path.cwd() / candidate
+    if path is None:
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    rows = data.get("rows") if isinstance(data.get("rows"), list) else []
+    ids = {
+        str(row.get("manifestId") or row.get("provider") or "").strip().casefold()
+        for row in rows if isinstance(row, dict)
+        if str(row.get("manifestId") or row.get("provider") or "").strip()
+    }
+    expected = int(data.get("hubCount") or data.get("providerCount") or len(ids))
+    if not ids or len(ids) != expected:
+        raise SystemExit(f"invalid native provider scope: ids={len(ids)} expected={expected} path={path}")
+    return ids
+
+
 def merge_outcome(current: str, incoming: str) -> str:
     """Keep positive proof once observed; otherwise retain the strongest problem."""
     if current == "positive" or incoming == "positive":
@@ -98,12 +119,14 @@ def main() -> int:
     parser.add_argument("--client", required=True, choices=("tv", "mobile", "desktop", "ios"))
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--corpus", type=Path, required=True)
+    parser.add_argument("--scope-matrix", type=Path, default=None)
     parser.add_argument("logs", nargs="+", type=Path)
     args = parser.parse_args()
 
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     corpus = json.loads(args.corpus.read_text(encoding="utf-8"))
     fixture_by_type = ((corpus.get("native_reader_acceptance") or {}).get("fixture_by_type") or {})
+    scope_ids = load_scope_ids(args.scope_matrix)
 
     expected: set[tuple[str, str]] = set()
     provider_ids: set[str] = set()
@@ -114,7 +137,10 @@ def main() -> int:
         if not provider:
             continue
         key = provider.casefold()
-        if row.get("enabled") is not True:
+        if scope_ids is not None and key not in scope_ids:
+            disabled_ids.add(key)
+            continue
+        if scope_ids is None and row.get("enabled") is not True:
             disabled_ids.add(key)
             continue
         provider_ids.add(key)
@@ -127,6 +153,13 @@ def main() -> int:
         for media_type in TYPES:
             if media_type in declared:
                 expected.add(route(provider, media_type))
+
+    if scope_ids is not None:
+        missing_scope = sorted(scope_ids - provider_ids)
+        if missing_scope:
+            raise SystemExit("scope provider(s) missing from manifest: " + ",".join(missing_scope))
+        if len(provider_ids) != len(scope_ids):
+            raise SystemExit(f"scope mismatch: providers={len(provider_ids)} expected={len(scope_ids)}")
 
     missing_fixture_types = [kind for kind in TYPES if not str(fixture_by_type.get(kind) or "").strip()]
     if missing_fixture_types:
@@ -159,6 +192,7 @@ def main() -> int:
                     provider, media_type, outcome = parsed
                     r = route(provider, media_type)
                     if r[0] in provider_ids:
+                        completed.add(r)
                         lane_outcomes[r] = merge_outcome(lane_outcomes[r], outcome)
                     elif r[0] in disabled_ids:
                         observed_disabled.add(r)

@@ -12,6 +12,25 @@ PROVIDER_TIMEOUT_MS = 40_000
 NUVIO_MOBILE = Path("nuvio-mobile")
 IOS_KOTLIN_TARGET = Path("nuvio-mobile/composeApp/src/iosFull/kotlin/com/nuvio/app/NiakvioIosLab.kt")
 
+
+def provider_scope_ids() -> list[str]:
+    raw = __import__("os").environ.get("NIAKVIO_PROVIDER_SCOPE_MATRIX", "").strip()
+    if not raw:
+        return []
+    candidate = Path(raw)
+    path = candidate if candidate.is_absolute() else ROOT / candidate
+    data = json.loads(path.read_text(encoding="utf-8"))
+    rows = data.get("rows") if isinstance(data.get("rows"), list) else []
+    ids = sorted({
+        str(row.get("manifestId") or row.get("provider") or "").strip().casefold()
+        for row in rows if isinstance(row, dict)
+        if str(row.get("manifestId") or row.get("provider") or "").strip()
+    })
+    expected = int(data.get("hubCount") or data.get("providerCount") or len(ids))
+    if not ids or len(ids) != expected:
+        raise SystemExit(f"invalid iOS provider scope: ids={len(ids)} expected={expected} path={path}")
+    return ids
+
 KOTLIN_TEMPLATE = r'''@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 
 package com.nuvio.app
@@ -80,6 +99,7 @@ private data class PlayerObservation(
 )
 
 private val fixtures = __FIXTURES__
+private val scopeProviderIds = __SCOPE_PROVIDER_IDS__
 private var started = false
 
 private fun env(name: String): String = getenv(name)?.toKString().orEmpty()
@@ -182,7 +202,8 @@ private suspend fun runLab(manifestUrl: String) {
         30000L,
     )
     val allIosProviders = manifest.scrapers.filter {
-        supportsIos(it.supportedPlatforms, it.disabledPlatforms)
+        supportsIos(it.supportedPlatforms, it.disabledPlatforms) &&
+            (scopeProviderIds.isEmpty() || it.id.lowercase() in scopeProviderIds)
     }
     val iosProviders = if (learning) {
         if (targetProvider.isBlank()) error("learning iOS Lab requires NIAKVIO_IOS_TARGET_PROVIDER")
@@ -350,6 +371,12 @@ def fixture_rows() -> list[dict]:
     return rows
 
 
+def kotlin_string_set(values: list[str]) -> str:
+    if not values:
+        return "emptySet<String>()"
+    return "setOf(" + ", ".join(json.dumps(value) for value in values) + ")"
+
+
 def kotlin_fixture_list(rows: list[dict]) -> str:
     values = []
     for row in rows:
@@ -376,11 +403,16 @@ def main() -> int:
     if not repo.is_dir():
         raise SystemExit(f"missing NuvioMobile checkout: {repo}")
     rows = fixture_rows()
+    scope_ids = provider_scope_ids()
     source = KOTLIN_TEMPLATE.replace("__PROVIDER_TIMEOUT_MS__", str(PROVIDER_TIMEOUT_MS))
     source = source.replace("__FIXTURES__", kotlin_fixture_list(rows))
+    source = source.replace("__SCOPE_PROVIDER_IDS__", kotlin_string_set(scope_ids))
     IOS_KOTLIN_TARGET.parent.mkdir(parents=True, exist_ok=True)
     IOS_KOTLIN_TARGET.write_text(source, encoding="utf-8")
-    print("FIELD_NATIVE_IOS_PREPARED fixtures=" + ",".join(row["slug"] for row in rows))
+    print(
+        "FIELD_NATIVE_IOS_PREPARED fixtures=" + ",".join(row["slug"] for row in rows)
+        + f" provider_scope={len(scope_ids) if scope_ids else 'all'}"
+    )
     return 0
 
 if __name__ == "__main__":
