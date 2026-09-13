@@ -100,6 +100,7 @@ jobs:
       NIAKVIO_TARGET_MANIFEST: manifest.json
       NIAKVIO_PRIMARY_STREAM_SCOPE: all
       NIAKVIO_REGRESSION_STREAM_SCOPE: all
+      NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json
       # Reader/player outcomes are evidence. External client failures remain visible.
     steps:
       - name: Checkout NiakVIO candidate
@@ -130,7 +131,10 @@ jobs:
           git -C nuvio-desktop lfs pull --include="composeApp/src/desktopMain/native/macos/runtime/**,composeApp/src/desktopMain/native/windows/runtime/**" --exclude=""
           touch nuvio-desktop/local.properties
           python3 niakvio/scripts/native_desktop_upstream_test_compat.py nuvio-desktop
-          python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type
+          INITIAL_FIXTURE="$(python3 niakvio/scripts/rotating_corpus.py select --lane movie --count-per-lane 1 | head -n 1)"
+          test -n "$INITIAL_FIXTURE"
+          echo "FIELD_ROTATING_CORPUS client=desktop phase=initial fixture=$INITIAL_FIXTURE"
+          python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture "$INITIAL_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type
 
       - name: Install official Windows WebView2 build dependency
         if: matrix.os_name == 'windows'
@@ -170,12 +174,17 @@ jobs:
             --no-configuration-cache --console=plain
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Execute representative routes and accumulate player evidence
+      - name: Execute rotating movie TV anime routes and accumulate player evidence
         shell: bash
         run: |
           set -u
-          FIXTURES=(interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01)
+          FIXTURES=()
+          while IFS= read -r fixture; do
+            [[ -n "$fixture" ]] && FIXTURES+=("$fixture")
+          done < <(python3 "$GITHUB_WORKSPACE/niakvio/scripts/rotating_corpus.py" select --lane all --count-per-lane 1)
+          [[ ${#FIXTURES[@]} -eq 3 ]] || { echo "rotating corpus must select exactly movie/tv/anime" >&2; exit 2; }
           printf '%s\n' "${FIXTURES[@]}" > "$GITHUB_WORKSPACE/desktop-fixtures-${{ matrix.os_name }}.txt"
+          echo "FIELD_ROTATING_CORPUS client=desktop os=${{ matrix.os_name }} fixtures=${FIXTURES[*]} scope=46"
           for fixture in "${FIXTURES[@]}"; do
             echo "===== DESKTOP ROUTE: $fixture (${{ matrix.os_name }}) ====="
             NIAKVIO_TARGET_FIXTURE="$fixture" \
@@ -189,7 +198,7 @@ jobs:
           done
           node "$GITHUB_WORKSPACE/niakvio/scripts/gate_native_player_reached.cjs" "${LOGS[@]}"
 
-      - name: Verify exhaustive Desktop provider matrix
+      - name: Verify exhaustive Desktop Hub-46 provider matrix
         shell: bash
         run: |
           set -euo pipefail
@@ -197,6 +206,7 @@ jobs:
             --client desktop \
             --manifest niakvio/manifest.json \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
+            --scope-matrix niakvio/automation/evidence/hub-lab-matrix-46.json \
             "$GITHUB_WORKSPACE"/desktop-native-corpus-${{ matrix.os_name }}-*.log
 
       - name: Build Desktop Brain diagnoses from captured evidence
@@ -208,7 +218,7 @@ jobs:
           set -u
           FIXTURE_FILE="$GITHUB_WORKSPACE/desktop-fixtures-${{ matrix.os_name }}.txt"
           if [[ ! -s "$FIXTURE_FILE" ]]; then
-            printf '%s\n' interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01 > "$FIXTURE_FILE"
+            python3 "$GITHUB_WORKSPACE/niakvio/scripts/rotating_corpus.py" select --lane all --count-per-lane 1 > "$FIXTURE_FILE"
           fi
           while IFS= read -r fixture; do
             [[ -n "$fixture" ]] || continue
