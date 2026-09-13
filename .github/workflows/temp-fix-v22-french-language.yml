@@ -1,0 +1,43 @@
+name: TEMP - Fix V22 French language
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-fix-v22-french-language.yml]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Preserve VF normalization for generic French tokens
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/provider_patches/global_stream_presentation_v1.py')
+          s=p.read_text(encoding='utf-8')
+          old='  var u=raw.toLowerCase().replace(/[_-]+/g," ").replace(/\\s+/g," ").trim();\n  if(/^(?:vf|vff|vfq|vostfr|vo|multi|multi audio|dual audio)$/i.test(u))return fallback||raw.toUpperCase();'
+          new='  var u=raw.toLowerCase().replace(/[_-]+/g," ").replace(/\\s+/g," ").trim();\n  if(/^(?:fr|fra|fre|french|francais|français|fr fr)$/i.test(u))return fallback||"VF";\n  if(/^(?:vf|vff|vfq|vostfr|vo|multi|multi audio|dual audio)$/i.test(u))return fallback||raw.toUpperCase();'
+          if old not in s: raise SystemExit('V22 detailedLanguage token missing')
+          p.write_text(s.replace(old,new),encoding='utf-8')
+          PY
+          git diff --check
+      - name: Run V22 presentation contracts
+        run: |
+          python tests/global_stream_presentation_test.py
+          python tests/global_stream_presentation_pipeline_test.py
+      - name: Commit Core fix
+        run: |
+          git config user.name niakvio-bot
+          git config user.email niakvio-bot@users.noreply.github.com
+          git add scripts/provider_patches/global_stream_presentation_v1.py
+          git commit -m '[presentation-v22] normalize generic French tokens to VF'
+          git pull --rebase origin fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
