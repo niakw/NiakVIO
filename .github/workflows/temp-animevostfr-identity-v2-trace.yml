@@ -1,0 +1,66 @@
+name: TEMP - AnimeVOSTFR identity v2 trace
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-animevostfr-identity-v2-trace.yml]
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NUVIO_PROVIDER_V3_CONTEXT: workspace
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: fix/labs-5.21.44-20260912}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Stage V2 and trace worker plus live episode hrefs
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_animevostfr_identity_v2.py
+          python3 scripts/materialize_provider_v3_one.py animevostfr
+          python3 - <<'PY'
+          import json,re,subprocess,sys,urllib.parse,urllib.request
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          f={'tmdbId':'61374','mediaType':'anime','category':'anime','season':1,'episode':1,'title':'Tokyo Ghoul','year':2014}
+          path=p.local_catalog()['animevostfr']['path']
+          cp=subprocess.run(['node','scripts/provider_worker.cjs',str(path),json.dumps(f,separators=(',',':')),json.dumps(p.context_for(f),separators=(',',':'))],capture_output=True,text=True,timeout=70)
+          payload={}
+          for line in cp.stdout.splitlines():
+            if line.startswith('NUVIO_HEALTH_RESULT='):payload=json.loads(line.split('=',1)[1])
+          obs=[]
+          for x in payload.get('network_observations') or []:
+            if isinstance(x,dict):obs.append({k:x.get(k) for k in ['stage','host','method','path_pattern','status','ok','error_code']})
+          print('ANIMEVOSTFR_V2_TRACE '+json.dumps({'streams':payload.get('stream_count'),'raw':payload.get('raw_stream_count'),'hosts':payload.get('provider_server_hosts'),'statuses':payload.get('provider_server_http_statuses'),'observations':obs[:80]},separators=(',',':')))
+
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145 Safari/537.36'
+          def get(url,ref):
+            req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'text/html,*/*','Referer':ref})
+            with urllib.request.urlopen(req,timeout=20) as r:return r.read(2*1024*1024).decode('utf-8','replace'),r.url
+          search,base=get('https://v2.animevostfr.org/?s=Tokyo%20Ghoul','https://v2.animevostfr.org/')
+          candidates=[]
+          for h in re.findall(r'href=["\']([^"\']+)',search,re.I):
+            u=urllib.parse.urljoin(base,h)
+            if '/animes/' in u and 'tokyo-ghoul' in u.lower() and u not in candidates:candidates.append(u)
+          print('ANIMEVOSTFR_SEARCH_CANDIDATES '+json.dumps(candidates[:20],ensure_ascii=False))
+          for u in candidates[:5]:
+            try:
+              html,final=get(u,base); eps=[]
+              for h in re.findall(r'href=["\']([^"\']+)',html,re.I):
+                e=urllib.parse.urljoin(final,h)
+                if '/episode/' in e and 'tokyo-ghoul' in e.lower() and e not in eps:eps.append(e)
+              print('ANIMEVOSTFR_EPISODE_HREFS '+json.dumps({'series':urllib.parse.urlsplit(final).path,'episodes':[urllib.parse.urlsplit(x).path for x in eps[:80]]},ensure_ascii=False,separators=(',',':')))
+            except Exception as exc:print('ANIMEVOSTFR_EPISODE_HREFS '+json.dumps({'series':u,'error':type(exc).__name__+': '+str(exc)[:120]},separators=(',',':')))
+          PY
