@@ -1,15 +1,15 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-13T04:55:14.241107+00:00",
+  "generated_at": "2026-09-13T13:21:18.658772+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 96,
   "status_counts": {
-    "healthy": 1,
+    "healthy": 0,
     "reachable": 1,
-    "blocked": 10,
+    "blocked": 11,
     "degraded": 1,
-    "no_streams": 36,
-    "provider_unreachable": 37,
+    "no_streams": 37,
+    "provider_unreachable": 36,
     "runtime_error": 0,
     "unavailable": 10,
     "excluded": 0
@@ -2145,7 +2145,7 @@
     },
     {
       "id": "animesalt",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2298,7 +2298,7 @@
     },
     {
       "id": "animoflix",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -3301,7 +3301,7 @@
     },
     {
       "id": "papadustream",
-      "status": "provider_unreachable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -4223,7 +4223,7 @@
     },
     {
       "id": "allwish",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -4421,18 +4421,14 @@
     },
     {
       "id": "frenchstream",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "u14.vidzy.cc"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "r1.fsvid.lol": {
           "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
