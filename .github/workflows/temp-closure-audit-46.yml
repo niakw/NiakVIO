@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   audit:
@@ -15,92 +15,73 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
 
-      - name: Probe TMDB-direct MovieBox authorities
+      - name: Probe exact Stremio stream routes
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
-          const cases = [
-            ['onrender-movie','https://stremio-moviebox-1.onrender.com/?tmdbId=157336&type=movie'],
-            ['onrender-tv','https://stremio-moviebox-1.onrender.com/?tmdbId=1396&type=tv&season=1&episode=1'],
-            ['onrender-manifest','https://stremio-moviebox-1.onrender.com/manifest.json'],
-            ['moviiebox-movie','https://moviiebox.lol/?tmdbId=157336&type=movie'],
-            ['moviiebox-tv','https://moviiebox.lol/?tmdbId=1396&type=tv&season=1&episode=1'],
+          const base='https://stremio-moviebox-1.onrender.com';
+          const cases=[
+            ['movie-tmdb',base+'/stream/movie/tmdb:157336.json'],
+            ['movie-imdb',base+'/stream/movie/tt0816692.json'],
+            ['tv-tmdb-series',base+'/stream/series/tmdb:1396:1:1.json'],
+            ['tv-imdb-series',base+'/stream/series/tt0903747:1:1.json'],
+            ['tv-tmdb-tv',base+'/stream/tv/tmdb:1396:1:1.json'],
+            ['tv-imdb-tv',base+'/stream/tv/tt0903747:1:1.json'],
           ];
           (async()=>{
-            for (const [label,url] of cases) {
+            for(const [label,url] of cases){
               const started=Date.now();
-              try {
-                const r=await fetch(url,{redirect:'follow',headers:{'User-Agent':'Mozilla/5.0','Accept':'application/json,text/plain,*/*'},signal:AbortSignal.timeout(20000)});
-                const body=await r.text();
-                let parsed=null; try { parsed=JSON.parse(body); } catch {}
-                const rows = Array.isArray(parsed?.streams) ? parsed.streams : Array.isArray(parsed) ? parsed : [];
-                const direct = rows.filter(x=>/^https?:\/\//i.test(String(x?.url||x?.file||x?.stream||'')));
-                console.log('FIELD_MB_DIRECT label='+label+' status='+r.status+' duration_ms='+(Date.now()-started)+' rows='+rows.length+' direct='+direct.length+' final='+r.url+' body64='+Buffer.from(body.slice(0,1200)).toString('base64'));
-              } catch(e) {
-                console.log('FIELD_MB_DIRECT label='+label+' error='+String(e)+' duration_ms='+(Date.now()-started));
-              }
+              try{
+                const r=await fetch(url,{headers:{'User-Agent':'Mozilla/5.0','Accept':'application/json'},signal:AbortSignal.timeout(20000)});
+                const body=await r.text(); let j={}; try{j=JSON.parse(body)}catch{}
+                const rows=Array.isArray(j?.streams)?j.streams:[];
+                const direct=rows.filter(x=>/^https?:\/\//i.test(String(x?.url||'')));
+                console.log('FIELD_MB_STREMIO label='+label+' status='+r.status+' duration_ms='+(Date.now()-started)+' rows='+rows.length+' direct='+direct.length+' body64='+Buffer.from(body.slice(0,1800)).toString('base64'));
+              }catch(e){console.log('FIELD_MB_STREMIO label='+label+' error='+String(e)+' duration_ms='+(Date.now()-started))}
             }
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
 
-      - name: Keep official H5 MovieBox proof
+      - name: Probe H5 direct TMDB lookup semantics
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
           const API='https://h5-api.aoneroom.com/wefeed-h5api-bff';
-          const H={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/148 Safari/537.36','Referer':'https://moviebox.ph/','Origin':'https://moviebox.ph','X-Client-Info':'{"timezone":"Asia/Dhaka"}','X-Request-Lang':'en','Accept':'application/json','Content-Type':'application/json'}; let token='';
-          async function req(url,opt={}){const headers={...H,...(opt.headers||{})};if(token)headers.Authorization='Bearer '+token;const r=await fetch(url,{...opt,headers,signal:AbortSignal.timeout(8000)});const xu=r.headers.get('x-user');if(xu)try{token=JSON.parse(xu).token||token}catch{};const t=await r.text();let j={};try{j=JSON.parse(t)}catch{};return {r,j,t}}
+          const H={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/148 Safari/537.36','Referer':'https://moviebox.ph/','Origin':'https://moviebox.ph','X-Client-Info':'{"timezone":"Asia/Dhaka"}','X-Request-Lang':'en','Accept':'application/json','Content-Type':'application/json'};let token='';
+          async function req(url,opt={}){const headers={...H,...(opt.headers||{})};if(token)headers.Authorization='Bearer '+token;const r=await fetch(url,{...opt,headers,signal:AbortSignal.timeout(10000)});const xu=r.headers.get('x-user');if(xu)try{token=JSON.parse(xu).token||token}catch{};const t=await r.text();let j={};try{j=JSON.parse(t)}catch{};return{r,j,t}}
           function rows(j){const d=j?.data||{};return Array.isArray(d.items)?d.items:Array.isArray(d.list)?d.list:[]}
-          async function prove(title,type,se,ep){const s=await req(API+'/subject/search',{method:'POST',body:JSON.stringify({keyword:title,page:1,perPage:20})});const a=rows(s.j);const exact=a.find(x=>String(x?.title||'').toLowerCase()===title.toLowerCase())||a[0];if(!exact)return false;const id=String(exact.subjectId||''),detail=String(exact.detailPath||'');const dom=await req(API+'/media-player/get-domain');const domain=String(dom.j?.data||'https://netfilm.world').replace(/\/$/,'');const ref=domain+'/spa/videoPlayPage/movies/'+detail+'?id='+encodeURIComponent(id)+'&type=/movie/detail&detailSe='+se+'&detailEp='+ep+'&lang=en';const p=await req(domain+'/wefeed-h5api-bff/subject/play?subjectId='+encodeURIComponent(id)+'&se='+se+'&ep='+ep+'&detailPath='+encodeURIComponent(detail),{headers:{Referer:ref,Origin:domain,'X-Source':''}});const d=p.j?.data||{}, streams=Array.isArray(d.streams)?d.streams:[],hls=Array.isArray(d.hls)?d.hls:[],dash=Array.isArray(d.dash)?d.dash:[];const direct=[...streams,...hls,...dash].filter(x=>/^https?:\/\//i.test(String(x?.url||x?.path||'')));console.log('FIELD_MB_H5 type='+type+' search='+s.r.status+' play='+p.r.status+' direct='+direct.length+' qualities='+[...new Set(streams.map(x=>x.resolutions).filter(Boolean))].join(','));return Boolean(d.hasResource&&direct.length)}
-          (async()=>{const b=await req(API+'/home?host=moviebox.ph');let movie=await prove('Interstellar','movie',0,0);if(!movie)movie=await prove('Interstellar','movie',1,1);const tv=await prove('Breaking Bad','tv',1,1);console.log('FIELD_MB_H5_PROOF movie='+movie+' tv='+tv+' token='+Boolean(token));if(!b.r.ok||!movie||!tv)process.exit(2)})().catch(e=>{console.error(e);process.exit(1)});
+          (async()=>{
+            const boot=await req(API+'/home?host=moviebox.ph');console.log('FIELD_MB_H5_BOOT status='+boot.r.status+' token='+Boolean(token));
+            const bodies=[
+              ['keyword-number',{keyword:'157336',page:1,perPage:20}],
+              ['keyword-tmdb',{keyword:'tmdb:157336',page:1,perPage:20}],
+              ['tmdbId-field',{tmdbId:'157336',page:1,perPage:20}],
+              ['subject-tmdb-field',{keyword:'',tmdbId:'157336',page:1,perPage:20}],
+            ];
+            for(const [label,body] of bodies){
+              const x=await req(API+'/subject/search',{method:'POST',body:JSON.stringify(body)});const a=rows(x.j);
+              console.log('FIELD_MB_H5_LOOKUP label='+label+' status='+x.r.status+' rows='+a.length+' sample64='+Buffer.from(JSON.stringify(a.slice(0,3))).toString('base64'));
+            }
+            const qs=[
+              API+'/subject/detail?tmdbId=157336',
+              API+'/detail?tmdbId=157336',
+              API+'/subject?tmdbId=157336',
+              API+'/subject/search?tmdbId=157336',
+            ];
+            for(const url of qs){const x=await req(url);console.log('FIELD_MB_H5_GET url='+url+' status='+x.r.status+' body64='+Buffer.from(x.t.slice(0,1200)).toString('base64'))}
+          })().catch(e=>{console.error(e);process.exit(1)});
           NODE
 
-      - name: Patch exact 25s Lab budget
+      - name: Lock already-fixed contracts
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          lab=Path('scripts/nuvio_client_lab.cjs')
-          text=lab.read_text()
-          old='const DEFAULT_TIMEOUT_MS = 70_000;'
-          new='const DEFAULT_TIMEOUT_MS = 25_000;'
-          if old in text:
-              text=text.replace(old,new,1)
-          assert new in text and old not in text
-          lab.write_text(text)
-
-          test=Path('tests/core_runtime_nonregression_contract_test.py')
-          t=test.read_text()
-          old_assert='assert provider_timeout >= 60_000, provider_timeout'
-          new_assert='assert provider_timeout == 25_000, provider_timeout'
-          if old_assert in t:
-              t=t.replace(old_assert,new_assert,1)
-          assert new_assert in t and old_assert not in t
-          test.write_text(t)
-          print('FIELD_CORE_BUDGET_PATCH timeout_ms=25000')
-          PY
           python3 tests/core_runtime_nonregression_contract_test.py
           python3 tests/native_runtime_settlement_contract_test.py
           python3 tests/native_declared_matrix_enabled_only_test.py
           python3 tests/provider_no_timer_runtime_test.py
-
-      - name: Commit exact 25s budget
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add scripts/nuvio_client_lab.cjs tests/core_runtime_nonregression_contract_test.py
-          if git diff --cached --quiet; then echo 'FIELD_CORE_BUDGET_COMMIT changed=0'; exit 0; fi
-          git commit -m 'fix(core): restore exact 25s lab budget'
-          git pull --rebase origin fix/labs-5.21.44-20260912
-          git push origin HEAD:fix/labs-5.21.44-20260912
-          echo "FIELD_CORE_BUDGET_COMMIT changed=1 sha=$(git rev-parse HEAD)"
