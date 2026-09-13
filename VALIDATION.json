@@ -1,17 +1,76 @@
 {
   "schema_version": 65,
-  "release": "5.15.0",
-  "purpose": "Global provider route override framework and sanitized route-regression detection.",
+  "release": "5.21.43",
+  "candidate_track": "fix/labs-5.21.44-20260912",
+  "purpose": "Current NiakVIO validation contract: 96-provider catalogue integrity, fail-closed Core ownership, physical Hub-46 native acceptance, adaptive recent fixture sampling, route repair and cache-safe publication.",
+  "catalogue": {
+    "provider_objects": 96,
+    "physical_native_lab_scope": 46,
+    "scope_authority": "automation/evidence/hub-lab-matrix-46.json",
+    "native_transport_manifest": "native-hub46/manifest.json",
+    "catalogue_rows_outside_native_scope_remain_visible": true
+  },
+  "native_sampling": {
+    "authority": ".github/triggers/rotating-popular-corpus.json",
+    "global_lists": [
+      "movie",
+      "tv",
+      "anime"
+    ],
+    "reserve_size_per_lane": 32,
+    "minimum_year": 2010,
+    "maximum_year_policy": "current_year_minus_1",
+    "initial_fixtures_per_lane": 1,
+    "fixed_batch": false,
+    "rotate_only_on_clean_zero_streams": true,
+    "positive_stops_rotation": true,
+    "technical_error_stops_and_reports": true,
+    "identity_contradiction_stops_and_reports": true,
+    "historical_targeted_fixture_authority": ".github/triggers/nuvio-client-lab.json"
+  },
+  "native_platforms": [
+    "TVAndroid",
+    "MobileAndroid",
+    "MobileIOS",
+    "DesktopMACOS",
+    "DesktopWindows"
+  ],
+  "core_contract": {
+    "timeout_seconds": 25,
+    "runtime_timer_compatibility_owner": "Core",
+    "http_403_policy": "fail_closed",
+    "stale_navigation_result_reinjection": false,
+    "stream_sanitizer": "strict_v8",
+    "wrong_media_is_failure": true,
+    "clean_zero_is_not_automatic_provider_failure": true
+  },
   "checks": {
     "node_provider_worker_syntax": true,
-    "node_health_check_syntax": true,
-    "python_compile_all_scripts": true,
-    "workflow_yaml_parse": true,
-    "full_npm_test": true,
+    "python_compile_scripts": true,
+    "published_provider_config_expected": 96,
+    "provider_core_runtime_ownership": true,
+    "desktop_runtime_without_host_timers": true,
+    "native_hub46_terminal_manifest_transport": true,
+    "native_adaptive_catalog_contract": true,
+    "domain_refresh_transaction_v2_contract": true,
     "route_override_schema": true,
     "route_regression_self_test": true,
-    "domain_override_regressions": true,
     "published_override_regressions": true
+  },
+  "domain_refresh": {
+    "authority": "scripts/domain_refresh_transaction_v2.py",
+    "mutation_scope": "validated official_site CONFIG and linked domain derivatives only",
+    "provider_base_and_core_bytes_must_remain_invariant": true,
+    "authoritative_hub_resolution_not_vetoed_by_runner_403": true,
+    "fail_closed_on_cycles_or_out_of_scope_mutation": true
+  },
+  "repair": {
+    "certain_regression_definition": "upstream positive for the same work/lane while NiakVIO is non-positive",
+    "clean_catalogue_miss_action": "resample",
+    "technical_unresolved_action": "diagnose",
+    "batch_policy": "fail-closed quarantine: failed providers are isolated and the workspace is reset before retrying survivors",
+    "final_candidate_requires_recent_corpus_parity": true,
+    "minimizer_stage": "after functional/provider/Core stabilization"
   },
   "route_observability": {
     "fields": [
@@ -37,7 +96,19 @@
     "obsolete_ratio": 0.75,
     "strict_gate_is_opt_in_after_fixture_validation": true
   },
+  "final_certification": {
+    "status": "pending_frozen_candidate_sha",
+    "requires_five_native_platforms": true,
+    "requires_codeql_security_extended": true,
+    "requires_npm_audit_high": true,
+    "requires_fixed_point_and_reverse_rebuild": true,
+    "requires_final_native_hub46_manifest_regeneration": true
+  },
   "limitations": [
-    "The framework detects obsolete route signatures but does not invent a replacement route. A route override is activated only after validation on a known fixture."
+    "A CI IP can be blocked while a residential IP works.",
+    "A sampled work is catalogue evidence, not proof for every title in a provider.",
+    "Evidence from one official Nuvio client/platform does not certify another platform.",
+    "A clean zero-stream result is catalogue uncertainty and must not be promoted to a provider regression without upstream-positive comparison evidence.",
+    "Final native/security certification remains pending until provider repair is frozen on one exact candidate SHA."
   ]
 }
