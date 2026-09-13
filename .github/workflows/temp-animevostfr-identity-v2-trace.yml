@@ -64,3 +64,4 @@ jobs:
               print('ANIMEVOSTFR_EPISODE_HREFS '+json.dumps({'series':urllib.parse.urlsplit(final).path,'episodes':[urllib.parse.urlsplit(x).path for x in eps[:80]]},ensure_ascii=False,separators=(',',':')))
             except Exception as exc:print('ANIMEVOSTFR_EPISODE_HREFS '+json.dumps({'series':u,'error':type(exc).__name__+': '+str(exc)[:120]},separators=(',',':')))
           PY
+# rerun 2026-09-13 after anime-only projection: locate first live divergence
