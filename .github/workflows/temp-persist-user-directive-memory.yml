@@ -1,0 +1,50 @@
+name: TEMP - Persist user directive in MEMORY
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths:
+      - .github/workflows/temp-persist-user-directive-memory.yml
+
+permissions:
+  contents: write
+
+jobs:
+  persist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - name: Persist directive in MEMORY.md
+        run: |
+          set -euo pipefail
+          marker='## 2026-09-13 — User repair execution directive'
+          if ! grep -Fq "$marker" MEMORY.md; then
+            cat >> MEMORY.md <<'EOF'
+
+## 2026-09-13 — User repair execution directive
+
+- Manual tests already supplied by the user are authoritative input evidence for the active repair pass.
+- Do **not** redo or reclassify the same provider tests from zero unless one narrowly targeted verification is strictly necessary to avoid a false fix.
+- When the user says `continue`, resume immediately from the real current HEAD of the active repair branch and execute the remaining ZERO/regression fixes through validation and delivery.
+- Do not stall on inventory, recounting, or repeated diagnosis when the user's existing manual evidence already identifies the failing lane or chain.
+- Prefer concrete correction -> targeted proof -> full non-regression -> persistence, then move to the next open ZERO/regression.
+- Never treat historical quarantine/repair labels alone as current regressions; current evidence wins.
+- During the active `fix/labs-5.21.44-20260912` repair pass, do not touch `main` unless a later explicit publication step authorizes it.
+EOF
+          fi
+          rm -f MEMORY_USER_DIRECTIVES.md
+      - name: Commit durable memory
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add MEMORY.md
+          git add -u MEMORY_USER_DIRECTIVES.md || true
+          git diff --cached --quiet && exit 0
+          git commit -m 'docs(memory): persist user repair execution directive'
+          git fetch origin fix/labs-5.21.44-20260912
+          git rebase origin/fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
