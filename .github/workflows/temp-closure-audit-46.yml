@@ -10,7 +10,7 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,13 +33,13 @@ jobs:
               const q=new URLSearchParams(c);q.delete('label');q.set('_t',String(Date.now()));
               const url=base+'?'+q;
               try{
-                const r=await fetch(url,{headers:{'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/137 Safari/537.36','Referer':'https://www.fmovies.cat/','Origin':'https://www.fmovies.cat','Cache-Control':'no-cache','Pragma':'no-cache','Accept':'*/*'}});
+                const r=await fetch(url,{signal:AbortSignal.timeout(8000),headers:{'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/137 Safari/537.36','Referer':'https://www.fmovies.cat/','Origin':'https://www.fmovies.cat','Cache-Control':'no-cache','Pragma':'no-cache','Accept':'*/*'}});
                 const body=await r.text();
                 console.log('FIELD_MOVIEBOX_VIDEASY',c.label,'status='+r.status,'ct='+(r.headers.get('content-type')||''),'bytes='+body.length,'body64='+Buffer.from(body.slice(0,1800)).toString('base64'));
                 if(r.ok && body.length>20) positive++;
-              }catch(e){console.log('FIELD_MOVIEBOX_VIDEASY',c.label,'error='+String(e),'cause='+(e.cause?String(e.cause):''))}
+              }catch(e){console.log('FIELD_MOVIEBOX_VIDEASY',c.label,'error='+e.name+':'+e.message,'cause='+(e.cause?String(e.cause):''))}
             }
-            console.log('FIELD_MOVIEBOX_VIDEASY_SUMMARY positive_http='+positive+' total='+cases.length);
+            console.log('FIELD_MOVIEBOX_VIDEASY_SUMMARY positive_http='+positive+' total='+cases.length+' probe_timeout_ms=8000');
             if(!positive) process.exit(2);
           })();
           NODE
