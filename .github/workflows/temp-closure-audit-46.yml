@@ -18,60 +18,60 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
 
-      - name: Prove TMDB public page title lookup and MovieBox H5 chain
+      - name: HindMoviez current authority and evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          d=json.load(open('provider-overrides.json'))['provider_patches']['hindmoviez']
+          print('FIELD_HIND_OVERRIDE='+json.dumps(d,ensure_ascii=False,sort_keys=True))
+          m=json.load(open('manifest.json'))['scrapers']
+          row=next(x for x in m if str(x.get('id','')).casefold()=='hindmoviez')
+          print('FIELD_HIND_MANIFEST='+json.dumps(row,ensure_ascii=False,sort_keys=True))
+          for fn in ('automation/evidence/hub-lab-matrix-46.json','automation/provider-v3-static-knowledge.json'):
+              p=pathlib.Path(fn)
+              if not p.exists(): continue
+              data=json.load(open(p))
+              text=json.dumps(data,ensure_ascii=False)
+              key='hindmoviez'
+              i=text.casefold().find(key)
+              print('FIELD_HIND_SOURCE',fn, text[max(0,i-2500):i+9000] if i>=0 else 'not-found')
+          PY
+
+      - name: Prove public TMDB page external IMDb identity
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
-          const API='https://h5-api.aoneroom.com/wefeed-h5api-bff';
+          const cases=[['movie','157336'],['tv','1396'],['movie','27205'],['movie','603']];
           const UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/148 Safari/537.36';
-          let token='';
-          function decodeHtml(s){return String(s||'').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>').trim()}
-          async function tmdbTitle(tmdbId,type){
-            const kind=type==='movie'?'movie':'tv';
-            const url=`https://www.themoviedb.org/${kind}/${encodeURIComponent(tmdbId)}?language=en-US`;
-            const r=await fetch(url,{headers:{'User-Agent':UA,'Accept':'text/html,application/xhtml+xml,*/*','Accept-Language':'en-US,en;q=0.9'},redirect:'follow',signal:AbortSignal.timeout(7000)});
-            const html=await r.text();
-            const patterns=[
-              /<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i,
-              /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i,
-              /<title[^>]*>([^<]+)<\/title>/i,
-            ];
-            let title='';for(const re of patterns){const m=re.exec(html);if(m&&m[1]){title=decodeHtml(m[1]).replace(/\s*[—|-]\s*The Movie Database.*$/i,'').replace(/\s*\(\d{4}\)\s*$/,'').trim();if(title)break}}
-            console.log('FIELD_MB_TMDB type='+type+' id='+tmdbId+' status='+r.status+' title64='+Buffer.from(title).toString('base64')+' bytes='+html.length);
-            if(!r.ok||!title)throw Error('tmdb-title-'+type);
-            return title;
-          }
-          function baseHeaders(origin='https://moviebox.ph'){return {'User-Agent':UA,'Referer':origin+'/','Origin':origin,'X-Client-Info':'{"timezone":"Europe/Paris"}','X-Request-Lang':'en','Accept':'application/json','Content-Type':'application/json'}}
-          async function req(url,opt={}){const headers={...baseHeaders(),...(opt.headers||{})};if(token)headers.Authorization='Bearer '+token;const r=await fetch(url,{...opt,headers,signal:AbortSignal.timeout(7000)});const xu=r.headers.get('x-user');if(xu)try{token=JSON.parse(xu).token||token}catch{};const text=await r.text();let json={};try{json=JSON.parse(text)}catch{};return{r,json,text}}
-          function rows(j){const d=j?.data||{};return Array.isArray(d.items)?d.items:Array.isArray(d.list)?d.list:[]}
-          async function resolve(tmdbId,type,se,ep){
-            const started=Date.now();
-            const [title,boot]=await Promise.all([tmdbTitle(tmdbId,type),req(API+'/home?host=moviebox.ph')]);
-            if(!boot.r.ok||!token)throw Error('moviebox-bootstrap');
-            const s=await req(API+'/subject/search',{method:'POST',body:JSON.stringify({keyword:title,page:1,perPage:20})});
-            const items=rows(s.json);const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
-            const exact=items.find(x=>norm(x?.title)===norm(title))||items.find(x=>norm(x?.title).includes(norm(title))||norm(title).includes(norm(x?.title)));
-            console.log('FIELD_MB_SEARCH type='+type+' title64='+Buffer.from(title).toString('base64')+' status='+s.r.status+' rows='+items.length+' exact='+Boolean(exact));
-            if(!exact)throw Error('moviebox-no-exact-'+type);
-            const id=String(exact.subjectId||''),detail=String(exact.detailPath||'');
-            const dom=await req(API+'/media-player/get-domain');const domain=String(dom.json?.data||'').replace(/\/$/,'');if(!domain)throw Error('moviebox-no-domain');
-            const ref=domain+'/spa/videoPlayPage/movies/'+detail+'?id='+encodeURIComponent(id)+'&type=/movie/detail&detailSe='+se+'&detailEp='+ep+'&lang=en';
-            const p=await req(domain+'/wefeed-h5api-bff/subject/play?subjectId='+encodeURIComponent(id)+'&se='+se+'&ep='+ep+'&detailPath='+encodeURIComponent(detail),{headers:{Referer:ref,Origin:domain,'X-Source':''}});
-            const d=p.json?.data||{}, all=[...(Array.isArray(d.streams)?d.streams:[]),...(Array.isArray(d.hls)?d.hls:[]),...(Array.isArray(d.dash)?d.dash:[])];
-            const direct=all.filter(x=>/^https?:\/\//i.test(String(x?.url||x?.path||'')));
-            console.log('FIELD_MB_FROM_TMDB type='+type+' tmdb='+tmdbId+' play='+p.r.status+' has='+Boolean(d.hasResource)+' direct='+direct.length+' qualities='+[...new Set(all.map(x=>x.resolutions||x.quality).filter(Boolean))].join(',')+' duration_ms='+(Date.now()-started));
-            if(!d.hasResource||!direct.length)throw Error('moviebox-no-stream-'+type);
-            return direct;
-          }
           (async()=>{
-            token='';const movie=await resolve('157336','movie',0,0);
-            token='';const tv=await resolve('1396','tv',1,1);
-            console.log('FIELD_MB_TMDB_ONLY_PROOF movie='+movie.length+' tv='+tv.length+' secret_embedded=false budget_ms=25000');
-          })().catch(e=>{console.error('FIELD_MB_TMDB_ONLY_ERROR',e);process.exit(1)});
+            for(const [type,id] of cases){
+              const r=await fetch(`https://www.themoviedb.org/${type}/${id}?language=en-US`,{headers:{'User-Agent':UA,'Accept':'text/html,application/xhtml+xml,*/*'},signal:AbortSignal.timeout(7000)});
+              const h=await r.text();
+              const ids=[...h.matchAll(/(?:imdb\.com\/title\/|"imdb_id"\s*:\s*")(tt\d+)/gi)].map(x=>x[1]);
+              console.log('FIELD_TMDB_IMDB type='+type+' tmdb='+id+' status='+r.status+' imdb='+[...new Set(ids)].slice(0,4).join(',')+' bytes='+h.length);
+            }
+          })().catch(e=>{console.error(e);process.exit(1)});
           NODE
 
-      - name: Lock exact 25s and disabled debt contracts
+      - name: HindMoviez endpoint smoke from representative IMDb identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const urls=['https://hindmovie.icu/wp-json/wp/v2/posts','https://hindmovie.fit/wp-json/wp/v2/posts'];
+          const ids=['tt0816692','tt0903747','tt1375666','tt0133093'];
+          (async()=>{
+            for(const base of urls)for(const imdb of ids){
+              const u=base+'?search='+encodeURIComponent(imdb)+'&per_page=10';
+              try{const r=await fetch(u,{headers:{'User-Agent':'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36','Accept':'application/json'},signal:AbortSignal.timeout(7000)});const t=await r.text();let a=[];try{a=JSON.parse(t)}catch{};const s=JSON.stringify(a);const mv=[...s.matchAll(/https?:\/\/mvlink\.blog\/(?:web\/)?\d+/gi)].map(x=>x[0]);console.log('FIELD_HIND_API base='+base+' imdb='+imdb+' status='+r.status+' rows='+(Array.isArray(a)?a.length:0)+' mvlinks='+[...new Set(mv)].length+' body64='+Buffer.from(t.slice(0,1200)).toString('base64'))}catch(e){console.log('FIELD_HIND_API base='+base+' imdb='+imdb+' error='+String(e))}
+            }
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+
+      - name: Lock repaired core contracts
         shell: bash
         run: |
           set -euo pipefail
