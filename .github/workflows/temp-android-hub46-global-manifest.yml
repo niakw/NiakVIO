@@ -1,0 +1,66 @@
+name: TEMP - Android Hub46 global manifest ownership
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-android-hub46-global-manifest.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply global Android physical-manifest ownership
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_native_android_hub46_manifest_v1.py
+          python3 -m py_compile scripts/prepare_native_reader_acceptance.py
+          python3 tests/native_hub46_transport_manifest_test.py
+          python3 tests/native_provider_loading_compat_test.py
+          python3 tests/native_adaptive_catalog_contract_test.py
+          NIAKVIO_PROVIDER_SCOPE_MATRIX=automation/evidence/hub-lab-matrix-46.json python3 - <<'PY'
+          import os, sys
+          from pathlib import Path
+          root=Path.cwd()
+          text=(root/'scripts/prepare_native_reader_acceptance.py').read_text(encoding='utf-8')
+          assert 'requested_manifest = "native-hub46/manifest.json"' in text
+          assert 'NIAKVIO_PROVIDER_SCOPE_MATRIX' in text
+          assert (root/'native-hub46/manifest.json').is_file()
+          print('ANDROID_HUB46_GLOBAL_PREP_OK manifest=native-hub46/manifest.json scope=46')
+          PY
+      - name: Persist MEMORY checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('MEMORY.md'); t=p.read_text(encoding='utf-8')
+          marker='## 2026-09-13 — Android Hub-46 manifest ownership globalized'
+          if marker not in t:
+              t += '''\n## 2026-09-13 — Android Hub-46 manifest ownership globalized\n\n- Android TV/Mobile initial native preparation now forces `native-hub46/manifest.json` whenever `NIAKVIO_PROVIDER_SCOPE_MATRIX` is active and the physical Hub-46 manifest exists, even if a historical workflow argument still says `manifest.json`.\n- This is a shared preparation-layer rule, not repeated workflow/provider hacks. The Desktop/iOS and Android suites therefore converge on the same terminal-name-safe physical 46 transport.\n'''
+              p.write_text(t, encoding='utf-8')
+          PY
+      - name: Commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/prepare_native_reader_acceptance.py MEMORY.md
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'fix(labs): enforce Hub-46 manifest globally for Android prep'
+          git fetch origin fix/labs-5.21.44-20260912
+          git rebase origin/fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
