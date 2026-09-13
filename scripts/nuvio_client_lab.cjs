@@ -10,7 +10,7 @@ const { spawn } = require('node:child_process');
 const WINDOWS_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
 const MACOS_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36';
 const HEALTH_PREFIX = 'NUVIO_HEALTH_RESULT=';
-const DEFAULT_TIMEOUT_MS = 70_000;
+const DEFAULT_TIMEOUT_MS = 25_000;
 const DEFAULT_PLAYBACK_TIMEOUT_MS = 18_000;
 
 const CLIENTS = Object.freeze({

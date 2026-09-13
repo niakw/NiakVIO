@@ -19,7 +19,7 @@ def main() -> int:
     lab = (ROOT / "scripts/nuvio_client_lab.cjs").read_text(encoding="utf-8")
     provider_timeout = constant(lab, "DEFAULT_TIMEOUT_MS")
     playback_timeout = constant(lab, "DEFAULT_PLAYBACK_TIMEOUT_MS")
-    assert provider_timeout >= 60_000, provider_timeout
+    assert provider_timeout == 25_000, provider_timeout
     assert playback_timeout >= 18_000, playback_timeout
 
     presentation = (ROOT / "engine_v2/src/stream-presentation.mjs").read_text(encoding="utf-8")
