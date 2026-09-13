@@ -1,4 +1,4 @@
-name: TEMP - batch priority provider repair v5
+name: TEMP - batch priority provider repair v6 quarantine
 
 on:
   push:
@@ -13,9 +13,6 @@ permissions:
 env:
   TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
   TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
-  NIAKVIO_PARITY_WORKERS: '8'
-  NIAKVIO_PARITY_TIMEOUT: '25'
-  NIAKVIO_PARITY_SEED: '20260913'
 
 jobs:
   batch:
@@ -33,51 +30,64 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Preflight current architecture
+      - name: Validate quarantine architecture and current invariants
         shell: bash
         run: |
           set -euo pipefail
           test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
-          python3 scripts/upgrade_provider_v3_source_plan_v5.py
-          python3 scripts/upgrade_provider_disabled_fast_advance_v1.py
-          python3 scripts/upgrade_stream_sanitizer_v7_selection.py
-          python3 tests/provider_v3_sequential_reconstruction_contract_test.py
-          python3 tests/global_core_runtime_ownership_test.py
-          python3 tests/native_adaptive_catalog_contract_test.py
+          python3 -m py_compile scripts/run_provider_repair_batch_quarantine_v1.py
+          python3 tests/provider_repair_batch_quarantine_test.py
           python3 tests/provider_upstream_parity_v3_test.py
+          python3 tests/recent_global_lab_corpus_policy_test.py
+          python3 tests/native_adaptive_catalog_contract_test.py
+          python3 tests/global_core_runtime_ownership_test.py
 
-      - name: Build stable batch and exception ledgers
+      - name: Build original certain-regression batch
         shell: bash
         run: |
           set -euo pipefail
           printf '%s\n' \
-            animesama-co animevost-fr french-manga playimdb sekai \
-            streamzo uhdmovies voiranime-homes voiranime-rip \
-            > automation/provider-priority-repair-queue.txt
-          printf '%s\n' animevostfr voiranime kurage > automation/provider-priority-exception-queue.txt
-          printf '%s\n' \
-            4khdhub allanime allwish anikototv anime-ultime animesalt animetsu flemmix \
-            fullanime moviebox moviesmod showbox vidfast vidlove vostfree \
-            > automation/provider-priority-zero-queue.txt
+            animesama-co animevost-fr animevostfr french-manga kurage playimdb \
+            sekai streamzo uhdmovies voiranime voiranime-homes voiranime-rip \
+            > /tmp/provider-priority-original-12.txt
+          cat /tmp/provider-priority-original-12.txt
 
-      - name: Repair the nine stable regressions in one transaction
+      - name: Repair batch and quarantine only explicit lost/regressed providers
         id: repair
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t providers < automation/provider-priority-repair-queue.txt
+          mapfile -t providers < /tmp/provider-priority-original-12.txt
           args=()
           for provider in "${providers[@]}"; do args+=(--provider "$provider"); done
-          python3 scripts/run_provider_repair_fast_targeted_v20.py \
+          python3 scripts/run_provider_repair_batch_quarantine_v1.py \
             --skip-file automation/provider-repair-planner-authorized-skip.json \
             --attempts 3 \
             --workers 8 \
             --timeout 55 \
             --defer-global-guard \
+            --parity-samples 12 \
+            --parity-workers 12 \
+            --parity-timeout 25 \
+            --parity-seed 20260913-batch-quarantine \
+            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
             "${args[@]}"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('automation/provider-repair-batch-quarantine.json').read_text())
+          accepted=d.get('acceptedProviders') or []
+          quarantined=d.get('quarantinedProviders') or []
+          assert accepted, d
+          assert set(accepted).isdisjoint(quarantined), d
+          print('BATCH_QUARANTINE_RESULT accepted=' + ','.join(accepted))
+          print('BATCH_QUARANTINE_DEBT quarantine=' + (','.join(quarantined) or 'none'))
+          Path('/tmp/provider-priority-accepted.txt').write_text('\n'.join(accepted)+'\n')
+          Path('/tmp/provider-priority-quarantined.txt').write_text('\n'.join(quarantined)+('\n' if quarantined else ''))
+          PY
           echo 'mutated=true' >> "$GITHUB_OUTPUT"
 
-      - name: Rebuild projections and run non-minifier guards
+      - name: Rebuild projections and run consolidated non-minifier guards
         if: steps.repair.outputs.mutated == 'true'
         shell: bash
         run: |
@@ -86,33 +96,13 @@ jobs:
           python3 scripts/validate_published_provider_config.py --expected 96
           python3 tests/global_stream_output_guard_test.py
           python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/global_runtime_no_timer_execution_test.py
           python3 tests/recent_global_lab_corpus_policy_test.py
           python3 tests/native_catalog_miss_rotation_test.py
           python3 tests/native_adaptive_catalog_contract_test.py
+          python3 tests/native_hub46_transport_manifest_test.py
 
-      - name: Post-repair parity on stable nine
-        if: steps.repair.outputs.mutated == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          mapfile -t providers < automation/provider-priority-repair-queue.txt
-          args=()
-          for provider in "${providers[@]}"; do args+=(--provider "$provider"); done
-          python3 scripts/run_provider_upstream_parity_v3.py \
-            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
-            --samples-per-lane 4 \
-            --seed "$NIAKVIO_PARITY_SEED" \
-            --out automation/provider-upstream-parity-batch-post.json \
-            "${args[@]}"
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-          d=json.loads(Path('automation/provider-upstream-parity-batch-post.json').read_text())
-          print('STABLE9_POST_COUNTS', d.get('statusCounts', {}))
-          print('STABLE9_POST_REGRESSIONS', ','.join(d.get('certainRegressions') or []) or 'none')
-          PY
-
-      - name: Persist checkpoint
+      - name: Persist accepted/quarantined batch checkpoint
         if: steps.repair.outputs.mutated == 'true'
         shell: bash
         run: |
@@ -120,17 +110,18 @@ jobs:
           python3 - <<'PY'
           import json, os
           from pathlib import Path
-          post=json.loads(Path('automation/provider-upstream-parity-batch-post.json').read_text())
-          queue=Path('automation/provider-priority-repair-queue.txt').read_text().split()
-          exceptions=Path('automation/provider-priority-exception-queue.txt').read_text().split()
+          q=json.loads(Path('automation/provider-repair-batch-quarantine.json').read_text())
+          accepted=q.get('acceptedProviders') or []
+          quarantined=q.get('quarantinedProviders') or []
+          lanes=q.get('quarantinedLanes') or {}
           p=Path('MEMORY.md'); text=p.read_text(encoding='utf-8')
-          marker='## 2026-09-13 — provider stable-nine salvage v5'
+          marker='## 2026-09-13 — fail-closed batch quarantine repair v1'
           if marker not in text:
-              text += f'''\n{marker}\n\n- Run `{os.environ.get('GITHUB_RUN_ID','')}` isolates the stable nine-provider salvage batch `{', '.join(queue)}`. The three active-loss exceptions are `{', '.join(exceptions)}` and are handled separately as one diagnostic sub-batch.\n- Post-repair parity counts on the stable nine: `{post.get('statusCounts',{})}`; remaining certain regressions in this batch: `{', '.join(post.get('certainRegressions') or []) or 'none'}`.\n- No minimizer in this loop.\n'''
+              text += f'''\n{marker}\n\n- Run `{os.environ.get('GITHUB_RUN_ID','')}` replaces the all-targets-or-nothing Repair retry loop with a fail-closed batch quarantine transaction. Requested providers are repaired together; any provider with an explicit lost upstream-positive lane or certain recent-corpus parity regression is removed, the workspace is hard-reset to the pre-attempt SHA, and the remaining providers are retried together. Failed-provider mutations never survive.\n- Accepted providers: `{', '.join(accepted)}`. Quarantined providers: `{', '.join(quarantined) or 'none'}`. Quarantined lanes: `{lanes}`.\n- Acceptance requires both the strict representative yield gate and a 12-candidate-per-lane recent-corpus parity pass. RESAMPLE/technical-only rows are not silently reclassified as regressions.\n- No NiakVIO minimizer ran in this repair loop.\n'''
               p.write_text(text, encoding='utf-8')
           PY
 
-      - name: Commit successful stable-nine transaction
+      - name: Commit only the passing accepted batch
         if: steps.repair.outputs.mutated == 'true'
         shell: bash
         run: |
@@ -140,26 +131,24 @@ jobs:
           git add -A
           git reset .github/workflows/temp-batch-priority-provider-repair.yml
           if git diff --cached --quiet; then
-            echo 'No durable changes to commit'
+            echo 'No durable accepted repair changes to commit'
             exit 0
           fi
-          git commit -m 'fix(providers): salvage nine stable parity repairs'
+          git commit -m 'fix(providers): preserve passing repairs with batch quarantine'
           git fetch origin fix/labs-5.21.44-20260912
           git rebase origin/fix/labs-5.21.44-20260912
           git push origin HEAD:fix/labs-5.21.44-20260912
 
-      - name: Upload evidence
+      - name: Upload quarantine and repair evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: batch-priority-provider-repair-v5-${{ github.run_id }}
+          name: batch-provider-quarantine-v6-${{ github.run_id }}
           retention-days: 14
           if-no-files-found: warn
           path: |
-            automation/provider-upstream-parity-batch-post.json
-            automation/provider-priority-zero-queue.txt
-            automation/provider-priority-repair-queue.txt
-            automation/provider-priority-exception-queue.txt
+            automation/provider-repair-batch-quarantine.json
+            automation/provider-repair-batch-parity.json
             automation/provider-repair-fast-targeted.json
             automation/provider-repair-fast-yield.json
             automation/provider-repair-fast-summary.json
