@@ -32,6 +32,10 @@ done < <(python3 "${NIAKVIO}/scripts/rotating_corpus.py" select --lane all --cou
 TARGET_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-}"
 TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-declared-type}"
 TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
+if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO}/manifest-hub46.json" ]]; then
+  TARGET_MANIFEST="manifest-hub46.json"
+  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=$TARGET_MANIFEST providers=46 authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
+fi
 PRIMARY_FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-interstellar}"
 PRIMARY_STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
 REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-2}"
@@ -86,16 +90,10 @@ for fixture in "${FIXTURES[@]}"; do
   fi
   python3 "$RUNTIME_DIAGNOSTICS" --source "$TEST_SOURCE" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
 
-  EXPECTED_MINUTES="$(python3 - "$fixture" "$NIAKVIO/.github/triggers/nuvio-client-lab.json" <<'PY'
-import json, sys
-slug, path = sys.argv[1], sys.argv[2]
-data = json.load(open(path, encoding='utf-8'))
-for row in data.get('fixtures', []):
-    if row.get('slug') == slug:
-        print(int((row.get('fixture') or {}).get('expectedDurationMinutes') or 0))
-        break
-else:
-    raise SystemExit(f'fixture not found: {slug}')
+  EXPECTED_MINUTES="$(PYTHONPATH="${NIAKVIO}/scripts" python3 - "$fixture" <<'PY'
+import sys
+from rotating_corpus import fixture_by_slug
+print(int(fixture_by_slug(sys.argv[1]).get("expectedDurationMinutes") or 0))
 PY
 )" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
   python3 "$PLAYER_AUGMENT" --source "$TEST_SOURCE" --expected-minutes "$EXPECTED_MINUTES" --streams "$STREAM_SCOPE" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
