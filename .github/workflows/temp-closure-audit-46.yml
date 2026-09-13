@@ -18,93 +18,72 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Audit closure contract
+      - name: Focused provider closure snapshot
         shell: bash
         run: |
-          set -u
+          set -euo pipefail
           exec > >(tee closure-audit-46.txt) 2>&1
-
           echo '=== HEAD ==='
           git rev-parse HEAD
-          git status --short --branch
 
-          echo '=== HUB MATRIX 46 ==='
+          echo '=== TARGET AUTHORITY ==='
           python3 - <<'PY'
-          import json
-          from pathlib import Path
-          p=Path('automation/evidence/hub-lab-matrix-46.json')
-          data=json.loads(p.read_text())
-          rows=data.get('rows',[])
-          print('hubCount=',data.get('hubCount'),'rows=',len(rows))
-          print('platformEvidence=',json.dumps(data.get('platformEvidence',{}),ensure_ascii=False,sort_keys=True))
-          bad=[]
-          for r in rows:
-              aid=r.get('registryId')
-              caps=r.get('capabilities') or []
-              live=r.get('currentLiveAudit') or {}
-              missing=live.get('missingTypes') or []
-              result=live.get('result')
-              print(f"HUB {aid} caps={','.join(caps)} live={result} missing={','.join(missing)}")
-              if result!='declared-types-qualified' or missing:
-                  bad.append((aid,result,missing))
-          print('HUB_BAD=',json.dumps(bad,ensure_ascii=False))
-          wanted={'moviebox','hindmoviez','anime-sama','mugiwarastream','mugiwara','papadustream','ctgmovies'}
-          for r in rows:
-              if str(r.get('registryId','')).lower() in wanted or any(x in str(r.get('registryId','')).lower() for x in ('moviebox','hindmovie','anime-sama','mugiwara','papadu','ctg')):
-                  print('SPECIAL=',json.dumps(r,ensure_ascii=False,sort_keys=True))
+          import json, pathlib, re
+          targets=('moviebox','ctgmovies','hindmoviez','anime-sama','mugiwarastream','papadustream')
+          def wanted(x):
+              s=str(x or '').lower()
+              return any(t in s for t in targets)
+          for fn in ('manifest.json','provider-overrides.json','provider-hubs.json','engine_v2/config/provider-upstreams.json'):
+              p=pathlib.Path(fn)
+              if not p.exists():
+                  print('MISSING',fn); continue
+              try: data=json.loads(p.read_text())
+              except Exception as e: print('JSONERR',fn,e); continue
+              print('\nFILE',fn)
+              if fn=='manifest.json':
+                  for row in data.get('scrapers',[]):
+                      if wanted(row.get('id')) or wanted(row.get('name')):
+                          print('MANIFEST',json.dumps(row,ensure_ascii=False,sort_keys=True))
+                          f=pathlib.Path(row.get('filename',''))
+                          if f.is_file():
+                              txt=f.read_text(errors='replace')
+                              print('BUNDLE',row.get('id'),'file=',f,'bytes=',len(txt),'setTimeout=',txt.count('setTimeout'))
+                              for needle in ('moviiebox','moviebox.yachts','uwu.eat-peach','net27.cc','hindmovie','papadustream'):
+                                  i=txt.lower().find(needle.lower())
+                                  if i>=0: print('BUNDLE_SNIP',row.get('id'),needle,repr(txt[max(0,i-500):i+1200]))
+              elif fn=='provider-overrides.json':
+                  for k,v in (data.get('provider_patches') or {}).items():
+                      if wanted(k): print('OVERRIDE',k,json.dumps(v,ensure_ascii=False,sort_keys=True))
+              elif isinstance(data,dict):
+                  for k,v in data.items():
+                      if wanted(k) or wanted(v): print('ENTRY',k,json.dumps(v,ensure_ascii=False,sort_keys=True)[:12000])
+              elif isinstance(data,list):
+                  for v in data:
+                      if wanted(v): print('ENTRY',json.dumps(v,ensure_ascii=False,sort_keys=True)[:12000])
           PY
 
-          echo '=== SPECIAL PROVIDER FILES ==='
-          find providers provider-bases engine_v2 engine-v2 automation scripts tests .github -type f 2>/dev/null \
-            | grep -Ei 'moviebox|ctgmovies|hindmovie|anime.?sama|mugiwara|papadustream' \
-            | sort | head -300 || true
+          echo '=== TARGET SOURCE REFERENCES ==='
+          grep -R -n -E 'moviebox|moviiebox|CTGMOVIES|ctgmovies|hindmoviez|HindMoviez|uwu\.eat-peach|moviebox\.yachts|net27\.cc' \
+            scripts tests engine_v2 engine-v2 automation .github 2>/dev/null | head -1000 || true
 
-          echo '=== SPECIAL CONFIG REFERENCES ==='
-          grep -R -n -E 'moviebox|CTGMOVIES|ctgmovies|hindmoviez|HindMoviez|anime-sama|Anime-Sama|mugiwarastream|Mugiwara|papadustream|Papadustream' \
-            --include='*.json' --include='*.md' --include='*.py' --include='*.yml' --include='*.yaml' \
-            engine_v2 engine-v2 automation scripts tests .github manifest.json provider-hubs.json 2>/dev/null \
-            | head -500 || true
+          echo '=== TARGET TEST/SCRIPT CANDIDATES ==='
+          find scripts tests -type f | grep -Ei '(provider|native|live|route|stream|moviebox|hindmovie|ctg|timeout|settlement)' | sort | head -800 || true
 
-          echo '=== SETTIMEOUT BAN ==='
-          SETTIMEOUT_COUNT=$(grep -R -n 'setTimeout' providers ProviderBase provider-base provider-bases 2>/dev/null | wc -l || true)
-          echo "setTimeout_count=$SETTIMEOUT_COUNT"
-          grep -R -n 'setTimeout' providers ProviderBase provider-base provider-bases 2>/dev/null | head -100 || true
+          echo '=== CONTRACT TESTS ==='
+          for t in \
+            tests/native_runtime_settlement_contract_test.py \
+            tests/provider_no_timer_runtime_test.py \
+            tests/provider_execution_failfast_v33_test.py \
+            tests/core_runtime_nonregression_contract_test.py \
+            tests/stream_quality_recovery_tv_test.py \
+            tests/stream_output_sanitizer_fail_closed_test.py \
+            tests/manual_tv_live_regressions_v34_test.py; do
+            if test -f "$t"; then echo RUN "$t"; python3 "$t"; fi
+          done
 
-          echo '=== STALE A-B-C / SETTLEMENT TESTS ==='
-          find tests scripts .github -type f 2>/dev/null | grep -Ei 'stale|settlement|navigation|abort|timeout' | sort | head -250 || true
-          grep -R -n -E 'A.?B.?C|stale|ProviderRuntimeSession|navigation.*epoch|request.*token|NUVIO_PROVIDER_TIMEOUT|provider_hard_timeout_ms' tests scripts .github 2>/dev/null | head -400 || true
-          if [ -f tests/native_runtime_settlement_contract_test.py ]; then
-            python3 tests/native_runtime_settlement_contract_test.py || true
-          fi
-
-          echo '=== LANGUAGES / VF / VOSTFR / QUALITY ==='
-          grep -R -n -E 'VOSTFR|\bVF\b|language|languages|quality|qualities|Papadustream|papadustream' \
-            tests scripts automation engine_v2 engine-v2 .github 2>/dev/null | head -600 || true
-
-          echo '=== LOGOS / BRANDING / DOMAIN REFRESH ==='
-          grep -R -n -E 'logo|icon|branding|Domain Refresh|domain.refresh|domain_refresh' \
-            tests scripts automation engine_v2 engine-v2 .github/workflows .github/scripts 2>/dev/null | head -600 || true
-
-          echo '=== BRAIN / WEEKLY / SCHEDULES ==='
-          grep -R -n -E '^\s*schedule:|cron:|weekly|Brain|brain' .github/workflows automation scripts tests 2>/dev/null | head -700 || true
-
-          echo '=== TEMP WORKFLOWS ==='
+          echo '=== TEMP COUNT ==='
           find .github/workflows -maxdepth 1 -type f -printf '%f\n' | grep -E '^temp-' | sort || true
           echo "temp_count=$(find .github/workflows -maxdepth 1 -type f -printf '%f\n' | grep -Ec '^temp-' || true)"
-
-          echo '=== DOCS / SECURITY / VALIDATION ==='
-          for f in CHANGELOG.md VALIDATION.json README.md README.fr.md README.en.md ARCHITECTURE.md ARCHITECTURE.docx VALIDATION.md MEMORY.md; do
-            if [ -e "$f" ]; then echo "DOC present $f"; else echo "DOC missing $f"; fi
-          done
-          find .github/workflows tests scripts -type f 2>/dev/null | grep -Ei 'security|validation|publish|brain|weekly|domain' | sort | head -500 || true
-
-          echo '=== MEMORY TAIL ==='
-          tail -n 220 MEMORY.md 2>/dev/null || true
-
-          echo '=== GENERATED / FIXED POINT REFERENCES ==='
-          grep -R -n -E 'fixed.?point|idempoten|96/96|rebuild.*96|provider.*rebuild' automation scripts tests .github/workflows 2>/dev/null | head -500 || true
-
-          echo '=== AUDIT END ==='
 
       - name: Upload audit
         if: always()
