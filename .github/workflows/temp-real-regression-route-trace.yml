@@ -1,0 +1,66 @@
+name: TEMP - Real regression route trace
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-real-regression-route-trace.yml]
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: fix/labs-5.21.44-20260912}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Trace upstream and local route shapes
+        run: |
+          python - <<'PY'
+          import json,subprocess,tempfile,urllib.request,sys
+          from pathlib import Path
+          sys.path.insert(0,'scripts');import run_provider_upstream_parity as p
+          manifest=json.loads(Path('manifest.json').read_text());local={str(r['id']).lower():r for r in manifest['scrapers']}
+          cases={
+            'kurage':{
+              'url':'https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/main/providers/kurage.js',
+              'fixture':{'tmdbId':'114868','mediaType':'anime','category':'anime','title':'Record of Ragnarok','year':2021,'season':1,'episode':1},
+            },
+            'voiranime':{
+              'url':'https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/providers/voiranime.js',
+              'fixture':{'tmdbId':'475557','mediaType':'movie','title':'Joker','year':2019},
+            },
+          }
+          def execute(path,fixture,upstream):
+              f=dict(fixture)
+              if upstream and f.get('mediaType')=='anime': f['mediaType']='tv';f['type']='tv';f.pop('category',None)
+              cp=subprocess.run(['node','scripts/provider_worker.cjs',str(path),json.dumps(f,separators=(',',':')),json.dumps(p.context_for(fixture),separators=(',',':'))],capture_output=True,text=True,timeout=90)
+              result={}
+              for line in cp.stdout.splitlines():
+                  if line.startswith('NUVIO_HEALTH_RESULT='):
+                      try:result=json.loads(line.split('=',1)[1])
+                      except:pass
+              return result
+          def obs(result):
+              rows=[]
+              for x in result.get('network_observations') or []:
+                  if not isinstance(x,dict):continue
+                  rows.append({k:x.get(k) for k in ('stage','host','method','path_pattern','status','ok','content_type','response_value_hints','error_code')})
+              return rows
+          with tempfile.TemporaryDirectory() as td:
+              td=Path(td)
+              for pid,c in cases.items():
+                  up=td/(pid+'.js');up.write_bytes(urllib.request.urlopen(urllib.request.Request(c['url'],headers={'User-Agent':'NiakVIO-Trace/1'}),timeout=30).read())
+                  ur=execute(up,c['fixture'],True);lr=execute(Path(local[pid]['filename']),c['fixture'],False)
+                  print('REAL_ROUTE_UPSTREAM '+pid+' '+json.dumps({'count':ur.get('stream_count'),'raw':ur.get('raw_stream_count'),'hosts':ur.get('provider_server_hosts'),'statuses':ur.get('provider_server_http_statuses'),'network':obs(ur)},sort_keys=True))
+                  print('REAL_ROUTE_LOCAL '+pid+' '+json.dumps({'count':lr.get('stream_count'),'raw':lr.get('raw_stream_count'),'hosts':lr.get('provider_server_hosts'),'statuses':lr.get('provider_server_http_statuses'),'network':obs(lr)},sort_keys=True))
+          PY
