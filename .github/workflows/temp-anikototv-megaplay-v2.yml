@@ -1,0 +1,124 @@
+name: TEMP - AniKotoTV MegaPlay v2 proof
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths:
+      - scripts/provider_patches/anikototv_runtime_v2.py
+      - scripts/upgrade_anikototv_megaplay_runtime_v2.py
+      - .github/workflows/temp-anikototv-megaplay-v2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Stage current contract and materialize readable workspace bytes
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_anikototv_megaplay_runtime_v2.py
+          python3 scripts/materialize_provider_v3_one.py anikototv
+          python3 scripts/validate_published_provider_config.py --expected 96
+          python3 tests/provider_v3_final_stage_minimizer_gate_test.py
+          python3 tests/global_core_runtime_ownership_test.py
+      - name: Require exact terminal stream proof
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          f={'slug':'death-note-2006-s01e01','tmdbId':'13916','mediaType':'anime','category':'anime','title':'Death Note','year':2006,'season':1,'episode':1}
+          cat=p.local_catalog(); r=p.run_worker(cat['anikototv']['path'],f,60)
+          row={
+            'fixture':f['slug'],
+            'streams':int(r.get('stream_count') or 0),
+            'raw':int(r.get('raw_stream_count') or 0),
+            'error':r.get('error_class'),
+            'hosts':r.get('provider_server_hosts') or [],
+            'statuses':r.get('provider_server_http_statuses') or r.get('http_statuses') or [],
+          }
+          print('ANIKOTOTV_MEGAPLAY_V2_PROOF '+json.dumps(row,ensure_ascii=False,separators=(',',':')))
+          Path('automation/anikototv-megaplay-v2-proof.json').write_text(json.dumps(row,ensure_ascii=False,indent=2)+'\n')
+          if row['streams'] <= 0:
+            raise SystemExit('AniKotoTV MegaPlay v2 did not produce a terminal playable stream')
+          PY
+      - name: Promote only proven anime lane and rematerialize
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('provider-overrides.json'); d=json.loads(p.read_text()); row=d['provider_patches']['anikototv']
+          row['route_data_state']='on'
+          disp=row.get('repair_disposition')
+          if isinstance(disp,dict):
+            disp.update({
+              'routeDataState':'on','currentVerifiedLanes':['anime'],'provenLanes':['anime'],'missingLanes':[],
+              'completeCapabilityProof':True,'recoveryStatus':'stream-positive-current-contract',
+              'reasonCodes':['current_contract_stream_positive','megaplay_terminal_media_verified']})
+          p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+          skp=Path('automation/provider-v3-static-knowledge.json'); sk=json.loads(skp.read_text()); model=((sk.get('providers') or {}).get('anikototv') or {}).get('model')
+          if not isinstance(model,dict): raise SystemExit('anikototv static model missing')
+          model.update({
+            'routes':['/ajax/anime/search?keyword={query}','/watch/{slug}','/ajax/episode/list/{id}','/ajax/server/list?servers={id}','/ajax/server?get={id}','https://megaplay.buzz/stream/getSources?id={id}'],
+            'routeProofVersion':5,
+            'sourceRuntimeFamily':'anikoto-ajax-megaplay-v2',
+          })
+          skp.write_text(json.dumps(sk,ensure_ascii=False,indent=2)+'\n')
+          PY
+          python3 scripts/materialize_provider_v3_one.py anikototv
+          python3 scripts/validate_published_provider_config.py --expected 96
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/provider_v3_strategy_plan_contract_test.py
+      - name: Reconfirm after promotion
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          f={'tmdbId':'13916','mediaType':'anime','category':'anime','title':'Death Note','year':2006,'season':1,'episode':1}
+          r=p.run_worker(p.local_catalog()['anikototv']['path'],f,60); n=int(r.get('stream_count') or 0)
+          print(f'ANIKOTOTV_MEGAPLAY_V2_RECONFIRM streams={n} raw={int(r.get("raw_stream_count") or 0)}')
+          if n<=0: raise SystemExit('AniKotoTV lost positive after proof promotion')
+          PY
+      - name: Record durable proof and commit
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          proof=json.loads(Path('automation/anikototv-megaplay-v2-proof.json').read_text())
+          p=Path('MEMORY.md'); t=p.read_text(encoding='utf-8')
+          marker='## 2026-09-13 — AniKotoTV current AJAX + MegaPlay terminal resolver'
+          if marker not in t:
+            t += f'''\n{marker}\n\n- AniKotoTV current search authority is `/ajax/anime/search?keyword={{query}}`; JSON `result.html` is parsed before candidate selection.\n- The current episode/server chain is resolved through AniKoto AJAX, then MegaPlay embed title `File {{id}} - MegaPlay` -> `/stream/getSources?id={{id}}` -> final media URL. Upstream JavaScript is not embedded/executed.\n- Exact Death Note S01E01 proof is stream-positive: `{proof}`. Core remains owner of timeout/cancellation, identity and terminal HTTP/media validation.\n- Workspace materialization kept the final-stage minimizer disabled.\n'''
+            p.write_text(t,encoding='utf-8')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add provider-overrides.json automation/provider-v3-static-knowledge.json manifest.json providers/ vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json scripts/provider_patches/anikototv_runtime_v2.py scripts/upgrade_anikototv_megaplay_runtime_v2.py automation/anikototv-megaplay-v2-proof.json MEMORY.md
+          git commit -m 'fix(anikoto): resolve MegaPlay to terminal media'
+          git fetch origin fix/labs-5.21.44-20260912
+          git rebase origin/fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
