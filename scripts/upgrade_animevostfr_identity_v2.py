@@ -94,3 +94,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+# trigger 2026-09-13: execute durable anime-only identity V2 proof transaction
