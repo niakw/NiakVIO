@@ -1,4 +1,6 @@
 const UNKNOWN = /^(?:unknown|inconnue?|n\/a|na|none|null|undefined|-)$/i;
+const QUALITY_PLACEHOLDER = /^(?:0|auto|automatic|source|original|default|unknown|inconnue?|n\/a|na|none|null|undefined|-)$/i;
+const QUALITY_RANK = Object.freeze({ "240p": 240, "360p": 360, "480p": 480, "576p": 576, "720p": 720, "1080p": 1080, "1440p": 1440, "2160p": 2160 });
 
 export function presentStreamCandidates(streams, metadata = {}, provider = {}) {
   return (Array.isArray(streams) ? streams : []).map((stream) => presentStreamCandidate(stream, metadata, provider));
@@ -48,9 +50,9 @@ export function collectFacts(stream = {}, metadata = {}, provider = {}) {
   const sourceType = normalizeSourceType(stream.sourceType ?? stream.source_type ?? stream.description ?? stream.filename);
   const releaseType = normalizeReleaseType(stream.releaseType ?? stream.release_type ?? stream.description ?? stream.filename);
   return {
-    quality: normalizeQuality(stream.quality ?? stream.resolution),
+    quality: inferQuality(stream),
     language,
-    codec: normalizeCodec(stream.codec ?? stream.videoCodec ?? stream.video_codec),
+    codec: normalizeCodec(stream.codec ?? stream.codecName ?? stream.videoCodec ?? stream.video_codec),
     audio,
     audioCodec: normalizeAudioCodec(audio),
     audioChannels: normalizeAudioChannels(audio),
@@ -129,16 +131,78 @@ export function buildBadgeIds(facts = {}) {
   return uniq(ids);
 }
 
-export function normalizeQuality(value) {
+function preciseQuality(value, allowBare = true) {
+  if (Array.isArray(value)) {
+    const rows = value.map((item) => preciseQuality(item, true)).filter(Boolean);
+    return rows.sort((a, b) => (QUALITY_RANK[b] || 0) - (QUALITY_RANK[a] || 0))[0] || null;
+  }
+  if (typeof value === "number") {
+    const height = Math.round(value);
+    return [2160, 1440, 1080, 720, 576, 480, 360, 240].includes(height) ? `${height}p` : null;
+  }
   const text = useful(value);
-  if (!text) return null;
-  if (/^(?:4k|uhd|2160p?)$/i.test(text)) return "2160p";
-  const match = text.match(/(?:^|\b)(2160|1440|1080|720|576|480)p?(?:\b|$)/i);
-  return match ? `${match[1]}p` : text;
+  if (!text || QUALITY_PLACEHOLDER.test(text)) return null;
+  if (/\b(?:4K|UHD)\b/i.test(text)) return "2160p";
+  if (/\b(?:QHD|2K)\b/i.test(text)) return "1440p";
+  if (/\b(?:FHD|FULL[ ._-]?HD)\b/i.test(text)) return "1080p";
+  const dimensions = text.match(/(?:^|[^0-9])(\d{3,4})\s*[x×]\s*(2160|1440|1080|720|576|480|360|240)(?:[^0-9]|$)/i);
+  if (dimensions) return `${dimensions[2]}p`;
+  const tagged = text.match(/(?:^|[^0-9])(2160|1440|1080|720|576|480|360|240)\s*p(?:[^0-9]|$)/i);
+  if (tagged) return `${tagged[1]}p`;
+  if (allowBare) {
+    const bare = text.match(/^\s*(2160|1440|1080|720|576|480|360|240)\s*$/i);
+    if (bare) return `${bare[1]}p`;
+  }
+  return null;
+}
+
+export function inferQuality(stream = {}) {
+  for (const value of [stream.height, stream.videoHeight, stream.video_height, stream.resolution, stream.resolutions]) {
+    const exact = preciseQuality(value, true);
+    if (exact) return exact;
+  }
+  const explicit = useful(stream.quality);
+  const exactExplicit = preciseQuality(explicit, true);
+  if (exactExplicit) return exactExplicit;
+  for (const value of [stream.sourceLabel, stream.label, stream.filename, stream.fileName, stream.name, stream.title, stream.description, stream.url]) {
+    const exact = preciseQuality(value, false);
+    if (exact) return exact;
+  }
+  if (explicit && /^(?:HD|SD)$/i.test(explicit)) return explicit.toUpperCase();
+  return null;
+}
+
+export function normalizeQuality(value) {
+  const exact = preciseQuality(value, true);
+  if (exact) return exact;
+  const text = useful(value);
+  return text && /^(?:HD|SD)$/i.test(text) ? text.toUpperCase() : null;
+}
+
+function naturalLanguageLabel(value) {
+  const raw = useful(value);
+  if (!raw) return null;
+  const aliases = {
+    hi: "Hindi", hindi: "Hindi", en: "English", eng: "English", english: "English",
+    fr: "French", fre: "French", fra: "French", french: "French", français: "French", francais: "French",
+    ja: "Japanese", jpn: "Japanese", japanese: "Japanese", ko: "Korean", kor: "Korean", korean: "Korean",
+    es: "Spanish", spa: "Spanish", spanish: "Spanish", de: "German", deu: "German", ger: "German", german: "German",
+    it: "Italian", ita: "Italian", italian: "Italian", pt: "Portuguese", por: "Portuguese", portuguese: "Portuguese",
+    ar: "Arabic", ara: "Arabic", arabic: "Arabic", tr: "Turkish", tur: "Turkish", turkish: "Turkish",
+    ru: "Russian", rus: "Russian", russian: "Russian", zh: "Chinese", zho: "Chinese", chi: "Chinese", chinese: "Chinese",
+    ta: "Tamil", tam: "Tamil", tamil: "Tamil", te: "Telugu", tel: "Telugu", telugu: "Telugu",
+    ml: "Malayalam", mal: "Malayalam", malayalam: "Malayalam", bn: "Bengali", ben: "Bengali", bengali: "Bengali",
+  };
+  const parts = raw.split(/\s*(?:\/|,|\+|\||;)\s*/).map((part) => clean(part)).filter(Boolean);
+  const mapped = parts.map((part) => aliases[String(part).toLowerCase()] || part);
+  return uniq(mapped).join(" / ") || null;
 }
 
 export function normalizeLanguage(stream = {}, provider = {}) {
-  const explicit = useful(stream.language ?? stream.lang ?? stream.audioLanguage ?? stream.audio_language);
+  const explicit = useful(
+    stream.language ?? stream.lang ?? stream.audioLanguage ?? stream.audio_language ??
+    stream.audioTrack ?? stream.audio_track ?? stream.playerLanguage ?? stream.player_language ?? stream.dub,
+  );
   const hints = [stream.description, stream.title, stream.sourceLabel, stream.filename].map(clean).filter(Boolean).join(" ").toUpperCase();
   const vfProvider = isVfProvider(provider);
   const upper = explicit?.toUpperCase() ?? "";
@@ -146,13 +210,16 @@ export function normalizeLanguage(stream = {}, provider = {}) {
   const isVost = (text) => /\bVOSTFR\b|\bVOST[ ._-]?FR\b|\bVO[ ._-]?ST[ ._-]?FR\b/.test(text);
   const isVfq = (text) => /\bVFQ\b|\bFR[ ._-]?CA\b|\bFRENCH[ ._-]?(?:CANADA|CANADIAN|QUEBEC)\b|\bQU[ÉE]B[ÉE]COIS\b/.test(text);
   const isVf = (text) => /\b(?:VF|VFF|FR|FRA|FRE|FRENCH|FRANCAIS|FRANÇAIS|FR[ ._-]?FR)\b/.test(text);
-  const isVo = (text) => /\bVO\b|\bORIGINAL(?:[ ._-]?(?:AUDIO|LANG(?:UAGE)?))?\b|\b(?:EN|ENG|ENGLISH)\b/.test(text);
+  const isVo = (text) => /\bVO\b|\bORIGINAL(?:[ ._-]?(?:AUDIO|LANG(?:UAGE)?))?\b/.test(text);
 
+  if (isVost(upper) && (isVf(upper) || isMulti(upper))) return vfProvider ? "MULTI (VF/VO)" : "MULTI";
   if (isVost(upper)) return "VOSTFR";
   if (isMulti(upper)) return vfProvider ? "MULTI (VF/VO)" : "MULTI";
-  if (isVfq(upper)) return isVost(hints) && vfProvider ? "MULTI (VF/VO)" : "VFQ";
-  if (isVf(upper)) return isVost(hints) && vfProvider ? "MULTI (VF/VO)" : "VF";
-  if (isVo(upper)) return "VO";
+  if (/^(?:VFQ|FR[ ._-]?CA)$/i.test(explicit || "")) return "VFQ";
+  if (/^(?:VF|VFF)$/i.test(explicit || "")) return "VF";
+  if (/^(?:VO|ORIGINAL(?:[ ._-]?(?:AUDIO|LANG(?:UAGE)?))?)$/i.test(explicit || "")) return "VO";
+  const natural = naturalLanguageLabel(explicit);
+  if (natural) return natural;
 
   const hasVost = isVost(hints);
   const hasVf = isVf(hints) || isVfq(hints);
@@ -161,7 +228,7 @@ export function normalizeLanguage(stream = {}, provider = {}) {
   if (isVfq(hints)) return "VFQ";
   if (hasVf) return "VF";
   if (isVo(hints)) return "VO";
-  return vfProvider ? "VF" : "VO";
+  return null;
 }
 
 export function normalizeSourceType(value) {
@@ -282,11 +349,13 @@ function normalizeFormat(value, url) {
 }
 
 function normalizeSubtitles(stream) {
-  const text = [stream.description, stream.title, stream.filename].map(clean).filter(Boolean).join(" ").toUpperCase();
+  const explicit = Array.isArray(stream.subtitles) ? stream.subtitles : Array.isArray(stream.extCaptions) ? stream.extCaptions : Array.isArray(stream.captions) ? stream.captions : [];
+  const explicitLanguages = explicit.map((row) => useful(row?.language ?? row?.lanName ?? row?.langName ?? row?.lan ?? row?.lang)).filter(Boolean);
+  const text = [stream.description, stream.title, stream.filename, ...explicitLanguages].map(clean).filter(Boolean).join(" ").toUpperCase();
   const out = [];
   if (/\bVOSTFR\b/.test(text)) out.push("VOSTFR");
-  if (/\bSUB[ ._-]?FR\b/.test(text)) out.push("SUB FR");
-  if (/\bSUB[ ._-]?EN\b/.test(text)) out.push("SUB EN");
+  if (/\bSUB[ ._-]?FR\b|\bFRENCH\b|\bFRAN[CÇ]AIS\b/.test(text)) out.push("SUB FR");
+  if (/\bSUB[ ._-]?EN\b|\bENGLISH\b/.test(text)) out.push("SUB EN");
   if (/\bFORCED\b/.test(text)) out.push("FORCED");
   if (/\bSDH\b|\bCLOSED[ ]?CAPTION\b/.test(text)) out.push("SDH");
   return uniq(out);
