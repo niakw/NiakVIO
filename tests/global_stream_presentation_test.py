@@ -138,9 +138,9 @@ assert "🎞️ WEB-DL" in tv_row["description"] and "HEVC 10bit" in tv_row["des
 assert "💾 8.4 GB" in tv_row["description"]
 
 # Generic French tokens normalize to VF; explicit Canadian French stays VFQ.
-vf = run("module.exports={getStreams:async()=>[{name:'Movix',url:'https://x.example/a.mp4',language:'fr',quality:'1080p'}]};\n", "movix", "p.getStreams({mediaType:'movie',title:'Film',year:2026}).then(v=>console.log(JSON.stringify(v[0])))")
+vf = run("module.exports={getStreams:async()=>[{name:'Coflix',url:'https://x.example/a.mp4',language:'fr',quality:'1080p'}]};\n", "coflix", "p.getStreams({mediaType:'movie',title:'Film',year:2026}).then(v=>console.log(JSON.stringify(v[0])))")
 assert vf["language"] == "VF" and "🇫🇷 VF" in vf["description"]
-assert vf["title"] == "Movix - 1080p"
+assert vf["title"] == "Coflix - 1080p - VF"
 assert "1080p" not in vf["description"]
 assert "BLU-RAY" not in vf["description"]
 assert "vf" in vf["badgeIds"]
