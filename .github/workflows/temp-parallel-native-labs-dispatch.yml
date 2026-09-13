@@ -1,4 +1,4 @@
-name: TEMP - Rotating corpus integration push
+name: TEMP - Hub46 native scope integration
 
 on:
   push:
@@ -14,6 +14,7 @@ jobs:
     timeout-minutes: 20
     env:
       REF: fix/labs-5.21.44-20260912
+      NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -23,58 +24,30 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Apply integration
+      - name: Apply exact Hub-46 execution scope
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m py_compile scripts/temp_integrate_rotating_corpus.py
-          python3 scripts/temp_integrate_rotating_corpus.py
-      - name: Add contract test
-        shell: bash
-        run: |
-          cat > tests/provider_rotating_repair_contract_test.py <<'PY'
-          from pathlib import Path
-          ROOT = Path(__file__).resolve().parents[1]
-          sequential = (ROOT/'scripts/validate_provider_v3_routes_sequential.py').read_text()
-          reconstruct = (ROOT/'scripts/reconstruct_provider_v3_sequential_live.py').read_text()
-          desktop = (ROOT/'.github/workflows/native-desktop-reader-acceptance.yml').read_text()
-          android = (ROOT/'.github/workflows/native-mobile-android-reader.yml').read_text()
-          ios = (ROOT/'scripts/prepare_native_ios_reader_acceptance.py').read_text()
-          prep = (ROOT/'scripts/prepare_native_corpus_validation.py').read_text()
-          assert 'PROVIDER_V3_ROTATING_CATALOGUE_SAMPLE_V1' in sequential
-          assert 'evaluation.get("playableChainValidatedTypes")' in reconstruct
-          assert 'FIELD_PROVIDER_RESAMPLE_REQUIRED' in reconstruct
-          assert 'completion_state = "resample-required"' in reconstruct
-          assert '"resample-required"' in sequential
-          assert 'rotating_corpus.py" select --lane all --count-per-lane 1' in desktop
-          assert 'FIELD_ROTATING_CORPUS client=tv' in android
-          assert 'FIELD_ROTATING_CORPUS client=mobile' in android
-          assert 'from rotating_corpus import select_fixtures' in ios
-          assert 'rotating_fixture_by_slug' in prep
-          print('provider rotating Repair/Lab integration contract tests passed')
-          PY
-      - name: Run tests
+          python3 -m py_compile scripts/temp_apply_hub46_native_scope.py
+          python3 scripts/temp_apply_hub46_native_scope.py
+      - name: Run focused scope and rotation tests
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m py_compile scripts/rotating_corpus.py scripts/gate_native_declared_provider_matrix.py scripts/prepare_native_corpus_validation.py scripts/prepare_native_ios_reader_acceptance.py scripts/validate_provider_v3_routes_sequential.py scripts/reconstruct_provider_v3_sequential_live.py
+          python3 -m py_compile scripts/prepare_native_corpus_client.py scripts/gate_native_declared_provider_matrix.py scripts/prepare_native_ios_reader_acceptance.py
+          python3 tests/native_hub46_scope_contract_test.py
           python3 tests/rotating_corpus_test.py
           python3 tests/native_provider_resample_status_test.py
           python3 tests/provider_rotating_repair_contract_test.py
-          python3 tests/provider_v3_sequential_live_gate_test.py
           python3 tests/provider_v3_final_transient_fixture_fallback_test.py
-          bash -n scripts/run_native_corpus_desktop_suite.sh
-          bash -n scripts/run_native_corpus_mobile_suite.sh
-          bash -n scripts/run_native_corpus_tv_suite.sh
-          node --check providers/streamflix.js
           node tests/streamflix_timerless_runtime_test.cjs
-      - name: Commit integration
+      - name: Commit exact Hub-46 execution scope
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add scripts/prepare_native_corpus_validation.py scripts/prepare_native_ios_reader_acceptance.py scripts/validate_provider_v3_routes_sequential.py scripts/reconstruct_provider_v3_sequential_live.py scripts/gate_native_declared_provider_matrix.py scripts/run_native_corpus_desktop_suite.sh scripts/run_native_corpus_mobile_suite.sh scripts/run_native_corpus_tv_suite.sh tests/provider_rotating_repair_contract_test.py
+          git add scripts/prepare_native_corpus_client.py scripts/gate_native_declared_provider_matrix.py scripts/prepare_native_ios_reader_acceptance.py
           git diff --cached --check
-          git commit -m "feat(labs): rotate catalogue misses before provider repair"
+          git commit -m "fix(labs): enforce exact Hub-46 execution scope"
           git push origin HEAD:"$REF"
