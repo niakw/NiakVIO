@@ -13,17 +13,24 @@ jobs:
         with: {ref: fix/labs-5.21.44-20260912}
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
-      - name: Print semantic projection mismatches
+      - name: Compare semantic authority layers
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
           root=Path('.')
           cat=json.loads((root/'provider_catalog.json').read_text())
+          ov=json.loads((root/'provider-overrides.json').read_text()).get('provider_patches') or {}
+          disp=json.loads((root/'automation/provider-repair-disposition.json').read_text())
+          disp_rows={str(x.get('provider') or x.get('id') or '').casefold():x for x in (disp.get('providers') or disp.get('rows') or []) if isinstance(x,dict)}
           sem={}
           for p in cat.get('providers') or []:
               s=p.get('scraper') or {}; pid=str(s.get('id') or p.get('canonicalId') or '').strip().casefold()
               sem[pid]=[str(x).strip().casefold() for x in (s.get('canonicalSupportedTypes') or s.get('supportedTypes') or [])]
+          targets=['anime-sama','mugiwarastream','neko-sama','animevost-fr','fullanime']
+          for pid in targets:
+              o=ov.get(pid) or {}; rd=o.get('repair_disposition') or disp_rows.get(pid) or {}
+              print('AUTH',pid,'catalog=',sem.get(pid),'published=',o.get('published_types'),'required=',rd.get('requiredLanes'),'proven=',rd.get('provenLanes'),'status=',rd.get('recoveryStatus'))
           for rel in ('manifest.json','vf/manifest.json','no-anime/manifest.json','vf-no-anime/manifest.json'):
               p=root/rel
               if not p.exists(): continue
