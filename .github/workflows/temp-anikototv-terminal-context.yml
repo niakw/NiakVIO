@@ -41,6 +41,33 @@ jobs:
           python3 scripts/materialize_provider_v3_one.py anikototv
           python3 -m py_compile scripts/provider_patches/anikototv_runtime_v2.py scripts/upgrade_anikototv_megaplay_aes_v3.py
 
+      - name: Inspect MegaPlay payload shape without media URLs
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'JS'
+          const ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36';
+          const embed='https://megaplay.buzz/stream/s-2/1464/sub';
+          const page=await fetch(embed,{headers:{'User-Agent':ua,'Accept':'text/html,application/json,text/plain,*/*','Referer':'https://megaplay.buzz/'}});
+          const html=await page.text();
+          const ids=[...html.matchAll(/\bdata-id=["'](\d+)["']/ig)].map(m=>m[1]);
+          const fid=ids[0]||((html.match(/<title[^>]*>\s*File\s+(\d+)\s*-\s*MegaPlay/i)||[])[1]);
+          if(!fid) throw new Error('no source id');
+          const r=await fetch('https://megaplay.buzz/stream/getSources?id='+encodeURIComponent(fid),{headers:{'User-Agent':ua,'Accept':'application/json,text/plain,*/*','Referer':embed,'Origin':'https://megaplay.buzz','X-Requested-With':'XMLHttpRequest'}});
+          const data=await r.json();
+          const urls=[];
+          function walk(v,path='root'){
+            if(typeof v==='string' && /^https?:\/\//i.test(v)){
+              try{const u=new URL(v); urls.push({path,host:u.hostname,pathname:u.pathname.replace(/[A-Fa-f0-9]{16,}/g,'{token}')});}catch{}
+              return;
+            }
+            if(Array.isArray(v)){v.slice(0,40).forEach((x,i)=>walk(x,path+'['+i+']'));return;}
+            if(v&&typeof v==='object'){Object.entries(v).slice(0,80).forEach(([k,x])=>walk(x,path+'.'+k));}
+          }
+          walk(data);
+          console.log('ANIKOTO_PAYLOAD_SHAPE '+JSON.stringify({status:r.status,sourceId:fid,dataIds:ids.slice(0,8),keys:Object.keys(data||{}),hasEnc:typeof data?.enc==='string',encLength:typeof data?.enc==='string'?data.enc.length:0,urlFields:urls}));
+          JS
+
       - name: Trace exact Death Note terminal request only
         shell: bash
         run: |
@@ -61,9 +88,7 @@ jobs:
               if line.startswith('NUVIO_HEALTH_RESULT='):
                   result=json.loads(line.split('=',1)[1])
           if not isinstance(result,dict):
-              print(cp.stdout)
-              print(cp.stderr)
-              raise SystemExit('worker_no_result')
+              print(cp.stdout); print(cp.stderr); raise SystemExit('worker_no_result')
           observations=result.get('network_observations') or []
           useful=[]
           for row in observations:
