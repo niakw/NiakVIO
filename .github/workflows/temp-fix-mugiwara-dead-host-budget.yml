@@ -1,4 +1,4 @@
-name: TEMP - Recover provider Lego wiring
+name: TEMP - Persist verified provider repairs
 
 on:
   push:
@@ -15,7 +15,7 @@ env:
 jobs:
   fix:
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,7 +26,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: {node-version: '24'}
 
-      - name: Restore owned provider Lego wiring
+      - name: Apply only already-proven repairs
         run: |
           python - <<'PY'
           import json
@@ -45,94 +45,51 @@ jobs:
           path=Path('provider-overrides.json')
           data=json.loads(path.read_text(encoding='utf-8'))
           patches=data.setdefault('provider_patches',{})
-          wanted={
-              'animevostfr':'scripts/provider_patches/animevostfr_runtime_v1.py',
-              'animesama-co':'scripts/provider_patches/animesamaco_site_runtime_v1.py',
-              'kurage':'scripts/provider_patches/kurage_runtime_v1.py',
-          }
-          for pid,script in wanted.items():
-              row=patches.setdefault(pid,{})
-              lego=row.get('provider_lego_scripts')
-              if not isinstance(lego,list): lego=[]
-              if script not in lego: lego.append(script)
-              row['provider_lego_scripts']=lego
-              print('RESTORED_LEGO',pid,script)
+          pid='animesama-co'; script='scripts/provider_patches/animesamaco_site_runtime_v1.py'
+          row=patches.setdefault(pid,{})
+          lego=row.get('provider_lego_scripts')
+          if not isinstance(lego,list): lego=[]
+          if script not in lego: lego.append(script)
+          row['provider_lego_scripts']=lego
           path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           PY
-          python -m py_compile \
-            scripts/provider_patches/mugiwarastream_packed_runtime_v1.py \
-            scripts/provider_patches/animevostfr_runtime_v1.py \
-            scripts/provider_patches/animesamaco_site_runtime_v1.py \
-            scripts/provider_patches/kurage_runtime_v1.py
+          python -m py_compile scripts/provider_patches/mugiwarastream_packed_runtime_v1.py scripts/provider_patches/animesamaco_site_runtime_v1.py
 
-      - name: Re-materialize Hub46 providers
+      - name: Re-materialize Hub46
         run: |
           python scripts/materialize_provider_v3_all.py
           python - <<'PY'
           import json
-          from pathlib import Path
-          d=json.loads(Path('provider-v3-materialization.json').read_text())
-          rows=d.get('providers') or []
-          assert len(rows)==46, len(rows)
+          d=json.load(open('provider-v3-materialization.json'))
+          assert len(d.get('providers') or [])==46
           print('HUB46_MATERIALIZATION_OK providers=46')
           PY
 
-      - name: Verify exact terminal regressions
+      - name: Exact terminal proof
         run: |
           python - <<'PY'
           import json,sys
           from pathlib import Path
           sys.path.insert(0,'scripts')
           import run_provider_upstream_parity_v3 as v3
-
-          manifest=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
-          rows={str(x.get('id') or '').lower():x for x in manifest.get('scrapers') or []}
+          m=json.loads(Path('manifest.json').read_text()); rows={str(x['id']).lower():x for x in m['scrapers']}
           cases={
             'mugiwarastream':{'tmdbId':'63926','mediaType':'anime','category':'anime','title':'One Punch Man','year':2015,'season':1,'episode':1},
-            'animevostfr':{'tmdbId':'95479','mediaType':'anime','category':'anime','title':'Jujutsu Kaisen','year':2020,'season':1,'episode':1},
             'animesama-co':{'tmdbId':'45782','mediaType':'anime','category':'anime','title':'Sword Art Online','year':2012,'season':1,'episode':1},
-            'kurage':{'tmdbId':'94664','mediaType':'anime','category':'anime','title':'Mushoku Tensei: Jobless Reincarnation','year':2021,'season':1,'episode':1},
             'streamzo':{'tmdbId':'240411','mediaType':'anime','category':'anime','title':'Dan Da Dan','year':2024,'season':1,'episode':1},
           }
-          failures=[]
-          for pid,fixture in cases.items():
-              path=Path(rows[pid]['filename'])
-              r=v3._run_verified(path,fixture,35)
-              summary={k:r.get(k) for k in ('stream_count','candidate_stream_count','raw_stream_count','terminal_verified','terminal_kinds','terminal_statuses','terminal_reasons','http_statuses','error_class')}
-              print('EXACT_TERMINAL',pid,json.dumps(summary,sort_keys=True))
-              if int(r.get('stream_count') or 0)<1:
-                  failures.append(pid)
-          if failures:
-              raise SystemExit('terminal regressions remain: '+','.join(failures))
+          for pid,f in cases.items():
+              r=v3._run_verified(Path(rows[pid]['filename']),f,35)
+              print('EXACT_VERIFIED',pid,json.dumps(r,sort_keys=True))
+              assert int(r.get('stream_count') or 0)>=1,(pid,r)
           PY
 
-      - name: Recheck previous full32 reds
-        run: |
-          python scripts/run_provider_upstream_parity_v3.py \
-            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
-            --samples-per-lane 32 --workers 5 --timeout 25 \
-            --seed 20260914-recovered-lego \
-            --out /tmp/recovered-v3.json \
-            --provider mugiwarastream --provider animevostfr --provider animesama-co --provider kurage --provider streamzo
-          python - <<'PY'
-          import json
-          d=json.load(open('/tmp/recovered-v3.json'))
-          print('RECOVERED_COUNTS',json.dumps(d.get('statusCounts') or {},sort_keys=True))
-          print('RECOVERED_REGRESSIONS',json.dumps(d.get('certainRegressions') or []))
-          for p in d.get('providers') or []:
-              print('RECOVERED_PROVIDER',p.get('providerId'),p.get('status'),json.dumps([(x.get('lane'),x.get('status')) for x in p.get('lanes') or []]))
-          PY
-
-      - name: Commit verified repairs
+      - name: Commit proven repairs
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add \
-            provider-overrides.json \
-            scripts/provider_patches/mugiwarastream_packed_runtime_v1.py \
-            providers/ manifest.json provider-v3-materialization.json
-          if git diff --cached --quiet; then
-            echo 'No repair diff to commit'; exit 1
-          fi
-          git commit -m 'fix: restore provider Lego wiring and Mugiwara fallback budget'
+          git add provider-overrides.json scripts/provider_patches/mugiwarastream_packed_runtime_v1.py providers/ manifest.json provider-v3-materialization.json
+          git diff --cached --quiet && { echo 'No repair diff'; exit 1; }
+          git commit -m 'fix: persist Mugiwara fallback and AnimeSamaCo runtime'
+          git pull --rebase origin fix/labs-5.21.44-20260912
           git push origin HEAD:fix/labs-5.21.44-20260912
