@@ -1,0 +1,82 @@
+name: TEMP - AniKoto MegaPlay repair
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-anikototv-megaplay-fix.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NUVIO_PROVIDER_V3_CONTEXT: workspace
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Materialize corrected AniKoto runtime
+        run: |
+          set -euo pipefail
+          python3 scripts/materialize_provider_v3_one.py anikototv
+          python3 scripts/validate_published_provider_config.py --expected 96
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/provider_html_filter_security_test.py
+      - name: Exact Tokyo Ghoul proof
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          path=p.local_catalog()['anikototv']['path']
+          fixture={'slug':'tokyo-ghoul-s01e01','tmdbId':'61374','mediaType':'anime','category':'anime','season':1,'episode':1,'title':'Tokyo Ghoul','year':2014}
+          r=p.run_worker(path,fixture,35)
+          row={'streams':int(r.get('stream_count') or 0),'raw':int(r.get('raw_stream_count') or 0),'statuses':r.get('provider_server_http_statuses') or r.get('http_statuses') or [],'hosts':r.get('provider_server_hosts') or [],'error':r.get('error_class')}
+          print('ANIKOTO_EXACT '+json.dumps(row,ensure_ascii=False,separators=(',',':')))
+          if row['streams'] <= 0:
+              raise SystemExit('AniKoto exact proof still ZERO')
+          PY
+      - name: Strict current full-32 anime parity
+        run: |
+          set -euo pipefail
+          python3 scripts/run_provider_upstream_parity_v3.py --provider anikototv --lanes anime --samples-per-lane 32 --workers 1 --timeout 25 --seed 20260913-anikoto-megaplay --out automation/anikoto-megaplay-parity.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('automation/anikoto-megaplay-parity.json').read_text())
+          rows=[]
+          bad=False
+          for p in d.get('providers') or []:
+            for lane in p.get('lanes') or []:
+              row={k:lane.get(k) for k in ('lane','status','upstreamPositive','niakPositive','compared','certainRegression','reason')}
+              rows.append(row)
+              if lane.get('lane')=='anime' and (lane.get('certainRegression') or int(lane.get('niakPositive') or 0)<=0): bad=True
+          print('ANIKOTO_PARITY '+json.dumps({'summary':d.get('summary'),'lanes':rows},ensure_ascii=False,separators=(',',':')))
+          if bad: raise SystemExit('AniKoto anime full-32 not recovered')
+          PY
+      - name: Persist generated provider state on fix branch
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add providers manifest.json no-anime/manifest.json provider_catalog.json provider-v3-materialization.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo 'ANIKOTO_PERSIST no_changes=true'
+            exit 0
+          fi
+          git commit -m 'fix(anikototv): publish MegaPlay native recovery'
+          git push origin HEAD:fix/labs-5.21.44-20260912
