@@ -26,65 +26,13 @@ jobs:
           node-version: '24'
           package-manager-cache: false
 
-      - name: Materialize physical Hub-46 manifest and patch native consumers
+      - name: Materialize exact Hub-46 native execution scope
         shell: bash
         run: |
           set -euo pipefail
+          python3 -m py_compile scripts/generate_hub46_manifest.py scripts/apply_hub46_native_lab_scope.py
           python3 scripts/generate_hub46_manifest.py
-          python3 - <<'PY'
-          from pathlib import Path
-
-          root = Path('.')
-          scoped = '''TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
-          if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO}/manifest-hub46.json" ]]; then
-            TARGET_MANIFEST="manifest-hub46.json"
-            echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=$TARGET_MANIFEST providers=46 authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
-          fi'''
-          base = 'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"'
-          for name in ('run_native_corpus_desktop_suite.sh', 'run_native_corpus_mobile_suite.sh', 'run_native_corpus_tv_suite.sh'):
-              path = root / 'scripts' / name
-              text = path.read_text(encoding='utf-8')
-              if 'FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE' not in text:
-                  if text.count(base) != 1:
-                      raise SystemExit(f'{name}: TARGET_MANIFEST anchor count={text.count(base)}')
-                  text = text.replace(base, scoped, 1)
-              path.write_text(text, encoding='utf-8')
-
-          desktop = root / 'scripts/run_native_corpus_desktop_suite.sh'
-          text = desktop.read_text(encoding='utf-8')
-          legacy_start = '  EXPECTED_MINUTES="$(python3 - "$fixture" "$NIAKVIO/.github/triggers/nuvio-client-lab.json" <<\'PY\'\n'
-          legacy_end = ')" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }\n'
-          if legacy_start in text:
-              start = text.index(legacy_start)
-              end = text.index(legacy_end, start) + len(legacy_end)
-              replacement = '''  EXPECTED_MINUTES="$(PYTHONPATH="${NIAKVIO}/scripts" python3 - "$fixture" <<'PY'
-          import sys
-          from rotating_corpus import fixture_by_slug
-          print(int(fixture_by_slug(sys.argv[1]).get("expectedDurationMinutes") or 0))
-          PY
-          )" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
-          '''
-              text = text[:start] + replacement + text[end:]
-          if '.github/triggers/nuvio-client-lab.json" <<\'PY\'' in text:
-              raise SystemExit('desktop legacy fixture duration lookup survived')
-          desktop.write_text(text, encoding='utf-8')
-
-          ios = root / 'scripts/run_native_corpus_ios_suite.sh'
-          text = ios.read_text(encoding='utf-8')
-          anchor = 'MANIFEST_URL="${NIAKVIO_MANIFEST_URL:?NIAKVIO_MANIFEST_URL is required}"'
-          if 'FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=manifest-hub46.json' not in text:
-              if text.count(anchor) != 1:
-                  raise SystemExit(f'iOS manifest URL anchor count={text.count(anchor)}')
-              replacement = anchor + '''
-          if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO_ROOT}/manifest-hub46.json" ]]; then
-            SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
-            SOURCE_SHA="${GITHUB_SHA:-$(git -C "$NIAKVIO_ROOT" rev-parse HEAD)}"
-            MANIFEST_URL="https://raw.githubusercontent.com/${SOURCE_REPOSITORY}/${SOURCE_SHA}/manifest-hub46.json"
-            echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=manifest-hub46.json providers=46 authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
-          fi'''
-              text = text.replace(anchor, replacement, 1)
-          ios.write_text(text, encoding='utf-8')
-          PY
+          python3 scripts/apply_hub46_native_lab_scope.py
 
       - name: Validate exact Hub-46 native execution contracts
         shell: bash
