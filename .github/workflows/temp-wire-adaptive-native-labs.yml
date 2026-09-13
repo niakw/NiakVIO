@@ -1,0 +1,86 @@
+name: TEMP - wire adaptive native Lab corpus
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-wire-adaptive-native-labs.yml
+
+permissions:
+  contents: write
+
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply adaptive Lab wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_native_adaptive_catalog_v1.py
+          python3 scripts/upgrade_ios_adaptive_catalog_v1.py
+      - name: Validate policy and shell/runtime wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/recent_global_lab_corpus_policy_test.py
+          python3 tests/native_catalog_miss_rotation_test.py
+          python3 -m py_compile \
+            scripts/rotating_corpus.py \
+            scripts/native_catalog_miss_rotation.py \
+            scripts/restage_native_corpus_client.py \
+            scripts/prepare_native_ios_reader_acceptance.py
+          bash -n scripts/run_native_adaptive_catalog_fallbacks.sh
+          bash -n scripts/run_native_catalog_fallback_desktop.sh
+          bash -n scripts/run_native_catalog_fallback_mobile.sh
+          bash -n scripts/run_native_catalog_fallback_tv.sh
+          bash -n scripts/run_native_corpus_desktop_suite.sh
+          bash -n scripts/run_native_corpus_mobile_suite.sh
+          bash -n scripts/run_native_corpus_tv_suite.sh
+          grep -Fq 'run_native_adaptive_catalog_fallbacks.sh' scripts/run_native_corpus_desktop_suite.sh
+          grep -Fq 'run_native_adaptive_catalog_fallbacks.sh' scripts/run_native_corpus_mobile_suite.sh
+          grep -Fq 'run_native_adaptive_catalog_fallbacks.sh' scripts/run_native_corpus_tv_suite.sh
+          grep -Fq 'FIELD_NATIVE_IOS_CATALOG_MISS' scripts/prepare_native_ios_reader_acceptance.py
+          grep -Fq 'fixed_batch=false' scripts/prepare_native_ios_reader_acceptance.py
+      - name: Update durable memory
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('MEMORY.md')
+          marker='## 2026-09-13 — adaptive Lab fallback wired across five Labs'
+          text=p.read_text(encoding='utf-8')
+          if marker not in text:
+              text += '''\n## 2026-09-13 — adaptive Lab fallback wired across five Labs\n\n- Desktop macOS/Windows, Android Mobile and Android TV now run the three initial global seeds (1 movie + 1 TV + 1 anime), then use `native_catalog_miss_rotation.py` plus a shrinking provider allowlist. Only provider/lane pairs that returned a clean `0 streams` without an error advance to another random/deterministic work from the same global list.\n- Fallback work is not a fixed batch and has no hard-coded “6 samples” rule. Positive providers and providers with runtime/load/timeout/transport/player/identity errors are not repeated to hide failures.\n- iOS embeds the same three recent global pools as an interleaved reserve and tracks terminal provider+lane pairs in-process: clean zero continues to the next same-lane fixture; positive or exception stops that provider/lane.\n- The adaptive runners reuse the current native session/emulator and restage only the clean-miss provider allowlist, reducing extra workload relative to rerunning the full 46 on every fallback title.\n'''
+              p.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit adaptive Lab wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            scripts/run_native_corpus_desktop_suite.sh \
+            scripts/run_native_corpus_mobile_suite.sh \
+            scripts/run_native_corpus_tv_suite.sh \
+            scripts/prepare_native_ios_reader_acceptance.py \
+            MEMORY.md
+          if git diff --cached --quiet; then
+            echo 'No adaptive wiring changes'
+            exit 0
+          fi
+          git commit -m 'feat(labs): wire clean-miss adaptive corpus across native Labs'
+          git fetch origin fix/labs-5.21.44-20260912
+          git rebase origin/fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
