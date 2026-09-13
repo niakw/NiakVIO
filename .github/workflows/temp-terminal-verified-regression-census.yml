@@ -1,0 +1,103 @@
+name: TEMP - Terminal-verified regression census
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths:
+      - scripts/run_provider_upstream_parity_v3.py
+      - .github/workflows/temp-terminal-verified-regression-census.yml
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NIAKVIO_PARITY_TIMEOUT: '25'
+
+jobs:
+  hard-trio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: fix/labs-5.21.44-20260912}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Terminal-verified hard trio
+        run: |
+          python -m py_compile scripts/run_provider_upstream_parity_v3.py
+          python scripts/run_provider_upstream_parity_v3.py \
+            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
+            --samples-per-lane 32 --workers 3 --timeout 25 \
+            --seed 20260914-hub46-hard-trio \
+            --out /tmp/hard-terminal.json \
+            --provider animevostfr --provider kurage --provider voiranime
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/hard-terminal.json'))
+          print('TERMINAL_HARD_COUNTS',json.dumps(d.get('statusCounts') or {},sort_keys=True))
+          print('TERMINAL_HARD_REGRESSIONS',json.dumps(d.get('certainRegressions') or []))
+          for p in d.get('providers') or []:
+              print('TERMINAL_HARD_PROVIDER',p.get('providerId'),p.get('status'),json.dumps([(x.get('lane'),x.get('status'),[(s.get('fixture'),s.get('classification'),(s.get('upstream') or {}).get('candidate_stream_count'),(s.get('upstream') or {}).get('stream_count'),(s.get('upstream') or {}).get('terminal_kinds')) for s in x.get('samples') or []]) for x in p.get('lanes') or []]))
+          PY
+      - uses: actions/upload-artifact@v4
+        with: {name: terminal-hard, path: /tmp/hard-terminal.json, retention-days: 14}
+
+  regression-a:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: fix/labs-5.21.44-20260912}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Terminal-verified set A
+        run: |
+          python scripts/run_provider_upstream_parity_v3.py \
+            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
+            --samples-per-lane 32 --workers 3 --timeout 25 \
+            --seed 20260914-hub46-reg-a \
+            --out /tmp/reg-a-terminal.json \
+            --provider mugiwarastream --provider streamzo
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/reg-a-terminal.json'))
+          print('TERMINAL_A_COUNTS',json.dumps(d.get('statusCounts') or {},sort_keys=True))
+          print('TERMINAL_A_REGRESSIONS',json.dumps(d.get('certainRegressions') or []))
+          for p in d.get('providers') or []: print('TERMINAL_A_PROVIDER',p.get('providerId'),p.get('status'))
+          PY
+      - uses: actions/upload-artifact@v4
+        with: {name: terminal-reg-a, path: /tmp/reg-a-terminal.json, retention-days: 14}
+
+  regression-b:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: fix/labs-5.21.44-20260912}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Terminal-verified set B
+        run: |
+          python scripts/run_provider_upstream_parity_v3.py \
+            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
+            --samples-per-lane 32 --workers 3 --timeout 25 \
+            --seed 20260914-hub46-reg-b \
+            --out /tmp/reg-b-terminal.json \
+            --provider animesama-co --provider voiranime-rip
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/reg-b-terminal.json'))
+          print('TERMINAL_B_COUNTS',json.dumps(d.get('statusCounts') or {},sort_keys=True))
+          print('TERMINAL_B_REGRESSIONS',json.dumps(d.get('certainRegressions') or []))
+          for p in d.get('providers') or []: print('TERMINAL_B_PROVIDER',p.get('providerId'),p.get('status'))
+          PY
+      - uses: actions/upload-artifact@v4
+        with: {name: terminal-reg-b, path: /tmp/reg-b-terminal.json, retention-days: 14}
