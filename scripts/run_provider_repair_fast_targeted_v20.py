@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run canonical targeted repair with V21.8 immediately before live recovery."""
+"""Run canonical targeted repair with the current V21.12 boundary before live recovery."""
 from __future__ import annotations
 
 import subprocess
@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import run_provider_repair_fast_targeted_v1 as runner  # noqa: E402
 import upgrade_provider_composite_request_template_v21_8 as v218  # noqa: E402
+import upgrade_provider_runtime_reconstruction_v21_12 as v212  # noqa: E402
 import upgrade_stream_sanitizer_v7_selection as sanitizer_v7  # noqa: E402
 
 _original_run = runner.run
@@ -43,6 +44,10 @@ def _run_with_v218_boundary(*args: str, timeout: int | None = None) -> None:
         v218.patch_recovery()
         v218.patch_materializer()
         v218.patch_base()
+        # PROVIDER_REPAIR_CURRENT_BOUNDARY_V22
+        # V21.12 is provider-agnostic and is the current live-recovery boundary.
+        v212.patch_recovery()
+        v212.patch_base()
         sanitizer_v7.patch_overrides()
         sanitizer_v7.patch_hashes()
         v218.validate_worker()
@@ -50,6 +55,8 @@ def _run_with_v218_boundary(*args: str, timeout: int | None = None) -> None:
         v218.validate_recovery()
         v218.validate_materializer()
         v218.validate_base()
+        v212.validate_recovery()
+        v212.validate_base()
         sanitizer_v7.validate_overrides()
         sanitizer_v7.validate_hashes()
         _v218_applied = True
@@ -66,6 +73,13 @@ def _run_with_v218_boundary(*args: str, timeout: int | None = None) -> None:
             "redacted_fields_fail_closed=1 direct_media_fail_closed=1 "
             "catalogue_detail_not_promoted=1 provider_specific_rules=0 "
             "all_v21_8_owners_before_census=1",
+            flush=True,
+        )
+        print(
+            "FIELD_PROVIDER_V21_12_BOUNDARY ready=true revision=v21.12 "
+            "explicit_season_mismatch_fail_closed=1 correlated_player_fallback=1 "
+            "identity_keyed_search_role_gated=1 obsolete_voiranime_homes_replay=0 "
+            "provider_specific_rules=0",
             flush=True,
         )
     _original_run(*args, timeout=timeout)

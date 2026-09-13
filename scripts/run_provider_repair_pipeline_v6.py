@@ -100,6 +100,9 @@ def main() -> int:
         "--baseline", str(PORTFOLIO_BASELINE.relative_to(ROOT)),
     )
 
+    # PROVIDER_REPAIR_CURRENT_BOUNDARY_V22
+    # V21.10's provider-specific `.homes` authority is historical evidence only;
+    # current Repair must not replay it. V21.12 is the generic live boundary.
     # This order is canonical. V16 (chained by base runtime V11) requires Source
     # Plan V15. V17 then builds on V16, while V21.8 cumulatively chains V18-V21.7
     # before the live recovery census. Do not reorder these migrations.
@@ -129,8 +132,8 @@ def main() -> int:
         "scripts/upgrade_provider_search_detail_bridge_v17.py",
         "scripts/upgrade_provider_composite_request_template_v21_8.py",
         "scripts/upgrade_provider_json_catalogue_preservation_v21_9.py",
-        "scripts/upgrade_provider_voiranime_homes_authority_v21_10.py",
         "scripts/retire_provider_neko_sama_v21_11.py",
+        "scripts/upgrade_provider_runtime_reconstruction_v21_12.py",
         "scripts/upgrade_stream_sanitizer_v7_selection.py",
     ]
     for migration in migrations:
@@ -154,7 +157,6 @@ def main() -> int:
         "tests/provider_execution_authority_v16_contract_test.py",
         "tests/provider_composite_request_template_v21_8_test.py",
         "tests/provider_json_catalogue_preservation_v21_9_test.py",
-        "tests/provider_voiranime_homes_authority_v21_10_test.py",
         "tests/provider_neko_sama_retirement_v21_11_test.py",
         "tests/stream_output_correlated_player_fallback_v7_test.py",
         "tests/global_identity_policy_ownership_test.py",
@@ -276,7 +278,7 @@ def main() -> int:
         "targetedProviderCount": len(targets),
         "targetedProviders": targets,
         "maxAttemptsPerTask": attempts,
-        "routePlanRevision": "v21.11",
+        "routePlanRevision": "v21.12",
         "targetedProvidersWithProvenRoutes": int(targeted_report.get("providersWithProvenRoutes") or 0),
         "targetedProvenRoutes": int(targeted_report.get("provenRouteCount") or 0),
         "mergedProvidersWithProvenRoutes": int(merged_report.get("providersWithProvenRoutes") or 0),
