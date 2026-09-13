@@ -1,0 +1,85 @@
+name: TEMP - Regression identity and Mugiwara debug
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-regression-identity-and-mugi-debug.yml]
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  hard-exact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: fix/labs-5.21.44-20260912}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Trace hard exact identities
+        run: |
+          python - <<'PY'
+          import json,subprocess,tempfile,urllib.request,urllib.parse,sys
+          from pathlib import Path
+          sys.path.insert(0,'scripts');import run_provider_upstream_parity as p
+          manifest=json.loads(Path('manifest.json').read_text());local={str(r['id']).lower():r for r in manifest['scrapers']}
+          cases={
+            'animevostfr':[
+              {'tmdbId':'1061474','mediaType':'movie','title':'Superman','year':2025},
+              {'tmdbId':'95479','mediaType':'anime','category':'anime','title':'Jujutsu Kaisen','year':2020,'season':1,'episode':1},
+            ],
+            'kurage':[{'tmdbId':'94664','mediaType':'anime','category':'anime','title':'Mushoku Tensei: Jobless Reincarnation','year':2021,'season':1,'episode':1}],
+            'voiranime':[{'tmdbId':'475557','mediaType':'movie','title':'Joker','year':2019}],
+          }
+          um=json.load(urllib.request.urlopen(urllib.request.Request('https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/manifest.json',headers={'User-Agent':'NiakVIO-Identity/1'}),timeout=30));ups={str(r['id']).lower():r for r in um['scrapers']}
+          def execute(path,fixture,upstream):
+              f=dict(fixture)
+              if upstream and f.get('mediaType')=='anime': f['mediaType']='tv';f['type']='tv';f.pop('category',None)
+              cp=subprocess.run(['node','scripts/provider_worker.cjs',str(path),json.dumps(f,separators=(',',':')),json.dumps(p.context_for(fixture),separators=(',',':'))],capture_output=True,text=True,timeout=95)
+              out={}
+              for line in cp.stdout.splitlines():
+                  if line.startswith('NUVIO_HEALTH_RESULT='):
+                      try:out=json.loads(line.split('=',1)[1])
+                      except:pass
+              return out
+          def clean(r):
+              rows=[]
+              for x in r.get('network_observations') or []:
+                  if not isinstance(x,dict):continue
+                  rows.append({k:x.get(k) for k in ('host','method','path_pattern','status','proof_url','proof_body_values','stage','content_type') if x.get(k) is not None})
+              return {'count':r.get('stream_count'),'raw':r.get('raw_stream_count'),'network':rows}
+          with tempfile.TemporaryDirectory() as td:
+              td=Path(td)
+              for pid,fixtures in cases.items():
+                  row=ups[pid];url=urllib.parse.urljoin('https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/',row['filename']);up=td/(pid+'.js');up.write_bytes(urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'NiakVIO-Identity/1'}),timeout=30).read())
+                  for f in fixtures:
+                      print('IDENTITY_UP '+pid+'|'+f['title']+' '+json.dumps(clean(execute(up,f,True)),sort_keys=True))
+                      print('IDENTITY_LOCAL '+pid+'|'+f['title']+' '+json.dumps(clean(execute(Path(local[pid]['filename']),f,False)),sort_keys=True))
+          PY
+
+  mugi-structure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: fix/labs-5.21.44-20260912}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Inspect One Punch Man animeServer source matrix
+        run: |
+          node <<'JS'
+          const UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145 Safari/537.36';
+          function pushContent(html){let marker='self.__next_f.push([1,"',chunks=[],pos=0;while(true){let start=html.indexOf(marker,pos);if(start<0)break;let i=start+marker.length,out='',esc=false;while(i<html.length){let ch=html[i];if(esc){if(ch==='n')out+='\n';else if(ch==='t')out+='\t';else if(ch==='r')out+='\r';else if(ch==='\\')out+='\\';else if(ch==='"')out+='"';else if(ch==='/')out+='/';else if(ch==='u'&&i+4<html.length){out+=String.fromCharCode(parseInt(html.slice(i+1,i+5),16));i+=4}else out+=ch;esc=false;i++;continue}if(ch==='\\'){esc=true;i++;continue}if(ch==='"'&&html.slice(i+1,i+3)==='])')break;out+=ch;i++}if(out)chunks.push(out);pos=i+1}return chunks.join('')}
+          function animeServer(html){let all=pushContent(html),mark='"animeServer":',idx=all.indexOf(mark);if(idx<0)return null;let st=all.indexOf('{',idx+mark.length);if(st<0)return null;let depth=0,str=false,esc=false,end=-1;for(let i=st;i<all.length;i++){let ch=all[i];if(esc){esc=false;continue}if(ch==='\\'&&str){esc=true;continue}if(ch==='"'){str=!str;continue}if(str)continue;if(ch==='{')depth++;else if(ch==='}'){depth--;if(depth===0){end=i+1;break}}}try{return JSON.parse(all.slice(st,end))}catch(e){console.log('MUGI_PARSE_ERROR',e.message);return null}}
+          const headers={'User-Agent':UA,'Accept-Language':'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7'};
+          let r=await fetch('https://www.mugiwara-no-streaming.com/catalogue/one-punch-man/episodes/saison1',{headers});let html=await r.text();let data=animeServer(html);console.log('MUGI_PAGE',r.status,html.length,!!data);
+          if(data&&data.options){let seasons=data.options.saisons;console.log('MUGI_SEASONS_TYPE',typeof seasons,Array.isArray(seasons),typeof seasons==='string'?seasons.slice(0,120):'');try{if(typeof seasons==='string')seasons=JSON.parse(seasons)}catch{};if(Array.isArray(seasons)){for(const s of seasons.slice(0,4)){let summary={id:s&&s.id,notASeason:s&&s.notASeason,langs:{}};for(const [lang,arr] of Object.entries(s?.lang||{})){summary.langs[lang]=(Array.isArray(arr)?arr:[]).map((src,i)=>({i,len:Array.isArray(src)?src.length:null,ep1:Array.isArray(src)&&src[0]?String(src[0]).replace(/([?&](?:token|t|e|sig|signature)=)[^&]+/gi,'$1<redacted>'):null}));}console.log('MUGI_SEASON',JSON.stringify(summary));}}
+          }
+          JS
