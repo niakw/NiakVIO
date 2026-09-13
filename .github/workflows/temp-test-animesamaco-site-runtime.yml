@@ -1,0 +1,47 @@
+name: TEMP - Test AnimeSamaCo site runtime
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-test-animesamaco-site-runtime.yml]
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NUVIO_PROVIDER_V3_CONTEXT: workspace
+  NIAKVIO_PROVIDER_V3_FINAL_MINIMIZE: '0'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Bind AnimeSamaCo current-site runtime
+        run: |
+          python scripts/upgrade_papa_asco_site_runtime_v1.py animesama-co
+          python scripts/materialize_provider_v3_one.py animesama-co
+          python scripts/audit_provider_v3_static.py
+      - name: Probe exact anime and movie fixtures
+        run: |
+          python - <<'PY'
+          import json,sys
+          sys.path.insert(0,'scripts');import run_provider_upstream_parity as p
+          fixtures=[
+            {'tmdbId':'45782','mediaType':'anime','category':'anime','title':'Sword Art Online','year':2012,'season':1,'episode':1},
+            {'tmdbId':'1233413','mediaType':'movie','title':'Sinners','year':2025},
+          ]
+          cat=p.local_catalog()
+          for f in fixtures:
+              r=p.run_worker(cat['animesama-co']['path'],f,65)
+              print('ANIMESAMACO_SITE_EXACT '+json.dumps({'fixture':f['title'],'streams':r.get('stream_count'),'raw':r.get('raw_stream_count'),'statuses':r.get('http_statuses'),'accessible':r.get('server_accessible'),'success':r.get('server_success'),'error':r.get('error_class'),'timeout':r.get('timeout')},sort_keys=True))
+          PY
