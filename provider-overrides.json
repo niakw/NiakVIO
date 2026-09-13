@@ -11457,8 +11457,8 @@
       "official_site": "https://nextgencloudfabric.com",
       "official_api": "https://streamdata.vaplayer.ru",
       "learned_routes": [
-        "/api.php?tmdb={id}&type={media}",
-        "/api.php"
+        "/api.php?tmdb={tmdbId}&type=movie",
+        "/api.php?tmdb={tmdbId}&type=tv&season={season}&episode={episode}"
       ],
       "identity_input": {
         "mode": "tmdb_direct",
@@ -11655,7 +11655,8 @@
             "referer": "https://nextgencloudfabric.com/",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "recipeKind": "typed-resolver-api"
       },
       "manifest_overrides": {
         "enabled": true
@@ -11700,6 +11701,42 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "api_recipe": {
+        "proofModelVersion": 5,
+        "allowGenericFallback": false,
+        "movieRoute": "https://streamdata.vaplayer.ru/api.php?tmdb={tmdbId}&type=movie",
+        "movieRequest": {
+          "method": "GET",
+          "headers": {
+            "accept-language": "fr-FR,fr,en-US,en",
+            "origin": "https://nextgencloudfabric.com",
+            "referer": "https://nextgencloudfabric.com/",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+          }
+        },
+        "episodeRoute": "https://streamdata.vaplayer.ru/api.php?tmdb={tmdbId}&type=tv&season={season}&episode={episode}",
+        "episodeRequest": {
+          "method": "GET",
+          "headers": {
+            "accept-language": "fr-FR,fr,en-US,en",
+            "origin": "https://nextgencloudfabric.com",
+            "referer": "https://nextgencloudfabric.com/",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+          }
+        },
+        "base": "https://streamdata.vaplayer.ru",
+        "directRoute": "/api.php?tmdb={tmdbId}&type=movie",
+        "directRequest": {
+          "method": "GET",
+          "headers": {
+            "accept-language": "fr-FR,fr,en-US,en",
+            "origin": "https://nextgencloudfabric.com",
+            "referer": "https://nextgencloudfabric.com/",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+          }
+        },
+        "recipeKind": "typed-resolver-api"
       }
     },
     "sekai": {
