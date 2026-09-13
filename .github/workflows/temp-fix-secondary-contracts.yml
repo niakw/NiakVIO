@@ -118,6 +118,10 @@ jobs:
 
           renderer=Path('engine_v2/src/provider-catalog.mjs')
           text=renderer.read_text(encoding='utf-8')
+          logo_old='  const byId = new Map(catalog.providers.map((row) => [row.canonicalId, row]));\n  let applied = 0;\n  for (const [rawId, logo] of Object.entries(indexed)) {\n    if (!logo || typeof logo !== "object") continue;\n    const canonicalId = canonicalProviderId(rawId);\n    const row = byId.get(canonicalId);\n    if (!row) throw new Error(`provider logo index references unknown provider: ${rawId}`);'
+          logo_new='  const byId = new Map(catalog.providers.map((row) => [row.canonicalId, row]));\n  const indexedIds = new Set(Object.keys(indexed).map((value) => canonicalProviderId(value)));\n  const missing = [...byId.keys()].filter((id) => !indexedIds.has(id));\n  if (missing.length) throw new Error(`provider logo coverage mismatch: missing=${missing.join(",")}`);\n  let applied = 0;\n  for (const [rawId, logo] of Object.entries(indexed)) {\n    if (!logo || typeof logo !== "object") continue;\n    const canonicalId = canonicalProviderId(rawId);\n    const row = byId.get(canonicalId);\n    // Historical committed assets may outlive executable Hub membership.\n    if (!row) continue;'
+          if logo_old not in text: raise SystemExit('logo binder contract token missing')
+          text=text.replace(logo_old,logo_new)
           pattern=re.compile(r'  if \(semantic\.includes\("anime"\)\) \{.*?\n  \} else \{\n    delete copy\.canonicalSupportedTypes;\n  \}',re.S)
           replacement=(
               '  const aliases = [];\n'
