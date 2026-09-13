@@ -1,0 +1,75 @@
+name: TEMP - Hard trio terminal fingerprint
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-hardtrio-terminal-fingerprint.yml]
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  fingerprint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Exact upstream/local terminal fingerprints
+        run: |
+          python - <<'PY'
+          import json,subprocess,tempfile,urllib.request,urllib.parse,sys
+          from pathlib import Path
+          sys.path.insert(0,'scripts')
+          import run_provider_upstream_parity as base
+          import audit_upstream_stream_fingerprints_v1 as fp
+          manifest=json.loads(Path('manifest.json').read_text()); local={str(r['id']).lower():r for r in manifest['scrapers']}
+          sources={
+            'animevostfr':('Gowaru/gowaru-nuvio-providers','main','providers/animevostfr.js'),
+            'kurage':('NuvioPlugin/All-in-One-Nuvio','main','providers/kurage.js'),
+            'voiranime':('Gowaru/gowaru-nuvio-providers','main','providers/voiranime.js'),
+          }
+          fixtures={
+            'animevostfr':[
+              {'tmdbId':'1061474','mediaType':'movie','title':'Superman','year':2025},
+              {'tmdbId':'95479','mediaType':'anime','category':'anime','title':'Jujutsu Kaisen','year':2020,'season':1,'episode':1},
+            ],
+            'kurage':[{'tmdbId':'114868','mediaType':'anime','category':'anime','title':'Record of Ragnarok','year':2021,'season':1,'episode':1}],
+            'voiranime':[{'tmdbId':'475557','mediaType':'movie','title':'Joker','year':2019}],
+          }
+          def rawurl(repo,branch,path): return 'https://raw.githubusercontent.com/'+repo+'/'+branch+'/'+path
+          def run(path,f,up):
+              actual=dict(f)
+              if up and actual.get('mediaType')=='anime': actual['mediaType']='tv';actual['type']='tv';actual.pop('category',None)
+              cp=subprocess.run(['node','scripts/provider_worker.cjs',str(path),json.dumps(actual,separators=(',',':')),json.dumps(base.context_for(f),separators=(',',':'))],capture_output=True,text=True,timeout=80)
+              res={}
+              for line in cp.stdout.splitlines():
+                  if line.startswith('NUVIO_HEALTH_RESULT='):
+                      try:res=json.loads(line.split('=',1)[1])
+                      except:pass
+              return res
+          def shapes(res):
+              out=[]
+              for st in res.get('streams') or []:
+                  if isinstance(st,dict):
+                      z=fp.fingerprint_stream(st)
+                      if z and z not in out:out.append(z)
+              return out
+          with tempfile.TemporaryDirectory() as td:
+              td=Path(td)
+              for pid,(repo,branch,path) in sources.items():
+                  upath=td/(pid+'.js'); req=urllib.request.Request(rawurl(repo,branch,path),headers={'User-Agent':'NiakVIO-Terminal/1'});upath.write_bytes(urllib.request.urlopen(req,timeout=30).read())
+                  lpath=Path(local[pid]['filename'])
+                  for f in fixtures[pid]:
+                      ur=run(upath,f,True);lr=run(lpath,f,False)
+                      print('HARD_TERMINAL '+pid+' '+json.dumps({'fixture':f['title'],'upstream':{'count':ur.get('stream_count'),'raw':ur.get('raw_stream_count'),'statuses':ur.get('provider_server_http_statuses'),'shapes':shapes(ur)},'niak':{'count':lr.get('stream_count'),'raw':lr.get('raw_stream_count'),'statuses':lr.get('provider_server_http_statuses'),'shapes':shapes(lr)}},sort_keys=True))
+          PY
