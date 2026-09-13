@@ -1,0 +1,53 @@
+name: TEMP - Android Hub46 explicit paths v1
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-android-hub46-explicit-paths-v1.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply explicit Hub46 paths and validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_android_native_hub46_explicit_paths_v1.py
+          python3 tests/native_hub46_transport_manifest_test.py
+          python3 tests/native_adaptive_catalog_contract_test.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('.github/workflows/native-mobile-android-reader.yml')
+          t=p.read_text()
+          assert '--manifest manifest.json' not in t
+          assert 'NIAKVIO_TARGET_MANIFEST: manifest.json' not in t
+          assert '--manifest niakvio/manifest.json' not in t
+          assert t.count('native-hub46/manifest.json') >= 6
+          print('ANDROID_WORKFLOW_HUB46_EXPLICIT_OK count=', t.count('native-hub46/manifest.json'))
+          PY
+      - name: Commit validated workflow wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/native-mobile-android-reader.yml
+          if git diff --cached --quiet; then echo 'No workflow changes'; exit 0; fi
+          git commit -m 'fix(labs): point Android acceptance explicitly at physical Hub-46 manifest'
+          git fetch origin fix/labs-5.21.44-20260912
+          git rebase origin/fix/labs-5.21.44-20260912
+          git push origin HEAD:fix/labs-5.21.44-20260912
