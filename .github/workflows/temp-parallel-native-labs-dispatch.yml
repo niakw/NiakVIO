@@ -1,4 +1,4 @@
-name: TEMP - Fix Rotating Native Consumers and Retry Desktop
+name: TEMP - Dispatch Unified Fixed Hub46 Native Labs
 
 on:
   push:
@@ -7,12 +7,12 @@ on:
 
 permissions:
   actions: write
-  contents: write
+  contents: read
 
 jobs:
-  patch-test-dispatch:
+  validate-dispatch:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     env:
       REF: fix/labs-5.21.44-20260912
       NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json
@@ -21,43 +21,35 @@ jobs:
         with:
           ref: fix/labs-5.21.44-20260912
           fetch-depth: 2
+          persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Apply rotating native fixture consumer fixes
+      - name: Validate unified rotating Hub-46 head
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m py_compile scripts/temp_fix_rotating_fixture_consumers.py
-          python3 scripts/temp_fix_rotating_fixture_consumers.py
-      - name: Validate rotating native consumers
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 -m py_compile scripts/rotating_corpus.py scripts/prepare_native_reader_acceptance.py scripts/augment_native_corpus_request_contract.py
+          python3 tests/workflow_security_policy_test.py
           python3 tests/native_rotating_fixture_consumers_test.py
           python3 tests/native_hub46_scope_contract_test.py
           python3 tests/rotating_corpus_test.py
           python3 tests/native_provider_resample_status_test.py
-          python3 tests/workflow_security_policy_test.py
+          python3 tests/provider_upstream_parity_v3_test.py
           node tests/streamflix_timerless_runtime_test.cjs
-      - name: Commit consumer fixes
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add scripts/prepare_native_reader_acceptance.py scripts/augment_native_corpus_request_contract.py
-          git diff --cached --check
-          git commit -m "fix(labs): resolve rotating fixtures in all native consumers"
-          git push origin HEAD:"$REF"
-      - name: Dispatch fresh Desktop Hub-46 Lab
+          bash -n scripts/run_native_corpus_desktop_suite.sh
+          bash -n scripts/run_native_corpus_mobile_suite.sh
+          bash -n scripts/run_native_corpus_tv_suite.sh
+      - name: Dispatch all exact Hub-46 native acceptance workflows
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
         shell: bash
         run: |
           set -euo pipefail
-          gh workflow run native-desktop-reader-acceptance.yml --repo "$REPO" --ref "$REF"
-          echo "FIELD_DESKTOP_HUB46_RETRY_DISPATCHED providers=46 rotating=true ref=$REF"
+          HEAD="$(git rev-parse HEAD)"
+          echo "FIELD_UNIFIED_HUB46_HEAD sha=$HEAD providers=46"
+          for wf in native-desktop-reader-acceptance.yml native-mobile-android-reader.yml native-mobile-ios-reader.yml; do
+            gh workflow run "$wf" --repo "$REPO" --ref "$HEAD"
+          done
+          echo "FIELD_UNIFIED_HUB46_NATIVE_LABS_DISPATCHED workflows=3 platforms=5 providers=46 sha=$HEAD"
