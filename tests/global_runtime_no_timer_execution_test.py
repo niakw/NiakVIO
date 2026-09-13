@@ -9,12 +9,14 @@ host runtime exposes neither function.
 from __future__ import annotations
 
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts" / "provider_patches"))
 
-from scripts.provider_patches import global_runtime_compat_v1  # type: ignore
+import global_runtime_compat_v1  # type: ignore  # noqa: E402
 
 BASE_PROVIDER = r'''
 async function getStreams() {
