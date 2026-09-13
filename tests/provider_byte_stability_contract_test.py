@@ -17,17 +17,22 @@ assert BYTE_STABILITY_VERSION == "raw-v1"
 assert not (ROOT / "engine_v2/scripts/purify-provider.mjs").exists()
 assert not (ROOT / "engine_v2/scripts/terser-clean.mjs").exists()
 
-# Critical publication/runtime paths must contain no Terser implementation or
-# metadata. Provider optimization stays disabled until runtime is stable.
+# Terser/generic formatter ownership must stay absent from publication/runtime
+# paths. Production Provider v3 minimization is owned exclusively by the
+# conservative scripts/provider_v3_minimizer.py fixed-point contract; this raw
+# byte-stability helper still guarantees that already-owned provider/Core regions
+# are never silently rewritten by legacy purification code.
 critical_paths = (
     ROOT / "scripts/provider_byte_stability.py",
     ROOT / "scripts/reapply_published_overrides.py",
     ROOT / "scripts/verify_provider_publication_fixed_point.py",
     ROOT / "scripts/run_adaptive_deep_repair.py",
     ROOT / "scripts/verify_native_reader_repair.py",
-    ROOT / ".github/workflows/core-media-finalize-main.yml",
+    ROOT / ".github/workflows/sync.yml",
+    ROOT / ".github/workflows/release-finalize.yml",
 )
 for path in critical_paths:
+    assert path.is_file(), f"current critical publication/runtime path missing: {path.relative_to(ROOT)}"
     text = path.read_text(encoding="utf-8")
     assert "terser" not in text.casefold(), path.relative_to(ROOT)
 
