@@ -1,5 +1,6 @@
 name: TEMP - trace Kurage upstream contract
 
+# corrected exact full32 fixture id
 on:
   push:
     branches:
@@ -28,11 +29,9 @@ jobs:
           curl -fsSL https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/main/providers/kurage.js -o /tmp/kurage-upstream.js
           node <<'NODE'
           const nativeFetch=globalThis.fetch.bind(globalThis);
-          const logs=[];
           globalThis.fetch=async function(input,init={}){
             const url=typeof input==='string'?input:String(input&&input.url||input);
-            const row={url,method:String(init&&init.method||'GET'),headers:init&&init.headers||{},body:typeof init?.body==='string'?init.body.slice(0,4000):null};
-            logs.push(row);
+            const row={url,method:String(init&&init.method||'GET'),headers:init&&init.headers||{},body:typeof init?.body==='string'?init.body.slice(0,6000):null};
             console.log('KURAGE_TRACE_REQUEST '+JSON.stringify(row));
             const res=await nativeFetch(input,init);
             console.log('KURAGE_TRACE_RESPONSE '+JSON.stringify({url,status:res.status,type:res.headers.get('content-type')}));
@@ -42,8 +41,8 @@ jobs:
           const fn=mod.getStreams||globalThis.getStreams;
           if(typeof fn!=='function') throw new Error('getStreams missing');
           (async()=>{
-            // TMDB 252322 = High School of the Dead (TV); parity uses anime alias -> tv upstream.
-            let rows=await fn('252322','tv',1,1);
+            // Exact full32 fixture: High School of the Dead, TMDB TV 56998, S01E01.
+            const rows=await fn('56998','tv',1,1);
             console.log('KURAGE_TRACE_RESULT '+JSON.stringify({count:Array.isArray(rows)?rows.length:-1,rows:(rows||[]).slice(0,3)}));
           })().catch(e=>{console.error(e&&e.stack||e);process.exit(1)});
           NODE
