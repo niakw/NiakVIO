@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-13T13:21:18.658772+00:00",
+  "generated_at": "2026-09-13T18:50:25.638586+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 96,
   "status_counts": {
-    "healthy": 0,
+    "healthy": 2,
     "reachable": 1,
-    "blocked": 11,
-    "degraded": 1,
-    "no_streams": 37,
-    "provider_unreachable": 36,
+    "blocked": 13,
+    "degraded": 0,
+    "no_streams": 34,
+    "provider_unreachable": 37,
     "runtime_error": 0,
-    "unavailable": 10,
+    "unavailable": 9,
     "excluded": 0
   },
   "policy": {
@@ -1627,7 +1627,7 @@
     },
     {
       "id": "kehflix",
-      "status": "provider_unreachable",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2145,7 +2145,7 @@
     },
     {
       "id": "animesalt",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3006,7 +3006,7 @@
     },
     {
       "id": "moviesmod",
-      "status": "unavailable",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3301,7 +3301,7 @@
     },
     {
       "id": "papadustream",
-      "status": "no_streams",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3912,34 +3912,47 @@
     },
     {
       "id": "vidrock",
-      "status": "degraded",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "moonfirekeeper.lol"
+      ],
       "response_categories": [
-        "endpoint_reachable"
+        "playable"
       ],
       "host_health": {
         "cdn1.ngcorp.dad": {
-          "last_checked_at": "2026-09-12T22:22:33.957414+00:00",
-          "last_category": "endpoint_reachable",
+          "last_checked_at": "2026-09-13T18:50:25.638586+00:00",
+          "last_category": "not_returned",
           "reachable": false,
-          "http_status": 200,
-          "latency_ms": 486,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "hls",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
         "dreadnought.flamingo-e55.workers.dev": {
-          "last_checked_at": "2026-09-12T18:28:03.837779+00:00",
+          "last_checked_at": "2026-09-13T18:50:25.638586+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "hls",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "moonfirekeeper.lol": {
+          "last_checked_at": "2026-09-13T18:50:25.638586+00:00",
           "last_category": "playable",
           "reachable": true,
-          "http_status": 200,
-          "latency_ms": 434,
+          "http_status": 206,
+          "latency_ms": 456,
           "kind": "hls",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 1,
@@ -3951,7 +3964,7 @@
     },
     {
       "id": "voiranime",
-      "status": "no_streams",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -4421,17 +4434,21 @@
     },
     {
       "id": "frenchstream",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "u14.vidzy.cc"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "r1.fsvid.lol": {
-          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
+          "last_checked_at": "2026-09-13T18:50:25.638586+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -4442,7 +4459,7 @@
           "consecutive_blocked": 0
         },
         "static.cloudflareinsights.com": {
-          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
+          "last_checked_at": "2026-09-13T18:50:25.638586+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -4453,7 +4470,7 @@
           "consecutive_blocked": 0
         },
         "french-stream.one": {
-          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
+          "last_checked_at": "2026-09-13T18:50:25.638586+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -4464,7 +4481,7 @@
           "consecutive_blocked": 0
         },
         "s1.fsvid.lol": {
-          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
+          "last_checked_at": "2026-09-13T18:50:25.638586+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -4475,7 +4492,7 @@
           "consecutive_blocked": 0
         },
         "strm2.uqload.is": {
-          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
+          "last_checked_at": "2026-09-13T18:50:25.638586+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -4486,18 +4503,18 @@
           "consecutive_blocked": 0
         },
         "u14.vidzy.cc": {
-          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
+          "last_checked_at": "2026-09-13T18:50:25.638586+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 495,
+          "latency_ms": 348,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 2,
           "consecutive_blocked": 0
         },
         "v6.vidzy.cc": {
-          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
+          "last_checked_at": "2026-09-13T18:50:25.638586+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -4508,7 +4525,7 @@
           "consecutive_blocked": 0
         },
         "strm4.uqload.is": {
-          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
+          "last_checked_at": "2026-09-13T18:50:25.638586+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -4519,7 +4536,7 @@
           "consecutive_blocked": 0
         },
         "strm8.uqload.is": {
-          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
+          "last_checked_at": "2026-09-13T18:50:25.638586+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -4665,7 +4682,7 @@
     },
     {
       "id": "moviebox",
-      "status": "provider_unreachable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
