@@ -36,46 +36,62 @@ jobs:
 
           path = Path('providers/streamflix.js')
           text = path.read_text(encoding='utf-8')
+          lines = text.splitlines()
 
-          old_timeout = """    const overallTimeout = setTimeout(() => {
-              try { ws.close(); } catch {}
-              reject(new Error('WebSocket timeout'));
-            }, 30000);
-          """
-          new_timeout = """    const overallTimeout = typeof setTimeout === 'function'
-              ? setTimeout(() => {
-                  try { ws.close(); } catch {}
-                  reject(new Error('WebSocket timeout'));
-                }, 30000)
-              : null;
+          clear_count = 0
+          for index, line in enumerate(lines):
+              if line.strip() == 'clearTimeout(overallTimeout);':
+                  indent = line[:len(line) - len(line.lstrip())]
+                  lines[index] = indent + 'clearOverallTimeout();'
+                  clear_count += 1
+          if clear_count != 3:
+              raise SystemExit(f'expected exactly three direct Streamflix clearTimeout calls, got {clear_count}')
 
-            function clearOverallTimeout() {
-              if (overallTimeout !== null && typeof clearTimeout === 'function') {
-                clearTimeout(overallTimeout);
-              }
-            }
-          """
+          timeout_indexes = [
+              index for index, line in enumerate(lines)
+              if line.strip() == 'const overallTimeout = setTimeout(() => {'
+          ]
+          if len(timeout_indexes) != 1:
+              raise SystemExit(f'expected exactly one direct Streamflix setTimeout block, got {len(timeout_indexes)}')
 
-          if text.count(old_timeout) != 1:
-              raise SystemExit(f'expected exactly one direct Streamflix timeout block, got {text.count(old_timeout)}')
-          text = text.replace(old_timeout, new_timeout, 1)
+          index = timeout_indexes[0]
+          indent = lines[index][:len(lines[index]) - len(lines[index].lstrip())]
+          expected_tail = [
+              'try { ws.close(); } catch {}',
+              "reject(new Error('WebSocket timeout'));",
+              '}, 30000);',
+          ]
+          actual_tail = [lines[index + offset].strip() for offset in range(1, 4)]
+          if actual_tail != expected_tail:
+              raise SystemExit(f'unexpected Streamflix timeout block tail: {actual_tail!r}')
 
-          direct_clear = '                clearTimeout(overallTimeout);'
-          if text.count(direct_clear) != 1:
-              raise SystemExit(f'expected one indented success clearTimeout, got {text.count(direct_clear)}')
-          text = text.replace(direct_clear, '                clearOverallTimeout();', 1)
+          replacement = [
+              indent + "const overallTimeout = typeof setTimeout === 'function'",
+              indent + '  ? setTimeout(() => {',
+              indent + '      try { ws.close(); } catch {}',
+              indent + "      reject(new Error('WebSocket timeout'));",
+              indent + '    }, 30000)',
+              indent + '  : null;',
+              '',
+              indent + 'function clearOverallTimeout() {',
+              indent + "  if (overallTimeout !== null && typeof clearTimeout === 'function') {",
+              indent + '    clearTimeout(overallTimeout);',
+              indent + '  }',
+              indent + '}',
+          ]
+          lines[index:index + 4] = replacement
+          patched = '\n'.join(lines) + '\n'
 
-          direct_clear = '      clearTimeout(overallTimeout);'
-          if text.count(direct_clear) != 2:
-              raise SystemExit(f'expected two handler clearTimeout calls, got {text.count(direct_clear)}')
-          text = text.replace(direct_clear, '      clearOverallTimeout();')
+          if 'const overallTimeout = setTimeout(() => {' in patched:
+              raise SystemExit('unguarded Streamflix setTimeout remains')
+          if patched.count('clearTimeout(overallTimeout);') != 1:
+              raise SystemExit('expected only the guarded clearTimeout implementation to remain')
+          if "typeof setTimeout === 'function'" not in patched or "typeof clearTimeout === 'function'" not in patched:
+              raise SystemExit('timer capability guards missing after patch')
 
-          path.write_text(text, encoding='utf-8')
+          path.write_text(patched, encoding='utf-8')
           PY
           node --check providers/streamflix.js
-          if grep -nE '(^|[^[:alnum:]_])setTimeout\(|(^|[^[:alnum:]_])clearTimeout\(' providers/streamflix.js | grep -v "typeof"; then
-            echo "Direct timer call audit shown above; verifying only guarded implementation remains"
-          fi
 
       - name: Add and execute timerless Streamflix regression test
         shell: bash
@@ -166,7 +182,7 @@ jobs:
             assert.doesNotMatch(websocketFailure, /setTimeout is not defined|clearTimeout is not defined|ReferenceError/);
             assert.equal(errors.some(line => /setTimeout is not defined|clearTimeout is not defined/.test(line)), false);
 
-            console.log('PASS streamflix timerless runtime: no timer globals -> normal WebSocket fallback, no ReferenceError');
+            process.stdout.write('PASS streamflix timerless runtime: normal WebSocket fallback, no timer ReferenceError\n');
           })().catch(error => {
             console.error(error);
             process.exitCode = 1;
@@ -183,7 +199,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add providers/streamflix.js tests/streamflix_timerless_runtime_test.cjs
           git diff --cached --check
-          git diff --cached --exit-code && { echo 'No Streamflix changes to commit'; exit 1; } || true
+          if git diff --cached --quiet; then
+            echo 'No Streamflix changes to commit' >&2
+            exit 1
+          fi
           git commit -m "fix(streamflix): tolerate missing desktop timer globals"
           git push origin HEAD:"$REF"
           echo "STREAMFLIX_FIX_SHA=$(git rev-parse HEAD)"
