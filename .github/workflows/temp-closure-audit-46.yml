@@ -17,47 +17,26 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
-
-      - name: Prove public Wikidata TMDB to IMDb bridge
-        shell: bash
-        run: |
-          set -euo pipefail
-          node - <<'NODE'
-          const UA='NiakVIO/5.21.44 contact=https://github.com/niakw/NiakVIO';
-          async function resolve(tmdb,type){
-            const prop=type==='movie'?'P4947':'P4983';
-            const q=`SELECT ?imdb WHERE { ?item wdt:${prop} "${tmdb}"; wdt:P345 ?imdb. } LIMIT 3`;
-            const url='https://query.wikidata.org/sparql?format=json&query='+encodeURIComponent(q);
-            const started=Date.now();
-            const r=await fetch(url,{headers:{'User-Agent':UA,'Accept':'application/sparql-results+json'},signal:AbortSignal.timeout(7000)});
-            const j=await r.json();const ids=(j?.results?.bindings||[]).map(x=>x?.imdb?.value).filter(x=>/^tt\d+$/.test(String(x)));
-            console.log('FIELD_WIKIDATA_IMDB type='+type+' tmdb='+tmdb+' status='+r.status+' imdb='+ids.join(',')+' duration_ms='+(Date.now()-started));
-            if(!ids.length)throw Error('missing imdb '+type+' '+tmdb);return ids[0];
-          }
-          (async()=>{const a=await resolve('157336','movie'),b=await resolve('1396','tv');if(a!=='tt0816692'||b!=='tt0903747')throw Error('identity mismatch '+a+' '+b);console.log('FIELD_HIND_IDENTITY_BRIDGE status=positive movie='+a+' tv='+b+' secret=false')})().catch(e=>{console.error(e);process.exit(1)});
-          NODE
-
-      - name: Prove current HindMoviez chain endpoints
+      - name: Resolve current HindMoviez signed-player chain
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
           const UA='Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 Chrome/124 Mobile Safari/537.36';
-          async function text(url,opt={}){const r=await fetch(url,{...opt,redirect:'follow',headers:{'User-Agent':UA,'Accept':'text/html,application/xhtml+xml,application/json,*/*','Referer':opt.referer||'https://hindmovie.fit/'},signal:AbortSignal.timeout(7000)});return {r,t:await r.text()}}
-          function urls(s,re){return [...String(s).replace(/\\\//g,'/').matchAll(re)].map(x=>x[0])}
-          function b64url(s){return Buffer.from(s).toString('base64url')}
+          async function fetchT(url,opt={}){const r=await fetch(url,{...opt,redirect:'follow',headers:{'User-Agent':UA,'Accept':opt.accept||'text/html,application/xhtml+xml,application/json,*/*','Referer':opt.referer||'https://hindmovie.fit/',...(opt.headers||{})},signal:AbortSignal.timeout(7000)});return{r,t:await r.text()}}
+          function links(s){return [...String(s).replace(/\\\//g,'/').matchAll(/https?:\/\/[^\s"'<>\\]+/gi)].map(x=>x[0])}
           async function one(imdb,type,se,ep){
-            const api=await text('https://hindmovie.icu/wp-json/wp/v2/posts?search='+encodeURIComponent(imdb)+'&per_page=100');let rows=[];try{rows=JSON.parse(api.t)}catch{};const raw=JSON.stringify(rows);let mv=urls(raw,/https?:\/\/mvlink\.blog\/(?:web\/)?\d+/gi);mv=[...new Set(mv)].filter(u=>type==='tv'?/\/web\//i.test(u):!/\/web\//i.test(u));
-            console.log('FIELD_HIND_CHAIN type='+type+' stage=catalog status='+api.r.status+' rows='+rows.length+' mv='+mv.length);if(!mv.length)throw Error('no mv '+type);
-            const page=await text(mv[0],{referer:'https://hindmovie.fit/'});const tag=new RegExp('S0*'+se+'E0*'+ep+'(?:[^0-9]|$)','i');let names=[...page.t.matchAll(/[A-Za-z0-9._+()\[\] -]{12,260}\.(?:mkv|mp4|avi)/gi)].map(x=>x[0].replace(/\s+/g,' '));if(type==='tv')names=names.filter(x=>tag.test(x));names=[...new Set(names)];console.log('FIELD_HIND_CHAIN type='+type+' stage=mv status='+page.r.status+' files='+names.length);if(!names.length)throw Error('no file '+type);
-            const body='action=hindshare_sign&d='+encodeURIComponent(b64url(names[0]));const sig=await fetch('https://mvlink.blog/wp-admin/admin-ajax.php',{method:'POST',headers:{'User-Agent':UA,'Referer':mv[0],'X-Requested-With':'XMLHttpRequest','Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Accept':'application/json,text/plain,*/*'},body,signal:AbortSignal.timeout(7000)});const st=await sig.text();let sj={};try{sj=JSON.parse(st)}catch{};const hs=String(sj?.data?.url||'');console.log('FIELD_HIND_CHAIN type='+type+' stage=sign status='+sig.status+' hshare='+Boolean(hs));if(!/^https?:\/\/hshare\.ink\//i.test(hs))throw Error('no hshare '+type);
-            const hp=await text(hs,{referer:mv[0]});const hc=urls(hp.t,/https?:\/\/hcloud\.ink\/[^\s"'<>\\]+/gi)[0]||'';console.log('FIELD_HIND_CHAIN type='+type+' stage=hshare status='+hp.r.status+' hcloud='+Boolean(hc));if(!hc)throw Error('no hcloud '+type);
-            const cp=await text(hc,{referer:hs});const final=urls(cp.t,/https?:\/\/[A-Za-z0-9.-]+\.workers\.dev\/[^\s"'<>\\]+/gi).filter(u=>/[?&]file=/i.test(u));console.log('FIELD_HIND_CHAIN type='+type+' stage=hcloud status='+cp.r.status+' direct='+final.length);if(!final.length)throw Error('no direct '+type);return final;
+            const a=await fetchT('https://hindmovie.icu/wp-json/wp/v2/posts?search='+imdb+'&per_page=100');const rows=JSON.parse(a.t);let mv=[...new Set(links(JSON.stringify(rows)).filter(x=>/mvlink\.blog\/(?:web\/)?\d+/i.test(x)))].filter(x=>type==='tv'?/\/web\//.test(x):!/\/web\//.test(x));if(!mv.length)throw Error('no mv');
+            const p=await fetchT(mv[0]);const tag=new RegExp('S0*'+se+'E0*'+ep+'(?:[^0-9]|$)','i');let names=[...p.t.matchAll(/[A-Za-z0-9._+()\[\] -]{12,260}\.(?:mkv|mp4|avi)/gi)].map(x=>x[0].replace(/\s+/g,' '));if(type==='tv')names=names.filter(x=>tag.test(x));names=[...new Set(names)];if(!names.length)throw Error('no name');
+            const d=Buffer.from(names[0]).toString('base64url');const sig=await fetch('https://mvlink.blog/wp-admin/admin-ajax.php',{method:'POST',headers:{'User-Agent':UA,'Referer':mv[0],'X-Requested-With':'XMLHttpRequest','Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','Accept':'application/json,text/plain,*/*'},body:'action=hindshare_sign&d='+encodeURIComponent(d),signal:AbortSignal.timeout(7000)});const st=await sig.text();let sj={};try{sj=JSON.parse(st)}catch{};const signed=String(sj?.data?.url||'');console.log('FIELD_HIND_SIGN type='+type+' status='+sig.status+' signed64='+Buffer.from(signed).toString('base64'));if(!/^https?:\/\//.test(signed))throw Error('no signed');
+            const s1=await fetchT(signed,{referer:mv[0]});const l1=links(s1.t);console.log('FIELD_HIND_SIGNED_PAGE type='+type+' status='+s1.r.status+' final='+s1.r.url+' links64='+Buffer.from(JSON.stringify(l1.slice(0,40))).toString('base64'));
+            let candidates=[...new Set(l1.filter(x=>/hcloud|workers\.dev|direct|redirect/i.test(x)))];if(!candidates.length)candidates=[s1.r.url];
+            for(const c of candidates.slice(0,8)){try{const z=await fetchT(c,{referer:signed});const zs=links(z.t);const direct=[...new Set(zs.filter(x=>/workers\.dev/i.test(x)||/[?&]file=/i.test(x)))];console.log('FIELD_HIND_CANDIDATE type='+type+' url64='+Buffer.from(c).toString('base64')+' status='+z.r.status+' final64='+Buffer.from(z.r.url).toString('base64')+' direct64='+Buffer.from(JSON.stringify(direct.slice(0,12))).toString('base64'));if(direct.length)return direct}catch(e){console.log('FIELD_HIND_CANDIDATE_ERROR type='+type+' url64='+Buffer.from(c).toString('base64')+' error='+String(e))}}
+            return [];
           }
-          (async()=>{const m=await one('tt0816692','movie',1,1);const t=await one('tt0903747','tv',1,1);console.log('FIELD_HIND_FULL_PROOF movie='+m.length+' tv='+t.length+' budget_ms=25000')})().catch(e=>{console.error('FIELD_HIND_FULL_ERROR',e);process.exit(1)});
+          (async()=>{const m=await one('tt0816692','movie',1,1),t=await one('tt0903747','tv',1,1);console.log('FIELD_HIND_DRIFT_PROOF movie='+m.length+' tv='+t.length);if(!m.length||!t.length)process.exit(2)})().catch(e=>{console.error(e);process.exit(1)});
           NODE
-
-      - name: Lock repaired core contracts
+      - name: Lock identity bridge and core contracts
         shell: bash
         run: |
           set -euo pipefail
