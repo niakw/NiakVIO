@@ -11,6 +11,7 @@ import argparse
 import hashlib
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -135,6 +136,12 @@ def classify_outcome(*, runtime_ok: bool, stream_count: int, runtime_error: bool
 
 
 def main() -> int:
+    # Windows TextIO defaults to CRLF. Git Bash command substitution/read keeps
+    # the carriage return, which corrupts fixture slugs and generated log names.
+    # Force the CLI transport to LF on every platform.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(newline="\n")
+
     parser = argparse.ArgumentParser(description="Select deterministic rotating NiakVIO catalogue fixtures")
     sub = parser.add_subparsers(dest="command", required=True)
 
