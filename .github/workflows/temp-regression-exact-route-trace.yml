@@ -1,0 +1,80 @@
+name: TEMP - Exact terminal regression trace
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-regression-exact-route-trace.yml]
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: fix/labs-5.21.44-20260912}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Trace exact regression routes
+        run: |
+          python - <<'PY'
+          import json,subprocess,tempfile,urllib.request,urllib.parse,sys
+          from pathlib import Path
+          sys.path.insert(0,'scripts');import run_provider_upstream_parity as p
+          manifest=json.loads(Path('manifest.json').read_text());local={str(r['id']).lower():r for r in manifest['scrapers']}
+          cases={
+            'mugiwarastream':[{'tmdbId':'63926','mediaType':'anime','category':'anime','title':'One Punch Man','year':2015,'season':1,'episode':1}],
+            'streamzo':[{'tmdbId':'240411','mediaType':'anime','category':'anime','title':'Dan Da Dan','year':2024,'season':1,'episode':1}],
+            'animesama-co':[
+              {'tmdbId':'1233413','mediaType':'movie','title':'Sinners','year':2025},
+              {'tmdbId':'45782','mediaType':'anime','category':'anime','title':'Sword Art Online','year':2012,'season':1,'episode':1},
+            ],
+            'voiranime-rip':[{'tmdbId':'62104','mediaType':'anime','category':'anime','title':'The Seven Deadly Sins','year':2014,'season':1,'episode':1}],
+          }
+          upstream_manifest=json.load(urllib.request.urlopen(urllib.request.Request('https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/manifest.json',headers={'User-Agent':'NiakVIO-Trace/2'}),timeout=30))
+          ups={str(r['id']).lower():r for r in upstream_manifest['scrapers']}
+          def execute(path,fixture,upstream):
+              f=dict(fixture)
+              if upstream and f.get('mediaType')=='anime': f['mediaType']='tv';f['type']='tv';f.pop('category',None)
+              cp=subprocess.run(['node','scripts/provider_worker.cjs',str(path),json.dumps(f,separators=(',',':')),json.dumps(p.context_for(fixture),separators=(',',':'))],capture_output=True,text=True,timeout=95)
+              result={}
+              for line in cp.stdout.splitlines():
+                  if line.startswith('NUVIO_HEALTH_RESULT='):
+                      try:result=json.loads(line.split('=',1)[1])
+                      except:pass
+              return result
+          def clean_obs(result):
+              rows=[]
+              for x in result.get('network_observations') or []:
+                  if not isinstance(x,dict): continue
+                  rows.append({k:x.get(k) for k in ('stage','host','method','path_pattern','status','ok','content_type','response_value_hints','error_code')})
+              return rows
+          def shapes(result):
+              out=[]
+              for s in result.get('streams') or []:
+                  if not isinstance(s,dict):continue
+                  u=str(s.get('url') or '')
+                  try:
+                      z=urllib.parse.urlsplit(u);out.append({'host':z.hostname,'path':z.path,'queryKeys':sorted(urllib.parse.parse_qs(z.query).keys()),'headerNames':sorted(str(k).lower() for k in (s.get('headers') or {}).keys())})
+                  except:pass
+              return out
+          with tempfile.TemporaryDirectory() as td:
+              td=Path(td)
+              for pid,fixtures in cases.items():
+                  row=ups[pid];url=urllib.parse.urljoin('https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/main/',row['filename'])
+                  up=td/(pid+'.js');up.write_bytes(urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'NiakVIO-Trace/2'}),timeout=30).read())
+                  lp=Path(local[pid]['filename'])
+                  for fixture in fixtures:
+                      ur=execute(up,fixture,True);lr=execute(lp,fixture,False)
+                      tag=pid+'|'+fixture['title']
+                      print('EXACT_UP '+tag+' '+json.dumps({'count':ur.get('stream_count'),'raw':ur.get('raw_stream_count'),'statuses':ur.get('provider_server_http_statuses'),'network':clean_obs(ur),'streams':shapes(ur)},sort_keys=True))
+                      print('EXACT_LOCAL '+tag+' '+json.dumps({'count':lr.get('stream_count'),'raw':lr.get('raw_stream_count'),'statuses':lr.get('provider_server_http_statuses'),'network':clean_obs(lr),'streams':shapes(lr)},sort_keys=True))
+          PY
