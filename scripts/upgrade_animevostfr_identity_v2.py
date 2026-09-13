@@ -14,6 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
+MANIFEST = ROOT / "manifest.json"
 RUNTIME = ROOT / "scripts" / "provider_patches" / "animevostfr_runtime_v1.py"
 SCRIPT = "scripts/provider_patches/animevostfr_runtime_v1.py"
 
@@ -36,6 +37,26 @@ def patch_runtime(text: str) -> str:
     text = text.replace('"semanticLanes": ["movie", "anime"]', '"semanticLanes": ["anime"]')
     text = text.replace('"runtimeFamily": "wordpress-toroplay-trembed-v1"', '"runtimeFamily": "wordpress-toroplay-trembed-identity-v2"')
     return text
+
+
+def project_manifest_anime_only() -> None:
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    rows = manifest.get("scrapers") or []
+    row = next(
+        (
+            item for item in rows
+            if isinstance(item, dict) and str(item.get("id") or "").strip().casefold() == "animevostfr"
+        ),
+        None,
+    )
+    if not isinstance(row, dict):
+        raise SystemExit("animevostfr manifest row missing")
+
+    # Canonical capability is anime only. Nuvio transport still needs tv/series
+    # aliases, but those aliases must never resurrect a semantic movie lane.
+    row["canonicalSupportedTypes"] = ["anime"]
+    row["supportedTypes"] = ["anime", "tv", "series"]
+    MANIFEST.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def main() -> int:
@@ -88,7 +109,8 @@ def main() -> int:
         "authority": "2026-09-13-upstream-output-integrity",
     }
     OVERRIDES.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"ANIMEVOSTFR_IDENTITY_V2_STAGED runtime_changed={after != before} published=anime movie=false")
+    project_manifest_anime_only()
+    print(f"ANIMEVOSTFR_IDENTITY_V2_STAGED runtime_changed={after != before} published=anime movie=false manifest_projected=true")
     return 0
 
 
