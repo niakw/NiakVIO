@@ -52,6 +52,9 @@ for path in sorted((ROOT / "engine_v2" / "providers").glob("*.mjs")):
     assert not re.search(r"Math\.abs\([^\n]{0,100}(?:year|Year)", text), path
 
 # Runtime media safety is media/playability-only. Identity lives in STREAM_IDENTITY.
+# V9 is the current accepted safety revision and adds correlated-player fallback
+# without moving identity policy back into media safety. Keep this assertion aligned
+# with the dedicated global playback policy contract rather than pinning stale V8.
 safety = (ROOT / "scripts" / "provider_patches" / "runtime_capability_media_safety_v4.py").read_text(encoding="utf-8")
 for token in (
     "routeIdentity(",
@@ -62,7 +65,8 @@ for token in (
     "collisionFixtures",
 ):
     assert token not in safety, token
-assert "field-safety-v8-media-only-p2p-vod-duration" in safety
+assert "field-safety-v9-correlated-player-fallback" in safety
+assert "field-safety-v8-media-only-p2p-vod-duration" not in safety
 
 # ProviderBase can transport identity evidence, but it delegates all acceptance
 # semantics to the Core policy and cannot keep year rejection/scoring locally.
@@ -71,4 +75,4 @@ assert "__nuvioIdentityPolicyV1" in base
 assert "Math.abs(Number(year) - Number(expectedYear))" not in base
 assert 'if (year && expectedYear && year !== expectedYear) return -1;' not in base
 
-print("Provider JS Lego ownership tests passed: providers=96 identity_owner=CORE.STREAM_IDENTITY.V1")
+print("Provider JS Lego ownership tests passed: providers=96 identity_owner=CORE.STREAM_IDENTITY.V1 media_safety=v9")
