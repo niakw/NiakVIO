@@ -4,6 +4,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from rotating_corpus import select_fixtures
+
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / ".github" / "triggers" / "nuvio-client-lab.json"
 PROVIDER_TIMEOUT_MS = 40_000
@@ -330,23 +332,15 @@ fun startNiakvioIosLabIfRequested() {
 '''
 
 def fixture_rows() -> list[dict]:
-    data = json.loads(CONFIG.read_text(encoding="utf-8"))
-    acceptance = data.get("native_reader_acceptance") or {}
-    fixture_by_type = acceptance.get("fixture_by_type") or {}
-    wanted = [fixture_by_type.get(kind) for kind in ("movie", "tv", "anime")]
-    index = {
-        str(row.get("slug") or ""): row.get("fixture") or {}
-        for row in data.get("fixtures") or []
-        if isinstance(row, dict)
-    }
     rows = []
-    for kind, slug in zip(("movie", "tv", "anime"), wanted):
-        if not slug or slug not in index:
-            raise SystemExit(f"missing canonical fixture for {kind}: {slug!r}")
-        fixture = index[slug]
+    for kind in ("movie", "tv", "anime"):
+        selected = select_fixtures(kind, count=1, provider="ios-native")
+        if len(selected) != 1:
+            raise SystemExit(f"missing rotating fixture for {kind}")
+        fixture = selected[0]
         rows.append(
             {
-                "slug": slug,
+                "slug": fixture["slug"],
                 "tmdbId": str(fixture.get("tmdbId") or ""),
                 "mediaType": kind,
                 "season": fixture.get("season"),
@@ -354,6 +348,7 @@ def fixture_rows() -> list[dict]:
             }
         )
     return rows
+
 
 def kotlin_fixture_list(rows: list[dict]) -> str:
     values = []

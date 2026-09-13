@@ -24,7 +24,11 @@ PLAYER_AUGMENT="${NIAKVIO}/scripts/augment_native_desktop_player.py"
 FRONTEND_PHASES="${NIAKVIO}/scripts/complete_native_desktop_frontend_phases.py"
 DESKTOP_TEST_JVM_INIT="${NIAKVIO}/scripts/nuvio_desktop_test_jvm.init.gradle"
 TEST_SOURCE="${DESKTOP_ROOT}/composeApp/src/desktopTest/kotlin/com/nuvio/app/features/plugins/NiakvioNativeCorpusDesktopTest.kt"
-DEFAULT_FIXTURES=(interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01)
+DEFAULT_FIXTURES=()
+while IFS= read -r fixture; do
+  [[ -n "$fixture" ]] && DEFAULT_FIXTURES+=("$fixture")
+done < <(python3 "${NIAKVIO}/scripts/rotating_corpus.py" select --lane all --count-per-lane 1)
+[[ ${#DEFAULT_FIXTURES[@]} -eq 3 ]] || { echo "rotating corpus must select movie/tv/anime" >&2; exit 2; }
 TARGET_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-}"
 TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-declared-type}"
 TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"

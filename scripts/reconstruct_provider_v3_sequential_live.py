@@ -68,6 +68,25 @@ def _live_probe_attempts() -> int:
 LIVE_PROBE_ATTEMPTS = _live_probe_attempts()
 
 
+# PROVIDER_V3_ADAPTIVE_LIVE_RETRY_V1
+TRANSIENT_LIVE_HTTP_STATUSES = {0, 408, 425, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525, 526}
+
+
+def should_retry_live_probe(result: dict[str, Any]) -> bool:
+    """Retry only when the current attempt looks transient rather than deterministic."""
+    task_status = str(result.get("status") or "").strip().casefold()
+    if task_status == "probe_error" or "timeout" in task_status:
+        return True
+    provider_statuses = [
+        int(fetch.get("status") or 0)
+        for fetch in result.get("fetches") or []
+        if isinstance(fetch, dict) and provider_fetch(fetch)
+    ]
+    if not provider_statuses:
+        return False
+    return any(status in TRANSIENT_LIVE_HTTP_STATUSES for status in provider_statuses)
+
+
 def credit_verified_playable_chains(
     evaluation: dict[str, Any],
     task_rows: list[dict[str, Any]],
@@ -222,6 +241,12 @@ def terminal_state(
         return "direct-output-verified", evidence
     if evaluation.get("providerBlockedOnly") and evaluation.get("providerRequestCount", 0) > 0:
         return "terminal-blocked", evidence
+    # PROVIDER_V3_TERMINAL_MEDIA_BLOCK_V1
+    # Exact identity resolution may succeed while every concrete media object is
+    # blocked by the runner. This is terminal transport evidence only: it never
+    # validates or promotes the blocked media URL as a live route.
+    if evaluation.get("providerMediaBlockedComplete"):
+        return "terminal-blocked", evidence
     if origins and evidence and not any(row.get("reachable") for row in evidence):
         return "terminal-unreachable", evidence
     return None, evidence
@@ -243,7 +268,7 @@ def run_until_qualified(
             break
         semantic_type = str(task.get("semantic_type") or "").strip().casefold()
         already_validated = {
-            str(value or "").strip().casefold() for value in evaluation.get("validatedTypes") or []
+            str(value or "").strip().casefold() for value in evaluation.get("playableChainValidatedTypes") or []
         }
         if semantic_type in already_validated:
             print(
@@ -280,8 +305,16 @@ def run_until_qualified(
                 flush=True,
             )
             if is_qualified(evaluation) or semantic_type in {
-                str(value or "").strip().casefold() for value in evaluation.get("validatedTypes") or []
+                str(value or "").strip().casefold() for value in evaluation.get("playableChainValidatedTypes") or []
             }:
+                break
+            if attempt < LIVE_PROBE_ATTEMPTS and not should_retry_live_probe(result):
+                print(
+                    "FIELD_PROVIDER_RETRY_SKIPPED_DETERMINISTIC "
+                    f"provider={provider['provider_id']} fixture={task.get('fixture_slug')} "
+                    f"attempt={attempt} task_status={result.get('status')}",
+                    flush=True,
+                )
                 break
 
     proof_tasks = select_minimal_final_proof_tasks(used_tasks, evaluation) if is_qualified(evaluation) else used_tasks
@@ -293,6 +326,43 @@ def run_until_qualified(
         flush=True,
     )
     return rows, evaluation, proof_tasks
+
+
+def resample_required_lanes(
+    rows: list[dict[str, Any]],
+    evaluation: dict[str, Any],
+) -> list[str]:
+    """Return unproved lanes whose sampled works all ended as clean no-streams."""
+    required = {
+        str(value or "").strip().casefold()
+        for value in evaluation.get("requiredTypes") or []
+        if str(value or "").strip()
+    }
+    playable = {
+        str(value or "").strip().casefold()
+        for value in evaluation.get("playableChainValidatedTypes") or []
+        if str(value or "").strip()
+    }
+    missing = required - playable
+    if not missing:
+        return []
+    clean: set[str] = set()
+    for media_type in missing:
+        lane_rows = [
+            row for row in rows
+            if str(row.get("semantic_type") or "").strip().casefold() == media_type
+        ]
+        if not lane_rows or any(row.get("status") != "no_streams" for row in lane_rows):
+            continue
+        http_error = any(
+            int(fetch.get("status") or 0) >= 400
+            for row in lane_rows
+            for fetch in row.get("fetches") or []
+            if isinstance(fetch, dict)
+        )
+        if not http_error:
+            clean.add(media_type)
+    return sorted(missing) if missing <= clean else []
 
 
 def prove_final_bundle(
@@ -359,6 +429,93 @@ def prove_final_bundle(
                 "wrong_content", "runtime_error", "invalid_probe_output", "probe_error"
             }
             if semantic_type in validated and not bad_status:
+                break
+            if attempt < LIVE_PROBE_ATTEMPTS and not should_retry_live_probe(result):
+                print(
+                    "FIELD_PROVIDER_FINAL_RETRY_SKIPPED_DETERMINISTIC "
+                    f"provider={provider['provider_id']} fixture={final_task.get('fixture_slug')} "
+                    f"attempt={attempt} task_status={result.get('status')}",
+                    flush=True,
+                )
+                break
+
+    # PROVIDER_V3_FINAL_TRANSIENT_FIXTURE_FALLBACK_V1
+    # The candidate already proved every declared type. If the selected final
+    # fixture exhausted its bounded retries with transport-only failures, probe
+    # alternate fixtures for that same semantic type before declaring DATA
+    # regression. Deterministic/wrong-content selected failures never enter here.
+    selected_slugs = {
+        str(task.get("fixture_slug") or "")
+        for task in used_tasks
+        if isinstance(task, dict) and str(task.get("fixture_slug") or "")
+    }
+    required_before_fallback = {
+        str(v or "").strip().casefold()
+        for v in evaluation.get("requiredTypes") or []
+        if str(v or "").strip()
+    }
+    validated_before_fallback = {
+        str(v or "").strip().casefold()
+        for v in evaluation.get("validatedTypes") or []
+        if str(v or "").strip()
+    }
+    for missing_type in sorted(required_before_fallback - validated_before_fallback):
+        selected_type_rows = [
+            row for row in rows
+            if str(row.get("semantic_type") or "").strip().casefold() == missing_type
+        ]
+        if not selected_type_rows or not all(should_retry_live_probe(row) for row in selected_type_rows):
+            continue
+        fallback_verified = False
+        fallback_step = 0
+        for raw_fallback_task in provider.get("tasks") or []:
+            if not isinstance(raw_fallback_task, dict):
+                continue
+            if str(raw_fallback_task.get("semantic_type") or "").strip().casefold() != missing_type:
+                continue
+            fallback_slug = str(raw_fallback_task.get("fixture_slug") or "")
+            if not fallback_slug or fallback_slug in selected_slugs:
+                continue
+            fallback_step += 1
+            fallback_task = copy.deepcopy(raw_fallback_task)
+            fallback_task["filename"] = final_filename
+            for attempt in range(1, LIVE_PROBE_ATTEMPTS + 1):
+                result = run_task(fallback_task, timeout)
+                result["fixture_slug"] = fallback_task.get("fixture_slug")
+                result["fixture"] = copy.deepcopy(fallback_task.get("fixture") or {})
+                result["probe_attempt"] = attempt
+                result["final_transient_fallback"] = True
+                rows.append(result)
+                evaluation = credit_verified_playable_chains(
+                    evaluate_provider(provider["provider_id"], live_model, rows, minimum), rows
+                )
+                http_counts = Counter(int(fetch.get("status") or 0) for fetch in result.get("fetches") or [])
+                http_summary = ",".join(
+                    f"{status}:{count}" for status, count in sorted(http_counts.items())
+                ) or "none"
+                print(
+                    "FIELD_PROVIDER_FINAL_TRANSIENT_FALLBACK "
+                    f"provider={provider['provider_id']} type={missing_type} "
+                    f"fixture={fallback_task.get('fixture_slug')} fallback_step={fallback_step} "
+                    f"attempt={attempt}/{LIVE_PROBE_ATTEMPTS} task_status={result.get('status')} "
+                    f"http_statuses={http_summary} "
+                    f"validated_types={','.join(evaluation.get('validatedTypes') or []) or 'none'} "
+                    f"missing_types={','.join(evaluation.get('missingTypes') or []) or 'none'}",
+                    flush=True,
+                )
+                validated_now = {
+                    str(value or "").strip().casefold()
+                    for value in evaluation.get("validatedTypes") or []
+                }
+                bad_status = result.get("status") in {
+                    "wrong_content", "runtime_error", "invalid_probe_output", "probe_error"
+                }
+                if missing_type in validated_now and not bad_status:
+                    fallback_verified = True
+                    break
+                if attempt < LIVE_PROBE_ATTEMPTS and not should_retry_live_probe(result):
+                    break
+            if fallback_verified:
                 break
 
     required_types = {str(v or "").strip().casefold() for v in evaluation.get("requiredTypes") or []}
@@ -510,6 +667,17 @@ def main() -> int:
             completion_state, origin_evidence = terminal_state(
                 evaluation, model, patch, origin_timeout
             )
+
+        if completion_state is None and provider.get("enabled") is not False:
+            resample_lanes = resample_required_lanes(_rows, evaluation)
+            if resample_lanes:
+                completion_state = "resample-required"
+                print(
+                    "FIELD_PROVIDER_RESAMPLE_REQUIRED "
+                    f"provider={provider_id} lanes={','.join(resample_lanes)} "
+                    "reason=clean_zero_stream_catalogue_sample next_action=rotate_fixture",
+                    flush=True,
+                )
 
         if completion_state is None and provider.get("enabled") is False:
             completion_state = "disabled-unqualified"

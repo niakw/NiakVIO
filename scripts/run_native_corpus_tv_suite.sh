@@ -27,7 +27,11 @@ FRONTEND_WATCHER="${NIAKVIO}/scripts/watch_native_device_frontend.sh"
 CHECKPOINT_TOOL="${NIAKVIO}/scripts/native_tv_route_checkpoint.py"
 EVIDENCE_ROOT="${WORKSPACE}/native-evidence/tv"
 TEST_SOURCE="${TV_ROOT}/app/src/androidTest/java/com/nuvio/tv/core/plugin/NiakvioNativeCorpusTvTest.kt"
-DEFAULT_FIXTURES=(interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01)
+DEFAULT_FIXTURES=()
+while IFS= read -r fixture; do
+  [[ -n "$fixture" ]] && DEFAULT_FIXTURES+=("$fixture")
+done < <(python3 "${NIAKVIO}/scripts/rotating_corpus.py" select --lane all --count-per-lane 1)
+[[ ${#DEFAULT_FIXTURES[@]} -eq 3 ]] || { echo "rotating corpus must select movie/tv/anime" >&2; exit 2; }
 TARGET_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-}"
 TARGET_FIXTURES="${NIAKVIO_TARGET_FIXTURES:-}"
 TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-declared-type}"

@@ -11,6 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from native_media_type_contract import fixture_runtime_media_type  # noqa: E402
+from rotating_corpus import fixture_by_slug as rotating_fixture_by_slug  # noqa: E402
 CORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"
 
 
@@ -23,14 +24,10 @@ def kotlin_string(value: object) -> str:
 
 
 def fixture_by_slug(slug: str) -> dict:
-    config = load_json(CORPUS)
-    for row in config.get("fixtures", []):
-        if isinstance(row, dict) and str(row.get("slug") or "") == slug:
-            fixture = row.get("fixture")
-            if not isinstance(fixture, dict):
-                break
-            return {"slug": slug, **fixture}
-    raise SystemExit(f"unknown native corpus fixture: {slug}")
+    try:
+        return rotating_fixture_by_slug(slug)
+    except KeyError as error:
+        raise SystemExit(str(error)) from error
 
 
 def manifest_providers() -> list[dict]:
