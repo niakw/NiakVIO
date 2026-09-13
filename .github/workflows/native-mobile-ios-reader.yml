@@ -75,7 +75,7 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 240
     env:
-      NIAKVIO_MANIFEST_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/manifest.json
+      NIAKVIO_MANIFEST_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/native-hub46/manifest.json
       DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
       GRADLE_OPTS: -Dfile.encoding=UTF-8
       NUVIO_GRADLE_JVMARGS: -Xmx4608M -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=768M
@@ -167,7 +167,7 @@ jobs:
           set -euo pipefail
           python3 niakvio/scripts/gate_native_declared_provider_matrix.py \
             --client ios \
-            --manifest niakvio/manifest.json \
+            --manifest niakvio/native-hub46/manifest.json \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
             --scope-matrix niakvio/automation/evidence/hub-lab-matrix-46.json \
             "$GITHUB_WORKSPACE/mobile-ios-native-corpus.log"
