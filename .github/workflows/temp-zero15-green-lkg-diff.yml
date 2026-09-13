@@ -1,0 +1,68 @@
+name: TEMP - ZERO15 green LKG diff
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-zero15-green-lkg-diff.yml
+
+permissions:
+  contents: read
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare last green strict-46 authority against current ZERO15
+        shell: bash
+        run: |
+          set -euo pipefail
+          git cat-file -e 491375c5603467f2554a2c3f1182ba2df85af48a^{commit}
+          python3 - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          OLD='491375c5603467f2554a2c3f1182ba2df85af48a'
+          PIDS=['4khdhub','allanime','allwish','anikototv','anime-ultime','animesalt','animetsu','flemmix','fullanime','moviebox','moviesmod','showbox','vidfast','vidlove','vostfree']
+          def show(path):
+              p=subprocess.run(['git','show',f'{OLD}:{path}'],text=True,capture_output=True)
+              return p.stdout if p.returncode==0 else ''
+          old_o=json.loads(show('provider-overrides.json'))
+          new_o=json.loads(Path('provider-overrides.json').read_text())
+          old_k=json.loads(show('automation/provider-v3-static-knowledge.json'))
+          new_k=json.loads(Path('automation/provider-v3-static-knowledge.json').read_text())
+          old_m=json.loads(show('manifest.json'))
+          new_m=json.loads(Path('manifest.json').read_text())
+          def rowmap(m): return {str(r.get('id','')).casefold():r for r in m.get('scrapers',[]) if isinstance(r,dict)}
+          om,nm=rowmap(old_m),rowmap(new_m)
+          out=[]
+          for pid in PIDS:
+              op=(old_o.get('provider_patches') or {}).get(pid) or {}
+              np=(new_o.get('provider_patches') or {}).get(pid) or {}
+              ok=((old_k.get('providers') or {}).get(pid) or {}).get('model') or {}
+              nk=((new_k.get('providers') or {}).get(pid) or {}).get('model') or {}
+              def slim(x):
+                  keys=['official_site','official_hub','official_api','learned_routes','candidate_learned_routes','search_request_plan','provider_value_plan','api_recipe','provider_lego_scripts','provider_lego_options','domain_substitutions','replacements','runtime_domain_replacements','core_options','strategy','knownSite','officialSite','officialApi','routes','searchRequestPlan','providerValuePlan','apiRecipe','origins','identityInput','routeProof']
+                  return {k:x.get(k) for k in keys if k in x}
+              item={'provider':pid,'oldPatch':slim(op),'newPatch':slim(np),'oldModel':slim(ok),'newModel':slim(nk),'oldManifest':om.get(pid,{}),'newManifest':nm.get(pid,{})}
+              item['patchChanged']=item['oldPatch']!=item['newPatch']
+              item['modelChanged']=item['oldModel']!=item['newModel']
+              item['manifestChanged']=item['oldManifest']!=item['newManifest']
+              out.append(item)
+              print('ZERO15_LKG_DIFF '+json.dumps({'provider':pid,'patchChanged':item['patchChanged'],'modelChanged':item['modelChanged'],'manifestChanged':item['manifestChanged'],'oldSite':op.get('official_site') or ok.get('officialSite') or ok.get('knownSite'),'newSite':np.get('official_site') or nk.get('officialSite') or nk.get('knownSite'),'oldRoutes':len(op.get('learned_routes') or ok.get('routes') or []),'newRoutes':len(np.get('learned_routes') or nk.get('routes') or []),'oldRecipe':bool(op.get('api_recipe') or ok.get('apiRecipe')),'newRecipe':bool(np.get('api_recipe') or nk.get('apiRecipe'))},ensure_ascii=False))
+          Path('automation/zero15-green-lkg-diff.json').write_text(json.dumps({'greenSha':OLD,'providers':out},ensure_ascii=False,indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zero15-green-lkg-diff-${{ github.run_id }}
+          path: automation/zero15-green-lkg-diff.json
+          retention-days: 14
+          if-no-files-found: error
