@@ -1,6 +1,6 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-12T22:22:33.957414+00:00",
+  "generated_at": "2026-09-13T04:55:14.241107+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 96,
   "status_counts": {
@@ -8,8 +8,8 @@
     "reachable": 1,
     "blocked": 10,
     "degraded": 1,
-    "no_streams": 38,
-    "provider_unreachable": 35,
+    "no_streams": 36,
+    "provider_unreachable": 37,
     "runtime_error": 0,
     "unavailable": 10,
     "excluded": 0
@@ -1627,7 +1627,7 @@
     },
     {
       "id": "kehflix",
-      "status": "blocked",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2145,7 +2145,7 @@
     },
     {
       "id": "animesalt",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2298,7 +2298,7 @@
     },
     {
       "id": "animoflix",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -2565,7 +2565,7 @@
     },
     {
       "id": "dooflix",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -3301,7 +3301,7 @@
     },
     {
       "id": "papadustream",
-      "status": "no_streams",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -4426,27 +4426,27 @@
       "enabled": false,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
-        "r1.fsvid.lol"
+        "u14.vidzy.cc"
       ],
       "response_categories": [
         "playable"
       ],
       "host_health": {
         "r1.fsvid.lol": {
-          "last_checked_at": "2026-09-12T22:22:33.957414+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 639,
+          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
         "static.cloudflareinsights.com": {
-          "last_checked_at": "2026-09-12T22:22:33.957414+00:00",
+          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -4457,7 +4457,7 @@
           "consecutive_blocked": 0
         },
         "french-stream.one": {
-          "last_checked_at": "2026-09-12T22:22:33.957414+00:00",
+          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -4468,7 +4468,7 @@
           "consecutive_blocked": 0
         },
         "s1.fsvid.lol": {
-          "last_checked_at": "2026-09-12T22:22:33.957414+00:00",
+          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -4479,7 +4479,7 @@
           "consecutive_blocked": 0
         },
         "strm2.uqload.is": {
-          "last_checked_at": "2026-09-12T22:22:33.957414+00:00",
+          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -4490,18 +4490,18 @@
           "consecutive_blocked": 0
         },
         "u14.vidzy.cc": {
-          "last_checked_at": "2026-09-12T22:22:33.957414+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
+          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 495,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         },
         "v6.vidzy.cc": {
-          "last_checked_at": "2026-09-12T22:22:33.957414+00:00",
+          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -4512,7 +4512,7 @@
           "consecutive_blocked": 0
         },
         "strm4.uqload.is": {
-          "last_checked_at": "2026-09-12T22:22:33.957414+00:00",
+          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -4523,7 +4523,7 @@
           "consecutive_blocked": 0
         },
         "strm8.uqload.is": {
-          "last_checked_at": "2026-09-12T22:22:33.957414+00:00",
+          "last_checked_at": "2026-09-13T04:55:14.241107+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
