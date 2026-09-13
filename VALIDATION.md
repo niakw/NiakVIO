@@ -131,15 +131,19 @@ Un échec Nuvio/OS n’est pas une cause Provider v3 et ne doit pas générer de
 
 ## Domain Refresh
 
-`domain-refresh.yml` est une transaction séparée et bornée :
+`domain-refresh.yml` est une transaction d’adresse séparée et bornée, dont l’autorité de publication est `scripts/domain_refresh_transaction_v2.py` :
 
-- hub officiel ;
-- champ `official_site` uniquement ;
-- CONFIG provider uniquement ;
-- structure identique hors CONFIG ;
-- aucun changement de route/API/Core ;
-- content-addressing/projections/hashes mis à jour si nécessaire ;
-- Quick relancé après publication.
+- les hubs/channels/redirects officiels servent uniquement à résoudre l’instance terminale courante ;
+- la nouvelle autorité d’adresse est persistée dans `provider-overrides.json`, `provider-hubs.json` et `provider-domain-history.json` ;
+- seules les dérivées de domaine réellement reliées à l’ancien terminal sont réconciliées ; les routes/protocoles métier et API non liées au déplacement de domaine ne sont pas réécrits ;
+- pour chaque provider modifié, le bloc `PROVIDER.<ID>.CONFIG.V1` complet est reconstruit depuis la DATA structurée courante ; l’ancien updater partiel `officialSite`-only n’est pas une autorité de publication ;
+- le namespace source-qualified du filename provider est conservé et seul le hash de contenu tourne lorsque le CONFIG change ;
+- tous les bytes hors CONFIG, y compris ProviderBase et Lego `CORE.*`, doivent rester identiques ;
+- DNS/HTTP après résolution est une observation et ne peut pas annuler une adresse annoncée par une source autoritative uniquement parce qu’un runner reçoit 403/anti-bot/timeout ;
+- activation 46/50, projections, versions cache-safe, hashes et release integrity restent synchronisés ;
+- la transaction est fail-closed sur rollback, cycle de remplacement, terminal template/social et mutation hors CONFIG, puis Quick est relancé après publication.
+
+Contrats principaux : `tests/domain_refresh_workflow_test.py`, `tests/domain_refresh_transaction_guard_test.py`, `tests/provider_v3_workflow_ownership_test.py` et `scripts/validate_domain_refresh_transaction.py`.
 
 ## Minimizer
 
