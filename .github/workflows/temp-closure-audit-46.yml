@@ -15,34 +15,56 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
-      - name: Probe current MovieBox source API
+      - name: Probe MovieBox mbapi search and detail
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
-          const base='https://api.videasy.net/moviebox/sources-with-title';
-          const cases=[
-            {label:'interstellar',title:'Interstellar',mediaType:'movie',year:'2014',episodeId:'1',seasonId:'1',tmdbId:'157336',imdbId:'tt0816692'},
-            {label:'inception',title:'Inception',mediaType:'movie',year:'2010',episodeId:'1',seasonId:'1',tmdbId:'27205',imdbId:'tt1375666'},
-            {label:'breakingbad',title:'Breaking Bad',mediaType:'tv',year:'2008',episodeId:'1',seasonId:'1',tmdbId:'1396',imdbId:'tt0903747'},
-            {label:'arcane',title:'Arcane',mediaType:'tv',year:'2021',episodeId:'1',seasonId:'1',tmdbId:'94605',imdbId:'tt11126994'}
-          ];
+          const headers={'User-Agent':'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/137 Mobile Safari/537.36','Referer':'https://www.moviebox.earth/','Origin':'https://www.moviebox.earth','Accept':'application/json,text/plain,*/*'};
+          async function get(url){
+            try{
+              const r=await fetch(url,{signal:AbortSignal.timeout(8000),headers});
+              const body=await r.text();
+              console.log('FIELD_MBAPI_HTTP status='+r.status+' bytes='+body.length+' url64='+Buffer.from(url).toString('base64')+' body64='+Buffer.from(body.slice(0,5000)).toString('base64'));
+              return {ok:r.ok,status:r.status,body};
+            }catch(e){console.log('FIELD_MBAPI_HTTP error='+e.name+':'+e.message+' url64='+Buffer.from(url).toString('base64'));return {ok:false,body:''}}
+          }
+          function rows(j){
+            const candidates=[j?.data?.list,j?.data?.results,j?.data,j?.results,j?.list];
+            return candidates.find(Array.isArray)||[];
+          }
           (async()=>{
             let positive=0;
-            for(const c of cases){
-              const q=new URLSearchParams(c);q.delete('label');q.set('_t',String(Date.now()));
-              const url=base+'?'+q;
+            for(const title of ['Interstellar','Breaking Bad']){
+              const search='https://mbapi.cc/app/search?keyword='+encodeURIComponent(title);
+              const s=await get(search); if(!s.ok) continue;
+              let j; try{j=JSON.parse(s.body)}catch{continue}
+              const list=rows(j);
+              console.log('FIELD_MBAPI_SEARCH title64='+Buffer.from(title).toString('base64')+' rows='+list.length);
+              const wanted=list.find(x=>String(x?.title||x?.name||'').toLowerCase()===title.toLowerCase())||list[0];
+              if(!wanted) continue;
+              const id=wanted.id||wanted.subjectId||wanted.videoId;
+              const category=wanted.boxType||wanted.category||wanted.type||1;
+              console.log('FIELD_MBAPI_PICK title64='+Buffer.from(title).toString('base64')+' id='+String(id||'')+' category='+String(category)+' year='+String(wanted.year||wanted.releaseDate||''));
+              if(!id) continue;
+              const d=await get('https://mbapi.cc/app/videoDetail?id='+encodeURIComponent(id)+'&category='+encodeURIComponent(category));
+              if(!d.ok) continue;
               try{
-                const r=await fetch(url,{signal:AbortSignal.timeout(8000),headers:{'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/137 Safari/537.36','Referer':'https://www.fmovies.cat/','Origin':'https://www.fmovies.cat','Cache-Control':'no-cache','Pragma':'no-cache','Accept':'*/*'}});
-                const body=await r.text();
-                console.log('FIELD_MOVIEBOX_VIDEASY',c.label,'status='+r.status,'ct='+(r.headers.get('content-type')||''),'bytes='+body.length,'body64='+Buffer.from(body.slice(0,1800)).toString('base64'));
-                if(r.ok && body.length>20) positive++;
-              }catch(e){console.log('FIELD_MOVIEBOX_VIDEASY',c.label,'error='+e.name+':'+e.message,'cause='+(e.cause?String(e.cause):''))}
+                const dj=JSON.parse(d.body), data=dj?.data||dj;
+                const eps=Array.isArray(data?.episodeVo)?data.episodeVo:[];
+                let defs=0,paths=0;
+                for(const ep of eps){for(const def of (Array.isArray(ep?.definition)?ep.definition:[])){defs++;if(/^https?:\/\//i.test(String(def?.path||'')))paths++;}}
+                console.log('FIELD_MBAPI_DETAIL id='+id+' episodes='+eps.length+' definitions='+defs+' direct_paths='+paths);
+                if(paths>0) positive++;
+              }catch(e){console.log('FIELD_MBAPI_PARSE error='+e.message)}
             }
-            console.log('FIELD_MOVIEBOX_VIDEASY_SUMMARY positive_http='+positive+' total='+cases.length+' probe_timeout_ms=8000');
+            console.log('FIELD_MBAPI_SUMMARY positive_details='+positive+' probe_timeout_ms=8000');
             if(!positive) process.exit(2);
           })();
           NODE
+      - name: Enabled-only native matrix regression
+        if: always()
+        run: python3 tests/native_declared_matrix_enabled_only_test.py
       - name: Preserve Core 25 second settlement contract
         if: always()
         run: python3 tests/native_runtime_settlement_contract_test.py
