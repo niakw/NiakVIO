@@ -1,5 +1,6 @@
 name: TEMP - adaptive native matrix gate
 
+# Retry after matrix test was migrated from old 96/static fixtures to scoped 46/adaptive recent fixtures.
 on:
   push:
     branches:
@@ -39,7 +40,7 @@ jobs:
           p=Path('MEMORY.md'); t=p.read_text(encoding='utf-8')
           marker='## 2026-09-13 — adaptive matrix gate follows global corpus lanes'
           if marker not in t:
-              t += '''\n## 2026-09-13 — adaptive matrix gate follows global corpus lanes\n\n- The native declared-provider matrix no longer requires three static representative fixture slugs. Any adaptive fallback fixture is resolved through `rotating_corpus.fixture_by_slug()` + `canonical_lane()` to `movie|tv|anime`; the old `fixture_by_type` map is compatibility-only for historical targeted evidence.\n- This prevents fallback titles from being misclassified/unobserved and prevents old fixed samples such as Breaking Bad 2008 from becoming an ordinary Lab prerequisite.\n'''
+              t += '''\n## 2026-09-13 — adaptive matrix gate follows global corpus lanes\n\n- The native declared-provider matrix no longer requires three static representative fixture slugs. Any adaptive fallback fixture is resolved through `rotating_corpus.fixture_by_slug()` + `canonical_lane()` to `movie|tv|anime`; the old `fixture_by_type` map is compatibility-only for historical targeted evidence.\n- This prevents fallback titles from being misclassified/unobserved and prevents old fixed samples such as Breaking Bad 2008 from becoming an ordinary Lab prerequisite.\n- The synthetic matrix contract itself now uses the exact Hub-46 scope and recent global fixture pools, matching final acceptance instead of asserting stale 96/static-fixture output.\n'''
               p.write_text(t, encoding='utf-8')
           PY
       - name: Commit
