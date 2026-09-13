@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Install the Hub-46 MovieBox TMDB-direct runtime without inventing proof.
+"""Install the Hub-46 MovieBox official H5 runtime without inventing proof.
 
-The migration removes the stale HTML-player quarantine and replaces it with a
-single attributable MovieBox Peach runtime. Evidence fields stay in repair
-until the live movie+TV probe promotes them in a separate evidence step.
+The provider keeps TMDB as its public identity. The runtime obtains factual
+metadata from Core when present, otherwise from the public TMDB title page, then
+uses MovieBox's official H5 bootstrap/search/domain/play chain. Evidence stays
+in repair until a live movie+TV proof promotes it separately.
 """
 from __future__ import annotations
 
@@ -12,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
-PATCH_SCRIPT = "scripts/provider_patches/moviebox_peach_runtime_v1.py"
+PATCH_SCRIPT = "scripts/provider_patches/moviebox_h5_runtime_v1.py"
 MARKER = "MOVIEBOX_HUB46_RUNTIME_V1"
 
 
@@ -28,11 +29,11 @@ def main() -> int:
     p["provider_lego_scripts"] = [PATCH_SCRIPT]
     p["provider_lego_options"] = {
         PATCH_SCRIPT: {
-            "origin": "https://peachify.top",
-            "referer": "https://peachify.top/",
-            "servers": [
-                {"label": "MovieBox", "base": "https://uwu.eat-peach.sbs", "path": "moviebox"}
-            ],
+            "apiBase": "https://h5-api.aoneroom.com/wefeed-h5api-bff",
+            "siteOrigin": "https://moviebox.ph",
+            "siteHost": "moviebox.ph",
+            "requestTimeoutMs": 7000,
+            "maxStreams": 8,
         }
     }
     p.setdefault("manifest_overrides", {})["enabled"] = True
@@ -43,10 +44,14 @@ def main() -> int:
     if isinstance(old_notes, str):
         notes = [old_notes]
     elif isinstance(old_notes, list):
-        notes = list(old_notes)
+        notes = [x for x in old_notes if "Peach /moviebox" not in str(x)]
     else:
         notes = []
-    note = f"{MARKER}: use attributable Peach /moviebox TMDB-direct movie+TV runtime; live evidence required before promotion."
+    note = (
+        f"{MARKER}: official MovieBox H5 movie+TV runtime; TMDB input resolves "
+        "through Core metadata or public TMDB title fallback; no embedded credential; "
+        "live evidence required before promotion."
+    )
     if note not in notes:
         notes.append(note)
     p["notes"] = notes
@@ -84,7 +89,12 @@ def main() -> int:
 
     proof = p.setdefault("route_proof", {})
     proof["runtimePlanSemanticLanes"] = ["movie", "tv"]
-    proof["lastRepairProbe"] = {"positiveExecutionEvidence": False, "status": "runtime-proof-required"}
+    proof["lastRepairProbe"] = {
+        "positiveExecutionEvidence": False,
+        "status": "runtime-proof-required",
+        "fixtureHardcodes": False,
+        "embeddedCredential": False,
+    }
     authority = proof.setdefault("canonicalExecutionAuthority", {})
     authority.update({
         "supportedLanes": ["movie", "tv"],
@@ -97,11 +107,11 @@ def main() -> int:
         "index": 0,
         "lanes": ["movie", "tv"],
         "owner": "provider_lego",
-        "route": "https://uwu.eat-peach.sbs/moviebox/{type}/{tmdbId}",
+        "route": "TMDB id -> Core/public TMDB title -> MovieBox official H5 BFF",
     }]
 
     OVERRIDES.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(MARKER, "installed=1 proof=fresh-required lanes=movie,tv")
+    print(MARKER, "installed=1 runtime=official-h5 proof=fresh-required lanes=movie,tv")
     return 0
 
 
