@@ -1,0 +1,84 @@
+name: TEMP - Pre Rebuild Closure
+
+on:
+  push:
+    branches: ["fix/labs-5.21.44-20260912"]
+    paths: [".github/workflows/temp-pre-rebuild-closure.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+
+      - name: Build and execute MovieBox plus HindMoviez source runtimes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0,'scripts'); sys.path.insert(0,'scripts/provider_patches')
+          import moviebox_h5_runtime_v1 as mb, hindmoviez_runtime_v1 as hm
+          open('/tmp/moviebox.js','w').write(mb.apply('globalThis.getStreams=async()=>[];'))
+          open('/tmp/hindmoviez.js','w').write(hm.apply('globalThis.getStreams=async()=>[];'))
+          PY
+          node - <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          async function prove(file,provider,cases){
+            delete globalThis.__niakvioProviderRuntimeResolverV1; delete globalThis.__nuvioMediaContext; delete globalThis.__nuvioCoreGetTmdbDataV1;
+            vm.runInThisContext(fs.readFileSync(file,'utf8'),{filename:file});
+            const r=globalThis.__niakvioProviderRuntimeResolverV1;if(!r)throw Error(provider+' resolver missing');
+            for(const c of cases){const s=Date.now(),rows=await r.resolve(c.args,{}),ms=Date.now()-s;console.log('FIELD_PREBUILD_RUNTIME provider='+provider+' type='+c.type+' duration_ms='+ms+' count='+(rows||[]).length+' qualities='+[...new Set((rows||[]).map(x=>x.quality).filter(Boolean))].join(',')+' languages='+[...new Set((rows||[]).map(x=>x.language).filter(Boolean))].join(','));if(!Array.isArray(rows)||!rows.length||ms>=25000)throw Error(provider+' '+c.type+' failed');}
+          }
+          (async()=>{await prove('/tmp/moviebox.js','moviebox',[{type:'movie',args:['157336','movie']},{type:'tv',args:['1396','tv',1,1]}]);await prove('/tmp/hindmoviez.js','hindmoviez',[{type:'movie',args:['157336','movie']},{type:'tv',args:['1396','tv',1,1]}]);})().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+
+      - name: Core plus schedule contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/core_runtime_nonregression_contract_test.py
+          python3 tests/native_runtime_settlement_contract_test.py
+          python3 tests/native_declared_matrix_enabled_only_test.py
+          python3 tests/provider_no_timer_runtime_test.py
+          python3 tests/provider_execution_failfast_v33_test.py
+          python3 tests/weekly_upstream_provider_discovery_test.py
+          python3 tests/brain_cron_full_coverage_test.py
+          python3 tests/native_lab_nonblocking_contract_test.py
+
+      - name: Domain branding language quality focused contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t tests < <(find tests -maxdepth 1 -type f -name '*.py' | sort | grep -Ei '(domain|logo|branding|language|quality|vostfr|vf|presentation|metadata)' || true)
+          failures=0
+          for t in "${tests[@]}"; do echo "RUN $t"; if ! timeout 90 python3 "$t"; then echo "FIELD_FOCUSED_FAILURE file=$t"; failures=$((failures+1)); fi; done
+          echo "FIELD_FOCUSED_SUMMARY total=${#tests[@]} failures=$failures"
+          test "$failures" -eq 0
+
+      - name: Static closure invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_moviebox_hub46_runtime_v1.py
+          python3 scripts/upgrade_anime_only_capability_v35.py
+          python3 - <<'PY'
+          import json
+          d=json.load(open('provider-overrides.json'))['provider_patches']
+          assert d['moviebox']['provider_lego_scripts']==['scripts/provider_patches/moviebox_h5_runtime_v1.py']
+          assert d['hindmoviez']['provider_lego_scripts']==['scripts/provider_patches/hindmoviez_runtime_v1.py']
+          assert 'movie' not in d['anime-sama']['published_types'] and 'movie' not in d['mugiwarastream']['published_types']
+          assert 'const DEFAULT_TIMEOUT_MS = 25_000;' in open('scripts/nuvio_client_lab.cjs').read()
+          for f in ('.github/workflows/weekly-upstream-provider-discovery.yml','.github/workflows/brain-learning-lab.yml','.github/workflows/domain-refresh.yml'):
+              s=open(f).read(); assert 'schedule:' in s and 'cron:' in s, f
+          print('FIELD_PREBUILD_STATIC all=true')
+          PY
