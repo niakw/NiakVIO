@@ -1,0 +1,57 @@
+name: TEMP - regression pair network trace
+
+on:
+  push:
+    branches: [fix/labs-5.21.44-20260912]
+    paths: [.github/workflows/temp-regression-pair-network-trace.yml]
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NUVIO_PROVIDER_V3_CONTEXT: workspace
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Stage pair and trace exact cases
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_regression_pair_legos_v1.py
+          python3 scripts/materialize_provider_v3_one.py animevostfr
+          python3 scripts/materialize_provider_v3_one.py kurage
+          python3 - <<'PY'
+          import json,subprocess,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          cases=[
+            ('animevostfr','movie',{'tmdbId':'1061474','mediaType':'movie','category':'movie','title':'Superman','year':2025}),
+            ('animevostfr','anime',{'tmdbId':'61374','mediaType':'anime','category':'anime','season':1,'episode':1,'title':'Tokyo Ghoul','year':2014}),
+            ('kurage','anime',{'tmdbId':'56998','mediaType':'anime','category':'anime','season':1,'episode':1,'title':'High School of the Dead','year':2010}),
+          ]
+          cat=p.local_catalog()
+          for pid,lane,f in cases:
+            cmd=['node','scripts/provider_worker.cjs',str(cat[pid]['path']),json.dumps(f,separators=(',',':')),json.dumps(p.context_for(f),separators=(',',':'))]
+            cp=subprocess.run(cmd,capture_output=True,text=True,timeout=70)
+            payload={}
+            for line in cp.stdout.splitlines():
+              if line.startswith('NUVIO_HEALTH_RESULT='): payload=json.loads(line.split('=',1)[1])
+            obs=[]
+            for x in payload.get('network_observations') or []:
+              if not isinstance(x,dict): continue
+              obs.append({k:x.get(k) for k in ['stage','host','method','path_pattern','status','ok','error_code']})
+            out={'provider':pid,'lane':lane,'streams':payload.get('stream_count'),'raw':payload.get('raw_stream_count'),'disallowed':payload.get('disallowed_stream_count'),'reasons':payload.get('disallowed_reasons'),'hosts':payload.get('provider_server_hosts'),'statuses':payload.get('provider_server_http_statuses'),'error':payload.get('error_details'),'observations':obs[:80]}
+            print('REGRESSION_PAIR_TRACE '+json.dumps(out,ensure_ascii=False,separators=(',',':')))
+          PY
