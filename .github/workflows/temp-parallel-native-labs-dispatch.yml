@@ -1,4 +1,4 @@
-name: TEMP - Validate and Dispatch Hub46 Native Labs
+name: TEMP - Validate and Dispatch Hub46 Parity
 
 on:
   push:
@@ -26,38 +26,23 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Validate rotating Hub-46 contracts
+      - name: Validate rotating Hub-46 parity contracts
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m py_compile scripts/rotating_corpus.py scripts/prepare_native_corpus_client.py scripts/gate_native_declared_provider_matrix.py scripts/prepare_native_ios_reader_acceptance.py scripts/validate_provider_v3_routes_sequential.py scripts/reconstruct_provider_v3_sequential_live.py
-          python3 tests/native_hub46_scope_contract_test.py
+          python3 -m py_compile scripts/run_provider_upstream_parity_v2.py scripts/run_provider_upstream_parity_v3.py scripts/rotating_corpus.py
+          python3 tests/provider_upstream_parity_v3_test.py
           python3 tests/rotating_corpus_test.py
           python3 tests/native_provider_resample_status_test.py
-          python3 tests/provider_rotating_repair_contract_test.py
-          python3 tests/provider_v3_sequential_live_gate_test.py
-          python3 tests/provider_v3_final_transient_fixture_fallback_test.py
-          node tests/streamflix_timerless_runtime_test.cjs
-          bash -n scripts/run_native_corpus_desktop_suite.sh
-          bash -n scripts/run_native_corpus_mobile_suite.sh
-          bash -n scripts/run_native_corpus_tv_suite.sh
-          ruby -e 'require "yaml"; ARGV.each { |f| YAML.load_file(f, aliases: true); puts "YAML_OK #{f}" }' \
-            .github/workflows/native-desktop-reader-acceptance.yml \
-            .github/workflows/native-mobile-android-reader.yml \
-            .github/workflows/native-mobile-ios-reader.yml
-      - name: Dispatch exact Hub-46 native acceptance workflows
+          node scripts/provider_worker.cjs --self-test-response-wrapper
+          node scripts/provider_worker.cjs --self-test-fixture-fallback
+          ruby -e 'require "yaml"; YAML.load_file(ARGV[0], aliases: true); puts "YAML_OK #{ARGV[0]}"' .github/workflows/provider-upstream-parity.yml
+      - name: Dispatch exact Hub-46 rotating upstream parity
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
         shell: bash
         run: |
           set -euo pipefail
-          for wf in \
-            native-desktop-reader-acceptance.yml \
-            native-mobile-android-reader.yml \
-            native-mobile-ios-reader.yml
-          do
-            echo "Dispatching $wf on $REF"
-            gh workflow run "$wf" --repo "$REPO" --ref "$REF"
-          done
-          echo "FIELD_HUB46_ROTATING_NATIVE_LABS_DISPATCHED workflows=3 platforms=5 providers=46 ref=$REF"
+          gh workflow run provider-upstream-parity.yml --repo "$REPO" --ref "$REF"
+          echo "FIELD_HUB46_ROTATING_PARITY_DISPATCHED providers=46 samples_per_lane=3 ref=$REF"
