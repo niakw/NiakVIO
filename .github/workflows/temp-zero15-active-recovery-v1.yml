@@ -1,0 +1,153 @@
+name: TEMP - ZERO15 active recovery v1
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-zero15-active-recovery-v1.yml
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Run active recovery across all 15 ZERO providers
+        id: repair
+        shell: bash
+        run: |
+          set -uo pipefail
+          providers=(
+            4khdhub allanime allwish anikototv anime-ultime animesalt animetsu flemmix
+            fullanime moviebox moviesmod showbox vidfast vidlove vostfree
+          )
+          args=()
+          for p in "${providers[@]}"; do args+=(--provider "$p"); done
+          set +e
+          python3 scripts/run_provider_repair_fast_targeted_v20.py \
+            --skip-file automation/provider-repair-planner-authorized-skip.json \
+            --attempts 4 --workers 10 --timeout 70 --defer-global-guard \
+            "${args[@]}"
+          status=$?
+          set -e
+          echo "ZERO15_REPAIR_EXIT=$status"
+          echo "repair_exit=$status" >> "$GITHUB_OUTPUT"
+          # Do not abort: the old yield gate is not the acceptance authority for ZERO recovery.
+          test -f automation/provider-repair-fast-targeted.json || true
+          test -f automation/provider-repair-fast-summary.json || true
+
+      - name: Adaptive local proof on the repaired workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import run_provider_upstream_parity as parity
+          from rotating_corpus import rotated_candidates, canonical_lane
+
+          providers=['4khdhub','allanime','allwish','anikototv','anime-ultime','animesalt','animetsu','flemmix','fullanime','moviebox','moviesmod','showbox','vidfast','vidlove','vostfree']
+          catalog=parity.local_catalog()
+          manifest=json.loads(Path('manifest.json').read_text())
+          rows={str(r.get('id','')).strip().casefold():r for r in manifest.get('scrapers',[]) if isinstance(r,dict)}
+          result=[]
+          for pid in providers:
+              entry=rows.get(pid,{})
+              declared=[str(x).strip().casefold() for x in entry.get('supportedTypes',[]) if str(x).strip()]
+              lanes=[]
+              for lane in ('movie','tv','anime'):
+                  if lane in declared or (lane=='anime' and 'tv' in declared):
+                      lanes.append(lane)
+              if not lanes:
+                  lanes=['movie','tv','anime']
+              provider_path=catalog.get(pid,{}).get('path')
+              prow={'provider':pid,'lanes':[],'positive':False}
+              if not provider_path:
+                  prow['fatal']='missing_local_catalog_path'; result.append(prow); continue
+              for lane in lanes:
+                  evidence={'lane':lane,'status':'zero','tested':0,'fixture':None,'streams':0,'error':None,'hosts':[],'statuses':[]}
+                  for fixture in rotated_candidates(lane,provider='zero15-active-recovery'):
+                      evidence['tested']+=1
+                      r=parity.run_worker(provider_path,fixture,45)
+                      count=int(r.get('stream_count') or 0)
+                      err=str(r.get('error_class') or '').strip()
+                      if count>0:
+                          evidence.update(status='positive',fixture=fixture.get('slug'),streams=count,error=None,hosts=r.get('provider_server_hosts') or [],statuses=r.get('provider_server_http_statuses') or r.get('http_statuses') or [])
+                          prow['positive']=True
+                          break
+                      if err:
+                          evidence.update(status='error',fixture=fixture.get('slug'),error=err,hosts=r.get('provider_server_hosts') or [],statuses=r.get('provider_server_http_statuses') or r.get('http_statuses') or [])
+                          break
+                      # clean zero => rotate to next work from the same global lane
+                  prow['lanes'].append(evidence)
+              result.append(prow)
+              print('ZERO15_LOCAL '+json.dumps(prow,ensure_ascii=False))
+          out={'providers':result,'recoveredProviders':[r['provider'] for r in result if r.get('positive')], 'stillZeroProviders':[r['provider'] for r in result if not r.get('positive')]}
+          Path('automation/zero15-active-recovery-v1.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n')
+          print('ZERO15_RECOVERED',','.join(out['recoveredProviders']) or 'none')
+          print('ZERO15_STILL_ZERO',','.join(out['stillZeroProviders']) or 'none')
+          PY
+
+      - name: Classify current live authority and blockers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          local=json.loads(Path('automation/zero15-active-recovery-v1.json').read_text())
+          recovery={}
+          p=Path('automation/provider-repair-fast-targeted.json')
+          if p.exists(): recovery=json.loads(p.read_text())
+          byid={str(r.get('providerId') or r.get('provider') or '').strip().casefold():r for r in recovery.get('providers',[]) if isinstance(r,dict)}
+          classes=[]
+          for row in local['providers']:
+              pid=row['provider']; rr=byid.get(pid,{})
+              routes=rr.get('routeData') or []
+              proven=sum(1 for x in routes if isinstance(x,dict) and (int(x.get('taskStreamCount') or 0)>0 or int(x.get('taskRawStreamCount') or 0)>0))
+              if row.get('positive'):
+                  cls='recovered_local_positive'
+              elif proven:
+                  cls='recovery_proof_but_materialized_zero'
+              elif any(l.get('status')=='error' for l in row.get('lanes',[])):
+                  cls='runtime_or_network_error'
+              else:
+                  cls='no_live_route_found'
+              classes.append({'provider':pid,'class':cls,'provenRecoveryRoutes':proven,'lanes':row.get('lanes',[])})
+              print('ZERO15_CLASS '+json.dumps(classes[-1],ensure_ascii=False))
+          Path('automation/zero15-active-recovery-v1-classification.json').write_text(json.dumps({'providers':classes},ensure_ascii=False,indent=2)+'\n')
+          PY
+
+      - name: Upload complete ZERO15 recovery evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zero15-active-recovery-v1-${{ github.run_id }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            automation/zero15-active-recovery-v1.json
+            automation/zero15-active-recovery-v1-classification.json
+            automation/provider-repair-fast-targeted.json
+            automation/provider-repair-fast-summary.json
+            automation/provider-repair-fast-yield.json
+            automation/provider-repair-fast-merged.json
