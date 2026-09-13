@@ -1,4 +1,4 @@
-name: TEMP - Rotating corpus integration retry
+name: TEMP - Rotating corpus integration push
 
 on:
   push:
@@ -74,7 +74,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add scripts/prepare_native_corpus_validation.py scripts/prepare_native_ios_reader_acceptance.py scripts/validate_provider_v3_routes_sequential.py scripts/reconstruct_provider_v3_sequential_live.py scripts/gate_native_declared_provider_matrix.py scripts/run_native_corpus_desktop_suite.sh scripts/run_native_corpus_mobile_suite.sh scripts/run_native_corpus_tv_suite.sh .github/workflows/native-desktop-reader-acceptance.yml .github/workflows/native-mobile-android-reader.yml tests/provider_rotating_repair_contract_test.py
+          git add scripts/prepare_native_corpus_validation.py scripts/prepare_native_ios_reader_acceptance.py scripts/validate_provider_v3_routes_sequential.py scripts/reconstruct_provider_v3_sequential_live.py scripts/gate_native_declared_provider_matrix.py scripts/run_native_corpus_desktop_suite.sh scripts/run_native_corpus_mobile_suite.sh scripts/run_native_corpus_tv_suite.sh tests/provider_rotating_repair_contract_test.py
           git diff --cached --check
           git commit -m "feat(labs): rotate catalogue misses before provider repair"
           git push origin HEAD:"$REF"
