@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -61,8 +60,16 @@ for path in (
     assert 'native-hub46/manifest.json' in text, path
     assert 'TARGET_MANIFEST="manifest-hub46.json"' not in text, path
 
+# Android prebuild must resolve the same physical manifest before QEMU. Historical
+# workflow env values may still say manifest.json; the shared prebuild layer owns
+# the scope switch and may not resolve the 96-provider root repository instead.
+prebuild = (ROOT / "scripts/prebuild_native_android_reader_suite.sh").read_text(encoding="utf-8")
+assert "NATIVE_ANDROID_HUB46_PREBUILD_V1" in prebuild
+assert 'TARGET_MANIFEST="native-hub46/manifest.json"' in prebuild
+assert "phase=prebuild" in prebuild
+
 ios = (ROOT / ".github/workflows/native-mobile-ios-reader.yml").read_text(encoding="utf-8")
 assert "/native-hub46/manifest.json" in ios
 assert "/${{ github.sha }}/manifest.json" not in ios
 
-print("NATIVE_HUB46_TRANSPORT_MANIFEST_OK providers=46 terminal=manifest.json pinned_provider_urls=true")
+print("NATIVE_HUB46_TRANSPORT_MANIFEST_OK providers=46 terminal=manifest.json pinned_provider_urls=true android_prebuild=nested")
