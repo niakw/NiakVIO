@@ -1,5 +1,16 @@
 {
-  "purpose": "final 5.21.44 validation after temporary workflow cleanup",
+  "purpose": "final 5.21.44 validation after 46-current/50-historical CI migration and domain-history cleanup",
   "branch": "fix/labs-5.21.44-20260912",
-  "parent": "b8737f3995fb359a8716005621dbd5e451836a80"
+  "cleanup_head": "7862e61f5ad7db86ff86aadc4e27f5574af32c06",
+  "provider_contract": {
+    "current": 46,
+    "historical": 50,
+    "historical_directory": "provider-old"
+  },
+  "requirements": [
+    "zero temp workflows",
+    "25s provider timeout",
+    "permanent gates only",
+    "five native labs before merge"
+  ]
 }
