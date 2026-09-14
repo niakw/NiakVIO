@@ -1,0 +1,105 @@
+name: SHORT - Neko-Sama Runtime V2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/neko-sama-runtime-v2-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-neko-sama-runtime-v2
+  cancel-in-progress: true
+
+jobs:
+  prove-publish-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Require exact trigger head
+        run: test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+      - name: Unit contracts and candidate DATA
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            scripts/provider_patches/neko_sama_runtime_v1.py \
+            scripts/register_neko_sama_runtime_v2.py \
+            tests/neko_sama_runtime_v2_test.py \
+            tests/neko_sama_runtime_v2_registration_test.py
+          python3 tests/neko_sama_runtime_v2_test.py
+          python3 tests/neko_sama_runtime_v2_registration_test.py
+          python3 scripts/register_neko_sama_runtime_v2.py
+          python3 tests/neko_sama_runtime_v2_registration_test.py
+          cp provider-overrides.json /tmp/neko-provider-overrides.json
+      - name: Ephemeral rematerialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/reapply_published_overrides.py --primary manifest.json
+      - name: Require reverse-order terminal parity on JJK
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 - <<'PY'
+          import json,pathlib,sys,tempfile
+          root=pathlib.Path('.').resolve();sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as p
+          import run_provider_upstream_parity_v2 as v2
+          import run_provider_upstream_parity_v3 as v3
+          corpus=json.loads((root/'.github/triggers/rotating-popular-corpus.json').read_text(encoding='utf-8'))
+          fixtures={(str(l),str(r.get('tmdbId') or '')):r for l,rows in (corpus.get('lists') or {}).items() for r in rows or [] if isinstance(r,dict)}
+          fx=fixtures[('anime','95479')]
+          local=p.local_catalog();upstreams,_=v2.upstream_catalog()
+          with tempfile.TemporaryDirectory() as td:
+            up=pathlib.Path(td)/'neko-sama-up.js';up.write_bytes(p.get_bytes(upstreams['neko-sama']['url']))
+            lf=v3.fixture_payload(fx,'anime',upstream=False);uf=v3.fixture_payload(fx,'anime',upstream=True)
+            for order in ('upstream_first','niak_first'):
+              if order=='upstream_first':
+                ur=v3._run_verified(up,uf,25);lr=v3._run_verified(local['neko-sama']['path'],lf,25)
+              else:
+                lr=v3._run_verified(local['neko-sama']['path'],lf,25);ur=v3._run_verified(up,uf,25)
+              row={'providerId':'neko-sama','fixture':fx['slug'],'order':order,'classification':v3.classify_pair(ur,lr),'upstream':{k:ur.get(k) for k in ('stream_count','candidate_stream_count','terminal_verified','terminal_reasons','terminal_media_duration_seconds')},'niakvio':{k:lr.get(k) for k in ('stream_count','candidate_stream_count','terminal_verified','terminal_reasons','terminal_media_duration_seconds')}}
+              print('NEKO_V2_PARITY '+json.dumps(row,sort_keys=True))
+              if int(ur.get('stream_count') or 0)<1 or not ur.get('terminal_verified'):
+                raise SystemExit('neko-sama: upstream lost terminal proof')
+              if int(lr.get('stream_count') or 0)<1 or not lr.get('terminal_verified'):
+                raise SystemExit('neko-sama: local v2 not terminal positive')
+          PY
+      - name: Persist only proven Neko DATA
+        shell: bash
+        run: |
+          set -euo pipefail
+          git reset --hard "${{ github.sha }}"
+          git clean -fd
+          cp /tmp/neko-provider-overrides.json provider-overrides.json
+          python3 scripts/register_neko_sama_runtime_v2.py
+          python3 tests/neko_sama_runtime_v2_registration_test.py
+          git diff --check
+          changed="$(git diff --name-only)"
+          printf '%s\n' "$changed"
+          test "$changed" = "provider-overrides.json"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add provider-overrides.json
+          git commit -m 'fix(neko-sama): register proven search season runtime'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${{ github.sha }}" || { echo 'main moved during Neko DATA publication' >&2; exit 1; }
+          git push origin HEAD:main
+          echo "NEKO_SAMA_DATA_PUBLISHED $(git rev-parse HEAD)"
