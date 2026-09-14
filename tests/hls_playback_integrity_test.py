@@ -12,6 +12,8 @@ SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
+from provider_patch_blocks import begin_marker, end_marker
+
 
 def load_module(path: Path, name: str):
     spec = importlib.util.spec_from_file_location(name, path)
@@ -125,9 +127,11 @@ ordered = integrity.apply(ordered, {
     "probe_all_urls": True,
     "fail_closed_unknown": True,
 })
-assert ordered.count("/* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
-assert ordered.count("/* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
-assert ordered.rfind("/* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") > ordered.rfind("streamzo #1")
+hls_begin = begin_marker("CORE.HLS_RUNTIME_INTEGRITY.V1")
+hls_end = end_marker("CORE.HLS_RUNTIME_INTEGRITY.V1")
+assert ordered.count(hls_begin) == 1
+assert ordered.count(hls_end) == 1
+assert ordered.rfind(hls_begin) > ordered.rfind("streamzo #1")
 # Strict final-output flags must survive even though the implementation revision
 # is then upgraded by the default native first-segment proof layer.
 assert "native-vod-duration-proof-v9" in ordered
