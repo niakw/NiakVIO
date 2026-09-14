@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Classify external audit findings into maintained source vs derived evidence.
 
-Raw Sonar/DeepSource/CodeScene exports remain untouched.  This script creates a
+Raw Sonar/DeepSource/CodeScene exports remain untouched. This script creates a
 release-oriented view so generated Provider JS does not multiply one maintained
 Core issue across every published bundle.
 """
@@ -24,7 +24,7 @@ MAINTAINED_PREFIXES = (
     "tests/",
 )
 
-# Exact reviewed scanner false positives.  Keep this intentionally narrow: the
+# Exact reviewed scanner false positives. Keep this intentionally narrow: the
 # rule remains active everywhere else.
 REVIEWED_FALSE_POSITIVES = {
     (
@@ -88,14 +88,21 @@ def deepsource_rows(root: Path) -> Iterable[dict[str, Any]]:
     for raw in rows if isinstance(rows, list) else []:
         if not isinstance(raw, dict):
             continue
-        rule = str(raw.get("issueCode") or raw.get("issue_code") or raw.get("code") or raw.get("rule") or "")
+        rule = str(
+            raw.get("shortcode")
+            or raw.get("issueCode")
+            or raw.get("issue_code")
+            or raw.get("code")
+            or raw.get("rule")
+            or ""
+        )
         yield {
             "source": "deepsource",
             "rule": rule,
             "severity": str(raw.get("severity") or "").upper(),
             "path": norm_path(raw.get("path") or raw.get("filePath")),
             "line": raw.get("beginLine") or raw.get("line"),
-            "message": str(raw.get("message") or raw.get("title") or raw.get("description") or ""),
+            "message": str(raw.get("message") or raw.get("title") or raw.get("shortDescription") or raw.get("description") or ""),
         }
 
 
@@ -112,11 +119,33 @@ def codescene_rows(root: Path) -> Iterable[dict[str, Any]]:
             continue
         yield {
             "source": "codescene",
-            "rule": str(raw.get("rule") or raw.get("category") or raw.get("type") or ""),
+            "rule": str(raw.get("rule") or raw.get("category") or raw.get("type") or "analysis-finding"),
             "severity": str(raw.get("severity") or "").upper(),
             "path": norm_path(raw.get("path") or raw.get("file") or raw.get("file_path")),
             "line": raw.get("line"),
             "message": str(raw.get("message") or raw.get("description") or raw.get("name") or ""),
+        }
+
+    files = load_json(root / "codescene" / "files.json", [])
+    if isinstance(files, dict):
+        files = files.get("files") or files.get("items") or files.get("data") or []
+    for raw in files if isinstance(files, list) else []:
+        if not isinstance(raw, dict):
+            continue
+        defects = raw.get("number_of_defects")
+        try:
+            defect_count = int(defects or 0)
+        except (TypeError, ValueError):
+            defect_count = 0
+        if defect_count <= 0:
+            continue
+        yield {
+            "source": "codescene",
+            "rule": "code-health-defects",
+            "severity": "",
+            "path": norm_path(raw.get("name") or raw.get("path") or raw.get("file")),
+            "line": None,
+            "message": f"CodeScene reports {defect_count} defect(s) for this file",
         }
 
 
@@ -147,7 +176,7 @@ def main() -> int:
             unresolved.append(row)
 
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         "raw_findings": len(rows),
         "by_source": dict(sorted(sources.items())),
         "by_scope": dict(sorted(scoped.items())),
@@ -179,11 +208,11 @@ def main() -> int:
     if unresolved:
         lines += ["", "## Unresolved maintained findings", ""]
         for row in unresolved[:200]:
-            lines.append(f"- `{row['source']}` `{row['rule']}` `{row['path']}:{row.get('line') or '?'}'` — {row['message']}")
+            lines.append(f"- `{row['source']}` `{row['rule']}` `{row['path']}:{row.get('line') or '?'}` — {row['message']}")
     if reviewed:
         lines += ["", "## Reviewed false positives", ""]
         for row in reviewed:
-            lines.append(f"- `{row['source']}` `{row['rule']}` `{row['path']}:{row.get('line') or '?'}'` — {row['review_reason']}")
+            lines.append(f"- `{row['source']}` `{row['rule']}` `{row['path']}:{row.get('line') or '?'}` — {row['review_reason']}")
     (root / "maintained-source.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     print(
