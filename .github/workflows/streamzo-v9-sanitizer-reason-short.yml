@@ -47,13 +47,13 @@ jobs:
           assert 'NUVIO_STREAM_OUTPUT_FULL_MANIFEST_V9' in text
           no_san=strip_managed_fix(text,'CORE.STREAM_SANITIZER.V6')
 
-          invalid='if(!validHls(text))return false;'
-          diag='''if(!validHls(text)){try{var __lines=String(text||"").split(/\\r?\\n/),__child=false;for(var __i=0;__i<__lines.length;__i++){var __line=String(__lines[__i]||"").trim();if(__line&&__line.charAt(0)!=="#"){__child=true;break}}console.log("NIAKVIO_SAN_HLS_INVALID","len="+String(text||"").length,"ctype="+contentType,"m3u="+(String(text||"").trimStart().indexOf("#EXTM3U")===0),"streaminf="+(/#EXT-X-STREAM-INF\\s*:/i.test(String(text||""))),"extinf="+(/#EXTINF\\s*:/i.test(String(text||""))),"map="+(/#EXT-X-MAP\\s*:/i.test(String(text||""))),"part="+(/#EXT-X-PART\\s*:/i.test(String(text||""))),"end="+(/#EXT-X-ENDLIST/i.test(String(text||""))),"child="+__child)}catch(_diag){}return false;}'''
-          if invalid not in text: raise SystemExit('invalidHls anchor missing')
+          invalid='if(!validHls(value))return null;'
+          diag='''if(!validHls(value)){try{var __lines=String(value||"").split(/\\r?\\n/),__child=false;for(var __i=0;__i<__lines.length;__i++){var __line=String(__lines[__i]||"").trim();if(__line&&__line.charAt(0)!=="#"){__child=true;break}}console.log("NIAKVIO_SAN_HLS_INVALID","len="+String(value||"").length,"m3u="+(String(value||"").trimStart().indexOf("#EXTM3U")===0),"streaminf="+(/#EXT-X-STREAM-INF\\s*:/i.test(String(value||""))),"iframe="+(/#EXT-X-I-FRAME-STREAM-INF\\s*:/i.test(String(value||""))),"media="+(/#EXT-X-MEDIA\\s*:/i.test(String(value||""))),"extinf="+(/#EXTINF\\s*:/i.test(String(value||""))),"target="+(/#EXT-X-TARGETDURATION\\s*:/i.test(String(value||""))),"map="+(/#EXT-X-MAP\\s*:/i.test(String(value||""))),"part="+(/#EXT-X-PART\\s*:/i.test(String(value||""))),"end="+(/#EXT-X-ENDLIST/i.test(String(value||""))),"child="+__child)}catch(_diag){}return null;}'''
+          if invalid not in text: raise SystemExit('normalizeHlsText validHls anchor missing')
           inst=text.replace(invalid,diag,1)
           verdict='return verdict===true?clearPrivateProofs(item.stream):null;'
+          if verdict not in inst: raise SystemExit('strict verdict anchor missing')
           inst=inst.replace(verdict,'try{console.log("NIAKVIO_SAN_VERDICT",String(verdict))}catch(_diag){}'+verdict,1)
-          inst=inst.replace('catch(_error){return null}','catch(_error){try{console.log("NIAKVIO_SAN_PROBE_ERROR",String(_error&&_error.name||"Error"))}catch(_diag){}return null}',1)
 
           fixture={'tmdbId':'60059','mediaType':'tv','title':'Better Call Saul','year':2015,'season':1,'episode':1}
           ctx=parity.context_for(fixture)
