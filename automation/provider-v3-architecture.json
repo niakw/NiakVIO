@@ -30,7 +30,7 @@
     "capability_gate_before_provider_network": true
   },
   "route_recognition": {
-    "provider_object_count": 96,
+    "provider_object_count": 46,
     "canonical_route_data": "provider.model.routeData",
     "derived_route_projection": "provider.model.routes",
     "compatibility_projection": "provider.knowledge.recognizedContract.requests",
@@ -98,7 +98,9 @@
   },
   "manual_reconstruction": {
     "full_catalogue": true,
-    "expected_provider_count": 96,
+    "expected_provider_count": 46,
+    "historical_provider_count": 50,
+    "historical_provider_directory": "provider-old",
     "command": "python scripts/materialize_provider_v3_all.py && python scripts/verify_provider_v3_reverse_rebuild.py",
     "requires_byte_identical_reverse_proof": true,
     "workflow": ".github/workflows/provider-v3-reconstruct-all.yml",
@@ -115,7 +117,9 @@
     "DesktopWindows"
   ],
   "native_lab_contract": {
-    "provider_count": 96,
+    "provider_count": 46,
+    "historical_provider_count": 50,
+    "historical_provider_directory": "provider-old",
     "route_matrix_source": "manifest.json:scrapers[*].supportedTypes",
     "semantic_capability_source": "manifest.json:scrapers[*].canonicalSupportedTypes",
     "declared_route_counts_are_dynamic": true,
@@ -223,7 +227,9 @@
     "note": "Frozen materialization reference retained for reverse-rebuild compatibility only. It is not current route, availability, capability or quarantine truth."
   },
   "provider_plan_contract": {
-    "catalogue_provider_count": 96,
+    "catalogue_provider_count": 46,
+    "historical_provider_count": 50,
+    "historical_provider_directory": "provider-old",
     "disabled_providers_are_audited": true,
     "historical_plan_counts_live_only_in_reference_reconstruction": true,
     "quarantine_requires_explicit_reason": true,
