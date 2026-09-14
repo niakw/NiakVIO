@@ -60,21 +60,28 @@ jobs:
           print('FINAL_HYGIENE_CONTRACT_OK current=46 historical=50 anime_transport=anime+tv shared_release_lock=true finalizer_rematerialization_required=true')
           PY
 
-      - name: Publish hygiene atomically
+      - name: Publish non-workflow hygiene atomically
         shell: bash
         run: |
           set -euo pipefail
-          rm .github/workflows/maintenance-final-hygiene-20260914.yml
+          # GitHub Actions tokens cannot update workflow files in this repository.
+          # Keep those four path changes for a connector-side commit immediately after
+          # this verified source/docs transaction.
+          git checkout -- \
+            .github/workflows/release-finalize.yml \
+            .github/workflows/domain-refresh.yml \
+            .github/workflows/release-candidate-validation.yml \
+            .github/triggers/final-validation-20260914.json
           rm .github/scripts/final_hygiene_20260914.py
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add -A
           test -n "$(git status --porcelain)" || { echo 'No hygiene changes produced' >&2; exit 1; }
-          git commit -m 'fix: align final release and current provider contracts'
+          git commit -m 'fix: align provider docs and publication contracts'
           git fetch origin main
           test "$(git rev-parse origin/main)" = "$GITHUB_SHA" || {
             echo "main moved during hygiene expected=$GITHUB_SHA actual=$(git rev-parse origin/main)" >&2
             exit 1
           }
           git push origin HEAD:main
-          echo "FIELD_FINAL_HYGIENE_SHA $(git rev-parse HEAD)"
+          echo "FIELD_FINAL_HYGIENE_SOURCE_SHA $(git rev-parse HEAD)"
