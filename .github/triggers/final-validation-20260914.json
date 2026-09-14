@@ -1,7 +1,17 @@
 {
-  "purpose": "final 5.21.44 core validation on complete 46-current/50-historical contract before merge",
-  "branch": "fix/labs-5.21.44-20260912",
-  "cleanup_head": "39df04bc4fe3485e90ecf7935b17b67b4529a807",
+  "purpose": "final 5.21.45 exact-main validation after atomic Domain Refresh publication and idempotence proof",
+  "branch": "main",
+  "release": "5.21.45",
+  "pre_validation_head": "db5c56b025259b07b12b01f61c4f787d243cdd45",
+  "domain_refresh": {
+    "run_id": 34823835967,
+    "scope": 46,
+    "applied": 0,
+    "registry_changed": 0,
+    "bundles_changed": 0,
+    "idempotent": true,
+    "release_changed": false
+  },
   "provider_contract": {
     "current": 46,
     "historical": 50,
@@ -13,17 +23,16 @@
     "domain_refresh_scope": "current manifest 46 only; historical hub/history rows immutable",
     "non_regression_scope": "quick-yield census iterates manifest.json current providers directly; no historical/all switch",
     "codeql_scope": "46 current providers/provider-bases plus source; provider-old excluded from current runtime scan",
-    "external_audit": "read-only; final audit is rerun on main after merge"
+    "external_audit": "read-only; publish=false"
   },
   "requirements": [
-    "zero temp workflows",
-    "derived projections subset of current manifest",
-    "historical assets retained without historical provider publication",
-    "historical snapshots collapse to 50 unique provider identities",
-    "Domain Refresh mutates current manifest providers only",
-    "25s provider timeout on Android and full iOS",
-    "CodeQL has no empty fallback shard",
-    "permanent core gates before merge",
-    "five native labs and external security audit finalized on main after merge"
+    "verify-only validation on main",
+    "Verify & Publish quick green on exact SHA",
+    "four permanent core gates green on exact SHA",
+    "CodeQL green on exact SHA",
+    "external audit green and read-only on exact SHA",
+    "five native platforms green on exact SHA",
+    "zero temporary workflows",
+    "no main mutation during final validation"
   ]
 }
