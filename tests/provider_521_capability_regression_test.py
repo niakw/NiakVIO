@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """Preserve trustworthy 5.21.0 capability evidence without reviving archived providers.
 
-The 5.21.0 fixture predates the strict semantic/transport split. Its `types` field
+The 5.21.0 fixture contains 92 providers. The current release has 46 providers
+and 50 historical providers live only in provider-old/, so the old fixture can
+cover exactly 42 current providers. The remaining four current providers were
+introduced after 5.21.0 and are validated from the current capability contract
+instead of fabricating historical evidence for them.
+
+The old fixture predates the strict semantic/transport split. Its `types` field
 can therefore contain transport aliases that are not semantic capability proof.
-Only explicit `semanticTypes` remains a semantic floor. Providers intentionally
-removed from the current 46-provider release must remain present in `provider-old/`
-as historical material instead of being silently lost or republished.
+Only explicit `semanticTypes` remains a semantic floor.
 """
 from __future__ import annotations
 
@@ -55,14 +59,26 @@ archived_count = 0
 current_fixture_count = 0
 
 assert len(rows) == CURRENT_PROVIDER_COUNT, f"current release must contain {CURRENT_PROVIDER_COUNT} providers, got {len(rows)}"
-fixture_ids = {str(value).strip().casefold() for value in (FIXTURE.get("providers") or {})}
+fixture_providers = FIXTURE.get("providers") or {}
+fixture_ids = {str(value).strip().casefold() for value in fixture_providers}
 current_ids = set(rows)
 fixture_archived = fixture_ids - current_ids
+current_new = current_ids - fixture_ids
+current_overlap = current_ids & fixture_ids
+
+assert int(FIXTURE.get("provider_count") or 0) == len(fixture_providers), "5.21.0 capability fixture count drift"
 assert len(fixture_archived) == HISTORICAL_PROVIDER_COUNT, (
     f"historical split drift: expected {HISTORICAL_PROVIDER_COUNT}, got {len(fixture_archived)}"
 )
+expected_overlap = len(fixture_ids) - HISTORICAL_PROVIDER_COUNT
+assert len(current_overlap) == expected_overlap, (
+    f"5.21 overlap drift: expected {expected_overlap}, got {len(current_overlap)}"
+)
+assert len(current_new) == CURRENT_PROVIDER_COUNT - expected_overlap, (
+    f"post-5.21 current provider count drift: {sorted(current_new)}"
+)
 
-for provider_id, floor in (FIXTURE.get("providers") or {}).items():
+for provider_id, floor in fixture_providers.items():
     provider_id = str(provider_id).strip().casefold()
     current = rows.get(provider_id)
     if current is None:
@@ -76,9 +92,6 @@ for provider_id, floor in (FIXTURE.get("providers") or {}).items():
     if not current_types:
         errors.append(f"{provider_id}: current semantic capability is empty")
 
-    # Only explicit historical semanticTypes is valid semantic evidence. The
-    # legacy `types` field mixed Nuvio transport aliases with actual capability
-    # and must not reintroduce fake movie/tv support into the current release.
     explicit_semantic = norm_types(floor.get("semanticTypes"))
     if explicit_semantic and current_types != explicit_semantic:
         errors.append(
@@ -99,6 +112,15 @@ for provider_id, floor in (FIXTURE.get("providers") or {}).items():
     if isinstance(floor.get("capability"), dict) and not isinstance(caps.get(provider_id), dict):
         errors.append(f"{provider_id}: current provider capability contract disappeared")
 
+# Providers introduced after the 5.21.0 fixture have no historical floor. They
+# must still have a complete current semantic + capability contract.
+for provider_id in sorted(current_new):
+    current_types = semantic_types(rows[provider_id])
+    if not current_types:
+        errors.append(f"{provider_id}: post-5.21 provider has empty semantic capability")
+    if not isinstance(caps.get(provider_id), dict):
+        errors.append(f"{provider_id}: post-5.21 provider is missing current capability contract")
+
 playback = OVERRIDES.get("playback_integrity_policy") or {}
 pre = [str(value) for value in playback.get("pre_media_discovery_hooks") or []]
 post = [str(value) for value in playback.get("post_media_discovery_hooks") or []]
@@ -112,14 +134,13 @@ if "scripts/provider_patches/hls_master_audio_preserver_v1.py" in global_hooks:
 if "scripts/provider_patches/native_hls_integrity_budget_v1.py" in pre + post + global_hooks:
     errors.append("retired native HLS cross-mutator reappeared in Core")
 
-assert int(FIXTURE.get("provider_count") or 0) == len(FIXTURE.get("providers") or {}), (
-    "5.21.0 capability fixture count drift"
-)
-assert current_fixture_count == CURRENT_PROVIDER_COUNT, current_fixture_count
+assert current_fixture_count == expected_overlap, current_fixture_count
 assert archived_count == HISTORICAL_PROVIDER_COUNT, archived_count
 assert not errors, "5.21.0 production capability regressions:\n- " + "\n- ".join(errors)
 
 print(
     "5.21.0 capability/history regression gate passed: "
-    f"current={current_fixture_count} historical={archived_count} hls_current={hls_count}"
+    f"current_with_5_21_floor={current_fixture_count} current_post_5_21={len(current_new)} "
+    f"historical={archived_count} hls_current={hls_count} "
+    f"post_5_21={','.join(sorted(current_new))}"
 )
