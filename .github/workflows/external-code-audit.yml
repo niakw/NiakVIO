@@ -2,14 +2,23 @@ name: SEC - External Code Audit
 
 on:
   workflow_dispatch:
+    inputs:
+      ref:
+        description: Repository ref to snapshot alongside external audit exports
+        required: false
+        default: main
+        type: string
+      publish:
+        description: Publish refreshed exports back to main (main ref only)
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - main
     paths:
-      # Manual refresh marker only: normal repository pushes do not trigger this workflow.
       - audit/ai-external/.refresh-request
   schedule:
-    # Weekly refresh every Sunday at 04:17 UTC.
     - cron: '17 4 * * 0'
 
 permissions:
@@ -32,12 +41,12 @@ jobs:
       CODESCENE_TOKEN: ${{ secrets.CODESCENE_TOKEN }}
       EXTERNAL_REFRESH_WAIT_SECONDS: '900'
       EXTERNAL_REFRESH_POLL_SECONDS: '15'
-
+      AUDIT_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || 'main' }}
     steps:
-      - name: Checkout current main
+      - name: Checkout requested audit snapshot
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
+          ref: ${{ env.AUDIT_REF }}
           fetch-depth: 0
 
       - name: Prepare export directory
@@ -68,11 +77,24 @@ jobs:
         if: always()
         run: python3 scripts/external_audit/build_index.py
 
-      - name: Commit refreshed audit exports safely
+      - name: Upload candidate audit evidence
         if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: external-code-audit-${{ github.run_id }}
+          path: audit/ai-external
+          retention-days: 21
+          if-no-files-found: error
+
+      - name: Commit refreshed audit exports safely
+        if: ${{ always() && (github.event_name != 'workflow_dispatch' || inputs.publish) }}
         shell: bash
         run: |
           set -euo pipefail
+          if [ "$AUDIT_REF" != "main" ]; then
+            echo "Refusing to publish external audit exports from non-main ref: $AUDIT_REF" >&2
+            exit 1
+          fi
           SNAPSHOT="$RUNNER_TEMP/ai-external-export"
           rm -rf "$SNAPSHOT"
           mkdir -p "$SNAPSHOT"
