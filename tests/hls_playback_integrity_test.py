@@ -41,7 +41,11 @@ globalThis.getStreams=async function(){return [{url:"https://media.test/master.m
 '''
 wrapped = integrity.apply(base_provider, {"timeout_ms": 2000, "max_children": 2})
 assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in wrapped
-assert "recovery-first-v5-native-budget-owned" in wrapped
+# Native first-segment/VOD proof is enabled by default and is the current
+# strongest revision for the default HLS guard. Older v5 was only the base
+# recovery layer before native proof was added.
+assert "native-vod-duration-proof-v9" in wrapped
+assert '"probeFirstSegmentNative":true' in wrapped
 assert 'typeof setTimeout==="function"' in wrapped
 assert 'typeof clearTimeout==="function"' in wrapped
 assert integrity.apply(wrapped, {"timeout_ms": 2000, "max_children": 2}) == wrapped
@@ -122,7 +126,11 @@ ordered = integrity.apply(ordered, {
 assert ordered.count("/* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
 assert ordered.count("/* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
 assert ordered.rfind("/* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") > ordered.rfind("streamzo #1")
-assert "final-output-order-v6-native-budget-owned" in ordered
+# Strict final-output flags must survive even though the implementation revision
+# is then upgraded by the default native first-segment proof layer.
+assert "native-vod-duration-proof-v9" in ordered
+assert '"probeAllUrls":true' in ordered
+assert '"failClosedUnknown":true' in ordered
 run_node(r'''
 const media="#EXTM3U\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n#EXT-X-ENDLIST\n";
 globalThis.fetch=async function(url){var u=String(url);
