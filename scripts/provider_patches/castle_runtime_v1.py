@@ -268,7 +268,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     if(raw==="4k")return 2160;
     var n=parseInt(raw,10);return Number.isFinite(n)?n:0;
   }
-  function outputRows(value,meta,label){
+  function outputRows(value,meta,label,language){
     var data=dataBlock(value),fallback=s(data.videoUrl);
     if(!fallback)return [];
     var subtitles=rows(data.subtitles).filter(function(x){return x&&x.url}).map(function(x){
@@ -286,10 +286,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         var quality=s(row.resolutionDescription||row.resolution||String(c.resolution));
         quality=quality.replace(/^(SD|HD|FHD)\s+/i,"");
         out.push({
-          name:"Castle "+label+" - "+quality,
+          name:"Castle - "+quality,
+          sourceLabel:"Castle "+label,
           title:meta.title+(meta.type==="tv"&&meta.season&&meta.episode?" S"+String(meta.season).padStart(2,"0")+"E"+String(meta.episode).padStart(2,"0"):(meta.year?" ("+meta.year+")":"")),
           url:url,
           quality:quality,
+          language:s(language),
           headers:playbackHeaders(),
           provider:"castle",
           subtitles:subtitles
@@ -297,10 +299,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       }
     }else{
       out.push({
-        name:"Castle "+label,
+        name:"Castle",
+        sourceLabel:"Castle "+label,
         title:meta.title,
         url:fallback,
         quality:String(c.resolution===3?"1080p":c.resolution===1?"480p":"720p"),
+        language:s(language),
         headers:playbackHeaders(),
         provider:"castle",
         subtitles:subtitles
@@ -333,11 +337,13 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       var track=tracks[i]||{};
       if(!track.existIndividualVideo||!track.languageId)continue;
       try{
-        var label="["+s(track.languageName||track.abbreviate||"Unknown")+"]";
+        var trackLanguage=s(track.languageName||track.abbreviate||"");
+        var label="["+(trackLanguage||"Unknown")+"]";
         streams.push.apply(streams,outputRows(
           await video(sec,activeMovieId,episodeId,track.languageId),
           meta,
-          label
+          label,
+          trackLanguage
         ));
       }catch(_e){}
     }
@@ -346,7 +352,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         streams.push.apply(streams,outputRows(
           await video(sec,activeMovieId,episodeId,null),
           meta,
-          "[Shared]"
+          "[Shared]",
+          ""
         ));
       }catch(_e){}
     }
