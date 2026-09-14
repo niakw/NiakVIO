@@ -1,5 +1,5 @@
 {
-  "purpose": "final 5.21.44 validation after 46-current/50-historical projection rebuild, asset-scope fix and canonical anime transport fix",
+  "purpose": "final 5.21.44 validation after Hub46 projection rebuild, transport alignment and CodeQL shard cleanup",
   "branch": "fix/labs-5.21.44-20260912",
   "cleanup_head": "7862e61f5ad7db86ff86aadc4e27f5574af32c06",
   "provider_contract": {
@@ -7,7 +7,8 @@
     "historical": 50,
     "historical_directory": "provider-old",
     "historical_snapshots": 951,
-    "anime_transport": "anime-only => anime+tv; canonical tv => tv+series; movie only when canonical"
+    "anime_transport": "anime-only => anime+tv; no synthetic series; movie only when canonical",
+    "codeql_scope": "46 current providers/provider-bases plus source; provider-old excluded from current runtime scan"
   },
   "requirements": [
     "zero temp workflows",
@@ -15,6 +16,7 @@
     "historical assets retained without historical provider publication",
     "historical snapshots collapse to 50 unique provider identities",
     "25s provider timeout",
+    "CodeQL has no empty fallback shard",
     "permanent gates only",
     "five native labs before merge"
   ]
