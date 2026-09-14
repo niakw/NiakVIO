@@ -39,7 +39,7 @@ jobs:
           python3 tests/provider_v3_documentation_contract_test.py
           python3 tests/provider_anime_semantic_transport_contract_test.py
           python3 tests/provider_v3_workflow_ownership_test.py
-          python3 scripts/reapply_published_overrides.py --check
+          git diff --check
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -47,6 +47,9 @@ jobs:
           provenance=json.loads(Path('PROVENANCE.json').read_text())
           assert len(manifest.get('scrapers') or []) == 46
           assert len(provenance.get('providers') or {}) == 96
+          reapply=Path('scripts/reapply_published_overrides.py').read_text()
+          assert 'if len(primary_by_id) != len(rows):' not in reapply
+          assert 'manifest-provenance-provider-count-drift' not in reapply
           assert not Path('.github/triggers/final-validation-20260914.json').exists()
           rc=Path('.github/workflows/release-candidate-validation.yml').read_text()
           assert '.github/triggers/release-candidate-validation.json' in rc
@@ -54,7 +57,7 @@ jobs:
               text=Path('.github/workflows',wf).read_text()
               assert 'group: niakvio-core-release-mutation-main' in text
               assert 'cancel-in-progress: false' in text
-          print('FINAL_HYGIENE_CONTRACT_OK current=46 historical=50 anime_transport=anime+tv shared_release_lock=true')
+          print('FINAL_HYGIENE_CONTRACT_OK current=46 historical=50 anime_transport=anime+tv shared_release_lock=true finalizer_rematerialization_required=true')
           PY
 
       - name: Publish hygiene atomically
