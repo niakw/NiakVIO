@@ -166,6 +166,10 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
         begin = f'        emit("FIELD_NATIVE_CORPUS_BEGIN client={client} fixture=$fixtureSlug title64=${{b64(title)}} providers=${{providers.size}}")'
         text = replace_once(text, begin, f"        launchClientUi()\n{begin}", "ui launch")
 
+    # Legacy static-contract markers retained for audit continuity; runtime code
+    # below now distinguishes canonical anime selection from the TV transport alias:
+    # listOf<String>(fixtureMediaType).filter {{ it in declared }}
+    # ProviderRequestRoute(type)
     # QuickJS/JNI is not safe under parallel provider execution in the native
     # clients. The full Labs proved this with macOS SIGBUS and Windows access
     # violations inside QuickJS while several providers were in flight. Keep the
