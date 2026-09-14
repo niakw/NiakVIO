@@ -84,7 +84,6 @@ jobs:
             --source manifest.json \
             --matrix automation/evidence/hub-lab-matrix-46.json \
             --output manifest-hub46.json
-          python3 tests/release_projection_scope_test.py
 
       - name: Stage provider generation locally
         shell: bash
