@@ -5,7 +5,7 @@ import json
 from typing import Any
 
 from provider_patch_blocks import replace_managed_fix
-from scripts.provider_patches import dle_anime_runtime_v1 as common
+import dle_anime_runtime_v1 as common
 
 MANAGED_FIX_ID = "PROVIDER.FRENCH-MANGA.DLE.RUNTIME.V1"
 
