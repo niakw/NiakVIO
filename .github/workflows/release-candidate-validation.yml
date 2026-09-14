@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - main
       - 'fix/labs-*'
     paths:
-      - '.github/workflows/release-candidate-validation.yml'
       - '.github/triggers/final-validation-20260914.json'
 
 permissions:
@@ -40,12 +40,14 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Normalize current Hub46 source contracts
+        if: github.ref_name != 'main'
         shell: bash
         run: |
           set -euo pipefail
           python scripts/normalize_hub46_semantic_transport_sources.py
           python scripts/normalize_hub46_release_gate_sources.py
       - name: Rebuild catalog and projections strictly from current Hub46 manifest
+        if: github.ref_name != 'main'
         shell: bash
         run: |
           set -euo pipefail
@@ -68,6 +70,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            test -z "$(git status --porcelain)" || {
+              echo 'main validation checkout is unexpectedly dirty' >&2
+              git status --short
+              exit 1
+            }
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            echo "candidate_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            echo "RELEASE_NORMALIZE main_verify_only=true changed=0 sha=$(git rev-parse HEAD)"
+            exit 0
+          fi
           git add \
             scripts/materialize_provider_v3_all.py \
             scripts/enforce_provider_v3_semantic_transport_contract_v5.py \
@@ -146,7 +159,7 @@ jobs:
         run: python tests/workflow_security_policy_test.py
 
   dispatch-and-wait:
-    name: Permanent gates, security and five native labs
+    name: Permanent gates, Verify & Publish, security and five native labs
     needs: [normalize, contracts]
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -165,7 +178,7 @@ jobs:
             echo "Candidate branch moved during validation: expected=${TARGET_SHA} actual=${actual}" >&2
             exit 1
           }
-      - name: Dispatch permanent gates, security and native labs on exact candidate ref
+      - name: Dispatch permanent gates, Verify & Publish, security and native labs on exact candidate ref
         shell: bash
         run: |
           set -euo pipefail
@@ -176,6 +189,7 @@ jobs:
               -f ref="${TARGET_REF}" "$@"
             echo "dispatched ${workflow} ref=${TARGET_REF} sha=${TARGET_SHA}"
           }
+          dispatch sync.yml -f 'inputs[mode]=quick'
           dispatch provider-non-regression.yml
           dispatch core-stream-metadata-contract.yml
           dispatch canonical-media-types.yml
@@ -198,6 +212,7 @@ jobs:
           sha=os.environ['TARGET_SHA']
           token=os.environ['GH_TOKEN']
           workflows=[
+              'sync.yml',
               'provider-non-regression.yml',
               'core-stream-metadata-contract.yml',
               'canonical-media-types.yml',
@@ -264,5 +279,5 @@ jobs:
               for workflow, run_id, conclusion in failures:
                   print(f'RUN_FAILED workflow={workflow} id={run_id} conclusion={conclusion}')
               raise SystemExit(1)
-          print('RELEASE_CANDIDATE_VALIDATION_GREEN providers=46 historical=50 platforms=5 security=codeql+external')
+          print('RELEASE_CANDIDATE_VALIDATION_GREEN providers=46 historical=50 platforms=5 verify=quick security=codeql+external')
           PY
