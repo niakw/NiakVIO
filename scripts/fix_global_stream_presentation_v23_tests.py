@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 GLOBAL_TEST = ROOT / "tests/global_stream_presentation_test.py"
 PIPELINE_TEST = ROOT / "tests/global_stream_presentation_pipeline_test.py"
+FALLBACK_TEST = ROOT / "tests/global_stream_presentation_metadata_fallback_test.py"
 
 GLOBAL_REPLACEMENTS = (
     (
@@ -54,6 +55,27 @@ PIPELINE_REPLACEMENTS = (
     ),
 )
 
+FALLBACK_REPLACEMENTS = (
+    (
+        'assert "🇫🇷 VF" in row["description"], row',
+        'assert row["language"] == "VF", row\n'
+        'assert row["languageTracks"] == [{"code":"fr","tag":"FR","label":"French","role":"Dub"}], row\n'
+        'assert "French · Dub" in row["description"], row\n'
+        'assert "FR Dub" in row["displayBadges"], row',
+    ),
+    (
+        'assert "🇫🇷 VF" in tv_row["description"], tv_row',
+        'assert tv_row["language"] == "VF", tv_row\n'
+        'assert tv_row["languageTracks"] == [{"code":"fr","tag":"FR","label":"French","role":"Dub"}], tv_row\n'
+        'assert "French · Dub" in tv_row["description"], tv_row\n'
+        'assert "FR Dub" in tv_row["displayBadges"], tv_row',
+    ),
+    (
+        'print("stream presentation metadata fallback preserves existing UI for movie and TV episode")',
+        'print("stream presentation metadata fallback preserves V23 language roles for movie and TV episode")',
+    ),
+)
+
 
 def apply_replacements(path: Path, replacements: tuple[tuple[str, str], ...]) -> bool:
     text = path.read_text(encoding="utf-8")
@@ -73,6 +95,7 @@ def apply_replacements(path: Path, replacements: tuple[tuple[str, str], ...]) ->
 def main() -> int:
     global_changed = apply_replacements(GLOBAL_TEST, GLOBAL_REPLACEMENTS)
     pipeline_changed = apply_replacements(PIPELINE_TEST, PIPELINE_REPLACEMENTS)
+    fallback_changed = apply_replacements(FALLBACK_TEST, FALLBACK_REPLACEMENTS)
     global_text = GLOBAL_TEST.read_text(encoding="utf-8")
     if ' - MULTI (VF/VO)"' in global_text or ' - 1080p - VF"' in global_text or ' - 1080p - VO"' in global_text:
         raise AssertionError("legacy language suffix remains in presentation title assertion")
@@ -80,6 +103,7 @@ def main() -> int:
         "GLOBAL_STREAM_PRESENTATION_V23_TESTS_OK",
         f"global_changed={str(global_changed).lower()}",
         f"pipeline_changed={str(pipeline_changed).lower()}",
+        f"fallback_changed={str(fallback_changed).lower()}",
     )
     return 0
 
