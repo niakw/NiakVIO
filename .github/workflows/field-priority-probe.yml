@@ -1,0 +1,66 @@
+name: FIELD - Short Priority Probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/field-priority-probe.yml'
+      - 'scripts/field_priority_probe.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-field-priority-probe
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Validate short probe
+        run: python -m py_compile scripts/field_priority_probe.py
+      - name: Run current published providers only
+        run: |
+          set -euo pipefail
+          python scripts/field_priority_probe.py \
+            --workers 10 \
+            --timeout 12 \
+            --output "$RUNNER_TEMP/field-priority-probe.json"
+      - name: Print compact diagnostic matrix
+        run: |
+          python - "$RUNNER_TEMP/field-priority-probe.json" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1],encoding='utf-8'))
+          print('FIELD_PRIORITY_MATRIX manifest='+str(data.get('manifestVersion')))
+          for fixture, classes in (data.get('summary') or {}).items():
+              print(f'FIXTURE {fixture}')
+              for state, providers in sorted(classes.items()):
+                  print(f'  {state}: '+','.join(providers))
+          print('FIELD_PRIORITY_DETAILS')
+          for row in data.get('results') or []:
+              strict=row.get('strict') or {}
+              diagnostic=row.get('diagnostic') or {}
+              statuses=sorted(set((strict.get('http_statuses') or [])+(diagnostic.get('http_statuses') or [])))
+              print(
+                  f"{row.get('fixture')} provider={row.get('provider')} class={row.get('classification')} "
+                  f"streams={strict.get('stream_count',0)} diag_streams={diagnostic.get('stream_count',0)} "
+                  f"http={statuses} provider_http={strict.get('provider_http_ok',False)} "
+                  f"error={strict.get('error_class') or ''}"
+              )
+          PY
