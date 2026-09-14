@@ -7,6 +7,10 @@ on:
         description: Exact accepted main SHA to finalize
         required: true
         type: string
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/release-finalize.json'
 
 permissions:
   contents: write
@@ -34,10 +38,17 @@ jobs:
         run: |
           set -euo pipefail
           ACTUAL="$(git rev-parse HEAD)"
-          test "$ACTUAL" = "${{ inputs.expected_sha }}" || {
-            echo "accepted SHA mismatch expected=${{ inputs.expected_sha }} actual=$ACTUAL" >&2
-            exit 1
-          }
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            test "$ACTUAL" = "${{ inputs.expected_sha }}" || {
+              echo "accepted SHA mismatch expected=${{ inputs.expected_sha }} actual=$ACTUAL" >&2
+              exit 1
+            }
+          else
+            test "$ACTUAL" = "${{ github.sha }}" || {
+              echo "accepted trigger SHA mismatch expected=${{ github.sha }} actual=$ACTUAL" >&2
+              exit 1
+            }
+          fi
 
       - name: Export current release-generation baseline
         shell: bash
