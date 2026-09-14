@@ -77,16 +77,18 @@ jobs:
               no_hls=strip_managed_fix(text,'CORE.HLS_RUNTIME_INTEGRITY.V1')
               p_no=td/(pid+'-no-hls.js'); p_no.write_text(no_hls,encoding='utf-8')
 
-              # Instrument only the temporary copy. Keep semantics byte-identical apart from diagnostic output.
-              instrumented=text
-              needle='if(proof.state==="invalid"||(proof.state==="unknown"&&config.failClosedUnknown)){'
-              replacement='if(proof.state==="invalid"||(proof.state==="unknown"&&config.failClosedUnknown)){try{console.log("NIAKVIO_HLS_PROOF",proof.state,proof.reason||"",proof.kind||"",proof.durationSeconds||"")}catch(_diag){}'
-              if needle not in instrumented:
-                raise SystemExit(pid+': native HLS rejection anchor missing')
-              instrumented=instrumented.replace(needle,replacement,1)
-              p_inst=td/(pid+'-instrumented.js'); p_inst.write_text(instrumented,encoding='utf-8')
-
+              # Always emit causality first, so diagnostic-anchor drift cannot hide it.
               run(pid+':current',src,fixture)
               run(pid+':no-hls',p_no,fixture)
+
+              # Instrument the native proof result in a temporary copy only.
+              instrumented=text
+              needle='var proof=await nativeFirstSegmentProof(stream);'
+              replacement=needle+'try{console.log("NIAKVIO_HLS_PROOF",proof.state,proof.reason||"",proof.kind||"",proof.durationSeconds||"")}catch(_diag){}'
+              if needle not in instrumented:
+                print('INSTRUMENTATION_SKIPPED',pid,'native-proof-anchor-missing')
+                continue
+              instrumented=instrumented.replace(needle,replacement,1)
+              p_inst=td/(pid+'-instrumented.js'); p_inst.write_text(instrumented,encoding='utf-8')
               run(pid+':instrumented',p_inst,fixture)
           PY
