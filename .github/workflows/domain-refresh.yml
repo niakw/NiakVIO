@@ -65,6 +65,7 @@ jobs:
           cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"
           cp provider-hubs.json "$RUNNER_TEMP/provider-hubs.before.json"
           cp provider-domain-history.json "$RUNNER_TEMP/provider-domain-history.before.json"
+          git rev-parse HEAD > "$RUNNER_TEMP/domain-base-sha"
 
       - name: Sanitize stale registry constructors before resolution
         run: |
@@ -145,9 +146,10 @@ jobs:
           python scripts/audit_provider_v3_static.py
           git diff --exit-code -- scripts/provider_patches provider-bases provider-type-policy.json
 
-      - name: Reproject manifests and finalize cache-safe version
+      - name: Reproject, pin Hub46 transport and validate release
         env:
           NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'
+        shell: bash
         run: |
           set -euo pipefail
           python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
@@ -156,9 +158,51 @@ jobs:
             --previous "$RUNNER_TEMP/published-manifest-baseline.json"
           python tests/release_auto_bump_test.py
           python scripts/audit_provider_v3_static.py
+          python scripts/generate_hub46_manifest.py \
+            --source manifest.json \
+            --matrix automation/evidence/hub-lab-matrix-46.json \
+            --output manifest-hub46.json
           python scripts/prune_unreferenced_providers.py
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add \
+            provider-overrides.json provider-hubs.json provider-domain-history.json \
+            manifest.json manifest-hub46.json \
+            vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
+            provider-v3-materialization.json providers/ \
+            package.json package-lock.json sources.json provider_catalog.json nuvio-client-id-state.json \
+            automation/PLATFORM-RUNTIME-CONTRACTS.md
+
+          if git diff --cached --quiet; then
+            echo 'FIELD_DOMAIN_TRANSACTION_CHANGED false'
+            echo false > "$RUNNER_TEMP/domain-transaction-changed"
+            exit 0
+          fi
+
+          echo true > "$RUNNER_TEMP/domain-transaction-changed"
+          git commit -m 'chore(domains): stage Provider v3 domain generation'
+          PROVIDER_SHA="$(git rev-parse HEAD)"
+          echo "$PROVIDER_SHA" > "$RUNNER_TEMP/domain-provider-sha"
+
+          python scripts/build_hub46_native_manifest.py \
+            --provider-sha "$PROVIDER_SHA" \
+            --source manifest-hub46.json \
+            --output native-hub46/manifest.json
+          python tests/native_hub46_manifest_test.py
+          python tests/native_hub46_transport_manifest_test.py
+          python tests/release_projection_scope_test.py
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
+          python tests/release_hash_scope_test.py
+
+          git add native-hub46/manifest.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git diff --cached --quiet && {
+            echo 'Pinned Hub46 transport produced no final publication diff' >&2
+            exit 1
+          }
+          git commit -m 'chore(domains): finalize Provider v3 domain transaction'
+          echo "FIELD_DOMAIN_LOCAL_FINAL_SHA $(git rev-parse HEAD) provider_sha=$PROVIDER_SHA"
 
       - name: Publish authoritative domain transaction
         env:
@@ -166,30 +210,25 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add \
-            provider-overrides.json provider-hubs.json provider-domain-history.json \
-            manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
-            provider-v3-materialization.json providers/ \
-            package.json package-lock.json sources.json provider_catalog.json nuvio-client-id-state.json \
-            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
-          if git diff --cached --quiet; then
+          if [ ! -f "$RUNNER_TEMP/domain-transaction-changed" ] || [ "$(cat "$RUNNER_TEMP/domain-transaction-changed")" != "true" ]; then
             echo 'No authoritative hub domain publication change.'
             echo 'FIELD_DOMAIN_REFRESH_IDEMPOTENT true'
             exit 0
           fi
-          BASE_SHA="$(git rev-parse HEAD)"
+
+          BASE_SHA="$(cat "$RUNNER_TEMP/domain-base-sha")"
+          FINAL_SHA="$(git rev-parse HEAD)"
           git fetch origin main
           CURRENT_SHA="$(git rev-parse origin/main)"
           if [ "$CURRENT_SHA" != "$BASE_SHA" ]; then
-            echo "FIELD_DOMAIN_PUBLICATION_SKIPPED reason=main_advanced observed=$BASE_SHA current=$CURRENT_SHA"
+            echo "FIELD_DOMAIN_PUBLICATION_SKIPPED reason=main_advanced observed=$BASE_SHA current=$CURRENT_SHA final=$FINAL_SHA"
             gh workflow run domain-refresh.yml --ref main -f mode=quick
             exit 0
           fi
-          git commit -m 'chore(domains): publish authoritative Provider v3 domain transaction'
+
           AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
+          echo "FIELD_DOMAIN_PUBLICATION_OK base=$BASE_SHA provider=$(cat "$RUNNER_TEMP/domain-provider-sha") final=$FINAL_SHA"
           gh workflow run sync.yml --ref main -f mode=quick
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
