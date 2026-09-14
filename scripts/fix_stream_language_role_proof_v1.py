@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Make Original/Dub role inference evidence-based.
+"""Make Original/Dub/Sub role inference evidence-based.
 
-A provider-language hint such as VF is not enough to prove `Dub` when the
-original language is unknown. Patch the durable migration source and, when the
-migration has already been applied in the current workspace, its generated Core
-outputs as well.
+Provider language hints such as VF or VOSTFR are not enough to prove a fully
+structured track set when the original language is unknown. Patch the durable
+migration source and, when the migration has already been applied in the current
+workspace, its generated Core outputs as well.
 """
 from __future__ import annotations
 
@@ -25,12 +25,28 @@ REPLACEMENTS = (
         '      if (original && isVfProvider(provider) && original !== "fr") add("fr", "Dub");',
     ),
     (
+        '      if (original) add(original, "Original");\n      add("fr", "Sub");',
+        '      if (original) { add(original, "Original"); add("fr", "Sub"); }',
+    ),
+    (
         'else if(/^(?:VF|VFF|VFQ|FR|FRA|FRE|FRENCH|FRANCAIS|FRANÇAIS|FR-CA)$/i.test(explicit)){add("fr",original==="fr"?"Original":"Dub")}',
         'else if(/^(?:VF|VFF|VFQ|FR|FRA|FRE|FRENCH|FRANCAIS|FRANÇAIS|FR-CA)$/i.test(explicit)){if(original)add("fr",original==="fr"?"Original":"Dub")}',
     ),
     (
         'if(s(c.providerLanguageMode).toLowerCase()==="vf"&&original!=="fr")add("fr","Dub")',
         'if(original&&s(c.providerLanguageMode).toLowerCase()==="vf"&&original!=="fr")add("fr","Dub")',
+    ),
+    (
+        'if(/\\bVOSTFR\\b/.test(u)){if(original)add(original,"Original");add("fr","Sub")}',
+        'if(/\\bVOSTFR\\b/.test(u)){if(original){add(original,"Original");add("fr","Sub")}}',
+    ),
+    (
+        '  if (/\\bVOSTFR\\b/i.test([stream.language, stream.description, stream.title].map(clean).filter(Boolean).join(" "))) add("fr", "Sub");',
+        '  if (original && /\\bVOSTFR\\b/i.test([stream.language, stream.description, stream.title].map(clean).filter(Boolean).join(" "))) add("fr", "Sub");',
+    ),
+    (
+        'if(/\\bVOSTFR\\b/i.test([r&&r.language,r&&r.description,r&&r.title].map(s).join(" ")))add("fr","Sub")',
+        'if(original&&/\\bVOSTFR\\b/i.test([r&&r.language,r&&r.description,r&&r.title].map(s).join(" ")))add("fr","Sub")',
     ),
 )
 
@@ -49,7 +65,7 @@ def patch(path: Path, *, required: bool) -> bool:
         if old in text:
             text = text.replace(old, new)
             touched += 1
-    if required and touched == 0 and not all(new in text for _old, new in REPLACEMENTS[:2]):
+    if required and touched == 0 and not all(new in text for _old, new in REPLACEMENTS[:3]):
         raise AssertionError(f"{path}: evidence-role source shape drifted")
     if text != before:
         path.write_text(text, encoding="utf-8")
