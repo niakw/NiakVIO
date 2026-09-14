@@ -211,8 +211,13 @@ export function normalizeLanguage(stream = {}, provider = {}) {
   const isVfq = (text) => /\bVFQ\b|\bFR[ ._-]?CA\b|\bFRENCH[ ._-]?(?:CANADA|CANADIAN|QUEBEC)\b|\bQU[ÉE]B[ÉE]COIS\b/.test(text);
   const isVf = (text) => /\b(?:VF|VFF|FR|FRA|FRE|FRENCH|FRANCAIS|FRANÇAIS|FR[ ._-]?FR)\b/.test(text);
   const isVo = (text) => /\bVO\b|\bORIGINAL(?:[ ._-]?(?:AUDIO|LANG(?:UAGE)?))?\b/.test(text);
+  const combined = `${upper} ${hints}`.trim();
 
-  if (isVost(upper) && (isVf(upper) || isMulti(upper))) return vfProvider ? "MULTI (VF/VO)" : "MULTI";
+  // Do not let a precise explicit label hide a complementary track advertised
+  // by the provider metadata. VF + VOSTFR is multi-audio evidence, not plain VF.
+  if (isVost(combined) && (isVf(combined) || isVfq(combined) || isMulti(combined))) {
+    return vfProvider ? "MULTI (VF/VO)" : "MULTI";
+  }
   if (isVost(upper)) return "VOSTFR";
   if (isMulti(upper)) return vfProvider ? "MULTI (VF/VO)" : "MULTI";
   if (/^(?:VFQ|FR[ ._-]?CA)$/i.test(explicit || "")) return "VFQ";
