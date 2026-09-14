@@ -1,11 +1,6 @@
 name: Provider Repair Parallel Sweep
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - automation/provider-parallel-sweep-trigger.json
   workflow_dispatch:
 
 permissions:
@@ -59,9 +54,11 @@ jobs:
           print("groups=" + json.dumps(groups, separators=(",", ":")))
           print(f"provider_count={len(providers)}")
           print(f"group_count={len(groups)}")
-          assert len(providers) == 96, f"parallel sweep must cover all 96 Provider Objects, got {len(providers)}"
-          assert len(groups) == 24, f"96 providers at four per group must produce 24 groups, got {len(groups)}"
-          assert all(len(group["providers"].split(",")) == 4 for group in groups)
+          assert len(providers) == 46, f"parallel sweep must cover all 46 current Provider Objects, got {len(providers)}"
+          assert len(groups) == 12, f"46 providers at four per group must produce 12 groups, got {len(groups)}"
+          sizes = [len(group["providers"].split(",")) for group in groups]
+          assert sizes[:-1] == [4] * 11, sizes
+          assert sizes[-1] == 2, sizes
           PY
 
   prove:
@@ -168,8 +165,8 @@ jobs:
           echo "planned_providers=${{ needs.plan.outputs.provider_count }}"
           echo "planned_groups=${{ needs.plan.outputs.group_count }}"
           echo "prove_result=${{ needs.prove.result }}"
-          echo "full_96_guard=DEFERRED_TO_CONSOLIDATED_CANDIDATE"
+          echo "full_46_guard=DEFERRED_TO_CONSOLIDATED_CANDIDATE"
           # Every group enforces live upstream-positive preservation and current
           # V16-V21.1 route/type/identity/player contracts. The expensive identical
-          # 96-provider non-network guard is intentionally run once after all
+          # 46-provider non-network guard is intentionally run once after all
           # recovered DATA is consolidated, before promotion/publication.
