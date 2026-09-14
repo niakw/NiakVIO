@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - main
-      - workbench/systemic-recovery-20260909
     paths:
       - '.github/workflows/provider-history-matrix.yml'
       - 'scripts/build_provider_history_matrix.py'
@@ -16,7 +15,6 @@ on:
       - 'automation/provider-repair-learn-handoff-v1.json'
       - 'provider-v3-quick-yield.json'
       - 'manifest.json'
-      - 'providers/.generation-retention.json'
 
 permissions:
   contents: read
