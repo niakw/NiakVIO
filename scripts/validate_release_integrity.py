@@ -122,7 +122,10 @@ def main() -> int:
     versions = {
         "package.json": expected,
         "manifest.json": load("manifest.json").get("version"),
+        "manifest-hub46.json": load("manifest-hub46.json").get("version"),
+        "native-hub46/manifest.json": load("native-hub46/manifest.json").get("version"),
         "vf/manifest.json": load("vf/manifest.json").get("version"),
+        "no-anime/manifest.json": load("no-anime/manifest.json").get("version"),
         "vf-no-anime/manifest.json": load("vf-no-anime/manifest.json").get("version"),
         "sources.json.manifest_version": sources.get("manifest_version"),
         "sources.json.repository.manifest_version": (sources.get("repository") or {}).get("manifest_version"),
@@ -147,8 +150,13 @@ def main() -> int:
                 errors.append(f"{workflow.relative_to(ROOT)}:{line_number}: {match.group(0)}")
 
     errors.extend(validate_manifest_paths("manifest.json", nested=False))
+    errors.extend(validate_manifest_paths("manifest-hub46.json", nested=False))
     errors.extend(validate_manifest_paths("vf/manifest.json", nested=True))
+    errors.extend(validate_manifest_paths("no-anime/manifest.json", nested=True))
     errors.extend(validate_manifest_paths("vf-no-anime/manifest.json", nested=True))
+    # native-hub46 intentionally contains absolute raw-GitHub provider URLs pinned
+    # to the accepted provider SHA. Its transport shape is validated by the
+    # dedicated native_hub46_transport_manifest_test instead of the relative-path gate.
     if os.environ.get("NUVIO_SKIP_ACTIVATION_PRESERVATION") != "1":
         errors.extend(validate_activation_preservation())
     else:
