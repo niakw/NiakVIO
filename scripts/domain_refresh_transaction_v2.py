@@ -39,6 +39,7 @@ MANIFEST_PATH = ROOT / "manifest.json"
 MATERIALIZATION_PATH = ROOT / "provider-v3-materialization.json"
 STATIC_KNOWLEDGE_PATH = ROOT / "automation" / "provider-v3-static-knowledge.json"
 PROVIDERS_DIR = ROOT / "providers"
+CURRENT_PROVIDER_COUNT = 46
 
 DOMAIN_PATCH_FIELDS = {
     "official_site",
@@ -299,9 +300,17 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
 
     manifest_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
     material_rows = [row for row in materialization.get("providers") or [] if isinstance(row, dict)]
-    if len(manifest_rows) != 96 or len(material_rows) != 96:
+    manifest_ids = {canonical(row.get("id")) for row in manifest_rows if canonical(row.get("id"))}
+    material_ids = {canonical(row.get("provider")) for row in material_rows if canonical(row.get("provider"))}
+    if len(manifest_rows) != CURRENT_PROVIDER_COUNT or len(material_rows) != CURRENT_PROVIDER_COUNT:
         raise RuntimeError(
-            f"domain publication requires 96/96 state: manifest={len(manifest_rows)} materialization={len(material_rows)}"
+            f"domain publication requires current Hub{CURRENT_PROVIDER_COUNT} state: "
+            f"manifest={len(manifest_rows)} materialization={len(material_rows)}"
+        )
+    if len(manifest_ids) != CURRENT_PROVIDER_COUNT or material_ids != manifest_ids:
+        raise RuntimeError(
+            "domain publication current provider identity mismatch: "
+            f"manifest={len(manifest_ids)} materialization={len(material_ids)}"
         )
 
     manifest_by_id = {canonical(row.get("id")): row for row in manifest_rows}
@@ -369,8 +378,8 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
         updates.append({"provider": provider_id, "from": old_rel, "to": new_rel})
 
     materialization["generation"] = _generation(material_rows)
-    materialization["providerCount"] = 96
-    materialization["expectedProviderCount"] = 96
+    materialization["providerCount"] = CURRENT_PROVIDER_COUNT
+    materialization["expectedProviderCount"] = CURRENT_PROVIDER_COUNT
     materialization["domainAuthorityOnlyUpdate"] = True
     materialization["domainAuthorityUpdatedProviders"] = [row["provider"] for row in updates]
     write(MANIFEST_PATH, manifest)
@@ -398,10 +407,30 @@ def main() -> int:
     if not isinstance(history_rows, dict):
         raise SystemExit("provider-domain-history.json providers must be object")
 
+    manifest_scope = load(MANIFEST_PATH)
+    current_provider_ids = {
+        canonical(row.get("id"))
+        for row in manifest_scope.get("scrapers") or []
+        if isinstance(row, dict) and canonical(row.get("id"))
+    }
+    if len(current_provider_ids) != CURRENT_PROVIDER_COUNT:
+        raise SystemExit(
+            f"domain refresh requires current Hub{CURRENT_PROVIDER_COUNT} manifest scope; "
+            f"got {len(current_provider_ids)}"
+        )
+
     hubs = _authoritative_hub_configs(config)
     selected = {canonical(value) for value in args.provider if canonical(value)}
+    outside_scope = selected - current_provider_ids
+    if outside_scope:
+        raise SystemExit(
+            "domain refresh refuses historical/non-current provider selection: "
+            + ",".join(sorted(outside_scope))
+        )
     work: list[tuple[str, dict[str, Any], dict[str, Any]]] = []
     for provider_id, cfg in sorted(hubs.items()):
+        if provider_id not in current_provider_ids:
+            continue
         if selected and provider_id not in selected:
             continue
         if not resolver.has_authoritative_hub_source(cfg):
@@ -421,6 +450,7 @@ def main() -> int:
         "mode": args.mode,
         "authority": "provider-hubs-authoritative-terminal",
         "terminal_validation_required": False,
+        "scope_provider_count": len(current_provider_ids),
         "providers": {},
         "applied": 0,
     }
@@ -503,7 +533,8 @@ def main() -> int:
     )
     print(
         "FIELD_DOMAIN_REFRESH_V2 "
-        f"resolved={resolved} unresolved={unresolved} applied={len(set(changed_provider_ids))} "
+        f"scope={len(current_provider_ids)} resolved={resolved} unresolved={unresolved} "
+        f"applied={len(set(changed_provider_ids))} "
         f"registry={len(set(registry_changed_ids))} bundles={len(bundle_updates)} "
         "terminal_probe=false core_mutation=false"
     )
