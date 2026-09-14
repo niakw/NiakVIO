@@ -4787,7 +4787,8 @@
       "notes": [
         "Clean v3 French-Manga uses shared Core catalogue/player recovery; no legacy fetch-capture wrapper is executed.",
         "Search/detail/player extraction is driven by structured routes and core_options.catalogue_alias_recovery, then terminal stream validation rejects troll/invalid media.",
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
+        "NIAKVIO_FRENCH_MANGA_DLE_REGISTRATION_V1: live reverse-order parity must prove French-Manga's DLE search-item transport before this registration is retained."
       ],
       "core_options": {
         "stream_sanitizer": {
@@ -5042,7 +5043,21 @@
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
         }
-      }
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/french_manga_dle_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/french_manga_dle_runtime_v1.py": {
+          "base": "https://w16.french-manga.net",
+          "provider": "french-manga",
+          "name": "French-Manga",
+          "max_streams": 6
+        }
+      },
+      "proof_search_bases": [
+        "https://w16.french-manga.net"
+      ]
     },
     "kurage": {
       "capability": "html_scraper",
