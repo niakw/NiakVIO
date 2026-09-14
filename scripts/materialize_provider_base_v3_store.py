@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-'''Create the canonical 96 ProviderBase v3 store from the owned common skeleton.
+'''Create the canonical current ProviderBase v3 store from the owned common skeleton.
 
 Before importing the ProviderBase generator, apply the deterministic execution
 route sanitizer, cumulative common runtime upgrades, the fail-closed HTML text
 hardening pass, provider-agnostic movie/episode identity guards, the live manual-TV
 V34 common fixes, and the durable Mugiwara episodic fail-closed migration. This
-ordering guarantees that all 96 generated bundles use the same repaired DATA/runtime
-contract and that provider-specific repaired runtime Lego cannot silently regress.
+ordering guarantees that all 46 current generated bundles use the same repaired
+DATA/runtime contract and that provider-specific repaired runtime Lego cannot
+silently regress. Historical knowledge may remain stored for the 50 archived
+providers, but it is never materialized into the current release.
 '''
 from __future__ import annotations
 
@@ -18,7 +20,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
-EXPECTED = 96
+EXPECTED_CURRENT = 46
 CURRENT_RUNTIME_READER_VERSION = 10
 
 
@@ -67,13 +69,17 @@ def main() -> int:
         row for row in manifest.get("scrapers") or []
         if isinstance(row, dict) and canonical_id(str(row.get("id") or ""))
     ]
-    if len(entries) != EXPECTED:
-        raise SystemExit(f"ProviderBase v3 store requires {EXPECTED} providers, got {len(entries)}")
+    if len(entries) != EXPECTED_CURRENT:
+        raise SystemExit(f"ProviderBase v3 store requires {EXPECTED_CURRENT} current providers, got {len(entries)}")
 
+    current_ids = {canonical_id(str(entry.get("id") or "")) for entry in entries}
     static_knowledge = load(ROOT / "automation" / "provider-v3-static-knowledge.json")
     static_rows = static_knowledge.get("providers")
-    if not isinstance(static_rows, dict) or len(static_rows) != EXPECTED:
-        raise SystemExit("sanitized Provider v3 static knowledge must contain 96 providers")
+    if not isinstance(static_rows, dict):
+        raise SystemExit("sanitized Provider v3 static knowledge must contain a providers map")
+    missing_static = sorted(pid for pid in current_ids if not isinstance(static_rows.get(pid), dict))
+    if missing_static:
+        raise SystemExit(f"sanitized Provider v3 static knowledge is missing current providers: {missing_static}")
 
     now = datetime.now(timezone.utc).isoformat()
     created = []
@@ -141,11 +147,13 @@ def main() -> int:
     store["manual_tv_live_regressions"] = "v34"
     store["mugiwara_episode_fail_closed"] = "v2"
     store["stream_sanitizer"] = "v8"
+    store["historical_static_knowledge_retained"] = max(0, len(static_rows) - len(current_ids))
 
     PROVENANCE.write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         f"FIELD_PROVIDER_BASE_V3_STORE providers={len(created)} "
         f"unique_paths={len(unique)} reconstruction_required=0 "
+        f"historical_static_rows={max(0, len(static_rows) - len(current_ids))} "
         f"provider_js_seed=false upstream_js_seed=false runtime_reader=v{CURRENT_RUNTIME_READER_VERSION} "
         "route_sanitizer=v1 html_text_hardening=deterministic-scanner-v1 "
         "movie_identity=v21.10 episode_identity=v22.1 manual_tv=v34 mugiwara_episode=v2 sanitizer=v8"
