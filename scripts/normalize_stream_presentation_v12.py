@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the permanently materialized NiakVIO stream presentation V22.
+"""Validate the permanently materialized NiakVIO stream presentation source.
 
 Presentation code is canonical in global_stream_presentation_v1.py. This compatibility
 entry point is read-only: it never rewrites Provider/Core bytes. Badge artwork and native
@@ -16,26 +16,34 @@ CORE = ROOT / "scripts/provider_patches/global_stream_presentation_v1.py"
 DARK_FEED = ROOT / "assets/stream-badges-dark.json"
 LIGHT_FEED = ROOT / "assets/stream-badges-light.json"
 FUSION_FEED = ROOT / "assets/stream-badges-fusion.json"
-REVISION = "all-providers-client-projection-strongest-evidence-v22"
+REVISION_V22 = "all-providers-client-projection-strongest-evidence-v22"
+REVISION_V23 = "all-providers-client-projection-language-roles-v23"
+SUPPORTED_REVISIONS = (REVISION_V23, REVISION_V22)
+
+
+def active_revision(text: str) -> str | None:
+    return next((revision for revision in SUPPORTED_REVISIONS if revision in text), None)
 
 
 def normalize(*, apply: bool) -> list[str]:
-    # ``apply`` is retained for compatibility only. V22 is a committed fixed point:
-    # no hidden staging, formatting or one-shot rewrite is permitted during a build/test run.
+    # ``apply`` is retained for compatibility only. Presentation is a committed
+    # fixed point: no hidden staging/formatting rewrite is permitted in builds.
     _ = apply
     text = CORE.read_text(encoding="utf-8")
-    if REVISION not in text:
+    if not active_revision(text):
         raise ValueError(
-            "stream presentation V22 source is not materialized; "
-            "global_stream_presentation_v1.py must contain the canonical V22 source"
+            "supported stream presentation source is not materialized; "
+            "global_stream_presentation_v1.py must contain canonical V22 or V23 source"
         )
     return []
 
 
 def assert_contract() -> None:
     text = CORE.read_text(encoding="utf-8")
-    for token in (
-        REVISION,
+    revision = active_revision(text)
+    if not revision:
+        raise ValueError("stream presentation revision missing")
+    common = (
         '"providerLanguageMode"',
         '"languageFallback"',
         '"MULTI (VF/VO)"',
@@ -47,7 +55,6 @@ def assert_contract() -> None:
         'r&&r.height',
         'FULL[ ._-]?HD|FHD',
         'var languageDetailValue=detailedLanguage(r,f.language);',
-        'out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"")+(languageDetailValue?" - "+languageDetailValue:"")',
         'out.name=out.title',
         'out.description=lines.join("\\n")',
         'function streamPayload(v){',
@@ -55,13 +62,33 @@ def assert_contract() -> None:
         'function installJvmSafeStreamStringify(){',
         'streamPayload(value)?asciiJson(raw):raw',
         'if(out.description)out.size=out.description',
-    ):
+    )
+    for token in (revision, *common):
+        if token not in text:
+            raise ValueError(f"stream presentation contract missing for {revision}: {token}")
+
+    if revision == REVISION_V23:
+        for token in (
+            'function languageTracks(r,meta){',
+            'function compactTrack(t){',
+            'function fullTrack(t){',
+            'out.originalLanguage=f.originalLanguage||null',
+            'out.languageTracks=f.languageTracks||[]',
+            'out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"");out.name=out.title',
+        ):
+            if token not in text:
+                raise ValueError(f"stream presentation V23 contract missing: {token}")
+        if '+(languageDetailValue?" - "+languageDetailValue:"")' in text:
+            raise ValueError("stream presentation V23 title must not append language detail")
+    else:
+        token = 'out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"")+(languageDetailValue?" - "+languageDetailValue:"")'
         if token not in text:
             raise ValueError(f"stream presentation V22 contract missing: {token}")
+
     technical_start = text.find("function technicalLine(f,fs){")
     technical_end = text.find("function durationAgeLine(f){", technical_start)
     if technical_start < 0 or technical_end < 0:
-        raise ValueError("stream presentation V22 technical line missing")
+        raise ValueError("stream presentation technical line missing")
     if "f.quality" in text[technical_start:technical_end]:
         raise ValueError("quality must remain title-only")
 
@@ -92,10 +119,12 @@ def main() -> int:
         raise SystemExit("choose --apply or --check")
     changed = normalize(apply=args.apply)
     if args.check and changed:
-        raise SystemExit("stream presentation V22 validation drift: " + ", ".join(changed))
+        raise SystemExit("stream presentation validation drift: " + ", ".join(changed))
     if args.apply or args.check:
         assert_contract()
-    print(f"FIELD_STREAM_PRESENTATION_V22 changed={len(changed)} revision={REVISION} badge_feeds=external_owner read_only=true")
+    text = CORE.read_text(encoding="utf-8")
+    revision = active_revision(text) or "missing"
+    print(f"FIELD_STREAM_PRESENTATION changed={len(changed)} revision={revision} badge_feeds=external_owner read_only=true")
     return 0
 
 
