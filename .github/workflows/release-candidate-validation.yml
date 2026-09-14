@@ -104,6 +104,7 @@ jobs:
           python tests/release_projection_scope_test.py
           python tests/canonical_media_types_test.py
           python tests/provider_521_capability_regression_test.py
+          python tests/native_five_lab_coverage_test.py
       - name: Verify cross-cutting runtime contracts
         run: |
           set -euo pipefail
@@ -124,7 +125,7 @@ jobs:
         run: python tests/workflow_security_policy_test.py
 
   dispatch-and-wait:
-    name: Permanent gates and five native labs
+    name: Permanent gates, security and five native labs
     needs: [normalize, contracts]
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -143,7 +144,7 @@ jobs:
             echo "Candidate branch moved during validation: expected=${TARGET_SHA} actual=${actual}" >&2
             exit 1
           }
-      - name: Dispatch permanent gates and native labs on exact candidate ref
+      - name: Dispatch permanent gates, security and native labs on exact candidate ref
         shell: bash
         run: |
           set -euo pipefail
@@ -158,6 +159,8 @@ jobs:
           dispatch core-stream-metadata-contract.yml
           dispatch canonical-media-types.yml
           dispatch provider-overrides-gate.yml
+          dispatch codeql.yml
+          dispatch external-code-audit.yml -f "inputs[ref]=${TARGET_REF}" -F 'inputs[publish]=false'
           dispatch native-mobile-android-reader.yml
           dispatch native-mobile-ios-reader.yml -f 'inputs[mode]=full'
           dispatch native-desktop-reader-acceptance.yml
@@ -178,6 +181,8 @@ jobs:
               'core-stream-metadata-contract.yml',
               'canonical-media-types.yml',
               'provider-overrides-gate.yml',
+              'codeql.yml',
+              'external-code-audit.yml',
               'native-mobile-android-reader.yml',
               'native-mobile-ios-reader.yml',
               'native-desktop-reader-acceptance.yml',
@@ -238,5 +243,5 @@ jobs:
               for workflow, run_id, conclusion in failures:
                   print(f'RUN_FAILED workflow={workflow} id={run_id} conclusion={conclusion}')
               raise SystemExit(1)
-          print('RELEASE_CANDIDATE_VALIDATION_GREEN providers=46 historical=50 platforms=5')
+          print('RELEASE_CANDIDATE_VALIDATION_GREEN providers=46 historical=50 platforms=5 security=codeql+external')
           PY
