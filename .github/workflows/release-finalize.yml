@@ -69,6 +69,23 @@ jobs:
           python3 tests/provider_versioning_test.py
           python3 tests/reapply_provider_versioning_test.py
 
+      - name: Rebuild exact Hub46 release projections
+        shell: bash
+        run: |
+          set -euo pipefail
+          ACCEPTED_SHA="$(git rev-parse HEAD)"
+          python3 scripts/generate_hub46_manifest.py \
+            --source manifest.json \
+            --matrix automation/evidence/hub-lab-matrix-46.json \
+            --output manifest-hub46.json
+          python3 scripts/build_hub46_native_manifest.py \
+            --provider-sha "$ACCEPTED_SHA" \
+            --source manifest-hub46.json \
+            --output native-hub46/manifest.json
+          python3 tests/native_hub46_manifest_test.py
+          python3 tests/native_hub46_transport_manifest_test.py
+          python3 tests/release_projection_scope_test.py
+
       - name: Regenerate and validate release integrity
         shell: bash
         run: |
@@ -82,7 +99,7 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only | tee "$RUNNER_TEMP/release-finalization-files.txt"
-          if grep -Ev '^(manifest\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|nuvio-client-id-state\.json|automation/PLATFORM-RUNTIME-CONTRACTS\.md|FILE-HASHES\.json|PATCH-SHA256SUMS\.txt|SHA256SUMS\.json)$' "$RUNNER_TEMP/release-finalization-files.txt"; then
+          if grep -Ev '^(manifest\.json|manifest-hub46\.json|native-hub46/manifest\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|nuvio-client-id-state\.json|automation/PLATFORM-RUNTIME-CONTRACTS\.md|FILE-HASHES\.json|PATCH-SHA256SUMS\.txt|SHA256SUMS\.json)$' "$RUNNER_TEMP/release-finalization-files.txt"; then
             echo 'Unexpected path changed by accepted-release finalization' >&2
             exit 1
           fi
@@ -98,7 +115,8 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add \
-            manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
+            manifest.json manifest-hub46.json native-hub46/manifest.json \
+            vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
             package.json package-lock.json sources.json provider_catalog.json nuvio-client-id-state.json \
             automation/PLATFORM-RUNTIME-CONTRACTS.md \
             FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
