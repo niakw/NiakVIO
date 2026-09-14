@@ -44,6 +44,9 @@ def main() -> int:
             check=True,
         )
 
+    # The root Hub46 file is the deterministic source projection. Native readers
+    # must consume the terminal-name-safe nested transport instead, because the
+    # official repository loaders derive their base by stripping /manifest.json.
     for script in (
         "run_native_corpus_desktop_suite.sh",
         "run_native_corpus_mobile_suite.sh",
@@ -51,9 +54,10 @@ def main() -> int:
         "run_native_corpus_ios_suite.sh",
     ):
         text = (ROOT / "scripts" / script).read_text(encoding="utf-8")
-        assert "manifest-hub46.json" in text, script
+        assert "native-hub46/manifest.json" in text, script
+        assert 'TARGET_MANIFEST="manifest-hub46.json"' not in text, script
 
-    print("native physical Hub-46 manifest contract tests passed: providers=46 root_relative=true")
+    print("native physical Hub-46 manifest contract tests passed: providers=46 transport=native-hub46/manifest.json")
     return 0
 
 
