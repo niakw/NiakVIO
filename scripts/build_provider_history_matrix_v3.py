@@ -90,7 +90,6 @@ def transport_types(row: dict[str, Any] | None) -> set[str]:
     }
 
 
-
 def normalize_historical_semantic_types(
     values: set[str],
     *,
@@ -98,26 +97,36 @@ def normalize_historical_semantic_types(
     current_transport: set[str],
     historical_verified_lanes: set[str],
 ) -> tuple[set[str], bool]:
-    """Demote the legacy anime->tv invocation alias unless TV has real proof.
+    """Demote legacy anime invocation aliases unless the lane has real proof.
 
-    Some historical manifests wrote the Nuvio ``tv`` transport alias into
-    ``canonicalSupportedTypes`` for anime providers. That field is normally a
-    semantic source, but the alias must not become a permanent TV capability
-    obligation when current canonical semantics are anime-only and no historical
-    TV lane was independently verified.
+    Older manifests could write transport compatibility into
+    ``canonicalSupportedTypes``: anime providers were exposed through ``tv`` and,
+    before the semantic/transport split, sometimes through ``movie`` as well.
+    Neither alias may become a permanent semantic capability obligation when the
+    current canonical provider is anime-only and the historical lane was never
+    independently verified.
     """
     normalized = set(values)
+    anime_only_current = current_semantic == {"anime"}
     alias_only_tv = (
         "anime" in normalized
         and "tv" in normalized
-        and "anime" in current_semantic
-        and "tv" not in current_semantic
+        and anime_only_current
         and "tv" in current_transport
         and "tv" not in historical_verified_lanes
     )
+    alias_only_movie = (
+        "anime" in normalized
+        and "movie" in normalized
+        and anime_only_current
+        and "movie" not in historical_verified_lanes
+    )
     if alias_only_tv:
         normalized.discard("tv")
-    return normalized, alias_only_tv
+    if alias_only_movie:
+        normalized.discard("movie")
+    return normalized, alias_only_tv or alias_only_movie
+
 
 def current_semantic_types(row: dict[str, Any] | None) -> tuple[set[str], str]:
     canonical = canonical_semantic_types(row)
@@ -271,7 +280,7 @@ def main() -> int:
                 historical_verified_lanes=historical_lanes,
             )
             if alias_reclassified:
-                source += "+anime-tv-transport-alias-normalized"
+                source += "+anime-transport-alias-normalized"
             historical_types[version] = sorted(values)
             historical_type_sources[version] = source
 
