@@ -1,19 +1,19 @@
 {
-  "purpose": "final 5.21.44 validation on complete 46-current/50-historical contract",
+  "purpose": "final 5.21.44 core validation on complete 46-current/50-historical contract before merge",
   "branch": "fix/labs-5.21.44-20260912",
-  "cleanup_head": "e3bf110f8fa17e21d38e531f4cc5151cddce4581",
+  "cleanup_head": "926d8c55b392a45ab42d49a0bc2ae4cf80556a06",
   "provider_contract": {
     "current": 46,
     "historical": 50,
     "historical_directory": "provider-old",
     "historical_snapshots": 951,
-    "anime_transport": "anime-only => anime+tv; no synthetic series; movie only when canonical",
+    "anime_transport": "anime-only => anime+tv; no synthetic series; no synthetic movie; movie only when canonical",
     "provider_timeout_ms": 25000,
     "manual_reconstruction": "46/46 current only; historical knowledge retained but never materialized",
     "domain_refresh_scope": "current manifest 46 only; historical hub/history rows immutable",
     "non_regression_scope": "quick-yield census iterates manifest.json current providers directly; no historical/all switch",
     "codeql_scope": "46 current providers/provider-bases plus source; provider-old excluded from current runtime scan",
-    "external_audit": "candidate read-only export; no candidate audit writes to main"
+    "external_audit": "read-only; final audit is rerun on main after merge"
   },
   "requirements": [
     "zero temp workflows",
@@ -23,8 +23,7 @@
     "Domain Refresh mutates current manifest providers only",
     "25s provider timeout on Android and full iOS",
     "CodeQL has no empty fallback shard",
-    "external audit forced on exact candidate without publishing to main",
-    "permanent gates only",
-    "five native labs before merge"
+    "permanent core gates before merge",
+    "five native labs and external security audit finalized on main after merge"
   ]
 }
