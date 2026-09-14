@@ -58,7 +58,10 @@ def fake_worker(path, fixture, timeout):
     return result(0)
 
 
-parity.parity.run_worker = fake_worker
+# V3 owns the terminal-verifying worker wrapper locally. Patch that boundary,
+# not the older parity module's raw worker, so this unit test cannot accidentally
+# hit the filesystem/network when the harness implementation evolves.
+parity._run_verified = fake_worker
 row = parity.run_lane(
     "demo",
     "movie",
@@ -73,7 +76,7 @@ assert [sample["fixture"] for sample in row["samples"]] == ["a", "b"], row
 assert len(calls) == 4, calls
 
 # If every sampled work is a clean 0/0, the lane is RESAMPLE, never ZERO.
-parity.parity.run_worker = lambda *args, **kwargs: result(0)
+parity._run_verified = lambda *args, **kwargs: result(0)
 row = parity.run_lane(
     "demo",
     "movie",
