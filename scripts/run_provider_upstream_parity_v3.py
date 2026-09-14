@@ -450,6 +450,87 @@ def run_lane(
     }
 
 
+def run_local_only_lane(
+    provider_id: str,
+    lane: str,
+    local_path: Path,
+    *,
+    timeout: int,
+    sample_count: int,
+    seed: str,
+) -> dict[str, Any]:
+    # PARITY_LOCAL_ONLY_UNMATCHED_V1
+    samples: list[dict[str, Any]] = []
+    candidates = select_fixtures(
+        lane,
+        count=sample_count,
+        seed=seed,
+        provider=provider_id,
+    )
+    for candidate in candidates:
+        local = _run_verified(local_path, fixture_payload(candidate, lane, upstream=False), timeout)
+        positive = int(local.get("stream_count") or 0) > 0 and bool(local.get("terminal_verified"))
+        samples.append({
+            "fixture": candidate["slug"],
+            "tmdbId": str(candidate.get("tmdbId") or ""),
+            "classification": "local_terminal_positive" if positive else (
+                "local_technical_unresolved" if technical(local) else (
+                    "local_candidate_unverified" if int(local.get("candidate_stream_count") or 0) > 0 else "local_catalog_miss"
+                )
+            ),
+            "niakvio": local,
+        })
+        if positive:
+            break
+    if any(row["classification"] == "local_terminal_positive" for row in samples):
+        status = "POSITIVE"
+    elif samples and all(row["classification"] in {"local_catalog_miss", "local_candidate_unverified"} for row in samples):
+        status = "RESAMPLE"
+    else:
+        status = "TECHNICAL_UNRESOLVED"
+    return {
+        "lane": lane,
+        "status": status,
+        "samples": samples,
+        "sampleCount": len(samples),
+        "candidateCount": len(candidates),
+    }
+
+
+def one_unmatched_provider(
+    provider_id: str,
+    local: dict[str, Any],
+    *,
+    timeout: int,
+    sample_count: int,
+    seed: str,
+) -> dict[str, Any]:
+    lanes = canonical_lanes(local["entry"], {})
+    lane_rows = [
+        run_local_only_lane(
+            provider_id, lane, local["path"],
+            timeout=timeout, sample_count=sample_count, seed=seed,
+        )
+        for lane in lanes
+    ]
+    states = [row["status"] for row in lane_rows]
+    if states and all(value == "POSITIVE" for value in states):
+        status = "UNMATCHED_FULL"
+    elif "POSITIVE" in states:
+        status = "UNMATCHED_PARTIAL"
+    elif states and all(value == "RESAMPLE" for value in states):
+        status = "UNMATCHED_RESAMPLE"
+    else:
+        status = "UNMATCHED_ZERO"
+    return {
+        "providerId": provider_id,
+        "upstreamSource": None,
+        "comparisonMode": "local-only-no-upstream",
+        "status": status,
+        "lanes": lane_rows,
+    }
+
+
 def one_provider(
     provider_id: str,
     local: dict[str, Any],
@@ -522,13 +603,14 @@ def main() -> int:
 
     upstreams, source_errors = parity_v2.upstream_catalog()
     requested = {cid(value) for value in args.provider if cid(value)}
+    accounting_scope = [pid for pid in sorted(local) if not requested or pid in requested]
     provider_ids = [
-        pid for pid in sorted(local)
-        if pid in upstreams and (not requested or pid in requested)
+        pid for pid in accounting_scope
+        if pid in upstreams
     ]
     missing_upstream = sorted(
-        pid for pid in local
-        if pid not in upstreams and (not requested or pid in requested)
+        pid for pid in accounting_scope
+        if pid not in upstreams
     )
     seed = str(args.seed if args.seed is not None else default_seed())
     sample_count = max(1, min(MAX_SAMPLES_PER_LANE, int(args.samples_per_lane)))
@@ -579,6 +661,28 @@ def main() -> int:
                         "lanes": [],
                     })
 
+    # Every selected provider must have an auditable row. Providers without an
+    # upstream authority are evaluated locally instead of disappearing from the
+    # status denominator (Kehflix exposed this blind spot).
+    for provider_id in missing_upstream:
+        try:
+            rows.append(one_unmatched_provider(
+                provider_id,
+                local[provider_id],
+                timeout=max(5, args.timeout),
+                sample_count=sample_count,
+                seed=seed,
+            ))
+        except Exception as exc:
+            rows.append({
+                "providerId": provider_id,
+                "upstreamSource": None,
+                "comparisonMode": "local-only-no-upstream",
+                "status": "HARNESS_ERROR",
+                "error": f"{type(exc).__name__}: {exc}"[:240],
+                "lanes": [],
+            })
+
     rows.sort(key=lambda row: str(row.get("providerId") or ""))
     counts = Counter(str(row.get("status") or "UNKNOWN") for row in rows)
     regressions = [row["providerId"] for row in rows if row.get("status") == "REGRESSION"]
@@ -588,8 +692,13 @@ def main() -> int:
         "method": "rotating-hub46-upstream-parity-terminal-verified",
         "terminalMediaRequired": True,
         "scopeProviderCount": len(scoped),
+        "selectedProviderCount": len(accounting_scope),
         "matchedUpstreamProviders": len(provider_ids),
         "testedProviders": len(rows),
+        "accountedProviders": len(rows),
+        "localOnlyProviders": len(missing_upstream),
+        "allSelectedProvidersAccounted": len(rows) == len(accounting_scope),
+        "allScopedProvidersAccounted": (not requested) and len(rows) == len(scoped),
         "samplesPerLane": sample_count,
         "seed": seed,
         "statusCounts": dict(sorted(counts.items())),
@@ -612,11 +721,16 @@ def main() -> int:
     )
     print(
         "PROVIDER_UPSTREAM_PARITY_V3_COVERAGE "
-        f"scope={len(scoped)} matched={len(provider_ids)} tested={len(rows)} "
-        f"missing_upstream={len(missing_upstream)} downloads_failed={len(download_errors)} samples_per_lane={sample_count}"
+        f"scope={len(scoped)} selected={len(accounting_scope)} matched={len(provider_ids)} "
+        f"accounted={len(rows)} tested={len(rows)} missing_upstream={len(missing_upstream)} "
+        f"local_only={len(missing_upstream)} downloads_failed={len(download_errors)} samples_per_lane={sample_count}"
     )
     print("PROVIDER_UPSTREAM_PARITY_V3_REGRESSIONS " + (",".join(regressions) if regressions else "none"))
     print("PROVIDER_UPSTREAM_PARITY_V3_RESAMPLE " + (",".join(resample) if resample else "none"))
+    if len(rows) != len(accounting_scope):
+        raise SystemExit(
+            f"Provider parity accounting failure accounted={len(rows)} expected={len(accounting_scope)}"
+        )
     return 0 if rows else 2
 
 
