@@ -73,12 +73,12 @@ def test_domain_overrides() -> None:
     site = str(purstream.get("official_site") or "").rstrip("/")
     api = str(purstream.get("official_api") or "").rstrip("/")
     assert hub == "https://purstream.wiki", hub
-    assert urlsplit(site).hostname == "purstream.ad", site
+    assert urlsplit(site).hostname == "purstream.mx", site
     assert urlsplit(api).hostname == "api.purstream.ad", api
     runtime_domains = purstream.get("runtime_domain_replacements") or {}
     assert isinstance(runtime_domains, dict) and runtime_domains
     replacement_hosts = {urlsplit(value if "://" in str(value) else f"https://{value}").hostname for value in runtime_domains.values()}
-    assert "purstream.ad" in replacement_hosts or "api.purstream.ad" in replacement_hosts, replacement_hosts
+    assert "purstream.mx" in replacement_hosts and "api.purstream.ad" in replacement_hosts, replacement_hosts
     assert (purstream.get("manifest_overrides") or {}).get("enabled") is True
 
     movix_source = b"const A='https://api.movix.cash'; const B='https://api.movix.cloud';"
