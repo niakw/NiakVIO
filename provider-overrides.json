@@ -14,13 +14,13 @@
     "anime-sama": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://anime-sama.wiki/",
-      "official_site": "https://anime-sama.to",
+      "official_site": "https://animes-sama.fr",
       "manifest_overrides": {
         "enabled": true
       },
       "domain_substitutions": {
-        "animes-sama.fr": "anime-sama.store",
-        "anime-sama.fr": "anime-sama.store"
+        "anime-sama.fr": "animes-sama.fr",
+        "anime-sama.to": "animes-sama.fr"
       },
       "published_types": [
         "anime"
@@ -239,7 +239,9 @@
         },
         "evidenceDestructive": false
       },
-      "runtime_domain_replacements": {},
+      "runtime_domain_replacements": {
+        "anime-sama.to": "animes-sama.fr"
+      },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
         "effective_coverage_ratio": 1.0,
@@ -302,7 +304,7 @@
       "manifest_overrides": {
         "enabled": true
       },
-      "official_site": "https://purstream.ad",
+      "official_site": "https://purstream.mx",
       "official_api": "https://api.purstream.ad/api/v1",
       "fixed_endpoint": {
         "resolver_function": "detectPurstreamDomain",
@@ -310,34 +312,37 @@
         "referer": "https://purstream.ad/"
       },
       "domain_substitutions": {
-        "purstream.art": "purstream.ad",
-        "purstream.club": "purstream.ad",
-        "purstream.id": "purstream.ad",
-        "purstream.wiki": "purstream.ad",
+        "purstream.art": "purstream.mx",
+        "purstream.club": "purstream.mx",
+        "purstream.id": "purstream.mx",
+        "purstream.wiki": "purstream.mx",
         "api.purstream.art": "api.purstream.ad",
         "api.purstream.club": "api.purstream.ad",
         "api.purstream.id": "api.purstream.ad",
-        "api.purstream.wiki": "api.purstream.ad"
+        "api.purstream.wiki": "api.purstream.ad",
+        "purstream.ad": "purstream.mx"
       },
       "replacements": {
-        "purstream.art": "purstream.ad",
-        "purstream.club": "purstream.ad",
-        "purstream.id": "purstream.ad",
-        "purstream.wiki": "purstream.ad",
+        "purstream.art": "purstream.mx",
+        "purstream.club": "purstream.mx",
+        "purstream.id": "purstream.mx",
+        "purstream.wiki": "purstream.mx",
         "api.purstream.art": "api.purstream.ad",
         "api.purstream.club": "api.purstream.ad",
         "api.purstream.id": "api.purstream.ad",
-        "api.purstream.wiki": "api.purstream.ad"
+        "api.purstream.wiki": "api.purstream.ad",
+        "purstream.ad": "purstream.mx"
       },
       "runtime_domain_replacements": {
-        "purstream.art": "purstream.ad",
-        "purstream.club": "purstream.ad",
-        "purstream.id": "purstream.ad",
-        "purstream.wiki": "purstream.ad",
+        "purstream.art": "purstream.mx",
+        "purstream.club": "purstream.mx",
+        "purstream.id": "purstream.mx",
+        "purstream.wiki": "purstream.mx",
         "api.purstream.art": "api.purstream.ad",
         "api.purstream.club": "api.purstream.ad",
         "api.purstream.id": "api.purstream.ad",
-        "api.purstream.wiki": "api.purstream.ad"
+        "api.purstream.wiki": "api.purstream.ad",
+        "purstream.ad": "purstream.mx"
       },
       "candidate_api_recipe": {
         "proofModelVersion": 5,
@@ -1158,9 +1163,10 @@
     "movieshunt": {
       "capability": "direct_media",
       "official_hub": "https://movieshunt.cc/",
-      "official_site": "https://movieshunt.casa",
+      "official_site": "https://movieshunt.ws",
       "domain_substitutions": {
-        "movieshunt.work": "movieshunt.ws"
+        "movieshunt.work": "movieshunt.ws",
+        "movieshunt.casa": "movieshunt.ws"
       },
       "learned_routes": [
         "/?s={query}"
@@ -1331,7 +1337,9 @@
         },
         "evidenceDestructive": false
       },
-      "runtime_domain_replacements": {},
+      "runtime_domain_replacements": {
+        "movieshunt.casa": "movieshunt.ws"
+      },
       "runtime_plan_lkg": {
         "version": 1,
         "source": "baseline-verified-published-plan",
@@ -1410,7 +1418,7 @@
     "hindmoviez": {
       "capability": "direct_media",
       "official_hub": "https://t.me/s/hindmoviez/1975",
-      "official_site": "https://hindmovie.fit",
+      "official_site": "https://hindmovie.icu",
       "manifest_overrides": {
         "enabled": true
       },
@@ -1427,7 +1435,9 @@
           "max_series_streams": 24
         }
       },
-      "domain_substitutions": {},
+      "domain_substitutions": {
+        "hindmovie.fit": "hindmovie.icu"
+      },
       "candidate_learned_routes": [
         "/?s={query}",
         "/search?q={query}",
@@ -1597,7 +1607,9 @@
         },
         "evidenceDestructive": false
       },
-      "runtime_domain_replacements": {},
+      "runtime_domain_replacements": {
+        "hindmovie.fit": "hindmovie.icu"
+      },
       "identity_input": {
         "mode": "catalog_search",
         "requires_tmdb_before_run": true,
@@ -2346,7 +2358,7 @@
       ],
       "capability": "html_scraper",
       "official_hub": "https://kehflix.wiki/",
-      "official_site": "https://kehflix.wiki",
+      "official_site": "https://kehflix.lol",
       "published_types": [
         "movie",
         "tv",
@@ -2398,11 +2410,9 @@
         "recognition_seed_is_http_proof": false
       },
       "domain_substitutions": {
-        "kehflix.lol": "kehflix.wiki",
         "kehflix.wiki": "kehflix.lol"
       },
       "runtime_domain_replacements": {
-        "kehflix.lol": "kehflix.wiki",
         "kehflix.wiki": "kehflix.lol"
       },
       "terminal_domain_proof": {
@@ -3256,7 +3266,7 @@
     "animesama-co": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://anime-sama.wiki/",
-      "official_site": "https://animesama.co",
+      "official_site": "https://animes-sama.fr",
       "manifest_overrides": {
         "enabled": true
       },
@@ -3280,7 +3290,8 @@
         "/api/v2/themoviedb?id={tmdbId}"
       ],
       "domain_substitutions": {
-        "anime-sama.store": "animesama.co"
+        "anime-sama.store": "animes-sama.fr",
+        "animesama.co": "animes-sama.fr"
       },
       "candidate_learned_routes": [
         "/catalogue/?search={query}",
@@ -3466,7 +3477,9 @@
         },
         "evidenceDestructive": false
       },
-      "runtime_domain_replacements": {},
+      "runtime_domain_replacements": {
+        "animesama.co": "animes-sama.fr"
+      },
       "api_recipe": {
         "proofModelVersion": 5,
         "allowGenericFallback": false,
@@ -3816,7 +3829,7 @@
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
       },
-      "official_site": "https://animetsu.bz/#.cc",
+      "official_site": "https://animetsu.live",
       "route_proof_version": 5,
       "route_proof": {
         "version": 5,
@@ -3957,8 +3970,12 @@
         "evidenceDestructive": false
       },
       "official_hub": "https://everythingmoe.com/s/animetsu",
-      "runtime_domain_replacements": {},
-      "domain_substitutions": {}
+      "runtime_domain_replacements": {
+        "animetsu.bz": "animetsu.live"
+      },
+      "domain_substitutions": {
+        "animetsu.bz": "animetsu.live"
+      }
     },
     "animevostfr": {
       "capability": "mixed_embed_resolver",
@@ -4450,7 +4467,7 @@
       ],
       "capability": "mixed_embed_resolver",
       "official_hub": "https://coflix.domains/",
-      "official_site": "http://coflix.group",
+      "official_site": "https://coflix.group",
       "manifest_overrides": {
         "logo": "https://coflix.group/favicon.ico",
         "supportsExternalPlayer": false,
@@ -7691,7 +7708,7 @@
       "manifest_overrides": {
         "enabled": true
       },
-      "official_site": "https://vidrock.net",
+      "official_site": "https://vidrock.to",
       "candidate_config_reconciliation": {
         "version": 3,
         "route_plan_source": "embedded-provider-js",
@@ -7908,12 +7925,19 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
+      },
+      "official_hub": "https://vidrock.ru",
+      "runtime_domain_replacements": {
+        "vidrock.net": "vidrock.to"
+      },
+      "domain_substitutions": {
+        "vidrock.net": "vidrock.to"
       }
     },
     "voiranime": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://voiranime.org.uk/",
-      "official_site": "https://voir-anime.to",
+      "official_site": "https://voiranime.diy",
       "manifest_overrides": {
         "enabled": true
       },
@@ -8139,16 +8163,16 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {
-        "voiranime.diy": "voir-anime.to",
-        "voiranime.homes": "voir-anime.to",
-        "voiranime.store": "voir-anime.to",
-        "voiranime.com": "voir-anime.to"
+        "voiranime.homes": "voiranime.diy",
+        "voiranime.store": "voiranime.diy",
+        "voiranime.com": "voiranime.diy",
+        "voir-anime.to": "voiranime.diy"
       },
       "domain_substitutions": {
-        "voiranime.com": "voir-anime.to",
-        "voiranime.diy": "voir-anime.to",
-        "voiranime.homes": "voir-anime.to",
-        "voiranime.store": "voir-anime.to"
+        "voiranime.com": "voiranime.diy",
+        "voiranime.homes": "voiranime.diy",
+        "voiranime.store": "voiranime.diy",
+        "voir-anime.to": "voiranime.diy"
       },
       "identity_input": {
         "mode": "catalog_search",
@@ -8905,7 +8929,7 @@
         "Wooka player crawl preserves all discovered embeds but prioritizes lecteurvideo.com before the ProviderBase bounded seed budget; current lecteurvideo pages are structurally parsed and still pass shared terminal/identity guards."
       ],
       "official_hub": "https://t.me/s/Wookafr2",
-      "official_site": "https://wookafr.boston",
+      "official_site": "https://wookafr.blog",
       "published_types": [
         "movie",
         "tv"
@@ -8919,12 +8943,12 @@
         }
       },
       "domain_substitutions": {
-        "wookafr.app": "wookafr.boston",
-        "wookafr.blog": "wookafr.boston",
-        "wookafr.center": "wookafr.boston",
-        "wookafr.cymru": "wookafr.boston",
-        "wookafr.fyi": "wookafr.boston",
-        "wookafr.to": "wookafr.boston"
+        "wookafr.app": "wookafr.blog",
+        "wookafr.center": "wookafr.blog",
+        "wookafr.cymru": "wookafr.blog",
+        "wookafr.fyi": "wookafr.blog",
+        "wookafr.to": "wookafr.blog",
+        "wookafr.boston": "wookafr.blog"
       },
       "candidate_config_reconciliation": {
         "version": 3,
@@ -9134,9 +9158,9 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {
-        "wookafr.blog": "wookafr.boston",
-        "wookafr.center": "wookafr.boston",
-        "wookafr.app": "wookafr.boston"
+        "wookafr.center": "wookafr.blog",
+        "wookafr.app": "wookafr.blog",
+        "wookafr.boston": "wookafr.blog"
       },
       "provider_lego_scripts": [
         "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py"
@@ -9399,9 +9423,9 @@
     "allanime": {
       "capability": "direct_media",
       "official_hub": "https://allanime.sa.com/",
-      "official_site": "https://aniwatchtv.watch",
+      "official_site": "https://ww2.aniwatch.fit",
       "domain_substitutions": {
-        "ww2.aniwatch.fit": "aniwatchtv.watch"
+        "aniwatchtv.watch": "ww2.aniwatch.fit"
       },
       "identity_input": {
         "mode": "tmdb_direct",
@@ -9601,7 +9625,9 @@
         },
         "evidenceDestructive": false
       },
-      "runtime_domain_replacements": {}
+      "runtime_domain_replacements": {
+        "aniwatchtv.watch": "ww2.aniwatch.fit"
+      }
     },
     "allwish": {
       "capability": "html_scraper",
