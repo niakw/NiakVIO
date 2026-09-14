@@ -28,7 +28,7 @@ jobs:
         with: {python-version: '3.12'}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: '24', package-manager-cache: false}
-      - name: Trace pre-probe sanitizer branches
+      - name: Bisect sanitizer rules by returned stream count
         shell: bash
         run: |
           set -euo pipefail
@@ -43,35 +43,26 @@ jobs:
           manifest=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
           row=next(r for r in manifest.get('scrapers',[]) if str(r.get('id','')).casefold()=='streamzo')
           patched,_=apply_overrides('streamzo',(root/row['filename']).read_bytes(),include_global_core=True)
-          text=patched.decode('utf-8')
-          assert 'NUVIO_STREAM_OUTPUT_FULL_MANIFEST_V9' in text
-          no_san=strip_managed_fix(text,'CORE.STREAM_SANITIZER.V6')
+          strict=patched.decode('utf-8')
+          assert 'NUVIO_STREAM_OUTPUT_FULL_MANIFEST_V9' in strict
+          no_san=strip_managed_fix(strict,'CORE.STREAM_SANITIZER.V6')
 
-          replacements=[
-            ('var result=await original.apply(this,arguments);',
-             'var result=await original.apply(this,arguments);try{console.log("NIAKVIO_SAN_RESULT","array="+Array.isArray(result),"type="+typeof result,"keys="+(result&&typeof result==="object"?Object.keys(result).sort().join(","):""))}catch(_diag){}'),
-            ('var slot=streamSlot(result);',
-             'var slot=streamSlot(result);try{console.log("NIAKVIO_SAN_SLOT","ok="+!!slot,"key="+(slot?String(slot.key):"none"),"len="+(slot&&slot.list?slot.list.length:-1))}catch(_diag){}'),
-            ('if(!slot)return [];',
-             'if(!slot){try{console.log("NIAKVIO_SAN_DROP","reason=no_slot")}catch(_diag){}return [];}'),
-            ('if(!slot.list.length)return result;',
-             'if(!slot.list.length){try{console.log("NIAKVIO_SAN_EARLY","reason=empty_slot")}catch(_diag){}return result;}'),
-            ('var stream=rows[i];syncPlaybackHeaders(stream);var url=urlOf(stream);',
-             'var stream=rows[i];syncPlaybackHeaders(stream);var url=urlOf(stream);try{console.log("NIAKVIO_SAN_ROW","i="+i,"url="+!!url,"blocked="+(url?blocked(url):false),"seen="+!!seen[url],"direct="+(url?isDirect(stream,url):false))}catch(_diag){}'),
-            ('if(!url||blocked(url)||seen[url])continue;',
-             'if(!url||blocked(url)||seen[url]){try{console.log("NIAKVIO_SAN_DROP","reason="+(!url?"no_url":(blocked(url)?"blocked":"duplicate")))}catch(_diag){}continue;}'),
-            ('candidates[c].probe=(config.probeAllUrls||(config.probeDirectMedia&&isDirect(candidates[c].stream,candidates[c].url)))&&probeCount++<config.maxProbes;',
-             'candidates[c].probe=(config.probeAllUrls||(config.probeDirectMedia&&isDirect(candidates[c].stream,candidates[c].url)))&&probeCount++<config.maxProbes;try{console.log("NIAKVIO_SAN_CANDIDATE","i="+c,"probe="+!!candidates[c].probe,"probeAll="+!!config.probeAllUrls,"count="+probeCount,"max="+config.maxProbes)}catch(_diag){}'),
-            ('if(genericAppShellMedia(item.url))return null;if(correlatedPlayerFallback(item.stream,item.url))return clearPrivateProofs(item.stream);if(coreMediaProof(item.stream,item.url))return clearPrivateProofs(item.stream);if(!item.probe)return config.probeAllUrls?null:clearPrivateProofs(item.stream);',
-             'if(genericAppShellMedia(item.url)){try{console.log("NIAKVIO_SAN_DROP","reason=app_shell")}catch(_diag){}return null;}if(correlatedPlayerFallback(item.stream,item.url)){try{console.log("NIAKVIO_SAN_KEEP","reason=correlated")}catch(_diag){}return clearPrivateProofs(item.stream);}if(coreMediaProof(item.stream,item.url)){try{console.log("NIAKVIO_SAN_KEEP","reason=core_proof")}catch(_diag){}return clearPrivateProofs(item.stream);}if(!item.probe){try{console.log("NIAKVIO_SAN_DROP","reason=no_probe","probeAll="+!!config.probeAllUrls)}catch(_diag){}return config.probeAllUrls?null:clearPrivateProofs(item.stream);}'),
-            ('return verdict===true?clearPrivateProofs(item.stream):null;',
-             'try{console.log("NIAKVIO_SAN_VERDICT",String(verdict))}catch(_diag){}return verdict===true?clearPrivateProofs(item.stream):null;'),
-          ]
-          inst=text
-          for old,new in replacements:
-            if old not in inst: raise SystemExit('missing instrumentation anchor: '+old[:80])
-            inst=inst.replace(old,new,1)
+          strict_verdict='return verdict===true?clearPrivateProofs(item.stream):null;'
+          old_verdict='return verdict===false?null:clearPrivateProofs(item.stream);'
+          block_check='if(!url||blocked(url)||seen[url])continue;'
+          budget='candidates[c].probe=(config.probeAllUrls||(config.probeDirectMedia&&isDirect(candidates[c].stream,candidates[c].url)))&&probeCount++<config.maxProbes;'
+          probe_pair='var verdict=await probe(item.stream,item.url);\n        '+strict_verdict
+          for anchor in (strict_verdict,block_check,budget,probe_pair):
+            if anchor not in strict: raise SystemExit('missing bisect anchor: '+anchor[:80])
 
+          variants={
+            'STRICT': strict,
+            'FAIL_OPEN_UNKNOWN': strict.replace(strict_verdict,old_verdict,1),
+            'NO_BLOCK_FILTER': strict.replace(block_check,'if(!url||seen[url])continue;',1),
+            'FORCE_PROBE': strict.replace(budget,'candidates[c].probe=true;probeCount++;',1),
+            'SKIP_PROBE_VALIDATION': strict.replace(probe_pair,'return clearPrivateProofs(item.stream);',1),
+            'NO_SAN': no_san,
+          }
           fixture={'tmdbId':'60059','mediaType':'tv','title':'Better Call Saul','year':2015,'season':1,'episode':1}
           ctx=parity.context_for(fixture)
           def run(label,source):
@@ -84,11 +75,13 @@ jobs:
                 if line.startswith('NUVIO_HEALTH_RESULT='):
                   try: result=json.loads(line.split('=',1)[1])
                   except Exception: pass
-                if line.startswith('NIAKVIO_SAN_'): print(label,line)
-            if not isinstance(result,dict): print(label,'NO_RESULT');return -1
-            print(label,'STREAMS',result.get('stream_count'),'RAW',result.get('raw_stream_count'))
-            return int(result.get('stream_count') or 0)
-          a=run('V9',inst)
-          b=run('NO_SAN',no_san)
-          print('CAUSAL_COUNTS',a,b)
+            if not isinstance(result,dict):
+              print('BISECT',label,'NO_RESULT','rc',p.returncode)
+              return -1
+            count=int(result.get('stream_count') or 0)
+            print('BISECT',label,'streams',count,'raw',result.get('raw_stream_count'))
+            return count
+          counts={label:run(label,source) for label,source in variants.items()}
+          print('BISECT_COUNTS',json.dumps(counts,sort_keys=True))
+          if counts['NO_SAN'] < 1: raise SystemExit('control without sanitizer did not reproduce')
           PY
