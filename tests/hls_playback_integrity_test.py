@@ -61,7 +61,9 @@ globalThis.fetch=async function(url){return {ok:true,status:200,url:String(url),
 # Recovery-first regression: the native row points at a header-only HLS, but
 # its normal Referer page embeds a player that exposes the real HLS source.
 # Niakvio must follow that public player path, adapt Referer/Origin to the
-# immediate player context and return the recovered playable source.
+# immediate player context and return the recovered playable source. The fake
+# recovered playlist is intentionally open-ended so this recovery test does not
+# collide with the separate anti-tiny finite-VOD policy.
 recovery_provider = r'''
 globalThis.getStreams=async function(){return [{url:"https://broken.example/header.m3u8",type:"hls",headers:{Referer:"https://catalog.example/title"}}]};
 '''
@@ -72,7 +74,7 @@ recovery_wrapped = integrity.apply(recovery_provider, {
     "max_recovery_candidates": 12,
 })
 run_node(r'''
-const media="#EXTM3U\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n#EXT-X-ENDLIST\n";
+const media="#EXTM3U\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n";
 globalThis.fetch=async function(url,init){var u=String(url),h=(init&&init.headers)||{};
  if(u==="https://broken.example/header.m3u8")return {ok:true,status:200,url:u,headers:{get:function(){return "application/vnd.apple.mpegurl"}},text:async function(){return "#EXTM3U\n#EXT-X-VERSION:3\n"}};
  if(u==="https://catalog.example/title")return {ok:true,status:200,url:u,headers:{get:function(){return "text/html"}},text:async function(){return '<iframe src="https://player.example/e/abc"></iframe>'}};
@@ -132,7 +134,7 @@ assert "native-vod-duration-proof-v9" in ordered
 assert '"probeAllUrls":true' in ordered
 assert '"failClosedUnknown":true' in ordered
 run_node(r'''
-const media="#EXTM3U\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n#EXT-X-ENDLIST\n";
+const media="#EXTM3U\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n";
 globalThis.fetch=async function(url){var u=String(url);
  if(u==="https://catalog.example/embed/player")return {ok:true,status:200,url:u,headers:{get:function(){return "text/html"}},text:async function(){return '<script>const source="https://cdn.example/final.m3u8";</script>'}};
  if(u==="https://cdn.example/final.m3u8")return {ok:true,status:200,url:u,headers:{get:function(){return "application/vnd.apple.mpegurl"}},text:async function(){return media}};
