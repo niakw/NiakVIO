@@ -4,7 +4,7 @@
 Canonical provider capability answers *what content the provider serves*.
 Transport capability answers *which Nuvio/TMDB namespace can launch it*.
 Every provider whose canonical catalogue includes ``anime`` keeps that semantic
-capability while accepting Nuvio episodic TV/series transport aliases.
+capability while accepting the Nuvio episodic TV transport alias.
 Movie transport is exposed only when movie is a canonical provider capability.
 Authoritative TMDB metadata still decides whether the work is anime before the
 semantic gate lets an anime catalogue serve an episodic TV-shaped request.
@@ -51,7 +51,7 @@ def normalized_transport_types(values: object) -> list[str]:
     out: list[str] = []
     for value in values if isinstance(values, list) else []:
         item = str(value or "").strip().casefold()
-        if item in {"movie", "tv", "anime", "series"} and item not in out:
+        if item in {"movie", "tv", "anime"} and item not in out:
             out.append(item)
     return out
 
@@ -61,8 +61,6 @@ def anime_transport(canonical: list[str]) -> list[str]:
     wanted = list(canonical)
     if "anime" in canonical and "tv" not in wanted:
         wanted.append("tv")
-    if "tv" in wanted and "series" not in wanted:
-        wanted.append("series")
     return wanted
 
 
@@ -87,8 +85,8 @@ def catalog_semantic_types() -> dict[str, list[str]]:
         if not canonical:
             raise AssertionError(f"provider_catalog.json:{provider_id}: missing canonical media types")
         result[provider_id] = canonical
-    if len(result) != 96:
-        raise AssertionError(f"provider_catalog.json semantic rows={len(result)} expected=96")
+    if len(result) != 46:
+        raise AssertionError(f"provider_catalog.json semantic rows={len(result)} expected=46")
     return result
 
 
@@ -167,10 +165,12 @@ def patch_materializer() -> bool:
     current = match.group(0)
     required = (
         'if "anime" in canonical and "tv" not in wanted:',
-        'wanted.append("series")',
-        'item in {"movie", "tv", "anime", "series"}',
+        'wanted.append("tv")',
+        'item in {"movie", "tv", "anime"}',
     )
     forbidden = (
+        'wanted.append("series")',
+        '"series"',
         'for compatible in ("tv", "movie"):',
         'wanted = ["anime", "tv", "movie"]',
     )

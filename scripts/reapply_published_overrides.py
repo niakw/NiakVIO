@@ -226,7 +226,7 @@ def _normalized_transport_types(values: object) -> list[str]:
     result: list[str] = []
     for value in values if isinstance(values, list) else []:
         item = str(value).strip().casefold()
-        if item in {"movie", "tv", "anime", "series"} and item not in result:
+        if item in {"movie", "tv", "anime"} and item not in result:
             result.append(item)
     return result
 
@@ -236,13 +236,9 @@ def projected_transport_types(semantic_types: object) -> list[str]:
     semantic = _normalized_media_types(semantic_types)
     transport = list(semantic)
     if "anime" in semantic and "tv" not in transport:
-        # Nuvio may surface episodic anime as series/tv. Movie is not a generic
-        # anime alias: only semantic movie capability may select movie transport.
+        # Nuvio launches episodic anime through its TV namespace. Movie is not a
+        # generic anime alias: only semantic movie capability may select movie.
         transport.append("tv")
-    if "tv" in transport and "series" not in transport:
-        # Some Nuvio client paths request episodic content as `series` before
-        # their local type normalizer runs. Publish it as a transport alias only.
-        transport.append("series")
     return transport
 
 

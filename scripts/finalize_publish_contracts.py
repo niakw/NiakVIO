@@ -24,7 +24,7 @@ def assert_media_contract() -> bool:
     """Fail closed if the authoritative semantic/transport split drifts.
 
     canonicalSupportedTypes is semantic movie|tv|anime. supportedTypes is the
-    Nuvio transport surface: episodic tv/anime additionally exposes tv+series.
+    Nuvio transport surface: anime-only additionally exposes the tv launch alias.
     Movie transport exists only when movie is a canonical capability.
     """
     materializer = (ROOT / "scripts/materialize_provider_v3_all.py").read_text(encoding="utf-8")
@@ -36,7 +36,6 @@ def assert_media_contract() -> bool:
         for needle in (
             'if "anime" in canonical and "tv" not in wanted:',
             'wanted.append("tv")',
-            'wanted.append("series")',
         ):
             if needle not in text:
                 raise AssertionError(f"{label}: missing authoritative transport rule {needle}")
@@ -46,7 +45,6 @@ def assert_media_contract() -> bool:
     # intentionally contains those strings inside its own anti-regression list.
     for needle in (
         'transport.append("tv")',
-        'transport.append("series")',
         'Movie is not a generic',
     ):
         if needle not in reapply:
@@ -57,8 +55,8 @@ def assert_media_contract() -> bool:
         raise AssertionError("architecture semantic field drifted")
     if media.get("transport_field") != "supportedTypes":
         raise AssertionError("architecture transport field drifted")
-    if media.get("anime_only_transport_compatibility") != ["anime", "tv", "series"]:
-        raise AssertionError("architecture anime transport must remain anime+tv+series")
+    if media.get("anime_only_transport_compatibility") != ["anime", "tv"]:
+        raise AssertionError("architecture anime transport must remain anime+tv")
     return False
 
 

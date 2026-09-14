@@ -387,13 +387,11 @@ def normalize_anime_transport_compatibility(entry: dict[str, Any]) -> bool:
     wanted = list(canonical)
     if "anime" in canonical and "tv" not in wanted:
         wanted.append("tv")
-    if "tv" in wanted and "series" not in wanted:
-        wanted.append("series")
 
     current = []
     for value in entry.get("supportedTypes") or []:
         item = str(value or "").strip().casefold()
-        if item in {"movie", "tv", "anime", "series"} and item not in current:
+        if item in {"movie", "tv", "anime"} and item not in current:
             current.append(item)
 
     before_canonical = [
