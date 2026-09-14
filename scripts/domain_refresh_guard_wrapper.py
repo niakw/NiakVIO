@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Run the Domain Refresh transaction guard with explicit active-domain reuse evidence.
+"""Run the Domain Refresh transaction guard with explicit current-domain reuse evidence.
 
-The base guard remains fail-closed. This wrapper adds one narrow fresh-evidence
-case used by authoritative address hubs: an explicitly labelled Active/Online
-domain may legitimately reuse a historical hostname. Labels containing Offline
-or Inactive never qualify.
+The base guard remains fail-closed. This wrapper adds two narrow fresh-evidence
+cases used by authoritative address hubs: an explicitly labelled Active/Online
+or Available/Disponible domain may legitimately reuse a historical hostname.
+Labels containing Offline/Inactive or Unavailable/Indisponible/Blocked never
+qualify.
 """
 from __future__ import annotations
 
@@ -14,6 +15,8 @@ from typing import Any
 import validate_domain_refresh_transaction as guard
 
 _BASE = guard.has_fresh_rollback_evidence
+_NEGATIVE = re.compile(r"\b(?:offline|inactive|unavailable|indisponible|blocked|bloqu[eé]e?s?)\b", re.I)
+_POSITIVE = re.compile(r"\b(?:active|online|available|disponible)\b", re.I)
 
 
 def has_fresh_rollback_evidence(item: dict[str, Any], terminal: str) -> bool:
@@ -21,9 +24,9 @@ def has_fresh_rollback_evidence(item: dict[str, Any], terminal: str) -> bool:
         return True
     candidate = guard.selected_candidate(item, terminal)
     label = str(candidate.get("label") or "").casefold()
-    if re.search(r"\b(?:offline|inactive)\b", label):
+    if _NEGATIVE.search(label):
         return False
-    return bool(re.search(r"\b(?:active|online)\b", label))
+    return bool(_POSITIVE.search(label))
 
 
 def main() -> int:
