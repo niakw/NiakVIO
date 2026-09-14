@@ -8439,7 +8439,22 @@
         "anime"
       ],
       "notes": [
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
+        "NIAKVIO_VOIRANIME_HOMES_DLE_REGISTRATION_V1: reverse-order terminal parity on Dan Da Dan S01E01 is required before retaining this runtime."
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/voiranime_homes_dle_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/voiranime_homes_dle_runtime_v1.py": {
+          "base": "https://voiranime.homes",
+          "provider": "voiranime-homes",
+          "name": "VoirAnime Homes",
+          "max_streams": 6
+        }
+      },
+      "proof_search_bases": [
+        "https://voiranime.homes"
       ]
     },
     "voiranime-rip": {
