@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CANONICAL = {"movie", "tv", "anime"}
-TRANSPORT = CANONICAL | {"series"}
+TRANSPORT = CANONICAL
 CURRENT_PROVIDER_COUNT = 46
 
 
@@ -20,18 +20,15 @@ def normalized_types(raw: object, label: str, allowed: set[str]) -> tuple[str, .
 
 
 def expected_transport(canonical: tuple[str, ...]) -> tuple[str, ...]:
-    """Project semantic capability onto the Nuvio launch surface.
+    """Project semantic capability onto the current Nuvio launch surface.
 
-    Anime-only providers need the TV launch alias for episodic anime, but that
-    alias does not itself create a canonical TV capability and therefore must
-    not cascade into the legacy `series` alias. `series` is retained only when
-    TV is a real canonical capability. Movie is never synthesized.
+    The current renderer keeps semantic movie/tv/anime capabilities verbatim
+    and adds only the TV launch alias needed by anime-only episodic providers.
+    It never synthesizes movie or the legacy `series` alias.
     """
     wanted = list(canonical)
     if "anime" in canonical and "tv" not in wanted:
         wanted.append("tv")
-    if "tv" in canonical and "series" not in wanted:
-        wanted.append("series")
     return tuple(wanted)
 
 
@@ -55,11 +52,9 @@ def validate_manifest(path: Path) -> tuple[list[dict], int]:
         if canonical_raw:
             canonical = normalized_types(canonical_raw, f"{path}:{provider_id}:canonicalSupportedTypes", CANONICAL)
         else:
-            canonical = tuple(value for value in transport if value != "series")
+            canonical = transport
             assert canonical, f"{path}:{provider_id}: missing canonical media capability"
-            assert all(value in CANONICAL for value in canonical)
 
-        assert "series" not in canonical, (path, provider_id, canonical)
         assert transport == expected_transport(canonical), (
             path,
             provider_id,
@@ -70,8 +65,6 @@ def validate_manifest(path: Path) -> tuple[list[dict], int]:
         assert ("movie" in transport) == ("movie" in canonical), (path, provider_id, canonical, transport)
         if "anime" in canonical:
             assert "tv" in transport, (path, provider_id, canonical, transport)
-        if "tv" in canonical:
-            assert {"tv", "series"} <= set(transport), (path, provider_id, canonical, transport)
 
         anime += int("anime" in canonical)
         out.append({"id": provider_id, "key": key, "transport": transport, "canonical": canonical, "row": row})
@@ -171,5 +164,5 @@ print(
     "canonical media type tests passed: "
     f"catalog={len(catalog)} general={canonical_count} vf={vf_count} "
     f"anime_general={canonical_anime} anime_vf={vf_anime} semantic=movie|tv|anime "
-    "transport=movie|tv|anime|series anime_alias=tv canonical_tv_alias=series movie_only_when_canonical"
+    "transport=movie|tv|anime anime_alias=tv no_series_synthesis=true movie_only_when_canonical"
 )
