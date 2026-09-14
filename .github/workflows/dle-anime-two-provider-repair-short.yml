@@ -37,7 +37,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m py_compile scripts/provider_patches/dle_anime_runtime_v1.py scripts/register_dle_anime_runtime_v1.py tests/dle_anime_runtime_registration_v1_test.py
+          python3 -m py_compile \
+            scripts/provider_patches/dle_anime_runtime_v1.py \
+            scripts/provider_patches/french_manga_dle_runtime_v1.py \
+            scripts/provider_patches/voiranime_homes_dle_runtime_v1.py \
+            scripts/register_dle_anime_runtime_v1.py \
+            tests/dle_anime_runtime_registration_v1_test.py
           python3 tests/dle_anime_runtime_registration_v1_test.py
           python3 scripts/register_dle_anime_runtime_v1.py
           python3 tests/dle_anime_runtime_registration_v1_test.py
