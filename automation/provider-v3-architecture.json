@@ -138,12 +138,14 @@
     "transformations_enabled": [
       "code-line-leading-indentation",
       "code-line-trailing-whitespace",
-      "code-blank-lines"
+      "code-blank-lines",
+      "unmanaged-full-line-comments"
     ],
-    "comment_architecture_must_be_preserved": true,
+    "managed_comment_architecture_must_be_preserved": true,
+    "unmanaged_full_line_comments_may_be_removed": true,
     "managed_markers_must_be_preserved": true,
-    "newline_asi_contract": "remove only code-only blank lines while retaining a physical line boundary between adjacent nonblank code lines",
-    "template_literal_policy": "lexically protect template payload bytes and nested ${...}; minimize only code-state line whitespace",
+    "newline_asi_contract": "remove only code-only blank/comment lines while retaining a physical line boundary between adjacent nonblank code lines",
+    "template_literal_policy": "lexically protect template payload bytes and nested ${...}; minimize only code-state line whitespace/comments",
     "identifier_renaming_allowed": false,
     "expression_reordering_allowed": false,
     "literal_rewriting_allowed": false,

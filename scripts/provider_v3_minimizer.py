@@ -2,15 +2,15 @@
 """NiakVIO-aware Provider v3 JavaScript minimizer.
 
 This is deliberately not a generic JavaScript minifier. It preserves strings,
-template literal payloads, block comments and every managed Provider v3 marker;
-never renames identifiers; never folds or reorders expressions; and never uses
-Terser. Production transformations are restricted to horizontal indentation,
-trailing horizontal whitespace, and blank lines while the lexer is in ordinary
-JavaScript code (including template-expression code).
+template literal payloads, managed Provider v3 markers, security/runtime markers,
+licenses and source directives; never renames identifiers; never folds or
+reorders expressions; and never uses Terser.
 
-The lexer tracks multiline strings/comments and nested template expressions so
-template payload bytes are never rewritten. The result must be idempotent and
-parse as JavaScript before publication.
+Production transformations are restricted to safe line-level operations while
+the lexer is in ordinary JavaScript code (including template-expression code):
+leading/trailing horizontal whitespace, blank code-only lines, and standalone
+non-contract comments. Literal/comment payload bytes that are not explicitly
+classified as removable are left untouched.
 """
 from __future__ import annotations
 
@@ -32,6 +32,7 @@ TRANSFORMATIONS_ENABLED = [
     "code-line-leading-indentation",
     "code-line-trailing-whitespace",
     "code-blank-lines",
+    "unmanaged-full-line-comments",
 ]
 
 MARKERS = (
@@ -41,6 +42,20 @@ MARKERS = (
     "CLOSEFIX:",
     "FIXDATA:",
     "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
+)
+
+PROTECTED_COMMENT_TOKENS = (
+    "NIAKVIO_",
+    "NUVIO_",
+    "STARTFIX:",
+    "CLOSEFIX:",
+    "FIXDATA:",
+    "SPDX-License-Identifier",
+    "@license",
+    "@preserve",
+    "sourceURL",
+    "sourceMappingURL",
+    "@cc_on",
 )
 
 _CODEISH = {"code", "template_expr"}
@@ -124,8 +139,6 @@ def _scan_line(line: str, stack: list[dict[str, int | str]]) -> None:
 
         # Ordinary code or template-expression code.
         if ch == "/" and nxt == "/":
-            # Line comments end at the physical line ending and do not alter
-            # the persistent lexical stack.
             return
         if ch == "/" and nxt == "*":
             stack.append(_ctx("block_comment"))
@@ -161,6 +174,30 @@ def _scan_line(line: str, stack: list[dict[str, int | str]]) -> None:
         i += 1
 
 
+def _protected_comment(stripped: str) -> bool:
+    if stripped.startswith("/*!"):
+        return True
+    return any(token.casefold() in stripped.casefold() for token in PROTECTED_COMMENT_TOKENS)
+
+
+def _removable_full_line_comment(body: str, start_kind: str, end_kind: str) -> bool:
+    if start_kind not in _CODEISH or end_kind not in _CODEISH:
+        return False
+    stripped = body.strip()
+    if not stripped or _protected_comment(stripped):
+        return False
+    if stripped.startswith("//"):
+        return True
+    if (
+        stripped.startswith("/*")
+        and stripped.endswith("*/")
+        and stripped.count("/*") == 1
+        and stripped.count("*/") == 1
+    ):
+        return True
+    return False
+
+
 def minimize_text(text: str) -> MinimizeResult:
     stack: list[dict[str, int | str]] = [_ctx("code")]
     out: list[str] = []
@@ -182,9 +219,11 @@ def minimize_text(text: str) -> MinimizeResult:
         if end_kind in _CODEISH:
             body = body.rstrip(" \t")
 
-        # Removing an empty code-only physical line leaves the previous line's
-        # terminator in place, so adjacent JavaScript statements still retain
-        # a line boundary for ASI-sensitive runtimes.
+        remove_comment = _removable_full_line_comment(
+            original_body,
+            start_kind,
+            end_kind,
+        )
         drop_blank = (
             not body
             and bool(ending)
@@ -192,7 +231,10 @@ def minimize_text(text: str) -> MinimizeResult:
             and end_kind in _CODEISH
         )
 
-        candidate = "" if drop_blank else body + ending
+        # Dropping a whole comment/blank physical line leaves the previous
+        # nonblank line's terminator in place, so adjacent statements retain a
+        # line boundary for ASI-sensitive runtimes.
+        candidate = "" if remove_comment or drop_blank else body + ending
         if candidate != raw_line:
             transformed += 1
         out.append(candidate)
@@ -324,7 +366,7 @@ def portfolio_report(*, syntax_check: bool = False) -> dict:
         totals["transformed_lines"] += result.transformed_lines
 
     return {
-        "schema_version": 3,
+        "schema_version": 4,
         "mode": "niakvio-safe-minimizer",
         "production_enabled": PRODUCTION_ENABLED,
         "terser_allowed": TERSER_ALLOWED,
@@ -332,7 +374,10 @@ def portfolio_report(*, syntax_check: bool = False) -> dict:
         "transformations_enabled": list(TRANSFORMATIONS_ENABLED),
         "safety_contract": [
             "preserve every managed Provider v3 marker cardinality",
-            "preserve bytes inside multiline strings, template payloads and block comments",
+            "preserve NIAKVIO_/NUVIO_ runtime/security marker comments",
+            "preserve license and source directive comments",
+            "remove only standalone non-contract comments",
+            "preserve bytes inside multiline strings, template payloads and multiline block comments",
             "track nested template expressions before touching line whitespace",
             "never rename identifiers",
             "never reorder or fold expressions",

@@ -21,17 +21,20 @@ assert module.TRANSFORMATIONS_ENABLED == [
     "code-line-leading-indentation",
     "code-line-trailing-whitespace",
     "code-blank-lines",
+    "unmanaged-full-line-comments",
 ]
 assert module.EXPECTED_PROVIDER_COUNT == EXPECTED
 
 sample = """/* BEGIN NIAKVIO_PROVIDER */
 
+  // removable explanatory comment
   const title = "  literal indentation stays";   
   function demo() {
     /* block comment
        indentation inside comment stays */
     return title;
   }
+  /* removable one-line block comment */
 
 /* STARTFIX:PROVIDER.DEMO.CONFIG.V1 */
 /* FIXDATA:PROVIDER.DEMO.CONFIG.V1:e30= */
@@ -45,8 +48,11 @@ assert result.saved_bytes > 0
 assert result.transformed_lines > 0
 assert '"  literal indentation stays"' in result.text
 assert "       indentation inside comment stays */" in result.text
+assert "removable explanatory comment" not in result.text
+assert "removable one-line block comment" not in result.text
+assert "STARTFIX:PROVIDER.DEMO.CONFIG.V1" in result.text
+assert "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1" in result.text
 assert "\n\n" not in result.text
-assert "title = " in result.text
 assert module.minimize_text(result.text).text == result.text
 
 tick = chr(96)
@@ -65,6 +71,18 @@ nested = "  const x = " + tick + nested_payload + tick + ";\n  let y = 2;\n"
 nested_result = module.minimize_text(nested)
 assert tick + nested_payload + tick in nested_result.text
 assert nested_result.text.endswith("let y = 2;\n")
+
+protected = """/*! license */
+// # sourceURL=provider.js
+/* NIAKVIO_PROVIDER_SECURITY_MARKER_V1 */
+/* NUVIO_PROVIDER_SECURITY_HARDENING_V1:deadbeef */
+  const x = 1;
+"""
+protected_result = module.minimize_text(protected)
+assert "/*! license */" in protected_result.text
+assert "sourceURL=provider.js" in protected_result.text
+assert "NIAKVIO_PROVIDER_SECURITY_MARKER_V1" in protected_result.text
+assert "NUVIO_PROVIDER_SECURITY_HARDENING_V1" in protected_result.text
 
 report = module.portfolio_report(syntax_check=False)
 assert report["mode"] == "niakvio-safe-minimizer"
@@ -89,5 +107,5 @@ with tempfile.TemporaryDirectory() as tmp:
 print(
     "PROVIDER_V3_MINIMIZER_CONTRACT_OK "
     f"providers={EXPECTED} saved_preview={report['totals']['saved_bytes']} "
-    "template_safe=1 nested_template_safe=1 terser=0"
+    "template_safe=1 nested_template_safe=1 comment_safe=1 terser=0"
 )

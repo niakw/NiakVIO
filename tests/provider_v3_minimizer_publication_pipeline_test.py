@@ -36,6 +36,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
             f"/* NIAKVIO_PROVIDER_ID:{provider_id} */\n"
             "/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n"
             "\n"
+            "  // removable publication comment\n"
             f"/* STARTFIX:PROVIDER.{provider_id.upper()}.CONFIG.V1 */\n"
             "  const NIAKVIO_PROVIDER_MODEL = Object.freeze({});   \n"
             f"/* CLOSEFIX:PROVIDER.{provider_id.upper()}.CONFIG.V1 */\n"
@@ -45,9 +46,11 @@ with tempfile.TemporaryDirectory() as tmp_raw:
             "/* END NIAKVIO_PROVIDER */\n"
         )
         (tmp / filename).write_text(text, encoding="utf-8")
+        # Simulate the preceding durable-reapply stage already consuming the
+        # cache-safe version bump for this same accepted provider generation.
         manifest["scrapers"].append({
             "id": provider_id,
-            "version": "1.0.0",
+            "version": "1.0.1",
             "filename": filename,
         })
         provenance["providers"][provider_id] = {
@@ -75,15 +78,19 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     module.MINIMIZER = ROOT / "scripts/provider_v3_minimizer.py"
     module.validate_artifact = lambda data, provider_id: None
     module.assert_hardened = lambda text: None
-    module.load_provider_version_floors = lambda: {}
+    module.load_provider_version_floors = lambda: {
+        f"p{index:02d}": "1.0.0" for index in range(46)
+    }
 
     first = module.finalize(check=False)
     assert first["changed"] == 46, first
     assert first["saved_bytes"] > 0, first
+    assert first["already_versioned"] == 46, first
 
     out_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     out_provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
     assert len(out_manifest["scrapers"]) == 46
+    first_proofs = {}
     for row in out_manifest["scrapers"]:
         provider_id = row["id"]
         assert row["version"] == "1.0.1", row
@@ -92,20 +99,28 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         text = (tmp / row["filename"]).read_text(encoding="utf-8")
         assert "  const NIAKVIO_PROVIDER_MODEL" not in text
         assert "  function getStreams" not in text
+        assert "removable publication comment" not in text
         assert "`literal ${\"  keep me\"}`" in text
         assert "\n\n" not in text
         assert text.count("STARTFIX:") == 1
         assert text.count("CLOSEFIX:") == 1
         proof = out_provenance["providers"][provider_id]["final_minimizer"]
+        assert proof["schema_version"] == 2
         assert proof["terser_allowed"] is False
         assert proof["production_enabled"] is True
+        assert proof["saved_bytes"] > 0
         assert proof["sha256"] == out_provenance["providers"][provider_id]["sha256"]
+        first_proofs[provider_id] = dict(proof)
 
-    # A second application is a strict fixed point: no provider version may bump.
+    # A second application is a strict fixed point: no provider version may
+    # bump and the original transformation metrics remain the stable proof.
     second = module.finalize(check=False)
     assert second["changed"] == 0, second
     after_second = json.loads(manifest_path.read_text(encoding="utf-8"))
+    provenance_second = json.loads(provenance_path.read_text(encoding="utf-8"))
     assert all(row["version"] == "1.0.1" for row in after_second["scrapers"])
+    for provider_id, proof in first_proofs.items():
+        assert provenance_second["providers"][provider_id]["final_minimizer"] == proof
     module.finalize(check=True)
 
-print("PROVIDER_V3_MINIMIZER_PUBLICATION_PIPELINE_OK providers=46 fixed_point=1 template_safe=1 terser=0")
+print("PROVIDER_V3_MINIMIZER_PUBLICATION_PIPELINE_OK providers=46 fixed_point=1 no_double_bump=1 template_safe=1 terser=0")

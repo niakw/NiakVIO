@@ -29,6 +29,7 @@ from reapply_published_overrides import (
     load_provider_version_floors,
     published_name,
     validate_artifact,
+    version_is_strictly_above_floor,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,7 +37,7 @@ MANIFEST = ROOT / "manifest.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
 PROVIDERS = ROOT / "providers"
 MINIMIZER = ROOT / "scripts" / "provider_v3_minimizer.py"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -77,6 +78,47 @@ def _safe_provider_path(relative: str) -> Path:
     return path
 
 
+def _proof_metrics(
+    current: object,
+    *,
+    tool_sha: str,
+    digest: str,
+    result: Any,
+    bytes_changed: bool,
+) -> tuple[int, int, str]:
+    """Keep publication-transform metrics stable across fixed-point checks.
+
+    On the transformation pass the metrics describe bytes actually removed. A
+    second pass necessarily observes zero removable bytes, but that must not
+    rewrite the historical proof for the exact same minimized asset/tool.
+    """
+    if bytes_changed:
+        return (
+            int(result.saved_bytes),
+            int(result.transformed_lines),
+            str(result.skipped_reason or ""),
+        )
+    if isinstance(current, dict):
+        same_asset = (
+            int(current.get("schema_version") or 0) == SCHEMA_VERSION
+            and str(current.get("tool_sha256") or "").casefold() == tool_sha.casefold()
+            and str(current.get("sha256") or "").casefold() == digest.casefold()
+            and current.get("production_enabled") is True
+            and current.get("terser_allowed") is False
+        )
+        if same_asset:
+            return (
+                int(current.get("saved_bytes") or 0),
+                int(current.get("transformed_lines") or 0),
+                str(current.get("skipped_reason") or ""),
+            )
+    return (
+        int(result.saved_bytes),
+        int(result.transformed_lines),
+        str(result.skipped_reason or ""),
+    )
+
+
 def finalize(*, check: bool) -> dict[str, Any]:
     if not PRODUCTION_ENABLED or TERSER_ALLOWED:
         raise ValueError("NiakVIO minimizer production contract is not safe")
@@ -93,6 +135,7 @@ def finalize(*, check: bool) -> dict[str, Any]:
     saved_total = 0
     transformed_total = 0
     skipped_templates = 0
+    already_versioned = 0
     stale = False
     outputs: dict[Path, bytes] = {}
 
@@ -128,15 +171,23 @@ def finalize(*, check: bool) -> dict[str, Any]:
                 f"ref_changed={ref_changed}"
             )
 
+        current_proof = row.get("final_minimizer")
+        proof_saved, proof_lines, proof_skipped = _proof_metrics(
+            current_proof,
+            tool_sha=tool_sha,
+            digest=digest,
+            result=result,
+            bytes_changed=bytes_changed,
+        )
         proof = {
             "schema_version": SCHEMA_VERSION,
             "tool": "scripts/provider_v3_minimizer.py",
             "tool_sha256": tool_sha,
             "production_enabled": True,
             "terser_allowed": False,
-            "saved_bytes": int(result.saved_bytes),
-            "transformed_lines": int(result.transformed_lines),
-            "skipped_reason": str(result.skipped_reason or ""),
+            "saved_bytes": proof_saved,
+            "transformed_lines": proof_lines,
+            "skipped_reason": proof_skipped,
             "sha256": digest,
         }
 
@@ -149,10 +200,16 @@ def finalize(*, check: bool) -> dict[str, Any]:
                 skipped_templates += 1
             expected_stale = True
             entry["filename"] = new_relative
-            entry["version"] = bump_provider_version(
-                str(entry.get("version") or "1.0.0"),
-                floors.get(provider_id),
-            )
+            current_version = str(entry.get("version") or "1.0.0")
+            floor = floors.get(provider_id)
+            # Reapply may already have changed the exact same provider in this
+            # accepted transaction. If its version is already strictly above the
+            # published floor, minimization changes the same generation and must
+            # not invent a second cache bump.
+            if floor and version_is_strictly_above_floor(current_version, floor):
+                already_versioned += 1
+            else:
+                entry["version"] = bump_provider_version(current_version, floor)
             row["published_filename"] = new_relative
             row["sha256"] = digest
             if "patched_sha256" in row:
@@ -171,7 +228,6 @@ def finalize(*, check: bool) -> dict[str, Any]:
             row["final_minimizer"] = proof
             outputs[ROOT / new_relative] = minimized
         else:
-            current_proof = row.get("final_minimizer")
             if current_proof != proof:
                 expected_stale = True
                 row["final_minimizer"] = proof
@@ -211,13 +267,14 @@ def finalize(*, check: bool) -> dict[str, Any]:
         "FIELD_PROVIDER_V3_MINIMIZER_PUBLICATION "
         f"providers={EXPECTED_PROVIDER_COUNT} changed={changed} saved_bytes={saved_total} "
         f"transformed_lines={transformed_total} skipped_templates={skipped_templates} "
-        f"tool_sha={tool_sha[:16]} terser_allowed=false"
+        f"already_versioned={already_versioned} tool_sha={tool_sha[:16]} terser_allowed=false"
     )
     return {
         "changed": changed,
         "saved_bytes": saved_total,
         "transformed_lines": transformed_total,
         "skipped_templates": skipped_templates,
+        "already_versioned": already_versioned,
         "tool_sha256": tool_sha,
     }
 

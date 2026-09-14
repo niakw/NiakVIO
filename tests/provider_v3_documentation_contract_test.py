@@ -112,14 +112,17 @@ assert machine["minifier"]["transformations_enabled"] == [
     "code-line-leading-indentation",
     "code-line-trailing-whitespace",
     "code-blank-lines",
+    "unmanaged-full-line-comments",
 ]
+assert machine["minifier"]["managed_comment_architecture_must_be_preserved"] is True
+assert machine["minifier"]["unmanaged_full_line_comments_may_be_removed"] is True
 assert machine["minifier"]["newline_asi_contract"] == (
-    "remove only code-only blank lines while retaining a physical line boundary "
-    "between adjacent nonblank code lines"
+    "remove only code-only blank/comment lines while retaining a physical line "
+    "boundary between adjacent nonblank code lines"
 )
 assert machine["minifier"]["template_literal_policy"] == (
     "lexically protect template payload bytes and nested ${...}; minimize only "
-    "code-state line whitespace"
+    "code-state line whitespace/comments"
 )
 assert machine["minifier"]["terser_allowed"] is False
 
@@ -156,9 +159,6 @@ assert lab["external_nuvio_repo_repairs_allowed"] is False
 assert lab["external_build_dependency_packaging_repairs_allowed"] is False
 assert lab["test_plumbing_must_not_change_official_runtime_behavior"] is True
 
-# Validate the dynamic matrix source against the current manifest instead of
-# freezing yesterday's route totals into docs/machine policy. Current transport
-# is semantic movie/tv/anime plus the single anime -> tv episodic launch alias.
 rows = manifest.get("scrapers") or []
 assert len(rows) == CURRENT_PROVIDER_COUNT
 canonical_valid = {"movie", "tv", "anime"}
@@ -175,8 +175,6 @@ for row in rows:
         assert "tv" in transport, (provider, canonical, transport)
     assert ("movie" in transport) == ("movie" in canonical), (provider, canonical, transport)
 
-# Historical providers are retained as archive input/evidence, never projected
-# back into the current runtime catalogue.
 archive = ROOT / "provider-old"
 assert archive.is_dir(), "provider-old historical archive missing"
 archived_ids = {path.name.split("--base--", 1)[0] for path in archive.glob("*--base--*.js")}
@@ -185,7 +183,6 @@ assert len(archived_ids - current_ids) == HISTORICAL_PROVIDER_COUNT, (
     len(archived_ids - current_ids), sorted(archived_ids & current_ids)
 )
 
-# No dead workbench should remain part of the permanent documentation contract.
 for text, label in ((architecture, "ARCHITECTURE"), (readme, "README"), (readme_fr, "README.fr")):
     assert "current route-recognition workbench" not in text.lower(), label
 
@@ -196,7 +193,6 @@ assert "ne sont **pas** rafraîchis par CORE Deep" in upstreams
 assert "jamais une seed JavaScript exécutable" in upstreams
 assert not (ROOT / ".github/triggers/deep-provider-repair").exists()
 
-# Active workflows may use bounded repair primitives only in Learning.
 for path in (ROOT / ".github/workflows").glob("*.yml"):
     text = path.read_text(encoding="utf-8")
     if path.name == "brain-learning-lab.yml":
