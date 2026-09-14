@@ -69,8 +69,9 @@ assert_pre_network_reject(["movie"], "series", "movie-only on tv")
 assert_pre_network_reject(["tv"], "anime", "tv-only on explicit anime")
 assert_pre_network_reject(["movie", "tv"], "anime", "movie-tv provider on explicit anime")
 
-# But a semantic-anime provider must still be allowed to provisionally accept a
-# movie transport because an anime work may genuinely live in TMDB movie space.
+# A semantic-anime provider may accept movie transport only after canonical
+# TMDB metadata has positively classified the work as anime. Provider execution
+# must happen after that metadata preflight, never before it.
 anime_only = mod.apply(BASE, options={"semantic_types": ["anime"]})
 run_case(anime_only, '''
 let fetchCalls=0;
@@ -92,4 +93,38 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1)});
 ''')
 
-print('global media fast gate passed: movie<->tv and explicit anime mismatches reject before provider/TMDB network')
+
+# Ambiguous anime-via-TV/movie transport must classify before provider network.
+# Live-action metadata therefore stops an anime-only provider at the Core gate.
+def assert_live_action_stops_anime_provider(media_type: str, tmdb_id: str, label: str) -> None:
+    patched = mod.apply(BASE, options={"semantic_types": ["anime"]})
+    endpoint = "/movie/" if media_type == "movie" else "/tv/"
+    season_arg, episode_arg = ("null", "null") if media_type == "movie" else ("1", "1")
+    run_case(
+        patched,
+        f'''
+let fetchCalls=0;
+global.__providerCalls=0;
+global.fetch=async(url)=>{{
+  fetchCalls++;
+  if(!String(url).includes('{endpoint}{tmdb_id}?'))throw new Error('{label}: expected TMDB semantic preflight, got '+url);
+  return {{ok:true,status:200,json:async()=>({{
+    id:Number('{tmdb_id}'),genres:[{{id:18,name:'Drama'}}],original_language:'en',
+    origin_country:['US'],production_countries:[{{iso_3166_1:'US'}}],keywords:{{results:[]}}
+  }})}};
+}};
+const provider=require(process.argv[2]);
+(async()=>{{
+  const value=await provider.getStreams('{tmdb_id}','{media_type}',{season_arg},{episode_arg});
+  if(!Array.isArray(value)||value.length!==0)throw new Error('{label}: live-action must return []');
+  if(global.__providerCalls!==0)throw new Error('{label}: anime provider touched live-action network path: '+global.__providerCalls);
+  if(fetchCalls!==1)throw new Error('{label}: expected exactly one TMDB preflight: '+fetchCalls);
+}})().catch(e=>{{console.error(e);process.exit(1)}});
+''',
+    )
+
+
+assert_live_action_stops_anime_provider("movie", "157336", "Interstellar")
+assert_live_action_stops_anime_provider("tv", "94997", "House of the Dragon")
+
+print('global media fast gate passed: semantic anime preflight blocks live-action before provider network')

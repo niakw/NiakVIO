@@ -68,7 +68,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-data-contract-launch-gate-v33-25s-isolated-failfast",
+        "revision": "tmdb-data-contract-launch-gate-v34-anime-pre-network-semantic-gate",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -429,6 +429,19 @@ function providerNeedsTmdbBeforeStreams(container){
 function hasResolvedTmdbMetadata(args){
   try{return !!(args&&args.__nuvioContext&&args.__nuvioContext.tmdbMetadata)}catch(_){return false}
 }
+function requiresSemanticPreflight(a){
+  var first=a[0],obj=objectRequest(first),q=obj?first:null;
+  var input=obj?s(q.mediaType||q.type||q.category||"movie"):s(a[1]||"movie");
+  var raw=s(input).toLowerCase(),transport=alias(input);
+  var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
+  if(!semantic.length||raw==="anime"||semantic.indexOf("anime")<0)return false;
+  var namespace=transport==="movie"?"movie":"tv";
+  // Anime is a semantic class carried through movie/tv transport. If anime is
+  // the only semantic reason this provider could accept this namespace, classify
+  // the work before touching provider network. This stops live-action titles
+  // from consuming an anime provider's whole execution budget.
+  return semantic.indexOf(namespace)<0;
+}
 
 async function resolve(a){
   var first=a[0],obj=objectRequest(first),q=obj?Object.assign({},first):null;
@@ -624,9 +637,13 @@ function install(o,k){
       var verified=null,preResolved=null;
       var needsPlanMetadata=providerNeedsTmdbBeforeStreams(o);
       var needsIdNormalization=requestHasExternalIdentity(originalArgs);
-      if(needsPlanMetadata||needsIdNormalization){
+      var needsSemanticPreflight=requiresSemanticPreflight(originalArgs);
+      if(needsPlanMetadata||needsIdNormalization||needsSemanticPreflight){
         preResolved=await resolve(originalArgs);
         if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
+        // Ambiguous anime-via-tv/movie transport is fail-closed before provider
+        // network unless canonical metadata positively classifies the work.
+        if(needsSemanticPreflight&&(!preResolved||!hasResolvedTmdbMetadata(preResolved)))return [];
         if(preResolved&&!deadlineExpired(requestDeadline)&&hasResolvedTmdbMetadata(preResolved)){
           verified=preResolved;
           if(verified.__nuvioContext)verified.__nuvioContext.requestToken=requestToken;

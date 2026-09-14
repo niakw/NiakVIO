@@ -232,10 +232,14 @@ def classify(strict: dict[str, Any], diagnostic: dict[str, Any] | None) -> str:
 
 
 def supports(row: dict[str, Any], fixture: dict[str, Any]) -> bool:
-    types = {canonical(value) for value in row.get("supportedTypes") or []}
+    # canonicalSupportedTypes is semantic authority. supportedTypes may contain
+    # Nuvio transport aliases such as anime -> tv and must not schedule an
+    # anime-only provider against arbitrary live-action TV.
+    semantic = row.get("canonicalSupportedTypes")
+    if not isinstance(semantic, list) or not semantic:
+        semantic = row.get("supportedTypes") or []
+    types = {canonical(value) for value in semantic}
     media_type = canonical(fixture["mediaType"])
-    if media_type == "anime":
-        return "anime" in types
     return media_type in types
 
 

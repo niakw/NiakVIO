@@ -57,7 +57,8 @@
       },
       "notes": [
         "Provider v3 runtime is a NiakVIO-owned catalogue/episodes.js Lego derived from the current upstream contract; upstream JavaScript is not embedded or executed.",
-        "Semantic movie support removed: current repair evidence did not prove identity-safe movie output; TV/series remain transport aliases for anime only."
+        "Semantic movie support removed: current repair evidence did not prove identity-safe movie output; TV/series remain transport aliases for anime only.",
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ],
       "candidate_learned_routes": [
         "/template-php/defaut/fetch.php",
@@ -248,12 +249,10 @@
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
         "required_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "validated_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "missing_types": [],
         "provider_request_count": 63,
@@ -2611,8 +2610,7 @@
       "official_hub": "https://streamingsiteshub.com/",
       "official_site": "https://anikototv.to/home",
       "published_types": [
-        "anime",
-        "movie"
+        "anime"
       ],
       "learned_routes": [
         "/search?keyword={query}",
@@ -2777,15 +2775,13 @@
         "forcedEnabled": true,
         "routeDataState": "repair",
         "requiredLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "currentVerifiedLanes": [],
         "exactLockedLanes": [],
         "provenLanes": [],
         "missingLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "completeCapabilityProof": false,
         "recoveryStatus": "no-proven-route",
@@ -2800,9 +2796,6 @@
         "laneStatuses": {
           "anime": [
             "no_streams"
-          ],
-          "movie": [
-            "no_streams"
           ]
         },
         "evidenceDestructive": false
@@ -2815,12 +2808,10 @@
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
         "required_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "validated_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "missing_types": [],
         "provider_request_count": 14,
@@ -2838,7 +2829,8 @@
         "sequential": true
       },
       "notes": [
-        "AniKoto runtime v2 is the durable authority for browser-like MegaPlay/CDN transport; no anti-bot token is fabricated and terminal 403 remains fail-closed."
+        "AniKoto runtime v2 is the durable authority for browser-like MegaPlay/CDN transport; no anti-bot token is fabricated and terminal 403 remains fail-closed.",
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ]
     },
     "animekai": {
@@ -2855,7 +2847,8 @@
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
+        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias.",
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ],
       "candidate_learned_routes": [
         "/browser?keyword={query}",
@@ -3068,14 +3061,10 @@
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
         "required_types": [
-          "anime",
-          "movie",
-          "tv"
+          "anime"
         ],
         "validated_types": [
-          "anime",
-          "movie",
-          "tv"
+          "anime"
         ],
         "missing_types": [],
         "provider_request_count": 12,
@@ -3227,17 +3216,13 @@
         "forcedEnabled": true,
         "routeDataState": "repair",
         "requiredLanes": [
-          "anime",
-          "movie",
-          "tv"
+          "anime"
         ],
         "currentVerifiedLanes": [],
         "exactLockedLanes": [],
         "provenLanes": [],
         "missingLanes": [
-          "anime",
-          "movie",
-          "tv"
+          "anime"
         ],
         "completeCapabilityProof": false,
         "recoveryStatus": "no-proven-route",
@@ -3252,16 +3237,16 @@
         "laneStatuses": {
           "anime": [
             "no_streams"
-          ],
-          "movie": [
-            "no_streams"
-          ],
-          "tv": [
-            "no_streams"
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "published_types": [
+        "anime"
+      ],
+      "notes": [
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+      ]
     },
     "animesama-co": {
       "capability": "mixed_embed_resolver",
@@ -3271,7 +3256,6 @@
         "enabled": true
       },
       "published_types": [
-        "movie",
         "anime"
       ],
       "identity_input": {
@@ -3447,15 +3431,13 @@
         "forcedEnabled": true,
         "routeDataState": "repair",
         "requiredLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "currentVerifiedLanes": [],
         "exactLockedLanes": [],
         "provenLanes": [],
         "missingLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "completeCapabilityProof": false,
         "recoveryStatus": "proven",
@@ -3469,9 +3451,6 @@
         ],
         "laneStatuses": {
           "anime": [
-            "no_streams"
-          ],
-          "movie": [
             "no_streams"
           ]
         },
@@ -3499,12 +3478,10 @@
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
         "required_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "validated_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "missing_types": [],
         "provider_request_count": 2,
@@ -3523,6 +3500,9 @@
       },
       "provider_lego_scripts": [
         "scripts/provider_patches/animesamaco_site_runtime_v1.py"
+      ],
+      "notes": [
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ]
     },
     "animesultra": {
@@ -3544,12 +3524,10 @@
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
         "required_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "validated_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "missing_types": [],
         "provider_request_count": 2,
@@ -3716,15 +3694,13 @@
         "forcedEnabled": true,
         "routeDataState": "off",
         "requiredLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "currentVerifiedLanes": [],
         "exactLockedLanes": [],
         "provenLanes": [],
         "missingLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "completeCapabilityProof": false,
         "recoveryStatus": "proven",
@@ -3739,9 +3715,6 @@
         ],
         "laneStatuses": {
           "anime": [
-            "no_streams"
-          ],
-          "movie": [
             "no_streams"
           ]
         },
@@ -3759,7 +3732,13 @@
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
         }
-      }
+      },
+      "published_types": [
+        "anime"
+      ],
+      "notes": [
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+      ]
     },
     "animetsu": {
       "capability": "direct_media",
@@ -3772,7 +3751,8 @@
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
+        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias.",
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ],
       "learned_routes": [
         "/v2/api",
@@ -3975,7 +3955,10 @@
       },
       "domain_substitutions": {
         "animetsu.bz": "animetsu.live"
-      }
+      },
+      "published_types": [
+        "anime"
+      ]
     },
     "animevostfr": {
       "capability": "mixed_embed_resolver",
@@ -3995,12 +3978,10 @@
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
         "required_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "validated_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "missing_types": [],
         "provider_request_count": 76,
@@ -4092,8 +4073,7 @@
         "runtimeEntryPlanOptimization": "compact-simple-alternatives-preserve-complex-graphs",
         "runtimePlanRouteCountBeforeOptimization": 3,
         "runtimePlanSemanticLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "runtimePlanTargetExceeded": false,
         "runtimePlanExceptionReason": "",
@@ -4190,15 +4170,13 @@
         "forcedEnabled": true,
         "routeDataState": "repair",
         "requiredLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "currentVerifiedLanes": [],
         "exactLockedLanes": [],
         "provenLanes": [],
         "missingLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "completeCapabilityProof": false,
         "recoveryStatus": "proven",
@@ -4213,13 +4191,16 @@
         "laneStatuses": {
           "anime": [
             "no_streams"
-          ],
-          "movie": [
-            "no_streams"
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "published_types": [
+        "anime"
+      ],
+      "notes": [
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+      ]
     },
     "castle": {
       "capability": "api_stream_resolver",
@@ -4791,12 +4772,12 @@
         "enabled": true
       },
       "published_types": [
-        "movie",
         "anime"
       ],
       "notes": [
         "Clean v3 French-Manga uses shared Core catalogue/player recovery; no legacy fetch-capture wrapper is executed.",
-        "Search/detail/player extraction is driven by structured routes and core_options.catalogue_alias_recovery, then terminal stream validation rejects troll/invalid media."
+        "Search/detail/player extraction is driven by structured routes and core_options.catalogue_alias_recovery, then terminal stream validation rejects troll/invalid media.",
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ],
       "core_options": {
         "stream_sanitizer": {
@@ -4843,12 +4824,10 @@
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
         "required_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "validated_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "missing_types": [],
         "provider_request_count": 2,
@@ -5013,8 +4992,7 @@
         "forcedEnabled": true,
         "routeDataState": "repair",
         "requiredLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "currentVerifiedLanes": [
           "anime"
@@ -5023,9 +5001,7 @@
         "provenLanes": [
           "anime"
         ],
-        "missingLanes": [
-          "movie"
-        ],
+        "missingLanes": [],
         "completeCapabilityProof": false,
         "recoveryStatus": "proven",
         "provenRouteCount": 8,
@@ -5040,9 +5016,6 @@
         "laneStatuses": {
           "anime": [
             "playable_verified"
-          ],
-          "movie": [
-            "no_streams"
           ]
         },
         "evidenceDestructive": false
@@ -5082,7 +5055,8 @@
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
+        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias.",
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ],
       "learned_routes": [
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
@@ -5574,12 +5548,10 @@
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
         "required_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "validated_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "missing_types": [],
         "provider_request_count": 39,
@@ -5656,8 +5628,7 @@
         "runtimeEntryPlanOptimization": "compact-simple-alternatives-preserve-complex-graphs",
         "runtimePlanRouteCountBeforeOptimization": 3,
         "runtimePlanSemanticLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "runtimePlanTargetExceeded": false,
         "runtimePlanExceptionReason": "",
@@ -5881,7 +5852,8 @@
         "anime"
       ],
       "notes": [
-        "Semantic movie support removed: current repair evidence did not prove identity-safe movie output; TV/series remain transport aliases for anime only."
+        "Semantic movie support removed: current repair evidence did not prove identity-safe movie output; TV/series remain transport aliases for anime only.",
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ]
     },
     "neko-sama": {
@@ -5897,12 +5869,12 @@
       "notes": [
         "Clean Provider v3 adapter re-implements the current provider transport contract from structured upstream knowledge; upstream JavaScript remains knowledge-only.",
         "Core resolves TMDB metadata before provider network calls; this anime-semantic provider accepts the Nuvio tv transport alias but never maps anime to movie.",
-        "Provider-specific runtime is bounded to the provider catalogue/API routes below; stream/player recovery remains in shared Core where applicable."
+        "Provider-specific runtime is bounded to the provider catalogue/API routes below; stream/player recovery remains in shared Core where applicable.",
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ],
       "official_site": "https://animes-sama.su",
       "published_types": [
-        "anime",
-        "tv"
+        "anime"
       ],
       "learned_routes": [
         "/anime/{slug}-saison-{season}/",
@@ -6860,15 +6832,13 @@
         "forcedEnabled": true,
         "routeDataState": "repair",
         "requiredLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "currentVerifiedLanes": [],
         "exactLockedLanes": [],
         "provenLanes": [],
         "missingLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "completeCapabilityProof": false,
         "recoveryStatus": "proven",
@@ -6883,9 +6853,6 @@
         ],
         "laneStatuses": {
           "anime": [
-            "no_streams"
-          ],
-          "movie": [
             "no_streams"
           ]
         },
@@ -6910,12 +6877,10 @@
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
         "required_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "validated_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "missing_types": [],
         "provider_request_count": 2,
@@ -6931,7 +6896,13 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      }
+      },
+      "published_types": [
+        "anime"
+      ],
+      "notes": [
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+      ]
     },
     "streamzo": {
       "notes": [
@@ -7966,12 +7937,10 @@
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
         "required_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "validated_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "missing_types": [],
         "provider_request_count": 15,
@@ -8132,8 +8101,7 @@
         "forcedEnabled": true,
         "routeDataState": "on",
         "requiredLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "currentVerifiedLanes": [
           "anime"
@@ -8154,9 +8122,6 @@
         ],
         "laneStatuses": {
           "anime": [
-            "no_streams"
-          ],
-          "movie": [
             "no_streams"
           ]
         },
@@ -8185,7 +8150,8 @@
       "notes": [
         "NIAKVIO_PROVIDER_VOIRANIME_HOMES_AUTHORITY_V21_10: official hub https://voiranime.org.uk/ resolves to https://voiranime.homes; reuse the proven voiranime-homes DLE DATA path (search -> provider-local newsid -> episodes API). Signed Vidzy/player URLs are runtime output only and are never persisted.",
         "NIAKVIO_VOIRANIME_DUAL_RUNTIME_V1: canonical voiranime uses .homes DLE for anime and voir-anime.to root->FILM chapter for movie; capabilities unchanged.",
-        "VoirAnime anime V2 uses the current voir-anime.to series/chapter/LECTEUR contract and delegates non-anime requests to the existing movie resolver; Core owns terminal validation."
+        "VoirAnime anime V2 uses the current voir-anime.to series/chapter/LECTEUR contract and delegates non-anime requests to the existing movie resolver; Core owns terminal validation.",
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ],
       "proof_search_bases": [
         "https://voir-anime.to"
@@ -8203,7 +8169,10 @@
           "base": "https://voir-anime.to",
           "maxStreams": 4
         }
-      }
+      },
+      "published_types": [
+        "anime"
+      ]
     },
     "voiranime-homes": {
       "capability": "mixed_embed_resolver",
@@ -8369,8 +8338,7 @@
         "forcedEnabled": true,
         "routeDataState": "repair",
         "requiredLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "currentVerifiedLanes": [
           "anime"
@@ -8379,9 +8347,7 @@
         "provenLanes": [
           "anime"
         ],
-        "missingLanes": [
-          "movie"
-        ],
+        "missingLanes": [],
         "completeCapabilityProof": false,
         "recoveryStatus": "proven",
         "provenRouteCount": 8,
@@ -8396,9 +8362,6 @@
         "laneStatuses": {
           "anime": [
             "playable_verified"
-          ],
-          "movie": [
-            "no_streams"
           ]
         },
         "evidenceDestructive": false
@@ -8422,12 +8385,10 @@
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
         "required_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "validated_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "missing_types": [],
         "provider_request_count": 2,
@@ -8443,7 +8404,13 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      }
+      },
+      "published_types": [
+        "anime"
+      ],
+      "notes": [
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+      ]
     },
     "voiranime-rip": {
       "capability": "mixed_embed_resolver",
@@ -8473,12 +8440,10 @@
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
         "required_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "validated_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "missing_types": [],
         "provider_request_count": 2,
@@ -8642,15 +8607,13 @@
         "forcedEnabled": true,
         "routeDataState": "repair",
         "requiredLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "currentVerifiedLanes": [],
         "exactLockedLanes": [],
         "provenLanes": [],
         "missingLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "completeCapabilityProof": false,
         "recoveryStatus": "proven",
@@ -8664,9 +8627,6 @@
         ],
         "laneStatuses": {
           "anime": [
-            "no_streams"
-          ],
-          "movie": [
             "no_streams"
           ]
         },
@@ -8684,7 +8644,13 @@
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
         }
-      }
+      },
+      "published_types": [
+        "anime"
+      ],
+      "notes": [
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+      ]
     },
     "vostfree": {
       "capability": "mixed_embed_resolver",
@@ -8841,15 +8807,13 @@
         "forcedEnabled": true,
         "routeDataState": "repair",
         "requiredLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "currentVerifiedLanes": [],
         "exactLockedLanes": [],
         "provenLanes": [],
         "missingLanes": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "completeCapabilityProof": false,
         "recoveryStatus": "proven",
@@ -8863,9 +8827,6 @@
         ],
         "laneStatuses": {
           "anime": [
-            "no_streams"
-          ],
-          "movie": [
             "no_streams"
           ]
         },
@@ -8899,12 +8860,10 @@
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
         "required_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "validated_types": [
-          "anime",
-          "movie"
+          "anime"
         ],
         "missing_types": [],
         "provider_request_count": 2,
@@ -8920,7 +8879,13 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      }
+      },
+      "published_types": [
+        "anime"
+      ],
+      "notes": [
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+      ]
     },
     "wookafr": {
       "capability": "mixed_embed_resolver",
@@ -9436,7 +9401,8 @@
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
+        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias.",
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -9627,7 +9593,10 @@
       },
       "runtime_domain_replacements": {
         "aniwatchtv.watch": "ww2.aniwatch.fit"
-      }
+      },
+      "published_types": [
+        "anime"
+      ]
     },
     "allwish": {
       "capability": "html_scraper",
@@ -9907,8 +9876,7 @@
         "runtimeEntryPlanOptimization": "compact-simple-alternatives-preserve-complex-graphs",
         "runtimePlanRouteCountBeforeOptimization": 1,
         "runtimePlanSemanticLanes": [
-          "anime",
-          "tv"
+          "anime"
         ],
         "runtimePlanTargetExceeded": false,
         "runtimePlanExceptionReason": "",
@@ -10015,17 +9983,13 @@
         "forcedEnabled": true,
         "routeDataState": "repair",
         "requiredLanes": [
-          "anime",
-          "movie",
-          "tv"
+          "anime"
         ],
         "currentVerifiedLanes": [],
         "exactLockedLanes": [],
         "provenLanes": [],
         "missingLanes": [
-          "anime",
-          "movie",
-          "tv"
+          "anime"
         ],
         "completeCapabilityProof": false,
         "recoveryStatus": "proven",
@@ -10039,12 +10003,6 @@
         ],
         "laneStatuses": {
           "anime": [
-            "no_streams"
-          ],
-          "movie": [
-            "no_streams"
-          ],
-          "tv": [
             "no_streams"
           ]
         },
@@ -10069,14 +10027,10 @@
         "required_coverage_ratio": 1.0,
         "declared_type_coverage_ratio": 1.0,
         "required_types": [
-          "anime",
-          "movie",
-          "tv"
+          "anime"
         ],
         "validated_types": [
-          "anime",
-          "movie",
-          "tv"
+          "anime"
         ],
         "missing_types": [],
         "provider_request_count": 3,
@@ -10092,7 +10046,13 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      }
+      },
+      "published_types": [
+        "anime"
+      ],
+      "notes": [
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+      ]
     },
     "animevost-fr": {
       "capability": "api_stream_resolver",
@@ -10107,13 +10067,13 @@
       "notes": [
         "Clean Provider v3 adapter re-implements the current provider transport contract from structured upstream knowledge; upstream JavaScript remains knowledge-only.",
         "Core resolves TMDB metadata before provider network calls; this anime-semantic provider accepts the Nuvio tv transport alias but never maps anime to movie.",
-        "Provider-specific runtime is bounded to the provider catalogue/API routes below; stream/player recovery remains in shared Core where applicable."
+        "Provider-specific runtime is bounded to the provider catalogue/API routes below; stream/player recovery remains in shared Core where applicable.",
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ],
       "official_site": "https://animevost.fr",
       "official_api": "https://animevost.fr",
       "published_types": [
-        "anime",
-        "tv"
+        "anime"
       ],
       "learned_routes": [
         "/api/animes/search?q={query}"
@@ -10210,8 +10170,7 @@
         "runtimeEntryPlanOptimization": "compact-simple-alternatives-preserve-complex-graphs",
         "runtimePlanRouteCountBeforeOptimization": 1,
         "runtimePlanSemanticLanes": [
-          "anime",
-          "tv"
+          "anime"
         ],
         "runtimePlanTargetExceeded": false,
         "runtimePlanExceptionReason": "",
@@ -10339,12 +10298,12 @@
       "notes": [
         "Clean Provider v3 adapter re-implements the current provider transport contract from structured upstream knowledge; upstream JavaScript remains knowledge-only.",
         "Core resolves TMDB metadata before provider network calls; this anime-semantic provider accepts the Nuvio tv transport alias but never maps anime to movie.",
-        "Provider-specific runtime is bounded to the provider catalogue/API routes below; stream/player recovery remains in shared Core where applicable."
+        "Provider-specific runtime is bounded to the provider catalogue/API routes below; stream/player recovery remains in shared Core where applicable.",
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ],
       "official_site": "https://www.fullanime.fr",
       "published_types": [
-        "anime",
-        "tv"
+        "anime"
       ],
       "learned_routes": [
         "/search?s={query}",

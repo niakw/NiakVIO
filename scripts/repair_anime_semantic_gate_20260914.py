@@ -281,6 +281,7 @@ def patch_test() -> bool:
 def assert_live_action_stops_anime_provider(media_type: str, tmdb_id: str, label: str) -> None:
     patched = mod.apply(BASE, options={"semantic_types": ["anime"]})
     endpoint = "/movie/" if media_type == "movie" else "/tv/"
+    season_arg, episode_arg = ("null", "null") if media_type == "movie" else ("1", "1")
     run_case(
         patched,
         f'''
@@ -296,7 +297,7 @@ global.fetch=async(url)=>{{
 }};
 const provider=require(process.argv[2]);
 (async()=>{{
-  const value=await provider.getStreams('{tmdb_id}','{media_type}',1,1);
+  const value=await provider.getStreams('{tmdb_id}','{media_type}',{season_arg},{episode_arg});
   if(!Array.isArray(value)||value.length!==0)throw new Error('{label}: live-action must return []');
   if(global.__providerCalls!==0)throw new Error('{label}: anime provider touched live-action network path: '+global.__providerCalls);
   if(fetchCalls!==1)throw new Error('{label}: expected exactly one TMDB preflight: '+fetchCalls);
