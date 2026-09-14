@@ -23,6 +23,8 @@ on:
       - 'scripts/refresh_authoritative_hub_domains.py'
       - 'scripts/resolve_provider_hubs.py'
       - 'scripts/provider_base_store.py'
+      - 'scripts/finalize_provider_v3_minimizer.py'
+      - 'scripts/provider_v3_minimizer.py'
       - 'scripts/sync_release_versions.py'
       - 'scripts/audit_provider_v3_static.py'
       - 'tests/domain_refresh_transaction_guard_test.py'
@@ -30,6 +32,7 @@ on:
       - 'tests/domain_refresh_guard_wrapper_test.py'
       - 'tests/provider_domain_metadata_reconcile_test.py'
       - 'tests/priority_tv_year_domain_refresh_test.py'
+      - 'tests/provider_v3_minimizer_publication_pipeline_test.py'
       - 'provider-hubs.json'
       - 'domain-observation-config.json'
   schedule:
@@ -90,6 +93,10 @@ jobs:
           set -euo pipefail
           python tests/provider_domain_metadata_reconcile_test.py
           python scripts/reconcile_provider_domain_metadata.py --rebuild
+          python scripts/finalize_provider_v3_minimizer.py
+          python scripts/finalize_provider_v3_minimizer.py --check
+          python tests/provider_v3_minimizer_publication_pipeline_test.py
+          python tests/provider_v3_minimizer_published_test.py
 
       - name: Fail closed on rollback, stale fallback or template terminal
         run: |
@@ -143,6 +150,7 @@ jobs:
           python tests/provider_domain_metadata_reconcile_test.py
           python tests/priority_tv_year_domain_refresh_test.py
           python tests/provider_v3_workflow_ownership_test.py
+          python scripts/finalize_provider_v3_minimizer.py --check
           python scripts/audit_provider_v3_static.py
           git diff --exit-code -- scripts/provider_patches provider-bases provider-type-policy.json
 
@@ -157,6 +165,7 @@ jobs:
             --manifest manifest.json \
             --previous "$RUNNER_TEMP/published-manifest-baseline.json"
           python tests/release_auto_bump_test.py
+          python scripts/finalize_provider_v3_minimizer.py --check
           python scripts/audit_provider_v3_static.py
           python scripts/generate_hub46_manifest.py \
             --source manifest.json \
@@ -167,7 +176,7 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add \
-            provider-overrides.json provider-hubs.json provider-domain-history.json \
+            PROVENANCE.json provider-overrides.json provider-hubs.json provider-domain-history.json \
             manifest.json manifest-hub46.json \
             vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
             provider-v3-materialization.json providers/ \
