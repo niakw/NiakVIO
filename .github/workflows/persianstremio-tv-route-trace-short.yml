@@ -28,6 +28,41 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
+      - name: Inspect PersianStremio timeout layers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re,pathlib
+          root=pathlib.Path('.').resolve()
+          cfg=json.loads((root/'provider-overrides.json').read_text(encoding='utf-8'))
+          row=(cfg.get('provider_patches') or {}).get('persianstremio') or {}
+          print('PERSIAN_PATCH_SCRIPTS',json.dumps(row.get('provider_lego_scripts') or []))
+          print('PERSIAN_CORE_OPTIONS',json.dumps(row.get('core_options') or {},sort_keys=True))
+          print('PERSIAN_LEGO_OPTIONS',json.dumps(row.get('provider_lego_options') or {},sort_keys=True))
+          def walk(v,path=''):
+            if isinstance(v,dict):
+              for k,x in v.items():
+                p=f'{path}.{k}' if path else k
+                if any(t in str(k).lower() for t in ('timeout','retry')):
+                  print('PERSIAN_TIMEOUT_OPTION',p,repr(x))
+                walk(x,p)
+            elif isinstance(v,list):
+              for i,x in enumerate(v): walk(x,f'{path}[{i}]')
+          walk(row)
+          manifest=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
+          m=next(x for x in manifest.get('scrapers',[]) if str(x.get('id','')).lower()=='persianstremio')
+          text=(root/m['filename']).read_text(encoding='utf-8',errors='replace')
+          for rx in (
+            r'"[A-Za-z_]*[Tt]imeout[A-Za-z_]*"\s*:\s*\d+',
+            r'"[A-Za-z_]*[Rr]etry[A-Za-z_]*"\s*:\s*\d+',
+            r'\b(?:timeout_ms|timeoutMs|probe_timeout_ms|requestTimeoutMs)\s*[:=]\s*\d+',
+          ):
+            for hit in sorted(set(re.findall(rx,text))): print('PERSIAN_BUNDLE_TIMEOUT',hit)
+          for value in ('5000','6000','6500','8000','10000','12000','15000','20000','25000'):
+            c=text.count(value)
+            if c: print('PERSIAN_BUNDLE_LITERAL',value,c)
+          PY
       - name: Trace exact upstream and Niak routes
         shell: bash
         run: |
