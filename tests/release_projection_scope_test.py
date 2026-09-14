@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,11 +28,12 @@ def manifest_ids(path: Path) -> list[str]:
 
 
 def archived_ids() -> set[str]:
+    """Return unique historical provider identities, not every archived snapshot."""
     root = ROOT / "provider-old"
     ids: set[str] = set()
     for path in root.glob("*.js"):
         stem = path.stem
-        provider_id = stem.split("--nuvio--", 1)[0]
+        provider_id = re.split(r"--(?:base|nuvio)--", stem, maxsplit=1)[0]
         provider_id = canonical(provider_id)
         if provider_id:
             ids.add(provider_id)
