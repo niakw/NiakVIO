@@ -13,8 +13,16 @@ REPLACEMENTS = (
         "  function outputRows(value,meta,label,language){",
     ),
     (
+        '          name:"Castle "+label+" - "+quality,',
+        '          name:"Castle - "+quality,\n          sourceLabel:"Castle "+label,',
+    ),
+    (
         "          quality:quality,\n          headers:playbackHeaders(),",
         "          quality:quality,\n          language:s(language),\n          headers:playbackHeaders(),",
+    ),
+    (
+        '        name:"Castle "+label,',
+        '        name:"Castle",\n        sourceLabel:"Castle "+label,',
     ),
     (
         '        quality:String(c.resolution===3?"1080p":c.resolution===1?"480p":"720p"),\n        headers:playbackHeaders(),',
@@ -55,6 +63,8 @@ def main() -> int:
 
     required = (
         "function outputRows(value,meta,label,language)",
+        'name:"Castle - "+quality',
+        'sourceLabel:"Castle "+label',
         "language:s(language)",
         'var trackLanguage=s(track.languageName||track.abbreviate||"")',
         "label,\n          trackLanguage",
