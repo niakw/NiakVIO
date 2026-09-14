@@ -64,7 +64,7 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only | tee "$RUNNER_TEMP/changed.txt"
-          if grep -Ev '^(engine_v2/src/stream-presentation\.mjs|engine_v2/tests/stream-presentation\.test\.mjs|scripts/provider_patches/global_stream_presentation_v1\.py|scripts/upgrade_stream_language_roles_v1\.py|tests/global_stream_presentation_test\.py)$' "$RUNNER_TEMP/changed.txt"; then
+          if grep -Ev '^(engine_v2/src/stream-presentation\.mjs|engine_v2/tests/stream-presentation\.test\.mjs|scripts/provider_patches/global_stream_presentation_v1\.py|scripts/upgrade_stream_language_roles_v1\.py|tests/global_stream_presentation_test\.py|tests/global_stream_presentation_pipeline_test\.py)$' "$RUNNER_TEMP/changed.txt"; then
             echo 'Unexpected language-role migration path' >&2
             exit 1
           fi
@@ -75,7 +75,8 @@ jobs:
             engine_v2/tests/stream-presentation.test.mjs \
             scripts/provider_patches/global_stream_presentation_v1.py \
             scripts/upgrade_stream_language_roles_v1.py \
-            tests/global_stream_presentation_test.py
+            tests/global_stream_presentation_test.py \
+            tests/global_stream_presentation_pipeline_test.py
           git diff --cached --quiet && { echo 'STREAM_LANGUAGE_ROLES_ALREADY_APPLIED'; exit 0; }
           git commit -m 'feat(core): structure stream language and audio roles'
           git fetch origin main
