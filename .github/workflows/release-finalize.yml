@@ -11,6 +11,12 @@ on:
     branches: [main]
     paths:
       - '.github/triggers/release-finalize.json'
+      - 'scripts/finalize_provider_v3_minimizer.py'
+      - 'scripts/provider_v3_minimizer.py'
+      - 'tests/provider_v3_minimizer_contract_test.py'
+      - 'tests/provider_v3_minimizer_preview_test.py'
+      - 'tests/provider_v3_minimizer_published_test.py'
+      - 'tests/provider_v3_minimizer_publication_pipeline_test.py'
 
 permissions:
   contents: write
@@ -59,12 +65,18 @@ jobs:
             --manifest manifest.json \
             --output "$RUNNER_TEMP/published-manifest-baseline.json"
 
-      - name: Reapply durable provider patches and rebuild current projections
+      - name: Reapply durable provider patches, minimize and rebuild current projections
         shell: bash
         run: |
           set -euo pipefail
           python3 scripts/reapply_published_overrides.py
+          python3 scripts/finalize_provider_v3_minimizer.py
+          python3 scripts/finalize_provider_v3_minimizer.py --check
           python3 scripts/reapply_published_overrides.py --check
+          python3 tests/provider_v3_minimizer_contract_test.py
+          python3 tests/provider_v3_minimizer_preview_test.py
+          python3 tests/provider_v3_minimizer_publication_pipeline_test.py
+          python3 tests/provider_v3_minimizer_published_test.py
           python3 scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
           python3 scripts/prune_unreferenced_providers.py
           python3 tests/provider_html_filter_security_test.py --published
