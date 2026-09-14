@@ -82,6 +82,26 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     assert "ExoPlayer.Builder" not in tv_out
     assert "PluginRuntime.executePlugin(" not in tv_out
 
+    # Adaptive catalogue fallback is provider-yield discovery, not a second
+    # production-player campaign. A hostile media URL must not abort traversal
+    # of the remaining clean-zero providers. The request-contract augmenter owns
+    # this runtime switch and must compile the probe loop to zero iterations.
+    adaptive_path = tmp / "TvAdaptive.kt"
+    adaptive_path.write_text(tv_source, encoding="utf-8")
+    previous_disable = os.environ.get("NIAKVIO_NATIVE_DISABLE_PLAYER_PROBES")
+    os.environ["NIAKVIO_NATIVE_DISABLE_PLAYER_PROBES"] = "1"
+    try:
+        contract.augment(adaptive_path, "tv", "sinners-2025", manifest)
+    finally:
+        if previous_disable is None:
+            os.environ.pop("NIAKVIO_NATIVE_DISABLE_PLAYER_PROBES", None)
+        else:
+            os.environ["NIAKVIO_NATIVE_DISABLE_PLAYER_PROBES"] = previous_disable
+    adaptive_out = adaptive_path.read_text(encoding="utf-8")
+    assert "rows.take(0).forEachIndexed" in adaptive_out
+    assert "providers.chunked(1)" in adaptive_out
+    assert "providers.chunked(6)" not in adaptive_out
+
     anime = corpus.fixture_by_slug("jujutsu-kaisen-s01e01")
     mobile_source = reader.augment_android_test(
         corpus.android_test(anime, selected, "mobile"),
