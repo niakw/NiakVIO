@@ -28,7 +28,7 @@ jobs:
         with: {python-version: '3.12'}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: '24', package-manager-cache: false}
-      - name: Build temporary V9 and inspect sanitizer verdict
+      - name: Trace pre-probe sanitizer branches
         shell: bash
         run: |
           set -euo pipefail
@@ -47,13 +47,30 @@ jobs:
           assert 'NUVIO_STREAM_OUTPUT_FULL_MANIFEST_V9' in text
           no_san=strip_managed_fix(text,'CORE.STREAM_SANITIZER.V6')
 
-          invalid='if(!validHls(value))return null;'
-          diag='''if(!validHls(value)){try{var __lines=String(value||"").split(/\\r?\\n/),__child=false;for(var __i=0;__i<__lines.length;__i++){var __line=String(__lines[__i]||"").trim();if(__line&&__line.charAt(0)!=="#"){__child=true;break}}console.log("NIAKVIO_SAN_HLS_INVALID","len="+String(value||"").length,"m3u="+(String(value||"").trimStart().indexOf("#EXTM3U")===0),"streaminf="+(/#EXT-X-STREAM-INF\\s*:/i.test(String(value||""))),"iframe="+(/#EXT-X-I-FRAME-STREAM-INF\\s*:/i.test(String(value||""))),"media="+(/#EXT-X-MEDIA\\s*:/i.test(String(value||""))),"extinf="+(/#EXTINF\\s*:/i.test(String(value||""))),"target="+(/#EXT-X-TARGETDURATION\\s*:/i.test(String(value||""))),"map="+(/#EXT-X-MAP\\s*:/i.test(String(value||""))),"part="+(/#EXT-X-PART\\s*:/i.test(String(value||""))),"end="+(/#EXT-X-ENDLIST/i.test(String(value||""))),"child="+__child)}catch(_diag){}return null;}'''
-          if invalid not in text: raise SystemExit('normalizeHlsText validHls anchor missing')
-          inst=text.replace(invalid,diag,1)
-          verdict='return verdict===true?clearPrivateProofs(item.stream):null;'
-          if verdict not in inst: raise SystemExit('strict verdict anchor missing')
-          inst=inst.replace(verdict,'try{console.log("NIAKVIO_SAN_VERDICT",String(verdict))}catch(_diag){}'+verdict,1)
+          replacements=[
+            ('var result=await original.apply(this,arguments);',
+             'var result=await original.apply(this,arguments);try{console.log("NIAKVIO_SAN_RESULT","array="+Array.isArray(result),"type="+typeof result,"keys="+(result&&typeof result==="object"?Object.keys(result).sort().join(","):""))}catch(_diag){}'),
+            ('var slot=streamSlot(result);',
+             'var slot=streamSlot(result);try{console.log("NIAKVIO_SAN_SLOT","ok="+!!slot,"key="+(slot?String(slot.key):"none"),"len="+(slot&&slot.list?slot.list.length:-1))}catch(_diag){}'),
+            ('if(!slot)return [];',
+             'if(!slot){try{console.log("NIAKVIO_SAN_DROP","reason=no_slot")}catch(_diag){}return [];}'),
+            ('if(!slot.list.length)return result;',
+             'if(!slot.list.length){try{console.log("NIAKVIO_SAN_EARLY","reason=empty_slot")}catch(_diag){}return result;}'),
+            ('var stream=rows[i];syncPlaybackHeaders(stream);var url=urlOf(stream);',
+             'var stream=rows[i];syncPlaybackHeaders(stream);var url=urlOf(stream);try{console.log("NIAKVIO_SAN_ROW","i="+i,"url="+!!url,"blocked="+(url?blocked(url):false),"seen="+!!seen[url],"direct="+(url?isDirect(stream,url):false))}catch(_diag){}'),
+            ('if(!url||blocked(url)||seen[url])continue;',
+             'if(!url||blocked(url)||seen[url]){try{console.log("NIAKVIO_SAN_DROP","reason="+(!url?"no_url":(blocked(url)?"blocked":"duplicate")))}catch(_diag){}continue;}'),
+            ('candidates[c].probe=(config.probeAllUrls||(config.probeDirectMedia&&isDirect(candidates[c].stream,candidates[c].url)))&&probeCount++<config.maxProbes;',
+             'candidates[c].probe=(config.probeAllUrls||(config.probeDirectMedia&&isDirect(candidates[c].stream,candidates[c].url)))&&probeCount++<config.maxProbes;try{console.log("NIAKVIO_SAN_CANDIDATE","i="+c,"probe="+!!candidates[c].probe,"probeAll="+!!config.probeAllUrls,"count="+probeCount,"max="+config.maxProbes)}catch(_diag){}'),
+            ('if(genericAppShellMedia(item.url))return null;if(correlatedPlayerFallback(item.stream,item.url))return clearPrivateProofs(item.stream);if(coreMediaProof(item.stream,item.url))return clearPrivateProofs(item.stream);if(!item.probe)return config.probeAllUrls?null:clearPrivateProofs(item.stream);',
+             'if(genericAppShellMedia(item.url)){try{console.log("NIAKVIO_SAN_DROP","reason=app_shell")}catch(_diag){}return null;}if(correlatedPlayerFallback(item.stream,item.url)){try{console.log("NIAKVIO_SAN_KEEP","reason=correlated")}catch(_diag){}return clearPrivateProofs(item.stream);}if(coreMediaProof(item.stream,item.url)){try{console.log("NIAKVIO_SAN_KEEP","reason=core_proof")}catch(_diag){}return clearPrivateProofs(item.stream);}if(!item.probe){try{console.log("NIAKVIO_SAN_DROP","reason=no_probe","probeAll="+!!config.probeAllUrls)}catch(_diag){}return config.probeAllUrls?null:clearPrivateProofs(item.stream);}'),
+            ('return verdict===true?clearPrivateProofs(item.stream):null;',
+             'try{console.log("NIAKVIO_SAN_VERDICT",String(verdict))}catch(_diag){}return verdict===true?clearPrivateProofs(item.stream):null;'),
+          ]
+          inst=text
+          for old,new in replacements:
+            if old not in inst: raise SystemExit('missing instrumentation anchor: '+old[:80])
+            inst=inst.replace(old,new,1)
 
           fixture={'tmdbId':'60059','mediaType':'tv','title':'Better Call Saul','year':2015,'season':1,'episode':1}
           ctx=parity.context_for(fixture)
@@ -67,17 +84,11 @@ jobs:
                 if line.startswith('NUVIO_HEALTH_RESULT='):
                   try: result=json.loads(line.split('=',1)[1])
                   except Exception: pass
-                if line.startswith('NIAKVIO_SAN_'):
-                  print(label,line)
+                if line.startswith('NIAKVIO_SAN_'): print(label,line)
             if not isinstance(result,dict): print(label,'NO_RESULT');return -1
             print(label,'STREAMS',result.get('stream_count'),'RAW',result.get('raw_stream_count'))
-            for obs in result.get('network_observations') or []:
-              if isinstance(obs,dict) and not obs.get('infrastructure') and obs.get('stage') in {'content_lookup','player'}:
-                print(label,'ROUTE',obs.get('host'),obs.get('path_pattern'),obs.get('status'),obs.get('ok'),obs.get('error_code') or '')
             return int(result.get('stream_count') or 0)
           a=run('V9',inst)
-          b=run('NO_SAN_1',no_san)
-          c=run('NO_SAN_2',no_san)
-          d=run('V9_REPEAT',inst)
-          print('CAUSAL_COUNTS',a,b,c,d)
+          b=run('NO_SAN',no_san)
+          print('CAUSAL_COUNTS',a,b)
           PY
