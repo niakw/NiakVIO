@@ -1,17 +1,21 @@
 {
-  "purpose": "final 5.21.46 exact-main validation after atomic provider publication, corrected published brick fixed-point audit, release repin, and strict Domain Refresh idempotence proof",
+  "purpose": "final 5.21.46 exact-main validation after atomic provider publication, current-manifest gate fixture repairs, release repin, and strict Domain Refresh idempotence proof",
   "branch": "main",
   "release": "5.21.46",
-  "pre_validation_head": "a88740c043fbc054bb51b82d6904b9494c310b48",
+  "pre_validation_head": "35e239eb6cd46e66a965c6d23ee474dbc978730f",
   "domain_refresh": {
-    "run_id": 34826733819,
+    "run_id": 34828662860,
     "scope": 46,
+    "resolved": 20,
+    "unresolved": 6,
     "applied": 0,
     "registry_changed": 0,
     "bundles_changed": 0,
+    "metadata_changed": 0,
     "idempotent": true,
     "transaction_changed": false,
-    "release_changed": false
+    "release_changed": false,
+    "provider_version_bump_count": 0
   },
   "provider_contract": {
     "current": 46,
@@ -24,6 +28,8 @@
     "domain_refresh_scope": "current manifest 46 only; historical hub/history rows immutable",
     "non_regression_scope": "quick-yield census iterates manifest.json current providers directly; no historical/all switch",
     "published_brick_fixed_point": "Lego replay followed by global provider security hardening, matching the publication pipeline",
+    "native_reader_learning_fixture": "current Purstream provider; retired MoviesDrive no longer used as a current-manifest test fixture",
+    "release_finalization_contract": "atomic two-stage provider generation and pinned release publication with bounded path whitelists and exact-SHA anti-race push guard",
     "codeql_scope": "46 current providers/provider-bases plus source; provider-old excluded from current runtime scan",
     "external_audit": "read-only; publish=false"
   },
@@ -34,6 +40,7 @@
     "CodeQL green on exact SHA",
     "external audit green and read-only on exact SHA",
     "five native platforms green on exact SHA",
+    "Workflow Gate green on exact SHA",
     "zero temporary workflows",
     "no main mutation during final validation"
   ]
