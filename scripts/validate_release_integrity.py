@@ -10,6 +10,12 @@ import re
 from route_proof_activation_preservation_v1 import validate as validate_activation_preservation
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+ROOT_MANIFEST = "manifest.json"
+HUB46_MANIFEST = "manifest-hub46.json"
+NATIVE_HUB46_MANIFEST = "native-hub46/manifest.json"
+VF_MANIFEST = "vf/manifest.json"
+NO_ANIME_MANIFEST = "no-anime/manifest.json"
+VF_NO_ANIME_MANIFEST = "vf-no-anime/manifest.json"
 
 
 def load(relative: str) -> dict:
@@ -121,12 +127,12 @@ def main() -> int:
     sources = load("sources.json")
     versions = {
         "package.json": expected,
-        "manifest.json": load("manifest.json").get("version"),
-        "manifest-hub46.json": load("manifest-hub46.json").get("version"),
-        "native-hub46/manifest.json": load("native-hub46/manifest.json").get("version"),
-        "vf/manifest.json": load("vf/manifest.json").get("version"),
-        "no-anime/manifest.json": load("no-anime/manifest.json").get("version"),
-        "vf-no-anime/manifest.json": load("vf-no-anime/manifest.json").get("version"),
+        ROOT_MANIFEST: load(ROOT_MANIFEST).get("version"),
+        HUB46_MANIFEST: load(HUB46_MANIFEST).get("version"),
+        NATIVE_HUB46_MANIFEST: load(NATIVE_HUB46_MANIFEST).get("version"),
+        VF_MANIFEST: load(VF_MANIFEST).get("version"),
+        NO_ANIME_MANIFEST: load(NO_ANIME_MANIFEST).get("version"),
+        VF_NO_ANIME_MANIFEST: load(VF_NO_ANIME_MANIFEST).get("version"),
         "sources.json.manifest_version": sources.get("manifest_version"),
         "sources.json.repository.manifest_version": (sources.get("repository") or {}).get("manifest_version"),
     }
@@ -149,11 +155,11 @@ def main() -> int:
             if match and match.group(1) in allowed and not re.fullmatch(r"[0-9a-f]{40}", match.group(2)):
                 errors.append(f"{workflow.relative_to(ROOT)}:{line_number}: {match.group(0)}")
 
-    errors.extend(validate_manifest_paths("manifest.json", nested=False))
-    errors.extend(validate_manifest_paths("manifest-hub46.json", nested=False))
-    errors.extend(validate_manifest_paths("vf/manifest.json", nested=True))
-    errors.extend(validate_manifest_paths("no-anime/manifest.json", nested=True))
-    errors.extend(validate_manifest_paths("vf-no-anime/manifest.json", nested=True))
+    errors.extend(validate_manifest_paths(ROOT_MANIFEST, nested=False))
+    errors.extend(validate_manifest_paths(HUB46_MANIFEST, nested=False))
+    errors.extend(validate_manifest_paths(VF_MANIFEST, nested=True))
+    errors.extend(validate_manifest_paths(NO_ANIME_MANIFEST, nested=True))
+    errors.extend(validate_manifest_paths(VF_NO_ANIME_MANIFEST, nested=True))
     # native-hub46 intentionally contains absolute raw-GitHub provider URLs pinned
     # to the accepted provider SHA. Its transport shape is validated by the
     # dedicated native_hub46_transport_manifest_test instead of the relative-path gate.
