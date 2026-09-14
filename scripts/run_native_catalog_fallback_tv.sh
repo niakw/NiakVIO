@@ -22,7 +22,7 @@ PROVIDER_LOADING_URL_ARGS=()
 if [[ "$ALLOW_LOCAL_MANIFEST" = "1" ]]; then PROVIDER_LOADING_URL_ARGS+=(--allow-local-lab-url); fi
 
 python3 "$RESTAGE" tv --fixture "$FIXTURE" --workspace "$WORKSPACE" --provider-file "$PROVIDER_FILE" --player-probes 1 --manifest "$TARGET_MANIFEST" || exit $?
-python3 "$REQUEST_CONTRACT" tv --fixture "$FIXTURE" --manifest "$TARGET_MANIFEST" --source "$TEST_SOURCE" || exit $?
+NIAKVIO_NATIVE_DISABLE_PLAYER_PROBES=1 python3 "$REQUEST_CONTRACT" tv --fixture "$FIXTURE" --manifest "$TARGET_MANIFEST" --source "$TEST_SOURCE" || exit $?
 python3 "$PROVIDER_LOADING" tv --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" "${PROVIDER_LOADING_URL_ARGS[@]}" || exit $?
 python3 "$TV_HILT_FINALIZER" "$TEST_SOURCE" || exit $?
 
@@ -46,7 +46,7 @@ kill "$WATCH_PID" 2>/dev/null || true
 wait "$WATCH_PID" 2>/dev/null || true
 kill "$LOGCAT_PID" 2>/dev/null || true
 wait "$LOGCAT_PID" 2>/dev/null || true
-echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=tv adaptive_fallback=true" | tee -a "$LOG"
+echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=tv adaptive_fallback=true player_probe=false" | tee -a "$LOG"
 cat "$FRONT_LOG" >> "$LOG" 2>/dev/null || true
-echo "FIELD_NATIVE_ADAPTIVE_FALLBACK client=tv fixture=$FIXTURE providers=$(grep -cve '^$' "$PROVIDER_FILE" || true) runtime=$RUNTIME_STATUS" | tee -a "$LOG"
+echo "FIELD_NATIVE_ADAPTIVE_FALLBACK client=tv fixture=$FIXTURE providers=$(grep -cve '^$' "$PROVIDER_FILE" || true) runtime=$RUNTIME_STATUS player_probe=false" | tee -a "$LOG"
 exit "$RUNTIME_STATUS"
