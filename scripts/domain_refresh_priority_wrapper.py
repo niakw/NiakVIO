@@ -6,10 +6,18 @@ provider-overrides.official_domain_hubs entries remain historical knowledge but
 must never recreate work for archived providers. Inside the current registry,
 the authoritative hub resolver still owns trust scoring; this wrapper only
 breaks equal-score ties using explicit semantic and provider-brand labels.
+
+When an applied transaction records fresh domain history, the same current-46
+sanitizer used by the workflow is run once more before control returns. Resolvers
+may legitimately observe template/constructor URLs while discovering a terminal,
+but those values must never survive as persisted LKG history.
 """
 from __future__ import annotations
 
 import re
+import subprocess
+import sys
+from pathlib import Path
 from typing import Any, Callable
 
 import domain_refresh_transaction_v2 as transaction
@@ -129,10 +137,21 @@ def install_priority_wrapper() -> Callable[..., dict[str, Any]]:
     return original
 
 
+def sanitize_applied_state() -> None:
+    sanitizer = Path(__file__).with_name("sanitize_provider_hub_registry.py")
+    subprocess.run(
+        [sys.executable, str(sanitizer), "--registry", "provider-hubs.json"],
+        check=True,
+    )
+
+
 def main() -> int:
     install_priority_wrapper()
     transaction._authoritative_hub_configs = current_registry_hub_configs
-    return transaction.main()
+    result = transaction.main()
+    if result == 0 and "--apply" in sys.argv:
+        sanitize_applied_state()
+    return result
 
 
 if __name__ == "__main__":
