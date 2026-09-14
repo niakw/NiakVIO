@@ -1,4 +1,5 @@
 name: OPS - Repository Hygiene
+# Merged candidate branches are ephemeral: once their PR is closed, hygiene removes them.
 
 on:
   workflow_dispatch:
@@ -323,7 +324,6 @@ jobs:
             deleted=$((deleted+1))
           done
           echo "FIELD_REPOSITORY_HYGIENE deleted=$deleted keep=main,brain-learning/proposals active_pr_branches=${#open_pr_branches[@]}"
-
 
       - name: Prove only intentional or active-PR branches remain
         env:
