@@ -25,8 +25,13 @@ assert "python scripts/generate_language_manifests.py" in text
 assert "python scripts/sync_release_versions.py" in text
 assert '--previous "$RUNNER_TEMP/published-manifest-baseline.json"' in text
 assert "python tests/release_auto_bump_test.py" in text
+assert "python scripts/generate_hub46_manifest.py" in text
+assert "python scripts/build_hub46_native_manifest.py" in text
 assert "python scripts/generate_release_hashes.py" in text
 assert "python scripts/validate_release_integrity.py" in text
+assert 'git rev-parse HEAD > "$RUNNER_TEMP/domain-base-sha"' in text
+assert 'PROVIDER_SHA="$(git rev-parse HEAD)"' in text
+assert 'BASE_SHA="$(cat "$RUNNER_TEMP/domain-base-sha")"' in text
 assert "NUVIO_SKIP_ACTIVATION_PRESERVATION: '1'" not in text, "Domain Refresh is address authority and must preserve catalogue activation"
 assert 'os.environ.get("NUVIO_SKIP_ACTIVATION_PRESERVATION") != "1"' in validator
 assert "FIELD_RELEASE_INTEGRITY activation_preservation=skipped owner=domain_refresh" in validator
@@ -48,10 +53,11 @@ for forbidden in (
     assert forbidden not in text, f"Domain Refresh must never invoke Repair: {forbidden}"
 
 commit_lines = [line.strip() for line in text.splitlines() if "git commit -m " in line]
-assert len(commit_lines) == 1, commit_lines
-assert "chore(domains):" in commit_lines[0]
-assert "Provider v3 domain transaction" in commit_lines[0]
+assert len(commit_lines) == 2, commit_lines
+assert "chore(domains): stage Provider v3 domain generation" in commit_lines[0]
+assert "chore(domains): finalize Provider v3 domain transaction" in commit_lines[1]
 assert "push origin HEAD:main" in text
+assert text.count("push origin HEAD:main") == 1, "Domain Refresh must expose only one remote publication point"
 assert "gh workflow run sync.yml --ref main -f mode=quick" in text
 
 for required in (
