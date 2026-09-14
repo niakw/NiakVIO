@@ -31,7 +31,7 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
         "accepted": [],
         "inconclusive": [],
         "rejected": [{
-            "provider": "moviesdrive",
+            "provider": "purstream",
             "fixture": "sinners-2025",
             "failureClasses": ["playback_http_access"],
             "hypotheses": ["replay-native-request-context"],
@@ -73,7 +73,7 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
         "readerFailures": 2,
         "plans": [
             {
-                "provider": "moviesdrive",
+                "provider": "purstream",
                 "fixture": "sinners-2025",
                 "requestType": "movie",
                 "client": "tv",
@@ -82,7 +82,7 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
                 "hypotheses": [{"id": "replay-native-request-context"}],
             },
             {
-                "provider": "moviesdrive",
+                "provider": "purstream",
                 "fixture": "sinners-2025",
                 "requestType": "movie",
                 "client": "mobile",
