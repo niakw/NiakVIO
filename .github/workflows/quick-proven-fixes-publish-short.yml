@@ -128,12 +128,20 @@ jobs:
           mem=pathlib.Path('MEMORY.md');text=mem.read_text(encoding='utf-8')
           marker='## 2026-09-15 — Quick-first proven fixes published'
           block=f'''\n\n{marker}\n\n- User explicitly requested simplest/fastest repairs first, while still finishing the remaining providers afterward.\n- Published-source quick fixes in this checkpoint: AllWish fresh-proof authority guard, deterministic HTML scanners for shared DLE/Neko source, and Core Runtime Media Safety applied after the terminal sanitizer so Safety is the actual outermost final guard.\n- Rematerialized affected providers only: AnimeKai, Kehflix, French-Manga, VoirAnime-Homes, Neko-Sama, Purstream, MugiwaraStream, VidEasy.\n- Terminal proof rows for the non-Neko quick set: `{json.dumps(proof['rows'],ensure_ascii=False,separators=(',',':'))}`.\n- Neko remains a separate heavy resolver case and is intentionally non-blocking for independent fixes. Current post-rematerialization JJK state: `{json.dumps(neko,ensure_ascii=False,separators=(',',':'))}`.\n- AllWish regeneration can no longer resurrect historical `playable_verified`; fresh identity-safe positive proof is required.\n- Continue immediately with Neko and the seven technical-unresolved providers, then rerun Hub46 parity/local proof.\n'''
-          if marker not in text: mem.write_text(text.rstrip()+block+'\n',encoding='utf-8')
+          if marker not in text:
+            mem.write_text((text.rstrip()+block).rstrip()+'\n',encoding='utf-8')
+          else:
+            mem.write_text(text.rstrip()+'\n',encoding='utf-8')
           PY
       - name: Publish tested source + targeted generated deltas
         shell: bash
         run: |
           set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('MEMORY.md')
+          p.write_text(p.read_text(encoding='utf-8').rstrip()+'\n',encoding='utf-8')
+          PY
           git diff --check
           git status --short
           git config user.name github-actions[bot]
