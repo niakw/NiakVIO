@@ -1,0 +1,147 @@
+name: SHORT - Publish Proven Quick Fixes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/quick-proven-fixes-publish-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-publish-proven-quick-fixes
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Require exact trigger head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+      - name: Apply only already-proven source fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/invalidate_allwish_stale_stream_proof_v1.py
+          python3 scripts/upgrade_repair_disposition_fresh_proof_guard_v1.py
+          python3 scripts/upgrade_html_filter_security_scanner_v1.py
+          python3 scripts/upgrade_core_runtime_safety_outermost_v1.py
+          python3 tests/core_runtime_safety_outermost_v1_test.py
+          python3 tests/provider_html_filter_security_test.py
+          python3 tests/stream_output_sanitizer_fail_closed_test.py
+          python3 tests/hls_master_facts_short_test.py
+      - name: Rebuild only providers affected by proven fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          for provider in animekai kehflix french-manga voiranime-homes neko-sama purstream mugiwarastream videasy; do
+            echo "QUICK_MATERIALIZE $provider"
+            python3 scripts/materialize_provider_v3_one.py "$provider"
+          done
+          python3 tests/provider_html_filter_security_test.py --published
+      - name: Verify exact live fixtures for non-Neko quick fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 - <<'PY'
+          import json,pathlib,sys
+          root=pathlib.Path('.').resolve();sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as p
+          import run_provider_upstream_parity_v3 as v3
+          fixtures={
+            'animekai':('anime',{'slug':'dragon-ball-super-2015-s01e01','tmdbId':'62715','mediaType':'anime','category':'anime','title':'Dragon Ball Super','year':2015,'season':1,'episode':1}),
+            'kehflix':('movie',{'slug':'interstellar-2014','tmdbId':'157336','mediaType':'movie','category':'movie','title':'Interstellar','year':2014,'expectedDurationMinutes':169}),
+            'french-manga':('anime',{'slug':'hunter-x-hunter-2011-s01e01','tmdbId':'46298','mediaType':'anime','category':'anime','title':'Hunter x Hunter','year':2011,'season':1,'episode':1}),
+            'voiranime-homes':('anime',{'slug':'dan-da-dan-2024-s01e01','tmdbId':'240411','mediaType':'anime','category':'anime','title':'Dan Da Dan','year':2024,'season':1,'episode':1}),
+            'purstream':('movie',{'slug':'interstellar-2014','tmdbId':'157336','mediaType':'movie','category':'movie','title':'Interstellar','year':2014}),
+            'mugiwarastream':('anime',{'slug':'tonikawa-over-the-moon-for-you-2020-s01e01','tmdbId':'100049','mediaType':'anime','category':'anime','title':'TONIKAWA: Over the Moon for You','year':2020,'season':1,'episode':1}),
+            'videasy':('movie',{'slug':'interstellar-2014','tmdbId':'157336','mediaType':'movie','category':'movie','title':'Interstellar','year':2014}),
+          }
+          local=p.local_catalog();rows=[]
+          for pid,(lane,fx) in fixtures.items():
+            r=v3._run_verified(local[pid]['path'],v3.fixture_payload(fx,lane,upstream=False),25)
+            item={'providerId':pid,'fixture':fx['slug'],'streams':int(r.get('stream_count') or 0),'terminal':bool(r.get('terminal_verified')),'reasons':r.get('terminal_reasons') or [],'durations':r.get('terminal_media_duration_seconds') or [],'statuses':r.get('http_statuses') or [],'error':r.get('error_class')}
+            rows.append(item);print('QUICK_PROOF '+json.dumps(item,sort_keys=True))
+            if item['streams'] < 1 or not item['terminal']:
+              raise SystemExit('quick proven provider regressed: '+pid)
+          pathlib.Path('automation/quick-proven-fixes-proof-20260915.json').write_text(json.dumps({'schemaVersion':1,'rows':rows},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          PY
+      - name: Record Neko state without blocking independent fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,pathlib,sys
+          root=pathlib.Path('.').resolve();sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as p
+          import run_provider_upstream_parity_v3 as v3
+          row=p.local_catalog()['neko-sama']
+          fx={'slug':'jujutsu-kaisen-2020-s01e01','tmdbId':'95479','mediaType':'anime','category':'anime','title':'Jujutsu Kaisen','year':2020,'season':1,'episode':1}
+          r=v3._run_verified(row['path'],v3.fixture_payload(fx,'anime',upstream=False),25)
+          out={'providerId':'neko-sama','fixture':fx['slug'],'streams':int(r.get('stream_count') or 0),'terminal':bool(r.get('terminal_verified')),'reasons':r.get('terminal_reasons') or [],'statuses':r.get('http_statuses') or [],'error':r.get('error_class')}
+          pathlib.Path('automation/neko-current-after-quick-fixes-20260915.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print('NEKO_NONBLOCKING_STATE '+json.dumps(out,sort_keys=True))
+          PY
+      - name: Regenerate AllWish disposition with fresh-proof authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/finalize_provider_repair_disposition_v1_impl.py
+          python3 - <<'PY'
+          import json
+          d=json.load(open('automation/provider-repair-disposition.json',encoding='utf-8'))
+          r=next(x for x in d['providers'] if x['provider']=='allwish')
+          assert r['routeDataState']=='repair',r
+          assert r['currentVerifiedLanes']==[],r
+          assert r['provenLanes']==[],r
+          assert r['missingLanes']==['movie','tv'],r
+          assert all('playable_verified' not in v for v in r['laneStatuses'].values()),r
+          print('ALLWISH_FRESH_PROOF_AUTHORITY_OK')
+          PY
+      - name: Append durable MEMORY checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,pathlib
+          proof=json.load(open('automation/quick-proven-fixes-proof-20260915.json',encoding='utf-8'))
+          neko=json.load(open('automation/neko-current-after-quick-fixes-20260915.json',encoding='utf-8'))
+          mem=pathlib.Path('MEMORY.md');text=mem.read_text(encoding='utf-8')
+          marker='## 2026-09-15 — Quick-first proven fixes published'
+          block=f'''\n\n{marker}\n\n- User explicitly requested simplest/fastest repairs first, while still finishing the remaining providers afterward.\n- Published-source quick fixes in this checkpoint: AllWish fresh-proof authority guard, deterministic HTML scanners for shared DLE/Neko source, and Core Runtime Media Safety applied after the terminal sanitizer so Safety is the actual outermost final guard.\n- Rematerialized affected providers only: AnimeKai, Kehflix, French-Manga, VoirAnime-Homes, Neko-Sama, Purstream, MugiwaraStream, VidEasy.\n- Terminal proof rows for the non-Neko quick set: `{json.dumps(proof['rows'],ensure_ascii=False,separators=(',',':'))}`.\n- Neko remains a separate heavy resolver case and is intentionally non-blocking for independent fixes. Current post-rematerialization JJK state: `{json.dumps(neko,ensure_ascii=False,separators=(',',':'))}`.\n- AllWish regeneration can no longer resurrect historical `playable_verified`; fresh identity-safe positive proof is required.\n- Continue immediately with Neko and the seven technical-unresolved providers, then rerun Hub46 parity/local proof.\n'''
+          if marker not in text: mem.write_text(text.rstrip()+block+'\n',encoding='utf-8')
+          PY
+      - name: Publish tested source + targeted generated deltas
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          git status --short
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git diff --cached --quiet && { echo QUICK_FIXES_ALREADY_CURRENT; exit 0; }
+          git commit -m 'fix: publish proven provider quick repairs'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${{ github.sha }}" || { echo 'main moved during quick-fix publication' >&2; exit 1; }
+          git push origin HEAD:main
+          echo "QUICK_FIXES_PUBLISHED $(git rev-parse HEAD)"
