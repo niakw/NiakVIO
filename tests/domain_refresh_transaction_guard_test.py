@@ -52,6 +52,57 @@ result = validate(
 )
 assert result["idempotent"] is True
 
+# A provider config may catch up to a terminal the registry already contains.
+# That is a valid reconciliation no-op: registry_changed stays empty because no
+# registry bytes need changing, but the final registry/config terminals match.
+before_overrides_lagging = copy.deepcopy(before_overrides)
+before_overrides_lagging["provider_patches"]["demo"]["official_site"] = "https://demo-old.example"
+after_overrides_synced = copy.deepcopy(before_overrides)
+report_synced = {
+    "providers": {
+        "demo": {
+            "status": "site_authoritative",
+            "official_site": "https://demo-new.example",
+            "selected_source_type": "hub",
+            "site_candidates": [{
+                "url": "https://demo-new.example",
+                "label": "Demo homepage",
+                "source_type": "hub",
+            }],
+        }
+    }
+}
+result = validate(
+    before_overrides_lagging,
+    after_overrides_synced,
+    before_hubs,
+    copy.deepcopy(before_hubs),
+    before_history,
+    report_synced,
+    {"changed": ["demo"], "registry_changed": []},
+)
+assert result["changed"] == ["demo"]
+assert result["registry_changed"] == []
+
+# A matching no-op is only valid when the final registry terminal really equals
+# the provider terminal.
+bad_hubs = copy.deepcopy(before_hubs)
+bad_hubs["providers"]["demo"]["direct"] = "https://different.example/"
+try:
+    validate(
+        before_overrides_lagging,
+        after_overrides_synced,
+        before_hubs,
+        bad_hubs,
+        before_history,
+        report_synced,
+        {"changed": ["demo"], "registry_changed": []},
+    )
+except AssertionError:
+    pass
+else:
+    raise AssertionError("registry/config divergence must fail closed")
+
 # Unresolved discovery may never mutate the published terminal.
 after_overrides = copy.deepcopy(before_overrides)
 after_overrides["provider_patches"]["demo"]["official_site"] = "https://other.example"
@@ -124,6 +175,21 @@ else:
 
 # Explicit fresh hub wording is sufficient evidence for a legitimate rotation/reuse.
 report["providers"]["demo"]["site_candidates"][0]["label"] = "Nouvelle adresse officielle"
+result = validate(
+    before_overrides,
+    after_overrides,
+    before_hubs,
+    after_hubs,
+    before_history,
+    report,
+    {"changed": ["demo"], "registry_changed": ["demo"]},
+)
+assert result["changed"] == ["demo"]
+
+# A current authoritative hub may explicitly identify a historical domain as its
+# homepage/principal target without date wording. This is fresh reuse evidence,
+# unlike a generic "Visit" link.
+report["providers"]["demo"]["site_candidates"][0]["label"] = "Demo homepage"
 result = validate(
     before_overrides,
     after_overrides,

@@ -15,6 +15,8 @@ on:
       - '.github/triggers/domain-refresh'
       - '.github/workflows/domain-refresh.yml'
       - 'scripts/domain_refresh_transaction_v2.py'
+      - 'scripts/domain_refresh_priority_wrapper.py'
+      - 'scripts/domain_refresh_guard_wrapper.py'
       - 'scripts/sanitize_provider_hub_registry.py'
       - 'scripts/validate_domain_refresh_transaction.py'
       - 'scripts/reconcile_provider_domain_metadata.py'
@@ -24,6 +26,8 @@ on:
       - 'scripts/sync_release_versions.py'
       - 'scripts/audit_provider_v3_static.py'
       - 'tests/domain_refresh_transaction_guard_test.py'
+      - 'tests/domain_refresh_priority_wrapper_test.py'
+      - 'tests/domain_refresh_guard_wrapper_test.py'
       - 'tests/provider_domain_metadata_reconcile_test.py'
       - 'tests/priority_tv_year_domain_refresh_test.py'
       - 'provider-hubs.json'
@@ -66,6 +70,7 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/sanitize_provider_hub_registry.py --registry provider-hubs.json
+          cp provider-domain-history.json "$RUNNER_TEMP/provider-domain-history.before.json"
 
       - name: Resolve and publish authoritative hub terminal DATA
         shell: bash
@@ -73,7 +78,7 @@ jobs:
           set -euo pipefail
           MODE="${{ github.event.inputs.mode || 'quick' }}"
           mkdir -p health-output
-          python scripts/domain_refresh_transaction_v2.py \
+          python scripts/domain_refresh_priority_wrapper.py \
             --mode "$MODE" --include-disabled --workers 8 --timeout 8 \
             --apply \
             --output health-output/provider-hub-report.json \
@@ -89,7 +94,9 @@ jobs:
         run: |
           set -euo pipefail
           python tests/domain_refresh_transaction_guard_test.py
-          python scripts/validate_domain_refresh_transaction.py \
+          python tests/domain_refresh_priority_wrapper_test.py
+          python tests/domain_refresh_guard_wrapper_test.py
+          python scripts/domain_refresh_guard_wrapper.py \
             --before-overrides "$RUNNER_TEMP/provider-overrides.before.json" \
             --before-hubs "$RUNNER_TEMP/provider-hubs.before.json" \
             --before-history "$RUNNER_TEMP/provider-domain-history.before.json" \
@@ -130,6 +137,8 @@ jobs:
           python tests/authoritative_hub_domain_refresh_test.py
           python tests/domain_refresh_workflow_test.py
           python tests/domain_refresh_transaction_guard_test.py
+          python tests/domain_refresh_priority_wrapper_test.py
+          python tests/domain_refresh_guard_wrapper_test.py
           python tests/provider_domain_metadata_reconcile_test.py
           python tests/priority_tv_year_domain_refresh_test.py
           python tests/provider_v3_workflow_ownership_test.py
