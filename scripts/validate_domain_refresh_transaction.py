@@ -91,8 +91,9 @@ def selected_source_is_authoritative(
 
     A public Telegram page is never authority by type alone. It qualifies only
     when the current provider-hubs.json row explicitly lists the exact selected
-    source URL and labels its purpose as an authoritative address/domain
-    reference. This keeps arbitrary public/community Telegram links fail-closed.
+    source URL and labels its purpose as an official/authoritative address,
+    domain or current-terminal reference. Arbitrary public/community Telegram
+    links therefore remain fail-closed.
     """
     source_type = str(item.get("selected_source_type") or "").strip().casefold()
     if source_type in AUTHORITY_TYPES:
@@ -112,7 +113,13 @@ def selected_source_is_authoritative(
         purpose = str(source.get("purpose") or "").strip().casefold()
         if configured_type != source_type or configured_url != selected_source:
             continue
-        if "authoritative" in purpose and ("address" in purpose or "domain" in purpose):
+        authority_signal = "authoritative" in purpose or "official" in purpose
+        address_signal = (
+            "address" in purpose
+            or "domain" in purpose
+            or "current terminal" in purpose
+        )
+        if authority_signal and address_signal:
             return True
     return False
 
