@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   normalize:
-    name: Normalize Hub46 derived release artifacts
+    name: Normalize Hub46 source and derived release artifacts
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
@@ -39,6 +39,11 @@ jobs:
           package-manager-cache: false
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Normalize current semantic transport source contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/normalize_hub46_semantic_transport_sources.py
       - name: Rebuild catalog and projections strictly from current Hub46 manifest
         shell: bash
         run: |
@@ -56,26 +61,32 @@ jobs:
             --vf-no-anime vf-no-anime/manifest.json
           python tests/release_projection_scope_test.py
           python tests/canonical_media_types_test.py
-      - name: Commit normalized derived artifacts when required
+          python tests/provider_anime_semantic_transport_contract_test.py
+      - name: Commit normalized source and derived artifacts when required
         id: finalize
         shell: bash
         run: |
           set -euo pipefail
-          git add provider_catalog.json manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json
+          git add \
+            scripts/materialize_provider_v3_all.py \
+            scripts/enforce_provider_v3_semantic_transport_contract_v5.py \
+            scripts/reapply_published_overrides.py \
+            scripts/finalize_publish_contracts.py \
+            provider_catalog.json manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json
           if git diff --cached --quiet; then
             echo 'changed=false' >> "$GITHUB_OUTPUT"
             echo "candidate_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-            echo "RELEASE_DERIVED_SYNC changed=0 sha=$(git rev-parse HEAD)"
+            echo "RELEASE_NORMALIZE changed=0 sha=$(git rev-parse HEAD)"
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'build(release): sync Hub46 derived manifests and catalog'
+          git commit -m 'build(release): normalize Hub46 sources and derived artifacts'
           git push origin "HEAD:${GITHUB_REF_NAME}"
           sha="$(git rev-parse HEAD)"
           echo 'changed=true' >> "$GITHUB_OUTPUT"
           echo "candidate_sha=${sha}" >> "$GITHUB_OUTPUT"
-          echo "RELEASE_DERIVED_SYNC changed=1 sha=${sha}"
+          echo "RELEASE_NORMALIZE changed=1 sha=${sha}"
 
   contracts:
     name: Hub46 release contracts
@@ -103,6 +114,7 @@ jobs:
           python tests/provider_v3_documentation_contract_test.py
           python tests/release_projection_scope_test.py
           python tests/canonical_media_types_test.py
+          python tests/provider_anime_semantic_transport_contract_test.py
           python tests/provider_521_capability_regression_test.py
           python tests/native_five_lab_coverage_test.py
       - name: Verify cross-cutting runtime contracts
