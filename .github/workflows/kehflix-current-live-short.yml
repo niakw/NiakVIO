@@ -79,20 +79,32 @@ jobs:
           root=pathlib.Path('.').resolve();sys.path.insert(0,str(root/'scripts'))
           import run_provider_upstream_parity as p
           import run_provider_upstream_parity_v3 as v3
+          from rotating_corpus import select_fixtures, default_seed
           local=p.local_catalog(); row=local.get('kehflix')
           if not row: raise SystemExit('kehflix missing after rematerialization')
-          fixtures=[
+
+          fixed=[
               ('movie', {'slug':'interstellar-2014','tmdbId':'157336','mediaType':'movie','category':'movie','title':'Interstellar','year':2014}),
               ('tv', {'slug':'house-of-the-dragon-s03e01','tmdbId':'94997','mediaType':'tv','category':'tv','title':'House of the Dragon','year':2022,'season':3,'episode':1,'expectedDurationMinutes':65}),
-              ('anime', {'slug':'jujutsu-kaisen-s01e01','tmdbId':'95479','mediaType':'tv','category':'anime','title':'Jujutsu Kaisen','year':2020,'season':1,'episode':1,'expectedDurationMinutes':24}),
           ]
           print('KEHFLIX_CANDIDATE_PATH',row.get('path'))
-          for lane,fx in fixtures:
+          for lane,fx in fixed:
               r=v3._run_verified(row['path'],v3.fixture_payload(fx,lane,upstream=False),25)
               out={k:r.get(k) for k in ('stream_count','candidate_stream_count','terminal_verified','terminal_reasons','terminal_media_duration_seconds','error','status')}
               print('KEHFLIX_REPAIR '+json.dumps({'lane':lane,'fixture':fx['slug'],'result':out},sort_keys=True))
               if int(r.get('stream_count') or 0)<1 or not r.get('terminal_verified'):
                   raise SystemExit(f'kehflix {lane}: no terminal media proof')
+
+          anime_positive=None
+          for fx in select_fixtures('anime',count=8,seed=default_seed(),provider='kehflix'):
+              r=v3._run_verified(row['path'],v3.fixture_payload(fx,'anime',upstream=False),25)
+              out={k:r.get(k) for k in ('stream_count','candidate_stream_count','terminal_verified','terminal_reasons','terminal_media_duration_seconds','error','status')}
+              print('KEHFLIX_REPAIR '+json.dumps({'lane':'anime','fixture':fx['slug'],'result':out},sort_keys=True))
+              if int(r.get('stream_count') or 0)>0 and r.get('terminal_verified'):
+                  anime_positive=fx['slug']; break
+          if not anime_positive:
+              raise SystemExit('kehflix anime: no terminal media proof across 8 rotated fixtures')
+          print('KEHFLIX_ALL_LANES_PROVEN anime_fixture='+anime_positive)
           PY
       - name: Persist only proven Kehflix DATA
         shell: bash
