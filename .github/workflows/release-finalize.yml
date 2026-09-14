@@ -22,7 +22,7 @@ concurrency:
 jobs:
   finalize:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     env:
       NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'
     steps:
@@ -49,6 +49,7 @@ jobs:
               exit 1
             }
           fi
+          echo "$ACTUAL" > "$RUNNER_TEMP/accepted-main-sha"
 
       - name: Export current release-generation baseline
         shell: bash
@@ -57,6 +58,17 @@ jobs:
           python3 scripts/release_version_baseline.py \
             --manifest manifest.json \
             --output "$RUNNER_TEMP/published-manifest-baseline.json"
+
+      - name: Reapply durable provider patches and rebuild current projections
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/reapply_published_overrides.py --check
+          python3 scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python3 scripts/prune_unreferenced_providers.py
+          python3 tests/provider_html_filter_security_test.py --published
+          python3 scripts/audit_provider_v3_static.py
 
       - name: Finalize synchronized release and provider cache versions
         shell: bash
@@ -68,57 +80,89 @@ jobs:
           python3 tests/release_auto_bump_test.py
           python3 tests/provider_versioning_test.py
           python3 tests/reapply_provider_versioning_test.py
-
-      - name: Rebuild exact Hub46 release projections
-        shell: bash
-        run: |
-          set -euo pipefail
-          ACCEPTED_SHA="$(git rev-parse HEAD)"
           python3 scripts/generate_hub46_manifest.py \
             --source manifest.json \
             --matrix automation/evidence/hub-lab-matrix-46.json \
             --output manifest-hub46.json
+          python3 tests/release_projection_scope_test.py
+
+      - name: Stage provider generation locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only | tee "$RUNNER_TEMP/release-generation-files.txt"
+          if grep -Ev '^(PROVENANCE\.json|provider-overrides\.json|providers/.*|manifest\.json|manifest-hub46\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|nuvio-client-id-state\.json|automation/PLATFORM-RUNTIME-CONTRACTS\.md)$' "$RUNNER_TEMP/release-generation-files.txt"; then
+            echo 'Unexpected path changed by provider-generation finalization' >&2
+            exit 1
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add \
+            PROVENANCE.json provider-overrides.json providers/ \
+            manifest.json manifest-hub46.json \
+            vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
+            package.json package-lock.json sources.json provider_catalog.json nuvio-client-id-state.json \
+            automation/PLATFORM-RUNTIME-CONTRACTS.md
+          if git diff --cached --quiet; then
+            echo 'FIELD_RELEASE_PROVIDER_GENERATION_CHANGED false'
+            echo false > "$RUNNER_TEMP/release-provider-generation-changed"
+            echo "$(git rev-parse HEAD)" > "$RUNNER_TEMP/release-provider-sha"
+            exit 0
+          fi
+          echo true > "$RUNNER_TEMP/release-provider-generation-changed"
+          git commit -m 'chore: stage accepted Provider v3 release generation'
+          git rev-parse HEAD > "$RUNNER_TEMP/release-provider-sha"
+          echo "FIELD_RELEASE_PROVIDER_GENERATION_CHANGED true sha=$(cat "$RUNNER_TEMP/release-provider-sha")"
+
+      - name: Rebuild exact pinned Hub46 transport and release integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROVIDER_SHA="$(cat "$RUNNER_TEMP/release-provider-sha")"
           python3 scripts/build_hub46_native_manifest.py \
-            --provider-sha "$ACCEPTED_SHA" \
+            --provider-sha "$PROVIDER_SHA" \
             --source manifest-hub46.json \
             --output native-hub46/manifest.json
           python3 tests/native_hub46_manifest_test.py
           python3 tests/native_hub46_transport_manifest_test.py
           python3 tests/release_projection_scope_test.py
-
-      - name: Regenerate and validate release integrity
-        shell: bash
-        run: |
-          set -euo pipefail
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
           python3 tests/release_hash_scope_test.py
 
-      - name: Verify bounded finalization diff
+      - name: Commit final pinned release locally
         shell: bash
         run: |
           set -euo pipefail
           git diff --name-only | tee "$RUNNER_TEMP/release-finalization-files.txt"
-          if grep -Ev '^(manifest\.json|manifest-hub46\.json|native-hub46/manifest\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|nuvio-client-id-state\.json|automation/PLATFORM-RUNTIME-CONTRACTS\.md|FILE-HASHES\.json|PATCH-SHA256SUMS\.txt|SHA256SUMS\.json)$' "$RUNNER_TEMP/release-finalization-files.txt"; then
-            echo 'Unexpected path changed by accepted-release finalization' >&2
+          if grep -Ev '^(native-hub46/manifest\.json|FILE-HASHES\.json|PATCH-SHA256SUMS\.txt|SHA256SUMS\.json)$' "$RUNNER_TEMP/release-finalization-files.txt"; then
+            echo 'Unexpected path changed by pinned release finalization' >&2
             exit 1
           fi
+          git add native-hub46/manifest.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if git diff --cached --quiet; then
+            echo 'FIELD_RELEASE_PINNED_FINAL_CHANGED false'
+          else
+            git commit -m 'chore: finalize accepted Provider v3 release'
+            echo 'FIELD_RELEASE_PINNED_FINAL_CHANGED true'
+          fi
+          echo "FIELD_RELEASE_LOCAL_FINAL_SHA $(git rev-parse HEAD) provider_sha=$(cat "$RUNNER_TEMP/release-provider-sha")"
 
-      - name: Commit accepted release atomically
+      - name: Publish accepted release atomically
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet; then
+          BASE_SHA="$(cat "$RUNNER_TEMP/accepted-main-sha")"
+          FINAL_SHA="$(git rev-parse HEAD)"
+          if [ "$FINAL_SHA" = "$BASE_SHA" ]; then
             echo 'Accepted release finalization is already a no-op.'
             exit 0
           fi
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add \
-            manifest.json manifest-hub46.json native-hub46/manifest.json \
-            vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
-            package.json package-lock.json sources.json provider_catalog.json nuvio-client-id-state.json \
-            automation/PLATFORM-RUNTIME-CONTRACTS.md \
-            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
-          git commit -m 'chore: finalize accepted Provider v3 release'
+          git fetch origin main
+          CURRENT_SHA="$(git rev-parse origin/main)"
+          test "$CURRENT_SHA" = "$BASE_SHA" || {
+            echo "Accepted main moved during finalization expected=$BASE_SHA actual=$CURRENT_SHA" >&2
+            exit 1
+          }
           git push origin HEAD:main
+          echo "FIELD_RELEASE_PUBLICATION_OK base=$BASE_SHA provider=$(cat "$RUNNER_TEMP/release-provider-sha") final=$FINAL_SHA"
