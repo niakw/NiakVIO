@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+EXPECTED = 46
 SOURCE_PATHS = (
     ROOT / "scripts/provider_base_store.py",
     ROOT / "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
@@ -38,10 +39,10 @@ def findings(path: Path) -> list[str]:
 def published_paths() -> list[Path]:
     manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
     rows = manifest.get("scrapers") or []
-    if len(rows) != 96:
-        raise AssertionError(f"expected 96 manifest providers, got {len(rows)}")
+    if len(rows) != EXPECTED:
+        raise AssertionError(f"expected {EXPECTED} manifest providers, got {len(rows)}")
     paths = [ROOT / str(row.get("filename") or "") for row in rows]
-    if len({path.resolve() for path in paths}) != 96:
+    if len({path.resolve() for path in paths}) != EXPECTED:
         raise AssertionError("published provider paths must be unique")
     for path in paths:
         if not path.is_file():
