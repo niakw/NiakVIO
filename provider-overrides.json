@@ -7925,7 +7925,7 @@
     "voiranime": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://voiranime.org.uk/",
-      "official_site": "https://voiranime.diy",
+      "official_site": "https://voir-anime.to",
       "manifest_overrides": {
         "enabled": true
       },
@@ -8145,16 +8145,14 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {
-        "voiranime.homes": "voiranime.diy",
-        "voiranime.store": "voiranime.diy",
-        "voiranime.com": "voiranime.diy",
-        "voir-anime.to": "voiranime.diy"
+        "voiranime.store": "voir-anime.to",
+        "voiranime.com": "voir-anime.to",
+        "voiranime.diy": "voir-anime.to"
       },
       "domain_substitutions": {
-        "voiranime.com": "voiranime.diy",
-        "voiranime.homes": "voiranime.diy",
-        "voiranime.store": "voiranime.diy",
-        "voir-anime.to": "voiranime.diy"
+        "voiranime.com": "voir-anime.to",
+        "voiranime.store": "voir-anime.to",
+        "voiranime.diy": "voir-anime.to"
       },
       "identity_input": {
         "mode": "catalog_search",
@@ -8165,10 +8163,10 @@
         ]
       },
       "notes": [
-        "NIAKVIO_PROVIDER_VOIRANIME_HOMES_AUTHORITY_V21_10: official hub https://voiranime.org.uk/ resolves to https://voiranime.homes; reuse the proven voiranime-homes DLE DATA path (search -> provider-local newsid -> episodes API). Signed Vidzy/player URLs are runtime output only and are never persisted.",
         "NIAKVIO_VOIRANIME_DUAL_RUNTIME_V1: canonical voiranime uses .homes DLE for anime and voir-anime.to root->FILM chapter for movie; capabilities unchanged.",
         "VoirAnime anime V2 uses the current voir-anime.to series/chapter/LECTEUR contract and delegates non-anime requests to the existing movie resolver; Core owns terminal validation.",
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
+        "NIAKVIO_VOIRANIME_DOMAIN_AUTHORITY_V1: live exact-fixture evidence and both active runtime Legos use https://voir-anime.to; stale .diy/.com/.store domains may migrate to .to, while the separate .homes DLE authority is not conflated."
       ],
       "proof_search_bases": [
         "https://voir-anime.to"
