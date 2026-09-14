@@ -128,15 +128,35 @@ def test_runtime_domain_prefix_collisions_are_globally_idempotent() -> None:
 
 def test_obfuscated_runtime_endpoint_override() -> None:
     source = b'''var DOMAINS_URL='https://registry-fixture.invalid/domains.json',MOVIX_FALLBACK='cash',_cachedEndpoint=null;function detectApi(){if(_cachedEndpoint)return Promise.resolve(_cachedEndpoint);return fetch(DOMAINS_URL).then(function(r){return r.json()}).then(function(x){return {api:'https://api.movix.'+x.movix}}).catch(function(){return {api:'https://api.movix.'+MOVIX_FALLBACK}})};module.exports={getStreams:async function(){var e=await detectApi();await fetch(e.api+'/api/purstream/movie/157336/stream');return []}};'''
-    output, records = apply_overrides("movix", source, phase="runtime")
-    assert b"NUVIO_FIXED_ENDPOINT:https://api.movix.fun" in output
-    assert b"fetch(DOMAINS_URL)" not in output
-    assert b"raw.githubusercontent.com" not in output
-    assert any(row.get("type") == "fixed_endpoint" for row in records)
-    assert any(row.get("type") == "runtime_domain_overrides" for row in records) == (b"NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1" in output)
-    second, second_records = apply_overrides("movix", output, phase="runtime")
-    assert second == output
-    assert not any(row.get("type") in {"fixed_endpoint", "runtime_domain_overrides"} for row in second_records)
+    # Movix is historical and intentionally outside the current Hub46 provider
+    # publication. Keep fixed_endpoint covered with an isolated legacy fixture
+    # instead of reintroducing a provider-specific publication row.
+    with tempfile.TemporaryDirectory(prefix="niakvio-fixed-endpoint-") as tmp:
+        config_path = Path(tmp) / "overrides.json"
+        config_path.write_text(json.dumps({
+            "domain_replacements": {
+                "api.movix.cash": "api.movix.fun",
+                "api.movix.cloud": "api.movix.fun",
+            },
+            "provider_patches": {
+                "movix": {
+                    "fixed_endpoint": {
+                        "resolver_function": "detectApi",
+                        "api": "https://api.movix.fun",
+                        "referer": "https://movix.example/",
+                    }
+                }
+            },
+        }), encoding="utf-8")
+        output, records = apply_overrides("movix", source, phase="runtime", config_path=config_path)
+        assert b"NUVIO_FIXED_ENDPOINT:https://api.movix.fun" in output
+        assert b"fetch(DOMAINS_URL)" not in output
+        assert b"raw.githubusercontent.com" not in output
+        assert any(row.get("type") == "fixed_endpoint" for row in records)
+        assert any(row.get("type") == "runtime_domain_overrides" for row in records) == (b"NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1" in output)
+        second, second_records = apply_overrides("movix", output, phase="runtime", config_path=config_path)
+        assert second == output
+        assert not any(row.get("type") in {"fixed_endpoint", "runtime_domain_overrides"} for row in second_records)
     with tempfile.TemporaryDirectory(prefix="niakvio-overrides-") as tmp:
         target = Path(tmp) / "provider.js"
         target.write_bytes(output)
