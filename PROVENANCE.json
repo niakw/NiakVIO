@@ -519,9 +519,9 @@
     },
     "4khdhub": {
       "id": "4khdhub",
-      "published_filename": "providers/4khdhub--nuvio--8ab86a4abc388503.js",
-      "sha256": "8ab86a4abc388503e02240e7f20b4449b03e7d4ac4611a74b493dbb4b271f2f0",
-      "patched_sha256": "8ab86a4abc388503e02240e7f20b4449b03e7d4ac4611a74b493dbb4b271f2f0",
+      "published_filename": "providers/4khdhub--nuvio--c4b1c8a0a0177970.js",
+      "sha256": "c4b1c8a0a0177970cb7173b9bda0a0d5714f702f590d674a43d3e740777aa9f5",
+      "patched_sha256": "c4b1c8a0a0177970cb7173b9bda0a0d5714f702f590d674a43d3e740777aa9f5",
       "upstream_sha256": "c9940593c2ca77c694994781c462d21f1c07189aace946879ade166cb03da306",
       "local_patches": [
         {
@@ -1397,9 +1397,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "8ab86a4abc388503e02240e7f20b4449b03e7d4ac4611a74b493dbb4b271f2f0"
+        "sha256": "c4b1c8a0a0177970cb7173b9bda0a0d5714f702f590d674a43d3e740777aa9f5"
       },
-      "build_input_sha256": "fd65036445d5470f628b738e52f8f95e8b3cecafffbb216e3ddc8ac9b1b10914",
+      "build_input_sha256": "f419f321b2f172476281b3fbdb7dcbfda4d26add447880c3b7d42a4cb26354c6",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -2712,9 +2712,9 @@
     },
     "allwish": {
       "id": "allwish",
-      "published_filename": "providers/allwish--nuvio--541bddc36cd9be08.js",
-      "sha256": "541bddc36cd9be08adfb75ff2713580141fe24186d4fcd959e3a940b73b7f8ee",
-      "patched_sha256": "541bddc36cd9be08adfb75ff2713580141fe24186d4fcd959e3a940b73b7f8ee",
+      "published_filename": "providers/allwish--nuvio--c0d7d6a5de759132.js",
+      "sha256": "c0d7d6a5de75913218b345d4d052c90502ac8c6956eec8d8f4c6923f6ae154a3",
+      "patched_sha256": "c0d7d6a5de75913218b345d4d052c90502ac8c6956eec8d8f4c6923f6ae154a3",
       "base_filename": "provider-bases/allwish--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -3251,10 +3251,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "541bddc36cd9be08adfb75ff2713580141fe24186d4fcd959e3a940b73b7f8ee"
+        "sha256": "c0d7d6a5de75913218b345d4d052c90502ac8c6956eec8d8f4c6923f6ae154a3"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "493be2425238894ef63573cba26f7b9346a8674e7d19e7890f31b5c80d395a58",
+      "build_input_sha256": "c12d826a6a1deb8690f8bacbc5497de0b72f087845dadf11c0b47058fc1edbb7",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -4002,9 +4002,9 @@
     },
     "anikototv": {
       "id": "anikototv",
-      "published_filename": "providers/anikototv--nuvio--ca869a8ec86d1a68.js",
-      "sha256": "ca869a8ec86d1a68b3b37722ae5e4ce5ccc9bbe6deb718eea4de0f6b0c1dbe31",
-      "patched_sha256": "ca869a8ec86d1a68b3b37722ae5e4ce5ccc9bbe6deb718eea4de0f6b0c1dbe31",
+      "published_filename": "providers/anikototv--nuvio--4ab63e72137fcbbb.js",
+      "sha256": "4ab63e72137fcbbb013537471a48cde55c810623dfafeeb0bad27df71a33aaaa",
+      "patched_sha256": "4ab63e72137fcbbb013537471a48cde55c810623dfafeeb0bad27df71a33aaaa",
       "base_filename": "provider-bases/anikototv--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -4341,6 +4341,12 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/anikototv_runtime_v2.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.ANIKOTOTV.RUNTIME.V2"
         }
       ],
       "source": "aio",
@@ -4576,10 +4582,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "ca869a8ec86d1a68b3b37722ae5e4ce5ccc9bbe6deb718eea4de0f6b0c1dbe31"
+        "sha256": "4ab63e72137fcbbb013537471a48cde55c810623dfafeeb0bad27df71a33aaaa"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "c5aa39290abff293f72174ebc2b1efc2d014b18eb3e4fe58ec29cc4f799eb6fc",
+      "build_input_sha256": "8229aa749773b05b99b5da0349862cd14656703ba1c5ac5b4207ec9c9d69e70c",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -4616,9 +4622,9 @@
     },
     "anime-sama": {
       "id": "anime-sama",
-      "published_filename": "providers/anime-sama--nuvio--2416b75e3907cbff.js",
-      "sha256": "2416b75e3907cbff276be74c130f9257f0969813e9c0259bb784e1a6c854a05e",
-      "patched_sha256": "2416b75e3907cbff276be74c130f9257f0969813e9c0259bb784e1a6c854a05e",
+      "published_filename": "providers/anime-sama--nuvio--fd4afd55603b148f.js",
+      "sha256": "fd4afd55603b148f8f5398d2cb3a12135b8028c6e28b30531f18f815f09cab91",
+      "patched_sha256": "fd4afd55603b148f8f5398d2cb3a12135b8028c6e28b30531f18f815f09cab91",
       "base_filename": "provider-bases/anime-sama--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -5256,10 +5262,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "2416b75e3907cbff276be74c130f9257f0969813e9c0259bb784e1a6c854a05e"
+        "sha256": "fd4afd55603b148f8f5398d2cb3a12135b8028c6e28b30531f18f815f09cab91"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "eaf705325e1f0d80e26c0fd2633604eb798b0467814be4b725bf9b19d81fee92",
+      "build_input_sha256": "aa5ddf2d495d8bbfcb2d985223600c512614c78e6f87a16e76c36b578b8b4ba2",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -5296,9 +5302,9 @@
     },
     "anime-ultime": {
       "id": "anime-ultime",
-      "published_filename": "providers/anime-ultime--nuvio--852571604b8455b6.js",
-      "sha256": "852571604b8455b66b1ccc744ab519e60926f724bdda1e1f7f5ca59cb92e5be8",
-      "patched_sha256": "852571604b8455b66b1ccc744ab519e60926f724bdda1e1f7f5ca59cb92e5be8",
+      "published_filename": "providers/anime-ultime--nuvio--7d9168155acca7f8.js",
+      "sha256": "7d9168155acca7f82fb07b5df83a0f195b2de02132adcf5174e1d95c79bb03ac",
+      "patched_sha256": "7d9168155acca7f82fb07b5df83a0f195b2de02132adcf5174e1d95c79bb03ac",
       "base_filename": "provider-bases/anime-ultime--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -5876,10 +5882,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "852571604b8455b66b1ccc744ab519e60926f724bdda1e1f7f5ca59cb92e5be8"
+        "sha256": "7d9168155acca7f82fb07b5df83a0f195b2de02132adcf5174e1d95c79bb03ac"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "83a5eb52f370e71298116af692038c989cda80ebafa5740e4fccab0df771f156",
+      "build_input_sha256": "85d041203bc4d7f9b32c84c09e1fec44f9d3b5190774bb84e53341a27e8c0a88",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -5910,9 +5916,9 @@
     },
     "animekai": {
       "id": "animekai",
-      "published_filename": "providers/animekai--nuvio--1302039163de6d16.js",
-      "sha256": "1302039163de6d1672b4621b322c268adf019e19fe53b5c2f4d3acabf40ce9f1",
-      "patched_sha256": "1302039163de6d1672b4621b322c268adf019e19fe53b5c2f4d3acabf40ce9f1",
+      "published_filename": "providers/animekai--nuvio--e2757d7a47fd3676.js",
+      "sha256": "e2757d7a47fd3676b59167eac5c8dc60a6f9881aacfab6bc7a27fb5506bac129",
+      "patched_sha256": "e2757d7a47fd3676b59167eac5c8dc60a6f9881aacfab6bc7a27fb5506bac129",
       "base_filename": "provider-bases/animekai--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -6472,10 +6478,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "1302039163de6d1672b4621b322c268adf019e19fe53b5c2f4d3acabf40ce9f1"
+        "sha256": "e2757d7a47fd3676b59167eac5c8dc60a6f9881aacfab6bc7a27fb5506bac129"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "3d45dfa123059b0f7a95fee13971aa9968d073f28cd74cc256ef6468a80ab057",
+      "build_input_sha256": "fd06ecdbd98dc9deb2b00a46d7fa46ac1d9768755a707d303097d3bfbc6d9107",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -7217,9 +7223,9 @@
     },
     "animesalt": {
       "id": "animesalt",
-      "published_filename": "providers/animesalt--nuvio--fd1afac6d2b63659.js",
-      "sha256": "fd1afac6d2b6365990fdfe24d6c39ffc7ef753b354743682786d2a64d019032a",
-      "patched_sha256": "fd1afac6d2b6365990fdfe24d6c39ffc7ef753b354743682786d2a64d019032a",
+      "published_filename": "providers/animesalt--nuvio--16d6e51682419776.js",
+      "sha256": "16d6e51682419776bd6e251248271ad56fd42e863b991c19b4bd0fb672be21f5",
+      "patched_sha256": "16d6e51682419776bd6e251248271ad56fd42e863b991c19b4bd0fb672be21f5",
       "upstream_sha256": "e221da6762e9c2033ca367d50ebc415a91a6ba4ecf716118d048956ec7df6c2d",
       "local_patches": [
         {
@@ -7938,9 +7944,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "fd1afac6d2b6365990fdfe24d6c39ffc7ef753b354743682786d2a64d019032a"
+        "sha256": "16d6e51682419776bd6e251248271ad56fd42e863b991c19b4bd0fb672be21f5"
       },
-      "build_input_sha256": "18593155168499b2ec5d32a94600ae17475d331f6dbd0a54f2808ceb29503b4a",
+      "build_input_sha256": "8c04b15f9f4ff801fd9911a8ea51daf02fd40ee4e733bd44683b08f1e1d0b330",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -7969,9 +7975,9 @@
     },
     "animesama-co": {
       "id": "animesama-co",
-      "published_filename": "providers/animesama-co--nuvio--b406817e4c487dcb.js",
-      "sha256": "b406817e4c487dcb2ef479a25a65ac8154d3838ed493faee801fa646b17d963d",
-      "patched_sha256": "b406817e4c487dcb2ef479a25a65ac8154d3838ed493faee801fa646b17d963d",
+      "published_filename": "providers/animesama-co--nuvio--d65763c4503d084c.js",
+      "sha256": "d65763c4503d084c33c4857ef0c58e7e4ff64c3b4b467744c55f06072309fa5e",
+      "patched_sha256": "d65763c4503d084c33c4857ef0c58e7e4ff64c3b4b467744c55f06072309fa5e",
       "base_filename": "provider-bases/animesama-co--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -8347,6 +8353,18 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/animesamaco_site_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.ANIMESAMA-CO.SITE.RUNTIME.V1"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_runtime_dispatch_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_runtime_dispatch"
         }
       ],
       "source": "gowaru",
@@ -8583,10 +8601,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "b406817e4c487dcb2ef479a25a65ac8154d3838ed493faee801fa646b17d963d"
+        "sha256": "d65763c4503d084c33c4857ef0c58e7e4ff64c3b4b467744c55f06072309fa5e"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "f2704b3556d9d1847e6ab00c62feff90b62e0748100192f62d0765bab986cb97",
+      "build_input_sha256": "4dc13676f95fe455444fb2d09f2fa4adc1c07d593c18479ca5d9cddaca3df8bf",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -8623,9 +8641,9 @@
     },
     "animesultra": {
       "id": "animesultra",
-      "published_filename": "providers/animesultra--nuvio--392fb6f20abea435.js",
-      "sha256": "392fb6f20abea435582ad2c7ceaed5733862f7a1b32854af277dd9458076bde9",
-      "patched_sha256": "392fb6f20abea435582ad2c7ceaed5733862f7a1b32854af277dd9458076bde9",
+      "published_filename": "providers/animesultra--nuvio--00dfb277c7c189fd.js",
+      "sha256": "00dfb277c7c189fd7f15484e85a908e4988be41300204fcc26be7286bba3b3a8",
+      "patched_sha256": "00dfb277c7c189fd7f15484e85a908e4988be41300204fcc26be7286bba3b3a8",
       "upstream_sha256": "7704e3a452b175545251a1d24b1882406335dcc3efe49890847334ef58c645bc",
       "local_patches": [
         {
@@ -9390,9 +9408,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "392fb6f20abea435582ad2c7ceaed5733862f7a1b32854af277dd9458076bde9"
+        "sha256": "00dfb277c7c189fd7f15484e85a908e4988be41300204fcc26be7286bba3b3a8"
       },
-      "build_input_sha256": "241b11a81ef74da9e2cd6e90eb495e0c1769bff1bc1d4f0c8c88605c92d59e58",
+      "build_input_sha256": "ed7c964edf1407c972f51736ea048a9e2d55ea8a4a31c03e2035fb0350a49336",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -9421,9 +9439,9 @@
     },
     "animetsu": {
       "id": "animetsu",
-      "published_filename": "providers/animetsu--nuvio--1e5428ed840e373c.js",
-      "sha256": "1e5428ed840e373c10fb1f41379543d43f5f5dd6c6e726728b6094f01c9676dc",
-      "patched_sha256": "1e5428ed840e373c10fb1f41379543d43f5f5dd6c6e726728b6094f01c9676dc",
+      "published_filename": "providers/animetsu--nuvio--a24131d9d1ae36c8.js",
+      "sha256": "a24131d9d1ae36c8dd47b61f62c58f98a81361440b5a857a5b7299a9937292bc",
+      "patched_sha256": "a24131d9d1ae36c8dd47b61f62c58f98a81361440b5a857a5b7299a9937292bc",
       "upstream_sha256": "243edd8c76b0995a72e02ba6ff7ca47add6063b1d471ebe378d3d6842bd8cadb",
       "local_patches": [
         {
@@ -10064,9 +10082,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "1e5428ed840e373c10fb1f41379543d43f5f5dd6c6e726728b6094f01c9676dc"
+        "sha256": "a24131d9d1ae36c8dd47b61f62c58f98a81361440b5a857a5b7299a9937292bc"
       },
-      "build_input_sha256": "017efe9965e44894623daa870ee4b73671d34f2c10a68edcc0f2fa02c6ef9660",
+      "build_input_sha256": "15ab1736ab37e7420d4019cc97a40b0c06b779eb285aa96bb22fc0cdaec3221e",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -10095,9 +10113,9 @@
     },
     "animevost-fr": {
       "id": "animevost-fr",
-      "published_filename": "providers/animevost-fr--nuvio--5fa3d225ae826570.js",
-      "sha256": "5fa3d225ae8265700339de943d5731daa24ec0bde9a2f69b34a170e0a45fddc1",
-      "patched_sha256": "5fa3d225ae8265700339de943d5731daa24ec0bde9a2f69b34a170e0a45fddc1",
+      "published_filename": "providers/animevost-fr--nuvio--295f5dacfdfdf754.js",
+      "sha256": "295f5dacfdfdf7542681ca375975ea870bc23856883438ae4751dad1507441df",
+      "patched_sha256": "295f5dacfdfdf7542681ca375975ea870bc23856883438ae4751dad1507441df",
       "base_filename": "provider-bases/animevost-fr--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -10653,10 +10671,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "5fa3d225ae8265700339de943d5731daa24ec0bde9a2f69b34a170e0a45fddc1"
+        "sha256": "295f5dacfdfdf7542681ca375975ea870bc23856883438ae4751dad1507441df"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "51f01c9dccfcb6ade1ffbb38e5d81cf864f22762ba75648801275f50a5966c29",
+      "build_input_sha256": "61e98c435b4308ce4897276bb87bb3d7de8f61c321337c79bed3f84841f5e077",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -10687,9 +10705,9 @@
     },
     "animevostfr": {
       "id": "animevostfr",
-      "published_filename": "providers/animevostfr--nuvio--c366c3256f4402a0.js",
-      "sha256": "c366c3256f4402a038335bcd8265c0cd88f831eea951be4dd589c247a425bd9e",
-      "patched_sha256": "c366c3256f4402a038335bcd8265c0cd88f831eea951be4dd589c247a425bd9e",
+      "published_filename": "providers/animevostfr--nuvio--3d796ab5f63d183d.js",
+      "sha256": "3d796ab5f63d183da123d5ae5ce2901e3137c40b094abfdf6e6a6a2f6b07d137",
+      "patched_sha256": "3d796ab5f63d183da123d5ae5ce2901e3137c40b094abfdf6e6a6a2f6b07d137",
       "base_filename": "provider-bases/animevostfr--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -11292,10 +11310,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "c366c3256f4402a038335bcd8265c0cd88f831eea951be4dd589c247a425bd9e"
+        "sha256": "3d796ab5f63d183da123d5ae5ce2901e3137c40b094abfdf6e6a6a2f6b07d137"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "9e2be139243826af17f5d78d1f30188eb474b591c9ebe63b36a6c6bff315ce9c",
+      "build_input_sha256": "ff51bd67ec8dcd43d43a4e2ca4c2cdd06b38bf268d78020e40856d9841537f7c",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -13865,9 +13883,9 @@
     },
     "castle": {
       "id": "castle",
-      "published_filename": "providers/castle--nuvio--2f3639409d61df1a.js",
-      "sha256": "2f3639409d61df1a032640154cc089bc9ea0d949c8f8e698b752b0e0012cc9f4",
-      "patched_sha256": "2f3639409d61df1a032640154cc089bc9ea0d949c8f8e698b752b0e0012cc9f4",
+      "published_filename": "providers/castle--nuvio--f486407ec8d23232.js",
+      "sha256": "f486407ec8d232325839366654176e5c215bac4cadf580be9f1e4c293ede07ab",
+      "patched_sha256": "f486407ec8d232325839366654176e5c215bac4cadf580be9f1e4c293ede07ab",
       "base_filename": "provider-bases/castle--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -14421,10 +14439,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "2f3639409d61df1a032640154cc089bc9ea0d949c8f8e698b752b0e0012cc9f4"
+        "sha256": "f486407ec8d232325839366654176e5c215bac4cadf580be9f1e4c293ede07ab"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "358de94711c3de253014c673736af759ddee85a4af71a3e02bd85fc7bc364381",
+      "build_input_sha256": "f8f7717856bbfd3343d8715b943ca741662bd4e869fd3f713f68c9dee8ca6e45",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -17552,9 +17570,9 @@
     },
     "coflix": {
       "id": "coflix",
-      "published_filename": "providers/coflix--nuvio--7fd93309795a77ca.js",
-      "sha256": "7fd93309795a77ca6b5afdbaa73861160ce2b8110fb662ed3655a24da27fc9fe",
-      "patched_sha256": "7fd93309795a77ca6b5afdbaa73861160ce2b8110fb662ed3655a24da27fc9fe",
+      "published_filename": "providers/coflix--nuvio--487b413516232c6e.js",
+      "sha256": "487b413516232c6e0af660f33ddb3160104200b97ad9923e34e04e180e5e3cc5",
+      "patched_sha256": "487b413516232c6e0af660f33ddb3160104200b97ad9923e34e04e180e5e3cc5",
       "upstream_sha256": "48239f7b107a98b295b0ddec8ed38805503a75975e1bee320543d856d0baa87c",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/vf_catalogue_recovery.py', 'phase': 'discovery'}",
@@ -18572,9 +18590,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "7fd93309795a77ca6b5afdbaa73861160ce2b8110fb662ed3655a24da27fc9fe"
+        "sha256": "487b413516232c6e0af660f33ddb3160104200b97ad9923e34e04e180e5e3cc5"
       },
-      "build_input_sha256": "907f0f1b09daf6c84e3f15f4bbfa57a0224d7aedf6a090e4c026d51beebbb378",
+      "build_input_sha256": "ad90790d7d3cbf9197eb800e9b9a36dcbb2157d90eb2451f101e8477a3f2f0b9",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -19171,9 +19189,9 @@
     },
     "desiflix": {
       "id": "desiflix",
-      "published_filename": "providers/desiflix--nuvio--b422ea7405895c9e.js",
-      "sha256": "b422ea7405895c9ea70fe2cd298c6d4f1fb73849830aa59172a9a2c6a0613809",
-      "patched_sha256": "b422ea7405895c9ea70fe2cd298c6d4f1fb73849830aa59172a9a2c6a0613809",
+      "published_filename": "providers/desiflix--nuvio--a2536570423ff577.js",
+      "sha256": "a2536570423ff577b7f49cea0d8e15abab7b885a34b0edf1af996480c286683b",
+      "patched_sha256": "a2536570423ff577b7f49cea0d8e15abab7b885a34b0edf1af996480c286683b",
       "base_filename": "provider-bases/desiflix--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -19605,10 +19623,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "b422ea7405895c9ea70fe2cd298c6d4f1fb73849830aa59172a9a2c6a0613809"
+        "sha256": "a2536570423ff577b7f49cea0d8e15abab7b885a34b0edf1af996480c286683b"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "0bee8e29e7c34d745b870da919fd9c275db0abe9ca373fedda4369e9a09a598e",
+      "build_input_sha256": "91ff497b05a76c7e01d68c14dece0ef229c1711d20f9c2d51b992c07c59a380b",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -22768,9 +22786,9 @@
     },
     "flemmix": {
       "id": "flemmix",
-      "published_filename": "providers/flemmix--nuvio--1a73fa8699dfaf0e.js",
-      "sha256": "1a73fa8699dfaf0e409272e08d95a63d30e15081711c1dc347823c3daf068469",
-      "patched_sha256": "1a73fa8699dfaf0e409272e08d95a63d30e15081711c1dc347823c3daf068469",
+      "published_filename": "providers/flemmix--nuvio--66b2e0dba11961a9.js",
+      "sha256": "66b2e0dba11961a93576f6a82915f16d41787a8671344bcf66d39422d019d83f",
+      "patched_sha256": "66b2e0dba11961a93576f6a82915f16d41787a8671344bcf66d39422d019d83f",
       "upstream_sha256": "e0c40c452aca0d6685426c739729bc7bca333a187f4dc2737295f7394ff3955f",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -23723,9 +23741,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "1a73fa8699dfaf0e409272e08d95a63d30e15081711c1dc347823c3daf068469"
+        "sha256": "66b2e0dba11961a93576f6a82915f16d41787a8671344bcf66d39422d019d83f"
       },
-      "build_input_sha256": "99dfa7131f4347889368ff1c81ed79f177182666790e40185fdbfd86e36dc137",
+      "build_input_sha256": "6f9ad4555223f2c86a25047ae9118c46ba36c03776e14f7b5fd4157000ca425d",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -23754,9 +23772,9 @@
     },
     "french-manga": {
       "id": "french-manga",
-      "published_filename": "providers/french-manga--nuvio--f19eff6e98b242f6.js",
-      "sha256": "f19eff6e98b242f647ca66e6c9b6c005f38e26ccb4316622517853693457cf4c",
-      "patched_sha256": "f19eff6e98b242f647ca66e6c9b6c005f38e26ccb4316622517853693457cf4c",
+      "published_filename": "providers/french-manga--nuvio--658f94822205b8dc.js",
+      "sha256": "658f94822205b8dc0641a7742eff7f0a03d183ac98bd43b98c12d32c10e9a390",
+      "patched_sha256": "658f94822205b8dc0641a7742eff7f0a03d183ac98bd43b98c12d32c10e9a390",
       "base_filename": "provider-bases/french-manga--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -24449,10 +24467,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "f19eff6e98b242f647ca66e6c9b6c005f38e26ccb4316622517853693457cf4c"
+        "sha256": "658f94822205b8dc0641a7742eff7f0a03d183ac98bd43b98c12d32c10e9a390"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "da6bb9c9c1c78f1f2c65775f1c69da246632e5fadb98282fd074aab092c9a542",
+      "build_input_sha256": "747a9d0e0628a9f2e622d9645a3f3d42dc30880b4520898a9f16ed218a3f2185",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -24489,9 +24507,9 @@
     },
     "fullanime": {
       "id": "fullanime",
-      "published_filename": "providers/fullanime--nuvio--973aa6a02057909b.js",
-      "sha256": "973aa6a02057909bd1c1e3cb017254f64435cb0f1e4a872ae197e9c29235e315",
-      "patched_sha256": "973aa6a02057909bd1c1e3cb017254f64435cb0f1e4a872ae197e9c29235e315",
+      "published_filename": "providers/fullanime--nuvio--c6e85cfb4dae2e7c.js",
+      "sha256": "c6e85cfb4dae2e7cab93bc853ac9d7158da6473d086dd3fb29396cbaa5d7328c",
+      "patched_sha256": "c6e85cfb4dae2e7cab93bc853ac9d7158da6473d086dd3fb29396cbaa5d7328c",
       "base_filename": "provider-bases/fullanime--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -25052,10 +25070,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "973aa6a02057909bd1c1e3cb017254f64435cb0f1e4a872ae197e9c29235e315"
+        "sha256": "c6e85cfb4dae2e7cab93bc853ac9d7158da6473d086dd3fb29396cbaa5d7328c"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "76b616ed846d204529a27573348a425c31954e2b45c8d7646e38c341aca008f7",
+      "build_input_sha256": "6e9f35dac26c2ec226c8f1bf81c64643864e74149efb6c0bc492a3149f8d82df",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -28817,9 +28835,9 @@
     },
     "hindmoviez": {
       "id": "hindmoviez",
-      "published_filename": "providers/hindmoviez--nuvio--44bb194385daedf0.js",
-      "sha256": "44bb194385daedf0b8600f6ee815ba7fd507d6682c42c99274f4fe75c5af145b",
-      "patched_sha256": "44bb194385daedf0b8600f6ee815ba7fd507d6682c42c99274f4fe75c5af145b",
+      "published_filename": "providers/hindmoviez--nuvio--af1f6d5bc5885a7d.js",
+      "sha256": "af1f6d5bc5885a7dc932d647d0aa4666e80423e85a46c9413fc2fba3862f1fb6",
+      "patched_sha256": "af1f6d5bc5885a7dc932d647d0aa4666e80423e85a46c9413fc2fba3862f1fb6",
       "base_filename": "provider-bases/hindmoviez--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -29426,10 +29444,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "44bb194385daedf0b8600f6ee815ba7fd507d6682c42c99274f4fe75c5af145b"
+        "sha256": "af1f6d5bc5885a7dc932d647d0aa4666e80423e85a46c9413fc2fba3862f1fb6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "379463d28f2fb38133877cf5c0bd4e45f8b7bde950aa4a655cfed376017a574c",
+      "build_input_sha256": "9882bcf7dce967fc3700aa72926b7043ae97913a863e547d629973cf649c4602",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -29466,9 +29484,9 @@
     },
     "kehflix": {
       "id": "kehflix",
-      "published_filename": "providers/kehflix--nuvio--b18784489753da90.js",
-      "sha256": "b18784489753da90871b6b89d628c0b970f97d82a4b1cb398936117d6b8ede5c",
-      "patched_sha256": "b18784489753da90871b6b89d628c0b970f97d82a4b1cb398936117d6b8ede5c",
+      "published_filename": "providers/kehflix--nuvio--bd71f39c48511071.js",
+      "sha256": "bd71f39c48511071696d35b6cc392679cdb01d8c0b632abff25d065c947fa4e1",
+      "patched_sha256": "bd71f39c48511071696d35b6cc392679cdb01d8c0b632abff25d065c947fa4e1",
       "base_filename": "provider-bases/kehflix--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -29877,10 +29895,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "b18784489753da90871b6b89d628c0b970f97d82a4b1cb398936117d6b8ede5c"
+        "sha256": "bd71f39c48511071696d35b6cc392679cdb01d8c0b632abff25d065c947fa4e1"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "0dd95a9b4f5f4b9befdb6ccae17a2aba8f293f28a4045977c4f1ed36404e15d5",
+      "build_input_sha256": "072555db0c2cea796f9dd1c632dbf52d5d76a67337426b8189d5c178df1421f3",
       "legacy_base_filename_before_clean_v3": "provider-bases/kehflix--base--8527dbcaa8de0ed3.js",
       "legacy_base_sha256_before_clean_v3": "8527dbcaa8de0ed3f34ada1008fabbce19f421ccabd0d6e3399af53c95424fdc",
       "clean_reconstruction_candidate": false,
@@ -30459,9 +30477,9 @@
     },
     "kurage": {
       "id": "kurage",
-      "published_filename": "providers/kurage--nuvio--72362471b62ec7fe.js",
-      "sha256": "72362471b62ec7fef6c845be661a60062b56de2a3029eaf1eb3ed3ea0d3d0951",
-      "patched_sha256": "72362471b62ec7fef6c845be661a60062b56de2a3029eaf1eb3ed3ea0d3d0951",
+      "published_filename": "providers/kurage--nuvio--e8fa9e19180d0fde.js",
+      "sha256": "e8fa9e19180d0fdec4403f8e058c22e7264c59458006c675d318cafff8b8723f",
+      "patched_sha256": "e8fa9e19180d0fdec4403f8e058c22e7264c59458006c675d318cafff8b8723f",
       "upstream_sha256": "87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb",
       "local_patches": [
         {
@@ -30834,6 +30852,18 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/kurage_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.KURAGE.RUNTIME.V1"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_runtime_dispatch_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_runtime_dispatch"
         }
       ],
       "source": "yoru",
@@ -31093,9 +31123,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "72362471b62ec7fef6c845be661a60062b56de2a3029eaf1eb3ed3ea0d3d0951"
+        "sha256": "e8fa9e19180d0fdec4403f8e058c22e7264c59458006c675d318cafff8b8723f"
       },
-      "build_input_sha256": "ba44568109642b730eff66fc8c9d172664fa6113b176134d4e6296ad26baa057",
+      "build_input_sha256": "7442c383b8d3ffc14d41d1663f27401d246264b0f26888382c3a002e8a874ef4",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -31124,9 +31154,9 @@
     },
     "mallumv": {
       "id": "mallumv",
-      "published_filename": "providers/mallumv--nuvio--0ae2da977b591010.js",
-      "sha256": "0ae2da977b591010c2c848f76c9d218719e51d33cd53ddee13c4d9104d72a734",
-      "patched_sha256": "0ae2da977b591010c2c848f76c9d218719e51d33cd53ddee13c4d9104d72a734",
+      "published_filename": "providers/mallumv--nuvio--629111d719c04759.js",
+      "sha256": "629111d719c04759cdd005a0c50139df1fd69ccc9a126d768e7cd18d46787198",
+      "patched_sha256": "629111d719c04759cdd005a0c50139df1fd69ccc9a126d768e7cd18d46787198",
       "base_filename": "provider-bases/mallumv--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -31702,10 +31732,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "0ae2da977b591010c2c848f76c9d218719e51d33cd53ddee13c4d9104d72a734"
+        "sha256": "629111d719c04759cdd005a0c50139df1fd69ccc9a126d768e7cd18d46787198"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "d269ab984fe6660708a88ed477ee9b4ea5671ce8140e8e077c706addf1184f57",
+      "build_input_sha256": "a93d0a2db9a56daebd588c8840ae8c6c096616644288cc6e865f73630233f5fe",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -34553,9 +34583,9 @@
     },
     "movieshunt": {
       "id": "movieshunt",
-      "published_filename": "providers/movieshunt--nuvio--d9e946cec1c913bb.js",
-      "sha256": "d9e946cec1c913bb504aa5573122480e42f7d35fd7d0df64d8e9693dc7651a0d",
-      "patched_sha256": "d9e946cec1c913bb504aa5573122480e42f7d35fd7d0df64d8e9693dc7651a0d",
+      "published_filename": "providers/movieshunt--nuvio--8f732b14903ce4bf.js",
+      "sha256": "8f732b14903ce4bf910134064cc514f579b558f903ff2a7139b0e9571cf32cf0",
+      "patched_sha256": "8f732b14903ce4bf910134064cc514f579b558f903ff2a7139b0e9571cf32cf0",
       "base_filename": "provider-bases/movieshunt--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -35080,10 +35110,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "d9e946cec1c913bb504aa5573122480e42f7d35fd7d0df64d8e9693dc7651a0d"
+        "sha256": "8f732b14903ce4bf910134064cc514f579b558f903ff2a7139b0e9571cf32cf0"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "515932adc10955ac47c9b8d51ec3b7fa635c1fce7b8bb71d02699283ec585c29",
+      "build_input_sha256": "4fc5e554645000c135da601ec65828024e5e33739ceb53473af8827507f2ba76",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -35120,9 +35150,9 @@
     },
     "moviesmod": {
       "id": "moviesmod",
-      "published_filename": "providers/moviesmod--nuvio--98e4ad39d10dab31.js",
-      "sha256": "98e4ad39d10dab313ed3cf265fbe0103f1b8f7651dd337b37f1df93f79f7667f",
-      "patched_sha256": "98e4ad39d10dab313ed3cf265fbe0103f1b8f7651dd337b37f1df93f79f7667f",
+      "published_filename": "providers/moviesmod--nuvio--51972baa4978c322.js",
+      "sha256": "51972baa4978c32293a0d75f7e67488b909906a4ec4373b433f5f8d082de65fe",
+      "patched_sha256": "51972baa4978c32293a0d75f7e67488b909906a4ec4373b433f5f8d082de65fe",
       "upstream_sha256": "c90890640a4598443ae4a264547b9ce1d089952f5d19ac9ab74e6cf1e28e0a9f",
       "local_patches": [
         {
@@ -35850,9 +35880,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "98e4ad39d10dab313ed3cf265fbe0103f1b8f7651dd337b37f1df93f79f7667f"
+        "sha256": "51972baa4978c32293a0d75f7e67488b909906a4ec4373b433f5f8d082de65fe"
       },
-      "build_input_sha256": "2c77c8e6709e6265165a38b506171db6f998a8aca1660c48d0c5dd668673ad78",
+      "build_input_sha256": "ff33a5eb7f7f37c1cf35749e859adde858b5106442328db19659f73c0208fc89",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -36790,9 +36820,9 @@
     },
     "mugiwarastream": {
       "id": "mugiwarastream",
-      "published_filename": "providers/mugiwarastream--nuvio--43f65ba08763023c.js",
-      "sha256": "43f65ba08763023cbb8925250bd45390f03d06ee2b55608b8ce04fd0583bfaa9",
-      "patched_sha256": "43f65ba08763023cbb8925250bd45390f03d06ee2b55608b8ce04fd0583bfaa9",
+      "published_filename": "providers/mugiwarastream--nuvio--a531b9bc2a68ef64.js",
+      "sha256": "a531b9bc2a68ef64c33aae7ace980b612bdc78a5a51f9735894e0bd2aa58f060",
+      "patched_sha256": "a531b9bc2a68ef64c33aae7ace980b612bdc78a5a51f9735894e0bd2aa58f060",
       "base_filename": "provider-bases/mugiwarastream--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -37442,10 +37472,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "43f65ba08763023cbb8925250bd45390f03d06ee2b55608b8ce04fd0583bfaa9"
+        "sha256": "a531b9bc2a68ef64c33aae7ace980b612bdc78a5a51f9735894e0bd2aa58f060"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "7b417a0de7f32cc9dbc2dbc0ddd5c456c6e5132190c26a2ad26a3bd3d66a6791",
+      "build_input_sha256": "06e4c3269d385c78589b172d164afabc15af94da24ce43cabf654d4e66262667",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -38700,9 +38730,9 @@
     },
     "neko-sama": {
       "id": "neko-sama",
-      "published_filename": "providers/neko-sama--nuvio--b777df161261f337.js",
-      "sha256": "b777df161261f3371963692fa40455dc87d3056130b9f3fbd5155d8dd352c3f7",
-      "patched_sha256": "b777df161261f3371963692fa40455dc87d3056130b9f3fbd5155d8dd352c3f7",
+      "published_filename": "providers/neko-sama--nuvio--e06969e2f42b01dc.js",
+      "sha256": "e06969e2f42b01dc94bce2b441bf15af1514186504e7f300c67660b70f190f1b",
+      "patched_sha256": "e06969e2f42b01dc94bce2b441bf15af1514186504e7f300c67660b70f190f1b",
       "base_filename": "provider-bases/neko-sama--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -39272,10 +39302,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "b777df161261f3371963692fa40455dc87d3056130b9f3fbd5155d8dd352c3f7"
+        "sha256": "e06969e2f42b01dc94bce2b441bf15af1514186504e7f300c67660b70f190f1b"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "9e7ee35649368417a7bd9ed0a615b3b277bc145e85a0d47d883411ee95a7acb7",
+      "build_input_sha256": "f95a504ba8d368a600c3faef85aa6844f9e6345f944a5db07f8b82ba5f18e8b4",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -39886,9 +39916,9 @@
     },
     "papadustream": {
       "id": "papadustream",
-      "published_filename": "providers/papadustream--nuvio--6c21d9ae1743adaa.js",
-      "sha256": "6c21d9ae1743adaae70a5ba185f6959f855420a7ccf19d21e83ce3027bff0510",
-      "patched_sha256": "6c21d9ae1743adaae70a5ba185f6959f855420a7ccf19d21e83ce3027bff0510",
+      "published_filename": "providers/papadustream--nuvio--b3cf599fe67693d7.js",
+      "sha256": "b3cf599fe67693d7b24d06f75eadf486213210dc844e69a0f428f3e13e590f44",
+      "patched_sha256": "b3cf599fe67693d7b24d06f75eadf486213210dc844e69a0f428f3e13e590f44",
       "upstream_sha256": "19fc281914eeaf7c943ba9a05ad9fa5288307a62e2d30f5599aa2e76c18db8fa",
       "local_patches": [
         {
@@ -40708,9 +40738,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "6c21d9ae1743adaae70a5ba185f6959f855420a7ccf19d21e83ce3027bff0510"
+        "sha256": "b3cf599fe67693d7b24d06f75eadf486213210dc844e69a0f428f3e13e590f44"
       },
-      "build_input_sha256": "c9d4781c35552ac12a26e435723a6fe9d5864bffd58bd3dd9c4cd9fc1ec1546f",
+      "build_input_sha256": "560baa960a2cc3a38cab7f52e65f4c9383f087035019793274e05e38c80b8022",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -41328,9 +41358,9 @@
     },
     "persianstremio": {
       "id": "persianstremio",
-      "published_filename": "providers/persianstremio--nuvio--e1a20cfee684342b.js",
-      "sha256": "e1a20cfee684342b511b73b725cab3924b54c80b326fce2e67a9b5efe96f9d38",
-      "patched_sha256": "e1a20cfee684342b511b73b725cab3924b54c80b326fce2e67a9b5efe96f9d38",
+      "published_filename": "providers/persianstremio--nuvio--7b603ee2ce257b06.js",
+      "sha256": "7b603ee2ce257b063f7d8643779eccbe89359668313aef8cb27edc44a8bf3f2f",
+      "patched_sha256": "7b603ee2ce257b063f7d8643779eccbe89359668313aef8cb27edc44a8bf3f2f",
       "base_filename": "provider-bases/persianstremio--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -41882,10 +41912,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "e1a20cfee684342b511b73b725cab3924b54c80b326fce2e67a9b5efe96f9d38"
+        "sha256": "7b603ee2ce257b063f7d8643779eccbe89359668313aef8cb27edc44a8bf3f2f"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "cec0b85be5464dd0f51c1737d81a7ef0a7146ffdee05947da975abd2237f24e1",
+      "build_input_sha256": "d57e7c7fb66ef244b4de2e9e3d928650f9015ead05db680bc104a644294af94b",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -41922,9 +41952,9 @@
     },
     "playimdb": {
       "id": "playimdb",
-      "published_filename": "providers/playimdb--nuvio--a4968dceec76c1f5.js",
-      "sha256": "a4968dceec76c1f581cfa407c5bfa96f1e2351d3159aca248abb2ecbfd8a46ca",
-      "patched_sha256": "a4968dceec76c1f581cfa407c5bfa96f1e2351d3159aca248abb2ecbfd8a46ca",
+      "published_filename": "providers/playimdb--nuvio--1673fb32bdf57585.js",
+      "sha256": "1673fb32bdf57585e9b9ed55cd4841447da330bcc599276155ac5562dca2448a",
+      "patched_sha256": "1673fb32bdf57585e9b9ed55cd4841447da330bcc599276155ac5562dca2448a",
       "base_filename": "provider-bases/playimdb--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -42466,10 +42496,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "a4968dceec76c1f581cfa407c5bfa96f1e2351d3159aca248abb2ecbfd8a46ca"
+        "sha256": "1673fb32bdf57585e9b9ed55cd4841447da330bcc599276155ac5562dca2448a"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "4df9ffb1538a81c438b5b197b0a08dc0a2ac1ec542cba80ff527e412ac536eb1",
+      "build_input_sha256": "e9223c7266ccead7c847e286bc3941b57f27ed5328fd93fc629405d36a4735f4",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -42506,9 +42536,9 @@
     },
     "purstream": {
       "id": "purstream",
-      "published_filename": "providers/purstream--nuvio--9fd1d2ddc59e9966.js",
-      "sha256": "9fd1d2ddc59e99664996fa6636b8ab82378d981960546bd989764ffc0eedb6e3",
-      "patched_sha256": "9fd1d2ddc59e99664996fa6636b8ab82378d981960546bd989764ffc0eedb6e3",
+      "published_filename": "providers/purstream--nuvio--2684b617b73c1981.js",
+      "sha256": "2684b617b73c1981ee3c9d2e3de02c9168d4fad60267724ea4344599083831cc",
+      "patched_sha256": "2684b617b73c1981ee3c9d2e3de02c9168d4fad60267724ea4344599083831cc",
       "base_filename": "provider-bases/purstream--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -43110,10 +43140,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "9fd1d2ddc59e99664996fa6636b8ab82378d981960546bd989764ffc0eedb6e3"
+        "sha256": "2684b617b73c1981ee3c9d2e3de02c9168d4fad60267724ea4344599083831cc"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "deae2785906d559f172ffb8debc6eb08ec8536619e215aab6d884cdf1f55a805",
+      "build_input_sha256": "7cde4437823c7d81f74516a3c69bf65211db9e3f8bb033015c804541142671f8",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -43150,9 +43180,9 @@
     },
     "sekai": {
       "id": "sekai",
-      "published_filename": "providers/sekai--nuvio--e8a5e4b22f136389.js",
-      "sha256": "e8a5e4b22f136389619f9eaf2c7dece92e836179e427656ee43b7eec3345b5de",
-      "patched_sha256": "e8a5e4b22f136389619f9eaf2c7dece92e836179e427656ee43b7eec3345b5de",
+      "published_filename": "providers/sekai--nuvio--d09b4ca4c96a0802.js",
+      "sha256": "d09b4ca4c96a0802c25546856c5a70b17d9b5df1bc415a062576c8c83577c6ac",
+      "patched_sha256": "d09b4ca4c96a0802c25546856c5a70b17d9b5df1bc415a062576c8c83577c6ac",
       "upstream_sha256": "e85fff4bdce1aca71ee95c81822481b07942ce9857d3644e2ef36eacf382b148",
       "local_patches": [
         {
@@ -43676,10 +43706,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "e8a5e4b22f136389619f9eaf2c7dece92e836179e427656ee43b7eec3345b5de"
+        "sha256": "d09b4ca4c96a0802c25546856c5a70b17d9b5df1bc415a062576c8c83577c6ac"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "65c5457db5f53b7ca5c061dfbedb4de74057a233aed773200d7e51a0a173e957",
+      "build_input_sha256": "4060a7d7907337371f3469584f991e11b0da524d431905b5141df011835d71e1",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -43714,9 +43744,9 @@
     },
     "showbox": {
       "id": "showbox",
-      "published_filename": "providers/showbox--nuvio--63fa562a61b687a1.js",
-      "sha256": "63fa562a61b687a178d114ae6db841a2692f8416c3fce23050775246c5b702d6",
-      "patched_sha256": "63fa562a61b687a178d114ae6db841a2692f8416c3fce23050775246c5b702d6",
+      "published_filename": "providers/showbox--nuvio--341e19571dfd791a.js",
+      "sha256": "341e19571dfd791a4c460c789edc9f317ea84fd0c8bf1af8c970530f0a014a19",
+      "patched_sha256": "341e19571dfd791a4c460c789edc9f317ea84fd0c8bf1af8c970530f0a014a19",
       "base_filename": "provider-bases/showbox--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -44249,10 +44279,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "63fa562a61b687a178d114ae6db841a2692f8416c3fce23050775246c5b702d6"
+        "sha256": "341e19571dfd791a4c460c789edc9f317ea84fd0c8bf1af8c970530f0a014a19"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "c08f037e3d023a8806b3cd92cc84bb595d15b37d106b7e6b3ef6c26c6ff77ead",
+      "build_input_sha256": "f4f66b5a8be8a9c1a00998ac93f5edfb2a14177618038ffdc099ac85cf1301d8",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -44990,9 +45020,9 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--nuvio--437d344abf449b4f.js",
-      "sha256": "437d344abf449b4f6dffad61902acbd99b0f19a7fa3859b95adfe965671e9fc3",
-      "patched_sha256": "437d344abf449b4f6dffad61902acbd99b0f19a7fa3859b95adfe965671e9fc3",
+      "published_filename": "providers/streamzo--nuvio--90576eeb2ce7c208.js",
+      "sha256": "90576eeb2ce7c20893b0b7a004a1b6aeb23ea6926b6a2a60111fe499031afb62",
+      "patched_sha256": "90576eeb2ce7c20893b0b7a004a1b6aeb23ea6926b6a2a60111fe499031afb62",
       "upstream_sha256": "0e0695a6398a6732b2ec39a15c94ec6fd8070cc120527fd7bc9dece9bddd8685",
       "local_patches": [
         {
@@ -45515,6 +45545,18 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/streamzo_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.STREAMZO.RUNTIME.V1"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_runtime_dispatch_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_runtime_dispatch"
         }
       ],
       "source": "published-baseline",
@@ -45778,9 +45820,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "437d344abf449b4f6dffad61902acbd99b0f19a7fa3859b95adfe965671e9fc3"
+        "sha256": "90576eeb2ce7c20893b0b7a004a1b6aeb23ea6926b6a2a60111fe499031afb62"
       },
-      "build_input_sha256": "f56fe6e9ce35817447b61c33edb9ff3e75bfd5da8097810e91394ab3a1327ad9",
+      "build_input_sha256": "de550b132e86e69991b14535c90ba73290349550c844fdeb41a6dc74aca7c973",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -46856,9 +46898,9 @@
     },
     "uhdmovies": {
       "id": "uhdmovies",
-      "published_filename": "providers/uhdmovies--nuvio--217b035d7376a5ba.js",
-      "sha256": "217b035d7376a5bab035918c67bf126e84f08771416ba5ded7bbd4e41a47d1c3",
-      "patched_sha256": "217b035d7376a5bab035918c67bf126e84f08771416ba5ded7bbd4e41a47d1c3",
+      "published_filename": "providers/uhdmovies--nuvio--95907e464c152d64.js",
+      "sha256": "95907e464c152d64728afdc655609b1291920f4a37f9e39b34df67eb5e1b95d7",
+      "patched_sha256": "95907e464c152d64728afdc655609b1291920f4a37f9e39b34df67eb5e1b95d7",
       "base_filename": "provider-bases/uhdmovies--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -47422,10 +47464,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "217b035d7376a5bab035918c67bf126e84f08771416ba5ded7bbd4e41a47d1c3"
+        "sha256": "95907e464c152d64728afdc655609b1291920f4a37f9e39b34df67eb5e1b95d7"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "9c74592e860c483b2d30c296cfb40877c063eb1c3d4d9bb676d6d4fe15bdf12b",
+      "build_input_sha256": "5c683c7dcd2296185a380934974342b1164679dfa694d7cc1d0913a98c4bc753",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -48253,9 +48295,9 @@
     },
     "videasy": {
       "id": "videasy",
-      "published_filename": "providers/videasy--nuvio--f8739454eae2f1ba.js",
-      "sha256": "f8739454eae2f1babd108897d7d6d41c7d783a7aef0b0044a01cef1675265612",
-      "patched_sha256": "f8739454eae2f1babd108897d7d6d41c7d783a7aef0b0044a01cef1675265612",
+      "published_filename": "providers/videasy--nuvio--7ac28d51f8ec8c06.js",
+      "sha256": "7ac28d51f8ec8c0615c75b586ba5baaa9c0c75e39b01434bc08e713a1bf1239f",
+      "patched_sha256": "7ac28d51f8ec8c0615c75b586ba5baaa9c0c75e39b01434bc08e713a1bf1239f",
       "base_filename": "provider-bases/videasy--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -48818,10 +48860,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "f8739454eae2f1babd108897d7d6d41c7d783a7aef0b0044a01cef1675265612"
+        "sha256": "7ac28d51f8ec8c0615c75b586ba5baaa9c0c75e39b01434bc08e713a1bf1239f"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "53eeef354842cb4f6bfac50144e2355013ea283b9fa102390c857a69bb8d8def",
+      "build_input_sha256": "f0a9764ed9b6990cb380e912bd6478133904b501f5045edec84760c3f00ebe9f",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -48858,9 +48900,9 @@
     },
     "vidfast": {
       "id": "vidfast",
-      "published_filename": "providers/vidfast--nuvio--469b073ecb9f63a7.js",
-      "sha256": "469b073ecb9f63a77a4849c8b5c8b79d6e9ab9cc20fe73f459e9ded2e3fd09f1",
-      "patched_sha256": "469b073ecb9f63a77a4849c8b5c8b79d6e9ab9cc20fe73f459e9ded2e3fd09f1",
+      "published_filename": "providers/vidfast--nuvio--6427a8fed043ad4e.js",
+      "sha256": "6427a8fed043ad4eaf7beae374ef18e36d36682199c6399cb90ffe2e375b5a7c",
+      "patched_sha256": "6427a8fed043ad4eaf7beae374ef18e36d36682199c6399cb90ffe2e375b5a7c",
       "upstream_sha256": "9750c41a72fe7978d81eabd1b3704529cac0c13a7830a1d608afec5c892271cd",
       "local_patches": [
         {
@@ -49516,9 +49558,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "469b073ecb9f63a77a4849c8b5c8b79d6e9ab9cc20fe73f459e9ded2e3fd09f1"
+        "sha256": "6427a8fed043ad4eaf7beae374ef18e36d36682199c6399cb90ffe2e375b5a7c"
       },
-      "build_input_sha256": "105f502412ab323039093762d2e090b3cfeaa32e858a11d53185e934aa60cf49",
+      "build_input_sha256": "194791c1726eade53036675b873b74299f11df37b2d662849c1cd01b5293844e",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -50249,9 +50291,9 @@
     },
     "vidlove": {
       "id": "vidlove",
-      "published_filename": "providers/vidlove--nuvio--61b467a6803c2bf8.js",
-      "sha256": "61b467a6803c2bf884bd48bdf46f78cacafba7bfefec05aa3ad24ee9ba0c2537",
-      "patched_sha256": "61b467a6803c2bf884bd48bdf46f78cacafba7bfefec05aa3ad24ee9ba0c2537",
+      "published_filename": "providers/vidlove--nuvio--a4a3ab6bb79e40f5.js",
+      "sha256": "a4a3ab6bb79e40f5b72e44172ded4bba68273a23eb11b29c804a903e728b6778",
+      "patched_sha256": "a4a3ab6bb79e40f5b72e44172ded4bba68273a23eb11b29c804a903e728b6778",
       "base_filename": "provider-bases/vidlove--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -50788,10 +50830,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "61b467a6803c2bf884bd48bdf46f78cacafba7bfefec05aa3ad24ee9ba0c2537"
+        "sha256": "a4a3ab6bb79e40f5b72e44172ded4bba68273a23eb11b29c804a903e728b6778"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "03715d4fa846d66ab64ee58ce08a24ec96836cb020ef0ec270d7679f86d9c4d4",
+      "build_input_sha256": "a7b251f2b71716c3a4f2266ead8c1bf9ced5c8266673d53a35d494d4d90b349c",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -51975,9 +52017,9 @@
     },
     "vidrock": {
       "id": "vidrock",
-      "published_filename": "providers/vidrock--nuvio--d2ede20f619be10f.js",
-      "sha256": "d2ede20f619be10fd0abc6942df0096635c86b5ecb71c72e9cedae32622392f2",
-      "patched_sha256": "d2ede20f619be10fd0abc6942df0096635c86b5ecb71c72e9cedae32622392f2",
+      "published_filename": "providers/vidrock--nuvio--40d79c83e6811a74.js",
+      "sha256": "40d79c83e6811a74e5abc620c811fadcfc79aeb3c27129109fb542d0552c5d92",
+      "patched_sha256": "40d79c83e6811a74e5abc620c811fadcfc79aeb3c27129109fb542d0552c5d92",
       "base_filename": "provider-bases/vidrock--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -52526,10 +52568,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "d2ede20f619be10fd0abc6942df0096635c86b5ecb71c72e9cedae32622392f2"
+        "sha256": "40d79c83e6811a74e5abc620c811fadcfc79aeb3c27129109fb542d0552c5d92"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "665dd828584d3d64653247ed023267b2cc476074f5779c617f8f0c3e3cd0990e",
+      "build_input_sha256": "c527ee487a7f0a990abf30a985d84e9966460eacba4cf535e33be0aad3048b54",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -52566,9 +52608,9 @@
     },
     "voiranime": {
       "id": "voiranime",
-      "published_filename": "providers/voiranime--nuvio--1368e5a1284ef06c.js",
-      "sha256": "1368e5a1284ef06c0890749d1d4fc8d3fead0266cf4d467bc9cbdbffa61dbb96",
-      "patched_sha256": "1368e5a1284ef06c0890749d1d4fc8d3fead0266cf4d467bc9cbdbffa61dbb96",
+      "published_filename": "providers/voiranime--nuvio--92088ecf1a11017d.js",
+      "sha256": "92088ecf1a11017d4a2f07093ae1ddb2b2ad212fd0cf838595649714b1b1814a",
+      "patched_sha256": "92088ecf1a11017d4a2f07093ae1ddb2b2ad212fd0cf838595649714b1b1814a",
       "base_filename": "provider-bases/voiranime--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -52951,6 +52993,12 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/voiranime_anime_runtime_v2.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.VOIRANIME.ANIME.RUNTIME.V2"
         }
       ],
       "source": "gowaru",
@@ -53186,10 +53234,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "1368e5a1284ef06c0890749d1d4fc8d3fead0266cf4d467bc9cbdbffa61dbb96"
+        "sha256": "92088ecf1a11017d4a2f07093ae1ddb2b2ad212fd0cf838595649714b1b1814a"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "5ab15a21940383705e857b9602b884ad6a31f01fd31e40830f57183b743d6d5a",
+      "build_input_sha256": "dec6d362a1a5d6723cbe054087181c8105d8a38da9a0548e74dc8fa614058864",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -53226,9 +53274,9 @@
     },
     "voiranime-homes": {
       "id": "voiranime-homes",
-      "published_filename": "providers/voiranime-homes--nuvio--cd543edc8c9887f9.js",
-      "sha256": "cd543edc8c9887f9b3e4056ead539010de11c40b3d247a875508f497db080c85",
-      "patched_sha256": "cd543edc8c9887f9b3e4056ead539010de11c40b3d247a875508f497db080c85",
+      "published_filename": "providers/voiranime-homes--nuvio--6f6c08ade094ed23.js",
+      "sha256": "6f6c08ade094ed23f5317d0c2d143dcc22bd43a23c3dbfd168d3be0d282fa004",
+      "patched_sha256": "6f6c08ade094ed23f5317d0c2d143dcc22bd43a23c3dbfd168d3be0d282fa004",
       "base_filename": "provider-bases/voiranime-homes--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -53816,10 +53864,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "cd543edc8c9887f9b3e4056ead539010de11c40b3d247a875508f497db080c85"
+        "sha256": "6f6c08ade094ed23f5317d0c2d143dcc22bd43a23c3dbfd168d3be0d282fa004"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "571c6f8ea701745d5b93a9613f88c847521d067a5b02f549e44f42f9a9de3756",
+      "build_input_sha256": "a276d5a0ee93b8e894ac6f46ddc63e7cee29f1c8070b42686c77a0c289b4a6e3",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -53856,9 +53904,9 @@
     },
     "voiranime-rip": {
       "id": "voiranime-rip",
-      "published_filename": "providers/voiranime-rip--nuvio--9b218feb7d8a48b2.js",
-      "sha256": "9b218feb7d8a48b283ac7cd9bca3c45e941e341459c8cdf19a253a3da03f138b",
-      "patched_sha256": "9b218feb7d8a48b283ac7cd9bca3c45e941e341459c8cdf19a253a3da03f138b",
+      "published_filename": "providers/voiranime-rip--nuvio--abab27182399f813.js",
+      "sha256": "abab27182399f813f040786fede826f24dc2910adb00e35a7e7068f5b8a51872",
+      "patched_sha256": "abab27182399f813f040786fede826f24dc2910adb00e35a7e7068f5b8a51872",
       "base_filename": "provider-bases/voiranime-rip--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -54461,10 +54509,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "9b218feb7d8a48b283ac7cd9bca3c45e941e341459c8cdf19a253a3da03f138b"
+        "sha256": "abab27182399f813f040786fede826f24dc2910adb00e35a7e7068f5b8a51872"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "d8df9d00a62757b85caaa5c799ff4d8735ffd29be6ae672792521336556988f6",
+      "build_input_sha256": "a57f19d9fc8a4605cb50e569e3370c001b5062adfafbe33d199255d155e9a028",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -54501,9 +54549,9 @@
     },
     "vostfree": {
       "id": "vostfree",
-      "published_filename": "providers/vostfree--nuvio--05dacc65473618fa.js",
-      "sha256": "05dacc65473618fa4742511053383f43f0ac9d531423cbe297f46cfd83379020",
-      "patched_sha256": "05dacc65473618fa4742511053383f43f0ac9d531423cbe297f46cfd83379020",
+      "published_filename": "providers/vostfree--nuvio--de1a31f40276b1a8.js",
+      "sha256": "de1a31f40276b1a8373534a5f23b4cf3a2769e722ba4116cb04ff33560436f25",
+      "patched_sha256": "de1a31f40276b1a8373534a5f23b4cf3a2769e722ba4116cb04ff33560436f25",
       "upstream_sha256": "8e9b00d7aff4dd9a06f259b4a61d2a6a5b0cfd82d7210e70b6b14e71f0e911b7",
       "local_patches": [
         {
@@ -55242,9 +55290,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "05dacc65473618fa4742511053383f43f0ac9d531423cbe297f46cfd83379020"
+        "sha256": "de1a31f40276b1a8373534a5f23b4cf3a2769e722ba4116cb04ff33560436f25"
       },
-      "build_input_sha256": "3bdc9578977b2b98c7a396c6e080153aa2d528eb4174f07bf53f180addfbdfc8",
+      "build_input_sha256": "7fa24a2498d997227122b1905fddf4325c1b874166d9e480b76814c7ce7c8bf2",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -55888,9 +55936,9 @@
     },
     "wookafr": {
       "id": "wookafr",
-      "published_filename": "providers/wookafr--nuvio--c9222c0dc93b0d5b.js",
-      "sha256": "c9222c0dc93b0d5bd95543d3d4b38a8eb353a47de570cb6cfca9cd8d5fb7dbb0",
-      "patched_sha256": "c9222c0dc93b0d5bd95543d3d4b38a8eb353a47de570cb6cfca9cd8d5fb7dbb0",
+      "published_filename": "providers/wookafr--nuvio--0638b55c55d30ff1.js",
+      "sha256": "0638b55c55d30ff153915fe99d6ad059bd5725340a98b38526422db1c949cb20",
+      "patched_sha256": "0638b55c55d30ff153915fe99d6ad059bd5725340a98b38526422db1c949cb20",
       "upstream_sha256": "4ce4c33e2fe1d23bea7263bf07d4b760ec50169aa0c7b925a7103efc15271b67",
       "local_patches": [
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
@@ -56740,9 +56788,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "c9222c0dc93b0d5bd95543d3d4b38a8eb353a47de570cb6cfca9cd8d5fb7dbb0"
+        "sha256": "0638b55c55d30ff153915fe99d6ad059bd5725340a98b38526422db1c949cb20"
       },
-      "build_input_sha256": "634af5065dfbf61fd6fddc6c9cc07f5ff30be5ee5da3097d9fe8f1083d0134ee",
+      "build_input_sha256": "14a6cb078d2cff0c2ec9d748451095e72025b1affae2e14f6e85b1a92b3d016f",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -57352,9 +57400,9 @@
     },
     "yflix": {
       "id": "yflix",
-      "published_filename": "providers/yflix--nuvio--a98ec4b9b197e0d5.js",
-      "sha256": "a98ec4b9b197e0d55d4946f8e5ceba58311605fe9ad69f84ad2c8a13c4186079",
-      "patched_sha256": "a98ec4b9b197e0d55d4946f8e5ceba58311605fe9ad69f84ad2c8a13c4186079",
+      "published_filename": "providers/yflix--nuvio--695be854c4a724c5.js",
+      "sha256": "695be854c4a724c502e5fc638a220692d050ed96fbde613f56da41cf6a338707",
+      "patched_sha256": "695be854c4a724c502e5fc638a220692d050ed96fbde613f56da41cf6a338707",
       "upstream_sha256": "ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94",
       "local_patches": [
         {
@@ -58002,9 +58050,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "a98ec4b9b197e0d55d4946f8e5ceba58311605fe9ad69f84ad2c8a13c4186079"
+        "sha256": "695be854c4a724c502e5fc638a220692d050ed96fbde613f56da41cf6a338707"
       },
-      "build_input_sha256": "ebffa726e4798ceb5e3e19cfb2318bdf6e7f99a87d0181f8a3e53f84a49883cf",
+      "build_input_sha256": "58e98d6a8fec809ca69ad6ecd3ea82c63bdfce53bc593c638d9e3f9bbd1ff118",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -58740,9 +58788,9 @@
     },
     "allanime": {
       "id": "allanime",
-      "published_filename": "providers/allanime--nuvio--3976ebf90257f005.js",
-      "sha256": "3976ebf90257f0054157a044cdac65a29038a7b73adb9fe23c00e15dfab67753",
-      "patched_sha256": "3976ebf90257f0054157a044cdac65a29038a7b73adb9fe23c00e15dfab67753",
+      "published_filename": "providers/allanime--nuvio--6aedd895b4751172.js",
+      "sha256": "6aedd895b47511721fbc2f521dcc66127a8e4538fdb72bf370dd75d05c15f653",
+      "patched_sha256": "6aedd895b47511721fbc2f521dcc66127a8e4538fdb72bf370dd75d05c15f653",
       "upstream_sha256": "7b6ee4d5c6b6dbc35b10d98003324126c313ce7e33d90e28fd378545590aee40",
       "local_patches": [
         {
@@ -59160,9 +59208,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "3976ebf90257f0054157a044cdac65a29038a7b73adb9fe23c00e15dfab67753"
+        "sha256": "6aedd895b47511721fbc2f521dcc66127a8e4538fdb72bf370dd75d05c15f653"
       },
-      "build_input_sha256": "c3f309e0d94556ace588ef2fecf24f03f6f421c73b28aeffaf712547f7e9ebba",
+      "build_input_sha256": "019440dffa9de89690ad581c73b8f02b3058fa547e7552572cbac410f605fbae",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -59860,9 +59908,9 @@
     },
     "moviebox": {
       "id": "moviebox",
-      "published_filename": "providers/moviebox--nuvio--b94bb278f7b7c7cc.js",
-      "sha256": "b94bb278f7b7c7cc81f5b325a7bfb9ca75dbd95f4f89839d89d871ddd294c09e",
-      "patched_sha256": "b94bb278f7b7c7cc81f5b325a7bfb9ca75dbd95f4f89839d89d871ddd294c09e",
+      "published_filename": "providers/moviebox--nuvio--f245fd98c9a7e124.js",
+      "sha256": "f245fd98c9a7e124f56c4a49ed88b8d0a4bec929a72b46842af9993f84e2f309",
+      "patched_sha256": "f245fd98c9a7e124f56c4a49ed88b8d0a4bec929a72b46842af9993f84e2f309",
       "upstream_sha256": "f19ec5a037e53220e1457e6db0cb9abee1d2f9f299c594dddefb14df7822c847",
       "local_patches": [
         {
@@ -60385,9 +60433,9 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "b94bb278f7b7c7cc81f5b325a7bfb9ca75dbd95f4f89839d89d871ddd294c09e"
+        "sha256": "f245fd98c9a7e124f56c4a49ed88b8d0a4bec929a72b46842af9993f84e2f309"
       },
-      "build_input_sha256": "2c9812fd17efa034bd13eb13523d97fb7f922f2a7a1afc8a183d9ae94a0d9332",
+      "build_input_sha256": "431d64f4361af229a0fc2275a5a08eda05012596794bb0e152359f4f8a53447e",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -62047,8 +62095,8 @@
   },
   "provider_publication_contract": {
     "schema_version": 2,
-    "sha256": "1e0d849bde9318c73a06e830472944e1cb6e5eed233487e4bec98025d3188516",
-    "provider_count": 96,
+    "sha256": "37eab0c767d4998cb569ac19aa31f0b1208d42b5fe40a036ff5d6a9bbd31f1e2",
+    "provider_count": 46,
     "mode": "provider_base_plus_deterministic_core"
   }
 }
