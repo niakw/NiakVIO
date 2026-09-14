@@ -77,7 +77,9 @@ for required in (
 assert '"publicationAllowed": False' in pipeline
 assert '"mainWritesAllowed": False' in pipeline
 
-for required in ("materialize_provider_v3_all.py","verify_provider_v3_reverse_rebuild.py","96"):
+# Manual reconstruction is scoped to the exact current Hub46 publication.
+# Historical provider-old/ identities remain archival inputs, never current output.
+for required in ("materialize_provider_v3_all.py","verify_provider_v3_reverse_rebuild.py","46"):
     assert required in manual
 assert "Refuse direct main mutation" in manual
 assert "NUVIO_PROVIDER_V3_CONTEXT: workspace" in manual
@@ -113,7 +115,7 @@ assert '"core_mutation": False' in transaction
 
 # Non-regression owns the exact four-version ledger plus the rolling accepted
 # quick-yield publication floor. Repair is allowed to propose/correct only if its
-# non-Learn candidate subsequently satisfies the exact same 96-provider floor.
+# non-Learn candidate subsequently satisfies the exact same current Hub46 floor.
 assert nonreg.startswith("name: Provider Non-Regression Gate")
 for required in (
     "build_provider_history_matrix_v3.py",
@@ -126,6 +128,6 @@ for required in (
 ):
     assert required in nonreg, f"non-regression ownership missing: {required}"
 assert "pull_request:" in nonreg
-assert "--all" in nonreg, "workbench/global verification must exercise the complete 96-provider portfolio"
+assert "--all" in nonreg, "workbench/global verification must exercise the complete current Hub46 publication"
 
-print("provider v3 workflow ownership contract passed: CORE verify-only + Brain evidence + one Repair engine + atomic Domain Refresh publication + four-version non-regression gate")
+print("provider v3 workflow ownership contract passed: CORE verify-only + Brain evidence + one Repair engine + atomic Domain Refresh publication + current-Hub46 four-version non-regression gate")
