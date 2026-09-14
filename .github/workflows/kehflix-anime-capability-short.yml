@@ -1,0 +1,60 @@
+name: SHORT - Kehflix Anime Capability
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/kehflix-anime-capability-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-kehflix-anime-capability
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Apply candidate terminal DATA and rematerialize
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_kehflix_terminal_domain_v1.py
+          python3 scripts/reapply_published_overrides.py --primary manifest.json
+      - name: Probe eight current anime fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 - <<'PY'
+          import json,pathlib,sys
+          root=pathlib.Path('.').resolve();sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as p
+          import run_provider_upstream_parity_v3 as v3
+          from rotating_corpus import select_fixtures,default_seed
+          local=p.local_catalog(); row=local['kehflix']
+          fixtures=select_fixtures('anime',count=8,seed=default_seed(),provider='kehflix')
+          positives=[]; results=[]
+          for fx in fixtures:
+              r=v3._run_verified(row['path'],v3.fixture_payload(fx,'anime',upstream=False),25)
+              item={'fixture':fx['slug'],'streams':int(r.get('stream_count') or 0),'candidates':int(r.get('candidate_stream_count') or 0),'terminal':bool(r.get('terminal_verified')),'statuses':r.get('http_statuses') or [],'timeout':bool(r.get('timeout')),'error':r.get('error_class')}
+              results.append(item)
+              print('KEHFLIX_ANIME_SAMPLE '+json.dumps(item,sort_keys=True))
+              if item['streams']>0 and item['terminal']:
+                  positives.append(item);break
+          print('KEHFLIX_ANIME_SUMMARY '+json.dumps({'tested':len(results),'positiveCount':len(positives),'positiveFixture':positives[0]['fixture'] if positives else None},sort_keys=True))
+          PY
