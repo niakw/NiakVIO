@@ -15,11 +15,13 @@ spec.loader.exec_module(module)
 data = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 changed = module.apply_document(data)
 module.validate_document(data)
-for pid, cfg in module.TARGETS.items():
+for pid, target in module.TARGETS.items():
     row = data["provider_patches"][pid]
-    assert module.LEGO in row["provider_lego_scripts"]
-    assert row["provider_lego_options"][module.LEGO]["base"] == cfg["base"]
-    assert row["provider_lego_options"][module.LEGO]["provider"] == pid
-    assert row["proof_search_bases"] == [cfg["base"]]
+    lego = target["lego"]
+    assert module.GENERIC_LEGO not in row["provider_lego_scripts"]
+    assert lego in row["provider_lego_scripts"]
+    assert row["provider_lego_options"][lego]["base"] == target["base"]
+    assert row["provider_lego_options"][lego]["provider"] == pid
+    assert row["proof_search_bases"] == [target["base"]]
 assert isinstance(changed, bool)
-print("shared DLE anime registration test passed: french-manga + voiranime-homes")
+print("provider-owned DLE facade registration test passed: french-manga + voiranime-homes")
