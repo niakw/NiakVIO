@@ -8,7 +8,9 @@ route exists.
 
 The public function name is retained because release-integrity validation imports it.
 Legacy proof-v5 disable records are now explicitly rejected rather than granted a
-special disablement exception.
+special disablement exception. The legacy activation validator still carries the old
+96-provider catalogue floor; this Hub46 adapter supersedes only that stale cardinality
+error, and only after independently proving the current catalogue is exactly 46 rows.
 """
 from __future__ import annotations
 
@@ -22,6 +24,8 @@ LEGACY_ROUTE_PROOF_DISABLE_ACTION = "published-disabled-no-proven-route"
 ROUTE_PROOF_DISABLE_ACTION = LEGACY_ROUTE_PROOF_DISABLE_ACTION
 ROUTE_PROOF_FAILED_GATE = "route_proof_no_proven_route"
 ROUTE_PROOF_AUTHORITY = "provider-route-recovery-v5"
+CURRENT_PROVIDER_COUNT = 46
+LEGACY_CATALOGUE_COUNT_ERROR = "canonical catalogue must contain 96 providers"
 
 
 def conclusive_disablement_with_route_proof(
@@ -48,13 +52,25 @@ def validate() -> list[str]:
 
     legacy.conclusive_disablement = wrapped
     try:
-        return core_rehash.validate()
+        errors = list(core_rehash.validate())
     finally:
         legacy.conclusive_disablement = original
+
+    main_count = len(legacy.rows(legacy.load(legacy.MAIN)))
+    if main_count == CURRENT_PROVIDER_COUNT:
+        errors = [
+            error for error in errors
+            if not str(error).startswith(LEGACY_CATALOGUE_COUNT_ERROR)
+        ]
+    else:
+        errors.append(
+            f"canonical Hub46 catalogue must contain exactly {CURRENT_PROVIDER_COUNT} providers, got {main_count}"
+        )
+    return errors
 
 
 if __name__ == "__main__":
     errors = validate()
     if errors:
         raise SystemExit("provider activation preservation failed:\n- " + "\n- ".join(errors))
-    print("provider activation preservation passed (route proof diagnostic-only)")
+    print("provider activation preservation passed (route proof diagnostic-only; Hub46 exact cardinality)")
