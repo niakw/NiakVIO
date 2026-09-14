@@ -17,6 +17,8 @@ SOURCE_PATHS = (
     ROOT / "scripts/provider_patches/papadustream_site_runtime_v1.py",
     ROOT / "scripts/provider_patches/voiranime_homes_runtime_v1.py",
     ROOT / "scripts/provider_patches/vostfree_dle_uqload_runtime_v1.py",
+    ROOT / "scripts/provider_patches/animesamaco_site_runtime_v1.py",
+    ROOT / "scripts/provider_patches/voiranime_anime_runtime_v2.py",
 )
 
 BAD_PATTERNS = (
@@ -63,6 +65,8 @@ def main() -> int:
     alias_source = SOURCE_PATHS[1].read_text(encoding="utf-8")
     allmovieland_source = SOURCE_PATHS[2].read_text(encoding="utf-8")
     anikoto_source = SOURCE_PATHS[3].read_text(encoding="utf-8")
+    animesamaco_source = SOURCE_PATHS[7].read_text(encoding="utf-8")
+    voiranime_source = SOURCE_PATHS[8].read_text(encoding="utf-8")
     if "function _htmlVisibleText(value)" not in base_source:
         failures.append("provider_base_store.py: missing deterministic HTML text scanner")
     if "function plainHtml(v)" not in alias_source:
@@ -71,6 +75,10 @@ def main() -> int:
         failures.append("allmovieland_runtime_v1.py: missing deterministic HTML text scanner")
     if 'function text(v){var src=String(v==null?"":v)' not in anikoto_source:
         failures.append("anikototv_runtime_v1.py: missing deterministic HTML text scanner")
+    if 'function visible(v){var src=String(v==null?"":v)' not in animesamaco_source:
+        failures.append("animesamaco_site_runtime_v1.py: missing deterministic HTML text scanner")
+    if 'function stripTags(v){var src=String(v==null?"":v)' not in voiranime_source:
+        failures.append("voiranime_anime_runtime_v2.py: missing deterministic HTML text scanner")
 
     checked = 0
     if args.published:
