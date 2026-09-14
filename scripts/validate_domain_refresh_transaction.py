@@ -1,150 +1,122 @@
 #!/usr/bin/env python3
-"""Fail-closed guard for the scheduled Provider domain refresh transaction.
-
-The daily Domain Refresh is allowed to publish address changes only when the
-change is explicitly supported by the current authoritative hub/channel/redirect
-observation. Ambiguous or unresolved discovery must preserve the published state.
-
-This guard intentionally runs *after* discovery/mutation in the ephemeral Actions
-workspace and *before* any commit. A failure therefore discards the candidate
-transaction without changing main.
-"""
 from __future__ import annotations
 
 import argparse
 import json
 import re
-import urllib.parse
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
-AUTHORITY_TYPES = {"hub", "telegram_public", "redirect"}
-FRESH_LABEL_TOKENS = (
-    "new", "nouveau", "nouvelle", "current", "actuel", "actuelle",
-    "latest", "dernier", "derniere", "officiel", "officielle", "official",
-    # Current authoritative hubs often describe the canonical target without
-    # date wording. These labels are explicit enough to prove a historical
-    # hostname has become current again, while generic labels such as "Visit"
-    # remain rejected by the rollback guard.
-    "principal", "principale", "primary", "recommended", "recommande",
-    "recommandé", "homepage", "accueil", "prioritaire", "preferred",
-)
-PLACEHOLDER_TOKENS = ("${", "{{", "}}", "<%", "%>", "{", "}")
+ROOT = Path(__file__).resolve().parents[1]
+AUTHORITY_TYPES = {"hub", "curated_direct", "source_redirect", "provider_config", "live_current"}
+PLACEHOLDER_TOKENS = ("${", "{{", "}}", "function(", "=>", "`", "<%", "%>")
 
 
-def load(path: str | Path) -> dict[str, Any]:
-    value = json.loads(Path(path).read_text(encoding="utf-8"))
-    if not isinstance(value, dict):
-        raise AssertionError(f"{path}: JSON object required")
-    return value
+def load(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def canonical(value: object) -> str:
-    return re.sub(r"[^a-z0-9.-]+", "-", str(value or "").casefold()).strip(".-")
-
-
-def host(value: object) -> str:
-    raw = str(value or "").strip()
-    if not raw:
-        return ""
-    if "://" not in raw:
-        raw = "https://" + raw
-    return (urllib.parse.urlparse(raw).hostname or "").casefold().strip(".")
+    return str(value or "").strip().casefold().replace("_", "-")
 
 
 def concrete_http(value: object) -> bool:
     raw = str(value or "").strip()
-    if not raw or any(token in raw for token in PLACEHOLDER_TOKENS):
+    if not raw.startswith(("http://", "https://")):
         return False
-    parsed = urllib.parse.urlparse(raw)
-    if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+    if any(token in raw for token in PLACEHOLDER_TOKENS):
         return False
-    hostname = parsed.hostname.casefold()
-    return not any(token in hostname for token in ("$", "{", "}"))
+    try:
+        parsed = urlparse(raw)
+    except ValueError:
+        return False
+    return bool(parsed.scheme in {"http", "https"} and parsed.hostname)
 
 
-def provider_rows(document: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    raw = document.get("providers") or {}
-    if isinstance(raw, dict):
-        return {
-            canonical(key): row
-            for key, row in raw.items()
-            if canonical(key) and isinstance(row, dict)
-        }
-    if isinstance(raw, list):
-        return {
-            canonical(row.get("id")): row
-            for row in raw
-            if isinstance(row, dict) and canonical(row.get("id"))
-        }
-    raise AssertionError("provider-hubs.json providers must be object or array")
+def provider_patches(document: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    rows = document.get("provider_patches") or {}
+    return {canonical(key): value for key, value in rows.items() if canonical(key) and isinstance(value, dict)}
 
 
-def patch_rows(document: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    raw = document.get("provider_patches") or {}
-    if not isinstance(raw, dict):
-        raise AssertionError("provider-overrides.json provider_patches must be object")
-    return {
-        canonical(key): row
-        for key, row in raw.items()
-        if canonical(key) and isinstance(row, dict)
-    }
+def registry_rows(document: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    rows = document.get("providers") or document
+    return {canonical(key): value for key, value in rows.items() if canonical(key) and isinstance(value, dict)}
 
 
 def history_rows(document: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    raw = document.get("providers") or {}
-    if not isinstance(raw, dict):
-        return {}
-    return {
-        canonical(key): row
-        for key, row in raw.items()
-        if canonical(key) and isinstance(row, dict)
-    }
+    rows = document.get("providers") or document
+    return {canonical(key): value for key, value in rows.items() if canonical(key) and isinstance(value, dict)}
 
 
-def historical_previous_urls(row: dict[str, Any]) -> set[str]:
-    output: set[str] = set()
-    for prior in row.get("previous") or []:
-        if isinstance(prior, dict):
-            value = str(prior.get("url") or "").rstrip("/").casefold()
-            if value:
-                output.add(value)
+def history_urls(row: dict[str, Any]) -> list[str]:
+    output: list[str] = []
+    current = row.get("current")
+    if isinstance(current, dict):
+        url = str(current.get("url") or "").strip().rstrip("/")
+        if url:
+            output.append(url)
+    for item in row.get("previous") or []:
+        if isinstance(item, dict):
+            url = str(item.get("url") or "").strip().rstrip("/")
+        else:
+            url = str(item or "").strip().rstrip("/")
+        if url and url not in output:
+            output.append(url)
     return output
 
 
+def historical_previous_urls(row: dict[str, Any]) -> set[str]:
+    current = row.get("current")
+    current_url = str((current or {}).get("url") or "").strip().rstrip("/").casefold() if isinstance(current, dict) else ""
+    return {url.casefold() for url in history_urls(row) if url.casefold() != current_url}
+
+
 def selected_candidate(item: dict[str, Any], terminal: str) -> dict[str, Any]:
-    normalized = terminal.rstrip("/").casefold()
+    normalized = str(terminal or "").strip().rstrip("/").casefold()
     for row in item.get("site_candidates") or []:
-        if isinstance(row, dict) and str(row.get("url") or "").rstrip("/").casefold() == normalized:
+        if not isinstance(row, dict):
+            continue
+        if str(row.get("url") or "").strip().rstrip("/").casefold() == normalized:
             return row
     return {}
 
 
 def has_fresh_rollback_evidence(item: dict[str, Any], terminal: str) -> bool:
-    source_type = str(item.get("selected_source_type") or "").casefold()
     candidate = selected_candidate(item, terminal)
-    if source_type in {"redirect", "telegram_public"}:
-        return True
-    if bool(candidate.get("source_redirect")):
-        return True
     label = str(candidate.get("label") or "").casefold()
-    return any(token in label for token in FRESH_LABEL_TOKENS)
+    source_type = str(candidate.get("source_type") or item.get("selected_source_type") or "").casefold()
+    if source_type not in {"hub", "source_redirect"}:
+        return False
+    positive = (
+        "nouvelle adresse",
+        "new address",
+        "adresse officielle",
+        "official address",
+        "nouveau domaine",
+        "new domain",
+        "homepage",
+        "accueil",
+        "principal",
+        "primary",
+    )
+    return any(token in label for token in positive)
 
 
 def validate(
-    before_overrides: dict[str, Any],
-    after_overrides: dict[str, Any],
-    before_hubs: dict[str, Any],
-    after_hubs: dict[str, Any],
-    before_history: dict[str, Any],
+    before_overrides_doc: dict[str, Any],
+    after_overrides_doc: dict[str, Any],
+    before_hubs_doc: dict[str, Any],
+    after_hubs_doc: dict[str, Any],
+    before_history_doc: dict[str, Any],
     report: dict[str, Any],
     changes: dict[str, Any],
 ) -> dict[str, Any]:
-    before_patches = patch_rows(before_overrides)
-    after_patches = patch_rows(after_overrides)
-    before_registry = provider_rows(before_hubs)
-    after_registry = provider_rows(after_hubs)
-    previous_history = history_rows(before_history)
+    before_patches = provider_patches(before_overrides_doc)
+    after_patches = provider_patches(after_overrides_doc)
+    before_registry = registry_rows(before_hubs_doc)
+    after_registry = registry_rows(after_hubs_doc)
+    previous_history = history_rows(before_history_doc)
     report_rows = {
         canonical(key): row
         for key, row in (report.get("providers") or {}).items()
@@ -210,19 +182,22 @@ def validate(
             f"domain change accounting mismatch actual={sorted(changed_actual)} declared={sorted(declared)}"
         )
 
-    # Existing registry rows may change metadata, but a provider with an official
-    # site mutation must be listed in registry_changed or already match exactly.
+    # A current provider mutation is reconciled when the registry terminal equals
+    # the final provider terminal. The registry may already have that exact value,
+    # in which case registry_changed is intentionally a no-op rather than an error.
     registry_changed = {canonical(value) for value in changes.get("registry_changed") or [] if canonical(value)}
     for provider_id in changed_actual:
         if provider_id not in after_registry:
             raise AssertionError(f"{provider_id}: changed provider missing from registry")
-        if provider_id not in registry_changed and after_registry.get(provider_id) == before_registry.get(provider_id):
+        after_site = str((after_patches.get(provider_id) or {}).get("official_site") or "").rstrip("/")
+        registry_direct = str((after_registry.get(provider_id) or {}).get("direct") or "").rstrip("/")
+        if registry_direct != after_site:
             raise AssertionError(f"{provider_id}: official_site changed without registry reconciliation")
 
     return {
         "changed": sorted(changed_actual),
         "registry_changed": sorted(registry_changed),
-        "idempotent": not changed_actual and before_hubs == after_hubs,
+        "idempotent": not changed_actual and before_hubs_doc == after_hubs_doc,
     }
 
 
@@ -238,19 +213,15 @@ def main() -> int:
     args = parser.parse_args()
 
     result = validate(
-        load(args.before_overrides),
-        load(args.after_overrides),
-        load(args.before_hubs),
-        load(args.after_hubs),
-        load(args.before_history),
-        load(args.report),
-        load(args.changes),
+        load(Path(args.before_overrides)),
+        load(Path(args.after_overrides)),
+        load(Path(args.before_hubs)),
+        load(Path(args.after_hubs)),
+        load(Path(args.before_history)),
+        load(Path(args.report)),
+        load(Path(args.changes)),
     )
-    print(
-        "FIELD_DOMAIN_REFRESH_GUARD "
-        f"changed={len(result['changed'])} registry={len(result['registry_changed'])} "
-        f"idempotent={'true' if result['idempotent'] else 'false'}"
-    )
+    print("FIELD_DOMAIN_REFRESH_GUARD " + json.dumps(result, sort_keys=True))
     return 0
 
 
