@@ -1,0 +1,71 @@
+name: DIAG - PersianStremio TV Route Trace
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/persianstremio-tv-route-trace-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Trace exact upstream and Niak routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, pathlib, subprocess, urllib.request
+          root=pathlib.Path('.').resolve()
+          upstream=root/'.diag-persianstremio-upstream.js'
+          urllib.request.urlretrieve('https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/main/providers/persianstremio.js', upstream)
+          manifest=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
+          row=next(x for x in manifest.get('scrapers',[]) if str(x.get('id','')).lower()=='persianstremio')
+          published=root/row['filename']
+          fixture={
+            'slug':'shgun-2024-s01e01','tmdbId':'126308','mediaType':'tv','title':'Shōgun','year':2024,'season':1,'episode':1
+          }
+          context={
+            'fixtureMetadata':fixture,
+            'tmdbApiKey':os.environ.get('TMDB_API_KEY',''),
+            'tmdbAccessToken':os.environ.get('TMDB_ACCESS_TOKEN',''),
+            'locale':'en-US','languages':['en-US','en'],'platform':'android',
+            'userAgent':'Mozilla/5.0 (Linux; Android 14; Nuvio) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36',
+            'maxSettingsProfiles':1,
+            'networkLimits':{'maxFetches':30,'maxResponseBytes':5242880,'maxTotalResponseBytes':20971520,'maxDistinctHosts':20,'maxRedirects':5},
+          }
+          def run(label,path):
+            p=subprocess.run(['node',str(root/'scripts/provider_worker.cjs'),str(path),json.dumps(fixture,separators=(',',':')),json.dumps(context,separators=(',',':'))],text=True,capture_output=True,timeout=55)
+            result=None
+            for line in p.stdout.splitlines():
+              if line.startswith('NUVIO_HEALTH_RESULT='):
+                result=json.loads(line.split('=',1)[1])
+            if not isinstance(result,dict):
+              print('TRACE',label,'NO_RESULT','exit',p.returncode)
+              return
+            err=result.get('error_details') if isinstance(result.get('error_details'),dict) else {}
+            print('TRACE',label,'streams='+str(result.get('stream_count',0)),'error='+str(err.get('code') or 'none'))
+            for obs in result.get('network_observations') or []:
+              if not isinstance(obs,dict) or obs.get('infrastructure'): continue
+              print('ROUTE',label,str(obs.get('stage')),str(obs.get('host')),str(obs.get('method')),str(obs.get('path_pattern')),str(obs.get('status')),str(obs.get('ok')),str(obs.get('error_code') or ''))
+          run('upstream',upstream)
+          run('niak',published)
+          PY
