@@ -92,8 +92,12 @@ assert 'for compatible in ("tv", "movie"):' not in materializer
 assert 'wanted = ["anime", "tv", "movie"]' not in materializer
 
 enforcer = (ROOT / "scripts/enforce_provider_v3_semantic_transport_contract_v5.py").read_text(encoding="utf-8")
-assert 'if "anime" in canonical and "tv" not in wanted:' in enforcer
-assert 'wanted.append("series")' not in enforcer
+assert 'def anime_transport(canonical: list[str]) -> list[str]:' in enforcer
+anime_transport_body = enforcer.split('def anime_transport(canonical: list[str]) -> list[str]:', 1)[1].split('\ndef catalog_semantic_types()', 1)[0]
+assert 'if "anime" in canonical and "tv" not in wanted:' in anime_transport_body
+assert 'wanted.append("tv")' in anime_transport_body
+assert 'wanted.append("series")' not in anime_transport_body
+assert '"series"' not in anime_transport_body
 assert 'expected=46' in enforcer
 
 reapply = (ROOT / "scripts/reapply_published_overrides.py").read_text(encoding="utf-8")
