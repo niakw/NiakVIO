@@ -85,7 +85,7 @@ assert source["published_provider_js_is_reconstruction_seed"] is False
 media = machine["media_types"]
 assert media["semantic_field"] == "canonicalSupportedTypes"
 assert media["transport_field"] == "supportedTypes"
-assert media["anime_only_transport_compatibility"] == ["anime", "tv", "series"]
+assert media["anime_only_transport_compatibility"] == ["anime", "tv"]
 assert media["transport_aliases_do_not_expand_semantic_capability"] is True
 assert media["capability_gate_before_provider_network"] is True
 
@@ -146,12 +146,12 @@ assert lab["external_build_dependency_packaging_repairs_allowed"] is False
 assert lab["test_plumbing_must_not_change_official_runtime_behavior"] is True
 
 # Validate the dynamic matrix source against the current manifest instead of
-# freezing yesterday's route totals into docs/machine policy. Canonical media
-# semantics are movie/tv/anime; `series` is a Nuvio transport alias only.
+# freezing yesterday's route totals into docs/machine policy. Current transport
+# is semantic movie/tv/anime plus the single anime -> tv episodic launch alias.
 rows = manifest.get("scrapers") or []
 assert len(rows) == CURRENT_PROVIDER_COUNT
 canonical_valid = {"movie", "tv", "anime"}
-transport_valid = canonical_valid | {"series"}
+transport_valid = canonical_valid
 for row in rows:
     provider = str(row.get("id") or "<unknown>")
     transport = {str(v).strip().lower() for v in (row.get("supportedTypes") or []) if str(v).strip()}
@@ -159,10 +159,9 @@ for row in rows:
     assert transport and canonical, provider
     assert transport <= transport_valid, (provider, transport)
     assert canonical <= canonical_valid, (provider, canonical)
-    assert "series" not in canonical, (provider, canonical)
     assert canonical <= transport, (provider, canonical, transport)
-    if "anime" in canonical or "tv" in canonical:
-        assert {"tv", "series"} <= transport, (provider, canonical, transport)
+    if "anime" in canonical:
+        assert "tv" in transport, (provider, canonical, transport)
     assert ("movie" in transport) == ("movie" in canonical), (provider, canonical, transport)
 
 # Historical providers are retained as archive input/evidence, never projected
