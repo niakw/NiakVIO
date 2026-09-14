@@ -17,8 +17,11 @@ spec.loader.exec_module(mod)
 
 BASE = '"use strict";\nmodule.exports={getStreams:async()=>[]};\n'
 PATCHED = mod.apply(BASE)
-assert "anilist-kurage-trpc-v2-season-aware" in PATCHED
-assert "seasonAwareIdentity" in PATCHED
+# Managed-fix metadata is encoded in FIXDATA; assert executable season-aware
+# bytes instead of searching plaintext metadata labels inside the generated JS.
+assert "NIAKVIO_KURAGE_RUNTIME_V1" in PATCHED
+assert "function advanceSeason" in PATCHED
+assert "anilistId:Number(ani.id)" in PATCHED
 
 NODE = r'''
 const scenario=process.argv[3];
