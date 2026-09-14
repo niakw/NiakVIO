@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import domain_refresh_priority_wrapper as wrapper
 from domain_refresh_priority_wrapper import prioritize_authoritative_item
 
 
@@ -20,6 +21,32 @@ def row(url: str, label: str, score: int, index: int) -> dict:
         "source": "https://hub.example/",
     }
 
+
+# Current scope regression: embedded legacy address rows must not create refresh
+# work. The wrapper must call merge_hub_registry without official_domain_hubs so
+# provider-hubs.json remains the only current provider membership authority.
+seen_config: dict = {}
+original_merge = wrapper.transaction.resolver.merge_hub_registry
+
+
+def fake_merge(config: dict) -> dict:
+    seen_config.clear()
+    seen_config.update(config)
+    return {"anime-sama": {"sources": [{"type": "hub", "url": "https://hub.example"}]}}
+
+try:
+    wrapper.transaction.resolver.merge_hub_registry = fake_merge
+    current = wrapper.current_registry_hub_configs({
+        "official_domain_hubs": {
+            "frenchstream": {"hub": "https://fstream.org/"},
+        },
+        "provider_patches": {"anime-sama": {}, "frenchstream": {}},
+    })
+finally:
+    wrapper.transaction.resolver.merge_hub_registry = original_merge
+
+assert "official_domain_hubs" not in seen_config, seen_config
+assert set(current) == {"anime-sama"}, current
 
 # Equal trust score: explicit principal/recommended must beat backup/mirror even
 # when lexical URL ordering would otherwise put the backup first.
@@ -80,4 +107,4 @@ item = {
 result = prioritize_authoritative_item(item)
 assert result["official_site"] == "https://z.example", result
 
-print("domain refresh semantic priority tests passed")
+print("domain refresh current-registry scope and semantic priority tests passed")
