@@ -1,15 +1,15 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-14T15:03:55.401991+00:00",
+  "generated_at": "2026-09-14T20:20:40.300824+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 46,
   "status_counts": {
-    "healthy": 2,
+    "healthy": 1,
     "reachable": 0,
     "blocked": 0,
     "degraded": 1,
     "no_streams": 26,
-    "provider_unreachable": 15,
+    "provider_unreachable": 16,
     "runtime_error": 0,
     "unavailable": 2,
     "excluded": 0
@@ -537,18 +537,14 @@
     },
     {
       "id": "hindmoviez",
-      "status": "healthy",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
-      "hosts": [
-        "abc.croiceloikace-6966.workers.dev"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "share.kujeucoixeti-6043.workers.dev": {
           "last_checked_at": "2026-09-14T15:03:55.401991+00:00",
@@ -2601,7 +2597,7 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
         "moonfirekeeper.lol"
       ],
@@ -2610,7 +2606,7 @@
       ],
       "host_health": {
         "cdn1.ngcorp.dad": {
-          "last_checked_at": "2026-09-14T15:03:55.401991+00:00",
+          "last_checked_at": "2026-09-14T20:20:40.300824+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2621,7 +2617,7 @@
           "consecutive_blocked": 0
         },
         "dreadnought.flamingo-e55.workers.dev": {
-          "last_checked_at": "2026-09-14T15:03:55.401991+00:00",
+          "last_checked_at": "2026-09-14T20:20:40.300824+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2632,14 +2628,14 @@
           "consecutive_blocked": 0
         },
         "moonfirekeeper.lol": {
-          "last_checked_at": "2026-09-14T15:03:55.401991+00:00",
+          "last_checked_at": "2026-09-14T20:20:40.300824+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 206,
-          "latency_ms": 1445,
+          "latency_ms": 532,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
+          "consecutive_successes": 3,
           "consecutive_blocked": 0
         }
       },
