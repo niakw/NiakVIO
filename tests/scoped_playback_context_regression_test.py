@@ -28,7 +28,7 @@ def safety_then_hls(source, provider_id, options=None):
     return safety_apply(source, options=opts, context={"provider_id":provider_id})
 
 ordinary = safety_then_hls(base, "ordinary")
-assert '"implementationRevision":"field-safety-v7-stream-scoped-p2p-vod-duration"' in ordinary
+assert '"implementationRevision":"field-safety-v9-correlated-player-fallback"' in ordinary
 assert "c.strictPlayback||tv" in ordinary
 assert "c.strictPlayback||c.failClosedUnknown" not in ordinary
 assert '"defaultUserAgent"' not in ordinary
