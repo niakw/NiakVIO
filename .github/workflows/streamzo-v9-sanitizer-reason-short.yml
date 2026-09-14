@@ -23,23 +23,25 @@ jobs:
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with: {ref: '${{ github.sha }}'}
+        with:
+          ref: ${{ github.sha }}
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with: {python-version: '3.12'}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: '24', package-manager-cache: false}
-      - name: Measure no-sanitizer media proof
+      - name: Measure no-sanitizer HLS shape
         shell: bash
         run: |
           set -euo pipefail
           test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
           python3 scripts/upgrade_stream_sanitizer_v9_selection.py
           python3 - <<'PY'
-          import json,pathlib,subprocess,sys,tempfile
-          root=pathlib.Path('.').resolve();sys.path.insert(0,str(root/'scripts'))
+          import json, pathlib, re, subprocess, sys, tempfile, urllib.request, urllib.parse
+          root=pathlib.Path('.').resolve(); sys.path.insert(0,str(root/'scripts'))
           from apply_provider_overrides import apply_overrides
           from provider_patch_blocks import strip_managed_fix
           import run_provider_upstream_parity as parity
+
           manifest=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
           row=next(r for r in manifest.get('scrapers',[]) if str(r.get('id','')).casefold()=='streamzo')
           patched,_=apply_overrides('streamzo',(root/row['filename']).read_bytes(),include_global_core=True)
@@ -47,27 +49,47 @@ jobs:
           fixture={'tmdbId':'60059','mediaType':'tv','title':'Better Call Saul','year':2015,'season':1,'episode':1}
           ctx=parity.context_for(fixture)
           with tempfile.TemporaryDirectory() as td:
-            td=pathlib.Path(td)
-            provider=td/'streamzo-no-san.js';provider.write_text(no_san,encoding='utf-8')
+            provider=pathlib.Path(td)/'streamzo-no-san.js'; provider.write_text(no_san,encoding='utf-8')
             p=subprocess.run(['node',str(root/'scripts/provider_worker.cjs'),str(provider),json.dumps(fixture,separators=(',',':')),json.dumps(ctx,separators=(',',':'))],cwd=root,text=True,capture_output=True,timeout=35,check=False)
-            result=None
-            for channel in (p.stdout,p.stderr):
-              for line in channel.splitlines():
-                if line.startswith('NUVIO_HEALTH_RESULT='):
-                  try: result=json.loads(line.split('=',1)[1])
-                  except Exception: pass
-            if not isinstance(result,dict): raise SystemExit('NO_SAN_RESULT_MISSING')
-            streams=result.get('streams') or []
-            if not streams: raise SystemExit('NO_SAN_STREAM_MISSING')
-            stream=streams[0]
-            stream_file=td/'stream.json';stream_file.write_text(json.dumps(stream,separators=(',',':')),encoding='utf-8')
-            probe=td/'probe.cjs'
-            probe.write_text(r'''const fs=require('node:fs');
-const {guardedFetch}=require(process.cwd()+'/scripts/network_guard.cjs');
-const {probeDirectMedia}=require(process.cwd()+'/scripts/direct_media_probe.cjs');
-(async()=>{const stream=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));const r=await probeDirectMedia(stream,{guardedFetch,fetchImpl:globalThis.fetch,timeoutMs:18000,maxRedirects:5});const safe={playable:!!r.playable,inconclusive:!!r.inconclusive,kind:r.kind||null,status:r.status??null,hls_master:r.hls_master??null,hls_variant_playable:r.hls_variant_playable??null,hls_segment_playable:r.hls_segment_playable??null,hls_external_audio_count:r.hls_external_audio_count??null,hls_audio_playable:r.hls_audio_playable??null,media_duration_seconds:r.media_duration_seconds??null,media_duration_complete:r.media_duration_complete??null};console.log('STREAMZO_MEDIA_PROOF '+JSON.stringify(safe));})().catch(e=>{console.error('STREAMZO_MEDIA_PROOF_ERROR '+String(e&&e.name||'Error'));process.exit(2)});''',encoding='utf-8')
-            q=subprocess.run(['node',str(probe),str(stream_file)],cwd=root,text=True,capture_output=True,timeout=40,check=False)
-            print(q.stdout.strip())
-            if q.stderr.strip(): print(q.stderr.strip())
-            if q.returncode: raise SystemExit(q.returncode)
+          result=None
+          for channel in (p.stdout,p.stderr):
+            for line in channel.splitlines():
+              if line.startswith('NUVIO_HEALTH_RESULT='):
+                try: result=json.loads(line.split('=',1)[1])
+                except Exception: pass
+          if not isinstance(result,dict): raise SystemExit('NO_SAN_RESULT_MISSING')
+          streams=result.get('streams') or []
+          if not streams: raise SystemExit('NO_SAN_STREAM_MISSING')
+          stream=streams[0]; url=str(stream.get('url') or '').strip()
+          if not url.startswith(('http://','https://')): raise SystemExit('NO_HTTP_STREAM')
+          headers={str(k):str(v) for k,v in (stream.get('headers') or {}).items() if v is not None}
+          headers.setdefault('Accept','application/vnd.apple.mpegurl,application/x-mpegURL,*/*')
+          headers.setdefault('User-Agent','Mozilla/5.0')
+
+          def fetch_text(target):
+            req=urllib.request.Request(target,headers=headers,method='GET')
+            with urllib.request.urlopen(req,timeout=20) as r:
+              body=r.read(196608).decode('utf-8','replace').lstrip('\ufeffï»¿')
+              return body, r.geturl(), int(getattr(r,'status',200) or 200), str(r.headers.get('content-type') or '')
+
+          def shape(text):
+            lines=[x.strip() for x in text.splitlines()]
+            variants=[]; segments=[]; durations=[]
+            for i,line in enumerate(lines):
+              if re.match(r'^#EXT-X-STREAM-INF\s*:',line,re.I):
+                for nxt in lines[i+1:]:
+                  if not nxt or nxt.startswith('#'): continue
+                  variants.append(nxt); break
+              if re.match(r'^#EXTINF\s*:',line,re.I):
+                try: durations.append(float(line.split(':',1)[1].split(',',1)[0]))
+                except Exception: pass
+                if i+1<len(lines) and lines[i+1] and not lines[i+1].startswith('#'): segments.append(lines[i+1])
+            return {'header': bool(lines and lines[0]=='#EXTM3U'),'master':bool(variants),'variants':len(variants),'segments':len(segments),'duration_entries':len(durations),'duration_seconds':round(sum(durations),3) if durations else None,'endlist':any(re.match(r'^#EXT-X-ENDLIST\s*$',x,re.I) for x in lines),'bytes':len(text.encode('utf-8','replace'))}, variants
+
+          top,final,status,ctype=fetch_text(url); top_shape,variants=shape(top)
+          print('STREAMZO_HLS_TOP',json.dumps({'status':status,'content_type':ctype.split(';',1)[0],**top_shape},sort_keys=True))
+          if variants:
+            child_url=urllib.parse.urljoin(final,variants[0])
+            child,_,cstatus,cctype=fetch_text(child_url); child_shape,_=shape(child)
+            print('STREAMZO_HLS_CHILD',json.dumps({'status':cstatus,'content_type':cctype.split(';',1)[0],**child_shape},sort_keys=True))
           PY
