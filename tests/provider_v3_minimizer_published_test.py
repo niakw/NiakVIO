@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/provider_v3_minimizer.py"
+EXPECTED = 46
 
 spec = importlib.util.spec_from_file_location("provider_v3_minimizer_published", SCRIPT)
 module = importlib.util.module_from_spec(spec)
@@ -17,7 +18,8 @@ spec.loader.exec_module(module)
 
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 files = [ROOT / str(row["filename"]) for row in manifest.get("scrapers") or []]
-assert len(files) == 96
+assert len(files) == EXPECTED
+assert len({path.resolve() for path in files}) == EXPECTED
 
 non_fixed = []
 for path in files:
@@ -33,7 +35,7 @@ node_script = """
 const fs = require('fs');
 const vm = require('vm');
 const files = process.argv.slice(1);
-if (files.length !== 96) throw new Error('expected 96 files, got ' + files.length);
+if (files.length !== 46) throw new Error('expected 46 files, got ' + files.length);
 for (const file of files) {
   new vm.Script(fs.readFileSync(file, 'utf8'), {filename: file});
 }
@@ -48,7 +50,7 @@ proc = subprocess.run(
     check=False,
 )
 assert proc.returncode == 0, proc.stdout + proc.stderr
-assert "NODE_PUBLISHED_PARSE_OK files=96" in proc.stdout
+assert f"NODE_PUBLISHED_PARSE_OK files={EXPECTED}" in proc.stdout
 
 total = sum(path.stat().st_size for path in files)
-print(f"PROVIDER_V3_MINIMIZER_PUBLISHED_OK providers=96 total_bytes={total}")
+print(f"PROVIDER_V3_MINIMIZER_PUBLISHED_OK providers={EXPECTED} total_bytes={total}")
