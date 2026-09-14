@@ -26,8 +26,8 @@ for workflow in (TV, ANDROID):
     assert "NIAKVIO_SKIP_ANDROID_PREBUILD: \"1\"" in workflow
 
 assert "matrix:" not in TV
-assert "Execute movie TV anime in one TV boot" in TV
-assert "Execute movie TV anime in one Mobile Android boot" in ANDROID
+assert "Execute rotating movie TV anime in one TV boot" in TV
+assert "Execute rotating movie TV anime in one Mobile Android boot" in ANDROID
 
 for suite in (tv_suite, mobile_suite):
     # Reader/playback outcomes are observational evidence. The suite may fail
