@@ -82,9 +82,13 @@ jobs:
         if: always()
         run: python3 scripts/external_audit/build_index.py
 
-      - name: Classify and enforce maintained-source findings
+      - name: Classify maintained-source findings
         if: always()
         run: python3 scripts/external_audit/classify_findings.py --root "$OUT" --strict
+
+      - name: Require complete exact-SHA external snapshot
+        if: always()
+        run: python3 scripts/external_audit/validate_snapshot.py
 
       - name: Upload candidate audit evidence
         if: always()
