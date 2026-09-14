@@ -74,12 +74,33 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         assert required in tv_out, required
     assert tv_out.count("FIELD_NATIVE_PLAYER_ENTRY client=tv") == 1
     assert tv_out.count("FIELD_NATIVE_PLAYER_BEGIN client=tv") == 1
-    assert "providers.chunked(6)" in tv_out
+    assert "providers.chunked(1)" in tv_out
+    assert "providers.chunked(6)" not in tv_out
     assert "async(Dispatchers.IO)" in tv_out
     assert "providerJobs.awaitAll()" in tv_out
     assert "synchronized(niakvioPlayerProbeLock)" in tv_out
     assert "ExoPlayer.Builder" not in tv_out
     assert "PluginRuntime.executePlugin(" not in tv_out
+
+    # Adaptive catalogue fallback is provider-yield discovery, not a second
+    # production-player campaign. A hostile media URL must not abort traversal
+    # of the remaining clean-zero providers. The request-contract augmenter owns
+    # this runtime switch and must compile the probe loop to zero iterations.
+    adaptive_path = tmp / "TvAdaptive.kt"
+    adaptive_path.write_text(tv_source, encoding="utf-8")
+    previous_disable = os.environ.get("NIAKVIO_NATIVE_DISABLE_PLAYER_PROBES")
+    os.environ["NIAKVIO_NATIVE_DISABLE_PLAYER_PROBES"] = "1"
+    try:
+        contract.augment(adaptive_path, "tv", "sinners-2025", manifest)
+    finally:
+        if previous_disable is None:
+            os.environ.pop("NIAKVIO_NATIVE_DISABLE_PLAYER_PROBES", None)
+        else:
+            os.environ["NIAKVIO_NATIVE_DISABLE_PLAYER_PROBES"] = previous_disable
+    adaptive_out = adaptive_path.read_text(encoding="utf-8")
+    assert "rows.take(0).forEachIndexed" in adaptive_out
+    assert "providers.chunked(1)" in adaptive_out
+    assert "providers.chunked(6)" not in adaptive_out
 
     anime = corpus.fixture_by_slug("jujutsu-kaisen-s01e01")
     mobile_source = reader.augment_android_test(
@@ -112,7 +133,8 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         assert required in mobile_out, required
     assert mobile_out.count("FIELD_NATIVE_PLAYER_ENTRY client=mobile") == 1
     assert mobile_out.count("FIELD_NATIVE_PLAYER_BEGIN client=mobile") == 1
-    assert "providers.chunked(6)" in mobile_out
+    assert "providers.chunked(1)" in mobile_out
+    assert "providers.chunked(6)" not in mobile_out
     assert "async(Dispatchers.IO)" in mobile_out
     assert "providerJobs.awaitAll()" in mobile_out
     assert "synchronized(niakvioPlayerProbeLock)" in mobile_out
@@ -152,7 +174,8 @@ with tempfile.TemporaryDirectory() as tmp_raw:
             assert "NativePlayerController(" not in desktop_out
             assert "controller.attach(" not in desktop_out
             assert "rows.take(" not in desktop_out
-            assert "providers.chunked(6)" in desktop_out
+            assert "providers.chunked(1)" in desktop_out
+            assert "providers.chunked(6)" not in desktop_out
             assert "async(Dispatchers.IO)" in desktop_out
             assert "providerJobs.awaitAll()" in desktop_out
             assert "synchronized(desktopPlayerProbeLock)" in desktop_out
