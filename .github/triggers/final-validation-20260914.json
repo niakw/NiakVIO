@@ -1,7 +1,7 @@
 {
   "purpose": "final 5.21.44 validation on complete 46-current/50-historical contract",
   "branch": "fix/labs-5.21.44-20260912",
-  "cleanup_head": "6923cd44d76144e12d6ee10afa5509aefb43d41b",
+  "cleanup_head": "640353e9a3be17c9a09bf9853538ec47a325f569",
   "provider_contract": {
     "current": 46,
     "historical": 50,
@@ -10,6 +10,7 @@
     "anime_transport": "anime-only => anime+tv; no synthetic series; movie only when canonical",
     "provider_timeout_ms": 25000,
     "manual_reconstruction": "46/46 current only; historical knowledge retained but never materialized",
+    "domain_refresh_scope": "current manifest 46 only; historical hub/history rows immutable",
     "codeql_scope": "46 current providers/provider-bases plus source; provider-old excluded from current runtime scan",
     "external_audit": "candidate read-only export; no candidate audit writes to main"
   },
@@ -18,6 +19,7 @@
     "derived projections subset of current manifest",
     "historical assets retained without historical provider publication",
     "historical snapshots collapse to 50 unique provider identities",
+    "Domain Refresh mutates current manifest providers only",
     "25s provider timeout on Android and full iOS",
     "CodeQL has no empty fallback shard",
     "external audit forced on exact candidate without publishing to main",
