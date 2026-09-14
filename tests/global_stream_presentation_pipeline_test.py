@@ -90,9 +90,8 @@ global.fetch=async function(url){
       headers:{get:function(){return 'application/json';}},
       json:async()=>({
         id:157336,title:'Interstellar',release_date:'2014-11-05',runtime:169,
-        genres:[{id:18,name:'Drama'}],original_language:'en',
-        production_countries:[{iso_3166_1:'US'}],keywords:{keywords:[]},
-        release_dates:{results:[{iso_3166_1:'FR',release_dates:[{certification:'-12'}]}]}
+        genres:[{id:18,name:'Drama'}],original_language:'en',production_countries:[{iso_3166_1:'US'}],
+        keywords:{keywords:[]},release_dates:{results:[{iso_3166_1:'FR',release_dates:[{certification:'-12'}]}]}
       }),
       text:async()=>''
     };
@@ -101,7 +100,7 @@ global.fetch=async function(url){
     mediaCalls++;
     return {
       ok:true,status:200,url:url,
-      headers:{get:function(name){return String(name).toLowerCase()==='content-type'?'application/vnd.apple.mpegurl':null;}},
+      headers:{get:function(){return 'application/vnd.apple.mpegurl';}},
       text:async()=> '#EXTM3U\\n#EXT-X-TARGETDURATION:120\\n#EXTINF:120,\\nhttps://media.example/seg.ts\\n#EXT-X-ENDLIST'
     };
   }
@@ -126,7 +125,11 @@ p.getStreams('157336','movie',undefined,undefined).then(function(rows){
     assert completed.returncode == 0, completed.stdout + completed.stderr
     native = json.loads(completed.stdout.strip())
     assert native["tmdbCalls"] == 1, native
-    assert native["row"]["title"].endswith(" - 1080p"), native
+    # V22 exposes both proven quality and the detailed language in the client
+    # title. Quality therefore remains visible but is no longer necessarily the
+    # final suffix.
+    assert " - 1080p" in native["row"]["title"], native
+    assert native["row"]["title"].endswith(" - VO"), native
     assert native["row"]["name"] == native["row"]["title"], native
     assert native["row"]["duration"] == 169, native
     assert "Interstellar • 2014" in native["row"]["description"], native
