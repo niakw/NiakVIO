@@ -1,0 +1,66 @@
+name: SHORT - AnimeKai PlayIMDb Deep Media
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-two-upstream-deep-media-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-animekai-playimdb-deep-media
+  cancel-in-progress: true
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Deep-probe upstream candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 - <<'PY'
+          import json,pathlib,subprocess,sys,tempfile
+          root=pathlib.Path('.').resolve();sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as p
+          import run_provider_upstream_parity_v2 as v2
+          import run_provider_upstream_parity_v3 as v3
+          targets={
+            'animekai':('anime','62715',4),
+            'playimdb':('tv','71446',3),
+          }
+          corpus=json.loads((root/'.github/triggers/rotating-popular-corpus.json').read_text(encoding='utf-8'))
+          fixtures={(str(l),str(r.get('tmdbId') or '')):r for l,rows in (corpus.get('lists') or {}).items() for r in rows or [] if isinstance(r,dict)}
+          upstreams,_=v2.upstream_catalog()
+          for pid,(lane,tmdb,limit) in targets.items():
+            fx=fixtures[(lane,tmdb)]
+            with tempfile.TemporaryDirectory() as td:
+              td=pathlib.Path(td); up=td/(pid+'-up.js');up.write_bytes(p.get_bytes(upstreams[pid]['url']))
+              raw=v3._worker_raw(up,v3.fixture_payload(fx,lane,upstream=True),25)
+              streams=[s for s in (raw.get('streams') or []) if isinstance(s,dict)][:limit]
+              print('DEEP_PROVIDER',pid,'candidates',len(streams))
+              for i,stream in enumerate(streams):
+                sf=td/(f'{pid}-{i}.json');sf.write_text(json.dumps(stream,separators=(',',':')),encoding='utf-8')
+                q=subprocess.run(['node',str(root/'scripts/direct_media_probe_cli.cjs'),str(sf)],cwd=root,text=True,capture_output=True,timeout=30,check=False)
+                proof=None
+                for line in q.stdout.splitlines():
+                  if line.startswith('DIRECT_MEDIA_PROOF='):
+                    try: proof=json.loads(line.split('=',1)[1])
+                    except Exception: pass
+                print('DEEP_MEDIA '+json.dumps({'providerId':pid,'index':i,'rc':q.returncode,'proof':proof},sort_keys=True))
+          PY
