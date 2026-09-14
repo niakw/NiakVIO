@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -165,12 +166,13 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
         begin = f'        emit("FIELD_NATIVE_CORPUS_BEGIN client={client} fixture=$fixtureSlug title64=${{b64(title)}} providers=${{providers.size}}")'
         text = replace_once(text, begin, f"        launchClientUi()\n{begin}", "ui launch")
 
-    # Legacy static-contract markers retained for audit continuity; runtime code
-    # below now distinguishes canonical anime selection from the TV transport alias:
-    # listOf<String>(fixtureMediaType).filter {{ it in declared }}
-    # ProviderRequestRoute(type)
+    # QuickJS/JNI is not safe under parallel provider execution in the native
+    # clients. The full Labs proved this with macOS SIGBUS and Windows access
+    # violations inside QuickJS while several providers were in flight. Keep the
+    # generated coroutine shape, but serialize providers so every JS runtime has
+    # exclusive process-local execution and still retains its own hard timeout.
     loop = "        for (providerBatch in providers.chunked(6)) {\n            val providerJobs = providerBatch.map { provider ->\n                async(Dispatchers.IO) {\n                    val started = System.currentTimeMillis()"
-    replacement = f'''        for (providerBatch in providers.chunked(6)) {{\n            val providerJobs = providerBatch.map {{ provider ->\n                async(Dispatchers.IO) {{\n                    val logoProbe = probeLogo(provider.logo, providers.size == 1)\n                    emit("FIELD_NATIVE_ADDON_LOGO client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} configured=${{provider.logo.isNotBlank()}} state=${{logoProbe.state}} status=${{logoProbe.status}} content_type64=${{b64(logoProbe.contentType)}} host64=${{b64(logoProbe.host)}}")\n                    val requestRoutes = requestRoutesFor(provider.id, mediaType)\n                    if (requestRoutes.isEmpty()) {{\n                        emit("FIELD_NATIVE_PROVIDER_SKIPPED client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} requested_type=$logicalFixtureMediaType runtime_type=$mediaType declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}} reason=unsupported_type")\n                        return@async\n                    }}\n                    for (requestRoute in requestRoutes) {{\n                        val requestMediaType = requestRoute.mediaType\n                        val routeMode = "declared"\n                        val started = System.currentTimeMillis()\n                        emit("FIELD_NATIVE_PROVIDER_BEGIN client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} logical_type=$logicalFixtureMediaType request_type=$requestMediaType route_mode=$routeMode declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}}")'''
+    replacement = f'''        for (providerBatch in providers.chunked(1)) {{\n            val providerJobs = providerBatch.map {{ provider ->\n                async(Dispatchers.IO) {{\n                    val logoProbe = probeLogo(provider.logo, providers.size == 1)\n                    emit("FIELD_NATIVE_ADDON_LOGO client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} configured=${{provider.logo.isNotBlank()}} state=${{logoProbe.state}} status=${{logoProbe.status}} content_type64=${{b64(logoProbe.contentType)}} host64=${{b64(logoProbe.host)}}")\n                    val requestRoutes = requestRoutesFor(provider.id, mediaType)\n                    if (requestRoutes.isEmpty()) {{\n                        emit("FIELD_NATIVE_PROVIDER_SKIPPED client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} requested_type=$logicalFixtureMediaType runtime_type=$mediaType declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}} reason=unsupported_type")\n                        return@async\n                    }}\n                    for (requestRoute in requestRoutes) {{\n                        val requestMediaType = requestRoute.mediaType\n                        val routeMode = "declared"\n                        val started = System.currentTimeMillis()\n                        emit("FIELD_NATIVE_PROVIDER_BEGIN client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} logical_type=$logicalFixtureMediaType request_type=$requestMediaType route_mode=$routeMode declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}}")'''
     text = replace_once(text, loop, replacement, "provider loop")
     text = replace_once(text, "                    mediaType = mediaType,", "                    mediaType = requestMediaType,", "runtime media type")
 
@@ -193,6 +195,21 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
             f'                    emit("FIELD_NATIVE_PLAYER_BEGIN client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index")\n' + reader_needle,
         )
 
+    # Adaptive catalogue rotations exist to resample clean zero-stream provider
+    # routes. Production-player smoke is already collected on the primary corpus.
+    # Do not let one hostile/buggy media URL abort an otherwise valid adaptive
+    # provider traversal (the TV evidence showed exactly this on The 100/StreamZo).
+    disable_player = os.environ.get("NIAKVIO_NATIVE_DISABLE_PLAYER_PROBES", "").strip() == "1"
+    if disable_player and client in {"tv", "mobile"}:
+        text, disabled_count = re.subn(
+            r"rows\.take\(\d+\)\.forEachIndexed",
+            "rows.take(0).forEachIndexed",
+            text,
+            count=1,
+        )
+        if disabled_count != 1:
+            raise SystemExit(f"adaptive player-disable anchor count={disabled_count} client={client}")
+
     end_anchor = '                }\n            }\n            providerJobs.awaitAll()\n        }\n        emit("FIELD_NATIVE_CORPUS_END client=' + client
     text = replace_once(
         text,
@@ -204,7 +221,8 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
     path.write_text(text, encoding="utf-8")
     print(
         f"FIELD_NATIVE_REQUEST_CONTRACT client={client} fixture={slug} media_type={resolved_fixture_media_type} "
-        f"canonical_selection=true anime_runtime_alias=tv providers={len(types)} path={path}"
+        f"canonical_selection=true anime_runtime_alias=tv providers={len(types)} provider_batch_size=1 "
+        f"player_probes_disabled={str(disable_player).lower()} path={path}"
     )
 
 
