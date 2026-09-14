@@ -135,18 +135,22 @@ for required in (
 # Non-regression owns the exact four-version ledger plus the rolling accepted
 # quick-yield publication floor. Repair is allowed to propose/correct only if its
 # non-Learn candidate subsequently satisfies the exact same current Hub46 floor.
+# Branch names are deliberately not ownership: workflow_dispatch + PR-to-main are
+# permanent entry points, while temporary candidate push branches may change.
 assert nonreg.startswith("name: Provider Non-Regression Gate")
 for required in (
+    "workflow_dispatch:",
     "build_provider_history_matrix_v3.py",
     "check_provider_non_regression_v1.py",
     "audit_provider_quick_yield.py",
+    "Run real 46-provider candidate census",
+    "NIAKVIO_QUICK_YIELD_TIMEOUT: '25'",
     "--candidate-gate",
     "provider-v3-quick-yield.json",
     "provider-non-regression-gate.json",
-    "workbench/systemic-recovery-20260909",
 ):
     assert required in nonreg, f"non-regression ownership missing: {required}"
-assert "pull_request:" in nonreg
-assert "--all" in nonreg, "workbench/global verification must exercise the complete current Hub46 publication"
+assert "pull_request:" in nonreg and "branches: [main]" in nonreg
+assert "--all" in nonreg, "global verification must exercise the complete current Hub46 publication"
 
 print("provider v3 workflow ownership contract passed: CORE verify-only + Brain evidence + one Repair engine + Hub46-scoped atomic Domain Refresh publication + current-Hub46 four-version non-regression gate")
