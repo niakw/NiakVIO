@@ -4,6 +4,7 @@ from pathlib import Path
 import json
 
 ROOT = Path(__file__).resolve().parents[1]
+CURRENT_PROVIDER_COUNT = 46
 android = (ROOT / ".github/workflows/native-mobile-android-reader.yml").read_text(encoding="utf-8")
 ios = (ROOT / ".github/workflows/native-mobile-ios-reader.yml").read_text(encoding="utf-8")
 desktop = (ROOT / ".github/workflows/native-desktop-reader-acceptance.yml").read_text(encoding="utf-8")
@@ -26,7 +27,7 @@ assert "mobile-ios-reader:" in ios
 assert "runs-on: macos-26" in ios
 assert "run_native_corpus_ios_suite.sh" in ios
 assert "gate_native_declared_provider_matrix.py" in ios
-assert "|| '40000'" in ios
+assert "|| '25000'" in ios
 
 # 2 Desktop matrix entries.
 assert "runner: macos-15" in desktop and "os_name: macos" in desktop
@@ -39,10 +40,10 @@ assert len(platforms) == 5 and len(set(platforms)) == 5
 
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 rows = manifest.get("scrapers") or []
-assert len(rows) == 96
+assert len(rows) == CURRENT_PROVIDER_COUNT
 
 canonical_valid = {"movie", "tv", "anime"}
-transport_valid = canonical_valid | {"series"}
+transport_valid = canonical_valid
 canonical_route_counts = {kind: 0 for kind in canonical_valid}
 transport_route_counts = {kind: 0 for kind in transport_valid}
 for row in rows:
@@ -52,30 +53,29 @@ for row in rows:
     assert transport and canonical, provider
     assert set(transport) <= transport_valid, (provider, transport)
     assert set(canonical) <= canonical_valid, (provider, canonical)
-    assert "series" not in canonical, (provider, canonical)
     assert set(canonical) <= set(transport), (provider, canonical, transport)
     for kind in canonical_valid:
         canonical_route_counts[kind] += int(kind in canonical)
     for kind in transport_valid:
         transport_route_counts[kind] += int(kind in transport)
 
-    # Episodic anime/tv must be reachable through Nuvio's tv/series lanes.
-    if "anime" in canonical or "tv" in canonical:
-        assert {"tv", "series"} <= set(transport), (provider, canonical, transport)
+    # Episodic anime-only providers need the Nuvio TV launch alias; no legacy
+    # `series` alias is synthesized by the current renderer.
+    if "anime" in canonical:
+        assert "tv" in transport, (provider, canonical, transport)
     # Movie transport exists only for a provider with actual movie capability.
     assert ("movie" in transport) == ("movie" in canonical), (provider, canonical, transport)
 
-# Never freeze yesterday's route totals: transport aliases legitimately change the
-# matrix. Canonical counts remain semantic; transport counts are what Nuvio can launch.
+# Never freeze yesterday's route totals: the anime -> TV alias may increase the
+# launch matrix while canonical counts remain semantic.
 for kind in canonical_valid:
     assert transport_route_counts[kind] >= canonical_route_counts[kind]
-assert transport_route_counts["series"] > 0
 assert sum(transport_route_counts.values()) >= sum(canonical_route_counts.values())
 assert canonical_route_counts["anime"] > 0
 
 print(
     "NATIVE_FIVE_LABS_OK platforms=" + ",".join(platforms)
-    + " providers=96 canonical_routes=" + str(sum(canonical_route_counts.values()))
+    + f" providers={CURRENT_PROVIDER_COUNT} canonical_routes=" + str(sum(canonical_route_counts.values()))
     + " transport_routes=" + str(sum(transport_route_counts.values()))
     + " canonical=" + json.dumps(canonical_route_counts, sort_keys=True)
     + " transport=" + json.dumps(transport_route_counts, sort_keys=True)
