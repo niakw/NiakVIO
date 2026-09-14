@@ -27,7 +27,15 @@ assert "python3 scripts/sync_release_versions.py" in workflow
 assert '--previous "$RUNNER_TEMP/published-manifest-baseline.json"' in workflow
 assert workflow.index("python3 scripts/sync_release_versions.py") < workflow.index("python3 scripts/generate_release_hashes.py")
 assert workflow.index("python3 scripts/generate_release_hashes.py") < workflow.index("python3 scripts/validate_release_integrity.py")
-assert "Verify bounded finalization diff" in workflow
+assert "Stage provider generation locally" in workflow
+assert "Unexpected path changed by provider-generation finalization" in workflow
+assert "Commit final pinned release locally" in workflow
+assert "Unexpected path changed by pinned release finalization" in workflow
+assert "Publish accepted release atomically" in workflow
+assert 'test "$CURRENT_SHA" = "$BASE_SHA"' in workflow
+assert workflow.index("Stage provider generation locally") < workflow.index("Rebuild exact pinned Hub46 transport and release integrity")
+assert workflow.index("Rebuild exact pinned Hub46 transport and release integrity") < workflow.index("Commit final pinned release locally")
+assert workflow.index("Commit final pinned release locally") < workflow.index("Publish accepted release atomically")
 assert "git push origin HEAD:main" in workflow
 assert "--first-parent" in baseline_source
 assert "current_version" in baseline_source
