@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Run Domain Refresh with deterministic semantic tie-breaking for hub candidates.
+"""Run Domain Refresh with current-registry scoping and deterministic tie-breaking.
 
-The authoritative hub resolver already assigns trust/brand scores. This wrapper
-must never override a candidate with a strictly higher score. It only resolves
-score ties so a hub-labelled primary/recommended link outranks backup/mirror/
-secondary links. When those semantic labels are neutral, a short label matching
-the provider brand outranks an anonymous link before document order is used.
+provider-hubs.json is the current executable address registry. Legacy
+provider-overrides.official_domain_hubs entries remain historical knowledge but
+must never recreate work for archived providers. Inside the current registry,
+the authoritative hub resolver still owns trust scoring; this wrapper only
+breaks equal-score ties using explicit semantic and provider-brand labels.
 """
 from __future__ import annotations
 
@@ -67,6 +67,17 @@ def brand_priority(provider_id: object, row: dict[str, Any]) -> int:
     return int(compact_label == provider or compact_label.startswith(provider))
 
 
+def current_registry_hub_configs(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Return only provider-hubs.json current rows, enriched from provider patches.
+
+    Calling merge_hub_registry with no embedded official_domain_hubs prevents
+    historical legacy-only rows from being resurrected while preserving current
+    registry aliases/sources and provider patch context.
+    """
+    clean_config = {"provider_patches": config.get("provider_patches") or {}}
+    return transaction.resolver.merge_hub_registry(clean_config)
+
+
 def _candidate_key(provider_id: object, row: dict[str, Any]) -> tuple[int, int, int, int, str]:
     # Trust score remains the first and strongest authority. Semantic labels only
     # break ties. A concise provider-branded label then beats an anonymous link;
@@ -120,6 +131,7 @@ def install_priority_wrapper() -> Callable[..., dict[str, Any]]:
 
 def main() -> int:
     install_priority_wrapper()
+    transaction._authoritative_hub_configs = current_registry_hub_configs
     return transaction.main()
 
 
