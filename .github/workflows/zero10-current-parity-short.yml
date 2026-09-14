@@ -1,0 +1,100 @@
+name: SHORT - ZERO10 Current Parity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/zero10-current-parity-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-zero10-current-parity
+  cancel-in-progress: true
+
+jobs:
+  zero10:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NIAKVIO_PARITY_SAMPLES_PER_LANE: '3'
+      NIAKVIO_PARITY_WORKERS: '6'
+      NIAKVIO_PARITY_TIMEOUT: '20'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Install declared provider parser dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Prove current worker can resolve parser packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "require('cheerio/slim'); require('crypto-js'); console.log('ZERO10_MODULE_RESOLUTION_OK')"
+          node tests/provider_worker_security.test.cjs
+      - name: Build exact ZERO10 scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          wanted={'4khdhub','allanime','allwish','flemmix','fullanime','moviebox','moviesmod','showbox','vidfast','vidlove'}
+          src=json.loads(Path('automation/evidence/hub-lab-matrix-46.json').read_text(encoding='utf-8'))
+          rows=[r for r in src.get('rows',[]) if str(r.get('manifestId') or r.get('provider') or '').strip().casefold().replace('_','-') in wanted]
+          got={str(r.get('manifestId') or r.get('provider') or '').strip().casefold().replace('_','-') for r in rows}
+          missing=sorted(wanted-got)
+          if missing: raise SystemExit('ZERO10 scope missing: '+','.join(missing))
+          out={'schemaVersion':src.get('schemaVersion',1),'hubCount':len(rows),'providerCount':len(rows),'rows':rows}
+          Path('/tmp/zero10-scope.json').write_text(json.dumps(out,indent=2)+'\n',encoding='utf-8')
+          print('ZERO10_SCOPE '+','.join(sorted(got)))
+          PY
+      - name: Run current deep parity for ZERO10
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 -m py_compile scripts/run_provider_upstream_parity_v2.py scripts/run_provider_upstream_parity_v3.py
+          python3 tests/provider_upstream_parity_v3_test.py
+          python3 scripts/run_provider_upstream_parity_v3.py \
+            --scope-matrix /tmp/zero10-scope.json \
+            --out automation/zero10-current-parity.json
+      - name: Print nominative ZERO10 verdict
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('automation/zero10-current-parity.json')
+          if not p.is_file():
+            print('ZERO10_REPORT_MISSING')
+            raise SystemExit(0)
+          d=json.loads(p.read_text(encoding='utf-8'))
+          print('ZERO10_STATUS_COUNTS '+json.dumps(d.get('statusCounts') or {},sort_keys=True))
+          for row in sorted(d.get('providers') or [],key=lambda x:x.get('providerId','')):
+            lanes=[]
+            for lane in row.get('lanes') or []:
+              classes=[]
+              for s in lane.get('samples') or []:
+                classes.append(s.get('confirmationClassification') or s.get('classification'))
+              lanes.append({'lane':lane.get('lane'),'status':lane.get('status'),'classes':classes})
+            print('ZERO10_PROVIDER '+json.dumps({'providerId':row.get('providerId'),'status':row.get('status'),'lanes':lanes},sort_keys=True))
+          PY
+      - name: Upload ZERO10 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: zero10-current-parity-${{ github.run_id }}
+          path: automation/zero10-current-parity.json
+          if-no-files-found: warn
+          retention-days: 14
