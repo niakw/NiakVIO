@@ -1,0 +1,88 @@
+name: DIAG - Stream Sanitizer Causality
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/stream-sanitizer-causality-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-stream-sanitizer-causality
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Compare current, sanitizer-disabled and sanitizer-instrumented bundles
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 - <<'PY'
+          import json, pathlib, subprocess, sys, tempfile
+          root=pathlib.Path('.').resolve(); sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as parity
+          from provider_patch_blocks import strip_managed_fix, has_managed_fix
+
+          manifest=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
+          rows={str(r.get('id','')).strip().casefold().replace('_','-'):r for r in manifest.get('scrapers',[]) if isinstance(r,dict)}
+          fixtures={
+            'playimdb': {'tmdbId':'71446','mediaType':'tv','title':'Money Heist','year':2017,'season':1,'episode':1},
+            'streamzo': {'tmdbId':'60059','mediaType':'tv','title':'Better Call Saul','year':2015,'season':1,'episode':1},
+          }
+
+          def run(label,path,fixture):
+            ctx=parity.context_for(fixture)
+            p=subprocess.run(['node',str(root/'scripts/provider_worker.cjs'),str(path),json.dumps(fixture,separators=(',',':')),json.dumps(ctx,separators=(',',':'))],cwd=root,text=True,capture_output=True,timeout=35,check=False)
+            result=None
+            for channel in (p.stdout,p.stderr):
+              for line in channel.splitlines():
+                if line.startswith('NUVIO_HEALTH_RESULT='):
+                  try: result=json.loads(line.split('=',1)[1])
+                  except Exception: pass
+                if 'NIAKVIO_SANITIZER_VERDICT' in line or 'NUVIO_STREAM_OUTPUT' in line:
+                  print('SAN_LOG',label,line[:800])
+            if not isinstance(result,dict):
+              print('RESULT',label,'NO_RESULT','exit='+str(p.returncode)); return
+            err=result.get('error_details') if isinstance(result.get('error_details'),dict) else {}
+            print('RESULT',label,'streams='+str(result.get('stream_count',0)),'raw='+str(result.get('raw_stream_count',0)),'error='+str(err.get('code') or err.get('name') or 'none'))
+            for obs in result.get('network_observations') or []:
+              if not isinstance(obs,dict) or obs.get('infrastructure'): continue
+              if obs.get('stage') in {'content_lookup','player'}:
+                print('ROUTE',label,str(obs.get('stage')),str(obs.get('host')),str(obs.get('path_pattern')),str(obs.get('status')),str(obs.get('ok')),str(obs.get('error_code') or ''))
+
+          with tempfile.TemporaryDirectory(prefix='niakvio-san-causality-') as td:
+            td=pathlib.Path(td)
+            for pid,fixture in fixtures.items():
+              row=rows[pid]; src=root/row['filename']; text=src.read_text(encoding='utf-8')
+              print('===',pid,'managed_sanitizer='+str(has_managed_fix(text,'CORE.STREAM_SANITIZER.V6')),'===')
+              no_san=strip_managed_fix(text,'CORE.STREAM_SANITIZER.V6')
+              p_no=td/(pid+'-no-san.js'); p_no.write_text(no_san,encoding='utf-8')
+              run(pid+':current',src,fixture)
+              run(pid+':no-san',p_no,fixture)
+
+              needle='return verdict===true?clearPrivateProofs(item.stream):null;'
+              if needle not in text:
+                print('INSTRUMENTATION_SKIPPED',pid,'strict-verdict-anchor-missing')
+                continue
+              replacement='try{console.log("NIAKVIO_SANITIZER_VERDICT",String(verdict),String(item&&item.url||""))}catch(_diag){}return verdict===true?clearPrivateProofs(item.stream):null;'
+              inst=text.replace(needle,replacement,1)
+              p_inst=td/(pid+'-san-inst.js'); p_inst.write_text(inst,encoding='utf-8')
+              run(pid+':instrumented',p_inst,fixture)
+          PY
