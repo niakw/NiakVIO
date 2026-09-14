@@ -28,7 +28,7 @@ jobs:
         with: {python-version: '3.12'}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: '24', package-manager-cache: false}
-      - name: Bisect HLS structural validation
+      - name: Measure no-sanitizer media proof
         shell: bash
         run: |
           set -euo pipefail
@@ -43,41 +43,31 @@ jobs:
           manifest=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
           row=next(r for r in manifest.get('scrapers',[]) if str(r.get('id','')).casefold()=='streamzo')
           patched,_=apply_overrides('streamzo',(root/row['filename']).read_bytes(),include_global_core=True)
-          strict=patched.decode('utf-8')
-          no_san=strip_managed_fix(strict,'CORE.STREAM_SANITIZER.V6')
-
-          rules={
-            'NORMALIZE_TEXT_GUARD': ('if(/^\\s*(?:<!doctype|<html|<body|\\{|\\[)/i.test(value))return null;', 'if(/^\\s*(?:<!doctype|<html|<body|\\{|\\[)/i.test(value))return {text:value,repaired:false};'),
-            'NORMALIZE_MISSING_TAGS': ('if(!/(?:^|\\n)#EXT-(?:X-[A-Z0-9-]+|INF)\\s*[:]/i.test(value))return null;', 'if(!/(?:^|\\n)#EXT-(?:X-[A-Z0-9-]+|INF)\\s*[:]/i.test(value))return {text:value,repaired:false};'),
-            'VALID_HEADER': ('if(value.indexOf("#EXTM3U")!==0)return false;', 'if(value.indexOf("#EXTM3U")!==0)return true;'),
-            'VALID_VARIANT_URI': ('if(hasVariantTag&&!hasVariantUri)return false;', 'if(hasVariantTag&&!hasVariantUri)return true;'),
-            'VALID_MEDIA_OR_VARIANT': ('if(!hasMedia&&!hasVariantUri)return false;', 'if(!hasMedia&&!hasVariantUri)return true;'),
-            'VALID_VOD_DURATION': ('if(total<config.minVodDurationSeconds)return false;', 'if(total<config.minVodDurationSeconds)return true;'),
-            'NORMALIZE_VALID_HLS': ('if(!validHls(value))return null;', 'if(!validHls(value))return {text:value,repaired:false};'),
-          }
-          variants={'STRICT':strict}
-          for label,(old,new) in rules.items():
-            if old not in strict: raise SystemExit('missing HLS rule '+label)
-            variants[label]=strict.replace(old,new,1)
-          variants['NO_SAN']=no_san
-
+          no_san=strip_managed_fix(patched.decode('utf-8'),'CORE.STREAM_SANITIZER.V6')
           fixture={'tmdbId':'60059','mediaType':'tv','title':'Better Call Saul','year':2015,'season':1,'episode':1}
           ctx=parity.context_for(fixture)
-          def run(label,source):
-            with tempfile.TemporaryDirectory() as td:
-              path=pathlib.Path(td)/(label+'.js');path.write_text(source,encoding='utf-8')
-              p=subprocess.run(['node',str(root/'scripts/provider_worker.cjs'),str(path),json.dumps(fixture,separators=(',',':')),json.dumps(ctx,separators=(',',':'))],cwd=root,text=True,capture_output=True,timeout=35,check=False)
+          with tempfile.TemporaryDirectory() as td:
+            td=pathlib.Path(td)
+            provider=td/'streamzo-no-san.js';provider.write_text(no_san,encoding='utf-8')
+            p=subprocess.run(['node',str(root/'scripts/provider_worker.cjs'),str(provider),json.dumps(fixture,separators=(',',':')),json.dumps(ctx,separators=(',',':'))],cwd=root,text=True,capture_output=True,timeout=35,check=False)
             result=None
             for channel in (p.stdout,p.stderr):
               for line in channel.splitlines():
                 if line.startswith('NUVIO_HEALTH_RESULT='):
                   try: result=json.loads(line.split('=',1)[1])
                   except Exception: pass
-            if not isinstance(result,dict): print('HLS_BISECT',label,'NO_RESULT','rc',p.returncode);return -1
-            count=int(result.get('stream_count') or 0)
-            print('HLS_BISECT',label,'streams',count,'raw',result.get('raw_stream_count'))
-            return count
-          counts={label:run(label,source) for label,source in variants.items()}
-          print('HLS_BISECT_COUNTS',json.dumps(counts,sort_keys=True))
-          if counts['NO_SAN'] < 1: raise SystemExit('control without sanitizer did not reproduce')
+            if not isinstance(result,dict): raise SystemExit('NO_SAN_RESULT_MISSING')
+            streams=result.get('streams') or []
+            if not streams: raise SystemExit('NO_SAN_STREAM_MISSING')
+            stream=streams[0]
+            stream_file=td/'stream.json';stream_file.write_text(json.dumps(stream,separators=(',',':')),encoding='utf-8')
+            probe=td/'probe.cjs'
+            probe.write_text(r'''const fs=require('node:fs');
+const {guardedFetch}=require(process.cwd()+'/scripts/network_guard.cjs');
+const {probeDirectMedia}=require(process.cwd()+'/scripts/direct_media_probe.cjs');
+(async()=>{const stream=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));const r=await probeDirectMedia(stream,{guardedFetch,fetchImpl:globalThis.fetch,timeoutMs:18000,maxRedirects:5});const safe={playable:!!r.playable,inconclusive:!!r.inconclusive,kind:r.kind||null,status:r.status??null,hls_master:r.hls_master??null,hls_variant_playable:r.hls_variant_playable??null,hls_segment_playable:r.hls_segment_playable??null,hls_external_audio_count:r.hls_external_audio_count??null,hls_audio_playable:r.hls_audio_playable??null,media_duration_seconds:r.media_duration_seconds??null,media_duration_complete:r.media_duration_complete??null};console.log('STREAMZO_MEDIA_PROOF '+JSON.stringify(safe));})().catch(e=>{console.error('STREAMZO_MEDIA_PROOF_ERROR '+String(e&&e.name||'Error'));process.exit(2)});''',encoding='utf-8')
+            q=subprocess.run(['node',str(probe),str(stream_file)],cwd=root,text=True,capture_output=True,timeout=40,check=False)
+            print(q.stdout.strip())
+            if q.stderr.strip(): print(q.stderr.strip())
+            if q.returncode: raise SystemExit(q.returncode)
           PY
