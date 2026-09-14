@@ -615,6 +615,11 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
+      },
+      "core_options": {
+        "hls_runtime_integrity": {
+          "inspect_master_facts": true
+        }
       }
     },
     "flemmix": {
@@ -4436,6 +4441,11 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "core_options": {
+        "hls_runtime_integrity": {
+          "inspect_master_facts": true
+        }
       }
     },
     "coflix": {
@@ -6667,6 +6677,12 @@
         "recipeKind": "typed-resolver-api",
         "base": "https://streamdata.vaplayer.ru",
         "referer": "https://nextgencloudfabric.com"
+      },
+      "core_options": {
+        "hls_runtime_integrity": {
+          "probe_all_urls": true,
+          "fail_closed_unknown": true
+        }
       }
     },
     "sekai": {
@@ -6950,7 +6966,8 @@
           "max_recovery_pages": 6,
           "max_recovery_candidates": 18,
           "probe_all_urls": true,
-          "fail_closed_unknown": false
+          "fail_closed_unknown": false,
+          "inspect_master_facts": true
         },
         "stream_sanitizer": {
           "blocked_hosts": [

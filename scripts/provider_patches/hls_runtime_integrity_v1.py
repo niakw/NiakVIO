@@ -66,6 +66,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     native_probe_max_rows = max(1, min(int(cfg.get("native_probe_max_rows", 8)), 16))
     native_probe_timeout_ms = max(900, min(int(cfg.get("native_probe_timeout_ms", 2500)), 5000))
     minimum_vod_duration_seconds = max(30, min(int(cfg.get("minimum_vod_duration_seconds", 90)), 600))
+    inspect_master_facts = bool(cfg.get("inspect_master_facts", False))
     payload_config = {
         "timeoutMs": timeout_ms,
         "maxChildren": max_children,
@@ -92,6 +93,13 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
                 "nativeProbeTimeoutMs": native_probe_timeout_ms,
                 "minimumVodDurationSeconds": minimum_vod_duration_seconds,
                 "implementationRevision": "native-vod-duration-proof-v9",
+            }
+        )
+    if inspect_master_facts:
+        payload_config.update(
+            {
+                "inspectMasterFacts": True,
+                "implementationRevision": "native-master-facts-v10",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
@@ -212,9 +220,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   async function nativeFirstSegmentProof(stream){
     var referer=headerValue(stream,"referer"),root=await fetchBounded(String(stream.url||""),stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
     if(root.state==="invalid")return root;if(root.state!=="ok")return {state:"unknown",reason:root.reason||"playlist_fetch_unknown"};
-    var body=await responseText(root),kind=playlistKind(body),base=root.url||String(stream.url||"");
+    var body=await responseText(root),kind=playlistKind(body),base=root.url||String(stream.url||""),facts=null;
     if(kind==="invalid"||kind==="header_only")return {state:"invalid",reason:"playlist_"+kind};
     if(kind==="master"){
+      if(config.inspectMasterFacts)facts=masterFacts(body);
       var variants=variantUris(body,base);if(!variants.length)return {state:"invalid",reason:"master_without_variants"};
       var child=await fetchBounded(variants[0],stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
       if(child.state==="invalid")return child;if(child.state!=="ok")return {state:"unknown",reason:child.reason||"variant_fetch_unknown"};
@@ -223,7 +232,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       if(kind==="master")return {state:"unknown",reason:"nested_master"};
     }
     var tiny=shortFiniteVod(body);if(tiny)return {state:"invalid",reason:"vod_duration_too_short",durationSeconds:tiny};
-    return proveMediaPlaylist(body,base,stream,referer);
+    var proof=await proveMediaPlaylist(body,base,stream,referer);if(facts)proof.facts=facts;return proof;
   }
   function finiteVodDurationSeconds(body){
     var text=clean(body);if(!/#EXT-X-ENDLIST(?:\s|$)/i.test(text))return 0;
@@ -262,6 +271,11 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     });
     return out.slice(0,config.maxChildren);
   }
+  function masterQuality(height){var h=Number(height||0);if(h>=2000)return"2160p";if(h>=1350)return"1440p";if(h>=900)return"1080p";if(h>=650)return"720p";if(h>=550)return"576p";if(h>=450)return"480p";if(h>=300)return"360p";return""}
+  function hlsAttr(line,name){var key=String(name||"").replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),q=new RegExp("(?:^|,)\\s*"+key+"\\s*=\\s*\\\"([^\\\"]*)\\\"","i").exec(String(line||""));if(q)return clean(q[1]);var b=new RegExp("(?:^|,)\\s*"+key+"\\s*=\\s*([^,\\s]+)","i").exec(String(line||""));return clean(b&&b[1])}
+  function hlsLang(value){var raw=clean(value).toLowerCase().replace(/_/g,"-"),first=raw.split("-")[0],a={eng:"en",english:"en",fra:"fr",fre:"fr",french:"fr",hin:"hi",hindi:"hi",jpn:"ja",japanese:"ja",tam:"ta",tamil:"ta",tel:"te",telugu:"te",ben:"bn",bengali:"bn",mal:"ml",malayalam:"ml",kan:"kn",kannada:"kn",pan:"pa",punjabi:"pa",guj:"gu",gujarati:"gu",mar:"mr",marathi:"mr",urd:"ur",urdu:"ur",kor:"ko",korean:"ko",spa:"es",spanish:"es",deu:"de",ger:"de",german:"de",ita:"it",italian:"it",por:"pt",portuguese:"pt",ara:"ar",arabic:"ar",tur:"tr",turkish:"tr",rus:"ru",russian:"ru",zho:"zh",chi:"zh",chinese:"zh"};if(a[raw])return a[raw];if(a[first])return a[first];return /^[a-z]{2}$/.test(first)?first:""}
+  function masterFacts(body){var lines=clean(body).split(/\r?\n/),height=0,tracks=[],seen={};for(var i=0;i<lines.length;i++){var line=lines[i];if(/^#EXT-X-STREAM-INF\s*:/i.test(line)){var rm=/\bRESOLUTION\s*=\s*\d{2,5}\s*[xX]\s*(\d{2,5})/i.exec(line);if(rm)height=Math.max(height,Number(rm[1]||0));continue}if(!/^#EXT-X-MEDIA\s*:/i.test(line)||!/\bTYPE\s*=\s*AUDIO\b/i.test(line))continue;var code=hlsLang(hlsAttr(line,"LANGUAGE")),name=hlsAttr(line,"NAME");if(!code)code=hlsLang(name);if(!code||seen[code])continue;seen[code]=1;tracks.push({language:code,name:name||code.toUpperCase()})}return{height:height,quality:masterQuality(height),audioTracks:tracks}}
+  function enrichMasterFacts(stream,facts){if(!stream||!facts)return stream;var row=Object.assign({},stream),tracks=Array.isArray(facts.audioTracks)?facts.audioTracks:[];if(facts.quality){if(clean(row.quality)&&!clean(row.sourceQuality))row.sourceQuality=clean(row.quality);if(clean(row.resolution)&&!clean(row.sourceResolution))row.sourceResolution=clean(row.resolution);row.quality=facts.quality;row.height=Number(facts.height)||row.height;row.hlsMasterQuality=facts.quality}if(tracks.length){row.audioTracks=tracks.map(function(t){return{language:t.language,name:t.name}});row.hlsMasterAudioTracks=row.audioTracks;if(tracks.length>1){if(clean(row.language)&&!clean(row.sourceLanguage))row.sourceLanguage=clean(row.language);row.language="MULTI"}}return row}
   async function validateChild(url,stream,referer){
     var result=await fetchBounded(url,stream,referer,false);if(result.state!=="ok")return result.state;
     var body=await responseText(result),kind=playlistKind(body);return kind==="media"||kind==="master"?"valid":"invalid";
@@ -275,7 +289,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     if(kind==="invalid"||kind==="header_only")return {state:"invalid",kind:kind,body:body,result:result};
     if(kind==="media"){var tiny=shortFiniteVod(body);if(tiny)return {state:"invalid",kind:"vod_duration_too_short",durationSeconds:tiny,body:body,result:result};return {state:"valid",kind:kind,url:result.url,body:body,result:result}}
 
-    var variants=variantUris(body,result.url||url),audio=audioUris(body,result.url||url);
+    var facts=config.inspectMasterFacts?masterFacts(body):null,variants=variantUris(body,result.url||url),audio=audioUris(body,result.url||url);
     if(!variants.length)return {state:"invalid",kind:"master_without_variants",body:body,result:result};
     var variantState="invalid";
     for(var i=0;i<variants.length;i++){
@@ -289,7 +303,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       }
       if(audioState!=="valid")return {state:audioState,kind:"audio_child_"+audioState,body:body,result:result};
     }
-    return {state:"valid",kind:"master",url:result.url,body:body,result:result};
+    return {state:"valid",kind:"master",url:result.url,body:body,result:result,facts:facts};
   }
   function normalizedText(text){
     return clean(text).replace(/\\u002[fF]/g,"/").replace(/\\\//g,"/").replace(/&amp;/g,"&");
@@ -371,7 +385,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   }
   async function validateOrRecover(stream){
     var inspection=await inspectHls(String(stream.url||""),stream,headerValue(stream,"referer"));
-    if(inspection.state==="valid")return stream;
+    if(inspection.state==="valid")return config.inspectMasterFacts&&inspection.facts?enrichMasterFacts(stream,inspection.facts):stream;
     if(inspection.state==="unknown"&&!config.failClosedUnknown)return stream;
     if(inspection.state==="direct")return cloneRecovered(stream,inspection.url||String(stream.url||""),inspection.format||"mp4",headerValue(stream,"referer"));
     var recovered=await recover(stream,inspection);if(recovered)return recovered;
@@ -383,14 +397,19 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       if(!config.probeFirstSegmentNative||!rows||!rows.length)return value;
       var remaining=Math.max(1,Number(config.nativeProbeMaxRows||1)||1);
       var checks=await Promise.all(rows.map(async function(stream){
-        if(!hlsHint(stream)||remaining<=0)return stream;
+        if(remaining<=0)return stream;
+        if(!hlsHint(stream)){
+          if(!config.probeAllUrls)return stream;
+          remaining-=1;
+          return await validateOrRecover(stream);
+        }
         remaining-=1;
         var proof=await nativeFirstSegmentProof(stream);
-        if(proof.state==="invalid"){
-          try{console.warn("[Nuvio HLS integrity] rejected invalid first media container",proof.reason||"invalid",String(stream&&stream.url||"").slice(0,180))}catch(_e){}
+        if(proof.state==="invalid"||(proof.state==="unknown"&&config.failClosedUnknown)){
+          try{console.warn("[Nuvio HLS integrity] rejected invalid/strict-unknown native media",proof.reason||"invalid",String(stream&&stream.url||"").slice(0,180))}catch(_e){}
           return null;
         }
-        return stream;
+        return config.inspectMasterFacts&&proof.facts?enrichMasterFacts(stream,proof.facts):stream;
       }));
       var nativeFiltered=checks.filter(Boolean);
       if(Array.isArray(value))return nativeFiltered;
