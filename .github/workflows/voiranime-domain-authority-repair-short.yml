@@ -1,0 +1,102 @@
+name: SHORT - VoirAnime Domain Authority Repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/voiranime-domain-authority-repair-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-voiranime-domain-authority-repair
+  cancel-in-progress: true
+
+jobs:
+  prove-publish-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Require exact trigger head
+        run: test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+      - name: Apply and unit-test domain authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/voiranime_domain_authority_v1_test.py
+          python3 scripts/repair_voiranime_domain_authority_v1.py
+          python3 tests/voiranime_domain_authority_v1_test.py
+          cp provider-overrides.json /tmp/voiranime-provider-overrides.json
+      - name: Ephemeral rematerialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/reapply_published_overrides.py --primary manifest.json
+      - name: Require exact Maid-sama terminal parity twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 - <<'PY'
+          import json,pathlib,sys,tempfile
+          root=pathlib.Path('.').resolve();sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as p
+          import run_provider_upstream_parity_v2 as v2
+          import run_provider_upstream_parity_v3 as v3
+          pid='voiranime';lane='anime';tmdb='65648'
+          corpus=json.loads((root/'.github/triggers/rotating-popular-corpus.json').read_text(encoding='utf-8'))
+          fx=next(r for r in corpus['lists'][lane] if str(r.get('tmdbId'))==tmdb)
+          local=p.local_catalog();upstreams,_=v2.upstream_catalog()
+          with tempfile.TemporaryDirectory() as td:
+            up=pathlib.Path(td)/(pid+'-up.js');up.write_bytes(p.get_bytes(upstreams[pid]['url']))
+            lf=v3.fixture_payload(fx,lane,upstream=False);uf=v3.fixture_payload(fx,lane,upstream=True)
+            rounds=[]
+            for order in ('upstream_first','niak_first'):
+              if order=='upstream_first':
+                ur=v3._run_verified(up,uf,25);lr=v3._run_verified(local[pid]['path'],lf,25)
+              else:
+                lr=v3._run_verified(local[pid]['path'],lf,25);ur=v3._run_verified(up,uf,25)
+              rounds.append((order,ur,lr))
+            for order,ur,lr in rounds:
+              row={'order':order,'classification':v3.classify_pair(ur,lr),'upstream':{k:ur.get(k) for k in ('stream_count','terminal_verified','terminal_reasons','terminal_media_duration_seconds')},'niakvio':{k:lr.get(k) for k in ('stream_count','terminal_verified','terminal_reasons','terminal_media_duration_seconds')}}
+              print('VOIRANIME_REPAIR_PARITY '+json.dumps(row,sort_keys=True))
+              if int(lr.get('stream_count') or 0)<1 or not lr.get('terminal_verified'):
+                raise SystemExit('VOIRANIME_REPAIR_LOCAL_NOT_TERMINAL_POSITIVE')
+              if int(ur.get('stream_count') or 0)<1 or not ur.get('terminal_verified'):
+                raise SystemExit('VOIRANIME_REPAIR_UPSTREAM_NOT_TERMINAL_POSITIVE')
+          PY
+      - name: Persist only proven provider DATA
+        shell: bash
+        run: |
+          set -euo pipefail
+          git reset --hard "${{ github.sha }}"
+          git clean -fd
+          cp /tmp/voiranime-provider-overrides.json provider-overrides.json
+          python3 scripts/repair_voiranime_domain_authority_v1.py
+          python3 tests/voiranime_domain_authority_v1_test.py
+          git diff --check
+          changed="$(git diff --name-only)"
+          printf '%s\n' "$changed"
+          test "$changed" = "provider-overrides.json"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add provider-overrides.json
+          git commit -m 'fix(voiranime): restore current .to domain authority'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${{ github.sha }}" || { echo 'main moved during VoirAnime DATA publication' >&2; exit 1; }
+          git push origin HEAD:main
+          echo "VOIRANIME_DOMAIN_DATA_PUBLISHED $(git rev-parse HEAD)"
