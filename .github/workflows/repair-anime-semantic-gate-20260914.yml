@@ -1,0 +1,80 @@
+name: TEMP - Repair Anime Semantic Gate 20260914
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/repair-anime-semantic-gate-20260914.yml'
+      - 'scripts/repair_anime_semantic_gate_20260914.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-temp-anime-semantic-gate-main
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Require exact trigger head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+      - name: Apply semantic gate migration
+        run: python3 scripts/repair_anime_semantic_gate_20260914.py
+      - name: Validate focused contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            scripts/repair_anime_semantic_gate_20260914.py \
+            scripts/provider_patches/global_media_type_resolution_v1.py \
+            scripts/field_priority_probe.py \
+            tests/global_media_type_pre_network_gate_test.py
+          python3 tests/global_media_type_pre_network_gate_test.py
+          python3 tests/global_media_type_resolution_test.py
+          python3 tests/provider_reconstruction_static_knowledge_test.py
+          python3 scripts/repair_anime_semantic_gate_20260914.py
+          git diff --check
+      - name: Commit repaired semantic authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only | tee "$RUNNER_TEMP/changed.txt"
+          if grep -Ev '^(scripts/provider_patches/global_media_type_resolution_v1\.py|scripts/field_priority_probe\.py|provider-overrides\.json|provider_catalog\.json|manifest\.json|tests/global_media_type_pre_network_gate_test\.py)$' "$RUNNER_TEMP/changed.txt"; then
+            echo 'Unexpected migration path' >&2
+            exit 1
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add \
+            scripts/provider_patches/global_media_type_resolution_v1.py \
+            scripts/field_priority_probe.py \
+            provider-overrides.json provider_catalog.json manifest.json \
+            tests/global_media_type_pre_network_gate_test.py
+          git diff --cached --quiet && { echo 'ANIME_SEMANTIC_GATE_ALREADY_FIXED'; exit 0; }
+          git commit -m 'fix(core): gate anime semantics before provider network'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${{ github.sha }}" || {
+            echo "main moved during repair" >&2
+            exit 1
+          }
+          git push origin HEAD:main
+          echo "ANIME_SEMANTIC_GATE_PUBLISHED $(git rev-parse HEAD)"
