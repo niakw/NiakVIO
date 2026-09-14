@@ -23,6 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PROVIDERS = ROOT / "providers"
 MANIFEST = ROOT / "manifest.json"
+EXPECTED_PROVIDER_COUNT = 46
 
 PRODUCTION_ENABLED = True
 TERSER_ALLOWED = False
@@ -206,9 +207,10 @@ def provider_files() -> list[Path]:
         for row in (manifest.get("scrapers") or [])
         if str(row.get("filename") or "").strip()
     ]
-    if len(filenames) != 96 or len(set(filenames)) != 96:
+    if len(filenames) != EXPECTED_PROVIDER_COUNT or len(set(filenames)) != EXPECTED_PROVIDER_COUNT:
         raise SystemExit(
-            f"expected 96 unique manifest provider filenames, got {len(filenames)} / {len(set(filenames))}"
+            f"expected {EXPECTED_PROVIDER_COUNT} unique manifest provider filenames, "
+            f"got {len(filenames)} / {len(set(filenames))}"
         )
     files: list[Path] = []
     for filename in filenames:
@@ -287,7 +289,7 @@ def portfolio_report(*, syntax_check: bool = False) -> dict:
             "never rename identifiers",
             "never reorder or fold expressions",
             "never modify template-bearing providers",
-            "require idempotence and Node syntax on all 96 providers",
+            f"require idempotence and Node syntax on all {EXPECTED_PROVIDER_COUNT} current providers",
         ],
         "totals": totals,
         "providers": rows,
@@ -320,8 +322,10 @@ def main() -> int:
     args = parser.parse_args()
 
     report = portfolio_report(syntax_check=args.syntax_check)
-    if report["provider_count"] != 96:
-        raise SystemExit(f"expected 96 generated providers, got {report['provider_count']}")
+    if report["provider_count"] != EXPECTED_PROVIDER_COUNT:
+        raise SystemExit(
+            f"expected {EXPECTED_PROVIDER_COUNT} generated providers, got {report['provider_count']}"
+        )
 
     if args.preview_dir:
         report = write_preview(args.preview_dir, syntax_check=True)
