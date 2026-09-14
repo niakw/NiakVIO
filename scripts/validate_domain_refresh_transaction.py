@@ -22,6 +22,12 @@ AUTHORITY_TYPES = {"hub", "telegram_public", "redirect"}
 FRESH_LABEL_TOKENS = (
     "new", "nouveau", "nouvelle", "current", "actuel", "actuelle",
     "latest", "dernier", "derniere", "officiel", "officielle", "official",
+    # Current authoritative hubs often describe the canonical target without
+    # date wording. These labels are explicit enough to prove a historical
+    # hostname has become current again, while generic labels such as "Visit"
+    # remain rejected by the rollback guard.
+    "principal", "principale", "primary", "recommended", "recommande",
+    "recommandé", "homepage", "accueil", "prioritaire", "preferred",
 )
 PLACEHOLDER_TOKENS = ("${", "{{", "}}", "<%", "%>", "{", "}")
 
