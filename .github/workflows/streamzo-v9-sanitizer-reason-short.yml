@@ -28,7 +28,7 @@ jobs:
         with: {python-version: '3.12'}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: '24', package-manager-cache: false}
-      - name: Bisect sanitizer rules by returned stream count
+      - name: Bisect HLS structural validation
         shell: bash
         run: |
           set -euo pipefail
@@ -44,25 +44,23 @@ jobs:
           row=next(r for r in manifest.get('scrapers',[]) if str(r.get('id','')).casefold()=='streamzo')
           patched,_=apply_overrides('streamzo',(root/row['filename']).read_bytes(),include_global_core=True)
           strict=patched.decode('utf-8')
-          assert 'NUVIO_STREAM_OUTPUT_FULL_MANIFEST_V9' in strict
           no_san=strip_managed_fix(strict,'CORE.STREAM_SANITIZER.V6')
 
-          strict_verdict='return verdict===true?clearPrivateProofs(item.stream):null;'
-          old_verdict='return verdict===false?null:clearPrivateProofs(item.stream);'
-          block_check='if(!url||blocked(url)||seen[url])continue;'
-          budget='candidates[c].probe=(config.probeAllUrls||(config.probeDirectMedia&&isDirect(candidates[c].stream,candidates[c].url)))&&probeCount++<config.maxProbes;'
-          probe_pair='var verdict=await probe(item.stream,item.url);\n        '+strict_verdict
-          for anchor in (strict_verdict,block_check,budget,probe_pair):
-            if anchor not in strict: raise SystemExit('missing bisect anchor: '+anchor[:80])
-
-          variants={
-            'STRICT': strict,
-            'FAIL_OPEN_UNKNOWN': strict.replace(strict_verdict,old_verdict,1),
-            'NO_BLOCK_FILTER': strict.replace(block_check,'if(!url||seen[url])continue;',1),
-            'FORCE_PROBE': strict.replace(budget,'candidates[c].probe=true;probeCount++;',1),
-            'SKIP_PROBE_VALIDATION': strict.replace(probe_pair,'return clearPrivateProofs(item.stream);',1),
-            'NO_SAN': no_san,
+          rules={
+            'NORMALIZE_TEXT_GUARD': ('if(/^\\s*(?:<!doctype|<html|<body|\\{|\\[)/i.test(value))return null;', 'if(/^\\s*(?:<!doctype|<html|<body|\\{|\\[)/i.test(value))return {text:value,repaired:false};'),
+            'NORMALIZE_MISSING_TAGS': ('if(!/(?:^|\\n)#EXT-(?:X-[A-Z0-9-]+|INF)\\s*[:]/i.test(value))return null;', 'if(!/(?:^|\\n)#EXT-(?:X-[A-Z0-9-]+|INF)\\s*[:]/i.test(value))return {text:value,repaired:false};'),
+            'VALID_HEADER': ('if(value.indexOf("#EXTM3U")!==0)return false;', 'if(value.indexOf("#EXTM3U")!==0)return true;'),
+            'VALID_VARIANT_URI': ('if(hasVariantTag&&!hasVariantUri)return false;', 'if(hasVariantTag&&!hasVariantUri)return true;'),
+            'VALID_MEDIA_OR_VARIANT': ('if(!hasMedia&&!hasVariantUri)return false;', 'if(!hasMedia&&!hasVariantUri)return true;'),
+            'VALID_VOD_DURATION': ('if(total<config.minVodDurationSeconds)return false;', 'if(total<config.minVodDurationSeconds)return true;'),
+            'NORMALIZE_VALID_HLS': ('if(!validHls(value))return null;', 'if(!validHls(value))return {text:value,repaired:false};'),
           }
+          variants={'STRICT':strict}
+          for label,(old,new) in rules.items():
+            if old not in strict: raise SystemExit('missing HLS rule '+label)
+            variants[label]=strict.replace(old,new,1)
+          variants['NO_SAN']=no_san
+
           fixture={'tmdbId':'60059','mediaType':'tv','title':'Better Call Saul','year':2015,'season':1,'episode':1}
           ctx=parity.context_for(fixture)
           def run(label,source):
@@ -75,13 +73,11 @@ jobs:
                 if line.startswith('NUVIO_HEALTH_RESULT='):
                   try: result=json.loads(line.split('=',1)[1])
                   except Exception: pass
-            if not isinstance(result,dict):
-              print('BISECT',label,'NO_RESULT','rc',p.returncode)
-              return -1
+            if not isinstance(result,dict): print('HLS_BISECT',label,'NO_RESULT','rc',p.returncode);return -1
             count=int(result.get('stream_count') or 0)
-            print('BISECT',label,'streams',count,'raw',result.get('raw_stream_count'))
+            print('HLS_BISECT',label,'streams',count,'raw',result.get('raw_stream_count'))
             return count
           counts={label:run(label,source) for label,source in variants.items()}
-          print('BISECT_COUNTS',json.dumps(counts,sort_keys=True))
+          print('HLS_BISECT_COUNTS',json.dumps(counts,sort_keys=True))
           if counts['NO_SAN'] < 1: raise SystemExit('control without sanitizer did not reproduce')
           PY
