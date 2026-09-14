@@ -29,7 +29,8 @@ assert has_fresh_rollback_evidence(item("Bloqué par les FAI — encore accessib
 assert has_fresh_rollback_evidence(item("Visit"), "https://historical.example") is False
 
 # Public Telegram is authority only when the exact current registry source is
-# explicitly curated as an authoritative address/domain reference.
+# explicitly curated as an official/authoritative address/domain/current-terminal
+# reference. Type alone never qualifies.
 provider_id = "hindmoviez"
 telegram_item = {
     "selected_source_type": "telegram_public",
@@ -60,8 +61,36 @@ assert selected_source_is_authoritative(
     {provider_id: {"sources": [{
         "type": "telegram_public",
         "url": "https://t.me/s/hindmoviez/1975",
-        "purpose": "Community discussion",
+        "purpose": "Official community discussion",
     }]}},
 ) is False
+
+purstream_item = {
+    "selected_source_type": "telegram_public",
+    "selected_source": "https://t.me/s/purstreamm",
+}
+assert selected_source_is_authoritative(
+    "purstream",
+    purstream_item,
+    {"purstream": {"sources": [{
+        "type": "telegram_public",
+        "url": "https://t.me/s/purstreamm",
+        "purpose": "Official announcement fallback when the wiki renders its current terminal dynamically",
+    }]}},
+) is True
+
+wooka_item = {
+    "selected_source_type": "telegram_public",
+    "selected_source": "https://t.me/s/Wookafr2",
+}
+assert selected_source_is_authoritative(
+    "wookafr",
+    wooka_item,
+    {"wookafr": {"sources": [{
+        "type": "telegram_public",
+        "url": "https://t.me/s/Wookafr2",
+        "purpose": "Official public address announcements",
+    }]}},
+) is True
 
 print("domain refresh explicit-current-domain and registry-authority guard tests passed")
