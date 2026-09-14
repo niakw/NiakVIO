@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/provider_v3_minimizer.py"
+EXPECTED = 46
 
 spec = importlib.util.spec_from_file_location("provider_v3_minimizer", SCRIPT)
 module = importlib.util.module_from_spec(spec)
@@ -17,6 +18,7 @@ spec.loader.exec_module(module)
 assert module.PRODUCTION_ENABLED is True
 assert module.TERSER_ALLOWED is False
 assert module.TRANSFORMATIONS_ENABLED == ["code-line-leading-indentation"]
+assert module.EXPECTED_PROVIDER_COUNT == EXPECTED
 
 sample = """/* BEGIN NIAKVIO_PROVIDER */
   const title = "  literal indentation stays";
@@ -49,8 +51,8 @@ report = module.portfolio_report(syntax_check=False)
 assert report["mode"] == "niakvio-safe-minimizer"
 assert report["production_enabled"] is True
 assert report["terser_allowed"] is False
-assert report["provider_count"] == 96
-assert len(report["providers"]) == 96
+assert report["provider_count"] == EXPECTED
+assert len(report["providers"]) == EXPECTED
 assert report["totals"]["bytes_after"] <= report["totals"]["bytes_before"]
 
 for row in report["providers"]:
@@ -62,11 +64,11 @@ for row in report["providers"]:
 with tempfile.TemporaryDirectory() as tmp:
     preview = Path(tmp) / "preview"
     preview_report = module.write_preview(preview, syntax_check=False)
-    assert preview_report["provider_count"] == 96
-    assert len(list(preview.glob("*.js"))) == 96
+    assert preview_report["provider_count"] == EXPECTED
+    assert len(list(preview.glob("*.js"))) == EXPECTED
 
 print(
     "PROVIDER_V3_MINIMIZER_CONTRACT_OK "
-    f"providers=96 saved_preview={report['totals']['saved_bytes']} "
+    f"providers={EXPECTED} saved_preview={report['totals']['saved_bytes']} "
     f"template_safe=1 terser=0"
 )
