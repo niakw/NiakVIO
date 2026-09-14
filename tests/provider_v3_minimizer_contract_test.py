@@ -17,16 +17,22 @@ spec.loader.exec_module(module)
 
 assert module.PRODUCTION_ENABLED is True
 assert module.TERSER_ALLOWED is False
-assert module.TRANSFORMATIONS_ENABLED == ["code-line-leading-indentation"]
+assert module.TRANSFORMATIONS_ENABLED == [
+    "code-line-leading-indentation",
+    "code-line-trailing-whitespace",
+    "code-blank-lines",
+]
 assert module.EXPECTED_PROVIDER_COUNT == EXPECTED
 
 sample = """/* BEGIN NIAKVIO_PROVIDER */
-  const title = "  literal indentation stays";
+
+  const title = "  literal indentation stays";   
   function demo() {
     /* block comment
        indentation inside comment stays */
     return title;
   }
+
 /* STARTFIX:PROVIDER.DEMO.CONFIG.V1 */
 /* FIXDATA:PROVIDER.DEMO.CONFIG.V1:e30= */
 /* CLOSEFIX:PROVIDER.DEMO.CONFIG.V1 */
@@ -39,13 +45,26 @@ assert result.saved_bytes > 0
 assert result.transformed_lines > 0
 assert '"  literal indentation stays"' in result.text
 assert "       indentation inside comment stays */" in result.text
+assert "\n\n" not in result.text
+assert "title = " in result.text
 assert module.minimize_text(result.text).text == result.text
 
 tick = chr(96)
-template = "  const x = " + tick + "line one\n    ${value}\n" + tick + ";\n"
+template_payload = "line one\n    ${value}\n"
+template = "  const x = " + tick + template_payload + tick + ";\n  let y = 2;\n"
 template_result = module.minimize_text(template)
-assert template_result.text == template
-assert template_result.skipped_reason == "template_literal"
+module.validate_transform(template, template_result.text)
+assert template_result.text.startswith("const x = " + tick)
+assert tick + template_payload + tick in template_result.text
+assert template_result.text.endswith("let y = 2;\n")
+assert template_result.skipped_reason == ""
+assert module.minimize_text(template_result.text).text == template_result.text
+
+nested_payload = "a ${" + tick + "nested ${z}" + tick + "} b"
+nested = "  const x = " + tick + nested_payload + tick + ";\n  let y = 2;\n"
+nested_result = module.minimize_text(nested)
+assert tick + nested_payload + tick in nested_result.text
+assert nested_result.text.endswith("let y = 2;\n")
 
 report = module.portfolio_report(syntax_check=False)
 assert report["mode"] == "niakvio-safe-minimizer"
@@ -70,5 +89,5 @@ with tempfile.TemporaryDirectory() as tmp:
 print(
     "PROVIDER_V3_MINIMIZER_CONTRACT_OK "
     f"providers={EXPECTED} saved_preview={report['totals']['saved_bytes']} "
-    f"template_safe=1 terser=0"
+    "template_safe=1 nested_template_safe=1 terser=0"
 )

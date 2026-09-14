@@ -108,8 +108,19 @@ assert machine["native_labs"] == [
 assert machine["minifier"]["enabled_in_production"] is True
 assert machine["minifier"]["phase"] == "pre-hash-safe-whitespace"
 assert machine["minifier"]["tool"] == "scripts/provider_v3_minimizer.py"
-assert machine["minifier"]["transformations_enabled"] == ["code-line-leading-indentation"]
-assert machine["minifier"]["newline_asi_contract"] == "preserve every line terminator"
+assert machine["minifier"]["transformations_enabled"] == [
+    "code-line-leading-indentation",
+    "code-line-trailing-whitespace",
+    "code-blank-lines",
+]
+assert machine["minifier"]["newline_asi_contract"] == (
+    "remove only code-only blank lines while retaining a physical line boundary "
+    "between adjacent nonblank code lines"
+)
+assert machine["minifier"]["template_literal_policy"] == (
+    "lexically protect template payload bytes and nested ${...}; minimize only "
+    "code-state line whitespace"
+)
 assert machine["minifier"]["terser_allowed"] is False
 
 # Historical reverse reference is intentionally frozen, but it is isolated from

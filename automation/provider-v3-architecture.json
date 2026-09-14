@@ -135,11 +135,15 @@
     "enabled_in_production": true,
     "phase": "pre-hash-safe-whitespace",
     "tool": "scripts/provider_v3_minimizer.py",
-    "transformations_enabled": ["code-line-leading-indentation"],
+    "transformations_enabled": [
+      "code-line-leading-indentation",
+      "code-line-trailing-whitespace",
+      "code-blank-lines"
+    ],
     "comment_architecture_must_be_preserved": true,
     "managed_markers_must_be_preserved": true,
-    "newline_asi_contract": "preserve every line terminator",
-    "template_literal_policy": "leave complete provider byte-stable when template literals are present",
+    "newline_asi_contract": "remove only code-only blank lines while retaining a physical line boundary between adjacent nonblank code lines",
+    "template_literal_policy": "lexically protect template payload bytes and nested ${...}; minimize only code-state line whitespace",
     "identifier_renaming_allowed": false,
     "expression_reordering_allowed": false,
     "literal_rewriting_allowed": false,

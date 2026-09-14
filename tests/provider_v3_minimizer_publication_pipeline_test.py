@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 SCRIPT = ROOT / "scripts/finalize_provider_v3_minimizer.py"
 
 spec = importlib.util.spec_from_file_location("finalize_provider_v3_minimizer", SCRIPT)
@@ -29,16 +31,16 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     for index in range(46):
         provider_id = f"p{index:02d}"
         filename = f"providers/{provider_id}--nuvio--old0000000000000.js"
-        # No templates: the safe production transform may remove only leading
-        # code indentation while preserving managed markers and newlines.
         text = (
             "/* BEGIN NIAKVIO_PROVIDER */\n"
             f"/* NIAKVIO_PROVIDER_ID:{provider_id} */\n"
             "/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n"
+            "\n"
             f"/* STARTFIX:PROVIDER.{provider_id.upper()}.CONFIG.V1 */\n"
-            "  const NIAKVIO_PROVIDER_MODEL = Object.freeze({});\n"
+            "  const NIAKVIO_PROVIDER_MODEL = Object.freeze({});   \n"
             f"/* CLOSEFIX:PROVIDER.{provider_id.upper()}.CONFIG.V1 */\n"
             "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */\n"
+            "  const message = `literal ${\"  keep me\"}`;\n"
             "  function getStreams(){ return []; }\n"
             "/* END NIAKVIO_PROVIDER */\n"
         )
@@ -90,6 +92,8 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         text = (tmp / row["filename"]).read_text(encoding="utf-8")
         assert "  const NIAKVIO_PROVIDER_MODEL" not in text
         assert "  function getStreams" not in text
+        assert "`literal ${\"  keep me\"}`" in text
+        assert "\n\n" not in text
         assert text.count("STARTFIX:") == 1
         assert text.count("CLOSEFIX:") == 1
         proof = out_provenance["providers"][provider_id]["final_minimizer"]
@@ -104,4 +108,4 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     assert all(row["version"] == "1.0.1" for row in after_second["scrapers"])
     module.finalize(check=True)
 
-print("PROVIDER_V3_MINIMIZER_PUBLICATION_PIPELINE_OK providers=46 fixed_point=1 terser=0")
+print("PROVIDER_V3_MINIMIZER_PUBLICATION_PIPELINE_OK providers=46 fixed_point=1 template_safe=1 terser=0")

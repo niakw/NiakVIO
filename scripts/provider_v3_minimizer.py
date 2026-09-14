@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """NiakVIO-aware Provider v3 JavaScript minimizer.
 
-This is deliberately not a generic JavaScript minifier. It preserves every line
-terminator and every byte inside strings, templates and block comments, never
-renames identifiers, never folds/reorders expressions, and never removes managed
-comments/markers. The only production transformation is removal of leading
-spaces/tabs on lines that begin in ordinary JavaScript code state.
+This is deliberately not a generic JavaScript minifier. It preserves strings,
+template literal payloads, block comments and every managed Provider v3 marker;
+never renames identifiers; never folds or reorders expressions; and never uses
+Terser. Production transformations are restricted to horizontal indentation,
+trailing horizontal whitespace, and blank lines while the lexer is in ordinary
+JavaScript code (including template-expression code).
 
-That narrow transform is enough to reduce generated Provider v3 bytes while
-remaining compatible with STARTFIX/CLOSEFIX/FIXDATA ownership and ASI-sensitive
-QuickJS/native runtimes.
+The lexer tracks multiline strings/comments and nested template expressions so
+template payload bytes are never rewritten. The result must be idempotent and
+parse as JavaScript before publication.
 """
 from __future__ import annotations
 
@@ -27,7 +28,11 @@ EXPECTED_PROVIDER_COUNT = 46
 
 PRODUCTION_ENABLED = True
 TERSER_ALLOWED = False
-TRANSFORMATIONS_ENABLED = ["code-line-leading-indentation"]
+TRANSFORMATIONS_ENABLED = [
+    "code-line-leading-indentation",
+    "code-line-trailing-whitespace",
+    "code-blank-lines",
+]
 
 MARKERS = (
     "BEGIN NIAKVIO_PROVIDER",
@@ -37,6 +42,8 @@ MARKERS = (
     "FIXDATA:",
     "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
 )
+
+_CODEISH = {"code", "template_expr"}
 
 
 class MinimizeResult:
@@ -64,98 +71,141 @@ def _split_line_ending(line: str) -> tuple[str, str]:
     return line, ""
 
 
-def _next_state(line: str, initial: str) -> str:
-    """Track only constructs that may legally continue onto the next line."""
-    state = initial
+def _ctx(kind: str, **extra: int) -> dict[str, int | str]:
+    row: dict[str, int | str] = {"kind": kind}
+    row.update(extra)
+    return row
+
+
+def _kind(stack: list[dict[str, int | str]]) -> str:
+    return str(stack[-1]["kind"])
+
+
+def _scan_line(line: str, stack: list[dict[str, int | str]]) -> None:
+    """Advance a conservative JS lexical stack using original source bytes."""
     i = 0
     while i < len(line):
+        kind = _kind(stack)
         ch = line[i]
         nxt = line[i + 1] if i + 1 < len(line) else ""
 
-        if state == "block_comment":
+        if kind == "block_comment":
             if ch == "*" and nxt == "/":
-                state = "code"
+                stack.pop()
                 i += 2
-                continue
-            i += 1
+            else:
+                i += 1
             continue
 
-        if state in {"single", "double"}:
-            quote = "'" if state == "single" else '"'
+        if kind in {"single", "double"}:
+            quote = "'" if kind == "single" else '"'
             if ch == "\\":
                 i += 2
                 continue
             if ch == quote:
-                state = "code"
+                stack.pop()
             i += 1
             continue
 
-        if state == "template":
+        if kind == "template":
             if ch == "\\":
                 i += 2
                 continue
             if ch == "`":
-                state = "code"
+                stack.pop()
+                i += 1
+                continue
+            if ch == "$" and nxt == "{":
+                stack.append(_ctx("template_expr", depth=1))
+                i += 2
+                continue
             i += 1
             continue
 
-        # code
+        # Ordinary code or template-expression code.
         if ch == "/" and nxt == "/":
-            return "code"
+            # Line comments end at the physical line ending and do not alter
+            # the persistent lexical stack.
+            return
         if ch == "/" and nxt == "*":
-            state = "block_comment"
+            stack.append(_ctx("block_comment"))
             i += 2
             continue
         if ch == "'":
-            state = "single"
+            stack.append(_ctx("single"))
             i += 1
             continue
         if ch == '"':
-            state = "double"
+            stack.append(_ctx("double"))
             i += 1
             continue
         if ch == "`":
-            state = "template"
+            stack.append(_ctx("template"))
             i += 1
             continue
+
+        if kind == "template_expr":
+            if ch == "{":
+                stack[-1]["depth"] = int(stack[-1].get("depth", 1)) + 1
+                i += 1
+                continue
+            if ch == "}":
+                depth = int(stack[-1].get("depth", 1)) - 1
+                if depth <= 0:
+                    stack.pop()
+                else:
+                    stack[-1]["depth"] = depth
+                i += 1
+                continue
+
         i += 1
-    return state
 
 
 def minimize_text(text: str) -> MinimizeResult:
-    # Templates can contain arbitrary JavaScript interpolation and literal
-    # newlines. Keep the complete file byte-stable rather than guessing.
-    if "`" in text:
-        return MinimizeResult(text=text, saved_bytes=0, transformed_lines=0, skipped_reason="template_literal")
-
-    state = "code"
+    stack: list[dict[str, int | str]] = [_ctx("code")]
     out: list[str] = []
-    removed = 0
     transformed = 0
 
     for raw_line in text.splitlines(keepends=True):
         body, ending = _split_line_ending(raw_line)
         original_body = body
+        start_kind = _kind(stack)
 
-        if state == "code":
-            cut = 0
-            while cut < len(body) and body[cut] in {" ", "\t"}:
-                cut += 1
-            if cut:
-                body = body[cut:]
-                removed += len(original_body[:cut].encode("utf-8"))
-                transformed += 1
+        # All lexical decisions are made from original bytes. Only horizontal
+        # whitespace outside protected literal/comment payloads is touched.
+        if start_kind in _CODEISH:
+            body = body.lstrip(" \t")
 
-        # State is derived from the original source, never from transformed
-        # bytes, so the minimizer cannot alter its own lexical decisions.
-        state = _next_state(original_body, state)
-        out.append(body + ending)
+        _scan_line(original_body, stack)
+        end_kind = _kind(stack)
+
+        if end_kind in _CODEISH:
+            body = body.rstrip(" \t")
+
+        # Removing an empty code-only physical line leaves the previous line's
+        # terminator in place, so adjacent JavaScript statements still retain
+        # a line boundary for ASI-sensitive runtimes.
+        drop_blank = (
+            not body
+            and bool(ending)
+            and start_kind in _CODEISH
+            and end_kind in _CODEISH
+        )
+
+        candidate = "" if drop_blank else body + ending
+        if candidate != raw_line:
+            transformed += 1
+        out.append(candidate)
 
     minimized = "".join(out)
     saved = len(text.encode("utf-8")) - len(minimized.encode("utf-8"))
-    if saved != removed:
-        raise ValueError(f"minimizer byte accounting mismatch: saved={saved} removed={removed}")
-    return MinimizeResult(text=minimized, saved_bytes=saved, transformed_lines=transformed)
+    if saved < 0:
+        raise ValueError(f"minimizer increased provider bytes: saved={saved}")
+    return MinimizeResult(
+        text=minimized,
+        saved_bytes=saved,
+        transformed_lines=transformed,
+    )
 
 
 def audit_text(text: str) -> dict:
@@ -180,17 +230,17 @@ def validate_transform(original: str, minimized: str) -> None:
     before = audit_text(original)
     after = audit_text(minimized)
 
-    if original.count("\n") != minimized.count("\n") or original.count("\r") != minimized.count("\r"):
-        raise ValueError("minimizer changed line terminators")
     if after["bytes"] > before["bytes"]:
         raise ValueError("minimizer increased provider bytes")
     if before["markers"] != after["markers"]:
         raise ValueError("minimizer changed Provider v3 structural markers")
     if before["template_literal_tokens"] != after["template_literal_tokens"]:
-        raise ValueError("minimizer changed template literal bytes")
+        raise ValueError("minimizer changed template literal token cardinality")
 
-    second = minimize_text(minimized).text
-    if second != minimized:
+    expected = minimize_text(original).text
+    if expected != minimized:
+        raise ValueError("minimized bytes are not the deterministic NiakVIO transform")
+    if minimize_text(minimized).text != minimized:
         raise ValueError("minimizer is not idempotent")
 
 
@@ -272,23 +322,22 @@ def portfolio_report(*, syntax_check: bool = False) -> dict:
         totals["bytes_after"] += after["bytes"]
         totals["saved_bytes"] += result.saved_bytes
         totals["transformed_lines"] += result.transformed_lines
-        if result.skipped_reason == "template_literal":
-            totals["skipped_templates"] += 1
 
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "mode": "niakvio-safe-minimizer",
         "production_enabled": PRODUCTION_ENABLED,
         "terser_allowed": TERSER_ALLOWED,
         "provider_count": len(files),
         "transformations_enabled": list(TRANSFORMATIONS_ENABLED),
         "safety_contract": [
-            "preserve every line terminator",
-            "preserve all managed marker cardinalities",
-            "preserve bytes inside strings, templates and block comments",
+            "preserve every managed Provider v3 marker cardinality",
+            "preserve bytes inside multiline strings, template payloads and block comments",
+            "track nested template expressions before touching line whitespace",
             "never rename identifiers",
             "never reorder or fold expressions",
-            "never modify template-bearing providers",
+            "never use Terser",
+            "retain a physical line boundary between adjacent nonblank code lines",
             f"require idempotence and Node syntax on all {EXPECTED_PROVIDER_COUNT} current providers",
         ],
         "totals": totals,
