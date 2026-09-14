@@ -11,6 +11,7 @@ repair=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(e
 manual=(ROOT/".github/workflows/provider-v3-reconstruct-all.yml").read_text(encoding="utf-8")
 domain=(ROOT/".github/workflows/domain-refresh.yml").read_text(encoding="utf-8")
 nonreg=(ROOT/".github/workflows/provider-non-regression.yml").read_text(encoding="utf-8")
+quick_yield=(ROOT/"scripts/audit_provider_quick_yield.py").read_text(encoding="utf-8")
 legacy_core=ROOT/".github/workflows/core-media-finalize-main.yml"
 
 assert not legacy_core.exists(), "legacy duplicate Core finalizer workflow must stay deleted"
@@ -151,6 +152,15 @@ for required in (
 ):
     assert required in nonreg, f"non-regression ownership missing: {required}"
 assert "pull_request:" in nonreg and "branches: [main]" in nonreg
-assert "--all" in nonreg, "global verification must exercise the complete current Hub46 publication"
+# audit_provider_quick_yield has no historical/all switch by design: its complete
+# census is the exact current manifest. Lock that structural ownership instead of
+# requiring a dead CLI flag that the census never accepted.
+for required in (
+    'MANIFEST = ROOT / "manifest.json"',
+    'for row in manifest.get("scrapers") or []:',
+    '"provider_count": provider_count',
+):
+    assert required in quick_yield, f"quick-yield census must remain current-manifest scoped: {required}"
+assert "--all" not in quick_yield, "quick-yield census must not grow a historical-provider switch"
 
 print("provider v3 workflow ownership contract passed: CORE verify-only + Brain evidence + one Repair engine + Hub46-scoped atomic Domain Refresh publication + current-Hub46 four-version non-regression gate")
