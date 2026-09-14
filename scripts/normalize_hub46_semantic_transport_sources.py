@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
-"""Normalize the current Hub46 semantic/transport source contract.
+"""Normalize the current Hub46 source contracts before release validation.
 
-Current contract:
+Current semantic/transport contract:
 - canonical capability: movie | tv | anime
 - anime-only launch compatibility: add tv
 - never synthesize `series`
 - never synthesize `movie`
 
+Current Domain Refresh contract:
+- only provider IDs present in the current manifest may be resolved/mutated;
+- archived provider-hubs/history rows remain historical knowledge only;
+- CONFIG rebuild/materialization must be exactly the current Hub46.
+
 This migration is intentionally narrow and idempotent. It edits only exact
-legacy source shapes that could otherwise reintroduce the retired `series`
-transport alias during reconstruction/publication.
+legacy source shapes that could otherwise reintroduce retired transport aliases
+or historical providers during reconstruction/publication/domain refresh.
 """
 from __future__ import annotations
 
@@ -131,14 +136,69 @@ def patch_finalizer() -> bool:
     return False
 
 
+def patch_domain_refresh() -> bool:
+    path = ROOT / "scripts" / "domain_refresh_transaction_v2.py"
+    text = path.read_text(encoding="utf-8")
+    original = text
+
+    if "CURRENT_PROVIDER_COUNT = 46" not in text:
+        marker = 'PROVIDERS_DIR = ROOT / "providers"\n'
+        if marker not in text:
+            raise AssertionError("domain refresh providers-dir marker drifted")
+        text = text.replace(marker, marker + "CURRENT_PROVIDER_COUNT = 46\n", 1)
+
+    old_guard = '''    manifest_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]\n    material_rows = [row for row in materialization.get("providers") or [] if isinstance(row, dict)]\n    if len(manifest_rows) != 96 or len(material_rows) != 96:\n        raise RuntimeError(\n            f"domain publication requires 96/96 state: manifest={len(manifest_rows)} materialization={len(material_rows)}"\n        )\n\n    manifest_by_id = {canonical(row.get("id")): row for row in manifest_rows}\n    material_by_id = {canonical(row.get("provider")): row for row in material_rows}\n'''
+    new_guard = '''    manifest_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]\n    material_rows = [row for row in materialization.get("providers") or [] if isinstance(row, dict)]\n    manifest_ids = {canonical(row.get("id")) for row in manifest_rows if canonical(row.get("id"))}\n    material_ids = {canonical(row.get("provider")) for row in material_rows if canonical(row.get("provider"))}\n    if len(manifest_rows) != CURRENT_PROVIDER_COUNT or len(material_rows) != CURRENT_PROVIDER_COUNT:\n        raise RuntimeError(\n            f"domain publication requires current Hub{CURRENT_PROVIDER_COUNT} state: "\n            f"manifest={len(manifest_rows)} materialization={len(material_rows)}"\n        )\n    if len(manifest_ids) != CURRENT_PROVIDER_COUNT or material_ids != manifest_ids:\n        raise RuntimeError(\n            "domain publication current provider identity mismatch: "\n            f"manifest={len(manifest_ids)} materialization={len(material_ids)}"\n        )\n\n    manifest_by_id = {canonical(row.get("id")): row for row in manifest_rows}\n    material_by_id = {canonical(row.get("provider")): row for row in material_rows}\n'''
+    if old_guard in text:
+        text = text.replace(old_guard, new_guard, 1)
+    elif new_guard not in text:
+        raise AssertionError("domain refresh 96/96 rebuild guard drifted")
+
+    text = text.replace(
+        '    materialization["providerCount"] = 96\n    materialization["expectedProviderCount"] = 96\n',
+        '    materialization["providerCount"] = CURRENT_PROVIDER_COUNT\n    materialization["expectedProviderCount"] = CURRENT_PROVIDER_COUNT\n',
+        1,
+    )
+
+    old_scope = '''    hubs = _authoritative_hub_configs(config)\n    selected = {canonical(value) for value in args.provider if canonical(value)}\n    work: list[tuple[str, dict[str, Any], dict[str, Any]]] = []\n    for provider_id, cfg in sorted(hubs.items()):\n        if selected and provider_id not in selected:\n            continue\n'''
+    new_scope = '''    manifest_scope = load(MANIFEST_PATH)\n    current_provider_ids = {\n        canonical(row.get("id"))\n        for row in manifest_scope.get("scrapers") or []\n        if isinstance(row, dict) and canonical(row.get("id"))\n    }\n    if len(current_provider_ids) != CURRENT_PROVIDER_COUNT:\n        raise SystemExit(\n            f"domain refresh requires current Hub{CURRENT_PROVIDER_COUNT} manifest scope; "\n            f"got {len(current_provider_ids)}"\n        )\n\n    hubs = _authoritative_hub_configs(config)\n    selected = {canonical(value) for value in args.provider if canonical(value)}\n    outside_scope = selected - current_provider_ids\n    if outside_scope:\n        raise SystemExit(\n            "domain refresh refuses historical/non-current provider selection: "\n            + ",".join(sorted(outside_scope))\n        )\n    work: list[tuple[str, dict[str, Any], dict[str, Any]]] = []\n    for provider_id, cfg in sorted(hubs.items()):\n        if provider_id not in current_provider_ids:\n            continue\n        if selected and provider_id not in selected:\n            continue\n'''
+    if old_scope in text:
+        text = text.replace(old_scope, new_scope, 1)
+    elif new_scope not in text:
+        raise AssertionError("domain refresh current-manifest work scope drifted")
+
+    old_report = '''        "authority": "provider-hubs-authoritative-terminal",\n        "terminal_validation_required": False,\n        "providers": {},\n'''
+    new_report = '''        "authority": "provider-hubs-authoritative-terminal",\n        "terminal_validation_required": False,\n        "scope_provider_count": len(current_provider_ids),\n        "providers": {},\n'''
+    if old_report in text:
+        text = text.replace(old_report, new_report, 1)
+    elif new_report not in text:
+        raise AssertionError("domain refresh report scope marker drifted")
+
+    old_print = '''        f"resolved={resolved} unresolved={unresolved} applied={len(set(changed_provider_ids))} "\n        f"registry={len(set(registry_changed_ids))} bundles={len(bundle_updates)} "\n'''
+    new_print = '''        f"scope={len(current_provider_ids)} resolved={resolved} unresolved={unresolved} "\n        f"applied={len(set(changed_provider_ids))} "\n        f"registry={len(set(registry_changed_ids))} bundles={len(bundle_updates)} "\n'''
+    if old_print in text:
+        text = text.replace(old_print, new_print, 1)
+    elif new_print not in text:
+        raise AssertionError("domain refresh summary scope marker drifted")
+
+    if "requires 96/96 state" in text:
+        raise AssertionError("domain refresh still contains active 96/96 publication guard")
+
+    if text != original:
+        path.write_text(text, encoding="utf-8")
+        return True
+    return False
+
+
 def main() -> int:
     changes = {
         "materializer": patch_materializer(),
         "reapply": patch_reapply(),
         "enforcer": patch_enforcer(),
         "finalizer": patch_finalizer(),
+        "domain_refresh": patch_domain_refresh(),
     }
-    print("HUB46_SEMANTIC_TRANSPORT_SOURCE_NORMALIZE " + " ".join(f"{k}={int(v)}" for k, v in changes.items()))
+    print("HUB46_SOURCE_NORMALIZE " + " ".join(f"{k}={int(v)}" for k, v in changes.items()))
     return 0
 
 
