@@ -7,6 +7,7 @@ on:
     paths:
       - 'scripts/upgrade_stream_language_roles_v1.py'
       - 'scripts/fix_stream_language_role_proof_v1.py'
+      - 'scripts/fix_global_stream_presentation_v23_tests.py'
       - 'scripts/normalize_stream_presentation_v12.py'
       - '.github/workflows/stream-language-roles-short.yml'
   workflow_dispatch:
@@ -41,8 +42,10 @@ jobs:
         run: python3 scripts/upgrade_stream_language_roles_v1.py
       - name: Require evidence before Original/Dub inference
         run: python3 scripts/fix_stream_language_role_proof_v1.py
+      - name: Migrate V23 regression assertions
+        run: python3 scripts/fix_global_stream_presentation_v23_tests.py
       - name: Compile Python Core presentation
-        run: python3 -m py_compile scripts/upgrade_stream_language_roles_v1.py scripts/fix_stream_language_role_proof_v1.py scripts/normalize_stream_presentation_v12.py scripts/provider_patches/global_stream_presentation_v1.py
+        run: python3 -m py_compile scripts/upgrade_stream_language_roles_v1.py scripts/fix_stream_language_role_proof_v1.py scripts/fix_global_stream_presentation_v23_tests.py scripts/normalize_stream_presentation_v12.py scripts/provider_patches/global_stream_presentation_v1.py
       - name: Engine v2 presentation contract
         run: node engine_v2/tests/stream-presentation.test.mjs
       - name: Provider global presentation contract
@@ -53,6 +56,7 @@ jobs:
         run: |
           python3 scripts/upgrade_stream_language_roles_v1.py
           python3 scripts/fix_stream_language_role_proof_v1.py
+          python3 scripts/fix_global_stream_presentation_v23_tests.py
       - name: Diff integrity
         run: git diff --check
       - name: Publish durable presentation source
@@ -60,7 +64,7 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only | tee "$RUNNER_TEMP/changed.txt"
-          if grep -Ev '^(engine_v2/src/stream-presentation\.mjs|engine_v2/tests/stream-presentation\.test\.mjs|scripts/provider_patches/global_stream_presentation_v1\.py|scripts/upgrade_stream_language_roles_v1\.py)$' "$RUNNER_TEMP/changed.txt"; then
+          if grep -Ev '^(engine_v2/src/stream-presentation\.mjs|engine_v2/tests/stream-presentation\.test\.mjs|scripts/provider_patches/global_stream_presentation_v1\.py|scripts/upgrade_stream_language_roles_v1\.py|tests/global_stream_presentation_test\.py)$' "$RUNNER_TEMP/changed.txt"; then
             echo 'Unexpected language-role migration path' >&2
             exit 1
           fi
@@ -70,7 +74,8 @@ jobs:
             engine_v2/src/stream-presentation.mjs \
             engine_v2/tests/stream-presentation.test.mjs \
             scripts/provider_patches/global_stream_presentation_v1.py \
-            scripts/upgrade_stream_language_roles_v1.py
+            scripts/upgrade_stream_language_roles_v1.py \
+            tests/global_stream_presentation_test.py
           git diff --cached --quiet && { echo 'STREAM_LANGUAGE_ROLES_ALREADY_APPLIED'; exit 0; }
           git commit -m 'feat(core): structure stream language and audio roles'
           git fetch origin main
