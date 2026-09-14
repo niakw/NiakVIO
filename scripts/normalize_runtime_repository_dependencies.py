@@ -23,6 +23,8 @@ REGISTRY_URLS = {
     "https://raw.githubusercontent.com/PirateZoro9/asura-providers/main/urls.json",
 }
 REQUIRED_SITE = ("cineby", "uhdmovies", "4khdhub", "zinkmovies", "goated")
+REPLACEMENT_FIELDS = ("replacements", "route_replacements", "runtime_domain_replacements")
+
 
 def load() -> dict[str, Any]:
     value = json.loads(CONFIG.read_text(encoding="utf-8"))
@@ -30,8 +32,43 @@ def load() -> dict[str, Any]:
         raise ValueError("provider-overrides.json must be an object")
     return value
 
+
 def _valid_url(value: object) -> bool:
     return isinstance(value, str) and value.strip().startswith(("http://", "https://"))
+
+
+def _remove_legacy_script(provider_id: str, raw: dict[str, Any]) -> list[str]:
+    changed: list[str] = []
+    scripts = raw.get("patch_scripts")
+    if isinstance(scripts, list):
+        clean = [str(path) for path in scripts if str(path).strip() and str(path) != LEGACY_PATCH]
+        if clean != scripts:
+            raw["patch_scripts"] = clean
+            changed.append(f"provider_patches.{provider_id}.patch_scripts:remove_legacy_repository_materializer")
+
+    options = raw.get("patch_script_options")
+    if isinstance(options, dict) and LEGACY_PATCH in options:
+        clean_options = dict(options)
+        clean_options.pop(LEGACY_PATCH, None)
+        raw["patch_script_options"] = clean_options
+        changed.append(
+            f"provider_patches.{provider_id}.patch_script_options:remove_legacy_repository_materializer"
+        )
+    return changed
+
+
+def _remove_registry_replacements(provider_id: str, raw: dict[str, Any]) -> list[str]:
+    changed: list[str] = []
+    for field in REPLACEMENT_FIELDS:
+        mapping = raw.get(field)
+        if not isinstance(mapping, dict):
+            continue
+        clean_mapping = {str(key): value for key, value in mapping.items() if str(key) not in REGISTRY_URLS}
+        if clean_mapping != mapping:
+            raw[field] = clean_mapping
+            changed.append(f"provider_patches.{provider_id}.{field}:remove_repository_registry")
+    return changed
+
 
 def normalize(value: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     providers = value.get("provider_patches")
@@ -41,27 +78,38 @@ def normalize(value: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     for provider_id, raw in providers.items():
         if not isinstance(raw, dict):
             continue
-        scripts = raw.get("patch_scripts")
-        if isinstance(scripts, list):
-            clean = [str(path) for path in scripts if str(path).strip() and str(path) != LEGACY_PATCH]
-            if clean != scripts:
-                raw["patch_scripts"] = clean
-                changed.append(f"provider_patches.{provider_id}.patch_scripts:remove_legacy_repository_materializer")
-        options = raw.get("patch_script_options")
-        if isinstance(options, dict) and LEGACY_PATCH in options:
-            clean_options = dict(options)
-            clean_options.pop(LEGACY_PATCH, None)
-            raw["patch_script_options"] = clean_options
-            changed.append(f"provider_patches.{provider_id}.patch_script_options:remove_legacy_repository_materializer")
-        for field in ("replacements", "route_replacements", "runtime_domain_replacements"):
-            mapping = raw.get(field)
-            if not isinstance(mapping, dict):
-                continue
-            clean_mapping = {str(k): v for k, v in mapping.items() if str(k) not in REGISTRY_URLS}
-            if clean_mapping != mapping:
-                raw[field] = clean_mapping
-                changed.append(f"provider_patches.{provider_id}.{field}:remove_repository_registry")
+        changed.extend(_remove_legacy_script(provider_id, raw))
+        changed.extend(_remove_registry_replacements(provider_id, raw))
     return value, changed
+
+
+def _assert_no_legacy_provider_runtime(provider_id: str, raw: object) -> None:
+    if not isinstance(raw, dict):
+        return
+    scripts = [str(value) for value in raw.get("patch_scripts") or []]
+    if LEGACY_PATCH in scripts:
+        raise ValueError(f"{provider_id}: legacy runtime repository materializer still configured")
+    options = raw.get("patch_script_options") or {}
+    if isinstance(options, dict) and LEGACY_PATCH in options:
+        raise ValueError(f"{provider_id}: legacy runtime repository materializer options remain")
+
+
+def _assert_required_sites(providers: dict[str, Any]) -> None:
+    for provider_id in REQUIRED_SITE:
+        row = providers.get(provider_id)
+        if not isinstance(row, dict) or not _valid_url(row.get("official_site")):
+            raise ValueError(f"{provider_id}: structured DATA requires persisted official_site")
+    cineby = providers.get("cineby")
+    if not isinstance(cineby, dict) or not _valid_url(cineby.get("official_api")):
+        raise ValueError("cineby: structured DATA requires persisted official_api")
+
+
+def _assert_core_has_no_provider_address_owner() -> None:
+    source = CORE_MEDIA_POLICY.read_text(encoding="utf-8")
+    forbidden = ("ZINK_REPOSITORY_DOMAIN_SOURCE", "_normalize_zink_domain_discovery")
+    if any(token in source for token in forbidden):
+        raise ValueError("Core media policy still owns provider address routing")
+
 
 def assert_contract(value: dict[str, Any]) -> None:
     providers = value.get("provider_patches")
@@ -70,25 +118,10 @@ def assert_contract(value: dict[str, Any]) -> None:
     if (ROOT / LEGACY_PATCH).exists():
         raise ValueError("legacy runtime repository domain materializer must remain absent in clean-v3")
     for provider_id, raw in providers.items():
-        if not isinstance(raw, dict):
-            continue
-        scripts = [str(v) for v in raw.get("patch_scripts") or []]
-        if LEGACY_PATCH in scripts:
-            raise ValueError(f"{provider_id}: legacy runtime repository materializer still configured")
-        options = raw.get("patch_script_options") or {}
-        if isinstance(options, dict) and LEGACY_PATCH in options:
-            raise ValueError(f"{provider_id}: legacy runtime repository materializer options remain")
-    for provider_id in REQUIRED_SITE:
-        row = providers.get(provider_id)
-        if not isinstance(row, dict) or not _valid_url(row.get("official_site")):
-            raise ValueError(f"{provider_id}: structured DATA requires persisted official_site")
-    cineby = providers.get("cineby")
-    if not isinstance(cineby, dict) or not _valid_url(cineby.get("official_api")):
-        raise ValueError("cineby: structured DATA requires persisted official_api")
-    source = CORE_MEDIA_POLICY.read_text(encoding="utf-8")
-    for token in ("ZINK_REPOSITORY_DOMAIN_SOURCE", "_normalize_zink_domain_discovery"):
-        if token in source:
-            raise ValueError("Core media policy still owns provider address routing")
+        _assert_no_legacy_provider_runtime(provider_id, raw)
+    _assert_required_sites(providers)
+    _assert_core_has_no_provider_address_owner()
+
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -110,6 +143,7 @@ def main() -> int:
         "legacy_materializer=absent address_owner=provider_data"
     )
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
