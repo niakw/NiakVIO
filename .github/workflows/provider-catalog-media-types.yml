@@ -29,26 +29,30 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.12'
-      - name: Reconcile catalog semantics and transport from Hub46 manifest
+      - name: Reconcile Hub46 semantics and transport across release projections
         run: python scripts/reconcile_provider_catalog_media_types.py --apply
       - name: Validate canonical projection after reconciliation
         run: python tests/canonical_media_types_test.py
-      - name: Commit bounded catalog reconciliation
+      - name: Commit bounded media-type reconciliation
         shell: bash
         run: |
           set -euo pipefail
-          CHANGED="$(git diff --name-only)"
-          if [ -z "$CHANGED" ]; then
+          mapfile -t CHANGED < <(git diff --name-only)
+          if [ "${#CHANGED[@]}" -eq 0 ]; then
             echo 'PROVIDER_CATALOG_MEDIA_TYPES_NOOP true'
             exit 0
           fi
-          test "$CHANGED" = "provider_catalog.json" || {
-            echo "Unexpected reconciliation paths:" >&2
-            printf '%s\n' "$CHANGED" >&2
-            exit 1
-          }
+          for path in "${CHANGED[@]}"; do
+            case "$path" in
+              provider_catalog.json|manifest.json|vf/manifest.json|no-anime/manifest.json|vf-no-anime/manifest.json) ;;
+              *)
+                echo "Unexpected reconciliation path: $path" >&2
+                exit 1
+                ;;
+            esac
+          done
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add provider_catalog.json
+          git add provider_catalog.json manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json
           git commit -m 'fix(catalog): align Hub46 canonical media types'
           git push origin HEAD:${{ github.ref_name }}
