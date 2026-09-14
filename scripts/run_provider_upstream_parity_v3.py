@@ -47,6 +47,7 @@ MAX_SAMPLES_PER_LANE = 32
 PROBE_BYTES = 4096
 MAX_TERMINAL_CANDIDATES = 4
 DEFAULT_PROBE_TIMEOUT = 12
+MIN_TERMINAL_VOD_SECONDS = 60
 
 
 def cid(value: object) -> str:
@@ -186,6 +187,43 @@ def _media_kind(url: str, content_type: str, body: bytes) -> str | None:
     return None
 
 
+def _short_finite_hls_seconds(body: bytes) -> float | None:
+    """Return a conclusive short finite media-playlist duration, otherwise None.
+
+    The probe body is intentionally bounded. Therefore duration is authoritative
+    only when ENDLIST is present in the sampled body, proving that the complete
+    finite playlist fit inside the sample. Master playlists are never judged by
+    EXTINF duration here.
+    """
+    # PARITY_SHORT_FINITE_VOD_V1
+    try:
+        text = body.decode("utf-8", errors="replace").lstrip("\ufeffï»¿")
+    except Exception:
+        return None
+    upper = text.upper()
+    if "#EXTM3U" not in upper or "#EXT-X-ENDLIST" not in upper:
+        return None
+    if "#EXT-X-STREAM-INF" in upper:
+        return None
+    durations: list[float] = []
+    for line in text.splitlines():
+        value = line.strip()
+        if not value.upper().startswith("#EXTINF:"):
+            continue
+        try:
+            duration = float(value.split(":", 1)[1].split(",", 1)[0].strip())
+        except (TypeError, ValueError):
+            continue
+        if duration >= 0:
+            durations.append(duration)
+    if not durations:
+        return None
+    total = float(sum(durations))
+    if 0 < total < MIN_TERMINAL_VOD_SECONDS:
+        return round(total, 3)
+    return None
+
+
 def _probe_terminal(stream: dict[str, Any], timeout: int) -> dict[str, Any]:
     url = str(stream.get("url") or "").strip()
     if not url.startswith(("http://", "https://")):
@@ -199,6 +237,15 @@ def _probe_terminal(stream: dict[str, Any], timeout: int) -> dict[str, Any]:
             content_type = str(response.headers.get("content-type") or "")
             body = response.read(PROBE_BYTES)
         kind = _media_kind(final_url, content_type, body)
+        short_vod_seconds = _short_finite_hls_seconds(body) if kind == "hls" else None
+        if short_vod_seconds is not None:
+            return {
+                "verified": False,
+                "kind": "hls",
+                "status": status,
+                "reason": "short_finite_vod",
+                "short_vod_seconds": short_vod_seconds,
+            }
         return {
             "verified": bool(kind and 200 <= status < 400),
             "kind": kind,
@@ -242,6 +289,7 @@ def _run_verified(path: Path, fixture: dict[str, Any], timeout: int) -> dict[str
         "terminal_kinds": sorted({str(row.get("kind")) for row in verified if row.get("kind")}),
         "terminal_statuses": sorted({int(row["status"]) for row in terminal_rows if isinstance(row.get("status"), int)}),
         "terminal_reasons": sorted({str(row.get("reason")) for row in terminal_rows if row.get("reason")}),
+        "terminal_short_vod_seconds": sorted({float(row["short_vod_seconds"]) for row in terminal_rows if isinstance(row.get("short_vod_seconds"), (int, float))}),
         "error_class": str(error_details.get("code") or error_details.get("name") or "")[:120] or None,
     }
 
