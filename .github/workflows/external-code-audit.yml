@@ -24,7 +24,7 @@ on:
     - cron: '17 4 * * 0'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: external-code-audit
@@ -35,6 +35,8 @@ jobs:
     name: Refresh services and export AI-readable audit logs
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    permissions:
+      contents: read
     env:
       REPO_SLUG: niakw/NiakVIO
       OUT: audit/ai-external
@@ -50,6 +52,7 @@ jobs:
         with:
           ref: ${{ env.AUDIT_REF }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Prepare export directory
         shell: bash
@@ -92,19 +95,35 @@ jobs:
           retention-days: 21
           if-no-files-found: error
 
-      - name: Commit refreshed audit exports safely
-        if: ${{ always() && (github.event_name != 'workflow_dispatch' || inputs.publish) }}
+  publish:
+    name: Publish explicitly requested audit evidence
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
+    needs: [collect]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout main for explicit publication
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Download validated audit evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: external-code-audit-${{ github.run_id }}
+          path: checked-audit
+
+      - name: Commit explicitly requested audit exports
         shell: bash
         run: |
           set -euo pipefail
-          if [ "$AUDIT_REF" != "main" ]; then
-            echo "Refusing to publish external audit exports from non-main ref: $AUDIT_REF" >&2
-            exit 1
-          fi
           SNAPSHOT="$RUNNER_TEMP/ai-external-export"
-          rm -rf "$SNAPSHOT"
           mkdir -p "$SNAPSHOT"
-          cp -a "$OUT"/. "$SNAPSHOT"/
+          cp -a checked-audit/. "$SNAPSHOT"/
 
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
@@ -112,10 +131,10 @@ jobs:
           for attempt in 1 2 3; do
             git fetch origin main
             git reset --hard origin/main
-            mkdir -p "$OUT"
-            find "$OUT" -mindepth 1 -maxdepth 1 ! -name README.md -exec rm -rf {} +
-            cp -a "$SNAPSHOT"/. "$OUT"/
-            git add "$OUT"
+            mkdir -p audit/ai-external
+            find audit/ai-external -mindepth 1 -maxdepth 1 ! -name README.md -exec rm -rf {} +
+            cp -a "$SNAPSHOT"/. audit/ai-external/
+            git add audit/ai-external
 
             if git diff --cached --quiet; then
               echo 'No audit export changes.'
