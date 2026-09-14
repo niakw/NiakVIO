@@ -50,8 +50,8 @@ def run_node(source: str, runner_source: str) -> dict | list:
 
 
 # Castle already receives languageName/abbreviate from its API. The provider layer
-# must expose that evidence structurally on every individual stream instead of only
-# burying it in the display name.
+# must expose that evidence structurally on every individual stream. The visible
+# provider name stays language-free; the old API label is retained only as provenance.
 castle_source = castle.apply("module.exports={getStreams:async()=>[]};\n")
 castle_rows = run_node(
     castle_source,
@@ -98,16 +98,18 @@ p.getStreams({
 )
 assert [row.get("language") for row in castle_rows] == ["Hindi", "Tamil", "Telugu", "Bengali"], castle_rows
 assert all(row.get("quality") == "1080p" for row in castle_rows), castle_rows
-assert all("Castle [" in row.get("name", "") for row in castle_rows), castle_rows
+assert all(row.get("name") == "Castle - 1080p" for row in castle_rows), castle_rows
+assert [row.get("sourceLabel") for row in castle_rows] == [
+    "Castle [Hindi]", "Castle [Tamil]", "Castle [Telugu]", "Castle [Bengali]"
+], castle_rows
 
 
 # Core V23 owns role inference. With Hindi proven as the TMDB original language,
-# Hindi must be Original while the other audio track becomes a Dub. Castle itself
-# never guesses those roles.
+# Hindi must be Original while Tamil becomes a Dub. Castle itself never guesses roles.
 role_source = (
     "module.exports={getStreams:async()=>["
-    "{name:'Castle [Hindi]',url:'https://media.example/hi.m3u8',quality:'1080p',language:'Hindi'},"
-    "{name:'Castle [Tamil]',url:'https://media.example/ta.m3u8',quality:'1080p',language:'Tamil'}"
+    "{name:'Castle',sourceLabel:'Castle [Hindi]',url:'https://media.example/hi.m3u8',quality:'1080p',language:'Hindi'},"
+    "{name:'Castle',sourceLabel:'Castle [Tamil]',url:'https://media.example/ta.m3u8',quality:'1080p',language:'Tamil'}"
     "]};\n"
 )
 role_source = presentation.apply(role_source, context={"provider_id": "castle"})
