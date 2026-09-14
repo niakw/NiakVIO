@@ -90,6 +90,9 @@ export function buildCatalogFromPublished({ generalManifest, vfManifest }) {
  * importer produced immutable horizontal + square WebP assets plus assets/providers/index.json. This
  * function only consumes that committed index so every future manifest rebuild
  * keeps using repository-owned URLs instead of fragile third-party image hosts.
+ * Historical logo rows may remain in the immutable asset registry after their
+ * providers move to provider-old/, but every current catalog provider must still
+ * be covered by a committed 96x96 logo entry.
  */
 export function applyCommittedProviderLogos(catalog, logoIndex) {
   validateProviderCatalog(catalog);
@@ -101,13 +104,24 @@ export function applyCommittedProviderLogos(catalog, logoIndex) {
   if (!indexed || typeof indexed !== "object") return catalog;
 
   const byId = new Map(catalog.providers.map((row) => [row.canonicalId, row]));
+  const indexedIds = new Set(Object.keys(indexed).map((value) => canonicalProviderId(value)));
+  const missing = [...byId.keys()].filter((id) => {
+    if (!indexedIds.has(id)) return true;
+    const url = String(indexed[id]?.urls?.["96x96"] ?? "").trim();
+    return !url;
+  });
+  if (missing.length) {
+    throw new Error(`provider logo coverage mismatch: missing=${missing.join(",") || "none"}`);
+  }
+
   let applied = 0;
   for (const [rawId, logo] of Object.entries(indexed)) {
-    if (!logo || typeof logo !== "object") continue;
     const canonicalId = canonicalProviderId(rawId);
     const row = byId.get(canonicalId);
-    if (!row) throw new Error(`provider logo index references unknown provider: ${rawId}`);
-    const url = String(logo.urls?.["96x96"] ?? "").trim();
+    // Asset history is intentionally wider than the current Hub46 catalog.
+    // Archived providers keep their committed files without re-entering release metadata.
+    if (!row) continue;
+    const url = String(logo?.urls?.["96x96"] ?? "").trim();
     if (!url) continue;
     if (!url.startsWith("https://raw.githubusercontent.com/niakw/NiakVIO/")) {
       throw new Error(`${canonicalId}: committed provider logo must use NiakVIO raw asset URL`);
