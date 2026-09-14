@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-"""Remove non-concrete address constructors from provider hub/history state.
+"""Remove non-concrete address constructors from current provider hub/history state.
 
 This is a conservative preflight for the scheduled Domain Refresh. It never
 invents a provider address: when `direct` is invalid it may only reuse the first
 already-curated concrete direct candidate, otherwise it becomes null. Invalid
 history entries are removed; the newest concrete historical entry may replace an
 invalid current entry so stale JS/template constructors cannot remain LKG state.
+
+The CLI is scoped by the current manifest. Historical provider identities may
+remain archived in provider-hubs/history, but Domain Refresh must never mutate
+those rows or turn them back into publication candidates.
 """
 from __future__ import annotations
 
@@ -36,6 +40,25 @@ def host(value: object) -> str:
     return (urllib.parse.urlparse(raw).hostname or "").casefold().strip(".")
 
 
+def canonical(value: object) -> str:
+    return str(value or "").strip().casefold()
+
+
+def current_provider_ids(manifest_path: Path) -> set[str]:
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    rows = payload.get("scrapers") if isinstance(payload, dict) else None
+    if not isinstance(rows, list) or not rows:
+        raise AssertionError(f"{manifest_path}: non-empty scrapers list required")
+    ids = {
+        canonical(row.get("id"))
+        for row in rows
+        if isinstance(row, dict) and canonical(row.get("id"))
+    }
+    if len(ids) != len(rows):
+        raise AssertionError(f"{manifest_path}: duplicate or missing provider id")
+    return ids
+
+
 def dedupe(values: list[str]) -> list[str]:
     out: list[str] = []
     seen: set[str] = set()
@@ -48,13 +71,20 @@ def dedupe(values: list[str]) -> list[str]:
     return out
 
 
-def sanitize(document: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+def sanitize(
+    document: dict[str, Any],
+    provider_ids: set[str] | None = None,
+) -> tuple[dict[str, Any], list[str]]:
     providers = document.get("providers")
     if not isinstance(providers, dict):
         raise AssertionError("provider-hubs.json providers must be an object")
 
+    scoped = {canonical(value) for value in provider_ids} if provider_ids is not None else None
     changed: list[str] = []
     for provider_id, row in providers.items():
+        provider_key = canonical(provider_id)
+        if scoped is not None and provider_key not in scoped:
+            continue
         if not isinstance(row, dict):
             continue
         before = json.dumps(row, ensure_ascii=False, sort_keys=True)
@@ -94,13 +124,20 @@ def sanitize(document: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     return document, sorted(changed)
 
 
-def sanitize_history(document: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+def sanitize_history(
+    document: dict[str, Any],
+    provider_ids: set[str] | None = None,
+) -> tuple[dict[str, Any], list[str]]:
     providers = document.get("providers")
     if not isinstance(providers, dict):
         raise AssertionError("provider-domain-history.json providers must be an object")
 
+    scoped = {canonical(value) for value in provider_ids} if provider_ids is not None else None
     changed: list[str] = []
     for provider_id, row in providers.items():
+        provider_key = canonical(provider_id)
+        if scoped is not None and provider_key not in scoped:
+            continue
         if not isinstance(row, dict):
             continue
         before = json.dumps(row, ensure_ascii=False, sort_keys=True)
@@ -141,16 +178,19 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--registry", default="provider-hubs.json")
     parser.add_argument("--history", default="provider-domain-history.json")
+    parser.add_argument("--manifest", default="manifest.json")
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
 
+    provider_ids = current_provider_ids(Path(args.manifest))
+
     registry_path = Path(args.registry)
     registry = json.loads(registry_path.read_text(encoding="utf-8"))
-    registry, registry_changed = sanitize(registry)
+    registry, registry_changed = sanitize(registry, provider_ids)
 
     history_path = Path(args.history)
     history = json.loads(history_path.read_text(encoding="utf-8"))
-    history, history_changed = sanitize_history(history)
+    history, history_changed = sanitize_history(history, provider_ids)
 
     if args.check and (registry_changed or history_changed):
         details = []
@@ -168,6 +208,7 @@ def main() -> int:
 
     print(
         "FIELD_HUB_REGISTRY_SANITIZE "
+        f"scope={len(provider_ids)} "
         f"registry_changed={len(registry_changed)} "
         f"registry_providers={','.join(registry_changed) if registry_changed else '-'} "
         f"history_changed={len(history_changed)} "
