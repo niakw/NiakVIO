@@ -1,3 +1,4 @@
+# retry: live-search-item-v2
 name: SHORT - VoirAnime-Homes DLE Repair
 
 on:
@@ -41,7 +42,9 @@ jobs:
             scripts/provider_patches/dle_anime_runtime_v1.py \
             scripts/provider_patches/voiranime_homes_dle_runtime_v1.py \
             scripts/register_voiranime_homes_dle_runtime_v1.py \
+            tests/voiranime_homes_search_item_adapter_test.py \
             tests/voiranime_homes_dle_registration_v1_test.py
+          python3 tests/voiranime_homes_search_item_adapter_test.py
           python3 tests/voiranime_homes_dle_registration_v1_test.py
           python3 scripts/register_voiranime_homes_dle_runtime_v1.py
           python3 tests/voiranime_homes_dle_registration_v1_test.py
