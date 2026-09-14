@@ -1,6 +1,6 @@
 # Provider history & live classification — 46 current / 50 historical archive
 
-- Current manifest: **5.21.43**, providers: **46**.
+- Current manifest: **5.21.44**, providers: **46**.
 - Historical snapshots are compared without cross-version fallback: **5.21.0 → 5.21.16 → 5.21.36 → current**.
 - State legend: **🟢 positive**, **🟡 partial/degraded**, **🟠 LEARN debt**, **🔴 explicit failure**, **⚪ unknown/inconclusive**.
 - A version/hash is not treated as green unless that exact snapshot has matching evidence.
