@@ -44,7 +44,10 @@ assert '"strictPlayback":true' in safety_then_hls(
 streamzo_safety = safety_then_hls(base, "streamzo", {"default_user_agent":"UA-STREAMZO"})
 assert '"defaultUserAgent"' not in streamzo_safety
 enriched = media_apply(base, options={})
-assert '"defaultUserAgent":""' in enriched
+# Media enrichment now owns a browser-like default UA for recovered player/media
+# requests. Safety still owns no UA. Provider-scoped options may override this
+# default (StreamZo below), but ordinary enrichment must remain deterministic.
+assert '"defaultUserAgent":"Mozilla/5.0 ' in enriched
 assert 'c.defaultUserAgent&&!keyOf(out,"User-Agent")' in enriched
 assert '"defaultUserAgent":"UA-STREAMZO"' in media_apply(base, options={"default_user_agent":"UA-STREAMZO"})
 
