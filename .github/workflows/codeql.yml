@@ -1,22 +1,22 @@
 name: "SEC - CodeQL"
 
-# Advanced CodeQL configuration for NiakVIO.
-#
-# Current release scope is 46 executable providers. Historical provider snapshots
-# under provider-old/ are retained as evidence only and are intentionally excluded
-# from current runtime code scanning. The live provider and ProviderBase trees are
-# split into four non-empty lexical shards each; s-z includes future z* entries so
-# no empty fallback database is created.
+# CodeQL scans maintained source, not content-addressed generated Provider JS.
+# Exact published providers remain blocking through NiakVIO's byte-level syntax,
+# runtime, hardening, forbidden-pattern, fixed-point, reverse and integrity gates.
+# Historical provider-old/ and evidence/upstream snapshots are never current code.
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
       - ".github/workflows/**"
       - ".github/actions/**"
       - ".github/dependabot.yml"
       - ".github/codeql/**"
+      - "engine_v2/**"
+      - "provider-bases/**"
+      - "scripts/**"
+      - "tests/**"
       - "**/*.js"
       - "**/*.jsx"
       - "**/*.mjs"
@@ -27,10 +27,17 @@ on:
       - "package.json"
       - "package-lock.json"
       - "requirements*.txt"
-
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/codeql.yml"
+      - ".github/codeql/**"
+      - "engine_v2/**"
+      - "provider-bases/**"
+      - "scripts/**"
+      - "tests/**"
   schedule:
     - cron: "42 18 * * 6"
-
   workflow_dispatch:
 
 concurrency:
@@ -44,50 +51,7 @@ permissions:
   security-events: write
 
 jobs:
-  scope-contract:
-    name: "CodeQL · Hub46 scope contract"
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-      - name: Validate current JS shard coverage
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-
-          for directory in (Path('providers'), Path('provider-bases')):
-              rows=sorted(directory.glob('*.js'))
-              if not rows:
-                  raise SystemExit(f'{directory}: no current JS providers')
-              bad=[]
-              buckets={'0-f':0,'g-l':0,'m-r':0,'s-z':0}
-              for path in rows:
-                  first=path.name[0].lower()
-                  if first.isdigit() or 'a' <= first <= 'f':
-                      buckets['0-f'] += 1
-                  elif 'g' <= first <= 'l':
-                      buckets['g-l'] += 1
-                  elif 'm' <= first <= 'r':
-                      buckets['m-r'] += 1
-                  elif 's' <= first <= 'z':
-                      buckets['s-z'] += 1
-                  else:
-                      bad.append(path.name)
-              if bad:
-                  raise SystemExit(f'{directory}: files outside CodeQL shard alphabet: {bad}')
-              empty=[name for name,count in buckets.items() if count == 0]
-              if empty:
-                  raise SystemExit(f'{directory}: empty CodeQL shards: {empty}; counts={buckets}')
-              print(f'CODEQL_SCOPE directory={directory} files={len(rows)} buckets={buckets}')
-          PY
-
   analyze:
-    needs: scope-contract
     name: "${{ matrix.check_name }}"
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -95,178 +59,91 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - check_name: "CodeQL · actions"
+          - check_name: "CodeQL · Actions"
             language: actions
-            build_mode: none
             config: ""
             category: "/language:actions"
-          - check_name: "CodeQL · python"
+
+          - check_name: "CodeQL · Python"
             language: python
-            build_mode: none
-            config: ""
+            config: |
+              paths-ignore:
+                - providers/**
+                - provider-old/**
+                - upstream-lkg/**
+                - audit/**
             category: "/language:python"
-          - check_name: "CodeQL · javascript-typescript · source"
+
+          - check_name: "CodeQL · JS Core"
             language: javascript-typescript
-            build_mode: none
             config: |
               paths-ignore:
                 - providers/**
                 - provider-bases/**
                 - provider-old/**
-            category: "/language:javascript-typescript/shard:source"
+                - upstream-lkg/**
+                - audit/**
+                - automation/evidence/**
+            category: "/language:javascript-typescript/scope:core"
 
-          - check_name: "CodeQL · javascript-typescript · providers-0-f"
+          - check_name: "CodeQL · JS ProviderBase"
             language: javascript-typescript
-            build_mode: none
             config: |
               paths:
-                - "providers/0*.js"
-                - "providers/1*.js"
-                - "providers/2*.js"
-                - "providers/3*.js"
-                - "providers/4*.js"
-                - "providers/5*.js"
-                - "providers/6*.js"
-                - "providers/7*.js"
-                - "providers/8*.js"
-                - "providers/9*.js"
-                - "providers/a*.js"
-                - "providers/b*.js"
-                - "providers/c*.js"
-                - "providers/d*.js"
-                - "providers/e*.js"
-                - "providers/f*.js"
-            category: "/language:javascript-typescript/shard:providers-0-f"
-          - check_name: "CodeQL · javascript-typescript · providers-g-l"
-            language: javascript-typescript
-            build_mode: none
-            config: |
-              paths:
-                - "providers/g*.js"
-                - "providers/h*.js"
-                - "providers/i*.js"
-                - "providers/j*.js"
-                - "providers/k*.js"
-                - "providers/l*.js"
-            category: "/language:javascript-typescript/shard:providers-g-l"
-          - check_name: "CodeQL · javascript-typescript · providers-m-r"
-            language: javascript-typescript
-            build_mode: none
-            config: |
-              paths:
-                - "providers/m*.js"
-                - "providers/n*.js"
-                - "providers/o*.js"
-                - "providers/p*.js"
-                - "providers/q*.js"
-                - "providers/r*.js"
-            category: "/language:javascript-typescript/shard:providers-m-r"
-          - check_name: "CodeQL · javascript-typescript · providers-s-z"
-            language: javascript-typescript
-            build_mode: none
-            config: |
-              paths:
-                - "providers/s*.js"
-                - "providers/t*.js"
-                - "providers/u*.js"
-                - "providers/v*.js"
-                - "providers/w*.js"
-                - "providers/x*.js"
-                - "providers/y*.js"
-                - "providers/z*.js"
-            category: "/language:javascript-typescript/shard:providers-s-z"
-
-          - check_name: "CodeQL · javascript-typescript · provider-bases-0-f"
-            language: javascript-typescript
-            build_mode: none
-            config: |
-              paths:
-                - "provider-bases/0*.js"
-                - "provider-bases/1*.js"
-                - "provider-bases/2*.js"
-                - "provider-bases/3*.js"
-                - "provider-bases/4*.js"
-                - "provider-bases/5*.js"
-                - "provider-bases/6*.js"
-                - "provider-bases/7*.js"
-                - "provider-bases/8*.js"
-                - "provider-bases/9*.js"
-                - "provider-bases/a*.js"
-                - "provider-bases/b*.js"
-                - "provider-bases/c*.js"
-                - "provider-bases/d*.js"
-                - "provider-bases/e*.js"
-                - "provider-bases/f*.js"
-            category: "/language:javascript-typescript/shard:provider-bases-0-f"
-          - check_name: "CodeQL · javascript-typescript · provider-bases-g-l"
-            language: javascript-typescript
-            build_mode: none
-            config: |
-              paths:
-                - "provider-bases/g*.js"
-                - "provider-bases/h*.js"
-                - "provider-bases/i*.js"
-                - "provider-bases/j*.js"
-                - "provider-bases/k*.js"
-                - "provider-bases/l*.js"
-            category: "/language:javascript-typescript/shard:provider-bases-g-l"
-          - check_name: "CodeQL · javascript-typescript · provider-bases-m-r"
-            language: javascript-typescript
-            build_mode: none
-            config: |
-              paths:
-                - "provider-bases/m*.js"
-                - "provider-bases/n*.js"
-                - "provider-bases/o*.js"
-                - "provider-bases/p*.js"
-                - "provider-bases/q*.js"
-                - "provider-bases/r*.js"
-            category: "/language:javascript-typescript/shard:provider-bases-m-r"
-          - check_name: "CodeQL · javascript-typescript · provider-bases-s-z"
-            language: javascript-typescript
-            build_mode: none
-            config: |
-              paths:
-                - "provider-bases/s*.js"
-                - "provider-bases/t*.js"
-                - "provider-bases/u*.js"
-                - "provider-bases/v*.js"
-                - "provider-bases/w*.js"
-                - "provider-bases/x*.js"
-                - "provider-bases/y*.js"
-                - "provider-bases/z*.js"
-            category: "/language:javascript-typescript/shard:provider-bases-s-z"
+                - provider-bases/**
+              paths-ignore:
+                - provider-old/**
+            category: "/language:javascript-typescript/scope:provider-bases"
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
 
+      - name: Validate Hub46 ProviderBase scope
+        if: ${{ matrix.check_name == 'CodeQL · JS ProviderBase' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          current={str(row.get('id') or '').strip().casefold() for row in manifest.get('scrapers') or []}
+          current.discard('')
+          bases=list(Path('provider-bases').glob('*.js'))
+          archived=list(Path('provider-old').glob('*.js'))
+          if len(current) != 46:
+              raise SystemExit(f'expected 46 current providers, got {len(current)}')
+          if not bases:
+              raise SystemExit('provider-bases/: no maintained ProviderBase files')
+          if not archived:
+              raise SystemExit('provider-old/: historical archive unexpectedly empty')
+          print(f'CODEQL_SCOPE current={len(current)} provider_bases={len(bases)} archived_files={len(archived)} generated_providers_excluded=true')
+          PY
+
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4
+        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938
         with:
           languages: ${{ matrix.language }}
-          build-mode: ${{ matrix.build_mode }}
+          build-mode: none
           queries: security-extended
           config: ${{ matrix.config }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4
+        uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938
         with:
           category: ${{ matrix.category }}
 
-  javascript-result:
-    name: "CodeQL · javascript-typescript"
+  result:
+    name: "CodeQL · maintained source"
     if: always()
-    needs: [scope-contract, analyze]
+    needs: [analyze]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Enforce complete CodeQL matrix
+      - name: Enforce complete maintained-source matrix
         env:
-          SCOPE_RESULT: ${{ needs.scope-contract.result }}
           MATRIX_RESULT: ${{ needs.analyze.result }}
-        run: |
-          test "$SCOPE_RESULT" = "success"
-          test "$MATRIX_RESULT" = "success"
+        run: test "$MATRIX_RESULT" = "success"
