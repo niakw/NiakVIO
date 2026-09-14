@@ -101,9 +101,12 @@ assert '"series"' not in anime_transport_body
 assert 'expected=46' in enforcer
 
 reapply = (ROOT / "scripts/reapply_published_overrides.py").read_text(encoding="utf-8")
-assert 'Movie is not a generic' in reapply
-assert 'transport.append("tv")' in reapply
-assert 'transport.append("series")' not in reapply
+assert 'def projected_transport_types(semantic_types: object) -> list[str]:' in reapply
+reapply_transport_body = reapply.split('def projected_transport_types(semantic_types: object) -> list[str]:', 1)[1].split('\ndef semantic_manifest_types(', 1)[0]
+assert 'if "anime" in semantic and "tv" not in transport:' in reapply_transport_body
+assert 'transport.append("tv")' in reapply_transport_body
+assert 'transport.append("series")' not in reapply_transport_body
+assert '"series"' not in reapply_transport_body
 
 machine = json.loads((ROOT / "automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
 assert machine["media_types"]["anime_only_transport_compatibility"] == ["anime", "tv"]
