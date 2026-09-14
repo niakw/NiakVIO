@@ -48,9 +48,10 @@ NEKO_BLOCK = r'''  /* NIAKVIO_NEKO_SEARCH_SEASON_EPLISTER_V2 */
     }
     return null
   }
+  function nekoVisibleText(v){var src=String(v==null?"":v),out="",inTag=false;for(var i=0;i<src.length;i++){var ch=src.charAt(i);if(ch==="<"){inTag=true;out+=" ";continue}if(ch===">"){inTag=false;continue}if(!inTag)out+=ch}return s(out).replace(/&(?:nbsp|amp|quot|#0*39);/gi," ").replace(/\s+/g," ").trim()}
   function nekoButtons(html){
     var out=[],groupRe=/<div[^>]*class=["'][^"']*server-group[^"']*["'][^>]*>([\s\S]*?)(?=<div[^>]*class=["'][^"']*server-group|<div[^>]*class=["'][^"']*server-divider|<!--\s*VF SERVERS|$)/gi,gm;
-    while((gm=groupRe.exec(html||""))!==null&&out.length<20){var block=gm[1],lm=block.match(/<label[^>]*>([\s\S]*?)<\/label>/i),label=lm?s(lm[1].replace(/<[^>]+>/g," ")).toUpperCase():"",language=/^VF\b|FRENCH/.test(label)?"VF":/SUB|VOSTFR/.test(label)?"VOSTFR":"VOSTFR",re=/loadMi\(\{\s*value\s*:\s*['"]([A-Za-z0-9+/=]{20,})['"]\s*\}\)/g,m;
+    while((gm=groupRe.exec(html||""))!==null&&out.length<20){var block=gm[1],lm=block.match(/<label[^>]*>([\s\S]*?)<\/label>/i),label=lm?nekoVisibleText(lm[1]).toUpperCase():"",language=/^VF\b|FRENCH/.test(label)?"VF":/SUB|VOSTFR/.test(label)?"VOSTFR":"VOSTFR",re=/loadMi\(\{\s*value\s*:\s*['"]([A-Za-z0-9+/=]{20,})['"]\s*\}\)/g,m;
       while((m=re.exec(block))!==null&&out.length<20){try{var decoded=atob(m[1]),sm=decoded.match(/src=["']([^"']+)["']/i),u=sm?abs(sm[1].replace(/&#0*38;/g,"&"),c.base):"";if(u)out.push({url:u,language:language})}catch(_e){}}}
     return out
   }

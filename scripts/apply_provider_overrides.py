@@ -1618,16 +1618,6 @@ def apply_overrides(
         }
         if "strict_playback_validation" in provider_capability:
             safety_options["strict_playback"] = bool(provider_capability.get("strict_playback_validation"))
-        before = text
-        text = _apply_patch_script(text, provider_id, GLOBAL_RUNTIME_MEDIA_SAFETY, safety_options, None)
-        if text != before:
-            applied.append({
-                "type": "patch_script",
-                "path": GLOBAL_RUNTIME_MEDIA_SAFETY,
-                "phase": phase,
-                "scope": "global_runtime_media_safety",
-            })
-
         _apply_playback_stage(post_media_hooks)
         staged_hooks = {str(value) for value in pre_media_hooks + post_media_hooks if str(value).strip()}
         legacy_tail_hooks = [
@@ -1783,6 +1773,21 @@ def apply_overrides(
                     "phase": phase,
                     "scope": "global_terminal_stream_sanitizer",
                 })
+
+        # CORE_RUNTIME_MEDIA_SAFETY_OUTERMOST_V1
+        # Safety is the final Core stream guard. Applying it after enrichment,
+        # playback integrity, identity/presentation/branding and the terminal
+        # sanitizer makes its wrapper outermost while preserving the sanitizer's
+        # strict fail-closed verdicts underneath it.
+        before = text
+        text = _apply_patch_script(text, provider_id, GLOBAL_RUNTIME_MEDIA_SAFETY, safety_options, None)
+        if text != before:
+            applied.append({
+                "type": "patch_script",
+                "path": GLOBAL_RUNTIME_MEDIA_SAFETY,
+                "phase": phase,
+                "scope": "global_runtime_media_safety",
+            })
 
         # END PROVIDER is the final byte boundary.
         # Every CORE.* Lego is inserted immediately before it, after PROVIDER.* Lego.

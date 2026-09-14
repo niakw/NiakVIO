@@ -193,6 +193,19 @@ def main() -> int:
 
         required = set(declared_lanes(manifest_row))
         current = set(verified.get(provider) or set())
+        # NIAKVIO_FRESH_STREAM_PROOF_GUARD_V1
+        # Explicit fresh invalidation is newer authority than historical quick-yield.
+        # Keep old rows as evidence, but they cannot restore a proven lane until
+        # a fresh identity-safe positive replaces current_stream_proof.
+        current_stream_proof = patch.get("current_stream_proof") if isinstance(patch.get("current_stream_proof"), dict) else {}
+        if (
+            current_stream_proof.get("requiresFreshIdentitySafePositive") is True
+            and current_stream_proof.get("streamPositive") is False
+        ):
+            current = set()
+            for semantic in required:
+                lane_statuses[provider][semantic].discard("playable_verified")
+                lane_statuses[provider][semantic].add("fresh_identity_safe_positive_required")
         protected = set(locked.get(provider) or set())
         proven = current | protected
         missing = sorted(required - proven)

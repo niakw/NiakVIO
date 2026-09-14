@@ -19,6 +19,7 @@ from provider_patch_blocks import replace_managed_fix
 
 MANAGED_FIX_ID = "PROVIDER.DLE.ANIME.RUNTIME.V1"
 MARKER = "NIAKVIO_DLE_ANIME_RUNTIME_V1"
+SECURITY_MARKER = "NIAKVIO_HTML_FILTER_SCANNER_V1"
 
 WRAPPER = r'''
 /* NIAKVIO_DLE_ANIME_RUNTIME_V1 */
@@ -28,7 +29,7 @@ WRAPPER = r'''
   function s(v){return String(v==null?"":v).trim()}
   function arr(v){return Array.isArray(v)?v:[]}
   function norm(v){var x=s(v).toLowerCase();try{x=x.normalize("NFD").replace(/[\u0300-\u036f]/g,"")}catch(_e){}return x.replace(/[^a-z0-9]+/g," ").trim()}
-  function stripTags(v){return s(v).replace(/<[^>]+>/g," ").replace(/&(?:nbsp|amp|quot|#0*39);/gi," ").replace(/\s+/g," ").trim()}
+  function stripTags(v){var src=String(v==null?"":v),out="",inTag=false;for(var i=0;i<src.length;i++){var ch=src.charAt(i);if(ch==="<"){inTag=true;out+=" ";continue}if(ch===">"){inTag=false;continue}if(!inTag)out+=ch}return s(out).replace(/&(?:nbsp|amp|quot|#0*39);/gi," ").replace(/\s+/g," ").trim()}
   function absolute(v,base){try{return new URL(s(v).replace(/&amp;/gi,"&").replace(/\\\//g,"/"),base).toString()}catch(_e){return""}}
   function score(a,b){a=norm(a);b=norm(b);if(!a||!b)return 0;if(a===b)return 120;if(a.indexOf(b)>=0||b.indexOf(a)>=0)return 85;var aw=a.split(/\s+/),bw=b.split(/\s+/),n=0;for(var i=0;i<bw.length;i++)if(bw[i].length>2&&aw.indexOf(bw[i])>=0)n+=14;return n}
   function uniq(v){var o=[],seen=Object.create(null);for(var i=0;i<v.length;i++){var x=s(v[i]),k=norm(x);if(!x||!k||seen[k])continue;seen[k]=1;o.push(x)}return o}

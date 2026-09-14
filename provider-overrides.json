@@ -223,19 +223,19 @@
         ],
         "missingLanes": [],
         "completeCapabilityProof": true,
-        "recoveryStatus": "anime-positive-movie-overdeclaration-removed",
+        "recoveryStatus": "proven",
         "provenRouteCount": 9,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
-          "quick_provider-returned-streams",
-          "quick_provider-returned-wrong-content",
-          "recovery_proven",
-          "movie_overdeclaration_removed"
+          "all_declared_lanes_live_proven"
         ],
         "laneStatuses": {
           "anime": [
             "playable_verified"
+          ],
+          "movie": [
+            "wrong_content"
           ]
         },
         "evidenceDestructive": false
@@ -303,7 +303,7 @@
       "manifest_overrides": {
         "enabled": true
       },
-      "official_site": "https://purstream.mx",
+      "official_site": "https://purstream.ad",
       "official_api": "https://api.purstream.ad/api/v1",
       "fixed_endpoint": {
         "resolver_function": "detectPurstreamDomain",
@@ -314,34 +314,28 @@
         "purstream.art": "purstream.mx",
         "purstream.club": "purstream.mx",
         "purstream.id": "purstream.mx",
-        "purstream.wiki": "purstream.mx",
         "api.purstream.art": "api.purstream.ad",
         "api.purstream.club": "api.purstream.ad",
         "api.purstream.id": "api.purstream.ad",
-        "api.purstream.wiki": "api.purstream.ad",
-        "purstream.ad": "purstream.mx"
+        "api.purstream.wiki": "api.purstream.ad"
       },
       "replacements": {
         "purstream.art": "purstream.mx",
         "purstream.club": "purstream.mx",
         "purstream.id": "purstream.mx",
-        "purstream.wiki": "purstream.mx",
         "api.purstream.art": "api.purstream.ad",
         "api.purstream.club": "api.purstream.ad",
         "api.purstream.id": "api.purstream.ad",
-        "api.purstream.wiki": "api.purstream.ad",
-        "purstream.ad": "purstream.mx"
+        "api.purstream.wiki": "api.purstream.ad"
       },
       "runtime_domain_replacements": {
         "purstream.art": "purstream.mx",
         "purstream.club": "purstream.mx",
         "purstream.id": "purstream.mx",
-        "purstream.wiki": "purstream.mx",
         "api.purstream.art": "api.purstream.ad",
         "api.purstream.club": "api.purstream.ad",
         "api.purstream.id": "api.purstream.ad",
-        "api.purstream.wiki": "api.purstream.ad",
-        "purstream.ad": "purstream.mx"
+        "api.purstream.wiki": "api.purstream.ad"
       },
       "candidate_api_recipe": {
         "proofModelVersion": 5,
@@ -2805,6 +2799,9 @@
         "laneStatuses": {
           "anime": [
             "no_streams"
+          ],
+          "movie": [
+            "no_streams"
           ]
         },
         "evidenceDestructive": false
@@ -3048,7 +3045,8 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      }
+      },
+      "official_site": "https://www3.anikai.cc"
     },
     "animesalt": {
       "capability": "html_scraper",
@@ -3245,6 +3243,12 @@
         ],
         "laneStatuses": {
           "anime": [
+            "no_streams"
+          ],
+          "movie": [
+            "no_streams"
+          ],
+          "tv": [
             "no_streams"
           ]
         },
@@ -3460,6 +3464,9 @@
         ],
         "laneStatuses": {
           "anime": [
+            "no_streams"
+          ],
+          "movie": [
             "no_streams"
           ]
         },
@@ -3693,7 +3700,7 @@
           }
         }
       },
-      "route_data_state": "off",
+      "route_data_state": "repair",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -3701,7 +3708,7 @@
         "activationAuthority": "hub-lab-matrix-46",
         "declaredHub": null,
         "forcedEnabled": true,
-        "routeDataState": "off",
+        "routeDataState": "repair",
         "requiredLanes": [
           "anime"
         ],
@@ -3714,16 +3721,18 @@
         "completeCapabilityProof": false,
         "recoveryStatus": "proven",
         "provenRouteCount": 2,
-        "terminalState": "terminal-blocked",
+        "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-http-error",
-          "recovery_proven",
-          "terminal-blocked"
+          "recovery_proven"
         ],
         "laneStatuses": {
           "anime": [
+            "no_streams"
+          ],
+          "movie": [
             "no_streams"
           ]
         },
@@ -4199,6 +4208,9 @@
         ],
         "laneStatuses": {
           "anime": [
+            "no_streams"
+          ],
+          "movie": [
             "no_streams"
           ]
         },
@@ -4997,7 +5009,7 @@
           "mediaType"
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "on",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -5005,7 +5017,7 @@
         "activationAuthority": "hub-lab-matrix-46",
         "declaredHub": null,
         "forcedEnabled": true,
-        "routeDataState": "repair",
+        "routeDataState": "on",
         "requiredLanes": [
           "anime"
         ],
@@ -5017,20 +5029,20 @@
           "anime"
         ],
         "missingLanes": [],
-        "completeCapabilityProof": false,
+        "completeCapabilityProof": true,
         "recoveryStatus": "proven",
         "provenRouteCount": 8,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
-          "declared_lane_unproven",
-          "quick_provider-network-zero-result",
-          "quick_provider-returned-streams",
-          "recovery_proven"
+          "all_declared_lanes_live_proven"
         ],
         "laneStatuses": {
           "anime": [
             "playable_verified"
+          ],
+          "movie": [
+            "no_streams"
           ]
         },
         "evidenceDestructive": false
@@ -5046,7 +5058,8 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "referer": "https://w16.french-manga.net"
       },
       "provider_lego_scripts": [
         "scripts/provider_patches/french_manga_dle_runtime_v1.py"
@@ -5757,7 +5770,7 @@
           "mediaType"
         ]
       },
-      "route_data_state": "on",
+      "route_data_state": "repair",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -5765,31 +5778,32 @@
         "activationAuthority": "hub-lab-matrix-46",
         "declaredHub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
         "forcedEnabled": true,
-        "routeDataState": "on",
+        "routeDataState": "repair",
         "requiredLanes": [
           "anime"
         ],
-        "currentVerifiedLanes": [
-          "anime"
-        ],
+        "currentVerifiedLanes": [],
         "exactLockedLanes": [],
-        "provenLanes": [
+        "provenLanes": [],
+        "missingLanes": [
           "anime"
         ],
-        "missingLanes": [],
-        "completeCapabilityProof": true,
-        "recoveryStatus": "anime-positive-movie-overdeclaration-removed",
+        "completeCapabilityProof": false,
+        "recoveryStatus": "proven",
         "provenRouteCount": 18,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
+          "declared_lane_unproven",
           "quick_provider-network-http-error",
           "quick_provider-network-zero-result",
-          "recovery_proven",
-          "movie_overdeclaration_removed"
+          "recovery_proven"
         ],
         "laneStatuses": {
           "anime": [
+            "no_streams"
+          ],
+          "movie": [
             "no_streams"
           ]
         },
@@ -6889,6 +6903,9 @@
         "laneStatuses": {
           "anime": [
             "no_streams"
+          ],
+          "movie": [
+            "no_streams"
           ]
         },
         "evidenceDestructive": false
@@ -7179,7 +7196,7 @@
           }
         }
       },
-      "route_data_state": "on",
+      "route_data_state": "repair",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -7187,34 +7204,34 @@
         "activationAuthority": "hub-lab-matrix-46",
         "declaredHub": null,
         "forcedEnabled": true,
-        "routeDataState": "on",
+        "routeDataState": "repair",
         "requiredLanes": [
+          "anime",
           "movie",
-          "tv",
-          "anime"
+          "tv"
         ],
         "currentVerifiedLanes": [
           "movie",
-          "tv",
-          "anime"
+          "tv"
         ],
         "exactLockedLanes": [],
         "provenLanes": [
           "movie",
-          "tv",
+          "tv"
+        ],
+        "missingLanes": [
           "anime"
         ],
-        "missingLanes": [],
-        "completeCapabilityProof": true,
-        "recoveryStatus": "current-suggest-runtime-full32",
+        "completeCapabilityProof": false,
+        "recoveryStatus": "proven",
         "provenRouteCount": 5,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
-          "current_suggest_exact_href",
-          "exact_tv_positive",
-          "exact_anime_positive",
-          "full32_no_certain_regression"
+          "declared_lane_unproven",
+          "quick_gate-runtime-plan-missing",
+          "quick_provider-returned-streams",
+          "recovery_proven"
         ],
         "laneStatuses": {
           "anime": [
@@ -7256,7 +7273,7 @@
       ],
       "capability": "api_stream_resolver",
       "official_hub": "https://www.videasy.to/docs",
-      "official_site": "https://player.videasy.to",
+      "official_site": "https://www.vidking.net",
       "domain_substitutions": {
         "player.videasy.net": "player.videasy.to"
       },
@@ -7849,7 +7866,7 @@
         "authority": "provider-repair-disposition-v1",
         "activationState": "enabled",
         "activationAuthority": "hub-lab-matrix-46",
-        "declaredHub": null,
+        "declaredHub": "https://vidrock.ru",
         "forcedEnabled": true,
         "routeDataState": "repair",
         "requiredLanes": [
@@ -8127,7 +8144,7 @@
           }
         }
       },
-      "route_data_state": "on",
+      "route_data_state": "repair",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -8135,29 +8152,31 @@
         "activationAuthority": "hub-lab-matrix-46",
         "declaredHub": "https://voiranime.org.uk/",
         "forcedEnabled": true,
-        "routeDataState": "on",
+        "routeDataState": "repair",
         "requiredLanes": [
           "anime"
         ],
-        "currentVerifiedLanes": [
-          "anime"
-        ],
+        "currentVerifiedLanes": [],
         "exactLockedLanes": [],
-        "provenLanes": [
+        "provenLanes": [],
+        "missingLanes": [
           "anime"
         ],
-        "missingLanes": [],
-        "completeCapabilityProof": true,
-        "recoveryStatus": "current-anime-v2-stream-positive",
+        "completeCapabilityProof": false,
+        "recoveryStatus": "proven",
         "provenRouteCount": 7,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
-          "exact_regression_recovered",
-          "full32_no_certain_regression"
+          "declared_lane_unproven",
+          "quick_provider-network-zero-result",
+          "recovery_proven"
         ],
         "laneStatuses": {
           "anime": [
+            "no_streams"
+          ],
+          "movie": [
             "no_streams"
           ]
         },
@@ -8362,7 +8381,7 @@
       "manifest_overrides": {
         "enabled": true
       },
-      "route_data_state": "repair",
+      "route_data_state": "on",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -8370,7 +8389,7 @@
         "activationAuthority": "hub-lab-matrix-46",
         "declaredHub": null,
         "forcedEnabled": true,
-        "routeDataState": "repair",
+        "routeDataState": "on",
         "requiredLanes": [
           "anime"
         ],
@@ -8382,20 +8401,20 @@
           "anime"
         ],
         "missingLanes": [],
-        "completeCapabilityProof": false,
+        "completeCapabilityProof": true,
         "recoveryStatus": "proven",
         "provenRouteCount": 8,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
-          "declared_lane_unproven",
-          "quick_provider-network-zero-result",
-          "quick_provider-returned-streams",
-          "recovery_proven"
+          "all_declared_lanes_live_proven"
         ],
         "laneStatuses": {
           "anime": [
             "playable_verified"
+          ],
+          "movie": [
+            "no_streams"
           ]
         },
         "evidenceDestructive": false
@@ -8411,7 +8430,8 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "referer": "https://voiranime.homes"
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -8459,7 +8479,8 @@
       },
       "proof_search_bases": [
         "https://voiranime.homes"
-      ]
+      ],
+      "official_site": "https://voiranime.homes"
     },
     "voiranime-rip": {
       "capability": "mixed_embed_resolver",
@@ -8677,6 +8698,9 @@
         "laneStatuses": {
           "anime": [
             "no_streams"
+          ],
+          "movie": [
+            "no_streams"
           ]
         },
         "evidenceDestructive": false
@@ -8876,6 +8900,9 @@
         ],
         "laneStatuses": {
           "anime": [
+            "no_streams"
+          ],
+          "movie": [
             "no_streams"
           ]
         },
@@ -9831,26 +9858,21 @@
           "tv"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "stale-stream-proof-invalidated",
+        "recoveryStatus": "no-proven-route",
         "provenRouteCount": 0,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
-          "fresh_full_corpus_zero",
-          "historical_wrong_content",
-          "fixture_invariant_short_media",
-          "stale_playable_verified_invalidated"
+          "declared_lane_unproven",
+          "quick_provider-returned-streams",
+          "recovery_no-proven-route"
         ],
         "laneStatuses": {
           "movie": [
-            "unproven",
-            "fresh_corpus_zero",
-            "historical_wrong_content"
+            "fresh_identity_safe_positive_required"
           ],
           "tv": [
-            "unproven",
-            "fresh_corpus_zero",
-            "historical_wrong_content"
+            "fresh_identity_safe_positive_required"
           ]
         },
         "evidenceDestructive": false
@@ -10052,6 +10074,12 @@
         ],
         "laneStatuses": {
           "anime": [
+            "no_streams"
+          ],
+          "movie": [
+            "no_streams"
+          ],
+          "tv": [
             "no_streams"
           ]
         },
@@ -11349,7 +11377,7 @@
           }
         ]
       },
-      "route_data_state": "off",
+      "route_data_state": "repair",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -11357,7 +11385,7 @@
         "activationAuthority": "hub-lab-matrix-46",
         "declaredHub": null,
         "forcedEnabled": true,
-        "routeDataState": "off",
+        "routeDataState": "repair",
         "requiredLanes": [
           "movie",
           "tv"
@@ -11372,13 +11400,12 @@
         "completeCapabilityProof": false,
         "recoveryStatus": "no-proven-route",
         "provenRouteCount": 0,
-        "terminalState": "terminal-blocked",
+        "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-zero-result",
-          "recovery_no-proven-route",
-          "terminal-blocked"
+          "recovery_no-proven-route"
         ],
         "laneStatuses": {
           "movie": [
