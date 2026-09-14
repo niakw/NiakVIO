@@ -22,7 +22,7 @@ route_reconstructor = ROUTES.read_text(encoding="utf-8")
 seeds = json.loads(SEEDS.read_text(encoding="utf-8"))
 knowledge = json.loads(KNOWLEDGE.read_text(encoding="utf-8"))
 
-# Ordinary 96/96 reconstruction must be self-contained after NiakVIO has learned
+# Ordinary 46/46 reconstruction must be self-contained after NiakVIO has learned
 # a provider contract. External repositories are research inputs only.
 for forbidden in (
     "python scripts/discover_candidates.py",
@@ -96,7 +96,7 @@ assert any(
 ), uhd
 
 providers = knowledge.get("providers")
-assert isinstance(providers, dict) and len(providers) == 96
+assert isinstance(providers, dict) and len(providers) == 46
 assert knowledge.get("legacyProviderJsExecuted") is False
 assert knowledge.get("upstreamJsExecuted") is False
 
