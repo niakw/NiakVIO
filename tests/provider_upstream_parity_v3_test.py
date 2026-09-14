@@ -73,9 +73,37 @@ row = parity.run_lane(
 )
 assert row["status"] == "REGRESSION", row
 assert [sample["fixture"] for sample in row["samples"]] == ["a", "b"], row
-assert len(calls) == 4, calls
+# Clean 0/0 costs two calls; the asymmetric positive is reverse-confirmed and
+# therefore costs four calls before it can be called a certain regression.
+assert len(calls) == 6, calls
+assert row["samples"][-1]["confirmationClassification"] == "upstream_ok_niakvio_ko", row
+
+# First-request-wins services must never manufacture a regression. The reverse
+# order proves that both implementations can produce terminal media, so the
+# lane is positive-but-flaky instead of upstream_ok_niakvio_ko.
+parity.select_fixtures = lambda *args, **kwargs: [fixtures[1]]
+flaky_calls = 0
+def first_request_wins(path, fixture, timeout):
+    global flaky_calls
+    flaky_calls += 1
+    return result(1 if flaky_calls % 2 else 0)
+parity._run_verified = first_request_wins
+flaky = parity.run_lane(
+    "demo",
+    "movie",
+    Path("local.js"),
+    Path("upstream.js"),
+    timeout=10,
+    sample_count=1,
+    seed="seed",
+)
+assert flaky["status"] == "POSITIVE", flaky
+assert flaky["samples"][0]["classification"] == "both_ok_flaky", flaky
+assert flaky["samples"][0]["confirmation"] is not None, flaky
+assert flaky_calls == 4, flaky_calls
 
 # If every sampled work is a clean 0/0, the lane is RESAMPLE, never ZERO.
+parity.select_fixtures = lambda *args, **kwargs: fixtures
 parity._run_verified = lambda *args, **kwargs: result(0)
 row = parity.run_lane(
     "demo",

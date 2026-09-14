@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import hashlib
 import json
 import os
 import subprocess
@@ -305,16 +306,66 @@ def run_lane(
     for candidate in candidates:
         up_fixture = fixture_payload(candidate, lane, upstream=True)
         local_fixture = fixture_payload(candidate, lane, upstream=False)
-        upstream = _run_verified(upstream_path, up_fixture, timeout)
-        local = _run_verified(local_path, local_fixture, timeout)
+        # Never give the upstream a systematic first-request advantage. Some
+        # services are cold-start/rate-limit sensitive (PersianStremio is a
+        # proven example: identical requests alternated 200/503). Pick the first
+        # order deterministically per sample, then reverse-confirm every
+        # asymmetric positive before it can become a certain regression.
+        identity = f"{provider_id}:{lane}:{candidate['slug']}"
+        local_first = bool(hashlib.sha256(identity.encode("utf-8")).digest()[0] & 1)
+
+        def ordered_pair(first_local: bool) -> tuple[dict[str, Any], dict[str, Any]]:
+            if first_local:
+                local_result = _run_verified(local_path, local_fixture, timeout)
+                upstream_result = _run_verified(upstream_path, up_fixture, timeout)
+            else:
+                upstream_result = _run_verified(upstream_path, up_fixture, timeout)
+                local_result = _run_verified(local_path, local_fixture, timeout)
+            return upstream_result, local_result
+
+        upstream, local = ordered_pair(local_first)
         classification = classify_pair(upstream, local)
-        samples.append({
+        confirmation = None
+        confirmation_classification = None
+
+        if classification in {"upstream_ok_niakvio_ko", "niakvio_ok_upstream_ko"}:
+            upstream_confirm, local_confirm = ordered_pair(not local_first)
+            confirmation_classification = classify_pair(upstream_confirm, local_confirm)
+            confirmation = {
+                "executionOrder": "upstream_first" if local_first else "niakvio_first",
+                "classification": confirmation_classification,
+                "upstream": upstream_confirm,
+                "niakvio": local_confirm,
+            }
+            upstream_positive_count = sum(
+                int(row.get("stream_count") or 0) > 0 for row in (upstream, upstream_confirm)
+            )
+            local_positive_count = sum(
+                int(row.get("stream_count") or 0) > 0 for row in (local, local_confirm)
+            )
+            if upstream_positive_count and local_positive_count:
+                classification = "both_ok_flaky"
+            elif upstream_positive_count == 2 and local_positive_count == 0:
+                classification = "upstream_ok_niakvio_ko"
+            elif local_positive_count and upstream_positive_count == 0:
+                classification = "niakvio_ok_upstream_ko"
+            elif upstream_positive_count and local_positive_count == 0:
+                classification = "upstream_advantage_unconfirmed"
+            else:
+                classification = "order_sensitive_resample"
+
+        sample = {
             "fixture": candidate["slug"],
             "tmdbId": str(candidate.get("tmdbId") or ""),
+            "executionOrder": "niakvio_first" if local_first else "upstream_first",
             "classification": classification,
             "upstream": upstream,
             "niakvio": local,
-        })
+        }
+        if confirmation is not None:
+            sample["confirmation"] = confirmation
+            sample["confirmationClassification"] = confirmation_classification
+        samples.append(sample)
         if classification in {
             "both_ok",
             "upstream_ok_niakvio_ko",
@@ -325,9 +376,15 @@ def run_lane(
     classes = [str(row.get("classification") or "") for row in samples]
     if "upstream_ok_niakvio_ko" in classes:
         status = "REGRESSION"
-    elif any(value in {"both_ok", "niakvio_ok_upstream_ko"} for value in classes):
+    elif any(value in {"both_ok", "both_ok_flaky", "niakvio_ok_upstream_ko"} for value in classes):
         status = "POSITIVE"
-    elif classes and all(value in {"catalog_miss_both", "upstream_candidate_unverified", "niakvio_candidate_unverified"} for value in classes):
+    elif classes and all(value in {
+        "catalog_miss_both",
+        "upstream_candidate_unverified",
+        "niakvio_candidate_unverified",
+        "upstream_advantage_unconfirmed",
+        "order_sensitive_resample",
+    } for value in classes):
         status = "RESAMPLE"
     else:
         status = "TECHNICAL_UNRESOLVED"
