@@ -124,7 +124,10 @@ assert row["name"] == row["title"], row
 assert "Interstellar • 2014" in row["description"], row
 assert "⏱ 2h49" in row["description"], row
 assert "🔞 -12" in row["description"], row
-assert "🇫🇷 VF" in row["description"], row
+assert row["language"] == "VF", row
+assert row["languageTracks"] == [{"code":"fr","tag":"FR","label":"French","role":"Dub"}], row
+assert "French · Dub" in row["description"], row
+assert "FR Dub" in row["displayBadges"], row
 assert row["duration"] == 169, row
 assert row["ageRating"] == "-12", row
 assert "1080p-full-hd" in row["badgeIds"], row
@@ -199,7 +202,10 @@ assert tv_row["name"] == tv_row["title"], tv_row
 assert "Breaking Bad • 2008 • S01E01" in tv_row["description"], tv_row
 assert "⏱ 58min" in tv_row["description"], tv_row
 assert "🔞 -16" in tv_row["description"], tv_row
-assert "🇫🇷 VF" in tv_row["description"], tv_row
+assert tv_row["language"] == "VF", tv_row
+assert tv_row["languageTracks"] == [{"code":"fr","tag":"FR","label":"French","role":"Dub"}], tv_row
+assert "French · Dub" in tv_row["description"], tv_row
+assert "FR Dub" in tv_row["displayBadges"], tv_row
 assert tv_row["duration"] == 58, tv_row
 assert tv_row["ageRating"] == "-16", tv_row
 assert "720p-hd" in tv_row["badgeIds"], tv_row
@@ -207,4 +213,4 @@ assert "vf" in tv_row["badgeIds"], tv_row
 assert tv_row["size"] == tv_row["description"], tv_row
 assert tv["tmdbCalls"] == 2, tv
 
-print("stream presentation metadata fallback preserves existing UI for movie and TV episode")
+print("stream presentation metadata fallback preserves V23 language roles for movie and TV episode")

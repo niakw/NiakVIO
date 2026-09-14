@@ -125,11 +125,11 @@ p.getStreams('157336','movie',undefined,undefined).then(function(rows){
     assert completed.returncode == 0, completed.stdout + completed.stderr
     native = json.loads(completed.stdout.strip())
     assert native["tmdbCalls"] == 1, native
-    # V22 exposes both proven quality and the detailed language in the client
-    # title. Quality therefore remains visible but is no longer necessarily the
-    # final suffix.
-    assert " - 1080p" in native["row"]["title"], native
-    assert native["row"]["title"].endswith(" - VO"), native
+    # V23 keeps the title uniform: provider + strongest proven quality only.
+    # Language remains in the structured fields, badges and description.
+    assert native["row"]["title"] == "Generic Core Test - 1080p", native
+    assert native["row"]["language"] == "VO", native
+    assert "🌐 VO" in native["row"]["description"], native
     assert native["row"]["name"] == native["row"]["title"], native
     assert native["row"]["duration"] == 169, native
     assert "Interstellar • 2014" in native["row"]["description"], native

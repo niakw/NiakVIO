@@ -4,6 +4,7 @@ import {
   buildBadgeIds,
   buildBadges,
   normalizeLanguage,
+  normalizeLanguageTracks,
   normalizeSourceType,
   presentStreamCandidate,
 } from "../src/stream-presentation.mjs";
@@ -148,6 +149,47 @@ assert.equal(normalizeLanguage({ language: "VFQ" }, vfProvider), "VFQ");
 assert.equal(normalizeLanguage({ language: "MULTI" }, voProvider), "MULTI");
 assert.deepEqual(buildBadges({ quality: "2160p", language: "VFQ", codec: "AVC" }), ["4K", "AVC", "VFQ"]);
 assert.deepEqual(buildBadgeIds({ quality: "2160p", language: "VFQ", codec: "AVC", subtitles: [] }), ["4k-ultra-hd", "avc", "vfq"]);
+
+
+const indianTracks = presentStreamCandidate({
+  name: "HindMoviez",
+  url: "https://media.example/india.m3u8",
+  language: "Hindi/English",
+}, { title: "Example", year: 2026, mediaType: "movie", originalLanguage: "en" }, { id: "hindmoviez", name: "HindMoviez", languages: ["hi", "en"] });
+assert.deepEqual(indianTracks.languageTracks, [
+  { code: "hi", tag: "HI", label: "Hindi", role: "Dub" },
+  { code: "en", tag: "EN", label: "English", role: "Original" },
+]);
+assert.match(indianTracks.description, /Hindi · Dub • English · Original/);
+assert.ok(indianTracks.displayBadges.includes("HI Dub"));
+assert.ok(indianTracks.displayBadges.includes("EN Original"));
+
+const castleHindi = presentStreamCandidate({
+  name: "Castle",
+  url: "https://media.example/castle-hi.m3u8",
+  language: "Hindi",
+}, { title: "Example", year: 2026, mediaType: "movie", originalLanguage: "en" }, { id: "castle", name: "Castle", languages: ["hi", "en"] });
+assert.deepEqual(castleHindi.languageTracks, [{ code: "hi", tag: "HI", label: "Hindi", role: "Dub" }]);
+assert.match(castleHindi.description, /Hindi · Dub/);
+
+const animeSub = presentStreamCandidate({
+  name: "Anime-Sama",
+  url: "https://media.example/anime.m3u8",
+  language: "VOSTFR",
+}, { title: "Anime", year: 2026, mediaType: "anime", originalLanguage: "ja" }, { id: "anime-sama", name: "Anime-Sama", languages: ["fr", "ja"] });
+assert.deepEqual(animeSub.languageTracks, [
+  { code: "ja", tag: "JA", label: "Japanese", role: "Original" },
+  { code: "fr", tag: "FR", label: "French", role: "Sub" },
+]);
+assert.match(animeSub.description, /Japanese · Original • French · Sub/);
+
+const hlsTracks = normalizeLanguageTracks({
+  audioTracks: [{ language: "en", name: "English" }, { language: "fr", name: "French" }],
+}, { originalLanguage: "en" }, vfProvider);
+assert.deepEqual(hlsTracks, [
+  { code: "en", tag: "EN", label: "English", role: "Original" },
+  { code: "fr", tag: "FR", label: "French", role: "Dub" },
+]);
 
 const normalizedMovie = normalizeTmdbPayload({
   id: 157336,

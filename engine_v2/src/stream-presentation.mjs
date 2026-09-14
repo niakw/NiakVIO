@@ -27,6 +27,8 @@ export function presentStreamCandidate(stream = {}, metadata = {}, provider = {}
     description: lines.join("\n") || null,
     quality: facts.quality,
     language: facts.language,
+    originalLanguage: facts.originalLanguage,
+    languageTracks: facts.languageTracks,
     codec: facts.codec,
     audio: facts.audio,
     duration: facts.duration,
@@ -46,12 +48,16 @@ export function presentStreamCandidate(stream = {}, metadata = {}, provider = {}
 export function collectFacts(stream = {}, metadata = {}, provider = {}) {
   const audio = normalizeAudio(stream.audio ?? stream.audioCodec ?? stream.audio_codec);
   const language = normalizeLanguage(stream, provider);
+  const originalLanguage = normalizeLanguageCode(metadata.originalLanguage ?? metadata.original_language);
+  const languageTracks = normalizeLanguageTracks(stream, metadata, provider);
   const videoTech = normalizeVideoTech(stream.videoTech ?? stream.video_tech ?? stream.visualTags ?? stream.hdr ?? stream.description);
   const sourceType = normalizeSourceType(stream.sourceType ?? stream.source_type ?? stream.description ?? stream.filename);
   const releaseType = normalizeReleaseType(stream.releaseType ?? stream.release_type ?? stream.description ?? stream.filename);
   return {
     quality: inferQuality(stream),
     language,
+    originalLanguage,
+    languageTracks,
     codec: normalizeCodec(stream.codec ?? stream.codecName ?? stream.videoCodec ?? stream.video_codec),
     audio,
     audioCodec: normalizeAudioCodec(audio),
@@ -89,7 +95,8 @@ export function buildBadges(facts = {}) {
   if (facts.bitDepth) out.push(facts.bitDepth);
   if (facts.audioCodec) out.push(facts.audioCodec);
   if (facts.audioChannels) out.push(facts.audioChannels);
-  if (facts.language) out.push(facts.language);
+  const trackBadges = (facts.languageTracks ?? []).map(compactTrackLabel).filter(Boolean);
+  if (trackBadges.length) out.push(...trackBadges); else if (facts.language) out.push(facts.language);
   out.push(...(facts.subtitles ?? []));
   if (facts.ageRating) out.push(facts.ageRating);
   return uniq(out);
@@ -196,6 +203,135 @@ function naturalLanguageLabel(value) {
   const parts = raw.split(/\s*(?:\/|,|\+|\||;)\s*/).map((part) => clean(part)).filter(Boolean);
   const mapped = parts.map((part) => aliases[String(part).toLowerCase()] || part);
   return uniq(mapped).join(" / ") || null;
+}
+
+const LANGUAGE_CODE_ALIASES = Object.freeze({
+  en: "en", eng: "en", english: "en",
+  fr: "fr", fra: "fr", fre: "fr", french: "fr", francais: "fr", français: "fr",
+  hi: "hi", hin: "hi", hindi: "hi",
+  ja: "ja", jpn: "ja", japanese: "ja",
+  ta: "ta", tam: "ta", tamil: "ta",
+  te: "te", tel: "te", telugu: "te",
+  bn: "bn", ben: "bn", bengali: "bn",
+  ml: "ml", mal: "ml", malayalam: "ml",
+  kn: "kn", kan: "kn", kannada: "kn",
+  pa: "pa", pan: "pa", punjabi: "pa",
+  gu: "gu", guj: "gu", gujarati: "gu",
+  mr: "mr", mar: "mr", marathi: "mr",
+  ur: "ur", urd: "ur", urdu: "ur",
+  ko: "ko", kor: "ko", korean: "ko",
+  es: "es", spa: "es", spanish: "es",
+  de: "de", deu: "de", ger: "de", german: "de",
+  it: "it", ita: "it", italian: "it",
+  pt: "pt", por: "pt", portuguese: "pt",
+  ar: "ar", ara: "ar", arabic: "ar",
+  tr: "tr", tur: "tr", turkish: "tr",
+  ru: "ru", rus: "ru", russian: "ru",
+  zh: "zh", zho: "zh", chi: "zh", chinese: "zh",
+});
+
+const LANGUAGE_NAMES = Object.freeze({
+  en: "English", fr: "French", hi: "Hindi", ja: "Japanese", ta: "Tamil", te: "Telugu",
+  bn: "Bengali", ml: "Malayalam", kn: "Kannada", pa: "Punjabi", gu: "Gujarati", mr: "Marathi",
+  ur: "Urdu", ko: "Korean", es: "Spanish", de: "German", it: "Italian", pt: "Portuguese",
+  ar: "Arabic", tr: "Turkish", ru: "Russian", zh: "Chinese",
+});
+
+export function normalizeLanguageCode(value) {
+  const raw = useful(value);
+  if (!raw) return null;
+  const normalized = raw.toLowerCase().replace(/[_-]+/g, " ").replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
+  if (LANGUAGE_CODE_ALIASES[normalized]) return LANGUAGE_CODE_ALIASES[normalized];
+  const first = normalized.split(" ")[0];
+  if (LANGUAGE_CODE_ALIASES[first]) return LANGUAGE_CODE_ALIASES[first];
+  const locale = raw.toLowerCase().replace(/_/g, "-").match(/^([a-z]{2,3})(?:-[a-z]{2,4})?$/i)?.[1];
+  return locale && LANGUAGE_CODE_ALIASES[locale] ? LANGUAGE_CODE_ALIASES[locale] : null;
+}
+
+function roleFrom(value) {
+  const text = clean(value)?.toLowerCase() ?? "";
+  if (/\b(?:original|original audio|native|vo)\b/.test(text)) return "Original";
+  if (/\b(?:dub|dubbed|doublage|vf|vff|vfq)\b/.test(text)) return "Dub";
+  if (/\b(?:sub|subtitle|subbed|vostfr|sous[- ]?titre)\b/.test(text)) return "Sub";
+  return null;
+}
+
+function trackObject(code, role) {
+  if (!code) return null;
+  return { code, tag: code.toUpperCase(), label: LANGUAGE_NAMES[code] ?? code.toUpperCase(), role: role ?? null };
+}
+
+function rawTrackRows(stream) {
+  for (const value of [stream.audioTracks, stream.audio_tracks, stream.audioLanguages, stream.audio_languages, stream.availableAudioTracks, stream.available_audio_tracks, stream.languages]) {
+    if (Array.isArray(value) && value.length) return value;
+  }
+  return [];
+}
+
+function subtitleTrackRows(stream) {
+  for (const value of [stream.subtitles, stream.extCaptions, stream.captions]) {
+    if (Array.isArray(value) && value.length) return value;
+  }
+  return [];
+}
+
+export function normalizeLanguageTracks(stream = {}, metadata = {}, provider = {}) {
+  const original = normalizeLanguageCode(metadata.originalLanguage ?? metadata.original_language);
+  const out = [];
+  const add = (code, role) => {
+    const row = trackObject(code, role);
+    if (!row) return;
+    if (!out.some((item) => item.code === row.code && item.role === row.role)) out.push(row);
+  };
+
+  const rows = rawTrackRows(stream);
+  for (const row of rows) {
+    const value = typeof row === "string" ? row : row?.language ?? row?.lang ?? row?.code ?? row?.name ?? row?.label ?? row?.title;
+    const code = normalizeLanguageCode(value);
+    if (!code) continue;
+    const explicitRole = roleFrom(typeof row === "string" ? row : row?.role ?? row?.kind ?? row?.type ?? row?.name ?? row?.label ?? "");
+    add(code, explicitRole ?? (original ? (code === original ? "Original" : "Dub") : null));
+  }
+
+  const explicit = useful(
+    stream.language ?? stream.lang ?? stream.audioLanguage ?? stream.audio_language ??
+    stream.audioTrack ?? stream.audio_track ?? stream.playerLanguage ?? stream.player_language ?? stream.dub,
+  );
+  const upper = explicit?.toUpperCase() ?? "";
+  if (!rows.length && explicit) {
+    if (/\bVOSTFR\b/.test(upper)) {
+      if (original) { add(original, "Original"); add("fr", "Sub"); }
+    } else if (/^(?:VO|ORIGINAL(?:[ ._-]?(?:AUDIO|LANG(?:UAGE)?))?)$/i.test(explicit)) {
+      if (original) add(original, "Original");
+    } else if (/^(?:VF|VFF|VFQ|FR|FRA|FRE|FRENCH|FRANCAIS|FRANÇAIS|FR-CA)$/i.test(explicit)) {
+      if (original) add("fr", original === "fr" ? "Original" : "Dub");
+    } else if (/\bMULTI\b|\bDUAL(?:[- ]?AUDIO)?\b/i.test(explicit)) {
+      if (original) add(original, "Original");
+      if (original && isVfProvider(provider) && original !== "fr") add("fr", "Dub");
+    } else {
+      const parts = explicit.split(/\s*(?:\/|,|\+|\||;)\s*/).map((value) => value.trim()).filter(Boolean);
+      for (const part of parts) {
+        const code = normalizeLanguageCode(part);
+        if (code) add(code, roleFrom(part) ?? (original ? (code === original ? "Original" : "Dub") : null));
+      }
+    }
+  }
+
+  for (const row of subtitleTrackRows(stream)) {
+    const value = typeof row === "string" ? row : row?.language ?? row?.lanName ?? row?.langName ?? row?.lan ?? row?.lang ?? row?.name ?? row?.label;
+    const code = normalizeLanguageCode(value);
+    if (code) add(code, "Sub");
+  }
+  if (original && /\bVOSTFR\b/i.test([stream.language, stream.description, stream.title].map(clean).filter(Boolean).join(" "))) add("fr", "Sub");
+  return out;
+}
+
+function compactTrackLabel(track) {
+  return track?.tag ? `${track.tag}${track.role ? ` ${track.role}` : ""}` : null;
+}
+
+function fullTrackLabel(track) {
+  return track?.label ? `${track.label}${track.role ? ` · ${track.role}` : ""}` : null;
 }
 
 export function normalizeLanguage(stream = {}, provider = {}) {
@@ -396,6 +532,8 @@ function durationAgeLine(facts) {
 }
 
 function languageLine(facts) {
+  const tracks = (facts.languageTracks ?? []).map(fullTrackLabel).filter(Boolean);
+  if (tracks.length) return `🌐 ${tracks.join(" • ")}`;
   if (!facts.language) return "";
   const prefix = ["VF", "VFQ", "MULTI (VF/VO)"].includes(facts.language) ? "🇫🇷" : facts.language === "VOSTFR" ? "🌐🇫🇷" : "🌐";
   const subtitles = (facts.subtitles ?? []).filter((value) => value !== "VOSTFR");
