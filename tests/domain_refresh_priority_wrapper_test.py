@@ -24,6 +24,7 @@ def row(url: str, label: str, score: int, index: int) -> dict:
 # Equal trust score: explicit principal/recommended must beat backup/mirror even
 # when lexical URL ordering would otherwise put the backup first.
 item = {
+    "provider_id": "anime-sama",
     "status": "site_authoritative",
     "official_site": "https://backup.example",
     "site_candidates": [
@@ -37,19 +38,38 @@ assert result["candidate_priority_adjusted"] is True, result
 
 # A strictly stronger authority score always wins, regardless of semantic label.
 item = {
+    "provider_id": "provider",
     "status": "site_authoritative",
     "official_site": "https://redirect.example",
     "site_candidates": [
         row("https://redirect.example", "authoritative source redirect destination", 120, 9),
-        row("https://primary.example", "Principal Recommandé", 100, 1),
+        row("https://primary.example", "Principal Recommandé Provider", 100, 1),
     ],
 }
 result = prioritize_authoritative_item(item)
 assert result["official_site"] == "https://redirect.example", result
 assert not result.get("candidate_priority_adjusted"), result
 
-# Neutral ties preserve document order before lexical URL order.
+# A concise provider-branded link beats an anonymous equal-score link even when
+# the anonymous link appears much earlier in the authoritative hub document.
 item = {
+    "provider_id": "voiranime",
+    "status": "site_authoritative",
+    "official_site": "https://voiranime.homes",
+    "site_candidates": [
+        row("https://voiranime.homes", "", 67, 2),
+        row("https://voiranime.diy", "VoirAnime", 67, 41),
+        row("https://voiranime.icu", "Voiranime.icu", 67, 42),
+    ],
+}
+result = prioritize_authoritative_item(item)
+assert result["official_site"] == "https://voiranime.diy", result
+assert result["candidate_priority_adjusted"] is True, result
+
+# Neutral ties with no provider-brand signal preserve document order before
+# lexical URL order.
+item = {
+    "provider_id": "neutral-provider",
     "status": "site_authoritative",
     "official_site": "https://z.example",
     "site_candidates": [
