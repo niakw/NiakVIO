@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Project the currently live Kehflix terminal into structured Provider DATA.
 
-Live proof on 2026-09-07 established that kehflix.lol redirects every path to the
-kehflix.com root, while kehflix.wiki and kehflix.com both preserve the HOTD detail
-path and expose the signed player chain. The official hub host is selected as the
-canonical runtime terminal because it returned the richer episodic API proof.
+Live proof established that kehflix.lol redirects every detail path to the
+kehflix.com root, while kehflix.wiki and kehflix.com preserve the requested
+catalogue path. kehflix.wiki is the canonical runtime terminal; kehflix.com is
+kept as an alternate live terminal. The redirect-only .lol host must never be
+the target of a substitution from the canonical .wiki host.
 """
 from __future__ import annotations
 
@@ -17,6 +18,7 @@ KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 TERMINAL = "https://kehflix.wiki"
 OLD = "kehflix.lol"
 NEW = "kehflix.wiki"
+ALTERNATE = "kehflix.com"
 
 
 def load(path: Path) -> dict:
@@ -30,6 +32,16 @@ def write(path: Path, value: dict) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def canonicalize_mapping(raw: object) -> dict[str, str]:
+    mapping = dict(raw) if isinstance(raw, dict) else {}
+    # Historical bad DATA inverted the proven direction and produced
+    # kehflix.wiki -> kehflix.lol. Remove any mapping *from* the canonical
+    # terminal before installing the one safe redirect-only -> terminal rule.
+    mapping.pop(NEW, None)
+    mapping[OLD] = NEW
+    return dict(sorted((str(k), str(v)) for k, v in mapping.items() if str(k).strip() and str(v).strip()))
+
+
 def patch_overrides(value: dict) -> bool:
     patches = value.get("provider_patches")
     if not isinstance(patches, dict) or not isinstance(patches.get("kehflix"), dict):
@@ -38,22 +50,17 @@ def patch_overrides(value: dict) -> bool:
     before = json.dumps(patch, ensure_ascii=False, sort_keys=True)
     patch["official_site"] = TERMINAL
     patch["official_hub"] = TERMINAL + "/"
-    substitutions = patch.get("domain_substitutions")
-    substitutions = dict(substitutions) if isinstance(substitutions, dict) else {}
-    substitutions[OLD] = NEW
-    patch["domain_substitutions"] = dict(sorted(substitutions.items()))
-    replacements = patch.get("runtime_domain_replacements")
-    replacements = dict(replacements) if isinstance(replacements, dict) else {}
-    replacements[OLD] = NEW
-    patch["runtime_domain_replacements"] = dict(sorted(replacements.items()))
+    patch["domain_substitutions"] = canonicalize_mapping(patch.get("domain_substitutions"))
+    patch["runtime_domain_replacements"] = canonicalize_mapping(patch.get("runtime_domain_replacements"))
     patch["terminal_domain_proof"] = {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "observedAt": "2026-09-07",
+        "reverifiedAt": "2026-09-14",
         "authority": "official-hub-live-path-proof",
         "terminal": NEW,
-        "alternateLiveTerminal": "kehflix.com",
+        "alternateLiveTerminal": ALTERNATE,
         "rejectedRedirectOnly": OLD,
-        "fixture": "house-of-the-dragon-s03e01",
+        "pathRetentionFixtures": ["interstellar-2014", "house-of-the-dragon-s03e01"],
         "signedPlayerObserved": True,
         "episodeApiMediaLikeValues": 5,
     }
@@ -72,25 +79,31 @@ def patch_knowledge(value: dict) -> bool:
     model["officialSite"] = TERMINAL
     model["knownSite"] = TERMINAL
     model["officialHub"] = TERMINAL + "/"
-    substitutions = model.get("domainSubstitutions")
-    substitutions = dict(substitutions) if isinstance(substitutions, dict) else {}
-    substitutions[OLD] = NEW
-    model["domainSubstitutions"] = dict(sorted(substitutions.items()))
+    model["domainSubstitutions"] = canonicalize_mapping(model.get("domainSubstitutions"))
     origins = [str(v).rstrip("/") for v in model.get("origins") or [] if str(v).strip()]
-    model["origins"] = list(dict.fromkeys([TERMINAL, "https://kehflix.com", *origins]))
+    model["origins"] = list(dict.fromkeys([TERMINAL, f"https://{ALTERNATE}", *origins]))
     observed = [str(v) for v in model.get("observedUrls") or [] if str(v).strip()]
-    model["observedUrls"] = list(dict.fromkeys([TERMINAL + "/", "https://kehflix.com/", *observed]))
+    model["observedUrls"] = list(dict.fromkeys([TERMINAL + "/", f"https://{ALTERNATE}/", *observed]))
     return before != json.dumps(model, ensure_ascii=False, sort_keys=True)
 
 
 def validate(overrides: dict, knowledge: dict) -> None:
     patch = overrides["provider_patches"]["kehflix"]
     model = knowledge["providers"]["kehflix"]["model"]
+    substitutions = patch.get("domain_substitutions") or {}
+    replacements = patch.get("runtime_domain_replacements") or {}
+    model_substitutions = model.get("domainSubstitutions") or {}
     assert patch.get("official_site") == TERMINAL
-    assert (patch.get("domain_substitutions") or {}).get(OLD) == NEW
+    assert patch.get("official_hub") == TERMINAL + "/"
+    assert substitutions.get(OLD) == NEW
+    assert NEW not in substitutions
+    assert replacements.get(OLD) == NEW
+    assert NEW not in replacements
     assert model.get("officialSite") == TERMINAL
     assert model.get("knownSite") == TERMINAL
-    assert (model.get("domainSubstitutions") or {}).get(OLD) == NEW
+    assert model.get("officialHub") == TERMINAL + "/"
+    assert model_substitutions.get(OLD) == NEW
+    assert NEW not in model_substitutions
     assert "/title/tv/{id}-{slug}" in (model.get("routes") or []), model.get("routes")
     assert "/api/streams/episode?id&season&episode&k" in (model.get("routes") or []), model.get("routes")
 
@@ -107,7 +120,7 @@ def main() -> int:
         write(KNOWLEDGE, knowledge)
     print(
         "KEHFLIX_TERMINAL_DOMAIN_V1_OK "
-        f"changed={str(changed_o or changed_k).lower()} terminal={NEW} alternate=kehflix.com old_redirect={OLD}"
+        f"changed={str(changed_o or changed_k).lower()} terminal={NEW} alternate={ALTERNATE} old_redirect={OLD}"
     )
     return 0
 
