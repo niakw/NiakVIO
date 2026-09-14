@@ -3,13 +3,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 AUTHORITY_TYPES = {"hub", "curated_direct", "source_redirect", "provider_config", "live_current"}
+REGISTRY_SCOPED_AUTHORITY_TYPES = {"telegram_public"}
 PLACEHOLDER_TOKENS = ("${", "{{", "}}", "function(", "=>", "`", "<%", "%>")
 
 
@@ -82,6 +82,41 @@ def selected_candidate(item: dict[str, Any], terminal: str) -> dict[str, Any]:
     return {}
 
 
+def selected_source_is_authoritative(
+    provider_id: str,
+    item: dict[str, Any],
+    before_registry: dict[str, dict[str, Any]],
+) -> bool:
+    """Accept global authority types or narrowly registry-authorized public feeds.
+
+    A public Telegram page is never authority by type alone. It qualifies only
+    when the current provider-hubs.json row explicitly lists the exact selected
+    source URL and labels its purpose as an authoritative address/domain
+    reference. This keeps arbitrary public/community Telegram links fail-closed.
+    """
+    source_type = str(item.get("selected_source_type") or "").strip().casefold()
+    if source_type in AUTHORITY_TYPES:
+        return True
+    if source_type not in REGISTRY_SCOPED_AUTHORITY_TYPES:
+        return False
+
+    selected_source = str(item.get("selected_source") or "").strip().rstrip("/").casefold()
+    if not selected_source:
+        return False
+    registry_row = before_registry.get(provider_id) or {}
+    for source in registry_row.get("sources") or []:
+        if not isinstance(source, dict):
+            continue
+        configured_type = str(source.get("type") or "").strip().casefold()
+        configured_url = str(source.get("url") or "").strip().rstrip("/").casefold()
+        purpose = str(source.get("purpose") or "").strip().casefold()
+        if configured_type != source_type or configured_url != selected_source:
+            continue
+        if "authoritative" in purpose and ("address" in purpose or "domain" in purpose):
+            return True
+    return False
+
+
 def has_fresh_rollback_evidence(item: dict[str, Any], terminal: str) -> bool:
     candidate = selected_candidate(item, terminal)
     label = str(candidate.get("label") or "").casefold()
@@ -136,7 +171,7 @@ def validate(
         if item.get("status") != "site_authoritative":
             raise AssertionError(f"{provider_id}: domain changed without site_authoritative proof")
         source_type = str(item.get("selected_source_type") or "").casefold()
-        if source_type not in AUTHORITY_TYPES:
+        if not selected_source_is_authoritative(provider_id, item, before_registry):
             raise AssertionError(f"{provider_id}: non-authoritative source attempted domain publication: {source_type!r}")
         reported_site = str(item.get("official_site") or "").rstrip("/")
         if reported_site != after_site:
