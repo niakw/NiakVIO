@@ -29,6 +29,10 @@ REPLACEMENTS = (
         'assert desktop_native["row"]["title"] == "Cineby - 1080p", desktop_native',
     ),
     (
+        'assert vfq["language"] == "VFQ" and "🇫🇷 VFQ" in vfq["description"]\nassert "vfq" in vfq["badgeIds"]',
+        'assert vfq["language"] == "VFQ", vfq\nassert vfq["languageTracks"] == [{"code":"fr","tag":"FR","label":"French","role":"Dub"}], vfq\nassert "French · Dub" in vfq["description"], vfq\nassert "FR Dub" in vfq["displayBadges"], vfq\nassert "vfq" in vfq["badgeIds"]',
+    ),
+    (
         'print("global stream presentation V22 strongest-evidence tests passed")',
         'print("global stream presentation V23 language-role tests passed")',
     ),
