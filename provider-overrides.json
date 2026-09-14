@@ -2362,7 +2362,7 @@
       ],
       "capability": "html_scraper",
       "official_hub": "https://kehflix.wiki/",
-      "official_site": "https://kehflix.lol",
+      "official_site": "https://kehflix.wiki",
       "published_types": [
         "movie",
         "tv",
@@ -2414,19 +2414,23 @@
         "recognition_seed_is_http_proof": false
       },
       "domain_substitutions": {
-        "kehflix.wiki": "kehflix.lol"
+        "kehflix.lol": "kehflix.wiki"
       },
       "runtime_domain_replacements": {
-        "kehflix.wiki": "kehflix.lol"
+        "kehflix.lol": "kehflix.wiki"
       },
       "terminal_domain_proof": {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "observedAt": "2026-09-07",
+        "reverifiedAt": "2026-09-14",
         "authority": "official-hub-live-path-proof",
         "terminal": "kehflix.wiki",
         "alternateLiveTerminal": "kehflix.com",
         "rejectedRedirectOnly": "kehflix.lol",
-        "fixture": "house-of-the-dragon-s03e01",
+        "pathRetentionFixtures": [
+          "interstellar-2014",
+          "house-of-the-dragon-s03e01"
+        ],
         "signedPlayerObserved": true,
         "episodeApiMediaLikeValues": 5
       },
