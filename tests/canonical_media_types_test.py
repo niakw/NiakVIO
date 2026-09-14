@@ -20,10 +20,17 @@ def normalized_types(raw: object, label: str, allowed: set[str]) -> tuple[str, .
 
 
 def expected_transport(canonical: tuple[str, ...]) -> tuple[str, ...]:
+    """Project semantic capability onto the Nuvio launch surface.
+
+    Anime-only providers need the TV launch alias for episodic anime, but that
+    alias does not itself create a canonical TV capability and therefore must
+    not cascade into the legacy `series` alias. `series` is retained only when
+    TV is a real canonical capability. Movie is never synthesized.
+    """
     wanted = list(canonical)
     if "anime" in canonical and "tv" not in wanted:
         wanted.append("tv")
-    if "tv" in wanted and "series" not in wanted:
+    if "tv" in canonical and "series" not in wanted:
         wanted.append("series")
     return tuple(wanted)
 
@@ -61,7 +68,9 @@ def validate_manifest(path: Path) -> tuple[list[dict], int]:
             expected_transport(canonical),
         )
         assert ("movie" in transport) == ("movie" in canonical), (path, provider_id, canonical, transport)
-        if "anime" in canonical or "tv" in canonical:
+        if "anime" in canonical:
+            assert "tv" in transport, (path, provider_id, canonical, transport)
+        if "tv" in canonical:
             assert {"tv", "series"} <= set(transport), (path, provider_id, canonical, transport)
 
         anime += int("anime" in canonical)
@@ -162,5 +171,5 @@ print(
     "canonical media type tests passed: "
     f"catalog={len(catalog)} general={canonical_count} vf={vf_count} "
     f"anime_general={canonical_anime} anime_vf={vf_anime} semantic=movie|tv|anime "
-    "transport=movie|tv|anime|series anime_or_tv_requires=tv+series movie_only_when_canonical"
+    "transport=movie|tv|anime|series anime_alias=tv canonical_tv_alias=series movie_only_when_canonical"
 )
