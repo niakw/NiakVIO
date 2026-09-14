@@ -19,7 +19,7 @@ if result.returncode:
 
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 rows = manifest.get("scrapers") or []
-assert len(rows) == 96, f"expected complete 96-provider publication, got {len(rows)}"
+assert len(rows) == 46, f"expected complete 46-provider Hub publication, got {len(rows)}"
 
 missing = []
 weak = []
