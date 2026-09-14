@@ -7,7 +7,9 @@ must follow that rotation as well, otherwise later static checks and generated
 manifests can keep yesterday's host alive.
 
 Only hosts already known as the provider's own current/historical terminals are
-rewritten. External/CDN assets are left untouched.
+rewritten. External/CDN assets are left untouched. When reconciliation rebuilds
+Provider CONFIG bytes, it preserves the accepted generation's filename grammar;
+it must never turn one unqualified provider into a source-qualified outlier.
 """
 from __future__ import annotations
 
@@ -50,6 +52,18 @@ def rows(document: dict[str, Any], key: str) -> dict[str, dict[str, Any]]:
     if isinstance(raw, dict):
         return {str(k).casefold(): v for k, v in raw.items() if isinstance(v, dict)}
     return {}
+
+
+def preserve_publication_filename_stage(provider_id: str, old_path: Path, digest: str) -> str:
+    """Rotate content addressing without changing the accepted filename grammar."""
+    safe = transaction._safe_fragment
+    parts = old_path.stem.split("--")
+    if len(parts) >= 3:
+        source = parts[-2]
+        if source.endswith("-audit-quarantine"):
+            source = source[: -len("-audit-quarantine")] or "nuvio"
+        return f"{safe(provider_id.casefold())}--{safe(source)}--{digest[:16]}.js"
+    return f"{safe(provider_id.casefold())}-{digest[:16]}.js"
 
 
 def known_site_hosts(
@@ -164,6 +178,7 @@ def main() -> int:
     if changed:
         write(OVERRIDES, overrides)
         if args.rebuild:
+            transaction.source_qualified_provider_name = preserve_publication_filename_stage
             transaction.rebuild_provider_configs(sorted(changed))
 
     print(
