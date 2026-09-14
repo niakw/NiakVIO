@@ -66,6 +66,10 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/sanitize_provider_hub_registry.py --registry provider-hubs.json
+          # Sanitization is part of the trusted preflight baseline. Re-snapshot
+          # history so an otherwise idempotent refresh cannot restore a rejected
+          # JS/template constructor into the last-known-good registry.
+          cp provider-domain-history.json "$RUNNER_TEMP/provider-domain-history.before.json"
 
       - name: Resolve and publish authoritative hub terminal DATA
         shell: bash
