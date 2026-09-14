@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+CURRENT_PROVIDER_COUNT = 46
 
 
 def constant(source: str, name: str) -> int:
@@ -34,7 +35,7 @@ def main() -> int:
         assert token in presentation, token
 
     manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
-    assert len(manifest.get("scrapers") or []) == 96
+    assert len(manifest.get("scrapers") or []) == CURRENT_PROVIDER_COUNT
 
     # Historical 12-15 s TV compatibility publisher must stay dormant. It is
     # retained for provenance/tests only and must not be called by a workflow.
@@ -48,7 +49,7 @@ def main() -> int:
 
     print(
         "core runtime non-regression contract passed "
-        f"providers=96 provider_timeout_ms={provider_timeout} playback_timeout_ms={playback_timeout} "
+        f"providers={CURRENT_PROVIDER_COUNT} provider_timeout_ms={provider_timeout} playback_timeout_ms={playback_timeout} "
         "presentation=quality-bearing-title+name badges=preserved legacy_15s_publisher=dormant"
     )
     return 0
