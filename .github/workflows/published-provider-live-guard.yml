@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/published-provider-live-guard.yml'
-      - '.github/triggers/published-provider-live-guard.json'
       - 'scripts/audit_published_provider_guard.py'
       - 'tests/published_provider_guard_test.py'
   workflow_dispatch:
@@ -87,13 +86,13 @@ jobs:
             --provider flemmix \
             --provider uhdmovies \
             --provider movieshunt \
-            --provider zinkmovies \
-            --provider vegamovies \
             --provider hindmoviez \
             --provider 4khdhub \
-            --provider 4khdhubnew \
             --provider persianstremio \
             --provider desiflix \
+            --provider moviesmod \
+            --provider showbox \
+            --provider vidrock \
             --output automation/published-priority-provider-live-guard.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
