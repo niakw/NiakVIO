@@ -1,28 +1,39 @@
 {
-  "target_sha": "daec891d1044afa240d78d1a220776ef4ac1450c",
+  "target_sha": "73dacabfd563628300414755169d2672c68c9ab0",
   "wait_seconds": 900,
   "services": {
     "sonar": {
       "requested": true,
       "fresh": false,
-      "notes": [],
-      "request_mode": "GitHub automatic analysis (latest main push)"
+      "notes": [
+        "did not reach target SHA within 900s"
+      ],
+      "request_mode": "GitHub automatic analysis (latest main push)",
+      "project_key": "niakw_NiakVIO",
+      "latest_sha": "8388b69c460c59363244cb0c248bed3320c8be06",
+      "latest_analysis_at": "2026-09-03T08:12:16+0000"
     },
     "deepsource": {
-      "requested": false,
+      "requested": true,
       "fresh": false,
       "notes": [
-        "request failed: URLError: <urlopen error [Errno 104] Connection reset by peer>"
+        "did not reach target SHA within 900s"
       ],
-      "repository_latest_sha_before": "daec891d1044afa240d78d1a220776ef4ac1450c",
-      "activated": true
+      "repository_latest_sha_before": "73dacabfd563628300414755169d2672c68c9ab0",
+      "activated": true,
+      "target_run_status": null,
+      "target_run_finished_at": null
     },
     "codescene": {
       "requested": true,
       "fresh": false,
-      "notes": [],
+      "notes": [
+        "did not reach target SHA within 900s"
+      ],
       "project_id": 83939,
-      "request_http_status": 202
+      "request_http_status": 202,
+      "latest_sha": "daec891d1044afa240d78d1a220776ef4ac1450c",
+      "latest_analysis_at": "2026-09-13T09:37:07Z"
     }
   }
 }
