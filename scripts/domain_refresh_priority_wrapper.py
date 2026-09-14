@@ -11,6 +11,11 @@ When an applied transaction records fresh domain history, the same current-46
 sanitizer used by the workflow is run once more before control returns. Resolvers
 may legitimately observe template/constructor URLs while discovering a terminal,
 but those values must never survive as persisted LKG history.
+
+Domain-only CONFIG rotations also preserve the accepted generation's provider
+filename stage. A current ``provider-hash.js`` generation stays unqualified;
+a source-qualified generation keeps its source namespace. Partial domain changes
+must never create a mixed 34/12 publication stage.
 """
 from __future__ import annotations
 
@@ -137,6 +142,18 @@ def install_priority_wrapper() -> Callable[..., dict[str, Any]]:
     return original
 
 
+def preserve_publication_filename_stage(provider_id: str, old_path: Path, digest: str) -> str:
+    """Rotate content addressing without changing the generation's filename grammar."""
+    safe = transaction._safe_fragment
+    parts = old_path.stem.split("--")
+    if len(parts) >= 3:
+        source = parts[-2]
+        if source.endswith("-audit-quarantine"):
+            source = source[: -len("-audit-quarantine")] or "nuvio"
+        return f"{safe(provider_id.casefold())}--{safe(source)}--{digest[:16]}.js"
+    return f"{safe(provider_id.casefold())}-{digest[:16]}.js"
+
+
 def sanitize_applied_state() -> None:
     sanitizer = Path(__file__).with_name("sanitize_provider_hub_registry.py")
     subprocess.run(
@@ -148,6 +165,7 @@ def sanitize_applied_state() -> None:
 def main() -> int:
     install_priority_wrapper()
     transaction._authoritative_hub_configs = current_registry_hub_configs
+    transaction.source_qualified_provider_name = preserve_publication_filename_stage
     result = transaction.main()
     if result == 0 and "--apply" in sys.argv:
         sanitize_applied_state()
