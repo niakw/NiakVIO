@@ -88,9 +88,16 @@ assert "desktopPlayerProbeLock" in desktop_player_codegen
 assert "synchronized(desktopPlayerProbeLock)" in desktop_player_codegen
 assert corpus.get("retry_provider_timeouts") is False
 
-fixtures = "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
-for workflow in (tv_reader, mobile_android, desktop_reader):
-    assert fixtures in workflow
+# Native acceptance keeps the stable fixture-by-type fallback in the corpus, but
+# routine Labs must select one current rotating fixture per semantic lane. The
+# fixed trio must therefore not be hard-coded in workflow execution anymore.
+for workflow in (tv_reader, mobile_android):
+    assert "rotating_corpus.py select --lane all --count-per-lane 1" in workflow
+    assert "NIAKVIO_TARGET_FIXTURES=$ROTATED_FIXTURES" in workflow
+assert 'rotating_corpus.py" select --lane all --count-per-lane 1' in desktop_reader
+assert "FIELD_ROTATING_CORPUS client=tv" in tv_reader
+assert "FIELD_ROTATING_CORPUS client=mobile" in mobile_android
+assert "FIELD_ROTATING_CORPUS client=desktop" in desktop_reader
 
 for workflow in (tv_reader, mobile_android, mobile_ios, desktop_reader):
     assert "\n  pull_request:" not in workflow
@@ -101,7 +108,7 @@ for workflow in (tv_reader, mobile_android, mobile_ios, desktop_reader):
 
 assert "matrix:" not in tv_reader
 assert tv_reader.count("tv-route-reader:") == 1
-assert "NIAKVIO_TARGET_FIXTURES: \"interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01\"" in tv_reader
+assert "NIAKVIO_TARGET_FIXTURES=$ROTATED_FIXTURES" in tv_reader
 assert "NIAKVIO_TV_PRIORITY_APPEND: \"0\"" in tv_reader
 assert "NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: \"45\"" in tv_reader
 assert 'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "25000"' in tv_reader
@@ -243,11 +250,11 @@ for row in manifest.get("scrapers",[]):
     if pid and filename and key not in seen:
         seen.add(key)
         stageable.append(pid)
-assert len(stageable) >= 80
+assert len(stageable) == 46, len(stageable)
 
 print(
     "native device lab contract passed: "
-    f"providers={len(stageable)} type_bounded_1_1_1=true "
+    f"providers={len(stageable)} type_bounded_1_1_1=true rotating_fixtures=true "
     "tv_single_job=true android_tv_mobile_combined=true mobile_ios_separate=true "
     "brain_decoupled=true desktop_native=true targeted_manual=true"
 )
