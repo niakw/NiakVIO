@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+CURRENT_PROVIDER_COUNT = 46
+HISTORICAL_PROVIDER_COUNT = 50
 
 architecture = (ROOT / "ARCHITECTURE.md").read_text(encoding="utf-8")
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
@@ -92,6 +94,9 @@ assert machine["routine"]["quick"]["provider_reconstruction_allowed"] is False
 assert machine["routine"]["deep"]["repair_allowed"] is False
 assert machine["routine"]["deep"]["provider_reconstruction_allowed"] is False
 assert machine["manual_reconstruction"]["main_write_allowed"] is False
+assert machine["manual_reconstruction"]["expected_provider_count"] == CURRENT_PROVIDER_COUNT
+assert machine["manual_reconstruction"]["historical_provider_count"] == HISTORICAL_PROVIDER_COUNT
+assert machine["manual_reconstruction"]["historical_provider_directory"] == "provider-old"
 assert machine["native_labs"] == [
     "TVAndroid",
     "MobileAndroid",
@@ -111,17 +116,24 @@ assert machine["minifier"]["terser_allowed"] is False
 # current operational truth and current native/type counts.
 reference = machine["reference_reconstruction"]
 assert reference["current_operational_truth"] is False
+assert reference["provider_count"] == 96
 assert reference["reverse_byte_identical"] == "96/96"
 assert reference["release_integrity"] is True
 assert machine["provider_plan_contract"]["historical_plan_counts_live_only_in_reference_reconstruction"] is True
 assert "executable_non_quarantined" not in machine["provider_plan_contract"]
 assert "quarantined" not in machine["provider_plan_contract"]
 
-assert machine["provider_plan_contract"]["disabled_providers_are_audited"] is True
+plan = machine["provider_plan_contract"]
+assert plan["catalogue_provider_count"] == CURRENT_PROVIDER_COUNT
+assert plan["historical_provider_count"] == HISTORICAL_PROVIDER_COUNT
+assert plan["historical_provider_directory"] == "provider-old"
+assert plan["disabled_providers_are_audited"] is True
 assert machine["security_html_filtering"]["regex_html_stripping_allowed"] is False
 
 lab = machine["native_lab_contract"]
-assert lab["provider_count"] == 96
+assert lab["provider_count"] == CURRENT_PROVIDER_COUNT
+assert lab["historical_provider_count"] == HISTORICAL_PROVIDER_COUNT
+assert lab["historical_provider_directory"] == "provider-old"
 assert lab["route_matrix_source"] == "manifest.json:scrapers[*].supportedTypes"
 assert lab["semantic_capability_source"] == "manifest.json:scrapers[*].canonicalSupportedTypes"
 assert lab["declared_route_counts_are_dynamic"] is True
@@ -137,7 +149,7 @@ assert lab["test_plumbing_must_not_change_official_runtime_behavior"] is True
 # freezing yesterday's route totals into docs/machine policy. Canonical media
 # semantics are movie/tv/anime; `series` is a Nuvio transport alias only.
 rows = manifest.get("scrapers") or []
-assert len(rows) == 96
+assert len(rows) == CURRENT_PROVIDER_COUNT
 canonical_valid = {"movie", "tv", "anime"}
 transport_valid = canonical_valid | {"series"}
 for row in rows:
@@ -152,6 +164,16 @@ for row in rows:
     if "anime" in canonical or "tv" in canonical:
         assert {"tv", "series"} <= transport, (provider, canonical, transport)
     assert ("movie" in transport) == ("movie" in canonical), (provider, canonical, transport)
+
+# Historical providers are retained as archive input/evidence, never projected
+# back into the current runtime catalogue.
+archive = ROOT / "provider-old"
+assert archive.is_dir(), "provider-old historical archive missing"
+archived_ids = {path.name.split("--base--", 1)[0] for path in archive.glob("*--base--*.js")}
+current_ids = {str(row.get("id") or "").strip().casefold() for row in rows}
+assert len(archived_ids - current_ids) == HISTORICAL_PROVIDER_COUNT, (
+    len(archived_ids - current_ids), sorted(archived_ids & current_ids)
+)
 
 # No dead workbench should remain part of the permanent documentation contract.
 for text, label in ((architecture, "ARCHITECTURE"), (readme, "README"), (readme_fr, "README.fr")):
@@ -172,4 +194,4 @@ for path in (ROOT / ".github/workflows").glob("*.yml"):
     assert "run_adaptive_quick_repair.py" not in text, path.name
     assert "run_adaptive_deep_repair.py" not in text, path.name
 
-print("Provider v3 documentation and workflow ownership contract passed")
+print("Provider v3 documentation and workflow ownership contract passed: current=46 historical=50")
