@@ -20,6 +20,7 @@ PLAYER_TIMEOUT_MS="${NIAKVIO_IOS_PLAYER_TIMEOUT_MS:-}"
 WAIT_SECONDS="${NIAKVIO_IOS_WAIT_SECONDS:-}"
 IDLE_TIMEOUT_SECONDS="${NIAKVIO_IOS_IDLE_TIMEOUT_SECONDS:-}"
 LAUNCH_RETRY_TIMEOUT_SECONDS="${NIAKVIO_IOS_LAUNCH_RETRY_TIMEOUT_SECONDS:-}"
+WATCHDOG_DRAIN_SECONDS="${NIAKVIO_IOS_WATCHDOG_DRAIN_SECONDS:-3}"
 
 case "$MODE" in
   full) ;;
@@ -173,6 +174,28 @@ stop_lab() {
   fi
 }
 
+drain_lab_output() {
+  local previous_size current_size stable=0
+  previous_size="$(wc -c < "$LOG" 2>/dev/null || echo 0)"
+  for _ in $(seq 1 "$WATCHDOG_DRAIN_SECONDS"); do
+    sleep 1
+    current_size="$(wc -c < "$LOG" 2>/dev/null || echo 0)"
+    if [[ "$current_size" = "$previous_size" ]]; then
+      stable=$((stable + 1))
+    else
+      stable=0
+      previous_size="$current_size"
+    fi
+  done
+  echo "FIELD_NATIVE_IOS_WATCHDOG action=drained bytes=$previous_size stable_seconds=$stable" | tee -a "$LOG"
+}
+
+provider_end_after_line() {
+  local begin_line="$1" fixture="$2" provider="$3"
+  tail -n "+$((begin_line + 1))" "$LOG" 2>/dev/null | \
+    grep -Fq "FIELD_NATIVE_IOS_PROVIDER_END fixture=$fixture provider=$provider "
+}
+
 launch_lab
 
 STATUS=0
@@ -204,17 +227,13 @@ for _ in $(seq 1 "$WAIT_SECONDS"); do
       STATUS=2
       break
     fi
-    LAST_BEGIN="$(grep 'FIELD_NATIVE_IOS_PROVIDER_BEGIN ' "$LOG" 2>/dev/null | tail -n 1 || true)"
+    LAST_BEGIN_WITH_LINE="$(grep -n 'FIELD_NATIVE_IOS_PROVIDER_BEGIN ' "$LOG" 2>/dev/null | tail -n 1 || true)"
+    BLOCKED_BEGIN_LINE="${LAST_BEGIN_WITH_LINE%%:*}"
+    LAST_BEGIN="${LAST_BEGIN_WITH_LINE#*:}"
     BLOCKED_FIXTURE="$(printf '%s\n' "$LAST_BEGIN" | sed -n 's/.* fixture=\([^ ]*\).*/\1/p')"
     BLOCKED_PROVIDER="$(printf '%s\n' "$LAST_BEGIN" | sed -n 's/.* provider=\([^ ]*\).*/\1/p')"
-    if [[ -z "$BLOCKED_FIXTURE" || -z "$BLOCKED_PROVIDER" ]]; then
+    if [[ -z "$BLOCKED_BEGIN_LINE" || ! "$BLOCKED_BEGIN_LINE" =~ ^[0-9]+$ || -z "$BLOCKED_FIXTURE" || -z "$BLOCKED_PROVIDER" ]]; then
       echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=idle_without_provider_context idle_seconds=$IDLE_SECONDS mode=$MODE" | tee -a "$LOG"
-      DONE=1
-      STATUS=2
-      break
-    fi
-    if grep -Fq "FIELD_NATIVE_IOS_PROVIDER_END fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER " "$LOG"; then
-      echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=idle_after_provider_end fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER" | tee -a "$LOG"
       DONE=1
       STATUS=2
       break
@@ -226,10 +245,31 @@ for _ in $(seq 1 "$WAIT_SECONDS"); do
       STATUS=2
       break
     fi
-    echo "FIELD_NATIVE_IOS_WATCHDOG action=restart fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER idle_seconds=$IDLE_SECONDS restart=$WATCHDOG_RESTARTS" | tee -a "$LOG"
+    echo "FIELD_NATIVE_IOS_WATCHDOG action=restart fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER begin_line=$BLOCKED_BEGIN_LINE idle_seconds=$IDLE_SECONDS restart=$WATCHDOG_RESTARTS" | tee -a "$LOG"
+
+    # Stop the current generation first, then allow its console pipe to drain.
+    # The old implementation relaunched immediately: late PROVIDER_END lines from
+    # generation N could then appear after PROVIDER_BEGIN from generation N+1 and
+    # be mistaken for the new provider's terminal state.
     stop_lab
+    drain_lab_output
+
     RESUME_FIXTURE="$BLOCKED_FIXTURE"
-    RESUME_AFTER_PROVIDER="$BLOCKED_PROVIDER"
+    if provider_end_after_line "$BLOCKED_BEGIN_LINE" "$BLOCKED_FIXTURE" "$BLOCKED_PROVIDER"; then
+      # The provider completed while the watchdog was stopping/draining the old
+      # process. Do not manufacture a watchdog timeout for it. Restart the same
+      # fixture from a clean generation; duplicate completed observations are
+      # harmless and are merged by the native evidence gate.
+      RESUME_AFTER_PROVIDER=""
+      echo "FIELD_NATIVE_IOS_WATCHDOG action=late_terminal fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER resume=fixture_restart restart=$WATCHDOG_RESTARTS" | tee -a "$LOG"
+    else
+      # No terminal exists after the exact BEGIN that triggered this watchdog.
+      # Resume after the blocked provider so the generated iOS Lab records the
+      # intentional watchdog timeout exactly once.
+      RESUME_AFTER_PROVIDER="$BLOCKED_PROVIDER"
+      echo "FIELD_NATIVE_IOS_WATCHDOG action=confirmed_timeout fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER resume=after_provider restart=$WATCHDOG_RESTARTS" | tee -a "$LOG"
+    fi
+
     launch_lab
     LAST_SIZE="$(wc -c < "$LOG" 2>/dev/null || echo 0)"
     IDLE_SECONDS=0
