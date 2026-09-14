@@ -1,15 +1,16 @@
 {
-  "purpose": "final 5.21.45 exact-main validation after atomic Domain Refresh publication and idempotence proof",
+  "purpose": "final 5.21.46 exact-main validation after atomic provider publication, corrected published brick fixed-point audit, release repin, and strict Domain Refresh idempotence proof",
   "branch": "main",
-  "release": "5.21.45",
-  "pre_validation_head": "db5c56b025259b07b12b01f61c4f787d243cdd45",
+  "release": "5.21.46",
+  "pre_validation_head": "a88740c043fbc054bb51b82d6904b9494c310b48",
   "domain_refresh": {
-    "run_id": 34823835967,
+    "run_id": 34826733819,
     "scope": 46,
     "applied": 0,
     "registry_changed": 0,
     "bundles_changed": 0,
     "idempotent": true,
+    "transaction_changed": false,
     "release_changed": false
   },
   "provider_contract": {
@@ -22,6 +23,7 @@
     "manual_reconstruction": "46/46 current only; historical knowledge retained but never materialized",
     "domain_refresh_scope": "current manifest 46 only; historical hub/history rows immutable",
     "non_regression_scope": "quick-yield census iterates manifest.json current providers directly; no historical/all switch",
+    "published_brick_fixed_point": "Lego replay followed by global provider security hardening, matching the publication pipeline",
     "codeql_scope": "46 current providers/provider-bases plus source; provider-old excluded from current runtime scan",
     "external_audit": "read-only; publish=false"
   },
