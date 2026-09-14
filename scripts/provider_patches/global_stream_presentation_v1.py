@@ -139,6 +139,7 @@ function detailedLanguage(r,fallback){
   var aliases=[["malayalam","Malayalam"],["kannada","Kannada"],["bengali","Bengali"],["punjabi","Punjabi"],["gujarati","Gujarati"],["japanese","Japanese"],["english","English"],["telugu","Telugu"],["marathi","Marathi"],["korean","Korean"],["hindi","Hindi"],["tamil","Tamil"],["urdu","Urdu"],["ml","Malayalam"],["kn","Kannada"],["bn","Bengali"],["pa","Punjabi"],["gu","Gujarati"],["ja","Japanese"],["jpn","Japanese"],["en","English"],["eng","English"],["te","Telugu"],["mr","Marathi"],["ko","Korean"],["kor","Korean"],["hi","Hindi"],["ta","Tamil"],["ur","Urdu"]];
   for(var i=0;i<aliases.length;i++){var token=aliases[i][0].replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),rx=new RegExp("(?:^|[^a-z])"+token+"(?:[^a-z]|$)","i");if(rx.test(all))return aliases[i][1]}
   var u=raw.toLowerCase().replace(/[_-]+/g," ").replace(/\s+/g," ").trim();
+  if(/^(?:(?:fr|fra|fre|french|francais|français|fr fr)(?:\s|$)|fr ca(?:\s|$))/i.test(u))return fallback||"VF";
   if(/^(?:vf|vff|vfq|vostfr|vo|multi|multi audio|dual audio)$/i.test(u))return fallback||raw.toUpperCase();
   if(meaningful(raw)&&raw.length<=32&&/^[A-Za-zÀ-ÿ .()/-]+$/.test(raw))return raw;
   return fallback||"";
