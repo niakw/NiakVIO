@@ -133,8 +133,11 @@ route_count = len(all_routes)
 assert provider_count == 46
 assert route_count == sum(counts.values())
 assert all(counts[kind] > 0 for kind in TYPES), counts
+# Hub46 is the complete current publication, not 46 enabled rows embedded in the
+# old 96-provider catalogue. Historical provider identities live in provider-old
+# and therefore do not count as disabled current rows.
 expected_summary = (
-    f"providers={provider_count} disabled=50 routes={route_count} "
+    f"providers={provider_count} disabled=0 routes={route_count} "
     f"movie={counts['movie']} tv={counts['tv']} anime={counts['anime']}"
 )
 
