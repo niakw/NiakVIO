@@ -1,0 +1,75 @@
+name: SHORT - Publish Local-Only Parity Accounting
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-parity-local-only-publish-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-parity-local-only-publish
+  cancel-in-progress: true
+
+jobs:
+  validate-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Require exact trigger head
+        run: test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+      - name: Apply migration and contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_provider_parity_local_only_v1.py
+          python3 -m py_compile scripts/run_provider_upstream_parity_v3.py scripts/upgrade_provider_parity_local_only_v1.py
+          python3 tests/provider_upstream_parity_v3_test.py
+          python3 scripts/upgrade_provider_parity_local_only_v1.py
+          git diff --check
+      - name: Require Kehflix explicit local-only accounting
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 scripts/run_provider_upstream_parity_v3.py --provider kehflix --samples-per-lane 1 --timeout 20 --out /tmp/kehflix.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/kehflix.json',encoding='utf-8')); rows=d.get('providers') or []
+          assert d.get('selectedProviderCount')==1 and d.get('accountedProviders')==1,d
+          assert d.get('allSelectedProvidersAccounted') is True,d
+          assert d.get('missingUpstreamProviders')==['kehflix'],d
+          assert len(rows)==1 and rows[0].get('providerId')=='kehflix',rows
+          assert rows[0].get('comparisonMode')=='local-only-no-upstream',rows[0]
+          print('PARITY_LOCAL_ONLY_GATE_OK',rows[0].get('status'))
+          PY
+      - name: Publish V3 accounting fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only)"
+          printf '%s\n' "$changed"
+          test "$changed" = 'scripts/run_provider_upstream_parity_v3.py'
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/run_provider_upstream_parity_v3.py
+          git commit -m 'fix(parity): account providers without upstreams'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${{ github.sha }}" || { echo 'main moved during parity publication' >&2; exit 1; }
+          git push origin HEAD:main
+          echo "PARITY_LOCAL_ONLY_PUBLISHED $(git rev-parse HEAD)"
