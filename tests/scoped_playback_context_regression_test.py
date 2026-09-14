@@ -87,10 +87,12 @@ canonical_again = hls_runtime_apply(canonical_again, options={"probe_all_urls": 
 assert canonical_again == canonical
 
 cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
-sopts = cfg["provider_patches"]["streamzo"]["patch_script_options"]
-assert "scripts/provider_patches/hls_master_audio_preserver_v1.py" not in sopts
-assert sopts["scripts/provider_patches/global_media_enrichment_v1.py"]["default_user_agent"]
-assert sopts["scripts/provider_patches/hls_runtime_integrity_v1.py"]["fail_closed_unknown"] is False
+streamzo_cfg = cfg["provider_patches"]["streamzo"]
+legacy_opts = streamzo_cfg.get("patch_script_options") or {}
+assert "scripts/provider_patches/hls_master_audio_preserver_v1.py" not in legacy_opts
+hls_opts = streamzo_cfg["core_options"]["hls_runtime_integrity"]
+assert hls_opts["probe_all_urls"] is True
+assert hls_opts["fail_closed_unknown"] is False
 
 runtime = ordinary + (
     "\nglobalThis.__NUVIO_TV_RUNTIME__=true;\n"
