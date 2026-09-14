@@ -1,7 +1,7 @@
 {
   "purpose": "final 5.21.44 validation on complete 46-current/50-historical contract",
   "branch": "fix/labs-5.21.44-20260912",
-  "cleanup_head": "dce969a89b783b0a89ae9b00e436537045b7709c",
+  "cleanup_head": "e3bf110f8fa17e21d38e531f4cc5151cddce4581",
   "provider_contract": {
     "current": 46,
     "historical": 50,
@@ -11,6 +11,7 @@
     "provider_timeout_ms": 25000,
     "manual_reconstruction": "46/46 current only; historical knowledge retained but never materialized",
     "domain_refresh_scope": "current manifest 46 only; historical hub/history rows immutable",
+    "non_regression_scope": "quick-yield census iterates manifest.json current providers directly; no historical/all switch",
     "codeql_scope": "46 current providers/provider-bases plus source; provider-old excluded from current runtime scan",
     "external_audit": "candidate read-only export; no candidate audit writes to main"
   },
