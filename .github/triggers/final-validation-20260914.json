@@ -1,12 +1,13 @@
 {
-  "purpose": "final 5.21.44 validation after 46-current/50-historical CI migration, projection rebuild, asset-scope fix and historical snapshot identity fix",
+  "purpose": "final 5.21.44 validation after 46-current/50-historical projection rebuild, asset-scope fix and canonical anime transport fix",
   "branch": "fix/labs-5.21.44-20260912",
   "cleanup_head": "7862e61f5ad7db86ff86aadc4e27f5574af32c06",
   "provider_contract": {
     "current": 46,
     "historical": 50,
     "historical_directory": "provider-old",
-    "historical_snapshots": 951
+    "historical_snapshots": 951,
+    "anime_transport": "anime-only => anime+tv; canonical tv => tv+series; movie only when canonical"
   },
   "requirements": [
     "zero temp workflows",
