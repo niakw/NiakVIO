@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/repair-anime-semantic-gate-20260914.yml'
       - 'scripts/repair_anime_semantic_gate_20260914.py'
+      - 'scripts/fix_semantic_gate_movie_fixture_20260914.py'
   workflow_dispatch:
 
 permissions:
@@ -39,10 +40,13 @@ jobs:
           test "$(git rev-parse HEAD)" = "${{ github.sha }}"
       - name: Apply semantic gate migration
         run: python3 scripts/repair_anime_semantic_gate_20260914.py
+      - name: Correct movie fixture arguments
+        run: python3 scripts/fix_semantic_gate_movie_fixture_20260914.py
       - name: Compile repaired sources
         run: |
           python3 -m py_compile \
             scripts/repair_anime_semantic_gate_20260914.py \
+            scripts/fix_semantic_gate_movie_fixture_20260914.py \
             scripts/provider_patches/global_media_type_resolution_v1.py \
             scripts/field_priority_probe.py \
             tests/global_media_type_pre_network_gate_test.py
@@ -53,7 +57,9 @@ jobs:
       - name: Test reconstruction static knowledge
         run: python3 tests/provider_reconstruction_static_knowledge_test.py
       - name: Test migration idempotence
-        run: python3 scripts/repair_anime_semantic_gate_20260914.py
+        run: |
+          python3 scripts/repair_anime_semantic_gate_20260914.py
+          python3 scripts/fix_semantic_gate_movie_fixture_20260914.py
       - name: Check diff
         run: git diff --check
       - name: Commit repaired semantic authority
@@ -61,13 +67,14 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only | tee "$RUNNER_TEMP/changed.txt"
-          if grep -Ev '^(scripts/provider_patches/global_media_type_resolution_v1\.py|scripts/field_priority_probe\.py|provider-overrides\.json|provider_catalog\.json|manifest\.json|tests/global_media_type_pre_network_gate_test\.py)$' "$RUNNER_TEMP/changed.txt"; then
+          if grep -Ev '^(scripts/repair_anime_semantic_gate_20260914\.py|scripts/provider_patches/global_media_type_resolution_v1\.py|scripts/field_priority_probe\.py|provider-overrides\.json|provider_catalog\.json|manifest\.json|tests/global_media_type_pre_network_gate_test\.py)$' "$RUNNER_TEMP/changed.txt"; then
             echo 'Unexpected migration path' >&2
             exit 1
           fi
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add \
+            scripts/repair_anime_semantic_gate_20260914.py \
             scripts/provider_patches/global_media_type_resolution_v1.py \
             scripts/field_priority_probe.py \
             provider-overrides.json provider_catalog.json manifest.json \
