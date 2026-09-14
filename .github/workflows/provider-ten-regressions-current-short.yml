@@ -1,0 +1,123 @@
+name: SHORT - Ten Historical Regressions Current
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-ten-regressions-current-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-ten-historical-regressions-current
+  cancel-in-progress: true
+
+jobs:
+  recheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Recheck exact historical regression fixtures with current V3 authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 - <<'PY'
+          import concurrent.futures, hashlib, json, pathlib, sys, tempfile
+          root=pathlib.Path('.').resolve(); sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as parity
+          import run_provider_upstream_parity_v2 as v2
+          import run_provider_upstream_parity_v3 as v3
+
+          wanted={
+            'animekai': ('anime','62715'),
+            'animevostfr': ('anime','73223'),
+            'french-manga': ('anime','46298'),
+            'mugiwarastream': ('anime','100049'),
+            'neko-sama': ('anime','95479'),
+            'playimdb': ('tv','71446'),
+            'streamzo': ('tv','60059'),
+            'voiranime': ('anime','65648'),
+            'voiranime-homes': ('anime','240411'),
+            'voiranime-rip': ('anime','114410'),
+          }
+          corpus=json.loads((root/'.github/triggers/rotating-popular-corpus.json').read_text(encoding='utf-8'))
+          fixtures={}
+          for lane,rows in (corpus.get('lists') or {}).items():
+            for row in rows or []:
+              if isinstance(row,dict): fixtures[(str(lane),str(row.get('tmdbId') or ''))]=row
+          local=parity.local_catalog(); upstreams,_=v2.upstream_catalog()
+
+          def safe(result):
+            return {k:result.get(k) for k in (
+              'stream_count','candidate_stream_count','raw_stream_count','timeout','server_accessible','server_success',
+              'http_statuses','terminal_verified','terminal_kinds','terminal_statuses','terminal_reasons',
+              'terminal_short_vod_seconds','error_class'
+            )}
+
+          def one(provider):
+            lane,tmdb=wanted[provider]
+            fixture=fixtures.get((lane,tmdb))
+            if not fixture: return {'providerId':provider,'lane':lane,'tmdbId':tmdb,'state':'FIXTURE_MISSING'}
+            lrow=local.get(provider); urow=upstreams.get(provider)
+            if not lrow or not urow: return {'providerId':provider,'lane':lane,'tmdbId':tmdb,'state':'SOURCE_MISSING','local':bool(lrow),'upstream':bool(urow)}
+            up_data=parity.get_bytes(urow['url'])
+            with tempfile.TemporaryDirectory(prefix='ten-reg-') as td:
+              up_path=pathlib.Path(td)/(provider+'-upstream.js'); up_path.write_bytes(up_data)
+              lf=v3.fixture_payload(fixture,lane,upstream=False)
+              uf=v3.fixture_payload(fixture,lane,upstream=True)
+              ident=f"{provider}:{lane}:{fixture['slug']}"
+              local_first=bool(hashlib.sha256(ident.encode('utf-8')).digest()[0]&1)
+              def ordered(first_local):
+                if first_local:
+                  lr=v3._run_verified(lrow['path'],lf,25); ur=v3._run_verified(up_path,uf,25)
+                else:
+                  ur=v3._run_verified(up_path,uf,25); lr=v3._run_verified(lrow['path'],lf,25)
+                return ur,lr
+              u1,l1=ordered(local_first); c1=v3.classify_pair(u1,l1)
+              final=c1; confirm=None
+              if c1 in {'upstream_ok_niakvio_ko','niakvio_ok_upstream_ko'}:
+                u2,l2=ordered(not local_first); c2=v3.classify_pair(u2,l2)
+                up_pos=sum(int(x.get('stream_count') or 0)>0 for x in (u1,u2))
+                lo_pos=sum(int(x.get('stream_count') or 0)>0 for x in (l1,l2))
+                if up_pos and lo_pos: final='both_ok_flaky'
+                elif up_pos==2 and lo_pos==0: final='upstream_ok_niakvio_ko'
+                elif lo_pos and up_pos==0: final='niakvio_ok_upstream_ko'
+                elif up_pos and lo_pos==0: final='upstream_advantage_unconfirmed'
+                else: final='order_sensitive_resample'
+                confirm={'classification':c2,'upstream':safe(u2),'niakvio':safe(l2)}
+              state='REGRESSION' if final=='upstream_ok_niakvio_ko' else ('POSITIVE' if final in {'both_ok','both_ok_flaky','niakvio_ok_upstream_ko'} else 'NOT_CERTAIN')
+              return {
+                'providerId':provider,'lane':lane,'fixture':fixture['slug'],'tmdbId':tmdb,
+                'state':state,'classification':final,'firstClassification':c1,
+                'executionOrder':'niakvio_first' if local_first else 'upstream_first',
+                'upstream':safe(u1),'niakvio':safe(l1),'confirmation':confirm,
+              }
+
+          rows=[]
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:
+            future={pool.submit(one,p):p for p in wanted}
+            for f in concurrent.futures.as_completed(future):
+              p=future[f]
+              try: rows.append(f.result())
+              except Exception as exc: rows.append({'providerId':p,'state':'ERROR','error':type(exc).__name__})
+          rows.sort(key=lambda r:r['providerId'])
+          for row in rows: print('CURRENT_REGRESSION_ROW '+json.dumps(row,sort_keys=True))
+          regressions=[r['providerId'] for r in rows if r.get('state')=='REGRESSION']
+          positives=[r['providerId'] for r in rows if r.get('state')=='POSITIVE']
+          uncertain=[r['providerId'] for r in rows if r.get('state') not in {'REGRESSION','POSITIVE'}]
+          print('CURRENT_REGRESSION_SUMMARY '+json.dumps({'regressions':regressions,'positives':positives,'uncertain':uncertain,'counts':{'regression':len(regressions),'positive':len(positives),'uncertain':len(uncertain)}},sort_keys=True))
+          if any(r.get('state') in {'ERROR','FIXTURE_MISSING','SOURCE_MISSING'} for r in rows): raise SystemExit('targeted ledger incomplete')
+          PY
