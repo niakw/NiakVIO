@@ -221,7 +221,7 @@ export function normalizeLanguage(stream = {}, provider = {}) {
   if (isVost(upper)) return "VOSTFR";
   if (isMulti(upper)) return vfProvider ? "MULTI (VF/VO)" : "MULTI";
   if (/^(?:VFQ|FR[ ._-]?CA)$/i.test(explicit || "")) return "VFQ";
-  if (/^(?:VF|VFF)$/i.test(explicit || "")) return "VF";
+  if (/^(?:VF|VFF|FR|FRA|FRE|FRENCH|FRANCAIS|FRANÇAIS)$/i.test(explicit || "")) return "VF";
   if (/^(?:VO|ORIGINAL(?:[ ._-]?(?:AUDIO|LANG(?:UAGE)?))?)$/i.test(explicit || "")) return "VO";
   const natural = naturalLanguageLabel(explicit);
   if (natural) return natural;

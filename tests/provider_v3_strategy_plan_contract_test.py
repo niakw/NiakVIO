@@ -307,10 +307,10 @@ def main() -> int:
         raise AssertionError("\n".join(failures))
 
     diagnostic_non_executable = len(quarantined) + len(terminal_audited) + len(off_audited) + len(repair_audited)
-    executable_count = 96 - diagnostic_non_executable
+    executable_count = 46 - diagnostic_non_executable
     print(
         "PROVIDER_V3_STRATEGY_PLAN_OK "
-        f"providers=96 enabled=46 disabled=50 executable={executable_count} diagnostic_non_executable={diagnostic_non_executable} "
+        f"providers=46 enabled=46 disabled=0 executable={executable_count} diagnostic_non_executable={diagnostic_non_executable} "
         f"quarantined={len(quarantined)} terminal_legacy={len(terminal_audited)} "
         f"off_diagnostic={len(off_audited)} repair_diagnostic={len(repair_audited)} "
         f"strategies={json.dumps(counts, sort_keys=True)}"

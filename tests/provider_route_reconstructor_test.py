@@ -138,7 +138,7 @@ assert unknown["knowledge"]["recognizedContract"]["requests"] == [], unknown
 assert unknown["model"]["strategy"] == "html_scraper", unknown
 assert "quarantine" not in unknown and "dead" not in unknown, unknown
 
-# Real 96/96 route-only census: every Provider Object receives the canonical field,
+# Real Hub46 route-only census: every current Provider Object receives the canonical field,
 # compact model.routes is always derived from it, and no full provider rebuild is
 # involved. Empty DATA is an explicit completed recognition result and is reported
 # consistently rather than converted into provider death/quarantine.
@@ -146,7 +146,7 @@ knowledge = json.loads((ROOT / "automation/provider-v3-static-knowledge.json").r
 seeds = json.loads((ROOT / "automation/provider-v3-recognition-seeds.json").read_text(encoding="utf-8"))
 overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 reconstructed, census = reconstruct_all_routes(knowledge, seeds=seeds, overrides=overrides)
-assert census["providerCount"] == 96, census
+assert census["providerCount"] == 46, census
 assert census["fullProviderReconstructionInvoked"] is False, census
 assert census["providerJavaScriptExecuted"] is False, census
 assert reconstructed["routeReconstruction"]["canonicalRouteData"] == "providers.<id>.model.routeData"
@@ -173,6 +173,6 @@ assert all(provider_id in reconstructed["providers"] for provider_id in reported
 
 print(
     "Provider route reconstructor tests passed: canonical routeData, structured object scan, "
-    f"static source proof, idempotence, unknown != quarantine, census=96 routes={census['routeCount']} "
+    f"static source proof, idempotence, unknown != quarantine, census=46 routes={census['routeCount']} "
     f"httpProven={census['httpProvenRouteCount']} noDurableRoutes={len(reported_without_routes)}"
 )

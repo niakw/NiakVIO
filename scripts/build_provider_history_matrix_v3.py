@@ -11,7 +11,7 @@ V2 = ROOT / "scripts" / "build_provider_history_matrix_v2.py"
 OUT_JSON = ROOT / "automation" / "provider-history-matrix.json"
 OUT_MD = ROOT / "automation" / "PROVIDER-HISTORY-MATRIX.md"
 CAP_5210 = ROOT / "tests" / "fixtures" / "provider-production-5.21.0-capabilities.json"
-EXPECTED = 96
+EXPECTED = 46
 
 GREEN = "🟢"
 YELLOW = "🟡"

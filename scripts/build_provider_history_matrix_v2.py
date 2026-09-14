@@ -11,7 +11,7 @@ BASE_BUILDER = ROOT / "scripts" / "build_provider_history_matrix.py"
 OUT_JSON = ROOT / "automation" / "provider-history-matrix.json"
 OUT_MD = ROOT / "automation" / "PROVIDER-HISTORY-MATRIX.md"
 EVIDENCE = ROOT / "automation" / "provider-history-evidence-v1.json"
-EXPECTED = 96
+EXPECTED = 46
 
 GREEN = "🟢"
 YELLOW = "🟡"
@@ -220,7 +220,7 @@ def main() -> int:
     counts = matrix.get("classificationCounts") or {}
     desktop = str(matrix.get("desktopMacFieldObservation") or "")
     lines = [
-        "# Provider history & live classification — 96/96",
+        "# Provider history & live classification — 46 current / 50 historical archive",
         "",
         f"- Current manifest: **{current_key}**, providers: **{EXPECTED}**.",
         "- Historical snapshots are compared without cross-version fallback: **5.21.0 → 5.21.16 → 5.21.36 → current**.",
@@ -243,7 +243,7 @@ def main() -> int:
         f"- Providers with at least one **🟢 historical snapshot** and a **🔴/🟠 current state**: **{len(regression_watch)}**.",
         "- " + (", ".join(f"`{x}`" for x in regression_watch) if regression_watch else "None."),
         "",
-        "## 96-provider matrix",
+        "## 46-current-provider matrix",
         "",
         "| Provider | Types | Family | 5.21.0 state | 5.21.16 state | 5.21.36 state | Current state | Retained | 5.21.36 live | Current published/field | Class | Action |",
         "|---|---|---|---|---|---|---|---:|---|---|---|---|",

@@ -15,7 +15,7 @@ LEARN_HANDOFF = ROOT / "automation" / "provider-repair-learn-handoff-v1.json"
 EVIDENCE = ROOT / "automation" / "provider-history-evidence-v1.json"
 OUT_JSON = ROOT / "automation" / "provider-history-matrix.json"
 OUT_MD = ROOT / "automation" / "PROVIDER-HISTORY-MATRIX.md"
-EXPECTED = 96
+EXPECTED = 46
 PRIORITY = {"anime-sama","purstream","flemmix","uhdmovies","movieshunt","zinkmovies","vegamovies","hindmoviez","4khdhub","4khdhubnew","persianstremio","desiflix"}
 VF_GUARDS = {"kehflix","streamzo"}
 
@@ -136,7 +136,7 @@ def classify(pid: str, baseline: dict[str,str], guard: dict[str,str], field_rows
 def main() -> int:
     current = load_json(CURRENT_MANIFEST)
     quick = load_json(QUICK_YIELD)
-    retention = load_json(RETENTION)
+    retention = load_json(RETENTION) if RETENTION.exists() else {}
     learn = load_json(LEARN_HANDOFF)
     evidence = load_json(EVIDENCE)
     current_map = manifest_map(current)
@@ -198,10 +198,10 @@ def main() -> int:
     desktop = next((str(x.get("observation")) for x in evidence.get("fieldEvidence") or [] if str(x.get("environment") or "").startswith("Desktop macOS")),"")
     out = {"schemaVersion":1,"providerCount":EXPECTED,"currentManifestVersion":current.get("version"),"snapshotRefs":snaps,"classificationCounts":dict(sorted(counts.items())),"desktopMacFieldObservation":desktop,"policy":evidence.get("policy"),"providers":rows_out}
     OUT_JSON.write_text(json.dumps(out,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
-    lines = ["# Provider history & live classification — 96/96","",f"- Current manifest: **{current.get('version')}**, providers: **{EXPECTED}**.","- Historical code snapshots: **5.21.0**, **5.21.16**, **5.21.36**, then current.","- Snapshot hash/version columns are code history, **not** live proof by themselves.","- Live precedence: current TV field evidence / current published-byte guard > recent reconstruction candidate > old census.",f"- Desktop macOS field observation: **{desktop or 'no field evidence'}**","- Non-regression policy: a known-good published provider/lane is immutable until a replacement wins an A/B live check.","","## Classification counts",""]
+    lines = ["# Provider history & live classification — 46 current / 50 historical archive","",f"- Current manifest: **{current.get('version')}**, providers: **{EXPECTED}**.","- Historical code snapshots: **5.21.0**, **5.21.16**, **5.21.36**, then current.","- Snapshot hash/version columns are code history, **not** live proof by themselves.","- Live precedence: current TV field evidence / current published-byte guard > recent reconstruction candidate > old census.",f"- Desktop macOS field observation: **{desktop or 'no field evidence'}**","- Non-regression policy: a known-good published provider/lane is immutable until a replacement wins an A/B live check.","","## Classification counts",""]
     for k,v in sorted(counts.items(), key=lambda kv:(-kv[1],kv[0])):
         lines.append(f"- **{k}**: {v}")
-    lines += ["","## 96-provider matrix","","| Provider | Types | Family | 5.21.0 | 5.21.16 | 5.21.36 | Current | Retained | 5.21.36 live | Current published/field | Class | Action |","|---|---|---|---|---|---|---|---:|---|---|---|---|"]
+    lines += ["","## 46-current-provider matrix","","| Provider | Types | Family | 5.21.0 | 5.21.16 | 5.21.36 | Current | Retained | 5.21.36 live | Current published/field | Class | Action |","|---|---|---|---|---|---|---|---:|---|---|---|---|"]
     current_key = str(current.get("version") or "current")
     for r in rows_out:
         ev=[]
