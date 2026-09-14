@@ -6,6 +6,7 @@ on:
     paths:
       - 'scripts/upgrade_stream_language_roles_v1.py'
       - 'scripts/fix_stream_language_role_proof_v1.py'
+      - 'scripts/normalize_stream_presentation_v12.py'
       - '.github/workflows/stream-language-roles-short.yml'
   workflow_dispatch:
 
@@ -40,7 +41,7 @@ jobs:
       - name: Require evidence before Original/Dub inference
         run: python3 scripts/fix_stream_language_role_proof_v1.py
       - name: Compile Python Core presentation
-        run: python3 -m py_compile scripts/upgrade_stream_language_roles_v1.py scripts/fix_stream_language_role_proof_v1.py scripts/provider_patches/global_stream_presentation_v1.py
+        run: python3 -m py_compile scripts/upgrade_stream_language_roles_v1.py scripts/fix_stream_language_role_proof_v1.py scripts/normalize_stream_presentation_v12.py scripts/provider_patches/global_stream_presentation_v1.py
       - name: Engine v2 presentation contract
         run: node engine_v2/tests/stream-presentation.test.mjs
       - name: Provider global presentation contract
