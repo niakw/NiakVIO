@@ -109,9 +109,28 @@ for forbidden in (
 ):
     assert forbidden not in domain, f"Domain Refresh must stay CONFIG/domain-only: {forbidden}"
 transaction=(ROOT/"scripts/domain_refresh_transaction_v2.py").read_text(encoding="utf-8")
-assert "replace_provider_fix" in transaction
-assert "domain refresh changed bytes outside CONFIG Lego" in transaction
-assert '"core_mutation": False' in transaction
+for required in (
+    "replace_provider_fix",
+    "domain refresh changed bytes outside CONFIG Lego",
+    '"core_mutation": False',
+    "CURRENT_PROVIDER_COUNT = 46",
+    "current_provider_ids",
+    "if provider_id not in current_provider_ids:",
+    "domain refresh refuses historical/non-current provider selection",
+    'materialization["providerCount"] = CURRENT_PROVIDER_COUNT',
+    'materialization["expectedProviderCount"] = CURRENT_PROVIDER_COUNT',
+    '"scope_provider_count": len(current_provider_ids)',
+):
+    assert required in transaction, f"Domain Refresh current-Hub46 scope missing: {required}"
+assert "requires 96/96 state" not in transaction
+sanitizer=(ROOT/"scripts/sanitize_provider_hub_registry.py").read_text(encoding="utf-8")
+for required in (
+    'parser.add_argument("--manifest", default="manifest.json")',
+    "provider_ids = current_provider_ids(Path(args.manifest))",
+    "sanitize(registry, provider_ids)",
+    "sanitize_history(history, provider_ids)",
+):
+    assert required in sanitizer, f"Domain Refresh sanitizer current-manifest scope missing: {required}"
 
 # Non-regression owns the exact four-version ledger plus the rolling accepted
 # quick-yield publication floor. Repair is allowed to propose/correct only if its
@@ -130,4 +149,4 @@ for required in (
 assert "pull_request:" in nonreg
 assert "--all" in nonreg, "workbench/global verification must exercise the complete current Hub46 publication"
 
-print("provider v3 workflow ownership contract passed: CORE verify-only + Brain evidence + one Repair engine + atomic Domain Refresh publication + current-Hub46 four-version non-regression gate")
+print("provider v3 workflow ownership contract passed: CORE verify-only + Brain evidence + one Repair engine + Hub46-scoped atomic Domain Refresh publication + current-Hub46 four-version non-regression gate")
