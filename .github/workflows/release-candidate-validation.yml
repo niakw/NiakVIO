@@ -10,7 +10,7 @@ on:
       - '.github/triggers/final-validation-20260914.json'
 
 permissions:
-  contents: read
+  contents: write
   actions: write
 
 concurrency:
@@ -18,14 +18,74 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  normalize:
+    name: Normalize Hub46 derived release artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      candidate_sha: ${{ steps.finalize.outputs.candidate_sha }}
+      changed: ${{ steps.finalize.outputs.changed }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Rebuild catalog and projections strictly from current Hub46 manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs \
+            --general manifest.json \
+            --vf vf/manifest.json \
+            --output provider_catalog.json
+          node engine_v2/scripts/render-manifests-from-catalog.mjs \
+            --catalog provider_catalog.json \
+            --general manifest.json \
+            --vf vf/manifest.json \
+            --no-anime no-anime/manifest.json \
+            --vf-no-anime vf-no-anime/manifest.json
+          python tests/release_projection_scope_test.py
+          python tests/canonical_media_types_test.py
+      - name: Commit normalized derived artifacts when required
+        id: finalize
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add provider_catalog.json manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json
+          if git diff --cached --quiet; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            echo "candidate_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            echo "RELEASE_DERIVED_SYNC changed=0 sha=$(git rev-parse HEAD)"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(release): sync Hub46 derived manifests and catalog'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          sha="$(git rev-parse HEAD)"
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+          echo "candidate_sha=${sha}" >> "$GITHUB_OUTPUT"
+          echo "RELEASE_DERIVED_SYNC changed=1 sha=${sha}"
+
   contracts:
     name: Hub46 release contracts
+    needs: normalize
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ needs.normalize.outputs.candidate_sha }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
@@ -37,10 +97,11 @@ jobs:
           package-manager-cache: false
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Verify Hub46 current/archive contract
+      - name: Verify Hub46 current/archive and projection contract
         run: |
           set -euo pipefail
           python tests/provider_v3_documentation_contract_test.py
+          python tests/release_projection_scope_test.py
           python tests/canonical_media_types_test.py
           python tests/provider_521_capability_regression_test.py
       - name: Verify cross-cutting runtime contracts
@@ -64,15 +125,24 @@ jobs:
 
   dispatch-and-wait:
     name: Permanent gates and five native labs
-    needs: contracts
+    needs: [normalize, contracts]
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
       GH_TOKEN: ${{ github.token }}
       TARGET_REF: ${{ github.ref_name }}
-      TARGET_SHA: ${{ github.sha }}
+      TARGET_SHA: ${{ needs.normalize.outputs.candidate_sha }}
       REPO: ${{ github.repository }}
     steps:
+      - name: Assert branch still points to normalized candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(gh api "repos/${REPO}/git/ref/heads/${TARGET_REF}" --jq '.object.sha')"
+          test "$actual" = "$TARGET_SHA" || {
+            echo "Candidate branch moved during validation: expected=${TARGET_SHA} actual=${actual}" >&2
+            exit 1
+          }
       - name: Dispatch permanent gates and native labs on exact candidate ref
         shell: bash
         run: |
