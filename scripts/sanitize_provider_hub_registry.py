@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Remove non-concrete address constructors from provider-hubs.json.
+"""Remove non-concrete address constructors from provider hub/history state.
 
 This is a conservative preflight for the scheduled Domain Refresh. It never
 invents a provider address: when `direct` is invalid it may only reuse the first
-already-curated concrete direct candidate, otherwise it becomes null. Historical
-concrete candidates are preserved.
+already-curated concrete direct candidate, otherwise it becomes null. Invalid
+history entries are removed; the newest concrete historical entry may replace an
+invalid current entry so stale JS/template constructors cannot remain LKG state.
 """
 from __future__ import annotations
 
@@ -93,22 +94,84 @@ def sanitize(document: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     return document, sorted(changed)
 
 
+def sanitize_history(document: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    providers = document.get("providers")
+    if not isinstance(providers, dict):
+        raise AssertionError("provider-domain-history.json providers must be an object")
+
+    changed: list[str] = []
+    for provider_id, row in providers.items():
+        if not isinstance(row, dict):
+            continue
+        before = json.dumps(row, ensure_ascii=False, sort_keys=True)
+
+        previous: list[dict[str, Any]] = []
+        seen_urls: set[str] = set()
+        for entry in row.get("previous") or []:
+            if not isinstance(entry, dict) or not concrete_http(entry.get("url")):
+                continue
+            key = str(entry.get("url") or "").rstrip("/").casefold()
+            if key in seen_urls:
+                continue
+            seen_urls.add(key)
+            previous.append(entry)
+
+        current = row.get("current")
+        if isinstance(current, dict) and concrete_http(current.get("url")):
+            current_key = str(current.get("url") or "").rstrip("/").casefold()
+            previous = [
+                entry for entry in previous
+                if str(entry.get("url") or "").rstrip("/").casefold() != current_key
+            ]
+            row["current"] = current
+        elif previous:
+            row["current"] = previous.pop(0)
+        else:
+            row.pop("current", None)
+        row["previous"] = previous
+
+        after = json.dumps(row, ensure_ascii=False, sort_keys=True)
+        if before != after:
+            changed.append(str(provider_id))
+
+    return document, sorted(changed)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--registry", default="provider-hubs.json")
+    parser.add_argument("--history", default="provider-domain-history.json")
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
 
-    path = Path(args.registry)
-    document = json.loads(path.read_text(encoding="utf-8"))
-    document, changed = sanitize(document)
-    if args.check and changed:
-        raise SystemExit(f"provider hub registry requires sanitization: {','.join(changed)}")
-    if changed and not args.check:
-        path.write_text(json.dumps(document, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    registry_path = Path(args.registry)
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    registry, registry_changed = sanitize(registry)
+
+    history_path = Path(args.history)
+    history = json.loads(history_path.read_text(encoding="utf-8"))
+    history, history_changed = sanitize_history(history)
+
+    if args.check and (registry_changed or history_changed):
+        details = []
+        if registry_changed:
+            details.append("registry=" + ",".join(registry_changed))
+        if history_changed:
+            details.append("history=" + ",".join(history_changed))
+        raise SystemExit("provider hub state requires sanitization: " + " ".join(details))
+
+    if not args.check:
+        if registry_changed:
+            registry_path.write_text(json.dumps(registry, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        if history_changed:
+            history_path.write_text(json.dumps(history, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
     print(
         "FIELD_HUB_REGISTRY_SANITIZE "
-        f"changed={len(changed)} providers={','.join(changed) if changed else '-'}"
+        f"registry_changed={len(registry_changed)} "
+        f"registry_providers={','.join(registry_changed) if registry_changed else '-'} "
+        f"history_changed={len(history_changed)} "
+        f"history_providers={','.join(history_changed) if history_changed else '-'}"
     )
     return 0
 
