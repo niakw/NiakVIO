@@ -61,6 +61,20 @@ for relative in ("vf/manifest.json", "no-anime/manifest.json", "vf-no-anime/mani
         f"{relative}: version drift {projection.get('version')!r} != {root_version!r}"
     )
 
+# Hub46 is now the complete current publication. Both the root-relative Lab
+# projection and the terminal-name-safe native transport must therefore carry
+# exactly the same provider membership and global release version as manifest.json.
+for relative in ("manifest-hub46.json", "native-hub46/manifest.json"):
+    path = ROOT / relative
+    projection = load(path)
+    ids = manifest_ids(path)
+    assert len(ids) == CURRENT_COUNT, f"{relative}: Hub46 cardinality drift: {len(ids)}"
+    assert set(ids) == root_set, f"{relative}: Hub46 membership differs from current manifest"
+    assert not (set(ids) & archive), f"{relative}: historical provider leaked into Hub46 projection"
+    assert str(projection.get("version") or "") == root_version, (
+        f"{relative}: version drift {projection.get('version')!r} != {root_version!r}"
+    )
+
 catalog = load(ROOT / "provider_catalog.json")
 catalog_ids = [canonical(row.get("canonicalId")) for row in catalog.get("providers") or [] if isinstance(row, dict)]
 assert len(catalog_ids) == CURRENT_COUNT, f"provider_catalog current scope drift: {len(catalog_ids)} != {CURRENT_COUNT}"
@@ -70,5 +84,5 @@ assert not (set(catalog_ids) & archive), "historical provider leaked into provid
 print(
     "release projection scope passed: "
     f"current={len(root_ids)} historical={len(archive)} "
-    "vf/no-anime/vf-no-anime subset=current"
+    "vf/no-anime/vf-no-anime subset=current hub46/native-hub46=current"
 )
