@@ -1,4 +1,4 @@
-name: SHORT - Kehflix Current Live
+name: SHORT - Kehflix Terminal Repair
 
 on:
   push:
@@ -8,16 +8,16 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: niakvio-kehflix-current-live
+  group: niakvio-kehflix-terminal-repair
   cancel-in-progress: true
 
 jobs:
-  verify:
+  prove-publish-data:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 12
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
@@ -25,43 +25,94 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: main
-          fetch-depth: 1
+          fetch-depth: 0
+          persist-credentials: true
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with: {python-version: '3.12'}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: '24', package-manager-cache: false}
       - name: Require exact trigger head
         run: test "$(git rev-parse HEAD)" = "${{ github.sha }}"
-      - name: Probe Kehflix terminals and current provider
+      - name: Unit contract and candidate DATA
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/upgrade_kehflix_terminal_domain_v1.py tests/kehflix_terminal_domain_v1_test.py
+          python3 tests/kehflix_terminal_domain_v1_test.py
+          python3 scripts/upgrade_kehflix_terminal_domain_v1.py
+          python3 - <<'PY'
+          import json
+          o=json.load(open('provider-overrides.json',encoding='utf-8'))['provider_patches']['kehflix']
+          k=json.load(open('automation/provider-v3-static-knowledge.json',encoding='utf-8'))['providers']['kehflix']['model']
+          assert o['official_site']=='https://kehflix.wiki'
+          assert o['domain_substitutions'].get('kehflix.lol')=='kehflix.wiki'
+          assert 'kehflix.wiki' not in o['domain_substitutions']
+          assert o['runtime_domain_replacements'].get('kehflix.lol')=='kehflix.wiki'
+          assert 'kehflix.wiki' not in o['runtime_domain_replacements']
+          assert k['officialSite']=='https://kehflix.wiki'
+          assert k['domainSubstitutions'].get('kehflix.lol')=='kehflix.wiki'
+          assert 'kehflix.wiki' not in k['domainSubstitutions']
+          print('KEHFLIX_CANDIDATE_DATA_OK')
+          PY
+          cp provider-overrides.json /tmp/kehflix-provider-overrides.json
+          cp automation/provider-v3-static-knowledge.json /tmp/kehflix-static-knowledge.json
+      - name: Ephemeral rematerialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/reapply_published_overrides.py --primary manifest.json
+      - name: Require live terminal proof for movie TV and anime
         shell: bash
         run: |
           set -euo pipefail
           test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
           echo '=== DOMAIN PATH RETENTION ==='
-          for base in https://kehflix.wiki https://kehflix.com https://kehflix.lol; do
-            code="$(curl -A 'Mozilla/5.0' -L -sS -o /tmp/kehflix-body -w '%{http_code}' --max-time 12 "$base/title/movie/157336-interstellar" || true)"
-            final="$(curl -A 'Mozilla/5.0' -L -sS -o /dev/null -w '%{url_effective}' --max-time 12 "$base/title/movie/157336-interstellar" || true)"
-            bytes="$(wc -c </tmp/kehflix-body 2>/dev/null || echo 0)"
-            printf 'KEHFLIX_DOMAIN base=%s code=%s final=%s bytes=%s\n' "$base" "$code" "$final" "$bytes"
-          done
-          echo '=== CURRENT PROVIDER TERMINAL PROOF ==='
+          wiki_final="$(curl -A 'Mozilla/5.0' -L -sS -o /tmp/kehflix-wiki -w '%{url_effective}' --max-time 12 'https://kehflix.wiki/title/movie/157336-interstellar')"
+          com_final="$(curl -A 'Mozilla/5.0' -L -sS -o /tmp/kehflix-com -w '%{url_effective}' --max-time 12 'https://kehflix.com/title/movie/157336-interstellar')"
+          lol_final="$(curl -A 'Mozilla/5.0' -L -sS -o /tmp/kehflix-lol -w '%{url_effective}' --max-time 12 'https://kehflix.lol/title/movie/157336-interstellar')"
+          printf 'KEHFLIX_DOMAIN wiki=%s com=%s lol=%s\n' "$wiki_final" "$com_final" "$lol_final"
+          test "$wiki_final" = 'https://kehflix.wiki/title/movie/157336-interstellar'
+          test "$com_final" = 'https://kehflix.com/title/movie/157336-interstellar'
+          test "$lol_final" = 'https://kehflix.com/'
           python3 - <<'PY'
           import json,pathlib,sys
           root=pathlib.Path('.').resolve();sys.path.insert(0,str(root/'scripts'))
           import run_provider_upstream_parity as p
           import run_provider_upstream_parity_v3 as v3
-          local=p.local_catalog()
-          row=local.get('kehflix')
-          if not row:
-              raise SystemExit('kehflix missing from local catalog')
+          local=p.local_catalog(); row=local.get('kehflix')
+          if not row: raise SystemExit('kehflix missing after rematerialization')
           fixtures=[
               ('movie', {'slug':'interstellar-2014','tmdbId':'157336','mediaType':'movie','category':'movie','title':'Interstellar','year':2014}),
               ('tv', {'slug':'house-of-the-dragon-s03e01','tmdbId':'94997','mediaType':'tv','category':'tv','title':'House of the Dragon','year':2022,'season':3,'episode':1,'expectedDurationMinutes':65}),
+              ('anime', {'slug':'jujutsu-kaisen-s01e01','tmdbId':'95479','mediaType':'tv','category':'anime','title':'Jujutsu Kaisen','year':2020,'season':1,'episode':1,'expectedDurationMinutes':24}),
           ]
-          print('KEHFLIX_LOCAL_PATH', row.get('path'))
+          print('KEHFLIX_CANDIDATE_PATH',row.get('path'))
           for lane,fx in fixtures:
-              payload=v3.fixture_payload(fx,lane,upstream=False)
-              r=v3._run_verified(row['path'],payload,25)
+              r=v3._run_verified(row['path'],v3.fixture_payload(fx,lane,upstream=False),25)
               out={k:r.get(k) for k in ('stream_count','candidate_stream_count','terminal_verified','terminal_reasons','terminal_media_duration_seconds','error','status')}
-              print('KEHFLIX_CURRENT '+json.dumps({'lane':lane,'fixture':fx['slug'],'result':out},sort_keys=True))
+              print('KEHFLIX_REPAIR '+json.dumps({'lane':lane,'fixture':fx['slug'],'result':out},sort_keys=True))
+              if int(r.get('stream_count') or 0)<1 or not r.get('terminal_verified'):
+                  raise SystemExit(f'kehflix {lane}: no terminal media proof')
           PY
+      - name: Persist only proven Kehflix DATA
+        shell: bash
+        run: |
+          set -euo pipefail
+          git reset --hard "${{ github.sha }}"
+          git clean -fd
+          cp /tmp/kehflix-provider-overrides.json provider-overrides.json
+          cp /tmp/kehflix-static-knowledge.json automation/provider-v3-static-knowledge.json
+          python3 scripts/upgrade_kehflix_terminal_domain_v1.py
+          python3 tests/kehflix_terminal_domain_v1_test.py
+          git diff --check
+          changed="$(git diff --name-only | sort)"
+          printf '%s\n' "$changed"
+          test "$changed" = $'automation/provider-v3-static-knowledge.json\nprovider-overrides.json'
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add provider-overrides.json automation/provider-v3-static-knowledge.json
+          git commit -m 'fix(kehflix): restore proven terminal domain'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${{ github.sha }}" || { echo 'main moved during Kehflix DATA publication' >&2; exit 1; }
+          git push origin HEAD:main
+          echo "KEHFLIX_DATA_PUBLISHED $(git rev-parse HEAD)"
