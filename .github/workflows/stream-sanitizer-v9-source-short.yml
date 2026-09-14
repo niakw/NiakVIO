@@ -1,0 +1,111 @@
+name: SHORT - Stream Sanitizer V9 Source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/stream-sanitizer-v9-source-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-stream-sanitizer-v9-source
+  cancel-in-progress: true
+
+jobs:
+  validate-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Require exact trigger head
+        run: test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+      - name: Select V9 and run Core regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_stream_sanitizer_v9_selection.py
+          python3 -m py_compile \
+            scripts/upgrade_stream_sanitizer_v9_selection.py \
+            scripts/provider_patches/stream_output_sanitizer_v9.py \
+            tests/stream_output_sanitizer_manifest_range_test.py
+          python3 tests/stream_output_sanitizer_manifest_range_test.py
+          python3 tests/stream_output_sanitizer_fail_closed_test.py
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/hls_master_facts_short_test.py
+      - name: Prove current StreamZo with V9 before global rebuild
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 - <<'PY'
+          import json, os, pathlib, subprocess, sys, tempfile
+          root=pathlib.Path('.').resolve(); sys.path.insert(0,str(root/'scripts'))
+          from apply_provider_overrides import apply_overrides
+          import run_provider_upstream_parity as parity
+          manifest=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
+          row=next(r for r in manifest.get('scrapers',[]) if str(r.get('id','')).casefold()=='streamzo')
+          src=root/row['filename']
+          patched,records=apply_overrides('streamzo',src.read_bytes(),include_global_core=True)
+          text=patched.decode('utf-8')
+          assert text.count('NUVIO_STREAM_OUTPUT_FULL_MANIFEST_V9')==1
+          assert text.count('NUVIO_STREAM_OUTPUT_STRICT_PROBE_V8')==1
+          fixture={'tmdbId':'60059','mediaType':'tv','title':'Better Call Saul','year':2015,'season':1,'episode':1}
+          ctx=parity.context_for(fixture)
+          with tempfile.TemporaryDirectory() as td:
+            path=pathlib.Path(td)/'streamzo-v9.js'; path.write_bytes(patched)
+            p=subprocess.run(['node',str(root/'scripts/provider_worker.cjs'),str(path),json.dumps(fixture,separators=(',',':')),json.dumps(ctx,separators=(',',':'))],cwd=root,text=True,capture_output=True,timeout=35,check=False)
+          result=None
+          for line in p.stdout.splitlines():
+            if line.startswith('NUVIO_HEALTH_RESULT='):
+              result=json.loads(line.split('=',1)[1])
+          if not isinstance(result,dict):
+            print(p.stdout); print(p.stderr); raise SystemExit('STREAMZO_V9_NO_RESULT')
+          count=int(result.get('stream_count') or 0)
+          print('STREAMZO_V9_STREAMS',count,'raw',result.get('raw_stream_count'))
+          for s in (result.get('streams') or [])[:3]:
+            if isinstance(s,dict):
+              print('STREAMZO_V9_FACTS',json.dumps({k:s.get(k) for k in ('quality','resolution','height','language','languageTracks','audioTracks','audioLanguages')},ensure_ascii=False,sort_keys=True))
+          for obs in result.get('network_observations') or []:
+            if isinstance(obs,dict) and not obs.get('infrastructure') and obs.get('stage') in {'content_lookup','player'}:
+              print('STREAMZO_V9_ROUTE',obs.get('host'),obs.get('path_pattern'),obs.get('status'),obs.get('ok'),obs.get('error_code') or '')
+          if count < 1:
+            raise SystemExit('STREAMZO_V9_STILL_ZERO')
+          PY
+      - name: Idempotence and diff integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_stream_sanitizer_v9_selection.py
+          git diff --check
+          git diff --name-only | tee "$RUNNER_TEMP/v9-source-files.txt"
+          if grep -Ev '^(scripts/apply_provider_overrides\.py|tests/global_core_runtime_ownership_test\.py)$' "$RUNNER_TEMP/v9-source-files.txt"; then
+            echo 'Unexpected V9 source migration path' >&2
+            exit 1
+          fi
+      - name: Publish V9 source selection
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/apply_provider_overrides.py tests/global_core_runtime_ownership_test.py
+          git diff --cached --quiet && { echo 'STREAM_SANITIZER_V9_SELECTION_ALREADY_PUBLISHED'; exit 0; }
+          git commit -m 'fix(core): select full-manifest stream sanitizer v9'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${{ github.sha }}" || { echo 'main moved during V9 source publication' >&2; exit 1; }
+          git push origin HEAD:main
+          echo "STREAM_SANITIZER_V9_SELECTION_PUBLISHED $(git rev-parse HEAD)"
