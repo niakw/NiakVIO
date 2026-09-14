@@ -105,7 +105,7 @@ assert.equal(
 );
 assert.ok(
   Object.keys(brandingIndex.providers ?? {}).length >= catalog.providers.length,
-  "branding registry may pre-register providers from a pending transaction but must cover the current catalog",
+  "branding registry may retain historical providers but must cover the current catalog",
 );
 const brandingRendered = manifestsFromCatalog(brandingCatalog);
 for (const scraper of brandingRendered.general.scrapers) {
@@ -119,29 +119,30 @@ for (const scraper of brandingRendered.vf.scrapers) {
   assert.equal(scraper.name, `${branding.emoji} ${branding.name}`, `${scraper.id}: VF display branding mismatch`);
 }
 const incompleteBranding = structuredClone(brandingIndex);
-delete incompleteBranding.providers[Object.keys(incompleteBranding.providers)[0]];
+delete incompleteBranding.providers[String(catalog.providers[0].canonicalId)];
 assert.throws(
   () => applyCommittedProviderNames(structuredClone(catalog), incompleteBranding),
   /coverage mismatch/i,
-  "catalog must reject incomplete provider branding coverage",
+  "catalog must reject incomplete current provider branding coverage",
 );
 const forwardBranding = structuredClone(brandingIndex);
-forwardBranding.providers["future-provider-pending"] = { name: "Future Provider Pending", emoji: "🇫" };
+forwardBranding.providers["historical-or-future-provider"] = { name: "Historical Or Future Provider", emoji: "🇫" };
 assert.doesNotThrow(
   () => applyCommittedProviderNames(structuredClone(catalog), forwardBranding),
-  "branding registry must tolerate providers pre-registered for a pending transaction",
+  "branding registry must tolerate rows outside the current catalog",
 );
 
 const logoIndex = JSON.parse(fs.readFileSync("assets/providers/index.json", "utf8"));
 const logoCatalog = applyCommittedProviderLogos(structuredClone(catalog), logoIndex);
-const expectedLogoRows = Object.values(logoIndex.providers ?? {}).filter(
-  (row) => typeof row?.urls?.["96x96"] === "string" && row.urls["96x96"].length > 0,
+const currentCatalogIds = new Set(catalog.providers.map((row) => row.canonicalId));
+const expectedLogoRows = Object.entries(logoIndex.providers ?? {}).filter(
+  ([id, row]) => currentCatalogIds.has(String(id).toLowerCase()) && typeof row?.urls?.["96x96"] === "string" && row.urls["96x96"].length > 0,
 );
 assert.equal(logoCatalog.policy.committedProviderLogos, true);
 assert.equal(
   logoCatalog.policy.committedProviderLogoCount,
   expectedLogoRows.length,
-  "catalog must bind every committed 96x96 provider logo",
+  "catalog must bind every current provider with a committed 96x96 logo",
 );
 const logoRendered = manifestsFromCatalog(logoCatalog);
 const indexedIds = new Set(Object.keys(logoIndex.providers ?? {}).map((value) => value.toLowerCase()));
@@ -161,6 +162,21 @@ for (const scraper of logoRendered.vf.scrapers) {
     `${scraper.id}: VF manifest must use committed NiakVIO logo`,
   );
 }
+const incompleteLogoIndex = structuredClone(logoIndex);
+delete incompleteLogoIndex.providers[String(catalog.providers[0].canonicalId)];
+assert.throws(
+  () => applyCommittedProviderLogos(structuredClone(catalog), incompleteLogoIndex),
+  /coverage mismatch/i,
+  "catalog must reject incomplete current provider logo coverage",
+);
+const historicalLogoIndex = structuredClone(logoIndex);
+historicalLogoIndex.providers["historical-provider"] = {
+  urls: { "96x96": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/historical-provider.webp" },
+};
+assert.doesNotThrow(
+  () => applyCommittedProviderLogos(structuredClone(catalog), historicalLogoIndex),
+  "logo registry must tolerate historical rows outside the current catalog",
+);
 const unsafeLogoIndex = structuredClone(logoIndex);
 unsafeLogoIndex.futurePolicy = "network-regeneration";
 assert.throws(
