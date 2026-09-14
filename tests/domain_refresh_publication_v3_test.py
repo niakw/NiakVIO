@@ -19,7 +19,8 @@ assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
-# Current publication namespace must survive a domain-only CONFIG rotation.
+# A domain-only CONFIG rotation must preserve the accepted generation's filename
+# stage. Source-qualified publications retain their source namespace.
 digest = "ab" * 32
 assert module.source_qualified_provider_name(
     "demo", Path("providers/demo--nuvio--0011223344556677.js"), digest
@@ -28,11 +29,12 @@ assert module.source_qualified_provider_name(
     "demo", Path("providers/demo--nuvio-tv-global--0011223344556677.js"), digest
 ) == "demo--nuvio-tv-global--abababababababab.js"
 
-# A historical unqualified file gets normalized into the canonical Nuvio source
-# namespace instead of creating yet another filename grammar.
+# Current Hub46 publication uses the unqualified workspace/content-addressed
+# grammar. Rotating only some CONFIG blocks must keep those providers in that
+# grammar instead of creating a mixed 34/12 manifest stage.
 assert module.source_qualified_provider_name(
     "demo", Path("providers/demo-0011223344556677.js"), digest
-) == "demo--nuvio--abababababababab.js"
+) == "demo-abababababababab.js"
 
 # Audit-quarantine is a transient publication suffix, not a permanent source.
 assert module.source_qualified_provider_name(
@@ -65,8 +67,9 @@ assert {"official_site", "official_hub", "runtime_domain_replacements", "domain_
 
 source = path.read_text(encoding="utf-8")
 assert 'new_rel = f"providers/{source_qualified_provider_name(provider_id, old_path, digest)}"' in source
-assert 'new_rel = f"providers/{provider_id}-{digest[:16]}.js"' not in source
+assert 'source = parts[-2] if len(parts) >= 3 else "nuvio"' not in source
+assert 'return f"{_safe_fragment(provider_id.casefold())}-{digest[:16]}.js"' in source
 assert "allmat.provider_model(provider_id, patch, capability, static_row)" in source
 assert "replace_provider_fix(" in source
 assert "domain refresh changed bytes outside CONFIG Lego" in source
-print("domain refresh publication v3 contract passed: full CONFIG + source-qualified refs + generic A->B derivatives")
+print("domain refresh publication v3 contract passed: full CONFIG + filename-stage preservation + generic A->B derivatives")
