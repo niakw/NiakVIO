@@ -2,13 +2,13 @@
 """One-shot repair for anime semantic gating and artificial movie capabilities.
 
 Policy:
-- anime-first providers are semantic `anime` only;
-- `tv` is a Nuvio transport alias, never a semantic live-action capability;
-- `movie` is never manufactured for anime-first providers;
-- ambiguous tv/movie transport must be canonically classified before provider network.
+- anime-first providers are semantic ``anime`` only;
+- ``tv`` is a Nuvio transport alias, never a semantic live-action capability;
+- ``movie`` is never manufactured for anime-first providers;
+- ambiguous tv/movie transport is canonically classified before provider network.
 
 This migration edits NiakVIO-owned source/data only. It does not bypass provider
-anti-bot/authentication controls and it does not weaken terminal validation.
+anti-bot/authentication controls and does not weaken terminal validation.
 """
 from __future__ import annotations
 
@@ -73,10 +73,10 @@ function requiresSemanticPreflight(a){
   var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
   if(!semantic.length||raw==="anime"||semantic.indexOf("anime")<0)return false;
   var namespace=transport==="movie"?"movie":"tv";
-  // If anime is the only semantic reason this provider can accept the current
-  // movie/tv transport, canonical classification must happen before provider
-  // network. This prevents anime providers from burning their budget on
-  // live-action titles such as Interstellar / House of the Dragon / The 100.
+  // Anime is a semantic class carried through movie/tv transport. If anime is
+  // the only semantic reason this provider could accept this namespace, classify
+  // the work before touching provider network. This stops live-action titles
+  // from consuming an anime provider's whole execution budget.
   return semantic.indexOf(namespace)<0;
 }
 
@@ -109,9 +109,7 @@ async function resolve(a){'''
         preResolved=await resolve(originalArgs);
         if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
         // Ambiguous anime-via-tv/movie transport is fail-closed before provider
-        // network unless canonical metadata positively classifies this work.
-        // Infrastructure failure must not turn every live-action title into an
-        // anime provider call.
+        // network unless canonical metadata positively classifies the work.
         if(needsSemanticPreflight&&(!preResolved||!hasResolvedTmdbMetadata(preResolved)))return [];
         if(preResolved&&!deadlineExpired(requestDeadline)&&hasResolvedTmdbMetadata(preResolved)){
           verified=preResolved;
@@ -152,13 +150,17 @@ def patch_probe() -> bool:
     return replace_once(PROBE, old, new, "short probe semantic filter")
 
 
+def prune_anime(values: object) -> list[str]:
+    return [str(v) for v in values if cid(v) == "anime"] if isinstance(values, list) else []
+
+
 def normalize_overrides() -> int:
     data = json.loads(OVERRIDES.read_text(encoding="utf-8"))
     patches = data.get("provider_patches") or {}
-    changed = 0
     missing = sorted(provider_id for provider_id in ANIME_FIRST if provider_id not in patches)
     if missing:
         raise AssertionError("anime-first overrides missing: " + ",".join(missing))
+    changed = 0
     for provider_id in sorted(ANIME_FIRST):
         row = patches[provider_id]
         if row.get("published_types") != ["anime"]:
@@ -170,14 +172,18 @@ def normalize_overrides() -> int:
             notes.append(note)
             row["notes"] = notes
             changed += 1
+
+        # Prune stale lane metadata, but deliberately preserve activation/repair
+        # state. A semantic migration is not playback proof.
         disp = row.get("repair_disposition")
         if isinstance(disp, dict):
-            for key in ("requiredLanes", "currentVerifiedLanes", "exactLockedLanes", "provenLanes", "missingLanes"):
+            if disp.get("requiredLanes") != ["anime"]:
+                disp["requiredLanes"] = ["anime"]
+                changed += 1
+            for key in ("currentVerifiedLanes", "exactLockedLanes", "provenLanes", "missingLanes"):
                 values = disp.get(key)
                 if isinstance(values, list):
-                    wanted = [v for v in values if cid(v) == "anime"]
-                    if key == "requiredLanes":
-                        wanted = ["anime"]
+                    wanted = prune_anime(values)
                     if values != wanted:
                         disp[key] = wanted
                         changed += 1
@@ -187,31 +193,25 @@ def normalize_overrides() -> int:
                 if statuses != wanted_statuses:
                     disp["laneStatuses"] = wanted_statuses
                     changed += 1
-            missing_lanes = disp.get("missingLanes") or []
-            disp["completeCapabilityProof"] = not missing_lanes and bool(
-                set(disp.get("currentVerifiedLanes") or []) | set(disp.get("provenLanes") or [])
-            )
-            if disp["completeCapabilityProof"]:
-                disp["routeDataState"] = "on"
-                row["route_data_state"] = "on"
+
         gate = row.get("live_route_gate")
         if isinstance(gate, dict):
             for key in ("required_types", "validated_types", "missing_types"):
                 values = gate.get(key)
                 if isinstance(values, list):
-                    wanted = [v for v in values if cid(v) == "anime"]
-                    if key == "required_types":
-                        wanted = ["anime"]
+                    wanted = ["anime"] if key == "required_types" else prune_anime(values)
                     if values != wanted:
                         gate[key] = wanted
                         changed += 1
+
         proof = row.get("route_proof")
         if isinstance(proof, dict) and isinstance(proof.get("runtimePlanSemanticLanes"), list):
             values = proof["runtimePlanSemanticLanes"]
-            wanted = [v for v in values if cid(v) == "anime"]
+            wanted = prune_anime(values)
             if values != wanted:
                 proof["runtimePlanSemanticLanes"] = wanted
                 changed += 1
+
     OVERRIDES.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return changed
 
@@ -223,12 +223,10 @@ def normalize_catalog_and_manifest() -> tuple[int, int]:
     for provider in catalog.get("providers") or []:
         if not isinstance(provider, dict):
             continue
-        provider_id = cid(provider.get("canonicalId") or (provider.get("scraper") or {}).get("id"))
+        scraper = provider.get("scraper") if isinstance(provider.get("scraper"), dict) else {}
+        provider_id = cid(provider.get("canonicalId") or scraper.get("id"))
         if provider_id not in ANIME_FIRST:
             continue
-        scraper = provider.get("scraper")
-        if not isinstance(scraper, dict):
-            raise AssertionError(f"{provider_id}: catalog scraper missing")
         if scraper.get("supportedTypes") != ["anime"]:
             scraper["supportedTypes"] = ["anime"]
             catalog_changed += 1
@@ -249,12 +247,11 @@ def normalize_catalog_and_manifest() -> tuple[int, int]:
         provider_id = cid(row.get("id"))
         if provider_id not in ANIME_FIRST:
             continue
-        wanted_transport = ["anime", "tv"]
         if row.get("canonicalSupportedTypes") != ["anime"]:
             row["canonicalSupportedTypes"] = ["anime"]
             manifest_changed += 1
-        if row.get("supportedTypes") != wanted_transport:
-            row["supportedTypes"] = wanted_transport
+        if row.get("supportedTypes") != ["anime", "tv"]:
+            row["supportedTypes"] = ["anime", "tv"]
             manifest_changed += 1
         seen_manifest.add(provider_id)
     if seen_manifest != ANIME_FIRST:
@@ -276,8 +273,9 @@ def patch_test() -> bool:
     if old_comment in text:
         text = text.replace(old_comment, new_comment, 1)
         changed = True
+
     marker = "print('global media fast gate passed: movie<->tv and explicit anime mismatches reject before provider/TMDB network')\n"
-    block = r'''
+    block = r"""
 # Ambiguous anime-via-TV/movie transport must classify before provider network.
 # Live-action metadata therefore stops an anime-only provider at the Core gate.
 def assert_live_action_stops_anime_provider(media_type: str, tmdb_id: str, label: str) -> None:
@@ -311,7 +309,7 @@ assert_live_action_stops_anime_provider("movie", "157336", "Interstellar")
 assert_live_action_stops_anime_provider("tv", "94997", "House of the Dragon")
 
 print('global media fast gate passed: semantic anime preflight blocks live-action before provider network')
-'''
+"""
     if "assert_live_action_stops_anime_provider" not in text:
         if marker not in text:
             raise AssertionError("global media test footer drifted")
