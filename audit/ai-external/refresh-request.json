@@ -1,13 +1,11 @@
 {
-  "target_sha": "73dacabfd563628300414755169d2672c68c9ab0",
+  "target_sha": "4e203d7a7e165cd90c058e2daa3b5adf6d74167a",
   "wait_seconds": 900,
   "services": {
     "sonar": {
       "requested": true,
       "fresh": false,
-      "notes": [
-        "did not reach target SHA within 900s"
-      ],
+      "notes": [],
       "request_mode": "GitHub automatic analysis (latest main push)",
       "project_key": "niakw_NiakVIO",
       "latest_sha": "8388b69c460c59363244cb0c248bed3320c8be06",
@@ -16,24 +14,22 @@
     "deepsource": {
       "requested": true,
       "fresh": false,
-      "notes": [
-        "did not reach target SHA within 900s"
-      ],
-      "repository_latest_sha_before": "73dacabfd563628300414755169d2672c68c9ab0",
+      "notes": [],
+      "repository_latest_sha_before": "4e203d7a7e165cd90c058e2daa3b5adf6d74167a",
       "activated": true,
       "target_run_status": null,
       "target_run_finished_at": null
     },
     "codescene": {
-      "requested": true,
+      "requested": false,
       "fresh": false,
       "notes": [
-        "did not reach target SHA within 900s"
+        "run-analysis returned HTTP 400: {'error': \"There's another analysis already running.\"}"
       ],
       "project_id": 83939,
-      "request_http_status": 202,
-      "latest_sha": "daec891d1044afa240d78d1a220776ef4ac1450c",
-      "latest_analysis_at": "2026-09-13T09:37:07Z"
+      "request_http_status": 400,
+      "latest_sha": "5646ee67d191473ef9d2f62daa8b12b993da59b8",
+      "latest_analysis_at": "2026-09-14T07:14:21Z"
     }
   }
 }
