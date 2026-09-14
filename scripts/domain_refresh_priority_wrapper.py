@@ -4,12 +4,12 @@
 The authoritative hub resolver already assigns trust/brand scores. This wrapper
 must never override a candidate with a strictly higher score. It only resolves
 score ties so a hub-labelled primary/recommended link outranks backup/mirror/
-secondary links. That prevents lexical URL ordering from publishing a backup as
-the current terminal when the same hub explicitly marks another equal-score link
-as principal.
+secondary links. When those semantic labels are neutral, a short label matching
+the provider brand outranks an anonymous link before document order is used.
 """
 from __future__ import annotations
 
+import re
 from typing import Any, Callable
 
 import domain_refresh_transaction_v2 as transaction
@@ -44,6 +44,10 @@ def _fold(value: object) -> str:
     return str(value or "").strip().casefold()
 
 
+def _compact(value: object) -> str:
+    return re.sub(r"[^a-z0-9]+", "", _fold(value))
+
+
 def semantic_priority(row: dict[str, Any]) -> int:
     label = _fold(row.get("label"))
     primary = sum(1 for token in PRIMARY_TOKENS if token in label)
@@ -51,12 +55,26 @@ def semantic_priority(row: dict[str, Any]) -> int:
     return primary - backup
 
 
-def _candidate_key(row: dict[str, Any]) -> tuple[int, int, int, str]:
+def brand_priority(provider_id: object, row: dict[str, Any]) -> int:
+    """Prefer concise provider-branded labels over anonymous equal-score links."""
+    label = _fold(row.get("label"))
+    if not label or len(label) > 80:
+        return 0
+    provider = _compact(provider_id)
+    compact_label = _compact(label)
+    if not provider or not compact_label:
+        return 0
+    return int(compact_label == provider or compact_label.startswith(provider))
+
+
+def _candidate_key(provider_id: object, row: dict[str, Any]) -> tuple[int, int, int, int, str]:
     # Trust score remains the first and strongest authority. Semantic labels only
-    # break ties; document order is the next conservative signal.
+    # break ties. A concise provider-branded label then beats an anonymous link;
+    # document order remains the final conservative signal before lexical order.
     return (
         -int(row.get("score") or 0),
         -semantic_priority(row),
+        -brand_priority(provider_id, row),
         int(row.get("document_index") if row.get("document_index") is not None else 10**9),
         _fold(row.get("url")),
     )
@@ -69,7 +87,8 @@ def prioritize_authoritative_item(item: dict[str, Any]) -> dict[str, Any]:
     if len(candidates) < 2:
         return item
 
-    ordered = sorted(candidates, key=_candidate_key)
+    provider_id = item.get("provider_id")
+    ordered = sorted(candidates, key=lambda row: _candidate_key(provider_id, row))
     selected = ordered[0]
     terminal = str(selected.get("url") or "").strip().rstrip("/")
     if not terminal:
@@ -85,7 +104,7 @@ def prioritize_authoritative_item(item: dict[str, Any]) -> dict[str, Any]:
     if terminal != previous:
         item["candidate_priority_adjusted"] = True
         item["candidate_priority_previous"] = previous
-        item["candidate_priority_reason"] = "equal-score semantic primary preference"
+        item["candidate_priority_reason"] = "equal-score semantic/brand primary preference"
     return item
 
 
