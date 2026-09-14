@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from domain_refresh_guard_wrapper import has_fresh_rollback_evidence
+from validate_domain_refresh_transaction import selected_source_is_authoritative
 
 
 def item(label: str) -> dict:
@@ -27,4 +28,40 @@ assert has_fresh_rollback_evidence(item("Domain Unavailable"), "https://historic
 assert has_fresh_rollback_evidence(item("Bloqué par les FAI — encore accessible via DNS alternatif"), "https://historical.example") is False
 assert has_fresh_rollback_evidence(item("Visit"), "https://historical.example") is False
 
-print("domain refresh explicit-current-domain reuse guard tests passed")
+# Public Telegram is authority only when the exact current registry source is
+# explicitly curated as an authoritative address/domain reference.
+provider_id = "hindmoviez"
+telegram_item = {
+    "selected_source_type": "telegram_public",
+    "selected_source": "https://t.me/s/hindmoviez/1975",
+}
+registry = {
+    provider_id: {
+        "sources": [{
+            "type": "telegram_public",
+            "url": "https://t.me/s/hindmoviez/1975",
+            "purpose": "Authoritative address reference",
+        }]
+    }
+}
+assert selected_source_is_authoritative(provider_id, telegram_item, registry) is True
+assert selected_source_is_authoritative(
+    provider_id,
+    telegram_item,
+    {provider_id: {"sources": [{
+        "type": "telegram_public",
+        "url": "https://t.me/s/other/1",
+        "purpose": "Authoritative address reference",
+    }]}},
+) is False
+assert selected_source_is_authoritative(
+    provider_id,
+    telegram_item,
+    {provider_id: {"sources": [{
+        "type": "telegram_public",
+        "url": "https://t.me/s/hindmoviez/1975",
+        "purpose": "Community discussion",
+    }]}},
+) is False
+
+print("domain refresh explicit-current-domain and registry-authority guard tests passed")
