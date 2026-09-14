@@ -19,5 +19,5 @@ assert '/?s=' in wrapper
 assert 'nekoFollowHub' in wrapper
 assert 'saison|saga' in wrapper
 assert wrapper.count('async function neko(meta)') == 1
-assert wrapper.count('NIAKVIO_PROVIDER_RUNTIME_RESOLVER_V1') == 1
+assert wrapper.count('function fullEpisodes(html)') == 1
 print('neko-sama v2 search/season/eplister runtime contract passed')
