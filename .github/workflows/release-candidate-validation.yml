@@ -1,0 +1,172 @@
+name: CORE - Release Candidate Validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'fix/labs-*'
+    paths:
+      - '.github/workflows/release-candidate-validation.yml'
+      - '.github/triggers/final-validation-20260914.json'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: release-candidate-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    name: Hub46 release contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify Hub46 current/archive contract
+        run: |
+          set -euo pipefail
+          python tests/provider_v3_documentation_contract_test.py
+          python tests/canonical_media_types_test.py
+          python tests/provider_521_capability_regression_test.py
+      - name: Verify cross-cutting runtime contracts
+        run: |
+          set -euo pipefail
+          python tests/core_runtime_nonregression_contract_test.py
+          python tests/global_stream_metadata_preservation_contract_test.py
+          python tests/global_stream_presentation_pipeline_test.py
+          python tests/provider_branding_contract_test.py
+          python tests/stream_quality_recovery_tv_test.py
+          python tests/stream_output_sanitizer_direct_normalization_test.py
+          python tests/stream_output_sanitizer_fail_closed_test.py
+          python tests/global_media_type_pre_network_gate_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/episodic_year_identity_regression_test.py
+          python tests/global_playback_integrity_policy_test.py
+      - name: Verify presentation fixed point
+        run: python scripts/normalize_stream_presentation_v12.py --check
+      - name: Verify workflow security policy
+        run: python tests/workflow_security_policy_test.py
+
+  dispatch-and-wait:
+    name: Permanent gates and five native labs
+    needs: contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_REF: ${{ github.ref_name }}
+      TARGET_SHA: ${{ github.sha }}
+      REPO: ${{ github.repository }}
+    steps:
+      - name: Dispatch permanent gates and native labs on exact candidate ref
+        shell: bash
+        run: |
+          set -euo pipefail
+          dispatch() {
+            local workflow="$1"
+            shift || true
+            gh api --method POST "repos/${REPO}/actions/workflows/${workflow}/dispatches" \
+              -f ref="${TARGET_REF}" "$@"
+            echo "dispatched ${workflow} ref=${TARGET_REF} sha=${TARGET_SHA}"
+          }
+          dispatch provider-non-regression.yml
+          dispatch core-stream-metadata-contract.yml
+          dispatch canonical-media-types.yml
+          dispatch provider-overrides-gate.yml
+          dispatch native-mobile-android-reader.yml
+          dispatch native-mobile-ios-reader.yml -f 'inputs[mode]=full'
+          dispatch native-desktop-reader-acceptance.yml
+
+      - name: Wait for exact candidate workflow conclusions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, time, urllib.parse, urllib.request
+
+          repo=os.environ['REPO']
+          ref=os.environ['TARGET_REF']
+          sha=os.environ['TARGET_SHA']
+          token=os.environ['GH_TOKEN']
+          workflows=[
+              'provider-non-regression.yml',
+              'core-stream-metadata-contract.yml',
+              'canonical-media-types.yml',
+              'provider-overrides-gate.yml',
+              'native-mobile-android-reader.yml',
+              'native-mobile-ios-reader.yml',
+              'native-desktop-reader-acceptance.yml',
+          ]
+          headers={
+              'Authorization': f'Bearer {token}',
+              'Accept': 'application/vnd.github+json',
+              'X-GitHub-Api-Version': '2022-11-28',
+              'User-Agent': 'NiakVIO-release-candidate-validation',
+          }
+
+          def get(url):
+              req=urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(req, timeout=30) as res:
+                  return json.load(res)
+
+          def runs(workflow):
+              q=urllib.parse.urlencode({'branch': ref, 'event': 'workflow_dispatch', 'per_page': 20})
+              url=f'https://api.github.com/repos/{repo}/actions/workflows/{workflow}/runs?{q}'
+              rows=get(url).get('workflow_runs') or []
+              return [r for r in rows if r.get('head_sha') == sha]
+
+          selected={}
+          deadline=time.time()+60*15
+          while time.time() < deadline and len(selected) < len(workflows):
+              for workflow in workflows:
+                  if workflow in selected:
+                      continue
+                  rows=runs(workflow)
+                  if rows:
+                      selected[workflow]=max(rows, key=lambda r: r.get('id', 0))
+                      print(f'RUN_FOUND workflow={workflow} id={selected[workflow]["id"]}', flush=True)
+              if len(selected) < len(workflows):
+                  time.sleep(10)
+          missing=[w for w in workflows if w not in selected]
+          if missing:
+              raise SystemExit('Missing dispatched workflow runs for exact candidate SHA: '+', '.join(missing))
+
+          pending=set(workflows)
+          deadline=time.time()+60*330
+          failures=[]
+          while pending and time.time() < deadline:
+              for workflow in list(pending):
+                  run_id=selected[workflow]['id']
+                  run=get(f'https://api.github.com/repos/{repo}/actions/runs/{run_id}')
+                  status=run.get('status')
+                  conclusion=run.get('conclusion')
+                  print(f'RUN_STATUS workflow={workflow} id={run_id} status={status} conclusion={conclusion}', flush=True)
+                  if status == 'completed':
+                      pending.remove(workflow)
+                      if conclusion != 'success':
+                          failures.append((workflow, run_id, conclusion))
+              if pending:
+                  time.sleep(30)
+          if pending:
+              raise SystemExit('Timed out waiting for: '+', '.join(sorted(pending)))
+          if failures:
+              for workflow, run_id, conclusion in failures:
+                  print(f'RUN_FAILED workflow={workflow} id={run_id} conclusion={conclusion}')
+              raise SystemExit(1)
+          print('RELEASE_CANDIDATE_VALIDATION_GREEN providers=46 historical=50 platforms=5')
+          PY
