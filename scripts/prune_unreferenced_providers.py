@@ -9,7 +9,11 @@ Policy:
 - when an 11th generation appears, remove only the oldest unprotected one;
 - each later generation removes at most the next oldest unprotected generation
   needed to return to the configured rolling window;
-- current/pending manifests, LKG and published provenance are always protected;
+- current/pending local manifests are authoritative and must resolve locally;
+- LKG/provenance references protect a generation only while that local artifact
+  still exists; archived/moved history must not block a current publication;
+- pinned native Hub46 transport is excluded from local existence checks because
+  its absolute URLs intentionally resolve against an immutable historical SHA;
 - if an older SHA becomes referenced again after being inactive, it becomes the
   newest occurrence in the rolling order;
 - plain non-hashed provider sources are never removed.
@@ -31,8 +35,11 @@ PROVIDERS_DIR = ROOT / "providers"
 RETENTION_LEDGER = ".generation-retention.json"
 SECURITY_REVOCATIONS = "provider-security-revocations.json"
 DEFAULT_RETENTION_GENERATIONS = 10
+# Accept both the historical source-qualified grammar and the current Hub46
+# content-addressed grammar. Plain source files without a 16-hex suffix remain
+# outside retention ownership.
 HASHED_PROVIDER_RE = re.compile(
-    r"^(?P<provider>.+?)--.+--(?P<digest>[0-9a-f]{16})\.js$",
+    r"^(?P<provider>.+?)(?:(?:--[^/]+--)|-)(?P<digest>[0-9a-f]{16})\.js$",
     re.IGNORECASE,
 )
 PROVIDER_PATH_RE = re.compile(
@@ -68,17 +75,22 @@ def normalize_provider_path(value: str) -> str | None:
 
 
 def choose_manifests(root: Path) -> list[Path]:
-    manifests: list[Path] = []
-    pending = root / "manifest.next.json"
-    if pending.is_file():
-        manifests.append(pending)
-    main = root / "manifest.json"
-    if main.is_file():
-        manifests.append(main)
-    for path in sorted(root.glob("*/manifest.json")):
-        if path != main and path.is_file():
-            manifests.append(path)
-    return manifests
+    """Return only current local publication manifests.
+
+    Do not glob every */manifest.json: native-hub46/manifest.json deliberately
+    pins absolute provider URLs to an immutable provider SHA and therefore is not
+    a local-file retention authority. Historical/diagnostic manifests likewise
+    cannot keep archived provider files alive in providers/.
+    """
+    candidates = [
+        root / "manifest.next.json",
+        root / "manifest.json",
+        root / "manifest-hub46.json",
+        root / "vf" / "manifest.json",
+        root / "no-anime" / "manifest.json",
+        root / "vf-no-anime" / "manifest.json",
+    ]
+    return [path for path in candidates if path.is_file()]
 
 
 def referenced_provider_paths(manifests: list[Path]) -> set[str]:
@@ -97,6 +109,15 @@ def retain_recorded_provider_path(referenced: set[str], value: object) -> None:
         return
     normalized = normalize_provider_path(value)
     if normalized:
+        referenced.add(normalized)
+
+
+def retain_existing_recorded_provider_path(root: Path, referenced: set[str], value: object) -> None:
+    """Protect optional LKG/provenance state only while its local artifact exists."""
+    if not isinstance(value, str):
+        return
+    normalized = normalize_provider_path(value)
+    if normalized and (root / normalized).is_file():
         referenced.add(normalized)
 
 
@@ -286,15 +307,28 @@ def main() -> int:
     if not manifests:
         raise SystemExit("No manifest.next.json or published manifest.json found; refusing to prune.")
 
-    protected = referenced_provider_paths(manifests)
+    # Only local current/pending manifests are hard authorities. A missing path in
+    # one of these files is a broken publication and must fail closed.
+    manifest_protected = referenced_provider_paths(manifests)
+    if not manifest_protected:
+        raise SystemExit("No provider JavaScript paths found in authoritative published state; refusing to prune.")
+    missing_authoritative = sorted(path for path in manifest_protected if not (root / path).is_file())
+    if missing_authoritative:
+        preview = "\n- ".join(missing_authoritative[:20])
+        raise SystemExit(f"Authoritative manifest provider files are missing; refusing to prune:\n- {preview}")
 
+    protected = set(manifest_protected)
+
+    # LKG is retention evidence, not a local existence authority. Domain/config
+    # rebuilds may already have retired or archived an older content-addressed
+    # path before the rolling-prune phase runs.
     lkg_path = root / "provider-lkg.json"
     if lkg_path.is_file():
         try:
             lkg = json.loads(lkg_path.read_text(encoding="utf-8"))
             for record in (lkg.get("providers", {}) if isinstance(lkg, dict) else {}).values():
                 if isinstance(record, dict):
-                    retain_recorded_provider_path(protected, record.get("filename"))
+                    retain_existing_recorded_provider_path(root, protected, record.get("filename"))
         except json.JSONDecodeError as exc:
             raise SystemExit(f"Invalid provider-lkg.json; refusing to prune: {exc}")
 
@@ -306,23 +340,15 @@ def main() -> int:
             records = provenance.get("providers", {}) if isinstance(provenance, dict) else {}
             for record in records.values():
                 if isinstance(record, dict):
-                    retain_recorded_provider_path(protected, record.get("published_filename"))
-                    retain_recorded_provider_path(protected_generated, record.get("published_filename"))
+                    retain_existing_recorded_provider_path(root, protected, record.get("published_filename"))
+                    retain_existing_recorded_provider_path(root, protected_generated, record.get("published_filename"))
                     base = normalize_generated_path(record.get("base_filename"))
-                    if base:
+                    if base and (root / base).is_file():
                         protected_generated.add(base)
         except json.JSONDecodeError as exc:
             raise SystemExit(f"Invalid PROVENANCE.json; refusing to prune: {exc}")
 
     protected_generated.update(protected)
-    if not protected:
-        raise SystemExit("No provider JavaScript paths found in authoritative published state; refusing to prune.")
-
-    missing_protected = sorted(path for path in protected if not (root / path).is_file())
-    if missing_protected:
-        preview = "\n- ".join(missing_protected[:20])
-        raise SystemExit(f"Referenced provider files are missing; refusing to prune:\n- {preview}")
-
     providers_dir.mkdir(parents=True, exist_ok=True)
 
     revoked = load_security_revocations(root)
