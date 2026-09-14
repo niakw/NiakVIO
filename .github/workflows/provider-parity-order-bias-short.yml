@@ -1,0 +1,95 @@
+name: SHORT - Provider Parity Order Bias
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/fix_provider_upstream_parity_order_bias_v1.py'
+      - '.github/workflows/provider-parity-order-bias-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-short-parity-order-bias-main
+  cancel-in-progress: false
+
+jobs:
+  migrate-test-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Require exact trigger head
+        run: test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+      - name: Apply reverse-order confirmation migration
+        run: python3 scripts/fix_provider_upstream_parity_order_bias_v1.py
+      - name: Compile and unit-test parity harness
+        run: |
+          python3 -m py_compile scripts/fix_provider_upstream_parity_order_bias_v1.py scripts/run_provider_upstream_parity_v3.py tests/provider_upstream_parity_v3_test.py
+          python3 tests/provider_upstream_parity_v3_test.py
+      - name: Recheck PersianStremio with unbiased terminal parity
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 scripts/run_provider_upstream_parity_v3.py \
+            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
+            --provider persianstremio \
+            --samples-per-lane 8 \
+            --workers 1 \
+            --timeout 20 \
+            --out automation/persianstremio-unbiased-parity.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('automation/persianstremio-unbiased-parity.json').read_text(encoding='utf-8'))
+          print('PERSIAN_UNBIASED_COUNTS',json.dumps(d.get('statusCounts') or {},sort_keys=True))
+          print('PERSIAN_UNBIASED_REGRESSIONS',','.join(d.get('certainRegressions') or []) or 'none')
+          for row in d.get('providers') or []:
+              print('PERSIAN_UNBIASED_PROVIDER',row.get('providerId'),row.get('status'))
+              for lane in row.get('lanes') or []:
+                  print('PERSIAN_UNBIASED_LANE',lane.get('lane'),lane.get('status'),','.join(str(s.get('classification')) for s in lane.get('samples') or []))
+          if 'persianstremio' in (d.get('certainRegressions') or []):
+              raise SystemExit('PersianStremio still reproduces as a reverse-order-confirmed regression')
+          PY
+      - name: Migration idempotence
+        run: python3 scripts/fix_provider_upstream_parity_order_bias_v1.py
+      - name: Diff integrity
+        run: git diff --check
+      - name: Publish unbiased parity harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only | tee "$RUNNER_TEMP/changed.txt"
+          if grep -Ev '^(scripts/run_provider_upstream_parity_v3\.py|tests/provider_upstream_parity_v3_test\.py|automation/persianstremio-unbiased-parity\.json)$' "$RUNNER_TEMP/changed.txt"; then
+            echo 'Unexpected parity migration path' >&2
+            exit 1
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/run_provider_upstream_parity_v3.py tests/provider_upstream_parity_v3_test.py
+          git diff --cached --quiet && { echo 'PARITY_ORDER_BIAS_ALREADY_APPLIED'; exit 0; }
+          git commit -m 'fix(parity): reverse-confirm asymmetric provider results'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${{ github.sha }}" || {
+            echo 'main moved during parity migration' >&2
+            exit 1
+          }
+          git push origin HEAD:main
+          echo "PARITY_ORDER_BIAS_PUBLISHED $(git rev-parse HEAD)"
