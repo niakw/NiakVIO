@@ -26,15 +26,15 @@ normalizer = load_path(NORMALIZER, "normalize_stream_presentation_v12")
 normalizer.normalize(apply=False)
 normalizer.assert_contract()
 presentation = load_path(PATCHES / "global_stream_presentation_v1.py", "global_stream_presentation_v1")
-assert presentation.REVISION == "all-providers-client-projection-name-mirror-v20"
+assert presentation.REVISION == "all-providers-client-projection-strongest-evidence-v22"
 presentation_source = (PATCHES / "global_stream_presentation_v1.py").read_text(encoding="utf-8")
-assert "\\nfunction" not in presentation_source, "raw V18 wrapper contains a literal \\n before function declaration"
+assert "\\nfunction" not in presentation_source, "raw presentation wrapper contains a literal \\n before function declaration"
 
 
 def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None, *, return_raw: bool = False):
     patched = presentation.apply(source, context={"provider_id": provider_id})
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
-    assert "all-providers-client-projection-name-mirror-v20" in patched
+    assert "all-providers-client-projection-strongest-evidence-v22" in patched
     assert patched == presentation.apply(patched, context={"provider_id": provider_id})
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw)
@@ -84,7 +84,7 @@ tmdb = r"""async function(url){
 # Provider VF: VF + VOSTFR evidence is one normalized MULTI VF/VO presentation.
 source = "module.exports={getStreams:async()=>[{name:'Purstream | 4K | VF',url:'https://media.example/master.m3u8',quality:'4K',language:'VF',subtitles:'VOSTFR',codec:'x265 10bit',audio:'DDP 5.1',duration:169,sourceType:'WEB-DL',format:'m3u8',size:'8.4 GB',headers:{Referer:'https://purstream.example/'}}]};\n"
 row = run(source, "purstream", "p.getStreams({tmdbId:'157336',mediaType:'movie',title:'Interstellar',year:2014}).then(v=>console.log(JSON.stringify(v[0])))", tmdb)
-assert row["title"] == "Purstream - 4K", row
+assert row["title"] == "Purstream - 4K - MULTI (VF/VO)", row
 assert row["name"] == row["title"], row
 assert row["quality"] == "2160p"
 assert row["language"] == "MULTI (VF/VO)", row
@@ -176,7 +176,7 @@ url_quality = run(
     "p.getStreams({mediaType:'movie',title:'Interstellar',year:2014}).then(v=>console.log(JSON.stringify(v[0])))",
 )
 assert url_quality["quality"] == "1080p", url_quality
-assert url_quality["title"].endswith(" - 1080p"), url_quality
+assert " - 1080p" in url_quality["title"], url_quality
 assert "1080p-full-hd" in url_quality["badgeIds"], url_quality
 
 numeric_height = run(
@@ -185,7 +185,7 @@ numeric_height = run(
     "p.getStreams({mediaType:'movie',title:'Film',year:2026}).then(v=>console.log(JSON.stringify(v[0])))",
 )
 assert numeric_height["quality"] == "2160p", numeric_height
-assert numeric_height["title"].endswith(" - 4K"), numeric_height
+assert " - 4K" in numeric_height["title"], numeric_height
 
 # Native Desktop bridge: optional TMDB enrichment is skipped when the client does
 # not expose a runtime-owned TMDB_API_KEY. Provider streams must return immediately.
@@ -195,10 +195,9 @@ desktop_native = run(
     "global.__native_fetch=async()=>{throw new Error('unexpected native TMDB fetch')};let calls=0;global.fetch=async()=>{calls++;throw new Error('TMDB must be skipped')};p.getStreams('157336','movie').then(v=>console.log(JSON.stringify({row:v[0],calls})))",
 )
 assert desktop_native["calls"] == 0, desktop_native
-assert desktop_native["row"]["title"] == "Cineby - 1080p", desktop_native
+assert desktop_native["row"]["title"] == "Cineby - 1080p - VO", desktop_native
 assert desktop_native["row"]["name"] == desktop_native["row"]["title"], desktop_native
 assert desktop_native["row"]["url"] == "https://x.example/a.mp4", desktop_native
-
 
 # Native composition: media_type has already populated the verified TMDB base
 # cache. Presentation may use it, but must not spend another synchronous native
@@ -212,4 +211,4 @@ assert native_cached["calls"] == 0, native_cached
 assert native_cached["row"]["duration"] == 169, native_cached
 assert "Interstellar • 2014" in native_cached["row"]["description"], native_cached
 
-print("global stream presentation V20 client-projection name-mirror tests passed")
+print("global stream presentation V22 strongest-evidence tests passed")
