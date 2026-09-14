@@ -38,6 +38,7 @@ from typing import Any
 import run_provider_upstream_parity as parity
 import run_provider_upstream_parity_v2 as parity_v2
 from rotating_corpus import default_seed, select_fixtures
+from parity_hls_terminal_probe import verify_hls_terminal
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SCOPE = ROOT / "automation/evidence/hub-lab-matrix-46.json"
@@ -237,15 +238,18 @@ def _probe_terminal(stream: dict[str, Any], timeout: int) -> dict[str, Any]:
             content_type = str(response.headers.get("content-type") or "")
             body = response.read(PROBE_BYTES)
         kind = _media_kind(final_url, content_type, body)
-        short_vod_seconds = _short_finite_hls_seconds(body) if kind == "hls" else None
-        if short_vod_seconds is not None:
-            return {
-                "verified": False,
-                "kind": "hls",
-                "status": status,
-                "reason": "short_finite_vod",
-                "short_vod_seconds": short_vod_seconds,
-            }
+        if kind == "hls":
+            # PARITY_DEEP_HLS_TERMINAL_V2
+            proof = verify_hls_terminal(
+                body,
+                final_url,
+                _safe_headers(stream.get("headers")),
+                timeout,
+                min_vod_seconds=MIN_TERMINAL_VOD_SECONDS,
+            )
+            if not isinstance(proof.get("status"), int):
+                proof["status"] = status
+            return proof
         return {
             "verified": bool(kind and 200 <= status < 400),
             "kind": kind,
@@ -290,6 +294,7 @@ def _run_verified(path: Path, fixture: dict[str, Any], timeout: int) -> dict[str
         "terminal_statuses": sorted({int(row["status"]) for row in terminal_rows if isinstance(row.get("status"), int)}),
         "terminal_reasons": sorted({str(row.get("reason")) for row in terminal_rows if row.get("reason")}),
         "terminal_short_vod_seconds": sorted({float(row["short_vod_seconds"]) for row in terminal_rows if isinstance(row.get("short_vod_seconds"), (int, float))}),
+        "terminal_media_duration_seconds": sorted({float(row["media_duration_seconds"]) for row in terminal_rows if isinstance(row.get("media_duration_seconds"), (int, float))}),
         "error_class": str(error_details.get("code") or error_details.get("name") or "")[:120] or None,
     }
 
