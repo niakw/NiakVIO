@@ -194,11 +194,11 @@ An anime-only provider can therefore legitimately expose:
 ```json
 {
   "canonicalSupportedTypes": ["anime"],
-  "supportedTypes": ["anime", "tv", "series"]
+  "supportedTypes": ["anime", "tv"]
 }
 ```
 
-`tv` and `series` are episodic transport aliases for anime. `movie` appears only when the provider declares canonical movie capability; transport aliases never widen semantic capability.
+`tv` is the episodic launch-compatibility alias for anime. NiakVIO does not synthesize `series`; `movie` appears only when the provider declares canonical movie capability. Transport aliases never widen semantic capability.
 
 ### Runtime rules
 
@@ -238,7 +238,7 @@ This separation prevents a health check from silently rewriting a provider just 
 
 Publication is atomic and fail-closed. Published provider-byte changes require synchronized provider/manifest/cache/release metadata, but **the bump happens only after the validation pile is accepted**.
 
-The accepted release is finalized explicitly through `release-finalize.yml`. It checks out the exact accepted SHA, uses either an explicit baseline or the oldest commit in the current release-version generation, and then synchronizes provider/manifest/cache/release versions, manifest projections, hashes and integrity metadata as one release transaction. It does **not** repair or reconstruct provider bytes.
+The accepted release is finalized explicitly through `release-finalize.yml`. It checks out and enforces the exact accepted `expected_sha`, exports the current release-generation baseline, reapplies durable patches to the 46 current providers, drives the NiakVIO minimizer to a verified fixed point, rebuilds projections, synchronizes provider/manifest/cache/release versions, then rebuilds the pinned Hub-46 transport and integrity hashes. The locally staged generation is published only by compare-and-swap if `main` has not moved. This is bounded release rematerialization, not discovery, Learning or full provider reconstruction.
 
 Route-only census, documentation and workflow-only changes that do not alter published provider bytes do **not** trigger a provider/cache bump. `sync.yml` Quick/Deep remains validation-oriented and does not routinely mutate release versions.
 

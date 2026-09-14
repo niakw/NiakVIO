@@ -1,61 +1,66 @@
 # NiakVIO media type / transport contract
 
-This is the durable contract for separating **canonical content identity** from the **Nuvio provider ABI transport lane**.
+This is the durable contract separating **canonical content capability** from the **Nuvio launch surface**.
 
 ## Core rule
 
-Provider selection is based on canonical semantic content type first. Runtime transport aliases are chosen only after provider selection.
+Provider selection is based on canonical semantic capability first. Transport compatibility must never widen that capability.
 
-| Content | Canonical semantic type | Nuvio runtime transport |
-| --- | --- | --- |
-| Ordinary/live-action movie | `movie` | `movie` |
-| Ordinary/live-action TV series or episode | `tv` | `tv` |
-| Anime series / anime episode | `anime` | `tv` |
-| Anime movie / theatrical anime film | `anime` | `movie` |
+| Canonical provider capability | Published `supportedTypes` |
+| --- | --- |
+| `movie` | `movie` |
+| `tv` | `tv` |
+| `movie + tv` | `movie + tv` |
+| anime-only (`anime`) | `anime + tv` |
 
-An anime film remains canonical `anime` even when invoked through runtime `movie`. An episodic anime remains canonical `anime` even when invoked through runtime `tv`. Therefore **never hardcode `anime -> tv` globally**.
+For an anime-only provider, `canonicalSupportedTypes` remains exactly `["anime"]` while `supportedTypes` is exactly `["anime", "tv"]`.
+
+`tv` is the only synthetic compatibility alias NiakVIO adds for anime-only providers. **Do not synthesize `series`, `show` or `movie`.** In particular, an anime-only provider does not gain a movie lane merely because a work is theatrical or feature-length. `movie` is published only when the provider has canonical movie capability.
 
 ## Mandatory order
 
-1. Resolve trusted identity and canonical type (`movie`, `tv`, `anime`).
-2. Select providers from semantic capability / `canonicalSupportedTypes`.
-3. Resolve work shape (movie vs episodic).
-4. Translate only the invocation to Nuvio ABI `movie` or `tv`.
-5. Invoke the provider.
+1. Resolve trusted work identity and semantic type (`movie`, `tv`, `anime`).
+2. Gate providers from canonical capability / `canonicalSupportedTypes`.
+3. Project only the allowed Nuvio launch compatibility for the selected provider.
+4. Invoke the provider on that bounded surface.
+5. Keep semantic identity separate from launch transport throughout evidence and output processing.
 
-Transport aliases must never widen semantic capability. An anime-only provider may receive runtime `movie` for an anime film without becoming eligible for ordinary films such as Interstellar.
+A launch alias never becomes permission to search or return a different semantic catalogue.
 
 ## Manifest fields
 
-- `canonicalSupportedTypes` is semantic/provider-selection authority.
-- `supportedTypes` is client/runtime compatibility metadata and may include transport aliases.
-- A transport alias alone must never manufacture canonical capability.
+- `canonicalSupportedTypes` is semantic/provider-selection authority whenever transport compatibility differs from semantics.
+- `supportedTypes` is the Nuvio launch surface.
+- Current manifests accept only `movie`, `tv` and `anime` values.
+- Anime-only projection is `["anime", "tv"]`; `series` is not part of the published contract.
+- `movie` transport is equivalent to canonical movie capability: no artificial anime-to-movie promotion is allowed.
 
-## Recognition
+## Recognition and runtime gate
 
-Trusted metadata may refine a Nuvio `movie`/`tv` presentation into canonical `anime`. Animation alone is not sufficient; Western animation remains ordinary movie/TV unless trusted identity says anime.
+Trusted metadata may refine a presented work into canonical `anime`, but provider compatibility is checked before provider-network work whenever the necessary identity is already known. Animation alone is not sufficient to classify ordinary Western animation as anime.
 
-For canonical anime, transport shape should use, in order: explicit trusted shape metadata; original raw Nuvio shape; season/episode evidence; conservative fallback.
+A provider that is incompatible with the canonical work returns no result; it must not fall back to an arbitrary search on a transport alias.
 
 ## Labs / evidence
 
-Native Labs should expose both concepts separately:
+Native evidence keeps the two concepts separate:
 
-- `logical_type` / canonical semantic type;
-- `request_type` / ABI transport lane.
+- logical/canonical type: semantic identity used for provider eligibility;
+- request/launch type: the bounded surface actually exercised by Nuvio.
 
-Expected examples:
-- anime episode: `logical_type=anime request_type=tv`;
-- anime feature film: `logical_type=anime request_type=movie`.
-
-Evidence that filters anime providers using the runtime alias before canonical selection is invalid.
+Coverage is derived from the current 46-provider manifest. The 50 archived historical providers remain knowledge/provenance only and are not injected into the current transport denominator.
 
 ## Implementation authority
 
-Relevant surfaces include `scripts/native_media_type_contract.py`, `scripts/augment_native_corpus_request_contract.py`, `scripts/provider_semantics.cjs`, provider materialization/projection, and native media-type regressions.
-
-Any implementation that globally maps canonical `anime` to runtime `tv` without preserving movie-vs-episodic shape is a regression.
+Relevant surfaces include `scripts/materialize_provider_v3_all.py`, `scripts/enforce_provider_v3_semantic_transport_contract_v5.py`, `scripts/reapply_published_overrides.py`, `engine_v2/src/provider-catalog.mjs`, `automation/provider-v3-architecture.json` and the native media-type regressions.
 
 ## Regression floor
 
-Tests must cover all four mapping rows, including a dedicated anime-movie fixture. Passing only an episodic anime fixture is insufficient.
+Tests must prove all of the following:
+
+- anime-only canonical capability stays `["anime"]`;
+- anime-only launch projection stays `["anime", "tv"]`;
+- no `series` synthesis;
+- no synthetic `movie` lane for anime-only providers;
+- canonical movie capability and published movie transport remain equivalent;
+- capability gating occurs before provider-network work when identity is already available.

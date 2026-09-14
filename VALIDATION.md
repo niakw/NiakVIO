@@ -43,14 +43,14 @@ Le corpus global ordinaire est défini par `.github/triggers/rotating-popular-co
 
 ### Couverture dérivée, jamais figée
 
-Le catalogue reste **96 providers**. La campagne d’acceptation native finale utilise actuellement le scope physique **Hub-46** dérivé de `automation/evidence/hub-lab-matrix-46.json` et transporté par `native-hub46/manifest.json`. Les 50 autres lignes ne disparaissent pas du catalogue : elles restent séparées du dénominateur physique du Lab. Le nombre de routes est calculé depuis le scope courant et ses `supportedTypes` ; il ne doit pas être recopié comme constante historique.
+Le catalogue exécutable courant contient **46 providers**. La campagne d’acceptation native finale utilise ce scope physique Hub-46 dérivé de `automation/evidence/hub-lab-matrix-46.json` et transporté par `native-hub46/manifest.json`. Les **50 providers historiques** restent archivés comme connaissance/provenance hors du manifest courant ; ils ne sont pas des lignes OFF du catalogue exécutable. Le nombre de routes est calculé depuis le scope courant et ses `supportedTypes` ; il ne doit pas être recopié comme constante historique.
 
 La distinction est obligatoire :
 
 - `canonicalSupportedTypes` = capacité sémantique réelle ;
 - `supportedTypes` = surface de lancement Nuvio.
 
-Un provider canonique anime-only peut donc avoir `supportedTypes = [anime, tv, series]`. Les voies `anime`, `tv` et `series` restent des lancements compatibles sans élargir la capacité canonique ; `movie` n’est exposé que s’il est canonique.
+Un provider canonique anime-only peut donc avoir `supportedTypes = [anime, tv]`. Les voies `anime` et `tv` restent des lancements compatibles sans élargir la capacité canonique. `series` n’est jamais synthétisé et `movie` n’est exposé que s’il est canonique.
 
 `tests/native_five_lab_coverage_test.py` doit calculer et vérifier dynamiquement cette relation à chaque changement de manifest.
 
@@ -62,7 +62,7 @@ La couverture vérifie que toutes les routes déclarées ont bien été exécut�
 non-empty / zero / error / timeout / player
 ```
 
-Un workflow vert ne signifie donc jamais « les 96 providers ont renvoyé des streams ».
+Un workflow vert ne signifie donc jamais « les 46 providers courants ont renvoyé des streams ».
 
 Un mauvais média, mauvais épisode, mauvaise identité ou contradiction de type reste un échec de preuve même si une URL est techniquement lisible.
 
@@ -147,7 +147,7 @@ Un échec Nuvio/OS n’est pas une cause Provider v3 et ne doit pas générer de
 - le namespace source-qualified du filename provider est conservé et seul le hash de contenu tourne lorsque le CONFIG change ;
 - tous les bytes hors CONFIG, y compris ProviderBase et Lego `CORE.*`, doivent rester identiques ;
 - DNS/HTTP après résolution est une observation et ne peut pas annuler une adresse annoncée par une source autoritative uniquement parce qu’un runner reçoit 403/anti-bot/timeout ;
-- activation 46/50, projections, versions cache-safe, hashes et release integrity restent synchronisés ;
+- scope courant 46, archive historique 50, projections, versions cache-safe, hashes et release integrity restent correctement séparés et synchronisés ;
 - la transaction est fail-closed sur rollback, cycle de remplacement, terminal template/social et mutation hors CONFIG, puis Quick est relancé après publication.
 
 Contrats principaux : `tests/domain_refresh_workflow_test.py`, `tests/domain_refresh_transaction_guard_test.py`, `tests/provider_v3_workflow_ownership_test.py` et `scripts/validate_domain_refresh_transaction.py`.

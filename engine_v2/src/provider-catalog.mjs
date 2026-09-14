@@ -262,7 +262,7 @@ function projectScraper(scraper, projection) {
     : [];
   if (semantic.includes("anime")) {
     const aliases = [];
-    // Nuvio may transport episodic anime as TV/series. Movie is never a
+    // Nuvio may transport episodic anime as TV. Movie is never a
     // generic anime alias: only canonical movie capability may select it.
     if (!semantic.includes("tv")) aliases.push("tv");
     if (aliases.length) {

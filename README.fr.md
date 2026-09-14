@@ -194,11 +194,11 @@ Un provider exclusivement anime peut donc légitimement exposer :
 ```json
 {
   "canonicalSupportedTypes": ["anime"],
-  "supportedTypes": ["anime", "tv", "series"]
+  "supportedTypes": ["anime", "tv"]
 }
 ```
 
-`tv` et `series` sont les alias de transport épisodique de l’anime. `movie` n’est exposé que si le provider déclare réellement une capacité canonique `movie` ; les alias de transport n’élargissent jamais la capacité sémantique.
+`tv` est l’alias de compatibilité de lancement épisodique de l’anime. NiakVIO ne synthétise pas `series` ; `movie` n’est exposé que si le provider déclare réellement une capacité canonique `movie`. Les alias de transport n’élargissent jamais la capacité sémantique.
 
 ### Règles runtime
 
@@ -238,7 +238,7 @@ Cette séparation évite qu’un simple health check réécrive silencieusement 
 
 La publication est atomique et fail-closed. Tout changement des bytes provider publiés impose une synchronisation des versions provider/manifest/cache/release, mais **le bump n’est effectué qu’une fois la pile de validation acceptée**.
 
-La release acceptée est finalisée explicitement via `release-finalize.yml`. Le workflow checkout le SHA accepté exact, utilise soit une baseline explicite soit le commit le plus ancien de la génération de version courante, puis synchronise versions provider/manifest/cache/release, projections des manifests, hashes et métadonnées d’intégrité dans une seule transaction de release. Il ne répare ni ne reconstruit les bytes providers.
+La release acceptée est finalisée explicitement via `release-finalize.yml`. Le workflow checkout et impose le `expected_sha` accepté exact, exporte la baseline de génération courante, réapplique les patches durables aux 46 providers courants, amène le minimizer NiakVIO à un fixed-point vérifié, reconstruit les projections, synchronise les versions provider/manifest/cache/release puis reconstruit le transport Hub-46 épinglé et les hashes d’intégrité. La génération préparée localement n’est publiée que par compare-and-swap si `main` n’a pas bougé. C’est une rematérialisation de release bornée, pas de la découverte, du Learning ou une reconstruction complète.
 
 Un census route-only, une mise à jour documentation ou un changement workflow qui ne modifie pas les bytes provider publiés ne déclenche **aucun bump provider/cache**. `sync.yml` Quick/Deep reste orienté validation et ne mute pas les versions de release en routine.
 

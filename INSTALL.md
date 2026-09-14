@@ -49,7 +49,7 @@ Il expose deux profondeurs de vérification :
 - `quick` : gate rapide et déterministe sur les bytes Provider v3 exacts et les contrats Core critiques ; aucun repair, aucune reconstruction, aucune mutation Provider/DATA/Core ;
 - `deep` : vérification structurelle complète + observation réseau read-only + re-projection des manifests/reports/hashes ; toujours aucun repair ni reconstruction provider.
 
-La reconstruction forcée 96/96 appartient uniquement à `.github/workflows/provider-v3-reconstruct-all.yml` sur une branche non-main et doit prouver un reverse rebuild byte-identical.
+La reconstruction forcée 46/46 appartient uniquement à `.github/workflows/provider-v3-reconstruct-all.yml` sur une branche non-main et doit prouver un reverse rebuild byte-identical.
 
 Le Learning (`brain-learning-lab.yml`) est le seul monde d'expérimentation de repair ; il travaille en sandbox et ne publie pas directement. `domain-refresh.yml` est séparément limité au CONFIG `official_site` validé.
 
@@ -66,7 +66,7 @@ Une modification du chemin de playback partagé doit être suivie des preuves na
 - Nuvio Desktop macOS/Windows : `.github/workflows/native-desktop-reader-acceptance.yml` ;
 - corpus natif ciblé : `.github/workflows/native-corpus-device-targeted.yml`.
 
-Le corpus de référence est versionné dans `.github/triggers/nuvio-client-lab.json` et couvre Interstellar, Breaking Bad S01E01 et Jujutsu Kaisen S01E01. La surface d'acceptation est exactement cinq Labs : TV Android, Mobile Android, Mobile iOS, Desktop macOS et Desktop Windows. Les Labs consomment les bytes NiakVIO exacts et les clients Nuvio officiels sans réparer, reconstruire ou réécrire les providers.
+Le corpus ordinaire est piloté par `.github/triggers/rotating-popular-corpus.json` ; `.github/triggers/nuvio-client-lab.json` conserve les fixtures ciblées/historiques de régression. La surface d'acceptation est exactement cinq Labs : TV Android, Mobile Android, Mobile iOS, Desktop macOS et Desktop Windows. Les Labs consomment les bytes NiakVIO exacts et les clients Nuvio officiels sans réparer, reconstruire ou réécrire les providers.
 
 ## Maintenance GitHub Actions
 

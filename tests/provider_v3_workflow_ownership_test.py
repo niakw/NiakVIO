@@ -10,6 +10,7 @@ brain=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-
 repair=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(encoding="utf-8")
 manual=(ROOT/".github/workflows/provider-v3-reconstruct-all.yml").read_text(encoding="utf-8")
 domain=(ROOT/".github/workflows/domain-refresh.yml").read_text(encoding="utf-8")
+finalizer=(ROOT/".github/workflows/release-finalize.yml").read_text(encoding="utf-8")
 nonreg=(ROOT/".github/workflows/provider-non-regression.yml").read_text(encoding="utf-8")
 quick_yield=(ROOT/"scripts/audit_provider_quick_yield.py").read_text(encoding="utf-8")
 legacy_core=ROOT/".github/workflows/core-media-finalize-main.yml"
@@ -124,6 +125,10 @@ for required in (
 ):
     assert required in transaction, f"Domain Refresh current-Hub46 scope missing: {required}"
 assert "requires 96/96 state" not in transaction
+assert "group: niakvio-core-release-mutation-main" in domain
+assert "cancel-in-progress: false" in domain
+assert "group: niakvio-core-release-mutation-main" in finalizer
+assert "cancel-in-progress: false" in finalizer
 sanitizer=(ROOT/"scripts/sanitize_provider_hub_registry.py").read_text(encoding="utf-8")
 for required in (
     'parser.add_argument("--manifest", default="manifest.json")',

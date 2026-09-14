@@ -48,7 +48,7 @@ Un anime-only peut donc être :
 
 ```text
 canonical = anime
-transport = anime + tv + series
+transport = anime + tv
 ```
 
 Les alias de transport ne doivent jamais être réinjectés comme capacités sémantiques.

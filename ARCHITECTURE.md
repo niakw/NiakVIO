@@ -71,7 +71,7 @@ provider.model.routeData
 
 La reconnaissance doit conserver quand ils sont connus : méthode HTTP, rôle, body/encodage, champs, `Referer`/`Origin`, type de réponse, placeholders, provenance et confiance. Elle peut analyser statiquement concaténations, variables et templates, sans exécuter le JavaScript provider.
 
-Le workflow route-only est `.github/workflows/provider-v3-reconstruct-routes.yml`. Il ne doit ni exécuter le provider JS ni reconstruire les 96 bundles. Une absence de route reconnue reste un état **unknown**, pas une quarantaine automatique.
+Le workflow route-only est `.github/workflows/provider-v3-reconstruct-routes.yml`. Il ne doit ni exécuter le provider JS ni reconstruire les 46 bundles courants. Une absence de route reconnue reste un état **unknown**, pas une quarantaine automatique.
 
 Les métriques d’un census précis restent dans les artifacts/rapports et dans `automation/provider-v3-architecture.json` lorsqu’une référence vérifiée est utile ; elles ne sont pas un invariant documentaire.
 
@@ -100,12 +100,12 @@ Un provider anime-only reste donc :
 Un provider anime-only peut exposer les alias de lancement épisodiques sans inventer de capacité movie :
 
 ```json
-{"supportedTypes":["anime","tv","series"]}
+{"supportedTypes":["anime","tv"]}
 ```
 
 Cela permet :
 
-- anime épisodique via transport `tv`/`series` ;
+- anime épisodique via transport `tv` ;
 - namespace `anime` lorsqu’il est exposé par le client ;
 - transport `movie` **uniquement** pour un provider qui déclare réellement une capacité canonique `movie` ; il ne doit jamais être ajouté artificiellement à un provider anime-only.
 
@@ -113,7 +113,7 @@ Cela permet :
 
 Inversement, un provider canonique `movie + tv` ne devient pas anime-compatible par simple alias de transport.
 
-Les alias `series`, `show` et équivalents se normalisent vers la forme `tv` du client.
+`tv` est l’unique alias de transport synthétique ajouté à un provider anime-only. `series`, `show` et `movie` ne sont jamais ajoutés comme aliases synthétiques.
 
 ## 6. Contrat runtime
 
@@ -148,7 +148,7 @@ Règles :
 
 ## 7. Reconstruction complète
 
-La reconstruction 96/96 appartient à `.github/workflows/provider-v3-reconstruct-all.yml`. Règle d’exploitation courante : **`main` est l’unique cible d’écriture active**. Le workflow peut utiliser un workspace runner et des artifacts éphémères, mais il ne doit pas créer ou maintenir une branche workbench persistante par défaut.
+La reconstruction courante **46/46** appartient à `.github/workflows/provider-v3-reconstruct-all.yml`. Elle travaille sur le SHA sélectionné et, lorsqu’un commit de reconstruction est demandé, **refuse toute écriture directe sur `main`** : la cible doit être une branche non-main explicite. Les 50 providers historiques restent des connaissances archivées, jamais des sorties de la reconstruction courante.
 
 Interdictions :
 
@@ -190,18 +190,19 @@ Deep ajoute :
 
 ### Finalisation d’une release acceptée
 
-`.github/workflows/release-finalize.yml` est la seule transaction explicite de finalisation après acceptation de la pile de validation.
+`.github/workflows/release-finalize.yml` est la transaction explicite de finalisation après acceptation de la pile de validation.
 
 Contrat :
 
-- entrée obligatoire `accepted_sha` ; le checkout et la transaction doivent porter exactement ce SHA accepté ;
-- `baseline_sha` peut être fourni explicitement ; sinon `scripts/release_version_baseline.py` retrouve le commit le plus ancien de la génération de version courante sur le first-parent ;
-- le finalizer ne répare, ne reconstruit et ne rematérialise aucun provider ;
-- il synchronise de façon atomique versions provider/manifest/cache/release, projections de manifests, hashes et intégrité ;
-- si aucun byte provider publié n’a changé par rapport à la baseline de release, aucun bump provider/cache ne doit être inventé ;
-- si une correction sécurité/runtime modifie ensuite les bytes providers publiés, une nouvelle validation puis une nouvelle finalisation sont obligatoires avant publication.
+- en lancement manuel, l’entrée obligatoire est `expected_sha` ; sur push de son trigger permanent, le SHA d’événement joue le même rôle ;
+- le checkout doit correspondre exactement au SHA accepté et une baseline de génération de release est exportée avant toute mutation ;
+- les patches providers durables sont réappliqués sur les **46 providers courants**, puis le minimizer NiakVIO est amené à son fixed-point et vérifié ; les projections de manifests sont reconstruites et les générations non référencées sont prunées ;
+- les versions provider/manifest/cache/release ne sont synchronisées qu’après stabilisation de cette génération exacte ;
+- le transport Hub-46 épinglé, les hashes et l’intégrité de release sont ensuite reconstruits et validés ;
+- les commits de génération et de pinning sont préparés localement, puis publiés atomiquement uniquement si `origin/main` pointe toujours sur le SHA de base accepté ; tout mouvement concurrent de `main` fait échouer la transaction ;
+- une génération déjà finalisée peut rester un no-op ; aucune version provider/cache ne doit être inventée lorsque les bytes publiés n’ont pas changé.
 
-Les scripts de finalisation restent des consommateurs des bytes acceptés, jamais une seconde autorité de reconstruction.
+Le finalizer n’est ni une autorité de découverte, ni un moteur Learning, ni une reconstruction complète : sa rematérialisation éventuelle est strictement bornée aux patches durables et à la génération courante acceptée, dans la transaction atomique de release.
 
 ## 9. Learning
 
@@ -302,7 +303,7 @@ Le stripping HTML générique par regexp est interdit. Les findings CodeQL sur c
 3. `provider.model.routeData` est la source route canonique.
 4. Reconnaissance vide ≠ quarantaine.
 5. `canonicalSupportedTypes` ≠ `supportedTypes`.
-6. Anime canonique peut être lancé via `anime/tv/series` sans devenir movie/tv canonique.
+6. Anime canonique peut être lancé via `anime/tv` sans devenir movie/tv canonique ; aucun alias synthétique `series` ou `movie` n’est publié.
 7. Gate capacité avant réseau provider.
 8. Quick/Deep ne réparent ni ne reconstruisent et ne finalisent pas une release en routine.
 9. `release-finalize.yml` ne modifie que la transaction release de bytes déjà acceptés.

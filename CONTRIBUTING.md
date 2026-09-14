@@ -40,10 +40,10 @@ An anime-only provider may require:
 
 ```text
 canonicalSupportedTypes = [anime]
-supportedTypes = [anime, tv, series]
+supportedTypes = [anime, tv]
 ```
 
-`tv` and `series` are episodic transport aliases. `movie` is present only for providers with canonical movie capability; aliases never authorize additional semantic content.
+`tv` is the episodic launch-compatibility alias. Do not synthesize `series`; `movie` is present only for providers with canonical movie capability. Aliases never authorize additional semantic content.
 
 ## Provider protocol and routes
 
