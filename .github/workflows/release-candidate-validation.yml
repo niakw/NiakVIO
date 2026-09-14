@@ -39,11 +39,12 @@ jobs:
           package-manager-cache: false
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Normalize current semantic transport source contract
+      - name: Normalize current Hub46 source contracts
         shell: bash
         run: |
           set -euo pipefail
           python scripts/normalize_hub46_semantic_transport_sources.py
+          python scripts/normalize_hub46_release_gate_sources.py
       - name: Rebuild catalog and projections strictly from current Hub46 manifest
         shell: bash
         run: |
@@ -73,6 +74,12 @@ jobs:
             scripts/reapply_published_overrides.py \
             scripts/finalize_publish_contracts.py \
             scripts/domain_refresh_transaction_v2.py \
+            scripts/build_provider_history_matrix.py \
+            scripts/build_provider_history_matrix_v2.py \
+            scripts/build_provider_history_matrix_v3.py \
+            tests/provider_route_reconstructor_test.py \
+            tests/provider_v3_strategy_plan_contract_test.py \
+            engine_v2/src/stream-presentation.mjs \
             provider_catalog.json manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json
           if git diff --cached --quiet; then
             echo 'changed=false' >> "$GITHUB_OUTPUT"
