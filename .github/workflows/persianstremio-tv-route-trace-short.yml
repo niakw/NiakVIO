@@ -63,6 +63,29 @@ jobs:
             c=text.count(value)
             if c: print('PERSIAN_BUNDLE_LITERAL',value,c)
           PY
+      - name: Compare exact request header profiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const url='https://persianstremio.vercel.app/stream/series/tt2788316:1:1.json';
+          const profiles={
+            upstream:{'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36','Accept':'application/json'},
+            niak:{'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 NiakVIO/3','Accept':'application/json,*/*','Referer':'https://persianstremio.vercel.app/'}
+          };
+          async function once(label){
+            const started=Date.now();
+            try{
+              const r=await fetch(url,{headers:profiles[label],signal:AbortSignal.timeout(12000)});
+              let count=-1;
+              try{const j=await r.json(); count=Array.isArray(j?.streams)?j.streams.length:Array.isArray(j)?j.length:0}catch{}
+              console.log('HEADER_PROBE',label,'status='+r.status,'streams='+count,'ms='+(Date.now()-started));
+            }catch(e){console.log('HEADER_PROBE',label,'error='+String(e?.name||e),'ms='+(Date.now()-started));}
+          }
+          (async()=>{
+            for(const label of ['niak','upstream','upstream','niak']){await once(label);await new Promise(r=>setTimeout(r,900));}
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
       - name: Trace exact upstream and Niak routes
         shell: bash
         run: |
@@ -75,13 +98,9 @@ jobs:
           manifest=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
           row=next(x for x in manifest.get('scrapers',[]) if str(x.get('id','')).lower()=='persianstremio')
           published=root/row['filename']
-          fixture={
-            'slug':'shgun-2024-s01e01','tmdbId':'126308','mediaType':'tv','title':'Shōgun','year':2024,'season':1,'episode':1
-          }
+          fixture={'slug':'shgun-2024-s01e01','tmdbId':'126308','mediaType':'tv','title':'Shōgun','year':2024,'season':1,'episode':1}
           context={
-            'fixtureMetadata':fixture,
-            'tmdbApiKey':os.environ.get('TMDB_API_KEY',''),
-            'tmdbAccessToken':os.environ.get('TMDB_ACCESS_TOKEN',''),
+            'fixtureMetadata':fixture,'tmdbApiKey':os.environ.get('TMDB_API_KEY',''),'tmdbAccessToken':os.environ.get('TMDB_ACCESS_TOKEN',''),
             'locale':'en-US','languages':['en-US','en'],'platform':'android',
             'userAgent':'Mozilla/5.0 (Linux; Android 14; Nuvio) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36',
             'maxSettingsProfiles':1,
@@ -91,11 +110,8 @@ jobs:
             p=subprocess.run(['node',str(root/'scripts/provider_worker.cjs'),str(path),json.dumps(fixture,separators=(',',':')),json.dumps(context,separators=(',',':'))],text=True,capture_output=True,timeout=55)
             result=None
             for line in p.stdout.splitlines():
-              if line.startswith('NUVIO_HEALTH_RESULT='):
-                result=json.loads(line.split('=',1)[1])
-            if not isinstance(result,dict):
-              print('TRACE',label,'NO_RESULT','exit',p.returncode)
-              return
+              if line.startswith('NUVIO_HEALTH_RESULT='): result=json.loads(line.split('=',1)[1])
+            if not isinstance(result,dict): print('TRACE',label,'NO_RESULT','exit',p.returncode); return
             err=result.get('error_details') if isinstance(result.get('error_details'),dict) else {}
             print('TRACE',label,'streams='+str(result.get('stream_count',0)),'error='+str(err.get('code') or 'none'))
             for obs in result.get('network_observations') or []:
