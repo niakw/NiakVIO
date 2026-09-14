@@ -12,16 +12,16 @@
 ## Install NiakVIO
 
 **Recommended — general manifest**  
-[`manifest.json`](https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json)
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
 
 **French-focused manifest**  
-[`vf/manifest.json`](https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json)
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
 
 **General manifest without anime-oriented providers**  
-[`no-anime/manifest.json`](https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/no-anime/manifest.json)
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/no-anime/manifest.json
 
 **French-focused manifest without anime-oriented providers**  
-[`vf-no-anime/manifest.json`](https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/manifest.json)
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/manifest.json
 
 Manifest guide: [`docs/how-to-add-manifest.md`](docs/how-to-add-manifest.md)
 
