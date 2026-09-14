@@ -135,4 +135,19 @@ result = validate(
 )
 assert result["changed"] == ["demo"]
 
+# A current authoritative hub may explicitly identify a historical domain as its
+# homepage/principal target without date wording. This is fresh reuse evidence,
+# unlike a generic "Visit" link.
+report["providers"]["demo"]["site_candidates"][0]["label"] = "Demo homepage"
+result = validate(
+    before_overrides,
+    after_overrides,
+    before_hubs,
+    after_hubs,
+    before_history,
+    report,
+    {"changed": ["demo"], "registry_changed": ["demo"]},
+)
+assert result["changed"] == ["demo"]
+
 print("domain refresh transaction guard tests passed")
