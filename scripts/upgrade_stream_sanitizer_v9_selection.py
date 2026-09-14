@@ -72,9 +72,15 @@ def main() -> int:
         if anchor not in test:
             raise SystemExit("ownership strict assertion anchor missing")
         test = test.replace(anchor, addition, 1)
+    test = replace_once(
+        test,
+        'assert len(rows) == 96\nfor row in rows:',
+        'assert rows\nprovider_ids = [str(row.get("id") or "").strip().casefold() for row in rows]\nassert all(provider_ids)\nassert len(provider_ids) == len(set(provider_ids)), provider_ids\nfor row in rows:',
+        "ownership manifest cardinality",
+    )
     test = test.replace(
         'print("GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers=96 timers=core 403=core sanitizer_v8=strict provider_specific_runtime_hacks=forbidden")',
-        'print("GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers=96 timers=core 403=core sanitizer_v9=full-manifest-strict provider_specific_runtime_hacks=forbidden")',
+        'print(f"GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers={len(rows)} timers=core 403=core sanitizer_v9=full-manifest-strict provider_specific_runtime_hacks=forbidden")',
     )
     TEST.write_text(test, encoding="utf-8")
     print("STREAM_SANITIZER_V9_SELECTION_OK")
