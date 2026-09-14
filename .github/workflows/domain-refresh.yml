@@ -43,8 +43,8 @@ permissions:
   actions: write
 
 concurrency:
-  group: niakvio-core-domain-refresh-main
-  cancel-in-progress: true
+  group: niakvio-core-release-mutation-main
+  cancel-in-progress: false
 
 jobs:
   refresh:
