@@ -18,6 +18,8 @@ on:
       - main
     paths:
       - audit/ai-external/.refresh-request
+      - .github/workflows/external-code-audit.yml
+      - scripts/external_audit/**
   schedule:
     - cron: '17 4 * * 0'
 
@@ -76,6 +78,10 @@ jobs:
       - name: Build AI index
         if: always()
         run: python3 scripts/external_audit/build_index.py
+
+      - name: Classify and enforce maintained-source findings
+        if: always()
+        run: python3 scripts/external_audit/classify_findings.py --root "$OUT" --strict
 
       - name: Upload candidate audit evidence
         if: always()
