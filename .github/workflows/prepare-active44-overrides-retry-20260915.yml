@@ -1,0 +1,75 @@
+name: SHORT - Prepare Active44 Overrides Retry
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/prepare-active44-overrides-retry-20260915.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-manual-evidence-active44
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Disable explicit activation overrides and retrigger v2
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          p=Path('provider-overrides.json')
+          data=json.loads(p.read_text(encoding='utf-8'))
+          patches=data.get('provider_patches') or {}
+          targets={'desiflix','fullanime'}
+          seen=set()
+          for key,row in patches.items():
+              if not isinstance(row,dict):
+                  continue
+              pid=str(key or '').strip().casefold().replace('_','-')
+              if pid not in targets:
+                  continue
+              seen.add(pid)
+              mo=row.get('manifest_overrides')
+              if not isinstance(mo,dict):
+                  mo={}
+                  row['manifest_overrides']=mo
+              mo['enabled']=False
+              row['activation_eligible']=False
+              row['manual_off_date']='2026-09-15'
+              row['manual_off_reason']=(
+                  'manual_off_compromised_or_inappropriate_redirect'
+                  if pid=='desiflix'
+                  else 'manual_off_no_current_hub_authority'
+              )
+          missing=targets-seen
+          if missing:
+              raise SystemExit('missing provider override rows: '+','.join(sorted(missing)))
+          p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print('ACTIVE44_OVERRIDES_OFF '+','.join(sorted(seen)))
+          PY
+          printf '\n# retry after explicit OFF overrides %s\n' "${{ github.sha }}" >> .github/workflows/apply-manual-evidence-active44-20260915-v2.yml
+          rm -f .github/workflows/prepare-active44-overrides-retry-20260915.yml
+          git diff --check
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m 'fix: disable DesiFlix and FullAnime activation overrides'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${{ github.sha }}"
+          git push origin HEAD:main
+          echo "ACTIVE44_OVERRIDE_PREP_PUBLISHED $(git rev-parse HEAD)"
