@@ -49362,18 +49362,16 @@
     },
     "movieshunt": {
       "model": {
-        "knownSite": "https://movieshunt.casa",
+        "knownSite": "https://movieshunt.monster",
         "strategy": "direct_media",
-        "officialSite": "https://movieshunt.casa",
-        "officialHub": "https://movieshunt.cc/",
+        "officialSite": "https://movieshunt.monster",
+        "officialHub": "https://movieshunt.run",
         "officialApi": null,
         "fixedApi": null,
         "origins": [
-          "https://movieshunt.casa",
-          "https://movieshunt.cc",
+          "https://movieshunt.monster",
           "https://abhilinks.site",
-          "https://vcloud.zip",
-          "https://movieshunt.run"
+          "https://vcloud.zip"
         ],
         "observedUrls": [
           "https://abhilinks.site/",
@@ -49381,6 +49379,7 @@
           "https://movieshunt.run/"
         ],
         "routes": [
+          "/lookup.php?q={query}&page=1&per_page=30",
           "/?s={query}"
         ],
         "sourceRuntimeFamily": "catalogue-html",
@@ -50594,39 +50593,24 @@
         ],
         "searchRequestPlan": [
           {
-            "base": "https://movieshunt.run",
-            "proofModelVersion": 5,
+            "base": "https://movieshunt.monster",
+            "route": "/lookup.php?q={query}&page=1&per_page=30",
             "requestSpec": {
+              "method": "GET",
               "headers": {
-                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "accept-language": "en-US,en;q=0.9",
-                "user-agent": "Mozilla/5.0 (Linux; Android 13; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"
-              },
-              "method": "GET"
+                "Accept": "application/json,text/plain,*/*",
+                "Referer": "https://movieshunt.monster/search.html"
+              }
             },
-            "route": "/?s={query}",
+            "proofModelVersion": 5,
+            "sourceRole": "catalog-search",
             "semanticTypes": [
               "movie"
-            ],
-            "sourceRole": "catalog-search"
-          },
-          {
-            "base": "https://movieshunt.run",
-            "proofModelVersion": 5,
-            "requestSpec": {
-              "headers": {
-                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "accept-language": "en-US,en;q=0.9",
-                "user-agent": "Mozilla/5.0 (Linux; Android 12; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Mobile Safari/537.36"
-              },
-              "method": "GET"
-            },
-            "route": "/?s={query}",
-            "semanticTypes": [
-              "movie"
-            ],
-            "sourceRole": "catalog-search"
+            ]
           }
+        ],
+        "proofProtectedHosts": [
+          "movieshunt.monster"
         ]
       },
       "knowledge": {

@@ -459,9 +459,9 @@
     },
     {
       "provider": "movieshunt",
-      "file": "providers/movieshunt-525002318e12311b.js",
-      "sha256": "525002318e12311b7936f3f32730f7fba46e4ae9309fe2ff22ee0d7d67e5b504",
-      "providerDataSha256": "707fb8f5486ba2873e0f358e4ce01746519b97368dec90308994d3a133c446c0",
+      "file": "providers/movieshunt-5cf414a734455b12.js",
+      "sha256": "5cf414a734455b1222b4fdf8215a2856f0591fd3b9c0b7a03f9c8ee73d722f4a",
+      "providerDataSha256": "7db52c5e9466bfcea3e4fb25d54330ffb1da9dae20732b5b1d488599d9612233",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -478,12 +478,6 @@
       ],
       "coreCount": 10,
       "applied": [
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
-        },
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
@@ -537,6 +531,12 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
         }
       ],
       "deviceSpecificJs": false,
@@ -552,7 +552,9 @@
         "savedBytes": 0,
         "transformedLines": 0,
         "skippedReason": "final-stage-only"
-      }
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": []
     },
     {
       "provider": "hindmoviez",
@@ -1118,9 +1120,9 @@
     },
     {
       "provider": "anikototv",
-      "file": "providers/anikototv-f9c4a20c9c8b4648.js",
-      "sha256": "f9c4a20c9c8b4648871822a5a4f87b3279adb7721ba40af5a9052b5c1f7986c6",
-      "providerDataSha256": "0f7acbdc0e31c12f7a92aceebc97b9d55cb8fbf99928407ab34c50ea82a6a3aa",
+      "file": "providers/anikototv-67b253f0085de163.js",
+      "sha256": "67b253f0085de163ad67333563ce5bedbbd991898e3cf2e523b54c1157be133c",
+      "providerDataSha256": "bf4305ad56b6c85e575d369183f39afb74c1076fd6d91018fdc20e1af70419e1",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -1157,12 +1159,6 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
         },
         {
           "type": "patch_script",
@@ -1217,6 +1213,12 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
         }
       ],
       "deviceSpecificJs": false,
@@ -1232,7 +1234,9 @@
         "savedBytes": 0,
         "transformedLines": 0,
         "skippedReason": "final-stage-only"
-      }
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": []
     },
     {
       "provider": "animekai",
@@ -1340,9 +1344,9 @@
     },
     {
       "provider": "animesalt",
-      "file": "providers/animesalt-942540f74f790b2c.js",
-      "sha256": "942540f74f790b2c82119e533ef129c28369099d4d51bbb90b69900f6cbefcce",
-      "providerDataSha256": "e11bcd274a5e4c90286fd8d4240f4a62c7e37e173fc8d094765b7850ca79f0e6",
+      "file": "providers/animesalt-3664cef3d41404ca.js",
+      "sha256": "3664cef3d41404ca22367715cad36fe662f54bb3701917946e8cd81c8590fa80",
+      "providerDataSha256": "ac0abc98952387c57e6b7b1094d4b416c07ac473270c05bfea260b2cd32724ea",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -1372,12 +1376,6 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
         },
         {
           "type": "patch_script",
@@ -1432,6 +1430,12 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
         }
       ],
       "deviceSpecificJs": false,
@@ -1447,13 +1451,15 @@
         "savedBytes": 0,
         "transformedLines": 0,
         "skippedReason": "final-stage-only"
-      }
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": []
     },
     {
       "provider": "animesama-co",
-      "file": "providers/animesama-co-862f392623e4e708.js",
-      "sha256": "862f392623e4e708f26ac70983488c20bd5e65971e300a626409c89796448196",
-      "providerDataSha256": "fe835d1c909b007651966ab35bd97bcddec7a9be661d3a763dfff73735431f50",
+      "file": "providers/animesama-co-5132d91f638a39cc.js",
+      "sha256": "5132d91f638a39cc4effddb71f4222269a29234154ae74f2c78a16f9362288c0",
+      "providerDataSha256": "82103f9ded4a7ad24fb9daae790a19cb98aac5a6fac194568a76da793781dd50",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -1491,12 +1497,6 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
         },
         {
           "type": "patch_script",
@@ -1557,6 +1557,12 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
         }
       ],
       "deviceSpecificJs": false,
@@ -1572,13 +1578,17 @@
         "savedBytes": 0,
         "transformedLines": 0,
         "skippedReason": "final-stage-only"
-      }
+      },
+      "staticAuthorityReconciledProviders": [
+        "animesama-co"
+      ],
+      "domainSubstitutionReconciledProviders": []
     },
     {
       "provider": "animesultra",
-      "file": "providers/animesultra-c580e4ec6756bbc1.js",
-      "sha256": "c580e4ec6756bbc11870765d37a2b390f7802bcdab566af40bbfb8294afef95b",
-      "providerDataSha256": "d10263b938a7191ff4b772eb16b8cf3cb2eabce5b52267a370dc13a902c1beea",
+      "file": "providers/animesultra-2abfdb26c0444c8b.js",
+      "sha256": "2abfdb26c0444c8b660f1e444c0bcc657909903ae157e4c58803df18a524452f",
+      "providerDataSha256": "ddd3ec4a2550e1c8e9b7cb14a2b38c6fa382e3c5d40b9ab5d66a2672f6858fb6",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -1608,12 +1618,6 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
         },
         {
           "type": "patch_script",
@@ -1668,6 +1672,12 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
         }
       ],
       "deviceSpecificJs": false,
@@ -1683,7 +1693,11 @@
         "savedBytes": 0,
         "transformedLines": 0,
         "skippedReason": "final-stage-only"
-      }
+      },
+      "staticAuthorityReconciledProviders": [
+        "animesultra"
+      ],
+      "domainSubstitutionReconciledProviders": []
     },
     {
       "provider": "animetsu",
@@ -1784,9 +1798,9 @@
     },
     {
       "provider": "animevostfr",
-      "file": "providers/animevostfr-e385662e55991595.js",
-      "sha256": "e385662e55991595255f1a397bcb224608a3f840b5cc95256c125d5f31e0b37f",
-      "providerDataSha256": "f415d2ca3cbb4f2e9e4d321cd60f0d29fa6a2119050c88e865c55dc360e75bde",
+      "file": "providers/animevostfr-8a996ee91f6c80ce.js",
+      "sha256": "8a996ee91f6c80ce09c4f89f4244c57421e60fc6c9018dc0a693cdeda783fa43",
+      "providerDataSha256": "c3da79c455cd52db6b5429e932409ef1a254a6d5c7814358ce4ef01fa38a14c2",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -1816,12 +1830,6 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
         },
         {
           "type": "patch_script",
@@ -1876,6 +1884,12 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
         }
       ],
       "deviceSpecificJs": false,
@@ -1891,7 +1905,9 @@
         "savedBytes": 0,
         "transformedLines": 0,
         "skippedReason": "final-stage-only"
-      }
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": []
     },
     {
       "provider": "castle",
@@ -2936,9 +2952,9 @@
     },
     {
       "provider": "sekai",
-      "file": "providers/sekai-0a8028a0ae59a465.js",
-      "sha256": "0a8028a0ae59a465e5b80c244792513542b837a513251c138247eae8c551c2ad",
-      "providerDataSha256": "eb3b8cae13ab2a5fc29d9d2c82d9863c6903f68b21a6d3a54f4a31a46f49d02d",
+      "file": "providers/sekai-d4f5025f2bf6daa4.js",
+      "sha256": "d4f5025f2bf6daa46944b39a37aa11c90261b0546ab4c83f622b899cf22d5ce1",
+      "providerDataSha256": "aacff0b6e9a64f239de02b2025e920ede10c628a566277cd77699dd400933fe8",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -2968,12 +2984,6 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
         },
         {
           "type": "patch_script",
@@ -3028,6 +3038,12 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
         }
       ],
       "deviceSpecificJs": false,
@@ -3043,7 +3059,11 @@
         "savedBytes": 0,
         "transformedLines": 0,
         "skippedReason": "final-stage-only"
-      }
+      },
+      "staticAuthorityReconciledProviders": [
+        "sekai"
+      ],
+      "domainSubstitutionReconciledProviders": []
     },
     {
       "provider": "streamzo",
@@ -3505,9 +3525,9 @@
     },
     {
       "provider": "voiranime",
-      "file": "providers/voiranime-d6d7ffb4ac97dc06.js",
-      "sha256": "d6d7ffb4ac97dc0681472e70d73f16b22c007cf674be7e7d77582f8af22f80c9",
-      "providerDataSha256": "a762e39ca4e789cf47dc15470491e7b09ebc4a62746b82fa0285956126221ed4",
+      "file": "providers/voiranime-8fc491e6554518fc.js",
+      "sha256": "8fc491e6554518fc8e5b849d3afc530ef41d8cc0933f2fa6cb30d939d2f49c7d",
+      "providerDataSha256": "20ae5951a0d4bca64eaa1a7e668e67b6813a396cf1f13d1adb9c0aa184cbd5b3",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -3552,12 +3572,6 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
         },
         {
           "type": "patch_script",
@@ -3618,6 +3632,12 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
         }
       ],
       "deviceSpecificJs": false,
@@ -3633,7 +3653,9 @@
         "savedBytes": 0,
         "transformedLines": 0,
         "skippedReason": "final-stage-only"
-      }
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": []
     },
     {
       "provider": "voiranime-homes",
@@ -3741,9 +3763,9 @@
     },
     {
       "provider": "voiranime-rip",
-      "file": "providers/voiranime-rip-c03288b4793683ac.js",
-      "sha256": "c03288b4793683ac7ac8d6f073209cbf5243e9d99bd15a0c9c5b2be9e6152bf8",
-      "providerDataSha256": "6f640685fcd2aac13162e12990316b961c1211afe60aaf5ad1d9384f64578d70",
+      "file": "providers/voiranime-rip-dc641d9d3701daa9.js",
+      "sha256": "dc641d9d3701daa9ec56485f2dddbca0f5a666f0f542ffb593ae4682d690b6b5",
+      "providerDataSha256": "3a120010d586d7fb91f868e2049e2c266202f17b6a3a9efb42e2f44b57dda5a2",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -3773,12 +3795,6 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
         },
         {
           "type": "patch_script",
@@ -3833,6 +3849,12 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
         }
       ],
       "deviceSpecificJs": false,
@@ -3848,13 +3870,17 @@
         "savedBytes": 0,
         "transformedLines": 0,
         "skippedReason": "final-stage-only"
-      }
+      },
+      "staticAuthorityReconciledProviders": [
+        "voiranime-rip"
+      ],
+      "domainSubstitutionReconciledProviders": []
     },
     {
       "provider": "vostfree",
-      "file": "providers/vostfree-42837b52afcb2097.js",
-      "sha256": "42837b52afcb209718511ac674bdfd6c35fa4672ade53712254d272cf13fa455",
-      "providerDataSha256": "06532ad2cc90c962c6c1202484faef793230b70a6a1992d099dfd54155ceef44",
+      "file": "providers/vostfree-2b18ac26810cb93d.js",
+      "sha256": "2b18ac26810cb93d0f04bad371bda3c8a22771f0b9c1767cdcd6be9358fb26b6",
+      "providerDataSha256": "6cce0407c963829b3a9ec1a7adae616c972f87dac8f415cf37e6b8aaa01250c2",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -3892,12 +3918,6 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
         },
         {
           "type": "patch_script",
@@ -3958,6 +3978,12 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
         }
       ],
       "deviceSpecificJs": false,
@@ -3973,7 +3999,11 @@
         "savedBytes": 0,
         "transformedLines": 0,
         "skippedReason": "final-stage-only"
-      }
+      },
+      "staticAuthorityReconciledProviders": [
+        "vostfree"
+      ],
+      "domainSubstitutionReconciledProviders": []
     },
     {
       "provider": "wookafr",
@@ -4414,11 +4444,12 @@
     },
     {
       "provider": "anime-ultime",
-      "file": "providers/anime-ultime-8287634dd2dac8ae.js",
-      "sha256": "8287634dd2dac8aeaf8d894ad7c4b9249be1cc0ccffbc0b7ca442017e59d6738",
-      "providerDataSha256": "63fc7f018ccdf29e7e919e73d67ca6de357fcaf100a544d8e99349a48b776e85",
+      "file": "providers/anime-ultime-55dc8187625f35b3.js",
+      "sha256": "55dc8187625f35b37235a0629495a4d703aee61feda983ba9b569386ce9a23b8",
+      "providerDataSha256": "f560ce6744c32a95f41a63f67c49fe80c383db128ae3a02d79c2a62c0fbe2beb",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
+        "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
         "CORE.MEDIA_ENRICHMENT.V1",
         "CORE.MEDIA_TYPE_RESOLUTION.V1",
@@ -4432,19 +4463,19 @@
         "CORE.STREAM_SANITIZER.V6",
         "PROVIDER.ANIME-ULTIME.CONFIG.V1"
       ],
-      "coreCount": 11,
+      "coreCount": 12,
       "applied": [
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
         },
         {
           "type": "patch_script",
@@ -4499,6 +4530,12 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
         }
       ],
       "deviceSpecificJs": false,
@@ -4514,13 +4551,17 @@
         "savedBytes": 0,
         "transformedLines": 0,
         "skippedReason": "final-stage-only"
-      }
+      },
+      "staticAuthorityReconciledProviders": [
+        "anime-ultime"
+      ],
+      "domainSubstitutionReconciledProviders": []
     },
     {
       "provider": "animevost-fr",
-      "file": "providers/animevost-fr-f62bf49abedfb5ed.js",
-      "sha256": "f62bf49abedfb5eda9363835bc9334f99e2b4556536b564fa6a83347524a5d63",
-      "providerDataSha256": "692ed2bdd438cc535eacbd4d52cba770e77b6733d1d5ae61ee410400e3cbfe45",
+      "file": "providers/animevost-fr-686701843bdce70b.js",
+      "sha256": "686701843bdce70b7dc4b715761785628bda248a600df5d64d3fdfeb81831baf",
+      "providerDataSha256": "54cc9cfaadcd6414791df54236a6a71464b3dff43529595740ce96006d7a3cbb",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -4553,12 +4594,6 @@
         },
         {
           "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
-        },
-        {
-          "type": "patch_script",
           "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
           "phase": "discovery",
           "scope": "global_playback_integrity"
@@ -4610,6 +4645,12 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
         }
       ],
       "deviceSpecificJs": false,
@@ -4625,7 +4666,9 @@
         "savedBytes": 0,
         "transformedLines": 0,
         "skippedReason": "final-stage-only"
-      }
+      },
+      "staticAuthorityReconciledProviders": [],
+      "domainSubstitutionReconciledProviders": []
     },
     {
       "provider": "fullanime",
