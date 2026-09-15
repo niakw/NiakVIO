@@ -106,7 +106,6 @@ jobs:
             tests/provider_v3_strategy_plan_contract_test.py \
             tests/native_hub46_scope_contract_test.py \
             tests/provider_repair_pipeline_v6_contract_test.py \
-            .github/workflows/main-route-proof-reconstruction.yml \
             MEMORY.md
           git diff --cached --check
           git commit -m 'fix: make repair and native activation honor active44 authority'
