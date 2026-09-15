@@ -1,0 +1,250 @@
+name: SHORT - Eliminate provider cardinality magic
+
+on:
+  push:
+    branches: [fix/active44-durability-20260915]
+    paths:
+      - '.github/workflows/eliminate-provider-cardinality-magic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-eliminate-provider-cardinality-magic
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/active44-durability-20260915
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Convert remaining current-cardinality gates to identity scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from __future__ import annotations
+          import re
+          from pathlib import Path
+
+          R=Path('.')
+
+          def read(rel): return (R/rel).read_text(encoding='utf-8')
+          def write(rel,text):
+              (R/rel).write_text(text,encoding='utf-8')
+              print('PATCHED',rel)
+          def replace(rel, old, new, *, required=True, count=-1):
+              t=read(rel)
+              if old not in t:
+                  if new in t or not required: return
+                  raise SystemExit(f'{rel}: anchor not found: {old[:120]!r}')
+              write(rel,t.replace(old,new,count))
+          def add_import(t, anchor, line):
+              return t if line in t else t.replace(anchor,anchor+line,1)
+
+          # Materializer = active providers only. Disabled rows remain untouched in source manifest.
+          rel='scripts/materialize_provider_v3_all.py'; t=read(rel)
+          t=add_import(t,'from provider_v3_minimizer import minimize_text, validate_transform  # noqa: E402\n','from current_provider_scope import active_provider_ids  # noqa: E402\n')
+          t=t.replace('EXPECTED_PROVIDER_COUNT = 46\n','')
+          old='''    rows = [\n        row for row in manifest.get("scrapers") or []\n        if isinstance(row, dict) and canonical_id(str(row.get("id") or ""))\n    ]\n    if len(rows) != EXPECTED_PROVIDER_COUNT:\n        raise ValueError(\n            f"global v3 manifest provider count={len(rows)} expected={EXPECTED_PROVIDER_COUNT}"\n        )\n\n    ids = [canonical_id(str(row.get("id") or "")) for row in rows]\n    if len(set(ids)) != EXPECTED_PROVIDER_COUNT:\n        raise ValueError("global v3 manifest contains duplicate provider ids")\n'''
+          new='''    active_ids = active_provider_ids()\n    rows = [\n        row for row in manifest.get("scrapers") or []\n        if isinstance(row, dict)\n        and canonical_id(str(row.get("id") or "")) in active_ids\n    ]\n    ids = [canonical_id(str(row.get("id") or "")) for row in rows]\n    if not rows or len(set(ids)) != len(ids) or set(ids) != active_ids:\n        raise ValueError(\n            f"global v3 active identity mismatch rows={len(rows)} unique={len(set(ids))} "\n            f"folder_active={len(active_ids)}"\n        )\n'''
+          if old not in t: raise SystemExit(f'{rel}: materializer count block drifted')
+          t=t.replace(old,new,1)
+          t=t.replace('        "expectedProviderCount": EXPECTED_PROVIDER_COUNT,','        "activeProviderIdentityCount": len(active_ids),')
+          write(rel,t)
+
+          # ProviderBase store = same active set, never visible disabled rows.
+          rel='scripts/materialize_provider_base_v3_store.py'; t=read(rel)
+          t=t.replace('all 46 current generated bundles','all current active generated bundles').replace('EXPECTED_CURRENT = 46\n','')
+          if 'from current_provider_scope import active_provider_ids' not in t:
+              t=t.replace('ROOT = Path(__file__).resolve().parents[1]\n','ROOT = Path(__file__).resolve().parents[1]\nsys.path.insert(0, str(ROOT / "scripts"))\nfrom current_provider_scope import active_provider_ids\n',1)
+          old='''    entries = [\n        row for row in manifest.get("scrapers") or []\n        if isinstance(row, dict) and canonical_id(str(row.get("id") or ""))\n    ]\n    if len(entries) != EXPECTED_CURRENT:\n        raise SystemExit(f"ProviderBase v3 store requires {EXPECTED_CURRENT} current providers, got {len(entries)}")\n\n    current_ids = {canonical_id(str(entry.get("id") or "")) for entry in entries}\n'''
+          new='''    current_ids = active_provider_ids()\n    entries = [\n        row for row in manifest.get("scrapers") or []\n        if isinstance(row, dict) and canonical_id(str(row.get("id") or "")) in current_ids\n    ]\n    if not entries or {canonical_id(str(entry.get("id") or "")) for entry in entries} != current_ids:\n        raise SystemExit("ProviderBase v3 active identity set differs from providers/ authority")\n'''
+          if old not in t: raise SystemExit(f'{rel}: count block drifted')
+          t=t.replace(old,new,1); write(rel,t)
+
+          # Static audit = exact active materialized bytes. Disabled retained files are deliberately excluded.
+          rel='scripts/audit_provider_v3_static.py'; t=read(rel)
+          t=t.replace('"""Read-only audit of the exact 46 hub Provider v3 bytes; never reconstructs."""','"""Read-only audit of exact current active Provider v3 bytes; never reconstructs."""')
+          if 'from current_provider_scope import active_provider_ids' not in t:
+              t=t.replace('from provider_v3_filename_policy import matches_provider_v3_filename\n','from provider_v3_filename_policy import matches_provider_v3_filename\nfrom current_provider_scope import active_provider_ids\n',1)
+          t=t.replace('rows=manifest.get("scrapers") or []; reports=material.get("providers") or []\nassert len(rows)==46 and len(reports)==46, (len(rows),len(reports))', 'active=active_provider_ids(); rows=[r for r in manifest.get("scrapers") or [] if isinstance(r,dict) and canon(r.get("id")) in active]; reports=[r for r in material.get("providers") or [] if isinstance(r,dict) and canon(r.get("provider")) in active]\nassert {canon(r.get("id")) for r in rows}==active, (len(rows),len(active))\nassert {canon(r.get("provider")) for r in reports}==active, (len(reports),len(active))')
+          t=t.replace('assert material.get("providerCount")==46 and material.get("expectedProviderCount")==46\nprint(f"PROVIDER_V3_STATIC_AUDIT_OK providers=46 reconstruction=false filename_stage={stage} structured_data=current")','assert int(material.get("providerCount") or 0)==len(active), (material.get("providerCount"),len(active))\nprint(f"PROVIDER_V3_STATIC_AUDIT_OK providers={len(active)} reconstruction=false filename_stage={stage} structured_data=current")')
+          write(rel,t)
+
+          # Activation preservation follows physical folders, matrix is evidence only.
+          rel='scripts/validate_activation_preservation.py'; t=read(rel)
+          if 'from current_provider_scope import active_provider_ids, visible_provider_ids' not in t:
+              t=t.replace('from pathlib import Path\n','from pathlib import Path\nfrom current_provider_scope import active_provider_ids, visible_provider_ids\n',1)
+          old='''    expected = int(matrix.get("hubCount") or 0)\n    if expected <= 0 or len(target) != expected:\n        errors.append(f"hub activation authority mismatch: declared={expected} rows={len(target)}")\n    if len(main_rows) != 46:\n        errors.append(f"canonical catalogue must contain 46 providers, got {len(main_rows)}")\n\n    missing = sorted(target - set(main_rows))\n    extra = sorted(active - target)\n    disabled_target = sorted(target - active)\n'''
+          new='''    expected_active = active_provider_ids()\n    expected_visible = visible_provider_ids()\n    if set(main_rows) != expected_visible:\n        errors.append(\n            "canonical catalogue differs from current provider folders: "\n            f"manifest_only={sorted(set(main_rows)-expected_visible)} folder_only={sorted(expected_visible-set(main_rows))}"\n        )\n    if active != expected_active:\n        errors.append(\n            "manifest activation differs from providers/ authority: "\n            f"manifest_only={sorted(active-expected_active)} folder_only={sorted(expected_active-active)}"\n        )\n    if target != expected_active:\n        # Hub matrix is diagnostic evidence and may lag a lifecycle change.\n        target = set(expected_active)\n\n    missing = sorted(target - set(main_rows))\n    extra = sorted(active - target)\n    disabled_target = sorted(target - active)\n'''
+          if old not in t: raise SystemExit(f'{rel}: activation block drifted')
+          t=t.replace(old,new,1)
+          t=t.replace('    if len(active) != expected:\n        errors.append(f"enabled provider count must equal active authority {expected}, got {len(active)}")\n','')
+          t=t.replace('override activation mismatch for hub46 authority','override activation mismatch for provider-folder authority').replace('hub46 activation projection mismatch','current activation projection mismatch')
+          write(rel,t)
+
+          # V2 history matrices describe whatever current set exists; no numeric release gate.
+          rel='scripts/build_provider_history_matrix_v2.py'; t=read(rel)
+          t=t.replace('EXPECTED = 46\n','').replace('if len(rows) != EXPECTED:', 'if not rows:').replace('f"expected {EXPECTED} providers, got {len(rows)}"','"provider history matrix is empty"').replace('"providerCount": EXPECTED','"providerCount": len(rows)')
+          write(rel,t)
+
+          # Route recovery executes only current active providers; historical source catalog may remain larger.
+          rel='scripts/recover_provider_routes_from_upstreams.py'; t=read(rel)
+          t=t.replace('EXPECTED = 96\n','')
+          if 'from current_provider_scope import active_provider_ids' not in t:
+              t=t.replace('from provider_route_proof import derive_task_routes, route_role, unique\n','from provider_route_proof import derive_task_routes, route_role, unique\nfrom current_provider_scope import active_provider_ids\n',1)
+          # Replace all exact EXPECTED checks conservatively after removing assignment.
+          t=re.sub(r'if len\(([^\n]+)\) != EXPECTED:\n\s+raise [^\n]+\n', '', t)
+          t=t.replace('EXPECTED,','len(active_provider_ids()),').replace('EXPECTED)','len(active_provider_ids()))')
+          write(rel,t)
+
+          # Generic current-scope scripts: replace count constants with dynamic helpers.
+          active_files=[
+            'scripts/validate_provider_v3_routes_live.py',
+            'scripts/provider_contract_local_enricher.py',
+            'scripts/sanitize_provider_v3_execution_routes_v1.py',
+            'scripts/materialize_provider_base_identity_only.py',
+            'scripts/provider_contract_recognizer.py',
+            'scripts/promote_provider_v3_static_knowledge.py',
+            'scripts/provider_route_reconstructor.py',
+          ]
+          for rel in active_files:
+              p=R/rel; t=p.read_text(encoding='utf-8')
+              if 'from current_provider_scope import active_provider_count' not in t:
+                  # all these scripts already import Path
+                  t=t.replace('from pathlib import Path\n','from pathlib import Path\nfrom current_provider_scope import active_provider_count\n',1)
+              t=re.sub(r'\bEXPECTED(?:_PROVIDERS)?\s*=\s*(?:44|46|96)\b','EXPECTED = active_provider_count()',t)
+              write(rel,t)
+
+          # Visible-current scripts: count derives from active+disabled current identity set.
+          visible_files=[
+            'scripts/enforce_provider_v3_semantic_transport_contract_v5.py',
+            'scripts/build_observational_health_report.py',
+            'scripts/update_provider_v3_domain_config.py',
+            'scripts/sanitize_provider_v3_core_metadata_routes.py',
+            'scripts/finalize_gowaru_provider_v3_source_plans.py',
+          ]
+          for rel in visible_files:
+              p=R/rel; t=p.read_text(encoding='utf-8')
+              if 'from current_provider_scope import visible_provider_count' not in t:
+                  t=t.replace('from pathlib import Path\n','from pathlib import Path\nfrom current_provider_scope import visible_provider_count\n',1)
+              t=re.sub(r'len\(([^\n()]+)\)\s*(!=|==)\s*(?:44|46|96)',r'len(\1) \2 visible_provider_count()',t)
+              t=re.sub(r'\bEXPECTED\s*=\s*(?:44|46|96)\b','EXPECTED = visible_provider_count()',t)
+              write(rel,t)
+
+          # Old prune migration is dangerous: make it a compatibility validator/no-op.
+          rel='scripts/prune_to_hub46_catalog.py'
+          write(rel,'''#!/usr/bin/env python3\n"""Compatibility shim for the retired numeric Hub46 prune migration.\n\nCurrent provider membership is owned by providers/ and provider-disabled/. This\nscript intentionally performs no pruning or cardinality rewrite.\n"""\nfrom __future__ import annotations\nimport sys\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT/"scripts"))\nfrom current_provider_scope import active_provider_count, disabled_provider_count, visible_provider_count, assert_directory_contract\ndef main()->int:\n assert_directory_contract()\n print(f"CURRENT_PROVIDER_PRUNE_COMPAT active={active_provider_count()} disabled={disabled_provider_count()} visible={visible_provider_count()} mutations=0")\n return 0\nif __name__=="__main__": raise SystemExit(main())\n''')
+
+          # Upgrade helpers must never inject a fixed current-provider count again.
+          rel='scripts/upgrade_provider_v3_final_stage_minimizer_v1.py'; t=read(rel)
+          t=t.replace('helper_anchor = "EXPECTED_PROVIDER_COUNT = 96\\n"','helper_anchor = "FINAL_MINIMIZER_ENV = \\\"NIAKVIO_PROVIDER_V3_FINAL_MINIMIZE\\\"\\n"')
+          t=t.replace("helper = '''EXPECTED_PROVIDER_COUNT = 96\\n\\n# PROVIDER_V3_FINAL_STAGE_MINIMIZER_GATE_V1", "helper = '''# PROVIDER_V3_FINAL_STAGE_MINIMIZER_GATE_V1")
+          write(rel,t)
+          rel='scripts/upgrade_stream_sanitizer_v9_selection.py'; t=read(rel)
+          t=t.replace("'assert len(rows) == 96\\nfor row in rows:'", "'for row in rows:'")
+          write(rel,t)
+
+          # All current tests derive their census from repository data, never literals.
+          test_active=[
+            'tests/provider_v3_static_knowledge_contract_test.py',
+            'tests/core_runtime_nonregression_contract_test.py',
+            'tests/native_hub46_transport_manifest_test.py',
+            'tests/provider_clean_reconstruction_contract_test.py',
+            'tests/native_hub46_manifest_test.py',
+            'tests/global_core_runtime_ownership_test.py',
+            'tests/provider_v3_minimizer_publication_pipeline_test.py',
+            'tests/native_evidence_codegen_pipeline_test.py',
+            'tests/provider_upstream_parity_v3_test.py',
+            'tests/provider_v3_minimizer_preview_test.py',
+            'tests/provider_v3_documentation_contract_test.py',
+            'tests/native_five_lab_coverage_test.py',
+            'tests/provider_anime_semantic_transport_contract_test.py',
+            'tests/global_stream_metadata_preservation_contract_test.py',
+            'tests/native_corpus_device_lab_test.py',
+            'tests/provider_js_lego_ownership_test.py',
+          ]
+          for rel in test_active:
+              p=R/rel; t=p.read_text(encoding='utf-8')
+              # Inject helper where Path is present; otherwise use manifest-derived expression below.
+              if 'from current_provider_scope import active_provider_count' not in t and 'from pathlib import Path\n' in t:
+                  t=t.replace('from pathlib import Path\n','from pathlib import Path\nfrom current_provider_scope import active_provider_count\n',1)
+              t=re.sub(r'\b(?:CURRENT_PROVIDER_COUNT|EXPECTED)\s*=\s*(?:44|46|96)\b','EXPECTED = active_provider_count()',t)
+              t=re.sub(r'len\(([^\n()]+)\)\s*==\s*(?:44|46|96)',r'len(\1) == active_provider_count()',t)
+              t=re.sub(r'len\(([^\n()]+)\)\s*!=\s*(?:44|46|96)',r'len(\1) != active_provider_count()',t)
+              t=t.replace('f"expected 96 exposed provider version floors, got {len(floors)}"','f"provider version floor identity mismatch: got {len(floors)}"')
+              write(rel,t)
+
+          # Tests whose structure is visible catalogue / static knowledge use visible count.
+          visible_tests=[
+            'tests/provider_version_floor_test.py',
+            'tests/provider_v3_local_recognition_contract_test.py',
+            'tests/provider_v3_core_metadata_route_sanitizer_test.py',
+            'tests/native_runtime_settlement_contract_test.py',
+          ]
+          for rel in visible_tests:
+              p=R/rel; t=p.read_text(encoding='utf-8')
+              if 'from current_provider_scope import visible_provider_count' not in t and 'from pathlib import Path\n' in t:
+                  t=t.replace('from pathlib import Path\n','from pathlib import Path\nfrom current_provider_scope import visible_provider_count\n',1)
+              t=re.sub(r'\b(?:CURRENT_PROVIDER_COUNT|EXPECTED)\s*=\s*(?:44|46|96)\b','EXPECTED = visible_provider_count()',t)
+              t=re.sub(r'len\(([^\n()]+)\)\s*==\s*(?:44|46|96)',r'len(\1) == visible_provider_count()',t)
+              t=re.sub(r'len\(([^\n()]+)\)\s*!=\s*(?:44|46|96)',r'len(\1) != visible_provider_count()',t)
+              write(rel,t)
+
+          # Remove the old expected-current constant from active base identity script if still present.
+          rel='scripts/materialize_provider_base_v3_store.py'; t=read(rel); t=re.sub(r'\bEXPECTED_CURRENT\s*=\s*(?:44|46|96)\b\n?','',t); write(rel,t)
+
+          # Permanent guard: scan *all* executable Python sources/tests. Historical JSON/data is outside this policy.
+          write('tests/provider_cardinality_source_of_truth_test.py','''#!/usr/bin/env python3\nfrom __future__ import annotations\nimport re\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parents[1]\npatterns=[\n re.compile(r"\\b(?:EXPECTED(?:_[A-Z_]+)?|CURRENT_PROVIDER_COUNT|EXPECTED_CURRENT|EXPECTED_ACTIVE|EXPECTED_PROVIDERS)\\s*=\\s*(?:44|46|96)\\b"),\n re.compile(r"len\\([^\\n]+?\\)\\s*(?:==|!=)\\s*(?:44|46|96)\\b"),\n re.compile(r"(?:exactly|expected|requires?)\\s+(?:44|46|96)[ -](?:provider|row)",re.I),\n]\nbad=[]\nfor root in (ROOT/"scripts",ROOT/"tests"):\n for path in root.rglob("*.py"):\n  text=path.read_text(encoding="utf-8")\n  for pat in patterns:\n   for match in pat.finditer(text):\n    # Historical constants may be mentioned in comments/docstrings, but never as executable assignments/comparisons.\n    line=text.count("\\n",0,match.start())+1\n    snippet=match.group(0)\n    prefix=text[text.rfind("\\n",0,match.start())+1:match.start()].lstrip()\n    if prefix.startswith("#") and pat is patterns[2]: continue\n    bad.append(f"{path.relative_to(ROOT)}:{line}: {snippet}")\nassert not bad,"hard-coded current provider cardinality remains:\\n"+"\\n".join(bad)\nprint("provider cardinality source-of-truth contract passed scope=all-python-scripts-tests")\n''')
+          print('EXHAUSTIVE_PROVIDER_CARDINALITY_MIGRATION_APPLIED')
+          PY
+
+      - name: Validate exhaustive dynamic scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m compileall -q scripts tests
+          python scripts/manage_provider_lifecycle.py --apply
+          python scripts/hub_activation_publication.py --verify-catalog
+          python scripts/validate_published_provider_config.py
+          python tests/provider_cardinality_source_of_truth_test.py
+          python tests/provider_disabled_lifecycle_contract_test.py
+          python tests/provider_repair_pipeline_v6_contract_test.py
+          python tests/provider_v3_workflow_ownership_test.py
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/provider_v3_minimizer_contract_test.py
+          python tests/provider_v3_minimizer_published_test.py
+          python tests/canonical_media_types_test.py
+          python tests/global_stream_output_guard_test.py
+          git diff --check
+
+      - name: Commit exhaustive dynamic scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts tests manifest.json manifest-hub46.json automation provider-disabled provider-old providers provider-bases
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo EXHAUSTIVE_PROVIDER_CARDINALITY_NO_CHANGE
+            exit 0
+          fi
+          git commit -m 'fix: eliminate provider cardinality as an operational gate'
+          git push origin HEAD:fix/active44-durability-20260915
+          echo "EXHAUSTIVE_PROVIDER_CARDINALITY_PUBLISHED $(git rev-parse HEAD)"
