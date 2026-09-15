@@ -1,5 +1,5 @@
 name: TEMP - Install Native Prebuild Caches
-# trigger: install-v2
+# trigger: install-v3
 
 on:
   push:
@@ -32,39 +32,50 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
 
+          def expr(body: str) -> str:
+              return '$' + '{{ ' + body + ' }}'
+
           def insert_before(path: str, marker: str, block: str) -> None:
               p = Path(path)
-              text = p.read_text(encoding="utf-8")
+              text = p.read_text(encoding='utf-8')
               if block.strip() in text:
                   return
               if text.count(marker) != 1:
-                  raise SystemExit(f"{path}: expected exactly one insertion marker: {marker!r}")
-              p.write_text(text.replace(marker, block + marker, 1), encoding="utf-8")
+                  raise SystemExit(f'{path}: expected exactly one insertion marker: {marker!r}')
+              p.write_text(text.replace(marker, block + marker, 1), encoding='utf-8')
 
-          cache_action = "actions/cache@caa296126883cff596d87d8935842f9db880ef25"
+          cache_action = 'actions/cache@caa296126883cff596d87d8935842f9db880ef25'
 
+          tv_hash = expr("hashFiles('niakvio/scripts/prebuild_native_android_reader_suite.sh', 'niakvio/scripts/prepare_native_reader_acceptance.py', 'niakvio/scripts/instrument_native_client_evidence.py', 'niakvio/scripts/instrument_native_repository_http_evidence.py', 'niakvio/scripts/augment_native_corpus_request_contract.py', 'niakvio/scripts/augment_native_provider_loading_compat.py', 'niakvio/native-hub46/manifest.json')")
+          tv_key = f"native-prebuild-v2-tv-{expr('runner.os')}-{expr('needs.resolve_tv.outputs.tv_sha')}-{tv_hash}"
           insert_before(
-              ".github/workflows/native-mobile-android-reader.yml",
-              "      - name: Prebuild TV reader once before QEMU\n",
-              f'''      - name: Restore TV Android prebuild cache\n        uses: {cache_action}\n        with:\n          path: |\n            ~/.gradle/caches\n            ~/.gradle/wrapper\n            nuvio-tv/.gradle\n            nuvio-tv/app/build\n          key: native-prebuild-v2-tv-${{{{ runner.os }}}}-${{{{ needs.resolve_tv.outputs.tv_sha }}}}-${{{{ hashFiles('niakvio/scripts/prebuild_native_android_reader_suite.sh', 'niakvio/scripts/prepare_native_reader_acceptance.py', 'niakvio/scripts/instrument_native_client_evidence.py', 'niakvio/scripts/instrument_native_repository_http_evidence.py', 'niakvio/scripts/augment_native_corpus_request_contract.py', 'niakvio/scripts/augment_native_provider_loading_compat.py', 'niakvio/native-hub46/manifest.json') }}}}\n''',
+              '.github/workflows/native-mobile-android-reader.yml',
+              '      - name: Prebuild TV reader once before QEMU\n',
+              f'''      - name: Restore TV Android prebuild cache\n        uses: {cache_action}\n        with:\n          path: |\n            ~/.gradle/caches\n            ~/.gradle/wrapper\n            nuvio-tv/.gradle\n            nuvio-tv/app/build\n          key: {tv_key}\n''',
           )
 
+          mobile_hash = expr("hashFiles('niakvio/scripts/prebuild_native_android_reader_suite.sh', 'niakvio/scripts/prepare_native_reader_acceptance.py', 'niakvio/scripts/instrument_native_client_evidence.py', 'niakvio/scripts/instrument_native_repository_http_evidence.py', 'niakvio/scripts/augment_native_corpus_request_contract.py', 'niakvio/scripts/augment_native_provider_loading_compat.py', 'niakvio/native-hub46/manifest.json')")
+          mobile_key = f"native-prebuild-v2-mobile-{expr('runner.os')}-{expr('needs.resolve_mobile.outputs.mobile_sha')}-{mobile_hash}"
           insert_before(
-              ".github/workflows/native-mobile-android-reader.yml",
-              "      - name: Prebuild Mobile Android reader once before QEMU\n",
-              f'''      - name: Restore Mobile Android prebuild cache\n        uses: {cache_action}\n        with:\n          path: |\n            ~/.gradle/caches\n            ~/.gradle/wrapper\n            nuvio-mobile/.gradle\n            nuvio-mobile/androidApp/build\n            nuvio-mobile/composeApp/build\n          key: native-prebuild-v2-mobile-${{{{ runner.os }}}}-${{{{ needs.resolve_mobile.outputs.mobile_sha }}}}-${{{{ hashFiles('niakvio/scripts/prebuild_native_android_reader_suite.sh', 'niakvio/scripts/prepare_native_reader_acceptance.py', 'niakvio/scripts/instrument_native_client_evidence.py', 'niakvio/scripts/instrument_native_repository_http_evidence.py', 'niakvio/scripts/augment_native_corpus_request_contract.py', 'niakvio/scripts/augment_native_provider_loading_compat.py', 'niakvio/native-hub46/manifest.json') }}}}\n''',
+              '.github/workflows/native-mobile-android-reader.yml',
+              '      - name: Prebuild Mobile Android reader once before QEMU\n',
+              f'''      - name: Restore Mobile Android prebuild cache\n        uses: {cache_action}\n        with:\n          path: |\n            ~/.gradle/caches\n            ~/.gradle/wrapper\n            nuvio-mobile/.gradle\n            nuvio-mobile/androidApp/build\n            nuvio-mobile/composeApp/build\n          key: {mobile_key}\n''',
           )
 
+          ios_hash = expr("hashFiles('niakvio/scripts/prepare_native_ios_reader_acceptance.py', 'niakvio/scripts/run_native_corpus_ios_suite.sh', 'niakvio/native-hub46/manifest.json')")
+          ios_key = f"native-prebuild-v2-ios-{expr('runner.os')}-{expr('needs.resolve.outputs.mobile_sha')}-xcode26.6-{ios_hash}"
           insert_before(
-              ".github/workflows/native-mobile-ios-reader.yml",
-              "      - name: Build official unsigned device IPA before Lab instrumentation\n",
-              f'''      - name: Restore iOS prebuild cache\n        uses: {cache_action}\n        with:\n          path: |\n            ~/.gradle/caches\n            ~/.gradle/wrapper\n            ~/.konan\n            nuvio-mobile/.gradle\n            nuvio-mobile/composeApp/build\n            nuvio-mobile/build/ios-derived-full-debug\n            nuvio-mobile/build/ios-ipa\n            ios-derived\n          key: native-prebuild-v2-ios-${{{{ runner.os }}}}-${{{{ needs.resolve.outputs.mobile_sha }}}}-xcode26.6-${{{{ hashFiles('niakvio/scripts/prepare_native_ios_reader_acceptance.py', 'niakvio/scripts/run_native_corpus_ios_suite.sh', 'niakvio/native-hub46/manifest.json') }}}}\n''',
+              '.github/workflows/native-mobile-ios-reader.yml',
+              '      - name: Build official unsigned device IPA before Lab instrumentation\n',
+              f'''      - name: Restore iOS prebuild cache\n        uses: {cache_action}\n        with:\n          path: |\n            ~/.gradle/caches\n            ~/.gradle/wrapper\n            ~/.konan\n            nuvio-mobile/.gradle\n            nuvio-mobile/composeApp/build\n            nuvio-mobile/build/ios-derived-full-debug\n            nuvio-mobile/build/ios-ipa\n            ios-derived\n          key: {ios_key}\n''',
           )
 
+          desktop_hash = expr("hashFiles('niakvio/scripts/prepare_native_corpus_client.py', 'niakvio/scripts/run_native_corpus_desktop_suite.sh', 'niakvio/scripts/native_desktop_upstream_test_compat.py', 'niakvio/native-hub46/manifest.json')")
+          desktop_key = f"native-prebuild-v2-desktop-{expr('matrix.os_name')}-{expr('needs.resolve.outputs.desktop_sha')}-webview2-{expr('env.WEBVIEW2_VERSION')}-{desktop_hash}"
           insert_before(
-              ".github/workflows/native-desktop-reader-acceptance.yml",
-              "      - name: Install official Windows WebView2 build dependency\n",
-              f'''      - name: Restore Desktop prebuild cache\n        uses: {cache_action}\n        with:\n          path: |\n            ~/.gradle/caches\n            ~/.gradle/wrapper\n            nuvio-desktop/.gradle\n            nuvio-desktop/composeApp/build\n          key: native-prebuild-v2-desktop-${{{{ matrix.os_name }}}}-${{{{ needs.resolve.outputs.desktop_sha }}}}-webview2-${{{{ env.WEBVIEW2_VERSION }}}}-${{{{ hashFiles('niakvio/scripts/prepare_native_corpus_client.py', 'niakvio/scripts/run_native_corpus_desktop_suite.sh', 'niakvio/scripts/native_desktop_upstream_test_compat.py', 'niakvio/native-hub46/manifest.json') }}}}\n''',
+              '.github/workflows/native-desktop-reader-acceptance.yml',
+              '      - name: Install official Windows WebView2 build dependency\n',
+              f'''      - name: Restore Desktop prebuild cache\n        uses: {cache_action}\n        with:\n          path: |\n            ~/.gradle/caches\n            ~/.gradle/wrapper\n            nuvio-desktop/.gradle\n            nuvio-desktop/composeApp/build\n          key: {desktop_key}\n''',
           )
           PY
 
@@ -84,18 +95,20 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          def expr(body: str) -> str:
+              return '$' + '{{ ' + body + ' }}'
           android = Path('.github/workflows/native-mobile-android-reader.yml').read_text()
           ios = Path('.github/workflows/native-mobile-ios-reader.yml').read_text()
           desktop = Path('.github/workflows/native-desktop-reader-acceptance.yml').read_text()
-          assert 'native-prebuild-v2-tv-${{ runner.os }}-${{ needs.resolve_tv.outputs.tv_sha }}-' in android
-          assert 'native-prebuild-v2-mobile-${{ runner.os }}-${{ needs.resolve_mobile.outputs.mobile_sha }}-' in android
-          assert 'native-prebuild-v2-ios-${{ runner.os }}-${{ needs.resolve.outputs.mobile_sha }}-xcode26.6-' in ios
-          assert 'native-prebuild-v2-desktop-${{ matrix.os_name }}-${{ needs.resolve.outputs.desktop_sha }}-' in desktop
+          assert f"native-prebuild-v2-tv-{expr('runner.os')}-{expr('needs.resolve_tv.outputs.tv_sha')}-" in android
+          assert f"native-prebuild-v2-mobile-{expr('runner.os')}-{expr('needs.resolve_mobile.outputs.mobile_sha')}-" in android
+          assert f"native-prebuild-v2-ios-{expr('runner.os')}-{expr('needs.resolve.outputs.mobile_sha')}-xcode26.6-" in ios
+          assert f"native-prebuild-v2-desktop-{expr('matrix.os_name')}-{expr('needs.resolve.outputs.desktop_sha')}-" in desktop
           for text in (android, ios, desktop):
               assert 'restore-keys:' not in text
-          assert '".github/triggers/full-native-lab-validation.json"' in android
-          assert '".github/triggers/full-native-lab-validation.json"' in ios
-          assert '".github/triggers/full-native-lab-validation.json"' in desktop
+          assert '.github/triggers/full-native-lab-validation.json' in android
+          assert '.github/triggers/full-native-lab-validation.json' in ios
+          assert '.github/triggers/full-native-lab-validation.json' in desktop
           print('NATIVE_PREBUILD_CACHE_CONTRACT_OK exact_client=true stale_restore=false runtime_gates_unchanged=true')
           PY
 
