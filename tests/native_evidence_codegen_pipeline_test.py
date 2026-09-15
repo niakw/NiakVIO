@@ -10,13 +10,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count
+from current_provider_scope import visible_provider_count
 
 PINNED_MANIFEST_URL = (
     "https://raw.githubusercontent.com/niakw/NiakVIO/"
     "0123456789abcdef0123456789abcdef01234567/manifest.json"
 )
-EXPECTED = active_provider_count()
 
 
 def load(name: str, relative: str):
@@ -37,7 +36,7 @@ desktop_player = load("native_desktop_player", "scripts/augment_native_desktop_p
 
 manifest = ROOT / "manifest.json"
 providers = corpus.manifest_providers()
-assert len(providers) == CURRENT_PROVIDER_COUNT, len(providers)
+assert len(providers) == visible_provider_count(), len(providers)
 selected = []
 for wanted in ("movieshunt", "purstream", "anime-sama"):
     row = next((p for p in providers if str(p["id"]).casefold() == wanted), None)
