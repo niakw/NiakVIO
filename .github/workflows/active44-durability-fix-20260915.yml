@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/active44-durability-fix-20260915.yml'
       - 'scripts/apply_active44_durability_v1.py'
+      - 'scripts/fix_active44_generated_sources_v1.py'
   workflow_dispatch:
 
 permissions:
@@ -37,6 +38,7 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "${{ github.sha }}"
           python scripts/apply_active44_durability_v1.py
+          python scripts/fix_active44_generated_sources_v1.py
 
       - name: Validate Active44 contracts
         shell: bash
