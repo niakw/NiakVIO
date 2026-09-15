@@ -4,9 +4,12 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
-from current_provider_scope import active_provider_count
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import active_provider_count
+
 BUILDER = ROOT / "scripts" / "build_hub46_native_manifest.py"
 
 spec = importlib.util.spec_from_file_location("build_hub46_native_manifest", BUILDER)

@@ -4,11 +4,10 @@
 NIAKVIO_FORCE_ON_REPAIR_DISPOSITION_V2
 
 Policy:
-- all 96 canonical providers stay present and enabled in the catalogue;
+- current catalogue visibility is derived from providers/ and provider-disabled/;
 - ``official_hub`` is discovery/address metadata, never activation authority;
 - proof controls diagnostic route/DATA state: ``on`` / ``repair`` / ``off``;
-- unresolved, terminal and quarantined providers remain enabled but fail closed
-  through an audited repair/off disposition;
+- route debt never overrides the physical provider-folder activation lifecycle;
 - existing route/DATA evidence is preserved for Learning/Repair;
 - this script never silently shrinks supported/canonical types.
 
@@ -144,7 +143,7 @@ def explicit_quarantine(patch: dict[str, Any], model: dict[str, Any]) -> bool:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Finalize Provider v3 repair diagnostics with matrix-targeted activation")
+    parser = argparse.ArgumentParser(description="Finalize Provider v3 repair diagnostics with provider-folder activation")
     parser.add_argument("--manifest", type=Path, default=MANIFEST)
     parser.add_argument("--overrides", type=Path, default=OVERRIDES)
     parser.add_argument("--knowledge", type=Path, default=KNOWLEDGE)
@@ -246,9 +245,9 @@ def main() -> int:
                 reason_codes.append("repair_incomplete")
             incomplete.append(provider)
 
-        # NIAKVIO_HUB46_ACTIVATION_AUTHORITY_V1
-        # Repair/off is route debt. Visibility is owned exclusively by the exact
-        # 46-provider hub matrix selected for this repair campaign.
+        # NIAKVIO_PROVIDER_FOLDER_ACTIVATION_AUTHORITY_V1
+        # Repair/off is route debt. Activation is owned by the physical current
+        # provider folders and never by a numeric campaign target.
         hub = declared_hub(patch)
         enabled = provider in active_ids
         manifest_row["enabled"] = enabled

@@ -4,10 +4,13 @@ from __future__ import annotations
 import ast
 import json
 from pathlib import Path
-from current_provider_scope import active_provider_count
+import sys
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import active_provider_count
+
 TV_READER = ROOT / ".github/workflows/native-mobile-android-reader.yml"
 MOBILE_ANDROID = TV_READER
 MOBILE_IOS = ROOT / ".github/workflows/native-mobile-ios-reader.yml"

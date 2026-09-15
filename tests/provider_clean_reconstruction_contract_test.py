@@ -11,14 +11,16 @@ import hashlib
 import json
 import sys
 from pathlib import Path
-from current_provider_scope import active_provider_count
 
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import active_provider_count
+from current_provider_scope import active_provider_ids
+
 SCRIPTS=ROOT/"scripts"
 sys.path.insert(0,str(SCRIPTS))
 
 import provider_base_store as base_store
-from current_provider_scope import active_provider_ids
 
 manifest=json.loads((ROOT/"manifest.json").read_text(encoding="utf-8"))
 provenance=json.loads((ROOT/"PROVENANCE.json").read_text(encoding="utf-8"))

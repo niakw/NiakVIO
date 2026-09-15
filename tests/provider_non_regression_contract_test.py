@@ -13,7 +13,7 @@ if source.count(old) != 1:
     raise AssertionError("provider non-regression finalizer compatibility anchor changed")
 source = source.replace(old, new, 1)
 
-# The active finalization branch is the 46-provider Labs branch. Keep the
+# The active finalization branch uses the current provider-folder lifecycle. Keep the
 # historical implementation source intact while projecting its workflow-branch
 # assertion and human-readable wording onto the current operational contract.
 old_branch_assert = 'assert "workbench/systemic-recovery-20260909" in nonreg'
@@ -21,10 +21,10 @@ new_branch_assert = 'assert "fix/labs-5.21.44-20260912" in nonreg'
 if source.count(old_branch_assert) != 1:
     raise AssertionError("provider non-regression active-branch compatibility anchor changed")
 source = source.replace(old_branch_assert, new_branch_assert, 1)
-source = source.replace("rolling 96-provider floor", "rolling 46-provider floor", 1)
+source = source.replace("rolling 96-provider floor", "rolling current-provider floor", 1)
 
 # Activation semantics now live directly in the durable implementation:
-# exact hub-lab-matrix-46 membership owns visibility, while routeDataState owns
+# physical provider-folder membership owns activation, while routeDataState owns
 # repair/off debt. Do not rewrite those assertions to historical hub-presence or
 # force-all policies here.
 exec(compile(source, str(impl_path), "exec"), globals(), globals())

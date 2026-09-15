@@ -5,9 +5,11 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
-from current_provider_scope import visible_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import visible_provider_count
+
 SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 

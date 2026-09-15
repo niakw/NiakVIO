@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Prevent automated releases from shrinking the canonical provider catalogue.
 
-NIAKVIO_HUB46_ACTIVATION_AUTHORITY_V1
+NIAKVIO_PROVIDER_FOLDER_ACTIVATION_AUTHORITY_V1
 
 Publication activation and runtime route confidence are separate concerns:
 
-* every canonical provider remains present; active rows follow the matrix while explicit manual OFF rows remain disabled;
+* current visible providers are the identities referenced from providers/ and provider-disabled/;
 * ``official_hub`` is discovery/address metadata only and never an ON/OFF switch;
 * Repair/health evidence controls route/DATA state (on/repair/off), not catalogue
   visibility;
@@ -461,7 +461,7 @@ def validate() -> list[str]:
     if registry_only:
         print(
             "FIELD_ACTIVATION_HUB46_REGISTRY_ONLY "
-            f"count={len(registry_only)} activation_authority=hub_lab_matrix_46"
+            f"count={len(registry_only)} activation_authority=provider_folders"
         )
 
     return errors
@@ -472,7 +472,7 @@ def main() -> int:
     if errors:
         raise SystemExit("provider activation preservation failed:\n- " + "\n- ".join(errors))
     active_count = sum(1 for row in rows(load(MAIN)).values() if row.get("enabled") is True)
-    print(f"provider activation preservation passed ({active_count} enabled; dynamic active hub-matrix authority)")
+    print(f"provider activation preservation passed ({active_count} enabled; provider-folder authority)")
     return 0
 
 

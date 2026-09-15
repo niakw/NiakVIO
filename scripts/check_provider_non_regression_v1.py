@@ -165,7 +165,7 @@ def current_activation_debt() -> dict[str, dict[str, Any]]:
         expected_activation_state = "enabled" if row.get("enabled") is True else "disabled"
         audited = (
             disposition.get("authority") == "provider-repair-disposition-v1"
-            and disposition.get("activationAuthority") == "hub-lab-matrix-46"
+            and disposition.get("activationAuthority") == "provider-folder-lifecycle"
             and disposition.get("activationState") == expected_activation_state
             and bool(disposition.get("forcedEnabled")) == (row.get("enabled") is True)
             and state in {"repair", "off"}
@@ -404,7 +404,7 @@ def candidate_gate(
         "proofInvalidationSource": str(DEFAULT_INVALIDATIONS.relative_to(ROOT)),
         "proofInvalidationPolicy": "only active, evidence-backed contradiction records may remove invalidated historical/rolling lanes from the candidate floor; all other floors remain unchanged",
         "candidateSource": str(DEFAULT_CANDIDATE.relative_to(ROOT)),
-        "disabledHistoricalDebtPolicy": "audited route debt is allowed for hub46 targets or disabled non-targets when provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden",
+        "disabledHistoricalDebtPolicy": "audited route debt is allowed for current provider-folder identities when provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden",
         "disabledDebtProviderCount": len(sorted(set(disabled_debt))),
         "disabledDebtProviders": sorted(set(disabled_debt)),
         "obligations": obligations,
