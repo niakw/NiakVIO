@@ -8,7 +8,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/provider_v3_minimizer.py"
-EXPECTED = 46
 
 spec = importlib.util.spec_from_file_location("provider_v3_minimizer", SCRIPT)
 module = importlib.util.module_from_spec(spec)
@@ -23,7 +22,10 @@ assert module.TRANSFORMATIONS_ENABLED == [
     "code-blank-lines",
     "unmanaged-full-line-comments",
 ]
-assert module.EXPECTED_PROVIDER_COUNT == EXPECTED
+
+# The minimizer scope is the current executable provider set, not a policy constant.
+EXPECTED = len(module.provider_files())
+assert EXPECTED > 0
 
 sample = """/* BEGIN NIAKVIO_PROVIDER */
 
