@@ -1,4 +1,4 @@
-name: TEMP Run Native Publication Fixed Point
+name: TEMP Publish Fixed Point And Repin Native
 
 on:
   push:
@@ -11,9 +11,9 @@ permissions:
   contents: write
 
 jobs:
-  refresh:
+  publish-and-repin:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -28,18 +28,15 @@ jobs:
           package-manager-cache: false
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Refresh deterministic provider publication fingerprint
+      - name: Rebuild exact provider publication fixed point
         shell: bash
         run: |
           set -euo pipefail
           python3 scripts/reapply_published_overrides.py
           python3 scripts/reapply_published_overrides.py --check
-          python3 tests/provider_base_store_test.py
-          python3 tests/native_hub46_transport_manifest_test.py
           git diff --check
-          echo '--- changed files ---'
-          git status --short
-      - name: Commit exact fixed point to repair branch
+      - name: Commit and push provider publication
+        id: publication
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -48,7 +45,37 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add -A
-          git diff --cached --quiet && exit 0
-          git commit -m 'fix(core): refresh provider publication fixed point'
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix(core): refresh provider publication fixed point'
+          fi
+          PUBLISH_SHA=$(git rev-parse HEAD)
+          echo "publish_sha=$PUBLISH_SHA" >> "$GITHUB_OUTPUT"
           AUTH=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
           git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:fix/native-pinned-provider-integrity-20260915
+      - name: Rebuild active and physical Native manifests against publication commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          PUBLISH_SHA='${{ steps.publication.outputs.publish_sha }}'
+          test -n "$PUBLISH_SHA"
+          python3 scripts/generate_hub46_manifest.py --source manifest.json --output manifest-hub46.json
+          python3 scripts/generate_hub46_manifest.py --source manifest.json --output manifest-hub46.json --check
+          python3 scripts/build_hub46_native_manifest.py --provider-sha "$PUBLISH_SHA" --source manifest-hub46.json --output native-hub46/manifest.json
+          python3 tests/native_hub46_manifest_test.py
+          python3 tests/native_hub46_transport_manifest_test.py
+          git diff --check
+      - name: Commit and push immutable Native transport
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git add manifest-hub46.json native-hub46/manifest.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix(native): pin Hub-46 to refreshed provider publication'
+          fi
+          AUTH=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:fix/native-pinned-provider-integrity-20260915
+          python3 scripts/reapply_published_overrides.py --check
+          python3 tests/native_hub46_manifest_test.py
+          python3 tests/native_hub46_transport_manifest_test.py
