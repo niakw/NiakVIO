@@ -7,7 +7,7 @@ from provider_patch_blocks import decode_managed_data, owned_span, validate_mana
 from provider_base_store import build_provider_data_model
 from materialize_provider_v3_all import provider_model, normalize_anime_transport_compatibility
 from provider_v3_filename_policy import matches_provider_v3_filename
-from current_provider_scope import active_provider_ids
+from current_provider_scope import active_provider_ids, visible_provider_count
 
 ROOT=Path(__file__).resolve().parents[1]
 def load(p): return json.loads(Path(p).read_text(encoding="utf-8"))
@@ -83,9 +83,12 @@ for row in rows:
     assert data==expected_data, pid
 
 assert set(rb)==seen
-assert int(material.get("providerCount") or 0)==len(active), (material.get("providerCount"),len(active))
+visible=visible_provider_count()
+assert int(material.get("providerCount") or 0)==visible, (material.get("providerCount"),visible)
+if "expectedProviderCount" in material:
+    assert int(material.get("expectedProviderCount") or 0)==visible, (material.get("expectedProviderCount"),visible)
 print(
-    f"PROVIDER_V3_STATIC_AUDIT_OK providers={len(active)} reconstruction=false "
+    f"PROVIDER_V3_STATIC_AUDIT_OK active={len(active)} visible={visible} reconstruction=false "
     f"filename_stage=per-row workspace={stage_counts['workspace']} publication={stage_counts['publication']} "
     "structured_data=current"
 )
