@@ -52,17 +52,20 @@
   ],
   "changedPaths": [
     ".github/workflows/dispatch-active44-v2-20260915.yml",
-    ".github/workflows/finalize-publication-fixed-point-v3-20260915.yml",
+    ".github/workflows/finalize-dynamic-minimizer-scope-20260915.yml",
+    ".github/workflows/finalize-dynamic-minimizer-scope-v2-20260915.yml",
     ".github/workflows/fix-active44-preservation-test-20260915.yml",
     ".github/workflows/prepare-active44-overrides-retry-20260915.yml",
     ".github/workflows/provider-disabled-lifecycle.yml",
     ".github/workflows/provider-non-regression.yml",
     ".github/workflows/sync.yml",
     "MEMORY.md",
+    "PROVENANCE.json",
     "VALIDATION.json",
     "automation/PROVIDER-HISTORY-MATRIX.md",
     "automation/provider-disabled-lifecycle.json",
     "automation/provider-history-matrix.json",
+    "automation/provider-non-regression-gate.json",
     "automation/provider-repair-disposition.json",
     "automation/provider-v3-architecture.json",
     "automation/provider-v3-static-knowledge.json",
@@ -131,20 +134,88 @@
     "provider-disabled/provider-bases/fullanime--base--ede6ce28ae5b4a72.js",
     "provider-overrides.json",
     "provider-v3-materialization.json",
+    "provider-v3-quick-yield.json",
     "provider_catalog.json",
+    "providers/.generation-retention.json",
+    "providers/4khdhub--nuvio--1e76c44186b27a67.js",
+    "providers/allanime--nuvio--d4ddf6c6eb2903c3.js",
+    "providers/allanime-7e4260eb60a470e3.js",
+    "providers/allwish--nuvio--a08e50499d3bb4f9.js",
+    "providers/anikototv--nuvio--2afb37f63fd9f57e.js",
     "providers/anikototv-67b253f0085de163.js",
+    "providers/anikototv-d0d55006c24e043c.js",
+    "providers/anime-sama--nuvio--6b08cb3e8223b031.js",
+    "providers/anime-ultime--nuvio--19a5febebb979b94.js",
     "providers/anime-ultime-55dc8187625f35b3.js",
+    "providers/anime-ultime-ea95e7eae06653e4.js",
+    "providers/animekai--nuvio--b9392d5140f08ba5.js",
+    "providers/animekai-fa479034c88e6d8b.js",
+    "providers/animesalt--nuvio--7547b07081dc0a69.js",
     "providers/animesalt-3664cef3d41404ca.js",
+    "providers/animesama-co--nuvio--d6fc520b26b7bd08.js",
     "providers/animesama-co-5132d91f638a39cc.js",
+    "providers/animesultra--nuvio--92b1c3c84c35be5c.js",
     "providers/animesultra-2abfdb26c0444c8b.js",
+    "providers/animetsu--nuvio--4742c23f4c14deca.js",
+    "providers/animevost-fr--nuvio--3540604abd2e3e4e.js",
     "providers/animevost-fr-686701843bdce70b.js",
+    "providers/animevostfr--nuvio--b1416116fc3de797.js",
     "providers/animevostfr-8a996ee91f6c80ce.js",
+    "providers/castle--nuvio--2f91215a8333c1b1.js",
+    "providers/coflix--nuvio--dfe9f4bf4a51c134.js",
+    "providers/flemmix--nuvio--310c72a1dfab963b.js",
+    "providers/french-manga--nuvio--06148e6428fc59cd.js",
+    "providers/french-manga--nuvio--af374a3af2ff19c0.js",
+    "providers/hindmoviez--nuvio--5f739b6a144b9447.js",
+    "providers/kehflix--nuvio--109f4b52d5077edf.js",
+    "providers/kehflix--nuvio--7ff3f45762db32bd.js",
+    "providers/kurage--nuvio--18ef36792738a094.js",
+    "providers/mallumv--nuvio--5e6d8b594a3413ba.js",
+    "providers/mallumv-cf24e99b8fd2040c.js",
+    "providers/moviebox--nuvio--c6e9dd7fe79b1890.js",
+    "providers/moviebox-c25ddc9b825c6633.js",
+    "providers/movieshunt--nuvio--adca36368e69366e.js",
     "providers/movieshunt-5cf414a734455b12.js",
+    "providers/moviesmod--nuvio--8983d1350debdd5d.js",
+    "providers/moviesmod-13918fa75f7010a7.js",
+    "providers/mugiwarastream--nuvio--b24bdbf0e42389e2.js",
+    "providers/mugiwarastream-ff4fed6a5e908a5d.js",
+    "providers/neko-sama--nuvio--d0ac9ce4077cd938.js",
+    "providers/neko-sama-a155a5dc0c4280c7.js",
+    "providers/papadustream--nuvio--6636b2e3b78a120a.js",
+    "providers/persianstremio--nuvio--5b766f00a6972297.js",
+    "providers/persianstremio-11502a15c2ec1eab.js",
+    "providers/playimdb--nuvio--534616082fb82f56.js",
+    "providers/purstream--nuvio--7c5a16a3348edc3b.js",
+    "providers/purstream-fc3159b789a58af2.js",
+    "providers/sekai--nuvio--13cb00fc9c72be68.js",
+    "providers/sekai-928b59369200e0e0.js",
+    "providers/sekai-9a3e29736caf2f25.js",
     "providers/sekai-d4f5025f2bf6daa4.js",
+    "providers/showbox--nuvio--f1f5cbbcce8f3ccb.js",
+    "providers/showbox-480ab439714edcea.js",
+    "providers/streamzo--nuvio--4071b44e760c0407.js",
+    "providers/uhdmovies--nuvio--9963478f5330866f.js",
+    "providers/videasy--nuvio--38c964fa55c84f49.js",
+    "providers/videasy-ee86d5c2fff6b5e5.js",
+    "providers/vidfast--nuvio--ce00b06598052330.js",
+    "providers/vidfast-6c659d1a01f061c9.js",
+    "providers/vidlove--nuvio--ebf8d087ab03f7c0.js",
+    "providers/vidlove-0050ad5096ec6dad.js",
+    "providers/vidrock--nuvio--cb3b61cf712cd257.js",
+    "providers/vidrock-d0e678565654b9c0.js",
+    "providers/voiranime--nuvio--7d136514f93c8e04.js",
     "providers/voiranime-8fc491e6554518fc.js",
+    "providers/voiranime-homes--nuvio--5fd8761bc64e636c.js",
+    "providers/voiranime-homes-98b41e5459cdd3ee.js",
+    "providers/voiranime-rip--nuvio--16513b5123ca5751.js",
     "providers/voiranime-rip-dc641d9d3701daa9.js",
+    "providers/vostfree--nuvio--a678297bc65f2da7.js",
     "providers/vostfree-2b18ac26810cb93d.js",
+    "providers/wookafr--nuvio--a89096605a523c64.js",
+    "providers/yflix--nuvio--57381f04f521b33d.js",
     "scripts/apply_hub46_native_lab_scope.py",
+    "scripts/apply_provider_overrides.py",
     "scripts/archive_nonhub_providerbases.py",
     "scripts/audit_provider_v3_static.py",
     "scripts/build_hub46_blocker_inventory.py",
@@ -176,6 +247,7 @@
     "scripts/provider_route_reconstructor.py",
     "scripts/provider_v3_minimizer.py",
     "scripts/prune_to_hub46_catalog.py",
+    "scripts/reapply_published_overrides.py",
     "scripts/reconcile_provider_catalog_media_types.py",
     "scripts/recover_provider_routes_from_upstreams.py",
     "scripts/route_proof_activation_preservation_v1.py",
@@ -209,6 +281,7 @@
     "tests/overrides_test.py",
     "tests/provider_521_capability_regression_test.py",
     "tests/provider_anime_semantic_transport_contract_test.py",
+    "tests/provider_brick_portfolio_audit_test.py",
     "tests/provider_cardinality_source_of_truth_test.py",
     "tests/provider_clean_reconstruction_contract_test.py",
     "tests/provider_disabled_lifecycle_contract_test.py",
@@ -882,15 +955,13 @@
       "requiredVerifiedLanes": [
         "movie"
       ],
-      "candidateVerifiedLanes": [
-        "tv"
-      ],
+      "candidateVerifiedLanes": [],
       "candidateLaneStatuses": {
         "movie": [
-          "timeout"
+          "no_streams"
         ],
         "tv": [
-          "playable_verified"
+          "no_streams"
         ]
       },
       "missingVerifiedLanes": [
@@ -1273,7 +1344,7 @@
       "candidateVerifiedLanes": [],
       "candidateLaneStatuses": {
         "movie": [
-          "wrong_content"
+          "no_streams"
         ],
         "tv": [
           "no_streams"
@@ -1675,16 +1746,13 @@
       "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
-      "candidateVerifiedLanes": [
-        "movie",
-        "tv"
-      ],
+      "candidateVerifiedLanes": [],
       "candidateLaneStatuses": {
         "movie": [
-          "playable_verified"
+          "no_streams"
         ],
         "tv": [
-          "playable_verified"
+          "no_streams"
         ]
       },
       "missingVerifiedLanes": [],
