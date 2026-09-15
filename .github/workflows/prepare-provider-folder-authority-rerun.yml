@@ -15,27 +15,34 @@ jobs:
           ref: fix/active44-durability-20260915
           fetch-depth: 0
           persist-credentials: true
-      - name: Align remaining strategy authority contract
+      - name: Align remaining dynamic provider contracts
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('tests/provider_v3_strategy_plan_contract_test.py')
-          t=p.read_text(encoding='utf-8')
-          old='disposition.get("activationAuthority") == "hub-lab-matrix-46"'
-          new='disposition.get("activationAuthority") == "provider-folder-lifecycle"'
-          if old not in t:
-              raise SystemExit('strategy authority anchor missing')
-          t=t.replace(old,new,1)
+
+          strategy=Path('tests/provider_v3_strategy_plan_contract_test.py')
+          t=strategy.read_text(encoding='utf-8')
+          t=t.replace('disposition.get("activationAuthority") == "hub-lab-matrix-46"',
+                      'disposition.get("activationAuthority") == "provider-folder-lifecycle"')
           t=t.replace('matching hub46 activation','matching provider-folder activation')
           t=t.replace('no audited hub46-aligned repair/off disposition','no audited provider-folder-aligned repair/off disposition')
-          p.write_text(t,encoding='utf-8')
+          strategy.write_text(t,encoding='utf-8')
+
+          docs=Path('tests/provider_v3_documentation_contract_test.py')
+          t=docs.read_text(encoding='utf-8')
+          t=t.replace('== CURRENT_PROVIDER_COUNT','== EXPECTED')
+          docs.write_text(t,encoding='utf-8')
           PY
-          python -m py_compile tests/provider_v3_strategy_plan_contract_test.py
+          python -m py_compile tests/provider_v3_strategy_plan_contract_test.py tests/provider_v3_documentation_contract_test.py
           git diff --check
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add tests/provider_v3_strategy_plan_contract_test.py
-          git commit -m 'test: align strategy plan with provider-folder authority'
+          git add tests/provider_v3_strategy_plan_contract_test.py tests/provider_v3_documentation_contract_test.py
+          if git diff --cached --quiet; then
+            echo PREP_ALREADY_ALIGNED
+            exit 0
+          fi
+          git commit -m 'test: finish dynamic provider authority contracts'
           git push origin HEAD:fix/active44-durability-20260915
