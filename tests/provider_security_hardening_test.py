@@ -165,16 +165,29 @@ function coreHlsLog(v){console.warn("trusted-core-hls",v)}
  /* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */
 '''
 provider_prefix = 'function p(u){console.warn(u)};globalThis.getStreams=async function(){return []};\n'
-secured_bundle, bundle_report = harden_bundle(provider_prefix + core_tail)
-boundary = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
-assert "__nuvioProviderSilentLog" in secured_bundle.split(boundary, 1)[0]
+provider_bundle = (
+    "/* BEGIN NIAKVIO_PROVIDER */\n"
+    + provider_prefix
+    + core_tail
+    + "/* END NIAKVIO_PROVIDER */\n"
+)
+secured_bundle, bundle_report = harden_bundle(provider_bundle)
+assert provider_prefix in secured_bundle
 assert 'function coreHlsLog(v){console.warn("trusted-core-hls",v)}' in secured_bundle
 assert secured_bundle.count("/* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
 assert secured_bundle.count("/* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
-assert secured_bundle.count("/* START NIAKVIO_FIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */") == 1
-assert secured_bundle.count("/* END NIAKVIO_FIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */") == 1
-assert secured_bundle.index("/* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") < secured_bundle.index("/* START NIAKVIO_FIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */")
-assert bundle_report["consoleSinkChanges"] == 1, bundle_report
+assert secured_bundle.count("/* STARTFIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */") == 1
+assert secured_bundle.count("/* CLOSEFIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */") == 1
+assert secured_bundle.count("/* NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1 */") == 1
+assert "globalThis.__nuvioGlobalProviderSecurityBoundaryV1=true;" in secured_bundle
+assert secured_bundle.index("/* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") < secured_bundle.index("/* STARTFIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */")
+assert secured_bundle.index("/* CLOSEFIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */") < secured_bundle.index("/* END NIAKVIO_PROVIDER */")
+assert bundle_report["providerMutation"] is False, bundle_report
+assert bundle_report["postBuildMutation"] is False, bundle_report
+assert bundle_report["mode"] == "preventive-core-lego", bundle_report
+secured_again, secured_again_report = harden_bundle(secured_bundle)
+assert secured_again == secured_bundle
+assert secured_again_report["changed"] is False, secured_again_report
 
 print("provider security hardening tests passed")
 
