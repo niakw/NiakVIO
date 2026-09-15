@@ -16,7 +16,6 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SOURCE = ROOT / "manifest.json"
 DEFAULT_MATRIX = ROOT / "automation/evidence/hub-lab-matrix-46.json"
 DEFAULT_OUTPUT = ROOT / "manifest-hub46.json"
-EXPECTED_COUNT = 46
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -45,10 +44,8 @@ def matrix_ids(matrix: dict[str, Any]) -> list[str]:
         seen.add(key)
         ids.append(provider_id)
     declared = int(matrix.get("hubCount") or 0)
-    if declared != EXPECTED_COUNT or len(ids) != EXPECTED_COUNT:
-        raise SystemExit(
-            f"Hub-46 authority mismatch: hubCount={declared} rows={len(ids)} expected={EXPECTED_COUNT}"
-        )
+    if declared <= 0 or len(ids) != declared:
+        raise SystemExit(f"active hub authority mismatch: hubCount={declared} rows={len(ids)}")
     return ids
 
 
@@ -79,14 +76,15 @@ def build(source: dict[str, Any], matrix: dict[str, Any]) -> dict[str, Any]:
             selected.append(row)
     if missing:
         raise SystemExit("Hub-46 provider(s) absent from source manifest: " + ", ".join(missing))
-    if len(selected) != EXPECTED_COUNT:
-        raise SystemExit(f"derived manifest count={len(selected)} expected={EXPECTED_COUNT}")
+    expected_count = len(wanted)
+    if len(selected) != expected_count:
+        raise SystemExit(f"derived manifest count={len(selected)} expected={expected_count}")
 
     output = dict(source)
     output["scrapers"] = selected
     output["labScope"] = {
-        "kind": "hub46-repair-campaign",
-        "providerCount": EXPECTED_COUNT,
+        "kind": "active-hub-repair-campaign",
+        "providerCount": len(wanted),
         "authority": "automation/evidence/hub-lab-matrix-46.json",
     }
     return output
@@ -101,10 +99,10 @@ def generate(source_path: Path, matrix_path: Path, output_path: Path, *, check: 
         current = output_path.read_text(encoding="utf-8")
         if current != rendered:
             raise SystemExit("derived Hub-46 manifest is stale; rerun scripts/generate_hub46_manifest.py")
-        print(f"FIELD_HUB46_MANIFEST_CHECK providers={EXPECTED_COUNT} status=clean path={output_path}")
+        print(f"FIELD_HUB46_MANIFEST_CHECK providers={len(output.get('scrapers') or [])} status=clean path={output_path}")
         return
     output_path.write_text(rendered, encoding="utf-8")
-    print(f"FIELD_HUB46_MANIFEST_GENERATED providers={EXPECTED_COUNT} path={output_path}")
+    print(f"FIELD_HUB46_MANIFEST_GENERATED providers={len(output.get('scrapers') or [])} path={output_path}")
 
 
 def main() -> int:

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "hubCount": 46,
+  "hubCount": 44,
   "runs": {
     "tv": "34587026051 (NuvioTV audited ref 23d1fe478e380860dae3eb41c8770533361a0cc5)",
     "desktop-macos": "34585968905",
@@ -417,57 +417,6 @@
       "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
       "cause": "preuve live courante 100% des types sémantiques déclarés",
       "repair": "revalider aux Labs après publication"
-    },
-    {
-      "registryId": "desiflix",
-      "manifestId": "DESIFLIX",
-      "hub": "https://desiflix.me/",
-      "officialHub": "https://desiflix.me",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 provider_hard_timeout_ms=25000",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 provider_hard_timeout_ms=25000",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
-      "cause": "preuve live courante 100% des types sémantiques déclarés",
-      "repair": "revalider aux Labs après publication",
-      "currentLiveAudit": {
-        "date": "2026-09-12",
-        "result": "declared-types-qualified",
-        "validatedTypes": [
-          "movie",
-          "tv"
-        ],
-        "missingTypes": [],
-        "evidenceRuns": [
-          34698141582,
-          34696902428,
-          34698638738
-        ]
-      }
     },
     {
       "registryId": "kehflix",
@@ -1742,31 +1691,6 @@
       "repair": "revalider aux Labs après publication"
     },
     {
-      "registryId": "fullanime",
-      "manifestId": "FULLANIME",
-      "hub": null,
-      "officialHub": null,
-      "capabilities": [
-        "anime"
-      ],
-      "currentLiveAudit": {
-        "date": "2026-09-12",
-        "result": "declared-types-qualified",
-        "validatedTypes": [
-          "anime"
-        ],
-        "missingTypes": [],
-        "evidenceRuns": [
-          34698141582,
-          34696902428,
-          34698638738
-        ]
-      },
-      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
-      "cause": "preuve live courante 100% des types sémantiques déclarés",
-      "repair": "revalider aux Labs après publication"
-    },
-    {
       "registryId": "mallumv",
       "manifestId": "MALLUMV",
       "hub": null,
@@ -1903,5 +1827,20 @@
     34698141582,
     34696902428,
     34698638738
+  ],
+  "activeProviderCount": 44,
+  "catalogueProviderCount": 46,
+  "scopePolicy": "dynamic-active-hub-authority",
+  "excludedProviders": [
+    {
+      "provider": "desiflix",
+      "state": "off",
+      "reason": "manual_off_compromised_or_inappropriate_redirect"
+    },
+    {
+      "provider": "fullanime",
+      "state": "off",
+      "reason": "manual_off_no_current_hub_authority"
+    }
   ]
 }

@@ -51,7 +51,7 @@ def scope_ids(path: Path) -> set[str]:
         if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))
     }
     expected = int(data.get("hubCount") or data.get("providerCount") or len(ids))
-    if expected != 46 or len(ids) != 46:
+    if expected <= 0 or len(ids) != expected:
         raise SystemExit(f"Hub-46 scope mismatch: ids={len(ids)} expected={expected}")
     return ids
 
@@ -125,7 +125,7 @@ def build(
 
     missing = sorted(scoped - seen)
     extra = sorted(seen - scoped)
-    if missing or extra or len(selected) != 46:
+    if missing or extra or len(selected) != len(scoped):
         raise SystemExit(
             f"physical Hub-46 mismatch selected={len(selected)} missing={','.join(missing)} extra={','.join(extra)}"
         )
@@ -159,7 +159,7 @@ def main() -> int:
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         "FIELD_NATIVE_HUB46_TRANSPORT_BUILT "
-        f"providers=46 provider_sha={args.provider_sha} output={output.relative_to(ROOT)} "
+        f"providers={len(payload.get('scrapers') or [])} provider_sha={args.provider_sha} output={output.relative_to(ROOT)} "
         "terminal_name=manifest.json absolute_provider_urls=true"
     )
     return 0

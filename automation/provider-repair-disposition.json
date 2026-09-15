@@ -8,8 +8,8 @@
     "forceAllProvidersEnabled": false,
     "activationFollowsRepairState": false,
     "activationFollowsDeclaredHub": false,
-    "activationAuthority": "automation/evidence/hub-lab-matrix-46.json:rows[].manifestId",
-    "targetHubProviderCount": 46,
+    "activationAuthority": "active rows in automation/evidence/hub-lab-matrix-46.json plus explicit manual OFF authority",
+    "targetHubProviderCount": 44,
     "nonTargetProviderState": "disabled",
     "registryOnlyTargetMayRemainEnabled": true,
     "terminalOrQuarantinedState": "off",
@@ -19,14 +19,17 @@
     "exactLiveLocksRequireExactBundlePath": true
   },
   "stateCounts": {
-    "off": 1,
+    "off": 3,
     "on": 8,
-    "repair": 37
+    "repair": 35
   },
-  "enabledProviderCount": 46,
-  "disabledProviderCount": 0,
-  "disabledProviders": [],
-  "incompleteProviderCount": 38,
+  "enabledProviderCount": 44,
+  "disabledProviderCount": 2,
+  "disabledProviders": [
+    "desiflix",
+    "fullanime"
+  ],
+  "incompleteProviderCount": 36,
   "incompleteProviders": [
     "4khdhub",
     "allanime",
@@ -40,9 +43,7 @@
     "animevost-fr",
     "animevostfr",
     "coflix",
-    "desiflix",
     "flemmix",
-    "fullanime",
     "hindmoviez",
     "kehflix",
     "kurage",
@@ -89,14 +90,14 @@
         "tv"
       ],
       "completeCapabilityProof": false,
-      "recoveryStatus": "no-proven-route",
+      "recoveryStatus": "manual-positive-integration-pending",
       "provenRouteCount": 0,
       "terminalState": null,
       "quarantined": false,
       "reasonCodes": [
         "declared_lane_unproven",
         "quick_provider-network-zero-result",
-        "recovery_no-proven-route"
+        "manual_browser_positive_integration_pending"
       ],
       "laneStatuses": {
         "movie": [
@@ -106,7 +107,8 @@
           "no_streams"
         ]
       },
-      "evidenceDestructive": false
+      "evidenceDestructive": false,
+      "manualEvidenceRef": "automation/manual-provider-evidence-20260915.json"
     },
     {
       "provider": "allanime",
@@ -127,21 +129,23 @@
         "anime"
       ],
       "completeCapabilityProof": false,
-      "recoveryStatus": "proven",
+      "recoveryStatus": "manual-positive-integration-pending",
       "provenRouteCount": 4,
       "terminalState": null,
       "quarantined": false,
       "reasonCodes": [
         "declared_lane_unproven",
         "quick_provider-network-zero-result",
-        "recovery_proven"
+        "recovery_proven",
+        "manual_browser_positive_integration_pending"
       ],
       "laneStatuses": {
         "anime": [
           "no_streams"
         ]
       },
-      "evidenceDestructive": false
+      "evidenceDestructive": false,
+      "manualEvidenceRef": "automation/manual-provider-evidence-20260915.json"
     },
     {
       "provider": "allwish",
@@ -164,14 +168,14 @@
         "tv"
       ],
       "completeCapabilityProof": false,
-      "recoveryStatus": "no-proven-route",
+      "recoveryStatus": "manual-positive-integration-pending",
       "provenRouteCount": 0,
       "terminalState": null,
       "quarantined": false,
       "reasonCodes": [
         "declared_lane_unproven",
         "quick_provider-returned-streams",
-        "recovery_no-proven-route"
+        "manual_browser_positive_integration_pending"
       ],
       "laneStatuses": {
         "movie": [
@@ -181,7 +185,8 @@
           "fresh_identity_safe_positive_required"
         ]
       },
-      "evidenceDestructive": false
+      "evidenceDestructive": false,
+      "manualEvidenceRef": "automation/manual-provider-evidence-20260915.json"
     },
     {
       "provider": "anikototv",
@@ -651,11 +656,11 @@
       "provider": "desiflix",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "enabled",
-      "activationAuthority": "hub-lab-matrix-46",
+      "activationState": "disabled",
+      "activationAuthority": "manual-user-off-20260915",
       "declaredHub": "https://desiflix.me",
-      "forcedEnabled": true,
-      "routeDataState": "repair",
+      "forcedEnabled": false,
+      "routeDataState": "off",
       "requiredLanes": [
         "movie",
         "tv"
@@ -671,15 +676,16 @@
         "movie"
       ],
       "completeCapabilityProof": false,
-      "recoveryStatus": "proven",
+      "recoveryStatus": "manual-off",
       "provenRouteCount": 3,
-      "terminalState": null,
-      "quarantined": false,
+      "terminalState": "manual-off",
+      "quarantined": true,
       "reasonCodes": [
         "declared_lane_unproven",
         "quick_provider-returned-streams",
         "quick_provider-returned-wrong-content",
-        "recovery_proven"
+        "recovery_proven",
+        "manual_off_compromised_or_inappropriate_redirect"
       ],
       "laneStatuses": {
         "movie": [
@@ -689,7 +695,8 @@
           "playable_verified"
         ]
       },
-      "evidenceDestructive": false
+      "evidenceDestructive": false,
+      "manualEvidenceRef": "automation/manual-provider-evidence-20260915.json"
     },
     {
       "provider": "flemmix",
@@ -773,11 +780,11 @@
       "provider": "fullanime",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "enabled",
-      "activationAuthority": "hub-lab-matrix-46",
+      "activationState": "disabled",
+      "activationAuthority": "manual-user-off-20260915",
       "declaredHub": null,
-      "forcedEnabled": true,
-      "routeDataState": "repair",
+      "forcedEnabled": false,
+      "routeDataState": "off",
       "requiredLanes": [
         "anime"
       ],
@@ -788,21 +795,23 @@
         "anime"
       ],
       "completeCapabilityProof": false,
-      "recoveryStatus": "no-proven-route",
+      "recoveryStatus": "manual-off",
       "provenRouteCount": 0,
-      "terminalState": null,
+      "terminalState": "manual-off",
       "quarantined": false,
       "reasonCodes": [
         "declared_lane_unproven",
         "quick_provider-network-http-error",
-        "recovery_no-proven-route"
+        "recovery_no-proven-route",
+        "manual_off_no_current_hub_authority"
       ],
       "laneStatuses": {
         "anime": [
           "no_streams"
         ]
       },
-      "evidenceDestructive": false
+      "evidenceDestructive": false,
+      "manualEvidenceRef": "automation/manual-provider-evidence-20260915.json"
     },
     {
       "provider": "hindmoviez",
@@ -1056,14 +1065,14 @@
         "tv"
       ],
       "completeCapabilityProof": false,
-      "recoveryStatus": "no-proven-route",
+      "recoveryStatus": "manual-positive-integration-pending",
       "provenRouteCount": 0,
       "terminalState": null,
       "quarantined": false,
       "reasonCodes": [
         "declared_lane_unproven",
         "quick_provider-network-exception",
-        "recovery_no-proven-route"
+        "manual_browser_positive_integration_pending"
       ],
       "laneStatuses": {
         "movie": [
@@ -1073,7 +1082,8 @@
           "no_streams"
         ]
       },
-      "evidenceDestructive": false
+      "evidenceDestructive": false,
+      "manualEvidenceRef": "automation/manual-provider-evidence-20260915.json"
     },
     {
       "provider": "mugiwarastream",

@@ -162,7 +162,7 @@ def main() -> int:
     quick = load(args.quick_yield)
     hub_matrix = load(args.hub_matrix)
     target_hubs = {cid(row.get("manifestId")) for row in hub_matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId"))}
-    if int(hub_matrix.get("hubCount") or 0) != 46 or len(target_hubs) != 46:
+    if int(hub_matrix.get("hubCount") or 0) <= 0 or len(target_hubs) != int(hub_matrix.get("hubCount") or 0):
         raise SystemExit(f"expected exact 46-hub activation matrix, got count={hub_matrix.get('hubCount')} ids={len(target_hubs)}")
 
     rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]

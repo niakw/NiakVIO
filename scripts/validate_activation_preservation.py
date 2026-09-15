@@ -5,7 +5,7 @@ NIAKVIO_HUB46_ACTIVATION_AUTHORITY_V1
 
 Publication activation and runtime route confidence are separate concerns:
 
-* every canonical provider remains present and ``enabled=true`` in the catalogue;
+* every canonical provider remains present; active rows follow the matrix while explicit manual OFF rows remain disabled;
 * ``official_hub`` is discovery/address metadata only and never an ON/OFF switch;
 * Repair/health evidence controls route/DATA state (on/repair/off), not catalogue
   visibility;
@@ -412,22 +412,23 @@ def validate() -> list[str]:
     }
 
     errors: list[str] = []
-    if int(matrix.get("hubCount") or 0) != 46 or len(target) != 46:
-        errors.append(f"hub activation authority must contain exactly 46 providers, got {len(target)}")
-    if len(main_rows) != 96:
-        errors.append(f"canonical catalogue must contain 96 providers, got {len(main_rows)}")
+    expected = int(matrix.get("hubCount") or 0)
+    if expected <= 0 or len(target) != expected:
+        errors.append(f"hub activation authority mismatch: declared={expected} rows={len(target)}")
+    if len(main_rows) != 46:
+        errors.append(f"canonical catalogue must contain 46 providers, got {len(main_rows)}")
 
     missing = sorted(target - set(main_rows))
     extra = sorted(active - target)
     disabled_target = sorted(target - active)
     if missing:
-        errors.append("46-hub target missing from canonical catalogue: " + ",".join(missing))
+        errors.append("active-hub target missing from canonical catalogue: " + ",".join(missing))
     if disabled_target:
-        errors.append("46-hub target unexpectedly disabled: " + ",".join(disabled_target))
+        errors.append("active-hub target unexpectedly disabled: " + ",".join(disabled_target))
     if extra:
         errors.append("non-target provider unexpectedly enabled: " + ",".join(extra))
-    if len(active) != 46:
-        errors.append(f"enabled provider count must be exactly 46, got {len(active)}")
+    if len(active) != expected:
+        errors.append(f"enabled provider count must equal active authority {expected}, got {len(active)}")
 
     for provider_id, patch in sorted(patches_by_id.items()):
         mo = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
@@ -462,7 +463,7 @@ def main() -> int:
     if errors:
         raise SystemExit("provider activation preservation failed:\n- " + "\n- ".join(errors))
     active_count = sum(1 for row in rows(load(MAIN)).values() if row.get("enabled") is True)
-    print(f"provider activation preservation passed ({active_count} enabled; exact hub-matrix-46 authority)")
+    print(f"provider activation preservation passed ({active_count} enabled; dynamic active hub-matrix authority)")
     return 0
 
 

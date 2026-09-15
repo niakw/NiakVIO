@@ -575,8 +575,8 @@
       "name": "4KHDHub",
       "manifest_status": "Actif",
       "category": "International",
-      "hub": "https://hdhub4u.ec/",
-      "direct": "https://hdhub4u.bi/",
+      "hub": "https://hdhub4u.bi/",
+      "direct": "https://new5.hdhub4u.cl/",
       "source": "curated_user_registry",
       "aliases": [
         "4khdhub",
@@ -586,10 +586,12 @@
       "last_verified": "2026-08-03",
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "direct_candidates": [
+        "https://new5.hdhub4u.cl/",
         "https://hdhub4u.bi/",
         "https://new3.hdhub4u.cl/"
       ],
       "allowed_terminal_hosts": [
+        "new5.hdhub4u.cl",
         "hdhub4u.bi",
         "new3.hdhub4u.cl"
       ],
@@ -614,7 +616,9 @@
       "terminal_aliases": [
         "4khdhub",
         "hdhub4u"
-      ]
+      ],
+      "activation_eligible": true,
+      "manual_authority_date": "2026-09-15"
     },
     "playimdb": {
       "id": "playimdb",
@@ -652,9 +656,9 @@
     "desiflix": {
       "id": "desiflix",
       "name": "DesiFlix",
-      "manifest_status": "Actif",
+      "manifest_status": "Inactif",
       "category": "International",
-      "hub": "https://desiflix.me/",
+      "hub": null,
       "direct": "https://desiflix.onl/",
       "source": "curated_user_registry",
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
@@ -684,7 +688,10 @@
           "purpose": "Fallback discovery when curated sources fail"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "activation_eligible": false,
+      "manual_off_reason": "manual_off_compromised_or_inappropriate_redirect",
+      "manual_off_date": "2026-09-15"
     },
     "allanime": {
       "id": "allanime",

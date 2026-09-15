@@ -26,7 +26,7 @@ def active_ids() -> set[str]:
     matrix = json.loads(MATRIX.read_text(encoding="utf-8"))
     rows = matrix.get("rows") if isinstance(matrix.get("rows"), list) else []
     ids = {cid(row.get("registryId")) for row in rows if isinstance(row, dict) and cid(row.get("registryId"))}
-    if int(matrix.get("hubCount") or 0) != 46 or len(ids) != 46:
+    if int(matrix.get("hubCount") or 0) <= 0 or len(ids) != int(matrix.get("hubCount") or 0):
         raise SystemExit(f"invalid Hub46 authority: count={matrix.get('hubCount')} ids={len(ids)}")
     return ids
 

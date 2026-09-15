@@ -154,7 +154,7 @@ def main() -> int:
     static_rows = knowledge.get("providers") if isinstance(knowledge.get("providers"), dict) else {}
 
     source_rows = matrix.get("rows") if isinstance(matrix.get("rows"), list) else []
-    if int(matrix.get("hubCount") or 0) != 46 or len(source_rows) != 46:
+    if int(matrix.get("hubCount") or 0) <= 0 or len(source_rows) != int(matrix.get("hubCount") or 0):
         raise AssertionError(f"hub matrix must be exhaustive 46/46, got hubCount={matrix.get('hubCount')} rows={len(source_rows)}")
 
     out_rows: list[dict[str, Any]] = []

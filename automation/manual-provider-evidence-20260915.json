@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-09-15",
+  "authority": "user-manual-browser-evidence",
+  "policy": {
+    "doNotRequestDuplicateManualTests": true,
+    "manualBrowserPositiveIsNotNativePlayerProof": true,
+    "historicalAutomatedZeroMayBeSupersededByNewerManualEvidence": true
+  },
+  "providers": {
+    "desiflix": {
+      "classification": "OFF",
+      "activeScope": false,
+      "reason": "current redirect authority is compromised/inappropriate; user explicitly disabled provider"
+    },
+    "fullanime": {
+      "classification": "OFF",
+      "activeScope": false,
+      "reason": "no current hub/address authority found; user explicitly disabled provider"
+    },
+    "moviesmod": {
+      "classification": "MANUAL_TERMINAL_POSITIVE_INTEGRATION_PENDING",
+      "observedChainHosts": [
+        "links.modpro.blog",
+        "cloud.unblockedgames.world",
+        "urlflix.xyz",
+        "driveseed.org",
+        "video-seed.dev",
+        "video-downloads.googleusercontent.com"
+      ],
+      "observed": "Interstellar route reaches direct media/download after interactive human/redirection gate",
+      "remaining": "provider-side bypass/bridge; older automated ZERO is not no-route authority"
+    },
+    "4khdhub": {
+      "classification": "MANUAL_MOVIE_TV_ROUTE_POSITIVE_INTEGRATION_PENDING",
+      "hub": "https://hdhub4u.bi/",
+      "terminal": "https://new5.hdhub4u.cl/",
+      "observedChainHosts": [
+        "hubcdn.lol",
+        "greenmountmotors.com",
+        "hblinks.co",
+        "hubdrive.sbs",
+        "hubcloud.ist",
+        "pixel.hubcloud.ist"
+      ],
+      "observed": "Interstellar movie route and House of the Dragon episodic route present in browser",
+      "remaining": "redirect/button/timing bypass and native terminal proof"
+    },
+    "allwish": {
+      "classification": "MANUAL_HLS_POSITIVE_INTEGRATION_PENDING",
+      "hub": "https://t.me/s/allwishme",
+      "terminal": "http://all-wish.me/",
+      "observedChainHosts": [
+        "fetch.nexabloom.top"
+      ],
+      "observed": "Death Note episode 37 master/index HLS requests returned HTTP 200 in browser",
+      "remaining": "Niak/native extraction reproduction; no duplicate manual retest"
+    },
+    "allanime": {
+      "classification": "MANUAL_HLS_POSITIVE_INTEGRATION_PENDING",
+      "hub": "https://allanime.sa.com/",
+      "terminal": "https://ww2.aniwatch.fit/",
+      "observedChainHosts": [
+        "fetch.nexabloom.top"
+      ],
+      "observed": "One Piece episode master/index HLS requests returned HTTP 200 in browser; catalogue reduced",
+      "remaining": "Niak/native extraction reproduction; no duplicate manual retest"
+    }
+  }
+}
