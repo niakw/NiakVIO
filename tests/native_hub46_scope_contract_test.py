@@ -16,8 +16,9 @@ ids = {
     for row in rows if isinstance(row, dict)
     if str(row.get("manifestId") or row.get("provider") or "").strip()
 }
-assert int(data.get("hubCount") or 0) == 46, data.get("hubCount")
-assert len(ids) == 46, len(ids)
+declared = int(data.get("hubCount") or 0)
+assert declared > 0, declared
+assert len(ids) == declared, (len(ids), declared)
 
 os.environ["NIAKVIO_PROVIDER_SCOPE_MATRIX"] = "automation/evidence/hub-lab-matrix-46.json"
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -53,4 +54,4 @@ assert "rotating_corpus.py" in workflow_paths[0].read_text(encoding="utf-8")
 assert "FIELD_ROTATING_CORPUS client=tv" in workflow_paths[1].read_text(encoding="utf-8")
 assert "FIELD_ROTATING_CORPUS client=mobile" in workflow_paths[1].read_text(encoding="utf-8")
 
-print("native Hub-46 rotating execution scope contract tests passed: providers=46 workflows=3")
+print(f"native active-scope rotating execution contract tests passed: providers={declared} workflows=3")

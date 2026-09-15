@@ -4,9 +4,14 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-CURRENT_PROVIDER_COUNT = 46
+sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import active_provider_count, visible_provider_count
+
+ACTIVE_EXPECTED = active_provider_count()
+VISIBLE_EXPECTED = visible_provider_count()
 HISTORICAL_PROVIDER_COUNT = 50
 
 architecture = (ROOT / "ARCHITECTURE.md").read_text(encoding="utf-8")
@@ -94,7 +99,8 @@ assert machine["routine"]["quick"]["provider_reconstruction_allowed"] is False
 assert machine["routine"]["deep"]["repair_allowed"] is False
 assert machine["routine"]["deep"]["provider_reconstruction_allowed"] is False
 assert machine["manual_reconstruction"]["main_write_allowed"] is False
-assert machine["manual_reconstruction"]["expected_provider_count"] == CURRENT_PROVIDER_COUNT
+assert "expected_provider_count" not in machine["manual_reconstruction"]
+assert machine["manual_reconstruction"]["provider_scope_authority"] == "scripts/current_provider_scope.py:active_provider_ids"
 assert machine["manual_reconstruction"]["historical_provider_count"] == HISTORICAL_PROVIDER_COUNT
 assert machine["manual_reconstruction"]["historical_provider_directory"] == "provider-old"
 assert machine["native_labs"] == [
@@ -138,14 +144,16 @@ assert "executable_non_quarantined" not in machine["provider_plan_contract"]
 assert "quarantined" not in machine["provider_plan_contract"]
 
 plan = machine["provider_plan_contract"]
-assert plan["catalogue_provider_count"] == CURRENT_PROVIDER_COUNT
+assert "catalogue_provider_count" not in plan
+assert plan["provider_scope_authority"] == "scripts/current_provider_scope.py:visible_provider_ids"
 assert plan["historical_provider_count"] == HISTORICAL_PROVIDER_COUNT
 assert plan["historical_provider_directory"] == "provider-old"
 assert plan["disabled_providers_are_audited"] is True
 assert machine["security_html_filtering"]["regex_html_stripping_allowed"] is False
 
 lab = machine["native_lab_contract"]
-assert lab["provider_count"] == CURRENT_PROVIDER_COUNT
+assert "provider_count" not in lab
+assert lab["provider_scope_authority"] == "scripts/current_provider_scope.py:active_provider_ids"
 assert lab["historical_provider_count"] == HISTORICAL_PROVIDER_COUNT
 assert lab["historical_provider_directory"] == "provider-old"
 assert lab["route_matrix_source"] == "manifest.json:scrapers[*].supportedTypes"
@@ -160,7 +168,8 @@ assert lab["external_build_dependency_packaging_repairs_allowed"] is False
 assert lab["test_plumbing_must_not_change_official_runtime_behavior"] is True
 
 rows = manifest.get("scrapers") or []
-assert len(rows) == CURRENT_PROVIDER_COUNT
+assert len(rows) == VISIBLE_EXPECTED
+assert sum(1 for row in rows if row.get("enabled") is not False) == ACTIVE_EXPECTED
 canonical_valid = {"movie", "tv", "anime"}
 transport_valid = canonical_valid
 for row in rows:

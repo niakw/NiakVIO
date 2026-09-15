@@ -79,9 +79,10 @@ for required in (
 assert '"publicationAllowed": False' in pipeline
 assert '"mainWritesAllowed": False' in pipeline
 
-# Manual reconstruction is scoped to the exact current Hub46 publication.
+# Manual reconstruction is scoped to the exact current provider publication.
 # Historical provider-old/ identities remain archival inputs, never current output.
-for required in ("materialize_provider_v3_all.py","verify_provider_v3_reverse_rebuild.py","46"):
+for required in ("materialize_provider_v3_all.py","verify_provider_v3_reverse_rebuild.py"):
+
     assert required in manual
 assert "Refuse direct main mutation" in manual
 assert "NUVIO_PROVIDER_V3_CONTEXT: workspace" in manual
@@ -115,7 +116,7 @@ for required in (
     "replace_provider_fix",
     "domain refresh changed bytes outside CONFIG Lego",
     '"core_mutation": False',
-    "CURRENT_PROVIDER_COUNT = 46",
+    "active_provider_ids",
     "current_provider_ids",
     "if provider_id not in current_provider_ids:",
     "domain refresh refuses historical/non-current provider selection",
@@ -123,7 +124,7 @@ for required in (
     'materialization["expectedProviderCount"] = CURRENT_PROVIDER_COUNT',
     '"scope_provider_count": len(current_provider_ids)',
 ):
-    assert required in transaction, f"Domain Refresh current-Hub46 scope missing: {required}"
+    assert required in transaction, f"Domain Refresh current-provider scope missing: {required}"
 assert "requires 96/96 state" not in transaction
 assert "group: niakvio-core-release-mutation-main" in domain
 assert "cancel-in-progress: false" in domain
@@ -140,7 +141,7 @@ for required in (
 
 # Non-regression owns the exact four-version ledger plus the rolling accepted
 # quick-yield publication floor. Repair is allowed to propose/correct only if its
-# non-Learn candidate subsequently satisfies the exact same current Hub46 floor.
+# non-Learn candidate subsequently satisfies the exact same current provider floor.
 # Branch names are deliberately not ownership: workflow_dispatch + PR-to-main are
 # permanent entry points, while temporary candidate push branches may change.
 assert nonreg.startswith("name: Provider Non-Regression Gate")
@@ -149,7 +150,7 @@ for required in (
     "build_provider_history_matrix_v3.py",
     "check_provider_non_regression_v1.py",
     "audit_provider_quick_yield.py",
-    "Run real 46-provider candidate census",
+    "Run real current-provider candidate census",
     "NIAKVIO_QUICK_YIELD_TIMEOUT: '25'",
     "--candidate-gate",
     "provider-v3-quick-yield.json",
@@ -168,4 +169,4 @@ for required in (
     assert required in quick_yield, f"quick-yield census must remain current-manifest scoped: {required}"
 assert "--all" not in quick_yield, "quick-yield census must not grow a historical-provider switch"
 
-print("provider v3 workflow ownership contract passed: CORE verify-only + Brain evidence + one Repair engine + Hub46-scoped atomic Domain Refresh publication + current-Hub46 four-version non-regression gate")
+print("provider v3 workflow ownership contract passed: CORE verify-only + Brain evidence + one Repair engine + current-provider-scoped atomic Domain Refresh publication + current-provider four-version non-regression gate")

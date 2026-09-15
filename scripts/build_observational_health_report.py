@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse, json
 from datetime import datetime, timezone
 from pathlib import Path
+from current_provider_scope import visible_provider_count
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -64,7 +65,7 @@ def main()->int:
         },
         "providers":providers,
     }
-    if len(providers)!=96:
+    if len(providers) != visible_provider_count():
         raise SystemExit(f"observation report incomplete: {len(providers)} != 96")
     args.output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print(f"FIELD_PROVIDER_OBSERVATION_REPORT mode={raw.get('mode')} providers={len(providers)} repair=false")

@@ -11,7 +11,6 @@ V2 = ROOT / "scripts" / "build_provider_history_matrix_v2.py"
 OUT_JSON = ROOT / "automation" / "provider-history-matrix.json"
 OUT_MD = ROOT / "automation" / "PROVIDER-HISTORY-MATRIX.md"
 CAP_5210 = ROOT / "tests" / "fixtures" / "provider-production-5.21.0-capabilities.json"
-EXPECTED = 46
 
 GREEN = "🟢"
 YELLOW = "🟡"
@@ -203,8 +202,10 @@ def main() -> int:
     # post-processor so the legacy V1 fallback can never remain authoritative.
     subprocess.run(["python3", str(V2)], cwd=ROOT, check=True)
     matrix = load(OUT_JSON)
-    if int(matrix.get("providerCount") or 0) != EXPECTED:
-        raise SystemExit(f"expected {EXPECTED} providers, got {matrix.get('providerCount')}")
+    history_rows = [row for row in matrix.get("providers") or [] if isinstance(row, dict)]
+    declared = int(matrix.get("providerCount") or len(history_rows))
+    if declared != len(history_rows):
+        raise SystemExit(f"history matrix identity mismatch declared={declared} rows={len(history_rows)}")
 
     refs = matrix.get("snapshotRefs") or {}
     ref0 = str((refs.get("tag_5_21_0") or {}).get("ref") or "5.21.0")
@@ -410,7 +411,7 @@ def main() -> int:
 
     print(
         "PROVIDER_HISTORY_V3 "
-        f"providers={EXPECTED} hard={len(set(hard))} partial={len(set(partial))} "
+        f"providers={len(matrix.get('providers') or [])} hard={len(set(hard))} partial={len(set(partial))} "
         f"revalidate={len(set(revalidate))} contract={len(set(contract_regressions))} "
         f"watch={len(set(watch))}"
     )

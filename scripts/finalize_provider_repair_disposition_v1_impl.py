@@ -4,11 +4,10 @@
 NIAKVIO_FORCE_ON_REPAIR_DISPOSITION_V2
 
 Policy:
-- all 96 canonical providers stay present and enabled in the catalogue;
+- current catalogue visibility is derived from providers/ and provider-disabled/;
 - ``official_hub`` is discovery/address metadata, never activation authority;
 - proof controls diagnostic route/DATA state: ``on`` / ``repair`` / ``off``;
-- unresolved, terminal and quarantined providers remain enabled but fail closed
-  through an audited repair/off disposition;
+- route debt never overrides the physical provider-folder activation lifecycle;
 - existing route/DATA evidence is preserved for Learning/Repair;
 - this script never silently shrinks supported/canonical types.
 
@@ -22,6 +21,8 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
+from current_provider_scope import active_provider_ids, disabled_provider_ids, visible_provider_ids
+
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
@@ -31,7 +32,6 @@ RECOVERY = ROOT / "automation" / "provider-route-recovery-v6-targeted.json"
 QUICK = ROOT / "provider-v3-quick-yield.json"
 OUTPUT = ROOT / "automation" / "provider-repair-disposition.json"
 HUB_MATRIX = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
-EXPECTED = 46
 TERMINAL = {"terminal-blocked", "terminal-unreachable"}
 
 
@@ -143,7 +143,7 @@ def explicit_quarantine(patch: dict[str, Any], model: dict[str, Any]) -> bool:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Finalize Provider v3 repair diagnostics with 46-hub targeted activation")
+    parser = argparse.ArgumentParser(description="Finalize Provider v3 repair diagnostics with provider-folder activation")
     parser.add_argument("--manifest", type=Path, default=MANIFEST)
     parser.add_argument("--overrides", type=Path, default=OVERRIDES)
     parser.add_argument("--knowledge", type=Path, default=KNOWLEDGE)
@@ -161,16 +161,18 @@ def main() -> int:
     recovery = load(args.recovery, {"providers": []})
     quick = load(args.quick_yield)
     hub_matrix = load(args.hub_matrix)
-    target_hubs = {cid(row.get("manifestId")) for row in hub_matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId"))}
-    if int(hub_matrix.get("hubCount") or 0) <= 0 or len(target_hubs) != int(hub_matrix.get("hubCount") or 0):
-        raise SystemExit(f"expected exact 46-hub activation matrix, got count={hub_matrix.get('hubCount')} ids={len(target_hubs)}")
-
+    matrix_ids = {cid(row.get("manifestId")) for row in hub_matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId"))}
     rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
-    if len(rows) != EXPECTED:
-        raise SystemExit(f"expected {EXPECTED} manifest providers, got {len(rows)}")
     manifest_rows = {cid(row.get("id")): row for row in rows if cid(row.get("id"))}
-    if len(manifest_rows) != EXPECTED:
-        raise SystemExit(f"expected {EXPECTED} unique provider ids, got {len(manifest_rows)}")
+    if len(manifest_rows) != len(rows):
+        raise SystemExit("manifest provider ids must be unique and non-empty")
+    active_ids = active_provider_ids()
+    disabled_ids = disabled_provider_ids()
+    visible_ids = visible_provider_ids()
+    if set(manifest_rows) != visible_ids:
+        raise SystemExit("manifest/folder identity mismatch before repair disposition")
+    if matrix_ids != active_ids:
+        print(f"PROVIDER_REPAIR_DISPOSITION_MATRIX_STALE matrix={len(matrix_ids)} active={len(active_ids)}")
 
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
     static = knowledge.get("providers") if isinstance(knowledge.get("providers"), dict) else {}
@@ -213,7 +215,13 @@ def main() -> int:
         terminal = terminal_state(patch, model)
         quarantined = explicit_quarantine(patch, model)
 
-        if complete and not quarantined:
+        manual_off_reason = str(patch.get("manual_off_reason") or "").strip()
+        manual_off = bool(manual_off_reason)
+        if manual_off:
+            route_state = "off"
+            reason_codes = [manual_off_reason]
+            complete = False
+        elif complete and not quarantined:
             route_state = "on"
             reason_codes = ["all_declared_lanes_live_proven"]
         else:
@@ -237,11 +245,11 @@ def main() -> int:
                 reason_codes.append("repair_incomplete")
             incomplete.append(provider)
 
-        # NIAKVIO_HUB46_ACTIVATION_AUTHORITY_V1
-        # Repair/off is route debt. Visibility is owned exclusively by the exact
-        # 46-provider hub matrix selected for this repair campaign.
+        # NIAKVIO_PROVIDER_FOLDER_ACTIVATION_AUTHORITY_V1
+        # Repair/off is route debt. Activation is owned by the physical current
+        # provider folders and never by a numeric campaign target.
         hub = declared_hub(patch)
-        enabled = provider in target_hubs
+        enabled = provider in active_ids
         manifest_row["enabled"] = enabled
         manifest_overrides = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
         manifest_overrides["enabled"] = enabled
@@ -256,7 +264,7 @@ def main() -> int:
             "schemaVersion": 1,
             "authority": "provider-repair-disposition-v1",
             "activationState": "enabled" if enabled else "disabled",
-            "activationAuthority": "hub-lab-matrix-46",
+            "activationAuthority": "provider-folder-lifecycle",
             "declaredHub": hub or None,
             "forcedEnabled": enabled,
             "routeDataState": route_state,
@@ -294,15 +302,15 @@ def main() -> int:
     summary = {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
-        "catalogueProviderCount": EXPECTED,
+        "catalogueProviderCount": len(manifest_rows),
         "policy": {
             "activeBrokenProviderAllowed": True,
             "incompleteProviderEnabled": True,
             "forceAllProvidersEnabled": False,
             "activationFollowsRepairState": False,
             "activationFollowsDeclaredHub": False,
-            "activationAuthority": "automation/evidence/hub-lab-matrix-46.json:rows[].manifestId",
-            "targetHubProviderCount": 46,
+            "activationAuthority": "providers/ + provider-disabled/ physical current folders",
+            "activeProviderCount": len(active_ids),
             "nonTargetProviderState": "disabled",
             "registryOnlyTargetMayRemainEnabled": True,
             "terminalOrQuarantinedState": "off",
@@ -313,7 +321,7 @@ def main() -> int:
         },
         "stateCounts": dict(sorted(counts.items())),
         "enabledProviderCount": enabled_count,
-        "disabledProviderCount": EXPECTED - enabled_count,
+        "disabledProviderCount": len(disabled_providers),
         "disabledProviders": disabled_providers,
         "incompleteProviderCount": len(incomplete),
         "incompleteProviders": incomplete,
@@ -326,9 +334,9 @@ def main() -> int:
     write(args.output, summary)
     print(
         "PROVIDER_REPAIR_DISPOSITION_V1 "
-        f"providers={EXPECTED} enabled={enabled_count} disabled={EXPECTED-enabled_count} "
+        f"providers={len(manifest_rows)} enabled={enabled_count} disabled={len(disabled_providers)} "
         f"on={counts['on']} repair={counts['repair']} off={counts['off']} "
-        f"diagnostic_incomplete={len(incomplete)} activation=hub_matrix_46"
+        f"diagnostic_incomplete={len(incomplete)} activation=provider_folders active={len(active_ids)}"
     )
     return 0
 

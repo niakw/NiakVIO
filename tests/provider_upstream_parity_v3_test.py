@@ -4,6 +4,7 @@ from __future__ import annotations
 import importlib.util
 import sys
 from pathlib import Path
+from current_provider_scope import active_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -17,7 +18,7 @@ parity = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(parity)
 
 scope = parity.scope_ids(ROOT / "automation/evidence/hub-lab-matrix-46.json")
-assert len(scope) == 46, len(scope)
+assert len(scope) == active_provider_count(), len(scope)
 
 
 def result(streams: int = 0, *, timeout: bool = False, error: str | None = None, statuses=None):

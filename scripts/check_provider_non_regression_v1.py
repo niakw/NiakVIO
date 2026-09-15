@@ -7,6 +7,8 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from current_provider_scope import active_provider_ids
+
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MATRIX = ROOT / "automation" / "provider-history-matrix.json"
 DEFAULT_CANDIDATE = ROOT / "provider-v3-quick-yield.json"
@@ -14,7 +16,6 @@ DEFAULT_OUT = ROOT / "automation" / "provider-non-regression-gate.json"
 DEFAULT_INVALIDATIONS = ROOT / "automation" / "provider-proof-invalidations.json"
 CURRENT_MANIFEST = ROOT / "manifest.json"
 CURRENT_OVERRIDES = ROOT / "provider-overrides.json"
-EXPECTED = 46
 HISTORY = ("5.21.0", "5.21.16", "5.21.36")
 GREEN = "🟢"
 
@@ -117,7 +118,8 @@ def verified_lanes_from_quick(data: dict[str, Any]) -> dict[str, set[str]]:
 
 
 def provider_ids(matrix: dict[str, Any]) -> list[str]:
-    return sorted({canon(row.get("provider")) for row in matrix.get("providers") or [] if canon(row.get("provider"))})
+    historical = {canon(row.get("provider")) for row in matrix.get("providers") or [] if canon(row.get("provider"))}
+    return sorted(historical & active_provider_ids())
 
 
 def matrix_rows(matrix: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -140,12 +142,30 @@ def current_activation_debt() -> dict[str, dict[str, Any]]:
     out: dict[str, dict[str, Any]] = {}
     for pid, row in rows.items():
         patch = patches.get(pid) if isinstance(patches.get(pid), dict) else {}
+        # Explicit user/manual OFF is newer activation authority than historical
+        # rolling lane proof. It may waive missing-live-lane debt only; semantic
+        # type and HLS contract deletion remain hard failures below.
+        manual_off_reason = str(patch.get("manual_off_reason") or "").strip()
+        manifest_overrides = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
+        if row.get("enabled") is False and manual_off_reason and manifest_overrides.get("enabled") is False:
+            out[pid] = {
+                "authority": "manual-user-off-v1",
+                "activationAuthority": "manual-user-off-v1",
+                "activationState": "disabled",
+                "forcedEnabled": False,
+                "routeDataState": "off",
+                "completeCapabilityProof": False,
+                "missingLanes": ["manual-off"],
+                "reasonCodes": [manual_off_reason],
+                "manualOff": True,
+            }
+            continue
         disposition = patch.get("repair_disposition") if isinstance(patch.get("repair_disposition"), dict) else {}
         state = canon(disposition.get("routeDataState"))
         expected_activation_state = "enabled" if row.get("enabled") is True else "disabled"
         audited = (
             disposition.get("authority") == "provider-repair-disposition-v1"
-            and disposition.get("activationAuthority") == "hub-lab-matrix-46"
+            and disposition.get("activationAuthority") == "provider-folder-lifecycle"
             and disposition.get("activationState") == expected_activation_state
             and bool(disposition.get("forcedEnabled")) == (row.get("enabled") is True)
             and state in {"repair", "off"}
@@ -227,8 +247,10 @@ def ledger_failures(matrix: dict[str, Any]) -> list[str]:
     failures: list[str] = []
     if int(matrix.get("schemaVersion") or 0) != 3:
         failures.append("matrix schemaVersion must be 3")
-    if int(matrix.get("providerCount") or 0) != EXPECTED:
-        failures.append(f"matrix providerCount must be {EXPECTED}")
+    declared = int(matrix.get("providerCount") or 0)
+    physical_rows = matrix_rows(matrix)
+    if declared and declared != len(physical_rows):
+        failures.append(f"matrix providerCount={declared} differs from ledger rows={len(physical_rows)}")
 
     policy = matrix.get("nonRegressionPolicy") or {}
     if list(policy.get("history") or []) != list(HISTORY):
@@ -241,8 +263,8 @@ def ledger_failures(matrix: dict[str, Any]) -> list[str]:
         failures.append("historical transport aliases may not create a semantic capability floor")
 
     rows = matrix_rows(matrix)
-    if len(rows) != EXPECTED:
-        failures.append(f"matrix must contain {EXPECTED} unique provider rows, got {len(rows)}")
+    if not rows:
+        failures.append("matrix must contain provider history rows")
 
     for pid, row in rows.items():
         states = row.get("snapshotStates") or {}
@@ -382,7 +404,7 @@ def candidate_gate(
         "proofInvalidationSource": str(DEFAULT_INVALIDATIONS.relative_to(ROOT)),
         "proofInvalidationPolicy": "only active, evidence-backed contradiction records may remove invalidated historical/rolling lanes from the candidate floor; all other floors remain unchanged",
         "candidateSource": str(DEFAULT_CANDIDATE.relative_to(ROOT)),
-        "disabledHistoricalDebtPolicy": "audited route debt is allowed for hub46 targets or disabled non-targets when provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden",
+        "disabledHistoricalDebtPolicy": "audited route debt is allowed for current provider-folder identities when provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden",
         "disabledDebtProviderCount": len(sorted(set(disabled_debt))),
         "disabledDebtProviders": sorted(set(disabled_debt)),
         "obligations": obligations,

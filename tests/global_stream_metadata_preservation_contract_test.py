@@ -7,9 +7,10 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from current_provider_scope import active_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
-CURRENT_PROVIDER_COUNT = 46
+EXPECTED = active_provider_count()
 sys.path.insert(0, str(ROOT / "scripts"))
 
 materialization = json.loads((ROOT / "provider-v3-materialization.json").read_text(encoding="utf-8"))

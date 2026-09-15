@@ -74,7 +74,7 @@ def main() -> int:
         test = test.replace(anchor, addition, 1)
     test = replace_once(
         test,
-        'assert len(rows) == 96\nfor row in rows:',
+        'for row in rows:',
         'assert rows\nprovider_ids = [str(row.get("id") or "").strip().casefold() for row in rows]\nassert all(provider_ids)\nassert len(provider_ids) == len(set(provider_ids)), provider_ids\nfor row in rows:',
         "ownership manifest cardinality",
     )

@@ -24,6 +24,7 @@ from typing import Any
 import materialize_provider_v3_all as allmat
 import refresh_authoritative_hub_domains as refresh
 import resolve_provider_hubs as resolver
+from current_provider_scope import active_provider_ids, visible_provider_count
 from provider_patch_blocks import (
     decode_managed_data,
     owned_span,
@@ -39,7 +40,7 @@ MANIFEST_PATH = ROOT / "manifest.json"
 MATERIALIZATION_PATH = ROOT / "provider-v3-materialization.json"
 STATIC_KNOWLEDGE_PATH = ROOT / "automation" / "provider-v3-static-knowledge.json"
 PROVIDERS_DIR = ROOT / "providers"
-CURRENT_PROVIDER_COUNT = 46
+CURRENT_PROVIDER_COUNT = visible_provider_count()
 
 DOMAIN_PATCH_FIELDS = {
     "official_site",
@@ -304,7 +305,7 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
     material_ids = {canonical(row.get("provider")) for row in material_rows if canonical(row.get("provider"))}
     if len(manifest_rows) != CURRENT_PROVIDER_COUNT or len(material_rows) != CURRENT_PROVIDER_COUNT:
         raise RuntimeError(
-            f"domain publication requires current Hub{CURRENT_PROVIDER_COUNT} state: "
+            f"domain publication requires current visible identity state: "
             f"manifest={len(manifest_rows)} materialization={len(material_rows)}"
         )
     if len(manifest_ids) != CURRENT_PROVIDER_COUNT or material_ids != manifest_ids:
@@ -408,16 +409,9 @@ def main() -> int:
         raise SystemExit("provider-domain-history.json providers must be object")
 
     manifest_scope = load(MANIFEST_PATH)
-    current_provider_ids = {
-        canonical(row.get("id"))
-        for row in manifest_scope.get("scrapers") or []
-        if isinstance(row, dict) and canonical(row.get("id"))
-    }
-    if len(current_provider_ids) != CURRENT_PROVIDER_COUNT:
-        raise SystemExit(
-            f"domain refresh requires current Hub{CURRENT_PROVIDER_COUNT} manifest scope; "
-            f"got {len(current_provider_ids)}"
-        )
+    current_provider_ids = active_provider_ids()
+    if not current_provider_ids:
+        raise SystemExit("domain refresh has no active providers")
 
     hubs = _authoritative_hub_configs(config)
     selected = {canonical(value) for value in args.provider if canonical(value)}

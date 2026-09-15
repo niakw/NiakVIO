@@ -1,0 +1,85 @@
+name: Provider Disabled Lifecycle
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 4 * * *'
+  push:
+    paths:
+      - '.github/workflows/provider-disabled-lifecycle.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: provider-disabled-lifecycle-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  lifecycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Apply active-disabled-archive lifecycle
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/manage_provider_lifecycle.py --apply
+          python -m py_compile scripts/manage_provider_lifecycle.py scripts/current_provider_scope.py
+          python - <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path('scripts').resolve()))
+          from current_provider_scope import (
+              active_provider_count,
+              active_provider_ids,
+              disabled_provider_count,
+              disabled_provider_ids,
+              visible_provider_count,
+          )
+
+          manifest=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows=[row for row in manifest.get('scrapers') or [] if isinstance(row,dict)]
+          manifest_active={str(row.get('id') or '').strip().casefold().replace('_','-') for row in rows if row.get('enabled') is not False}
+          manifest_disabled={str(row.get('id') or '').strip().casefold().replace('_','-') for row in rows if row.get('enabled') is False}
+          assert active_provider_ids() == manifest_active
+          assert disabled_provider_ids() == manifest_disabled
+          assert visible_provider_count() == active_provider_count() + disabled_provider_count()
+          for row in rows:
+              filename=str(row.get('filename') or '')
+              if row.get('enabled') is False:
+                  assert filename.startswith('provider-disabled/'), (row.get('id'), filename)
+                  assert row.get('disabledAt') and row.get('purgeAfter')
+              else:
+                  assert filename.startswith('providers/'), (row.get('id'), filename)
+          print('PROVIDER_DIRECTORY_CONTRACT_OK', f'active={active_provider_count()}', f'disabled={disabled_provider_count()}')
+          PY
+          git diff --check
+
+      - name: Commit lifecycle transition if needed
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
+            manifest-hub46.json native-hub46/manifest.json provider_catalog.json \
+            automation/provider-disabled-lifecycle.json providers provider-disabled provider-bases provider-old
+          if git diff --cached --quiet; then
+            echo PROVIDER_LIFECYCLE_NO_CHANGE
+            exit 0
+          fi
+          git diff --cached --check
+          git commit -m 'chore: apply provider disabled retention lifecycle'
+          git push origin HEAD:${{ github.ref_name }}

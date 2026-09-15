@@ -5,6 +5,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from current_provider_scope import visible_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -75,7 +76,7 @@ def main() -> int:
     unit_contract()
     payload = json.loads(KNOWLEDGE.read_text(encoding="utf-8"))
     providers = payload.get("providers")
-    assert isinstance(providers, dict) and len(providers) == 96
+    assert isinstance(providers, dict) and len(providers) == visible_provider_count()
     assert payload.get("coreMetadataTransportSanitized") is True
     assert payload.get("coreMetadataTransportOwner") == "core"
     assert payload.get("runtimeFamilyFinalized") is True

@@ -53,6 +53,24 @@ CORE_MANAGED_SANITIZER_SCRIPTS = {
 GLOBAL_MEDIA_TYPE_RESOLUTION = "scripts/provider_patches/global_media_type_resolution_v1.py"
 # Managed Core bricks are composed only at whole START/END boundaries; provider rows may supply data/options, never brick ownership.
 CORE_START_MARKER = "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1"
+# Textual order of managed CORE.* Lego produced by apply_overrides(). Optional
+# bricks stay in the sequence and are ignored by structural audits when absent.
+CANONICAL_CORE_MANAGED_ORDER = (
+    "CORE.DESKTOP_RUNTIME_COMPAT.V1",
+    "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
+    "CORE.MEDIA_ENRICHMENT.V1",
+    "CORE.HLS_RUNTIME_INTEGRITY.V1",
+    "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
+    "CORE.RUNTIME_COMPAT.V1",
+    "CORE.PROVIDER_RUNTIME_DISPATCH.V1",
+    "CORE.STREAM_FACTS.V1",
+    "CORE.STREAM_IDENTITY.V1",
+    "CORE.MEDIA_TYPE_RESOLUTION.V1",
+    "CORE.STREAM_PRESENTATION.V1",
+    "CORE.PROVIDER_BRANDING.V1",
+    "CORE.STREAM_SANITIZER.V6",
+    "CORE.RUNTIME_MEDIA_SAFETY.V4",
+)
 PROVIDER_BEGIN_MARKER = "/* BEGIN NIAKVIO_PROVIDER */"
 PROVIDER_END_MARKER = "/* END NIAKVIO_PROVIDER */"
 GENERATED_CORE_TAIL_MARKERS = (

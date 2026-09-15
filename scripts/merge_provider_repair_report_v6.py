@@ -1,21 +1,10 @@
 #!/usr/bin/env python3
-"""Merge targeted route proof with the 96-provider baseline and exact-source LKG.
+"""Merge targeted route proof with historical evidence for current active providers.
 
-Already-green providers are deliberately not re-probed. Their baseline rows are
-carried forward. Targeted providers use current proof first, augmented only by
-live-positive route rows retained in the exact-source route-proof LKG. This keeps
-variable successful upstream traces from erasing previously proven correlated
-steps while source changes still reset historical evidence.
-
-A small historical bootstrap may recover proof emitted before the durable LKG
-existed. Bootstrap evidence is eligible only for a provider targeted now and only
-when its exact source identity equals the current targeted source. It cannot
-revive evidence after an upstream SHA change.
-
-Before persistence, every carried/new simple API recipe passes the same typed-route
-normalizer so obsolete generic directRoute DATA cannot outrank movie/tv routes.
-The resulting report is a normal full proof-v5 census consumable by the existing
-deterministic applier/materializer.
+Provider cardinality is never policy. The executable Repair scope is the set of
+manifest rows that are enabled and whose current artifact lives in providers/.
+Disabled-retained providers remain visible in manifest.json but are not Repair
+obligations; provider-old entries are absent from the current catalogue.
 """
 from __future__ import annotations
 
@@ -42,15 +31,11 @@ def pid(row: dict[str, Any]) -> str:
     return str(row.get("providerId") or "").strip().casefold().replace("_", "-")
 
 
-def normalize_typed_api_recipe(row: dict[str, Any]) -> tuple[dict[str, Any], bool]:
-    """Remove obsolete generic direct execution when both semantic lanes exist.
+def manifest_pid(row: dict[str, Any]) -> str:
+    return str(row.get("id") or "").strip().casefold().replace("_", "-")
 
-    A legacy directRoute is unsafe once a recipe owns explicit movieRoute and
-    episodeRoute: runtime direct-first execution can force the movie lane for TV.
-    Preserve all proof rows and typed requests; only the redundant generic route
-    and its paired request are removed. This applies equally to preserved and
-    freshly targeted providers, so skip status cannot bypass DATA safety.
-    """
+
+def normalize_typed_api_recipe(row: dict[str, Any]) -> tuple[dict[str, Any], bool]:
     out = copy.deepcopy(row)
     recipe = out.get("apiRecipe")
     if not isinstance(recipe, dict):
@@ -67,7 +52,6 @@ def normalize_typed_api_recipe(row: dict[str, Any]) -> tuple[dict[str, Any], boo
 
 
 def eligible_bootstrap(seed: dict[str, Any], targeted: dict[str, Any]) -> dict[str, Any]:
-    """Return only seed rows whose provider + exact source are targeted now."""
     targeted_sources = {
         pid(row): route_lkg.source_identity(row.get("source"))
         for row in targeted.get("providers") or []
@@ -84,6 +68,22 @@ def eligible_bootstrap(seed: dict[str, Any], targeted: dict[str, Any]) -> dict[s
     return {"schemaVersion": 1, "providers": providers}
 
 
+def current_active_ids(manifest: dict[str, Any]) -> list[str]:
+    ids = [
+        manifest_pid(row)
+        for row in manifest.get("scrapers") or []
+        if isinstance(row, dict)
+        and row.get("enabled") is not False
+        and str(row.get("filename") or "").startswith("providers/")
+        and manifest_pid(row)
+    ]
+    if not ids:
+        raise SystemExit("current active provider scope is empty")
+    if len(ids) != len(set(ids)):
+        raise SystemExit("current active provider scope contains duplicate ids")
+    return ids
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--baseline", type=Path, default=Path("automation/provider-route-recovery-v5.json"))
@@ -91,11 +91,22 @@ def main() -> int:
     parser.add_argument("--lkg", type=Path, default=Path("automation/provider-route-proof-lkg.json"))
     parser.add_argument("--seed", type=Path, default=Path("automation/provider-route-proof-seed-v1.json"))
     parser.add_argument("--output", type=Path, default=Path("automation/provider-route-recovery-v6.json"))
+    parser.add_argument("--manifest", type=Path, default=Path("manifest.json"))
     args = parser.parse_args()
+
     baseline = load(ROOT / args.baseline)
     targeted = load(ROOT / args.targeted)
-    if int(baseline.get("providerCount") or 0) != 96 or len(baseline.get("providers") or []) != 96:
-        raise SystemExit("baseline route proof must contain 96 providers")
+    manifest = load(ROOT / args.manifest)
+    catalogue_ids = current_active_ids(manifest)
+    catalogue_set = set(catalogue_ids)
+
+    baseline_rows = [
+        row for row in baseline.get("providers") or []
+        if isinstance(row, dict) and pid(row) in catalogue_set
+    ]
+    missing_baseline = sorted(catalogue_set - {pid(row) for row in baseline_rows})
+    if missing_baseline:
+        raise SystemExit("historical baseline missing current active providers: " + ",".join(missing_baseline))
 
     lkg_path = ROOT / args.lkg
     lkg = route_lkg.load(lkg_path, missing_ok=True)
@@ -109,9 +120,13 @@ def main() -> int:
     route_lkg.write(lkg_path, lkg)
     lkg_providers = lkg.get("providers") if isinstance(lkg.get("providers"), dict) else {}
 
-    rows = {pid(row): row for row in baseline.get("providers") or [] if isinstance(row, dict) and pid(row)}
+    rows = {pid(row): row for row in baseline_rows if pid(row)}
     targeted_rows = [row for row in targeted.get("providers") or [] if isinstance(row, dict) and pid(row)]
     targeted_ids = {pid(row) for row in targeted_rows}
+    outside = sorted(targeted_ids - catalogue_set)
+    if outside:
+        raise SystemExit("targeted report contains providers outside current active scope: " + ",".join(outside))
+
     lkg_retained_rows = 0
     lkg_augmented_providers: list[str] = []
     for row in targeted_rows:
@@ -121,8 +136,11 @@ def main() -> int:
         if retained > 0:
             lkg_retained_rows += retained
             lkg_augmented_providers.append(key)
-    if len(rows) != 46:
-        raise SystemExit(f"merged provider rows={len(rows)}, expected=46")
+
+    if set(rows) != catalogue_set:
+        missing = sorted(catalogue_set - set(rows))
+        extra = sorted(set(rows) - catalogue_set)
+        raise SystemExit(f"merged provider identity mismatch missing={missing} extra={extra}")
 
     merged_rows = []
     typed_recipe_sanitized = []
@@ -136,18 +154,19 @@ def main() -> int:
     proven = [row for row in merged_rows if row.get("routes")]
     merged = dict(baseline)
     merged.update({
-        "providerCount": 46,
-        "catalogueProviderCount": 46,
+        "providerCount": len(catalogue_ids),
+        "catalogueProviderCount": len(catalogue_ids),
+        "scopeAuthority": "manifest.json enabled rows under providers/",
         "providersWithProvenRoutes": len(proven),
         "provenRouteCount": sum(len(row.get("routes") or []) for row in merged_rows),
         "simpleApiRecipeCount": sum(1 for row in merged_rows if isinstance(row.get("apiRecipe"), dict)),
         "statusCounts": dict(sorted(counts.items())),
         "providers": merged_rows,
         "portfolioRepair": {
-            "version": 9,
+            "version": 10,
             "targetedProviderCount": len(targeted_ids),
             "targetedProviders": sorted(targeted_ids),
-            "preservedProviderCount": 96 - len(targeted_ids),
+            "preservedProviderCount": len(catalogue_ids) - len(targeted_ids),
             "preservedProvidersNotReprobed": sorted(set(rows) - targeted_ids),
             "targetedDurationMs": int(targeted.get("durationMs") or 0),
             "proofMethod": targeted.get("method"),
@@ -165,7 +184,7 @@ def main() -> int:
     out.write_text(json.dumps(merged, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         "PROVIDER_REPAIR_REPORT_V6_MERGED "
-        f"targeted={len(targeted_ids)} preserved={96-len(targeted_ids)} "
+        f"active={len(catalogue_ids)} targeted={len(targeted_ids)} preserved={len(catalogue_ids)-len(targeted_ids)} "
         f"proven={merged['providersWithProvenRoutes']} routes={merged['provenRouteCount']} "
         f"recipes={merged['simpleApiRecipeCount']} typed_direct_sanitized={len(typed_recipe_sanitized)} "
         f"route_bootstrap={seed_stats.get('updatedProviders', 0)} "

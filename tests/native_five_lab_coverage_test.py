@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """The native acceptance surface is exactly five first-class client/platform labs."""
 from pathlib import Path
+import sys
 import json
 
 ROOT = Path(__file__).resolve().parents[1]
-CURRENT_PROVIDER_COUNT = 46
+sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import active_provider_ids
+
+ACTIVE_PROVIDER_IDS = active_provider_ids()
 android = (ROOT / ".github/workflows/native-mobile-android-reader.yml").read_text(encoding="utf-8")
 ios = (ROOT / ".github/workflows/native-mobile-ios-reader.yml").read_text(encoding="utf-8")
 desktop = (ROOT / ".github/workflows/native-desktop-reader-acceptance.yml").read_text(encoding="utf-8")
@@ -39,8 +43,17 @@ platforms = ["TVAndroid", "MobileAndroid", "MobileIOS", "DesktopMACOS", "Desktop
 assert len(platforms) == 5 and len(set(platforms)) == 5
 
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
-rows = manifest.get("scrapers") or []
-assert len(rows) == CURRENT_PROVIDER_COUNT
+rows = [
+    row
+    for row in manifest.get("scrapers") or []
+    if isinstance(row, dict)
+    and str(row.get("id") or "").strip().casefold() in ACTIVE_PROVIDER_IDS
+]
+row_ids = {str(row.get("id") or "").strip().casefold() for row in rows}
+assert row_ids == ACTIVE_PROVIDER_IDS, (
+    sorted(row_ids - ACTIVE_PROVIDER_IDS),
+    sorted(ACTIVE_PROVIDER_IDS - row_ids),
+)
 
 canonical_valid = {"movie", "tv", "anime"}
 transport_valid = canonical_valid
@@ -75,7 +88,7 @@ assert canonical_route_counts["anime"] > 0
 
 print(
     "NATIVE_FIVE_LABS_OK platforms=" + ",".join(platforms)
-    + f" providers={CURRENT_PROVIDER_COUNT} canonical_routes=" + str(sum(canonical_route_counts.values()))
+    + f" providers={len(rows)} canonical_routes=" + str(sum(canonical_route_counts.values()))
     + " transport_routes=" + str(sum(transport_route_counts.values()))
     + " canonical=" + json.dumps(canonical_route_counts, sort_keys=True)
     + " transport=" + json.dumps(transport_route_counts, sort_keys=True)

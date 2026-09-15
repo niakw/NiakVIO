@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Prevent automated releases from shrinking the canonical provider catalogue.
 
-NIAKVIO_HUB46_ACTIVATION_AUTHORITY_V1
+NIAKVIO_PROVIDER_FOLDER_ACTIVATION_AUTHORITY_V1
 
 Publication activation and runtime route confidence are separate concerns:
 
-* every canonical provider remains present; active rows follow the matrix while explicit manual OFF rows remain disabled;
+* current visible providers are the identities referenced from providers/ and provider-disabled/;
 * ``official_hub`` is discovery/address metadata only and never an ON/OFF switch;
 * Repair/health evidence controls route/DATA state (on/repair/off), not catalogue
   visibility;
@@ -26,6 +26,7 @@ import os
 import re
 import subprocess
 from pathlib import Path
+from current_provider_scope import active_provider_ids, visible_provider_ids
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -412,11 +413,21 @@ def validate() -> list[str]:
     }
 
     errors: list[str] = []
-    expected = int(matrix.get("hubCount") or 0)
-    if expected <= 0 or len(target) != expected:
-        errors.append(f"hub activation authority mismatch: declared={expected} rows={len(target)}")
-    if len(main_rows) != 46:
-        errors.append(f"canonical catalogue must contain 46 providers, got {len(main_rows)}")
+    expected_active = active_provider_ids()
+    expected_visible = visible_provider_ids()
+    if set(main_rows) != expected_visible:
+        errors.append(
+            "canonical catalogue differs from current provider folders: "
+            f"manifest_only={sorted(set(main_rows)-expected_visible)} folder_only={sorted(expected_visible-set(main_rows))}"
+        )
+    if active != expected_active:
+        errors.append(
+            "manifest activation differs from providers/ authority: "
+            f"manifest_only={sorted(active-expected_active)} folder_only={sorted(expected_active-active)}"
+        )
+    if target != expected_active:
+        # Hub matrix is diagnostic evidence and may lag a lifecycle change.
+        target = set(expected_active)
 
     missing = sorted(target - set(main_rows))
     extra = sorted(active - target)
@@ -427,13 +438,11 @@ def validate() -> list[str]:
         errors.append("active-hub target unexpectedly disabled: " + ",".join(disabled_target))
     if extra:
         errors.append("non-target provider unexpectedly enabled: " + ",".join(extra))
-    if len(active) != expected:
-        errors.append(f"enabled provider count must equal active authority {expected}, got {len(active)}")
 
     for provider_id, patch in sorted(patches_by_id.items()):
         mo = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
         if "enabled" in mo and bool(mo.get("enabled")) != (provider_id in target):
-            errors.append(f"override activation mismatch for hub46 authority: {provider_id}")
+            errors.append(f"override activation mismatch for provider-folder authority: {provider_id}")
 
     mismatched = sorted(
         provider_id
@@ -442,7 +451,7 @@ def validate() -> list[str]:
         != bool(vf_rows[provider_id].get("enabled"))
     )
     if mismatched:
-        errors.append("hub46 activation projection mismatch: " + ",".join(mismatched))
+        errors.append("current activation projection mismatch: " + ",".join(mismatched))
 
     registry_only = sorted(
         provider_id
@@ -452,7 +461,7 @@ def validate() -> list[str]:
     if registry_only:
         print(
             "FIELD_ACTIVATION_HUB46_REGISTRY_ONLY "
-            f"count={len(registry_only)} activation_authority=hub_lab_matrix_46"
+            f"count={len(registry_only)} activation_authority=provider_folders"
         )
 
     return errors
@@ -463,7 +472,7 @@ def main() -> int:
     if errors:
         raise SystemExit("provider activation preservation failed:\n- " + "\n- ".join(errors))
     active_count = sum(1 for row in rows(load(MAIN)).values() if row.get("enabled") is True)
-    print(f"provider activation preservation passed ({active_count} enabled; dynamic active hub-matrix authority)")
+    print(f"provider activation preservation passed ({active_count} enabled; provider-folder authority)")
     return 0
 
 

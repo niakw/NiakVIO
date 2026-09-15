@@ -8,6 +8,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import visible_provider_count  # noqa: E402
+
 WORKFLOW = ROOT / ".github/workflows/provider-v3-reconstruct-all.yml"
 ENTRY = ROOT / "scripts/enrich_provider_v3_static_knowledge.py"
 LOCAL = ROOT / "scripts/provider_contract_local_enricher.py"
@@ -22,7 +25,7 @@ route_reconstructor = ROUTES.read_text(encoding="utf-8")
 seeds = json.loads(SEEDS.read_text(encoding="utf-8"))
 knowledge = json.loads(KNOWLEDGE.read_text(encoding="utf-8"))
 
-# Ordinary 46/46 reconstruction must be self-contained after NiakVIO has learned
+# Ordinary current-provider reconstruction must be self-contained after NiakVIO has learned
 # a provider contract. External repositories are research inputs only.
 for forbidden in (
     "python scripts/discover_candidates.py",
@@ -62,8 +65,6 @@ assert 'model["routeData"]' in route_reconstructor
 assert 'model["routes"] = canonical_routes' in route_reconstructor
 assert '"status": "recognized" if model["routeData"] else "unknown"' in route_reconstructor
 
-# Functional route-object tests are part of the normal strategy gate through this
-# child contract test, not an optional standalone check.
 route_test = subprocess.run(
     [sys.executable, str(ROOT / "tests/provider_route_reconstructor_test.py")],
     cwd=ROOT,
@@ -96,7 +97,7 @@ assert any(
 ), uhd
 
 providers = knowledge.get("providers")
-assert isinstance(providers, dict) and len(providers) == 46
+assert isinstance(providers, dict) and len(providers) == visible_provider_count()
 assert knowledge.get("legacyProviderJsExecuted") is False
 assert knowledge.get("upstreamJsExecuted") is False
 

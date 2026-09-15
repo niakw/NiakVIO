@@ -3,10 +3,10 @@
 
 This is deliberately NOT a publication gate. It executes the same proof-first
 migrations and target recovery/yield checks as the canonical V6 pipeline, but it
-materializes only explicitly requested providers and skips the full 96-provider
+materializes only explicitly requested providers and skips the full current-provider
 portfolio baseline/rematerialization.
 
-Failed experiments stop before the expensive 96-provider output guard. A target
+Failed experiments stop before the expensive full-provider output guard. A target
 candidate must first prove an actual targeted yield gain. The canonical full
 portfolio gate remains mandatory before promotion/publication.
 """
@@ -20,6 +20,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from current_provider_scope import active_provider_ids, visible_provider_ids
+
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
@@ -29,6 +31,7 @@ TARGET_REPORT = ROOT / "automation" / "provider-repair-fast-targeted.json"
 MERGED_REPORT = ROOT / "automation" / "provider-repair-fast-merged.json"
 YIELD_REPORT = ROOT / "automation" / "provider-repair-fast-yield.json"
 SUMMARY = ROOT / "automation" / "provider-repair-fast-summary.json"
+HUB_MATRIX = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -150,7 +153,7 @@ def write_summary(
         "schemaVersion": 3,
         "publicationAllowed": False,
         "fullPortfolioGateRequired": True,
-        "catalogueProviderCount": 46,
+        "catalogueProviderCount": len(visible_provider_ids()),
         "targetedProviders": targets,
         "targetedProviderCount": len(targets),
         "maxAttemptsPerTask": attempts,
@@ -186,14 +189,28 @@ def main() -> int:
     parser.add_argument(
         "--defer-global-guard",
         action="store_true",
-        help="Defer the repeated 96-provider non-network guard to the consolidated candidate gate.",
+        help="Defer the repeated full-provider non-network guard to the consolidated candidate gate.",
     )
     args = parser.parse_args()
 
     manifest = load(MANIFEST)
-    catalogue = [cid(row.get("id")) for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]
-    if len(catalogue) != 96 or len(set(catalogue)) != 96:
-        raise SystemExit(f"provider catalogue must be exactly 96, got {len(catalogue)}")
+    catalogue_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]
+    catalogue = [cid(row.get("id")) for row in catalogue_rows]
+    if len(catalogue) != len(set(catalogue)):
+        raise SystemExit("provider catalogue contains duplicate ids")
+    visible = visible_provider_ids()
+    if set(catalogue) != visible:
+        raise SystemExit("manifest/folder provider identity mismatch")
+    active = active_provider_ids()
+    matrix = load(HUB_MATRIX)
+    matrix_ids = {cid(row.get("manifestId") or row.get("provider")) for row in matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))}
+    if matrix_ids != active:
+        print(
+            "FIELD_PROVIDER_FAST_MATRIX_STALE "
+            f"matrix_only={','.join(sorted(matrix_ids-active)) or '-'} "
+            f"active_only={','.join(sorted(active-matrix_ids)) or '-'}",
+            flush=True,
+        )
 
     skip_path = args.skip_file if args.skip_file.is_absolute() else ROOT / args.skip_file
     skip_cfg = load(skip_path)
@@ -206,6 +223,9 @@ def main() -> int:
     unknown = [value for value in requested if value not in catalogue]
     if unknown:
         raise SystemExit("unknown providers: " + ",".join(unknown))
+    disabled = [value for value in requested if value not in active]
+    if disabled:
+        raise SystemExit("requested providers are explicitly OFF/disabled: " + ",".join(disabled))
     targets = [value for value in requested if value not in skipped]
     if not targets:
         raise SystemExit("all requested providers are already in skip/green set")
@@ -213,7 +233,7 @@ def main() -> int:
     attempts = max(1, min(int(args.attempts), 4))
     print(
         "FIELD_PROVIDER_FAST_SCOPE "
-        f"catalogue=96 targeted={len(targets)} skipped_green={len(skipped)} "
+        f"catalogue={len(catalogue)} active={len(active)} targeted={len(targets)} skipped_green={len(skipped)} "
         f"attempts={attempts} defer_global_guard={str(args.defer_global_guard).lower()} "
         f"providers={','.join(targets)}",
         flush=True,
@@ -297,7 +317,7 @@ def main() -> int:
     for provider in targets:
         run(sys.executable, "scripts/materialize_provider_v3_one.py", provider)
 
-    run(sys.executable, "scripts/validate_published_provider_config.py", "--expected", "96")
+    run(sys.executable, "scripts/validate_published_provider_config.py", "--expected", str(len(catalogue)))
     for test in (
         "tests/episodic_identity_runtime_test.py",
         "tests/episodic_year_identity_regression_test.py",

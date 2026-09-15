@@ -14,13 +14,15 @@ import json
 import tempfile
 from pathlib import Path
 
+from current_provider_scope import visible_provider_count
+
 from materialize_provider_v3_all import materialize_all
 from provider_v3_minimizer import minimize_provider_text
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = ROOT / "provider-v3-materialization.json"
 MANIFEST = ROOT / "manifest.json"
-EXPECTED_PROVIDER_COUNT = 46
+EXPECTED_PROVIDER_COUNT = visible_provider_count()
 HISTORICAL_PROVIDER_COUNT = 50
 
 

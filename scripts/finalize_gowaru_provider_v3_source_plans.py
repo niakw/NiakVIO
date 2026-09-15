@@ -15,6 +15,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
+from current_provider_scope import visible_provider_count
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -277,8 +278,8 @@ def main() -> int:
     path = args.knowledge.resolve()
     payload = load(path)
     providers = payload.get("providers")
-    if not isinstance(providers, dict) or len(providers) != 96:
-        raise ValueError("expected durable knowledge for exactly 96 providers")
+    if not isinstance(providers, dict) or len(providers) != visible_provider_count():
+        raise ValueError("expected durable knowledge for the complete current visible provider set")
 
     gowaru_count = 0
     source_modules = 0

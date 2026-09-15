@@ -7,11 +7,12 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from current_provider_scope import active_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 SCRIPT = ROOT / "scripts/provider_v3_minimizer.py"
-EXPECTED = 46
+EXPECTED = active_provider_count()
 
 spec = importlib.util.spec_from_file_location("provider_v3_minimizer_preview", SCRIPT)
 module = importlib.util.module_from_spec(spec)

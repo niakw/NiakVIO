@@ -145,12 +145,15 @@ def main() -> int:
     parser.add_argument("--no-git-verify", action="store_true")
     args = parser.parse_args()
 
-    scope = args.scope_matrix if args.scope_matrix.is_absolute() else ROOT / args.scope_matrix
     source_path = args.source if args.source.is_absolute() else ROOT / args.source
     output = args.output if args.output.is_absolute() else ROOT / args.output
+    source_doc = load(source_path)
+    scoped = {cid(row.get("id")) for row in source_doc.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))}
+    if not scoped:
+        raise SystemExit("native active source manifest is empty")
     payload = build(
-        load(source_path),
-        scoped=scope_ids(scope),
+        source_doc,
+        scoped=scoped,
         repository=args.repository,
         provider_sha=args.provider_sha,
         verify_git=not args.no_git_verify,

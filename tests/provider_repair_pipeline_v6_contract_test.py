@@ -28,13 +28,34 @@ for old, new in replacements.items():
         raise AssertionError(f"repair contract compatibility anchor changed: {old}")
     source = source.replace(old, new, 1)
 
-# Activation is now an exact release authority: only the 46 current-live-positive
-# matrix members are visible. Repair/off remains separate route debt and can never
-# widen that set. Replace only historical static spellings; the implementation test
-# remains otherwise unchanged.
+# ACTIVE44_REPAIR_V21_12_COMPAT
+# V21.10's provider-specific VoirAnime authority is historical evidence only.
+# The canonical current Repair boundary intentionally skips replaying it and
+# proceeds V21.9 -> V21.11 retirement -> V21.12 generic reconstruction.
+legacy_v21_10 = "    'scripts/upgrade_provider_voiranime_homes_authority_v21_10.py',\n"
+legacy_v21_10_test = "    'tests/provider_voiranime_homes_authority_v21_10_test.py',\n"
+if legacy_v21_10 not in source:
+    raise AssertionError("repair contract no longer contains expected historical V21.10 assertion")
+source = source.replace(legacy_v21_10, "")
+source = source.replace(legacy_v21_10_test, "")
+v21_11 = "    'scripts/retire_provider_neko_sama_v21_11.py',\n"
+v21_12 = "    'scripts/upgrade_provider_runtime_reconstruction_v21_12.py',\n"
+source = source.replace(v21_11, v21_11 + v21_12)
+source = source.replace(
+    "assert '\"routePlanRevision\": \"v21.11\"' in pipeline",
+    "assert '\"routePlanRevision\": \"v21.12\"' in pipeline",
+)
+source = source.replace(
+    "V15->V16->V17->V21.9->V21.10->V21.11 order",
+    "V15->V16->V17->V21.9->V21.11->V21.12 order",
+)
+
+# Activation belongs to the physical current-provider lifecycle:
+# providers/ = enabled, provider-disabled/ = visible but disabled.
+# Repair/off is separate route debt and must never invent provider cardinality.
 compat_replacements = {
-    "    'active-but-broken',": "    '\"activationAuthority\": \"hub-lab-matrix-46\"',",
-    "    'enabled = True',": "    'enabled = provider in target_hubs',",
+    "    'active-but-broken',": "    '\"activationAuthority\": \"provider-folder-lifecycle\"',",
+    "    'enabled = True',": "    'enabled = provider in active_ids',",
     "    'def off_evidence_ok(patch: dict) -> bool:',": "    'def off_evidence_ok(patch: dict, expected_enabled: bool) -> bool:',",
 }
 for old, new in compat_replacements.items():

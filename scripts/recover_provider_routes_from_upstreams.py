@@ -30,6 +30,7 @@ from pathlib import Path
 from typing import Any
 
 from provider_route_proof import derive_task_routes, route_role, unique
+from current_provider_scope import active_provider_ids
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
@@ -40,7 +41,6 @@ WORKER = ROOT / "scripts" / "provider_worker.cjs"
 OUT = ROOT / "automation" / "provider-route-recovery-v5.json"
 KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 OVERRIDES = ROOT / "provider-overrides.json"
-EXPECTED = 96
 PROOF_VERSION = 5
 
 FIXTURES: dict[str, list[dict[str, Any]]] = {
@@ -1447,9 +1447,14 @@ def main() -> int:
     parser.add_argument("--out", type=Path, default=OUT)
     args = parser.parse_args()
 
-    local = manifest_catalog()
-    if len(local) != EXPECTED:
-        raise SystemExit(f"manifest providers={len(local)}, expected={EXPECTED}")
+    all_local = manifest_catalog()
+    active = active_provider_ids()
+    local = {provider_id: row for provider_id, row in all_local.items() if provider_id in active}
+    if set(local) != active:
+        raise SystemExit(
+            "route recovery active identity mismatch: "
+            f"missing={sorted(active-set(local))} extra={sorted(set(local)-active)}"
+        )
     parity = load(PARITY)
     source_map = {
         cid(row.get("providerId")): str(row.get("upstreamSource") or "") or None

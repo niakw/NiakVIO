@@ -13,6 +13,10 @@ import sys
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import active_provider_count
+from current_provider_scope import active_provider_ids
+
 SCRIPTS=ROOT/"scripts"
 sys.path.insert(0,str(SCRIPTS))
 
@@ -25,13 +29,14 @@ store=provenance.get("provider_base_store")
 assert isinstance(rows,dict)
 assert isinstance(store,dict)
 
+active_ids=active_provider_ids()
 entries=[
     row for row in manifest.get("scrapers") or []
-    if isinstance(row,dict) and base_store.canonical_id(str(row.get("id") or ""))
+    if isinstance(row,dict) and base_store.canonical_id(str(row.get("id") or "")) in active_ids
 ]
 provider_ids=[base_store.canonical_id(str(row["id"])) for row in entries]
-assert len(provider_ids)==96, len(provider_ids)
-assert len(set(provider_ids))==96
+assert set(provider_ids)==active_ids, (len(provider_ids),len(active_ids))
+assert len(set(provider_ids))==len(provider_ids)
 
 assert base_store.INITIAL_RECONSTRUCTION_SCOPE==96
 assert base_store.CLEAN_RECONSTRUCTION_AUTHORING_VERSION>=3
@@ -69,7 +74,7 @@ for pid in provider_ids:
     base_store.assert_clean_provider_base(raw,pid)
     seen_paths.add(relative)
 
-assert len(seen_paths)==96
+assert len(seen_paths) == active_provider_count()
 assert all(hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==expected_sha for path in seen_paths)
 
 materializer=(SCRIPTS/"materialize_provider_v3_all.py").read_text(encoding="utf-8")

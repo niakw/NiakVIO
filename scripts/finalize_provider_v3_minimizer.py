@@ -18,7 +18,6 @@ from typing import Any
 
 from provider_security_hardening import assert_hardened
 from provider_v3_minimizer import (
-    EXPECTED_PROVIDER_COUNT,
     PRODUCTION_ENABLED,
     TERSER_ALLOWED,
     minimize_text,
@@ -60,15 +59,29 @@ def _tool_sha() -> str:
 
 
 def _provider_rows(manifest: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return only executable rows; visible disabled rows are publication metadata."""
     rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
-    if len(rows) != EXPECTED_PROVIDER_COUNT:
-        raise ValueError(
-            f"expected {EXPECTED_PROVIDER_COUNT} current providers, got {len(rows)}"
-        )
     ids = [str(row.get("id") or "").strip().casefold() for row in rows]
-    if any(not value for value in ids) or len(set(ids)) != EXPECTED_PROVIDER_COUNT:
+    if any(not value for value in ids) or len(set(ids)) != len(ids):
         raise ValueError("current manifest provider ids must be unique and non-empty")
-    return rows
+
+    active: list[dict[str, Any]] = []
+    for row in rows:
+        relative = str(row.get("filename") or "").strip()
+        if row.get("enabled") is False:
+            if relative.startswith("providers/"):
+                raise ValueError(
+                    f"disabled provider remains in active publication folder: {row.get('id')}"
+                )
+            continue
+        if not relative.startswith("providers/"):
+            raise ValueError(
+                f"active provider is outside active publication folder: {row.get('id')}={relative}"
+            )
+        active.append(row)
+    if not active:
+        raise ValueError("current active provider scope is empty")
+    return active
 
 
 def _safe_provider_path(relative: str) -> Path:
@@ -138,8 +151,10 @@ def finalize(*, check: bool) -> dict[str, Any]:
     already_versioned = 0
     stale = False
     outputs: dict[Path, bytes] = {}
+    active_rows = _provider_rows(manifest)
+    provider_count = len(active_rows)
 
-    for entry in _provider_rows(manifest):
+    for entry in active_rows:
         provider_id = str(entry.get("id") or "").strip().casefold()
         relative = str(entry.get("filename") or "").strip()
         path = _safe_provider_path(relative)
@@ -252,7 +267,7 @@ def finalize(*, check: bool) -> dict[str, Any]:
             raise SystemExit("published providers are not NiakVIO minimizer fixed-point")
         print(
             "FIELD_PROVIDER_V3_MINIMIZER_PUBLICATION "
-            f"providers={EXPECTED_PROVIDER_COUNT} changed=0 saved_bytes=0 "
+            f"providers={provider_count} changed=0 saved_bytes=0 "
             f"tool_sha={tool_sha[:16]} fixed_point=true terser_allowed=false"
         )
         return {"changed": 0, "saved_bytes": 0, "tool_sha256": tool_sha}
@@ -265,7 +280,7 @@ def finalize(*, check: bool) -> dict[str, Any]:
 
     print(
         "FIELD_PROVIDER_V3_MINIMIZER_PUBLICATION "
-        f"providers={EXPECTED_PROVIDER_COUNT} changed={changed} saved_bytes={saved_total} "
+        f"providers={provider_count} changed={changed} saved_bytes={saved_total} "
         f"transformed_lines={transformed_total} skipped_templates={skipped_templates} "
         f"already_versioned={already_versioned} tool_sha={tool_sha[:16]} terser_allowed=false"
     )

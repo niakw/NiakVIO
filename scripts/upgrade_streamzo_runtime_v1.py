@@ -3,6 +3,7 @@
 from __future__ import annotations
 import json
 from pathlib import Path
+from current_provider_scope import active_provider_count
 
 ROOT=Path(__file__).resolve().parents[1]
 OVR=ROOT/'provider-overrides.json'
@@ -14,7 +15,7 @@ def cid(v): return str(v or '').strip().casefold().replace('_','-')
 def main():
     m=json.loads(MATRIX.read_text())
     active={cid(r.get('registryId')) for r in m.get('rows') or [] if isinstance(r,dict)}
-    if 'streamzo' not in active or len(active)!=46: raise SystemExit('invalid Hub46 authority')
+    if 'streamzo' not in active or len(active) != active_provider_count(): raise SystemExit('invalid active-provider authority')
     d=json.loads(OVR.read_text()); p=(d.get('provider_patches') or {}).get('streamzo')
     if not isinstance(p,dict): raise SystemExit('streamzo missing from active overrides')
     scripts=[str(x) for x in p.get('provider_lego_scripts') or [] if str(x)]

@@ -73,7 +73,7 @@ def test_domain_overrides() -> None:
     site = str(purstream.get("official_site") or "").rstrip("/")
     api = str(purstream.get("official_api") or "").rstrip("/")
     assert hub == "https://purstream.wiki", hub
-    assert urlsplit(site).hostname == "purstream.mx", site
+    assert urlsplit(site).hostname == "purstream.ad", site
     assert urlsplit(api).hostname == "api.purstream.ad", api
     runtime_domains = purstream.get("runtime_domain_replacements") or {}
     assert isinstance(runtime_domains, dict) and runtime_domains

@@ -4,8 +4,12 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import active_provider_count
+
 BUILDER = ROOT / "scripts" / "build_hub46_native_manifest.py"
 
 spec = importlib.util.spec_from_file_location("build_hub46_native_manifest", BUILDER)
@@ -18,7 +22,7 @@ scope = {
     module.cid(row.get("manifestId") or row.get("provider"))
     for row in scope_data["rows"]
 }
-assert len(scope) == 46
+assert len(scope) == active_provider_count()
 
 source = json.loads((ROOT / "manifest-hub46.json").read_text(encoding="utf-8"))
 provider_sha = "1" * 40
@@ -30,7 +34,7 @@ payload = module.build(
     verify_git=False,
 )
 rows = payload.get("scrapers") or []
-assert len(rows) == 46
+assert len(rows) == len(scope)
 assert {module.cid(row.get("id")) for row in rows} == scope
 for row in rows:
     filename = str(row.get("filename") or "")

@@ -1719,3 +1719,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Canonical recoverable census remains **46 rows**, executable hub/native scope is **44 active providers**. The legacy `hub-lab-matrix-46.json` filename is compatibility-only; its declared active count is now 44 and current generators derive the count from that authority.
 - `automation/manual-provider-evidence-20260915.json` captures reusable browser evidence: AllWish + AllAnime HLS 200; MoviesMod terminal direct-media route behind interaction; 4KHDHub current movie+TV route via `hdhub4u.bi -> new5.hdhub4u.cl`. Manual positive evidence is not native-player proof, but supersedes interpreting older ZERO results as “no route exists”.
 - **Never ask the user to repeat those already supplied tests.** Continue integration from the captured evidence; a new manual test is justified only for a genuinely new fact not recoverable from repository/runtime evidence.
+
+## 2026-09-15 — Active44 durability repair
+
+- Recoverable provider catalogue is 46 rows; executable/native/automatic-repair scope is matrix-driven and currently 44. DesiFlix and FullAnime are explicit OFF and must never be reactivated merely to satisfy an old cardinality.
+- Repair V6 and fast targeted Repair must reject explicit OFF providers, derive executable targets from `automation/evidence/hub-lab-matrix-46.json`, and may use the historical 96-provider proof baseline only as evidence filtered down to the current 46-row catalogue.
+- Existing user browser evidence is authoritative for avoiding duplicate manual requests: MoviesMod terminal media chain, 4KHDHub movie+TV chain, AllWish/AllAnime HLS 200, plus the larger manual-test history supplied 2026-09-15.
+- `official_hub` is discovery/address metadata, not activation authority. Current activation is the matrix plus explicit manual-OFF state.

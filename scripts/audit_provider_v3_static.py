@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only audit of the exact 46 hub Provider v3 bytes; never reconstructs."""
+"""Read-only audit of exact current active Provider v3 bytes; never reconstructs."""
 from __future__ import annotations
 import hashlib, json, re
 from pathlib import Path
@@ -7,43 +7,38 @@ from provider_patch_blocks import decode_managed_data, owned_span, validate_mana
 from provider_base_store import build_provider_data_model
 from materialize_provider_v3_all import provider_model, normalize_anime_transport_compatibility
 from provider_v3_filename_policy import matches_provider_v3_filename
+from current_provider_scope import active_provider_ids, visible_provider_count
 
 ROOT=Path(__file__).resolve().parents[1]
 def load(p): return json.loads(Path(p).read_text(encoding="utf-8"))
 def canon(v): return str(v or "").strip().casefold()
 
 manifest=load(ROOT/"manifest.json"); overrides=load(ROOT/"provider-overrides.json"); material=load(ROOT/"provider-v3-materialization.json"); static=load(ROOT/"automation/provider-v3-static-knowledge.json")
-rows=manifest.get("scrapers") or []; reports=material.get("providers") or []
-assert len(rows)==46 and len(reports)==46, (len(rows),len(reports))
+active=active_provider_ids(); rows=[r for r in manifest.get("scrapers") or [] if isinstance(r,dict) and canon(r.get("id")) in active]; reports=[r for r in material.get("providers") or [] if isinstance(r,dict) and canon(r.get("provider")) in active]
+assert {canon(r.get("id")) for r in rows}==active, (len(rows),len(active))
+assert {canon(r.get("provider")) for r in reports}==active, (len(reports),len(active))
 rb={canon(r.get("provider")):r for r in reports if isinstance(r,dict)}
 patches=overrides.get("provider_patches") or {}; capabilities=overrides.get("provider_capabilities") or {}; static_rows=static.get("providers") or {}; seen=set()
 
-# Audit the bytes in the tree according to the manifest shape actually being
-# audited, rather than silently defaulting every invocation to publication mode.
-# A mixed filename stage is itself invalid. This preserves the filename-policy
-# rule that unspecified *individual* checks fail closed to publication while
-# allowing the repository-wide workspace materialization audit to state its
-# context explicitly.
-def _filename_stage(rows):
-    workspace=0; publication=0
-    for row in rows:
-        pid=canon(row.get("id")); name=Path(str(row.get("filename") or "")).name
-        if pid and re.fullmatch(rf"{re.escape(pid)}-[0-9a-f]{{16}}\.js",name,re.I): workspace+=1
-        elif pid and re.fullmatch(rf"{re.escape(pid)}--[A-Za-z0-9._-]+--[0-9a-f]{{16}}\.js",name,re.I): publication+=1
-        else: raise AssertionError((pid,name,"invalid-provider-v3-filename-shape"))
-    assert not (workspace and publication), (workspace,publication,"mixed-provider-v3-filename-stage")
-    return "workspace" if workspace else "publication"
+# Filename stage is per-provider compatibility metadata, not activation
+# authority. During a rolling materialization/publication transition, valid
+# workspace and publication names may coexist in the same manifest. Each row
+# still has to satisfy the exact content-addressed filename contract for its
+# own stage. Provider activation remains owned by the literal providers/ tree.
+def _filename_stage(pid: str, name: str) -> str:
+    if pid and re.fullmatch(rf"{re.escape(pid)}-[0-9a-f]{{16}}\.js",name,re.I):
+        return "workspace"
+    if pid and re.fullmatch(rf"{re.escape(pid)}--[A-Za-z0-9._-]+--[0-9a-f]{{16}}\.js",name,re.I):
+        return "publication"
+    raise AssertionError((pid,name,"invalid-provider-v3-filename-shape"))
 
-stage=_filename_stage(rows)
+stage_counts={"workspace":0,"publication":0}
 for row in rows:
     pid=canon(row.get("id")); assert pid and pid not in seen, pid; seen.add(pid)
     rel=str(row.get("filename") or ""); path=ROOT/rel
     assert rel.startswith("providers/") and path.is_file(), (pid,rel)
     raw=path.read_bytes(); sha=hashlib.sha256(raw).hexdigest()
-    # Workspace materialization is provider-hash.js. Final publication is
-    # source-qualified provider--source--hash.js. Both remain exact content
-    # addressing contracts; the repository-wide audit passes the stage inferred
-    # from the complete manifest instead of relying on an implicit default.
+    stage=_filename_stage(pid,path.name); stage_counts[stage]+=1
     assert matches_provider_v3_filename(pid,path.name,sha,material,execution_context=stage), (
         pid,path.name,sha[:16],stage,material.get("context"),material.get("publication")
     )
@@ -88,5 +83,12 @@ for row in rows:
     assert data==expected_data, pid
 
 assert set(rb)==seen
-assert material.get("providerCount")==46 and material.get("expectedProviderCount")==46
-print(f"PROVIDER_V3_STATIC_AUDIT_OK providers=46 reconstruction=false filename_stage={stage} structured_data=current")
+visible=visible_provider_count()
+assert int(material.get("providerCount") or 0)==visible, (material.get("providerCount"),visible)
+if "expectedProviderCount" in material:
+    assert int(material.get("expectedProviderCount") or 0)==visible, (material.get("expectedProviderCount"),visible)
+print(
+    f"PROVIDER_V3_STATIC_AUDIT_OK active={len(active)} visible={visible} reconstruction=false "
+    f"filename_stage=per-row workspace={stage_counts['workspace']} publication={stage_counts['publication']} "
+    "structured_data=current"
+)

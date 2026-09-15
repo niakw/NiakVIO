@@ -36,13 +36,13 @@ from provider_base_store import (  # noqa: E402
 from apply_provider_overrides import apply_overrides  # noqa: E402
 from provider_patch_blocks import owned_span, validate_managed_fixes  # noqa: E402
 from provider_v3_minimizer import minimize_text, validate_transform  # noqa: E402
+from current_provider_scope import active_provider_ids  # noqa: E402
 
 DEFAULT_SOURCE_MANIFEST = ROOT / "manifest.json"
 DEFAULT_OVERRIDES = ROOT / "provider-overrides.json"
 DEFAULT_STATIC_KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 DEFAULT_OUT = ROOT / "providers"
 DEFAULT_REPORT = ROOT / "provider-v3-materialization.json"
-EXPECTED_PROVIDER_COUNT = 46
 
 # PROVIDER_V3_FINAL_STAGE_MINIMIZER_GATE_V1
 FINAL_MINIMIZER_ENV = "NIAKVIO_PROVIDER_V3_FINAL_MINIMIZE"
@@ -468,18 +468,18 @@ def materialize_all(
     context = materialization_context()
     minimize_enabled = final_minimizer_enabled(context)
 
+    active_ids = active_provider_ids()
     rows = [
         row for row in manifest.get("scrapers") or []
-        if isinstance(row, dict) and canonical_id(str(row.get("id") or ""))
+        if isinstance(row, dict)
+        and canonical_id(str(row.get("id") or "")) in active_ids
     ]
-    if len(rows) != EXPECTED_PROVIDER_COUNT:
-        raise ValueError(
-            f"global v3 manifest provider count={len(rows)} expected={EXPECTED_PROVIDER_COUNT}"
-        )
-
     ids = [canonical_id(str(row.get("id") or "")) for row in rows]
-    if len(set(ids)) != EXPECTED_PROVIDER_COUNT:
-        raise ValueError("global v3 manifest contains duplicate provider ids")
+    if not rows or len(set(ids)) != len(ids) or set(ids) != active_ids:
+        raise ValueError(
+            f"global v3 active identity mismatch rows={len(rows)} unique={len(set(ids))} "
+            f"folder_active={len(active_ids)}"
+        )
 
     patch_ids = {canonical_id(v) for v in patches}
     capability_ids = {canonical_id(v) for v in capabilities}
@@ -655,7 +655,7 @@ def materialize_all(
         "context": context,
         "generation": generation,
         "providerCount": len(report_rows),
-        "expectedProviderCount": EXPECTED_PROVIDER_COUNT,
+        "activeProviderIdentityCount": len(active_ids),
         "providers": report_rows,
         "devicePolicy": {
             "providerJsIsDeviceAgnostic": True,

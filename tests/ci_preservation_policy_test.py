@@ -66,13 +66,13 @@ validator_source = (ROOT / 'scripts/validate_activation_preservation.py').read_t
 assert 'ci_inconclusive_is_not_disablement_proof' in validator_source
 assert 'removed-disallowed-p2p' in validator_source
 assert 'configured_safety_quarantine' in validator_source
-assert 'NIAKVIO_HUB46_ACTIVATION_AUTHORITY_V1' in validator_source
+assert 'NIAKVIO_PROVIDER_FOLDER_ACTIVATION_AUTHORITY_V1' in validator_source
 assert 'declared-hub activation mismatch' not in validator_source
 assert '["git", "show", "HEAD:manifest.json"]' in validator_source
 assert 'NUVIO_PUBLISHED_MANIFEST_BASELINE' in validator_source
 
 
-def run_validator(*, manifest_rows, report_rows, mode='deep', safety=None):
+def run_validator(*, manifest_rows, report_rows, mode='deep', safety=None, authority_active=None, authority_visible=None):
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
         (root / 'vf').mkdir()
@@ -106,7 +106,12 @@ def run_validator(*, manifest_rows, report_rows, mode='deep', safety=None):
             path = root / relative
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(content, encoding='utf-8')
+        authority_active = set(authority_active if authority_active is not None else [str(row.get('id') or '').casefold() for row in manifest_rows if row.get('enabled') is True])
+        authority_visible = set(authority_visible if authority_visible is not None else [str(row.get('id') or '').casefold() for row in manifest_rows])
         script = validator_source.replace(
+            'from current_provider_scope import active_provider_ids, visible_provider_ids',
+            f'def active_provider_ids():\n    return {authority_active!r}\n\ndef visible_provider_ids():\n    return {authority_visible!r}',
+        ).replace(
             'ROOT = Path(__file__).resolve().parents[1]',
             f'ROOT = Path({str(root)!r})',
         )
@@ -127,16 +132,16 @@ result = run_validator(
     manifest_rows=[{'id': 'a', 'enabled': True}, {'id': 'b', 'enabled': False}],
     report_rows=[],
 )
-assert result.returncode == 1
-assert 'canonical catalogue must contain 46 providers' in result.stderr
-assert 'active-hub target missing from canonical catalogue' in result.stderr
-assert 'non-target provider unexpectedly enabled' not in result.stderr
+assert result.returncode == 0, result.stderr
 
 result = run_validator(
     manifest_rows=[{'id': 'a', 'enabled': True}, {'id': 'b', 'enabled': True}],
     report_rows=[],
+    authority_active={'a'},
+    authority_visible={'a', 'b'},
 )
 assert result.returncode == 1
+assert 'manifest activation differs from providers/ authority' in result.stderr
 assert 'non-target provider unexpectedly enabled: b' in result.stderr
 
 # official_hub itself is not activation authority; registry-only targets are legal.

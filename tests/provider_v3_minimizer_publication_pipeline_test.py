@@ -11,6 +11,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 SCRIPT = ROOT / "scripts/finalize_provider_v3_minimizer.py"
+SYNTHETIC_ACTIVE = 3
+DISABLED_ID = "disabled-demo"
+
 
 spec = importlib.util.spec_from_file_location("finalize_provider_v3_minimizer", SCRIPT)
 module = importlib.util.module_from_spec(spec)
@@ -19,16 +22,16 @@ spec.loader.exec_module(module)
 
 assert module.PRODUCTION_ENABLED is True
 assert module.TERSER_ALLOWED is False
-assert module.EXPECTED_PROVIDER_COUNT == 46
 
 with tempfile.TemporaryDirectory() as tmp_raw:
     tmp = Path(tmp_raw)
     providers = tmp / "providers"
     providers.mkdir()
+    (tmp / "provider-disabled").mkdir()
     manifest = {"version": "9.9.9", "scrapers": []}
     provenance = {"providers": {}}
 
-    for index in range(46):
+    for index in range(SYNTHETIC_ACTIVE):
         provider_id = f"p{index:02d}"
         filename = f"providers/{provider_id}--nuvio--old0000000000000.js"
         text = (
@@ -66,6 +69,20 @@ with tempfile.TemporaryDirectory() as tmp_raw:
             },
         }
 
+    disabled_filename = "provider-disabled/disabled-demo--nuvio--disabled00000000.js"
+    disabled_text = "/* disabled provider retained verbatim */\n"
+    (tmp / disabled_filename).write_text(disabled_text, encoding="utf-8")
+    manifest["scrapers"].append({
+        "id": DISABLED_ID,
+        "version": "7.7.7",
+        "filename": disabled_filename,
+        "enabled": False,
+    })
+    provenance["providers"][DISABLED_ID] = {
+        "published_filename": disabled_filename,
+        "sha256": "disabled-stable",
+    }
+
     manifest_path = tmp / "manifest.json"
     provenance_path = tmp / "PROVENANCE.json"
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
@@ -79,19 +96,31 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     module.validate_artifact = lambda data, provider_id: None
     module.assert_hardened = lambda text: None
     module.load_provider_version_floors = lambda: {
-        f"p{index:02d}": "1.0.0" for index in range(46)
+        f"p{index:02d}": "1.0.0" for index in range(SYNTHETIC_ACTIVE)
     }
 
     first = module.finalize(check=False)
-    assert first["changed"] == 46, first
+    assert first["changed"] == SYNTHETIC_ACTIVE, first
     assert first["saved_bytes"] > 0, first
-    assert first["already_versioned"] == 46, first
+    assert first["already_versioned"] == SYNTHETIC_ACTIVE, first
 
     out_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     out_provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
-    assert len(out_manifest["scrapers"]) == 46
+    assert len(out_manifest["scrapers"]) == SYNTHETIC_ACTIVE + 1
+    disabled_row = next(row for row in out_manifest["scrapers"] if row["id"] == DISABLED_ID)
+    assert disabled_row == {
+        "id": DISABLED_ID,
+        "version": "7.7.7",
+        "filename": disabled_filename,
+        "enabled": False,
+    }
+    assert (tmp / disabled_filename).read_text(encoding="utf-8") == disabled_text
+    assert out_provenance["providers"][DISABLED_ID] == {
+        "published_filename": disabled_filename,
+        "sha256": "disabled-stable",
+    }
     first_proofs = {}
-    for row in out_manifest["scrapers"]:
+    for row in [row for row in out_manifest["scrapers"] if row.get("enabled") is not False]:
         provider_id = row["id"]
         assert row["version"] == "1.0.1", row
         assert row["filename"].startswith(f"providers/{provider_id}--nuvio--"), row
@@ -118,9 +147,9 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     assert second["changed"] == 0, second
     after_second = json.loads(manifest_path.read_text(encoding="utf-8"))
     provenance_second = json.loads(provenance_path.read_text(encoding="utf-8"))
-    assert all(row["version"] == "1.0.1" for row in after_second["scrapers"])
+    assert all(row["version"] == "1.0.1" for row in after_second["scrapers"] if row.get("enabled") is not False)
     for provider_id, proof in first_proofs.items():
         assert provenance_second["providers"][provider_id]["final_minimizer"] == proof
     module.finalize(check=True)
 
-print("PROVIDER_V3_MINIMIZER_PUBLICATION_PIPELINE_OK providers=46 fixed_point=1 no_double_bump=1 template_safe=1 terser=0")
+print(f"PROVIDER_V3_MINIMIZER_PUBLICATION_PIPELINE_OK providers={SYNTHETIC_ACTIVE} disabled_preserved=1 fixed_point=1 no_double_bump=1 template_safe=1 terser=0")

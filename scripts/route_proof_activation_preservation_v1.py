@@ -9,8 +9,8 @@ route exists.
 The public function name is retained because release-integrity validation imports it.
 Legacy proof-v5 disable records are now explicitly rejected rather than granted a
 special disablement exception. The legacy activation validator still carries the old
-96-provider catalogue floor; this Hub46 adapter supersedes only that stale cardinality
-error, and only after independently proving the current catalogue is exactly 46 rows.
+96-provider catalogue floor; this compatibility adapter ignores only that stale legacy cardinality error;
+current folder/manifest identity is validated independently.
 """
 from __future__ import annotations
 
@@ -24,7 +24,6 @@ LEGACY_ROUTE_PROOF_DISABLE_ACTION = "published-disabled-no-proven-route"
 ROUTE_PROOF_DISABLE_ACTION = LEGACY_ROUTE_PROOF_DISABLE_ACTION
 ROUTE_PROOF_FAILED_GATE = "route_proof_no_proven_route"
 ROUTE_PROOF_AUTHORITY = "provider-route-recovery-v5"
-CURRENT_PROVIDER_COUNT = 46
 LEGACY_CATALOGUE_COUNT_ERROR = "canonical catalogue must contain 96 providers"
 
 
@@ -56,21 +55,13 @@ def validate() -> list[str]:
     finally:
         legacy.conclusive_disablement = original
 
-    main_count = len(legacy.rows(legacy.load(legacy.MAIN)))
-    if main_count == CURRENT_PROVIDER_COUNT:
-        errors = [
-            error for error in errors
-            if not str(error).startswith(LEGACY_CATALOGUE_COUNT_ERROR)
-        ]
-    else:
-        errors.append(
-            f"canonical Hub46 catalogue must contain exactly {CURRENT_PROVIDER_COUNT} providers, got {main_count}"
-        )
-    return errors
+    # The legacy 96-row error is obsolete. Current identity/folder coherence is
+    # validated independently; route proof never owns provider cardinality.
+    return [error for error in errors if not str(error).startswith(LEGACY_CATALOGUE_COUNT_ERROR)]
 
 
 if __name__ == "__main__":
     errors = validate()
     if errors:
         raise SystemExit("provider activation preservation failed:\n- " + "\n- ".join(errors))
-    print("provider activation preservation passed (route proof diagnostic-only; Hub46 exact cardinality)")
+    print("provider activation preservation passed (route proof diagnostic-only; dynamic current-provider identity)")

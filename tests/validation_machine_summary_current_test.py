@@ -3,21 +3,24 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/"scripts"))
+from current_provider_scope import active_provider_count, visible_provider_count
 validation = json.loads((ROOT / "VALIDATION.json").read_text(encoding="utf-8"))
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 corpus = json.loads((ROOT / ".github/triggers/rotating-popular-corpus.json").read_text(encoding="utf-8"))
 scope = json.loads((ROOT / "automation/evidence/hub-lab-matrix-46.json").read_text(encoding="utf-8"))
 
 assert validation["release"] == manifest["version"]
-assert validation["catalogue"]["provider_objects"] == len(manifest.get("scrapers") or []) == 96
+assert len(manifest.get("scrapers") or []) == visible_provider_count()
 scope_ids = {
     str(row.get("manifestId") or row.get("provider") or "").strip().casefold()
     for row in scope.get("rows") or []
     if isinstance(row, dict) and str(row.get("manifestId") or row.get("provider") or "").strip()
 }
-assert len(scope_ids) == validation["catalogue"]["physical_native_lab_scope"] == 46
+assert len(scope_ids) == active_provider_count()
 assert set(validation["native_sampling"]["global_lists"]) == {"movie", "tv", "anime"}
 assert set(corpus.get("lists") or {}) == {"movie", "tv", "anime"}
 for lane in ("movie", "tv", "anime"):
@@ -32,5 +35,5 @@ assert validation["final_certification"]["requires_final_native_hub46_manifest_r
 
 print(
     "VALIDATION_MACHINE_SUMMARY_CURRENT_OK "
-    f"release={validation['release']} providers=96 scope=46 corpus=3x32 certification=pending"
+    f"release={validation['release']} providers={visible_provider_count()} scope={active_provider_count()} corpus=3x32 certification=pending"
 )

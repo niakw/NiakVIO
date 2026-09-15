@@ -11,6 +11,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from current_provider_scope import active_provider_ids, visible_provider_ids
+
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 DEFAULT_SKIP = ROOT / "automation" / "provider-repair-skip.json"
@@ -24,6 +26,7 @@ PORTFOLIO_CANDIDATE = ROOT / "automation" / "provider-repair-portfolio-candidate
 PORTFOLIO_RETRY = ROOT / "automation" / "provider-repair-portfolio-retry.json"
 PORTFOLIO_LOSSES = ROOT / "automation" / "provider-repair-portfolio-losses.json"
 DISPOSITION = ROOT / "automation" / "provider-repair-disposition.json"
+HUB_MATRIX = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 RUNTIME_PLAN_LKG = Path(os.environ.get("RUNNER_TEMP") or (ROOT / "automation")) / "provider-runtime-plan-lkg-v1.json"
 
 
@@ -76,18 +79,42 @@ def main() -> int:
     skip_path = args.skip_file if args.skip_file.is_absolute() else ROOT / args.skip_file
     skip_cfg = load(skip_path)
     skipped = {cid(value) for value in (skip_cfg.get("providers") or {}).keys() if cid(value)}
-    catalogue = [cid(row.get("id")) for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]
-    if len(catalogue) != 96 or len(set(catalogue)) != 96:
-        raise SystemExit(f"provider catalogue must be exactly 96, got {len(catalogue)}")
+    catalogue_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]
+    catalogue = [cid(row.get("id")) for row in catalogue_rows]
+    if len(catalogue) != len(set(catalogue)):
+        raise SystemExit("provider catalogue contains duplicate ids")
+    visible = visible_provider_ids()
+    if set(catalogue) != visible:
+        raise SystemExit(
+            "manifest/folder provider identity mismatch: "
+            f"manifest_only={sorted(set(catalogue)-visible)} folder_only={sorted(visible-set(catalogue))}"
+        )
+    active_ids = active_provider_ids()
+    active_catalogue = [cid(row.get("id")) for row in catalogue_rows if cid(row.get("id")) in active_ids]
+    matrix = load(HUB_MATRIX)
+    matrix_ids = {cid(row.get("manifestId") or row.get("provider")) for row in matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))}
+    if matrix_ids != active_ids:
+        print(
+            "FIELD_PROVIDER_REPAIR_MATRIX_STALE "
+            f"matrix_only={','.join(sorted(matrix_ids-active_ids)) or '-'} "
+            f"active_only={','.join(sorted(active_ids-matrix_ids)) or '-'}",
+            flush=True,
+        )
     requested = {cid(value) for value in args.provider if cid(value)}
-    targets = [provider for provider in catalogue if provider not in skipped and (not requested or provider in requested)]
+    unknown = sorted(requested - set(catalogue))
+    if unknown:
+        raise SystemExit("unknown providers: " + ",".join(unknown))
+    disabled_requested = sorted(requested - set(active_catalogue))
+    if disabled_requested:
+        raise SystemExit("requested providers are explicitly OFF/disabled: " + ",".join(disabled_requested))
+    targets = [provider for provider in active_catalogue if provider not in skipped and (not requested or provider in requested)]
     if not targets:
         raise SystemExit("no unresolved provider selected for repair")
 
     attempts = max(1, min(int(args.attempts), 4))
     print(
         "FIELD_PROVIDER_REPAIR_SCOPE "
-        f"mode={args.mode} catalogue=96 targeted={len(targets)} skipped_green={len(skipped)} "
+        f"mode={args.mode} catalogue={len(catalogue)} active={len(active_catalogue)} targeted={len(targets)} skipped_green={len(skipped)} "
         f"attempts={attempts} providers={','.join(targets)}",
         flush=True,
     )
@@ -179,7 +206,7 @@ def main() -> int:
         cmd.extend(["--provider", provider])
     run(*cmd, timeout=max(1200, len(targets) * max(15, args.timeout) * attempts))
 
-    run(sys.executable, "scripts/merge_provider_repair_report_v6.py", "--baseline", "automation/provider-route-recovery-v5.json", "--targeted", str(TARGET_REPORT.relative_to(ROOT)), "--output", str(MERGED_REPORT.relative_to(ROOT)))
+    run(sys.executable, "scripts/merge_provider_repair_report_v6.py", "--baseline", "automation/provider-route-recovery-v5.json", "--targeted", str(TARGET_REPORT.relative_to(ROOT)), "--output", str(MERGED_REPORT.relative_to(ROOT)), "--manifest", "manifest.json")
     run(sys.executable, "scripts/apply_provider_route_recovery_report.py", str(MERGED_REPORT.relative_to(ROOT)))
     run(
         sys.executable,
@@ -191,7 +218,7 @@ def main() -> int:
     run(sys.executable, "scripts/materialize_provider_base_v3_store.py")
     run(sys.executable, "scripts/materialize_provider_v3_all.py")
     run(sys.executable, "scripts/generate_language_manifests.py", "--manifest", "manifest.json", "--report", "health-report.json")
-    run(sys.executable, "scripts/validate_published_provider_config.py", "--expected", "96")
+    run(sys.executable, "scripts/validate_published_provider_config.py")
 
     for test in (
         "tests/provider_js_lego_ownership_test.py",
@@ -218,7 +245,7 @@ def main() -> int:
         "--quick-yield", str(QUICK_YIELD.relative_to(ROOT)),
     )
     run(sys.executable, "scripts/generate_language_manifests.py", "--manifest", "manifest.json", "--report", "health-report.json")
-    run(sys.executable, "scripts/validate_published_provider_config.py", "--expected", "96")
+    run(sys.executable, "scripts/validate_published_provider_config.py")
     run(sys.executable, "tests/provider_v3_strategy_plan_contract_test.py")
 
     PORTFOLIO_RETRY.unlink(missing_ok=True)
@@ -273,7 +300,8 @@ def main() -> int:
         "mode": args.mode,
         "publicationAllowed": False,
         "mainWritesAllowed": False,
-        "catalogueProviderCount": 46,
+        "catalogueProviderCount": len(catalogue),
+        "activeProviderCount": len(active_catalogue),
         "skippedAlreadyGreenProviders": sorted(skipped),
         "targetedProviderCount": len(targets),
         "targetedProviders": targets,

@@ -4,10 +4,13 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import visible_provider_ids
 CURRENT_MANIFEST = ROOT / "manifest.json"
 QUICK_YIELD = ROOT / "provider-v3-quick-yield.json"
 RETENTION = ROOT / "providers" / ".generation-retention.json"
@@ -15,7 +18,6 @@ LEARN_HANDOFF = ROOT / "automation" / "provider-repair-learn-handoff-v1.json"
 EVIDENCE = ROOT / "automation" / "provider-history-evidence-v1.json"
 OUT_JSON = ROOT / "automation" / "provider-history-matrix.json"
 OUT_MD = ROOT / "automation" / "PROVIDER-HISTORY-MATRIX.md"
-EXPECTED = 46
 PRIORITY = {"anime-sama","purstream","flemmix","uhdmovies","movieshunt","zinkmovies","vegamovies","hindmoviez","4khdhub","4khdhubnew","persianstremio","desiflix"}
 VF_GUARDS = {"kehflix","streamzo"}
 
@@ -140,8 +142,13 @@ def main() -> int:
     learn = load_json(LEARN_HANDOFF)
     evidence = load_json(EVIDENCE)
     current_map = manifest_map(current)
-    if len(current_map) != EXPECTED:
-        raise SystemExit(f"expected {EXPECTED} current providers, got {len(current_map)}")
+    current_ids = visible_provider_ids()
+    if set(current_map) != current_ids:
+        raise SystemExit(
+            "current manifest/folder identity mismatch "
+            f"manifest_only={sorted(set(current_map) - current_ids)} "
+            f"folder_only={sorted(current_ids - set(current_map))}"
+        )
     snaps = evidence.get("snapshots") or {}
     tag0 = manifest_map(git_show_json(str((snaps.get("tag_5_21_0") or {}).get("ref") or "5.21.0"), "manifest.json"))
     tag16 = manifest_map(git_show_json(str((snaps.get("tag_5_21_16") or {}).get("ref") or "5.21.16"), "manifest.json"))
@@ -190,18 +197,18 @@ def main() -> int:
             "historyVerdict":verdict,
             "action":action,
         })
-    if len(rows_out) != EXPECTED:
-        raise SystemExit(f"expected {EXPECTED} matrix rows, got {len(rows_out)}")
+    if {str(row.get("provider") or "").strip().casefold() for row in rows_out} != current_ids:
+        raise SystemExit("history matrix rows do not match current provider identities")
     counts = {}
     for r in rows_out:
         counts[r["classification"]] = counts.get(r["classification"],0) + 1
     desktop = next((str(x.get("observation")) for x in evidence.get("fieldEvidence") or [] if str(x.get("environment") or "").startswith("Desktop macOS")),"")
-    out = {"schemaVersion":1,"providerCount":EXPECTED,"currentManifestVersion":current.get("version"),"snapshotRefs":snaps,"classificationCounts":dict(sorted(counts.items())),"desktopMacFieldObservation":desktop,"policy":evidence.get("policy"),"providers":rows_out}
+    out = {"schemaVersion":1,"providerCount":len(rows_out),"currentManifestVersion":current.get("version"),"snapshotRefs":snaps,"classificationCounts":dict(sorted(counts.items())),"desktopMacFieldObservation":desktop,"policy":evidence.get("policy"),"providers":rows_out}
     OUT_JSON.write_text(json.dumps(out,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
-    lines = ["# Provider history & live classification — 46 current / 50 historical archive","",f"- Current manifest: **{current.get('version')}**, providers: **{EXPECTED}**.","- Historical code snapshots: **5.21.0**, **5.21.16**, **5.21.36**, then current.","- Snapshot hash/version columns are code history, **not** live proof by themselves.","- Live precedence: current TV field evidence / current published-byte guard > recent reconstruction candidate > old census.",f"- Desktop macOS field observation: **{desktop or 'no field evidence'}**","- Non-regression policy: a known-good published provider/lane is immutable until a replacement wins an A/B live check.","","## Classification counts",""]
+    lines = [f"# Provider history & live classification — {len(rows_out)} current / historical archive","",f"- Current manifest: **{current.get('version')}**, providers: **{len(rows_out)}**.","- Historical code snapshots: **5.21.0**, **5.21.16**, **5.21.36**, then current.","- Snapshot hash/version columns are code history, **not** live proof by themselves.","- Live precedence: current TV field evidence / current published-byte guard > recent reconstruction candidate > old census.",f"- Desktop macOS field observation: **{desktop or 'no field evidence'}**","- Non-regression policy: a known-good published provider/lane is immutable until a replacement wins an A/B live check.","","## Classification counts",""]
     for k,v in sorted(counts.items(), key=lambda kv:(-kv[1],kv[0])):
         lines.append(f"- **{k}**: {v}")
-    lines += ["","## 46-current-provider matrix","","| Provider | Types | Family | 5.21.0 | 5.21.16 | 5.21.36 | Current | Retained | 5.21.36 live | Current published/field | Class | Action |","|---|---|---|---|---|---|---|---:|---|---|---|---|"]
+    lines += ["",f"## {len(rows_out)}-current-provider matrix","","| Provider | Types | Family | 5.21.0 | 5.21.16 | 5.21.36 | Current | Retained | 5.21.36 live | Current published/field | Class | Action |","|---|---|---|---|---|---|---|---:|---|---|---|---|"]
     current_key = str(current.get("version") or "current")
     for r in rows_out:
         ev=[]

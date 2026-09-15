@@ -24,7 +24,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PROVIDERS = ROOT / "providers"
 MANIFEST = ROOT / "manifest.json"
-EXPECTED_PROVIDER_COUNT = 46
 
 PRODUCTION_ENABLED = True
 TERSER_ALLOWED = False
@@ -297,12 +296,13 @@ def provider_files() -> list[Path]:
     filenames = [
         str(row.get("filename") or "").strip()
         for row in (manifest.get("scrapers") or [])
-        if str(row.get("filename") or "").strip()
+        if isinstance(row, dict)
+        and row.get("enabled") is not False
+        and str(row.get("filename") or "").startswith("providers/")
     ]
-    if len(filenames) != EXPECTED_PROVIDER_COUNT or len(set(filenames)) != EXPECTED_PROVIDER_COUNT:
+    if not filenames or len(filenames) != len(set(filenames)):
         raise SystemExit(
-            f"expected {EXPECTED_PROVIDER_COUNT} unique manifest provider filenames, "
-            f"got {len(filenames)} / {len(set(filenames))}"
+            f"active manifest provider filenames must be unique/non-empty: {len(filenames)} / {len(set(filenames))}"
         )
     files: list[Path] = []
     for filename in filenames:
@@ -383,7 +383,7 @@ def portfolio_report(*, syntax_check: bool = False) -> dict:
             "never reorder or fold expressions",
             "never use Terser",
             "retain a physical line boundary between adjacent nonblank code lines",
-            f"require idempotence and Node syntax on all {EXPECTED_PROVIDER_COUNT} current providers",
+            f"require idempotence and Node syntax on all {len(files)} current active providers",
         ],
         "totals": totals,
         "providers": rows,
@@ -416,10 +416,6 @@ def main() -> int:
     args = parser.parse_args()
 
     report = portfolio_report(syntax_check=args.syntax_check)
-    if report["provider_count"] != EXPECTED_PROVIDER_COUNT:
-        raise SystemExit(
-            f"expected {EXPECTED_PROVIDER_COUNT} generated providers, got {report['provider_count']}"
-        )
 
     if args.preview_dir:
         report = write_preview(args.preview_dir, syntax_check=True)

@@ -12,11 +12,12 @@ import argparse
 import json
 import re
 from pathlib import Path
+from current_provider_scope import active_provider_count
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
-EXPECTED = 96
+EXPECTED = active_provider_count()
 
 SEARCH_EMPTY_RE = re.compile(
     r"([?&](?:s|q|query|keyword|search|story)=)(?:\.{3})?(?=&|#|$)",

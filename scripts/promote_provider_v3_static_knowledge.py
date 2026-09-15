@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from current_provider_scope import active_provider_count
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,7 +18,7 @@ DEFAULT_STAGE = ROOT / "staging" / "provider-v3-static-knowledge"
 DEFAULT_OUTPUT = ROOT / "automation" / "provider-v3-static-knowledge.json"
 MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
-EXPECTED = 96
+EXPECTED = active_provider_count()
 
 
 def load(path: Path) -> dict[str, Any]:

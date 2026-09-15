@@ -2,9 +2,13 @@
 from __future__ import annotations
 import json
 from pathlib import Path
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-CURRENT_PROVIDER_COUNT = 46
+sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import active_provider_count
+
+EXPECTED = active_provider_count()
 CANONICAL = {"movie", "tv", "anime"}
 TRANSPORT = CANONICAL
 
