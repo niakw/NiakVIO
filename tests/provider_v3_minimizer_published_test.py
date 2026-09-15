@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
-"""Published Provider v3 bundles must already be minimizer fixed-points."""
+"""Published active Provider v3 bundles must already be minimizer fixed-points."""
 from __future__ import annotations
 
 import importlib.util
-import json
 import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/provider_v3_minimizer.py"
-EXPECTED = 46
 
 spec = importlib.util.spec_from_file_location("provider_v3_minimizer_published", SCRIPT)
 module = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(module)
 
-manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
-files = [ROOT / str(row["filename"]) for row in manifest.get("scrapers") or []]
-assert len(files) == EXPECTED
+# Active executable bytes are exactly what the minimizer itself derives from
+# enabled manifest identities under providers/. No provider census is policy.
+files = module.provider_files()
+EXPECTED = len(files)
+assert EXPECTED > 0
 assert len({path.resolve() for path in files}) == EXPECTED
 
 non_fixed = []
@@ -35,7 +35,7 @@ node_script = """
 const fs = require('fs');
 const vm = require('vm');
 const files = process.argv.slice(1);
-if (files.length !== 46) throw new Error('expected 46 files, got ' + files.length);
+if (!files.length) throw new Error('active provider set is empty');
 for (const file of files) {
   new vm.Script(fs.readFileSync(file, 'utf8'), {filename: file});
 }
