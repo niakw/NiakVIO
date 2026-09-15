@@ -5,6 +5,7 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
+from current_provider_scope import visible_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
@@ -20,7 +21,7 @@ spec.loader.exec_module(module)
 
 floors_payload = json.loads(FLOORS.read_text(encoding="utf-8"))
 floors = floors_payload.get("providers") or {}
-assert len(floors) == 96, f"expected 96 exposed provider version floors, got {len(floors)}"
+assert len(floors) == visible_provider_count(), f"expected 96 exposed provider version floors, got {len(floors)}"
 
 assert module.bump_provider_version("1.0.69", "1.0.70") == "1.0.71"
 assert module.bump_provider_version("1.0.71", "1.0.70") == "1.0.72"

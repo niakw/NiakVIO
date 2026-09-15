@@ -23,6 +23,7 @@ import time
 import urllib.parse
 from collections import Counter, defaultdict
 from pathlib import Path
+from current_provider_scope import active_provider_count
 from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,7 +33,7 @@ PROBE = ROOT / "scripts" / "nuvio_tv_probe_route_validation.cjs"
 KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 OUTPUT = ROOT / "provider-v3-live-route-validation.json"
-EXPECTED = 96
+EXPECTED = active_provider_count()
 REPRESENTATIVE = {
     "movie": "interstellar",
     "tv": "breaking-bad-s01e01",

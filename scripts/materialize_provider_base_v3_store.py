@@ -5,7 +5,7 @@ Before importing the ProviderBase generator, apply the deterministic execution
 route sanitizer, cumulative common runtime upgrades, the fail-closed HTML text
 hardening pass, provider-agnostic movie/episode identity guards, the live manual-TV
 V34 common fixes, and the durable Mugiwara episodic fail-closed migration. This
-ordering guarantees that all 46 current generated bundles use the same repaired
+ordering guarantees that all current active generated bundles use the same repaired
 DATA/runtime contract and that provider-specific repaired runtime Lego cannot
 silently regress. Historical knowledge may remain stored for the 50 archived
 providers, but it is never materialized into the current release.
@@ -19,8 +19,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import active_provider_ids
 OVERRIDES = ROOT / "provider-overrides.json"
-EXPECTED_CURRENT = 46
 CURRENT_RUNTIME_READER_VERSION = 10
 
 
@@ -65,14 +66,13 @@ def main() -> int:
     if not isinstance(patches, dict) or not isinstance(capabilities, dict) or not isinstance(rows, dict):
         raise SystemExit("ProviderBase v3 store requires patches/capabilities/provenance maps")
 
+    current_ids = active_provider_ids()
     entries = [
         row for row in manifest.get("scrapers") or []
-        if isinstance(row, dict) and canonical_id(str(row.get("id") or ""))
+        if isinstance(row, dict) and canonical_id(str(row.get("id") or "")) in current_ids
     ]
-    if len(entries) != EXPECTED_CURRENT:
-        raise SystemExit(f"ProviderBase v3 store requires {EXPECTED_CURRENT} current providers, got {len(entries)}")
-
-    current_ids = {canonical_id(str(entry.get("id") or "")) for entry in entries}
+    if not entries or {canonical_id(str(entry.get("id") or "")) for entry in entries} != current_ids:
+        raise SystemExit("ProviderBase v3 active identity set differs from providers/ authority")
     static_knowledge = load(ROOT / "automation" / "provider-v3-static-knowledge.json")
     static_rows = static_knowledge.get("providers")
     if not isinstance(static_rows, dict):

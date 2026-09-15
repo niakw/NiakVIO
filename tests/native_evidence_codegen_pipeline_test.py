@@ -7,13 +7,14 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from current_provider_scope import active_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
 PINNED_MANIFEST_URL = (
     "https://raw.githubusercontent.com/niakw/NiakVIO/"
     "0123456789abcdef0123456789abcdef01234567/manifest.json"
 )
-CURRENT_PROVIDER_COUNT = 46
+EXPECTED = active_provider_count()
 
 
 def load(name: str, relative: str):

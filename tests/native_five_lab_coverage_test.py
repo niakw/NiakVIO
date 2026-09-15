@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """The native acceptance surface is exactly five first-class client/platform labs."""
 from pathlib import Path
+from current_provider_scope import active_provider_count
 import json
 
 ROOT = Path(__file__).resolve().parents[1]
-CURRENT_PROVIDER_COUNT = 46
+EXPECTED = active_provider_count()
 android = (ROOT / ".github/workflows/native-mobile-android-reader.yml").read_text(encoding="utf-8")
 ios = (ROOT / ".github/workflows/native-mobile-ios-reader.yml").read_text(encoding="utf-8")
 desktop = (ROOT / ".github/workflows/native-desktop-reader-acceptance.yml").read_text(encoding="utf-8")

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only audit of the exact 46 hub Provider v3 bytes; never reconstructs."""
+"""Read-only audit of exact current active Provider v3 bytes; never reconstructs."""
 from __future__ import annotations
 import hashlib, json, re
 from pathlib import Path
@@ -7,14 +7,16 @@ from provider_patch_blocks import decode_managed_data, owned_span, validate_mana
 from provider_base_store import build_provider_data_model
 from materialize_provider_v3_all import provider_model, normalize_anime_transport_compatibility
 from provider_v3_filename_policy import matches_provider_v3_filename
+from current_provider_scope import active_provider_ids
 
 ROOT=Path(__file__).resolve().parents[1]
 def load(p): return json.loads(Path(p).read_text(encoding="utf-8"))
 def canon(v): return str(v or "").strip().casefold()
 
 manifest=load(ROOT/"manifest.json"); overrides=load(ROOT/"provider-overrides.json"); material=load(ROOT/"provider-v3-materialization.json"); static=load(ROOT/"automation/provider-v3-static-knowledge.json")
-rows=manifest.get("scrapers") or []; reports=material.get("providers") or []
-assert len(rows)==46 and len(reports)==46, (len(rows),len(reports))
+active=active_provider_ids(); rows=[r for r in manifest.get("scrapers") or [] if isinstance(r,dict) and canon(r.get("id")) in active]; reports=[r for r in material.get("providers") or [] if isinstance(r,dict) and canon(r.get("provider")) in active]
+assert {canon(r.get("id")) for r in rows}==active, (len(rows),len(active))
+assert {canon(r.get("provider")) for r in reports}==active, (len(reports),len(active))
 rb={canon(r.get("provider")):r for r in reports if isinstance(r,dict)}
 patches=overrides.get("provider_patches") or {}; capabilities=overrides.get("provider_capabilities") or {}; static_rows=static.get("providers") or {}; seen=set()
 
@@ -88,5 +90,5 @@ for row in rows:
     assert data==expected_data, pid
 
 assert set(rb)==seen
-assert material.get("providerCount")==46 and material.get("expectedProviderCount")==46
-print(f"PROVIDER_V3_STATIC_AUDIT_OK providers=46 reconstruction=false filename_stage={stage} structured_data=current")
+assert int(material.get("providerCount") or 0)==len(active), (material.get("providerCount"),len(active))
+print(f"PROVIDER_V3_STATIC_AUDIT_OK providers={len(active)} reconstruction=false filename_stage={stage} structured_data=current")

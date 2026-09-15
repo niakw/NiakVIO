@@ -11,7 +11,6 @@ BASE_BUILDER = ROOT / "scripts" / "build_provider_history_matrix.py"
 OUT_JSON = ROOT / "automation" / "provider-history-matrix.json"
 OUT_MD = ROOT / "automation" / "PROVIDER-HISTORY-MATRIX.md"
 EVIDENCE = ROOT / "automation" / "provider-history-evidence-v1.json"
-EXPECTED = 46
 
 GREEN = "🟢"
 YELLOW = "🟡"

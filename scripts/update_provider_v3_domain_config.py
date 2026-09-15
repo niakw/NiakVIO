@@ -8,6 +8,7 @@ materialization inventory are updated deterministically.
 from __future__ import annotations
 import argparse, hashlib, json, re
 from pathlib import Path
+from current_provider_scope import visible_provider_count
 from typing import Any
 from provider_patch_blocks import decode_managed_data, owned_span, replace_provider_fix, validate_managed_fixes
 
@@ -60,7 +61,7 @@ def main()->int:
 
     manifest=load(args.manifest); overrides=load(args.overrides); material=load(args.materialization)
     mrows=manifest.get("scrapers") or []; rrows=material.get("providers") or []
-    if len(mrows)!=96 or len(rrows)!=96:
+    if len(mrows) != visible_provider_count() or len(rrows) != visible_provider_count():
         raise SystemExit("domain update requires 96/96 published Provider v3 state")
     mb={canonical(r.get("id")):r for r in mrows if isinstance(r,dict)}
     rb={canonical(r.get("provider")):r for r in rrows if isinstance(r,dict)}

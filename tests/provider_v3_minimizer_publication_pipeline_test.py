@@ -7,6 +7,7 @@ import json
 import sys
 import tempfile
 from pathlib import Path
+from current_provider_scope import active_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -89,7 +90,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
 
     out_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     out_provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
-    assert len(out_manifest["scrapers"]) == 46
+    assert len(out_manifest["scrapers"]) == active_provider_count()
     first_proofs = {}
     for row in out_manifest["scrapers"]:
         provider_id = row["id"]

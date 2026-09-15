@@ -11,11 +11,12 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from current_provider_scope import active_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
-EXPECTED = 96
+EXPECTED = active_provider_count()
 RUNTIME_READER_VERSION = 9
 
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from current_provider_scope import visible_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -72,7 +73,7 @@ def main() -> int:
     if provenance_path.stat().st_size > 0:
         provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
         providers = provenance.get("providers") or {}
-        assert len(providers) == 96
+        assert len(providers) == visible_provider_count()
         for provider_id, row in providers.items():
             base_file = ROOT / str(row.get("base_filename") or "")
             assert base_file.is_file(), (provider_id, base_file)

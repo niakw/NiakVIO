@@ -3,13 +3,14 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from current_provider_scope import active_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 SEEDS = ROOT / "automation" / "provider-v3-recognition-seeds.json"
-EXPECTED = 96
+EXPECTED = active_provider_count()
 
 
 def canonical(value: object) -> str:

@@ -4,6 +4,7 @@ from __future__ import annotations
 import ast
 import json
 from pathlib import Path
+from current_provider_scope import active_provider_count
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -250,7 +251,7 @@ for row in manifest.get("scrapers",[]):
     if pid and filename and key not in seen:
         seen.add(key)
         stageable.append(pid)
-assert len(stageable) == 46, len(stageable)
+assert len(stageable) == active_provider_count(), len(stageable)
 
 print(
     "native device lab contract passed: "

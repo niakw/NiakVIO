@@ -22,6 +22,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
+from current_provider_scope import active_provider_count
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,7 +30,7 @@ SOURCES = ROOT / "sources.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 DEFAULT_KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 USER_AGENT = "NiakVIO-ProviderContractRecognizer/2"
-EXPECTED = 96
+EXPECTED = active_provider_count()
 
 YORU_METHOD_TEMPLATE_URLS = (
     "https://raw.githubusercontent.com/yoruix/nuvio-providers/template/src/_template/extractor.js",

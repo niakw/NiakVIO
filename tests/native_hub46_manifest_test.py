@@ -2,6 +2,7 @@
 from __future__ import annotations
 import json,sys
 from pathlib import Path
+from current_provider_scope import active_provider_count
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 import generate_hub46_manifest as active_manifest

@@ -4,10 +4,11 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from current_provider_scope import active_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
-EXPECTED = 96
+EXPECTED = active_provider_count()
 
 manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]

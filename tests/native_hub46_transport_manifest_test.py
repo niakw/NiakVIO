@@ -4,6 +4,7 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+from current_provider_scope import active_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILDER = ROOT / "scripts" / "build_hub46_native_manifest.py"
@@ -18,7 +19,7 @@ scope = {
     module.cid(row.get("manifestId") or row.get("provider"))
     for row in scope_data["rows"]
 }
-assert len(scope) == 46
+assert len(scope) == active_provider_count()
 
 source = json.loads((ROOT / "manifest-hub46.json").read_text(encoding="utf-8"))
 provider_sha = "1" * 40

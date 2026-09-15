@@ -14,6 +14,7 @@ import argparse
 import copy
 import json
 from pathlib import Path
+from current_provider_scope import active_provider_count
 from typing import Any, Iterable, Iterator
 
 import provider_contract_recognizer as recognizer
@@ -29,7 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 DEFAULT_SEEDS = ROOT / "automation" / "provider-v3-recognition-seeds.json"
 DEFAULT_OVERRIDES = ROOT / "provider-overrides.json"
-EXPECTED_PROVIDERS = 46
+EXPECTED = active_provider_count()
 HTTP_METHODS = {"GET", "POST", "PUT", "PATCH", "DELETE"}
 STRUCTURED_ROUTE_SUFFIXES = ("route", "routes", "path", "paths", "endpoint", "endpoints", "url", "urls")
 STRUCTURED_ROUTE_EXCLUDED_KEYS = {

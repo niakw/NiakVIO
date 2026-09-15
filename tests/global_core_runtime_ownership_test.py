@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from current_provider_scope import active_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
@@ -52,7 +53,7 @@ for forbidden in ("streamflix", "movix", "vidrock", "cineby", "coflix"):
     assert forbidden not in SANITIZER_V8.casefold(), forbidden
 
 rows = MANIFEST.get("scrapers") or []
-assert len(rows) == 96
+assert len(rows) == active_provider_count()
 for row in rows:
     provider_id = str(row.get("id") or "")
     path = ROOT / str(row.get("filename") or "")

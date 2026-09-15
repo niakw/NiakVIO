@@ -11,6 +11,7 @@ import hashlib
 import json
 import sys
 from pathlib import Path
+from current_provider_scope import active_provider_count
 
 ROOT=Path(__file__).resolve().parents[1]
 SCRIPTS=ROOT/"scripts"
@@ -71,7 +72,7 @@ for pid in provider_ids:
     base_store.assert_clean_provider_base(raw,pid)
     seen_paths.add(relative)
 
-assert len(seen_paths)==96
+assert len(seen_paths) == active_provider_count()
 assert all(hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==expected_sha for path in seen_paths)
 
 materializer=(SCRIPTS/"materialize_provider_v3_all.py").read_text(encoding="utf-8")
