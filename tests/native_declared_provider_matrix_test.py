@@ -48,12 +48,17 @@ def scope_ids() -> set[str]:
     return ids
 
 
+def manifest_rows() -> list[dict]:
+    data = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    return [row for row in data.get("scrapers") or [] if isinstance(row, dict) and str(row.get("id") or "").strip()]
+
+
 def routes() -> list[tuple[str, str]]:
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    rows = manifest_rows()
     scoped = scope_ids()
     out = []
     seen: set[str] = set()
-    for row in manifest.get("scrapers") or []:
+    for row in rows:
         provider = str(row.get("id") or "").strip()
         if not provider or provider.casefold() not in scoped:
             continue
@@ -129,15 +134,18 @@ def run(client: str, logs: list[Path]) -> subprocess.CompletedProcess[str]:
 
 all_routes = routes()
 provider_count = len({provider.casefold() for provider, _ in all_routes})
+catalogue_count = len(manifest_rows())
+disabled_count = catalogue_count - provider_count
 counts = {kind: sum(1 for _, route_type in all_routes if route_type == kind) for kind in TYPES}
 route_count = len(all_routes)
 assert provider_count == len(scope_ids())
+assert catalogue_count >= provider_count and disabled_count >= 0
 assert route_count == sum(counts.values())
 assert all(counts[kind] > 0 for kind in TYPES), counts
 # The active matrix is the complete executable publication scope. Recoverable
-# disabled providers remain in the 46-row catalogue but are not native Lab rows.
+# disabled providers remain in the catalogue but are not native Lab rows.
 expected_summary = (
-    f"providers={provider_count} disabled=0 routes={route_count} "
+    f"providers={provider_count} disabled={disabled_count} routes={route_count} "
     f"movie={counts['movie']} tv={counts['tv']} anime={counts['anime']}"
 )
 
@@ -165,7 +173,7 @@ with tempfile.TemporaryDirectory() as tmp:
 
 print(
     "native declared provider matrix gate passed "
-    f"providers={provider_count} routes={route_count} "
+    f"providers={provider_count} disabled={disabled_count} routes={route_count} "
     f"movie={counts['movie']} tv={counts['tv']} anime={counts['anime']} "
     "adaptive_recent_fixtures=true"
 )
