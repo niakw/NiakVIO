@@ -6,17 +6,63 @@ const path = require('node:path');
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36';
 
+function decodeBasicHtmlEntities(value) {
+  const entities = {
+    '&nbsp;': ' ',
+    '&#160;': ' ',
+    '&quot;': '"',
+    '&#34;': '"',
+    '&#39;': "'",
+    '&apos;': "'",
+    '&amp;': '&',
+  };
+  return String(value || '').replace(/&(?:nbsp|#160|quot|#34|#39|apos|amp);/gi, match => entities[match.toLowerCase()] || match);
+}
+
 function stripHtml(value) {
-  return String(value || '')
-    .replace(/<script\b[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style\b[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;|&#160;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&quot;|&#34;/gi, '"')
-    .replace(/&#39;|&apos;/gi, "'")
-    .replace(/\s+/g, ' ')
-    .trim();
+  const input = String(value || '');
+  const lower = input.toLowerCase();
+  let output = '';
+  let index = 0;
+  let hiddenTag = '';
+
+  while (index < input.length) {
+    if (hiddenTag) {
+      const closeAt = lower.indexOf(`</${hiddenTag}`, index);
+      if (closeAt < 0) break;
+      const closeEnd = input.indexOf('>', closeAt + hiddenTag.length + 2);
+      if (closeEnd < 0) break;
+      index = closeEnd + 1;
+      hiddenTag = '';
+      output += ' ';
+      continue;
+    }
+
+    if (input[index] !== '<') {
+      output += input[index];
+      index += 1;
+      continue;
+    }
+
+    const tagEnd = input.indexOf('>', index + 1);
+    if (tagEnd < 0) {
+      output += input.slice(index);
+      break;
+    }
+
+    let cursor = index + 1;
+    while (cursor < tagEnd && /\s/.test(input[cursor])) cursor += 1;
+    if (input[cursor] === '/') cursor += 1;
+    while (cursor < tagEnd && /\s/.test(input[cursor])) cursor += 1;
+    const nameStart = cursor;
+    while (cursor < tagEnd && /[A-Za-z0-9:-]/.test(input[cursor])) cursor += 1;
+    const tagName = input.slice(nameStart, cursor).toLowerCase();
+    if (tagName === 'script' || tagName === 'style') hiddenTag = tagName;
+    index = tagEnd + 1;
+    output += ' ';
+  }
+
+  return decodeBasicHtmlEntities(output).replace(/\s+/g, ' ').trim();
 }
 
 function bounded(value, max = 320) {
