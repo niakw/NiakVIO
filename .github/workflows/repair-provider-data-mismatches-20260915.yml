@@ -1,0 +1,139 @@
+name: TEMP - Reconcile Provider DATA Mismatches
+
+on:
+  push:
+    branches: [fix/active44-durability-20260915]
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-24.04
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NIAKVIO_QUICK_YIELD_WORKERS: '16'
+      NIAKVIO_QUICK_YIELD_TIMEOUT: '25'
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/active44-durability-20260915
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Patch MoviesHunt live contract and reconcile all stale CONFIG DATA
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import copy,json,re,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import materialize_provider_v3_one as one
+          import materialize_provider_v3_all as allmat
+          from provider_base_store import build_provider_data_model
+          from provider_patch_blocks import decode_managed_data
+          from current_provider_scope import active_provider_ids
+
+          def load(path): return json.loads(Path(path).read_text(encoding='utf-8'))
+          def write(path,obj): Path(path).write_text(json.dumps(obj,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          def canon(v): return str(v or '').strip().casefold()
+
+          o=load('provider-overrides.json'); s=load('automation/provider-v3-static-knowledge.json')
+          p=o['provider_patches']['movieshunt']; m=s['providers']['movieshunt']['model']
+          base='https://movieshunt.monster'; hub='https://movieshunt.run'; route='/lookup.php?q={query}&page=1&per_page=30'
+          plan={'base':base,'route':route,'requestSpec':{'method':'GET','headers':{'Accept':'application/json,text/plain,*/*','Referer':base+'/search.html'}},'proofModelVersion':5,'sourceRole':'catalog-search','semanticTypes':['movie']}
+          p['official_site']=base; p['official_hub']=hub
+          p['identity_input']={'mode':'catalog_search','requires_tmdb_before_run':True,'required_fields':['title','year','mediaType']}
+          p['route_proof_version']=max(5,int(p.get('route_proof_version') or 0)); p['search_request_plan']=[plan]; p['route_data_state']='on'
+          p['proof_protected_hosts']=sorted(set([*[canon(x) for x in p.get('proof_protected_hosts') or [] if canon(x)],'movieshunt.monster']))
+          p['learned_routes']=[route,*[str(x).strip() for x in p.get('learned_routes') or [] if str(x).strip() and str(x).strip()!=route]]
+          note='2026-09-15 live drift repair: movieshunt.run -> movieshunt.monster; lookup.php JSON search returns permalink detail pages.'
+          notes=[str(x) for x in p.get('notes') or []]
+          if note not in notes: notes.append(note)
+          p['notes']=notes
+          m['knownSite']=base; m['officialSite']=base; m['officialHub']=hub; m['routeProofVersion']=max(5,int(m.get('routeProofVersion') or 0)); m['searchRequestPlan']=[plan]
+          m['proofProtectedHosts']=sorted(set([*[canon(x) for x in m.get('proofProtectedHosts') or [] if canon(x)],'movieshunt.monster']))
+          m['origins']=[base,*[str(x).strip() for x in m.get('origins') or [] if str(x).strip() and 'movieshunt.' not in str(x).casefold()]]
+          m['routes']=[route,*[str(x).strip() for x in m.get('routes') or [] if str(x).strip() and str(x).strip()!=route]]
+          write('provider-overrides.json',o); write('automation/provider-v3-static-knowledge.json',s)
+
+          manifest=load('manifest.json'); active=active_provider_ids(); patches=o.get('provider_patches') or {}; caps=o.get('provider_capabilities') or {}; static_rows=s.get('providers') or {}
+          mismatches=[]
+          for row in manifest.get('scrapers') or []:
+              if not isinstance(row,dict): continue
+              pid=canon(row.get('id'))
+              if pid not in active: continue
+              path=Path(str(row.get('filename') or ''))
+              if not path.is_file(): raise SystemExit(f'{pid}: bundle missing {path}')
+              text=path.read_text(encoding='utf-8')
+              comp=re.sub(r'[^A-Z0-9_.:-]+','_',pid.upper()).strip('_.:-'); cfg=f'PROVIDER.{comp}.CONFIG.V1'
+              data=decode_managed_data(text,cfg)
+              entry=copy.deepcopy(row); allmat.normalize_anime_transport_compatibility(entry)
+              model=allmat.provider_model(pid,patches[pid],caps[pid],static_rows[pid])
+              expected=build_provider_data_model(pid,entry,known_site=model.get('knownSite'),provider_model=model)
+              if data!=expected: mismatches.append(pid)
+          print('PROVIDER_DATA_MISMATCHES count=%d ids=%s' % (len(mismatches),','.join(mismatches)))
+          if 'movieshunt' not in mismatches: mismatches.append('movieshunt')
+
+          fresh={pid:one.materialize_one(pid) for pid in mismatches}
+          matp=Path('provider-v3-materialization.json'); mat=load(matp); by={canon(r.get('provider')):r for r in mat.get('providers') or [] if isinstance(r,dict)}
+          for pid,row in fresh.items():
+              if pid not in by: raise SystemExit('missing materialization row '+pid)
+              by[pid].update(row)
+          write(matp,mat)
+
+          manifest=load('manifest.json'); rr={canon(r.get('id')):r for r in manifest.get('scrapers') or [] if isinstance(r,dict)}; names={pid:Path(str(rr[pid]['filename'])).name for pid in fresh}
+          for path in map(Path,['manifest-hub46.json','vf/manifest.json','no-anime/manifest.json','vf-no-anime/manifest.json','native-hub46/manifest.json']):
+              if not path.is_file(): continue
+              d=load(path); changed=False
+              for r in d.get('scrapers') or []:
+                  if not isinstance(r,dict): continue
+                  pid=canon(r.get('id'))
+                  if pid not in names: continue
+                  old=str(r.get('filename') or ''); prefix=old.rsplit('/',1)[0]+'/' if '/' in old else ''; new=prefix+names[pid]
+                  if old!=new: r['filename']=new; changed=True
+              if changed: write(path,d)
+          print('PROVIDER_DATA_REMATERIALIZED count=%d ids=%s' % (len(fresh),','.join(fresh)))
+          PY
+
+      - name: Validate exact static and live contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/audit_provider_v3_static.py
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/native_declared_provider_matrix_test.py
+          python tests/provider_521_capability_regression_test.py
+          python scripts/audit_provider_quick_yield.py | tee /tmp/qy.log
+          python scripts/check_provider_non_regression_v1.py --candidate-gate --base-ref f814d325c68a9a4eebd895498aafb245ce27ac2b
+          grep '^FIELD_PROVIDER_QUICK_YIELD' /tmp/qy.log
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          g=json.loads(Path('automation/provider-non-regression-gate.json').read_text(encoding='utf-8'))
+          failed=[str(x.get('provider') or '').casefold() for x in g.get('failures') or [] if isinstance(x,dict)]
+          if failed: raise SystemExit('candidate non-regression failures: '+','.join(failed))
+          print('FINAL_PROVIDER_RECONCILIATION_OK')
+          PY
+
+      - name: Commit durable reconciliation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add provider-overrides.json automation/provider-v3-static-knowledge.json provider-v3-materialization.json manifest.json providers/
+          for p in manifest-hub46.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json native-hub46/manifest.json; do [ ! -f "$p" ] || git add "$p"; done
+          if git diff --cached --quiet; then echo NO_DURABLE_CHANGES; exit 0; fi
+          git commit -m 'repair: reconcile current provider data and MoviesHunt route'
+          git push origin HEAD:fix/active44-durability-20260915
