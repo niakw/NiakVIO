@@ -12,6 +12,8 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+
+from current_provider_scope import visible_provider_count
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,7 +27,7 @@ PROJECTIONS = (
 )
 CANONICAL = {"movie", "tv", "anime"}
 TRANSPORT = CANONICAL | {"series"}
-EXPECTED_CURRENT = 46
+EXPECTED_CURRENT = visible_provider_count()
 
 
 def norm(values: object, allowed: set[str]) -> list[str]:

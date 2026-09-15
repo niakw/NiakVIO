@@ -22,6 +22,8 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+
+from current_provider_scope import active_provider_count
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,7 +32,7 @@ SKIP = ROOT / "automation" / "provider-repair-skip.json"
 RECENT = ROOT / "automation" / "provider-sweep-recent-v1.json"
 TRIGGER = ROOT / "automation" / "provider-fast-trigger.json"
 LEARN_HANDOFF = ROOT / "automation" / "provider-repair-learn-handoff-v1.json"
-EXPECTED = 46
+EXPECTED = active_provider_count()
 
 
 def cid(value: object) -> str:

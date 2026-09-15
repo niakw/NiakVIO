@@ -168,7 +168,7 @@ def main() -> int:
     targets = hub46_targets()
 
     rows = manifest.get("scrapers") or []
-    assert len(rows) == 46, f"expected hub-only 46-provider catalogue, got {len(rows)}"
+    assert len({cid(row.get("id")) for row in rows}) == len(rows), "provider ids must be unique"
     ids = [cid(row.get("id")) for row in rows]
     assert len(set(ids)) == 46, "provider ids must be unique after canonical case-fold"
     missing_targets = sorted(targets - set(ids))

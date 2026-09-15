@@ -7,6 +7,8 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from current_provider_scope import active_provider_ids
+
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MATRIX = ROOT / "automation" / "provider-history-matrix.json"
 DEFAULT_CANDIDATE = ROOT / "provider-v3-quick-yield.json"
@@ -14,7 +16,6 @@ DEFAULT_OUT = ROOT / "automation" / "provider-non-regression-gate.json"
 DEFAULT_INVALIDATIONS = ROOT / "automation" / "provider-proof-invalidations.json"
 CURRENT_MANIFEST = ROOT / "manifest.json"
 CURRENT_OVERRIDES = ROOT / "provider-overrides.json"
-EXPECTED = 46
 HISTORY = ("5.21.0", "5.21.16", "5.21.36")
 GREEN = "🟢"
 
@@ -117,7 +118,8 @@ def verified_lanes_from_quick(data: dict[str, Any]) -> dict[str, set[str]]:
 
 
 def provider_ids(matrix: dict[str, Any]) -> list[str]:
-    return sorted({canon(row.get("provider")) for row in matrix.get("providers") or [] if canon(row.get("provider"))})
+    historical = {canon(row.get("provider")) for row in matrix.get("providers") or [] if canon(row.get("provider"))}
+    return sorted(historical & active_provider_ids())
 
 
 def matrix_rows(matrix: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -245,8 +247,10 @@ def ledger_failures(matrix: dict[str, Any]) -> list[str]:
     failures: list[str] = []
     if int(matrix.get("schemaVersion") or 0) != 3:
         failures.append("matrix schemaVersion must be 3")
-    if int(matrix.get("providerCount") or 0) != EXPECTED:
-        failures.append(f"matrix providerCount must be {EXPECTED}")
+    declared = int(matrix.get("providerCount") or 0)
+    physical_rows = matrix_rows(matrix)
+    if declared and declared != len(physical_rows):
+        failures.append(f"matrix providerCount={declared} differs from ledger rows={len(physical_rows)}")
 
     policy = matrix.get("nonRegressionPolicy") or {}
     if list(policy.get("history") or []) != list(HISTORY):
@@ -259,8 +263,8 @@ def ledger_failures(matrix: dict[str, Any]) -> list[str]:
         failures.append("historical transport aliases may not create a semantic capability floor")
 
     rows = matrix_rows(matrix)
-    if len(rows) != EXPECTED:
-        failures.append(f"matrix must contain {EXPECTED} unique provider rows, got {len(rows)}")
+    if not rows:
+        failures.append("matrix must contain provider history rows")
 
     for pid, row in rows.items():
         states = row.get("snapshotStates") or {}

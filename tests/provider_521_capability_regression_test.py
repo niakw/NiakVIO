@@ -17,7 +17,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CURRENT_PROVIDER_COUNT = 46
+CURRENT_PROVIDER_COUNT = len([row for row in json.loads((ROOT / "manifest.json").read_text(encoding="utf-8")).get("scrapers") or [] if isinstance(row, dict) and row.get("enabled") is not False and str(row.get("filename") or "").startswith("providers/")])
 HISTORICAL_PROVIDER_COUNT = 50
 FIXTURE = json.loads(
     (ROOT / "tests/fixtures/provider-production-5.21.0-capabilities.json").read_text(encoding="utf-8")

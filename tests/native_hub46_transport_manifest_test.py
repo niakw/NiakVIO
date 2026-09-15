@@ -30,7 +30,7 @@ payload = module.build(
     verify_git=False,
 )
 rows = payload.get("scrapers") or []
-assert len(rows) == 46
+assert len(rows) == len(scope)
 assert {module.cid(row.get("id")) for row in rows} == scope
 for row in rows:
     filename = str(row.get("filename") or "")

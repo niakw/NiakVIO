@@ -5,6 +5,8 @@ import json
 import re
 from collections import Counter
 from pathlib import Path
+
+from current_provider_scope import active_provider_ids
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -256,8 +258,9 @@ def main() -> int:
         })
 
     enabled = [row["provider"] for row in out_rows if row["enabled"]]
-    if len(enabled) != 46:
-        raise AssertionError(f"hub46 inventory must contain exactly 46 enabled targets, got {len(enabled)}")
+    expected = active_provider_ids()
+    if set(enabled) != expected:
+        raise AssertionError(f"active blocker inventory identity mismatch missing={sorted(expected-set(enabled))} extra={sorted(set(enabled)-expected)}")
 
     report = {
         "schemaVersion": 1,

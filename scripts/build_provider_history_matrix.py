@@ -15,7 +15,6 @@ LEARN_HANDOFF = ROOT / "automation" / "provider-repair-learn-handoff-v1.json"
 EVIDENCE = ROOT / "automation" / "provider-history-evidence-v1.json"
 OUT_JSON = ROOT / "automation" / "provider-history-matrix.json"
 OUT_MD = ROOT / "automation" / "PROVIDER-HISTORY-MATRIX.md"
-EXPECTED = 46
 PRIORITY = {"anime-sama","purstream","flemmix","uhdmovies","movieshunt","zinkmovies","vegamovies","hindmoviez","4khdhub","4khdhubnew","persianstremio","desiflix"}
 VF_GUARDS = {"kehflix","streamzo"}
 

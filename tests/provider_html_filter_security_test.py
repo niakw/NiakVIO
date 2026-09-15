@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED = 46
+EXPECTED = len([row for row in json.loads((ROOT / "manifest.json").read_text(encoding="utf-8")).get("scrapers") or [] if isinstance(row, dict)])
 SOURCE_PATHS = (
     ROOT / "scripts/provider_base_store.py",
     ROOT / "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",

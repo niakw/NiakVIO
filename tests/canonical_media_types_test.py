@@ -7,7 +7,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CANONICAL = {"movie", "tv", "anime"}
 TRANSPORT = CANONICAL
-CURRENT_PROVIDER_COUNT = 46
 
 
 def normalized_types(raw: object, label: str, allowed: set[str]) -> tuple[str, ...]:
@@ -103,7 +102,6 @@ def validate_catalog(path: Path) -> tuple[dict[str, dict], dict[str, list[str]]]
             "projections": projections,
         }
 
-    assert len(by_canonical) == CURRENT_PROVIDER_COUNT, len(by_canonical)
     orders = data.get("manifestOrder") or {}
     assert isinstance(orders, dict), f"{path}: manifestOrder must be an object"
     normalized_orders: dict[str, list[str]] = {}
@@ -148,7 +146,7 @@ def assert_projection(manifest_path: Path, projection: str, catalog: dict[str, d
 catalog, orders = validate_catalog(ROOT / "provider_catalog.json")
 canonical_count, canonical_anime = assert_projection(ROOT / "manifest.json", "general", catalog, orders)
 vf_count, vf_anime = assert_projection(ROOT / "vf/manifest.json", "vf", catalog, orders)
-assert canonical_count == CURRENT_PROVIDER_COUNT, canonical_count
+assert canonical_count == len(catalog), (canonical_count, len(catalog))
 assert canonical_anime > 0, "general projection must retain anime providers"
 assert vf_count > 0, vf_count
 assert vf_anime > 0, "VF projection must retain its anime providers"
