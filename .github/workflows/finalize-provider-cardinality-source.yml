@@ -1,0 +1,218 @@
+name: SHORT - Finalize provider folder source of truth
+
+on:
+  push:
+    branches: [fix/active44-durability-20260915]
+    paths:
+      - '.github/workflows/finalize-provider-cardinality-source.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-provider-folder-source
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/active44-durability-20260915
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Remove remaining operational cardinality authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from __future__ import annotations
+          import re
+          from pathlib import Path
+
+          R=Path('.')
+
+          def edit(path, old, new, *, required=True, count=1):
+              p=R/path
+              t=p.read_text(encoding='utf-8')
+              if old not in t:
+                  if new in t or not required:
+                      return False
+                  raise SystemExit(f'{path}: expected block not found')
+              u=t.replace(old,new,count)
+              p.write_text(u,encoding='utf-8')
+              print('PATCHED',path)
+              return True
+
+          def write(path, text):
+              (R/path).write_text(text,encoding='utf-8')
+              print('REWROTE',path)
+
+          # Canonical Repair: active folder/manifest identities are the only executable scope.
+          p=R/'scripts/run_provider_repair_pipeline_v6.py'
+          t=p.read_text(encoding='utf-8')
+          if 'from current_provider_scope import active_provider_ids, visible_provider_ids' not in t:
+              t=t.replace('from typing import Any\n','from typing import Any\n\nfrom current_provider_scope import active_provider_ids, visible_provider_ids\n',1)
+          old='''    catalogue_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]\n    catalogue = [cid(row.get("id")) for row in catalogue_rows]\n    if len(catalogue) != 46 or len(set(catalogue)) != 46:\n        raise SystemExit(f"provider catalogue must be exactly 46 unique ids, got {len(catalogue)}/{len(set(catalogue))}")\n    matrix = load(HUB_MATRIX)\n    matrix_ids = [cid(row.get("manifestId") or row.get("provider")) for row in matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))]\n    declared_active = int(matrix.get("hubCount") or 0)\n    if declared_active <= 0 or len(matrix_ids) != declared_active or len(set(matrix_ids)) != declared_active:\n        raise SystemExit(f"active provider matrix mismatch: declared={declared_active} rows={len(matrix_ids)} unique={len(set(matrix_ids))}")\n    active_catalogue = [cid(row.get("id")) for row in catalogue_rows if row.get("enabled") is True]\n    if set(active_catalogue) != set(matrix_ids):\n        raise SystemExit("manifest enabled set differs from active provider matrix")\n'''
+          new='''    catalogue_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]\n    catalogue = [cid(row.get("id")) for row in catalogue_rows]\n    if len(catalogue) != len(set(catalogue)):\n        raise SystemExit("provider catalogue contains duplicate ids")\n    visible = visible_provider_ids()\n    if set(catalogue) != visible:\n        raise SystemExit(\n            "manifest/folder provider identity mismatch: "\n            f"manifest_only={sorted(set(catalogue)-visible)} folder_only={sorted(visible-set(catalogue))}"\n        )\n    active_ids = active_provider_ids()\n    active_catalogue = [cid(row.get("id")) for row in catalogue_rows if cid(row.get("id")) in active_ids]\n    matrix = load(HUB_MATRIX)\n    matrix_ids = {cid(row.get("manifestId") or row.get("provider")) for row in matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))}\n    if matrix_ids != active_ids:\n        print(\n            "FIELD_PROVIDER_REPAIR_MATRIX_STALE "\n            f"matrix_only={','.join(sorted(matrix_ids-active_ids)) or '-'} "\n            f"active_only={','.join(sorted(active_ids-matrix_ids)) or '-'}",\n            flush=True,\n        )\n'''
+          if old not in t:
+              raise SystemExit('run_provider_repair_pipeline_v6.py scope block drifted')
+          t=t.replace(old,new,1)
+          t=t.replace(', "--expected", str(len(catalogue))','')
+          p.write_text(t,encoding='utf-8')
+
+          # Fast Repair follows exactly the same physical active scope.
+          p=R/'scripts/run_provider_repair_fast_targeted_v1.py'
+          t=p.read_text(encoding='utf-8')
+          if 'from current_provider_scope import active_provider_ids, visible_provider_ids' not in t:
+              t=t.replace('from typing import Any\n','from typing import Any\n\nfrom current_provider_scope import active_provider_ids, visible_provider_ids\n',1)
+          old='''    catalogue_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]\n    catalogue = [cid(row.get("id")) for row in catalogue_rows]\n    if len(catalogue) != 46 or len(set(catalogue)) != 46:\n        raise SystemExit(f"provider catalogue must be exactly 46 unique ids, got {len(catalogue)}/{len(set(catalogue))}")\n    matrix = load(HUB_MATRIX)\n    active = {cid(row.get("manifestId") or row.get("provider")) for row in matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))}\n    declared_active = int(matrix.get("hubCount") or 0)\n    manifest_active = {cid(row.get("id")) for row in catalogue_rows if row.get("enabled") is True}\n    if declared_active <= 0 or len(active) != declared_active or active != manifest_active:\n        raise SystemExit(f"active provider matrix mismatch: declared={declared_active} matrix={len(active)} manifest={len(manifest_active)}")\n'''
+          new='''    catalogue_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]\n    catalogue = [cid(row.get("id")) for row in catalogue_rows]\n    if len(catalogue) != len(set(catalogue)):\n        raise SystemExit("provider catalogue contains duplicate ids")\n    visible = visible_provider_ids()\n    if set(catalogue) != visible:\n        raise SystemExit("manifest/folder provider identity mismatch")\n    active = active_provider_ids()\n    matrix = load(HUB_MATRIX)\n    matrix_ids = {cid(row.get("manifestId") or row.get("provider")) for row in matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))}\n    if matrix_ids != active:\n        print(\n            "FIELD_PROVIDER_FAST_MATRIX_STALE "\n            f"matrix_only={','.join(sorted(matrix_ids-active)) or '-'} "\n            f"active_only={','.join(sorted(active-matrix_ids)) or '-'}",\n            flush=True,\n        )\n'''
+          if old not in t:
+              raise SystemExit('run_provider_repair_fast_targeted_v1.py scope block drifted')
+          t=t.replace(old,new,1)
+          t=t.replace('"catalogueProviderCount": 46,','"catalogueProviderCount": len(visible_provider_ids()),')
+          p.write_text(t,encoding='utf-8')
+
+          # Published health stage is active providers only; disabled-retained are not executable.
+          write('scripts/build_published_provider_stage.py','''#!/usr/bin/env python3\nfrom __future__ import annotations\nimport argparse, hashlib, json, shutil\nfrom pathlib import Path\nfrom current_provider_scope import active_provider_rows\n\nROOT=Path(__file__).resolve().parents[1]\n\ndef main()->int:\n    p=argparse.ArgumentParser()\n    p.add_argument("--manifest",type=Path,default=ROOT/"manifest.json")\n    p.add_argument("--stage",type=Path,default=ROOT/"staging-published")\n    args=p.parse_args()\n    # The default publication contract is the physical active providers/ set.\n    if args.manifest.resolve() != (ROOT/"manifest.json").resolve():\n        payload=json.loads(args.manifest.read_text(encoding="utf-8"))\n        rows=[r for r in payload.get("scrapers") or [] if isinstance(r,dict) and r.get("enabled") is not False and str(r.get("filename") or "").startswith("providers/")]\n    else:\n        rows=active_provider_rows()\n    if args.stage.exists(): shutil.rmtree(args.stage)\n    (args.stage/"providers").mkdir(parents=True,exist_ok=True)\n    candidates=[]; seen=set()\n    for row in rows:\n        pid=str(row["id"]).strip().casefold()\n        if not pid or pid in seen: raise SystemExit(f"invalid/duplicate active provider id: {pid}")\n        seen.add(pid)\n        rel=Path(str(row["filename"]))\n        src=(ROOT/rel).resolve(); src.relative_to((ROOT/"providers").resolve())\n        data=src.read_bytes(); digest=hashlib.sha256(data).hexdigest()\n        dst=args.stage/"providers"/src.name; dst.write_bytes(data)\n        metadata=dict(row); metadata["publishedFilename"]=str(rel).replace("\\\\","/")\n        candidates.append({"key":f"published-v3:{pid}","source":"published-v3","upstream_id":pid,"canonical_id":pid,"local_path":f"providers/{src.name}","sha256":digest,"metadata":metadata,"canonical_metadata":{"contentLanguage":row.get("contentLanguage") or [],"formats":row.get("formats") or [],"descriptions":[row.get("description")] if row.get("description") else []},"published_exact_bytes":True,"repair_allowed":False})\n    if not candidates: raise SystemExit("no active published providers")\n    registry={"schema_version":1,"source":"published-provider-v3","candidate_count":len(candidates),"excluded_count":0,"repair_allowed":False,"candidates":candidates}\n    (args.stage/"candidates.json").write_text(json.dumps(registry,ensure_ascii=False,indent=2)+"\\n",encoding="utf-8")\n    print(f"FIELD_PUBLISHED_V3_STAGE providers={len(candidates)} repair_allowed=false")\n    return 0\nif __name__=="__main__": raise SystemExit(main())\n''')
+
+          # CONFIG validator validates identities/folders, never a requested numeric census.
+          write('scripts/validate_published_provider_config.py','''#!/usr/bin/env python3\nfrom __future__ import annotations\nimport argparse, json, sys\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parents[1]\nsys.path.insert(0,str(ROOT/"scripts"))\nfrom provider_base_store import canonical_id\nfrom provider_patch_blocks import decode_managed_data\nfrom current_provider_scope import active_provider_rows, disabled_provider_rows\nDECL="const NIAKVIO_PROVIDER_MODEL = Object.freeze("\n\ndef validate_bundle(text:str,provider_id:str)->None:\n canonical=canonical_id(provider_id)\n if "NIAKVIO_PROVIDER_BASE_OWNED_V3" not in text: return\n fix_id=f"PROVIDER.{canonical.upper()}.CONFIG.V1"; start=f"/* STARTFIX:{fix_id} */"; close=f"/* CLOSEFIX:{fix_id} */"\n if text.count(start)!=1 or text.count(close)!=1: raise ValueError(f"{canonical}: CONFIG Lego cardinality invalid")\n if text.count(DECL)!=1: raise ValueError(f"{canonical}: NIAKVIO_PROVIDER_MODEL declaration count={text.count(DECL)}")\n if not (text.index(start)<text.index(DECL)<text.index(close)): raise ValueError(f"{canonical}: model declaration outside CONFIG Lego")\n model=decode_managed_data(text,fix_id)\n if canonical_id(str(model.get("providerId") or ""))!=canonical: raise ValueError(f"{canonical}: CONFIG providerId mismatch")\n if text.count("/* BEGIN NIAKVIO_PROVIDER */")!=1 or text.count("/* END NIAKVIO_PROVIDER */")!=1: raise ValueError(f"{canonical}: Provider envelope cardinality invalid")\n\ndef validate_manifest(path:Path)->None:\n if path.resolve()==(ROOT/"manifest.json").resolve(): rows=active_provider_rows()+disabled_provider_rows()\n else:\n  payload=json.loads(path.read_text(encoding="utf-8")); rows=[r for r in payload.get("scrapers") or [] if isinstance(r,dict)]\n seen=set(); active=disabled=0\n for row in rows:\n  provider_id=canonical_id(str(row.get("id") or ""))\n  if not provider_id or provider_id in seen: raise ValueError(f"invalid/duplicate provider id: {provider_id!r}")\n  seen.add(provider_id); relative=str(row.get("filename") or ""); bundle=(ROOT/relative).resolve()\n  if row.get("enabled") is False:\n   if not relative.startswith("provider-disabled/") or (ROOT/"provider-disabled").resolve() not in bundle.parents: raise ValueError(f"{provider_id}: disabled bundle outside provider-disabled/: {relative}")\n   disabled+=1\n  else:\n   if not relative.startswith("providers/") or (ROOT/"providers").resolve() not in bundle.parents: raise ValueError(f"{provider_id}: active bundle outside providers/: {relative}")\n   active+=1\n  if not bundle.is_file(): raise ValueError(f"{provider_id}: bundle missing: {relative}")\n  validate_bundle(bundle.read_text(encoding="utf-8"),provider_id)\n print(f"final published Provider CONFIG tests passed active={active} disabled={disabled} visible={len(rows)}")\n\ndef main()->int:\n parser=argparse.ArgumentParser(); parser.add_argument("--manifest",type=Path,default=ROOT/"manifest.json"); parser.add_argument("--expected",type=int,default=None,help="deprecated compatibility argument; cardinality is derived from provider identities")\n args=parser.parse_args(); validate_manifest(args.manifest.resolve())\n if args.expected is not None: print(f"FIELD_PROVIDER_EXPECTED_IGNORED requested={args.expected} authority=provider-folders")\n return 0\nif __name__=="__main__": raise SystemExit(main())\n''')
+
+          # Activation publication follows the physical folder lifecycle, not the lab matrix.
+          write('scripts/hub_activation_publication.py','''#!/usr/bin/env python3\nfrom __future__ import annotations\nimport argparse,json,sys\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT/"scripts"))\nfrom current_provider_scope import active_provider_ids, disabled_provider_ids, visible_provider_ids, assert_directory_contract\n\ndef load(rel): return json.loads((ROOT/rel).read_text(encoding="utf-8"))\ndef cid(v): return str(v or "").strip().casefold().replace("_","-")\n\ndef compute_scope():\n assert_directory_contract(); manifest=load("manifest.json"); rows=[r for r in manifest.get("scrapers") or [] if isinstance(r,dict)]\n active=active_provider_ids(); disabled=disabled_provider_ids(); visible=visible_provider_ids(); row_ids={cid(r.get("id")) for r in rows}\n if row_ids!=visible: raise AssertionError(f"manifest/folder identity mismatch missing={sorted(visible-row_ids)} extra={sorted(row_ids-visible)}")\n return {"schemaVersion":3,"authority":"providers/ + provider-disabled/ physical current folders","catalogueProviderCount":len(visible),"enabledProviderCount":len(active),"disabledProviderCount":len(disabled),"enabledProviders":sorted(active),"disabledProviders":sorted(disabled),"repairScope":"providers-active-only","nativeLabPolicy":"reuse-existing-artifacts-first; rerun-only-for-specific-fix-validation"}\n\ndef write_scope(scope): (ROOT/"automation/hub-activation-scope.json").write_text(json.dumps(scope,ensure_ascii=False,indent=2)+"\\n",encoding="utf-8")\ndef verify_catalog(scope):\n catalog=load("provider_catalog.json"); providers=[r for r in catalog.get("providers") or [] if isinstance(r,dict)]; a=set(); d=set()\n for row in providers:\n  scraper=row.get("scraper") or {}; pid=cid(row.get("canonicalId") or scraper.get("id"));\n  if not pid: continue\n  (d if scraper.get("enabled") is False else a).add(pid)\n if a!=set(scope["enabledProviders"]) or d!=set(scope["disabledProviders"]): raise AssertionError("provider_catalog activation differs from provider folders")\ndef main():\n ap=argparse.ArgumentParser(); ap.add_argument("--write-scope",action="store_true"); ap.add_argument("--verify-catalog",action="store_true"); ap.add_argument("--append-memory",action="store_true"); args=ap.parse_args(); scope=compute_scope()\n if args.write_scope: write_scope(scope)\n if args.verify_catalog: verify_catalog(scope)\n print("HUB_ACTIVATION_SCOPE",f"visible={scope['catalogueProviderCount']}",f"enabled={scope['enabledProviderCount']}",f"disabled={scope['disabledProviderCount']}")\n return 0\nif __name__=="__main__": raise SystemExit(main())\n''')
+
+          # Derived lab manifest is just the currently active rows in providers/.
+          write('scripts/generate_hub46_manifest.py','''#!/usr/bin/env python3\nfrom __future__ import annotations\nimport argparse,json\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parents[1]; DEFAULT_SOURCE=ROOT/"manifest.json"; DEFAULT_OUTPUT=ROOT/"manifest-hub46.json"\n\ndef load_json(path):\n v=json.loads(path.read_text(encoding="utf-8"));\n if not isinstance(v,dict): raise SystemExit(f"expected JSON object: {path}")\n return v\ndef build(source):\n rows=[]; seen=set()\n for row in source.get("scrapers") or []:\n  if not isinstance(row,dict) or row.get("enabled") is False: continue\n  pid=str(row.get("id") or "").strip().casefold(); filename=str(row.get("filename") or "").strip()\n  if not pid or pid in seen: raise SystemExit(f"invalid/duplicate active provider id: {pid!r}")\n  if not filename.startswith("providers/"): raise SystemExit(f"{pid}: active provider outside providers/: {filename}")\n  seen.add(pid); rows.append(row)\n if not rows: raise SystemExit("no active providers")\n out=dict(source); out["scrapers"]=rows; out["labScope"]={"kind":"current-active-providers","providerCount":len(rows),"authority":"providers/ current manifest references"}; return out\ndef generate(source_path,output_path,check=False):\n out=build(load_json(source_path)); rendered=json.dumps(out,ensure_ascii=False,indent=2)+"\\n"\n if check:\n  if not output_path.is_file() or output_path.read_text(encoding="utf-8")!=rendered: raise SystemExit("derived active manifest is stale")\n  print(f"FIELD_ACTIVE_MANIFEST_CHECK providers={len(out['scrapers'])} status=clean path={output_path}"); return\n output_path.write_text(rendered,encoding="utf-8"); print(f"FIELD_ACTIVE_MANIFEST_GENERATED providers={len(out['scrapers'])} path={output_path}")\ndef main():\n p=argparse.ArgumentParser(); p.add_argument("--source",type=Path,default=DEFAULT_SOURCE); p.add_argument("--matrix",type=Path,default=None,help="deprecated; active scope comes from providers/"); p.add_argument("--output",type=Path,default=DEFAULT_OUTPUT); p.add_argument("--check",action="store_true"); a=p.parse_args(); generate(a.source,a.output,check=a.check); return 0\nif __name__=="__main__": raise SystemExit(main())\n''')
+
+          # Native transport uses exactly the derived active manifest, never a separate count authority.
+          p=R/'scripts/build_hub46_native_manifest.py'; t=p.read_text(encoding='utf-8')
+          old='''    scope = args.scope_matrix if args.scope_matrix.is_absolute() else ROOT / args.scope_matrix\n    source_path = args.source if args.source.is_absolute() else ROOT / args.source\n    output = args.output if args.output.is_absolute() else ROOT / args.output\n    payload = build(\n        load(source_path),\n        scoped=scope_ids(scope),\n'''
+          new='''    source_path = args.source if args.source.is_absolute() else ROOT / args.source\n    output = args.output if args.output.is_absolute() else ROOT / args.output\n    source_doc = load(source_path)\n    scoped = {cid(row.get("id")) for row in source_doc.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))}\n    if not scoped:\n        raise SystemExit("native active source manifest is empty")\n    payload = build(\n        source_doc,\n        scoped=scoped,\n'''
+          if old not in t: raise SystemExit('build_hub46_native_manifest.py main block drifted')
+          t=t.replace(old,new,1).replace('"The result is exactly the Hub-46 set; the global 96-provider catalogue remains\\nuntouched.\\n"','')
+          p.write_text(t,encoding='utf-8')
+
+          # Route-proof adapter must not carry a cardinality exception.
+          p=R/'scripts/route_proof_activation_preservation_v1.py'; t=p.read_text(encoding='utf-8')
+          t=t.replace('CURRENT_PROVIDER_COUNT = 46\n','')
+          old='''    main_count = len(legacy.rows(legacy.load(legacy.MAIN)))\n    if main_count == CURRENT_PROVIDER_COUNT:\n        errors = [\n            error for error in errors\n            if not str(error).startswith(LEGACY_CATALOGUE_COUNT_ERROR)\n        ]\n    else:\n        errors.append(\n            f"canonical Hub46 catalogue must contain exactly {CURRENT_PROVIDER_COUNT} providers, got {main_count}"\n        )\n    return errors\n'''
+          new='''    # The legacy 96-row error is obsolete. Current identity/folder coherence is\n    # validated independently; route proof never owns provider cardinality.\n    return [error for error in errors if not str(error).startswith(LEGACY_CATALOGUE_COUNT_ERROR)]\n'''
+          if old not in t: raise SystemExit('route proof cardinality adapter drifted')
+          t=t.replace(old,new,1).replace('Hub46 exact cardinality','dynamic current-provider identity')
+          p.write_text(t,encoding='utf-8')
+
+          # Finalizer: route debt classification never changes activation. Folder state owns activation.
+          p=R/'scripts/finalize_provider_repair_disposition_v1_impl.py'; t=p.read_text(encoding='utf-8')
+          if 'from current_provider_scope import active_provider_ids, disabled_provider_ids, visible_provider_ids' not in t:
+              t=t.replace('from typing import Any\n','from typing import Any\n\nfrom current_provider_scope import active_provider_ids, disabled_provider_ids, visible_provider_ids\n',1)
+          t=t.replace('EXPECTED = 46\n','')
+          old='''    target_hubs = {cid(row.get("manifestId")) for row in hub_matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId"))}\n    if int(hub_matrix.get("hubCount") or 0) <= 0 or len(target_hubs) != int(hub_matrix.get("hubCount") or 0):\n        raise SystemExit(f"active hub matrix mismatch: count={hub_matrix.get('hubCount')} ids={len(target_hubs)}")\n\n    rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]\n    if len(rows) != EXPECTED:\n        raise SystemExit(f"expected {EXPECTED} manifest providers, got {len(rows)}")\n    manifest_rows = {cid(row.get("id")): row for row in rows if cid(row.get("id"))}\n    if len(manifest_rows) != EXPECTED:\n        raise SystemExit(f"expected {EXPECTED} unique provider ids, got {len(manifest_rows)}")\n'''
+          new='''    matrix_ids = {cid(row.get("manifestId")) for row in hub_matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId"))}\n    rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]\n    manifest_rows = {cid(row.get("id")): row for row in rows if cid(row.get("id"))}\n    if len(manifest_rows) != len(rows):\n        raise SystemExit("manifest provider ids must be unique and non-empty")\n    active_ids = active_provider_ids()\n    disabled_ids = disabled_provider_ids()\n    visible_ids = visible_provider_ids()\n    if set(manifest_rows) != visible_ids:\n        raise SystemExit("manifest/folder identity mismatch before repair disposition")\n    if matrix_ids != active_ids:\n        print(f"PROVIDER_REPAIR_DISPOSITION_MATRIX_STALE matrix={len(matrix_ids)} active={len(active_ids)}")\n'''
+          if old not in t: raise SystemExit('finalizer scope block drifted')
+          t=t.replace(old,new,1)
+          t=t.replace('        enabled = provider in target_hubs','        enabled = provider in active_ids')
+          t=t.replace('"activationAuthority": "hub-lab-matrix-46",','"activationAuthority": "provider-folder-lifecycle",')
+          t=t.replace('"catalogueProviderCount": EXPECTED,','"catalogueProviderCount": len(manifest_rows),')
+          t=t.replace('"activationAuthority": "automation/evidence/hub-lab-matrix-46.json:rows[].manifestId",','"activationAuthority": "providers/ + provider-disabled/ physical current folders",')
+          t=t.replace('"targetHubProviderCount": len(target_hubs),','"activeProviderCount": len(active_ids),')
+          t=t.replace('"disabledProviderCount": EXPECTED - enabled_count,','"disabledProviderCount": len(disabled_providers),')
+          t=t.replace('f"providers={EXPECTED} enabled={enabled_count} disabled={EXPECTED-enabled_count} "','f"providers={len(manifest_rows)} enabled={enabled_count} disabled={len(disabled_providers)} "')
+          t=t.replace('f"diagnostic_incomplete={len(incomplete)} activation=hub_matrix_active count={len(target_hubs)}"','f"diagnostic_incomplete={len(incomplete)} activation=provider_folders active={len(active_ids)}"')
+          p.write_text(t,encoding='utf-8')
+
+          # Domain Refresh may mutate addresses only for currently active providers.
+          p=R/'scripts/domain_refresh_transaction_v2.py'; t=p.read_text(encoding='utf-8')
+          if 'from current_provider_scope import active_provider_ids, visible_provider_count' not in t:
+              t=t.replace('from provider_patch_blocks import (','from current_provider_scope import active_provider_ids, visible_provider_count\nfrom provider_patch_blocks import (',1)
+          t=t.replace('CURRENT_PROVIDER_COUNT = 46','CURRENT_PROVIDER_COUNT = visible_provider_count()')
+          old='''    current_provider_ids = {\n        canonical(row.get("id"))\n        for row in manifest_scope.get("scrapers") or []\n        if isinstance(row, dict) and canonical(row.get("id"))\n    }\n    if len(current_provider_ids) != CURRENT_PROVIDER_COUNT:\n        raise SystemExit(\n            f"domain refresh requires current Hub{CURRENT_PROVIDER_COUNT} manifest scope; "\n            f"got {len(current_provider_ids)}"\n        )\n'''
+          new='''    current_provider_ids = active_provider_ids()\n    if not current_provider_ids:\n        raise SystemExit("domain refresh has no active providers")\n'''
+          if old in t: t=t.replace(old,new,1)
+          t=t.replace('f"domain publication requires current Hub{CURRENT_PROVIDER_COUNT} state: "','f"domain publication requires current visible identity state: "')
+          p.write_text(t,encoding='utf-8')
+
+          # Old release normalizers are now harmless compatibility validators; they can never rewrite counts.
+          validator='''#!/usr/bin/env python3\nfrom __future__ import annotations\nimport sys\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT/"scripts"))\nfrom current_provider_scope import active_provider_count, disabled_provider_count, visible_provider_count, assert_directory_contract\ndef main():\n assert_directory_contract(); print(f"CURRENT_PROVIDER_SOURCE_CONTRACT active={active_provider_count()} disabled={disabled_provider_count()} visible={visible_provider_count()} mutations=0"); return 0\nif __name__=="__main__": raise SystemExit(main())\n'''
+          write('scripts/normalize_hub46_semantic_transport_sources.py',validator)
+          write('scripts/normalize_hub46_release_gate_sources.py',validator)
+
+          # Workflow ownership test must require dynamic scope, never a numeric literal.
+          p=R/'tests/provider_v3_workflow_ownership_test.py'; t=p.read_text(encoding='utf-8')
+          t=t.replace('for required in ("materialize_provider_v3_all.py","verify_provider_v3_reverse_rebuild.py","46"):', 'for required in ("materialize_provider_v3_all.py","verify_provider_v3_reverse_rebuild.py"):\n')
+          t=t.replace('    "CURRENT_PROVIDER_COUNT = 46",','    "active_provider_ids",')
+          t=t.replace('"Run real 46-provider candidate census",','"Run real current-provider candidate census",')
+          t=t.replace('current Hub46','current provider').replace('current-Hub46','current-provider').replace('Hub46-scoped','current-provider-scoped')
+          p.write_text(t,encoding='utf-8')
+
+          # Expand permanent anti-regression coverage to every operational source touched here.
+          p=R/'tests/provider_cardinality_source_of_truth_test.py'; t=p.read_text(encoding='utf-8')
+          marker=' "scripts/upgrade_streamzo_runtime_v1.py",\n'
+          additions=''' "scripts/run_provider_repair_pipeline_v6.py",\n "scripts/run_provider_repair_fast_targeted_v1.py",\n "scripts/build_published_provider_stage.py",\n "scripts/validate_published_provider_config.py",\n "scripts/finalize_provider_repair_disposition_v1_impl.py",\n "scripts/generate_hub46_manifest.py",\n "scripts/build_hub46_native_manifest.py",\n "scripts/route_proof_activation_preservation_v1.py",\n "scripts/domain_refresh_transaction_v2.py",\n "scripts/normalize_hub46_semantic_transport_sources.py",\n "scripts/normalize_hub46_release_gate_sources.py",\n'''
+          if additions not in t:
+              if marker not in t: raise SystemExit('cardinality guard marker missing')
+              t=t.replace(marker,marker+additions,1)
+          p.write_text(t,encoding='utf-8')
+
+          print('PROVIDER_FOLDER_SOURCE_PATCH_COMPLETE')
+          PY
+
+      - name: Validate folder source of truth and operational contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile \
+            scripts/current_provider_scope.py \
+            scripts/run_provider_repair_pipeline_v6.py \
+            scripts/run_provider_repair_fast_targeted_v1.py \
+            scripts/build_published_provider_stage.py \
+            scripts/validate_published_provider_config.py \
+            scripts/hub_activation_publication.py \
+            scripts/generate_hub46_manifest.py \
+            scripts/build_hub46_native_manifest.py \
+            scripts/finalize_provider_repair_disposition_v1_impl.py \
+            scripts/domain_refresh_transaction_v2.py
+          python scripts/manage_provider_lifecycle.py --apply
+          python scripts/generate_hub46_manifest.py
+          python scripts/hub_activation_publication.py --verify-catalog
+          python scripts/validate_published_provider_config.py
+          python tests/provider_cardinality_source_of_truth_test.py
+          python tests/provider_disabled_lifecycle_contract_test.py
+          python tests/provider_repair_pipeline_v6_contract_test.py
+          python tests/provider_v3_workflow_ownership_test.py
+          python tests/native_declared_provider_matrix_test.py
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/provider_v3_minimizer_contract_test.py
+          python tests/provider_v3_minimizer_published_test.py
+          python tests/global_stream_output_guard_test.py
+          echo '--- remaining operational magic-count candidates ---'
+          grep -RInE '(EXPECTED(_[A-Z_]+)?|CURRENT_PROVIDER_COUNT|EXPECTED_CURRENT|EXPECTED_ACTIVE)[[:space:]]*=[[:space:]]*(44|46|96)|len\([^)]*\)[[:space:]]*(==|!=)[[:space:]]*(44|46|96)' scripts tests --include='*.py' || true
+          git diff --check
+
+      - name: Commit dynamic provider-folder authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts tests manifest.json manifest-hub46.json automation provider-disabled provider-old providers
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo PROVIDER_FOLDER_SOURCE_NO_CHANGE
+            exit 0
+          fi
+          git commit -m 'fix: make provider folders the sole activation authority'
+          git push origin HEAD:fix/active44-durability-20260915
+          echo "PROVIDER_FOLDER_SOURCE_PUBLISHED $(git rev-parse HEAD)"
