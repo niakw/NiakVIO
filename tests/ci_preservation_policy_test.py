@@ -128,8 +128,8 @@ result = run_validator(
     report_rows=[],
 )
 assert result.returncode == 1
-assert 'canonical catalogue must contain 96 providers' in result.stderr
-assert '46-hub target missing from canonical catalogue' in result.stderr
+assert 'canonical catalogue must contain 46 providers' in result.stderr
+assert 'active-hub target missing from canonical catalogue' in result.stderr
 assert 'non-target provider unexpectedly enabled' not in result.stderr
 
 result = run_validator(
