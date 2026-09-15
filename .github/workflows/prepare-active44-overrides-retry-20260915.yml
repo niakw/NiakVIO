@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: niakvio-manual-evidence-active44
+  group: niakvio-active44-override-prep
   cancel-in-progress: false
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
           ref: main
           fetch-depth: 0
           persist-credentials: true
-      - name: Disable explicit activation overrides and retrigger v2
+      - name: Disable explicit activation overrides only
         shell: bash
         run: |
           set -euo pipefail
@@ -62,12 +62,14 @@ jobs:
           p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           print('ACTIVE44_OVERRIDES_OFF '+','.join(sorted(seen)))
           PY
-          printf '\n# retry after explicit OFF overrides %s\n' "${{ github.sha }}" >> .github/workflows/apply-manual-evidence-active44-20260915-v2.yml
-          rm -f .github/workflows/prepare-active44-overrides-retry-20260915.yml
           git diff --check
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add -A
+          git add provider-overrides.json
+          if git diff --cached --quiet; then
+            echo ACTIVE44_OVERRIDES_ALREADY_OFF
+            exit 0
+          fi
           git commit -m 'fix: disable DesiFlix and FullAnime activation overrides'
           git fetch origin main
           test "$(git rev-parse origin/main)" = "${{ github.sha }}"
