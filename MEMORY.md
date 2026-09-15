@@ -1699,3 +1699,16 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The seven unresolved providers were rerun with current V3, installed upstream dependencies, 8 rotating samples per declared lane and deep terminal HLS proof: `{"allwish":"ZERO","flemmix":"ZERO","fullanime":"ZERO","moviebox":"ZERO","moviesmod":"ZERO","vidfast":"ZERO","vidlove":"ZERO"}`.
 - Certain Niak regressions: `[]`. Resample providers: `[]`. Missing upstream comparators: `[]`.
 - Durable detailed evidence: `automation/final-seven-technical-audit-20260915.json`. A provider remains `repair` when its reference side is 403/429/timeout/otherwise technical and there is no terminal-positive authority; no speculative runtime patch is allowed.
+
+## 2026-09-15 — Neko final repair classification
+
+- Neko-Sama is now explicitly closed for the current provider-repair sweep as `repair` / fail-closed, not green.
+- Behavior-preserving instrumentation on JJK S1E1 and Sakamoto Days S1E1 proved the internal resolver reaches the series, exact episode, `loadMi` servers and Vidmoly iframe, then constructs one runtime row (`runtimeOutCount=1`) while the exported provider contract still returns `raw=0`, `streams=0`.
+- Tested directions that did not solve the export disappearance: episode parser V3 alone, provider-specific Vidmoly terminal resolver, Core correlated-player marker and Referer variations. No speculative patch is published.
+- Durable final classification: `automation/neko-final-classification-20260915.json`; detailed stage evidence remains on `diag/neko-runtime-stage-20260915` commit `b1cd42ad2872125f0f9591797b9f8a08b4652530`.
+- The previous seven technical-unresolved providers remain classified `ZERO/repair` with no certain Niak regression: AllWish, Flemmix, FullAnime, MovieBox, MoviesMod, VidFast and VidLove. The active provider debugging queue is therefore empty pending final Hub46 revalidation.
+
+## 2026-09-15 — Hub46 provider closeout parity
+
+- Final rotating Hub46 parity after classifying Neko: `{"schemaVersion":1,"scopeProviderCount":46,"accountedProviders":46,"statusCounts":{"FULL":10,"REGRESSION":4,"RESAMPLE":19,"UNMATCHED_FULL":1,"ZERO":12},"certainRegressions":["coflix","neko-sama","sekai","voiranime"],"resampleProviders":["anikototv","anime-ultime","animesama-co","animesultra","animetsu","animevost-fr","animevostfr","castle","mallumv","movieshunt","papadustream","persianstremio","playimdb","streamzo","uhdmovies","voiranime-rip","vostfree","wookafr","yflix"],"fullProviders":["anime-sama","animekai","desiflix","french-manga","hindmoviez","kehflix","kurage","mugiwarastream","purstream","videasy","voiranime-homes"],"partialProviders":[],"zeroProviders":["4khdhub","allanime","allwish","animesalt","flemmix","fullanime","moviebox","moviesmod","showbox","vidfast","vidlove","vidrock"],"currentRepairSweepOpenProviders":["coflix","neko-sama","sekai","voiranime"],"providerDebugQueueClosed":false,"nekoFinalState":"repair","knownFinalSevenRepair":["allwish","flemmix","fullanime","moviebox","moviesmod","vidfast","vidlove"]}`.
+- Detailed parity evidence: `automation/hub46-final-parity-20260915.json`; concise closeout ledger: `automation/hub46-provider-closeout-20260915.json`.
