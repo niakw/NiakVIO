@@ -1692,3 +1692,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Neko remains a separate heavy resolver case and is intentionally non-blocking for independent fixes. Current post-rematerialization JJK state: `{"providerId":"neko-sama","fixture":"jujutsu-kaisen-2020-s01e01","streams":0,"terminal":false,"reasons":[],"statuses":[200],"error":null}`.
 - AllWish regeneration can no longer resurrect historical `playable_verified`; fresh identity-safe positive proof is required.
 - Continue immediately with Neko and the seven technical-unresolved providers, then rerun Hub46 parity/local proof.
+
+## 2026-09-15 — Final seven technical-unresolved audit
+
+- User requested the simplest/fastest providers first but also asked to finish the remaining providers so Hub46 is practically clean.
+- The seven unresolved providers were rerun with current V3, installed upstream dependencies, 8 rotating samples per declared lane and deep terminal HLS proof: `{"allwish":"ZERO","flemmix":"ZERO","fullanime":"ZERO","moviebox":"ZERO","moviesmod":"ZERO","vidfast":"ZERO","vidlove":"ZERO"}`.
+- Certain Niak regressions: `[]`. Resample providers: `[]`. Missing upstream comparators: `[]`.
+- Durable detailed evidence: `automation/final-seven-technical-audit-20260915.json`. A provider remains `repair` when its reference side is 403/429/timeout/otherwise technical and there is no terminal-positive authority; no speculative runtime patch is allowed.
