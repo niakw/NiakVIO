@@ -56,17 +56,16 @@ jobs:
           t=t.replace('"## 46-current-provider matrix"','f"## {provider_count}-current-provider matrix"')
           p.write_text(t,encoding='utf-8')
 
-          # The active provider directory name is an external/runtime contract.
+          # The active provider directory name is a permanent external/runtime contract.
           p=R/'scripts/current_provider_scope.py'
           t=p.read_text(encoding='utf-8')
-          marker='ACTIVE_PROVIDER_DIR = ROOT / "providers"\n'
+          marker='ACTIVE_DIR = (ROOT / "providers").resolve()\n'
           if marker not in t:
               raise SystemExit('active provider directory must remain literally providers/')
-          if 'assert ACTIVE_PROVIDER_DIR.name == "providers"' not in t:
-              t=t.replace(marker, marker+'assert ACTIVE_PROVIDER_DIR.name == "providers"\n',1)
+          if 'assert ACTIVE_DIR.name == "providers"' not in t:
+              t=t.replace(marker, marker+'assert ACTIVE_DIR.name == "providers"\n',1)
           p.write_text(t,encoding='utf-8')
 
-          # Reject stale undefined migration constants in current history builders.
           for rel in ('scripts/build_provider_history_matrix.py','scripts/build_provider_history_matrix_v2.py'):
               s=(R/rel).read_text(encoding='utf-8')
               if 'EXPECTED' in s:
