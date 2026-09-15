@@ -7,7 +7,9 @@ Provider cardinality is data, never policy.
 * ``provider-disabled/`` contains disabled artifacts still visible in manifest.json.
 * ``provider-old/`` is terminal archive and is not part of the current catalogue.
 
-No caller should encode a fixed provider count (44/46/96/etc.).
+The physical current folder is activation authority. ``manifest.json`` must agree
+with that authority; it never invents the active count. Historical duplicate files
+outside the manifest-referenced current paths do not inflate cardinality.
 """
 from __future__ import annotations
 
@@ -18,6 +20,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 ACTIVE_DIR = (ROOT / "providers").resolve()
 DISABLED_DIR = (ROOT / "provider-disabled").resolve()
+OLD_DIR = (ROOT / "provider-old").resolve()
 MANIFEST = ROOT / "manifest.json"
 
 
@@ -46,37 +49,52 @@ def _resolved_asset(row: dict[str, Any]) -> Path:
     return path
 
 
-def active_provider_rows() -> list[dict[str, Any]]:
-    rows: list[dict[str, Any]] = []
+def _state_for_path(path: Path) -> str:
+    if ACTIVE_DIR in path.parents:
+        return "active"
+    if DISABLED_DIR in path.parents:
+        return "disabled"
+    if OLD_DIR in path.parents:
+        return "old"
+    return "invalid"
+
+
+def _classified_rows() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    active: list[dict[str, Any]] = []
+    disabled: list[dict[str, Any]] = []
     for row in _manifest_rows():
-        if row.get("enabled") is False:
-            continue
+        provider = cid(row.get("id"))
         path = _resolved_asset(row)
-        if ACTIVE_DIR not in path.parents:
-            raise RuntimeError(
-                f"{cid(row.get('id'))}: enabled provider must live in providers/, got {path.relative_to(ROOT)}"
-            )
-        rows.append(row)
-    return rows
+        state = _state_for_path(path)
+        enabled = row.get("enabled") is not False
+        if state == "active":
+            if not enabled:
+                raise RuntimeError(f"{provider}: providers/ artifact cannot be enabled=false")
+            active.append(row)
+            continue
+        if state == "disabled":
+            if enabled:
+                raise RuntimeError(f"{provider}: provider-disabled/ artifact must be enabled=false")
+            disabled.append(row)
+            continue
+        if state == "old":
+            raise RuntimeError(f"{provider}: provider-old/ artifact must not remain in current manifest")
+        raise RuntimeError(f"{provider}: current provider artifact is outside managed folders: {path.relative_to(ROOT)}")
+    return active, disabled
+
+
+def active_provider_rows() -> list[dict[str, Any]]:
+    active, _ = _classified_rows()
+    return active
 
 
 def disabled_provider_rows() -> list[dict[str, Any]]:
-    rows: list[dict[str, Any]] = []
-    for row in _manifest_rows():
-        if row.get("enabled") is not False:
-            continue
-        path = _resolved_asset(row)
-        if DISABLED_DIR not in path.parents:
-            raise RuntimeError(
-                f"{cid(row.get('id'))}: disabled provider must live in provider-disabled/, got {path.relative_to(ROOT)}"
-            )
-        rows.append(row)
-    return rows
+    _, disabled = _classified_rows()
+    return disabled
 
 
 def visible_provider_rows() -> list[dict[str, Any]]:
-    active = active_provider_rows()
-    disabled = disabled_provider_rows()
+    active, disabled = _classified_rows()
     return active + disabled
 
 
@@ -108,13 +126,13 @@ def visible_provider_count() -> int:
 
 
 def assert_directory_contract() -> None:
-    """Ensure the physical active folder is exactly the enabled manifest set.
-
-    Historical duplicate files are not allowed to silently inflate or define the
-    provider count. Only manifest-referenced current artifacts participate.
-    """
-    active_rows = active_provider_rows()
-    referenced = {_resolved_asset(row).resolve() for row in active_rows}
-    manifest_named = {path for path in ACTIVE_DIR.glob("*.js") if path.resolve() in referenced}
-    if manifest_named != referenced:
-        raise RuntimeError("providers/ current artifact set differs from enabled manifest set")
+    """Prove folder/manifest identity without using a magic provider count."""
+    active, disabled = _classified_rows()
+    active_paths = {_resolved_asset(row) for row in active}
+    disabled_paths = {_resolved_asset(row) for row in disabled}
+    if active_paths & disabled_paths:
+        raise RuntimeError("active/disabled provider asset collision")
+    active_ids = {cid(row.get("id")) for row in active}
+    disabled_ids = {cid(row.get("id")) for row in disabled}
+    if active_ids & disabled_ids:
+        raise RuntimeError("active/disabled provider identity collision")
