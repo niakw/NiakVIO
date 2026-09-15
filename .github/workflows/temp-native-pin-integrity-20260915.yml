@@ -1,0 +1,92 @@
+name: TEMP - Repair Native Pinned Provider Integrity
+
+on:
+  push:
+    branches: [fix/native-pinned-provider-integrity-20260915]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/native-pinned-provider-integrity-20260915
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Re-pin Native manifest to a commit containing current bundles
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROVIDER_SHA="c7b06a732ed07c13af819c1490fbe950d29024fb"
+          python scripts/build_hub46_native_manifest.py \
+            --provider-sha "$PROVIDER_SHA" \
+            --source manifest-hub46.json \
+            --output native-hub46/manifest.json
+      - name: Add fail-closed checked-in transport integrity proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('tests/native_hub46_transport_manifest_test.py')
+          text = p.read_text(encoding='utf-8')
+          marker = 'NATIVE_HUB46_PINNED_BUNDLE_INTEGRITY_V1'
+          if marker not in text:
+              addition = r'''
+
+# NATIVE_HUB46_PINNED_BUNDLE_INTEGRITY_V1
+# The checked-in transport is an executable publication artifact.  Every absolute
+# provider URL must name a blob that really exists at its immutable Git SHA; merely
+# preserving the URL shape is insufficient and previously allowed 0-scraper loads.
+from urllib.parse import urlparse
+import re
+import subprocess
+
+checked_in = json.loads((ROOT / "native-hub46/manifest.json").read_text(encoding="utf-8"))
+pinned_rows = [row for row in checked_in.get("scrapers") or [] if isinstance(row, dict)]
+assert pinned_rows, "checked-in native transport is empty"
+sha_re = re.compile(r"^[0-9a-f]{40}$")
+for row in pinned_rows:
+    filename = str(row.get("filename") or "").strip()
+    parsed = urlparse(filename)
+    assert parsed.scheme == "https" and parsed.hostname == "raw.githubusercontent.com", (row.get("id"), filename)
+    parts = [part for part in parsed.path.split("/") if part]
+    assert len(parts) >= 5 and parts[0:2] == ["niakw", "NiakVIO"], (row.get("id"), filename)
+    provider_sha = parts[2]
+    provider_path = "/".join(parts[3:])
+    assert sha_re.fullmatch(provider_sha), (row.get("id"), provider_sha)
+    assert provider_path.startswith("providers/") and ".." not in Path(provider_path).parts, (row.get("id"), provider_path)
+    proof = subprocess.run(
+        ["git", "cat-file", "-e", f"{provider_sha}:{provider_path}"],
+        cwd=ROOT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    assert proof.returncode == 0, f"pinned provider bundle missing: {row.get('id')} {provider_sha}:{provider_path}"
+'''
+              text = text.replace('\nprint("NATIVE_HUB46_TRANSPORT_MANIFEST_OK providers=46 terminal=manifest.json pinned_provider_urls=true android_prebuild=nested")\n', addition + '\nprint("NATIVE_HUB46_TRANSPORT_MANIFEST_OK providers=46 terminal=manifest.json pinned_provider_urls=true pinned_blobs_exist=true android_prebuild=nested")\n')
+              p.write_text(text, encoding='utf-8')
+          PY
+          python tests/native_hub46_transport_manifest_test.py
+          git diff --check
+      - name: Commit repaired transport and invariant
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add native-hub46/manifest.json tests/native_hub46_transport_manifest_test.py
+          git diff --cached --quiet && { echo NO_NATIVE_PIN_CHANGES; exit 0; }
+          git commit -m 'fix(native): bind transport filenames to existing provider blobs'
+          AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:fix/native-pinned-provider-integrity-20260915
