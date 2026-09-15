@@ -50,12 +50,12 @@ source = source.replace(
     "V15->V16->V17->V21.9->V21.11->V21.12 order",
 )
 
-# Activation is now an exact release authority: only current matrix members are visible; the count is not hard-coded. Repair/off remains separate route debt and can never
-# widen that set. Replace only historical static spellings; the implementation test
-# remains otherwise unchanged.
+# Activation belongs to the physical current-provider lifecycle:
+# providers/ = enabled, provider-disabled/ = visible but disabled.
+# Repair/off is separate route debt and must never invent provider cardinality.
 compat_replacements = {
-    "    'active-but-broken',": "    '\"activationAuthority\": \"hub-lab-matrix-46\"',",
-    "    'enabled = True',": "    'enabled = provider in target_hubs',",
+    "    'active-but-broken',": "    '\"activationAuthority\": \"provider-folder-lifecycle\"',",
+    "    'enabled = True',": "    'enabled = provider in active_ids',",
     "    'def off_evidence_ok(patch: dict) -> bool:',": "    'def off_evidence_ok(patch: dict, expected_enabled: bool) -> bool:',",
 }
 for old, new in compat_replacements.items():
