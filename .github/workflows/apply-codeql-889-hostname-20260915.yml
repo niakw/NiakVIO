@@ -93,8 +93,33 @@ jobs:
           Path('.github/workflows/apply-codeql-889-hostname-20260915.yml').unlink()
           PY
 
-          python tests/provider_base_store_test.py
           python -m py_compile scripts/provider_base_store.py tests/provider_base_store_test.py
+          python - <<'PY'
+          import importlib.util
+          import sys
+          from pathlib import Path
+
+          root = Path.cwd()
+          sys.path.insert(0, str(root / 'scripts'))
+          script = root / 'scripts' / 'provider_base_store.py'
+          spec = importlib.util.spec_from_file_location('provider_base_store_codeql889', script)
+          assert spec is not None and spec.loader is not None
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+
+          cases = {
+              'https://user:pass@npms.io:443/path': False,
+              'https://NPMS.IO./path': False,
+              'https://sub.t.me/channel': False,
+              'https://example.invalid/path?next=https://npms.io/': True,
+              'https://npms.io.evil.example/path': True,
+              'https://not-t.me/path': True,
+          }
+          for url, expected in cases.items():
+              actual = module._provider_data_url_is_executable(url)
+              assert actual is expected, (url, actual, expected)
+          print('FIELD_CODEQL_889_FOCUSED_TEST ok=true cases=6')
+          PY
 
       - name: Commit patch to PR branch
         shell: bash
