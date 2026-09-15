@@ -92,26 +92,49 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Validate Hub46 ProviderBase scope
+      - name: Validate current ProviderBase scope
         if: ${{ matrix.check_name == 'CodeQL · JS ProviderBase' }}
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json
+          import sys
           from pathlib import Path
-          manifest=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
-          current={str(row.get('id') or '').strip().casefold() for row in manifest.get('scrapers') or []}
-          current.discard('')
-          bases=list(Path('provider-bases').glob('*.js'))
-          archived=list(Path('provider-old').glob('*.js'))
-          if len(current) != 46:
-              raise SystemExit(f'expected 46 current providers, got {len(current)}')
+
+          sys.path.insert(0, str(Path('scripts').resolve()))
+          from current_provider_scope import (
+              active_provider_ids,
+              assert_directory_contract,
+              disabled_provider_ids,
+              visible_provider_ids,
+          )
+
+          assert_directory_contract()
+          active = active_provider_ids()
+          disabled = disabled_provider_ids()
+          visible = visible_provider_ids()
+          bases = list(Path('provider-bases').glob('*.js'))
+          archived = list(Path('provider-old').glob('*.js'))
+
+          if not visible:
+              raise SystemExit('current provider catalogue is empty')
+          if not active:
+              raise SystemExit('active provider scope is empty')
           if not bases:
               raise SystemExit('provider-bases/: no maintained ProviderBase files')
           if not archived:
               raise SystemExit('provider-old/: historical archive unexpectedly empty')
-          print(f'CODEQL_SCOPE current={len(current)} provider_bases={len(bases)} archived_files={len(archived)} generated_providers_excluded=true')
+          if active & disabled:
+              raise SystemExit('active/disabled provider identity collision')
+          if visible != active | disabled:
+              raise SystemExit('visible provider scope differs from active + disabled authority')
+
+          print(
+              'CODEQL_SCOPE '
+              f'visible={len(visible)} active={len(active)} disabled={len(disabled)} '
+              f'provider_bases={len(bases)} archived_files={len(archived)} '
+              'generated_providers_excluded=true cardinality_policy=data'
+          )
           PY
 
       - name: Initialize CodeQL
