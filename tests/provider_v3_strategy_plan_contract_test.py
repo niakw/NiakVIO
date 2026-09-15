@@ -107,7 +107,7 @@ def disposition_activation_ok(disposition: dict, expected_enabled: bool) -> bool
     expected_state = "enabled" if expected_enabled else "disabled"
     return (
         disposition.get("authority") == "provider-repair-disposition-v1"
-        and disposition.get("activationAuthority") == "hub-lab-matrix-46"
+        and disposition.get("activationAuthority") == "provider-folder-lifecycle"
         and disposition.get("activationState") == expected_state
         and bool(disposition.get("forcedEnabled")) == expected_enabled
     )
@@ -273,7 +273,7 @@ def main() -> int:
                 failures.append(f"{provider_id}: quarantine must carry explicit evidence/reason")
             if not off_evidence_ok(patch, expected_enabled):
                 failures.append(
-                    f"{provider_id}: quarantine must carry audited routeDataState=off with matching hub46 activation"
+                    f"{provider_id}: quarantine must carry audited routeDataState=off with matching provider-folder activation"
                 )
             continue
 
@@ -297,7 +297,7 @@ def main() -> int:
                 continue
             failures.append(
                 f"{provider_id}: strategy={strategy} has no executable LIVE DATA/recipe/Lego "
-                f"and no audited hub46-aligned repair/off disposition "
+                f"and no audited provider-folder-aligned repair/off disposition "
                 f"(routeKinds={sorted(kinds)}, bases={len(bases)}, enabled={enabled}, terminal={state or 'none'})"
             )
 
