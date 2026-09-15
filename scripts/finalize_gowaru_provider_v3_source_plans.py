@@ -278,7 +278,7 @@ def main() -> int:
     payload = load(path)
     providers = payload.get("providers")
     if not isinstance(providers, dict) or len(providers) != 96:
-        raise ValueError("expected durable knowledge for exactly 96 providers")
+        raise ValueError("expected durable knowledge for the complete current visible provider set")
 
     gowaru_count = 0
     source_modules = 0

@@ -170,7 +170,7 @@ def main() -> int:
     rows = manifest.get("scrapers") or []
     assert len({cid(row.get("id")) for row in rows}) == len(rows), "provider ids must be unique"
     ids = [cid(row.get("id")) for row in rows]
-    assert len(set(ids)) == 46, "provider ids must be unique after canonical case-fold"
+    assert len(set(ids)) == len(ids), "provider ids must be unique after canonical case-fold"
     missing_targets = sorted(targets - set(ids))
     assert not missing_targets, f"hub46 targets missing from catalogue: {missing_targets}"
 

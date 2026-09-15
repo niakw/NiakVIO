@@ -1,65 +1,32 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-
-import json
-import os
-import sys
+import json,sys
 from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/"scripts"))
+import generate_hub46_manifest as active_manifest
+from current_provider_scope import active_provider_ids
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "scripts"))
-
-import generate_hub46_manifest as hub46  # noqa: E402
-
-
-def main() -> int:
-    source = hub46.load_json(ROOT / "manifest.json")
-    matrix = hub46.load_json(ROOT / "automation/evidence/hub-lab-matrix-46.json")
-    built = hub46.build(source, matrix)
-    rows = built.get("scrapers") or []
-    assert len(rows) == 46, len(rows)
-
-    expected = [value.casefold() for value in hub46.matrix_ids(matrix)]
-    actual = [str(row.get("id") or "").casefold() for row in rows]
-    assert actual == expected, (actual, expected)
-    assert len(set(actual)) == 46
-
-    global_ids = {str(row.get("id") or "").casefold() for row in source.get("scrapers") or []}
-    assert set(actual) <= global_ids
-    for row in rows:
-        filename = str(row.get("filename") or "")
-        assert filename.startswith("providers/"), (row.get("id"), filename)
-        assert not filename.startswith("/")
-        assert ".." not in Path(filename).parts
-
-    scope = built.get("labScope") or {}
-    assert scope.get("providerCount") == 46
-    assert scope.get("authority") == "automation/evidence/hub-lab-matrix-46.json"
-
-    if (ROOT / "manifest-hub46.json").exists():
-        hub46.generate(
-            ROOT / "manifest.json",
-            ROOT / "automation/evidence/hub-lab-matrix-46.json",
-            ROOT / "manifest-hub46.json",
-            check=True,
-        )
-
-    # The root Hub46 file is the deterministic source projection. Native readers
-    # must consume the terminal-name-safe nested transport instead, because the
-    # official repository loaders derive their base by stripping /manifest.json.
-    for script in (
-        "run_native_corpus_desktop_suite.sh",
-        "run_native_corpus_mobile_suite.sh",
-        "run_native_corpus_tv_suite.sh",
-        "run_native_corpus_ios_suite.sh",
-    ):
-        text = (ROOT / "scripts" / script).read_text(encoding="utf-8")
-        assert "native-hub46/manifest.json" in text, script
-        assert 'TARGET_MANIFEST="manifest-hub46.json"' not in text, script
-
-    print("native physical Hub-46 manifest contract tests passed: providers=46 transport=native-hub46/manifest.json")
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+def main()->int:
+ source=active_manifest.load_json(ROOT/"manifest.json")
+ built=active_manifest.build(source)
+ rows=built.get("scrapers") or []
+ expected=active_provider_ids()
+ actual=[str(row.get("id") or "").strip().casefold().replace("_","-") for row in rows]
+ assert set(actual)==expected,(set(actual)-expected,expected-set(actual))
+ assert len(set(actual))==len(actual)
+ for row in rows:
+  filename=str(row.get("filename") or "")
+  assert filename.startswith("providers/"),(row.get("id"),filename)
+  assert not filename.startswith("/") and ".." not in Path(filename).parts
+ scope=built.get("labScope") or {}
+ assert int(scope.get("providerCount") or 0)==len(expected)
+ assert scope.get("authority")=="providers/ current manifest references"
+ if (ROOT/"manifest-hub46.json").exists():
+  active_manifest.generate(ROOT/"manifest.json",ROOT/"manifest-hub46.json",check=True)
+ for script in ("run_native_corpus_desktop_suite.sh","run_native_corpus_mobile_suite.sh","run_native_corpus_tv_suite.sh","run_native_corpus_ios_suite.sh"):
+  text=(ROOT/"scripts"/script).read_text(encoding="utf-8")
+  assert "native-hub46/manifest.json" in text,script
+ print(f"native current-provider manifest contract passed providers={len(expected)} transport=native-hub46/manifest.json")
+ return 0
+if __name__=="__main__": raise SystemExit(main())

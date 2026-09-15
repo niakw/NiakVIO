@@ -9,8 +9,8 @@ route exists.
 The public function name is retained because release-integrity validation imports it.
 Legacy proof-v5 disable records are now explicitly rejected rather than granted a
 special disablement exception. The legacy activation validator still carries the old
-96-provider catalogue floor; this Hub46 adapter supersedes only that stale cardinality
-error, and only after independently proving the current catalogue is exactly 46 rows.
+96-provider catalogue floor; this compatibility adapter ignores only that stale legacy cardinality error;
+current folder/manifest identity is validated independently.
 """
 from __future__ import annotations
 

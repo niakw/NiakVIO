@@ -17,6 +17,7 @@ SCRIPTS=ROOT/"scripts"
 sys.path.insert(0,str(SCRIPTS))
 
 import provider_base_store as base_store
+from current_provider_scope import active_provider_ids
 
 manifest=json.loads((ROOT/"manifest.json").read_text(encoding="utf-8"))
 provenance=json.loads((ROOT/"PROVENANCE.json").read_text(encoding="utf-8"))
@@ -25,13 +26,14 @@ store=provenance.get("provider_base_store")
 assert isinstance(rows,dict)
 assert isinstance(store,dict)
 
+active_ids=active_provider_ids()
 entries=[
     row for row in manifest.get("scrapers") or []
-    if isinstance(row,dict) and base_store.canonical_id(str(row.get("id") or ""))
+    if isinstance(row,dict) and base_store.canonical_id(str(row.get("id") or "")) in active_ids
 ]
 provider_ids=[base_store.canonical_id(str(row["id"])) for row in entries]
-assert len(provider_ids)==96, len(provider_ids)
-assert len(set(provider_ids))==96
+assert set(provider_ids)==active_ids, (len(provider_ids),len(active_ids))
+assert len(set(provider_ids))==len(provider_ids)
 
 assert base_store.INITIAL_RECONSTRUCTION_SCOPE==96
 assert base_store.CLEAN_RECONSTRUCTION_AUTHORING_VERSION>=3

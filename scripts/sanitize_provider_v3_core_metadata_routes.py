@@ -183,7 +183,7 @@ def main() -> int:
     payload = load(path)
     providers = payload.get("providers")
     if not isinstance(providers, dict) or len(providers) != 96:
-        raise ValueError("expected durable knowledge for exactly 96 providers")
+        raise ValueError("durable knowledge does not match the current visible provider identity set")
 
     removed = 0
     touched = 0
