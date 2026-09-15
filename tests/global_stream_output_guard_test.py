@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Every published provider must materialize the Core terminal stream sanitizer."""
+"""Current provider artifacts must materialize the Core terminal stream sanitizer.
+
+Active providers are sourced only from ``providers/``. Disabled-retained providers
+may remain visible in the manifest under ``provider-disabled/`` while they are in
+the 28-day retention window. No fixed provider census is a test invariant.
+"""
 from __future__ import annotations
 
 import json
@@ -18,16 +23,27 @@ if result.returncode:
     raise SystemExit(result.returncode)
 
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
-rows = manifest.get("scrapers") or []
-assert len(rows) == 46, f"expected complete 46-provider Hub publication, got {len(rows)}"
+rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
+assert rows, "current provider publication must not be empty"
+
+active_rows = [row for row in rows if row.get("enabled") is not False]
+disabled_rows = [row for row in rows if row.get("enabled") is False]
+assert active_rows, "current active provider publication must not be empty"
 
 missing = []
 weak = []
 for row in rows:
     provider_id = str(row.get("id") or "").strip()
     relative = str(row.get("filename") or "").strip()
-    assert provider_id and relative.startswith("providers/"), row
-    source = (ROOT / relative).read_bytes()
+    assert provider_id, row
+    if row.get("enabled") is False:
+        assert relative.startswith("provider-disabled/"), row
+        assert row.get("disabledAt") and row.get("purgeAfter"), row
+    else:
+        assert relative.startswith("providers/"), row
+    target = ROOT / relative
+    assert target.is_file(), (provider_id, relative)
+    source = target.read_bytes()
     patched, _records = apply_overrides(provider_id, source, phase="discovery")
     text = patched.decode("utf-8")
     sanitizer_start = "/* STARTFIX:CORE.STREAM_SANITIZER.V6 */"
@@ -43,9 +59,6 @@ for row in rows:
     if branding >= 0 and sanitizer <= branding:
         weak.append(provider_id)
 
-    # V6 owns the terminal boundary. V7 deliberately keeps that exact managed
-    # owner/fix id and strengthens one cleanup path so an exact proof-correlated
-    # non-direct player fallback can survive without weakening probeAllUrls.
     compact = "".join(text.split())
     current_v6_hook = (
         "if(coreMediaProof(item.stream,item.url))returnclearCoreMediaProof(item.stream);"
@@ -74,4 +87,8 @@ for row in rows:
 
 assert not missing, f"providers missing terminal sanitizer V6: {missing}"
 assert not weak, f"providers missing current V6/V7 fail-closed ownership/policy: {sorted(set(weak))}"
-print(f"global stream output guard passed: providers={len(rows)} managed_terminal_sanitizer={len(rows)} startfix_v3=true fail_closed_v6=true v7_extension_accepted=true")
+print(
+    "global stream output guard passed: "
+    f"active={len(active_rows)} disabled_retained={len(disabled_rows)} visible={len(rows)} "
+    f"managed_terminal_sanitizer={len(rows)} startfix_v3=true fail_closed_v6=true v7_extension_accepted=true"
+)
