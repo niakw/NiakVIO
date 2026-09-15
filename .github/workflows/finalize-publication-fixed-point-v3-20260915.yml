@@ -1,0 +1,168 @@
+name: TEMP - Finalize Publication Fixed Point V3
+
+on:
+  push:
+    branches: [fix/active44-durability-20260915]
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-24.04
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NUVIO_PROVIDER_V3_CONTEXT: publication
+      NIAKVIO_QUICK_YIELD_WORKERS: '16'
+      NIAKVIO_QUICK_YIELD_TIMEOUT: '25'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/active44-durability-20260915
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Align durable publication contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          # Active publication fixed point: disabled visible rows remain valid
+          # catalogue entries but are not part of providers/ publication rebuild.
+          p=Path('scripts/reapply_published_overrides.py')
+          t=p.read_text(encoding='utf-8')
+          old='''        if not provider_id or not relative.startswith("providers/"):\n            return False, f"invalid-primary-row:{provider_id or 'missing-id'}"\n        primary_by_id[provider_id] = entry\n'''
+          new='''        if not provider_id:\n            return False, "invalid-primary-row:missing-id"\n        if relative.startswith("provider-disabled/"):\n            if entry.get("enabled") is not False:\n                return False, f"disabled-row-enabled:{provider_id}"\n            disabled_path = (ROOT / relative).resolve()\n            disabled_root = (ROOT / "provider-disabled").resolve()\n            if disabled_root not in disabled_path.parents or not disabled_path.is_file():\n                return False, f"missing-disabled-bundle:{provider_id}"\n            continue\n        if not relative.startswith("providers/"):\n            return False, f"invalid-primary-row:{provider_id}"\n        primary_by_id[provider_id] = entry\n'''
+          if old in t:
+              t=t.replace(old,new,1)
+          elif 'missing-disabled-bundle' not in t:
+              raise SystemExit('reapply fixed-point anchor mismatch')
+          p.write_text(t,encoding='utf-8')
+
+          # The composer owns the canonical managed Core order. Keep the order
+          # next to the code that actually applies those Lego so tests cannot drift.
+          p=Path('scripts/apply_provider_overrides.py')
+          t=p.read_text(encoding='utf-8')
+          anchor='CORE_START_MARKER = "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1"\n'
+          constant='''CORE_START_MARKER = "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1"\n# Textual order of managed CORE.* Lego produced by apply_overrides(). Optional\n# bricks stay in the sequence and are ignored by structural audits when absent.\nCANONICAL_CORE_MANAGED_ORDER = (\n    "CORE.DESKTOP_RUNTIME_COMPAT.V1",\n    "CORE.CATALOGUE_ALIAS_RECOVERY.V2",\n    "CORE.MEDIA_ENRICHMENT.V1",\n    "CORE.HLS_RUNTIME_INTEGRITY.V1",\n    "CORE.PROVIDER_SECURITY_BOUNDARY.V1",\n    "CORE.RUNTIME_COMPAT.V1",\n    "CORE.PROVIDER_RUNTIME_DISPATCH.V1",\n    "CORE.STREAM_FACTS.V1",\n    "CORE.STREAM_IDENTITY.V1",\n    "CORE.MEDIA_TYPE_RESOLUTION.V1",\n    "CORE.STREAM_PRESENTATION.V1",\n    "CORE.PROVIDER_BRANDING.V1",\n    "CORE.STREAM_SANITIZER.V6",\n    "CORE.RUNTIME_MEDIA_SAFETY.V4",\n)\n'''
+          if 'CANONICAL_CORE_MANAGED_ORDER' not in t:
+              if t.count(anchor)!=1: raise SystemExit('Core-order anchor mismatch')
+              t=t.replace(anchor,constant,1)
+          p.write_text(t,encoding='utf-8')
+
+          # Published brick audit checks exact final bytes structurally. Deterministic
+          # ProviderBase -> publication equality is separately enforced by --check.
+          p=Path('tests/provider_brick_portfolio_audit_test.py')
+          t=p.read_text(encoding='utf-8')
+          old='from apply_provider_overrides import apply_overrides\n'
+          new='from apply_provider_overrides import CANONICAL_CORE_MANAGED_ORDER, apply_overrides\n'
+          if old in t: t=t.replace(old,new,1)
+          elif 'CANONICAL_CORE_MANAGED_ORDER' not in t: raise SystemExit('brick import anchor mismatch')
+          t,n=re.subn(r'CORE_ORDER = \[.*?\]\n\nBLOCK_START', 'CORE_ORDER = list(CANONICAL_CORE_MANAGED_ORDER)\n\nBLOCK_START', t, count=1, flags=re.S)
+          if n!=1 and 'CORE_ORDER = list(CANONICAL_CORE_MANAGED_ORDER)' not in t:
+              raise SystemExit('brick Core order block mismatch')
+          imp='from provider_security_hardening import harden_bytes\n'
+          if 'from current_provider_scope import active_provider_ids' not in t:
+              if imp not in t: raise SystemExit('brick scope import anchor mismatch')
+              t=t.replace(imp,imp+'from current_provider_scope import active_provider_ids\n',1)
+          old='    staged = stage_rows(args.stage.resolve()) if args.stage else {}\n\n    for entry in MANIFEST.get("scrapers") or []:\n'
+          new='    staged = stage_rows(args.stage.resolve()) if args.stage else {}\n    active = active_provider_ids()\n\n    for entry in MANIFEST.get("scrapers") or []:\n'
+          if old in t: t=t.replace(old,new,1)
+          elif '    active = active_provider_ids()\n' not in t: raise SystemExit('brick active scope mismatch')
+          old='        if not provider_id:\n            continue\n\n        row = ROWS.get(provider_id)\n'
+          new='        if not provider_id:\n            continue\n        if args.published and provider_id not in active:\n            continue\n\n        row = ROWS.get(provider_id)\n'
+          if old in t: t=t.replace(old,new,1)
+          elif 'if args.published and provider_id not in active:' not in t: raise SystemExit('brick published scope mismatch')
+          start=t.index('        if args.published:\n')
+          end=t.index('        elif args.stage:\n',start)
+          published='''        if args.published:\n            local_path = str(entry.get("filename") or "").strip()\n            if not local_path:\n                portfolio_errors.append(f"{provider_id}: manifest provider filename missing")\n                continue\n            target = (ROOT / local_path).resolve()\n            providers_root = (ROOT / "providers").resolve()\n            if providers_root not in target.parents or not target.is_file():\n                portfolio_errors.append(f"{provider_id}: published provider file missing: {local_path}")\n                continue\n            first_text = target.read_text(encoding="utf-8", errors="strict")\n            try:\n                fix_ids = validate_managed_fixes(first_text)\n                audit_order(provider_id, first_text)\n                if first_text.count(CORE_BOUNDARY) != 1:\n                    portfolio_errors.append(\n                        f"{provider_id}: canonical Core boundary count={first_text.count(CORE_BOUNDARY)} expected=1"\n                    )\n                missing = sorted(UNIVERSAL_CORE_IDS - set(fix_ids))\n                if missing:\n                    portfolio_errors.append(f"{provider_id}: missing universal Core bricks={','.join(missing)}")\n                hardened, _security_report = harden_bytes(first_text.encode("utf-8"))\n                if hardened != first_text.encode("utf-8"):\n                    portfolio_errors.append(f"{provider_id}: published security hardening is not idempotent")\n                record_paths = []\n            except Exception as exc:\n                portfolio_errors.append(f"{provider_id}: published structural exception: {type(exc).__name__}: {exc}")\n                continue\n'''
+          t=t[:start]+published+t[end:]
+          old='''    expected = len([\n        x for x in MANIFEST.get("scrapers") or []\n        if isinstance(x, dict) and str(x.get("id") or "").strip()\n    ])\n    if args.published:\n'''
+          new='''    expected = (\n        len(active)\n        if args.published\n        else len([\n            x for x in MANIFEST.get("scrapers") or []\n            if isinstance(x, dict) and str(x.get("id") or "").strip()\n        ])\n    )\n    if args.published:\n'''
+          if old in t: t=t.replace(old,new,1)
+          elif 'len(active)\n        if args.published' not in t: raise SystemExit('brick expected scope mismatch')
+          p.write_text(t,encoding='utf-8')
+
+          # Permanent Verify & Publish proves deterministic rebuild before the
+          # byte-structure audit.
+          p=Path('.github/workflows/sync.yml')
+          t=p.read_text(encoding='utf-8')
+          old='          python scripts/audit_provider_v3_static.py\n          python tests/provider_brick_portfolio_audit_test.py --published --require-all\n'
+          new='          python scripts/audit_provider_v3_static.py\n          python scripts/reapply_published_overrides.py --check\n          python tests/provider_brick_portfolio_audit_test.py --published --require-all\n'
+          if old in t: t=t.replace(old,new,1)
+          elif 'python scripts/reapply_published_overrides.py --check' not in t: raise SystemExit('sync gate anchor mismatch')
+          p.write_text(t,encoding='utf-8')
+          print('PUBLICATION_CORE_ORDER_CONTRACTS_PATCHED')
+          PY
+          python -m py_compile scripts/apply_provider_overrides.py scripts/reapply_published_overrides.py tests/provider_brick_portfolio_audit_test.py
+
+      - name: Rebuild exact active publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/reapply_published_overrides.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          def load(p): return json.loads(Path(p).read_text(encoding='utf-8'))
+          def write(p,d): Path(p).write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          root=load('manifest.json')
+          by={str(r.get('id') or '').strip().casefold():r for r in root.get('scrapers') or [] if isinstance(r,dict)}
+          for path in map(Path,['manifest-hub46.json','vf/manifest.json','no-anime/manifest.json','vf-no-anime/manifest.json','native-hub46/manifest.json']):
+              if not path.is_file(): continue
+              data=load(path); changed=False
+              for row in data.get('scrapers') or []:
+                  if not isinstance(row,dict): continue
+                  pid=str(row.get('id') or '').strip().casefold(); src=by.get(pid)
+                  if not isinstance(src,dict): continue
+                  old=str(row.get('filename') or '')
+                  root_name=Path(str(src.get('filename') or '')).name
+                  prefix=old.rsplit('/',1)[0]+'/' if '/' in old else ''
+                  new=prefix+root_name
+                  if old!=new: row['filename']=new; changed=True
+                  for key in ('version','supportedTypes','canonicalSupportedTypes','enabled'):
+                      if key in src:
+                          if row.get(key)!=src[key]: row[key]=src[key]; changed=True
+                      elif key=='canonicalSupportedTypes' and key in row:
+                          row.pop(key,None); changed=True
+              if changed: write(path,data)
+          PY
+          python scripts/prune_unreferenced_providers.py
+
+      - name: Prove exact publication and live non-regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/reapply_published_overrides.py --check
+          python scripts/audit_provider_v3_static.py
+          python tests/provider_brick_portfolio_audit_test.py --published --require-all
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/native_declared_provider_matrix_test.py
+          python tests/provider_521_capability_regression_test.py
+          python scripts/audit_provider_quick_yield.py | tee /tmp/qy-published.log
+          python scripts/check_provider_non_regression_v1.py --candidate-gate --base-ref f814d325c68a9a4eebd895498aafb245ce27ac2b
+          grep '^FIELD_PROVIDER_QUICK_YIELD' /tmp/qy-published.log
+          git diff --check
+
+      - name: Commit durable fixed point
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git reset -- .github/workflows/finalize-publication-fixed-point-v3-20260915.yml
+          if git diff --cached --quiet; then echo NO_DURABLE_PUBLICATION_CHANGES; exit 0; fi
+          git commit -m 'fix: align publication and Core brick fixed point'
+          git push origin HEAD:fix/active44-durability-20260915
