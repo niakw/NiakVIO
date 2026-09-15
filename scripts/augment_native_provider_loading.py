@@ -192,11 +192,22 @@ def tv_helpers(manifest_url: str, blocked: list[str]) -> str:
             }}
             installed.getOrThrow()
         }}
-        val loaded = manager.scrapers.first().filter {{ it.repositoryId == repo.id }}
-        val byId = loaded.associateBy {{ it.id.substringAfterLast(':').lowercase() }}
         val selectedKeys = providers.map {{ it.id.lowercase() }}.toSet()
-        val selectedLoaded = byId.keys.count {{ it in selectedKeys }}
         val expectedLoaded = providers.count {{ it.id.lowercase() !in platformExcludedProviders }}
+        var loaded = manager.scrapers.first().filter {{ it.repositoryId == repo.id }}
+        var byId = loaded.associateBy {{ it.id.substringAfterLast(':').lowercase() }}
+        var selectedLoaded = byId.keys.count {{ it in selectedKeys }}
+        var waitedMs = 0L
+        while (selectedLoaded < expectedLoaded && waitedMs < 30_000L) {{
+            kotlinx.coroutines.delay(250L)
+            waitedMs += 250L
+            loaded = manager.scrapers.first().filter {{ it.repositoryId == repo.id }}
+            byId = loaded.associateBy {{ it.id.substringAfterLast(':').lowercase() }}
+            selectedLoaded = byId.keys.count {{ it in selectedKeys }}
+        }}
+        if (waitedMs > 0L) {{
+            emit("FIELD_NATIVE_REPOSITORY_READY_WAIT client=tv fixture=$fixtureSlugForLoad waited_ms=$waitedMs expected=$expectedLoaded loaded=$selectedLoaded")
+        }}
         emit("FIELD_NATIVE_REPOSITORY_LOAD_RESULT client=tv fixture=$fixtureSlugForLoad repository64=${{b64(repo.name)}} expected=$expectedLoaded loaded=$selectedLoaded")
         providers.forEach {{ provider ->
             val key = provider.id.lowercase()
@@ -260,11 +271,22 @@ def repository_helpers(client: str, manifest_url: str, blocked: list[str]) -> st
                 }}
             }}
         }}
-        val loaded = PluginRepository.uiState.value.scrapers.filter {{ it.repositoryUrl == repositoryUrl }}
-        val byId = loaded.associateBy {{ it.id.substringAfterLast(':').lowercase() }}
         val selectedKeys = providers.map {{ it.id.lowercase() }}.toSet()
-        val selectedLoaded = byId.keys.count {{ it in selectedKeys }}
         val expectedLoaded = providers.count {{ it.id.lowercase() !in platformExcludedProviders }}
+        var loaded = PluginRepository.uiState.value.scrapers.filter {{ it.repositoryUrl == repositoryUrl }}
+        var byId = loaded.associateBy {{ it.id.substringAfterLast(':').lowercase() }}
+        var selectedLoaded = byId.keys.count {{ it in selectedKeys }}
+        var waitedMs = 0L
+        while (selectedLoaded < expectedLoaded && waitedMs < 30_000L) {{
+            kotlinx.coroutines.delay(250L)
+            waitedMs += 250L
+            loaded = PluginRepository.uiState.value.scrapers.filter {{ it.repositoryUrl == repositoryUrl }}
+            byId = loaded.associateBy {{ it.id.substringAfterLast(':').lowercase() }}
+            selectedLoaded = byId.keys.count {{ it in selectedKeys }}
+        }}
+        if (waitedMs > 0L) {{
+            emit("FIELD_NATIVE_REPOSITORY_READY_WAIT client={client} fixture=$fixtureSlugForLoad waited_ms=$waitedMs expected=$expectedLoaded loaded=$selectedLoaded")
+        }}
         emit("FIELD_NATIVE_REPOSITORY_LOAD_RESULT client={client} fixture=$fixtureSlugForLoad expected=$expectedLoaded loaded=$selectedLoaded")
         providers.forEach {{ provider ->
             val key = provider.id.lowercase()
