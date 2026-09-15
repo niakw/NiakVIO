@@ -1,0 +1,111 @@
+name: APPLY - CodeQL 889 hostname sanitizer
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  apply-codeql-889:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'fix/codeql-889-hostname-20260915'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Apply exact hostname sanitizer and tests
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          source_path = Path('scripts/provider_base_store.py')
+          source = source_path.read_text(encoding='utf-8')
+
+          old_import = '''from pathlib import Path
+          from typing import Any
+
+          from apply_provider_overrides import apply_overrides, _strip_generated_core_tail
+          '''
+          new_import = '''from pathlib import Path
+          from typing import Any
+          from urllib.parse import urlsplit
+
+          from apply_provider_overrides import apply_overrides, _strip_generated_core_tail
+          '''
+          if source.count(old_import) != 1:
+              raise SystemExit(f'CodeQL 889 import anchor count={source.count(old_import)}')
+          source = source.replace(old_import, new_import, 1)
+
+          old_block = '''    lowered = text.casefold()
+              # NIAKVIO_PROVIDER_TELEGRAM_DISCOVERY_ONLY_DATA_V21_2
+              # Telegram is an address/discovery hub, never a provider execution backend.
+              if re.search(r"://(?:[^/@]+\\.)*(?:t\\.me|telegram\\.me|telegram\\.dog)(?::\\d+)?(?:[/?#]|$)", lowered):
+                  return False
+              return not any(f"://{host}" in lowered for host in NON_EXECUTABLE_KNOWLEDGE_HOSTS)
+          '''
+          new_block = '''    # NIAKVIO_PROVIDER_TELEGRAM_DISCOVERY_ONLY_DATA_V21_2
+              # Compare parsed hostnames at domain boundaries. Substring checks are unsafe:
+              # a trusted hostname may occur in userinfo, a query, or an attacker suffix.
+              try:
+                  parsed_host = (urlsplit(text).hostname or "").casefold().rstrip(".")
+              except ValueError:
+                  parsed_host = ""
+              telegram_roots = {"t.me", "telegram.me", "telegram.dog"}
+              if any(parsed_host == root or parsed_host.endswith("." + root) for root in telegram_roots):
+                  return False
+              return parsed_host not in NON_EXECUTABLE_KNOWLEDGE_HOSTS
+          '''
+          if source.count(old_block) != 1:
+              raise SystemExit(f'CodeQL 889 sanitizer anchor count={source.count(old_block)}')
+          source = source.replace(old_block, new_block, 1)
+          source_path.write_text(source, encoding='utf-8')
+
+          test_path = Path('tests/provider_base_store_test.py')
+          tests = test_path.read_text(encoding='utf-8')
+          anchor = '''assert dirty_model["upstreamCodeEmbedded"] is False
+          assert dirty_model["upstreamCodeExecuted"] is False
+          module.assert_base_layering(clean, "synthetic-clean")
+          '''
+          replacement = '''assert dirty_model["upstreamCodeEmbedded"] is False
+          assert dirty_model["upstreamCodeExecuted"] is False
+
+          # CodeQL #889: host filtering must use the parsed hostname, never a URL substring.
+          assert module._provider_data_url_is_executable("https://user:pass@npms.io:443/path") is False
+          assert module._provider_data_url_is_executable("https://NPMS.IO./path") is False
+          assert module._provider_data_url_is_executable("https://sub.t.me/channel") is False
+          assert module._provider_data_url_is_executable("https://example.invalid/path?next=https://npms.io/") is True
+          assert module._provider_data_url_is_executable("https://npms.io.evil.example/path") is True
+          assert module._provider_data_url_is_executable("https://not-t.me/path") is True
+
+          module.assert_base_layering(clean, "synthetic-clean")
+          '''
+          if tests.count(anchor) != 1:
+              raise SystemExit(f'CodeQL 889 test anchor count={tests.count(anchor)}')
+          tests = tests.replace(anchor, replacement, 1)
+          test_path.write_text(tests, encoding='utf-8')
+
+          Path('.github/workflows/apply-codeql-889-hostname-20260915.yml').unlink()
+          PY
+
+          python tests/provider_base_store_test.py
+          python -m py_compile scripts/provider_base_store.py tests/provider_base_store_test.py
+
+      - name: Commit patch to PR branch
+        shell: bash
+        run: |
+          git config user.name "niakvio-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "FIELD_CODEQL_889_PATCH changed=false"
+            exit 0
+          fi
+          git commit -m "fix(security): parse provider data URL hostnames exactly"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          echo "FIELD_CODEQL_889_PATCH changed=true"
