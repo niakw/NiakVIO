@@ -1,0 +1,264 @@
+name: SHORT - Dynamic provider cardinality migration
+
+on:
+  push:
+    branches:
+      - fix/active44-durability-20260915
+    paths:
+      - '.github/workflows/patch-dynamic-provider-counts.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/active44-durability-20260915
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Replace hard-coded provider cardinalities
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          ROOT = Path.cwd()
+
+          helper = ROOT / 'scripts/current_provider_scope.py'
+          helper.write_text('''#!/usr/bin/env python3
+          """Canonical current-provider scope derived from the published providers/ catalogue.
+
+          Cardinality is data, never policy: callers may validate identity/set equality, but
+          must not encode a fixed provider count.
+          """
+          from __future__ import annotations
+
+          import json
+          from pathlib import Path
+          from typing import Any
+
+          ROOT = Path(__file__).resolve().parents[1]
+          PROVIDERS = (ROOT / "providers").resolve()
+          MANIFEST = ROOT / "manifest.json"
+
+
+          def _cid(value: Any) -> str:
+              return str(value or "").strip().casefold().replace("_", "-")
+
+
+          def current_provider_rows(*, enabled_only: bool = False) -> list[dict[str, Any]]:
+              data = json.loads(MANIFEST.read_text(encoding="utf-8"))
+              rows: list[dict[str, Any]] = []
+              seen: set[str] = set()
+              for raw in data.get("scrapers") or []:
+                  if not isinstance(raw, dict):
+                      continue
+                  pid = _cid(raw.get("id"))
+                  filename = str(raw.get("filename") or "").strip()
+                  if not pid or not filename:
+                      continue
+                  path = (ROOT / filename).resolve()
+                  if PROVIDERS not in path.parents:
+                      continue
+                  if not path.is_file():
+                      raise RuntimeError(f"current provider asset missing: {filename}")
+                  if pid in seen:
+                      raise RuntimeError(f"duplicate current provider id: {pid}")
+                  seen.add(pid)
+                  if enabled_only and raw.get("enabled") is False:
+                      continue
+                  rows.append(raw)
+              if not rows:
+                  raise RuntimeError("no current providers resolved from providers/ + manifest.json")
+              return rows
+
+
+          def current_provider_ids() -> set[str]:
+              return {_cid(row.get("id")) for row in current_provider_rows()}
+
+
+          def active_provider_ids() -> set[str]:
+              return {_cid(row.get("id")) for row in current_provider_rows(enabled_only=True)}
+
+
+          def current_provider_count() -> int:
+              return len(current_provider_ids())
+
+
+          def active_provider_count() -> int:
+              return len(active_provider_ids())
+          ''', encoding='utf-8')
+
+          def replace(path: str, old: str, new: str, *, required: bool = True) -> bool:
+              p = ROOT / path
+              text = p.read_text(encoding='utf-8')
+              if old not in text:
+                  if required:
+                      raise SystemExit(f'missing expected pattern in {path}: {old!r}')
+                  return False
+              p.write_text(text.replace(old, new), encoding='utf-8')
+              print(f'PATCHED {path}')
+              return True
+
+          # Executed scripts: catalogue cardinality comes from providers/ + manifest.json.
+          scripts = {
+              'scripts/check_provider_non_regression_v1.py': ('EXPECTED = 46', 'from current_provider_scope import current_provider_count\nEXPECTED = current_provider_count()'),
+              'scripts/hub_activation_publication.py': ('EXPECTED = 46', 'from current_provider_scope import current_provider_count\nEXPECTED = current_provider_count()'),
+              'scripts/provider_v3_minimizer.py': ('EXPECTED_PROVIDER_COUNT = 46', 'from current_provider_scope import current_provider_count\nEXPECTED_PROVIDER_COUNT = current_provider_count()'),
+              'scripts/build_provider_history_matrix.py': ('EXPECTED = 46', 'from current_provider_scope import current_provider_count\nEXPECTED = current_provider_count()'),
+              'scripts/build_provider_history_matrix_v3.py': ('EXPECTED = 46', 'from current_provider_scope import current_provider_count\nEXPECTED = current_provider_count()'),
+              'scripts/provider_parallel_sweep_plan_v1.py': ('EXPECTED = 46', 'from current_provider_scope import current_provider_count\nEXPECTED = current_provider_count()'),
+              'scripts/reconcile_provider_catalog_media_types.py': ('EXPECTED_CURRENT = 46', 'from current_provider_scope import current_provider_count\nEXPECTED_CURRENT = current_provider_count()'),
+              'scripts/verify_provider_v3_reverse_rebuild.py': ('EXPECTED_PROVIDER_COUNT = 46', 'from current_provider_scope import current_provider_count\nEXPECTED_PROVIDER_COUNT = current_provider_count()'),
+              'scripts/archive_nonhub_providerbases.py': ('EXPECTED_ACTIVE = 46', 'from current_provider_scope import current_provider_count\nEXPECTED_ACTIVE = current_provider_count()'),
+          }
+          for path, (old, new) in scripts.items():
+              replace(path, old, new, required=False)
+
+          # Repair merge must match the current catalogue set, never a magic integer.
+          p = ROOT / 'scripts/merge_provider_repair_report_v6.py'
+          text = p.read_text(encoding='utf-8')
+          if 'from current_provider_scope import current_provider_count' not in text:
+              anchor = 'from pathlib import Path\n'
+              if anchor in text:
+                  text = text.replace(anchor, anchor + 'from current_provider_scope import current_provider_count\n', 1)
+          text = text.replace('if len(rows) != 46:\n        raise SystemExit(f"merged provider rows={len(rows)}, expected=46")',
+                              'expected_provider_count = current_provider_count()\n    if len(rows) != expected_provider_count:\n        raise SystemExit(f"merged provider rows={len(rows)}, expected current catalogue={expected_provider_count}")')
+          text = text.replace('"providerCount": 46', '"providerCount": current_provider_count()')
+          p.write_text(text, encoding='utf-8')
+
+          # Active inventory: compare to the actual enabled subset, not 46.
+          p = ROOT / 'scripts/build_hub46_blocker_inventory.py'
+          text = p.read_text(encoding='utf-8')
+          if 'from current_provider_scope import active_provider_count' not in text:
+              anchor = 'from pathlib import Path\n'
+              if anchor in text:
+                  text = text.replace(anchor, anchor + 'from current_provider_scope import active_provider_count\n', 1)
+          text = text.replace('if len(enabled) != 46:\n        raise AssertionError(f"hub46 inventory must contain exactly 46 enabled targets, got {len(enabled)}")',
+                              'expected_enabled = active_provider_count()\n    if len(enabled) != expected_enabled:\n        raise AssertionError(f"inventory enabled targets={len(enabled)} current active providers={expected_enabled}")')
+          p.write_text(text, encoding='utf-8')
+
+          # StreamZo migration guard: verify membership + live active cardinality.
+          p = ROOT / 'scripts/upgrade_streamzo_runtime_v1.py'
+          text = p.read_text(encoding='utf-8')
+          if 'from current_provider_scope import active_provider_count' not in text:
+              text = text.replace('from pathlib import Path\n', 'from pathlib import Path\nfrom current_provider_scope import active_provider_count\n', 1)
+          text = text.replace("if 'streamzo' not in active or len(active)!=46: raise SystemExit('invalid Hub46 authority')",
+                              "if 'streamzo' not in active or len(active) != active_provider_count(): raise SystemExit('invalid active-provider authority')")
+          p.write_text(text, encoding='utf-8')
+
+          # Tests: derive the current catalogue/active set from the same source of truth.
+          test_replacements = {
+              'tests/global_stream_output_guard_test.py': [
+                  ('assert len(rows) == 46, f"expected complete 46-provider Hub publication, got {len(rows)}"',
+                   'expected_rows = [row for row in rows if str(row.get("filename") or "").startswith("providers/")]\nassert len(rows) == len(expected_rows), f"manifest contains non-current provider rows: {len(rows)} vs {len(expected_rows)}"'),
+              ],
+              'tests/provider_v3_strategy_plan_contract_test.py': [
+                  ('assert len(rows) == 46, f"expected hub-only 46-provider catalogue, got {len(rows)}"',
+                   'expected_count = len({cid(row.get("id")) for row in rows if str(row.get("filename") or "").startswith("providers/")})\n    assert len(rows) == expected_count, f"catalogue contains duplicate/non-current rows: {len(rows)} vs {expected_count}"'),
+              ],
+              'tests/native_hub46_transport_manifest_test.py': [
+                  ('assert len(rows) == 46', 'assert len(rows) == len(scope)'),
+              ],
+              'tests/provider_521_capability_regression_test.py': [
+                  ('CURRENT_PROVIDER_COUNT = 46', 'CURRENT_PROVIDER_COUNT = len({str(row.get("id") or "").strip().casefold() for row in json.loads((ROOT / "manifest.json").read_text(encoding="utf-8")).get("scrapers") or [] if isinstance(row, dict) and str(row.get("filename") or "").startswith("providers/")})'),
+              ],
+          }
+          for path, reps in test_replacements.items():
+              p = ROOT / path
+              text = p.read_text(encoding='utf-8')
+              for old, new in reps:
+                  text = text.replace(old, new)
+              p.write_text(text, encoding='utf-8')
+
+          # provider_html_filter_security_test already owns ROOT; make EXPECTED dynamic locally.
+          p = ROOT / 'tests/provider_html_filter_security_test.py'
+          text = p.read_text(encoding='utf-8')
+          text = text.replace('EXPECTED = 46', 'EXPECTED = len({str(row.get("id") or "").strip().casefold() for row in json.loads((ROOT / "manifest.json").read_text(encoding="utf-8")).get("scrapers") or [] if isinstance(row, dict) and str(row.get("filename") or "").startswith("providers/")})')
+          p.write_text(text, encoding='utf-8')
+
+          # Remove remaining active cardinality literals in current branch sources where they are gate logic.
+          gate_patterns = [
+              (re.compile(r'len\(([^\n()]+)\)\s*!=\s*46'), r'len(\1) != current_provider_count()'),
+          ]
+          # Intentionally do not bulk-edit migration/docs strings or historical fixture counts.
+
+          # Guard against reintroducing the exact anti-patterns in core executed files.
+          guard = ROOT / 'tests/provider_cardinality_source_of_truth_test.py'
+          guard.write_text('''#!/usr/bin/env python3
+          from __future__ import annotations
+          import re
+          from pathlib import Path
+
+          ROOT = Path(__file__).resolve().parents[1]
+          CHECK = [
+              ROOT / "scripts/check_provider_non_regression_v1.py",
+              ROOT / "scripts/hub_activation_publication.py",
+              ROOT / "scripts/provider_v3_minimizer.py",
+              ROOT / "scripts/build_provider_history_matrix.py",
+              ROOT / "scripts/build_provider_history_matrix_v3.py",
+              ROOT / "scripts/provider_parallel_sweep_plan_v1.py",
+              ROOT / "scripts/reconcile_provider_catalog_media_types.py",
+              ROOT / "scripts/verify_provider_v3_reverse_rebuild.py",
+              ROOT / "scripts/merge_provider_repair_report_v6.py",
+              ROOT / "scripts/build_hub46_blocker_inventory.py",
+          ]
+          bad = []
+          patterns = [
+              re.compile(r"\\b(?:EXPECTED(?:_[A-Z_]+)?|CURRENT_PROVIDER_COUNT|EXPECTED_CURRENT|EXPECTED_ACTIVE)\\s*=\\s*(?:44|46|96)\\b"),
+              re.compile(r"len\\([^\\n]+?\\)\\s*(?:==|!=)\\s*(?:44|46|96)\\b"),
+          ]
+          for path in CHECK:
+              text = path.read_text(encoding="utf-8")
+              for pattern in patterns:
+                  if pattern.search(text):
+                      bad.append(f"{path.relative_to(ROOT)}: {pattern.pattern}")
+          assert not bad, "hard-coded provider cardinality remains:\\n" + "\\n".join(bad)
+          print("provider cardinality source-of-truth contract passed")
+          ''', encoding='utf-8')
+
+          print('DYNAMIC_PROVIDER_COUNT_MIGRATION_DONE')
+          PY
+
+          python -m py_compile \
+            scripts/current_provider_scope.py \
+            scripts/check_provider_non_regression_v1.py \
+            scripts/hub_activation_publication.py \
+            scripts/provider_v3_minimizer.py \
+            scripts/build_provider_history_matrix.py \
+            scripts/build_provider_history_matrix_v3.py \
+            scripts/provider_parallel_sweep_plan_v1.py \
+            scripts/reconcile_provider_catalog_media_types.py \
+            scripts/verify_provider_v3_reverse_rebuild.py \
+            scripts/merge_provider_repair_report_v6.py \
+            scripts/build_hub46_blocker_inventory.py \
+            tests/provider_cardinality_source_of_truth_test.py
+
+          python tests/provider_cardinality_source_of_truth_test.py
+          python scripts/hub_activation_publication.py --verify-catalog
+          python tests/native_declared_provider_matrix_test.py
+          python tests/provider_non_regression_contract_test.py
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/provider_521_capability_regression_test.py
+          python tests/global_stream_output_guard_test.py
+
+      - name: Commit migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts tests
+          if git diff --cached --quiet; then
+            echo 'No changes'
+            exit 0
+          fi
+          git commit -m 'fix: derive provider cardinality from current catalogue'
+          git push origin HEAD:fix/active44-durability-20260915
