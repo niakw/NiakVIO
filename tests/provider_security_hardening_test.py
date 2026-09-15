@@ -196,10 +196,12 @@ with tempfile.TemporaryDirectory() as raw:
     stage = Path(raw)
     (stage / "providers").mkdir()
     source = stage / "providers" / "one.js"
-    original = (
-        b'function f(u){return u.includes("example.com"),console.log(u)};'
-        b'globalThis.getStreams=async function(){return []}'
+    original_text = (
+        "/* BEGIN NIAKVIO_PROVIDER */\n"
+        "globalThis.getStreams=async function(){return []};\n"
+        "/* END NIAKVIO_PROVIDER */\n"
     )
+    original = original_text.encode("utf-8")
     source.write_bytes(original)
     registry = {
         "candidates": [{
@@ -222,12 +224,10 @@ with tempfile.TemporaryDirectory() as raw:
     assert rejected
     assert source.read_bytes() == original
 
-    secured_text = (
-        "/* NUVIO_PROVIDER_SECURITY_HARDENING_V1:test-fixture */\n"
-        "var __nuvioProviderSilentLog=function(){};\n"
-        "globalThis.__nuvioGlobalProviderSecurityBoundaryV1=true;\n"
-        "globalThis.getStreams=async function(){return []};\n"
-    )
+    secured_text, secured_report = harden_bundle(original_text)
+    assert secured_report["changed"] is True, secured_report
+    assert secured_report["providerMutation"] is False, secured_report
+    assert secured_report["mode"] == "preventive-core-lego", secured_report
     secured = secured_text.encode("utf-8")
     source.write_bytes(secured)
     registry["candidates"][0]["sha256"] = hashlib.sha256(secured).hexdigest()
