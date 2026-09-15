@@ -834,8 +834,18 @@ def fast_fixed_point_check(
             continue
         provider_id = str(entry.get("id") or "").strip().casefold()
         relative = str(entry.get("filename") or "").strip()
-        if not provider_id or not relative.startswith("providers/"):
-            return False, f"invalid-primary-row:{provider_id or 'missing-id'}"
+        if not provider_id:
+            return False, "invalid-primary-row:missing-id"
+        if relative.startswith("provider-disabled/"):
+            if entry.get("enabled") is not False:
+                return False, f"disabled-row-enabled:{provider_id}"
+            disabled_path = (ROOT / relative).resolve()
+            disabled_root = (ROOT / "provider-disabled").resolve()
+            if disabled_root not in disabled_path.parents or not disabled_path.is_file():
+                return False, f"missing-disabled-bundle:{provider_id}"
+            continue
+        if not relative.startswith("providers/"):
+            return False, f"invalid-primary-row:{provider_id}"
         primary_by_id[provider_id] = entry
         floor = version_floors.get(provider_id)
         if floor and not version_is_strictly_above_floor(str(entry.get("version") or ""), floor):

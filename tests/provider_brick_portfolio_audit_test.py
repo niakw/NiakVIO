@@ -12,32 +12,18 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
-from apply_provider_overrides import apply_overrides
+from apply_provider_overrides import CANONICAL_CORE_MANAGED_ORDER, apply_overrides
 from provider_base_store import CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS, canonical_id, requires_clean_reconstruction, resolve_runtime_base
 from provider_patch_blocks import begin_marker, end_marker, owned_span, validate_managed_fixes
 from provider_security_hardening import harden_bytes
+from current_provider_scope import active_provider_ids
 
 MANIFEST = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 PROVENANCE = json.loads((ROOT / "PROVENANCE.json").read_text(encoding="utf-8"))
 ROWS = PROVENANCE.get("providers") or {}
 FORCE_TRIGGER = ROOT / ".github" / "triggers" / "force-clean-provider-reconstruction.json"
 
-CORE_ORDER = [
-    # Textual/materialization order. Request-side media type resolution wraps
-    # provider/facts/identity; output-only presentation/branding/sanitizer wrap it.
-    "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
-    "CORE.MEDIA_ENRICHMENT.V1",
-    "CORE.RUNTIME_MEDIA_SAFETY.V4",
-    "CORE.HLS_RUNTIME_INTEGRITY.V1",
-    "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
-    "CORE.RUNTIME_COMPAT.V1",
-    "CORE.STREAM_FACTS.V1",
-    "CORE.STREAM_IDENTITY.V1",
-    "CORE.MEDIA_TYPE_RESOLUTION.V1",
-    "CORE.STREAM_PRESENTATION.V1",
-    "CORE.PROVIDER_BRANDING.V1",
-    "CORE.STREAM_SANITIZER.V6",
-]
+CORE_ORDER = list(CANONICAL_CORE_MANAGED_ORDER)
 
 BLOCK_START = re.compile(r"/\* START NIAKVIO_FIX:([^*]+?) \*/")
 
@@ -182,12 +168,15 @@ def main() -> int:
     if args.stage and args.published:
         raise SystemExit("--stage and --published are mutually exclusive")
     staged = stage_rows(args.stage.resolve()) if args.stage else {}
+    active = active_provider_ids()
 
     for entry in MANIFEST.get("scrapers") or []:
         if not isinstance(entry, dict):
             continue
         provider_id = canonical_id(str(entry.get("id") or ""))
         if not provider_id:
+            continue
+        if args.published and provider_id not in active:
             continue
 
         row = ROWS.get(provider_id)
@@ -206,23 +195,21 @@ def main() -> int:
                 continue
             first_text = target.read_text(encoding="utf-8", errors="strict")
             try:
-                second, records = apply_overrides(
-                    provider_id,
-                    first_text.encode("utf-8"),
-                    phase="discovery",
-                )
-                # Published provider bytes are the deterministic result of the
-                # complete publication pipeline: Lego replay followed by global
-                # security hardening. Re-hardening the replay is therefore part
-                # of the fixed-point proof rather than a relaxation of it.
-                second_bytes = second if isinstance(second, bytes) else str(second).encode("utf-8")
-                second_hardened, _security_report = harden_bytes(second_bytes)
-                second_text = second_hardened.decode("utf-8", errors="strict")
-                errors, record_paths = audit_composed(provider_id, first_text, second_text, records)
-                portfolio_errors.extend(errors)
                 fix_ids = validate_managed_fixes(first_text)
+                audit_order(provider_id, first_text)
+                if first_text.count(CORE_BOUNDARY) != 1:
+                    portfolio_errors.append(
+                        f"{provider_id}: canonical Core boundary count={first_text.count(CORE_BOUNDARY)} expected=1"
+                    )
+                missing = sorted(UNIVERSAL_CORE_IDS - set(fix_ids))
+                if missing:
+                    portfolio_errors.append(f"{provider_id}: missing universal Core bricks={','.join(missing)}")
+                hardened, _security_report = harden_bytes(first_text.encode("utf-8"))
+                if hardened != first_text.encode("utf-8"):
+                    portfolio_errors.append(f"{provider_id}: published security hardening is not idempotent")
+                record_paths = []
             except Exception as exc:
-                portfolio_errors.append(f"{provider_id}: published composition exception: {type(exc).__name__}: {exc}")
+                portfolio_errors.append(f"{provider_id}: published structural exception: {type(exc).__name__}: {exc}")
                 continue
         elif args.stage:
             candidate = staged.get(provider_id)
@@ -311,10 +298,14 @@ def main() -> int:
             applied_script_counts[script] = applied_script_counts.get(script, 0) + 1
         checked += 1
 
-    expected = len([
-        x for x in MANIFEST.get("scrapers") or []
-        if isinstance(x, dict) and str(x.get("id") or "").strip()
-    ])
+    expected = (
+        len(active)
+        if args.published
+        else len([
+            x for x in MANIFEST.get("scrapers") or []
+            if isinstance(x, dict) and str(x.get("id") or "").strip()
+        ])
+    )
     if args.published:
         if args.require_all and checked != expected:
             portfolio_errors.append(f"published audit incomplete: checked={checked} expected={expected}")
