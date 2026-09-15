@@ -95,7 +95,7 @@ assert machine["routine"]["quick"]["provider_reconstruction_allowed"] is False
 assert machine["routine"]["deep"]["repair_allowed"] is False
 assert machine["routine"]["deep"]["provider_reconstruction_allowed"] is False
 assert machine["manual_reconstruction"]["main_write_allowed"] is False
-assert machine["manual_reconstruction"]["expected_provider_count"] == CURRENT_PROVIDER_COUNT
+assert machine["manual_reconstruction"]["expected_provider_count"] == EXPECTED
 assert machine["manual_reconstruction"]["historical_provider_count"] == HISTORICAL_PROVIDER_COUNT
 assert machine["manual_reconstruction"]["historical_provider_directory"] == "provider-old"
 assert machine["native_labs"] == [
@@ -139,14 +139,14 @@ assert "executable_non_quarantined" not in machine["provider_plan_contract"]
 assert "quarantined" not in machine["provider_plan_contract"]
 
 plan = machine["provider_plan_contract"]
-assert plan["catalogue_provider_count"] == CURRENT_PROVIDER_COUNT
+assert plan["catalogue_provider_count"] == EXPECTED
 assert plan["historical_provider_count"] == HISTORICAL_PROVIDER_COUNT
 assert plan["historical_provider_directory"] == "provider-old"
 assert plan["disabled_providers_are_audited"] is True
 assert machine["security_html_filtering"]["regex_html_stripping_allowed"] is False
 
 lab = machine["native_lab_contract"]
-assert lab["provider_count"] == CURRENT_PROVIDER_COUNT
+assert lab["provider_count"] == EXPECTED
 assert lab["historical_provider_count"] == HISTORICAL_PROVIDER_COUNT
 assert lab["historical_provider_directory"] == "provider-old"
 assert lab["route_matrix_source"] == "manifest.json:scrapers[*].supportedTypes"
@@ -161,7 +161,7 @@ assert lab["external_build_dependency_packaging_repairs_allowed"] is False
 assert lab["test_plumbing_must_not_change_official_runtime_behavior"] is True
 
 rows = manifest.get("scrapers") or []
-assert len(rows) == CURRENT_PROVIDER_COUNT
+assert len(rows) == EXPECTED
 canonical_valid = {"movie", "tv", "anime"}
 transport_valid = canonical_valid
 for row in rows:
