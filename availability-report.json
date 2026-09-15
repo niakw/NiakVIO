@@ -1,15 +1,15 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-15T13:37:39.183051+00:00",
+  "generated_at": "2026-09-15T19:43:57.802529+00:00",
   "test_environment": "github-actions-node",
-  "checked_providers": 46,
+  "checked_providers": 44,
   "status_counts": {
     "healthy": 2,
     "reachable": 0,
-    "blocked": 1,
+    "blocked": 2,
     "degraded": 1,
-    "no_streams": 21,
-    "provider_unreachable": 18,
+    "no_streams": 19,
+    "provider_unreachable": 17,
     "runtime_error": 0,
     "unavailable": 3,
     "excluded": 0
@@ -537,18 +537,14 @@
     },
     {
       "id": "hindmoviez",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "abc.zollutroinoju-4636.workers.dev"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "share.kujeucoixeti-6043.workers.dev": {
           "last_checked_at": "2026-09-15T04:59:22.449300+00:00",
@@ -1334,9 +1330,9 @@
     },
     {
       "id": "desiflix",
-      "status": "no_streams",
+      "status": "not-checked",
       "action": "unchanged",
-      "enabled": true,
+      "enabled": false,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
@@ -1409,9 +1405,7 @@
           "consecutive_successes": 0,
           "consecutive_blocked": 0
         }
-      },
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_ci_uncertain"
+      }
     },
     {
       "id": "kehflix",
@@ -1546,7 +1540,7 @@
     },
     {
       "id": "animesalt",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2130,7 +2124,7 @@
     },
     {
       "id": "papadustream",
-      "status": "provider_unreachable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2648,17 +2642,21 @@
     },
     {
       "id": "voiranime",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "prx-am-o-1.vmpx.online"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "box-1429-v10.vmeas.cloud": {
-          "last_checked_at": "2026-08-30T05:31:12.767982+00:00",
+          "last_checked_at": "2026-09-15T19:43:57.802529+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2669,7 +2667,7 @@
           "consecutive_blocked": 0
         },
         "streamtape.com": {
-          "last_checked_at": "2026-08-30T05:31:12.767982+00:00",
+          "last_checked_at": "2026-09-15T19:43:57.802529+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2680,7 +2678,7 @@
           "consecutive_blocked": 0
         },
         "prx-1476-ant.vmwesa.online": {
-          "last_checked_at": "2026-08-30T05:31:12.767982+00:00",
+          "last_checked_at": "2026-09-15T19:43:57.802529+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2691,7 +2689,7 @@
           "consecutive_blocked": 0
         },
         "gate-1-an.vmnow.online": {
-          "last_checked_at": "2026-08-30T05:31:12.767982+00:00",
+          "last_checked_at": "2026-09-15T19:43:57.802529+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2702,7 +2700,7 @@
           "consecutive_blocked": 0
         },
         "prx-1353-ant-23.vmpx.online": {
-          "last_checked_at": "2026-08-30T05:31:12.767982+00:00",
+          "last_checked_at": "2026-09-15T19:43:57.802529+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2713,12 +2711,23 @@
           "consecutive_blocked": 0
         },
         "cdn29.my.mail.ru": {
-          "last_checked_at": "2026-08-30T05:31:12.767982+00:00",
+          "last_checked_at": "2026-09-15T19:43:57.802529+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "prx-am-o-1.vmpx.online": {
+          "last_checked_at": "2026-09-15T19:43:57.802529+00:00",
           "last_category": "playable",
           "reachable": true,
-          "http_status": 206,
-          "latency_ms": 1467,
-          "kind": "mp4",
+          "http_status": 200,
+          "latency_ms": 480,
+          "kind": "hls",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 1,
           "consecutive_blocked": 0
@@ -2897,7 +2906,7 @@
     },
     {
       "id": "anime-ultime",
-      "status": "no_streams",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2925,17 +2934,15 @@
     },
     {
       "id": "fullanime",
-      "status": "provider_unreachable",
+      "status": "not-checked",
       "action": "unchanged",
-      "enabled": true,
+      "enabled": false,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "disabled"
+      "host_health": {}
     },
     {
       "id": "mallumv",
