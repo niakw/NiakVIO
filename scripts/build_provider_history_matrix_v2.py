@@ -164,8 +164,11 @@ def main() -> int:
 
     matrix = json.loads(OUT_JSON.read_text(encoding="utf-8"))
     evidence = json.loads(EVIDENCE.read_text(encoding="utf-8"))
-    if int(matrix.get("providerCount") or 0) != EXPECTED:
-        raise SystemExit(f"expected {EXPECTED} providers, got {matrix.get('providerCount')}")
+    provider_count = len(matrix.get("providers") or [])
+    if int(matrix.get("providerCount") or 0) != provider_count:
+        raise SystemExit(
+            f"history matrix count mismatch declared={matrix.get('providerCount')} rows={provider_count}"
+        )
 
     snapshots = evidence.get("snapshots") or {}
     ref0 = str((snapshots.get("tag_5_21_0") or {}).get("ref") or "5.21.0")
@@ -219,9 +222,9 @@ def main() -> int:
     counts = matrix.get("classificationCounts") or {}
     desktop = str(matrix.get("desktopMacFieldObservation") or "")
     lines = [
-        "# Provider history & live classification — 46 current / 50 historical archive",
+        f"# Provider history & live classification — {provider_count} current / historical archive",
         "",
-        f"- Current manifest: **{current_key}**, providers: **{EXPECTED}**.",
+        f"- Current manifest: **{current_key}**, providers: **{provider_count}**.",
         "- Historical snapshots are compared without cross-version fallback: **5.21.0 → 5.21.16 → 5.21.36 → current**.",
         "- State legend: **🟢 positive**, **🟡 partial/degraded**, **🟠 LEARN debt**, **🔴 explicit failure**, **⚪ unknown/inconclusive**.",
         "- A version/hash is not treated as green unless that exact snapshot has matching evidence.",
@@ -242,7 +245,7 @@ def main() -> int:
         f"- Providers with at least one **🟢 historical snapshot** and a **🔴/🟠 current state**: **{len(regression_watch)}**.",
         "- " + (", ".join(f"`{x}`" for x in regression_watch) if regression_watch else "None."),
         "",
-        "## 46-current-provider matrix",
+        f"## {provider_count}-current-provider matrix",
         "",
         "| Provider | Types | Family | 5.21.0 state | 5.21.16 state | 5.21.36 state | Current state | Retained | 5.21.36 live | Current published/field | Class | Action |",
         "|---|---|---|---|---|---|---|---:|---|---|---|---|",

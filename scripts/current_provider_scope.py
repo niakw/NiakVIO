@@ -19,6 +19,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 ACTIVE_DIR = (ROOT / "providers").resolve()
+assert ACTIVE_DIR.name == "providers"
 DISABLED_DIR = (ROOT / "provider-disabled").resolve()
 OLD_DIR = (ROOT / "provider-old").resolve()
 MANIFEST = ROOT / "manifest.json"

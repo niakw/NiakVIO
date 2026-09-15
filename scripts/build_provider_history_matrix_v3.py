@@ -411,7 +411,7 @@ def main() -> int:
 
     print(
         "PROVIDER_HISTORY_V3 "
-        f"providers={EXPECTED} hard={len(set(hard))} partial={len(set(partial))} "
+        f"providers={len(matrix.get('providers') or [])} hard={len(set(hard))} partial={len(set(partial))} "
         f"revalidate={len(set(revalidate))} contract={len(set(contract_regressions))} "
         f"watch={len(set(watch))}"
     )
