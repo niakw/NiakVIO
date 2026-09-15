@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import visible_provider_count
+from current_provider_scope import visible_provider_ids
 
 SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
@@ -23,7 +23,14 @@ spec.loader.exec_module(module)
 
 floors_payload = json.loads(FLOORS.read_text(encoding="utf-8"))
 floors = floors_payload.get("providers") or {}
-assert len(floors) == visible_provider_count(), f"expected 96 exposed provider version floors, got {len(floors)}"
+current_ids = visible_provider_ids()
+assert current_ids, "current provider identity set must not be empty"
+missing_current = sorted(current_ids - set(floors))
+assert not missing_current, f"current providers missing version floors: {missing_current}"
+
+# Version floors are durable historical safety data. They intentionally outlive
+# the current provider catalogue and therefore must not be cardinality-equal to it.
+assert len(floors) >= len(current_ids), (len(floors), len(current_ids))
 
 assert module.bump_provider_version("1.0.69", "1.0.70") == "1.0.71"
 assert module.bump_provider_version("1.0.71", "1.0.70") == "1.0.72"
@@ -39,4 +46,7 @@ assert module.version_is_strictly_above_floor("1.0.71", "1.0.70")
 assert not module.version_is_strictly_above_floor("1.0.70", "1.0.70")
 assert not module.version_is_strictly_above_floor("1.0.69", "1.0.70")
 
-print("provider version floor tests passed")
+print(
+    "provider version floor tests passed "
+    f"current={len(current_ids)} retained_floors={len(floors)}"
+)
