@@ -150,6 +150,15 @@ jobs:
           } >> "$GITHUB_ENV"
           echo "FIELD_ROTATING_CORPUS client=tv fixtures=$ROTATED_FIXTURES scope=46"
           python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture "$PRIMARY_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams 2 --initial
+      - name: Restore TV Android prebuild cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            nuvio-tv/.gradle
+            nuvio-tv/app/build
+          key: native-prebuild-v2-tv-${{ runner.os }}-${{ needs.resolve_tv.outputs.tv_sha }}-${{ hashFiles('niakvio/scripts/prebuild_native_android_reader_suite.sh', 'niakvio/scripts/prepare_native_reader_acceptance.py', 'niakvio/scripts/instrument_native_client_evidence.py', 'niakvio/scripts/instrument_native_repository_http_evidence.py', 'niakvio/scripts/augment_native_corpus_request_contract.py', 'niakvio/scripts/augment_native_provider_loading_compat.py', 'niakvio/native-hub46/manifest.json') }}
       - name: Prebuild TV reader once before QEMU
         shell: bash
         env:
@@ -263,6 +272,16 @@ jobs:
           } >> "$GITHUB_ENV"
           echo "FIELD_ROTATING_CORPUS client=mobile fixtures=$ROTATED_FIXTURES scope=46"
           python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture "$PRIMARY_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams all --initial
+      - name: Restore Mobile Android prebuild cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            nuvio-mobile/.gradle
+            nuvio-mobile/androidApp/build
+            nuvio-mobile/composeApp/build
+          key: native-prebuild-v2-mobile-${{ runner.os }}-${{ needs.resolve_mobile.outputs.mobile_sha }}-${{ hashFiles('niakvio/scripts/prebuild_native_android_reader_suite.sh', 'niakvio/scripts/prepare_native_reader_acceptance.py', 'niakvio/scripts/instrument_native_client_evidence.py', 'niakvio/scripts/instrument_native_repository_http_evidence.py', 'niakvio/scripts/augment_native_corpus_request_contract.py', 'niakvio/scripts/augment_native_provider_loading_compat.py', 'niakvio/native-hub46/manifest.json') }}
       - name: Prebuild Mobile Android reader once before QEMU
         shell: bash
         env:
