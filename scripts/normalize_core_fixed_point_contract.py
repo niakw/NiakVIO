@@ -30,12 +30,18 @@ def assert_contract() -> None:
     byte_text = BYTE_STABILITY.read_text(encoding="utf-8")
     byte_test = BYTE_STABILITY_TEST.read_text(encoding="utf-8")
 
+    # Legacy flattened providers still need an export-floor proof before a stale
+    # generated Core tail can be stripped. Provider v3 no longer infers that floor:
+    # the Provider envelope itself is authoritative and Core is composed immediately
+    # before END NIAKVIO_PROVIDER after Provider DATA/CONFIG and PROVIDER.* Lego.
     for required in (
         f'CORE_START_MARKER = "{CORE_START_MARKER}"',
         "def _provider_export_floor(text: str) -> int:",
         'boundary_needle = f"/* {CORE_START_MARKER} */"',
-        "provider_floor = _provider_export_floor(text)",
-        'text.find(boundary_needle, provider_floor) < 0',
+        "floor = _provider_export_floor(text)",
+        "boundary_index = text.find(boundary_needle, floor)",
+        "provider_end = text.index(PROVIDER_END_MARKER)",
+        'text = before_end + boundary_needle + "\\n" + text[provider_end:]',
         "validate_managed_fixes(result)",
     ):
         assert required in apply_text, f"missing Core composition contract: {required}"
