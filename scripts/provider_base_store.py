@@ -10,6 +10,7 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 from apply_provider_overrides import apply_overrides, _strip_generated_core_tail
 from provider_byte_stability import split_owned_prefix_bootstraps
@@ -128,12 +129,17 @@ def _provider_data_url_is_executable(value: object) -> bool:
     text = str(value or "").strip()
     if not text or "${" in text or "encodeURIComponent(" in text:
         return False
-    lowered = text.casefold()
     # NIAKVIO_PROVIDER_TELEGRAM_DISCOVERY_ONLY_DATA_V21_2
-    # Telegram is an address/discovery hub, never a provider execution backend.
-    if re.search(r"://(?:[^/@]+\.)*(?:t\.me|telegram\.me|telegram\.dog)(?::\d+)?(?:[/?#]|$)", lowered):
+    # Compare parsed hostnames at domain boundaries. Substring checks are unsafe:
+    # a trusted hostname may occur in userinfo, a query, or an attacker suffix.
+    try:
+        parsed_host = (urlsplit(text).hostname or "").casefold().rstrip(".")
+    except ValueError:
+        parsed_host = ""
+    telegram_roots = {"t.me", "telegram.me", "telegram.dog"}
+    if any(parsed_host == root or parsed_host.endswith("." + root) for root in telegram_roots):
         return False
-    return not any(f"://{host}" in lowered for host in NON_EXECUTABLE_KNOWLEDGE_HOSTS)
+    return parsed_host not in NON_EXECUTABLE_KNOWLEDGE_HOSTS
 
 
 def _provider_data_route_is_executable(value: object) -> bool:

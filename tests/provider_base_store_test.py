@@ -107,6 +107,15 @@ assert dirty_model["observedUrls"] == ["https://example.invalid/watch"]
 assert dirty_model["routes"] == ["/?s={query}"]
 assert dirty_model["upstreamCodeEmbedded"] is False
 assert dirty_model["upstreamCodeExecuted"] is False
+
+# CodeQL #889: host filtering must use the parsed hostname, never a URL substring.
+assert module._provider_data_url_is_executable("https://user:pass@npms.io:443/path") is False
+assert module._provider_data_url_is_executable("https://NPMS.IO./path") is False
+assert module._provider_data_url_is_executable("https://sub.t.me/channel") is False
+assert module._provider_data_url_is_executable("https://example.invalid/path?next=https://npms.io/") is True
+assert module._provider_data_url_is_executable("https://npms.io.evil.example/path") is True
+assert module._provider_data_url_is_executable("https://not-t.me/path") is True
+
 module.assert_base_layering(clean, "synthetic-clean")
 with tempfile.NamedTemporaryFile(suffix=".js") as handle:
     handle.write(clean)
