@@ -1,0 +1,154 @@
+name: SHORT - Repair provider-folder final gates
+on:
+  push:
+    branches: [fix/active44-durability-20260915]
+    paths: ['.github/workflows/fix-provider-folder-final-gates.yml']
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/active44-durability-20260915
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Align production and contracts to provider-folder authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          R=Path('.')
+          def rw(rel, fn):
+              p=R/rel; old=p.read_text(encoding='utf-8'); new=fn(old)
+              if new != old:
+                  p.write_text(new,encoding='utf-8'); print('PATCHED',rel)
+              else:
+                  print('UNCHANGED',rel)
+
+          # Production non-regression debt audit must use the physical-folder lifecycle authority.
+          def nonreg_gate(t):
+              t=t.replace('disposition.get("activationAuthority") == "hub-lab-matrix-46"',
+                          'disposition.get("activationAuthority") == "provider-folder-lifecycle"')
+              t=t.replace('audited route debt is allowed for hub46 targets or disabled non-targets when provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden',
+                          'audited route debt is allowed for current provider-folder identities when provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden')
+              return t
+          rw('scripts/check_provider_non_regression_v1.py', nonreg_gate)
+
+          def nonreg_impl(t):
+              t=t.replace('A targeted\n# hub46 provider can remain visible while routeDataState=repair/off; non-targets\n# remain disabled.',
+                          'A current provider-folder identity can remain visible while routeDataState=repair/off;\n# disabled-retained identities remain visible but disabled.')
+              t=t.replace('disposition.get("activationAuthority") == "hub-lab-matrix-46"',
+                          'disposition.get("activationAuthority") == "provider-folder-lifecycle"')
+              t=t.replace('"activationAuthority": "hub-lab-matrix-46"',
+                          '"activationAuthority": "provider-folder-lifecycle"')
+              return t
+          rw('tests/provider_non_regression_contract_test_impl.py', nonreg_impl)
+
+          def nonreg_wrapper(t):
+              t=t.replace('The active finalization branch is the 46-provider Labs branch.',
+                          'The active finalization branch uses the current provider-folder lifecycle.')
+              t=t.replace('rolling 46-provider floor','rolling current-provider floor')
+              t=t.replace('exact hub-lab-matrix-46 membership owns visibility, while routeDataState owns\n# repair/off debt.',
+                          'physical provider-folder membership owns activation, while routeDataState owns\n# repair/off debt.')
+              return t
+          rw('tests/provider_non_regression_contract_test.py', nonreg_wrapper)
+
+          def validator(t):
+              t=t.replace('NIAKVIO_HUB46_ACTIVATION_AUTHORITY_V1','NIAKVIO_PROVIDER_FOLDER_ACTIVATION_AUTHORITY_V1')
+              t=t.replace('* every canonical provider remains present; active rows follow the matrix while explicit manual OFF rows remain disabled;',
+                          '* current visible providers are the identities referenced from providers/ and provider-disabled/;')
+              t=t.replace('f"count={len(registry_only)} activation_authority=hub_lab_matrix_46"',
+                          'f"count={len(registry_only)} activation_authority=provider_folders"')
+              t=t.replace('provider activation preservation passed ({active_count} enabled; dynamic active hub-matrix authority)',
+                          'provider activation preservation passed ({active_count} enabled; provider-folder authority)')
+              return t
+          rw('scripts/validate_activation_preservation.py', validator)
+
+          def finalizer(t):
+              t=t.replace('- all 96 canonical providers stay present and enabled in the catalogue;',
+                          '- current catalogue visibility is derived from providers/ and provider-disabled/;')
+              t=t.replace('- unresolved, terminal and quarantined providers remain enabled but fail closed\n  through an audited repair/off disposition;',
+                          '- route debt never overrides the physical provider-folder activation lifecycle;')
+              t=t.replace('# NIAKVIO_HUB46_ACTIVATION_AUTHORITY_V1\n        # Repair/off is route debt. Visibility is owned exclusively by the exact\n        # 46-provider hub matrix selected for this repair campaign.',
+                          '# NIAKVIO_PROVIDER_FOLDER_ACTIVATION_AUTHORITY_V1\n        # Repair/off is route debt. Activation is owned by the physical current\n        # provider folders and never by a numeric campaign target.')
+              t=t.replace('description="Finalize Provider v3 repair diagnostics with matrix-targeted activation"',
+                          'description="Finalize Provider v3 repair diagnostics with provider-folder activation"')
+              return t
+          rw('scripts/finalize_provider_repair_disposition_v1_impl.py', finalizer)
+
+          # Any direct test importing a scripts/ module must make scripts/ importable first.
+          import_pat=re.compile(r'^from current_provider_scope import (?:[^\n]+|\(\n(?:.*\n)*?^\))\n',re.M)
+          root_pat=re.compile(r'^(ROOT\s*=\s*Path\(__file__\)\.resolve\(\)\.parents\[1\]\s*)$',re.M)
+          for p in sorted((R/'tests').rglob('*.py')):
+              t=p.read_text(encoding='utf-8')
+              if 'from current_provider_scope import ' not in t:
+                  continue
+              if 'sys.path.insert(0, str(ROOT / "scripts"))' in t or "sys.path.insert(0, str(ROOT / 'scripts'))" in t or 'sys.path.insert(0,str(ROOT/"scripts"))' in t:
+                  continue
+              imports=import_pat.findall(t)
+              if not imports:
+                  raise SystemExit(f'{p}: current_provider_scope import shape unsupported')
+              t=import_pat.sub('',t)
+              if not re.search(r'^import sys(?:\s|$)',t,re.M):
+                  # Keep imports simple and deterministic.
+                  anchor='from pathlib import Path\n'
+                  if anchor not in t:
+                      raise SystemExit(f'{p}: Path import anchor missing')
+                  t=t.replace(anchor,anchor+'import sys\n',1)
+              m=root_pat.search(t)
+              if not m:
+                  raise SystemExit(f'{p}: ROOT anchor missing for provider scope import')
+              injection=m.group(1)+'\nsys.path.insert(0, str(ROOT / "scripts"))\n'+''.join(imports).rstrip()+'\n'
+              t=t[:m.start()]+injection+t[m.end():]
+              p.write_text(t,encoding='utf-8')
+              print('IMPORT_FIXED',p)
+
+          # Synthetic preservation fixture injects its own folder authority so the unit remains tiny.
+          p=R/'tests/ci_preservation_policy_test.py'; t=p.read_text(encoding='utf-8')
+          t=t.replace("assert 'NIAKVIO_HUB46_ACTIVATION_AUTHORITY_V1' in validator_source",
+                      "assert 'NIAKVIO_PROVIDER_FOLDER_ACTIVATION_AUTHORITY_V1' in validator_source")
+          t=t.replace("def run_validator(*, manifest_rows, report_rows, mode='deep', safety=None):",
+                      "def run_validator(*, manifest_rows, report_rows, mode='deep', safety=None, authority_active=None, authority_visible=None):")
+          old="""        script = validator_source.replace(\n            'ROOT = Path(__file__).resolve().parents[1]',\n            f'ROOT = Path({str(root)!r})',\n        )\n"""
+          new="""        authority_active = set(authority_active if authority_active is not None else [str(row.get('id') or '').casefold() for row in manifest_rows if row.get('enabled') is True])\n        authority_visible = set(authority_visible if authority_visible is not None else [str(row.get('id') or '').casefold() for row in manifest_rows])\n        script = validator_source.replace(\n            'from current_provider_scope import active_provider_ids, visible_provider_ids',\n            f'def active_provider_ids():\\n    return {authority_active!r}\\n\\ndef visible_provider_ids():\\n    return {authority_visible!r}',\n        ).replace(\n            'ROOT = Path(__file__).resolve().parents[1]',\n            f'ROOT = Path({str(root)!r})',\n        )\n"""
+          if old not in t:
+              raise SystemExit('ci preservation validator fixture anchor drifted')
+          t=t.replace(old,new,1)
+          old_block="""assert result.returncode == 1\nassert 'canonical catalogue must contain 46 providers' in result.stderr\nassert 'active-hub target missing from canonical catalogue' in result.stderr\nassert 'non-target provider unexpectedly enabled' not in result.stderr\n\nresult = run_validator(\n    manifest_rows=[{'id': 'a', 'enabled': True}, {'id': 'b', 'enabled': True}],\n    report_rows=[],\n)\nassert result.returncode == 1\nassert 'non-target provider unexpectedly enabled: b' in result.stderr\n"""
+          new_block="""assert result.returncode == 0, result.stderr\n\nresult = run_validator(\n    manifest_rows=[{'id': 'a', 'enabled': True}, {'id': 'b', 'enabled': True}],\n    report_rows=[],\n    authority_active={'a'},\n    authority_visible={'a', 'b'},\n)\nassert result.returncode == 1\nassert 'manifest activation differs from providers/ authority' in result.stderr\nassert 'non-target provider unexpectedly enabled: b' in result.stderr\n"""
+          if old_block not in t:
+              raise SystemExit('ci preservation old numeric assertion block drifted')
+          t=t.replace(old_block,new_block,1)
+          p.write_text(t,encoding='utf-8'); print('PATCHED tests/ci_preservation_policy_test.py')
+
+          # Fail if current activation logic still names the Hub46 matrix as authority.
+          bad=[]
+          for root in (R/'scripts',R/'tests'):
+              for f in root.rglob('*.py'):
+                  s=f.read_text(encoding='utf-8')
+                  for needle in ('activationAuthority\") == \"hub-lab-matrix-46', 'activation_authority=hub_lab_matrix_46'):
+                      if needle in s: bad.append(f'{f}:{needle}')
+          if bad:
+              raise SystemExit('stale activation authority remains:\n'+'\n'.join(bad))
+          PY
+          python -m compileall -q scripts tests
+          python tests/ci_preservation_policy_test.py
+          python tests/provider_non_regression_contract_test.py
+          python tests/provider_v3_documentation_contract_test.py
+          python tests/provider_cardinality_source_of_truth_test.py
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/provider_repair_pipeline_v6_contract_test.py
+          git diff --check
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts tests
+          git commit -m 'fix: align final gates with provider-folder authority'
+          git push origin HEAD:fix/active44-durability-20260915
