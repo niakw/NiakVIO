@@ -64,7 +64,9 @@ def _catalogue_url(probe: dict) -> str:
             parsed = urlsplit(raw)
         except ValueError:
             continue
-        if parsed.hostname and "mugiwara-no-streaming.com" in parsed.hostname.casefold() and "/catalogue/" in parsed.path and "/episodes/" in parsed.path:
+        host = (parsed.hostname or "").casefold().rstrip(".")
+        trusted_host = host == "mugiwara-no-streaming.com" or host.endswith(".mugiwara-no-streaming.com")
+        if trusted_host and "/catalogue/" in parsed.path and "/episodes/" in parsed.path:
             return raw
     return ""
 
