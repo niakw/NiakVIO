@@ -1,0 +1,359 @@
+name: SHORT - Apply Manual Evidence Active44
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-manual-evidence-active44-20260915.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-manual-evidence-active44
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Require exact trigger head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+
+      - name: Apply manual authority and dynamic active scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from __future__ import annotations
+          import json, pathlib, re
+          from collections import Counter
+
+          ROOT = pathlib.Path('.')
+          OFF = {
+              'desiflix': 'manual_off_compromised_or_inappropriate_redirect',
+              'fullanime': 'manual_off_no_current_hub_authority',
+          }
+          ACTIVE_COUNT = 44
+          CATALOGUE_COUNT = 46
+          TODAY = '2026-09-15'
+
+          def load(rel):
+              return json.loads((ROOT/rel).read_text(encoding='utf-8'))
+          def dump(rel, value):
+              p=ROOT/rel; p.parent.mkdir(parents=True, exist_ok=True)
+              p.write_text(json.dumps(value, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+          def cid(v):
+              return str(v or '').strip().casefold().replace('_','-')
+          def uniq(seq):
+              out=[]
+              for x in seq:
+                  if x not in out: out.append(x)
+              return out
+
+          # Durable user-supplied browser evidence. Signed/tokenized media URLs are deliberately not persisted.
+          evidence = {
+            'schemaVersion': 1,
+            'date': TODAY,
+            'authority': 'user-manual-browser-evidence',
+            'policy': {
+              'doNotRequestDuplicateManualTests': True,
+              'manualBrowserPositiveIsNotNativePlayerProof': True,
+              'historicalAutomatedZeroMayBeSupersededByNewerManualEvidence': True,
+            },
+            'providers': {
+              'desiflix': {
+                'classification': 'OFF',
+                'reason': 'current redirect authority is compromised/inappropriate; user explicitly disabled provider',
+                'activeScope': False,
+              },
+              'fullanime': {
+                'classification': 'OFF',
+                'reason': 'no current hub/address authority found; user explicitly disabled provider',
+                'activeScope': False,
+              },
+              'moviesmod': {
+                'classification': 'MANUAL_TERMINAL_POSITIVE_INTEGRATION_PENDING',
+                'observedChainHosts': ['links.modpro.blog','cloud.unblockedgames.world','urlflix.xyz','driveseed.org','video-seed.dev','video-downloads.googleusercontent.com'],
+                'observed': 'Interstellar route reaches direct media/download after interactive human/redirection gate',
+                'remaining': 'provider-side bypass/bridge must reproduce this without treating the older automated ZERO as no-route authority',
+              },
+              '4khdhub': {
+                'classification': 'MANUAL_MOVIE_TV_ROUTE_POSITIVE_INTEGRATION_PENDING',
+                'hub': 'https://hdhub4u.bi/',
+                'terminal': 'https://new5.hdhub4u.cl/',
+                'observedChainHosts': ['hubcdn.lol','greenmountmotors.com','hblinks.co','hubdrive.sbs','hubcloud.ist','pixel.hubcloud.ist'],
+                'observed': 'Interstellar movie route and House of the Dragon episodic route both present in browser',
+                'remaining': 'redirect/button/timing bypass and native terminal proof still required',
+              },
+              'allwish': {
+                'classification': 'MANUAL_HLS_POSITIVE_INTEGRATION_PENDING',
+                'hub': 'https://t.me/s/allwishme',
+                'terminal': 'http://all-wish.me/',
+                'observedChainHosts': ['fetch.nexabloom.top'],
+                'observed': 'Death Note episode 37 master/index HLS requests returned HTTP 200 in browser',
+                'remaining': 'retain repair until Niak/native extraction reproduces the route; do not classify as pure ZERO',
+              },
+              'allanime': {
+                'classification': 'MANUAL_HLS_POSITIVE_INTEGRATION_PENDING',
+                'hub': 'https://allanime.sa.com/',
+                'terminal': 'https://ww2.aniwatch.fit/',
+                'observedChainHosts': ['fetch.nexabloom.top'],
+                'observed': 'One Piece episode master/index HLS requests returned HTTP 200 in browser; catalogue observed as reduced',
+                'remaining': 'retain repair until Niak/native extraction reproduces the route',
+              },
+            },
+          }
+          dump('automation/manual-provider-evidence-20260915.json', evidence)
+
+          # Hub/address authority: remove the two explicit OFF providers from active hub authority.
+          hubs=load('provider-hubs.json')
+          hp=hubs.get('providers') or {}
+          for pid, reason in OFF.items():
+              row=hp.get(pid)
+              assert isinstance(row, dict), f'missing provider-hubs row: {pid}'
+              row['hub']=None
+              row['manifest_status']='Inactif'
+              row['activation_eligible']=False
+              row['manual_off_reason']=reason
+              row['manual_off_date']=TODAY
+          # Refresh 4KHDHub authority from the user's current browser evidence without discarding history.
+          four=hp.get('4khdhub')
+          if isinstance(four, dict):
+              four['hub']='https://hdhub4u.bi/'
+              four['direct']='https://new5.hdhub4u.cl/'
+              four['activation_eligible']=True
+              four['manual_authority_date']=TODAY
+              four['direct_candidates']=uniq(['https://new5.hdhub4u.cl/'] + list(four.get('direct_candidates') or []))
+              four['allowed_terminal_hosts']=uniq(['new5.hdhub4u.cl'] + list(four.get('allowed_terminal_hosts') or []))
+          dump('provider-hubs.json', hubs)
+
+          # Root/projection manifests retain census rows but the two providers are genuinely disabled.
+          manifest_paths=['manifest.json','vf/manifest.json','no-anime/manifest.json','vf-no-anime/manifest.json']
+          for rel in manifest_paths:
+              p=ROOT/rel
+              if not p.is_file(): continue
+              d=load(rel); rows=d.get('scrapers') or []
+              for row in rows:
+                  if isinstance(row, dict) and cid(row.get('id')) in OFF:
+                      row['enabled']=False
+                      row['disabledReason']=OFF[cid(row.get('id'))]
+              dump(rel,d)
+
+          root=load('manifest.json')
+          root_rows=[r for r in root.get('scrapers') or [] if isinstance(r,dict)]
+          assert len(root_rows)==CATALOGUE_COUNT, f'root catalogue changed unexpectedly: {len(root_rows)}'
+          assert sum(r.get('enabled') is not False for r in root_rows)==ACTIVE_COUNT
+          for pid in OFF:
+              matches=[r for r in root_rows if cid(r.get('id'))==pid]
+              assert len(matches)==1 and matches[0].get('enabled') is False, pid
+
+          # Client ID projection must not silently re-enable the two OFF providers.
+          state_path=ROOT/'nuvio-client-id-state.json'
+          if state_path.is_file():
+              st=load('nuvio-client-id-state.json')
+              def disable(node):
+                  if isinstance(node, dict):
+                      for k,v in node.items():
+                          if cid(k) in OFF and isinstance(v,dict) and 'enabled' in v:
+                              v['enabled']=False
+                          disable(v)
+                  elif isinstance(node,list):
+                      for v in node: disable(v)
+              disable(st)
+              dump('nuvio-client-id-state.json',st)
+
+          # Active Lab matrix: preserve evidence rows for the remaining providers but stop lying about 46.
+          matrix=load('automation/evidence/hub-lab-matrix-46.json')
+          rows=[r for r in matrix.get('rows') or [] if isinstance(r,dict) and cid(r.get('registryId') or r.get('manifestId')) not in OFF and cid(r.get('manifestId')) not in OFF]
+          assert len(rows)==ACTIVE_COUNT, f'expected 44 active rows after explicit OFF: {len(rows)}'
+          matrix['rows']=rows
+          matrix['hubCount']=ACTIVE_COUNT
+          matrix['activeProviderCount']=ACTIVE_COUNT
+          matrix['catalogueProviderCount']=CATALOGUE_COUNT
+          matrix['scopePolicy']='dynamic-active-hub-authority'
+          matrix['excludedProviders']=[{'provider':p,'state':'off','reason':OFF[p]} for p in sorted(OFF)]
+          dump('automation/evidence/hub-lab-matrix-46.json',matrix)
+
+          # Repair disposition: catalogue is still recoverable/traceable, but active set is 44.
+          disp=load('automation/provider-repair-disposition.json')
+          prows=[r for r in disp.get('providers') or [] if isinstance(r,dict)]
+          assert len(prows)==CATALOGUE_COUNT, len(prows)
+          for row in prows:
+              pid=cid(row.get('provider'))
+              if pid in OFF:
+                  row['activationState']='disabled'
+                  row['activationAuthority']='manual-user-off-20260915'
+                  row['forcedEnabled']=False
+                  row['routeDataState']='off'
+                  row['terminalState']='manual-off'
+                  row['quarantined']=(pid=='desiflix')
+                  row['completeCapabilityProof']=False
+                  row['recoveryStatus']='manual-off'
+                  row['reasonCodes']=uniq(list(row.get('reasonCodes') or [])+[OFF[pid]])
+                  row['manualEvidenceRef']='automation/manual-provider-evidence-20260915.json'
+              elif pid in {'allwish','allanime','moviesmod','4khdhub'}:
+                  row['manualEvidenceRef']='automation/manual-provider-evidence-20260915.json'
+                  row['recoveryStatus']='manual-positive-integration-pending'
+                  row['reasonCodes']=uniq([x for x in list(row.get('reasonCodes') or []) if x not in {'recovery_no-proven-route'}]+['manual_browser_positive_integration_pending'])
+                  if row.get('routeDataState')=='off':
+                      row['routeDataState']='repair'
+                      row['terminalState']=None
+          disp['catalogueProviderCount']=CATALOGUE_COUNT
+          disp['enabledProviderCount']=ACTIVE_COUNT
+          disp['disabledProviderCount']=len(OFF)
+          disp['disabledProviders']=sorted(OFF)
+          incomplete=[cid(x) for x in disp.get('incompleteProviders') or [] if cid(x) not in OFF]
+          disp['incompleteProviders']=incomplete
+          disp['incompleteProviderCount']=len(incomplete)
+          pol=disp.setdefault('policy',{})
+          pol['targetHubProviderCount']=ACTIVE_COUNT
+          pol['activationAuthority']='automation/evidence/hub-lab-matrix-46.json active rows + explicit manual OFF authority'
+          pol['terminalOrQuarantinedState']='off'
+          counts=Counter(str(r.get('routeDataState') or 'repair') for r in prows)
+          disp['stateCounts']={k:counts.get(k,0) for k in ('off','on','repair')}
+          dump('automation/provider-repair-disposition.json',disp)
+
+          # Preserve the original seven-provider machine audit, but explicitly mark newer user evidence as superseding selected ZERO conclusions.
+          audit_path=ROOT/'automation/final-seven-technical-audit-20260915.json'
+          if audit_path.is_file():
+              audit=load('automation/final-seven-technical-audit-20260915.json')
+              audit['manualEvidenceSupersession']={
+                'date':TODAY,
+                'evidenceRef':'automation/manual-provider-evidence-20260915.json',
+                'providers':{
+                  'allwish':'MANUAL_HLS_POSITIVE_INTEGRATION_PENDING',
+                  'moviesmod':'MANUAL_TERMINAL_POSITIVE_INTEGRATION_PENDING',
+                  'fullanime':'OFF_NO_CURRENT_HUB_AUTHORITY',
+                },
+                'note':'Original automated ZERO observations remain historical measurements, not current no-route authority.'
+              }
+              dump('automation/final-seven-technical-audit-20260915.json',audit)
+
+          # Patch the physical manifest generator so the authority count comes from the matrix instead of the historical number 46.
+          p=ROOT/'scripts/generate_hub46_manifest.py'
+          t=p.read_text(encoding='utf-8')
+          t=t.replace('EXPECTED_COUNT = 46\n','')
+          t=t.replace(
+              '    declared = int(matrix.get("hubCount") or 0)\n    if declared != EXPECTED_COUNT or len(ids) != EXPECTED_COUNT:\n        raise SystemExit(\n            f"Hub-46 authority mismatch: hubCount={declared} rows={len(ids)} expected={EXPECTED_COUNT}"\n        )\n',
+              '    declared = int(matrix.get("hubCount") or 0)\n    if declared <= 0 or len(ids) != declared:\n        raise SystemExit(\n            f"active hub authority mismatch: hubCount={declared} rows={len(ids)}"\n        )\n'
+          )
+          t=t.replace(
+              '    if len(selected) != EXPECTED_COUNT:\n        raise SystemExit(f"derived manifest count={len(selected)} expected={EXPECTED_COUNT}")\n',
+              '    expected_count = len(wanted)\n    if len(selected) != expected_count:\n        raise SystemExit(f"derived manifest count={len(selected)} expected={expected_count}")\n'
+          )
+          t=t.replace('        "kind": "hub46-repair-campaign",\n        "providerCount": EXPECTED_COUNT,','        "kind": "active-hub-repair-campaign",\n        "providerCount": len(wanted),')
+          t=t.replace('print(f"FIELD_HUB46_MANIFEST_CHECK providers={EXPECTED_COUNT} status=clean path={output_path}")','print(f"FIELD_HUB46_MANIFEST_CHECK providers={len(output.get(\'scrapers\') or [])} status=clean path={output_path}")')
+          t=t.replace('print(f"FIELD_HUB46_MANIFEST_GENERATED providers={EXPECTED_COUNT} path={output_path}")','print(f"FIELD_HUB46_MANIFEST_GENERATED providers={len(output.get(\'scrapers\') or [])} path={output_path}")')
+          assert 'EXPECTED_COUNT' not in t, 'stale fixed active count in generate_hub46_manifest.py'
+          p.write_text(t,encoding='utf-8')
+
+          # Patch native transport builder the same way; the legacy filename is retained for compatibility only.
+          p=ROOT/'scripts/build_hub46_native_manifest.py'; t=p.read_text(encoding='utf-8')
+          t=t.replace('    if expected != 46 or len(ids) != 46:\n        raise SystemExit(f"Hub-46 scope mismatch: ids={len(ids)} expected={expected}")',
+                      '    if expected <= 0 or len(ids) != expected:\n        raise SystemExit(f"active hub scope mismatch: ids={len(ids)} expected={expected}")')
+          t=t.replace('    if missing or extra or len(selected) != 46:', '    if missing or extra or len(selected) != len(scoped):')
+          t=t.replace('f"physical Hub-46 mismatch selected={len(selected)} missing={\',\'.join(missing)} extra={\',\'.join(extra)}"',
+                      'f"physical active-hub mismatch selected={len(selected)} expected={len(scoped)} missing={\',\'.join(missing)} extra={\',\'.join(extra)}"')
+          t=t.replace('f"providers=46 provider_sha={args.provider_sha} output={output.relative_to(ROOT)} "',
+                      'f"providers={len(payload.get(\'scrapers\') or [])} provider_sha={args.provider_sha} output={output.relative_to(ROOT)} "')
+          p.write_text(t,encoding='utf-8')
+
+          # Future matrix rebuilds must accept the current number of non-null hub authorities, not force the historical 46.
+          p=ROOT/'scripts/build_hub_lab_matrix.py'; t=p.read_text(encoding='utf-8')
+          t=t.replace('    if len(out) != 46:\n        raise SystemExit(f"provider-hubs invariant failed: expected 46 non-null hubs, got {len(out)}")',
+                      '    if not out:\n        raise SystemExit("provider-hubs invariant failed: no active non-null hubs")')
+          t=t.replace('    assert len(rows) == 46\n', '    assert rows\n')
+          p.write_text(t,encoding='utf-8')
+
+          # Keep current blocker/disposition gates aligned with the matrix authority when their old check is present.
+          dynamic_files=[
+            'scripts/build_hub46_blocker_inventory.py',
+            'scripts/finalize_provider_repair_disposition_v1_impl.py',
+            'scripts/fix_cdn_runtime_lego_bindings_v1.py',
+          ]
+          for rel in dynamic_files:
+              p=ROOT/rel
+              if not p.is_file(): continue
+              t=p.read_text(encoding='utf-8')
+              t=re.sub(r'if int\(matrix\.get\("hubCount"\) or 0\) != 46 or len\(([^)]+)\) != 46:',
+                       r'if int(matrix.get("hubCount") or 0) <= 0 or len(\1) != int(matrix.get("hubCount") or 0):', t)
+              t=re.sub(r'if int\(hub_matrix\.get\("hubCount"\) or 0\) != 46 or len\(([^)]+)\) != 46:',
+                       r'if int(hub_matrix.get("hubCount") or 0) <= 0 or len(\1) != int(hub_matrix.get("hubCount") or 0):', t)
+              p.write_text(t,encoding='utf-8')
+
+          # Rebuild the derived active manifest now. Native transport is regenerated separately at release against a frozen provider SHA.
+          import subprocess
+          subprocess.run(['python3','scripts/generate_hub46_manifest.py','--source','manifest.json','--matrix','automation/evidence/hub-lab-matrix-46.json','--output','manifest-hub46.json'],check=True)
+          mh=load('manifest-hub46.json')
+          assert len(mh.get('scrapers') or [])==ACTIVE_COUNT
+          assert not ({cid(r.get('id')) for r in mh.get('scrapers') or []} & set(OFF))
+
+          # Keep native projection logically scoped to 44 immediately; release-finalize will repin provider URLs to its frozen SHA.
+          native=load('native-hub46/manifest.json')
+          wanted={cid(r.get('manifestId')) for r in rows}
+          native['scrapers']=[r for r in native.get('scrapers') or [] if isinstance(r,dict) and cid(r.get('id')) in wanted]
+          native['labScope']={'kind':'active-hub-repair-campaign','providerCount':ACTIVE_COUNT,'authority':'automation/evidence/hub-lab-matrix-46.json'}
+          assert len(native['scrapers'])==ACTIVE_COUNT
+          dump('native-hub46/manifest.json',native)
+
+          # Durable checkpoint: explicit user evidence is authoritative for duplicate-test avoidance.
+          mem=ROOT/'MEMORY.md'; text=mem.read_text(encoding='utf-8').rstrip()
+          marker='## 2026-09-15 — Manual evidence + active scope 44'
+          block='''\n\n## 2026-09-15 — Manual evidence + active scope 44\n\n- User explicitly disabled **DesiFlix** because its current redirect authority is compromised/inappropriate and **FullAnime** because no current hub/address authority exists. These are real OFF states, not artificial enabled rows.\n- The executable catalogue keeps 46 rows for recoverability/history, but the active hub/native repair scope is now **44**. `automation/evidence/hub-lab-matrix-46.json` keeps its legacy filename only for compatibility and now declares `hubCount=44`; generated active manifests must derive their count from that authority instead of hard-coding 46.\n- New manual browser evidence is durable in `automation/manual-provider-evidence-20260915.json`: AllWish and AllAnime have browser HLS 200 evidence; MoviesMod reaches terminal direct media behind an interactive gate; 4KHDHub has current movie+TV route evidence through `hdhub4u.bi -> new5.hdhub4u.cl`. These positives do **not** equal native-player proof, but they supersede any interpretation of older automated ZERO as “no route exists”.\n- Do **not** ask the user to repeat these manual tests. Continue provider-side integration/repair from the captured evidence and only request a new manual test for a genuinely new unresolved fact that cannot be established by repository/runtime evidence.\n'''
+          if marker not in text: text += block
+          mem.write_text(text.rstrip()+'\n',encoding='utf-8')
+
+          # Final coherence proof before commit.
+          matrix=load('automation/evidence/hub-lab-matrix-46.json')
+          assert matrix['hubCount']==ACTIVE_COUNT and len(matrix['rows'])==ACTIVE_COUNT
+          disp=load('automation/provider-repair-disposition.json')
+          assert disp['catalogueProviderCount']==CATALOGUE_COUNT
+          assert disp['enabledProviderCount']==ACTIVE_COUNT
+          assert disp['disabledProviderCount']==2 and set(disp['disabledProviders'])==set(OFF)
+          assert not (set(disp.get('incompleteProviders') or []) & set(OFF))
+          hubs=load('provider-hubs.json')['providers']
+          assert hubs['desiflix'].get('hub') is None and hubs['fullanime'].get('hub') is None
+          assert hubs['4khdhub'].get('hub')=='https://hdhub4u.bi/'
+          print('ACTIVE44_MANUAL_EVIDENCE_OK catalogue=46 active=44 off=desiflix,fullanime')
+          PY
+
+      - name: Static checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/generate_hub46_manifest.py scripts/build_hub46_native_manifest.py scripts/build_hub_lab_matrix.py
+          python3 scripts/generate_hub46_manifest.py --check --source manifest.json --matrix automation/evidence/hub-lab-matrix-46.json --output manifest-hub46.json
+          python3 - <<'PY'
+          import json
+          for p in ['manifest.json','manifest-hub46.json','native-hub46/manifest.json','provider-hubs.json','automation/evidence/hub-lab-matrix-46.json','automation/provider-repair-disposition.json','automation/manual-provider-evidence-20260915.json']:
+              json.load(open(p,encoding='utf-8'))
+          print('ACTIVE44_JSON_OK')
+          PY
+          git diff --check
+
+      - name: Commit atomically and remove one-shot workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/apply-manual-evidence-active44-20260915.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git diff --cached --check
+          git commit -m 'fix: honor manual provider off states and active scope 44'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${{ github.sha }}" || { echo 'main moved during active44 transaction' >&2; exit 1; }
+          git push origin HEAD:main
+          echo "ACTIVE44_PUBLISHED $(git rev-parse HEAD)"
