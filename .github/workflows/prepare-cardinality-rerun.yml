@@ -1,0 +1,44 @@
+name: SHORT - Prepare cardinality rerun
+on:
+  push:
+    branches: [fix/active44-durability-20260915]
+    paths: ['.github/workflows/prepare-cardinality-rerun.yml']
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/active44-durability-20260915
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Make route recovery identity-scoped
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/recover_provider_routes_from_upstreams.py')
+          t=p.read_text(encoding='utf-8')
+          t=t.replace('EXPECTED = 96\n','')
+          if 'from current_provider_scope import active_provider_ids' not in t:
+              anchor='from provider_route_proof import derive_task_routes, route_role, unique\n'
+              if anchor not in t: raise SystemExit('route recovery import anchor missing')
+              t=t.replace(anchor,anchor+'from current_provider_scope import active_provider_ids\n',1)
+          old='''    local = manifest_catalog()\n    if len(local) != EXPECTED:\n        raise SystemExit(f"manifest providers={len(local)}, expected={EXPECTED}")\n    parity = load(PARITY)\n'''
+          new='''    all_local = manifest_catalog()\n    active = active_provider_ids()\n    local = {provider_id: row for provider_id, row in all_local.items() if provider_id in active}\n    if set(local) != active:\n        raise SystemExit(\n            "route recovery active identity mismatch: "\n            f"missing={sorted(active-set(local))} extra={sorted(set(local)-active)}"\n        )\n    parity = load(PARITY)\n'''
+          if old not in t:
+              if new not in t: raise SystemExit('route recovery main scope block drifted')
+          else:
+              t=t.replace(old,new,1)
+          p.write_text(t,encoding='utf-8')
+          PY
+          python -m py_compile scripts/recover_provider_routes_from_upstreams.py
+          git diff --check
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/recover_provider_routes_from_upstreams.py
+          git commit -m 'fix: scope route recovery to active provider identities'
+          git push origin HEAD:fix/active44-durability-20260915
