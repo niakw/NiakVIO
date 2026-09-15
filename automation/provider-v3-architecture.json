@@ -17,20 +17,30 @@
     "legacy_provider_js_seed_allowed": false,
     "upstream_provider_js_seed_allowed": false,
     "canonical_provider_base_marker": "NIAKVIO_PROVIDER_BASE_OWNED_V3",
-    "managed_markers": ["STARTFIX", "CLOSEFIX", "FIXDATA"],
+    "managed_markers": [
+      "STARTFIX",
+      "CLOSEFIX",
+      "FIXDATA"
+    ],
     "core_boundary": "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
     "published_provider_js_is_reconstruction_seed": false
   },
   "media_types": {
     "semantic_field": "canonicalSupportedTypes",
     "transport_field": "supportedTypes",
-    "canonical_values": ["movie", "tv", "anime"],
-    "anime_only_transport_compatibility": ["anime", "tv"],
+    "canonical_values": [
+      "movie",
+      "tv",
+      "anime"
+    ],
+    "anime_only_transport_compatibility": [
+      "anime",
+      "tv"
+    ],
     "transport_aliases_do_not_expand_semantic_capability": true,
     "capability_gate_before_provider_network": true
   },
   "route_recognition": {
-    "provider_object_count": 46,
     "canonical_route_data": "provider.model.routeData",
     "derived_route_projection": "provider.model.routes",
     "compatibility_projection": "provider.knowledge.recognizedContract.requests",
@@ -50,8 +60,11 @@
       "route_count": 401,
       "http_proven_route_count": 6,
       "providers_with_route_data": 95,
-      "providers_without_durable_route": ["topcartoons"]
-    }
+      "providers_without_durable_route": [
+        "topcartoons"
+      ]
+    },
+    "provider_scope_authority": "scripts/current_provider_scope.py:visible_provider_ids"
   },
   "routine": {
     "quick": {
@@ -97,8 +110,7 @@
     }
   },
   "manual_reconstruction": {
-    "full_catalogue": true,
-    "expected_provider_count": 46,
+    "full_catalogue": false,
     "historical_provider_count": 50,
     "historical_provider_directory": "provider-old",
     "command": "python scripts/materialize_provider_v3_all.py && python scripts/verify_provider_v3_reverse_rebuild.py",
@@ -107,7 +119,8 @@
     "main_write_allowed": false,
     "published_or_upstream_js_seed_allowed": false,
     "executable_plan_gate": "tests/provider_v3_strategy_plan_contract_test.py",
-    "security_html_filter_gate": "tests/provider_html_filter_security_test.py --published"
+    "security_html_filter_gate": "tests/provider_html_filter_security_test.py --published",
+    "provider_scope_authority": "scripts/current_provider_scope.py:active_provider_ids"
   },
   "native_labs": [
     "TVAndroid",
@@ -117,7 +130,6 @@
     "DesktopWindows"
   ],
   "native_lab_contract": {
-    "provider_count": 46,
     "historical_provider_count": 50,
     "historical_provider_directory": "provider-old",
     "route_matrix_source": "manifest.json:scrapers[*].supportedTypes",
@@ -129,7 +141,8 @@
     "external_nuvio_repo_repairs_allowed": false,
     "external_build_dependency_packaging_repairs_allowed": false,
     "harness_repairs_allowed_only_when_test_plumbing_itself_is_wrong": true,
-    "test_plumbing_must_not_change_official_runtime_behavior": true
+    "test_plumbing_must_not_change_official_runtime_behavior": true,
+    "provider_scope_authority": "scripts/current_provider_scope.py:active_provider_ids"
   },
   "minifier": {
     "enabled_in_production": true,
@@ -161,7 +174,9 @@
   "domain_refresh": {
     "schedule": "daily",
     "autonomous_main_write": true,
-    "allowed_provider_data_fields": ["official_site"],
+    "allowed_provider_data_fields": [
+      "official_site"
+    ],
     "history_write_allowed": true,
     "repair_allowed": false,
     "provider_fix_mutation_allowed": false,
@@ -233,7 +248,6 @@
     "note": "Frozen materialization reference retained for reverse-rebuild compatibility only. It is not current route, availability, capability or quarantine truth."
   },
   "provider_plan_contract": {
-    "catalogue_provider_count": 46,
     "historical_provider_count": 50,
     "historical_provider_directory": "provider-old",
     "disabled_providers_are_audited": true,
@@ -248,7 +262,8 @@
       "direct_media",
       "iframe_player",
       "quarantined"
-    ]
+    ],
+    "provider_scope_authority": "scripts/current_provider_scope.py:visible_provider_ids"
   },
   "security_html_filtering": {
     "codeql_rule_family": "Bad HTML filtering regexp",
