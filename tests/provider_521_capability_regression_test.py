@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """Preserve trustworthy 5.21.0 capability evidence without reviving archived providers.
 
-The 5.21.0 fixture contains 92 providers. The current release has 46 providers
-and 50 historical providers live only in provider-old/, so the old fixture can
-cover exactly 42 current providers. The remaining four current providers were
-introduced after 5.21.0 and are validated from the current capability contract
-instead of fabricating historical evidence for them.
+The 5.21.0 fixture is a historical capability floor. Current identities are
+owned by the physical current-provider folders; providers absent from that
+identity set may still remain in provider-old/ as historical evidence.
 
 The old fixture predates the strict semantic/transport split. Its `types` field
 can therefore contain transport aliases that are not semantic capability proof.
@@ -14,21 +12,26 @@ Only explicit `semanticTypes` remains a semantic floor.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CURRENT_PROVIDER_COUNT = len([row for row in json.loads((ROOT / "manifest.json").read_text(encoding="utf-8")).get("scrapers") or [] if isinstance(row, dict) and row.get("enabled") is not False and str(row.get("filename") or "").startswith("providers/")])
+sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import visible_provider_ids
+
 HISTORICAL_PROVIDER_COUNT = 50
 FIXTURE = json.loads(
     (ROOT / "tests/fixtures/provider-production-5.21.0-capabilities.json").read_text(encoding="utf-8")
 )
 MANIFEST = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 OVERRIDES = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+CURRENT_IDS = visible_provider_ids()
 
 rows = {
     str(row.get("id") or "").strip().casefold(): row
     for row in MANIFEST.get("scrapers") or []
-    if isinstance(row, dict) and str(row.get("id") or "").strip()
+    if isinstance(row, dict)
+    and str(row.get("id") or "").strip().casefold() in CURRENT_IDS
 }
 caps = OVERRIDES.get("provider_capabilities") or {}
 archive_dir = ROOT / "provider-old"
@@ -58,7 +61,10 @@ hls_count = 0
 archived_count = 0
 current_fixture_count = 0
 
-assert len(rows) == CURRENT_PROVIDER_COUNT, f"current release must contain {CURRENT_PROVIDER_COUNT} providers, got {len(rows)}"
+assert set(rows) == CURRENT_IDS, (
+    f"current manifest/folder identity mismatch: "
+    f"manifest_only={sorted(set(rows) - CURRENT_IDS)} folder_only={sorted(CURRENT_IDS - set(rows))}"
+)
 fixture_providers = FIXTURE.get("providers") or {}
 fixture_ids = {str(value).strip().casefold() for value in fixture_providers}
 current_ids = set(rows)
@@ -74,7 +80,7 @@ expected_overlap = len(fixture_ids) - HISTORICAL_PROVIDER_COUNT
 assert len(current_overlap) == expected_overlap, (
     f"5.21 overlap drift: expected {expected_overlap}, got {len(current_overlap)}"
 )
-assert len(current_new) == CURRENT_PROVIDER_COUNT - expected_overlap, (
+assert len(current_new) == len(CURRENT_IDS) - expected_overlap, (
     f"post-5.21 current provider count drift: {sorted(current_new)}"
 )
 
@@ -140,7 +146,7 @@ assert not errors, "5.21.0 production capability regressions:\n- " + "\n- ".join
 
 print(
     "5.21.0 capability/history regression gate passed: "
-    f"current_with_5_21_floor={current_fixture_count} current_post_5_21={len(current_new)} "
-    f"historical={archived_count} hls_current={hls_count} "
+    f"current={len(CURRENT_IDS)} current_with_5_21_floor={current_fixture_count} "
+    f"current_post_5_21={len(current_new)} historical={archived_count} hls_current={hls_count} "
     f"post_5_21={','.join(sorted(current_new))}"
 )
