@@ -76,4 +76,26 @@ ios = (ROOT / ".github/workflows/native-mobile-ios-reader.yml").read_text(encodi
 assert "/native-hub46/manifest.json" in ios
 assert "/${{ github.sha }}/manifest.json" not in ios
 
-print("NATIVE_HUB46_TRANSPORT_MANIFEST_OK providers=46 terminal=manifest.json pinned_provider_urls=true android_prebuild=nested")
+# NATIVE_HUB46_PINNED_BUNDLE_INTEGRITY_V1
+from urllib.parse import urlparse
+import re
+import subprocess
+
+checked_in = json.loads((ROOT / "native-hub46/manifest.json").read_text(encoding="utf-8"))
+pinned_rows = [row for row in checked_in.get("scrapers") or [] if isinstance(row, dict)]
+assert pinned_rows, "checked-in native transport is empty"
+sha_re = re.compile(r"^[0-9a-f]{40}$")
+for row in pinned_rows:
+    filename = str(row.get("filename") or "").strip()
+    parsed = urlparse(filename)
+    assert parsed.scheme == "https" and parsed.hostname == "raw.githubusercontent.com", (row.get("id"), filename)
+    parts = [part for part in parsed.path.split("/") if part]
+    assert len(parts) >= 5 and parts[0:2] == ["niakw", "NiakVIO"], (row.get("id"), filename)
+    provider_sha = parts[2]
+    provider_path = "/".join(parts[3:])
+    assert sha_re.fullmatch(provider_sha), (row.get("id"), provider_sha)
+    assert provider_path.startswith("providers/") and ".." not in Path(provider_path).parts, (row.get("id"), provider_path)
+    proof = subprocess.run(["git", "cat-file", "-e", f"{provider_sha}:{provider_path}"], cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+    assert proof.returncode == 0, f"pinned provider bundle missing: {row.get('id')} {provider_sha}:{provider_path}"
+
+print("NATIVE_HUB46_TRANSPORT_MANIFEST_OK providers=46 terminal=manifest.json pinned_provider_urls=true pinned_blobs_exist=true android_prebuild=nested")
