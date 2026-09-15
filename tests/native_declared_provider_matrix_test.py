@@ -43,7 +43,8 @@ def scope_ids() -> set[str]:
         for row in data.get("rows") or []
         if isinstance(row, dict) and str(row.get("manifestId") or row.get("provider") or "").strip()
     }
-    assert len(ids) == 46
+    declared = int(data.get("hubCount") or 0)
+    assert declared > 0 and len(ids) == declared, (declared, len(ids))
     return ids
 
 
@@ -130,12 +131,11 @@ all_routes = routes()
 provider_count = len({provider.casefold() for provider, _ in all_routes})
 counts = {kind: sum(1 for _, route_type in all_routes if route_type == kind) for kind in TYPES}
 route_count = len(all_routes)
-assert provider_count == 46
+assert provider_count == len(scope_ids())
 assert route_count == sum(counts.values())
 assert all(counts[kind] > 0 for kind in TYPES), counts
-# Hub46 is the complete current publication, not 46 enabled rows embedded in the
-# old 96-provider catalogue. Historical provider identities live in provider-old
-# and therefore do not count as disabled current rows.
+# The active matrix is the complete executable publication scope. Recoverable
+# disabled providers remain in the 46-row catalogue but are not native Lab rows.
 expected_summary = (
     f"providers={provider_count} disabled=0 routes={route_count} "
     f"movie={counts['movie']} tv={counts['tv']} anime={counts['anime']}"
