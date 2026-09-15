@@ -9,7 +9,7 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count
+from current_provider_scope import active_provider_count, visible_provider_count
 
 TV_READER = ROOT / ".github/workflows/native-mobile-android-reader.yml"
 MOBILE_ANDROID = TV_READER
@@ -243,6 +243,8 @@ for suite, client in ((mobile_suite,"MOBILE"),(tv_suite,"TV")):
 for required in ("repeatedContradictions","repeatedTransportFailures","repeatedSlow","providerRuntimeErrors","repeatedReaderFailures"):
     assert required in summarizer
 
+# Staging covers the visible catalogue (active + explicitly disabled retained
+# rows). Execution/lab scope remains active_provider_count().
 stageable=[]
 seen=set()
 for row in manifest.get("scrapers",[]):
@@ -254,11 +256,11 @@ for row in manifest.get("scrapers",[]):
     if pid and filename and key not in seen:
         seen.add(key)
         stageable.append(pid)
-assert len(stageable) == active_provider_count(), len(stageable)
+assert len(stageable) == visible_provider_count(), (len(stageable), visible_provider_count())
 
 print(
     "native device lab contract passed: "
-    f"providers={len(stageable)} type_bounded_1_1_1=true rotating_fixtures=true "
+    f"providers={len(stageable)} active={active_provider_count()} type_bounded_1_1_1=true rotating_fixtures=true "
     "tv_single_job=true android_tv_mobile_combined=true mobile_ios_separate=true "
     "brain_decoupled=true desktop_native=true targeted_manual=true"
 )
