@@ -140,6 +140,24 @@ def current_activation_debt() -> dict[str, dict[str, Any]]:
     out: dict[str, dict[str, Any]] = {}
     for pid, row in rows.items():
         patch = patches.get(pid) if isinstance(patches.get(pid), dict) else {}
+        # Explicit user/manual OFF is newer activation authority than historical
+        # rolling lane proof. It may waive missing-live-lane debt only; semantic
+        # type and HLS contract deletion remain hard failures below.
+        manual_off_reason = str(patch.get("manual_off_reason") or "").strip()
+        manifest_overrides = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
+        if row.get("enabled") is False and manual_off_reason and manifest_overrides.get("enabled") is False:
+            out[pid] = {
+                "authority": "manual-user-off-v1",
+                "activationAuthority": "manual-user-off-v1",
+                "activationState": "disabled",
+                "forcedEnabled": False,
+                "routeDataState": "off",
+                "completeCapabilityProof": False,
+                "missingLanes": ["manual-off"],
+                "reasonCodes": [manual_off_reason],
+                "manualOff": True,
+            }
+            continue
         disposition = patch.get("repair_disposition") if isinstance(patch.get("repair_disposition"), dict) else {}
         state = canon(disposition.get("routeDataState"))
         expected_activation_state = "enabled" if row.get("enabled") is True else "disabled"

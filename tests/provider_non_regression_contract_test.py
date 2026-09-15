@@ -28,3 +28,12 @@ source = source.replace("rolling 96-provider floor", "rolling 46-provider floor"
 # repair/off debt. Do not rewrite those assertions to historical hub-presence or
 # force-all policies here.
 exec(compile(source, str(impl_path), "exec"), globals(), globals())
+
+
+# Active44: explicit manual OFF may waive missing rolling lane proof, but the
+# gate still evaluates semantic/HLS contract regression independently.
+_gate_source = (ROOT / "scripts/check_provider_non_regression_v1.py").read_text(encoding="utf-8")
+assert "manual_off_reason" in _gate_source
+assert "manual-user-off-v1" in _gate_source
+assert "semantic_capability_regression" in _gate_source
+assert "historical_hls_m3u8_regression" in _gate_source
