@@ -15,73 +15,77 @@ jobs:
           ref: fix/active44-durability-20260915
           fetch-depth: 0
           persist-credentials: true
-      - name: Remove current numeric provider policy from architecture
+      - name: Normalize persisted provider-folder authority
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json
+          import json, sys
           from pathlib import Path
+          ROOT=Path('.').resolve()
+          sys.path.insert(0,str(ROOT/'scripts'))
+          from current_provider_scope import active_provider_ids, disabled_provider_ids, visible_provider_ids
 
-          architecture=Path('automation/provider-v3-architecture.json')
-          data=json.loads(architecture.read_text(encoding='utf-8'))
+          active=active_provider_ids(); disabled=disabled_provider_ids(); visible=visible_provider_ids()
+          assert active and active.isdisjoint(disabled) and visible == active | disabled
 
-          route=data['route_recognition']
-          route.pop('provider_object_count',None)
-          route['provider_scope_authority']='scripts/current_provider_scope.py:visible_provider_ids'
+          def dump(path,data):
+              Path(path).write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 
-          manual=data['manual_reconstruction']
-          manual.pop('expected_provider_count',None)
-          manual['full_catalogue']=False
-          manual['provider_scope_authority']='scripts/current_provider_scope.py:active_provider_ids'
+          overrides=json.loads(Path('provider-overrides.json').read_text(encoding='utf-8'))
+          for pid,patch in (overrides.get('provider_patches') or {}).items():
+              if not isinstance(patch,dict) or pid not in visible: continue
+              disp=patch.get('repair_disposition')
+              if not isinstance(disp,dict): continue
+              disp['activationAuthority']='provider-folder-lifecycle'
+              disp['activationState']='enabled' if pid in active else 'disabled'
+              disp['forcedEnabled']=pid in active
+          dump('provider-overrides.json',overrides)
 
-          lab=data['native_lab_contract']
-          lab.pop('provider_count',None)
-          lab['provider_scope_authority']='scripts/current_provider_scope.py:active_provider_ids'
+          knowledge=json.loads(Path('automation/provider-v3-static-knowledge.json').read_text(encoding='utf-8'))
+          for pid,row in (knowledge.get('providers') or {}).items():
+              if not isinstance(row,dict) or pid not in visible: continue
+              model=row.get('model') if isinstance(row.get('model'),dict) else {}
+              disp=model.get('repairDisposition')
+              if isinstance(disp,dict):
+                  disp['activationAuthority']='provider-folder-lifecycle'
+                  disp['activationState']='enabled' if pid in active else 'disabled'
+                  disp['forcedEnabled']=pid in active
+          dump('automation/provider-v3-static-knowledge.json',knowledge)
 
-          plan=data['provider_plan_contract']
-          plan.pop('catalogue_provider_count',None)
-          plan['provider_scope_authority']='scripts/current_provider_scope.py:visible_provider_ids'
+          report=json.loads(Path('automation/provider-repair-disposition.json').read_text(encoding='utf-8'))
+          policy=report.get('policy') if isinstance(report.get('policy'),dict) else {}
+          policy['activationAuthority']='providers/ + provider-disabled/ physical current folders'
+          policy.pop('targetHubProviderCount',None)
+          policy['activeProviderCount']=len(active)
+          for row in report.get('providers') or []:
+              if not isinstance(row,dict): continue
+              pid=str(row.get('provider') or '').strip().casefold()
+              if pid not in visible: continue
+              row['activationAuthority']='provider-folder-lifecycle'
+              row['activationState']='enabled' if pid in active else 'disabled'
+              row['forcedEnabled']=pid in active
+          report['enabledProviderCount']=len(active)
+          report['disabledProviderCount']=len(disabled)
+          report['disabledProviders']=sorted(disabled)
+          dump('automation/provider-repair-disposition.json',report)
 
-          architecture.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          for path in ('provider-overrides.json','automation/provider-v3-static-knowledge.json','automation/provider-repair-disposition.json'):
+              text=Path(path).read_text(encoding='utf-8')
+              assert '"activationAuthority": "hub-lab-matrix-46"' not in text, path
 
-          docs=Path('tests/provider_v3_documentation_contract_test.py')
-          t=docs.read_text(encoding='utf-8')
-          t=t.replace('from current_provider_scope import active_provider_count',
-                      'from current_provider_scope import active_provider_count, visible_provider_count')
-          t=t.replace('EXPECTED = active_provider_count()','ACTIVE_EXPECTED = active_provider_count()\nVISIBLE_EXPECTED = visible_provider_count()')
-          t=t.replace('assert machine["manual_reconstruction"]["expected_provider_count"] == EXPECTED',
-                      'assert "expected_provider_count" not in machine["manual_reconstruction"]\nassert machine["manual_reconstruction"]["provider_scope_authority"] == "scripts/current_provider_scope.py:active_provider_ids"')
-          t=t.replace('assert plan["catalogue_provider_count"] == EXPECTED',
-                      'assert "catalogue_provider_count" not in plan\nassert plan["provider_scope_authority"] == "scripts/current_provider_scope.py:visible_provider_ids"')
-          t=t.replace('assert lab["provider_count"] == EXPECTED',
-                      'assert "provider_count" not in lab\nassert lab["provider_scope_authority"] == "scripts/current_provider_scope.py:active_provider_ids"')
-          t=t.replace('assert len(rows) == EXPECTED',
-                      'assert len(rows) == VISIBLE_EXPECTED\nassert sum(1 for row in rows if row.get("enabled") is not False) == ACTIVE_EXPECTED')
-          t=t.replace('== EXPECTED','== ACTIVE_EXPECTED')
-          # The broad replacement above is harmless for active-only assertions but must not restore a numeric machine key.
-          t=t.replace('assert machine["manual_reconstruction"]["expected_provider_count"] == ACTIVE_EXPECTED',
-                      'assert "expected_provider_count" not in machine["manual_reconstruction"]\nassert machine["manual_reconstruction"]["provider_scope_authority"] == "scripts/current_provider_scope.py:active_provider_ids"')
-          docs.write_text(t,encoding='utf-8')
-          PY
-          python -m py_compile tests/provider_v3_documentation_contract_test.py
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          data=json.loads(Path('automation/provider-v3-architecture.json').read_text())
-          assert 'provider_object_count' not in data['route_recognition']
-          assert 'expected_provider_count' not in data['manual_reconstruction']
-          assert 'provider_count' not in data['native_lab_contract']
-          assert 'catalogue_provider_count' not in data['provider_plan_contract']
-          assert data['route_recognition']['provider_scope_authority'].endswith(':visible_provider_ids')
-          assert data['manual_reconstruction']['provider_scope_authority'].endswith(':active_provider_ids')
-          assert data['native_lab_contract']['provider_scope_authority'].endswith(':active_provider_ids')
-          assert data['provider_plan_contract']['provider_scope_authority'].endswith(':visible_provider_ids')
-          print('ARCHITECTURE_DYNAMIC_SCOPE_OK')
+          # Preserve the architecture migration from the previous preparation pass.
+          architecture=json.loads(Path('automation/provider-v3-architecture.json').read_text(encoding='utf-8'))
+          route=architecture['route_recognition']; route.pop('provider_object_count',None); route['provider_scope_authority']='scripts/current_provider_scope.py:visible_provider_ids'
+          manual=architecture['manual_reconstruction']; manual.pop('expected_provider_count',None); manual['full_catalogue']=False; manual['provider_scope_authority']='scripts/current_provider_scope.py:active_provider_ids'
+          lab=architecture['native_lab_contract']; lab.pop('provider_count',None); lab['provider_scope_authority']='scripts/current_provider_scope.py:active_provider_ids'
+          plan=architecture['provider_plan_contract']; plan.pop('catalogue_provider_count',None); plan['provider_scope_authority']='scripts/current_provider_scope.py:visible_provider_ids'
+          dump('automation/provider-v3-architecture.json',architecture)
+          print(f'PERSISTED_FOLDER_AUTHORITY_OK active={len(active)} disabled={len(disabled)} visible={len(visible)}')
           PY
           git diff --check
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add automation/provider-v3-architecture.json tests/provider_v3_documentation_contract_test.py
-          git commit -m 'fix: make provider architecture scope identity-driven'
+          git add provider-overrides.json automation/provider-v3-static-knowledge.json automation/provider-repair-disposition.json automation/provider-v3-architecture.json
+          git commit -m 'fix: persist provider-folder activation authority'
           git push origin HEAD:fix/active44-durability-20260915
