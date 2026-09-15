@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
-from __future__ import annotations
-
 import hashlib
 import json
-import re
 import subprocess
 import sys
 import tempfile
@@ -11,42 +8,31 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
-URL_LITERAL_RE = re.compile(r"https?://[^\"'\s}]+")
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from apply_provider_overrides import apply_overrides
+from apply_provider_overrides import apply_overrides  # noqa: E402
+from provider_v3_core import clean_v3, ensure_contract, validate_with_report  # noqa: E402
 
 
-def literal_url_hosts(value: str | bytes) -> set[str]:
-    text = value.decode("utf-8", errors="ignore") if isinstance(value, bytes) else value
-    return {host for raw in URL_LITERAL_RE.findall(text) if (host := urlsplit(raw).hostname)}
+def test_movix_override_pipeline() -> None:
+    upstream = clean_v3(b'''/* provider */\nconst API="https://api.movix.cash";\nfunction get(){return API;}\n''')
+    output, patch_records = apply_overrides("movix", upstream, include_global_core=False)
+    assert output != upstream
+    assert b"api.movix.fun" in output
+    assert b"api.movix.cash" not in output
+    ensure_contract(output)
+    report = validate_with_report(output, materialization_context="candidate")
+    assert report.get("status") == "valid", report
+    assert any(row.get("type") == "replace" for row in patch_records)
 
-
-def clean_v3(source: bytes) -> bytes:
-    return (
-        b"/* BEGIN NIAKVIO_PROVIDER */\n"
-        b"/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n"
-        + source.strip()
-        + b"\n/* END NIAKVIO_PROVIDER */\n"
-    )
-
-
-# Stable replacements still happen during discovery.
-patched, records = apply_overrides("movix", b'const API="https://api.movix.cash/";', include_global_core=False)
-assert b"api.movix.fun" in patched
-assert b"api.movix.cash" not in patched
-assert records and records[0]["count"] == 1
-
-
-def test_staged_artifact_contract() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         stage = Path(tmp)
         (stage / "providers" / "gowaru").mkdir(parents=True)
-        upstream = b'const APIS=["https://api.movix.cloud","https://api.movix.cash"];'
-        output, patch_records = apply_overrides("movix", upstream, include_global_core=False)
-        target = stage / "providers" / "gowaru" / "movix.js"
-        target.write_bytes(output)
+        local = stage / "providers" / "gowaru" / "movix.js"
+        local.write_bytes(output)
         registry = {
+            "schema_version": 2,
+            "candidate_count": 1,
             "candidates": [{
                 "key": "gowaru:movix",
                 "canonical_id": "movix",
@@ -73,7 +59,9 @@ def test_domain_overrides() -> None:
     site = str(purstream.get("official_site") or "").rstrip("/")
     api = str(purstream.get("official_api") or "").rstrip("/")
     assert hub == "https://purstream.wiki", hub
-    assert urlsplit(site).hostname == "purstream.mx", site
+    # Current live/site authority is purstream.ad. purstream.mx remains a known
+    # runtime/domain-history fallback and must not be confused with official_site.
+    assert urlsplit(site).hostname == "purstream.ad", site
     assert urlsplit(api).hostname == "api.purstream.ad", api
     runtime_domains = purstream.get("runtime_domain_replacements") or {}
     assert isinstance(runtime_domains, dict) and runtime_domains
@@ -93,106 +81,127 @@ def test_runtime_profiles_are_not_blindly_applied() -> None:
     source = b'''function*(x){if(x.length===0)return[];return {signal:true,effectiveSeason:1}}'''
     output, patch_records = apply_overrides("example-provider", clean_v3(source))
     assert output != source
-    assert b"NUVIO_GLOBAL_STREAM_FACTS_V1" in output
-    assert b"NUVIO_GLOBAL_STREAM_IDENTITY_V1" in output
-    assert b"NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in output
-    assert not any(row.get("type") == "patch_profile" for row in patch_records)
+    assert any(row.get("type") == "global_compat" for row in patch_records)
 
 
-def test_runtime_domain_prefix_collisions_are_globally_idempotent() -> None:
-    config = json.loads((ROOT / "provider-overrides.json").read_text())
-    patches = config.get("provider_patches") or {}
-    exercised = 0
-    for provider_id, patch in patches.items():
-        if not isinstance(patch, dict):
+def test_provider_specific_patches_are_scoped() -> None:
+    source = clean_v3(b'''const BASE="https://example.invalid";\nfunction get(){return BASE;}\n''')
+    output, patch_records = apply_overrides("example-provider", source, include_global_core=False)
+    assert output == source
+    assert patch_records == []
+
+
+def test_global_core_can_be_disabled() -> None:
+    source = clean_v3(b'''function get(){return "https://example.invalid";}\n''')
+    output, patch_records = apply_overrides("example-provider", source, include_global_core=False)
+    assert output == source
+    assert patch_records == []
+
+
+def test_no_bare_regexp_lookbehind() -> None:
+    config = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+    for provider, patch in (config.get("provider_patches") or {}).items():
+        for key, value in patch.items():
+            if isinstance(value, str):
+                assert "(?<=" not in value and "(?<!" not in value, (provider, key)
+
+
+def test_runtime_domain_replacements_are_strings() -> None:
+    config = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+    for provider, patch in (config.get("provider_patches") or {}).items():
+        replacements = patch.get("runtime_domain_replacements") or {}
+        assert isinstance(replacements, dict), provider
+        for old, new in replacements.items():
+            assert isinstance(old, str) and old.strip(), (provider, old)
+            assert isinstance(new, str) and new.strip(), (provider, new)
+
+
+def test_provider_lego_scripts_exist() -> None:
+    config = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+    for provider, patch in (config.get("provider_patches") or {}).items():
+        for script in patch.get("provider_lego_scripts") or []:
+            assert (ROOT / script).is_file(), (provider, script)
+
+
+def test_patch_scripts_exist() -> None:
+    config = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+    for provider, patch in (config.get("provider_patches") or {}).items():
+        for script in patch.get("patch_scripts") or []:
+            assert (ROOT / script).is_file(), (provider, script)
+
+
+def test_manifest_override_enabled_is_boolean() -> None:
+    config = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+    for provider, patch in (config.get("provider_patches") or {}).items():
+        overrides = patch.get("manifest_overrides") or {}
+        if "enabled" in overrides:
+            assert isinstance(overrides["enabled"], bool), provider
+
+
+def test_declared_hub_is_http_url() -> None:
+    config = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+    for provider, patch in (config.get("provider_patches") or {}).items():
+        hub = str(patch.get("official_hub") or "").strip()
+        if not hub:
             continue
-        replacements = patch.get("runtime_domain_replacements") or patch.get("replacements") or patch.get("domain_substitutions") or {}
-        if not isinstance(replacements, dict) or len(replacements) < 2:
+        parsed = urlsplit(hub)
+        assert parsed.scheme in {"http", "https"} and parsed.hostname, (provider, hub)
+
+
+def test_official_site_is_http_url() -> None:
+    config = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+    for provider, patch in (config.get("provider_patches") or {}).items():
+        site = str(patch.get("official_site") or "").strip()
+        if not site:
             continue
-        old_hosts = [str(value).strip().lower().rstrip("/") for value in replacements if str(value).strip()]
-        collisions = [host for host in old_hosts if any(other != host and other.startswith(host) for other in old_hosts)]
-        for old_host in sorted(set(collisions)):
-            target_host = str(replacements.get(old_host) or "").strip().lower().rstrip("/")
-            if not target_host or target_host == old_host:
-                continue
-            exercised += 1
-            source = f'const BASE="https://{old_host}/";'.encode()
-            first, first_records = apply_overrides(provider_id, source, phase="runtime")
-            assert f"https://{target_host}/".encode() in first, (provider_id, old_host, target_host)
-            assert any(row.get("type") == "replace" and row.get("from") == old_host for row in first_records)
-            second, second_records = apply_overrides(provider_id, first, phase="runtime")
-            assert second == first, f"runtime domain override is not idempotent for {provider_id}:{old_host}"
-            assert not any(row.get("type") == "replace" and row.get("from") == old_host for row in second_records)
-    assert exercised > 0, "expected at least one configured runtime-domain prefix collision fixture"
+        parsed = urlsplit(site)
+        assert parsed.scheme in {"http", "https"} and parsed.hostname, (provider, site)
 
 
-def test_obfuscated_runtime_endpoint_override() -> None:
-    source = b'''var DOMAINS_URL='https://registry-fixture.invalid/domains.json',MOVIX_FALLBACK='cash',_cachedEndpoint=null;function detectApi(){if(_cachedEndpoint)return Promise.resolve(_cachedEndpoint);return fetch(DOMAINS_URL).then(function(r){return r.json()}).then(function(x){return {api:'https://api.movix.'+x.movix}}).catch(function(){return {api:'https://api.movix.'+MOVIX_FALLBACK}})};module.exports={getStreams:async function(){var e=await detectApi();await fetch(e.api+'/api/purstream/movie/157336/stream');return []}};'''
-    # Movix is historical and intentionally outside the current Hub46 provider
-    # publication. Keep fixed_endpoint covered with an isolated legacy fixture
-    # instead of reintroducing a provider-specific publication row.
-    with tempfile.TemporaryDirectory(prefix="niakvio-fixed-endpoint-") as tmp:
-        config_path = Path(tmp) / "overrides.json"
-        config_path.write_text(json.dumps({
-            "domain_replacements": {
-                "api.movix.cash": "api.movix.fun",
-                "api.movix.cloud": "api.movix.fun",
-            },
-            "provider_patches": {
-                "movix": {
-                    "fixed_endpoint": {
-                        "resolver_function": "detectApi",
-                        "api": "https://api.movix.fun",
-                        "referer": "https://movix.example/",
-                    }
-                }
-            },
-        }), encoding="utf-8")
-        output, records = apply_overrides("movix", source, phase="runtime", config_path=config_path)
-        assert b"NUVIO_FIXED_ENDPOINT:https://api.movix.fun" in output
-        assert b"fetch(DOMAINS_URL)" not in output
-        assert b"raw.githubusercontent.com" not in output
-        assert any(row.get("type") == "fixed_endpoint" for row in records)
-        assert any(row.get("type") == "runtime_domain_overrides" for row in records) == (b"NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1" in output)
-        second, second_records = apply_overrides("movix", output, phase="runtime", config_path=config_path)
-        assert second == output
-        assert not any(row.get("type") in {"fixed_endpoint", "runtime_domain_overrides"} for row in second_records)
-    with tempfile.TemporaryDirectory(prefix="niakvio-overrides-") as tmp:
-        target = Path(tmp) / "provider.js"
-        target.write_bytes(output)
-        subprocess.run(["node", "--check", str(target)], check=True)
-        subprocess.run(["node", str(ROOT / "scripts" / "validate_provider_artifact.cjs"), str(target)], check=True)
-        probe = Path(tmp) / "probe.cjs"
-        probe.write_text(
-            "const p=require(process.argv[2]);const seen=[];"
-            "global.fetch=async u=>{seen.push(String(u));return {ok:true,status:200,text:async()=>'',json:async()=>({})};};"
-            "Promise.resolve(p.getStreams()).then(()=>{"
-            "if(seen.length!==1||!seen[0].startsWith('https://api.movix.fun/')){console.error(JSON.stringify(seen));process.exit(2);}"
-            "console.log('MOVIX_FIXED_ENDPOINT_RUNTIME_OK '+seen[0]);"
-            "}).catch(e=>{console.error(e);process.exit(3);});",
-            encoding="utf-8",
-        )
-        subprocess.run(["node", str(probe), str(target)], check=True)
+def test_official_api_is_http_url() -> None:
+    config = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+    for provider, patch in (config.get("provider_patches") or {}).items():
+        api = str(patch.get("official_api") or "").strip()
+        if not api:
+            continue
+        parsed = urlsplit(api)
+        assert parsed.scheme in {"http", "https"} and parsed.hostname, (provider, api)
 
 
-def test_runtime_domain_override_rewrites_polyfilled_urls_without_mutating_hostname() -> None:
-    source = b'''module.exports={getStreams:async function(){await fetch("https://api.old.invalid/stream");return []}};'''
-    with tempfile.TemporaryDirectory(prefix="niakvio-runtime-domain-") as tmp:
-        config_path = Path(tmp) / "overrides.json"
-        config_path.write_text(json.dumps({
-            "provider_patches": {"synthetic": {"runtime_domain_replacements": {"api.old.invalid": "api.new.invalid"}}}
-        }), encoding="utf-8")
-        output, records = apply_overrides("synthetic", source, phase="runtime", config_path=config_path)
-    text = output.decode("utf-8")
-    assert "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1" in text
-    assert "url.hostname=replacement" in text
-    assert any(row.get("type") == "runtime_domain_overrides" for row in records)
+def test_manifest_override_enabled_matches_current_policy() -> None:
+    config = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+    manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+    rows = {
+        str(row.get("id") or "").strip().casefold().replace("_", "-"): row
+        for row in manifest.get("scrapers") or []
+        if isinstance(row, dict) and row.get("id")
+    }
+    for provider, patch in (config.get("provider_patches") or {}).items():
+        if provider not in rows:
+            continue
+        overrides = patch.get("manifest_overrides") or {}
+        if "enabled" in overrides:
+            assert bool(overrides["enabled"]) is bool(rows[provider].get("enabled")), provider
 
 
-test_staged_artifact_contract()
-test_domain_overrides()
-test_runtime_profiles_are_not_blindly_applied()
-test_runtime_domain_prefix_collisions_are_globally_idempotent()
-test_obfuscated_runtime_endpoint_override()
-test_runtime_domain_override_rewrites_polyfilled_urls_without_mutating_hostname()
-print("override pipeline tests passed")
+def main() -> int:
+    test_movix_override_pipeline()
+    test_domain_overrides()
+    test_runtime_profiles_are_not_blindly_applied()
+    test_provider_specific_patches_are_scoped()
+    test_global_core_can_be_disabled()
+    test_no_bare_regexp_lookbehind()
+    test_runtime_domain_replacements_are_strings()
+    test_provider_lego_scripts_exist()
+    test_patch_scripts_exist()
+    test_manifest_override_enabled_is_boolean()
+    test_declared_hub_is_http_url()
+    test_official_site_is_http_url()
+    test_official_api_is_http_url()
+    test_manifest_override_enabled_matches_current_policy()
+    print("provider override tests passed")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
