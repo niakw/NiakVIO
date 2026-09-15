@@ -1,0 +1,25 @@
+name: SHORT - Dispatch Active44 v2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/dispatch-active44-v2-20260915.yml'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch Active44 v2 on current main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api --method POST \
+            repos/${{ github.repository }}/actions/workflows/apply-manual-evidence-active44-20260915-v2.yml/dispatches \
+            -f ref=main
+          echo ACTIVE44_V2_DISPATCHED
