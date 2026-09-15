@@ -1,0 +1,54 @@
+name: TEMP Run Native Pin Repair
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/temp-run-native-pin-repair-20260915.yml
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/native-pinned-provider-integrity-20260915
+          fetch-depth: 0
+      - name: Re-pin transport and add immutable-blob proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/build_hub46_native_manifest.py --provider-sha c7b06a732ed07c13af819c1490fbe950d29024fb --source manifest-hub46.json --output native-hub46/manifest.json
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('tests/native_hub46_transport_manifest_test.py')
+          t=p.read_text(encoding='utf-8')
+          marker='NATIVE_HUB46_PINNED_BUNDLE_INTEGRITY_V1'
+          if marker not in t:
+              block='''\n# NATIVE_HUB46_PINNED_BUNDLE_INTEGRITY_V1\nfrom urllib.parse import urlparse\nimport re\nimport subprocess\n\nchecked_in = json.loads((ROOT / "native-hub46/manifest.json").read_text(encoding="utf-8"))\npinned_rows = [row for row in checked_in.get("scrapers") or [] if isinstance(row, dict)]\nassert pinned_rows, "checked-in native transport is empty"\nsha_re = re.compile(r"^[0-9a-f]{40}$")\nfor row in pinned_rows:\n    filename = str(row.get("filename") or "").strip()\n    parsed = urlparse(filename)\n    assert parsed.scheme == "https" and parsed.hostname == "raw.githubusercontent.com", (row.get("id"), filename)\n    parts = [part for part in parsed.path.split("/") if part]\n    assert len(parts) >= 5 and parts[0:2] == ["niakw", "NiakVIO"], (row.get("id"), filename)\n    provider_sha = parts[2]\n    provider_path = "/".join(parts[3:])\n    assert sha_re.fullmatch(provider_sha), (row.get("id"), provider_sha)\n    assert provider_path.startswith("providers/") and ".." not in Path(provider_path).parts, (row.get("id"), provider_path)\n    proof = subprocess.run(["git", "cat-file", "-e", f"{provider_sha}:{provider_path}"], cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)\n    assert proof.returncode == 0, f"pinned provider bundle missing: {row.get('id')} {provider_sha}:{provider_path}"\n'''
+              old='\nprint("NATIVE_HUB46_TRANSPORT_MANIFEST_OK providers=46 terminal=manifest.json pinned_provider_urls=true android_prebuild=nested")\n'
+              new=block+'\nprint("NATIVE_HUB46_TRANSPORT_MANIFEST_OK providers=46 terminal=manifest.json pinned_provider_urls=true pinned_blobs_exist=true android_prebuild=nested")\n'
+              if old not in t:
+                  raise SystemExit('transport test print anchor missing')
+              p.write_text(t.replace(old,new,1),encoding='utf-8')
+          PY
+          python3 tests/native_hub46_transport_manifest_test.py
+          git diff --check
+      - name: Commit repair to fix branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add native-hub46/manifest.json tests/native_hub46_transport_manifest_test.py
+          git diff --cached --quiet && exit 0
+          git commit -m 'fix(native): bind transport filenames to existing provider blobs'
+          AUTH=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:fix/native-pinned-provider-integrity-20260915
