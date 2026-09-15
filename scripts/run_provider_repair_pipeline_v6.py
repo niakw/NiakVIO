@@ -11,6 +11,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from current_provider_scope import active_provider_ids, visible_provider_ids
+
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 DEFAULT_SKIP = ROOT / "automation" / "provider-repair-skip.json"
@@ -79,16 +81,25 @@ def main() -> int:
     skipped = {cid(value) for value in (skip_cfg.get("providers") or {}).keys() if cid(value)}
     catalogue_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]
     catalogue = [cid(row.get("id")) for row in catalogue_rows]
-    if len(catalogue) != 46 or len(set(catalogue)) != 46:
-        raise SystemExit(f"provider catalogue must be exactly 46 unique ids, got {len(catalogue)}/{len(set(catalogue))}")
+    if len(catalogue) != len(set(catalogue)):
+        raise SystemExit("provider catalogue contains duplicate ids")
+    visible = visible_provider_ids()
+    if set(catalogue) != visible:
+        raise SystemExit(
+            "manifest/folder provider identity mismatch: "
+            f"manifest_only={sorted(set(catalogue)-visible)} folder_only={sorted(visible-set(catalogue))}"
+        )
+    active_ids = active_provider_ids()
+    active_catalogue = [cid(row.get("id")) for row in catalogue_rows if cid(row.get("id")) in active_ids]
     matrix = load(HUB_MATRIX)
-    matrix_ids = [cid(row.get("manifestId") or row.get("provider")) for row in matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))]
-    declared_active = int(matrix.get("hubCount") or 0)
-    if declared_active <= 0 or len(matrix_ids) != declared_active or len(set(matrix_ids)) != declared_active:
-        raise SystemExit(f"active provider matrix mismatch: declared={declared_active} rows={len(matrix_ids)} unique={len(set(matrix_ids))}")
-    active_catalogue = [cid(row.get("id")) for row in catalogue_rows if row.get("enabled") is True]
-    if set(active_catalogue) != set(matrix_ids):
-        raise SystemExit("manifest enabled set differs from active provider matrix")
+    matrix_ids = {cid(row.get("manifestId") or row.get("provider")) for row in matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))}
+    if matrix_ids != active_ids:
+        print(
+            "FIELD_PROVIDER_REPAIR_MATRIX_STALE "
+            f"matrix_only={','.join(sorted(matrix_ids-active_ids)) or '-'} "
+            f"active_only={','.join(sorted(active_ids-matrix_ids)) or '-'}",
+            flush=True,
+        )
     requested = {cid(value) for value in args.provider if cid(value)}
     unknown = sorted(requested - set(catalogue))
     if unknown:
@@ -207,7 +218,7 @@ def main() -> int:
     run(sys.executable, "scripts/materialize_provider_base_v3_store.py")
     run(sys.executable, "scripts/materialize_provider_v3_all.py")
     run(sys.executable, "scripts/generate_language_manifests.py", "--manifest", "manifest.json", "--report", "health-report.json")
-    run(sys.executable, "scripts/validate_published_provider_config.py", "--expected", str(len(catalogue)))
+    run(sys.executable, "scripts/validate_published_provider_config.py")
 
     for test in (
         "tests/provider_js_lego_ownership_test.py",
@@ -234,7 +245,7 @@ def main() -> int:
         "--quick-yield", str(QUICK_YIELD.relative_to(ROOT)),
     )
     run(sys.executable, "scripts/generate_language_manifests.py", "--manifest", "manifest.json", "--report", "health-report.json")
-    run(sys.executable, "scripts/validate_published_provider_config.py", "--expected", str(len(catalogue)))
+    run(sys.executable, "scripts/validate_published_provider_config.py")
     run(sys.executable, "tests/provider_v3_strategy_plan_contract_test.py")
 
     PORTFOLIO_RETRY.unlink(missing_ok=True)

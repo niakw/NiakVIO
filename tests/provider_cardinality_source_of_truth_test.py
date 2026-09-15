@@ -14,6 +14,17 @@ CHECK=[
  "scripts/verify_provider_v3_reverse_rebuild.py",
  "scripts/archive_nonhub_providerbases.py",
  "scripts/upgrade_streamzo_runtime_v1.py",
+ "scripts/run_provider_repair_pipeline_v6.py",
+ "scripts/run_provider_repair_fast_targeted_v1.py",
+ "scripts/build_published_provider_stage.py",
+ "scripts/validate_published_provider_config.py",
+ "scripts/finalize_provider_repair_disposition_v1_impl.py",
+ "scripts/generate_hub46_manifest.py",
+ "scripts/build_hub46_native_manifest.py",
+ "scripts/route_proof_activation_preservation_v1.py",
+ "scripts/domain_refresh_transaction_v2.py",
+ "scripts/normalize_hub46_semantic_transport_sources.py",
+ "scripts/normalize_hub46_release_gate_sources.py",
 ]
 patterns=[
  re.compile(r"\b(?:EXPECTED(?:_[A-Z_]+)?|CURRENT_PROVIDER_COUNT|EXPECTED_CURRENT|EXPECTED_ACTIVE)\s*=\s*(?:44|46|96)\b"),

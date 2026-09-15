@@ -22,6 +22,8 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
+from current_provider_scope import active_provider_ids, disabled_provider_ids, visible_provider_ids
+
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
@@ -31,7 +33,6 @@ RECOVERY = ROOT / "automation" / "provider-route-recovery-v6-targeted.json"
 QUICK = ROOT / "provider-v3-quick-yield.json"
 OUTPUT = ROOT / "automation" / "provider-repair-disposition.json"
 HUB_MATRIX = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
-EXPECTED = 46
 TERMINAL = {"terminal-blocked", "terminal-unreachable"}
 
 
@@ -161,16 +162,18 @@ def main() -> int:
     recovery = load(args.recovery, {"providers": []})
     quick = load(args.quick_yield)
     hub_matrix = load(args.hub_matrix)
-    target_hubs = {cid(row.get("manifestId")) for row in hub_matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId"))}
-    if int(hub_matrix.get("hubCount") or 0) <= 0 or len(target_hubs) != int(hub_matrix.get("hubCount") or 0):
-        raise SystemExit(f"active hub matrix mismatch: count={hub_matrix.get('hubCount')} ids={len(target_hubs)}")
-
+    matrix_ids = {cid(row.get("manifestId")) for row in hub_matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId"))}
     rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
-    if len(rows) != EXPECTED:
-        raise SystemExit(f"expected {EXPECTED} manifest providers, got {len(rows)}")
     manifest_rows = {cid(row.get("id")): row for row in rows if cid(row.get("id"))}
-    if len(manifest_rows) != EXPECTED:
-        raise SystemExit(f"expected {EXPECTED} unique provider ids, got {len(manifest_rows)}")
+    if len(manifest_rows) != len(rows):
+        raise SystemExit("manifest provider ids must be unique and non-empty")
+    active_ids = active_provider_ids()
+    disabled_ids = disabled_provider_ids()
+    visible_ids = visible_provider_ids()
+    if set(manifest_rows) != visible_ids:
+        raise SystemExit("manifest/folder identity mismatch before repair disposition")
+    if matrix_ids != active_ids:
+        print(f"PROVIDER_REPAIR_DISPOSITION_MATRIX_STALE matrix={len(matrix_ids)} active={len(active_ids)}")
 
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
     static = knowledge.get("providers") if isinstance(knowledge.get("providers"), dict) else {}
@@ -247,7 +250,7 @@ def main() -> int:
         # Repair/off is route debt. Visibility is owned exclusively by the exact
         # 46-provider hub matrix selected for this repair campaign.
         hub = declared_hub(patch)
-        enabled = provider in target_hubs
+        enabled = provider in active_ids
         manifest_row["enabled"] = enabled
         manifest_overrides = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
         manifest_overrides["enabled"] = enabled
@@ -262,7 +265,7 @@ def main() -> int:
             "schemaVersion": 1,
             "authority": "provider-repair-disposition-v1",
             "activationState": "enabled" if enabled else "disabled",
-            "activationAuthority": "hub-lab-matrix-46",
+            "activationAuthority": "provider-folder-lifecycle",
             "declaredHub": hub or None,
             "forcedEnabled": enabled,
             "routeDataState": route_state,
@@ -300,15 +303,15 @@ def main() -> int:
     summary = {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
-        "catalogueProviderCount": EXPECTED,
+        "catalogueProviderCount": len(manifest_rows),
         "policy": {
             "activeBrokenProviderAllowed": True,
             "incompleteProviderEnabled": True,
             "forceAllProvidersEnabled": False,
             "activationFollowsRepairState": False,
             "activationFollowsDeclaredHub": False,
-            "activationAuthority": "automation/evidence/hub-lab-matrix-46.json:rows[].manifestId",
-            "targetHubProviderCount": len(target_hubs),
+            "activationAuthority": "providers/ + provider-disabled/ physical current folders",
+            "activeProviderCount": len(active_ids),
             "nonTargetProviderState": "disabled",
             "registryOnlyTargetMayRemainEnabled": True,
             "terminalOrQuarantinedState": "off",
@@ -319,7 +322,7 @@ def main() -> int:
         },
         "stateCounts": dict(sorted(counts.items())),
         "enabledProviderCount": enabled_count,
-        "disabledProviderCount": EXPECTED - enabled_count,
+        "disabledProviderCount": len(disabled_providers),
         "disabledProviders": disabled_providers,
         "incompleteProviderCount": len(incomplete),
         "incompleteProviders": incomplete,
@@ -332,9 +335,9 @@ def main() -> int:
     write(args.output, summary)
     print(
         "PROVIDER_REPAIR_DISPOSITION_V1 "
-        f"providers={EXPECTED} enabled={enabled_count} disabled={EXPECTED-enabled_count} "
+        f"providers={len(manifest_rows)} enabled={enabled_count} disabled={len(disabled_providers)} "
         f"on={counts['on']} repair={counts['repair']} off={counts['off']} "
-        f"diagnostic_incomplete={len(incomplete)} activation=hub_matrix_active count={len(target_hubs)}"
+        f"diagnostic_incomplete={len(incomplete)} activation=provider_folders active={len(active_ids)}"
     )
     return 0
 

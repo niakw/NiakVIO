@@ -20,6 +20,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from current_provider_scope import active_provider_ids, visible_provider_ids
+
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
@@ -151,7 +153,7 @@ def write_summary(
         "schemaVersion": 3,
         "publicationAllowed": False,
         "fullPortfolioGateRequired": True,
-        "catalogueProviderCount": 46,
+        "catalogueProviderCount": len(visible_provider_ids()),
         "targetedProviders": targets,
         "targetedProviderCount": len(targets),
         "maxAttemptsPerTask": attempts,
@@ -194,14 +196,21 @@ def main() -> int:
     manifest = load(MANIFEST)
     catalogue_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]
     catalogue = [cid(row.get("id")) for row in catalogue_rows]
-    if len(catalogue) != 46 or len(set(catalogue)) != 46:
-        raise SystemExit(f"provider catalogue must be exactly 46 unique ids, got {len(catalogue)}/{len(set(catalogue))}")
+    if len(catalogue) != len(set(catalogue)):
+        raise SystemExit("provider catalogue contains duplicate ids")
+    visible = visible_provider_ids()
+    if set(catalogue) != visible:
+        raise SystemExit("manifest/folder provider identity mismatch")
+    active = active_provider_ids()
     matrix = load(HUB_MATRIX)
-    active = {cid(row.get("manifestId") or row.get("provider")) for row in matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))}
-    declared_active = int(matrix.get("hubCount") or 0)
-    manifest_active = {cid(row.get("id")) for row in catalogue_rows if row.get("enabled") is True}
-    if declared_active <= 0 or len(active) != declared_active or active != manifest_active:
-        raise SystemExit(f"active provider matrix mismatch: declared={declared_active} matrix={len(active)} manifest={len(manifest_active)}")
+    matrix_ids = {cid(row.get("manifestId") or row.get("provider")) for row in matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))}
+    if matrix_ids != active:
+        print(
+            "FIELD_PROVIDER_FAST_MATRIX_STALE "
+            f"matrix_only={','.join(sorted(matrix_ids-active)) or '-'} "
+            f"active_only={','.join(sorted(active-matrix_ids)) or '-'}",
+            flush=True,
+        )
 
     skip_path = args.skip_file if args.skip_file.is_absolute() else ROOT / args.skip_file
     skip_cfg = load(skip_path)
