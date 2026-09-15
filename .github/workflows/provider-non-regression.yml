@@ -96,7 +96,7 @@ jobs:
           python scripts/build_provider_history_matrix_v3.py
           python scripts/check_provider_non_regression_v1.py
 
-      - name: Run real 46-provider candidate census
+      - name: Run real current-provider candidate census
         shell: bash
         run: |
           set -euo pipefail
