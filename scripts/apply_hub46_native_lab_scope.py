@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Make all native Lab clients consume the exact physical Hub-46 manifest.
+"""Make all native Lab clients consume the physical active-scope manifest.
 
 This is intentionally an idempotent source transformation used only by the repair
-campaign branch. The global 96-provider manifest remains unchanged.
+campaign branch. The recoverable catalogue remains unchanged.
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ TARGET_ANCHOR = 'TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"'
 TARGET_BLOCK = '''TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
 if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO}/manifest-hub46.json" ]]; then
   TARGET_MANIFEST="manifest-hub46.json"
-  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=$TARGET_MANIFEST providers=46 authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
+  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=$TARGET_MANIFEST providers=active-scope authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
 fi'''
 
 LEGACY_DURATION = '''  EXPECTED_MINUTES="$(python3 - "$fixture" "$NIAKVIO/.github/triggers/nuvio-client-lab.json" <<'PY'
@@ -44,7 +44,7 @@ if [[ -n "${NIAKVIO_PROVIDER_SCOPE_MATRIX:-}" && -f "${NIAKVIO_ROOT}/manifest-hu
   SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
   SOURCE_SHA="${GITHUB_SHA:-$(git -C "$NIAKVIO_ROOT" rev-parse HEAD)}"
   MANIFEST_URL="https://raw.githubusercontent.com/${SOURCE_REPOSITORY}/${SOURCE_SHA}/manifest-hub46.json"
-  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=manifest-hub46.json providers=46 authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
+  echo "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=manifest-hub46.json providers=active-scope authority=${NIAKVIO_PROVIDER_SCOPE_MATRIX}"
 fi'''
 
 
@@ -64,7 +64,7 @@ def patch_target_manifest(name: str) -> None:
         text,
         TARGET_ANCHOR,
         TARGET_BLOCK,
-        "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=$TARGET_MANIFEST providers=46",
+        "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=$TARGET_MANIFEST providers=active-scope",
         name,
     )
     path.write_text(text, encoding="utf-8")
@@ -90,7 +90,7 @@ def patch_ios() -> None:
         text,
         IOS_ANCHOR,
         IOS_BLOCK,
-        "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=manifest-hub46.json providers=46",
+        "FIELD_NATIVE_PHYSICAL_PROVIDER_SCOPE manifest=manifest-hub46.json providers=active-scope",
         "iOS",
     )
     path.write_text(text, encoding="utf-8")
@@ -105,7 +105,7 @@ def main() -> int:
         patch_target_manifest(name)
     patch_desktop_duration()
     patch_ios()
-    print("FIELD_HUB46_NATIVE_SCOPE_APPLIED clients=desktop,mobile,tv,ios providers=46")
+    print("FIELD_HUB46_NATIVE_SCOPE_APPLIED clients=desktop,mobile,tv,ios providers=active-scope")
     return 0
 
 

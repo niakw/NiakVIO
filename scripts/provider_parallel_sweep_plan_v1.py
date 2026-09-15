@@ -2,7 +2,7 @@
 """Plan deterministic parallel Provider sweeps without conflating tested and green.
 
 Selection authority:
-- manifest.json defines the complete 96-provider catalogue;
+- manifest.json defines the current 46-row recoverable catalogue and enabled executable subset;
 - provider-repair-skip.json contains only already accepted green providers;
 - provider-sweep-recent-v1.json prevents immediate duplicate automatic work but
   does not declare anything healthy;
@@ -57,10 +57,14 @@ def unique(values: list[str]) -> list[str]:
 
 def catalogue() -> list[str]:
     manifest = load(MANIFEST)
-    ids = [cid(row.get("id")) for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]
+    rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]
+    ids = [cid(row.get("id")) for row in rows]
     if len(ids) != EXPECTED or len(set(ids)) != EXPECTED:
         raise SystemExit(f"provider catalogue must be exactly {EXPECTED} unique ids, got {len(ids)}/{len(set(ids))}")
-    return ids
+    active = [cid(row.get("id")) for row in rows if row.get("enabled") is True]
+    if not active:
+        raise SystemExit("provider executable scope is empty")
+    return active
 
 
 def plan(limit: int, batch_size: int) -> dict[str, Any]:
@@ -133,7 +137,7 @@ def main() -> int:
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--matrix-only", action="store_true")
     args = parser.parse_args()
-    limit = max(1, min(int(args.limit), EXPECTED))
+    limit = max(1, int(args.limit))
     batch_size = max(1, min(int(args.batch_size), 12))
     value = plan(limit, batch_size)
     if args.matrix_only:

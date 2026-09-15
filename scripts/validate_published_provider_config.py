@@ -55,7 +55,7 @@ def validate_manifest(path: Path, expected: int) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", type=Path, default=ROOT / "manifest.json")
-    parser.add_argument("--expected", type=int, default=96)
+    parser.add_argument("--expected", type=int, default=46)
     args = parser.parse_args()
     validate_manifest(args.manifest.resolve(), args.expected)
     return 0

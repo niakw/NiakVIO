@@ -3,10 +3,10 @@
 
 This is deliberately NOT a publication gate. It executes the same proof-first
 migrations and target recovery/yield checks as the canonical V6 pipeline, but it
-materializes only explicitly requested providers and skips the full 96-provider
+materializes only explicitly requested providers and skips the full current-provider
 portfolio baseline/rematerialization.
 
-Failed experiments stop before the expensive 96-provider output guard. A target
+Failed experiments stop before the expensive full-provider output guard. A target
 candidate must first prove an actual targeted yield gain. The canonical full
 portfolio gate remains mandatory before promotion/publication.
 """
@@ -29,6 +29,7 @@ TARGET_REPORT = ROOT / "automation" / "provider-repair-fast-targeted.json"
 MERGED_REPORT = ROOT / "automation" / "provider-repair-fast-merged.json"
 YIELD_REPORT = ROOT / "automation" / "provider-repair-fast-yield.json"
 SUMMARY = ROOT / "automation" / "provider-repair-fast-summary.json"
+HUB_MATRIX = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -186,14 +187,21 @@ def main() -> int:
     parser.add_argument(
         "--defer-global-guard",
         action="store_true",
-        help="Defer the repeated 96-provider non-network guard to the consolidated candidate gate.",
+        help="Defer the repeated full-provider non-network guard to the consolidated candidate gate.",
     )
     args = parser.parse_args()
 
     manifest = load(MANIFEST)
-    catalogue = [cid(row.get("id")) for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]
-    if len(catalogue) != 96 or len(set(catalogue)) != 96:
-        raise SystemExit(f"provider catalogue must be exactly 96, got {len(catalogue)}")
+    catalogue_rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]
+    catalogue = [cid(row.get("id")) for row in catalogue_rows]
+    if len(catalogue) != 46 or len(set(catalogue)) != 46:
+        raise SystemExit(f"provider catalogue must be exactly 46 unique ids, got {len(catalogue)}/{len(set(catalogue))}")
+    matrix = load(HUB_MATRIX)
+    active = {cid(row.get("manifestId") or row.get("provider")) for row in matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId") or row.get("provider"))}
+    declared_active = int(matrix.get("hubCount") or 0)
+    manifest_active = {cid(row.get("id")) for row in catalogue_rows if row.get("enabled") is True}
+    if declared_active <= 0 or len(active) != declared_active or active != manifest_active:
+        raise SystemExit(f"active provider matrix mismatch: declared={declared_active} matrix={len(active)} manifest={len(manifest_active)}")
 
     skip_path = args.skip_file if args.skip_file.is_absolute() else ROOT / args.skip_file
     skip_cfg = load(skip_path)
@@ -206,6 +214,9 @@ def main() -> int:
     unknown = [value for value in requested if value not in catalogue]
     if unknown:
         raise SystemExit("unknown providers: " + ",".join(unknown))
+    disabled = [value for value in requested if value not in active]
+    if disabled:
+        raise SystemExit("requested providers are explicitly OFF/disabled: " + ",".join(disabled))
     targets = [value for value in requested if value not in skipped]
     if not targets:
         raise SystemExit("all requested providers are already in skip/green set")
@@ -213,7 +224,7 @@ def main() -> int:
     attempts = max(1, min(int(args.attempts), 4))
     print(
         "FIELD_PROVIDER_FAST_SCOPE "
-        f"catalogue=96 targeted={len(targets)} skipped_green={len(skipped)} "
+        f"catalogue={len(catalogue)} active={len(active)} targeted={len(targets)} skipped_green={len(skipped)} "
         f"attempts={attempts} defer_global_guard={str(args.defer_global_guard).lower()} "
         f"providers={','.join(targets)}",
         flush=True,
@@ -297,7 +308,7 @@ def main() -> int:
     for provider in targets:
         run(sys.executable, "scripts/materialize_provider_v3_one.py", provider)
 
-    run(sys.executable, "scripts/validate_published_provider_config.py", "--expected", "96")
+    run(sys.executable, "scripts/validate_published_provider_config.py", "--expected", str(len(catalogue)))
     for test in (
         "tests/episodic_identity_runtime_test.py",
         "tests/episodic_year_identity_regression_test.py",

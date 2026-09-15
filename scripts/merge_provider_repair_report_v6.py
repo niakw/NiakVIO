@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Merge targeted route proof with the 96-provider baseline and exact-source LKG.
+"""Merge targeted route proof with the historical baseline and exact-source LKG.
 
 Already-green providers are deliberately not re-probed. Their baseline rows are
 carried forward. Targeted providers use current proof first, augmented only by
@@ -91,11 +91,23 @@ def main() -> int:
     parser.add_argument("--lkg", type=Path, default=Path("automation/provider-route-proof-lkg.json"))
     parser.add_argument("--seed", type=Path, default=Path("automation/provider-route-proof-seed-v1.json"))
     parser.add_argument("--output", type=Path, default=Path("automation/provider-route-recovery-v6.json"))
+    parser.add_argument("--manifest", type=Path, default=Path("manifest.json"))
     args = parser.parse_args()
     baseline = load(ROOT / args.baseline)
     targeted = load(ROOT / args.targeted)
-    if int(baseline.get("providerCount") or 0) != 96 or len(baseline.get("providers") or []) != 96:
-        raise SystemExit("baseline route proof must contain 96 providers")
+    manifest = load(ROOT / args.manifest)
+    catalogue_ids = [
+        str(row.get("id") or "").strip().casefold().replace("_", "-")
+        for row in manifest.get("scrapers") or []
+        if isinstance(row, dict) and str(row.get("id") or "").strip()
+    ]
+    if len(catalogue_ids) != 46 or len(set(catalogue_ids)) != 46:
+        raise SystemExit(f"current provider catalogue must contain 46 unique ids, got {len(catalogue_ids)}/{len(set(catalogue_ids))}")
+    catalogue_set = set(catalogue_ids)
+    baseline_rows = [row for row in baseline.get("providers") or [] if isinstance(row, dict) and pid(row) in catalogue_set]
+    missing_baseline = sorted(catalogue_set - {pid(row) for row in baseline_rows})
+    if missing_baseline:
+        raise SystemExit("historical baseline missing current providers: " + ",".join(missing_baseline))
 
     lkg_path = ROOT / args.lkg
     lkg = route_lkg.load(lkg_path, missing_ok=True)
@@ -109,9 +121,12 @@ def main() -> int:
     route_lkg.write(lkg_path, lkg)
     lkg_providers = lkg.get("providers") if isinstance(lkg.get("providers"), dict) else {}
 
-    rows = {pid(row): row for row in baseline.get("providers") or [] if isinstance(row, dict) and pid(row)}
+    rows = {pid(row): row for row in baseline_rows if pid(row)}
     targeted_rows = [row for row in targeted.get("providers") or [] if isinstance(row, dict) and pid(row)]
     targeted_ids = {pid(row) for row in targeted_rows}
+    outside = sorted(targeted_ids - catalogue_set)
+    if outside:
+        raise SystemExit("targeted report contains providers outside current catalogue: " + ",".join(outside))
     lkg_retained_rows = 0
     lkg_augmented_providers: list[str] = []
     for row in targeted_rows:
@@ -121,8 +136,8 @@ def main() -> int:
         if retained > 0:
             lkg_retained_rows += retained
             lkg_augmented_providers.append(key)
-    if len(rows) != 46:
-        raise SystemExit(f"merged provider rows={len(rows)}, expected=46")
+    if len(rows) != len(catalogue_ids):
+        raise SystemExit(f"merged provider rows={len(rows)}, expected={len(catalogue_ids)}")
 
     merged_rows = []
     typed_recipe_sanitized = []
@@ -136,8 +151,8 @@ def main() -> int:
     proven = [row for row in merged_rows if row.get("routes")]
     merged = dict(baseline)
     merged.update({
-        "providerCount": 46,
-        "catalogueProviderCount": 46,
+        "providerCount": len(catalogue_ids),
+        "catalogueProviderCount": len(catalogue_ids),
         "providersWithProvenRoutes": len(proven),
         "provenRouteCount": sum(len(row.get("routes") or []) for row in merged_rows),
         "simpleApiRecipeCount": sum(1 for row in merged_rows if isinstance(row.get("apiRecipe"), dict)),
@@ -147,7 +162,7 @@ def main() -> int:
             "version": 9,
             "targetedProviderCount": len(targeted_ids),
             "targetedProviders": sorted(targeted_ids),
-            "preservedProviderCount": 96 - len(targeted_ids),
+            "preservedProviderCount": len(catalogue_ids) - len(targeted_ids),
             "preservedProvidersNotReprobed": sorted(set(rows) - targeted_ids),
             "targetedDurationMs": int(targeted.get("durationMs") or 0),
             "proofMethod": targeted.get("method"),
@@ -165,7 +180,7 @@ def main() -> int:
     out.write_text(json.dumps(merged, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         "PROVIDER_REPAIR_REPORT_V6_MERGED "
-        f"targeted={len(targeted_ids)} preserved={96-len(targeted_ids)} "
+        f"targeted={len(targeted_ids)} preserved={len(catalogue_ids)-len(targeted_ids)} "
         f"proven={merged['providersWithProvenRoutes']} routes={merged['provenRouteCount']} "
         f"recipes={merged['simpleApiRecipeCount']} typed_direct_sanitized={len(typed_recipe_sanitized)} "
         f"route_bootstrap={seed_stats.get('updatedProviders', 0)} "

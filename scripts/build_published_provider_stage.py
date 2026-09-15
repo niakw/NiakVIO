@@ -13,8 +13,8 @@ def main()->int:
     args=p.parse_args()
     manifest=json.loads(args.manifest.read_text(encoding="utf-8"))
     rows=[r for r in manifest.get("scrapers") or [] if isinstance(r,dict) and r.get("id") and r.get("filename")]
-    if len(rows)!=96:
-        raise SystemExit(f"published Provider v3 stage requires 96 rows, got {len(rows)}")
+    if len(rows)!=46:
+        raise SystemExit(f"published Provider v3 stage requires current 46-row census, got {len(rows)}")
     if args.stage.exists():
         shutil.rmtree(args.stage)
     (args.stage/"providers").mkdir(parents=True,exist_ok=True)

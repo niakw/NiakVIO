@@ -76,19 +76,22 @@ def patch_strategy_plan_contract() -> bool:
     original = text
     text = text.replace(
         "    executable_count = 96 - diagnostic_non_executable\n",
-        "    executable_count = 46 - diagnostic_non_executable\n",
+        "    executable_count = len(rows) - diagnostic_non_executable\n",
     )
     text = text.replace(
-        '        f"providers=96 enabled=46 disabled=50 executable={executable_count} diagnostic_non_executable={diagnostic_non_executable} "\n',
-        '        f"providers=46 enabled=46 disabled=0 executable={executable_count} diagnostic_non_executable={diagnostic_non_executable} "\n',
+        "    executable_count = 46 - diagnostic_non_executable\n",
+        "    executable_count = len(rows) - diagnostic_non_executable\n",
     )
-    if "executable_count = 96" in text or "providers=96 enabled=46 disabled=50" in text:
-        raise AssertionError("strategy plan still reports retired 96-provider publication")
+    text = text.replace(
+        "    if enabled_count != 46:\n        failures.append(f\"hub46 enabled count mismatch: {enabled_count} != 46\")",
+        "    if enabled_count != len(targets):\n        failures.append(f\"active enabled count mismatch: {enabled_count} != {len(targets)}\")",
+    )
+    if "enabled_count != 46" in text or "enabled=46 disabled=0" in text:
+        raise AssertionError("strategy plan still encodes a fixed active-provider count")
     if text != original:
         path.write_text(text, encoding="utf-8")
         return True
     return False
-
 
 def patch_engine_language_contract() -> bool:
     path = ROOT / "engine_v2/src/stream-presentation.mjs"

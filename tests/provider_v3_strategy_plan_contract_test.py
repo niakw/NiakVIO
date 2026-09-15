@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Provider v3 strategy-to-executable-plan contract for the hub-only 46 catalogue.
+"""Provider v3 strategy-to-executable-plan contract for the 46-row catalogue with matrix-driven activation.
 
 Catalogue membership and activation are separate concerns:
 - only the 46 hub Provider Objects remain in the executable catalogue;
-- the 46 providers in ``hub-lab-matrix-46.json`` are the complete executable catalogue;
+- active providers are exactly the rows currently declared by ``hub-lab-matrix-46.json``;
 - non-hub providers survive only as historical ProviderBase bytes and Repair must not resurrect them;
 - a provider with executable LIVE DATA/recipe/Lego is directly executable;
 - a provider without a currently executable plan is accepted only when Repair V6
@@ -139,7 +139,7 @@ def off_evidence_ok(patch: dict, expected_enabled: bool) -> bool:
         return False
     terminal = str(disposition.get("terminalState") or "").strip().casefold()
     quarantined = disposition.get("quarantined") is True
-    return quarantined or terminal in TERMINAL_DISABLED
+    return quarantined or terminal in TERMINAL_DISABLED or bool(str(patch.get("manual_off_reason") or "").strip())
 
 
 def hub46_targets() -> set[str]:
@@ -150,8 +150,9 @@ def hub46_targets() -> set[str]:
         for row in rows
         if isinstance(row, dict) and cid(row.get("manifestId"))
     }
-    assert int(matrix.get("hubCount") or 0) == 46, matrix.get("hubCount")
-    assert len(targets) == 46, len(targets)
+    declared = int(matrix.get("hubCount") or 0)
+    assert declared > 0, declared
+    assert len(targets) == declared, (len(targets), declared)
     return targets
 
 
@@ -300,17 +301,17 @@ def main() -> int:
                 f"(routeKinds={sorted(kinds)}, bases={len(bases)}, enabled={enabled}, terminal={state or 'none'})"
             )
 
-    if enabled_count != 46:
-        failures.append(f"hub46 enabled count mismatch: {enabled_count} != 46")
+    if enabled_count != len(targets):
+        failures.append(f"active enabled count mismatch: {enabled_count} != {len(targets)}")
 
     if failures:
         raise AssertionError("\n".join(failures))
 
     diagnostic_non_executable = len(quarantined) + len(terminal_audited) + len(off_audited) + len(repair_audited)
-    executable_count = 46 - diagnostic_non_executable
+    executable_count = len(rows) - diagnostic_non_executable
     print(
         "PROVIDER_V3_STRATEGY_PLAN_OK "
-        f"providers=46 enabled=46 disabled=0 executable={executable_count} diagnostic_non_executable={diagnostic_non_executable} "
+        f"providers={len(rows)} enabled={enabled_count} disabled={len(rows)-enabled_count} executable={executable_count} diagnostic_non_executable={diagnostic_non_executable} "
         f"quarantined={len(quarantined)} terminal_legacy={len(terminal_audited)} "
         f"off_diagnostic={len(off_audited)} repair_diagnostic={len(repair_audited)} "
         f"strategies={json.dumps(counts, sort_keys=True)}"

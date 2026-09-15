@@ -143,7 +143,7 @@ def explicit_quarantine(patch: dict[str, Any], model: dict[str, Any]) -> bool:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Finalize Provider v3 repair diagnostics with 46-hub targeted activation")
+    parser = argparse.ArgumentParser(description="Finalize Provider v3 repair diagnostics with matrix-targeted activation")
     parser.add_argument("--manifest", type=Path, default=MANIFEST)
     parser.add_argument("--overrides", type=Path, default=OVERRIDES)
     parser.add_argument("--knowledge", type=Path, default=KNOWLEDGE)
@@ -163,7 +163,7 @@ def main() -> int:
     hub_matrix = load(args.hub_matrix)
     target_hubs = {cid(row.get("manifestId")) for row in hub_matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId"))}
     if int(hub_matrix.get("hubCount") or 0) <= 0 or len(target_hubs) != int(hub_matrix.get("hubCount") or 0):
-        raise SystemExit(f"expected exact 46-hub activation matrix, got count={hub_matrix.get('hubCount')} ids={len(target_hubs)}")
+        raise SystemExit(f"active hub matrix mismatch: count={hub_matrix.get('hubCount')} ids={len(target_hubs)}")
 
     rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
     if len(rows) != EXPECTED:
@@ -213,7 +213,13 @@ def main() -> int:
         terminal = terminal_state(patch, model)
         quarantined = explicit_quarantine(patch, model)
 
-        if complete and not quarantined:
+        manual_off_reason = str(patch.get("manual_off_reason") or "").strip()
+        manual_off = bool(manual_off_reason)
+        if manual_off:
+            route_state = "off"
+            reason_codes = [manual_off_reason]
+            complete = False
+        elif complete and not quarantined:
             route_state = "on"
             reason_codes = ["all_declared_lanes_live_proven"]
         else:
@@ -302,7 +308,7 @@ def main() -> int:
             "activationFollowsRepairState": False,
             "activationFollowsDeclaredHub": False,
             "activationAuthority": "automation/evidence/hub-lab-matrix-46.json:rows[].manifestId",
-            "targetHubProviderCount": 46,
+            "targetHubProviderCount": len(target_hubs),
             "nonTargetProviderState": "disabled",
             "registryOnlyTargetMayRemainEnabled": True,
             "terminalOrQuarantinedState": "off",
@@ -328,7 +334,7 @@ def main() -> int:
         "PROVIDER_REPAIR_DISPOSITION_V1 "
         f"providers={EXPECTED} enabled={enabled_count} disabled={EXPECTED-enabled_count} "
         f"on={counts['on']} repair={counts['repair']} off={counts['off']} "
-        f"diagnostic_incomplete={len(incomplete)} activation=hub_matrix_46"
+        f"diagnostic_incomplete={len(incomplete)} activation=hub_matrix_active count={len(target_hubs)}"
     )
     return 0
 
