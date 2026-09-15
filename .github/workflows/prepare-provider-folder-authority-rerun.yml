@@ -1,0 +1,41 @@
+name: SHORT - Prepare provider-folder authority rerun
+on:
+  push:
+    branches: [fix/active44-durability-20260915]
+    paths: ['.github/workflows/prepare-provider-folder-authority-rerun.yml']
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/active44-durability-20260915
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Align remaining strategy authority contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('tests/provider_v3_strategy_plan_contract_test.py')
+          t=p.read_text(encoding='utf-8')
+          old='disposition.get("activationAuthority") == "hub-lab-matrix-46"'
+          new='disposition.get("activationAuthority") == "provider-folder-lifecycle"'
+          if old not in t:
+              raise SystemExit('strategy authority anchor missing')
+          t=t.replace(old,new,1)
+          t=t.replace('matching hub46 activation','matching provider-folder activation')
+          t=t.replace('no audited hub46-aligned repair/off disposition','no audited provider-folder-aligned repair/off disposition')
+          p.write_text(t,encoding='utf-8')
+          PY
+          python -m py_compile tests/provider_v3_strategy_plan_contract_test.py
+          git diff --check
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tests/provider_v3_strategy_plan_contract_test.py
+          git commit -m 'test: align strategy plan with provider-folder authority'
+          git push origin HEAD:fix/active44-durability-20260915
