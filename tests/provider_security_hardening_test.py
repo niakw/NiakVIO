@@ -161,6 +161,7 @@ js_ok(rehardened)
 
 core_tail = '''/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */
  /* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */
+ /* FIXDATA:CORE.HLS_RUNTIME_INTEGRITY.V1:e30= */
 function coreHlsLog(v){console.warn("trusted-core-hls",v)}
  /* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */
 '''
