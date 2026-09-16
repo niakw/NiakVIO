@@ -90,11 +90,13 @@ const vfPlusVost = presentStreamCandidate({
   name: "Purstream",
   url: "https://media.example/vf-vost.m3u8",
   language: "VF",
-  description: "VOSTFR available",
+  subtitles: [{ language: "VOSTFR" }],
 }, { title: "Film", year: 2026, mediaType: "movie" }, vfProvider);
-assert.equal(vfPlusVost.language, "MULTI (VF/VO)");
-assert.match(vfPlusVost.description, /🇫🇷 MULTI \(VF\/VO\)/);
-assert.doesNotMatch(vfPlusVost.description, /VOSTFR available/);
+assert.equal(vfPlusVost.language, "VF");
+assert.match(vfPlusVost.description, /🇫🇷 VF/);
+assert.ok(vfPlusVost.badgeIds.includes("vf"));
+assert.ok(vfPlusVost.badgeIds.includes("vostfr"));
+assert.ok(!vfPlusVost.badgeIds.includes("multi"));
 
 const series = presentStreamCandidate({
   name: "Purstream",
