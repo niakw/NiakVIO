@@ -71,7 +71,7 @@ WRAPPER = r'''
           try{
             var rr=await _fetch(BASE+"/ajax/server?get="+encodeURIComponent(ids[ii]),{headers:headers(watch,true)}),rv=await rr.json();
             var u=rv&&rv.result&&typeof rv.result.url==="string"?rv.result.url:"";if(!/^https?:\/\//i.test(u))continue;
-            streams.push({name:NIAKVIO_PROVIDER_MODEL.displayName,title:NIAKVIO_PROVIDER_MODEL.displayName+(streams.length?" #"+(streams.length+1):""),url:u,headers:{Referer:watch,Origin:BASE}});
+            streams.push({name:NIAKVIO_PROVIDER_MODEL.displayName,title:NIAKVIO_PROVIDER_MODEL.displayName+(streams.length?" #"+(streams.length+1):""),url:u,headers:{Referer:watch,Origin:BASE},__nuvioCorrelatedPlayerFallbackV1:{url:u}});
           }catch(_e){}
         }
         if(streams.length)return streams;

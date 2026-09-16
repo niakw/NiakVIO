@@ -27,7 +27,7 @@ WRAPPER = r'''
         var src=value&&typeof value.src==="string"?value.src:"";if(!/^https?:\/\//i.test(src))return [];
         var check=await _fetch(src,{headers:{Referer:REFERER}}),ct=String(check.headers&&check.headers.get?check.headers.get("content-type")||"":"").toLowerCase();
         if(ct&&ct.indexOf("text/html")<0)return [];
-        return [{name:NIAKVIO_PROVIDER_MODEL.displayName,title:NIAKVIO_PROVIDER_MODEL.displayName,url:src,headers:{Referer:REFERER}}];
+        return [{name:NIAKVIO_PROVIDER_MODEL.displayName,title:NIAKVIO_PROVIDER_MODEL.displayName,url:src,headers:{Referer:REFERER},__nuvioCorrelatedPlayerFallbackV1:{url:src}}];
       }catch(_e){return []}
     }
     var wrapped=async function(tmdbId,mediaType,season,episode){try{var rows=await current(tmdbId,mediaType,season,episode);if(rows.length)return rows}catch(_e){}try{return await original(tmdbId,mediaType,season,episode)}catch(_e){return []}};

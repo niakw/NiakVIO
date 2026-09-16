@@ -68,7 +68,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "timeoutMs": max(2500, min(int(cfg.get("timeout_ms", 6500)), 12000)),
         "preserveOriginal": bool(cfg.get("preserve_original", True)),
         "defaultUserAgent": str(cfg.get("default_user_agent") or "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"),
-        "implementationRevision": "scoped-playback-context-v9-browser-default-ua",
+        "implementationRevision": "scoped-playback-context-v10-correlated-player-survival",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -179,7 +179,18 @@ function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="o
 function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
 function clone(row,media){var out=Object.assign({},normalizeRow(row),{url:media.url,headers:media.headers||baseHeaders(row),isDirect:true,type:media.kind,__nuvioCoreMediaProofV1:{url:media.url,kind:media.kind}});if(media.kind==="hls"&&"format" in out)out.format="m3u8";if(media.kind==="dash"&&"format" in out)out.format="mpd";return out}
 function refererOf(row,u){var h=baseHeaders(row),k=keyOf(h,"Referer");return s(k?h[k]:(row&&(row.referer||row.referrer||row.playerUrl||row.embedUrl||row.pageUrl))||u)}
-async function enrich(list){if(providerDeadlineExpired())return[];var out=[],seen={};function add(row){row=normalizeRow(row);var u=urlOf(row);if(!u||seen[u])return;seen[u]=1;out.push(row)}for(var i=0;i<list.length;i++){var row=list[i];if(!row||typeof row!=="object")continue;var u=urlOf(row);if(!u||rejected(u))continue;if(declaredDirect(row,u)){add(row);continue}if(i<c.maxRows){var ref=refererOf(row,u),jar=[],found=await resolve(u,row,ref,0,{},jar);for(var j=0;j<found.length;j++)add(clone(row,found[j]));if(found.length)continue}/* Unresolved player/download pages are not playable streams. */}return out}
+function correlatedPlayerFallback(row,u){
+  if(!row||typeof row!=="object"||!/^https?:\/\//i.test(s(u)))return false;
+  var proof=row.__nuvioCorrelatedPlayerFallbackV1;
+  if(!proof||typeof proof!=="object"||s(proof.url)!==s(u))return false;
+  try{
+    var parsed=new URL(s(u)),path=s(parsed.pathname).toLowerCase();
+    if(/\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path))return true;
+    if(/\/(?:shell|video|stream)(?:\.php|[/?#.-]|$)/i.test(path))return true;
+  }catch(_e){}
+  return false;
+}
+async function enrich(list){if(providerDeadlineExpired())return[];var out=[],seen={};function add(row){row=normalizeRow(row);var u=urlOf(row);if(!u||seen[u])return;seen[u]=1;out.push(row)}for(var i=0;i<list.length;i++){var row=list[i];if(!row||typeof row!=="object")continue;var u=urlOf(row);if(!u||rejected(u))continue;if(declaredDirect(row,u)){add(row);continue}if(i<c.maxRows){var ref=refererOf(row,u),jar=[],found=await resolve(u,row,ref,0,{},jar);for(var j=0;j<found.length;j++)add(clone(row,found[j]));if(found.length)continue;if(c.preserveOriginal&&correlatedPlayerFallback(row,u)){add(row);continue}}/* Unresolved uncorrelated player/download pages are not playable streams. */}return out}
 function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalMediaEnrichmentV1)return false;var native=o[k];var wrap=async function(){var v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;var list=await enrich(x.list);return rebuild(v,x,list)};wrap.__nuvioGlobalMediaEnrichmentV1=true;o[k]=wrap;return true}
 var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);

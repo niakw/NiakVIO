@@ -61,7 +61,7 @@ WRAPPER = r'''
           var dr=await _fetch(candidates[i].url,{headers:headers(search)}),detailUrl=dr.url||candidates[i].url,dh=await dr.text();
           var epUrl=episodeUrl(dh,detailUrl,ep);if(!epUrl)continue;
           var er=await _fetch(epUrl,{headers:headers(detailUrl)}),finalEp=er.url||epUrl,eh=await er.text(),rows=embeds(eh,finalEp);
-          if(rows.length){var name=NIAKVIO_PROVIDER_MODEL.displayName;return rows.slice(0,8).map(function(u,index){return {name:name,title:name+(index?" #"+(index+1):""),url:u,headers:{Referer:finalEp}}});}
+          if(rows.length){var name=NIAKVIO_PROVIDER_MODEL.displayName;return rows.slice(0,8).map(function(u,index){return {name:name,title:name+(index?" #"+(index+1):""),url:u,headers:{Referer:finalEp},__nuvioCorrelatedPlayerFallbackV1:{url:u}}});}
         }catch(_e){}
       }
       return [];

@@ -73,7 +73,7 @@ WRAPPER = r'''
         if(!playerRows.length)return [];
         var name=NIAKVIO_PROVIDER_MODEL&&NIAKVIO_PROVIDER_MODEL.displayName?NIAKVIO_PROVIDER_MODEL.displayName:"Wookafr";
         return playerRows.slice(0,6).map(function(row,index){
-          return {name:name,title:name+(index?" #"+(index+1):""),url:row.url,headers:row.referer?{Referer:row.referer}:undefined};
+          return {name:name,title:name+(index?" #"+(index+1):""),url:row.url,headers:row.referer?{Referer:row.referer}:undefined,__nuvioCorrelatedPlayerFallbackV1:{url:row.url}};
         });
       };
       wrappedGetStreams.__niakvioWookaEmbedFallbackV1=true;

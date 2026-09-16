@@ -53,7 +53,7 @@ WRAPPER = r'''
             if(mm){var slice=target.text.slice(Math.max(0,mm.index-2500),Math.min(target.text.length,mm.index+10000));found=embeds(slice,target.url);}
           }
         }else found=embeds(detail.text,detail.url);
-        if(found.length){var ref=target.url;return found.slice(0,8).map(function(u,index){return {name:NIAKVIO_PROVIDER_MODEL.displayName,title:NIAKVIO_PROVIDER_MODEL.displayName+(index?" #"+(index+1):""),url:u,headers:{Referer:ref,Origin:BASE}}});}
+        if(found.length){var ref=target.url;return found.slice(0,8).map(function(u,index){return {name:NIAKVIO_PROVIDER_MODEL.displayName,title:NIAKVIO_PROVIDER_MODEL.displayName+(index?" #"+(index+1):""),url:u,headers:{Referer:ref,Origin:BASE},__nuvioCorrelatedPlayerFallbackV1:{url:u}}});}
       }
       return [];
     }
