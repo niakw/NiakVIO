@@ -27,13 +27,55 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: '24', package-manager-cache: false}
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Materialize and prove Thor
+      - name: Materialize and inspect fresh Livavid resolver output
         shell: bash
         run: |
           set -euo pipefail
           python3 -m py_compile scripts/provider_patches/coflix_livavid_origin_v2.py
           python3 scripts/register_non_display_recovery_v1.py
           python3 scripts/materialize_provider_v3_one.py coflix
+          PROVIDER="$(python3 - <<'PY'
+          import pathlib,sys
+          sys.path.insert(0,str(pathlib.Path('scripts').resolve()))
+          import run_provider_upstream_parity as p
+          print(p.local_catalog()['coflix']['path'])
+          PY
+          )"
+          export PROVIDER
+          node --input-type=commonjs <<'JS'
+          const path=require('node:path');
+          require(path.resolve(process.env.PROVIDER));
+          const resolver=globalThis.__niakvioProviderRuntimeResolverV1;
+          if(!resolver||resolver.provider!=='coflix'||typeof resolver.resolve!=='function')throw new Error('coflix resolver missing');
+          (async()=>{
+            const rows=await resolver.resolve([{tmdbId:'10195',mediaType:'movie',canonicalMediaType:'movie',title:'Thor',name:'Thor'}],{});
+            const safeHeaders=(h)=>Object.fromEntries(Object.entries(h||{}).map(([k,v])=>[k,/authorization|cookie/i.test(k)?'<redacted>':String(v)]));
+            const safeUrl=(raw)=>{try{const u=new URL(String(raw));return {host:u.hostname,path:u.pathname,queryKeys:[...u.searchParams.keys()].sort()}}catch{return {host:'',path:''}}};
+            console.log('COFLIX_UNSANITIZED_ROWS '+JSON.stringify({count:Array.isArray(rows)?rows.length:0,rows:(Array.isArray(rows)?rows:[]).map(r=>({url:safeUrl(r&&r.url),headers:safeHeaders(r&&r.headers)}))}));
+            for(const row of Array.isArray(rows)?rows.slice(0,2):[]){
+              if(!row||!/^https?:/.test(String(row.url||'')))continue;
+              const base=Object.assign({},row.headers||{});
+              const variants=[
+                ['stream-headers',base],
+                ['without-ua',Object.fromEntries(Object.entries(base).filter(([k])=>k.toLowerCase()!=='user-agent'))],
+                ['generic-ua',Object.assign({},base,{'User-Agent':'Mozilla/5.0'})],
+                ['provider-ua',Object.assign({},base,{'User-Agent':'Mozilla/5.0 NiakVIO/2'})],
+                ['provider-ua-range',Object.assign({},base,{'User-Agent':'Mozilla/5.0 NiakVIO/2','Range':'bytes=0-32767'})],
+              ];
+              for(const [name,headers] of variants){
+                try{
+                  const r=await fetch(row.url,{redirect:'follow',headers});
+                  const text=await r.text();
+                  console.log('COFLIX_SIGNED_CONTEXT '+JSON.stringify({variant:name,status:r.status,ok:r.ok,contentType:r.headers.get('content-type')||'',extm3u:/^\uFEFF?#EXTM3U/m.test(text),final:safeUrl(r.url)}));
+                }catch(e){console.log('COFLIX_SIGNED_CONTEXT '+JSON.stringify({variant:name,error:e&&e.name||'Error'}));}
+              }
+            }
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+      - name: Verify Thor through full Core boundary
+        shell: bash
+        run: |
+          set -euo pipefail
           python3 - <<'PY'
           import json,pathlib,sys
           root=pathlib.Path('.').resolve();sys.path.insert(0,str(root/'scripts'))
