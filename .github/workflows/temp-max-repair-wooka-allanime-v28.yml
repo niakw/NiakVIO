@@ -1,0 +1,129 @@
+name: TEMP - Max Repair Wooka AllAnime V28
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-max-repair-wooka-allanime-v28.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  repair-prove:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - name: Apply V11 player contract and Wooka current runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_correlated_path_player_v11.py
+          python3 scripts/upgrade_wookafr_current_runtime_v2.py
+          python3 -m py_compile \
+            scripts/provider_patches/stream_output_sanitizer_v11.py \
+            scripts/provider_patches/wookafr_current_runtime_v2.py \
+            scripts/upgrade_correlated_path_player_v11.py \
+            scripts/upgrade_wookafr_current_runtime_v2.py
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/validate_published_overrides.py
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/core_runtime_nonregression_contract_test.py
+      - name: Persist statically validated materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A -- scripts provider-overrides.json providers provider-bases sources.json manifest.json tests
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: materialize wooka and path-player residual repairs'
+            git pull --rebase origin fix/non-display-recovery-20260916
+            git push origin HEAD:fix/non-display-recovery-20260916
+          fi
+      - name: Probe repaired providers and regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/probe-v28.cjs <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const manifest=JSON.parse(fs.readFileSync('manifest.json','utf8')),out={};
+          function norm(v){return String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,'')}
+          function entry(pid){const rows=(manifest.scrapers||[]).filter(r=>norm(r&&r.id)===norm(pid));if(rows.length!==1)throw new Error(`manifest:${pid}:${rows.length}`);return rows[0]}
+          function file(pid){const r=entry(pid),f=path.resolve(String(r.filename||''));if(!fs.existsSync(f))throw new Error('missing:'+f);return f}
+          function metadata(s){return s.type==='movie'?{title:s.title,original_title:s.title,release_date:`${s.year}-01-01`,alternative_titles:{titles:[]}}:{name:s.title,original_name:s.title,first_air_date:`${s.year}-01-01`,alternative_titles:{results:[]}}}
+          async function run(label,s){
+            try{
+              const f=file(s.pid),ns=s.type==='movie'?'movie':'tv',m=metadata(s);
+              globalThis.__nuvioMediaContext={tmdbId:String(s.id),tmdbNamespace:ns,tmdbMetadata:m};
+              globalThis.__nuvioTmdbMetadataCacheV1={[`${ns}:${s.id}`]:m};
+              globalThis.__nuvioProviderDeadlineMs=Date.now()+33000;
+              delete require.cache[f];const mod=require(f);
+              const rows=await Promise.race([Promise.resolve(mod.getStreams(String(s.id),s.type,s.season,s.episode)),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),34000))]);
+              const list=Array.isArray(rows)?rows:[],privateProof=list.some(r=>!!(r&&(r.__nuvioCorrelatedPlayerFallbackV1||r.__nuvioCoreMediaProofV1)));
+              let pageOk=false,status=0,ctype='';
+              if(list[0]&&/^https?:\/\//i.test(String(list[0].url||''))){const c=new AbortController(),t=setTimeout(()=>c.abort(),12000);try{const r=await fetch(list[0].url,{headers:list[0].headers||{},redirect:'follow',signal:c.signal});status=r.status;ctype=r.headers.get('content-type')||'';const body=await r.text();pageOk=r.ok&&body.length>=20;console.log('PAGE',label,status,ctype,'bytes='+body.length,r.url)}catch(e){console.log('PAGE_ERROR',label,String(e&&e.message||e))}finally{clearTimeout(t)}}
+              out[label]={count:list.length,privateProof,pageOk,status,ctype,urls:list.slice(0,8).map(r=>String(r&&r.url||''))};
+              console.log('PROBE',label,JSON.stringify(out[label]),list.slice(0,8).map(r=>({title:r&&r.title,url:r&&r.url,type:r&&r.type})));
+            }catch(e){out[label]={count:0,privateProof:false,pageOk:false,error:String(e&&e.message||e),urls:[]};console.log('PROBE_ERROR',label,out[label].error)}
+          }
+          (async()=>{
+            const specs={
+              wooka_movie:{pid:'wookafr',id:'157336',type:'movie',title:'Interstellar',year:2014},
+              wooka_tv:{pid:'wookafr',id:'1396',type:'tv',title:'Breaking Bad',year:2008,season:1,episode:1},
+              allanime:{pid:'allanime',id:'37854',type:'anime',title:'One Piece',year:1999,season:1,episode:1178},
+              moviebox_movie:{pid:'moviebox',id:'157336',type:'movie',title:'Interstellar',year:2014},
+              moviebox_tv:{pid:'moviebox',id:'1396',type:'tv',title:'Breaking Bad',year:2008,season:1,episode:1},
+              vidlove_movie:{pid:'vidlove',id:'157336',type:'movie',title:'Interstellar',year:2014},
+              vidlove_tv:{pid:'vidlove',id:'1396',type:'tv',title:'Breaking Bad',year:2008,season:1,episode:1}
+            };
+            for(const [k,v] of Object.entries(specs))await run(k,v);
+            fs.writeFileSync('/tmp/probe-v28.json',JSON.stringify(out,null,2));
+            console.log('SUMMARY',JSON.stringify(out,null,2));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/probe-v28.cjs
+      - name: Positive and private-proof gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          r=json.load(open('/tmp/probe-v28.json'))
+          required=['wooka_movie','wooka_tv','allanime','moviebox_movie','moviebox_tv','vidlove_movie','vidlove_tv']
+          bad={k:r.get(k) for k in required if int((r.get(k) or {}).get('count') or 0)<1}
+          leaked={k:v for k,v in r.items() if v.get('privateProof')}
+          if bad: raise SystemExit('positive failures: '+repr(bad))
+          if leaked: raise SystemExit('private proof leak: '+repr(leaked))
+          print('MAX_REPAIR_V28_POSITIVE_OK',required)
+          PY
+      - name: Record V26-V28 evidence in MEMORY
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('MEMORY.md');t=p.read_text(encoding='utf-8');mark='<!-- MAX_REPAIR_20260916_V28_RESULT -->'
+          if mark not in t:
+            try:r=json.load(open('/tmp/probe-v28.json'))
+            except Exception:r={}
+            def f(k):
+              x=r.get(k) or {};return f"{k}: count={x.get('count','n/a')} pageOk={x.get('pageOk','n/a')} status={x.get('status','n/a')} error={x.get('error','')}"
+            sec=mark+'\n### V26-V28 residual repair evidence\n- V26 run `35158780319`: Wooka `/?s=Interstellar` -> exact detail 200 -> lecteurvideo 200 -> 9 `showVideo(base64)` players. AllAnime One Piece detail exposes episodes 1178..1170; episode 1178 -> MegaPlay `/stream/s-2/501939/sub` iframe 200. Coflix current obvious search routes return the same shell and no Interstellar/Breaking Bad result.\n- V27 run `35158978594`: Wooka TV search returns `/streaming/series/breaking-bad/`; detail exposes seasons 1-5 and exact episode URLs `/streaming/episodes/{slug}-saison-{season}-episode-{episode}/`.\n- V11 changes only exact correlated proof handling for bounded path-based `/stream/...` player routes; ordinary HTML remains fail-closed and private proof is cleared by outer Runtime Media Safety.\n- '+f('wooka_movie')+'\n- '+f('wooka_tv')+'\n- '+f('allanime')+'\n- '+f('moviebox_movie')+'\n- '+f('moviebox_tv')+'\n- '+f('vidlove_movie')+'\n- '+f('vidlove_tv')+'\n\n'
+            anchor='## 2026-09-16 — authoritative current checkpoint';t=t.replace(anchor,sec+anchor,1) if anchor in t else t.rstrip()+'\n\n'+sec;p.write_text(t,encoding='utf-8')
+          PY
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add MEMORY.md
+          if ! git diff --cached --quiet; then
+            git commit -m 'docs: record wooka allanime residual repair evidence'
+            git pull --rebase origin fix/non-display-recovery-20260916
+            git push origin HEAD:fix/non-display-recovery-20260916
+          fi
