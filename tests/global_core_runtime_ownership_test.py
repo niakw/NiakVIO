@@ -17,17 +17,19 @@ RUNTIME = (ROOT / "scripts/provider_patches/global_runtime_compat_v1.py").read_t
 DESKTOP = (ROOT / "scripts/provider_patches/desktop_runtime_compat_v1.py").read_text(encoding="utf-8")
 SANITIZER_BASE = (ROOT / "scripts/provider_patches/stream_output_sanitizer.py").read_text(encoding="utf-8")
 SANITIZER_V8 = (ROOT / "scripts/provider_patches/stream_output_sanitizer_v8.py").read_text(encoding="utf-8")
+SANITIZER_V9 = (ROOT / "scripts/provider_patches/stream_output_sanitizer_v9.py").read_text(encoding="utf-8")
+SANITIZER_V10 = (ROOT / "scripts/provider_patches/stream_output_sanitizer_v10.py").read_text(encoding="utf-8")
 
 CORE_RUNTIME = "scripts/provider_patches/global_runtime_compat_v1.py"
 CORE_DESKTOP = "scripts/provider_patches/desktop_runtime_compat_v1.py"
-CORE_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v8.py"
+CORE_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v10.py"
 CORE_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 
 # Architecture ownership: these are Core-managed bricks. Provider rows may pass
 # data/options but may never own/materialize them in provider patch_scripts.
 assert 'GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_v1.py"' in APPLY
 assert 'GLOBAL_DESKTOP_RUNTIME_COMPAT = "scripts/provider_patches/desktop_runtime_compat_v1.py"' in APPLY
-assert 'GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v8.py"' in APPLY
+assert 'GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v10.py"' in APPLY
 assert 'GLOBAL_RUNTIME_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"' in APPLY
 assert "provider_patches.{provider_id}.patch_scripts contains Core-global modules" in APPLY
 
@@ -52,6 +54,9 @@ assert 'forbidden = {"domain_replacements", "domain_failover"}' in DESKTOP
 assert 'status===403||status===404||status===410' in SANITIZER_BASE
 assert 'MANAGED_FIX_ID = "CORE.STREAM_SANITIZER.V6"' in SANITIZER_V8
 assert 'return verdict===true?clearPrivateProofs(item.stream):null;' in SANITIZER_V8
+assert 'NUVIO_STREAM_OUTPUT_FULL_MANIFEST_V9' in SANITIZER_V9
+assert 'NUVIO_STREAM_OUTPUT_CORRELATED_HANDOFF_V10' in SANITIZER_V10
+assert 'clearCoreProofOnly(item.stream)' in SANITIZER_V10
 for forbidden in ("streamflix", "movix", "vidrock", "cineby", "coflix"):
     assert forbidden not in SANITIZER_V8.casefold(), forbidden
 

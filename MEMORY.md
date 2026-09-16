@@ -45,6 +45,16 @@ This section supersedes older branch-topology assumptions below for the active r
 - Next repair target: identify why `CORE.MEDIA_ENRICHMENT.V1` / later playback layers fail to retain a row carrying exact `__nuvioCorrelatedPlayerFallbackV1` provenance. The exception must remain exact/proof-bound; never broadly allow arbitrary HTML/download pages.
 
 
+<!-- MAX_REPAIR_20260916_V23_RESULT -->
+### V23 exact Core provenance-loss root cause
+- Corrected trace run **35154947352**, job **104992064614**, succeeded.
+- MovieBox current runtime is not the zero source: `vidsrcme.ru/vs_src.php?type=movie&id=157336` returned **200 JSON**, and its `cloudorchestranova.com/embed/movie/...` player returned **200 HTML**.
+- `CORE.MEDIA_ENRICHMENT.V1` received the row with exact `__nuvioCorrelatedPlayerFallbackV1`, `preserveOriginal=true`, and logged **`correlated=true`**. The row correctly survived Media Enrichment.
+- Immediately before `CORE.RUNTIME_MEDIA_SAFETY.V4`, the same URL remained but the private proof had disappeared. Runtime Safety then correctly classified it `embed_page_url` and returned zero.
+- Root cause: global terminal sanitizer **V8** inherits V7 behavior `correlatedPlayerFallback(...) -> clearPrivateProofs(...)`. V7 deleted `__nuvioCorrelatedPlayerFallbackV1` before output, but Core was later reordered so Runtime Media Safety is now the outer final guard. The sanitizer destroys the proof one layer before its consumer.
+- Correct architecture: sanitizer may carry the private proof forward **only on its own exact correlated-player acceptance path**; all ordinary sanitizer paths still clear it. Outer Runtime Media Safety consumes exact proof and then clears all private proof fields before client output. Never whitelist generic HTML/embed URLs.
+- Effective V23 options: MovieBox Media Enrichment `preserve_original=True`; MovieBox safety `html_scraper + strict_playback=True`; Wooka/Flemmix `mixed_embed_resolver`; AllAnime `direct_media`; AllWish `html_scraper`.
+
 ## 2026-09-16 — authoritative current checkpoint
 
 - Current public release is **5.21.48**. `manifest.json`, VF/no-anime projections, package metadata and release hashes are on 5.21.48.

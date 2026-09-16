@@ -96,6 +96,14 @@ WRAPPER = r'''
     }catch(_e){}
     return false;
   }
+  /* NUVIO_RUNTIME_MEDIA_SAFETY_PRIVATE_PROOF_CLEANUP_V2 */
+  function clearPrivateProofs(row){
+    if(row&&typeof row==="object"){
+      try{delete row.__nuvioCorrelatedPlayerFallbackV1}catch(_e){}
+      try{delete row.__nuvioCoreMediaProofV1}catch(_e){}
+    }
+    return row;
+  }
   function staticSafety(row){
     if(!row||typeof row!=="object")return{keep:false,reason:"invalid_row"};
     var obvious=obviousNonMedia(row);
@@ -115,7 +123,7 @@ WRAPPER = r'''
   async function expectedSeconds(q){var tmdbKey=s(g&&g.TMDB_API_KEY);if(!c.durationIdentity||!q||!tmdbKey||!/^\d+$/.test(q.tmdbId||""))return null;var kind=(q.mediaType==="tv"||q.mediaType==="anime"||q.mediaType==="series")?"tv":"movie",url;if(kind==="tv"&&q.season>0&&q.episode>0)url="https://api.themoviedb.org/3/tv/"+encodeURIComponent(q.tmdbId)+"/season/"+q.season+"/episode/"+q.episode+"?api_key="+encodeURIComponent(tmdbKey);else url="https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(q.tmdbId)+"?api_key="+encodeURIComponent(tmdbKey);try{var r=await g.fetch(url,{headers:{Accept:"application/json"},signal:timeoutSignal(c.tmdbTimeoutMs)});if(!r||!r.ok)return null;var d=await r.json(),minutes=Number(d&&d.runtime||0);if(!minutes&&kind==="tv"&&Array.isArray(d&&d.episode_run_time)&&d.episode_run_time.length)minutes=Number(d.episode_run_time[0]||0);return minutes>=5?minutes*60:null}catch(_e){return null}}
   async function directPlayable(row,url){var r=await fetchText(url,row,true);if(r.state!=="ok")return r;if(/text\/html|application\/xhtml/i.test(r.contentType)||/^<!doctype html|^<html/i.test(r.text||""))return{state:"dead",reason:"html_payload"};return{state:"ok"}}
   async function remoteCheck(row,expected,tv){var kind=mediaKind(row),result;if(kind==="hls")result=await inspectHls(row,s(row.url));else if(kind==="direct")result=await directPlayable(row,s(row.url));else return{keep:true};if(result.state==="dead")return{keep:false,reason:result.reason||("http_"+result.status)};if(result.state==="unknown"){if(c.strictPlayback||tv)return{keep:false,reason:result.reason||"unverified_media"};return{keep:true}}if(kind==="hls"&&expected&&result.duration){var ratio=result.duration/expected;if(ratio<c.minDurationRatio||ratio>c.maxDurationRatio)return{keep:false,reason:"duration_identity_mismatch",ratio:ratio}}return{keep:true}}
-  function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioRuntimeCapabilitySafetyV4)return false;var native=o[k];var wrap=async function(){var q=requestInfo(arguments),invoke=invocationArgs(arguments,q),v=await native.apply(this,invoke),x=slot(v);if(!x||!x.list.length)return v;var tv=isTv(),nativeRuntime=nativeHost();var staticRows=x.list.filter(function(row){return staticSafety(row).keep});if(nativeRuntime)return rebuild(v,x,staticRows);var expected=await expectedSeconds(q),head=staticRows.slice(0,c.maxRows),tail=staticRows.slice(c.maxRows),checks=await Promise.all(head.map(function(row){return remoteCheck(row,expected,tv)})),kept=head.filter(function(_row,i){return checks[i]&&checks[i].keep}).concat(tail);return rebuild(v,x,kept)};wrap.__nuvioRuntimeCapabilitySafetyV4=true;o[k]=wrap;return true}
+  function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioRuntimeCapabilitySafetyV4)return false;var native=o[k];var wrap=async function(){var q=requestInfo(arguments),invoke=invocationArgs(arguments,q),v=await native.apply(this,invoke),x=slot(v);if(!x||!x.list.length)return v;var tv=isTv(),nativeRuntime=nativeHost();var staticRows=x.list.filter(function(row){return staticSafety(row).keep});if(nativeRuntime)return rebuild(v,x,staticRows.map(clearPrivateProofs));var expected=await expectedSeconds(q),head=staticRows.slice(0,c.maxRows),tail=staticRows.slice(c.maxRows),checks=await Promise.all(head.map(function(row){return remoteCheck(row,expected,tv)})),kept=head.filter(function(_row,i){return checks[i]&&checks[i].keep}).concat(tail);return rebuild(v,x,kept.map(clearPrivateProofs))};wrap.__nuvioRuntimeCapabilitySafetyV4=true;o[k]=wrap;return true}
   var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG);
 '''
