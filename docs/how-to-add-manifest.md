@@ -2,19 +2,23 @@
 
 [Français](fr/how-to-add-manifest.md) · [Back to README](../README.md)
 
-NiakVIO is installed in Nuvio as a **plugin repository manifest**.
+> [!TIP]
+> For most users, install the **general manifest**. You only need one NiakVIO projection.
 
-## Which manifest should I use?
-
-### General manifest — recommended
-
-Use this unless you specifically want a French-focused subset.
+## ⚡ Recommended manifest
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
 ```
 
-### French-focused manifest
+NiakVIO is installed in Nuvio as a **plugin repository manifest**.
+
+<details>
+<summary><strong>Other manifest projections</strong></summary>
+
+<br>
+
+### French-focused
 
 Use this if you only want the French-focused provider selection, based on language information explicitly declared by providers or streams.
 
@@ -22,7 +26,7 @@ Use this if you only want the French-focused provider selection, based on langua
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
 ```
 
-### General manifest without anime providers
+### General without anime-oriented providers
 
 Copy of the general catalogue with clearly anime-oriented providers removed. A provider is excluded when it declares **anime as its only supported type**, or when its committed provider id/name contains **`anim`** (case-insensitive). Mixed movie/TV/anime providers remain when their id/name is not anime-oriented.
 
@@ -30,7 +34,7 @@ Copy of the general catalogue with clearly anime-oriented providers removed. A p
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/no-anime/manifest.json
 ```
 
-### French-focused manifest without anime providers
+### French-focused without anime-oriented providers
 
 The same deterministic filter applied to the French-focused manifest.
 
@@ -38,11 +42,14 @@ The same deterministic filter applied to the French-focused manifest.
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/manifest.json
 ```
 
+</details>
+
+> [!NOTE]
 > Installing multiple overlapping manifests is usually unnecessary. Pick the projection that matches what you want Nuvio to expose.
 
-## Nuvio Mobile and Nuvio Desktop
+---
 
-Current Nuvio UI path:
+## 📱 Nuvio Mobile & Desktop
 
 1. Open **Settings**.
 2. Open **Content & Discovery**.
@@ -52,11 +59,12 @@ Current Nuvio UI path:
 6. Make sure **Enable plugin providers globally** is enabled.
 7. Confirm that NiakVIO appears under **INSTALLED REPOSITORIES** and that its providers are listed below.
 
-If Nuvio shows **TMDB API key missing**, configure TMDB in Nuvio settings. Current plugin providers may rely on TMDB metadata for correct movie / series / episode matching.
+> [!IMPORTANT]
+> If Nuvio shows **TMDB API key missing**, configure TMDB in Nuvio settings. Current plugin providers may rely on TMDB metadata for correct movie / series / episode matching.
 
-## NuvioTV
+---
 
-Current NuvioTV UI path:
+## 📺 NuvioTV
 
 1. Open **Settings**.
 2. Open **Content Discovery**.
@@ -67,9 +75,18 @@ Current NuvioTV UI path:
 7. Make sure **Enable plugin providers globally** is enabled.
 8. Confirm that the NiakVIO repository and its providers appear in the list.
 
+<details>
+<summary><strong>Manage from phone</strong></summary>
+
+<br>
+
 NuvioTV also provides **Manage from phone**: open it, scan the QR code, then add or remove the repository from your phone. Confirm the pending repository change on the TV when prompted.
 
-## Verify that it is active
+</details>
+
+---
+
+## ✅ Verify that it is active
 
 A successful installation should show:
 
@@ -78,9 +95,9 @@ A successful installation should show:
 - providers enabled globally;
 - NiakVIO sources appearing in the stream picker for compatible titles.
 
-If the repository was installed but streams do not appear, refresh the repository first, then check that plugin providers are globally enabled and that the relevant provider itself is enabled.
+If the repository is installed but streams do not appear, **refresh the repository first**, then check that plugin providers are globally enabled and that the relevant provider itself is enabled.
 
-## Updating NiakVIO
+## 🔄 Updating NiakVIO
 
 You do not need to replace the URL when NiakVIO is updated. The manifest URLs are stable.
 
