@@ -11,23 +11,39 @@
 
 ## Install NiakVIO
 
-**Recommended — general manifest**  
+**Recommended — general manifest**
+
+```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
+```
 
-**French-focused manifest**  
+**French-focused manifest**
+
+```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
+```
 
-**General manifest without anime-oriented providers**  
+**General manifest without anime-oriented providers**
+
+```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/no-anime/manifest.json
+```
 
-**French-focused manifest without anime-oriented providers**  
+**French-focused manifest without anime-oriented providers**
+
+```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/manifest.json
+```
 
 Manifest guide: [`docs/how-to-add-manifest.md`](docs/how-to-add-manifest.md)
 
 ### StreamBadge feed
 
 [`assets/stream-badges-fusion-v2.json`](https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v2.json)
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v2.json
+```
 
 StreamBadge guide: [`docs/how-to-add-stream-badges.md`](docs/how-to-add-stream-badges.md)
 
