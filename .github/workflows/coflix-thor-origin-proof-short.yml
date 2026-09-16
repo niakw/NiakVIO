@@ -1,0 +1,52 @@
+name: PROOF - Coflix Thor Origin
+
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths:
+      - '.github/workflows/coflix-thor-origin-proof-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {ref: '${{ github.sha }}'}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Materialize and prove Thor
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/register_non_display_recovery_v1.py
+          python3 scripts/materialize_provider_v3_one.py coflix
+          python3 - <<'PY'
+          import json,pathlib,sys
+          root=pathlib.Path('.').resolve();sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as p
+          import run_provider_upstream_parity_v3 as v3
+          corpus=json.loads((root/'.github/triggers/rotating-popular-corpus.json').read_text(encoding='utf-8'))
+          fx=next(r for r in corpus['lists']['movie'] if str(r.get('tmdbId'))=='10195')
+          local=p.local_catalog()['coflix']['path']
+          raw=v3._worker_raw(local,v3.fixture_payload(fx,'movie',upstream=False),25)
+          verified=v3._run_verified(local,v3.fixture_payload(fx,'movie',upstream=False),25)
+          obs=[]
+          for o in raw.get('network_observations') or []:
+              if isinstance(o,dict) and not o.get('infrastructure'):
+                  obs.append({k:o.get(k) for k in ('stage','method','host','path_pattern','status','ok') if o.get(k) is not None})
+          print('COFLIX_THOR_ORIGIN_RAW '+json.dumps({'streams':raw.get('stream_count'),'rawStreams':raw.get('raw_stream_count'),'error':raw.get('error_class'),'routes':obs},sort_keys=True))
+          print('COFLIX_THOR_ORIGIN_VERIFIED '+json.dumps({'streams':verified.get('stream_count'),'terminal':verified.get('terminal_verified'),'reasons':verified.get('terminal_reasons') or [],'error':verified.get('error_class')},sort_keys=True))
+          if int(verified.get('stream_count') or 0)<1 or not verified.get('terminal_verified'):
+              raise SystemExit('Coflix Thor still not terminal')
+          PY
