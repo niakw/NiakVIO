@@ -19,59 +19,42 @@ jobs:
           ref: fix/cross-device-audit-20260916
           fetch-depth: 0
 
-      - name: Inspect Mugiwara frontend player loader contract
+      - name: Prove current Mugiwara episodes-script endpoints
         shell: bash
         run: |
           set -euo pipefail
           BASE='https://www.mugiwara-no-streaming.com'
           UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36'
-          PAGE="$BASE/catalogue/hell-mode-the-hardcore-gamer-dominates-in-another-world-with-garbage-balancing/episodes/saison2"
-          curl -L --fail --max-time 20 -A "$UA" "$PAGE" -o /tmp/page.html
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          t=Path('/tmp/page.html').read_text(encoding='utf-8',errors='replace')
-          urls=[]
-          for m in re.finditer(r'(?:src|href)="([^"]+\.js(?:\?[^\"]*)?)"',t):
-              u=m.group(1)
-              if u.startswith('/'):
-                  u='https://www.mugiwara-no-streaming.com'+u
-              if u not in urls:
-                  urls.append(u)
-          Path('/tmp/chunks.txt').write_text('\n'.join(urls)+'\n',encoding='utf-8')
-          print('MUGI_CHUNKS',len(urls))
-          for u in urls: print(u)
+          REL='hell-mode/saison2/vostfr/episodes.js'
+          common=(-A "$UA" -H 'Accept-Language: fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Sec-Fetch-Site: same-origin' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Dest: empty' -e "$BASE/catalogue/hell-mode-the-hardcore-gamer-dominates-in-another-world-with-garbage-balancing/episodes/saison2")
+          curl -L --fail --max-time 20 "${common[@]}" -H 'Accept: application/json, text/plain, */*' -G --data-urlencode "url=$REL" "$BASE/api/episodes-script/version" -D /tmp/version.headers -o /tmp/version.json
+          echo 'MUGI_VERSION_HEADERS'; sed -n '1,30p' /tmp/version.headers
+          echo 'MUGI_VERSION_BODY'; cat /tmp/version.json; echo
+          FILEVER="$(python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/version.json'))
+          print(d.get('filever') or '')
           PY
-          mkdir -p /tmp/chunks
-          n=0
-          while IFS= read -r u; do
-            [ -n "$u" ] || continue
-            n=$((n+1))
-            curl -L --fail --max-time 15 -A "$UA" "$u" -o "/tmp/chunks/$n.js" || true
-          done </tmp/chunks.txt
+          )"
+          test -n "$FILEVER"
+          curl -L --fail --max-time 20 "${common[@]}" -H 'Accept: text/javascript, application/javascript, */*' -G --data-urlencode "url=$REL" --data-urlencode "filever=$FILEVER" "$BASE/api/episodes-script" -D /tmp/script.headers -o /tmp/episodes.js
+          echo 'MUGI_SCRIPT_HEADERS'; sed -n '1,30p' /tmp/script.headers
+          echo "MUGI_SCRIPT bytes=$(wc -c </tmp/episodes.js) filever=$FILEVER"
           python3 - <<'PY'
           from pathlib import Path
           import re
-          needles=[
-            'SCRIPT_URL','EPISODES_OPTIONS','saisonServer','episodeReleases',
-            'static.mugiwara-no-streaming.com','/api/','fetch(','vostfr','langToShow',
-            'smoothpre','vidmoly','sibnet','voembed','ansembed','iframe','player'
-          ]
-          for p in sorted(Path('/tmp/chunks').glob('*.js')):
-              t=p.read_text(encoding='utf-8',errors='replace')
-              interesting=[]
-              for needle in needles:
-                  hits=[m.start() for m in re.finditer(re.escape(needle),t,re.I)]
-                  if hits:
-                      interesting.append((needle,hits[:8]))
-              if not interesting:
-                  continue
-              print('MUGI_CHUNK_FILE',p.name,'bytes',len(t),'hits',interesting)
-              focus=[]
-              for needle,hits in interesting:
-                  if needle in {'SCRIPT_URL','EPISODES_OPTIONS','saisonServer','episodeReleases','static.mugiwara-no-streaming.com','/api/','smoothpre','vidmoly','sibnet','voembed','ansembed'}:
-                      focus.extend((needle,x) for x in hits[:4])
-              for needle,pos in focus[:24]:
-                  snip=re.sub(r'\s+',' ',t[max(0,pos-1200):pos+2800])
-                  print('MUGI_CHUNK_SNIP',p.name,needle,snip[:4000])
+          t=Path('/tmp/episodes.js').read_text(encoding='utf-8',errors='replace')
+          print('MUGI_SCRIPT_HEAD',repr(t[:1800]))
+          for key in [f'eps{i}' for i in range(1,9)]:
+              hits=[m.start() for m in re.finditer(r'\b'+re.escape(key)+r'\b',t)]
+              print('MUGI_EPS',key,'count',len(hits),'positions',hits[:10])
+              for p in hits[:2]:
+                  print('MUGI_EPS_SNIP',key,re.sub(r'\s+',' ',t[max(0,p-250):p+1800])[:2050])
+          for host in ['vidmoly','ansembed','sibnet','smoothpre','voembed','sendvid','youtube','vk.com']:
+              hits=[m.start() for m in re.finditer(re.escape(host),t,re.I)]
+              print('MUGI_HOST',host,'count',len(hits),'first',hits[:8])
+          # Best-effort inspect E11 values without executing the downloaded JS.
+          for m in re.finditer(r'(?:var|let|const)?\s*(eps[1-8])\s*=\s*(\[[\s\S]*?\])\s*;?',t):
+              name=m.group(1); arr=m.group(2)
+              print('MUGI_ASSIGN',name,'chars',len(arr),'head',repr(arr[:1200]))
           PY
