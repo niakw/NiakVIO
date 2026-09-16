@@ -19,7 +19,7 @@ jobs:
           ref: fix/cross-device-audit-20260916
           fetch-depth: 0
 
-      - name: Prove provider runtime dispatcher reachability through final Core chain
+      - name: Locate Mugiwara getStreams chain break
         shell: bash
         run: |
           set -euo pipefail
@@ -30,15 +30,31 @@ jobs:
               if str(r.get('id','')).casefold()=='mugiwarastream': print(r.get('filename')); break
           PY
           )"
-          node - "$MUGI" <<'NODE'
-          const path=require('node:path');
-          const file=path.resolve(process.argv[2]);
-          globalThis.fetch=async()=>({ok:false,status:500,url:'https://invalid.local/',headers:{get:()=>''},text:async()=>'',arrayBuffer:async()=>new ArrayBuffer(0)});
-          const p=require(file);
-          let called=0;
-          globalThis.__niakvioProviderRuntimeResolverV1={provider:'sentinel',resolve:async()=>{called++; return [];}};
-          Promise.resolve(p.getStreams('280049','tv',2,11)).then((rows)=>{
-            console.log('MUGI_DISPATCH_SENTINEL called='+called+' rows='+(Array.isArray(rows)?rows.length:'nonarray'));
-            if(called<1) process.exitCode=3;
-          }).catch((e)=>{console.error(e);process.exitCode=4;});
-          NODE
+          python3 - "$MUGI" <<'PY'
+          import re,sys
+          t=open(sys.argv[1],encoding='utf-8').read()
+          needles=[
+            'NIAKVIO_PROVIDER_BASE_OWNED_V3',
+            'NIAKVIO_MUGIWARASTREAM_PACKED_RUNTIME_V1',
+            'NUVIO_GLOBAL_PROVIDER_RUNTIME_DISPATCH_V1',
+            'NUVIO_GLOBAL_STREAM_FACTS_V1',
+            'NUVIO_GLOBAL_STREAM_IDENTITY_V1',
+            'NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1',
+            'NUVIO_GLOBAL_STREAM_PRESENTATION_V1',
+            'NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6',
+            'NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1',
+            'NUVIO_GLOBAL_PROVIDER_BRANDING_V1',
+            '/* END NIAKVIO_PROVIDER */',
+          ]
+          for n in needles: print('CHAIN_MARKER',n,'first',t.find(n),'last',t.rfind(n),'count',t.count(n))
+          pats=[r'module\.exports\s*=',r'module\.exports\.getStreams\s*=',r'\.getStreams\s*=\s*wrap',r'o\[k\]\s*=\s*wrap',r'g\.getStreams\s*=']
+          for pat in pats:
+              rows=[m.start() for m in re.finditer(pat,t)]
+              print('CHAIN_ASSIGN',pat,'count',len(rows),'positions',rows[-30:])
+          # Show small contexts around assignments after the dispatcher.
+          dispatch=t.find('NUVIO_GLOBAL_PROVIDER_RUNTIME_DISPATCH_V1')
+          for m in re.finditer(r'(?:module\.exports(?:\.getStreams)?|g\.getStreams|o\[k\])\s*=',t):
+              if m.start()>dispatch:
+                  ctx=re.sub(r'\s+',' ',t[max(0,m.start()-220):m.start()+420])
+                  print('CHAIN_CONTEXT',m.start(),ctx[:700])
+          PY
