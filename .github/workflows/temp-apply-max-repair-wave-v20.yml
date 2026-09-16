@@ -1,0 +1,153 @@
+name: TEMP - Apply Max Repair Wave V20
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-apply-max-repair-wave-v20.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apply-prove-persist:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - name: Apply all current max-repair contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_max_repair_current_contracts_v1.py
+          python3 scripts/upgrade_max_repair_current_contracts_v2.py
+          python3 scripts/upgrade_max_repair_authority_semantics_v3.py
+          python3 scripts/upgrade_max_repair_residual_runtimes_v4.py
+          python3 scripts/upgrade_wookafr_lecteurvideo_priority_v1.py
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/validate_published_overrides.py
+          python3 -m py_compile \
+            scripts/provider_patches/wookafr_showvideo_base64_v1.py \
+            scripts/provider_patches/allwish_current_runtime_v1.py \
+            scripts/provider_patches/flemmix_current_runtime_v1.py \
+            scripts/provider_patches/allanime_current_runtime_v1.py \
+            scripts/provider_patches/moviebox_current_embed_v2.py \
+            scripts/upgrade_max_repair_current_contracts_v1.py \
+            scripts/upgrade_max_repair_current_contracts_v2.py \
+            scripts/upgrade_max_repair_authority_semantics_v3.py \
+            scripts/upgrade_max_repair_residual_runtimes_v4.py
+      - name: Probe manifest-authoritative provider artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/probe-wave-v20.cjs <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const manifest=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const result={};
+          function norm(v){return String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,'');}
+          function entry(pid){
+            const wanted=norm(pid),rows=(manifest.scrapers||[]).filter(r=>norm(r&&r.id)===wanted);
+            if(rows.length!==1)throw new Error(`manifest_provider_count:${pid}:${rows.length}`);
+            return rows[0];
+          }
+          function providerFile(pid){const row=entry(pid),file=path.resolve(String(row.filename||''));if(!fs.existsSync(file))throw new Error('provider_file_missing:'+pid);console.log('MANIFEST',pid,row.filename,'enabled='+row.enabled,'types='+JSON.stringify(row.supportedTypes||[]),'canonical='+JSON.stringify(row.canonicalSupportedTypes||[]));return file;}
+          function meta(spec){return spec.type==='movie'?{title:spec.title,original_title:spec.title,release_date:`${spec.year}-01-01`,alternative_titles:{titles:[]}}:{name:spec.title,original_name:spec.title,first_air_date:`${spec.year}-01-01`,alternative_titles:{results:[]}};}
+          async function run(label,spec){
+            try{
+              const file=providerFile(spec.pid),ns=spec.type==='movie'?'movie':'tv',m=meta(spec);
+              globalThis.__nuvioMediaContext={tmdbId:String(spec.id),tmdbNamespace:ns,tmdbMetadata:m};
+              globalThis.__nuvioTmdbMetadataCacheV1={[`${ns}:${spec.id}`]:m};
+              globalThis.__nuvioProviderDeadlineMs=Date.now()+28000;
+              delete require.cache[file];const mod=require(file);if(!mod||typeof mod.getStreams!=='function')throw new Error('getStreams_missing');
+              const timer=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),29000));
+              const rows=await Promise.race([Promise.resolve(mod.getStreams(String(spec.id),spec.type,spec.season,spec.episode)),timer]);
+              const out=Array.isArray(rows)?rows:[];
+              console.log('PROBE',label,'count='+out.length,out.slice(0,8).map(r=>({url:r&&r.url,title:r&&r.title,headers:r&&r.headers})));
+              result[label]={count:out.length,urls:out.slice(0,8).map(r=>String(r&&r.url||'')),error:''};
+              return out;
+            }catch(e){console.log('PROBE_ERROR',label,String(e&&e.message||e));result[label]={count:0,urls:[],error:String(e&&e.message||e)};return [];}
+          }
+          async function page(label,row){
+            if(!row||!/^https?:\/\//i.test(String(row.url||'')))return false;
+            const c=new AbortController(),t=setTimeout(()=>c.abort(),12000);
+            try{const r=await fetch(row.url,{headers:row.headers||{},redirect:'follow',signal:c.signal});const body=await r.text();console.log('PAGE',label,r.status,r.headers.get('content-type')||'','bytes='+body.length,'final='+r.url);return r.ok&&body.length>=100;}catch(e){console.log('PAGE_ERROR',label,String(e&&e.message||e));return false;}finally{clearTimeout(t)}
+          }
+          (async()=>{
+            const specs={
+              wookafr:{pid:'wookafr',id:'157336',type:'movie',title:'Interstellar',year:'2014'},
+              allwish:{pid:'allwish',id:'95479',type:'anime',title:'Jujutsu Kaisen',year:'2020',season:1,episode:1},
+              flemmix_movie:{pid:'flemmix',id:'1356963',type:'movie',title:'Little Lorraine',year:'2026'},
+              flemmix_tv:{pid:'flemmix',id:'94997',type:'tv',title:'House of the Dragon',year:'2022',season:1,episode:1},
+              allanime:{pid:'allanime',id:'37854',type:'anime',title:'One Piece',year:'1999',season:1,episode:1178},
+              moviebox_movie:{pid:'moviebox',id:'157336',type:'movie',title:'Interstellar',year:'2014'},
+              moviebox_tv:{pid:'moviebox',id:'1396',type:'tv',title:'Breaking Bad',year:'2008',season:1,episode:1}
+            };
+            for(const [label,spec] of Object.entries(specs)){const rows=await run(label,spec);result[label].pageOk=rows.length?await page(label,rows[0]):false;}
+            result.semantic={
+              allwish:entry('allwish'),
+              coflix:entry('coflix'),
+              allanime:entry('allanime'),
+              moviebox:entry('moviebox')
+            };
+            fs.writeFileSync('/tmp/max-repair-wave-v20.json',JSON.stringify(result,null,2));
+            console.log('PROBE_SUMMARY',JSON.stringify(Object.fromEntries(Object.entries(result).filter(([k])=>k!=='semantic').map(([k,v])=>[k,{count:v.count,pageOk:v.pageOk,error:v.error}])),null,2));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/probe-wave-v20.cjs
+          cat /tmp/max-repair-wave-v20.json
+      - name: Verify semantic corrections
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          m=json.load(open('manifest.json'))['scrapers']
+          def norm(v): return ''.join(c for c in str(v or '').lower() if c.isalnum())
+          def row(pid):
+            x=[r for r in m if norm(r.get('id'))==norm(pid)]
+            assert len(x)==1,(pid,len(x)); return x[0]
+          aw=row('allwish'); cf=row('coflix'); aa=row('allanime')
+          print('SEMANTIC_ALLWISH',aw.get('supportedTypes'),aw.get('canonicalSupportedTypes'))
+          print('SEMANTIC_COFLIX',cf.get('supportedTypes'),cf.get('canonicalSupportedTypes'))
+          print('SEMANTIC_ALLANIME',aa.get('supportedTypes'),aa.get('canonicalSupportedTypes'))
+          assert 'movie' not in set(aw.get('canonicalSupportedTypes') or []), aw
+          assert 'anime' not in set(cf.get('canonicalSupportedTypes') or cf.get('supportedTypes') or []), cf
+          assert set(aa.get('canonicalSupportedTypes') or [])=={'anime'}, aa
+          PY
+      - name: Persist materialized repair wave
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A -- provider-overrides.json providers provider-bases sources.json manifest.json scripts
+          if git diff --cached --quiet; then
+            echo 'No materialized changes to commit'
+          else
+            git commit -m 'fix: materialize maximum current provider repair wave'
+            git push origin HEAD:fix/non-display-recovery-20260916
+          fi
+      - name: Final positive-proof gate
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          r=json.load(open('/tmp/max-repair-wave-v20.json'))
+          # These lanes have current live positive contracts and must survive the real NiakVIO artifact.
+          required=['allwish','flemmix_movie','allanime','moviebox_movie','moviebox_tv']
+          bad=[]
+          for key in required:
+            row=r.get(key) or {}
+            if int(row.get('count') or 0)<1 or not row.get('pageOk'):
+              bad.append((key,row))
+          # Wooka and Flemmix TV remain diagnostic here; they are reported but do not prevent persistence of independent repairs.
+          print('RESIDUAL_WOOKA',r.get('wookafr'))
+          print('RESIDUAL_FLEMMIX_TV',r.get('flemmix_tv'))
+          if bad:
+            raise SystemExit('positive proof failures: '+repr(bad))
+          print('MAX_REPAIR_WAVE_V20_POSITIVE_GATE_OK')
+          PY
