@@ -40,12 +40,16 @@ jobs:
           set -euo pipefail
           git config user.name 'NiakVIO Repair Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add -A -- scripts provider-overrides.json providers provider-bases sources.json manifest.json tests
+          # Reapply/prune changes both authoritative refs and superseded generated
+          # files. Stage the complete generated tree so rebase never sees hidden
+          # unstaged deletions and the persisted commit exactly matches validation.
+          git add -A
           if ! git diff --cached --quiet; then
             git commit -m 'fix: materialize wooka and path-player residual repairs'
             git pull --rebase origin fix/non-display-recovery-20260916
             git push origin HEAD:fix/non-display-recovery-20260916
           fi
+          test -z "$(git status --porcelain)"
       - name: Probe repaired providers and regressions
         shell: bash
         run: |
@@ -107,13 +111,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Never record a synthetic n/a checkpoint when the real provider probe
+          # did not execute. The prior V23/V25 checkpoint stays authoritative.
+          if [ ! -f /tmp/probe-v28.json ]; then
+            echo 'No V28 probe result; MEMORY unchanged'
+            exit 0
+          fi
           python3 - <<'PY'
           from pathlib import Path
           import json
           p=Path('MEMORY.md');t=p.read_text(encoding='utf-8');mark='<!-- MAX_REPAIR_20260916_V28_RESULT -->'
           if mark not in t:
-            try:r=json.load(open('/tmp/probe-v28.json'))
-            except Exception:r={}
+            r=json.load(open('/tmp/probe-v28.json'))
             def f(k):
               x=r.get(k) or {};return f"{k}: count={x.get('count','n/a')} pageOk={x.get('pageOk','n/a')} status={x.get('status','n/a')} error={x.get('error','')}"
             sec=mark+'\n### V26-V28 residual repair evidence\n- V26 run `35158780319`: Wooka `/?s=Interstellar` -> exact detail 200 -> lecteurvideo 200 -> 9 `showVideo(base64)` players. AllAnime One Piece detail exposes episodes 1178..1170; episode 1178 -> MegaPlay `/stream/s-2/501939/sub` iframe 200. Coflix current obvious search routes return the same shell and no Interstellar/Breaking Bad result.\n- V27 run `35158978594`: Wooka TV search returns `/streaming/series/breaking-bad/`; detail exposes seasons 1-5 and exact episode URLs `/streaming/episodes/{slug}-saison-{season}-episode-{episode}/`.\n- V11 changes only exact correlated proof handling for bounded path-based `/stream/...` player routes; ordinary HTML remains fail-closed and private proof is cleared by outer Runtime Media Safety.\n- '+f('wooka_movie')+'\n- '+f('wooka_tv')+'\n- '+f('allanime')+'\n- '+f('moviebox_movie')+'\n- '+f('moviebox_tv')+'\n- '+f('vidlove_movie')+'\n- '+f('vidlove_tv')+'\n\n'
