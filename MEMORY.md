@@ -71,6 +71,19 @@ This section supersedes older branch-topology assumptions below for the active r
 - vidfast_movie: count=1 pageOk=False status=403 error=
 - vidfast_tv: count=1 pageOk=False status=403 error=
 
+<!-- MAX_REPAIR_20260916_V28_RESULT -->
+### V26-V28 residual repair evidence
+- V26 run `35158780319`: Wooka `/?s=Interstellar` -> exact detail 200 -> lecteurvideo 200 -> 9 `showVideo(base64)` players. AllAnime One Piece detail exposes episodes 1178..1170; episode 1178 -> MegaPlay `/stream/s-2/501939/sub` iframe 200. Coflix current obvious search routes return the same shell and no Interstellar/Breaking Bad result.
+- V27 run `35158978594`: Wooka TV search returns `/streaming/series/breaking-bad/`; detail exposes seasons 1-5 and exact episode URLs `/streaming/episodes/{slug}-saison-{season}-episode-{episode}/`.
+- V11 changes only exact correlated proof handling for bounded path-based `/stream/...` player routes; ordinary HTML remains fail-closed and private proof is cleared by outer Runtime Media Safety.
+- wooka_movie: count=0 pageOk=False status=0 error=
+- wooka_tv: count=0 pageOk=False status=0 error=
+- allanime: count=0 pageOk=False status=0 error=
+- moviebox_movie: count=1 pageOk=True status=200 error=
+- moviebox_tv: count=1 pageOk=True status=200 error=
+- vidlove_movie: count=1 pageOk=True status=200 error=
+- vidlove_tv: count=1 pageOk=True status=200 error=
+
 ## 2026-09-16 — authoritative current checkpoint
 
 - Current public release is **5.21.48**. `manifest.json`, VF/no-anime projections, package metadata and release hashes are on 5.21.48.
