@@ -44,10 +44,7 @@ t=t.replace(
 )
 p.write_text(t,encoding='utf-8')
 
-# Android Mobile: the official Activity's Kotlin package is not necessarily the
-# installed applicationId. The generated code already resolves the launcher from
-# PackageManager; the finalizer now validates that contract instead of rewriting
-# it back to class.java.packageName.
+# Android Mobile installed-launcher contract.
 p=ROOT/'scripts/finalize_native_android_reader_source.py'
 t=p.read_text(encoding='utf-8')
 start=t.index('MOBILE_CONTEXT_LAUNCH =')
@@ -70,7 +67,7 @@ t=t.replace(
 )
 p.write_text(t,encoding='utf-8')
 
-# Align direct finalizer/codegen contracts with the proven installed-launcher rule.
+# Align direct finalizer/codegen tests.
 p=ROOT/'tests/finalize_native_android_reader_source_test.py'
 p.write_text('''#!/usr/bin/env python3\nfrom __future__ import annotations\nimport sys\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parents[1]\nsys.path.insert(0,str(ROOT/"scripts"))\nfrom finalize_native_android_reader_source import finalize_source\nENTRY='emit("FIELD_NATIVE_PLAYER_BEGIN client=mobile fixture=x provider64=x index=0 entry=nuvio-production-player")'\ncurrent_mobile=f\'''\nimport android.content.Intent\nimport com.nuvio.app.MainActivity\n{ENTRY}\nval launcherQuery = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)\nval launchActivity = context.packageManager.queryIntentActivities(launcherQuery, 0)\n    .firstOrNull {{ info -> info.activityInfo?.name == MainActivity::class.java.name }}\n    ?: context.packageManager.queryIntentActivities(launcherQuery, 0).first()\nval intent = Intent().setClassName(\n    launchActivity.activityInfo.packageName,\n    launchActivity.activityInfo.name,\n)\n\'''\nfinalized=finalize_source(current_mobile,"mobile")\nassert "FIELD_NATIVE_PLAYER_ENTRY client=mobile" in finalized\nassert "FIELD_NATIVE_PLAYER_BEGIN client=mobile" not in finalized\nassert "queryIntentActivities(launcherQuery, 0)" in finalized\nassert "launchActivity.activityInfo.packageName" in finalized\nassert "launchActivity.activityInfo.name" in finalized\nassert "MainActivity::class.java.packageName" not in finalized\nlegacy=f\'''{ENTRY}\nval intent = Intent().setClassName(context.packageName, MainActivity::class.java.name)\n\'''\ntry: finalize_source(legacy,"mobile")\nexcept ValueError: pass\nelse: raise AssertionError("namespace-based package launch must be rejected")\ntv='emit("FIELD_NATIVE_PLAYER_BEGIN client=tv fixture=x provider64=x index=0 entry=nuvio-production-player")'\nout=finalize_source(tv,"tv")\nassert "FIELD_NATIVE_PLAYER_ENTRY client=tv" in out\nprint("native Android reader finalizer installed-launcher contract passed")\n''',encoding='utf-8')
 
@@ -88,4 +85,10 @@ t=p.read_text(encoding='utf-8')
 t=t.replace('assert "MainActivity::class.java.packageName," in mobile','assert "queryIntentActivities(launcherQuery, 0)" in mobile\nassert "launchActivity.activityInfo.packageName," in mobile\nassert "launchActivity.activityInfo.name," in mobile\nassert "MainActivity::class.java.packageName," not in mobile')
 p.write_text(t,encoding='utf-8')
 
-print('retry: audio roles, sanitizer order and applicationId-safe finalizer aligned')
+# Existing non-regression test had already imported the live scope helper into
+# EXPECTED, but two stale references still used the deleted variable name.
+p=ROOT/'tests/core_runtime_nonregression_contract_test.py'
+t=p.read_text(encoding='utf-8').replace('CURRENT_PROVIDER_COUNT','EXPECTED')
+p.write_text(t,encoding='utf-8')
+
+print('retry: presentation, sanitizer, launcher and current-scope contracts aligned')
