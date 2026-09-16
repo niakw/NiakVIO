@@ -2,17 +2,21 @@
 
 [English](../how-to-add-manifest.md) · [Retour au README](../../README.fr.md)
 
-NiakVIO s'installe dans Nuvio comme un **manifest de repository de plugins**.
+> [!TIP]
+> Pour la plupart des utilisateurs, installez le **manifest général**. Une seule projection NiakVIO suffit.
 
-## Quel manifest utiliser ?
-
-### Manifest général — recommandé
-
-À utiliser par défaut.
+## ⚡ Manifest recommandé
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
 ```
+
+NiakVIO s'installe dans Nuvio comme un **manifest de repository de plugins**.
+
+<details>
+<summary><strong>Autres projections disponibles</strong></summary>
+
+<br>
 
 ### Manifest francophone
 
@@ -22,7 +26,7 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
 ```
 
-### Manifest VO sans anime
+### Manifest général sans providers orientés anime
 
 Copie du manifest général avec retrait des providers clairement orientés anime. Un provider est exclu s'il déclare **uniquement `anime`** dans ses types, ou si son **id/nom contient `anim`** (sans tenir compte de la casse). Un provider mixte film/série/anime reste présent si son id/nom n'est pas orienté anime.
 
@@ -30,7 +34,7 @@ Copie du manifest général avec retrait des providers clairement orientés anim
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/no-anime/manifest.json
 ```
 
-### Manifest VF sans anime
+### Manifest francophone sans providers orientés anime
 
 Le même filtre déterministe est appliqué à la copie du manifest francophone.
 
@@ -38,11 +42,14 @@ Le même filtre déterministe est appliqué à la copie du manifest francophone.
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/manifest.json
 ```
 
+</details>
+
+> [!NOTE]
 > Installer plusieurs manifests qui se recoupent est généralement inutile. Choisissez la projection correspondant à ce que vous voulez afficher dans Nuvio.
 
-## Nuvio Mobile et Nuvio Desktop
+---
 
-Chemin actuel dans l'interface Nuvio :
+## 📱 Nuvio Mobile & Desktop
 
 1. Ouvrez **Paramètres**.
 2. Ouvrez **Contenu et découverte**.
@@ -52,11 +59,12 @@ Chemin actuel dans l'interface Nuvio :
 6. Vérifiez que **Activer les fournisseurs de plugins** est activé.
 7. Vérifiez que NiakVIO apparaît dans **DÉPÔTS INSTALLÉS** et que ses providers sont listés.
 
-Si Nuvio affiche **TMDB API key missing**, configurez TMDB dans les réglages Nuvio. Certains providers utilisent les métadonnées TMDB pour assurer le bon matching film / série / épisode.
+> [!IMPORTANT]
+> Si Nuvio affiche **TMDB API key missing**, configurez TMDB dans les réglages Nuvio. Certains providers utilisent les métadonnées TMDB pour assurer le bon matching film / série / épisode.
 
-## NuvioTV
+---
 
-Chemin actuel dans NuvioTV :
+## 📺 NuvioTV
 
 1. Ouvrez **Paramètres**.
 2. Ouvrez **Contenu et découverte**.
@@ -67,9 +75,18 @@ Chemin actuel dans NuvioTV :
 7. Vérifiez que **Activer les fournisseurs de plugins globalement** est activé.
 8. Vérifiez que le repository NiakVIO et ses providers apparaissent dans la liste.
 
+<details>
+<summary><strong>Gérer depuis le téléphone</strong></summary>
+
+<br>
+
 NuvioTV propose également **Gérer depuis le téléphone** : ouvrez cette option, scannez le QR code, puis ajoutez ou supprimez le repository depuis votre téléphone. Confirmez ensuite la modification sur la TV si NuvioTV le demande.
 
-## Vérifier que NiakVIO est actif
+</details>
+
+---
+
+## ✅ Vérifier que NiakVIO est actif
 
 Une installation correcte doit afficher :
 
@@ -78,9 +95,9 @@ Une installation correcte doit afficher :
 - les plugins activés globalement ;
 - les sources NiakVIO dans le sélecteur de streams sur les contenus compatibles.
 
-Si le repository est installé mais qu'aucun stream n'apparaît, commencez par rafraîchir le repository, puis vérifiez l'activation globale des plugins et l'activation du provider concerné.
+Si le repository est installé mais qu'aucun stream n'apparaît, **commencez par rafraîchir le repository**, puis vérifiez l'activation globale des plugins et l'activation du provider concerné.
 
-## Mises à jour
+## 🔄 Mises à jour
 
 Il n'est pas nécessaire de remplacer l'URL à chaque mise à jour de NiakVIO. Les URLs de manifest restent stables.
 
