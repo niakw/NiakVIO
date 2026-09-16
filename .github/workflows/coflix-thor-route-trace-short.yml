@@ -32,12 +32,12 @@ jobs:
           set -euo pipefail
           python3 scripts/register_non_display_recovery_v1.py
           python3 scripts/materialize_provider_v3_one.py coflix
-      - name: Trace Coflix Thor HTTP shape and local/upstream workers
+      - name: Trace Coflix Thor HTTP shape, Livavid headers and local/upstream workers
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json, pathlib, sys, tempfile, urllib.parse, urllib.request
+          import json, pathlib, sys, tempfile, urllib.parse, urllib.request, urllib.error, re
           from urllib.parse import urlparse
           root=pathlib.Path('.').resolve(); sys.path.insert(0,str(root/'scripts'))
           import run_provider_upstream_parity as p
@@ -45,12 +45,19 @@ jobs:
           import run_provider_upstream_parity_v3 as v3
 
           UA='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/151 Safari/537.36'
-          def req(url, method='GET', data=None, referer='https://coflix.wiki/'):
-              h={'User-Agent':UA,'Accept':'application/json,text/plain,*/*','Accept-Language':'fr-FR,fr;q=0.9,en;q=0.7','Referer':referer}
+          def req(url, method='GET', data=None, referer='https://coflix.wiki/', headers=None, read=True):
+              h={'User-Agent':UA,'Accept':'application/json,text/plain,*/*','Accept-Language':'fr-FR,fr;q=0.9,en;q=0.7'}
+              if referer: h['Referer']=referer
+              if headers: h.update(headers)
               if method=='POST': h['Content-Type']='application/x-www-form-urlencoded'; h['X-Requested-With']='XMLHttpRequest'
               r=urllib.request.Request(url,data=data,headers=h,method=method)
-              with urllib.request.urlopen(r,timeout=15) as x:
-                  return x.geturl(),x.status,x.read().decode('utf-8','replace')
+              try:
+                  with urllib.request.urlopen(r,timeout=15) as x:
+                      body=x.read().decode('utf-8','replace') if read else ''
+                      return x.geturl(),x.status,body
+              except urllib.error.HTTPError as e:
+                  body=e.read().decode('utf-8','replace') if read else ''
+                  return e.geturl(),e.code,body
           def loc(u):
               try:
                   x=urlparse(str(u)); return {'host':x.hostname or '', 'path':x.path, 'scheme':x.scheme}
@@ -59,24 +66,48 @@ jobs:
           base='https://coflix.wiki'
           _,status,txt=req(base+'/ajax/search/suggest?keyword='+urllib.parse.quote('Thor'))
           d=json.loads(txt); html=d.get('html') or ''
-          import re
           cands=[]
           for m in re.finditer(r'href=["\'](?:https?://coflix\.wiki)?/film/([^"\'/]+)/ep-(\d+)["\']',html,re.I):
               item={'slug':m.group(1),'epId':m.group(2)}
               if item not in cands:cands.append(item)
-          print('COFLIX_THOR_SEARCH '+json.dumps({'status':status,'candidates':cands[:8]},sort_keys=True))
-          for c in cands[:4]:
+          thor_cands=[c for c in cands if 'thor' in c['slug'].lower()]
+          print('COFLIX_THOR_SEARCH '+json.dumps({'status':status,'total':len(cands),'thorCandidates':thor_cands[:30]},sort_keys=True))
+
+          livavid=[]
+          for c in thor_cands[:16]:
               body=('episode_id='+urllib.parse.quote(c['epId'])).encode()
-              try:
-                  _,st,pt=req(base+'/ajax/episode/player?episode_id='+urllib.parse.quote(c['epId']),'POST',body,base+'/film/'+c['slug']+'/')
-                  pd=json.loads(pt); rows=[]
-                  for srv in pd.get('message') or []:
-                      u=srv.get('server_link') if isinstance(srv,dict) else None
-                      if isinstance(u,dict):u=u.get('url')
-                      rows.append({'version':srv.get('version') if isinstance(srv,dict) else None,'server_type':srv.get('server_type') if isinstance(srv,dict) else None,**loc(u)})
-                  print('COFLIX_THOR_PLAYERS '+json.dumps({'slug':c['slug'],'epId':c['epId'],'status':st,'players':rows},sort_keys=True))
-              except Exception as e:
-                  print('COFLIX_THOR_PLAYERS '+json.dumps({'slug':c['slug'],'epId':c['epId'],'error':type(e).__name__},sort_keys=True))
+              _,st,pt=req(base+'/ajax/episode/player?episode_id='+urllib.parse.quote(c['epId']),'POST',body,base+'/film/'+c['slug']+'/')
+              try: pd=json.loads(pt)
+              except Exception: pd={}
+              rows=[]
+              for srv in pd.get('message') or []:
+                  u=srv.get('server_link') if isinstance(srv,dict) else None
+                  if isinstance(u,dict):u=u.get('url')
+                  rows.append({'version':srv.get('version') if isinstance(srv,dict) else None,'server_type':srv.get('server_type') if isinstance(srv,dict) else None,**loc(u)})
+                  if isinstance(u,str) and 'livavid.' in u: livavid.append((u,base+'/film/'+c['slug']+'/',c['slug']))
+              print('COFLIX_THOR_PLAYERS '+json.dumps({'slug':c['slug'],'epId':c['epId'],'status':st,'players':rows},sort_keys=True))
+
+          seen=set()
+          for embed,parent,slug in livavid[:4]:
+              if embed in seen: continue
+              seen.add(embed)
+              final,st,eh=req(embed,referer=parent)
+              matches=[]
+              for mm in re.finditer(r'https?://[^"\'\s<>]+?\.m3u8(?:\?[^"\'\s<>]*)?',eh,re.I):
+                  u=mm.group(0).replace('\\/','/')
+                  if u not in matches: matches.append(u)
+              print('COFLIX_LIVAVID_PAGE '+json.dumps({'slug':slug,'status':st,**loc(final),'m3u8Count':len(matches)},sort_keys=True))
+              for hls in matches[:2]:
+                  origin='https://'+(urlparse(embed).hostname or '')
+                  tests=[
+                    ('none','',{}),
+                    ('coflix',parent,{}),
+                    ('livavid',embed,{}),
+                    ('livavid-origin',embed,{'Origin':origin}),
+                  ]
+                  for name,ref,extra in tests:
+                      fin,code,_=req(hls,referer=ref,headers={**extra,'Range':'bytes=0-512'},read=False)
+                      print('COFLIX_LIVAVID_HLS '+json.dumps({'slug':slug,'variant':name,'status':code,**loc(fin)},sort_keys=True))
 
           corpus=json.loads((root/'.github/triggers/rotating-popular-corpus.json').read_text(encoding='utf-8'))
           fx=next(r for r in corpus['lists']['movie'] if str(r.get('tmdbId'))=='10195')
