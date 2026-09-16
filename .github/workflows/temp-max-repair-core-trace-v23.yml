@@ -1,0 +1,98 @@
+name: temp-max-repair-core-trace-v23
+
+on:
+  push:
+    branches:
+      - fix/non-display-recovery-20260916
+    paths:
+      - .github/workflows/temp-max-repair-core-trace-v23.yml
+
+permissions:
+  contents: write
+
+jobs:
+  trace:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+
+      - name: Persist V22 result in MEMORY
+        run: python3 scripts/update_memory_max_repair_20260916_v2.py
+
+      - name: Print applied Core options
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import importlib.util
+          from pathlib import Path
+          root=Path('.')
+          spec=importlib.util.spec_from_file_location('apo',root/'scripts/apply_provider_overrides.py')
+          m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+          captured=[]
+          def cap(text,provider_id,patch_script,options,profile_name):
+              captured.append((provider_id,patch_script,dict(options),profile_name)); return text
+          m._apply_patch_script=cap
+          for pid in ('moviebox','allanime','wookafr','allwish','flemmix'):
+              captured.clear(); m.apply_overrides(pid,b'module.exports={getStreams:async()=>[]};\n',phase='discovery')
+              print('OPTIONS',pid)
+              for _pid,path,opts,profile in captured:
+                  if path.endswith(('global_media_enrichment_v1.py','runtime_capability_media_safety_v4.py','stream_output_sanitizer_v7.py','hls_runtime_integrity_v1.py')):
+                      print(' ',path,opts,profile)
+          PY
+
+      - name: Trace MovieBox through Core wrappers
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/trace-core-v23.cjs <<'NODE'
+          const fs=require('fs'),path=require('path'),os=require('os');
+          const manifest=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const row=(manifest.scrapers||[]).find(r=>String(r.id||'').toLowerCase()==='moviebox');
+          if(!row)throw new Error('moviebox missing');
+          const srcPath=path.resolve(row.filename);
+          let src=fs.readFileSync(srcPath,'utf8');
+          const positions=['NIAKVIO_MOVIEBOX_CURRENT_EMBED_V2','NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1','NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1','NUVIO_STREAM_OUTPUT_SANITIZER_V7','NUVIO_HLS_RUNTIME_INTEGRITY_V1'].map(k=>[k,src.indexOf(k)]);
+          console.log('POSITIONS',JSON.stringify(positions));
+          const enrichNeedle='async function enrich(list){if(providerDeadlineExpired())return[];var out=[],seen={};';
+          if(!src.includes(enrichNeedle))throw new Error('enrich anchor missing');
+          src=src.replace(enrichNeedle,enrichNeedle+`console.log('DBG_ENRICH_INPUT',JSON.stringify({cfg:c,rows:(list||[]).map(function(r){return {url:urlOf(r),keys:Object.keys(r||{}),proof:r&&r.__nuvioCorrelatedPlayerFallbackV1};})}));`);
+          const fallbackNeedle='if(c.preserveOriginal&&correlatedPlayerFallback(row,u)){add(row);continue}';
+          if(!src.includes(fallbackNeedle))throw new Error('fallback anchor missing');
+          src=src.replace(fallbackNeedle,`console.log('DBG_ENRICH_FALLBACK',JSON.stringify({url:u,preserve:c.preserveOriginal,proof:row&&row.__nuvioCorrelatedPlayerFallbackV1,correlated:correlatedPlayerFallback(row,u),keys:Object.keys(row||{})}));${fallbackNeedle}`);
+          const safetyNeedle='var staticRows=x.list.filter(function(row){return staticSafety(row).keep});';
+          if(!src.includes(safetyNeedle))throw new Error('safety anchor missing');
+          src=src.replace(safetyNeedle,`console.log('DBG_SAFETY_INPUT',JSON.stringify(x.list.map(function(r){return {url:r&&r.url,keys:Object.keys(r||{}),proof:r&&r.__nuvioCorrelatedPlayerFallbackV1,static:staticSafety(r)};})));${safetyNeedle}`);
+          const tmp=path.join(os.tmpdir(),'moviebox-v23-'+Date.now()+'.cjs');fs.writeFileSync(tmp,src);
+          const nativeFetch=global.fetch;
+          global.fetch=async function(url,opts){const r=await nativeFetch(url,opts);console.log('DBG_FETCH',String(url),'status='+r.status,'ctype='+(r.headers.get('content-type')||''));return r};
+          const meta={title:'Interstellar',original_title:'Interstellar',release_date:'2014-01-01',alternative_titles:{titles:[]}};
+          global.__nuvioMediaContext={tmdbId:'157336',tmdbNamespace:'movie',tmdbMetadata:meta};
+          global.__nuvioTmdbMetadataCacheV1={'movie:157336':meta};
+          global.__nuvioProviderDeadlineMs=Date.now()+30000;
+          const mod=require(tmp);
+          Promise.resolve(mod.getStreams('157336','movie')).then(v=>{console.log('DBG_FINAL',JSON.stringify(v,null,2));fs.unlinkSync(tmp)}).catch(e=>{console.error(e&&e.stack||e);process.exitCode=1});
+          NODE
+          node /tmp/trace-core-v23.cjs
+
+      - name: Commit MEMORY
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add MEMORY.md
+          if ! git diff --cached --quiet; then
+            git commit -m 'docs: record v22 provider diagnostics'
+            git push origin HEAD:fix/non-display-recovery-20260916
+          fi
