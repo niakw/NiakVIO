@@ -74,7 +74,7 @@ jobs:
           set -euo pipefail
           git config user.name 'NiakVIO Repair Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add provider-overrides.json providers provider-bases sources.json manifest.json manifests scripts || true
+          git add -A -- provider-overrides.json providers provider-bases sources.json manifest.json scripts
           if git diff --cached --quiet; then
             echo 'No materialized changes to commit'
           else
