@@ -16,52 +16,134 @@ concurrency:
 jobs:
   followup:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 20
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: fix/cross-device-audit-20260916
           fetch-depth: 0
 
-      - name: Inspect UHDMovies labeled 4K handoff
+      - name: Probe released Hell Mode S2E11 on Anime-Sama and Mugiwara
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider_file() {
+            python3 - "$1" <<'PY'
+          import json,sys
+          pid=sys.argv[1].casefold()
+          data=json.load(open('manifest.json',encoding='utf-8'))
+          for row in data.get('scrapers') or data.get('providers') or []:
+              rid=str(row.get('id') or row.get('canonicalId') or row.get('scraper',{}).get('id') or '').casefold()
+              if rid==pid:
+                  print(row.get('filename') or row.get('file') or row.get('path') or '')
+                  raise SystemExit(0)
+          raise SystemExit(2)
+          PY
+          }
+          FIXTURE='{"tmdbId":"280049","mediaType":"anime","type":"anime","title":"Hell Mode","season":2,"episode":11}'
+          for pid in anime-sama mugiwarastream; do
+            file="$(provider_file "$pid")"
+            echo "FIELD_VALID_ANIME_PROBE_BEGIN provider=$pid file=$file"
+            timeout 70s node scripts/nuvio_tv_probe_tmdb_ci.cjs "$file" "$FIXTURE" 2>&1 | tee "/tmp/${pid}-e11.log" || true
+            echo "FIELD_VALID_ANIME_PROBE_END provider=$pid"
+          done
+
+      - name: Inspect Mugiwara public search contract without bypass
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://www.mugiwara-no-streaming.com'
+          curl -L --max-time 15 -A 'Mozilla/5.0' -D /tmp/mugi.headers "$BASE/" -o /tmp/mugi.html || true
+          python3 - <<'PY'
+          import re,html,os,json
+          text=html.unescape(open('/tmp/mugi.html',encoding='utf-8',errors='replace').read()) if os.path.exists('/tmp/mugi.html') else ''
+          print('MUGI_HOME_BYTES',len(text))
+          print('MUGI_FORMS',json.dumps(re.findall(r'<form\b[^>]*>[\s\S]{0,1800}?</form>',text,re.I)[:8],ensure_ascii=False)[:12000])
+          src=[]
+          for u in re.findall(r'<script[^>]+src=["\']([^"\']+)',text,re.I):
+              if u not in src: src.append(u)
+          print('MUGI_SCRIPTS',json.dumps(src[:50],ensure_ascii=False))
+          for pat in ('/api/search','search?','search-bar','query','algolia'):
+              if pat.lower() in text.lower(): print('MUGI_HAS',pat)
+          PY
+
+      - name: Follow UHDMovies public 4K handoff form
         shell: bash
         run: |
           set -euo pipefail
           PAGE='https://uhdmovies.my/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/'
-          curl -L --fail --max-time 15 -A 'Mozilla/5.0' "$PAGE" -o /tmp/uhd.html
-          LINK="$(python3 - <<'PY'
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145 Safari/537.36'
+          curl -L --fail --max-time 15 -A "$UA" -c /tmp/uhd.cookies "$PAGE" -o /tmp/uhd.html
+          python3 - <<'PY' >/tmp/uhd-link.txt
           import re,html
           text=html.unescape(open('/tmp/uhd.html',encoding='utf-8',errors='replace').read()).replace('\\/','/')
-          # Prefer the explicit inline 4k/2160p content link, not ads or generic site navigation.
           for m in re.finditer(r'<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>([\s\S]*?)</a>',text,re.I):
-              href=m.group(1)
-              label=re.sub(r'<[^>]+>',' ',m.group(2))
-              label=re.sub(r'\s+',' ',label).strip()
+              href=m.group(1); label=re.sub(r'<[^>]+>',' ',m.group(2)); label=re.sub(r'\s+',' ',label).strip()
               if 'cloud.unblockedgames.world' in href and re.search(r'\b(?:4k|2160p)\b',label,re.I):
                   print(href); break
           PY
-          )"
+          LINK="$(cat /tmp/uhd-link.txt)"
           test -n "$LINK"
-          echo "UHD_HANDOFF_URL=$LINK"
-          curl -L --max-time 20 -A 'Mozilla/5.0' -e "$PAGE" -D /tmp/handoff.headers -o /tmp/handoff.body -w 'UHD_HANDOFF_FINAL url=%{url_effective} code=%{http_code} type=%{content_type} redirects=%{num_redirects} bytes=%{size_download}\n' "$LINK" || true
-          echo '--- HANDOFF HEADERS ---'
-          tail -n 80 /tmp/handoff.headers || true
-          echo '--- HANDOFF BODY FACTS ---'
+          curl -L --max-time 15 -A "$UA" -e "$PAGE" -b /tmp/uhd.cookies -c /tmp/uhd.cookies "$LINK" -o /tmp/landing.html
+          python3 - <<'PY' >/tmp/uhd-form.env
+          import re,html
+          t=html.unescape(open('/tmp/landing.html',encoding='utf-8',errors='replace').read())
+          action=re.search(r'<form[^>]+action=["\']([^"\']+)',t,re.I)
+          token=re.search(r'<input[^>]+name=["\']_wp_http["\'][^>]+value=["\']([^"\']+)',t,re.I)
+          if not action or not token: raise SystemExit('UHD_FORM_NOT_FOUND')
+          print('ACTION='+action.group(1))
+          print('TOKEN='+token.group(1))
+          PY
+          ACTION="$(grep '^ACTION=' /tmp/uhd-form.env | cut -d= -f2-)"
+          TOKEN="$(grep '^TOKEN=' /tmp/uhd-form.env | cut -d= -f2-)"
+          echo "UHD_FORM action=$ACTION token_length=${#TOKEN}"
+          curl -L --max-time 20 -A "$UA" -e "$LINK" -b /tmp/uhd.cookies -c /tmp/uhd.cookies \
+            --data-urlencode "_wp_http=$TOKEN" -D /tmp/uhd-post.headers -o /tmp/uhd-post.body \
+            -w 'UHD_POST_FINAL url=%{url_effective} code=%{http_code} type=%{content_type} redirects=%{num_redirects} bytes=%{size_download}\n' "$ACTION" || true
           python3 - <<'PY'
-          import re,os
-          path='/tmp/handoff.body'
-          data=open(path,'rb').read(262144) if os.path.exists(path) else b''
-          text=data.decode('utf-8','replace')
-          print('bytes_sample',len(data))
-          print('extm3u',text.lstrip().startswith('#EXTM3U'))
-          print('direct_media_tokens',sorted(set(re.findall(r'https?://[^"\'<>\s]+\.(?:m3u8|mpd|mp4|mkv|webm)(?:\?[^"\'<>\s]*)?',text,re.I)))[:10])
-          print('hosts',sorted(set(re.findall(r'https?://([^/"\'<>\s]+)',text,re.I)))[:30])
-          print('head',re.sub(r'\s+',' ',text[:1800])[:1800])
+          import re,os,html,json
+          p='/tmp/uhd-post.body'; data=open(p,'rb').read(524288) if os.path.exists(p) else b''; text=html.unescape(data.decode('utf-8','replace')).replace('\\/','/')
+          print('UHD_POST_BYTES',len(data))
+          direct=[]
+          for u in re.findall(r'https?://[^"\'<>\s]+',text,re.I):
+              if re.search(r'\.(?:m3u8|mpd|mp4|mkv|webm)(?:[?#]|$)',u,re.I) and u not in direct: direct.append(u)
+          print('UHD_POST_DIRECT_MEDIA',json.dumps(direct[:20],ensure_ascii=False))
+          links=[]
+          for m in re.finditer(r'<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>([\s\S]*?)</a>',text,re.I):
+              href=m.group(1); label=re.sub(r'<[^>]+>',' ',m.group(2)); label=re.sub(r'\s+',' ',label).strip()
+              if re.search(r'download|direct|cloud|drive|hub|server|resume|instant',href+' '+label,re.I): links.append({'href':href[:500],'label':label[:250]})
+          print('UHD_POST_LINKS',json.dumps(links[:60],ensure_ascii=False))
+          print('UHD_POST_HEAD',re.sub(r'\s+',' ',text[:2500])[:2500])
           PY
 
-      - name: Keep Core quality regression green
+      - name: Inspect exact 4KHDHub Interstellar search anchors
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL='https://hdhub4u.bi/?s=Interstellar'
+          curl -L --fail --max-time 15 -A 'Mozilla/5.0' "$URL" -o /tmp/hdhub.html
+          python3 - <<'PY' >/tmp/hdhub-links.txt
+          import re,html
+          text=html.unescape(open('/tmp/hdhub.html',encoding='utf-8',errors='replace').read())
+          seen=[]
+          for m in re.finditer(r'<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>([\s\S]*?)</a>',text,re.I):
+              href=m.group(1); label=re.sub(r'<[^>]+>',' ',m.group(2)); label=re.sub(r'\s+',' ',label).strip()
+              if 'interstellar' in (href+' '+label).lower() and href not in seen:
+                  seen.append(href); print(href)
+          PY
+          echo 'HDHUB_INTERSTELLAR_LINKS'; cat /tmp/hdhub-links.txt
+          while IFS= read -r link; do
+            [[ -n "$link" ]] || continue
+            curl -L --max-time 12 -A 'Mozilla/5.0' -o /tmp/hdhub-one -w "HDHUB_FOLLOW source=$link final=%{url_effective} code=%{http_code} type=%{content_type} bytes=%{size_download}\n" "$link" || true
+          done </tmp/hdhub-links.txt
+
+      - name: Keep proven Core regressions green
         shell: bash
         run: |
           set -euo pipefail
           python3 tests/stream_quality_recovery_tv_test.py
           python3 tests/stream_output_sanitizer_fail_closed_test.py
+          python3 tests/cross_device_user_audit_regression_test.py
