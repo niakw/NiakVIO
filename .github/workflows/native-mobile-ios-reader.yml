@@ -108,6 +108,19 @@ jobs:
           xcodebuild -version
           xcrun --sdk iphoneos --show-sdk-version
           test "$DEVELOPER_DIR" = "/Applications/Xcode_26.6.app/Contents/Developer"
+      - name: Restore iOS prebuild cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.konan
+            nuvio-mobile/.gradle
+            nuvio-mobile/composeApp/build
+            nuvio-mobile/build/ios-derived-full-debug
+            nuvio-mobile/build/ios-ipa
+            ios-derived
+          key: native-prebuild-v2-ios-${{ runner.os }}-${{ needs.resolve.outputs.mobile_sha }}-xcode26.6-${{ hashFiles('niakvio/scripts/prepare_native_ios_reader_acceptance.py', 'niakvio/scripts/run_native_corpus_ios_suite.sh', 'niakvio/native-hub46/manifest.json') }}
       - name: Build official unsigned device IPA before Lab instrumentation
         if: ${{ github.event_name == 'schedule' || inputs.mode != 'only' }}
         shell: bash
