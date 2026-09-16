@@ -4,10 +4,10 @@ from __future__ import annotations
 import importlib.util
 import sys
 from pathlib import Path
-from current_provider_scope import active_provider_count
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
+from current_provider_scope import active_provider_count
 
 spec = importlib.util.spec_from_file_location(
     "provider_upstream_parity_v3",
@@ -118,4 +118,4 @@ row = parity.run_lane(
 assert row["status"] == "RESAMPLE", row
 assert len(row["samples"]) == 3, row
 
-print("provider upstream parity v3 tests passed: scope=46 clean-miss=RESAMPLE")
+print(f"provider upstream parity v3 tests passed: scope={active_provider_count()} clean-miss=RESAMPLE")
