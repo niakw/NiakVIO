@@ -1,0 +1,33 @@
+name: TEMP - Wooka TV Diagnostics V27
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-wooka-tv-diag-v27.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - name: Inspect Breaking Bad route
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/wooka-tv.cjs <<'NODE'
+          const UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36';
+          async function get(url,ref){const c=new AbortController(),t=setTimeout(()=>c.abort(),10000);try{const r=await fetch(url,{redirect:'follow',headers:{'User-Agent':UA,Accept:'text/html,*/*',...(ref?{Referer:ref}:{})},signal:c.signal});return {status:r.status,url:r.url,text:await r.text()}}finally{clearTimeout(t)}}
+          function abs(v,b){try{return new URL(v,b).toString()}catch{return''}}
+          function anchors(h,b){return [...String(h||'').matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)].map(m=>({url:abs(m[1],b),text:String(m[2]||'').replace(/<[^>]+>/g,' ').replace(/&[^;]+;/g,' ').replace(/\s+/g,' ').trim()}))}
+          (async()=>{
+            const base='https://wookafr.boston/';const s=await get(base+'?s='+encodeURIComponent('Breaking Bad'),base);const a=anchors(s.text,s.url);const matches=a.filter(x=>(x.text+' '+x.url).toLowerCase().includes('breaking bad')).slice(0,30);console.log('SEARCH',s.status,s.url,'bytes='+s.text.length,JSON.stringify(matches));
+            for(const row of matches.filter((x,i,arr)=>x.url&&arr.findIndex(y=>y.url===x.url)===i).slice(0,5)){
+              const d=await get(row.url,s.url),da=anchors(d.text,d.url);const interesting=da.filter(x=>/(season|saison|episode|lecteurvideo|player|embed)/i.test(x.text+' '+x.url)).slice(0,100);const raw=[...d.text.matchAll(/https?:\/\/[^"'<>\s]+/gi)].map(m=>m[0]).filter(u=>/lecteurvideo\.com/i.test(u)).slice(0,50);console.log('DETAIL',d.status,d.url,'bytes='+d.text.length,'interesting='+JSON.stringify(interesting),'rawLecteur='+JSON.stringify(raw));
+              const seasons=[...d.text.matchAll(/(?:saison|season)[^<]{0,100}/gi)].map(m=>m[0]).slice(0,30);console.log('SEASON_TEXT',JSON.stringify(seasons));
+            }
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/wooka-tv.cjs
