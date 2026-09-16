@@ -7577,7 +7577,8 @@
     },
     "vidfast": {
       "notes": [
-        "Use VidFast documented movie/tv embed routes. Do not force direct-media validation on the iframe URL."
+        "Use VidFast documented movie/tv embed routes. Do not force direct-media validation on the iframe URL.",
+        "Current documented VidFast routes are /movie/{tmdbId} and /tv/{tmdbId}/{season}/{episode}; provider-local fallback verifies the HTML player before returning the embed URL and does not invent a direct-media URL."
       ],
       "capability": "iframe_player",
       "preserve_embed_urls": true,
@@ -7586,7 +7587,9 @@
       },
       "learned_routes": [
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}/{season}/{episode}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -7780,7 +7783,15 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/vidfast_current_embed_v1.py"
+      ],
+      "official_site": "https://vidfast.vc",
+      "published_types": [
+        "movie",
+        "tv"
+      ]
     },
     "vidrock": {
       "capability": "html_scraper",
@@ -9040,7 +9051,8 @@
       "capability": "mixed_embed_resolver",
       "notes": [
         "Use the latest Wooka terminal domain announced by the official Telegram address channel.",
-        "Wooka player crawl preserves all discovered embeds but prioritizes lecteurvideo.com before the ProviderBase bounded seed budget; current lecteurvideo pages are structurally parsed and still pass shared terminal/identity guards."
+        "Wooka player crawl preserves all discovered embeds but prioritizes lecteurvideo.com before the ProviderBase bounded seed budget; current lecteurvideo pages are structurally parsed and still pass shared terminal/identity guards.",
+        "Current lecteurvideo embeds encode player URLs in showVideo(base64,...); Wooka decodes those provider-local seeds before the existing bounded shared crawler and terminal guards."
       ],
       "official_hub": "https://t.me/s/Wookafr2",
       "official_site": "https://wookafr.blog",
@@ -9277,7 +9289,8 @@
         "wookafr.boston": "wookafr.blog"
       },
       "provider_lego_scripts": [
-        "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py"
+        "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py",
+        "scripts/provider_patches/wookafr_showvideo_base64_v1.py"
       ],
       "provider_lego_options": {
         "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py": {
@@ -11270,36 +11283,40 @@
       }
     },
     "vidlove": {
-      "capability": "html_scraper",
+      "capability": "direct_api_hls",
       "manifest_overrides": {
         "enabled": true
       },
       "notes": [
-        "Clean ProviderBase reconstruction models VidLove as a bounded multi-source JSON API recipe derived from the upstream provider contract."
+        "Clean ProviderBase reconstruction models VidLove as a bounded multi-source JSON API recipe derived from the upstream provider contract.",
+        "2026-09-16 live contract: api.vidlove.cc movie/tv JSON returns source.url; with player.vidlove.cc Referer that URL responds 200 application/vnd.apple.mpegurl. Subtitle URLs are excluded by a provider-local source selector."
       ],
       "candidate_api_recipe": {
-        "base": "https://ballerinacappuccinalovestungtungtungsahur.com",
+        "proofModelVersion": 5,
+        "allowGenericFallback": false,
+        "base": "https://api.vidlove.cc",
         "referer": "https://player.vidlove.cc/",
         "origin": "https://player.vidlove.cc",
-        "directRoute": "/{media}?id={tmdbId}&mode=json&sources={source}&hevc=1&season={season}&episode={episode}",
-        "sources": [
-          "moviebox",
-          "ipcloud",
-          "tcloud",
-          "vidapi",
-          "vixsrc",
-          "1embed",
-          "xpass",
-          "vidrift",
-          "lookmovie",
-          "vidnest"
-        ],
-        "sourceFields": [
-          "url",
-          "qualities",
-          "quality",
-          "source"
-        ]
+        "directRoute": "/{media}?id={tmdbId}&mode=json&season={season}&episode={episode}",
+        "directRequest": {
+          "method": "GET",
+          "headers": {
+            "Accept": "application/json,text/plain,*/*",
+            "Origin": "https://player.vidlove.cc",
+            "Referer": "https://player.vidlove.cc/"
+          }
+        },
+        "requestHeaders": {
+          "Accept": "application/json,text/plain,*/*",
+          "Origin": "https://player.vidlove.cc",
+          "Referer": "https://player.vidlove.cc/"
+        },
+        "playbackHeaders": {
+          "Origin": "https://player.vidlove.cc"
+        },
+        "sources": [],
+        "requestTimeoutMs": 8000,
+        "minStreamsBeforeStop": 1
       },
       "candidate_config_reconciliation": {
         "version": 3,
@@ -11494,6 +11511,46 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/vidlove_current_api_v1.py"
+      ],
+      "official_site": "https://player.vidlove.cc",
+      "official_api": "https://api.vidlove.cc",
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "domain_substitutions": {
+        "ballerinacappuccinalovestungtungtungsahur.com": "api.vidlove.cc",
+        "api.ballerinacappuccinalovestungtungtungsahur.com": "api.vidlove.cc"
+      },
+      "api_recipe": {
+        "proofModelVersion": 5,
+        "allowGenericFallback": false,
+        "base": "https://api.vidlove.cc",
+        "referer": "https://player.vidlove.cc/",
+        "origin": "https://player.vidlove.cc",
+        "directRoute": "/{media}?id={tmdbId}&mode=json&season={season}&episode={episode}",
+        "directRequest": {
+          "method": "GET",
+          "headers": {
+            "Accept": "application/json,text/plain,*/*",
+            "Origin": "https://player.vidlove.cc",
+            "Referer": "https://player.vidlove.cc/"
+          }
+        },
+        "requestHeaders": {
+          "Accept": "application/json,text/plain,*/*",
+          "Origin": "https://player.vidlove.cc",
+          "Referer": "https://player.vidlove.cc/"
+        },
+        "playbackHeaders": {
+          "Origin": "https://player.vidlove.cc"
+        },
+        "sources": [],
+        "requestTimeoutMs": 8000,
+        "minStreamsBeforeStop": 1
       }
     }
   },
