@@ -5,6 +5,8 @@ on:
     branches: ['fix/non-display-recovery-20260916']
     paths:
       - '.github/workflows/coflix-thor-origin-proof-short.yml'
+      - 'scripts/provider_patches/coflix_livavid_origin_v2.py'
+      - 'scripts/register_non_display_recovery_v1.py'
   workflow_dispatch:
 
 permissions:
@@ -29,6 +31,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 -m py_compile scripts/provider_patches/coflix_livavid_origin_v2.py
           python3 scripts/register_non_display_recovery_v1.py
           python3 scripts/materialize_provider_v3_one.py coflix
           python3 - <<'PY'
@@ -45,8 +48,8 @@ jobs:
           for o in raw.get('network_observations') or []:
               if isinstance(o,dict) and not o.get('infrastructure'):
                   obs.append({k:o.get(k) for k in ('stage','method','host','path_pattern','status','ok') if o.get(k) is not None})
-          print('COFLIX_THOR_ORIGIN_RAW '+json.dumps({'streams':raw.get('stream_count'),'rawStreams':raw.get('raw_stream_count'),'error':raw.get('error_class'),'routes':obs},sort_keys=True))
-          print('COFLIX_THOR_ORIGIN_VERIFIED '+json.dumps({'streams':verified.get('stream_count'),'terminal':verified.get('terminal_verified'),'reasons':verified.get('terminal_reasons') or [],'error':verified.get('error_class')},sort_keys=True))
+          print('COFLIX_THOR_CONTEXT_RAW '+json.dumps({'streams':raw.get('stream_count'),'rawStreams':raw.get('raw_stream_count'),'error':raw.get('error_class'),'routes':obs},sort_keys=True))
+          print('COFLIX_THOR_CONTEXT_VERIFIED '+json.dumps({'streams':verified.get('stream_count'),'terminal':verified.get('terminal_verified'),'reasons':verified.get('terminal_reasons') or [],'error':verified.get('error_class')},sort_keys=True))
           if int(verified.get('stream_count') or 0)<1 or not verified.get('terminal_verified'):
               raise SystemExit('Coflix Thor still not terminal')
           PY
