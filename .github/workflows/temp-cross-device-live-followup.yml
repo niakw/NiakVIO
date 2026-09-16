@@ -16,71 +16,46 @@ concurrency:
 jobs:
   followup:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: fix/cross-device-audit-20260916
           fetch-depth: 0
 
-      - name: Inspect current Mugiwara Next.js public routes
+      - name: Prove current Mugiwara suggest lookup
         shell: bash
         run: |
           set -euo pipefail
           BASE='https://www.mugiwara-no-streaming.com'
-          UA='Mozilla/5.0'
-          curl -L --fail --max-time 15 -A "$UA" "$BASE/" -o /tmp/mugi-home.html
-          python3 - <<'PY' >/tmp/mugi-scripts.txt
-          import re,html
-          t=html.unescape(open('/tmp/mugi-home.html',encoding='utf-8',errors='replace').read())
-          seen=[]
-          for src in re.findall(r'<script[^>]+src=["\']([^"\']+)',t,re.I):
-              if src not in seen:
-                  seen.append(src); print(src)
+          for q in 'Hell Mode' 'Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing'; do
+            enc="$(python3 -c 'import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))' "$q")"
+            url="$BASE/api/suggest/lookup?q=$enc"
+            curl -L --max-time 12 -A 'Mozilla/5.0' -H 'Accept: application/json' -D /tmp/h -o /tmp/b \
+              -w "MUGI_SUGGEST query=$q final=%{url_effective} code=%{http_code} type=%{content_type} bytes=%{size_download}\n" "$url" || true
+            echo 'MUGI_SUGGEST_BODY_BEGIN'; head -c 12000 /tmp/b; echo; echo 'MUGI_SUGGEST_BODY_END'
+          done
+
+      - name: Extract current lookup contract from frontend chunk
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://www.mugiwara-no-streaming.com'
+          curl -L --fail --max-time 15 -A 'Mozilla/5.0' "$BASE/" -o /tmp/home
+          python3 - <<'PY' >/tmp/scripts
+          import re
+          t=open('/tmp/home',encoding='utf-8',errors='replace').read()
+          for x in dict.fromkeys(re.findall(r'<script[^>]+src=["\']([^"\']+)',t,re.I)): print(x)
           PY
-          mkdir -p /tmp/mugi-js
           n=0
           while IFS= read -r src; do
-            n=$((n+1)); [[ $n -le 40 ]] || break
-            case "$src" in http*) url="$src";; *) url="$BASE$src";; esac
-            curl -L --max-time 12 -A "$UA" "$url" -o "/tmp/mugi-js/$n.js" || true
-          done </tmp/mugi-scripts.txt
-          python3 - <<'PY'
-          import re,glob,json,html
-          texts=[]
-          for p in glob.glob('/tmp/mugi-js/*.js'):
-              try: texts.append((p,open(p,encoding='utf-8',errors='replace').read()))
-              except: pass
-          patterns=[r'/api/[A-Za-z0-9_?&=/${}.:-]+',r'https?://[^"\'`<> ]+',r'fetch\(([^)]{0,500})\)',r'axios[^;]{0,600}',r'query[^;]{0,500}']
-          for p,t in texts:
-              hits=[]
-              low=t.lower()
-              if any(x in low for x in ('api/search','/api/','searchparams','anime','episode')):
-                  for pat in patterns:
-                      for m in re.finditer(pat,t,re.I):
-                          v=m.group(0)
-                          if any(k in v.lower() for k in ('search','anime','episode','api/')) and v not in hits: hits.append(v[:800])
-                  if hits: print('MUGI_JS_FILE',p,'HITS',json.dumps(hits[:80],ensure_ascii=False))
-          home=html.unescape(open('/tmp/mugi-home.html',encoding='utf-8',errors='replace').read())
-          for needle in ('api/search','api/anime','api/animes','episode','search'):
-              pos=home.lower().find(needle)
-              if pos>=0: print('MUGI_HOME_CONTEXT',needle,re.sub(r'\s+',' ',home[max(0,pos-800):pos+1800])[:2600])
+            n=$((n+1)); url="$BASE$src"; curl -L --max-time 8 -A 'Mozilla/5.0' "$url" -o "/tmp/chunk$n" || true
+            if grep -q '/api/suggest/lookup' "/tmp/chunk$n"; then
+              python3 - "/tmp/chunk$n" <<'PY'
+          import sys
+          t=open(sys.argv[1],encoding='utf-8',errors='replace').read(); needle='/api/suggest/lookup'; p=t.find(needle)
+          print('MUGI_SUGGEST_JS_CONTEXT',t[max(0,p-2500):p+4500])
           PY
-
-      - name: Test discovered common public route shapes read-only
-        shell: bash
-        run: |
-          set -euo pipefail
-          BASE='https://www.mugiwara-no-streaming.com'
-          Q='Hell%20Mode'
-          for path in \
-            "/api/search?q=$Q" \
-            "/api/search?query=$Q" \
-            "/api/animes?search=$Q" \
-            "/api/anime?search=$Q" \
-            "/search?q=$Q" \
-            "/search?query=$Q"; do
-            curl -L --max-time 10 -A 'Mozilla/5.0' -o /tmp/mugi-route -w "MUGI_ROUTE path=$path final=%{url_effective} code=%{http_code} type=%{content_type} bytes=%{size_download}\n" "$BASE$path" || true
-            head -c 300 /tmp/mugi-route 2>/dev/null | tr '\n' ' ' | sed 's/^/MUGI_ROUTE_HEAD /' || true
-            echo
-          done
+              break
+            fi
+          done </tmp/scripts
