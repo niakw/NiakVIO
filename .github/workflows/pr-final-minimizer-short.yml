@@ -73,7 +73,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 tests/provider_overrides_sync_test.py
+          python3 tests/published_overrides_test.py
           python3 tests/global_stream_presentation_test.py
           python3 tests/global_stream_presentation_pipeline_test.py
           python3 tests/stream_output_sanitizer_fail_closed_test.py
