@@ -39,6 +39,7 @@ import run_provider_upstream_parity as parity
 import run_provider_upstream_parity_v2 as parity_v2
 from rotating_corpus import default_seed, select_fixtures
 from parity_hls_terminal_probe import verify_hls_terminal
+import provider_upstream_semantic_guard as semantic_guard
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SCOPE = ROOT / "automation/evidence/hub-lab-matrix-46.json"
@@ -339,6 +340,26 @@ def classify_pair(upstream: dict[str, Any], local: dict[str, Any]) -> str:
     return "both_technical"
 
 
+# PARITY_UPSTREAM_SEMANTIC_GUARD_V4
+def classify_pair_with_semantic_guard(
+    provider_id: str,
+    fixture: dict[str, Any],
+    upstream_path: Path,
+    upstream: dict[str, Any],
+    local: dict[str, Any],
+    timeout: int,
+) -> tuple[str, dict[str, Any] | None]:
+    classification = classify_pair(upstream, local)
+    if classification != "upstream_ok_niakvio_ko":
+        return classification, None
+    evidence = semantic_guard.assess_upstream(
+        provider_id, upstream_path, fixture, timeout, _worker_raw
+    )
+    if evidence.get("trusted") is False:
+        return "upstream_semantic_untrusted", evidence
+    return classification, evidence
+
+
 def run_lane(
     provider_id: str,
     lane: str,
@@ -380,6 +401,7 @@ def run_lane(
         classification = classify_pair(upstream, local)
         confirmation = None
         confirmation_classification = None
+        semantic_evidence = None
 
         if classification in {"upstream_ok_niakvio_ko", "niakvio_ok_upstream_ko"}:
             upstream_confirm, local_confirm = ordered_pair(not local_first)
@@ -400,6 +422,11 @@ def run_lane(
                 classification = "both_ok_flaky"
             elif upstream_positive_count == 2 and local_positive_count == 0:
                 classification = "upstream_ok_niakvio_ko"
+                semantic_evidence = semantic_guard.assess_upstream(
+                    provider_id, upstream_path, up_fixture, timeout, _worker_raw
+                )
+                if semantic_evidence.get("trusted") is False:
+                    classification = "upstream_semantic_untrusted"
             elif local_positive_count and upstream_positive_count == 0:
                 classification = "niakvio_ok_upstream_ko"
             elif upstream_positive_count and local_positive_count == 0:
@@ -418,6 +445,8 @@ def run_lane(
         if confirmation is not None:
             sample["confirmation"] = confirmation
             sample["confirmationClassification"] = confirmation_classification
+        if semantic_evidence is not None:
+            sample["semanticValidation"] = semantic_evidence
         samples.append(sample)
         if classification in {
             "both_ok",
@@ -437,6 +466,7 @@ def run_lane(
         "niakvio_candidate_unverified",
         "upstream_advantage_unconfirmed",
         "order_sensitive_resample",
+        "upstream_semantic_untrusted",
     } for value in classes):
         status = "RESAMPLE"
     else:

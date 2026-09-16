@@ -3506,11 +3506,25 @@
         "sequential": true
       },
       "provider_lego_scripts": [
-        "scripts/provider_patches/animesamaco_site_runtime_v1.py"
+        "scripts/provider_patches/animesamaco_site_runtime_v1.py",
+        "scripts/provider_patches/animesamaco_nondisplay_recovery_v1.py",
+        "scripts/provider_patches/animesamaco_nondisplay_recovery_v2.py"
       ],
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
-      ]
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/animesamaco_nondisplay_recovery_v1.py": {
+          "provider": "animesama-co",
+          "base": "https://animesama.co",
+          "max_streams": 4
+        },
+        "scripts/provider_patches/animesamaco_nondisplay_recovery_v2.py": {
+          "provider": "animesama-co",
+          "base": "https://animesama.co",
+          "max_streams": 4
+        }
+      }
     },
     "animesultra": {
       "capability": "mixed_embed_resolver",
@@ -4213,7 +4227,17 @@
       ],
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
-      ]
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/animevostfr_nondisplay_recovery_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/animevostfr_nondisplay_recovery_v1.py": {
+          "provider": "animevostfr",
+          "base": "https://v2.animevostfr.org",
+          "max_streams": 4
+        }
+      }
     },
     "castle": {
       "capability": "api_stream_resolver",
@@ -4502,15 +4526,14 @@
         }
       },
       "domain_substitutions": {
-        "coflix.cymru": "coflix.group",
-        "coflix.blue": "coflix.group",
-        "coflix.wiki": "coflix.group",
-        "coflix.life": "coflix.group",
-        "coflix.fr": "coflix.group",
-        "coflix.boston": "coflix.group",
-        "coflix.to": "coflix.group",
-        "coflix.blog": "coflix.group",
-        "coflix.esq": "coflix.group"
+        "coflix.cymru": "coflix.wiki",
+        "coflix.blue": "coflix.wiki",
+        "coflix.life": "coflix.wiki",
+        "coflix.fr": "coflix.wiki",
+        "coflix.boston": "coflix.wiki",
+        "coflix.to": "coflix.wiki",
+        "coflix.blog": "coflix.wiki",
+        "coflix.esq": "coflix.wiki"
       },
       "candidate_learned_routes": [
         "/?s={query}",
@@ -4777,6 +4800,17 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
+        },
+        "referer": "https://coflix.group"
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/coflix_nondisplay_recovery_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/coflix_nondisplay_recovery_v1.py": {
+          "provider": "coflix",
+          "base": "https://coflix.wiki",
+          "max_streams": 4
         }
       }
     },
@@ -5918,11 +5952,23 @@
         "/anime/{slug}-saison-1/"
       ],
       "provider_lego_scripts": [
-        "scripts/provider_patches/neko_sama_runtime_v1.py"
+        "scripts/provider_patches/neko_sama_runtime_v1.py",
+        "scripts/provider_patches/neko_sama_nondisplay_recovery_v1.py",
+        "scripts/provider_patches/neko_sama_nondisplay_recovery_v2.py"
       ],
       "provider_lego_options": {
         "scripts/provider_patches/neko_sama_runtime_v1.py": {
           "base": "https://animes-sama.su"
+        },
+        "scripts/provider_patches/neko_sama_nondisplay_recovery_v1.py": {
+          "provider": "neko-sama",
+          "base": "https://animes-sama.su",
+          "max_streams": 4
+        },
+        "scripts/provider_patches/neko_sama_nondisplay_recovery_v2.py": {
+          "provider": "neko-sama",
+          "base": "https://animes-sama.su",
+          "max_streams": 4
         }
       },
       "candidate_learned_routes": [
@@ -6947,7 +6993,23 @@
       ],
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
-      ]
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/sekai_nondisplay_recovery_v1.py",
+        "scripts/provider_patches/sekai_nondisplay_recovery_v2.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/sekai_nondisplay_recovery_v1.py": {
+          "provider": "sekai",
+          "base": "https://sekai.one",
+          "max_streams": 4
+        },
+        "scripts/provider_patches/sekai_nondisplay_recovery_v2.py": {
+          "provider": "sekai",
+          "base": "https://sekai.one",
+          "max_streams": 4
+        }
+      }
     },
     "streamzo": {
       "notes": [
@@ -8717,7 +8779,23 @@
       ],
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
-      ]
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/voiranime_rip_nondisplay_recovery_v1.py",
+        "scripts/provider_patches/voiranime_rip_nondisplay_recovery_v2.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/voiranime_rip_nondisplay_recovery_v1.py": {
+          "provider": "voiranime-rip",
+          "base": "https://voiranime.rip",
+          "max_streams": 4
+        },
+        "scripts/provider_patches/voiranime_rip_nondisplay_recovery_v2.py": {
+          "provider": "voiranime-rip",
+          "base": "https://voiranime.rip",
+          "max_streams": 4
+        }
+      }
     },
     "vostfree": {
       "capability": "mixed_embed_resolver",

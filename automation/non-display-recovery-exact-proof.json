@@ -1,0 +1,131 @@
+{
+  "rows": [
+    {
+      "providerId": "animesama-co",
+      "lane": "anime",
+      "fixture": "high-school-dxd-2012-s01e01",
+      "classification": "catalog_miss_both",
+      "localStreams": 0,
+      "localTerminal": false,
+      "upstreamStreams": 0,
+      "upstreamTerminal": false,
+      "localReasons": [],
+      "upstreamReasons": [],
+      "localError": null,
+      "upstreamError": null
+    },
+    {
+      "providerId": "animevostfr",
+      "lane": "anime",
+      "fixture": "jujutsu-kaisen-2020-s01e01",
+      "classification": "niakvio_ok_upstream_ko",
+      "localStreams": 1,
+      "localTerminal": true,
+      "upstreamStreams": 0,
+      "upstreamTerminal": false,
+      "localReasons": [
+        "hls_segment_media"
+      ],
+      "upstreamReasons": [],
+      "localError": null,
+      "upstreamError": "timeout"
+    },
+    {
+      "providerId": "coflix",
+      "lane": "movie",
+      "fixture": "thor-2011",
+      "classification": "upstream_semantic_untrusted",
+      "localStreams": 0,
+      "localTerminal": false,
+      "upstreamStreams": 1,
+      "upstreamTerminal": true,
+      "localReasons": [],
+      "upstreamReasons": [
+        "hls_segment_media"
+      ],
+      "localError": null,
+      "upstreamError": null,
+      "semanticValidation": {
+        "trusted": false,
+        "reason": "correlated_different_work",
+        "matchedCandidates": [
+          {
+            "slug": "hulk-vs-thor-vostfr",
+            "semanticMatch": false,
+            "routeCount": 1
+          },
+          {
+            "slug": "hulk-vs-thor-vf",
+            "semanticMatch": false,
+            "routeCount": 1
+          }
+        ],
+        "candidateCount": 10
+      }
+    },
+    {
+      "providerId": "coflix",
+      "lane": "tv",
+      "fixture": "house-of-the-dragon-2022-s01e01",
+      "classification": "both_ok",
+      "localStreams": 1,
+      "localTerminal": true,
+      "upstreamStreams": 1,
+      "upstreamTerminal": true,
+      "localReasons": [
+        "hls_segment_media"
+      ],
+      "upstreamReasons": [
+        "hls_segment_media"
+      ],
+      "localError": null,
+      "upstreamError": null
+    },
+    {
+      "providerId": "neko-sama",
+      "lane": "anime",
+      "fixture": "my-hero-academia-2016-s01e01",
+      "classification": "both_ok",
+      "localStreams": 1,
+      "localTerminal": true,
+      "upstreamStreams": 1,
+      "upstreamTerminal": true,
+      "localReasons": [
+        "hls_segment_media"
+      ],
+      "upstreamReasons": [
+        "hls_segment_media"
+      ],
+      "localError": null,
+      "upstreamError": null
+    },
+    {
+      "providerId": "sekai",
+      "lane": "anime",
+      "fixture": "my-hero-academia-2016-s01e01",
+      "classification": "catalog_miss_both",
+      "localStreams": 0,
+      "localTerminal": false,
+      "upstreamStreams": 0,
+      "upstreamTerminal": false,
+      "localReasons": [],
+      "upstreamReasons": [],
+      "localError": null,
+      "upstreamError": null
+    },
+    {
+      "providerId": "voiranime-rip",
+      "lane": "anime",
+      "fixture": "spy-x-family-2022-s01e01",
+      "classification": "upstream_technical_niakvio_no_stream",
+      "localStreams": 0,
+      "localTerminal": false,
+      "upstreamStreams": 0,
+      "upstreamTerminal": false,
+      "localReasons": [],
+      "upstreamReasons": [],
+      "localError": null,
+      "upstreamError": "timeout"
+    }
+  ]
+}
