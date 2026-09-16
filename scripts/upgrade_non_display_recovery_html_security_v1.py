@@ -23,22 +23,51 @@ _SAFE = (
     'out+=ch;i++}return s(out).replace(/&[^;]+;/g," ").replace(/\\s+/g," ").trim()}'
 )
 
+_PLAYER_MARKER = 'NIAKVIO_ANIMESAMACO_PLAYER_DISCOVERY_V2'
+_PLAYER_HELPER = r'''/* NIAKVIO_ANIMESAMACO_PLAYER_DISCOVERY_V2 */
+function animeSamaPlayers(html,base){var out=[],seen={};function push(u){u=abs(u,base);if(u&&!seen[u]){seen[u]=1;out.push(u)}}var raw=s(html).replace(/\\\//g,"/"),m,re=/(?:videoUrls|filmUrls)\s*=\s*\{([^}]{0,1600})\}/gi;while((m=re.exec(raw))!==null){var pr=/(?:["']?(?:vf|vostfr|vo|v1|v2)["']?)\s*:\s*["'](https?:\/\/[^"'\s]+)["']/gi,p;while((p=pr.exec(m[1]))!==null)push(p[1])}var ir=/<iframe[^>]+src=["']([^"']+)["']/gi,i;while((i=ir.exec(raw))!==null)push(i[1]);return out}
+'''
+_PLAYER_INSERT_ANCHOR = '\n\nasync function animeSamaCo(q){'
+_OLD_CRAWL = 'var shells=hrefs(eh.text,/["]'  # sentinel only; exact replacement below
+_OLD_ROUTE = r'''var shells=hrefs(eh.text,/["'](https?:\/\/video\.sibnet\.ru\/shell\.php\?videoid=\d+[^"']*)["']/gi,eh.url);var rows=await crawl(shells,eh.url,"AnimeSamaCo","VOSTFR");'''
+_NEW_ROUTE = r'''var shells=hrefs(eh.text,/["'](https?:\/\/video\.sibnet\.ru\/shell\.php\?videoid=\d+[^"']*)["']/gi,eh.url);var players=animeSamaPlayers(eh.text,eh.url);var rows=await crawl(uniq(shells.concat(players)),eh.url,"AnimeSamaCo","VOSTFR");'''
+
 
 def main() -> int:
     text = TARGET.read_text(encoding="utf-8")
-    if _SAFE in text:
-        if _UNSAFE in text:
-            raise SystemExit("unsafe HTML strip survived beside safe scanner")
-        print("NON_DISPLAY_HTML_SECURITY_V1_ALREADY_SAFE")
-        return 0
-    count = text.count(_UNSAFE)
-    if count != 1:
-        raise SystemExit(f"expected one unsafe non-display strip anchor, got {count}")
-    text = text.replace(_UNSAFE, _SAFE, 1)
+    changed = []
+
+    if _SAFE not in text:
+        count = text.count(_UNSAFE)
+        if count != 1:
+            raise SystemExit(f"expected one unsafe non-display strip anchor, got {count}")
+        text = text.replace(_UNSAFE, _SAFE, 1)
+        changed.append("html_scanner")
     if _UNSAFE in text or _SAFE not in text:
         raise SystemExit("non-display HTML security replacement failed closed")
+
+    if _PLAYER_MARKER not in text:
+        count = text.count(_PLAYER_INSERT_ANCHOR)
+        if count != 1:
+            raise SystemExit(f"expected one AnimeSamaCo helper insertion anchor, got {count}")
+        text = text.replace(_PLAYER_INSERT_ANCHOR, '\n\n' + _PLAYER_HELPER + 'async function animeSamaCo(q){', 1)
+        changed.append("animesamaco_player_helper")
+
+    if _NEW_ROUTE not in text:
+        count = text.count(_OLD_ROUTE)
+        if count != 1:
+            raise SystemExit(f"expected one AnimeSamaCo Sibnet-only route anchor, got {count}")
+        text = text.replace(_OLD_ROUTE, _NEW_ROUTE, 1)
+        changed.append("animesamaco_player_route")
+
+    if _PLAYER_MARKER not in text or _NEW_ROUTE not in text:
+        raise SystemExit("AnimeSamaCo player discovery V2 replacement failed closed")
+
     TARGET.write_text(text, encoding="utf-8")
-    print("NON_DISPLAY_HTML_SECURITY_V1_PATCHED deterministic_state_machine=1")
+    if changed:
+        print("NON_DISPLAY_RECOVERY_UPGRADED " + ",".join(changed))
+    else:
+        print("NON_DISPLAY_RECOVERY_ALREADY_CURRENT")
     return 0
 
 
