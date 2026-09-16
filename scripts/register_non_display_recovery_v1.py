@@ -25,7 +25,6 @@ V1_LEGOS = {
 }
 V2_LEGOS = {
     "animesama-co": "scripts/provider_patches/animesamaco_nondisplay_recovery_v2.py",
-    "coflix": "scripts/provider_patches/coflix_livavid_origin_v2.py",
     "neko-sama": "scripts/provider_patches/neko_sama_nondisplay_recovery_v2.py",
     "sekai": "scripts/provider_patches/sekai_nondisplay_recovery_v2.py",
     "voiranime-rip": "scripts/provider_patches/voiranime_rip_nondisplay_recovery_v2.py",
@@ -33,6 +32,9 @@ V2_LEGOS = {
 LEGACY_SHARED = {
     "scripts/provider_patches/non_display_recovery_runtime_v1.py",
     "scripts/provider_patches/non_display_recovery_entry_v1.py",
+}
+RETIRED_LEGOS = {
+    "scripts/provider_patches/coflix_livavid_origin_v2.py",
 }
 
 
@@ -49,7 +51,7 @@ def apply_document(doc: dict[str, Any]) -> list[str]:
             raise ValueError(f"missing provider patch row: {provider}")
         scripts = row.setdefault("provider_lego_scripts", [])
         before_scripts = list(scripts)
-        scripts[:] = [x for x in scripts if x not in LEGACY_SHARED]
+        scripts[:] = [x for x in scripts if x not in LEGACY_SHARED and x not in RETIRED_LEGOS]
         v1 = V1_LEGOS[provider]
         if v1 not in scripts:
             scripts.append(v1)
@@ -63,7 +65,7 @@ def apply_document(doc: dict[str, Any]) -> list[str]:
             changed.append(provider)
 
         options = row.setdefault("provider_lego_options", {})
-        for old in LEGACY_SHARED:
+        for old in LEGACY_SHARED | RETIRED_LEGOS:
             options.pop(old, None)
         wanted = _wanted(provider, base)
         if options.get(v1) != wanted:
@@ -110,9 +112,11 @@ def validate_document(doc: dict[str, Any]) -> None:
         v1 = V1_LEGOS[provider]
         if v1 not in scripts:
             raise AssertionError(f"{provider}: recovery V1 Lego missing")
-        if any(old in scripts for old in LEGACY_SHARED):
-            raise AssertionError(f"{provider}: legacy shared recovery Lego still registered")
+        if any(old in scripts for old in LEGACY_SHARED | RETIRED_LEGOS):
+            raise AssertionError(f"{provider}: retired/legacy recovery Lego still registered")
         options = row.get("provider_lego_options") or {}
+        if any(old in options for old in RETIRED_LEGOS):
+            raise AssertionError(f"{provider}: retired recovery options still registered")
         if options.get(v1) != _wanted(provider, base):
             raise AssertionError(f"{provider}: recovery V1 options drift")
         v2 = V2_LEGOS.get(provider)
