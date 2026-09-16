@@ -16,46 +16,28 @@ concurrency:
 jobs:
   followup:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: fix/cross-device-audit-20260916
           fetch-depth: 0
 
-      - name: Prove current Mugiwara suggest lookup
+      - name: Test public same-origin Mugiwara lookup session
         shell: bash
         run: |
           set -euo pipefail
           BASE='https://www.mugiwara-no-streaming.com'
-          for q in 'Hell Mode' 'Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing'; do
-            enc="$(python3 -c 'import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))' "$q")"
-            url="$BASE/api/suggest/lookup?q=$enc"
-            curl -L --max-time 12 -A 'Mozilla/5.0' -H 'Accept: application/json' -D /tmp/h -o /tmp/b \
-              -w "MUGI_SUGGEST query=$q final=%{url_effective} code=%{http_code} type=%{content_type} bytes=%{size_download}\n" "$url" || true
-            echo 'MUGI_SUGGEST_BODY_BEGIN'; head -c 12000 /tmp/b; echo; echo 'MUGI_SUGGEST_BODY_END'
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36'
+          curl -L --fail --max-time 15 -A "$UA" -c /tmp/mugi.cookies "$BASE/" -o /tmp/home
+          echo 'MUGI_COOKIE_JAR'; sed -E 's/([^\t]+)$/<redacted>/' /tmp/mugi.cookies || true
+          enc='Hell%20Mode'
+          for route in "/api/suggest/lookup?q=$enc" "/api/search/sources?q=$enc"; do
+            curl -L --max-time 15 -A "$UA" -b /tmp/mugi.cookies -c /tmp/mugi.cookies \
+              -H 'Accept: application/json, text/plain, */*' \
+              -H 'Sec-Fetch-Site: same-origin' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Dest: empty' \
+              -H 'X-Requested-With: XMLHttpRequest' -e "$BASE/" \
+              -D /tmp/headers -o /tmp/body \
+              -w "MUGI_SAME_ORIGIN route=$route final=%{url_effective} code=%{http_code} type=%{content_type} bytes=%{size_download}\n" "$BASE$route" || true
+            echo 'MUGI_BODY'; head -c 10000 /tmp/body; echo
           done
-
-      - name: Extract current lookup contract from frontend chunk
-        shell: bash
-        run: |
-          set -euo pipefail
-          BASE='https://www.mugiwara-no-streaming.com'
-          curl -L --fail --max-time 15 -A 'Mozilla/5.0' "$BASE/" -o /tmp/home
-          python3 - <<'PY' >/tmp/scripts
-          import re
-          t=open('/tmp/home',encoding='utf-8',errors='replace').read()
-          for x in dict.fromkeys(re.findall(r'<script[^>]+src=["\']([^"\']+)',t,re.I)): print(x)
-          PY
-          n=0
-          while IFS= read -r src; do
-            n=$((n+1)); url="$BASE$src"; curl -L --max-time 8 -A 'Mozilla/5.0' "$url" -o "/tmp/chunk$n" || true
-            if grep -q '/api/suggest/lookup' "/tmp/chunk$n"; then
-              python3 - "/tmp/chunk$n" <<'PY'
-          import sys
-          t=open(sys.argv[1],encoding='utf-8',errors='replace').read(); needle='/api/suggest/lookup'; p=t.find(needle)
-          print('MUGI_SUGGEST_JS_CONTEXT',t[max(0,p-2500):p+4500])
-          PY
-              break
-            fi
-          done </tmp/scripts
