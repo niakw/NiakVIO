@@ -1,0 +1,144 @@
+name: TEMP - Max Repair Context Handoff V31
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-max-repair-context-handoff-v31.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - name: Apply request-scoped metadata handoff and unit tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/upgrade_request_scoped_metadata_handoff_v1.py
+          python3 scripts/upgrade_request_scoped_metadata_handoff_v1.py
+          python3 -m py_compile tests/global_media_type_resolution_test.py
+          python3 tests/global_media_type_resolution_test.py
+          python3 tests/native_dual_id_identity_test.py
+          python3 tests/provider_stream_scope_architecture_test.py
+      - name: Rematerialize all provider artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/validate_published_overrides.py
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/core_runtime_nonregression_contract_test.py
+          python3 tests/global_media_type_resolution_test.py
+      - name: Persist Core and materialized artifacts before live probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add scripts/provider_patches/global_media_type_resolution_v1.py tests/global_media_type_resolution_test.py manifest.json PROVENANCE.json providers provider-bases
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: preserve matching request TMDB metadata in Core'
+            git pull --rebase origin fix/non-display-recovery-20260916
+            git push origin HEAD:fix/non-display-recovery-20260916
+          fi
+      - name: Probe repaired and regression lanes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/probe-v31.cjs <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const manifest=JSON.parse(fs.readFileSync('manifest.json','utf8')),result={};
+          function norm(v){return String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,'')}
+          function file(pid){const x=(manifest.scrapers||[]).filter(r=>norm(r&&r.id)===norm(pid));if(x.length!==1)throw new Error('manifest_count:'+pid+':'+x.length);return path.resolve(x[0].filename)}
+          function metadata(s){return s.type==='movie'?{title:s.title,original_title:s.title,release_date:`${s.year}-01-01`,alternative_titles:{titles:[]}}:{name:s.title,original_name:s.title,first_air_date:`${s.year}-01-01`,alternative_titles:{results:[]}}}
+          async function run(label,s){
+            try{
+              const ns=s.type==='movie'?'movie':'tv',m=metadata(s),f=file(s.pid);
+              globalThis.__nuvioMediaContext={tmdbId:String(s.id),tmdbNamespace:ns,tmdbMetadata:m,canonicalMediaType:s.type};
+              globalThis.__nuvioTmdbMetadataCacheV1={[`${ns}:${s.id}`]:m};
+              globalThis.__nuvioProviderDeadlineMs=Date.now()+35000;
+              delete require.cache[f];const mod=require(f);
+              const rows=await Promise.race([Promise.resolve(mod.getStreams(String(s.id),s.type,s.season,s.episode)),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),36000))]);
+              const out=Array.isArray(rows)?rows:[],privateProof=out.some(r=>r&&(r.__nuvioCorrelatedPlayerFallbackV1||r.__nuvioCoreMediaProofV1));
+              console.log('PROBE',label,'count='+out.length,'private='+privateProof,out.slice(0,8).map(r=>({url:r&&r.url,title:r&&r.title})));
+              let status=0,pageOk=false,ctype='';
+              if(out[0]&&/^https?:\/\//i.test(String(out[0].url||''))){const c=new AbortController(),t=setTimeout(()=>c.abort(),12000);try{const r=await fetch(out[0].url,{headers:out[0].headers||{},redirect:'follow',signal:c.signal});status=r.status;ctype=r.headers.get('content-type')||'';const body=await r.text();pageOk=r.ok&&body.length>=20;console.log('PAGE',label,status,ctype,'bytes='+body.length,'final='+r.url)}catch(e){console.log('PAGE_ERROR',label,String(e&&e.message||e))}finally{clearTimeout(t)}}
+              result[label]={count:out.length,privateProof,status,pageOk,ctype,urls:out.slice(0,8).map(r=>String(r&&r.url||''))};
+            }catch(e){console.log('PROBE_ERROR',label,String(e&&e.stack||e));result[label]={count:0,privateProof:false,status:0,pageOk:false,error:String(e&&e.message||e),urls:[]}}
+          }
+          (async()=>{
+            const specs={
+              wookafr_movie:{pid:'wookafr',id:'157336',type:'movie',title:'Interstellar',year:'2014'},
+              wookafr_tv:{pid:'wookafr',id:'1396',type:'tv',title:'Breaking Bad',year:'2008',season:1,episode:1},
+              allanime:{pid:'allanime',id:'37854',type:'anime',title:'One Piece',year:'1999',season:1,episode:1178},
+              moviebox_movie:{pid:'moviebox',id:'157336',type:'movie',title:'Interstellar',year:'2014'},
+              moviebox_tv:{pid:'moviebox',id:'1396',type:'tv',title:'Breaking Bad',year:'2008',season:1,episode:1},
+              vidlove_movie:{pid:'vidlove',id:'157336',type:'movie',title:'Interstellar',year:'2014'},
+              vidlove_tv:{pid:'vidlove',id:'1396',type:'tv',title:'Breaking Bad',year:'2008',season:1,episode:1}
+            };
+            for(const [k,v] of Object.entries(specs))await run(k,v);
+            fs.writeFileSync('/tmp/probe-v31.json',JSON.stringify(result,null,2));console.log('SUMMARY',JSON.stringify(result,null,2));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/probe-v31.cjs
+      - name: Record V29 V30 V31 and update lane ledger
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          try:r=json.load(open('/tmp/probe-v31.json'))
+          except Exception:r={}
+          def positive(k):
+              x=r.get(k) or {}; return int(x.get('count') or 0)>0 and not x.get('privateProof')
+          p=Path('provider-overrides.json'); data=json.loads(p.read_text(encoding='utf-8')); rows=data['provider_patches']
+          def set_disp(pid,required,proven):
+              row=rows[pid];d=row.get('repair_disposition') if isinstance(row.get('repair_disposition'),dict) else {'schemaVersion':1,'authority':'provider-repair-disposition-v1'}
+              d['requiredLanes']=required;d['provenLanes']=[x for x in required if x in proven];d['currentVerifiedLanes']=list(d['provenLanes']);d['missingLanes']=[x for x in required if x not in proven];d['completeCapabilityProof']=not d['missingLanes'];d['recoveryStatus']='proven' if not d['missingLanes'] else 'repair';d['quarantined']=False;d['terminalState']=None;d['activationState']='enabled';codes=[str(x) for x in d.get('reasonCodes') or [] if str(x)];code='v31_request_scoped_metadata_live_proven' if not d['missingLanes'] else 'v31_request_scoped_metadata_partial';
+              if code not in codes:codes.append(code)
+              d['reasonCodes']=codes;row['repair_disposition']=d
+          wp=[]
+          if positive('wookafr_movie'):wp.append('movie')
+          if positive('wookafr_tv'):wp.append('tv')
+          set_disp('wookafr',['movie','tv'],wp)
+          set_disp('allanime',['anime'],['anime'] if positive('allanime') else [])
+          p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          mem=Path('MEMORY.md');t=mem.read_text(encoding='utf-8');mark='<!-- MAX_REPAIR_20260917_V31_RESULT -->'
+          if mark not in t:
+              def fmt(k):
+                  x=r.get(k) or {};return f"{k}: count={x.get('count','n/a')} pageOk={x.get('pageOk','n/a')} status={x.get('status','n/a')} error={x.get('error','')}"
+              section=mark+'\n### V29/V30/V31 request-scoped metadata + residual authorities\n- V29 run `35161748810`: Wooka/AllAnime current runtime markers were present, but no current title-search fetch occurred; both fell back to old ProviderBase routes. Root cause localized to Core clearing incoming `__nuvioMediaContext` before building provisional arguments.\n- Core V31 fix accepts incoming TMDB metadata only when request identity and namespace match exactly; stale/mismatched context remains rejected. Unit tests cover matching reuse and cross-title non-leak.\n- V30 run `35161833380`: AllWish `.me` is Cloudflare 403; `new.all-wish.me` and deployment IP are unreachable. Flemmix `.me`, `.cloud`, `.men` all return Cloudflare 403. Coflix `.group` is current/live 200 but obvious search routes expose no usable catalogue/backend; 4KHDHub search remains same shell.\n- '+fmt('wookafr_movie')+'\n- '+fmt('wookafr_tv')+'\n- '+fmt('allanime')+'\n- '+fmt('moviebox_movie')+'\n- '+fmt('moviebox_tv')+'\n- '+fmt('vidlove_movie')+'\n- '+fmt('vidlove_tv')+'\n\n'
+              anchor='## 2026-09-16 — authoritative current checkpoint';t=t.replace(anchor,section+anchor,1) if anchor in t else t.rstrip()+'\n\n'+section;mem.write_text(t,encoding='utf-8')
+          PY
+          python3 scripts/validate_published_overrides.py
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add provider-overrides.json MEMORY.md
+          if ! git diff --cached --quiet; then
+            git commit -m 'docs: record V31 metadata handoff provider proof'
+            git pull --rebase origin fix/non-display-recovery-20260916
+            git push origin HEAD:fix/non-display-recovery-20260916
+          fi
+      - name: Positive gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          r=json.load(open('/tmp/probe-v31.json'))
+          required=['wookafr_movie','wookafr_tv','allanime','moviebox_movie','moviebox_tv','vidlove_movie','vidlove_tv']
+          bad={k:r.get(k) for k in required if int((r.get(k) or {}).get('count') or 0)<1 or (r.get(k) or {}).get('privateProof')}
+          assert not bad,bad
+          print('V31_ALL_REQUIRED_POSITIVE_OK',required)
+          PY
