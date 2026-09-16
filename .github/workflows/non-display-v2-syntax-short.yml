@@ -1,0 +1,29 @@
+name: DIAG - Non-Display V2 Syntax
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/non-display-v2-syntax-short.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {ref: '${{ github.sha }}'}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Materialize and check syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/register_non_display_recovery_v1.py
+          for provider in animesama-co neko-sama sekai voiranime-rip; do
+            json="$(python3 scripts/materialize_provider_v3_one.py "$provider" | tail -1)"
+            file="$(printf '%s\n' "$json" | sed -n 's/.*file=\([^ ]*\).*/\1/p')"
+            echo "CHECK $provider $file"
+            node --check "$file" || true
+          done
