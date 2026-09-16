@@ -13,11 +13,11 @@ if source.count(old) != 1:
     raise AssertionError("provider non-regression finalizer compatibility anchor changed")
 source = source.replace(old, new, 1)
 
-# The active finalization branch uses the current provider-folder lifecycle. Keep the
-# historical implementation source intact while projecting its workflow-branch
-# assertion and human-readable wording onto the current operational contract.
+# The durable workflow validates pull requests and direct publication work on main.
+# Keep the historical implementation source intact while projecting its obsolete
+# workbench assertion onto the current operational contract.
 old_branch_assert = 'assert "workbench/systemic-recovery-20260909" in nonreg'
-new_branch_assert = 'assert "fix/labs-5.21.44-20260912" in nonreg'
+new_branch_assert = 'assert "      - main" in nonreg'
 if source.count(old_branch_assert) != 1:
     raise AssertionError("provider non-regression active-branch compatibility anchor changed")
 source = source.replace(old_branch_assert, new_branch_assert, 1)
