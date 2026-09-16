@@ -17,6 +17,22 @@ WRAPPER = r'''
     var original=_spv4GetStreams,BASE="https://ww2.aniwatch.fit",UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36";
     function headers(ref){return {"User-Agent":UA,"Accept":"text/html,application/xhtml+xml,text/plain,*/*","Accept-Language":"en-US,en;q=0.9","Referer":ref||BASE+"/"};}
     function clean(v){return String(v==null?"":v).replace(/<[^>]+>/g," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;/gi,"'").replace(/\s+/g," ").trim();}
+    function project(row){
+      if(row&&row.state==="ok"&&row.metadata)row=row.metadata;
+      if(!row||typeof row!=="object")return null;
+      var title=clean(row.title||row.name||row.original_title||row.original_name||"");if(!title)return null;
+      var al=row.alternative_titles&&((row.alternative_titles.titles||row.alternative_titles.results)||row.alternative_titles),aliases=[];
+      if(Array.isArray(al))for(var i=0;i<al.length;i++){var a=clean(al[i]&&(al[i].title||al[i].name)||al[i]);if(a)aliases.push(a)}
+      aliases=_uniq([title,row.title,row.name,row.original_title,row.original_name].concat(aliases).map(clean).filter(Boolean));
+      return {title:title,aliases:aliases};
+    }
+    async function metadata(tmdbId,mediaType){
+      var id=String(tmdbId||""),ns="tv";
+      try{var ctx=globalThis.__nuvioMediaContext||null;if(ctx&&(!ctx.tmdbId||String(ctx.tmdbId)===id)&&(!ctx.tmdbNamespace||String(ctx.tmdbNamespace)===ns)){var p=project(ctx.tmdbMetadata);if(p)return p}}catch(_e){}
+      try{var cache=globalThis.__nuvioTmdbMetadataCacheV1||null,v=cache&&cache[ns+":"+id];if(v&&typeof v.then==="function")v=await v;var p2=project(v);if(p2)return p2}catch(_e){}
+      try{var p3=project(await _tmdb(tmdbId,mediaType));if(p3)return p3}catch(_e){}
+      return null;
+    }
     function expected(meta){return _uniq([meta&&meta.title].concat(meta&&Array.isArray(meta.aliases)?meta.aliases:[])).map(_slug).filter(Boolean);}
     function detailCandidates(html,meta){
       var exp=expected(meta),out=[],seen=Object.create(null),re=/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,m;
@@ -41,7 +57,7 @@ WRAPPER = r'''
       return "";
     }
     function embeds(html,base){
-      var out=[],seen=Object.create(null),re=/<iframe[^>]+src=["']([^"']+)["']/gi,m;
+      var out=[],seen=Object.create(null),re=/<iframe[^>]+(?:src|data-src)=["']([^"']+)["']/gi,m;
       while((m=re.exec(String(html||"")))&&out.length<10){
         var u=_absolute(m[1],base);if(!/^https?:/i.test(u)||seen[u])continue;
         var host="";try{host=new URL(u).hostname.toLowerCase()}catch(_e){}
@@ -52,7 +68,7 @@ WRAPPER = r'''
     async function current(tmdbId,mediaType,season,episode){
       var lane=String(mediaType||"").toLowerCase();if(lane!=="anime"&&lane!=="tv")return [];
       var ep=Math.floor(Number(episode)||0);if(ep<=0)return [];
-      var meta=await _tmdb(tmdbId,mediaType);if(!meta||!meta.title)return [];
+      var meta=await metadata(tmdbId,mediaType);if(!meta||!meta.title)return [];
       var search=BASE+"/?s="+encodeURIComponent(meta.title),sr,sh;
       try{sr=await _fetch(search,{headers:headers(BASE+"/")});sh=await sr.text()}catch(_e){return []}
       var candidates=detailCandidates(sh,meta);if(!candidates.length)return [];
@@ -81,6 +97,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "fixtureIdsHardcoded": False,
         "searchRoute": "/?s={title}",
         "episodeIdentity": "epl-num",
+        "metadataAuthority": "media-context-cache-first-then-provider-tmdb",
         "preserveEmbeds": True,
     })
 
