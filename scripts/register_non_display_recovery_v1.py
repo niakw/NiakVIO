@@ -25,6 +25,7 @@ V1_LEGOS = {
 }
 V2_LEGOS = {
     "animesama-co": "scripts/provider_patches/animesamaco_nondisplay_recovery_v2.py",
+    "coflix": "scripts/provider_patches/coflix_livavid_origin_v2.py",
     "neko-sama": "scripts/provider_patches/neko_sama_nondisplay_recovery_v2.py",
     "sekai": "scripts/provider_patches/sekai_nondisplay_recovery_v2.py",
     "voiranime-rip": "scripts/provider_patches/voiranime_rip_nondisplay_recovery_v2.py",
@@ -53,7 +54,7 @@ def apply_document(doc: dict[str, Any]) -> list[str]:
         if v1 not in scripts:
             scripts.append(v1)
         # V2 is deliberately ordered after V1 so its runtime-resolver registration
-        # is the final provider-owned resolver for the four still-broken routes.
+        # is the final provider-owned resolver for the still-broken routes.
         v2 = V2_LEGOS.get(provider)
         if v2:
             scripts[:] = [x for x in scripts if x != v2]
