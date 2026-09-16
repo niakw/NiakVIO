@@ -10,6 +10,9 @@ on:
       - 'scripts/provider_patches/*nondisplay_recovery_v1.py'
       - 'scripts/provider_patches/*nondisplay_recovery_v2.py'
       - 'scripts/register_non_display_recovery_v1.py'
+      - 'scripts/provider_upstream_semantic_guard.py'
+      - 'scripts/upgrade_provider_upstream_parity_semantic_v4.py'
+      - 'tests/provider_upstream_semantic_guard_test.py'
   workflow_dispatch:
 
 permissions:
@@ -41,10 +44,11 @@ jobs:
         with: {node-version: '24', package-manager-cache: false}
       - name: Install provider worker dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Validate source and registrar without mutation
+      - name: Install fail-closed semantic parity guard and validate source
         shell: bash
         run: |
           set -euo pipefail
+          python3 scripts/upgrade_provider_upstream_parity_semantic_v4.py
           python3 -m py_compile \
             scripts/provider_patches/non_display_recovery_runtime_v1.py \
             scripts/provider_patches/non_display_recovery_followup_v2.py \
@@ -58,9 +62,12 @@ jobs:
             scripts/provider_patches/sekai_nondisplay_recovery_v2.py \
             scripts/provider_patches/voiranime_rip_nondisplay_recovery_v1.py \
             scripts/provider_patches/voiranime_rip_nondisplay_recovery_v2.py \
+            scripts/provider_upstream_semantic_guard.py \
+            scripts/upgrade_provider_upstream_parity_semantic_v4.py \
             scripts/register_non_display_recovery_v1.py \
             scripts/materialize_provider_v3_one.py \
             scripts/run_provider_upstream_parity_v3.py
+          python3 tests/provider_upstream_semantic_guard_test.py
           python3 - <<'PY'
           import importlib.util,json,pathlib
           root=pathlib.Path('.').resolve()
@@ -116,7 +123,7 @@ jobs:
               fx=fixtures[(lane,tmdb)]
               lo=v3._run_verified(local[pid]['path'],v3.fixture_payload(fx,lane,upstream=False),25)
               up=v3._run_verified(up_paths[pid],v3.fixture_payload(fx,lane,upstream=True),25)
-              status=v3.classify_pair(up,lo)
+              status,semantic=v3.classify_pair_with_semantic_guard(pid,fx,up_paths[pid],up,lo,25)
               item={
                 'providerId':pid,'lane':lane,'fixture':fx['slug'],'classification':status,
                 'localStreams':int(lo.get('stream_count') or 0),'localTerminal':bool(lo.get('terminal_verified')),
@@ -124,6 +131,7 @@ jobs:
                 'localReasons':lo.get('terminal_reasons') or [],'upstreamReasons':up.get('terminal_reasons') or [],
                 'localError':lo.get('error_class'),'upstreamError':up.get('error_class'),
               }
+              if semantic is not None:item['semanticValidation']=semantic
               print('NON_DISPLAY_EXACT_PARITY '+json.dumps(item,sort_keys=True));rows.append(item)
           pathlib.Path('automation/non-display-recovery-exact-proof.json').write_text(json.dumps({'rows':rows},indent=2)+'\n',encoding='utf-8')
           bad=[r for r in rows if r['classification']=='upstream_ok_niakvio_ko']
@@ -143,6 +151,7 @@ jobs:
           if got!=wanted: raise SystemExit('scope mismatch missing='+','.join(sorted(wanted-got)))
           Path('/tmp/non-display-suspect-scope.json').write_text(json.dumps({'schemaVersion':src.get('schemaVersion',1),'hubCount':len(rows),'providerCount':len(rows),'rows':rows},indent=2)+'\n')
           PY
+          python3 tests/provider_upstream_semantic_guard_test.py
           python3 tests/provider_upstream_parity_v3_test.py
           python3 scripts/run_provider_upstream_parity_v3.py --scope-matrix /tmp/non-display-suspect-scope.json --out automation/non-display-recovery-parity.json
       - name: Enforce zero proven regressions
@@ -163,7 +172,9 @@ jobs:
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add provider-overrides.json manifest.json providers/ provider-v3-materialization.json automation/non-display-recovery-exact-proof.json automation/non-display-recovery-parity.json
+          git add provider-overrides.json manifest.json providers/ provider-v3-materialization.json \
+            scripts/run_provider_upstream_parity_v3.py \
+            automation/non-display-recovery-exact-proof.json automation/non-display-recovery-parity.json
           git diff --cached --quiet && { echo NON_DISPLAY_CANDIDATE_ALREADY_CURRENT; exit 0; }
           git commit -m 'fix: recover six non-display provider routes'
           git push origin HEAD:fix/non-display-recovery-20260916
