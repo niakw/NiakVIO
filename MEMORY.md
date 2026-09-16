@@ -105,6 +105,14 @@ This section supersedes older branch-topology assumptions below for the active r
 - output-positive but terminal not confirmed: none
 - still zero/no acceptable output: none
 
+<!-- MAX_REPAIR_20260917_V34_RESULT -->
+### V34 isolated full residual requalification
+- V33 run `35162751955` aborted because normalized manifest lookup collided `animevost-fr` with `animevostfr`; its empty result lists are **not provider verdicts**. V34 fixes lookup by exact manifest ID and isolates every lane in its own Node process so media context cannot race across concurrent probes.
+- V31 terminal proofs are reconciled into the stale ledger for MovieBox movie/TV and VidLove movie/TV.
+- V34 newly terminal-proven lanes: purstream:movie, purstream:tv, kehflix:movie, kehflix:tv, animevostfr:anime, coflix:tv, coflix:movie, papadustream:movie, vidrock:movie, vidrock:tv, voiranime:anime
+- V34 output-positive but terminal not confirmed: hindmoviez:movie, vidfast:movie, vidfast:tv, kurage:anime
+- V34 still zero/no acceptable output on tested fixtures: flemmix:tv, flemmix:movie, uhdmovies:movie, 4khdhub:movie, uhdmovies:tv, persianstremio:movie, persianstremio:tv, 4khdhub:tv, kehflix:anime, desiflix:movie, hindmoviez:tv, animesultra:anime, animesalt:anime, animetsu:anime, moviesmod:movie, moviesmod:tv, mugiwarastream:anime, neko-sama:anime, animesama-co:anime, anikototv:anime, sekai:anime, streamzo:anime, vostfree:anime, yflix:movie, yflix:tv, anime-ultime:anime, animevost-fr:anime, fullanime:anime, mallumv:movie, showbox:movie, showbox:tv, allwish:anime, voiranime-rip:anime
+
 ## 2026-09-16 — authoritative current checkpoint
 
 - Current public release is **5.21.48**. `manifest.json`, VF/no-anime projections, package metadata and release hashes are on 5.21.48.
