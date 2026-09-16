@@ -13,14 +13,16 @@ WRAPPER = r'''
 ;(function(){
   "use strict";
   try{
-    if(typeof _spv4GetStreams!=="function"||_spv4GetStreams.__niakvioVidFastCurrentEmbedV1)return;
-    var original=_spv4GetStreams;
+    var exported=(typeof module!=="undefined"&&module&&module.exports&&typeof module.exports.getStreams==="function")?module.exports.getStreams:null;
+    var internal=typeof _spv4GetStreams==="function"?_spv4GetStreams:null;
+    var original=exported||internal;
+    if(!original||original.__niakvioVidFastCurrentEmbedV1)return;
     var wrapped=async function(tmdbId,mediaType,season,episode){
       var rows=[];
       try{rows=await original(tmdbId,mediaType,season,episode)}catch(_e){}
       if(Array.isArray(rows)&&rows.length)return rows;
       var id=String(tmdbId==null?"":tmdbId).trim();if(!id)return [];
-      var lane=_mediaNamespace(mediaType),url="";
+      var lane=typeof _mediaNamespace==="function"?_mediaNamespace(mediaType):(mediaType==="movie"?"movie":"tv"),url="";
       if(lane==="movie")url="https://vidfast.vc/movie/"+encodeURIComponent(id);
       else{
         var s=Math.floor(Number(season)||0),e=Math.floor(Number(episode)||0);
@@ -29,6 +31,7 @@ WRAPPER = r'''
       }
       try{
         var response=await _fetch(url,{headers:{Referer:"https://vidfast.vc/"}});
+        if(!response||response.ok===false)return [];
         var type=String(response&&response.headers&&response.headers.get?response.headers.get("content-type")||"":"").toLowerCase();
         if(type&&type.indexOf("text/html")<0)return [];
       }catch(_e){return []}
@@ -36,7 +39,8 @@ WRAPPER = r'''
     };
     wrapped.__niakvioVidFastCurrentEmbedV1=true;
     wrapped.__niakvioOriginal=original;
-    _spv4GetStreams=wrapped;
+    try{_spv4GetStreams=wrapped}catch(_e){}
+    if(typeof module!=="undefined"&&module&&module.exports)module.exports.getStreams=wrapped;
   }catch(_e){}
 })();
 '''
@@ -47,11 +51,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         MANAGED_FIX_ID,
         WRAPPER,
         data={
-            "scope": "provider-local-current-documented-embed-route",
+            "scope": "provider-local-exported-current-documented-embed-route",
             "providerBaseModified": False,
             "fixtureUrlHardcoded": False,
             "movieRoute": "/movie/{tmdbId}",
             "tvRoute": "/tv/{tmdbId}/{season}/{episode}",
+            "wrapsExportedGetStreams": True,
         },
     )
 
