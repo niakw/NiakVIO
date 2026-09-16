@@ -244,6 +244,8 @@ Publication is atomic and fail-closed. Published provider-byte changes require s
 | `github-actions-gate.yml` | workflow/repository security invariants |
 | `codeql.yml` | local CodeQL `security-extended` + production dependency audit |
 | `weekly-upstream-provider-discovery.yml` | read-only upstream discovery |
+| `purge-actions-history.yml` | weekly cleanup of stale GitHub Actions history |
+| `brain-branch-maintenance.yml` | scheduled maintenance of Learning proposal branches |
 
 </details>
 
