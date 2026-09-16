@@ -1,6 +1,21 @@
 # Architecture NiakVIO — Provider v3
 
-> Source de vérité technique humaine. Les états de run, branches temporaires et métriques de disponibilité ne sont pas des invariants d’architecture et ne doivent pas être figés ici.
+> [!IMPORTANT]
+> **Source de vérité technique humaine.** Les états de run, branches temporaires et métriques de disponibilité ne sont pas des invariants d’architecture et ne doivent pas être figés ici.
+
+## 🧭 Lecture rapide
+
+| Couche | Autorité |
+| --- | --- |
+| **Provider Object** | identité, capacité canonique, DATA, routes/protocole, stratégie, preuves et provenance |
+| **NiakVIO** | reconnaissance, composition, vérification, Learning et publication |
+| **Clients Nuvio officiels** | surfaces d’exécution et de preuve par plateforme |
+| **Publication** | bytes Provider v3 acceptés + projections + versions/hashes synchronisés |
+| **Preuve native** | 5 Labs indépendants : TV Android, Mobile Android, Mobile iOS, macOS, Windows |
+
+**Navigation :** [modèle](#1-modèle) · [source de vérité](#2-source-de-vérité-provider-v3) · [routes](#4-routes-et-protocoles) · [types média](#5-type-canonique--transport-nuvio) · [runtime](#6-contrat-runtime) · [CORE](#8-core--verify--publish) · [Learning](#9-learning) · [Domain Refresh](#10-domain-refresh) · [Native Labs](#11-cinq-native-labs) · [sécurité](#13-sécurité) · [invariants](#15-invariants-non-négociables)
+
+---
 
 ## 1. Modèle
 
@@ -77,7 +92,8 @@ Les métriques d’un census précis restent dans les artifacts/rapports et dans
 
 ## 5. Type canonique ≠ transport Nuvio
 
-C’est un contrat central.
+> [!IMPORTANT]
+> C’est un contrat central : **capacité sémantique** et **voie de lancement** ne sont pas la même chose.
 
 ### Capacité canonique
 
@@ -165,26 +181,10 @@ Les anciens comptes de plans/quarantaines restent des **snapshots historiques**,
 
 Le workflow routine est `.github/workflows/sync.yml` : **CORE - Verify & Publish**.
 
-### Quick
-
-Quick vérifie rapidement :
-
-- structure Provider v3/Core ;
-- bytes publiés exacts ;
-- sécurité ;
-- minimizer ;
-- contrats média/type ;
-- cohérence des cinq Labs.
-
-### Deep
-
-Deep ajoute :
-
-- observations réseau/hubs en lecture seule ;
-- health des bytes publiés exacts ;
-- diagnostics ;
-- projections de manifests ;
-- hashes et intégrité de release.
+| Mode | Rôle |
+| --- | --- |
+| **Quick** | structure Provider v3/Core, bytes publiés exacts, sécurité, minimizer, contrats média/type, cohérence des cinq Labs |
+| **Deep** | Quick + observations réseau/hubs read-only, health, diagnostics, projections manifests, hashes et intégrité release |
 
 **Quick/Deep ne réparent ni ne reconstruisent les providers et ne réalisent pas le bump release de routine.**
 
@@ -237,11 +237,13 @@ Le contrat est fail-closed sur rollback/cycle, terminal social/template, dérive
 
 Surface exacte :
 
-1. `TVAndroid` — NuvioTV ;
-2. `MobileAndroid` — NuvioMobile ;
-3. `MobileIOS` — NuvioMobile ;
-4. `DesktopMACOS` — NuvioDesktop ;
-5. `DesktopWindows` — NuvioDesktop.
+| ID | Client |
+| --- | --- |
+| `TVAndroid` | NuvioTV |
+| `MobileAndroid` | NuvioMobile |
+| `MobileIOS` | NuvioMobile |
+| `DesktopMACOS` | NuvioDesktop |
+| `DesktopWindows` | NuvioDesktop |
 
 Règles :
 
@@ -258,7 +260,8 @@ Le trigger commun est `.github/triggers/full-native-lab-validation.json`.
 
 ## 12. Minimizer NiakVIO
 
-Terser est interdit.
+> [!CAUTION]
+> **Terser est interdit.** Le minimizer NiakVIO est volontairement conservateur.
 
 `scripts/provider_v3_minimizer.py` est conservateur et pré-hash. Il doit préserver :
 
@@ -285,6 +288,8 @@ Provider JS est de l’entrée non fiable : sandbox, budgets mémoire/temps/rés
 Le stripping HTML générique par regexp est interdit. Les findings CodeQL sur code NiakVIO doivent être corrigés ou justifiés ; les snapshots/bundles générés restent traités comme code non fiable même lorsqu’un finding est classé vendored/generated.
 
 `.github/workflows/codeql.yml` produit une preuve locale `security-extended` au SHA exact, conserve le SARIF en artifact et gate les findings High/Critical. Le même workflow audite les dépendances production au niveau High/Critical. Cette preuve complète le CodeQL Default Setup GitHub ; elle ne doit pas être désactivée pour masquer des alertes historiques.
+
+Voir [`SECURITY.md`](SECURITY.md).
 
 ## 14. Branches et publication
 
