@@ -21,6 +21,7 @@ SOURCE_PATHS = (
     ROOT / "scripts/provider_patches/voiranime_anime_runtime_v2.py",
     ROOT / "scripts/provider_patches/dle_anime_runtime_v1.py",
     ROOT / "scripts/provider_patches/neko_sama_runtime_v1.py",
+    ROOT / "scripts/provider_patches/non_display_recovery_runtime_v1.py",
 )
 
 BAD_PATTERNS = (
@@ -71,6 +72,7 @@ def main() -> int:
     voiranime_source = SOURCE_PATHS[8].read_text(encoding="utf-8")
     dle_source = SOURCE_PATHS[9].read_text(encoding="utf-8")
     neko_source = SOURCE_PATHS[10].read_text(encoding="utf-8")
+    recovery_source = SOURCE_PATHS[11].read_text(encoding="utf-8")
     if "function _htmlVisibleText(value)" not in base_source:
         failures.append("provider_base_store.py: missing deterministic HTML text scanner")
     if "function plainHtml(v)" not in alias_source:
@@ -87,6 +89,8 @@ def main() -> int:
         failures.append("dle_anime_runtime_v1.py: missing deterministic HTML text scanner")
     if 'function nekoVisibleText(v){var src=String(v==null?"":v)' not in neko_source:
         failures.append("neko_sama_runtime_v1.py: missing deterministic HTML text scanner")
+    if 'function strip(v){var src=String(v==null?"":v),lower=src.toLowerCase(),out="",i=0,inTag=false;' not in recovery_source:
+        failures.append("non_display_recovery_runtime_v1.py: missing deterministic HTML text scanner")
 
     checked = 0
     if args.published:
