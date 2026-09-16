@@ -85,10 +85,14 @@ t=p.read_text(encoding='utf-8')
 t=t.replace('assert "MainActivity::class.java.packageName," in mobile','assert "queryIntentActivities(launcherQuery, 0)" in mobile\nassert "launchActivity.activityInfo.packageName," in mobile\nassert "launchActivity.activityInfo.name," in mobile\nassert "MainActivity::class.java.packageName," not in mobile')
 p.write_text(t,encoding='utf-8')
 
-# Existing non-regression test had already imported the live scope helper into
-# EXPECTED, but two stale references still used the deleted variable name.
+# Manifest contains visible rows (active + explicitly disabled retained rows).
 p=ROOT/'tests/core_runtime_nonregression_contract_test.py'
-t=p.read_text(encoding='utf-8').replace('CURRENT_PROVIDER_COUNT','EXPECTED')
+t=p.read_text(encoding='utf-8')
+t=t.replace('from current_provider_scope import active_provider_count','from current_provider_scope import active_provider_count, visible_provider_count')
+t=t.replace('EXPECTED = active_provider_count()','ACTIVE_EXPECTED = active_provider_count()\nVISIBLE_EXPECTED = visible_provider_count()')
+t=t.replace('CURRENT_PROVIDER_COUNT','VISIBLE_EXPECTED')
+t=t.replace('== EXPECTED','== VISIBLE_EXPECTED')
+t=t.replace('f"providers={EXPECTED} provider_timeout_ms=', 'f"providers_visible={VISIBLE_EXPECTED} providers_active={ACTIVE_EXPECTED} provider_timeout_ms=')
 p.write_text(t,encoding='utf-8')
 
-print('retry: presentation, sanitizer, launcher and current-scope contracts aligned')
+print('retry: presentation, sanitizer, launcher and active/visible scope contracts aligned')
