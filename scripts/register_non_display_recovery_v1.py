@@ -7,7 +7,6 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 PATH = ROOT / "provider-overrides.json"
-LEGO = "scripts/provider_patches/non_display_recovery_entry_v1.py"
 PROVIDERS = {
     "animesama-co": "https://animesama.co",
     "animevostfr": "https://v2.animevostfr.org",
@@ -15,6 +14,18 @@ PROVIDERS = {
     "neko-sama": "https://animes-sama.su",
     "sekai": "https://sekai.one",
     "voiranime-rip": "https://voiranime.rip",
+}
+LEGOS = {
+    "animesama-co": "scripts/provider_patches/animesamaco_nondisplay_recovery_v1.py",
+    "animevostfr": "scripts/provider_patches/animevostfr_nondisplay_recovery_v1.py",
+    "coflix": "scripts/provider_patches/coflix_nondisplay_recovery_v1.py",
+    "neko-sama": "scripts/provider_patches/neko_sama_nondisplay_recovery_v1.py",
+    "sekai": "scripts/provider_patches/sekai_nondisplay_recovery_v1.py",
+    "voiranime-rip": "scripts/provider_patches/voiranime_rip_nondisplay_recovery_v1.py",
+}
+LEGACY_SHARED = {
+    "scripts/provider_patches/non_display_recovery_runtime_v1.py",
+    "scripts/provider_patches/non_display_recovery_entry_v1.py",
 }
 
 
@@ -25,14 +36,20 @@ def apply_document(doc: dict[str, Any]) -> list[str]:
         row = patches.get(provider)
         if not isinstance(row, dict):
             raise ValueError(f"missing provider patch row: {provider}")
+        lego = LEGOS[provider]
         scripts = row.setdefault("provider_lego_scripts", [])
-        if LEGO not in scripts:
-            scripts.append(LEGO)
+        before_scripts = list(scripts)
+        scripts[:] = [x for x in scripts if x not in LEGACY_SHARED]
+        if lego not in scripts:
+            scripts.append(lego)
+        if scripts != before_scripts:
             changed.append(provider)
         options = row.setdefault("provider_lego_options", {})
+        for old in LEGACY_SHARED:
+            options.pop(old, None)
         wanted = {"provider": provider, "base": base, "max_streams": 4}
-        if options.get(LEGO) != wanted:
-            options[LEGO] = wanted
+        if options.get(lego) != wanted:
+            options[lego] = wanted
             if provider not in changed:
                 changed.append(provider)
 
@@ -67,10 +84,14 @@ def validate_document(doc: dict[str, Any]) -> None:
         row = patches.get(provider)
         if not isinstance(row, dict):
             raise AssertionError(provider)
-        if LEGO not in (row.get("provider_lego_scripts") or []):
+        lego = LEGOS[provider]
+        scripts = row.get("provider_lego_scripts") or []
+        if lego not in scripts:
             raise AssertionError(f"{provider}: recovery Lego missing")
+        if any(old in scripts for old in LEGACY_SHARED):
+            raise AssertionError(f"{provider}: legacy shared recovery Lego still registered")
         options = row.get("provider_lego_options") or {}
-        if (options.get(LEGO) or {}).get("base") != base:
+        if (options.get(lego) or {}).get("base") != base:
             raise AssertionError(f"{provider}: recovery base drift")
     coflix = patches["coflix"]
     if coflix.get("official_site") != "https://coflix.wiki":
