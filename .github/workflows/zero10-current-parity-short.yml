@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/zero10-current-parity-short.yml'
+      - 'tests/provider_upstream_parity_v3_test.py'
+      - 'scripts/run_provider_upstream_parity_v3.py'
+      - 'scripts/current_provider_scope.py'
+      - 'automation/evidence/hub-lab-matrix-46.json'
   workflow_dispatch:
 
 permissions:
