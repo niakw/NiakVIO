@@ -1,0 +1,101 @@
+name: TEMP - Cross Device Live Followup
+
+on:
+  push:
+    branches: [fix/cross-device-audit-20260916]
+    paths:
+      - '.github/workflows/temp-cross-device-live-followup.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-cross-device-live-followup
+  cancel-in-progress: true
+
+jobs:
+  followup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/cross-device-audit-20260916
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Patch generic URL quality recovery and regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f noop.tmp
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/provider_patches/stream_output_sanitizer_v5.py')
+          t=p.read_text(encoding='utf-8')
+          old='''    if(/(?:\\b4K\\b|\\b2160P?\\b|\\bUHD\\b)/.test(source))return"2160p";\n    var m=source.match(/\\b(1440|1080|720|576|540|480|360)P?\\b/);return m?m[1]+"p":"";'''
+          new='''    if(/(?:^|[^0-9])(?:4K|2160P?|UHD)(?:[^0-9]|$)/.test(source))return"2160p";\n    var m=source.match(/(?:^|[^0-9])(1440|1080|720|576|540|480|360)P?(?:[^0-9]|$)/);return m?m[1]+"p":"";'''
+          if old not in t: raise SystemExit('quality URL anchor drifted')
+          p.write_text(t.replace(old,new,1),encoding='utf-8')
+
+          p=Path('tests/stream_quality_recovery_tv_test.py')
+          t=p.read_text(encoding='utf-8')
+          t=t.replace('{name:"StreamZo",title:"StreamZo",quality:"Unknown",url:"https://cdn.example/master.m3u8"}', '{name:"StreamZo",title:"StreamZo",quality:"Unknown",url:"https://cdn.example/index-s2160p-v1-a1.m3u8"}')
+          t=t.replace('const playlist="#EXTM3U\\n#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080\\nhttps://cdn.example/1080.m3u8\\n";', 'const playlist="#EXTM3U\\n#EXTINF:6.0,\\nseg-001.ts\\n#EXT-X-ENDLIST\\n";')
+          t=t.replace('if(u.endsWith("master.m3u8")){', 'if(u.includes("index-s2160p-v1-a1.m3u8")){')
+          t=t.replace('if(rows[1].quality!=="1080p")throw new Error("HLS master quality not recovered: "+JSON.stringify(rows[1]));', 'if(rows[1].quality!=="2160p")throw new Error("HLS URL 2160p quality not recovered: "+JSON.stringify(rows[1]));')
+          p.write_text(t,encoding='utf-8')
+          PY
+          python3 tests/stream_quality_recovery_tv_test.py
+          python3 tests/stream_output_sanitizer_fail_closed_test.py
+
+      - name: Inspect Anime-Sama current Hell Mode episode arrays
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL='https://anime-sama.to/catalogue/hell-mode/saison2/vostfr/episodes.js'
+          curl -L --fail --max-time 15 -A 'Mozilla/5.0' "$URL" -o /tmp/episodes.js
+          python3 - <<'PY'
+          import re,json
+          text=open('/tmp/episodes.js',encoding='utf-8',errors='replace').read()
+          rows=[]
+          for m in re.finditer(r'var\s+([a-z0-9_$]+)\s*=\s*\[([\s\S]*?)\s*\];',text,re.I):
+              vals=re.findall(r'["\']([^"\']+)["\']',m.group(2))
+              urls=[v for v in vals if re.match(r'^https?://',v,re.I)]
+              rows.append({'name':m.group(1),'values':len(vals),'urls':len(urls),'episode12': urls[11][:240] if len(urls)>11 else None,'first':urls[0][:180] if urls else None})
+          print('ANIME_SAMA_EPISODES_BYTES',len(text))
+          print('ANIME_SAMA_ARRAYS',json.dumps(rows[:30],ensure_ascii=False))
+          print('ANIME_SAMA_HEAD',text[:1200].replace('\n',' ')[:1200])
+          PY
+
+      - name: Inspect UHDMovies current Interstellar outbound links
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL='https://uhdmovies.my/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/'
+          curl -L --fail --max-time 15 -A 'Mozilla/5.0' "$URL" -o /tmp/uhd.html
+          python3 - <<'PY'
+          import re,json,html
+          text=html.unescape(open('/tmp/uhd.html',encoding='utf-8',errors='replace').read()).replace('\\/','/')
+          urls=[]
+          for u in re.findall(r'https?://[^"\'<>\\s]+',text,re.I):
+              if u not in urls: urls.append(u)
+          useful=[u for u in urls if re.search(r'vcloud|hubcloud|driveseed|hubdrive|gdflix|gofile|pixeldrain|stream|download|drive|link',u,re.I)]
+          print('UHD_BYTES',len(text))
+          print('UHD_USEFUL_URLS',json.dumps(useful[:80],ensure_ascii=False))
+          for pat in ['vcloud','hubcloud','driveseed','hubdrive','gdflix','download','btn','links']:
+              if pat.lower() in text.lower(): print('UHD_HAS',pat)
+          PY
+
+      - name: Commit proven generic quality fix only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/provider_patches/stream_output_sanitizer_v5.py tests/stream_quality_recovery_tv_test.py
+          git commit -m 'fix(core): recover quality from embedded media path tokens'
+          git push origin HEAD:fix/cross-device-audit-20260916
