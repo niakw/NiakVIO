@@ -39,7 +39,9 @@ jobs:
             scripts/apply_provider_overrides.py \
             scripts/provider_patches/global_stream_presentation_v1.py \
             scripts/provider_patches/global_provider_branding_v1.py \
+            scripts/provider_patches/stream_output_sanitizer_v6.py \
             scripts/native_player_diagnostics_codegen.py \
+            scripts/finalize_native_android_reader_source.py \
             scripts/render_platform_runtime_contracts.py
 
       - name: Focused cross-device regression suite
@@ -51,6 +53,9 @@ jobs:
           python3 tests/stream_quality_recovery_tv_test.py
           python3 tests/stream_output_sanitizer_fail_closed_test.py
           python3 tests/native_mobile_player_launch_v36_test.py
+          python3 tests/finalize_native_android_reader_source_test.py
+          python3 tests/native_player_diagnostics_codegen_test.py
+          python3 tests/native_lab_reader_observation_contract_test.py
           python3 tests/native_evidence_codegen_pipeline_test.py
           python3 tests/core_runtime_nonregression_contract_test.py
           python3 scripts/render_platform_runtime_contracts.py --check
