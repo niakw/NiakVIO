@@ -2,9 +2,10 @@
 """Coflix Livavid terminal-context bridge.
 
 The Coflix V1 resolver already discovers the correct Livavid player and HLS.
-This provider-owned follow-up preserves the player Referer and adds its Origin
-for terminal HLS validation/playback. It does not change catalogue matching,
-select another title, or modify shared Core crawling behavior.
+This provider-owned follow-up preserves the exact player request context used by
+the ProviderBase when Livavid creates its signed CDN URL: player Referer, matching
+Origin, and the same ProviderBase User-Agent. It does not change catalogue
+matching, select another title, or modify shared Core crawling behavior.
 """
 from __future__ import annotations
 
@@ -38,6 +39,7 @@ WRAPPER = r'''
       if(!o)continue;
       headers.Referer=ref;
       headers.Origin=o;
+      headers["User-Agent"]="Mozilla/5.0 NiakVIO/2";
       delete headers.referer;
       row.headers=headers;
     }
@@ -57,7 +59,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         data={
             "scope": "coflix-only",
             "catalogueMatchingChanged": False,
-            "terminalContext": "preserve Livavid Referer + matching Origin",
+            "terminalContext": "preserve Livavid Referer + matching Origin + ProviderBase User-Agent",
             "sharedCoreChanged": False,
             "fixtureHardcodes": False,
             "runtimeResolverRegistration": True,
