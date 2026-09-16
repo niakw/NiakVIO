@@ -9,10 +9,6 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: temp-cross-device-live-followup
-  cancel-in-progress: true
-
 jobs:
   followup:
     runs-on: ubuntu-latest
@@ -23,21 +19,20 @@ jobs:
           ref: fix/cross-device-audit-20260916
           fetch-depth: 0
 
-      - name: Test public same-origin Mugiwara lookup session
+      - name: Isolate public Mugiwara lookup requirements
         shell: bash
         run: |
           set -euo pipefail
           BASE='https://www.mugiwara-no-streaming.com'
+          URL="$BASE/api/suggest/lookup?q=Hell%20Mode"
           UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36'
-          curl -L --fail --max-time 15 -A "$UA" -c /tmp/mugi.cookies "$BASE/" -o /tmp/home
-          echo 'MUGI_COOKIE_JAR'; sed -E 's/([^\t]+)$/<redacted>/' /tmp/mugi.cookies || true
-          enc='Hell%20Mode'
-          for route in "/api/suggest/lookup?q=$enc" "/api/search/sources?q=$enc"; do
-            curl -L --max-time 15 -A "$UA" -b /tmp/mugi.cookies -c /tmp/mugi.cookies \
-              -H 'Accept: application/json, text/plain, */*' \
-              -H 'Sec-Fetch-Site: same-origin' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Dest: empty' \
-              -H 'X-Requested-With: XMLHttpRequest' -e "$BASE/" \
-              -D /tmp/headers -o /tmp/body \
-              -w "MUGI_SAME_ORIGIN route=$route final=%{url_effective} code=%{http_code} type=%{content_type} bytes=%{size_download}\n" "$BASE$route" || true
-            echo 'MUGI_BODY'; head -c 10000 /tmp/body; echo
-          done
+          curl -L --fail --max-time 15 -A "$UA" -c /tmp/cookies "$BASE/" -o /tmp/home
+          common=(-A "$UA" -H 'Accept: application/json, text/plain, */*' -H 'Sec-Fetch-Site: same-origin' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Dest: empty' -e "$BASE/")
+          curl -L --max-time 12 "${common[@]}" -o /tmp/a -w 'MUGI_AB headers_only code=%{http_code} bytes=%{size_download}\n' "$URL" || true
+          head -c 500 /tmp/a; echo
+          curl -L --max-time 12 -A "$UA" -b /tmp/cookies -o /tmp/b -w 'MUGI_AB cookies_only code=%{http_code} bytes=%{size_download}\n' "$URL" || true
+          head -c 500 /tmp/b; echo
+          curl -L --max-time 12 "${common[@]}" -b /tmp/cookies -o /tmp/c -w 'MUGI_AB cookies_headers code=%{http_code} bytes=%{size_download}\n' "$URL" || true
+          head -c 500 /tmp/c; echo
+          echo 'MUGI_COOKIE_NAMES'
+          awk 'BEGIN{FS="\t"} !/^#/ && NF>=7 {print $6}' /tmp/cookies | sort -u
