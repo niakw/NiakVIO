@@ -97,6 +97,14 @@ This section supersedes older branch-topology assumptions below for the active r
 - vidlove_movie: count=1 pageOk=True status=200 error=
 - vidlove_tv: count=1 pageOk=True status=200 error=
 
+<!-- MAX_REPAIR_20260917_V33_RESULT -->
+### V32/V33 full residual requalification after Core V31
+- V32 run `35162658270` found 36 stale/residual provider dispositions; this included known-live MovieBox/VidLove, proving the ledger still contained historical false negatives.
+- V33 re-probed every missing lane on the materialized post-V31 Core with standard movie/TV/anime fixtures; anime zeros receive a second One Piece fixture. A lane is auto-promoted only when output is non-empty, private proof is absent, and at least one returned terminal URL responds successfully.
+- newly terminal-proven lanes: none
+- output-positive but terminal not confirmed: none
+- still zero/no acceptable output: none
+
 ## 2026-09-16 — authoritative current checkpoint
 
 - Current public release is **5.21.48**. `manifest.json`, VF/no-anime projections, package metadata and release hashes are on 5.21.48.
