@@ -234,8 +234,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     while((match=re.exec(value))!==null)best=Math.max(best,Number(match[2]||0));
     var q=qualityFromHeight(best);if(q)return q;
     var source=String(url||"").toUpperCase();
-    if(/(?:\b4K\b|\b2160P?\b|\bUHD\b)/.test(source))return"2160p";
-    var m=source.match(/\b(1440|1080|720|576|540|480|360)P?\b/);return m?m[1]+"p":"";
+    if(/(?:^|[^0-9])(?:4K|2160P?|UHD)(?:[^0-9]|$)/.test(source))return"2160p";
+    var m=source.match(/(?:^|[^0-9])(1440|1080|720|576|540|480|360)P?(?:[^0-9]|$)/);return m?m[1]+"p":"";
   }
   function recoverQuality(stream,text,url){if(!stream||typeof stream!=="object")return;var q=qualityFromHls(text,url);if(q){stream.quality=q;return}if(!meaningfulQuality(stream.quality))try{delete stream.quality}catch(_e){}}
   function repairedHlsUrl(text){

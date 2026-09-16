@@ -25,12 +25,12 @@ assert "Intent(context, MainActivity::class.java)" not in mobile_codegen
 assert "generateSequence(error) { it.cause }" in mobile_codegen
 assert "getLaunchIntentForPackage(context.packageName)" not in mobile_codegen.split("MOBILE_HELPERS =", 1)[1]
 
-# Codegen may initially use instrumentation context as a neutral placeholder. The
-# mandatory finalizer owns the authoritative target-component rewrite and must reject
-# any finalized Mobile source that still points at the test APK package.
-assert 'MOBILE_EXPLICIT_TARGET_PACKAGE = "MainActivity::class.java.packageName,"' in mobile_finalizer
-assert "source = source.replace(MOBILE_EXPLICIT_CONTEXT_PACKAGE, MOBILE_EXPLICIT_TARGET_PACKAGE, 1)" in mobile_finalizer
-assert "or MOBILE_EXPLICIT_CONTEXT_PACKAGE in source" in mobile_finalizer
+# Mobile launcher resolution is based on the installed component. The finalizer
+# validates it and rejects namespace/applicationId assumptions.
+assert 'MOBILE_LAUNCHER_QUERY = "val launcherQuery = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)"' in mobile_finalizer
+assert 'MOBILE_INSTALLED_PACKAGE = "launchActivity.activityInfo.packageName,"' in mobile_finalizer
+assert 'MOBILE_INSTALLED_ACTIVITY = "launchActivity.activityInfo.name,"' in mobile_finalizer
+assert "MOBILE_EXPLICIT_TARGET_PACKAGE in source" in mobile_finalizer
 
 # Desktop reader/player failures are observational evidence: each official-client
 # attempt may fail without repairing Nuvio, while the exhaustive provider matrix

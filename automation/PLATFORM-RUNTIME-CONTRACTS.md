@@ -2,7 +2,7 @@
 
 > Généré depuis `automation/platform-runtime-contracts.json` par `scripts/render_platform_runtime_contracts.py`. Ne pas éditer la matrice à la main.
 
-Dernier audit du contrat : **2026-09-09**.
+Dernier audit du contrat : **2026-09-16**.
 
 **Lecture rapide :** 🟢 identique sur tous les clients · 🟠 implémentation/sémantique différente · 🔴 capacité absente, incompatible ou à ré-auditer sur au moins un client.
 
@@ -143,3 +143,23 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Transport : `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt`
 - Modèle de résultat : `app/src/main/java/com/nuvio/tv/domain/model/Plugin.kt`
 - Note d'audit : Re-audited at dev HEAD 23d1fe478e38 / 0.9.0-beta. Positional getStreams and network/runtime globals remain stable. Subtitle projection changed additively: subtitle-specific headers are now part of the TV result model and must survive NiakVIO projection; fresh Android-TV runtime re-proof remains required.
+
+## Évidence croisée Native + tests utilisateur
+
+Évidence datée **2026-09-16**, NiakVIO SHA `6b28f3b2c53f5ca6cfb4bc11a3af139c21d6dee1`.
+
+| Device | Extraction provider | Player | UX / transport | Classification |
+| --- | --- | --- | --- | --- |
+| Android TV | User TV: Interstellar Purstream/Papadustream/Castle/StreamZo/Kehflix; HOTD S1E2 Purstream/StreamZo/Castle/VidRock/HindMoviez; Hell Mode S2E12 French-Manga/VoirAnime.homes. | User-visible streams exist; provider/player verdict must remain per-row. | Common TV defects: non-uniform title, duplicated/conflicting quality, Inconnue placeholder, language/badge mismatch, late rows without badges, no visible 4K provider. | real product UX + provider coverage work; runner red does not cancel user positives |
+| Android Mobile | 2073 results; VidRock count>0 on movie + TV. | 2/2 extracted VidRock rows fail only at Activity launch: Unable to resolve cmp=com.nuvio.app/.MainActivity. | Launcher diagnostic must resolve installed applicationId independently from Kotlin namespace. | Lab launcher false red after positive extraction |
+| iOS | 3299 results; 89 count>0 (VidRock 58, VoirAnime 31). | 89/89 production-player probes ready; exhaustive Hub-46 gate success. | Ktor/Darwin path is a positive control against simultaneous provider-bundle failure. | native green positive control |
+| macOS | Artifact: HindMoviez movie count=4; VidRock movie=1 + TV=1. User UI: VidRock visible on Interstellar/HOTD, Hell Mode zero. | Artifact 6/6 mpv_create_failed; user log player attach -> mpv_create failed and visible VidRock does not launch. | User work-change test resets streams correctly. Logs separately show WookaFR DNS failure and MovieBox/Workers.dev timeouts. | positive extraction + real macOS player/client blocker; no evidence of current stale reset bug on macOS |
+| Windows | 2116 results; HindMoviez + VidRock positive on movie and TV (4 positive result rows / 10 streams). | 9 ready / 1 timeout. | Exhaustive matrix red must not be reported as Desktop-wide zero. | native positives; matrix coverage red |
+
+### Règles anti-régression / anti-faux-diagnostic
+
+- Provider extraction, client projection and player readiness are independent verdicts; a player failure never erases a positive provider extraction.
+- A red exhaustive matrix is not a provider-wide failure when the same platform artifact contains count>0 rows.
+- TV late-result/stale symptoms must not be generalized to Desktop: the 2026-09-16 macOS user test observed correct reset after changing work.
+- Quality shown to the client must be the final post-sanitizer quality; source/declaration quality cannot remain in title when media proof changes it.
+- Language/badges require stream-level evidence. Provider catalogue language is a capability hint, not proof that a returned media track is French/VO/VF.

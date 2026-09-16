@@ -6,9 +6,9 @@ on local stream rows, one committed emoji per provider gives the textual stream
 name/title a stable identity. This layer runs *after* Core stream presentation so
 it never destroys provider-returned technical facts before they are normalized.
 
-V8 restores the historical lossless client-visible label contract: Core may
-normalize quality/facts, but provider/player labels already returned by the
-provider remain visible in ``title``/``name``. STREAM_FACTS keeps the original
+V9 makes the final client-visible title deterministic after media safety: Core
+uses only the committed provider identity plus final verified/recovered quality in
+``title``/``name``. Provider/player labels remain preserved as source facts. STREAM_FACTS keeps the original
 fields under ``source*`` before presentation mutates legacy UI fields; branding
 projects those preserved values back into the final label without inventing any
 metadata or duplicating quality already present in the source label. Placeholder
@@ -81,7 +81,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "providerId": provider_id,
         "providerName": row["name"],
         "providerEmoji": row["emoji"],
-        "implementationRevision": "post-presentation-lossless-source-label-v8",
+        "implementationRevision": "post-safety-uniform-final-label-v9",
     }
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode('utf-8')).hexdigest()[:12]}"
@@ -100,8 +100,8 @@ function oldQuality(old){old=s(old);var token=" - ",i=old.lastIndexOf(token);if(
 function addUnique(out,value){value=cleanSource(value);if(!value)return;var n=norm(value);if(!n)return;for(var i=0;i<out.length;i++){var p=norm(out[i]);if(p===n||p.indexOf(n)>=0)return;if(n.indexOf(p)>=0){out[i]=value;return}}out.push(value)}
 function sourceParts(r){var out=[];addUnique(out,r&&r.sourceName);addUnique(out,r&&r.sourceTitle);addUnique(out,r&&r.sourceLabel);addUnique(out,r&&r.server);addUnique(out,r&&r.hoster);addUnique(out,r&&r.player);addUnique(out,r&&r.indexer);addUnique(out,r&&r.network);return out}
 function containsQuality(parts,q){q=qualityToken(q);if(!q)return false;var aliases=q==="4K"?["4k","2160p","uhd"]:[q.toLowerCase()];var all=(parts||[]).join(" ").toLowerCase();for(var i=0;i<aliases.length;i++)if(all.indexOf(aliases[i])>=0)return true;return false}
-function visibleTitle(r,v,old){var parts=[v],sources=sourceParts(r);for(var i=0;i<sources.length;i++){var value=sources[i],n=norm(value),pn=norm(c.providerName),vl=norm(v);if(n&&n!==pn&&n!==vl)addUnique(parts,value)}var q=qualityToken(r&&r.quality)||oldQuality(old),base=parts.join(" • ");return q&&!containsQuality(parts,q)?base+" - "+q:base}
-function brand(r){if(!r||typeof r!=="object")return r;var o=Object.assign({},r),v=label();if(!v)return o;var display=visibleTitle(o,v,o.title);o.title=display;o.name=display;return o}
+function visibleTitle(r,v,old){var q=qualityToken(r&&r.quality)||oldQuality(old);return q?v+" - "+q:v}
+function brand(r){if(!r||typeof r!=="object")return r;var o=Object.assign({},r),v=label();if(!v)return o;if(placeholder(o.quality))delete o.quality;var display=visibleTitle(o,v,o.title);o.title=display;o.name=display;return o}
 function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalProviderBrandingV1)return false;var native=o[k];var wrap=async function(){var v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;return rebuild(v,x,x.list.map(brand))};wrap.__nuvioGlobalProviderBrandingV1=true;o[k]=wrap;return true}
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);

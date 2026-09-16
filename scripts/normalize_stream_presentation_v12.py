@@ -18,7 +18,8 @@ LIGHT_FEED = ROOT / "assets/stream-badges-light.json"
 FUSION_FEED = ROOT / "assets/stream-badges-fusion.json"
 REVISION_V22 = "all-providers-client-projection-strongest-evidence-v22"
 REVISION_V23 = "all-providers-client-projection-language-roles-v23"
-SUPPORTED_REVISIONS = (REVISION_V23, REVISION_V22)
+REVISION_V24 = "all-providers-client-projection-evidence-language-v24"
+SUPPORTED_REVISIONS = (REVISION_V24, REVISION_V23, REVISION_V22)
 
 
 def active_revision(text: str) -> str | None:
@@ -33,7 +34,7 @@ def normalize(*, apply: bool) -> list[str]:
     if not active_revision(text):
         raise ValueError(
             "supported stream presentation source is not materialized; "
-            "global_stream_presentation_v1.py must contain canonical V22 or V23 source"
+            "global_stream_presentation_v1.py must contain canonical V22, V23 or V24 source"
         )
     return []
 
@@ -67,7 +68,7 @@ def assert_contract() -> None:
         if token not in text:
             raise ValueError(f"stream presentation contract missing for {revision}: {token}")
 
-    if revision == REVISION_V23:
+    if revision in (REVISION_V24, REVISION_V23):
         for token in (
             'function languageTracks(r,meta){',
             'function compactTrack(t){',

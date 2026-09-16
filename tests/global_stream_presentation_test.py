@@ -26,7 +26,7 @@ normalizer = load_path(NORMALIZER, "normalize_stream_presentation_v12")
 normalizer.normalize(apply=False)
 normalizer.assert_contract()
 presentation = load_path(PATCHES / "global_stream_presentation_v1.py", "global_stream_presentation_v1")
-assert presentation.REVISION == "all-providers-client-projection-language-roles-v23"
+assert presentation.REVISION == "all-providers-client-projection-evidence-language-v24"
 presentation_source = (PATCHES / "global_stream_presentation_v1.py").read_text(encoding="utf-8")
 assert "\\nfunction" not in presentation_source, "raw presentation wrapper contains a literal \\n before function declaration"
 
@@ -34,7 +34,7 @@ assert "\\nfunction" not in presentation_source, "raw presentation wrapper conta
 def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None, *, return_raw: bool = False):
     patched = presentation.apply(source, context={"provider_id": provider_id})
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
-    assert "all-providers-client-projection-language-roles-v23" in patched
+    assert "all-providers-client-projection-evidence-language-v24" in patched
     assert patched == presentation.apply(patched, context={"provider_id": provider_id})
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw)
@@ -87,18 +87,19 @@ row = run(source, "purstream", "p.getStreams({tmdbId:'157336',mediaType:'movie',
 assert row["title"] == "Purstream - 4K", row
 assert row["name"] == row["title"], row
 assert row["quality"] == "2160p"
-assert row["language"] == "MULTI (VF/VO)", row
+assert row["language"] == "VF", row
 assert row["codec"] == "HEVC"
 assert row["duration"] == 169
 assert row["sourceType"] == "WEB-DL"
 assert row["format"] == "HLS"
 assert row["size"] == row["description"], row
 assert row["headers"] == {"Referer": "https://purstream.example/"}
-assert {"4k-ultra-hd", "webdl", "hevc", "multi"}.issubset(set(row["badgeIds"])), row
+assert {"4k-ultra-hd", "webdl", "hevc", "vf", "vostfr"}.issubset(set(row["badgeIds"])), row
+assert "multi" not in set(row["badgeIds"]), row
 lines = row["description"].splitlines()
 assert lines[0] == "🎬 Interstellar • 2014", lines
 assert lines[1] == "⏱ 2h49 • 🔞 -12", lines
-assert lines[2] == "🇫🇷 MULTI (VF/VO)", lines
+assert lines[2] == "🇫🇷 VF", lines
 assert lines[3].startswith("🎞️ WEB-DL"), lines
 assert "HEVC 10bit" in lines[3] and "HLS" in lines[3] and "💾 8.4 GB" in lines[3]
 assert "2160p" not in row["description"] and "4K" not in row["description"]
@@ -118,7 +119,7 @@ assert raw_stream_json.isascii(), raw_stream_json
 assert "\\ud83c\\udfac" in raw_stream_json.lower(), raw_stream_json
 roundtrip = json.loads(raw_stream_json)[0]
 assert roundtrip["description"].splitlines()[0] == "🎬 Interstellar • 2014", roundtrip
-assert "🇫🇷 MULTI (VF/VO)" in roundtrip["description"], roundtrip
+assert "🇫🇷 VF" in roundtrip["description"], roundtrip
 
 # Cross-client projection contract: Mobile/Desktop rebuild plugin StreamItem.description
 # from quality + size + language; TV maps LocalScraperResult.size -> Stream.description.
@@ -133,7 +134,7 @@ tv_row = run(
 assert tv_row["size"] == tv_row["description"], tv_row
 assert tv_row["description"].splitlines()[0] == "🎬 Interstellar • 2014"
 assert "⏱ 2h49" in tv_row["description"] and "🔞 -12" in tv_row["description"]
-assert "🇫🇷 MULTI (VF/VO)" in tv_row["description"]
+assert "🇫🇷 VF" in tv_row["description"]
 assert "🎞️ WEB-DL" in tv_row["description"] and "HEVC 10bit" in tv_row["description"]
 assert "💾 8.4 GB" in tv_row["description"]
 

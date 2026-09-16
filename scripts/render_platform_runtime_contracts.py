@@ -243,6 +243,27 @@ def render(data: dict) -> str:
             f"- Note d'audit : {esc(client['audit_note'])}",
             "",
         ]
+    observed = data.get("observed_native_differences") or {}
+    devices = observed.get("devices") or []
+    if devices:
+        lines += [
+            "## Évidence croisée Native + tests utilisateur",
+            "",
+            f"Évidence datée **{esc(observed.get('evidence_date'))}**, NiakVIO SHA `{esc(observed.get('niakvio_sha'))}`.",
+            "",
+            "| Device | Extraction provider | Player | UX / transport | Classification |",
+            "| --- | --- | --- | --- | --- |",
+        ]
+        for row in devices:
+            lines.append(
+                "| " + esc(row.get("device")) + " | " + esc(row.get("provider_extraction")) + " | "
+                + esc(row.get("player")) + " | " + esc(row.get("ux")) + " | " + esc(row.get("classification")) + " |"
+            )
+        lines += ["", "### Règles anti-régression / anti-faux-diagnostic", ""]
+        for rule in observed.get("anti_inference_rules") or []:
+            lines.append("- " + esc(rule))
+        lines.append("")
+
     return "\n".join(lines).rstrip() + "\n"
 
 

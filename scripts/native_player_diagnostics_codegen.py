@@ -156,12 +156,21 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
         val terminalStateRef = AtomicReference<String?>(null)
         var activity: MainActivity? = null
         return try {
-            // Start the official production MainActivity explicitly inside the exact package
-            // under instrumentation. applicationId can differ between official client
-            // revisions/build variants, so the Lab must not hard-code a debug package.
+            // Resolve the installed production launcher by activity class, not by the
+            // Kotlin namespace/targetContext package. Official build variants may keep
+            // com.nuvio.app.MainActivity while using a different applicationId.
+            val launcherQuery = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+            val launchActivity = context.packageManager.queryIntentActivities(launcherQuery, 0)
+                .firstOrNull { info -> info.activityInfo?.name == MainActivity::class.java.name }
+                ?: context.packageManager.queryIntentActivities(launcherQuery, 0)
+                    .firstOrNull { info ->
+                        info.activityInfo?.name?.endsWith(".MainActivity") == true &&
+                            info.activityInfo?.applicationInfo?.sourceDir == context.applicationInfo.sourceDir
+                    }
+                ?: return NativePlayerProbe("error", "nuvio-mobile", "MainActivity", "NO_LAUNCH_ACTIVITY", 0, "player_setup", host, null)
             val intent = Intent().setClassName(
-                context.packageName,
-                MainActivity::class.java.name,
+                launchActivity.activityInfo.packageName,
+                launchActivity.activityInfo.name,
             )
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             activity = instrumentation.startActivitySync(intent) as? MainActivity

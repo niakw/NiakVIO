@@ -104,13 +104,13 @@ def main() -> int:
     assert module.PROBE_ALIAS_RE.search(sanitizer_region(relocated))
     assert module.apply(relocated, options=options) == relocated
 
-    # Core stream presentation/branding can also be rematerialized after an old
-    # sanitizer. The strict terminal layer must move after them as well.
+    # Stream presentation is inside the sanitizer, while final provider branding
+    # is outside it. Reapplying V6 must preserve branding after the sanitizer.
     branding_stale = first.rstrip() + "\n/* NUVIO_GLOBAL_PROVIDER_BRANDING_V1:fixture */\n"
     branding_relocated = module.apply(branding_stale, options=options)
     sanitizer_pos = branding_relocated.find(module.SANITIZER_PREFIX)
     branding_pos = branding_relocated.rfind("/* NUVIO_GLOBAL_PROVIDER_BRANDING_V1:fixture */")
-    assert branding_pos >= 0 and sanitizer_pos > branding_pos, (branding_pos, sanitizer_pos)
+    assert branding_pos >= 0 and branding_pos > sanitizer_pos, (branding_pos, sanitizer_pos)
     assert module.apply(branding_relocated, options=options) == branding_relocated
 
     # Reproduce the Coflix collision: another provider wrapper may already define
