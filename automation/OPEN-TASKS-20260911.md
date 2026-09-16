@@ -82,16 +82,16 @@ Trigger SHA: `6b28f3b2c53f5ca6cfb4bc11a3af139c21d6dee1`.
 
 - [x] Temporary Native pin-repair and prebuild-cache installer workflows have been removed.
 - [x] `VALIDATION.json` now identifies release 5.21.48, `main`, immutable Hub-46 publication SHA and the current five-Lab run IDs.
-- [ ] `MEMORY.md` top/current checkpoint must describe 5.21.48, PR #120, immutable Hub-46, CodeQL #889, prebuild caches and the current Native runs while retaining older material as history.
-- [ ] `CHANGELOG.md` needs a 5.21.48 entry; its current newest release section is older.
-- [ ] `provider_catalog.json` metadata names must be synchronized from `NiakVIO v5.21.43` to `NiakVIO v5.21.48`, and `sync_release_versions.py` must update catalogue visible names so the drift cannot recur.
-- [ ] Provider Non-Regression push policy must target `main`, not the historical 5.21.44 repair branch, and its compatibility contract must be aligned.
-- [ ] Remove unreferenced one-shot scripts `scripts/temp_apply_hub46_native_scope.py` and `scripts/temp_integrate_rotating_corpus.py` after confirming no tracked references.
+- [x] `MEMORY.md` now carries an authoritative 2026-09-16 checkpoint covering 5.21.48, PR #120, immutable Hub-46 transport, CodeQL #889, prebuild caches and the current Native runs while retaining older material as history.
+- [x] `CHANGELOG.md` now starts with the 5.21.48 Hub-46/publication/native-Lab checkpoint.
+- [x] `provider_catalog.json` visible names are synchronized to 5.21.48, and `sync_release_versions.py` plus its regression test now keep catalogue names/version aligned.
+- [x] Provider Non-Regression push policy targets `main`; its compatibility contract was aligned and passed.
+- [x] Obsolete one-shot Hub-46/rotating-corpus migration scripts were confirmed unreferenced and removed.
 - [ ] Recheck `ARCHITECTURE.docx` only after final wording is stable; do not let it override current Markdown/runtime truth.
 
 ## Privacy / repository metadata
 
-- [x] Tracked-content searches found no occurrence of the user’s obvious personal name/surname, personal Gmail address, Pollestres, Perpignan or LinkedIn profile URL.
+- [x] Tracked-content searches found no user-specific personal identifiers in the scanned categories; current documentation uses only generic privacy wording.
 - [!] Git commit author metadata contains a personal author identity/email on some historical/recent commits. This is **history metadata**, not tracked file content.
 - [ ] Do not rewrite Git history while immutable Hub-46/current Labs depend on exact SHAs. If historical author metadata is to be purged, perform it later as a dedicated migration with repinning/republication and downstream SHA reconciliation.
 - [ ] Configure a GitHub noreply/private commit email for future human-authored commits outside this automation path.
