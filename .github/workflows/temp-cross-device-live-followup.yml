@@ -19,66 +19,59 @@ jobs:
           ref: fix/cross-device-audit-20260916
           fetch-depth: 0
 
-      - name: Inspect current Mugiwara Hell Mode season payload
+      - name: Inspect Mugiwara frontend player loader contract
         shell: bash
         run: |
           set -euo pipefail
           BASE='https://www.mugiwara-no-streaming.com'
           UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36'
-          Q='Hell%20Mode%3A%20The%20Hardcore%20Gamer%20Dominates%20in%20Another%20World%20with%20Garbage%20Balancing'
-          curl -L --fail --max-time 20 -A "$UA" -H 'Accept: application/json, text/plain, */*' -H 'Sec-Fetch-Site: same-origin' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Dest: empty' -e "$BASE/" "$BASE/api/suggest/lookup?q=$Q" -o /tmp/lookup.json
-          cat /tmp/lookup.json
-          SLUG="$(python3 - <<'PY'
-          import json
-          d=json.load(open('/tmp/lookup.json'))
-          row=(d.get('exact') or ((d.get('results') or [{}])[0]))
-          print(row.get('slug') or '')
-          PY
-          )"
-          test -n "$SLUG"
-          URL="$BASE/catalogue/$SLUG/episodes/saison2"
-          curl -L --fail --max-time 20 -A "$UA" -H 'Accept: text/html,application/xhtml+xml,*/*' -e "$BASE/" "$URL" -o /tmp/page.html
-          echo "MUGI_PAGE url=$URL bytes=$(wc -c </tmp/page.html)"
+          PAGE="$BASE/catalogue/hell-mode-the-hardcore-gamer-dominates-in-another-world-with-garbage-balancing/episodes/saison2"
+          curl -L --fail --max-time 20 -A "$UA" "$PAGE" -o /tmp/page.html
           python3 - <<'PY'
           from pathlib import Path
-          import re, html
+          import re
           t=Path('/tmp/page.html').read_text(encoding='utf-8',errors='replace')
-          for needle in ['animeServer','saisons','lang','vostfr','vf','smoothpre','vidmoly','sibnet','voembed','ansembed','iframe','Hell Mode','episode']:
-              pos=[m.start() for m in re.finditer(re.escape(needle),t,re.I)]
-              print('MUGI_HTML_NEEDLE',needle,'count',len(pos),'first',pos[:8])
-              for p in pos[:2]:
-                  print('MUGI_HTML_SNIP',needle,re.sub(r'\s+',' ',html.unescape(t[max(0,p-500):p+1800]))[:2400])
-          # Decode the Next flight chunks exactly enough to expose server/options shapes.
-          marker='self.__next_f.push([1,"'
-          chunks=[]; pos=0
-          while True:
-              start=t.find(marker,pos)
-              if start<0: break
-              i=start+len(marker); out=[]; esc=False
-              while i<len(t):
-                  ch=t[i]
-                  if esc:
-                      if ch=='n': out.append('\n')
-                      elif ch=='t': out.append('\t')
-                      elif ch=='r': out.append('\r')
-                      elif ch=='\\': out.append('\\')
-                      elif ch=='"': out.append('"')
-                      elif ch=='/': out.append('/')
-                      elif ch=='u' and i+4<len(t):
-                          try: out.append(chr(int(t[i+1:i+5],16))); i+=4
-                          except Exception: out.append(ch)
-                      else: out.append(ch)
-                      esc=False; i+=1; continue
-                  if ch=='\\': esc=True; i+=1; continue
-                  if ch=='"' and t[i+1:i+3]=='])': break
-                  out.append(ch); i+=1
-              chunks.append(''.join(out)); pos=i+1
-          allflight=''.join(chunks)
-          Path('/tmp/flight.txt').write_text(allflight,encoding='utf-8')
-          print('MUGI_FLIGHT bytes',len(allflight),'chunks',len(chunks))
-          for needle in ['animeServer','saisons','lang','vostfr','vf','smoothpre','vidmoly','sibnet','voembed','ansembed']:
-              hits=[m.start() for m in re.finditer(re.escape(needle),allflight,re.I)]
-              print('MUGI_FLIGHT_NEEDLE',needle,'count',len(hits),'first',hits[:12])
-              for p in hits[:3]:
-                  print('MUGI_FLIGHT_SNIP',needle,re.sub(r'\s+',' ',allflight[max(0,p-600):p+2600])[:3200])
+          urls=[]
+          for m in re.finditer(r'(?:src|href)="([^"]+\.js(?:\?[^\"]*)?)"',t):
+              u=m.group(1)
+              if u.startswith('/'):
+                  u='https://www.mugiwara-no-streaming.com'+u
+              if u not in urls:
+                  urls.append(u)
+          Path('/tmp/chunks.txt').write_text('\n'.join(urls)+'\n',encoding='utf-8')
+          print('MUGI_CHUNKS',len(urls))
+          for u in urls: print(u)
+          PY
+          mkdir -p /tmp/chunks
+          n=0
+          while IFS= read -r u; do
+            [ -n "$u" ] || continue
+            n=$((n+1))
+            curl -L --fail --max-time 15 -A "$UA" "$u" -o "/tmp/chunks/$n.js" || true
+          done </tmp/chunks.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          needles=[
+            'SCRIPT_URL','EPISODES_OPTIONS','saisonServer','episodeReleases',
+            'static.mugiwara-no-streaming.com','/api/','fetch(','vostfr','langToShow',
+            'smoothpre','vidmoly','sibnet','voembed','ansembed','iframe','player'
+          ]
+          for p in sorted(Path('/tmp/chunks').glob('*.js')):
+              t=p.read_text(encoding='utf-8',errors='replace')
+              interesting=[]
+              for needle in needles:
+                  hits=[m.start() for m in re.finditer(re.escape(needle),t,re.I)]
+                  if hits:
+                      interesting.append((needle,hits[:8]))
+              if not interesting:
+                  continue
+              print('MUGI_CHUNK_FILE',p.name,'bytes',len(t),'hits',interesting)
+              focus=[]
+              for needle,hits in interesting:
+                  if needle in {'SCRIPT_URL','EPISODES_OPTIONS','saisonServer','episodeReleases','static.mugiwara-no-streaming.com','/api/','smoothpre','vidmoly','sibnet','voembed','ansembed'}:
+                      focus.extend((needle,x) for x in hits[:4])
+              for needle,pos in focus[:24]:
+                  snip=re.sub(r'\s+',' ',t[max(0,pos-1200):pos+2800])
+                  print('MUGI_CHUNK_SNIP',p.name,needle,snip[:4000])
           PY
