@@ -1,0 +1,101 @@
+name: temp-max-repair-correlated-embed-v21
+on:
+  push:
+    branches: [fix/non-display-recovery-20260916]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  prove-persist:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Patch correlated embed survival and rematerialize
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_correlated_embed_survival_v1.py
+          python3 -m py_compile scripts/upgrade_correlated_embed_survival_v1.py scripts/provider_patches/global_media_enrichment_v1.py scripts/provider_patches/allwish_current_runtime_v1.py scripts/provider_patches/flemmix_current_runtime_v1.py scripts/provider_patches/allanime_current_runtime_v1.py scripts/provider_patches/moviebox_current_embed_v2.py scripts/provider_patches/wookafr_showvideo_base64_v1.py
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/validate_published_overrides.py
+      - name: Probe repaired current providers
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/probe-v21.cjs <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const manifest=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const result={};
+          function norm(v){return String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,'');}
+          function entry(pid){const rows=(manifest.scrapers||[]).filter(r=>norm(r&&r.id)===norm(pid));if(rows.length!==1)throw new Error(`manifest_provider_count:${pid}:${rows.length}`);return rows[0];}
+          function file(pid){const row=entry(pid),f=path.resolve(String(row.filename||''));if(!fs.existsSync(f))throw new Error('provider_file_missing:'+pid);console.log('MANIFEST',pid,row.filename,'types='+JSON.stringify(row.supportedTypes||[]),'canonical='+JSON.stringify(row.canonicalSupportedTypes||[]));return f;}
+          function meta(spec){return spec.type==='movie'?{title:spec.title,original_title:spec.title,release_date:`${spec.year}-01-01`,alternative_titles:{titles:[]}}:{name:spec.title,original_name:spec.title,first_air_date:`${spec.year}-01-01`,alternative_titles:{results:[]}};}
+          async function run(label,spec){
+            try{
+              const f=file(spec.pid),ns=spec.type==='movie'?'movie':'tv',m=meta(spec);
+              globalThis.__nuvioMediaContext={tmdbId:String(spec.id),tmdbNamespace:ns,tmdbMetadata:m};
+              globalThis.__nuvioTmdbMetadataCacheV1={[`${ns}:${spec.id}`]:m};
+              globalThis.__nuvioProviderDeadlineMs=Date.now()+30000;
+              delete require.cache[f];const mod=require(f);const rows=await Promise.race([Promise.resolve(mod.getStreams(String(spec.id),spec.type,spec.season,spec.episode)),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),31000))]);
+              const out=Array.isArray(rows)?rows:[];
+              console.log('PROBE',label,'count='+out.length,out.slice(0,8).map(r=>({url:r&&r.url,title:r&&r.title,type:r&&r.type,privateProof:!!(r&&r.__nuvioCorrelatedPlayerFallbackV1)})));
+              let pageOk=false,status=0,ctype='';
+              if(out[0]&&/^https?:\/\//i.test(String(out[0].url||''))){const c=new AbortController(),t=setTimeout(()=>c.abort(),12000);try{const r=await fetch(out[0].url,{headers:out[0].headers||{},redirect:'follow',signal:c.signal});status=r.status;ctype=r.headers.get('content-type')||'';const body=await r.text();pageOk=r.ok&&body.length>=100;console.log('PAGE',label,status,ctype,'bytes='+body.length,'final='+r.url);}catch(e){console.log('PAGE_ERROR',label,String(e&&e.message||e));}finally{clearTimeout(t)}}
+              result[label]={count:out.length,pageOk,status,ctype,urls:out.slice(0,8).map(r=>String(r&&r.url||''))};
+            }catch(e){console.log('PROBE_ERROR',label,String(e&&e.message||e));result[label]={count:0,pageOk:false,error:String(e&&e.message||e),urls:[]};}
+          }
+          (async()=>{
+            const specs={
+              wookafr:{pid:'wookafr',id:'157336',type:'movie',title:'Interstellar',year:'2014'},
+              allwish:{pid:'allwish',id:'95479',type:'anime',title:'Jujutsu Kaisen',year:'2020',season:1,episode:1},
+              flemmix_movie:{pid:'flemmix',id:'1356963',type:'movie',title:'Little Lorraine',year:'2026'},
+              flemmix_tv:{pid:'flemmix',id:'94997',type:'tv',title:'House of the Dragon',year:'2022',season:1,episode:1},
+              allanime:{pid:'allanime',id:'37854',type:'anime',title:'One Piece',year:'1999',season:1,episode:1178},
+              moviebox_movie:{pid:'moviebox',id:'157336',type:'movie',title:'Interstellar',year:'2014'},
+              moviebox_tv:{pid:'moviebox',id:'1396',type:'tv',title:'Breaking Bad',year:'2008',season:1,episode:1}
+            };
+            for(const [k,v] of Object.entries(specs))await run(k,v);
+            fs.writeFileSync('/tmp/probe-v21.json',JSON.stringify(result,null,2));
+            console.log('SUMMARY',JSON.stringify(result,null,2));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/probe-v21.cjs
+      - name: Persist v21 wave
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A -- scripts provider-overrides.json providers provider-bases sources.json manifest.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: preserve correlated current provider embeds'
+            git push origin HEAD:fix/non-display-recovery-20260916
+          fi
+      - name: Positive proof gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          r=json.load(open('/tmp/probe-v21.json'))
+          required=['allwish','flemmix_movie','allanime','moviebox_movie','moviebox_tv']
+          bad=[]
+          for key in required:
+              row=r.get(key) or {}
+              if int(row.get('count') or 0)<1 or not row.get('pageOk'):
+                  bad.append((key,row))
+          print('RESIDUAL_WOOKA',r.get('wookafr'))
+          print('RESIDUAL_FLEMMIX_TV',r.get('flemmix_tv'))
+          if bad:
+              raise SystemExit('positive proof failures: '+repr(bad))
+          print('MAX_REPAIR_CORRELATED_EMBED_V21_OK')
+          PY
