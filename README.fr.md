@@ -289,7 +289,7 @@ Les fixtures historiques de `.github/triggers/nuvio-client-lab.json` restent dis
 | --- | --- | --- |
 | [<img src="assets/thanks/gowaru-bg.png" alt="Gowaru" width="110">](https://github.com/Gowaru/gowaru-nuvio-providers)<br>**[Gowaru](https://github.com/Gowaru/gowaru-nuvio-providers)** | Implémentations providers françaises et connaissance protocolaire locale. | **Référence / preuve** |
 | [<img src="assets/thanks/yoru-bg.png" alt="Yoru" width="110">](https://github.com/yoruix/nuvio-providers)<br>**[Yoru](https://github.com/yoruix/nuvio-providers)** | Implémentations providers et conventions Nuvio utiles pour croiser runtime/interfaces. | **Référence / preuve** |
-| [<img src="assets/thanks/deadlyrocket-bg.png" alt="All-in-One Nuvio / D3adlyRocket" width="110">](https://github.com/D3adlyRocket/All-in-One-Nuvio)<br>**[All-in-One Nuvio / D3adlyRocket](https://github.com/D3adlyRocket/All-in-One-Nuvio)** | Matériel historique d’agrégation/mirror permettant de préserver de la provenance. | **Provenance historique** |
+| [<img src="assets/thanks/deadlyrocket-bg.png" alt="All-in-One Nuvio" width="110">](https://github.com/NuvioPlugin/All-in-One-Nuvio)<br>**[All-in-One Nuvio](https://github.com/NuvioPlugin/All-in-One-Nuvio)** | Matériel international d’agrégation/référence. L’[ancien miroir D3adlyRocket](https://github.com/D3adlyRocket/All-in-One-Nuvio) reste utile pour la provenance historique. | **Référence / preuve + provenance historique** |
 
 <details>
 <summary><strong>Ce que signifie “connaissance upstream” ici</strong></summary>
