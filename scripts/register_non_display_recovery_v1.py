@@ -15,7 +15,7 @@ PROVIDERS = {
     "sekai": "https://sekai.one",
     "voiranime-rip": "https://voiranime.rip",
 }
-LEGOS = {
+V1_LEGOS = {
     "animesama-co": "scripts/provider_patches/animesamaco_nondisplay_recovery_v1.py",
     "animevostfr": "scripts/provider_patches/animevostfr_nondisplay_recovery_v1.py",
     "coflix": "scripts/provider_patches/coflix_nondisplay_recovery_v1.py",
@@ -23,10 +23,20 @@ LEGOS = {
     "sekai": "scripts/provider_patches/sekai_nondisplay_recovery_v1.py",
     "voiranime-rip": "scripts/provider_patches/voiranime_rip_nondisplay_recovery_v1.py",
 }
+V2_LEGOS = {
+    "animesama-co": "scripts/provider_patches/animesamaco_nondisplay_recovery_v2.py",
+    "neko-sama": "scripts/provider_patches/neko_sama_nondisplay_recovery_v2.py",
+    "sekai": "scripts/provider_patches/sekai_nondisplay_recovery_v2.py",
+    "voiranime-rip": "scripts/provider_patches/voiranime_rip_nondisplay_recovery_v2.py",
+}
 LEGACY_SHARED = {
     "scripts/provider_patches/non_display_recovery_runtime_v1.py",
     "scripts/provider_patches/non_display_recovery_entry_v1.py",
 }
+
+
+def _wanted(provider: str, base: str) -> dict[str, object]:
+    return {"provider": provider, "base": base, "max_streams": 4}
 
 
 def apply_document(doc: dict[str, Any]) -> list[str]:
@@ -36,20 +46,31 @@ def apply_document(doc: dict[str, Any]) -> list[str]:
         row = patches.get(provider)
         if not isinstance(row, dict):
             raise ValueError(f"missing provider patch row: {provider}")
-        lego = LEGOS[provider]
         scripts = row.setdefault("provider_lego_scripts", [])
         before_scripts = list(scripts)
         scripts[:] = [x for x in scripts if x not in LEGACY_SHARED]
-        if lego not in scripts:
-            scripts.append(lego)
+        v1 = V1_LEGOS[provider]
+        if v1 not in scripts:
+            scripts.append(v1)
+        # V2 is deliberately ordered after V1 so its runtime-resolver registration
+        # is the final provider-owned resolver for the four still-broken routes.
+        v2 = V2_LEGOS.get(provider)
+        if v2:
+            scripts[:] = [x for x in scripts if x != v2]
+            scripts.append(v2)
         if scripts != before_scripts:
             changed.append(provider)
+
         options = row.setdefault("provider_lego_options", {})
         for old in LEGACY_SHARED:
             options.pop(old, None)
-        wanted = {"provider": provider, "base": base, "max_streams": 4}
-        if options.get(lego) != wanted:
-            options[lego] = wanted
+        wanted = _wanted(provider, base)
+        if options.get(v1) != wanted:
+            options[v1] = wanted
+            if provider not in changed:
+                changed.append(provider)
+        if v2 and options.get(v2) != wanted:
+            options[v2] = wanted
             if provider not in changed:
                 changed.append(provider)
 
@@ -84,15 +105,23 @@ def validate_document(doc: dict[str, Any]) -> None:
         row = patches.get(provider)
         if not isinstance(row, dict):
             raise AssertionError(provider)
-        lego = LEGOS[provider]
         scripts = row.get("provider_lego_scripts") or []
-        if lego not in scripts:
-            raise AssertionError(f"{provider}: recovery Lego missing")
+        v1 = V1_LEGOS[provider]
+        if v1 not in scripts:
+            raise AssertionError(f"{provider}: recovery V1 Lego missing")
         if any(old in scripts for old in LEGACY_SHARED):
             raise AssertionError(f"{provider}: legacy shared recovery Lego still registered")
         options = row.get("provider_lego_options") or {}
-        if (options.get(lego) or {}).get("base") != base:
-            raise AssertionError(f"{provider}: recovery base drift")
+        if options.get(v1) != _wanted(provider, base):
+            raise AssertionError(f"{provider}: recovery V1 options drift")
+        v2 = V2_LEGOS.get(provider)
+        if v2:
+            if v2 not in scripts:
+                raise AssertionError(f"{provider}: recovery V2 Lego missing")
+            if scripts[-1] != v2:
+                raise AssertionError(f"{provider}: recovery V2 must be last provider Lego")
+            if options.get(v2) != _wanted(provider, base):
+                raise AssertionError(f"{provider}: recovery V2 options drift")
     coflix = patches["coflix"]
     if coflix.get("official_site") != "https://coflix.wiki":
         raise AssertionError("coflix current authority drift")
