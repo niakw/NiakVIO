@@ -1,0 +1,77 @@
+name: FINALIZE - PR Provider Minimizer Fixed Point
+
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths:
+      - '.github/workflows/pr-final-minimizer-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NUVIO_PROVIDER_V3_CONTEXT: publication
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Apply authoritative final provider publication transform
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/finalize_provider_v3_minimizer.py
+          python3 scripts/finalize_provider_v3_minimizer.py --check
+          python3 scripts/reapply_published_overrides.py --check
+          python3 tests/provider_v3_minimizer_contract_test.py
+          python3 tests/provider_v3_minimizer_preview_test.py
+          python3 tests/provider_v3_minimizer_publication_pipeline_test.py
+          python3 tests/provider_v3_minimizer_published_test.py
+          python3 scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python3 scripts/prune_unreferenced_providers.py
+          python3 tests/provider_html_filter_security_test.py --published
+          python3 scripts/audit_provider_v3_static.py
+      - name: Re-prove critical provider gates after minimization
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/provider_overrides_sync_test.py
+          python3 tests/global_stream_presentation_test.py
+          python3 tests/global_stream_presentation_pipeline_test.py
+          python3 tests/stream_output_sanitizer_fail_closed_test.py
+          node --test engine_v2/tests/stream-presentation.test.mjs
+      - name: Persist only authoritative generated publication state
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/pr-final-minimizer-short.yml
+          git diff --name-only | tee /tmp/pr-minimizer-files.txt
+          if grep -Ev '^(PROVENANCE\.json|provider-overrides\.json|providers/.*|manifest\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|nuvio-client-id-state\.json|automation/PLATFORM-RUNTIME-CONTRACTS\.md|\.github/workflows/pr-final-minimizer-short\.yml)$' /tmp/pr-minimizer-files.txt; then
+            echo 'Unexpected path changed by PR provider finalization' >&2
+            exit 1
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m 'chore: finalize provider minimizer fixed point'
+          git fetch origin fix/non-display-recovery-20260916
+          test "$(git rev-parse origin/fix/non-display-recovery-20260916)" = "${GITHUB_SHA}" || {
+            echo 'Repair branch moved during finalization' >&2
+            exit 1
+          }
+          git push origin HEAD:fix/non-display-recovery-20260916
+          echo "FIELD_PR_PROVIDER_FINALIZATION_OK sha=$(git rev-parse HEAD) version=$(python3 -c 'import json;print(json.load(open("manifest.json"))["version"])')"
