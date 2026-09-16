@@ -1,0 +1,38 @@
+name: TEMP - Max Repair Post V28 Trace V29
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-max-repair-post-v28-trace-v29.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  trace:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - name: Trace post-V28 provider calls
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/trace-v29.cjs <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const manifest=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const nativeFetch=globalThis.fetch;
+          function norm(v){return String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,'')}
+          function file(pid){const rows=(manifest.scrapers||[]).filter(r=>norm(r&&r.id)===norm(pid));if(rows.length!==1)throw new Error('manifest_count:'+pid+':'+rows.length);return path.resolve(rows[0].filename)}
+          function context(s){const ns=s.type==='movie'?'movie':'tv',m=s.type==='movie'?{title:s.title,original_title:s.title,release_date:`${s.year}-01-01`,alternative_titles:{titles:[]}}:{name:s.title,original_name:s.title,first_air_date:`${s.year}-01-01`,alternative_titles:{results:[]}};globalThis.__nuvioMediaContext={tmdbId:String(s.id),tmdbNamespace:ns,tmdbMetadata:m,canonicalMediaType:s.type};globalThis.__nuvioTmdbMetadataCacheV1={[`${ns}:${s.id}`]:m};globalThis.__nuvioProviderDeadlineMs=Date.now()+30000}
+          function trace(label){globalThis.fetch=async function(input,init){const url=typeof input==='string'?input:(input&&input.url)||String(input||''),started=Date.now();try{const r=await nativeFetch(input,init);console.log('FETCH',label,r.status,'ms='+(Date.now()-started),'req='+url,'final='+r.url,'ctype='+(r.headers.get('content-type')||''));return r}catch(e){console.log('FETCH_ERR',label,'req='+url,String(e&&e.message||e));throw e}}}
+          async function run(label,s){console.log('\n===',label,'===');context(s);trace(label);const f=file(s.pid),code=fs.readFileSync(f,'utf8');console.log('FILE',f,'currentWooka='+code.includes('NIAKVIO_WOOKAFR_CURRENT_RUNTIME_V2'),'currentAA='+code.includes('NIAKVIO_ALLANIME_CURRENT_RUNTIME_V1'),'sanitizer11='+code.includes('NUVIO_STREAM_OUTPUT_CORRELATED_PATH_HANDOFF_V11'));delete require.cache[f];const mod=require(f);try{const rows=await Promise.race([Promise.resolve(mod.getStreams(String(s.id),s.type,s.season,s.episode)),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),31000))]);console.log('ROWS',label,JSON.stringify(Array.isArray(rows)?rows:rows||null))}catch(e){console.log('STREAM_ERR',label,String(e&&e.stack||e))}globalThis.fetch=nativeFetch}
+          (async()=>{
+            await run('wookafr_movie',{pid:'wookafr',id:'157336',type:'movie',title:'Interstellar',year:'2014'});
+            await run('wookafr_tv',{pid:'wookafr',id:'1396',type:'tv',title:'Breaking Bad',year:'2008',season:1,episode:1});
+            await run('allanime',{pid:'allanime',id:'37854',type:'anime',title:'One Piece',year:'1999',season:1,episode:1178});
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/trace-v29.cjs
