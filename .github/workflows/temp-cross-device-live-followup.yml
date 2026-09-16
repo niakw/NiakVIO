@@ -5,121 +5,56 @@ on:
     branches: [fix/cross-device-audit-20260916]
     paths:
       - '.github/workflows/temp-cross-device-live-followup.yml'
-      - 'scripts/temp_fix_mugiwara_discovery_v2.py'
 
 permissions:
   contents: write
 
-concurrency:
-  group: temp-cross-device-live-followup
-  cancel-in-progress: true
-
 jobs:
   followup:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-    env:
-      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: fix/cross-device-audit-20260916
           fetch-depth: 0
-          persist-credentials: true
 
-      - name: Apply current Mugiwara discovery contract
+      - name: Dump Mugiwara configured execution authorities
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/temp_fix_mugiwara_discovery_v2.py
-          python3 -m py_compile scripts/provider_patches/mugiwarastream_packed_runtime_v1.py
-          python3 tests/mugiwarastream_same_origin_discovery_v2_test.py
-
-      - name: Recompose active providers with Mugiwara and 4K Core fixes
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 scripts/reapply_published_overrides.py
-          python3 tests/global_stream_output_guard_test.py
-          python3 tests/global_stream_presentation_pipeline_test.py
-          python3 tests/stream_quality_recovery_tv_test.py
-          python3 tests/stream_output_sanitizer_fail_closed_test.py
-          python3 tests/cross_device_user_audit_regression_test.py
-          python3 tests/mugiwarastream_same_origin_discovery_v2_test.py
-
-      - name: Prove Mugiwara E11 and StreamZo 2160p on recomposed bytes
-        shell: bash
-        run: |
-          set -euo pipefail
-          provider_file() {
-            python3 - "$1" <<'PY'
-          import json,sys
-          pid=sys.argv[1].casefold()
-          data=json.load(open('manifest.json',encoding='utf-8'))
-          for row in data.get('scrapers') or data.get('providers') or []:
-              rid=str(row.get('id') or row.get('canonicalId') or row.get('scraper',{}).get('id') or '').casefold()
-              if rid==pid:
-                  print(row.get('filename') or row.get('file') or row.get('path') or '')
-                  raise SystemExit(0)
-          raise SystemExit(2)
-          PY
-          }
-          MUGI="$(provider_file mugiwarastream)"
-          STREAMZO="$(provider_file streamzo)"
-          HELL='{"tmdbId":"280049","mediaType":"anime","type":"anime","title":"Hell Mode","season":2,"episode":11}'
-          MOVIE='{"tmdbId":"157336","mediaType":"movie","type":"movie","title":"Interstellar","year":2014}'
-          timeout 80s node scripts/nuvio_tv_probe_tmdb_ci.cjs "$MUGI" "$HELL" 2>&1 | tee /tmp/mugi-final.log
-          timeout 60s node scripts/nuvio_tv_probe_tmdb_ci.cjs "$STREAMZO" "$MOVIE" 2>&1 | tee /tmp/streamzo-final.log
           python3 - <<'PY'
-          import json,re
-          from pathlib import Path
-          def payload(path):
-              found=None
-              for line in Path(path).read_text(encoding='utf-8',errors='replace').splitlines():
-                  line=line.strip()
-                  if not line.startswith('{'): continue
-                  try: row=json.loads(line)
-                  except Exception: continue
-                  if 'playable_stream_count' in row: found=row
-              if found is None: raise SystemExit(f'no probe JSON: {path}')
-              return found
-          m=payload('/tmp/mugi-final.log')
-          s=payload('/tmp/streamzo-final.log')
-          if int(m.get('playable_stream_count') or 0) < 1:
-              raise SystemExit('Mugiwara S2E11 still has no playable stream')
-          qualities=[str((x.get('row') or {}).get('quality') or '') for x in s.get('streams') or []]
-          titles=[str((x.get('row') or {}).get('title') or '') for x in s.get('streams') or []]
-          if int(s.get('playable_stream_count') or 0) < 1 or '2160p' not in qualities:
-              raise SystemExit(f'StreamZo 2160p recovery missing: {qualities}')
-          out={
-            'mugiwarastream': {'fixture':'Hell Mode S2E11','raw':m.get('raw_stream_count'),'playable':m.get('playable_stream_count'),'stage':(m.get('debug') or {}).get('stage')},
-            'streamzo': {'fixture':'Interstellar','raw':s.get('raw_stream_count'),'playable':s.get('playable_stream_count'),'qualities':qualities,'titles':titles,'stage':(s.get('debug') or {}).get('stage')},
-          }
-          Path('/tmp/final-live-proof.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-          print(json.dumps(out,ensure_ascii=False,indent=2))
+          import json
+          d=json.load(open('provider-overrides.json',encoding='utf-8'))
+          r=d['provider_patches']['mugiwarastream']
+          keys=['capability','official_site','learned_routes','search_request_plan','searchRequestPlan','provider_value_plan','providerValuePlan','api_recipe','candidate_api_recipe','route_proof','provider_lego_scripts','provider_lego_options']
+          for k in keys:
+              if k in r: print('MUGI_CONFIG',k,json.dumps(r[k],ensure_ascii=False)[:30000])
           PY
 
-      - name: Persist proven repair and compact evidence
+      - name: Inspect generated Mugiwara hook and Core dispatcher
         shell: bash
         run: |
           set -euo pipefail
-          cp /tmp/final-live-proof.json automation/evidence/cross-device-20260916/final-live-proof.json
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add -A
-          git reset -- .github/workflows/temp-cross-device-live-followup.yml scripts/temp_fix_mugiwara_discovery_v2.py || true
-          git diff --cached --stat
-          git commit -m 'fix(providers): restore Mugiwara discovery and materialize 2160p recovery'
-          git push origin HEAD:fix/cross-device-audit-20260916
-
-      - name: Remove temporary diagnostic driver
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -f .github/workflows/temp-cross-device-live-followup.yml scripts/temp_fix_mugiwara_discovery_v2.py
-          git add -A
-          if ! git diff --cached --quiet; then
-            git commit -m 'ci: remove cross-device live repair driver'
-            git push origin HEAD:fix/cross-device-audit-20260916
-          fi
+          MUGI="$(python3 - <<'PY'
+          import json
+          d=json.load(open('manifest.json',encoding='utf-8'))
+          for r in d.get('scrapers') or []:
+              if str(r.get('id','')).casefold()=='mugiwarastream': print(r.get('filename')); break
+          PY
+          )"
+          echo "MUGI_FILE=$MUGI"
+          python3 - "$MUGI" <<'PY'
+          import sys
+          t=open(sys.argv[1],encoding='utf-8').read()
+          for needle in ['NIAKVIO_MUGIWARASTREAM_PACKED_RUNTIME_V1','__niakvioProviderRuntimeResolverV1={provider:"mugiwarastream"','NUVIO_GLOBAL_PROVIDER_RUNTIME_DISPATCH_V1','var hook=null']:
+              print('MUGI_SOURCE_MARKER',needle,'count',t.count(needle),'first',t.find(needle))
+          PY
+          node - "$MUGI" <<'NODE'
+          const path=require('node:path');
+          const file=path.resolve(process.argv[2]);
+          const p=require(file);
+          console.log('MUGI_RUNTIME exports',Object.keys(p||{}));
+          console.log('MUGI_RUNTIME hook',!!globalThis.__niakvioProviderRuntimeResolverV1,globalThis.__niakvioProviderRuntimeResolverV1?.provider,typeof globalThis.__niakvioProviderRuntimeResolverV1?.resolve);
+          console.log('MUGI_RUNTIME dispatch',!!p?.getStreams?.__nuvioProviderRuntimeDispatchV1,!!p?.streams?.__nuvioProviderRuntimeDispatchV1);
+          NODE
