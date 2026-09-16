@@ -1,104 +1,101 @@
-# NiakVIO — open-task recovery checkpoint — updated 2026-09-13
+# NiakVIO — open-task recovery checkpoint — updated 2026-09-16
 
-This is the operational recovery list for the active candidate branch `fix/labs-5.21.44-20260912`. `MEMORY.md`, exact repository state and current GitHub Actions evidence override stale chat summaries. `main` remains untouched by this repair campaign until explicit publication authorization.
+This is the operational recovery list for current `main`. Exact repository state and current GitHub Actions/native evidence override older chat summaries and historical sections of `MEMORY.md`. The old `fix/labs-5.21.44-20260912` campaign is historical, not an active write policy.
 
-## Hard constraints / architecture
+## Current authority
 
-- Canonical catalogue remains **96 Provider Objects**; never delete providers to manufacture a green yield.
-- Current native Hub/Lab campaign is the exact **46-provider** scope from `automation/evidence/hub-lab-matrix-46.json`; the other 50 catalogue rows remain outside this physical campaign, not deleted.
-- Wrong title/type/season/episode is worse than zero. Identity/media integrity stays fail-closed.
+- Current public release: **5.21.48**.
+- Active write/publication target: **`main`** only. Do not recreate a persistent workbench/repair branch.
+- Recovery census remains **96 Provider Objects**: 46 current rows plus 50 historical archive rows. Never shrink this census to manufacture green metrics.
+- Current physical manifest has **46 rows**, of which **44 are active** and **2 disabled-retained**; active Native execution is defined by `automation/evidence/hub-lab-matrix-46.json`.
+- Wrong title/type/season/episode is worse than zero. Identity/media integrity remains fail-closed.
 - Hub/registry presence is discovery knowledge, never execution proof. Telegram remains discovery-only.
 - Runtime/client portability is Core-global Lego. Timer shims, fetch/URL portability, stale-generation suppression, HTTP 403/media fail-closed and terminal sanitation must never become provider-specific runtime patches.
 - Provider timeout remains **25 s**. Preserve A→B→C latest-generation isolation even if fetch ignores `AbortSignal`.
-- Terser is forbidden. Provider v3 minimization happens only after functional stabilization and must preserve managed boundaries, deterministic reverse rebuild and byte fixed point.
+- Terser is forbidden. Provider v3 uses `scripts/provider_v3_minimizer.py` and must preserve managed boundaries, deterministic reverse rebuild and byte fixed point.
 
-## Main priority — provider yield / parity
+## Publication / immutable Hub-46 transport
 
-- [x] Upstream parity authority uses `engine_v2/config/provider-upstreams.json`; the old `sources.json` lookup is obsolete.
-- [x] Parity semantics are strict: only exact `upstream_ok_niakvio_ko` is a certain NiakVIO regression. ZERO/technical inconclusive is not auto-repair debt.
-- [x] PlayIMDb proof-v5 typed resolver was restored; exact movie+TV live proof is green.
-- [x] Fail-closed batch quarantine repair run `34766893110` replaced all-or-nothing retries. Accepted after strict-yield + recent parity: `animevost-fr`, `playimdb`, `uhdmovies`. Failed-provider mutations were hard-reset and did not survive.
-- [x] Full-reserve parity run `34766524150` scanned the 15 historical ZERO rows plus three active-loss exceptions through up to **32 recent candidates per declared lane**. Result: **3 certain regressions, 15 ZERO/technical-inconclusive, 0 provider-level RESAMPLE**.
-- [x] The 15 rows that remain ZERO/inconclusive and must **not** be blindly mutated are: `4khdhub`, `allanime`, `allwish`, `anikototv`, `anime-ultime`, `animesalt`, `animetsu`, `flemmix`, `fullanime`, `moviebox`, `moviesmod`, `showbox`, `vidfast`, `vidlove`, `vostfree`.
-- [ ] Repair the only three current full32 certain regressions as one evidence-driven wave:
-  - `animevostfr`: movie `superman-2025` + anime `tokyo-ghoul-2014-s01e01`;
-  - `kurage`: anime `high-school-of-the-dead-2010-s01e01`;
-  - `voiranime`: anime `tokyo-ghoul-2014-s01e01`.
-  Current diagnostic run: `34768054363`.
-- [ ] After the trio repair, rerun the identical exact cases **and** full32 parity for the trio; require zero certain regression and zero wrong-content contradiction before retaining any mutation.
-- [ ] Reclassify the former historical hypotheses (Cineby/Coflix/French-Manga/NetMirror/Papadustream/StreamZo/etc.) from current parity evidence only. They are no longer an automatic repair queue merely because they appeared in older runs.
-- [ ] Maintain a nominative blocker list for the remaining 46: domain/hub, metadata identity, search/detail, API/player extraction, anti-bot/network, stream transport, content identity, native player, or unknown/opaque. `0 streams` alone is not opaque.
+- [x] Release 5.21.48 is synchronized across root/VF/no-anime/VF-no-anime manifests, package metadata and release hashes.
+- [x] PR **#120** restored immutable Hub-46 transport and was merged normally at `e401e61688dd79996002f9e37b9abfc923846735`.
+- [x] Final provider publication used by Native transport is immutable commit `425756cf1646380fb8172f380d176758c3734ce6`.
+- [x] `native-hub46/manifest.json` pins absolute provider URLs to that publication SHA.
+- [x] `tests/native_hub46_transport_manifest_test.py` proves each pinned provider blob exists at the pinned commit.
+- [x] PR #120 final gates passed: Provider Non-Regression, Media Type & Playback, Workflow Gate, Verify & Publish and CodeQL.
+- [x] CodeQL #889 hostname parsing fix is already on main (`c60ec1871dc5d3b2217e69581d2c2a5a6615fc84`); do not duplicate it.
 
-## Global Core / Desktop/runtime work
+## Five first-class Native Labs — current authoritative run
 
-- [x] `CORE.RUNTIME_COMPAT.V1` owns missing timer globals and Desktop URL/fetch portability.
-- [x] Provider-specific ownership of Core-global runtime modules is rejected.
-- [x] Terminal stream/media policy is Core-global; HTTP 403/404/410 and terminal sanitizer remain fail-closed.
-- [x] `tests/global_core_runtime_ownership_test.py` checks all 96 bundles and is green.
-- [x] Explicit no-timer execution proof is green: `GLOBAL_RUNTIME_NO_TIMER_EXECUTION_OK rows=1 setTimeout=function clearTimeout=function`. A Desktop-like host with no timer globals is Core-shimmed without provider disappearance.
-- [ ] Reconcile any remaining stale profile test assumptions (not provider code) if final fixed-point suite exposes them.
+Trigger SHA: `6b28f3b2c53f5ca6cfb4bc11a3af139c21d6dee1`.
 
-## Hub-46 transport and Native Labs
-
-- [x] Root-name repository 404 root cause is closed: official Nuvio strips literal `/manifest.json`.
-- [x] Physical transport is `native-hub46/manifest.json`, exactly 46 rows, terminal filename `manifest.json`, provider files pinned by immutable absolute URLs.
-- [x] Desktop, Mobile and TV suites select the physical nested manifest during the Hub-46 campaign; iOS and Desktop workflows are explicit.
-- [x] Android **prebuild** also switches to `native-hub46/manifest.json` when the scope matrix is active, so preparation/prebuild/runtime agree before QEMU.
-- [x] Adaptive native corpus contract is **32 movie + 32 TV + 32 anime**, starts **1+1+1**, rotates one-at-a-time only on clean zero, and stops on positive/error/wrong-content evidence.
-- [ ] **Regenerate `native-hub46/manifest.json` against the final frozen repaired provider SHA.** Current pinned provider SHA is infrastructure-era and is not final certification transport.
-- [ ] Run exactly five first-class native Labs on one frozen NiakVIO SHA and record exact official client refs:
-  1. TV Android — NuvioTV;
-  2. Mobile Android — NuvioMobile;
-  3. Mobile iOS — NuvioMobile;
-  4. Desktop macOS — NuvioDesktop;
-  5. Desktop Windows — NuvioDesktop.
+- [ ] TV Android — run `35033132967`, job `tv-route-reader`: runtime corpus in progress at last checkpoint.
+- [ ] Mobile Android — run `35033132967`, job `mobile-android-reader`: runtime corpus in progress at last checkpoint.
+- [ ] Mobile iOS — run `35033132980`: native Lab session in progress at last checkpoint; unsigned device IPA build/upload already green.
+- [ ] Desktop macOS — run `35033133048`: bridge build green, rotating route runtime in progress at last checkpoint.
+- [ ] Desktop Windows — run `35033133048`: WebView2 + bridge build green, rotating route runtime in progress at last checkpoint.
+- [ ] Do not declare a platform green until its exhaustive Hub-46 matrix step completes and route evidence is uploaded/analyzed.
 - [ ] Keep reader/player failures separate from provider extraction failures. Never patch official Nuvio clients merely to turn a Lab green.
+
+## Future Native run latency
+
+- [x] Exact-client prebuild caches are installed for TV Android, Mobile Android, iOS, macOS and Windows.
+- [x] Cache keys include exact official-client SHA + OS/toolchain + relevant NiakVIO harness/native-manifest hash.
+- [x] No permissive `restore-keys`: stale builds from another client revision cannot be silently reused.
+- [x] Runtime corpus and exhaustive provider-matrix gates still execute even on cache hit.
+- [x] The temporary cache installer workflow was removed after installation.
+
+## Provider parity / repair queue
+
+- [x] Upstream parity authority is `engine_v2/config/provider-upstreams.json`; the old `sources.json` lookup is obsolete.
+- [x] Only exact `upstream_ok_niakvio_ko` evidence is a certain NiakVIO regression. ZERO/technical inconclusive is not automatic repair debt.
+- [x] Historical full32 campaign separated three then-certain regressions from fifteen ZERO/technical-inconclusive rows; that historical classification must not be blindly reused as a current queue after later publications.
+- [ ] Re-prove any remaining regression against **current 5.21.48 bytes** before mutating it. Historical names that require explicit re-check if still failing include `animevostfr`, `kurage`, `voiranime`.
+- [ ] Preserve the historical ZERO/inconclusive list as anti-forgetting evidence, not an automatic mutation queue: `4khdhub`, `allanime`, `allwish`, `anikototv`, `anime-ultime`, `animesalt`, `animetsu`, `flemmix`, `fullanime`, `moviebox`, `moviesmod`, `showbox`, `vidfast`, `vidlove`, `vostfree`.
+- [ ] Current named follow-ups from later manual evidence remain: HindMoviez host/search variability and downstream timeouts; AnimePahe provider/runtime I/O versus runner 403; AnimeSalt browser-positive/runner-403 behavior. Diagnose only from fresh evidence.
+- [x] Nakios troll/short HLS is rejected by Core fail-closed media safety; do not weaken the validator.
+- [x] StreamZo/Frenchstream missing-host-timer class is owned by `CORE.RUNTIME_COMPAT.V1`, not provider-specific timer hacks.
+- [ ] Keep a nominative blocker/evidence classification for every current provider: domain/hub, metadata identity, search/detail, API/player extraction, anti-bot/network, stream transport, content identity, native player, or unknown/opaque. `0 streams` alone is not opaque.
+
+## Core/runtime invariants
+
+- [x] `CORE.RUNTIME_COMPAT.V1` owns missing `setTimeout`/`clearTimeout` and Desktop URL/fetch portability.
+- [x] Provider-specific ownership of Core-global runtime modules is rejected.
+- [x] HTTP 403/404/410 and terminal sanitizer behavior remain fail-closed.
+- [x] Explicit no-timer execution proof exists; Desktop-like runtimes without host timer globals must not make providers disappear.
+- [x] Capability/type gate occurs before provider network work; semantic anime remains distinct while Nuvio transport may use `tv`/`movie` aliases.
+- [x] TMDB/IMDb identity remains dual; episodic year must not affect TV/anime identity; strict year identity is movie-only.
 
 ## Domain Refresh
 
-- [x] Domain Refresh is the full-CONFIG transaction v2, not the obsolete `official_site`-only updater.
+- [x] Domain Refresh is the full-CONFIG transaction v2, not the obsolete `officialSite`-only updater.
 - [x] Source authority, CONFIG rebuild, source-qualified/content-hashed filenames, projections/versioning, cycle/rollback safety, idempotence and Core/Lego invariance are covered by current contracts.
-- [x] `VALIDATION.md` and `ARCHITECTURE.md` describe the current Domain Refresh transaction.
 - [ ] Keep generic old-host → new-host derivative reconciliation and synthetic A→B proof covered if this subsystem changes again.
 
 ## Brain / Learning / discovery
 
 - [x] Weekly upstream/provider discovery is structurally scheduled (`37 3 * * 3`), read-only and non-P2P.
-- [x] Obsolete TEMP workflow that tried to remove the weekly watch is gone.
-- [ ] Verify an actual scheduled weekly execution/artifact before declaring operational scheduling proven historically.
+- [ ] Verify a real scheduled weekly execution/artifact before treating the schedule as historically proven operationally.
 - [ ] Review real multi-day Brain differential evidence before treating Learning state as production authority.
 - [ ] Preserve international discovery candidate data and country/UHD balance.
 
-## Provider presentation / UI
-
-- [ ] Preserve 72×32 and 96×40 compressed WebP provider-logo assets and first-letter fallback.
-- [ ] Revalidate branding, language labels and quality metadata after final materialization/minimization.
-- [ ] Verify visible provider-logo propagation in the official Nuvio UI/Labs without patching official clients.
-
 ## Repository hygiene / docs
 
-- [x] README EN/FR and `VALIDATION.md` now explicitly distinguish **96 catalogue / 46 physical Lab scope / 3×32 adaptive reserve / 1+1+1 initial sampling**.
-- [x] `VALIDATION.json` was upgraded from obsolete 5.15.0-era metadata to current 5.21.43/candidate contracts, with final certification explicitly pending a frozen candidate SHA; machine-summary validation passed.
-- [x] `ARCHITECTURE.md` now documents the explicit candidate-branch policy and Hub-46 adaptive Lab model rather than claiming every repair must write directly to `main`.
-- [x] Completed/stale TEMP workflows already removed include the old Domain Refresh, Brain smoke, manual-TV/V34, mobile V36, V35 rebuild, positive-output audits, Hub46/docs/prebuild migrations, batch repair, full32 parity, old Mugiwara diagnostic, old parallel Lab dispatcher and old VF pre-main smoke.
-- [ ] Keep `temp-full32-regression-trio-diagnosis.yml` only until its current evidence is consumed, then delete it.
-- [ ] Extract/supersede unique evidence from `temp-netmirror-movie-diag.yml`, `temp-voiranime-coflix-payload-probe.yml` and `temp-animesalt-runner-recheck.yml`, then delete them if no longer operationally useful.
-- [ ] Update the top/current-state sections of `MEMORY.md` after the trio repair; its header/topology still contains 2026-09-07-era branch/publication wording.
-- [ ] Reconcile `CHANGELOG.md`, Lab triggers/matrices and `automation/provider-v3-architecture.json` on the frozen candidate.
-- [ ] Regenerate/recheck `ARCHITECTURE.docx` only after architecture wording and final candidate are frozen.
+- [x] Temporary Native pin-repair and prebuild-cache installer workflows have been removed.
+- [x] `VALIDATION.json` now identifies release 5.21.48, `main`, immutable Hub-46 publication SHA and the current five-Lab run IDs.
+- [ ] `MEMORY.md` top/current checkpoint must describe 5.21.48, PR #120, immutable Hub-46, CodeQL #889, prebuild caches and the current Native runs while retaining older material as history.
+- [ ] `CHANGELOG.md` needs a 5.21.48 entry; its current newest release section is older.
+- [ ] `provider_catalog.json` metadata names must be synchronized from `NiakVIO v5.21.43` to `NiakVIO v5.21.48`, and `sync_release_versions.py` must update catalogue visible names so the drift cannot recur.
+- [ ] Provider Non-Regression push policy must target `main`, not the historical 5.21.44 repair branch, and its compatibility contract must be aligned.
+- [ ] Remove unreferenced one-shot scripts `scripts/temp_apply_hub46_native_scope.py` and `scripts/temp_integrate_rotating_corpus.py` after confirming no tracked references.
+- [ ] Recheck `ARCHITECTURE.docx` only after final wording is stable; do not let it override current Markdown/runtime truth.
 
-## Final minimizer / deterministic publication gate
+## Privacy / repository metadata
 
-- [ ] Only after provider behavior is frozen, run Provider v3 minimizer contract/preview/published tests across all 96.
-- [ ] Run byte stability, deterministic reverse rebuild, content-hash/source-qualified filename synchronization, manifest projections and fixed-point/idempotence.
-- [ ] Measure final bundle size and prove managed marker/runtime semantics unchanged.
-
-## Security / final certification
-
-- [ ] Frozen SHA must pass CodeQL `security-extended` across Actions, Python, JS/TS source, providers and provider-bases without weakening rules.
-- [ ] Run `npm audit --omit=dev --audit-level=high` (or current repository equivalent) on that same candidate.
-- [ ] Validate release hashes/integrity and retain final Labs/security evidence.
+- [x] Tracked-content searches found no occurrence of the user’s obvious personal name/surname, personal Gmail address, Pollestres, Perpignan or LinkedIn profile URL.
+- [!] Git commit author metadata contains a personal author identity/email on some historical/recent commits. This is **history metadata**, not tracked file content.
+- [ ] Do not rewrite Git history while immutable Hub-46/current Labs depend on exact SHAs. If historical author metadata is to be purged, perform it later as a dedicated migration with repinning/republication and downstream SHA reconciliation.
+- [ ] Configure a GitHub noreply/private commit email for future human-authored commits outside this automation path.
 
 ## Completion rule
 
-The work is complete only when the three current proven regressions are repaired or precisely fail-closed with evidence; the 15 full32 ZERO rows remain correctly classified rather than force-fixed; all 46 have defensible evidence/blocker status; the Hub-46 manifest is regenerated on the frozen provider SHA; minimizer/reverse-rebuild/fixed-point/security are green; all five native Labs execute that exact candidate; UI/logo evidence is reconciled; `MEMORY.md`/docs are current; obsolete TEMP workflows are removed; and every residual issue is recorded with an exact reason/evidence.
+The current campaign is complete only when the five Native Labs above finish and their evidence is analyzed; any genuine current provider regression is repaired or precisely fail-closed; current manifests/projections/fixed-point/security remain coherent; durable memory/docs match 5.21.48; obsolete temporary files are removed; and every remaining issue is recorded with exact evidence/reason rather than inherited from an older branch campaign.
