@@ -4,12 +4,14 @@
   <p><strong>English</strong> · <a href="README.fr.md">Français</a></p>
   <h3>One maintained provider layer for Nuvio.</h3>
   <p><strong>46 Hub Provider Objects · VO / VF · TV / Mobile / Desktop</strong></p>
-  <p>Install one provider repository. Keep a broad catalogue while NiakVIO handles structured maintenance, domain changes, validation and cache-safe releases.</p>
+  <p>One provider layer, multiple manifest projections, structured provider knowledge and native validation across the official Nuvio clients.</p>
 </div>
 
 ---
 
 ## Install NiakVIO
+
+Pick the projection that matches your setup and paste its URL into Nuvio.
 
 **Recommended — general manifest**
 
@@ -39,8 +41,6 @@ Manifest guide: [`docs/how-to-add-manifest.md`](docs/how-to-add-manifest.md)
 
 ### StreamBadge feed
 
-[`assets/stream-badges-fusion-v2.json`](https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v2.json)
-
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v2.json
 ```
@@ -56,18 +56,19 @@ StreamBadge guide: [`docs/how-to-add-stream-badges.md`](docs/how-to-add-stream-b
 
 ## Why NiakVIO?
 
-A provider layer is easy while everything is static. The real maintenance problem starts when domains rotate, APIs change, player requirements drift, clients behave differently, or a cached provider generation refuses to refresh.
+A provider pack is easy while everything is static. The maintenance problem starts when domains rotate, APIs change, player requirements drift, native clients behave differently, or cached provider generations refuse to refresh.
 
-NiakVIO is built around that problem.
+NiakVIO is built around that lifecycle rather than around a one-time bundle dump.
 
-- **46 Hub Provider Objects stay in the census** — disabled or unresolved providers are not silently removed to improve a success rate.
-- **VO and VF projections** — one maintained catalogue with dedicated French-focused manifests.
-- **One provider layer** — avoid stacking several provider packs that duplicate the same role.
-- **Structured provider knowledge** — routes, request semantics, identity rules and official-domain evidence live outside opaque published bundles.
-- **Repairable architecture** — common failures can be fixed at Provider/Core-family level; uncertain changes go through reviewable Learning proposals.
-- **Native compatibility evidence** — TV Android, Mobile Android, Mobile iOS, macOS and Windows are independent compatibility boundaries.
-- **Cache-safe publication** — provider versions, manifest versions, content-addressed bundles and integrity metadata remain synchronized.
-- **Fail-closed validation** — zero streams, wrong-media playback, malformed media and upstream client failures remain distinct states instead of fake success.
+| | NiakVIO keeps this explicit |
+| --- | --- |
+| **Catalogue** | 46 Hub Provider Objects stay in the census; disabled or unresolved providers are not silently deleted to improve a success rate. |
+| **Projections** | General, French-focused and no-anime manifests are generated from one maintained provider layer. |
+| **Provider knowledge** | Routes, request semantics, identity rules, official-domain evidence and provenance live outside opaque published bundles. |
+| **Repair** | Common failures can be handled at Provider/Core-family level; uncertain changes go through reviewable Learning proposals. |
+| **Native evidence** | TV Android, Mobile Android, Mobile iOS, macOS and Windows are independent compatibility boundaries. |
+| **Publication** | Provider versions, manifest versions, content-addressed bundles and integrity metadata stay synchronized. |
+| **Validation** | Zero streams, wrong-media playback, malformed media and upstream client failures remain distinct states instead of fake success. |
 
 <div align="center">
   <img src="assets/branding/how-it-works-en.svg" alt="How NiakVIO works" width="820">
@@ -80,49 +81,18 @@ NiakVIO is built around that problem.
 <div align="center">
   <a href="https://github.com/NuvioMedia"><img src="assets/thanks/nuvio-bg.png" alt="Nuvio" width="150"></a>
   <p><strong>Keep the stack small: one tool per role.</strong></p>
+  <p>NiakVIO is designed to be the provider layer, not to replace every other part of the Nuvio stack.</p>
 </div>
 
-### Providers — NiakVIO
+| Role | Recommended project | What it should do in the stack | Links |
+| --- | --- | --- | --- |
+| **Providers** | <img src="assets/branding/niakvio-mark.svg" alt="NiakVIO" width="42"><br>**NiakVIO** | Use **one NiakVIO manifest** as the provider layer. Keeping this role singular makes source selection, caching and provider diagnostics much easier to understand. | [Repository](https://github.com/niakw/NiakVIO) · [General manifest](https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json) |
+| **Metadata & catalogue** | <img src="assets/thanks/ultramax-bg.png" alt="Ultra MAX" width="42"><br>**Ultra MAX** | Use it for catalogues, metadata-oriented rows and discovery instead of stacking another provider pack on top of NiakVIO. | [Ultra MAX](https://ultramax.vip) · [GitHub](https://github.com/PaRaN01a-hash/UltraMax) |
+| **Subtitles** | <img src="assets/thanks/subsense-bg.png" alt="SubSense" width="42"><br>**SubSense** | Keep subtitle discovery in a dedicated addon rather than mixing subtitle responsibilities into the provider layer. | [Configure](https://subsense.nepiraw.com/configure) · [GitHub](https://github.com/NepiRaw/Stremio-SubSense) |
+| **Favorites & tracking** | <img src="assets/thanks/simkl-bg.png" alt="SIMKL" width="42"><br>**SIMKL** | Use it for watch history, favorites and tracking so playback/provider concerns stay separate from user-library state. | [SIMKL](https://simkl.com) |
 
-<img src="assets/branding/niakvio-mark.svg" alt="NiakVIO" width="72" align="left">
-
-Use **NiakVIO only** for the provider layer. That keeps source selection, cache behavior and provider diagnostics understandable instead of duplicating the same role through multiple provider packs.
-
-**Links:** [NiakVIO repository](https://github.com/niakw/NiakVIO) · [General manifest](https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json)
-
-<br clear="left">
-
-### Metadata & catalogue — Ultra MAX
-
-<img src="assets/thanks/ultramax-bg.png" alt="Ultra MAX" width="72" align="left">
-
-Use **Ultra MAX** for catalogues, metadata-oriented rows and discovery rather than adding another provider layer.
-
-**Links:** [Ultra MAX](https://ultramax.vip) · [GitHub](https://github.com/PaRaN01a-hash/UltraMax)
-
-<br clear="left">
-
-### Subtitles — SubSense
-
-<img src="assets/thanks/subsense-bg.png" alt="SubSense" width="72" align="left">
-
-Use **SubSense** as the subtitle addon.
-
-**Links:** [Configure SubSense](https://subsense.nepiraw.com/configure) · [GitHub](https://github.com/NepiRaw/Stremio-SubSense)
-
-<br clear="left">
-
-### Favorites & tracking — SIMKL
-
-<img src="assets/thanks/simkl-bg.png" alt="SIMKL" width="72" align="left">
-
-Use **SIMKL** for watch history, favorites and tracking.
-
-**Link:** [SIMKL](https://simkl.com)
-
-<br clear="left">
-
-The goal is deliberately simple: **one provider layer, one metadata/catalogue addon, one subtitle addon and one tracking service**.
+> [!TIP]
+> **Simple target stack:** 1 provider layer + 1 metadata/catalogue addon + 1 subtitle addon + 1 tracking service. Avoid installing several provider packs that compete for the same role unless you are deliberately testing them.
 
 ---
 
@@ -292,33 +262,27 @@ Final publication can include:
 
 ---
 
-## Thanks & upstream knowledge
+## Upstream references & credits
 
-NiakVIO is independent. These projects are useful upstream references and deserve explicit credit; they are **not** NiakVIO reconstruction authorities.
+> [!NOTE]
+> NiakVIO is an independent project. Upstream repositories are used as **knowledge, implementation evidence and provenance**. They do not become NiakVIO reconstruction authorities, and published upstream JavaScript is never treated as the canonical source for rebuilding NiakVIO providers.
 
-### Gowaru
+| Project | What it contributes | Relationship to NiakVIO |
+| --- | --- | --- |
+| [<img src="assets/thanks/gowaru-bg.png" alt="Gowaru" width="120">](https://github.com/Gowaru/gowaru-nuvio-providers)<br>**[Gowaru](https://github.com/Gowaru/gowaru-nuvio-providers)** | French Nuvio provider implementations and provider-local protocol knowledge. Useful for route semantics, request behavior and provenance cross-checks. | **Reference / evidence source** — not reconstruction authority. |
+| [<img src="assets/thanks/yoru-bg.png" alt="Yoru" width="120">](https://github.com/yoruix/nuvio-providers)<br>**[Yoru](https://github.com/yoruix/nuvio-providers)** | Provider implementations and reusable Nuvio conventions that help cross-check runtime behavior and interfaces. | **Reference / evidence source** — not reconstruction authority. |
+| [<img src="assets/thanks/deadlyrocket-bg.png" alt="All-in-One Nuvio / D3adlyRocket" width="120">](https://github.com/D3adlyRocket/All-in-One-Nuvio)<br>**[All-in-One Nuvio / D3adlyRocket](https://github.com/D3adlyRocket/All-in-One-Nuvio)** | Historical provider aggregation and mirror material that can preserve useful provenance when original implementations move or disappear. | **Historical provenance source** — never canonical NiakVIO provider source. |
 
-[<img src="assets/thanks/gowaru-bg.png" alt="Gowaru" width="170">](https://github.com/Gowaru/gowaru-nuvio-providers)
+### What “upstream knowledge” means here
 
-French Nuvio provider implementations with provider-local source and protocol knowledge that can be used as upstream evidence/provenance.
+NiakVIO may use an upstream project to learn or verify:
 
-**Repository:** [Gowaru/gowaru-nuvio-providers](https://github.com/Gowaru/gowaru-nuvio-providers)
+- endpoint and route structure;
+- request methods, headers, body encoding and response shapes;
+- provider naming, provenance and historical behavior;
+- runtime conventions or compatibility patterns worth cross-checking.
 
-### Yoru
-
-[<img src="assets/thanks/yoru-bg.png" alt="Yoru" width="170">](https://github.com/yoruix/nuvio-providers)
-
-Provider implementations and reusable Nuvio provider conventions that help cross-check runtime behavior and interfaces.
-
-**Repository:** [yoruix/nuvio-providers](https://github.com/yoruix/nuvio-providers)
-
-### All-in-One Nuvio / D3adlyRocket
-
-[<img src="assets/thanks/deadlyrocket-bg.png" alt="All-in-One Nuvio / D3adlyRocket" width="170">](https://github.com/D3adlyRocket/All-in-One-Nuvio)
-
-Historical provider aggregation/mirror material used as one provenance source where relevant, never as NiakVIO reconstruction authority.
-
-**Repository:** [D3adlyRocket/All-in-One-Nuvio](https://github.com/D3adlyRocket/All-in-One-Nuvio)
+That knowledge is normalized into NiakVIO's own structured DATA / Provider/Core model before publication. The goal is to preserve credit and evidence **without making third-party published bundles the durable source of truth**.
 
 ---
 
