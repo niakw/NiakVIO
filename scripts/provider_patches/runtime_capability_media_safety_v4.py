@@ -89,6 +89,7 @@ WRAPPER = r'''
     try{
       var parsed=new URL(u),path=s(parsed.pathname).toLowerCase();
       if(/\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path))return true;
+      if(/^\/stream\/(?:[^/?#]+\/){1,4}[^/?#]+\/?$/i.test(path))return true;
       if(/\/(?:shell|video|stream)(?:\.php|[/?#.-]|$)/i.test(path)){
         var keys=[];parsed.searchParams.forEach(function(_v,k){keys.push(s(k).toLowerCase())});
         return keys.some(function(k){return /^(?:videoid|video|vid|file|embed|player|stream|source)$/.test(k)});

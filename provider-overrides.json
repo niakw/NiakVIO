@@ -9065,7 +9065,8 @@
         "Wooka player crawl preserves all discovered embeds but prioritizes lecteurvideo.com before the ProviderBase bounded seed budget; current lecteurvideo pages are structurally parsed and still pass shared terminal/identity guards.",
         "Current lecteurvideo embeds encode player URLs in showVideo(base64,...); Wooka decodes those provider-local seeds before the existing bounded shared crawler and terminal guards.",
         "When the identity-qualified Wooka path reaches lecteurvideo but no direct media is extractable, the provider preserves the freshly decoded player embeds as a fallback instead of returning a false zero; the cache is reset per getStreams call to prevent cross-title leakage.",
-        "Authority refresh 2026-09-16: wookafr.blog is DNS-dead; wookafr.center redirects to the live wookafr.boston authority. Runtime substitutions must therefore converge on .boston, never rewrite .boston back to .blog."
+        "Authority refresh 2026-09-16: wookafr.blog is DNS-dead; wookafr.center redirects to the live wookafr.boston authority. Runtime substitutions must therefore converge on .boston, never rewrite .boston back to .blog.",
+        "Current-first Wooka runtime is authoritative before generic crawl: WP ?s= title search, strict movie-vs-series identity, exact season/episode route, then lecteurvideo showVideo(base64) players. No fixture ID or title is hardcoded."
       ],
       "official_hub": "https://t.me/s/Wookafr2",
       "official_site": "https://wookafr.boston",
@@ -9105,7 +9106,11 @@
         "/?s={query}",
         "/streaming/{slug}/",
         "/api/v2/themoviedb?id={tmdbId}",
-        "/streaming/series/{slug}/"
+        "/streaming/series/{slug}/",
+        "/?s={title}",
+        "/streaming/{category}/{slug}/",
+        "/streaming/episodes/{slug}-saison-{season}-episode-{episode}/",
+        "https://lecteurvideo.com/embed.php?id={id}&tp={type}&url={source}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -9303,12 +9308,14 @@
       },
       "provider_lego_scripts": [
         "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py",
-        "scripts/provider_patches/wookafr_showvideo_base64_v1.py"
+        "scripts/provider_patches/wookafr_showvideo_base64_v1.py",
+        "scripts/provider_patches/wookafr_current_runtime_v2.py"
       ],
       "provider_lego_options": {
         "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py": {
           "priority_host": "lecteurvideo.com"
-        }
+        },
+        "scripts/provider_patches/wookafr_current_runtime_v2.py": {}
       },
       "preserve_embed_urls": true,
       "known_site": "https://wookafr.boston"
