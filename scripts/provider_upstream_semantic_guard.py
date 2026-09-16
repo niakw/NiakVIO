@@ -43,10 +43,20 @@ def coflix_candidate_matches_fixture(slug: str, fixture: dict[str, Any]) -> bool
     return bool(year and actual in {f"{expected} {year}", f"{year} {expected}"})
 
 
-def _route_key(host: object, path: object) -> str:
+def _canonical_player_host(host: object) -> str:
     h = str(host or "").strip().casefold()
     if h.startswith("www."):
         h = h[4:]
+    # Coflix currently advertises Vidzy embeds on vidzy.org while the resolver
+    # follows the same embed id through vidzy.live. Only the first-party embed
+    # mirrors are collapsed; CDN hosts such as u14.vidzy.cc stay distinct.
+    if h in {"vidzy.org", "vidzy.live"}:
+        return "vidzy.embed"
+    return h
+
+
+def _route_key(host: object, path: object) -> str:
+    h = _canonical_player_host(host)
     p = str(path or "").strip()
     if not h or not p:
         return ""
