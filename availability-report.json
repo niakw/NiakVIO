@@ -1,15 +1,15 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-16T13:33:17.382195+00:00",
+  "generated_at": "2026-09-16T19:35:42.872019+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 44,
   "status_counts": {
-    "healthy": 2,
+    "healthy": 1,
     "reachable": 0,
     "blocked": 1,
     "degraded": 1,
-    "no_streams": 19,
-    "provider_unreachable": 18,
+    "no_streams": 22,
+    "provider_unreachable": 16,
     "runtime_error": 0,
     "unavailable": 3,
     "excluded": 0
@@ -2124,7 +2124,7 @@
     },
     {
       "id": "papadustream",
-      "status": "provider_unreachable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2595,7 +2595,7 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
         "moonfirekeeper.lol"
       ],
@@ -2604,7 +2604,7 @@
       ],
       "host_health": {
         "cdn1.ngcorp.dad": {
-          "last_checked_at": "2026-09-16T13:33:17.382195+00:00",
+          "last_checked_at": "2026-09-16T19:35:42.872019+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2615,7 +2615,7 @@
           "consecutive_blocked": 0
         },
         "dreadnought.flamingo-e55.workers.dev": {
-          "last_checked_at": "2026-09-16T13:33:17.382195+00:00",
+          "last_checked_at": "2026-09-16T19:35:42.872019+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -2626,14 +2626,14 @@
           "consecutive_blocked": 0
         },
         "moonfirekeeper.lol": {
-          "last_checked_at": "2026-09-16T13:33:17.382195+00:00",
+          "last_checked_at": "2026-09-16T19:35:42.872019+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 206,
-          "latency_ms": 542,
+          "latency_ms": 481,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 4,
+          "consecutive_successes": 5,
           "consecutive_blocked": 0
         }
       },
@@ -2642,18 +2642,14 @@
     },
     {
       "id": "voiranime",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "prx-1546-ant.vmpx.online"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "box-1429-v10.vmeas.cloud": {
           "last_checked_at": "2026-09-15T22:56:10.052795+00:00",
@@ -2917,7 +2913,7 @@
     },
     {
       "id": "anime-ultime",
-      "status": "provider_unreachable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
