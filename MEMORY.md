@@ -55,6 +55,22 @@ This section supersedes older branch-topology assumptions below for the active r
 - Correct architecture: sanitizer may carry the private proof forward **only on its own exact correlated-player acceptance path**; all ordinary sanitizer paths still clear it. Outer Runtime Media Safety consumes exact proof and then clears all private proof fields before client output. Never whitelist generic HTML/embed URLs.
 - Effective V23 options: MovieBox Media Enrichment `preserve_original=True`; MovieBox safety `html_scraper + strict_playback=True`; Wooka/Flemmix `mixed_embed_resolver`; AllAnime `direct_media`; AllWish `html_scraper`.
 
+<!-- MAX_REPAIR_20260916_V25_RESULT -->
+### V25 materialized V10 proof
+- Branch head entering proof: `67476c74e47e6ebb45e0a1d60fe170712d6e62f3`.
+- V10 architecture: terminal sanitizer carries exact correlated-player proof only to outer Runtime Media Safety; Runtime Safety clears private proof before client output.
+- moviebox_movie: count=1 pageOk=True status=200 error=
+- moviebox_tv: count=1 pageOk=True status=200 error=
+- wookafr: count=0 pageOk=False status=0 error=
+- allwish: count=0 pageOk=False status=0 error=
+- flemmix_movie: count=0 pageOk=False status=0 error=
+- flemmix_tv: count=0 pageOk=False status=0 error=
+- allanime: count=0 pageOk=False status=0 error=
+- vidlove_movie: count=1 pageOk=True status=200 error=
+- vidlove_tv: count=1 pageOk=True status=200 error=
+- vidfast_movie: count=1 pageOk=False status=403 error=
+- vidfast_tv: count=1 pageOk=False status=403 error=
+
 ## 2026-09-16 — authoritative current checkpoint
 
 - Current public release is **5.21.48**. `manifest.json`, VF/no-anime projections, package metadata and release hashes are on 5.21.48.
