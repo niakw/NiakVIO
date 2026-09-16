@@ -1,0 +1,83 @@
+name: TEMP - Apply Max Repair Current Contracts V1
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-apply-max-repair-current-contracts-v1.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - name: Apply canonical DATA and rematerialize
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_max_repair_current_contracts_v1.py
+          python3 scripts/upgrade_wookafr_lecteurvideo_priority_v1.py
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/validate_published_overrides.py
+          python3 -m py_compile scripts/provider_patches/wookafr_showvideo_base64_v1.py scripts/provider_patches/vidlove_current_api_v1.py scripts/provider_patches/vidfast_current_embed_v1.py scripts/upgrade_max_repair_current_contracts_v1.py
+      - name: Verify materialized markers
+        run: |
+          set -euo pipefail
+          grep -R -l 'NIAKVIO_WOOKAFR_SHOWVIDEO_BASE64_V1' providers | head -1
+          grep -R -l 'NIAKVIO_VIDLOVE_CURRENT_API_V1' providers | head -1
+          grep -R -l 'NIAKVIO_VIDFAST_CURRENT_EMBED_V1' providers | head -1
+      - name: Run real provider getStreams probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/probe-providers.cjs <<'NODE'
+          const fs=require('fs'),path=require('path');
+          globalThis.TMDB_API_KEY=process.env.TMDB_API_KEY||'';
+          globalThis.TMDB_ACCESS_TOKEN=process.env.TMDB_ACCESS_TOKEN||'';
+          function files(pid){return fs.readdirSync('providers').filter(x=>x.endsWith('.js')&&(x===pid+'.js'||x.startsWith(pid+'-'))).map(x=>path.resolve('providers',x));}
+          function pick(pid){const rows=files(pid);if(!rows.length)throw new Error('provider_missing:'+pid);rows.sort((a,b)=>fs.statSync(b).mtimeMs-fs.statSync(a).mtimeMs);return rows[0];}
+          async function run(pid,id,type,s,e){
+            const file=pick(pid);delete require.cache[file];const mod=require(file);if(!mod||typeof mod.getStreams!=='function')throw new Error('getStreams_missing:'+pid);
+            const deadline=Date.now()+26000;globalThis.__nuvioProviderDeadlineMs=deadline;
+            const timer=new Promise((_,rej)=>setTimeout(()=>rej(new Error('probe_timeout:'+pid)),27000));
+            const rows=await Promise.race([Promise.resolve(mod.getStreams(String(id),type,s,e)),timer]);
+            const out=Array.isArray(rows)?rows:[];
+            console.log('PROBE',pid,type,id,s||'',e||'','count='+out.length,out.slice(0,5).map(x=>({url:x&&x.url,headers:x&&x.headers,title:x&&x.title})));
+            return out;
+          }
+          (async()=>{
+            const vlm=await run('vidlove',157336,'movie'); if(!vlm.length)throw new Error('vidlove_movie_zero');
+            const vlt=await run('vidlove',1396,'tv',1,1); if(!vlt.length)throw new Error('vidlove_tv_zero');
+            for(const row of [vlm[0],vlt[0]]){
+              const r=await fetch(row.url,{headers:row.headers||{}});const ct=(r.headers.get('content-type')||'').toLowerCase();const body=await r.text();
+              console.log('VIDLOVE_TERMINAL',r.status,ct,body.slice(0,16));
+              if(!r.ok||(!ct.includes('mpegurl')&&!body.startsWith('#EXTM3U')))throw new Error('vidlove_terminal_not_hls');
+            }
+            const vfm=await run('vidfast',157336,'movie');if(!vfm.length||!String(vfm[0].url).includes('/movie/157336'))throw new Error('vidfast_movie_route_bad');
+            const vft=await run('vidfast',1396,'tv',1,1);if(!vft.length||!String(vft[0].url).includes('/tv/1396/1/1'))throw new Error('vidfast_tv_route_bad');
+            try{await run('wookafr',157336,'movie')}catch(e){console.log('WOOKA_PROBE_NONFATAL',String(e&&e.message||e))}
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/probe-providers.cjs
+      - name: Commit materialized repair
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add provider-overrides.json providers provider-bases sources.json manifest.json manifests scripts || true
+          if git diff --cached --quiet; then
+            echo 'No materialized changes to commit'
+          else
+            git commit -m 'fix: materialize current Wooka VidLove VidFast contracts'
+            git push origin HEAD:fix/non-display-recovery-20260916
+          fi
