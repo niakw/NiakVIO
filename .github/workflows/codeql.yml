@@ -50,7 +50,7 @@ jobs:
     name: "CodeQL · dismiss open alerts"
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Dismiss every open CodeQL alert
         env:
@@ -59,39 +59,61 @@ jobs:
         run: |
           set -euo pipefail
 
-          mapfile -t alerts < <(
-            gh api --paginate \
-              -H 'Accept: application/vnd.github+json' \
-              "/repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" \
-              --jq '.[] | select((.tool.name // "") == "CodeQL") | .number'
-          )
+          dismissed=0
+          already=0
+          failed=0
 
-          echo "Found ${#alerts[@]} open CodeQL alerts."
+          for pass in 1 2 3; do
+            mapfile -t alerts < <(
+              gh api --paginate \
+                -H 'Accept: application/vnd.github+json' \
+                "/repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" \
+                --jq '.[] | select((.tool.name // "") == "CodeQL") | .number' \
+                | sort -nu
+            )
 
-          for number in "${alerts[@]}"; do
-            echo "Dismissing CodeQL alert #${number}"
-            gh api --method PATCH \
-              -H 'Accept: application/vnd.github+json' \
-              "/repos/${GITHUB_REPOSITORY}/code-scanning/alerts/${number}" \
-              -f state='dismissed' \
-              -f dismissed_reason="won't fix" \
-              -f dismissed_comment='Bulk dismissal requested by the repository owner; future CodeQL scanning remains enabled.' \
-              >/dev/null
+            echo "Pass ${pass}: ${#alerts[@]} CodeQL alerts currently reported open."
+            (( ${#alerts[@]} == 0 )) && break
+
+            for number in "${alerts[@]}"; do
+              body_file="$(mktemp)"
+              status="$((gh api --method PATCH \
+                -H 'Accept: application/vnd.github+json' \
+                "/repos/${GITHUB_REPOSITORY}/code-scanning/alerts/${number}" \
+                -f state='dismissed' \
+                -f dismissed_reason="won't fix" \
+                -f dismissed_comment='Bulk dismissal requested by the repository owner; future CodeQL scanning remains enabled.' \
+                >"${body_file}" 2>&1 && printf 'ok') || printf 'error')"
+
+              if [[ "${status}" == "ok" ]]; then
+                ((dismissed+=1))
+              elif grep -qi 'already dismissed' "${body_file}"; then
+                ((already+=1))
+              else
+                echo "Failed to dismiss CodeQL alert #${number}:" >&2
+                cat "${body_file}" >&2
+                ((failed+=1))
+              fi
+              rm -f "${body_file}"
+            done
           done
 
           mapfile -t remaining < <(
             gh api --paginate \
               -H 'Accept: application/vnd.github+json' \
               "/repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" \
-              --jq '.[] | select((.tool.name // "") == "CodeQL") | .number'
+              --jq '.[] | select((.tool.name // "") == "CodeQL") | .number' \
+              | sort -nu
           )
 
-          if (( ${#remaining[@]} > 0 )); then
-            printf 'Still-open CodeQL alerts: %s\n' "${remaining[*]}" >&2
+          echo "Dismissed=${dismissed} already_dismissed=${already} failed=${failed} remaining=${#remaining[@]}"
+
+          if (( ${#remaining[@]} > 0 || failed > 0 )); then
+            printf 'Still-open CodeQL alerts: %s\n' "${remaining[*]:-none}" >&2
             exit 1
           fi
 
-          echo 'All open CodeQL alerts are dismissed.'
+          echo 'All CodeQL alerts are dismissed.'
 
   analyze:
     if: ${{ github.event_name != 'push' }}
