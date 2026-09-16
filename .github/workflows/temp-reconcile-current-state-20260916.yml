@@ -16,7 +16,7 @@ concurrency:
 jobs:
   reconcile:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 8
     steps:
       - name: Checkout current main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -24,154 +24,72 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Reconcile release metadata and durable docs
+      - name: Scrub current tracked privacy wording and close completed ledger items
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          import json
 
-          root = Path('.')
+          memory = Path('MEMORY.md')
+          lines = memory.read_text(encoding='utf-8').splitlines()
+          out = []
+          for line in lines:
+              if line.startswith('- Repository privacy audit found '):
+                  out.append('- Repository privacy audit found no tracked-content occurrence of user-specific personal identifiers in the scanned categories. Git **commit author metadata** does contain a personal author identity/email on some commits; do not rewrite history while immutable SHAs/current Labs depend on it. Any history scrub must be a later dedicated repin/republication migration.')
+              else:
+                  out.append(line)
+          memory.write_text('\n'.join(out) + '\n', encoding='utf-8')
 
-          sync = root / 'scripts/sync_release_versions.py'
-          text = sync.read_text(encoding='utf-8')
-          start = text.index('    catalog_path = ROOT / "provider_catalog.json"')
-          end = text.index('    for path in (', start)
-          segment = text[start:end]
-          needle = '            row["version"] = version\n'
-          addition = needle + '            row["name"] = versioned_manifest_name(row.get("name"), version)\n'
-          if 'row["name"] = versioned_manifest_name(row.get("name"), version)' not in segment:
-              if segment.count(needle) != 1:
-                  raise SystemExit('sync_release_versions provider_catalog version assignment drifted')
-              segment = segment.replace(needle, addition, 1)
-              sync.write_text(text[:start] + segment + text[end:], encoding='utf-8')
-
-          test = root / 'tests/release_version_sync_test.py'
-          text = test.read_text(encoding='utf-8')
-          text = text.replace('{"name": "General", "version": version}', '{"name": f"NiakVIO v{version}", "version": version}', 1)
-          text = text.replace('{"name": "VF", "version": version}', '{"name": f"NiakVIO v{version} — VF uniquement", "version": version}', 1)
-          marker = '    assert catalog["manifestMeta"]["vf"]["version"] == "9.8.7"\n'
-          addition = marker + '    assert catalog["manifestMeta"]["general"]["name"] == "NiakVIO v9.8.7"\n    assert catalog["manifestMeta"]["vf"]["name"] == "NiakVIO v9.8.7 — VF uniquement"\n'
-          if 'catalog["manifestMeta"]["general"]["name"] == "NiakVIO v9.8.7"' not in text:
-              if text.count(marker) != 1:
-                  raise SystemExit('release_version_sync_test catalogue assertion anchor drifted')
-              text = text.replace(marker, addition, 1)
-          test.write_text(text, encoding='utf-8')
-
-          catalog_path = root / 'provider_catalog.json'
-          catalog = json.loads(catalog_path.read_text(encoding='utf-8'))
-          release = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))['version']
-          meta = catalog.setdefault('manifestMeta', {})
-          general = meta.setdefault('general', {})
-          vf = meta.setdefault('vf', {})
-          general['version'] = release
-          general['name'] = f'NiakVIO v{release}'
-          vf['version'] = release
-          vf['name'] = f'NiakVIO v{release} — VF uniquement'
-          catalog_path.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-
-          secondary = root / 'automation/SECONDARY-TASKS-DURABLE.md'
-          text = secondary.read_text(encoding='utf-8')
-          replacements = {
-              'Last audited against the active repair branch: 2026-09-13.': 'Last audited against current `main`: 2026-09-16.',
-              'Keep branch cleanup for the end; do not touch `main` during the current `fix/labs-5.21.44-20260912` repair phase without explicit authorization.': 'Use `main` as the only active write/publication target. Current branches are `main` and `brain-learning/proposals`; branch cleanup is otherwise complete.',
-              'Keep root 96-provider catalogue and all projections internally consistent.': 'Keep the 96-provider recovery census (46 current + 50 historical) and all current 46-row projections internally consistent.',
-              'Finish native workflow wiring to `native-hub46/manifest.json`, including iOS and explicit Desktop/Android consistency.': 'Keep all five Native workflows wired consistently to the immutable Hub-46 transport; Android, iOS and Desktop wiring is implemented.',
-              'Regenerate Hub-46 against the final repaired provider SHA; do not certify Labs against the historical infrastructure-proof provider SHA.': 'Current Hub-46 transport is pinned to immutable provider publication `425756cf1646380fb8172f380d176758c3734ce6`; preserve the pinned-blob invariant and repin only after a deliberately accepted new provider publication.',
-          }
-          for old, new in replacements.items():
-              text = text.replace(old, new)
-          secondary.write_text(text, encoding='utf-8')
-
-          memory = root / 'MEMORY.md'
-          text = memory.read_text(encoding='utf-8')
-          text = text.replace('Last authoritative checkpoint: 2026-09-07 Europe/Paris.', 'Last authoritative checkpoint: 2026-09-16 Europe/Paris.', 1)
-          heading = '## Repository topology / execution policy\n'
-          checkpoint_lines = [
-              '## 2026-09-16 — authoritative current checkpoint',
-              '',
-              '- Current public release is **5.21.48**. `manifest.json`, VF/no-anime projections, package metadata and release hashes are on 5.21.48.',
-              '- **`main` is the only active write/publication target.** `brain-learning/proposals` remains proposal storage only. Current branch inventory is now exactly these two branches; do not recreate a persistent workbench/repair branch.',
-              '- Recovery census is **96 Provider Objects = 46 current rows + 50 historical archive rows**. Current physical manifest has **44 active + 2 disabled-retained** rows; active Native scope is defined by `automation/evidence/hub-lab-matrix-46.json`.',
-              '- PR **#120** restored immutable Hub-46 provider transport and was merged normally at `e401e61688dd79996002f9e37b9abfc923846735`. Native transport pins provider publication **`425756cf1646380fb8172f380d176758c3734ce6`** and `tests/native_hub46_transport_manifest_test.py` proves every pinned blob exists at that exact commit.',
-              '- Final PR #120 gates were green: Provider Non-Regression, Media Type & Playback, Workflow Gate, Verify & Publish and CodeQL. CodeQL #889 is already fixed on main by `c60ec1871dc5d3b2217e69581d2c2a5a6615fc84`; do not duplicate it.',
-              '- Full five-Lab validation was triggered from `6b28f3b2c53f5ca6cfb4bc11a3af139c21d6dee1`: Android TV+Mobile run **35033132967**, iOS run **35033132980**, Desktop macOS+Windows run **35033133048**. At this checkpoint all five runtime jobs are still executing their real corpus; do not call a platform green before its exhaustive Hub-46 matrix and evidence upload complete.',
-              '- Future Native runs restore exact-client prebuild caches for TV Android, Mobile Android, iOS, macOS and Windows. Keys bind exact official-client SHA + OS/toolchain + relevant NiakVIO harness/native-manifest hash; no permissive `restore-keys`; runtime and matrix gates still execute.',
-              '- `CORE.RUNTIME_COMPAT.V1` owns missing host timers (`setTimeout`/`clearTimeout`) and Desktop runtime portability globally. StreamZo/Frenchstream timer failures must not become provider-specific hacks. Core timeout remains **25 s**; A→B→C stale-generation suppression and HTTP 403 fail-closed remain mandatory.',
-              '- Historical full32 regression/ZERO lists remain evidence, not an automatic mutation queue. Re-prove any regression against current 5.21.48 bytes. Named follow-ups retained from recent work include AnimeVOSTFR/Kurage/VoirAnime historical regression checks, HindMoviez timeout/search variability, AnimePahe runner/runtime I/O, and AnimeSalt browser-positive/runner-403 behavior. Nakios short/troll HLS remains correctly fail-closed.',
-              '- Repository privacy audit found no tracked-content occurrence of the user’s obvious personal name/surname, personal Gmail address, Pollestres, Perpignan or LinkedIn profile URL. Git **commit author metadata** does contain a personal author identity/email on some commits; do not rewrite history while immutable SHAs/current Labs depend on it. Any history scrub must be a later dedicated repin/republication migration.',
-              '- Current cleanup: `VALIDATION.json` is aligned to 5.21.48/main/current runs; Provider Non-Regression push policy is back on `main`; obsolete one-shot `temp_*` migration scripts and the dead workbench recovery finalizer are removed; provider catalogue visible release-name synchronization is repaired.',
-              '',
-              '**Everything below this checkpoint is retained as historical recovery evidence unless explicitly restated above or by newer repository/runtime evidence.**',
-              '',
-          ]
-          checkpoint = '\n'.join(checkpoint_lines) + '\n'
-          if '## 2026-09-16 — authoritative current checkpoint' not in text:
-              if heading not in text:
-                  raise SystemExit('MEMORY repository-topology heading missing')
-              text = text.replace(heading, checkpoint + heading, 1)
-          memory.write_text(text, encoding='utf-8')
-
-          changelog = root / 'CHANGELOG.md'
-          text = changelog.read_text(encoding='utf-8')
-          if not text.startswith('## 5.21.48'):
-              current_lines = [
-                  '## 5.21.48 — Hub-46 immuable, publication stable et Labs natifs',
-                  '',
-                  '- Stabilise le catalogue courant à **46 lignes** (44 actives + 2 désactivées conservées) tout en gardant le census de récupération de **96 Provider Objects** avec 50 historiques.',
-                  '- Finalise la publication Provider v3/minimizer en fixed point et conserve les bundles adressés par contenu.',
-                  '- Restaure le transport Native Hub-46 immuable : `native-hub46/manifest.json` pointe vers le commit provider `425756cf1646380fb8172f380d176758c3734ce6`, et un test vérifie que chaque blob épinglé existe réellement.',
-                  '- Ferme la régression `loaded=0` Native causée par des URLs provider épinglées vers un ancien SHA où les nouveaux filenames n’existaient pas.',
-                  '- Valide PR #120 via Provider Non-Regression, Media Type & Playback, Workflow Gate, Verify & Publish et CodeQL avant merge normal.',
-                  '- Conserve le timeout Core à 25 s, les timers/runtime Desktop dans `CORE.RUNTIME_COMPAT.V1`, l’isolation A→B→C des générations et les réponses terminales 403 en fail-closed.',
-                  '- Lance les cinq Labs natifs de première classe : TV Android, Mobile Android, Mobile iOS, Desktop macOS et Desktop Windows, avec preuve exhaustive Hub-46 requise avant certification.',
-                  '- Ajoute des caches de prébuild exact-client pour les prochains Labs afin d’éviter les recompilations natives inutiles sans court-circuiter les tests runtime/matrice.',
-                  '- Corrige le parsing d’hôte de sécurité CodeQL #889 et conserve la validation CodeQL verte.',
-                  '- Réaligne les contrats/documentations courants sur `main` et 5.21.48 et retire les scripts/workflows de migration temporaires devenus obsolètes.',
-                  '',
-              ]
-              changelog.write_text('\n'.join(current_lines) + '\n' + text, encoding='utf-8')
+          tasks = Path('automation/OPEN-TASKS-20260911.md')
+          lines = tasks.read_text(encoding='utf-8').splitlines()
+          out = []
+          for line in lines:
+              if line.startswith('- [ ] `MEMORY.md` top/current checkpoint must describe'):
+                  out.append('- [x] `MEMORY.md` now carries an authoritative 2026-09-16 checkpoint covering 5.21.48, PR #120, immutable Hub-46 transport, CodeQL #889, prebuild caches and the current Native runs while retaining older material as history.')
+              elif line.startswith('- [ ] `CHANGELOG.md` needs a 5.21.48 entry'):
+                  out.append('- [x] `CHANGELOG.md` now starts with the 5.21.48 Hub-46/publication/native-Lab checkpoint.')
+              elif line.startswith('- [ ] `provider_catalog.json` metadata names must be synchronized'):
+                  out.append('- [x] `provider_catalog.json` visible names are synchronized to 5.21.48, and `sync_release_versions.py` plus its regression test now keep catalogue names/version aligned.')
+              elif line.startswith('- [ ] Provider Non-Regression push policy must target `main`'):
+                  out.append('- [x] Provider Non-Regression push policy targets `main`; its compatibility contract was aligned and passed.')
+              elif line.startswith('- [ ] Remove unreferenced one-shot scripts `scripts/temp_apply_hub46_native_scope.py`'):
+                  out.append('- [x] Obsolete one-shot Hub-46/rotating-corpus migration scripts were confirmed unreferenced and removed.')
+              elif line.startswith('- [x] Tracked-content searches found no occurrence of '):
+                  out.append('- [x] Tracked-content searches found no user-specific personal identifiers in the scanned categories; current documentation uses only generic privacy wording.')
+              else:
+                  out.append(line)
+          tasks.write_text('\n'.join(out) + '\n', encoding='utf-8')
           PY
 
-      - name: Validate reconciled contracts
+      - name: Verify current tree contains only generic privacy wording
         shell: bash
         run: |
           set -euo pipefail
-          python3 tests/release_version_sync_test.py
-          python3 tests/provider_non_regression_contract_test.py
-          python3 tests/workflow_security_policy_test.py
           python3 - <<'PY'
-          import json
           from pathlib import Path
-          manifest = json.loads(Path('manifest.json').read_text())
-          validation = json.loads(Path('VALIDATION.json').read_text())
-          catalog = json.loads(Path('provider_catalog.json').read_text())
-          release = manifest['version']
-          assert release == '5.21.48'
-          assert validation['release'] == release
-          assert validation['candidate_track'] == 'main'
-          assert catalog['manifestMeta']['general']['version'] == release
-          assert catalog['manifestMeta']['general']['name'] == f'NiakVIO v{release}'
-          assert catalog['manifestMeta']['vf']['name'] == f'NiakVIO v{release} — VF uniquement'
-          assert '## 2026-09-16 — authoritative current checkpoint' in Path('MEMORY.md').read_text()
-          assert Path('CHANGELOG.md').read_text().startswith('## 5.21.48')
-          print('CURRENT_STATE_RECONCILIATION_OK release=5.21.48 branch=main catalog_name_synced=true')
+          memory = Path('MEMORY.md').read_text(encoding='utf-8')
+          tasks = Path('automation/OPEN-TASKS-20260911.md').read_text(encoding='utf-8')
+          assert 'Repository privacy audit found no tracked-content occurrence of user-specific personal identifiers' in memory
+          assert 'Tracked-content searches found no user-specific personal identifiers' in tasks
+          assert 'CHANGELOG.md` now starts with the 5.21.48' in tasks
+          assert 'Provider Non-Regression push policy targets `main`' in tasks
+          print('CURRENT_TREE_PRIVACY_WORDING_OK generic_only=true')
           PY
 
-      - name: Commit non-workflow reconciliation
+      - name: Commit sanitized docs
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add MEMORY.md CHANGELOG.md automation/SECONDARY-TASKS-DURABLE.md provider_catalog.json scripts/sync_release_versions.py tests/release_version_sync_test.py
+          git add MEMORY.md automation/OPEN-TASKS-20260911.md
           git diff --cached --check
           if git diff --cached --quiet; then
-            echo 'No reconciliation changes to commit.'
+            echo 'No sanitization changes to commit.'
             exit 0
           fi
-          git commit -m 'chore(repo): reconcile 5.21.48 durable state'
+          git commit -m 'docs(privacy): keep repository audit wording generic'
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
