@@ -19,20 +19,7 @@ jobs:
           ref: fix/cross-device-audit-20260916
           fetch-depth: 0
 
-      - name: Dump Mugiwara configured execution authorities
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import json
-          d=json.load(open('provider-overrides.json',encoding='utf-8'))
-          r=d['provider_patches']['mugiwarastream']
-          keys=['capability','official_site','learned_routes','search_request_plan','searchRequestPlan','provider_value_plan','providerValuePlan','api_recipe','candidate_api_recipe','route_proof','provider_lego_scripts','provider_lego_options']
-          for k in keys:
-              if k in r: print('MUGI_CONFIG',k,json.dumps(r[k],ensure_ascii=False)[:30000])
-          PY
-
-      - name: Inspect generated Mugiwara hook and Core dispatcher
+      - name: Prove provider runtime dispatcher reachability through final Core chain
         shell: bash
         run: |
           set -euo pipefail
@@ -43,18 +30,15 @@ jobs:
               if str(r.get('id','')).casefold()=='mugiwarastream': print(r.get('filename')); break
           PY
           )"
-          echo "MUGI_FILE=$MUGI"
-          python3 - "$MUGI" <<'PY'
-          import sys
-          t=open(sys.argv[1],encoding='utf-8').read()
-          for needle in ['NIAKVIO_MUGIWARASTREAM_PACKED_RUNTIME_V1','__niakvioProviderRuntimeResolverV1={provider:"mugiwarastream"','NUVIO_GLOBAL_PROVIDER_RUNTIME_DISPATCH_V1','var hook=null']:
-              print('MUGI_SOURCE_MARKER',needle,'count',t.count(needle),'first',t.find(needle))
-          PY
           node - "$MUGI" <<'NODE'
           const path=require('node:path');
           const file=path.resolve(process.argv[2]);
+          globalThis.fetch=async()=>({ok:false,status:500,url:'https://invalid.local/',headers:{get:()=>''},text:async()=>'',arrayBuffer:async()=>new ArrayBuffer(0)});
           const p=require(file);
-          console.log('MUGI_RUNTIME exports',Object.keys(p||{}));
-          console.log('MUGI_RUNTIME hook',!!globalThis.__niakvioProviderRuntimeResolverV1,globalThis.__niakvioProviderRuntimeResolverV1?.provider,typeof globalThis.__niakvioProviderRuntimeResolverV1?.resolve);
-          console.log('MUGI_RUNTIME dispatch',!!p?.getStreams?.__nuvioProviderRuntimeDispatchV1,!!p?.streams?.__nuvioProviderRuntimeDispatchV1);
+          let called=0;
+          globalThis.__niakvioProviderRuntimeResolverV1={provider:'sentinel',resolve:async()=>{called++; return [];}};
+          Promise.resolve(p.getStreams('280049','tv',2,11)).then((rows)=>{
+            console.log('MUGI_DISPATCH_SENTINEL called='+called+' rows='+(Array.isArray(rows)?rows.length:'nonarray'));
+            if(called<1) process.exitCode=3;
+          }).catch((e)=>{console.error(e);process.exitCode=4;});
           NODE
