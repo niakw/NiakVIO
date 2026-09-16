@@ -3,10 +3,14 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CURRENT_COUNT = 46
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from current_provider_scope import active_provider_ids, visible_provider_ids  # noqa: E402
+
 HISTORICAL_COUNT = 50
 
 
@@ -42,9 +46,14 @@ def archived_ids() -> set[str]:
 
 root_ids = manifest_ids(ROOT / "manifest.json")
 root_set = set(root_ids)
+active_set = active_provider_ids()
+visible_set = visible_provider_ids()
 archive = archived_ids()
 
-assert len(root_ids) == CURRENT_COUNT, f"manifest current scope drift: {len(root_ids)} != {CURRENT_COUNT}"
+assert root_set == visible_set, (
+    f"manifest visible scope drift: actual={len(root_set)} expected={len(visible_set)} "
+    f"missing={sorted(visible_set-root_set)} extra={sorted(root_set-visible_set)}"
+)
 assert len(archive) == HISTORICAL_COUNT, f"provider-old historical scope drift: {len(archive)} != {HISTORICAL_COUNT}"
 assert root_set.isdisjoint(archive), f"current/historical overlap: {sorted(root_set & archive)}"
 
@@ -61,28 +70,32 @@ for relative in ("vf/manifest.json", "no-anime/manifest.json", "vf-no-anime/mani
         f"{relative}: version drift {projection.get('version')!r} != {root_version!r}"
     )
 
-# Hub46 is now the complete current publication. Both the root-relative Lab
-# projection and the terminal-name-safe native transport must therefore carry
-# exactly the same provider membership and global release version as manifest.json.
+# The root manifest intentionally keeps disabled rows visible. Native/Hub Lab
+# projections are executable transports and therefore contain active rows only.
 for relative in ("manifest-hub46.json", "native-hub46/manifest.json"):
     path = ROOT / relative
     projection = load(path)
     ids = manifest_ids(path)
-    assert len(ids) == CURRENT_COUNT, f"{relative}: Hub46 cardinality drift: {len(ids)}"
-    assert set(ids) == root_set, f"{relative}: Hub46 membership differs from current manifest"
-    assert not (set(ids) & archive), f"{relative}: historical provider leaked into Hub46 projection"
+    assert set(ids) == active_set, (
+        f"{relative}: active membership drift "
+        f"actual={len(ids)} expected={len(active_set)} "
+        f"missing={sorted(active_set-set(ids))} extra={sorted(set(ids)-active_set)}"
+    )
+    assert not (set(ids) & archive), f"{relative}: historical provider leaked into active projection"
     assert str(projection.get("version") or "") == root_version, (
         f"{relative}: version drift {projection.get('version')!r} != {root_version!r}"
     )
 
 catalog = load(ROOT / "provider_catalog.json")
 catalog_ids = [canonical(row.get("canonicalId")) for row in catalog.get("providers") or [] if isinstance(row, dict)]
-assert len(catalog_ids) == CURRENT_COUNT, f"provider_catalog current scope drift: {len(catalog_ids)} != {CURRENT_COUNT}"
-assert set(catalog_ids) == root_set, "provider_catalog membership differs from current manifest"
+assert len(catalog_ids) == len(visible_set), (
+    f"provider_catalog visible scope drift: {len(catalog_ids)} != {len(visible_set)}"
+)
+assert set(catalog_ids) == visible_set, "provider_catalog membership differs from current visible manifest"
 assert not (set(catalog_ids) & archive), "historical provider leaked into provider_catalog"
 
 print(
     "release projection scope passed: "
-    f"current={len(root_ids)} historical={len(archive)} "
-    "vf/no-anime/vf-no-anime subset=current hub46/native-hub46=current"
+    f"visible={len(visible_set)} active={len(active_set)} historical={len(archive)} "
+    "vf/no-anime/vf-no-anime subset=visible hub46/native-hub46=active"
 )
