@@ -1,0 +1,56 @@
+name: PROOF - Coflix Upstream Semantic Guard
+
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths:
+      - '.github/workflows/coflix-upstream-semantic-proof-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {ref: '${{ github.sha }}'}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Prove fail-closed semantic correlation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_provider_upstream_parity_semantic_v4.py
+          python3 tests/provider_upstream_semantic_guard_test.py
+          python3 scripts/register_non_display_recovery_v1.py
+          python3 scripts/materialize_provider_v3_one.py coflix
+          python3 - <<'PY'
+          import json,pathlib,sys,tempfile
+          root=pathlib.Path('.').resolve();sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as p
+          import run_provider_upstream_parity_v2 as v2
+          import run_provider_upstream_parity_v3 as v3
+          corpus=json.loads((root/'.github/triggers/rotating-popular-corpus.json').read_text(encoding='utf-8'))
+          fx=next(r for r in corpus['lists']['movie'] if str(r.get('tmdbId'))=='10195')
+          local=p.local_catalog()['coflix']['path']; upstreams,_=v2.upstream_catalog()
+          with tempfile.TemporaryDirectory() as td:
+              up=pathlib.Path(td)/'coflix-up.js';up.write_bytes(p.get_bytes(upstreams['coflix']['url']))
+              lo=v3._run_verified(local,v3.fixture_payload(fx,'movie',upstream=False),25)
+              ur=v3._run_verified(up,v3.fixture_payload(fx,'movie',upstream=True),25)
+              cls,semantic=v3.classify_pair_with_semantic_guard('coflix',fx,up,ur,lo,25)
+              out={'classification':cls,'localStreams':lo.get('stream_count'),'upstreamStreams':ur.get('stream_count'),'semanticValidation':semantic}
+              print('COFLIX_SEMANTIC_PROOF '+json.dumps(out,sort_keys=True))
+              if cls=='upstream_ok_niakvio_ko': raise SystemExit('semantic guard did not disprove false regression')
+              if ur.get('stream_count') and not lo.get('stream_count'):
+                  if cls!='upstream_semantic_untrusted': raise SystemExit('asymmetry was not semantically correlated')
+                  if not semantic or semantic.get('reason')!='correlated_different_work': raise SystemExit('wrong semantic reason')
+          PY
