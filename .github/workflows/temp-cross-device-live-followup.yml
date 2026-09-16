@@ -22,35 +22,44 @@ jobs:
         with:
           ref: fix/cross-device-audit-20260916
           fetch-depth: 0
-          persist-credentials: true
 
-      - name: Inspect UHDMovies relative links, forms and buttons
+      - name: Inspect UHDMovies labeled 4K handoff
         shell: bash
         run: |
           set -euo pipefail
-          URL='https://uhdmovies.my/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/'
-          curl -L --fail --max-time 15 -A 'Mozilla/5.0' "$URL" -o /tmp/uhd.html
-          python3 - <<'PY'
-          import re,json,html
+          PAGE='https://uhdmovies.my/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/'
+          curl -L --fail --max-time 15 -A 'Mozilla/5.0' "$PAGE" -o /tmp/uhd.html
+          LINK="$(python3 - <<'PY'
+          import re,html
           text=html.unescape(open('/tmp/uhd.html',encoding='utf-8',errors='replace').read()).replace('\\/','/')
-          attrs=[]
-          for tag in re.findall(r'<(?:a|form|button|input)[^>]*>',text,re.I):
-              row={'tag':re.sub(r'\s+',' ',tag)[:700]}
-              for key in ('href','action','data-href','data-url','data-link','onclick','value','id','class'):
-                  m=re.search(r'\b'+re.escape(key)+r'\s*=\s*(["\'])(.*?)\1',tag,re.I|re.S)
-                  if m: row[key]=m.group(2)[:500]
-              if any(re.search(r'download|link|drive|cloud|hub|seed|redirect|btn|server',str(v),re.I) for v in row.values()): attrs.append(row)
-          print('UHD_ACTION_TAGS',json.dumps(attrs[:120],ensure_ascii=False))
-          for m in re.finditer(r'(?i)(download.{0,500}|links?.{0,500}|button.{0,500})',text):
-              snippet=re.sub(r'\s+',' ',m.group(0))
-              if re.search(r'href|onclick|data-|form|button',snippet,re.I): print('UHD_SNIPPET',snippet[:1000])
-          scripts=[]
-          for src in re.findall(r'<script[^>]+src=["\']([^"\']+)',text,re.I):
-              if src not in scripts: scripts.append(src)
-          print('UHD_SCRIPTS',json.dumps(scripts[:80],ensure_ascii=False))
+          # Prefer the explicit inline 4k/2160p content link, not ads or generic site navigation.
+          for m in re.finditer(r'<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>([\s\S]*?)</a>',text,re.I):
+              href=m.group(1)
+              label=re.sub(r'<[^>]+>',' ',m.group(2))
+              label=re.sub(r'\s+',' ',label).strip()
+              if 'cloud.unblockedgames.world' in href and re.search(r'\b(?:4k|2160p)\b',label,re.I):
+                  print(href); break
+          PY
+          )"
+          test -n "$LINK"
+          echo "UHD_HANDOFF_URL=$LINK"
+          curl -L --max-time 20 -A 'Mozilla/5.0' -e "$PAGE" -D /tmp/handoff.headers -o /tmp/handoff.body -w 'UHD_HANDOFF_FINAL url=%{url_effective} code=%{http_code} type=%{content_type} redirects=%{num_redirects} bytes=%{size_download}\n' "$LINK" || true
+          echo '--- HANDOFF HEADERS ---'
+          tail -n 80 /tmp/handoff.headers || true
+          echo '--- HANDOFF BODY FACTS ---'
+          python3 - <<'PY'
+          import re,os
+          path='/tmp/handoff.body'
+          data=open(path,'rb').read(262144) if os.path.exists(path) else b''
+          text=data.decode('utf-8','replace')
+          print('bytes_sample',len(data))
+          print('extm3u',text.lstrip().startswith('#EXTM3U'))
+          print('direct_media_tokens',sorted(set(re.findall(r'https?://[^"\'<>\s]+\.(?:m3u8|mpd|mp4|mkv|webm)(?:\?[^"\'<>\s]*)?',text,re.I)))[:10])
+          print('hosts',sorted(set(re.findall(r'https?://([^/"\'<>\s]+)',text,re.I)))[:30])
+          print('head',re.sub(r'\s+',' ',text[:1800])[:1800])
           PY
 
-      - name: Check current Core quality fix remains green
+      - name: Keep Core quality regression green
         shell: bash
         run: |
           set -euo pipefail
