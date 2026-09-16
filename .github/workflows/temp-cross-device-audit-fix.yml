@@ -68,6 +68,19 @@ jobs:
           python3 tests/global_stream_presentation_pipeline_test.py
           python3 tests/cross_device_user_audit_regression_test.py
 
+      - name: Persist validated cross-device corrections
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          # Keep the temporary driver/workflow out of the durable correction commit.
+          git reset -- .github/workflows/temp-cross-device-audit-fix.yml scripts/temp_cross_device_audit_fix_20260916.py scripts/temp_cross_device_audit_fix_20260916_retry.py || true
+          git diff --cached --stat
+          git commit -m 'fix(core): reconcile cross-device stream projection and native diagnostics'
+          git push origin HEAD:fix/cross-device-audit-20260916
+
       - name: Targeted live coverage arbitration - anime and 4K
         shell: bash
         run: |
@@ -75,29 +88,36 @@ jobs:
           mkdir -p automation/evidence/cross-device-20260916
           provider_path() {
             python3 - "$1" <<'PY'
-          import json,sys,os,urllib.parse
+          import json,sys
           pid=sys.argv[1].casefold()
           data=json.load(open('manifest.json',encoding='utf-8'))
           rows=data.get('scrapers') or data.get('providers') or []
           for row in rows:
               rid=str(row.get('id') or row.get('canonicalId') or row.get('scraper',{}).get('id') or '').casefold()
-              if rid!=pid: continue
-              ref=str(row.get('file') or row.get('url') or row.get('path') or row.get('source') or '')
-              if '/providers/' in ref: ref='providers/'+ref.split('/providers/',1)[1]
-              elif ref.startswith('providers/'): pass
-              else: ref='providers/'+os.path.basename(urllib.parse.urlparse(ref).path)
-              print(ref)
-              raise SystemExit(0)
+              if rid != pid:
+                  continue
+              ref=str(row.get('filename') or row.get('file') or row.get('path') or '').strip()
+              if ref:
+                  print(ref)
+                  raise SystemExit(0)
           raise SystemExit(2)
           PY
           }
           probe() {
-            local pid="$1" fixture="$2" out="automation/evidence/cross-device-20260916/${pid}.jsonl"
-            local path
-            path="$(provider_path "$pid")" || { echo "FIELD_TARGET_PROBE provider=$pid state=missing_manifest" | tee "$out"; return 0; }
-            if [[ ! -f "$path" ]]; then echo "FIELD_TARGET_PROBE provider=$pid state=missing_file path=$path" | tee "$out"; return 0; fi
-            echo "FIELD_TARGET_PROBE_BEGIN provider=$pid path=$path fixture=$fixture" | tee "$out"
-            timeout 90s node scripts/nuvio_tv_probe_tmdb_ci.cjs "$path" "$fixture" 2>&1 | tee -a "$out" || true
+            local pid="$1"
+            local fixture="$2"
+            local out="automation/evidence/cross-device-20260916/${pid}.jsonl"
+            local provider_file=""
+            provider_file="$(provider_path "$pid")" || {
+              echo "FIELD_TARGET_PROBE provider=$pid state=missing_manifest" | tee "$out"
+              return 0
+            }
+            if [[ ! -f "$provider_file" ]]; then
+              echo "FIELD_TARGET_PROBE provider=$pid state=missing_file path=$provider_file" | tee "$out"
+              return 0
+            fi
+            echo "FIELD_TARGET_PROBE_BEGIN provider=$pid path=$provider_file fixture=$fixture" | tee "$out"
+            timeout 90s node scripts/nuvio_tv_probe_tmdb_ci.cjs "$provider_file" "$fixture" 2>&1 | tee -a "$out" || true
             echo "FIELD_TARGET_PROBE_END provider=$pid" | tee -a "$out"
           }
           MOVIE='{"tmdbId":"157336","mediaType":"movie","type":"movie","title":"Interstellar","year":2014}'
@@ -109,7 +129,50 @@ jobs:
           probe streamzo "$MOVIE"
           probe kehflix "$MOVIE"
 
-      - name: Commit durable corrections and evidence
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('automation/evidence/cross-device-20260916')
+          rows=[]
+          for path in sorted(root.glob('*.jsonl')):
+              provider=path.stem
+              payload=None
+              text=path.read_text(encoding='utf-8',errors='replace')
+              for line in text.splitlines():
+                  line=line.strip()
+                  if not line.startswith('{'):
+                      continue
+                  try:
+                      candidate=json.loads(line)
+                  except Exception:
+                      continue
+                  if 'playable_stream_count' in candidate:
+                      payload=candidate
+              if payload is None:
+                  rows.append((provider,'no_probe_json','','',''))
+                  continue
+              debug=payload.get('debug') or {}
+              rows.append((
+                  provider,
+                  str(payload.get('playable_stream_count',0)),
+                  str(payload.get('raw_stream_count',0)),
+                  str(debug.get('stage') or ''),
+                  str(debug.get('provider_fetch_count','')),
+              ))
+          out=[
+              '# Cross-device targeted live arbitration — 2026-09-16',
+              '',
+              'These probes run after the cross-device Core corrections were recomposed and globally guarded.',
+              '',
+              '| Provider | Playable | Raw | Debug stage | Provider fetches |',
+              '| --- | ---: | ---: | --- | ---: |',
+          ]
+          out += [f'| {p} | {play} | {raw} | {stage} | {fetches} |' for p,play,raw,stage,fetches in rows]
+          (root/'README.md').write_text('\n'.join(out)+'\n',encoding='utf-8')
+          print('\n'.join(out))
+          PY
+
+      - name: Commit live evidence and remove temporary driver
         shell: bash
         run: |
           set -euo pipefail
@@ -118,5 +181,5 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add -A
           git diff --cached --stat
-          git commit -m 'fix(core): reconcile cross-device stream projection and native diagnostics'
+          git commit -m 'test: record anime and 4K cross-device arbitration evidence'
           git push origin HEAD:fix/cross-device-audit-20260916
