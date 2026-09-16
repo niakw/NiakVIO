@@ -28,7 +28,7 @@ base = r'''
 async function getStreams() {
   return [
     {name:"Purstream",title:"Purstream",quality:"Inconnue",resolution:"1920x1080",url:"https://cdn.example/direct.mp4"},
-    {name:"StreamZo",title:"StreamZo",quality:"Unknown",url:"https://cdn.example/master.m3u8"}
+    {name:"StreamZo",title:"StreamZo",quality:"Unknown",url:"https://cdn.example/index-s2160p-v1-a1.m3u8"}
   ];
 }
 module.exports={getStreams};
@@ -48,7 +48,7 @@ patched = sanitizer.apply(
 )
 
 runner = r'''
-const playlist="#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080\nhttps://cdn.example/1080.m3u8\n";
+const playlist="#EXTM3U\n#EXT-X-TARGETDURATION:6\n#EXTINF:6.0,\nseg-001.ts\n#EXTINF:6.0,\nseg-002.ts\n#EXTINF:6.0,\nseg-003.ts\n#EXTINF:6.0,\nseg-004.ts\n#EXTINF:6.0,\nseg-005.ts\n#EXTINF:6.0,\nseg-006.ts\n#EXTINF:6.0,\nseg-007.ts\n#EXTINF:6.0,\nseg-008.ts\n#EXTINF:6.0,\nseg-009.ts\n#EXTINF:6.0,\nseg-010.ts\n#EXTINF:6.0,\nseg-011.ts\n#EXTINF:6.0,\nseg-012.ts\n#EXT-X-ENDLIST\n";
 function headers(type){return{get:(key)=>String(key).toLowerCase()==="content-type"?type:""}}
 global.fetch=async(url)=>{
   const u=String(url);
@@ -56,7 +56,7 @@ global.fetch=async(url)=>{
     const bytes=new Uint8Array([0,0,0,24,102,116,121,112,105,115,111,109]);
     return{ok:true,status:200,url:u,headers:headers("video/mp4"),arrayBuffer:async()=>bytes.buffer};
   }
-  if(u.endsWith("master.m3u8")){
+  if(u.includes("index-s2160p-v1-a1.m3u8")){
     const bytes=new TextEncoder().encode(playlist);
     return{ok:true,status:200,url:u,headers:headers("application/vnd.apple.mpegurl"),arrayBuffer:async()=>bytes.buffer};
   }
@@ -67,7 +67,7 @@ const provider=require(process.argv[2]);
   const rows=await provider.getStreams("157336","movie");
   if(rows.length!==2)throw new Error("rows lost "+JSON.stringify(rows));
   if(rows[0].quality!=="1080p")throw new Error("resolution fact quality not recovered: "+JSON.stringify(rows[0]));
-  if(rows[1].quality!=="1080p")throw new Error("HLS master quality not recovered: "+JSON.stringify(rows[1]));
+  if(rows[1].quality!=="2160p")throw new Error("HLS URL 2160p quality not recovered: "+JSON.stringify(rows[1]));
   for(const row of rows){
     if(/unknown|inconnue?/i.test(String(row.quality||"")))throw new Error("placeholder quality leaked: "+JSON.stringify(row));
   }
