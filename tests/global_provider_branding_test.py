@@ -41,7 +41,7 @@ reapplied = global_provider_branding_v1.apply(
     context={"provider_id": "purstream"},
 )
 assert reapplied == patched, "global provider branding must be byte-idempotent"
-assert "post-presentation-lossless-source-label-v8" in patched
+assert "post-safety-uniform-final-label-v9" in patched
 assert patched.count("/* STARTFIX:CORE.PROVIDER_BRANDING.V1 */") == 1
 assert patched.count("/* CLOSEFIX:CORE.PROVIDER_BRANDING.V1 */") == 1
 
@@ -63,8 +63,8 @@ expected = [
     provider,
     provider,
     provider + " - 1080p",
-    provider + " - FR",
-    provider + " - VOSTFR",
+    provider,
+    provider,
     provider,
     provider,
 ]
@@ -72,4 +72,4 @@ assert labels == expected, (labels, expected)
 assert all(row["name"] == row["title"] for row in rows)
 assert not any("Inconnu" in value or "Unknown" in value for value in labels)
 
-print("global provider branding placeholder-suffix contract passed")
+print("global provider branding v9 final-label contract passed")
