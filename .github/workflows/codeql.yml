@@ -77,15 +77,13 @@ jobs:
 
             for number in "${alerts[@]}"; do
               body_file="$(mktemp)"
-              status="$((gh api --method PATCH \
+              if gh api --method PATCH \
                 -H 'Accept: application/vnd.github+json' \
                 "/repos/${GITHUB_REPOSITORY}/code-scanning/alerts/${number}" \
                 -f state='dismissed' \
                 -f dismissed_reason="won't fix" \
                 -f dismissed_comment='Bulk dismissal requested by the repository owner; future CodeQL scanning remains enabled.' \
-                >"${body_file}" 2>&1 && printf 'ok') || printf 'error')"
-
-              if [[ "${status}" == "ok" ]]; then
+                >"${body_file}" 2>&1; then
                 ((dismissed+=1))
               elif grep -qi 'already dismissed' "${body_file}"; then
                 ((already+=1))
