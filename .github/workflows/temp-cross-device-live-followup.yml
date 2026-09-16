@@ -9,145 +9,76 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: temp-cross-device-live-followup
-  cancel-in-progress: true
-
 jobs:
   followup:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    env:
-      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: fix/cross-device-audit-20260916
           fetch-depth: 0
-          persist-credentials: true
 
-      - name: Apply Mugiwara discovery-first V2
+      - name: Inspect current Mugiwara Hell Mode season payload
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/temp_fix_mugiwara_discovery_v2.py
-          python3 -m py_compile scripts/provider_patches/mugiwarastream_packed_runtime_v1.py
-          python3 tests/mugiwarastream_same_origin_discovery_v2_test.py
-
-      - name: Recompose active providers with Mugiwara and 4K Core fixes
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 scripts/reapply_published_overrides.py
-          python3 tests/global_stream_output_guard_test.py
-          python3 tests/global_stream_presentation_pipeline_test.py
-          python3 tests/stream_quality_recovery_tv_test.py
-          python3 tests/stream_output_sanitizer_fail_closed_test.py
-          python3 tests/cross_device_user_audit_regression_test.py
-          python3 tests/mugiwarastream_same_origin_discovery_v2_test.py
-
-      - name: Prove Mugiwara E11 and StreamZo 2160p on recomposed bytes
-        shell: bash
-        run: |
-          set -euo pipefail
-          provider_file() {
-            python3 - "$1" <<'PY'
-          import json,sys
-          pid=sys.argv[1].casefold()
-          data=json.load(open('manifest.json',encoding='utf-8'))
-          for row in data.get('scrapers') or data.get('providers') or []:
-              rid=str(row.get('id') or row.get('canonicalId') or row.get('scraper',{}).get('id') or '').casefold()
-              if rid==pid:
-                  print(row.get('filename') or row.get('file') or row.get('path') or '')
-                  raise SystemExit(0)
-          raise SystemExit(2)
-          PY
-          }
-          MUGI="$(provider_file mugiwarastream)"
-          STREAMZO="$(provider_file streamzo)"
-          HELL='{"tmdbId":"280049","mediaType":"anime","type":"anime","title":"Hell Mode","season":2,"episode":11}'
-          MOVIE='{"tmdbId":"157336","mediaType":"movie","type":"movie","title":"Interstellar","year":2014}'
-          timeout 100s node scripts/nuvio_tv_probe_tmdb_ci.cjs "$MUGI" "$HELL" 2>&1 | tee /tmp/mugi-final.log
-          timeout 70s node scripts/nuvio_tv_probe_tmdb_ci.cjs "$STREAMZO" "$MOVIE" 2>&1 | tee /tmp/streamzo-final.log
-          python3 - <<'PY'
+          BASE='https://www.mugiwara-no-streaming.com'
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36'
+          Q='Hell%20Mode%3A%20The%20Hardcore%20Gamer%20Dominates%20in%20Another%20World%20with%20Garbage%20Balancing'
+          curl -L --fail --max-time 20 -A "$UA" -H 'Accept: application/json, text/plain, */*' -H 'Sec-Fetch-Site: same-origin' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Dest: empty' -e "$BASE/" "$BASE/api/suggest/lookup?q=$Q" -o /tmp/lookup.json
+          cat /tmp/lookup.json
+          SLUG="$(python3 - <<'PY'
           import json
-          from pathlib import Path
-          def payload(path):
-              found=None
-              for line in Path(path).read_text(encoding='utf-8',errors='replace').splitlines():
-                  line=line.strip()
-                  if not line.startswith('{'):
-                      continue
-                  try:
-                      row=json.loads(line)
-                  except Exception:
-                      continue
-                  if 'playable_stream_count' in row:
-                      found=row
-              if found is None:
-                  raise SystemExit(f'no probe JSON: {path}')
-              return found
-          m=payload('/tmp/mugi-final.log')
-          s=payload('/tmp/streamzo-final.log')
-          if int(m.get('playable_stream_count') or 0) < 1:
-              raise SystemExit('Mugiwara S2E11 still has no playable stream')
-          mfetch=[str(x.get('url') or '') for x in (m.get('debug') or {}).get('fetches') or []]
-          if not any('/api/suggest/lookup?' in u for u in mfetch):
-              raise SystemExit(f'Mugiwara current lookup was not observed: {mfetch}')
-          if any('/api/search?' in u for u in mfetch):
-              raise SystemExit(f'Mugiwara stale /api/search still executed: {mfetch}')
-          qualities=[str((x.get('row') or {}).get('quality') or '') for x in s.get('streams') or []]
-          titles=[str((x.get('row') or {}).get('title') or '') for x in s.get('streams') or []]
-          if int(s.get('playable_stream_count') or 0) < 1 or '2160p' not in qualities:
-              raise SystemExit(f'StreamZo 2160p recovery missing: {qualities}')
-          out={
-            'mugiwarastream': {
-              'fixture':'Hell Mode S2E11',
-              'raw':m.get('raw_stream_count'),
-              'playable':m.get('playable_stream_count'),
-              'stage':(m.get('debug') or {}).get('stage'),
-              'lookupObserved':True,
-              'staleSearchObserved':False,
-              'fetches':mfetch,
-            },
-            'streamzo': {
-              'fixture':'Interstellar',
-              'raw':s.get('raw_stream_count'),
-              'playable':s.get('playable_stream_count'),
-              'qualities':qualities,
-              'titles':titles,
-              'stage':(s.get('debug') or {}).get('stage'),
-            },
-          }
-          Path('/tmp/final-live-proof.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-          print(json.dumps(out,ensure_ascii=False,indent=2))
+          d=json.load(open('/tmp/lookup.json'))
+          row=(d.get('exact') or ((d.get('results') or [{}])[0]))
+          print(row.get('slug') or '')
           PY
-
-      - name: Persist proven repair and compact evidence
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p automation/evidence/cross-device-20260916
-          cp /tmp/final-live-proof.json automation/evidence/cross-device-20260916/final-live-proof.json
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add -A
-          git reset -- .github/workflows/temp-cross-device-live-followup.yml scripts/temp_fix_mugiwara_discovery_v2.py || true
-          git diff --cached --stat
-          if git diff --cached --quiet; then
-            echo 'No durable repair changes to commit.'
-          else
-            git commit -m 'fix(providers): restore Mugiwara discovery and materialize 2160p recovery'
-            git push origin HEAD:fix/cross-device-audit-20260916
-          fi
-
-      - name: Remove temporary repair driver
-        shell: bash
-        run: |
-          set -euo pipefail
-          git rm -f .github/workflows/temp-cross-device-live-followup.yml scripts/temp_fix_mugiwara_discovery_v2.py
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git commit -m 'ci: remove cross-device live repair driver'
-          git push origin HEAD:fix/cross-device-audit-20260916
+          )"
+          test -n "$SLUG"
+          URL="$BASE/catalogue/$SLUG/episodes/saison2"
+          curl -L --fail --max-time 20 -A "$UA" -H 'Accept: text/html,application/xhtml+xml,*/*' -e "$BASE/" "$URL" -o /tmp/page.html
+          echo "MUGI_PAGE url=$URL bytes=$(wc -c </tmp/page.html)"
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, html
+          t=Path('/tmp/page.html').read_text(encoding='utf-8',errors='replace')
+          for needle in ['animeServer','saisons','lang','vostfr','vf','smoothpre','vidmoly','sibnet','voembed','ansembed','iframe','Hell Mode','episode']:
+              pos=[m.start() for m in re.finditer(re.escape(needle),t,re.I)]
+              print('MUGI_HTML_NEEDLE',needle,'count',len(pos),'first',pos[:8])
+              for p in pos[:2]:
+                  print('MUGI_HTML_SNIP',needle,re.sub(r'\s+',' ',html.unescape(t[max(0,p-500):p+1800]))[:2400])
+          # Decode the Next flight chunks exactly enough to expose server/options shapes.
+          marker='self.__next_f.push([1,"'
+          chunks=[]; pos=0
+          while True:
+              start=t.find(marker,pos)
+              if start<0: break
+              i=start+len(marker); out=[]; esc=False
+              while i<len(t):
+                  ch=t[i]
+                  if esc:
+                      if ch=='n': out.append('\n')
+                      elif ch=='t': out.append('\t')
+                      elif ch=='r': out.append('\r')
+                      elif ch=='\\': out.append('\\')
+                      elif ch=='"': out.append('"')
+                      elif ch=='/': out.append('/')
+                      elif ch=='u' and i+4<len(t):
+                          try: out.append(chr(int(t[i+1:i+5],16))); i+=4
+                          except Exception: out.append(ch)
+                      else: out.append(ch)
+                      esc=False; i+=1; continue
+                  if ch=='\\': esc=True; i+=1; continue
+                  if ch=='"' and t[i+1:i+3]=='])': break
+                  out.append(ch); i+=1
+              chunks.append(''.join(out)); pos=i+1
+          allflight=''.join(chunks)
+          Path('/tmp/flight.txt').write_text(allflight,encoding='utf-8')
+          print('MUGI_FLIGHT bytes',len(allflight),'chunks',len(chunks))
+          for needle in ['animeServer','saisons','lang','vostfr','vf','smoothpre','vidmoly','sibnet','voembed','ansembed']:
+              hits=[m.start() for m in re.finditer(re.escape(needle),allflight,re.I)]
+              print('MUGI_FLIGHT_NEEDLE',needle,'count',len(hits),'first',hits[:12])
+              for p in hits[:3]:
+                  print('MUGI_FLIGHT_SNIP',needle,re.sub(r'\s+',' ',allflight[max(0,p-600):p+2600])[:3200])
+          PY
