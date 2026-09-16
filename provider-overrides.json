@@ -9066,7 +9066,8 @@
         "Current lecteurvideo embeds encode player URLs in showVideo(base64,...); Wooka decodes those provider-local seeds before the existing bounded shared crawler and terminal guards.",
         "When the identity-qualified Wooka path reaches lecteurvideo but no direct media is extractable, the provider preserves the freshly decoded player embeds as a fallback instead of returning a false zero; the cache is reset per getStreams call to prevent cross-title leakage.",
         "Authority refresh 2026-09-16: wookafr.blog is DNS-dead; wookafr.center redirects to the live wookafr.boston authority. Runtime substitutions must therefore converge on .boston, never rewrite .boston back to .blog.",
-        "Current-first Wooka runtime is authoritative before generic crawl: WP ?s= title search, strict movie-vs-series identity, exact season/episode route, then lecteurvideo showVideo(base64) players. No fixture ID or title is hardcoded."
+        "Current-first Wooka runtime is authoritative before generic crawl: WP ?s= title search, strict movie-vs-series identity, exact season/episode route, then lecteurvideo showVideo(base64) players. No fixture ID or title is hardcoded.",
+        "2026-09-16 V26/V27: live Wooka contract is WP search /?s={title} -> /streaming/... detail -> lecteurvideo.com/embed.php -> showVideo(base64). V2 runtime is explicitly wired because the generic ProviderBase route planner did not consume the current search route before fallback."
       ],
       "official_hub": "https://t.me/s/Wookafr2",
       "official_site": "https://wookafr.boston",
@@ -9587,7 +9588,8 @@
       "notes": [
         "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias.",
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
-        "2026-09-16 current contract: WordPress search /?s= resolves anime detail pages; episode anchors carry epl-num identity, and current episode pages expose playable MegaPlay/Vidmoly iframes. Jujutsu Kaisen currently misses the catalogue, while One Piece proves the provider transport is alive."
+        "2026-09-16 current contract: WordPress search /?s= resolves anime detail pages; episode anchors carry epl-num identity, and current episode pages expose playable MegaPlay/Vidmoly iframes. Jujutsu Kaisen currently misses the catalogue, while One Piece proves the provider transport is alive.",
+        "2026-09-16 V26/V27: One Piece search/detail/episode/MegaPlay chain is live. Current runtime now reads Core media context/cache before falling back to _tmdb so title search is not skipped when ProviderBase TMDB projection is unavailable."
       ],
       "candidate_config_reconciliation": {
         "version": 3,
