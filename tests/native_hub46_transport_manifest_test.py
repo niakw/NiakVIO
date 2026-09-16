@@ -54,7 +54,7 @@ assert 'git -C "$NIAKVIO" cat-file -e "$SOURCE_SHA:$TARGET_MANIFEST"' in resolve
 assert 'mode=pinned_github' in resolver
 
 # The three suite families and iOS workflow must point to the terminal-name-safe
-# Hub-46 transport when the 46 campaign is active.
+# active-provider transport when the current native campaign is active.
 for path in (
     ROOT / "scripts/run_native_corpus_desktop_suite.sh",
     ROOT / "scripts/run_native_corpus_mobile_suite.sh",
@@ -66,7 +66,7 @@ for path in (
 
 # Android prebuild must resolve the same physical manifest before QEMU. Historical
 # workflow env values may still say manifest.json; the shared prebuild layer owns
-# the scope switch and may not resolve the 96-provider root repository instead.
+# the scope switch and may not resolve the visible root repository instead.
 prebuild = (ROOT / "scripts/prebuild_native_android_reader_suite.sh").read_text(encoding="utf-8")
 assert "NATIVE_ANDROID_HUB46_PREBUILD_V1" in prebuild
 assert 'TARGET_MANIFEST="native-hub46/manifest.json"' in prebuild
@@ -98,4 +98,8 @@ for row in pinned_rows:
     proof = subprocess.run(["git", "cat-file", "-e", f"{provider_sha}:{provider_path}"], cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
     assert proof.returncode == 0, f"pinned provider bundle missing: {row.get('id')} {provider_sha}:{provider_path}"
 
-print("NATIVE_HUB46_TRANSPORT_MANIFEST_OK providers=46 terminal=manifest.json pinned_provider_urls=true pinned_blobs_exist=true android_prebuild=nested")
+print(
+    "NATIVE_HUB46_TRANSPORT_MANIFEST_OK "
+    f"providers={active_provider_count()} terminal=manifest.json "
+    "pinned_provider_urls=true pinned_blobs_exist=true android_prebuild=nested"
+)
