@@ -29,6 +29,14 @@ V2_LEGOS = {
     "sekai": "scripts/provider_patches/sekai_nondisplay_recovery_v2.py",
     "voiranime-rip": "scripts/provider_patches/voiranime_rip_nondisplay_recovery_v2.py",
 }
+V3_SECURITY_LEGOS = {
+    "animesama-co": "scripts/provider_patches/animesamaco_nondisplay_security_v3.py",
+    "animevostfr": "scripts/provider_patches/animevostfr_nondisplay_security_v3.py",
+    "coflix": "scripts/provider_patches/coflix_nondisplay_security_v3.py",
+    "neko-sama": "scripts/provider_patches/neko_sama_nondisplay_security_v3.py",
+    "sekai": "scripts/provider_patches/sekai_nondisplay_security_v3.py",
+    "voiranime-rip": "scripts/provider_patches/voiranime_rip_nondisplay_security_v3.py",
+}
 LEGACY_SHARED = {
     "scripts/provider_patches/non_display_recovery_runtime_v1.py",
     "scripts/provider_patches/non_display_recovery_entry_v1.py",
@@ -55,12 +63,15 @@ def apply_document(doc: dict[str, Any]) -> list[str]:
         v1 = V1_LEGOS[provider]
         if v1 not in scripts:
             scripts.append(v1)
-        # V2 is deliberately ordered after V1 so its runtime-resolver registration
-        # is the final provider-owned resolver for the still-broken routes.
         v2 = V2_LEGOS.get(provider)
         if v2:
             scripts[:] = [x for x in scripts if x != v2]
             scripts.append(v2)
+        # Security V3 must be the final provider-owned Lego: it hardens the V1
+        # visible-text primitive after any V2 route resolver has been composed.
+        v3 = V3_SECURITY_LEGOS[provider]
+        scripts[:] = [x for x in scripts if x != v3]
+        scripts.append(v3)
         if scripts != before_scripts:
             changed.append(provider)
 
@@ -74,6 +85,10 @@ def apply_document(doc: dict[str, Any]) -> list[str]:
                 changed.append(provider)
         if v2 and options.get(v2) != wanted:
             options[v2] = wanted
+            if provider not in changed:
+                changed.append(provider)
+        if options.get(v3) != {}:
+            options[v3] = {}
             if provider not in changed:
                 changed.append(provider)
 
@@ -123,10 +138,15 @@ def validate_document(doc: dict[str, Any]) -> None:
         if v2:
             if v2 not in scripts:
                 raise AssertionError(f"{provider}: recovery V2 Lego missing")
-            if scripts[-1] != v2:
-                raise AssertionError(f"{provider}: recovery V2 must be last provider Lego")
             if options.get(v2) != _wanted(provider, base):
                 raise AssertionError(f"{provider}: recovery V2 options drift")
+        v3 = V3_SECURITY_LEGOS[provider]
+        if v3 not in scripts:
+            raise AssertionError(f"{provider}: recovery security V3 Lego missing")
+        if scripts[-1] != v3:
+            raise AssertionError(f"{provider}: recovery security V3 must be last provider Lego")
+        if options.get(v3) != {}:
+            raise AssertionError(f"{provider}: recovery security V3 options drift")
     coflix = patches["coflix"]
     if coflix.get("official_site") != "https://coflix.wiki":
         raise AssertionError("coflix current authority drift")
