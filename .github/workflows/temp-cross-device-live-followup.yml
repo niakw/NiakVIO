@@ -9,52 +9,127 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: temp-cross-device-live-followup
+  cancel-in-progress: true
+
 jobs:
   followup:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 30
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: fix/cross-device-audit-20260916
           fetch-depth: 0
+          persist-credentials: true
 
-      - name: Prove current Mugiwara episodes-script endpoints
+      - name: Apply current Mugiwara contract
         shell: bash
         run: |
           set -euo pipefail
-          BASE='https://www.mugiwara-no-streaming.com'
-          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36'
-          REL='hell-mode/saison2/vostfr/episodes.js'
-          common=(-A "$UA" -H 'Accept-Language: fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Sec-Fetch-Site: same-origin' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Dest: empty' -e "$BASE/catalogue/hell-mode-the-hardcore-gamer-dominates-in-another-world-with-garbage-balancing/episodes/saison2")
-          curl -L --fail --max-time 20 "${common[@]}" -H 'Accept: application/json, text/plain, */*' -G --data-urlencode "url=$REL" "$BASE/api/episodes-script/version" -D /tmp/version.headers -o /tmp/version.json
-          echo 'MUGI_VERSION_HEADERS'; sed -n '1,30p' /tmp/version.headers
-          echo 'MUGI_VERSION_BODY'; cat /tmp/version.json; echo
-          FILEVER="$(python3 - <<'PY'
-          import json
-          d=json.load(open('/tmp/version.json'))
-          print(d.get('filever') or '')
+          python3 scripts/temp_fix_mugiwara_discovery_v2.py
+          python3 -m py_compile scripts/provider_patches/mugiwarastream_packed_runtime_v1.py
+          python3 tests/mugiwarastream_same_origin_discovery_v2_test.py
+
+      - name: Recompose all active providers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/reapply_published_overrides.py
+          python3 tests/global_stream_output_guard_test.py
+          python3 tests/global_stream_presentation_pipeline_test.py
+          python3 tests/stream_quality_recovery_tv_test.py
+          python3 tests/stream_output_sanitizer_fail_closed_test.py
+          python3 tests/cross_device_user_audit_regression_test.py
+          python3 tests/mugiwarastream_same_origin_discovery_v2_test.py
+
+      - name: Live prove Mugiwara E11 and StreamZo 2160p
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider_file() {
+            python3 - "$1" <<'PY'
+          import json,sys
+          pid=sys.argv[1].casefold()
+          data=json.load(open('manifest.json',encoding='utf-8'))
+          for row in data.get('scrapers') or data.get('providers') or []:
+              rid=str(row.get('id') or row.get('canonicalId') or row.get('scraper',{}).get('id') or '').casefold()
+              if rid==pid:
+                  print(row.get('filename') or row.get('file') or row.get('path') or '')
+                  raise SystemExit(0)
+          raise SystemExit(2)
           PY
-          )"
-          test -n "$FILEVER"
-          curl -L --fail --max-time 20 "${common[@]}" -H 'Accept: text/javascript, application/javascript, */*' -G --data-urlencode "url=$REL" --data-urlencode "filever=$FILEVER" "$BASE/api/episodes-script" -D /tmp/script.headers -o /tmp/episodes.js
-          echo 'MUGI_SCRIPT_HEADERS'; sed -n '1,30p' /tmp/script.headers
-          echo "MUGI_SCRIPT bytes=$(wc -c </tmp/episodes.js) filever=$FILEVER"
+          }
+          MUGI="$(provider_file mugiwarastream)"
+          STREAMZO="$(provider_file streamzo)"
+          HELL='{"tmdbId":"280049","mediaType":"anime","type":"anime","title":"Hell Mode","season":2,"episode":11}'
+          MOVIE='{"tmdbId":"157336","mediaType":"movie","type":"movie","title":"Interstellar","year":2014}'
+          timeout 110s node scripts/nuvio_tv_probe_tmdb_ci.cjs "$MUGI" "$HELL" 2>&1 | tee /tmp/mugi-final.log
+          timeout 75s node scripts/nuvio_tv_probe_tmdb_ci.cjs "$STREAMZO" "$MOVIE" 2>&1 | tee /tmp/streamzo-final.log
           python3 - <<'PY'
+          import json
           from pathlib import Path
-          import re
-          t=Path('/tmp/episodes.js').read_text(encoding='utf-8',errors='replace')
-          print('MUGI_SCRIPT_HEAD',repr(t[:1800]))
-          for key in [f'eps{i}' for i in range(1,9)]:
-              hits=[m.start() for m in re.finditer(r'\b'+re.escape(key)+r'\b',t)]
-              print('MUGI_EPS',key,'count',len(hits),'positions',hits[:10])
-              for p in hits[:2]:
-                  print('MUGI_EPS_SNIP',key,re.sub(r'\s+',' ',t[max(0,p-250):p+1800])[:2050])
-          for host in ['vidmoly','ansembed','sibnet','smoothpre','voembed','sendvid','youtube','vk.com']:
-              hits=[m.start() for m in re.finditer(re.escape(host),t,re.I)]
-              print('MUGI_HOST',host,'count',len(hits),'first',hits[:8])
-          # Best-effort inspect E11 values without executing the downloaded JS.
-          for m in re.finditer(r'(?:var|let|const)?\s*(eps[1-8])\s*=\s*(\[[\s\S]*?\])\s*;?',t):
-              name=m.group(1); arr=m.group(2)
-              print('MUGI_ASSIGN',name,'chars',len(arr),'head',repr(arr[:1200]))
+          def payload(path):
+              found=None
+              for line in Path(path).read_text(encoding='utf-8',errors='replace').splitlines():
+                  line=line.strip()
+                  if not line.startswith('{'): continue
+                  try: row=json.loads(line)
+                  except Exception: continue
+                  if 'playable_stream_count' in row: found=row
+              if found is None: raise SystemExit(f'no probe JSON: {path}')
+              return found
+          m=payload('/tmp/mugi-final.log'); s=payload('/tmp/streamzo-final.log')
+          mf=[str(x.get('url') or '') for x in (m.get('debug') or {}).get('fetches') or []]
+          if int(m.get('playable_stream_count') or 0)<1:
+              raise SystemExit('Mugiwara S2E11 no playable stream')
+          for needle in ['/api/suggest/lookup?','/api/episodes-script/version?','/api/episodes-script?']:
+              if not any(needle in u for u in mf): raise SystemExit(f'Mugiwara missing live route {needle}: {mf}')
+          if any('/api/search?' in u for u in mf): raise SystemExit(f'Mugiwara stale /api/search executed: {mf}')
+          qualities=[str((x.get('row') or {}).get('quality') or '') for x in s.get('streams') or []]
+          if int(s.get('playable_stream_count') or 0)<1 or '2160p' not in qualities:
+              raise SystemExit(f'StreamZo 2160p recovery missing: {qualities}')
+          out={
+            'mugiwarastream':{
+              'fixture':'Hell Mode S2E11','raw':m.get('raw_stream_count'),'playable':m.get('playable_stream_count'),
+              'identityVerified':m.get('identity_verified_count'),'stage':(m.get('debug') or {}).get('stage'),
+              'lookupObserved':True,'episodesScriptObserved':True,'staleSearchObserved':False,'fetches':mf,
+              'streams':m.get('streams') or [],
+            },
+            'streamzo':{
+              'fixture':'Interstellar','raw':s.get('raw_stream_count'),'playable':s.get('playable_stream_count'),
+              'identityVerified':s.get('identity_verified_count'),'qualities':qualities,'stage':(s.get('debug') or {}).get('stage'),
+              'streams':s.get('streams') or [],
+            }
+          }
+          Path('/tmp/final-live-proof.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print(json.dumps(out,ensure_ascii=False,indent=2))
           PY
+
+      - name: Persist durable repair and proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p automation/evidence/cross-device-20260916
+          cp /tmp/final-live-proof.json automation/evidence/cross-device-20260916/final-live-proof.json
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git reset -- .github/workflows/temp-cross-device-live-followup.yml scripts/temp_fix_mugiwara_discovery_v2.py || true
+          git diff --cached --stat
+          git commit -m 'fix(providers): restore Mugiwara current player path and 2160p recovery'
+          git push origin HEAD:fix/cross-device-audit-20260916
+
+      - name: Remove temporary repair drivers
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm -f .github/workflows/temp-cross-device-live-followup.yml scripts/temp_fix_mugiwara_discovery_v2.py
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m 'ci: remove completed cross-device repair drivers'
+          git push origin HEAD:fix/cross-device-audit-20260916
