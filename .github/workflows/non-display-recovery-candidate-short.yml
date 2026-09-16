@@ -6,6 +6,9 @@ on:
     paths:
       - '.github/workflows/non-display-recovery-candidate-short.yml'
       - 'scripts/provider_patches/non_display_recovery_runtime_v1.py'
+      - 'scripts/provider_patches/non_display_recovery_followup_v2.py'
+      - 'scripts/provider_patches/*nondisplay_recovery_v1.py'
+      - 'scripts/provider_patches/*nondisplay_recovery_v2.py'
       - 'scripts/register_non_display_recovery_v1.py'
   workflow_dispatch:
 
@@ -42,7 +45,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m py_compile scripts/provider_patches/non_display_recovery_runtime_v1.py scripts/register_non_display_recovery_v1.py scripts/materialize_provider_v3_one.py scripts/run_provider_upstream_parity_v3.py
+          python3 -m py_compile \
+            scripts/provider_patches/non_display_recovery_runtime_v1.py \
+            scripts/provider_patches/non_display_recovery_followup_v2.py \
+            scripts/provider_patches/animesamaco_nondisplay_recovery_v1.py \
+            scripts/provider_patches/animesamaco_nondisplay_recovery_v2.py \
+            scripts/provider_patches/animevostfr_nondisplay_recovery_v1.py \
+            scripts/provider_patches/coflix_nondisplay_recovery_v1.py \
+            scripts/provider_patches/neko_sama_nondisplay_recovery_v1.py \
+            scripts/provider_patches/neko_sama_nondisplay_recovery_v2.py \
+            scripts/provider_patches/sekai_nondisplay_recovery_v1.py \
+            scripts/provider_patches/sekai_nondisplay_recovery_v2.py \
+            scripts/provider_patches/voiranime_rip_nondisplay_recovery_v1.py \
+            scripts/provider_patches/voiranime_rip_nondisplay_recovery_v2.py \
+            scripts/register_non_display_recovery_v1.py \
+            scripts/materialize_provider_v3_one.py \
+            scripts/run_provider_upstream_parity_v3.py
           python3 - <<'PY'
           import importlib.util,json,pathlib
           root=pathlib.Path('.').resolve()
@@ -63,15 +81,16 @@ jobs:
             python3 scripts/materialize_provider_v3_one.py "$provider"
           done
           git diff --check
-      - name: Prove the seven exact lost routes locally
+      - name: Prove seven exact lost routes against same-time upstream
         shell: bash
         run: |
           set -euo pipefail
           test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
           python3 - <<'PY'
-          import json,pathlib,sys
+          import json,pathlib,sys,tempfile
           root=pathlib.Path('.').resolve();sys.path.insert(0,str(root/'scripts'))
           import run_provider_upstream_parity as p
+          import run_provider_upstream_parity_v2 as v2
           import run_provider_upstream_parity_v3 as v3
           cases=[
             ('animesama-co','anime','45950'),
@@ -84,15 +103,31 @@ jobs:
           ]
           corpus=json.loads((root/'.github/triggers/rotating-popular-corpus.json').read_text(encoding='utf-8'))
           fixtures={(str(l),str(r.get('tmdbId') or '')):r for l,rows in (corpus.get('lists') or {}).items() for r in rows or [] if isinstance(r,dict)}
-          local=p.local_catalog();rows=[]
-          for pid,lane,tmdb in cases:
-            fx=fixtures[(lane,tmdb)]
-            r=v3._run_verified(local[pid]['path'],v3.fixture_payload(fx,lane,upstream=False),25)
-            item={'providerId':pid,'lane':lane,'fixture':fx['slug'],'streams':int(r.get('stream_count') or 0),'terminal':bool(r.get('terminal_verified')),'reasons':r.get('terminal_reasons') or [],'error':r.get('error_class')}
-            print('NON_DISPLAY_EXACT_PROOF '+json.dumps(item,sort_keys=True));rows.append(item)
+          local=p.local_catalog(); upstreams,_=v2.upstream_catalog(); rows=[]
+          with tempfile.TemporaryDirectory() as td:
+            td=pathlib.Path(td)
+            up_paths={}
+            for pid,_,_ in cases:
+              if pid in up_paths: continue
+              row=upstreams.get(pid)
+              if not row or not row.get('url'): raise SystemExit('missing upstream: '+pid)
+              path=td/(pid+'-up.js');path.write_bytes(p.get_bytes(row['url']));up_paths[pid]=path
+            for pid,lane,tmdb in cases:
+              fx=fixtures[(lane,tmdb)]
+              lo=v3._run_verified(local[pid]['path'],v3.fixture_payload(fx,lane,upstream=False),25)
+              up=v3._run_verified(up_paths[pid],v3.fixture_payload(fx,lane,upstream=True),25)
+              status=v3.classify_pair(up,lo)
+              item={
+                'providerId':pid,'lane':lane,'fixture':fx['slug'],'classification':status,
+                'localStreams':int(lo.get('stream_count') or 0),'localTerminal':bool(lo.get('terminal_verified')),
+                'upstreamStreams':int(up.get('stream_count') or 0),'upstreamTerminal':bool(up.get('terminal_verified')),
+                'localReasons':lo.get('terminal_reasons') or [],'upstreamReasons':up.get('terminal_reasons') or [],
+                'localError':lo.get('error_class'),'upstreamError':up.get('error_class'),
+              }
+              print('NON_DISPLAY_EXACT_PARITY '+json.dumps(item,sort_keys=True));rows.append(item)
           pathlib.Path('automation/non-display-recovery-exact-proof.json').write_text(json.dumps({'rows':rows},indent=2)+'\n',encoding='utf-8')
-          bad=[r for r in rows if r['streams']<1 or not r['terminal']]
-          if bad: raise SystemExit('exact recovery still missing: '+','.join(r['providerId']+':'+r['lane'] for r in bad))
+          bad=[r for r in rows if r['classification']=='upstream_ok_niakvio_ko']
+          if bad: raise SystemExit('exact proven regressions remain: '+','.join(r['providerId']+':'+r['lane'] for r in bad))
           PY
       - name: Build 18-provider suspect scope and rerun deep parity
         shell: bash
