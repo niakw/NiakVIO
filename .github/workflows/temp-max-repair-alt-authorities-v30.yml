@@ -1,0 +1,33 @@
+name: TEMP - Max Repair Alternate Authorities V30
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-max-repair-alt-authorities-v30.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {ref: fix/non-display-recovery-20260916}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - name: Probe alternate current authorities
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/alt-v30.cjs <<'NODE'
+          const UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36';
+          async function get(url,referer){const c=new AbortController(),t=setTimeout(()=>c.abort(),9000);try{const r=await fetch(url,{redirect:'follow',headers:{'User-Agent':UA,'Accept':'text/html,application/xhtml+xml,application/json,text/plain,*/*','Accept-Language':'fr-FR,fr;q=0.9,en;q=0.8',...(referer?{Referer:referer}:{})},signal:c.signal});const text=await r.text();return {status:r.status,url:r.url,ctype:r.headers.get('content-type')||'',text}}catch(e){return {status:0,url,error:String(e&&e.message||e),ctype:'',text:''}}finally{clearTimeout(t)}}
+          function summary(label,r,needles=[]){const low=(r.text||'').toLowerCase(),hits=needles.filter(x=>low.includes(x.toLowerCase()));console.log(label,'status='+r.status,'final='+r.url,'ctype='+r.ctype,'bytes='+(r.text||'').length,'hits='+JSON.stringify(hits),'error='+(r.error||''));}
+          function endpoints(text){const src=String(text||'');const urls=[...src.matchAll(/https?:\/\/[^"'<>\s)]+/gi)].map(x=>x[0]);const paths=[...src.matchAll(/["'](\/(?:api|ajax|search|filter|embed|player|watch|stream|server|servers)[^"'<>\s]{0,180})["']/gi)].map(x=>x[1]);return [...new Set(urls.concat(paths))].slice(0,80)}
+          async function allwish(){for(const base of ['https://all-wish.me','https://new.all-wish.me','http://176.97.192.18:5000']){const root=await get(base+'/');summary('ALLWISH_ROOT '+base,root,['AllWish','anime']);const s=await get(base+'/filter?keyword='+encodeURIComponent('Jujutsu Kaisen'),base+'/');summary('ALLWISH_SEARCH '+base,s,['Jujutsu','Kaisen','data-tip']);console.log('ALLWISH_ENDPOINTS '+base,JSON.stringify(endpoints(s.text).filter(x=>/ajax|episode|server|watch/i.test(x)).slice(0,30)))}}
+          async function flemmix(){for(const base of ['https://flemmix.me','https://flemmix.cloud','https://flemmix.men']){const root=await get(base+'/');summary('FLEMMIX_ROOT '+base,root,['Flemmix','Wiflix']);const s=await get(base+'/search?q='+encodeURIComponent('Little Lorraine'),base+'/');summary('FLEMMIX_SEARCH '+base,s,['Little Lorraine','movie','url']);console.log('FLEMMIX_SAMPLE '+base,JSON.stringify((s.text||'').slice(0,800)));}}
+          async function coflix(){for(const base of ['https://coflix.esq','https://coflix.group']){const root=await get(base+'/');summary('COFLIX_ROOT '+base,root,['Coflix']);console.log('COFLIX_ENDPOINTS '+base,JSON.stringify(endpoints(root.text).filter(x=>/api|search|film|serie|stream|ajax/i.test(x)).slice(0,50)));for(const title of ['Interstellar','Breaking Bad']){for(const route of ['/?s=','/search?q=','/recherche?q=']){const r=await get(base+route+encodeURIComponent(title),base+'/');summary('COFLIX_SEARCH '+base+' '+title+' '+route,r,[title]);}}}}
+          async function hdhub(){const base='https://hdhub4u.bi';const root=await get(base+'/');summary('4K_ROOT',root,['HDHub','4K']);console.log('4K_ENDPOINTS',JSON.stringify(endpoints(root.text).filter(x=>/api|search|ajax|wp-json|film|movie/i.test(x)).slice(0,80)));const s=await get(base+'/?s='+encodeURIComponent('Interstellar'),base+'/');summary('4K_SEARCH',s,['Interstellar']);console.log('4K_SEARCH_ENDPOINTS',JSON.stringify(endpoints(s.text).filter(x=>/api|ajax|wp-json|search/i.test(x)).slice(0,50)))}
+          (async()=>{await allwish();await flemmix();await coflix();await hdhub()})().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/alt-v30.cjs
