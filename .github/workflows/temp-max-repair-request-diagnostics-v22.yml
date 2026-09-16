@@ -1,0 +1,106 @@
+name: temp-max-repair-request-diagnostics-v22
+
+on:
+  push:
+    branches:
+      - fix/non-display-recovery-20260916
+    paths:
+      - .github/workflows/temp-max-repair-request-diagnostics-v22.yml
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+
+      - name: Persist recovery checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/update_memory_max_repair_20260916_v1.py
+
+      - name: Compare current and browser request signatures
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/request-ab-v22.cjs <<'NODE'
+          const cases = [
+            ['moviebox','https://vidsrcme.ru/vs_src.php?type=movie&id=157336','https://vidsrcme.ru/'],
+            ['allwish','https://all-wish.me/filter?keyword=Jujutsu%20Kaisen','https://all-wish.me/'],
+            ['flemmix','https://flemmix.me/search?q=Little%20Lorraine','https://flemmix.me/'],
+            ['allanime','https://ww2.aniwatch.fit/?s=One%20Piece','https://ww2.aniwatch.fit/'],
+            ['wookafr','https://wookafr.boston/','https://wookafr.boston/']
+          ];
+          const uas = {
+            niak: 'Mozilla/5.0 NiakVIO/3',
+            browser: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36'
+          };
+          async function once(name,url,ref,label,ua){
+            const c=new AbortController(),t=setTimeout(()=>c.abort(),15000);
+            try{
+              const r=await fetch(url,{headers:{Accept:'application/json,text/html,application/xhtml+xml,text/plain,*/*','Accept-Language':'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7','User-Agent':ua,Referer:ref},redirect:'follow',signal:c.signal});
+              const body=await r.text();
+              console.log('AB',name,label,'status='+r.status,'ok='+r.ok,'ctype='+(r.headers.get('content-type')||''),'bytes='+body.length,'final='+r.url,'head='+JSON.stringify(body.slice(0,180)));
+            }catch(e){console.log('AB_ERROR',name,label,String(e&&e.message||e));}
+            finally{clearTimeout(t)}
+          }
+          (async()=>{for(const row of cases){for(const [label,ua] of Object.entries(uas))await once(...row,label,ua)}})().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/request-ab-v22.cjs
+
+      - name: Instrument manifest-authoritative MovieBox runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/moviebox-trace-v22.cjs <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const manifest=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const row=(manifest.scrapers||[]).find(r=>String(r.id||'').toLowerCase()==='moviebox');
+          if(!row)throw new Error('moviebox manifest row missing');
+          const f=path.resolve(row.filename);
+          const nativeFetch=global.fetch;
+          global.fetch=async function(url,opts){
+            const h=opts&&opts.headers||{};
+            console.log('TRACE_FETCH',String(url),JSON.stringify(h));
+            try{
+              const r=await nativeFetch(url,opts);
+              console.log('TRACE_RESP',String(url),'status='+r.status,'ok='+r.ok,'ctype='+(r.headers.get('content-type')||''),'final='+r.url);
+              return r;
+            }catch(e){console.log('TRACE_FETCH_ERROR',String(url),String(e&&e.message||e));throw e}
+          };
+          const meta={title:'Interstellar',original_title:'Interstellar',release_date:'2014-01-01',alternative_titles:{titles:[]}};
+          global.__nuvioMediaContext={tmdbId:'157336',tmdbNamespace:'movie',tmdbMetadata:meta};
+          global.__nuvioTmdbMetadataCacheV1={'movie:157336':meta};
+          global.__nuvioProviderDeadlineMs=Date.now()+30000;
+          delete require.cache[f];
+          const mod=require(f);
+          Promise.resolve(mod.getStreams('157336','movie')).then(rows=>{
+            console.log('TRACE_ROWS',JSON.stringify(Array.isArray(rows)?rows.slice(0,5):rows,null,2));
+          }).catch(e=>{console.error('TRACE_ERROR',e&&e.stack||e);process.exitCode=1});
+          NODE
+          node /tmp/moviebox-trace-v22.cjs
+
+      - name: Commit MEMORY checkpoint
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add MEMORY.md
+          if ! git diff --cached --quiet; then
+            git commit -m 'docs: checkpoint maximum provider repair'
+            git push origin HEAD:fix/non-display-recovery-20260916
+          fi
