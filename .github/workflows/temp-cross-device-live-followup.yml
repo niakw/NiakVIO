@@ -44,7 +44,10 @@ jobs:
           p=Path('tests/stream_quality_recovery_tv_test.py')
           t=p.read_text(encoding='utf-8')
           t=t.replace('{name:"StreamZo",title:"StreamZo",quality:"Unknown",url:"https://cdn.example/master.m3u8"}', '{name:"StreamZo",title:"StreamZo",quality:"Unknown",url:"https://cdn.example/index-s2160p-v1-a1.m3u8"}')
-          t=t.replace('const playlist="#EXTM3U\\n#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080\\nhttps://cdn.example/1080.m3u8\\n";', 'const playlist="#EXTM3U\\n#EXTINF:6.0,\\nseg-001.ts\\n#EXT-X-ENDLIST\\n";')
+          long_media='''#EXTM3U\n#EXT-X-TARGETDURATION:6\n#EXTINF:6.0,\nseg-001.ts\n#EXTINF:6.0,\nseg-002.ts\n#EXTINF:6.0,\nseg-003.ts\n#EXTINF:6.0,\nseg-004.ts\n#EXTINF:6.0,\nseg-005.ts\n#EXTINF:6.0,\nseg-006.ts\n#EXTINF:6.0,\nseg-007.ts\n#EXTINF:6.0,\nseg-008.ts\n#EXTINF:6.0,\nseg-009.ts\n#EXTINF:6.0,\nseg-010.ts\n#EXTINF:6.0,\nseg-011.ts\n#EXTINF:6.0,\nseg-012.ts\n#EXT-X-ENDLIST\n'''
+          old_playlist='const playlist="#EXTM3U\\n#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080\\nhttps://cdn.example/1080.m3u8\\n";'
+          new_playlist='const playlist='+repr(long_media).replace("'",'"')+';'
+          t=t.replace(old_playlist,new_playlist)
           t=t.replace('if(u.endsWith("master.m3u8")){', 'if(u.includes("index-s2160p-v1-a1.m3u8")){')
           t=t.replace('if(rows[1].quality!=="1080p")throw new Error("HLS master quality not recovered: "+JSON.stringify(rows[1]));', 'if(rows[1].quality!=="2160p")throw new Error("HLS URL 2160p quality not recovered: "+JSON.stringify(rows[1]));')
           p.write_text(t,encoding='utf-8')
@@ -68,7 +71,7 @@ jobs:
               rows.append({'name':m.group(1),'values':len(vals),'urls':len(urls),'episode12': urls[11][:240] if len(urls)>11 else None,'first':urls[0][:180] if urls else None})
           print('ANIME_SAMA_EPISODES_BYTES',len(text))
           print('ANIME_SAMA_ARRAYS',json.dumps(rows[:30],ensure_ascii=False))
-          print('ANIME_SAMA_HEAD',text[:1200].replace('\n',' ')[:1200])
+          print('ANIME_SAMA_HEAD',text[:1600].replace('\n',' ')[:1600])
           PY
 
       - name: Inspect UHDMovies current Interstellar outbound links
@@ -85,7 +88,7 @@ jobs:
               if u not in urls: urls.append(u)
           useful=[u for u in urls if re.search(r'vcloud|hubcloud|driveseed|hubdrive|gdflix|gofile|pixeldrain|stream|download|drive|link',u,re.I)]
           print('UHD_BYTES',len(text))
-          print('UHD_USEFUL_URLS',json.dumps(useful[:80],ensure_ascii=False))
+          print('UHD_USEFUL_URLS',json.dumps(useful[:100],ensure_ascii=False))
           for pat in ['vcloud','hubcloud','driveseed','hubdrive','gdflix','download','btn','links']:
               if pat.lower() in text.lower(): print('UHD_HAS',pat)
           PY
