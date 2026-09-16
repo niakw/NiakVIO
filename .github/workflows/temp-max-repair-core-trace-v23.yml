@@ -33,20 +33,25 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import importlib.util
+          import importlib.util, sys
           from pathlib import Path
-          root=Path('.')
+          root=Path('.').resolve(); sys.path.insert(0,str(root/'scripts'))
           spec=importlib.util.spec_from_file_location('apo',root/'scripts/apply_provider_overrides.py')
           m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
           captured=[]
-          def cap(text,provider_id,patch_script,options,profile_name):
-              captured.append((provider_id,patch_script,dict(options),profile_name)); return text
+          def cap(*args, **kwargs):
+              text=args[0] if args else kwargs.get('text')
+              pid=args[1] if len(args)>1 else kwargs.get('provider_id','')
+              path=args[2] if len(args)>2 else kwargs.get('patch_script','')
+              opts=args[3] if len(args)>3 else kwargs.get('options',{})
+              profile=args[4] if len(args)>4 else kwargs.get('profile_name','')
+              captured.append((pid,path,dict(opts or {}),profile)); return text
           m._apply_patch_script=cap
           for pid in ('moviebox','allanime','wookafr','allwish','flemmix'):
               captured.clear(); m.apply_overrides(pid,b'module.exports={getStreams:async()=>[]};\n',phase='discovery')
               print('OPTIONS',pid)
               for _pid,path,opts,profile in captured:
-                  if path.endswith(('global_media_enrichment_v1.py','runtime_capability_media_safety_v4.py','stream_output_sanitizer_v7.py','hls_runtime_integrity_v1.py')):
+                  if str(path).endswith(('global_media_enrichment_v1.py','runtime_capability_media_safety_v4.py','stream_output_sanitizer_v7.py','hls_runtime_integrity_v1.py')):
                       print(' ',path,opts,profile)
           PY
 
