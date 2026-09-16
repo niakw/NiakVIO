@@ -84,6 +84,19 @@ This section supersedes older branch-topology assumptions below for the active r
 - vidlove_movie: count=1 pageOk=True status=200 error=
 - vidlove_tv: count=1 pageOk=True status=200 error=
 
+<!-- MAX_REPAIR_20260917_V31_RESULT -->
+### V29/V30/V31 request-scoped metadata + residual authorities
+- V29 run `35161748810`: Wooka/AllAnime current runtime markers were present, but no current title-search fetch occurred; both fell back to old ProviderBase routes. Root cause localized to Core clearing incoming `__nuvioMediaContext` before building provisional arguments.
+- Core V31 fix accepts incoming TMDB metadata only when request identity and namespace match exactly; stale/mismatched context remains rejected. Unit tests cover matching reuse and cross-title non-leak.
+- V30 run `35161833380`: AllWish `.me` is Cloudflare 403; `new.all-wish.me` and deployment IP are unreachable. Flemmix `.me`, `.cloud`, `.men` all return Cloudflare 403. Coflix `.group` is current/live 200 but obvious search routes expose no usable catalogue/backend; 4KHDHub search remains same shell.
+- wookafr_movie: count=5 pageOk=False status=403 error=
+- wookafr_tv: count=6 pageOk=False status=403 error=
+- allanime: count=1 pageOk=True status=200 error=
+- moviebox_movie: count=1 pageOk=True status=200 error=
+- moviebox_tv: count=1 pageOk=True status=200 error=
+- vidlove_movie: count=1 pageOk=True status=200 error=
+- vidlove_tv: count=1 pageOk=True status=200 error=
+
 ## 2026-09-16 — authoritative current checkpoint
 
 - Current public release is **5.21.48**. `manifest.json`, VF/no-anime projections, package metadata and release hashes are on 5.21.48.
