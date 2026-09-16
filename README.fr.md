@@ -244,6 +244,8 @@ La publication est atomique et fail-closed. Tout changement des bytes providers 
 | `github-actions-gate.yml` | invariants sécurité workflows/repository |
 | `codeql.yml` | CodeQL `security-extended` + audit dépendances production |
 | `weekly-upstream-provider-discovery.yml` | découverte upstream read-only |
+| `purge-actions-history.yml` | purge hebdomadaire de l’historique GitHub Actions obsolète |
+| `brain-branch-maintenance.yml` | maintenance planifiée des branches de propositions Learning |
 
 </details>
 
