@@ -7,7 +7,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 PATH = ROOT / "provider-overrides.json"
-LEGO = "scripts/provider_patches/non_display_recovery_runtime_v1.py"
+LEGO = "scripts/provider_patches/non_display_recovery_entry_v1.py"
 PROVIDERS = {
     "animesama-co": "https://animesama.co",
     "animevostfr": "https://v2.animevostfr.org",
