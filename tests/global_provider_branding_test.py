@@ -63,8 +63,8 @@ expected = [
     provider,
     provider,
     provider + " - 1080p",
-    provider,
-    provider,
+    provider + " - FR",
+    provider + " - VOSTFR",
     provider,
     provider,
 ]
