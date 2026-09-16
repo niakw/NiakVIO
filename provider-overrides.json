@@ -621,10 +621,12 @@
       "notes": [
         "Resolve Flemmix from its official address hub; the active domain is flemmix.kim.",
         "Do not retain ww547.wiflix-hd.vip as LKG after DNS failure; rewrite legacy Flemmix/Wiflix hostnames to flemmix.kim.",
-        "Cloudflare/browser verification is not by itself provider-unreachable; final activation remains governed by runtime media proof."
+        "Cloudflare/browser verification is not by itself provider-unreachable; final activation remains governed by runtime media proof.",
+        "2026-09-16 current contract: /search?q= returns typed JSON rows with title/year/url; identity-gated details expose short-lived signed /embed/video/... URLs which are preserved dynamically rather than hardcoded. TV traversal remains season/episode scoped and must be proven independently by Labs.",
+        "Authority refresh 2026-09-16: the current typed JSON search and signed /embed/video contract are live on flemmix.me; current .me URLs must not be rewritten to the historical .cloud authority."
       ],
       "official_hub": "https://ww1.wiflix-adresses.fun/",
-      "official_site": "https://flemmix.cloud",
+      "official_site": "https://flemmix.me",
       "manifest_overrides": {
         "supportsExternalPlayer": true,
         "logo": "https://flemmix.cloud/favicon.ico",
@@ -635,7 +637,9 @@
         "tv"
       ],
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/api/v2/themoviedb?id={tmdbId}",
+        "/search?q={title}",
+        "/embed/video/{id}?expires={expires}&signature={signature}"
       ],
       "core_options": {
         "desktop_runtime_compat": {
@@ -650,7 +654,6 @@
         }
       },
       "domain_substitutions": {
-        "flemmix.me": "flemmix.cloud",
         "flemmix.casa": "flemmix.cloud",
         "flemmix.gold": "flemmix.cloud",
         "flemmix.voto": "flemmix.cloud",
@@ -661,12 +664,14 @@
         "flemmix.menn": "flemmix.cloud",
         "ww547.wiflix-hd.vip": "flemmix.cloud",
         "flemmix.wales": "flemmix.cloud",
-        "flemmix.vip": "flemmix.cloud",
+        "flemmix.vip": "flemmix.me",
         "flemmix.prof": "flemmix.cloud",
         "wiflix.re": "flemmix.cloud",
         "flemmix.cafe": "flemmix.cloud",
         "flemmix.men": "flemmix.cloud",
-        "flemmix.kim": "flemmix.cloud"
+        "flemmix.kim": "flemmix.cloud",
+        "flemmix.cloud": "flemmix.me",
+        "flemmix.ws": "flemmix.me"
       },
       "replacements": {
         "flemmix.casa": "flemmix.cloud",
@@ -686,7 +691,6 @@
         "flemmix.casa": "flemmix.cloud",
         "flemmix.garden": "flemmix.cloud",
         "flemmix.gold": "flemmix.cloud",
-        "flemmix.me": "flemmix.cloud",
         "flemmix.menn": "flemmix.cloud",
         "flemmix.voto": "flemmix.cloud",
         "wiflix-hd.vip": "flemmix.cloud",
@@ -694,7 +698,10 @@
         "ww1.wiflix-adresses.fun": "flemmix.cloud",
         "ww547.wiflix-hd.vip": "flemmix.cloud",
         "flemmix.men": "flemmix.cloud",
-        "flemmix.kim": "flemmix.cloud"
+        "flemmix.kim": "flemmix.cloud",
+        "flemmix.cloud": "flemmix.me",
+        "flemmix.vip": "flemmix.me",
+        "flemmix.ws": "flemmix.me"
       },
       "candidate_learned_routes": [
         "/index.php?do=search&subaction=search&story={query}",
@@ -916,7 +923,12 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      }
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/flemmix_current_runtime_v1.py"
+      ],
+      "preserve_embed_urls": true,
+      "known_site": "https://flemmix.me"
     },
     "uhdmovies": {
       "notes": [
@@ -4486,7 +4498,8 @@
         "NuvioTV currently does not enforce manifest platform filters; resolve Coflix embeds to direct media, reject WordPress infrastructure routes, and validate every final URL before exposing it.",
         "Use the currently reachable Coflix catalogue and strict title/year matching before following LecteurVideo players.",
         "Decode current LecteurVideo base64 player routes, resolve target media, then publish only output that passes the terminal sanitizer; do not expose generic embed or telemetry URLs.",
-        "NuvioTV uses fail-closed all-URL probing for Coflix: any row without media proof, including rows beyond the bounded probe budget, is discarded."
+        "NuvioTV uses fail-closed all-URL probing for Coflix: any row without media proof, including rows beyond the bounded probe budget, is discarded.",
+        "Semantic correction 2026-09-16: current Coflix routes redirect to the live service but repeated anime/search probes expose no anime catalogue. Anime is removed rather than manufactured; movie/tv remain declared and require their own playback proof."
       ],
       "capability": "mixed_embed_resolver",
       "official_hub": "https://coflix.domains/",
@@ -4498,8 +4511,7 @@
       },
       "published_types": [
         "movie",
-        "tv",
-        "anime"
+        "tv"
       ],
       "learned_routes": [
         "/film/{slug}/",
@@ -4752,7 +4764,6 @@
         "forcedEnabled": true,
         "routeDataState": "repair",
         "requiredLanes": [
-          "anime",
           "movie",
           "tv"
         ],
@@ -4760,12 +4771,11 @@
         "exactLockedLanes": [],
         "provenLanes": [],
         "missingLanes": [
-          "anime",
           "movie",
           "tv"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "recoveryStatus": "repair",
         "provenRouteCount": 12,
         "terminalState": null,
         "quarantined": false,
@@ -4773,7 +4783,8 @@
           "declared_lane_unproven",
           "quick_provider-network-http-error",
           "quick_provider-network-zero-result",
-          "recovery_proven"
+          "recovery_proven",
+          "anime_lane_removed_no_current_catalogue_evidence"
         ],
         "laneStatuses": {
           "anime": [
@@ -9052,10 +9063,12 @@
       "notes": [
         "Use the latest Wooka terminal domain announced by the official Telegram address channel.",
         "Wooka player crawl preserves all discovered embeds but prioritizes lecteurvideo.com before the ProviderBase bounded seed budget; current lecteurvideo pages are structurally parsed and still pass shared terminal/identity guards.",
-        "Current lecteurvideo embeds encode player URLs in showVideo(base64,...); Wooka decodes those provider-local seeds before the existing bounded shared crawler and terminal guards."
+        "Current lecteurvideo embeds encode player URLs in showVideo(base64,...); Wooka decodes those provider-local seeds before the existing bounded shared crawler and terminal guards.",
+        "When the identity-qualified Wooka path reaches lecteurvideo but no direct media is extractable, the provider preserves the freshly decoded player embeds as a fallback instead of returning a false zero; the cache is reset per getStreams call to prevent cross-title leakage.",
+        "Authority refresh 2026-09-16: wookafr.blog is DNS-dead; wookafr.center redirects to the live wookafr.boston authority. Runtime substitutions must therefore converge on .boston, never rewrite .boston back to .blog."
       ],
       "official_hub": "https://t.me/s/Wookafr2",
-      "official_site": "https://wookafr.blog",
+      "official_site": "https://wookafr.boston",
       "published_types": [
         "movie",
         "tv"
@@ -9070,11 +9083,11 @@
       },
       "domain_substitutions": {
         "wookafr.app": "wookafr.blog",
-        "wookafr.center": "wookafr.blog",
+        "wookafr.center": "wookafr.boston",
         "wookafr.cymru": "wookafr.blog",
         "wookafr.fyi": "wookafr.blog",
         "wookafr.to": "wookafr.blog",
-        "wookafr.boston": "wookafr.blog"
+        "wookafr.blog": "wookafr.boston"
       },
       "candidate_config_reconciliation": {
         "version": 3,
@@ -9284,9 +9297,9 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {
-        "wookafr.center": "wookafr.blog",
+        "wookafr.center": "wookafr.boston",
         "wookafr.app": "wookafr.blog",
-        "wookafr.boston": "wookafr.blog"
+        "wookafr.blog": "wookafr.boston"
       },
       "provider_lego_scripts": [
         "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py",
@@ -9296,7 +9309,9 @@
         "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py": {
           "priority_host": "lecteurvideo.com"
         }
-      }
+      },
+      "preserve_embed_urls": true,
+      "known_site": "https://wookafr.boston"
     },
     "yflix": {
       "capability": "mixed_embed_resolver",
@@ -9548,7 +9563,7 @@
       }
     },
     "allanime": {
-      "capability": "direct_media",
+      "capability": "mixed_embed_resolver",
       "official_hub": "https://allanime.sa.com/",
       "official_site": "https://ww2.aniwatch.fit",
       "domain_substitutions": {
@@ -9564,7 +9579,8 @@
       },
       "notes": [
         "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias.",
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
+        "2026-09-16 current contract: WordPress search /?s= resolves anime detail pages; episode anchors carry epl-num identity, and current episode pages expose playable MegaPlay/Vidmoly iframes. Jujutsu Kaisen currently misses the catalogue, while One Piece proves the provider transport is alive."
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -9581,7 +9597,10 @@
       "learned_routes": [
         "/api",
         "/api/v2/themoviedb?id={id}",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/?s={title}",
+        "/{slug}/",
+        "/{slug}-episode-{episode}/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -9718,7 +9737,7 @@
       "manifest_overrides": {
         "enabled": true
       },
-      "route_data_state": "repair",
+      "route_data_state": "on",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -9737,14 +9756,15 @@
           "anime"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "recoveryStatus": "repair",
         "provenRouteCount": 4,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-zero-result",
-          "recovery_proven"
+          "recovery_proven",
+          "current_wordpress_episode_embed_contract_live_pending_real_probe"
         ],
         "laneStatuses": {
           "anime": [
@@ -9758,10 +9778,14 @@
       },
       "published_types": [
         "anime"
-      ]
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/allanime_current_runtime_v1.py"
+      ],
+      "preserve_embed_urls": true
     },
     "allwish": {
-      "capability": "html_scraper",
+      "capability": "mixed_embed_resolver",
       "official_hub": "https://t.me/s/allwishme",
       "official_site": "https://all-wish.me",
       "candidate_config_reconciliation": {
@@ -9779,7 +9803,11 @@
       "learned_routes": [
         "/player",
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/filter?keyword={title}",
+        "/ajax/episode/list/{id}",
+        "/ajax/server/list?servers={serverKey}",
+        "/ajax/server?get={serverId}"
       ],
       "live_route_gate": {
         "completion_state": "stream-capability-unproven",
@@ -9933,25 +9961,24 @@
         "forcedEnabled": true,
         "routeDataState": "repair",
         "requiredLanes": [
-          "movie",
-          "tv"
+          "anime"
         ],
         "currentVerifiedLanes": [],
         "exactLockedLanes": [],
         "provenLanes": [],
         "missingLanes": [
-          "movie",
-          "tv"
+          "anime"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "no-proven-route",
+        "recoveryStatus": "repair",
         "provenRouteCount": 0,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-returned-streams",
-          "recovery_no-proven-route"
+          "recovery_no-proven-route",
+          "semantic_contract_corrected_to_current_anime_only_site"
         ],
         "laneStatuses": {
           "movie": [
@@ -9968,7 +9995,9 @@
       "notes": [
         "Fresh 2026-09-13 adaptive corpus proof is zero on all declared lanes; previous playable_verified lane claims are invalidated.",
         "Historical manual cross-fixture evidence returned the same very short media for unrelated works, so it is wrong-content/fixture-invariant evidence, not a valid stream proof.",
-        "Route knowledge is retained for diagnosis, but activation does not imply live capability proof; runtime must fail closed until fresh identity-safe media proof exists."
+        "Route knowledge is retained for diagnosis, but activation does not imply live capability proof; runtime must fail closed until fresh identity-safe media proof exists.",
+        "2026-09-16 current contract: title search returns /watch cards with a provider series id; the watch page confirms that id, episode/list yields the requested episode data-ids token, server/list yields per-language server link ids, and ajax/server yields current Mega player embeds. The runtime does not widen published semantic lanes.",
+        "Semantic correction 2026-09-16: the current AllWish service is an anime catalogue; historical movie/tv semantic lanes are removed. TV remains transport compatibility for anime through the shared semantic layer, not a generic TV capability."
       ],
       "current_stream_proof": {
         "schemaVersion": 1,
@@ -9981,7 +10010,14 @@
         "globalCorpusExhausted": true,
         "historicalWrongContent": true,
         "requiresFreshIdentitySafePositive": true
-      }
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/allwish_current_runtime_v1.py"
+      ],
+      "preserve_embed_urls": true,
+      "published_types": [
+        "anime"
+      ]
     },
     "anime-ultime": {
       "capability": "mixed_embed_resolver",
@@ -10876,13 +10912,165 @@
       }
     },
     "moviebox": {
-      "capability": "quarantined",
+      "capability": "mixed_embed_resolver",
       "official_hub": "https://moviiebox.lol/",
       "official_site": "https://moviebox.yachts",
       "manifest_overrides": {
         "enabled": true
       },
-      "notes": "Fail-closed safety quarantine: non_playable_html_output. Published bundle is inert; re-enable only after fresh strict identity and direct-media proof.",
+      "notes": [
+        "F",
+        "a",
+        "i",
+        "l",
+        "-",
+        "c",
+        "l",
+        "o",
+        "s",
+        "e",
+        "d",
+        " ",
+        "s",
+        "a",
+        "f",
+        "e",
+        "t",
+        "y",
+        " ",
+        "q",
+        "u",
+        "a",
+        "r",
+        "a",
+        "n",
+        "t",
+        "i",
+        "n",
+        "e",
+        ":",
+        " ",
+        "n",
+        "o",
+        "n",
+        "_",
+        "p",
+        "l",
+        "a",
+        "y",
+        "a",
+        "b",
+        "l",
+        "e",
+        "_",
+        "h",
+        "t",
+        "m",
+        "l",
+        "_",
+        "o",
+        "u",
+        "t",
+        "p",
+        "u",
+        "t",
+        ".",
+        " ",
+        "P",
+        "u",
+        "b",
+        "l",
+        "i",
+        "s",
+        "h",
+        "e",
+        "d",
+        " ",
+        "b",
+        "u",
+        "n",
+        "d",
+        "l",
+        "e",
+        " ",
+        "i",
+        "s",
+        " ",
+        "i",
+        "n",
+        "e",
+        "r",
+        "t",
+        ";",
+        " ",
+        "r",
+        "e",
+        "-",
+        "e",
+        "n",
+        "a",
+        "b",
+        "l",
+        "e",
+        " ",
+        "o",
+        "n",
+        "l",
+        "y",
+        " ",
+        "a",
+        "f",
+        "t",
+        "e",
+        "r",
+        " ",
+        "f",
+        "r",
+        "e",
+        "s",
+        "h",
+        " ",
+        "s",
+        "t",
+        "r",
+        "i",
+        "c",
+        "t",
+        " ",
+        "i",
+        "d",
+        "e",
+        "n",
+        "t",
+        "i",
+        "t",
+        "y",
+        " ",
+        "a",
+        "n",
+        "d",
+        " ",
+        "d",
+        "i",
+        "r",
+        "e",
+        "c",
+        "t",
+        "-",
+        "m",
+        "e",
+        "d",
+        "i",
+        "a",
+        " ",
+        "p",
+        "r",
+        "o",
+        "o",
+        "f",
+        ".",
+        "2026-09-16 current contract: vidsrcme vs_src.php returns a current cloudorchestranova embed for both movie and TV. data.vidsrcme.ru stream_urls is encrypted/WASM, so NiakVIO preserves the verified embed instead of implementing brittle decryption or claiming direct media."
+      ],
       "quarantine_reason": "non_playable_html_output",
       "candidate_config_reconciliation": {
         "version": 3,
@@ -10898,7 +11086,9 @@
       },
       "learned_routes": [
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "https://vidsrcme.ru/vs_src.php?type=movie&id={tmdbId}",
+        "https://vidsrcme.ru/vs_src.php?type=tv&id={tmdbId}&season={season}&episode={episode}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -11038,7 +11228,7 @@
           }
         ]
       },
-      "route_data_state": "off",
+      "route_data_state": "on",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -11059,15 +11249,16 @@
           "tv"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "no-proven-route",
+        "recoveryStatus": "repair",
         "provenRouteCount": 0,
         "terminalState": null,
-        "quarantined": true,
+        "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "explicit_quarantine",
           "quick_provider-network-http-error",
-          "recovery_no-proven-route"
+          "recovery_no-proven-route",
+          "current_vidsrcme_embed_contract_live_pending_real_probe"
         ],
         "laneStatuses": {
           "movie": [
@@ -11080,7 +11271,16 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {},
-      "domain_substitutions": {}
+      "domain_substitutions": {},
+      "provider_lego_scripts": [
+        "scripts/provider_patches/moviebox_current_embed_v2.py"
+      ],
+      "official_api": "https://vidsrcme.ru/vs_src.php",
+      "preserve_embed_urls": true,
+      "published_types": [
+        "movie",
+        "tv"
+      ]
     },
     "showbox": {
       "capability": "html_scraper",
