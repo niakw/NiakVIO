@@ -7,7 +7,9 @@ best-effort probing, but not for a strict publication boundary: every published
 row must either have media proof or be discarded.
 
 A second subtlety matters on durable/LKG rematerialization. Some target-media
-profiles deliberately remove their old wrapper and append a fresh one. If an
+profiles deliberately remove their old wrapper and append a fresh one. Final
+provider branding is intentionally outside this boundary: sanitizer validates
+media first, then branding projects the final verified quality exactly once. If an
 already-materialized sanitizer is left in place, the new target-media wrapper is
 installed after it and therefore becomes the outer wrapper at runtime. The final
 media URL then bypasses the terminal sanitizer entirely. V6 detects that stale
@@ -61,7 +63,6 @@ TARGET_MEDIA_MARKERS = (
 )
 CORE_PREDECESSOR_MARKERS = TARGET_MEDIA_MARKERS + (
     "/* NUVIO_GLOBAL_STREAM_PRESENTATION_V1:",
-    "/* NUVIO_GLOBAL_PROVIDER_BRANDING_V1:",
 )
 PROBE_RESOLVED = "  async function probeResolved(stream,url,depth,referer){\n"
 PROBE_ALIAS = '  async function probe(stream,url){return await probeResolved(stream,url,0,"")}\n'

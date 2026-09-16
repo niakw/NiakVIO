@@ -67,9 +67,9 @@ CANONICAL_CORE_MANAGED_ORDER = (
     "CORE.STREAM_IDENTITY.V1",
     "CORE.MEDIA_TYPE_RESOLUTION.V1",
     "CORE.STREAM_PRESENTATION.V1",
-    "CORE.PROVIDER_BRANDING.V1",
     "CORE.STREAM_SANITIZER.V6",
     "CORE.RUNTIME_MEDIA_SAFETY.V4",
+    "CORE.PROVIDER_BRANDING.V1",
 )
 PROVIDER_BEGIN_MARKER = "/* BEGIN NIAKVIO_PROVIDER */"
 PROVIDER_END_MARKER = "/* END NIAKVIO_PROVIDER */"
@@ -1738,20 +1738,6 @@ def apply_overrides(
                 "scope": "global_stream_presentation",
             })
 
-        # Provider branding is deliberately the final Core stream layer. Upstream
-        # stream names can contain quality/language/codec facts; presentation must
-        # read those originals before the committed emoji/name replaces the local
-        # row label and title prefix.
-        before = text
-        text = _apply_patch_script(text, provider_id, GLOBAL_PROVIDER_BRANDING, {}, None)
-        if text != before:
-            applied.append({
-                "type": "patch_script",
-                "path": GLOBAL_PROVIDER_BRANDING,
-                "phase": phase,
-                "scope": "global_provider_branding",
-            })
-
         # Terminal stream validation is a Core-wide publication boundary.
         # Every returned URL within the bounded probe budget is checked with the
         # exact stream headers. Conclusive invalidity (403/404/410, blocked host,
@@ -1805,6 +1791,20 @@ def apply_overrides(
                 "path": GLOBAL_RUNTIME_MEDIA_SAFETY,
                 "phase": phase,
                 "scope": "global_runtime_media_safety",
+            })
+
+        # Provider branding is the final client-visible projection. It must run
+        # after terminal media validation and runtime safety so title/name use the
+        # final verified/recovered quality exactly once. Source labels stay in
+        # preserved source* facts and never re-expand the UI title.
+        before = text
+        text = _apply_patch_script(text, provider_id, GLOBAL_PROVIDER_BRANDING, {}, None)
+        if text != before:
+            applied.append({
+                "type": "patch_script",
+                "path": GLOBAL_PROVIDER_BRANDING,
+                "phase": phase,
+                "scope": "global_provider_branding",
             })
 
         # END PROVIDER is the final byte boundary.

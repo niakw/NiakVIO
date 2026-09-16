@@ -8,9 +8,10 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count
+from current_provider_scope import active_provider_count, visible_provider_count
 
-EXPECTED = active_provider_count()
+ACTIVE_EXPECTED = active_provider_count()
+VISIBLE_EXPECTED = visible_provider_count()
 
 
 def constant(source: str, name: str) -> int:
@@ -39,7 +40,7 @@ def main() -> int:
         assert token in presentation, token
 
     manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
-    assert len(manifest.get("scrapers") or []) == CURRENT_PROVIDER_COUNT
+    assert len(manifest.get("scrapers") or []) == VISIBLE_EXPECTED
 
     # Historical 12-15 s TV compatibility publisher must stay dormant. It is
     # retained for provenance/tests only and must not be called by a workflow.
@@ -53,7 +54,7 @@ def main() -> int:
 
     print(
         "core runtime non-regression contract passed "
-        f"providers={CURRENT_PROVIDER_COUNT} provider_timeout_ms={provider_timeout} playback_timeout_ms={playback_timeout} "
+        f"providers={VISIBLE_EXPECTED} provider_timeout_ms={provider_timeout} playback_timeout_ms={playback_timeout} "
         "presentation=quality-bearing-title+name badges=preserved legacy_15s_publisher=dormant"
     )
     return 0

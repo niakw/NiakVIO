@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "audited_at": "2026-09-09",
+  "audited_at": "2026-09-16",
   "capability_state_vocabulary": [
     "native",
     "bridge",
@@ -890,5 +890,63 @@
     "user_tmdb_credential_required": false,
     "secret_projection_to_provider_javascript": false,
     "rule": "Preserve TMDB and IMDb identity as one media identity contract. A client may provide equivalent hydration through a host metadata bridge or an audited runtime metadata capability, but must not require an end-user TMDB credential."
+  },
+  "observed_native_differences": {
+    "evidence_date": "2026-09-16",
+    "niakvio_sha": "6b28f3b2c53f5ca6cfb4bc11a3af139c21d6dee1",
+    "runs": {
+      "android": 35033132967,
+      "ios": 35033132980,
+      "desktop": 35033133048
+    },
+    "anti_inference_rules": [
+      "Provider extraction, client projection and player readiness are independent verdicts; a player failure never erases a positive provider extraction.",
+      "A red exhaustive matrix is not a provider-wide failure when the same platform artifact contains count>0 rows.",
+      "TV late-result/stale symptoms must not be generalized to Desktop: the 2026-09-16 macOS user test observed correct reset after changing work.",
+      "Quality shown to the client must be the final post-sanitizer quality; source/declaration quality cannot remain in title when media proof changes it.",
+      "Language/badges require stream-level evidence. Provider catalogue language is a capability hint, not proof that a returned media track is French/VO/VF."
+    ],
+    "devices": [
+      {
+        "device": "Android TV",
+        "artifact": "native-tv-full-35033132967 (~613 MB; job diagnostics + user device evidence)",
+        "provider_extraction": "User TV: Interstellar Purstream/Papadustream/Castle/StreamZo/Kehflix; HOTD S1E2 Purstream/StreamZo/Castle/VidRock/HindMoviez; Hell Mode S2E12 French-Manga/VoirAnime.homes.",
+        "player": "User-visible streams exist; provider/player verdict must remain per-row.",
+        "ux": "Common TV defects: non-uniform title, duplicated/conflicting quality, Inconnue placeholder, language/badge mismatch, late rows without badges, no visible 4K provider.",
+        "classification": "real product UX + provider coverage work; runner red does not cancel user positives"
+      },
+      {
+        "device": "Android Mobile",
+        "artifact": "native-mobile-android-full-35033132967",
+        "provider_extraction": "2073 results; VidRock count>0 on movie + TV.",
+        "player": "2/2 extracted VidRock rows fail only at Activity launch: Unable to resolve cmp=com.nuvio.app/.MainActivity.",
+        "ux": "Launcher diagnostic must resolve installed applicationId independently from Kotlin namespace.",
+        "classification": "Lab launcher false red after positive extraction"
+      },
+      {
+        "device": "iOS",
+        "artifact": "native-mobile-ios-full-35033132980",
+        "provider_extraction": "3299 results; 89 count>0 (VidRock 58, VoirAnime 31).",
+        "player": "89/89 production-player probes ready; exhaustive Hub-46 gate success.",
+        "ux": "Ktor/Darwin path is a positive control against simultaneous provider-bundle failure.",
+        "classification": "native green positive control"
+      },
+      {
+        "device": "macOS",
+        "artifact": "native-desktop-full-macos-35033133048 + user testmac1609 logs",
+        "provider_extraction": "Artifact: HindMoviez movie count=4; VidRock movie=1 + TV=1. User UI: VidRock visible on Interstellar/HOTD, Hell Mode zero.",
+        "player": "Artifact 6/6 mpv_create_failed; user log player attach -> mpv_create failed and visible VidRock does not launch.",
+        "ux": "User work-change test resets streams correctly. Logs separately show WookaFR DNS failure and MovieBox/Workers.dev timeouts.",
+        "classification": "positive extraction + real macOS player/client blocker; no evidence of current stale reset bug on macOS"
+      },
+      {
+        "device": "Windows",
+        "artifact": "native-desktop-full-windows-35033133048",
+        "provider_extraction": "2116 results; HindMoviez + VidRock positive on movie and TV (4 positive result rows / 10 streams).",
+        "player": "9 ready / 1 timeout.",
+        "ux": "Exhaustive matrix red must not be reported as Desktop-wide zero.",
+        "classification": "native positives; matrix coverage red"
+      }
+    ]
   }
 }

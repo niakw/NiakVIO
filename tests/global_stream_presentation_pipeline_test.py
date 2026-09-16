@@ -47,8 +47,9 @@ for provider in ("purstream", "movix", "cineby", "animepahe", "goated"):
     assert output.index("NUVIO_GLOBAL_STREAM_FACTS_V1") < output.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1"), provider
     assert output.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1") < output.index("NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1"), provider
     assert output.index("NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1") < output.index("NUVIO_GLOBAL_STREAM_PRESENTATION_V1"), provider
-    assert output.index("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") < output.index("NUVIO_GLOBAL_PROVIDER_BRANDING_V1"), provider
-    assert output.index("NUVIO_GLOBAL_PROVIDER_BRANDING_V1") < output.index("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */"), provider
+    assert output.index("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") < output.index("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */"), provider
+    assert output.index("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */") < output.index("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1"), provider
+    assert output.index("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1") < output.index("NUVIO_GLOBAL_PROVIDER_BRANDING_V1"), provider
     assert any(
         row.get("path") == GLOBAL_MEDIA_TYPE_RESOLUTION
         and row.get("scope") == "global_media_type_resolution"
@@ -128,8 +129,8 @@ p.getStreams('157336','movie',undefined,undefined).then(function(rows){
     # V23 keeps the title uniform: provider + strongest proven quality only.
     # Language remains in the structured fields, badges and description.
     assert native["row"]["title"] == "Generic Core Test - 1080p", native
-    assert native["row"]["language"] == "VO", native
-    assert "🌐 VO" in native["row"]["description"], native
+    assert not native["row"].get("language"), native
+    assert "🌐 VO" not in native["row"]["description"], native
     assert native["row"]["name"] == native["row"]["title"], native
     assert native["row"]["duration"] == 169, native
     assert "Interstellar • 2014" in native["row"]["description"], native

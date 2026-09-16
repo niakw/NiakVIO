@@ -339,7 +339,7 @@ export function normalizeLanguage(stream = {}, provider = {}) {
     stream.language ?? stream.lang ?? stream.audioLanguage ?? stream.audio_language ??
     stream.audioTrack ?? stream.audio_track ?? stream.playerLanguage ?? stream.player_language ?? stream.dub,
   );
-  const hints = [stream.description, stream.title, stream.sourceLabel, stream.filename].map(clean).filter(Boolean).join(" ").toUpperCase();
+  const hints = [stream.language, stream.languages, stream.languageTracks, stream.audioLanguage, stream.audio_languages, stream.audioTracks].map(clean).filter(Boolean).join(" ").toUpperCase();
   const vfProvider = isVfProvider(provider);
   const upper = explicit?.toUpperCase() ?? "";
   const isMulti = (text) => /\bMULTI(?:[- ]?AUDIO|LANG(?:UE)?S?)?\b|\bDUAL(?:[- ]?AUDIO)?\b/.test(text);

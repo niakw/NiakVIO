@@ -56,7 +56,7 @@ for row in rows:
         weak.append(provider_id)
     branding = text.rfind("/* STARTFIX:CORE.PROVIDER_BRANDING.V1 */")
     sanitizer = text.rfind(sanitizer_start)
-    if branding >= 0 and sanitizer <= branding:
+    if branding >= 0 and branding <= sanitizer:
         weak.append(provider_id)
 
     compact = "".join(text.split())
@@ -90,5 +90,5 @@ assert not weak, f"providers missing current V6/V7 fail-closed ownership/policy:
 print(
     "global stream output guard passed: "
     f"active={len(active_rows)} disabled_retained={len(disabled_rows)} visible={len(rows)} "
-    f"managed_terminal_sanitizer={len(rows)} startfix_v3=true fail_closed_v6=true v7_extension_accepted=true"
+    f"managed_media_sanitizer={len(rows)} startfix_v3=true fail_closed_v6=true v7_extension_accepted=true final_branding_after_media=true"
 )
