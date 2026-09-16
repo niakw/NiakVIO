@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/temp-cross-device-audit-fix.yml'
       - 'scripts/temp_cross_device_audit_fix_20260916.py'
+      - 'scripts/temp_cross_device_audit_fix_20260916_retry.py'
       - 'tests/cross_device_user_audit_regression_test.py'
 
 permissions:
@@ -32,7 +33,7 @@ jobs:
       - name: Apply cross-device corrections
         run: |
           set -euo pipefail
-          python3 scripts/temp_cross_device_audit_fix_20260916.py
+          python3 scripts/temp_cross_device_audit_fix_20260916_retry.py
           python3 scripts/render_platform_runtime_contracts.py
           python3 -m py_compile \
             scripts/apply_provider_overrides.py \
@@ -69,28 +70,27 @@ jobs:
           mkdir -p automation/evidence/cross-device-20260916
           provider_path() {
             python3 - "$1" <<'PY'
-          import json,sys
+          import json,sys,os,urllib.parse
           pid=sys.argv[1].casefold()
           data=json.load(open('manifest.json',encoding='utf-8'))
-          for row in data.get('scrapers') or data.get('providers') or []:
+          rows=data.get('scrapers') or data.get('providers') or []
+          for row in rows:
               rid=str(row.get('id') or row.get('canonicalId') or row.get('scraper',{}).get('id') or '').casefold()
-              if rid==pid:
-                  print(row.get('file') or row.get('url') or row.get('path') or '')
-                  raise SystemExit(0)
+              if rid!=pid: continue
+              ref=str(row.get('file') or row.get('url') or row.get('path') or row.get('source') or '')
+              if '/providers/' in ref: ref='providers/'+ref.split('/providers/',1)[1]
+              elif ref.startswith('providers/'): pass
+              else: ref='providers/'+os.path.basename(urllib.parse.urlparse(ref).path)
+              print(ref)
+              raise SystemExit(0)
           raise SystemExit(2)
           PY
           }
           probe() {
             local pid="$1" fixture="$2" out="automation/evidence/cross-device-20260916/${pid}.jsonl"
-            local ref path
-            ref="$(provider_path "$pid")" || { echo "FIELD_TARGET_PROBE provider=$pid state=missing_manifest" | tee "$out"; return 0; }
-            path="$ref"
-            path="${path#./}"
-            path="${path#https://raw.githubusercontent.com/niakw/NiakVIO/}"
-            if [[ "$path" == */providers/* ]]; then path="providers/${path##*/providers/}"; fi
-            if [[ ! -f "$path" ]]; then
-              path="providers/$(basename "$ref")"
-            fi
+            local path
+            path="$(provider_path "$pid")" || { echo "FIELD_TARGET_PROBE provider=$pid state=missing_manifest" | tee "$out"; return 0; }
+            if [[ ! -f "$path" ]]; then echo "FIELD_TARGET_PROBE provider=$pid state=missing_file path=$path" | tee "$out"; return 0; fi
             echo "FIELD_TARGET_PROBE_BEGIN provider=$pid path=$path fixture=$fixture" | tee "$out"
             timeout 90s node scripts/nuvio_tv_probe_tmdb_ci.cjs "$path" "$fixture" 2>&1 | tee -a "$out" || true
             echo "FIELD_TARGET_PROBE_END provider=$pid" | tee -a "$out"
@@ -108,7 +108,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -f scripts/temp_cross_device_audit_fix_20260916.py .github/workflows/temp-cross-device-audit-fix.yml
+          rm -f scripts/temp_cross_device_audit_fix_20260916.py scripts/temp_cross_device_audit_fix_20260916_retry.py .github/workflows/temp-cross-device-audit-fix.yml
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add -A
