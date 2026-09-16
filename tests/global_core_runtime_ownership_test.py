@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Global runtime/client adaptations must stay Core-owned across all 96 bundles."""
+"""Global runtime/client adaptations must stay Core-owned across every visible provider bundle."""
 from __future__ import annotations
 
 import json
@@ -8,7 +8,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count
+from current_provider_scope import visible_provider_count
 
 OVERRIDES = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 MANIFEST = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
@@ -61,7 +61,10 @@ for forbidden in ("streamflix", "movix", "vidrock", "cineby", "coflix"):
     assert forbidden not in SANITIZER_V8.casefold(), forbidden
 
 rows = MANIFEST.get("scrapers") or []
-assert len(rows) == active_provider_count()
+# manifest.json is the visible catalogue: active providers in providers/ plus
+# disabled providers in provider-disabled/. Comparing it to active-only scope
+# incorrectly fails whenever a legitimate disabled row exists.
+assert len(rows) == visible_provider_count()
 for row in rows:
     provider_id = str(row.get("id") or "")
     path = ROOT / str(row.get("filename") or "")
@@ -78,4 +81,4 @@ for row in rows:
     assert text.count("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */") == 1, provider_id
     assert text.count("/* CLOSEFIX:CORE.STREAM_SANITIZER.V6 */") == 1, provider_id
 
-print("GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers=96 timers=core 403=core sanitizer_v8=strict provider_specific_runtime_hacks=forbidden")
+print(f"GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers={len(rows)} timers=core 403=core sanitizer_v10=correlated-handoff provider_specific_runtime_hacks=forbidden")
