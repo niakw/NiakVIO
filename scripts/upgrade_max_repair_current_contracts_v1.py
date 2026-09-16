@@ -46,7 +46,10 @@ def patch() -> bool:
 
     wooka = patches["wookafr"]
     add_script(wooka, WOOKA_DECODER)
+    wooka["capability"] = "mixed_embed_resolver"
+    wooka["preserve_embed_urls"] = True
     add_note(wooka, "Current lecteurvideo embeds encode player URLs in showVideo(base64,...); Wooka decodes those provider-local seeds before the existing bounded shared crawler and terminal guards.")
+    add_note(wooka, "When the identity-qualified Wooka path reaches lecteurvideo but no direct media is extractable, the provider preserves the freshly decoded player embeds as a fallback instead of returning a false zero; the cache is reset per getStreams call to prevent cross-title leakage.")
 
     vidlove = patches["vidlove"]
     add_script(vidlove, VIDLOVE_SELECTOR)
@@ -116,6 +119,8 @@ def validate() -> None:
     wooka = patches["wookafr"]
     if WOOKA_DECODER not in (wooka.get("provider_lego_scripts") or []):
         raise AssertionError("Wooka showVideo decoder missing")
+    if wooka.get("capability") != "mixed_embed_resolver" or wooka.get("preserve_embed_urls") is not True:
+        raise AssertionError("Wooka mixed embed contract missing")
 
     vidlove = patches["vidlove"]
     if VIDLOVE_SELECTOR not in (vidlove.get("provider_lego_scripts") or []):
