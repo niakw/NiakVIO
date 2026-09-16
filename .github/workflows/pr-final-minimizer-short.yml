@@ -37,19 +37,15 @@ jobs:
         with: {node-version: '24', package-manager-cache: false}
       - run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Register and validate safe recovery Lego ownership
+      - name: Patch owner source and validate recovery registration
         shell: bash
         run: |
           set -euo pipefail
           python3 -m py_compile \
-            scripts/provider_patches/non_display_recovery_html_security_v3.py \
-            scripts/provider_patches/animesamaco_nondisplay_security_v3.py \
-            scripts/provider_patches/animevostfr_nondisplay_security_v3.py \
-            scripts/provider_patches/coflix_nondisplay_security_v3.py \
-            scripts/provider_patches/neko_sama_nondisplay_security_v3.py \
-            scripts/provider_patches/sekai_nondisplay_security_v3.py \
-            scripts/provider_patches/voiranime_rip_nondisplay_security_v3.py \
+            scripts/upgrade_non_display_recovery_html_security_v1.py \
+            scripts/provider_patches/non_display_recovery_runtime_v1.py \
             scripts/register_non_display_recovery_v1.py
+          python3 scripts/upgrade_non_display_recovery_html_security_v1.py
           python3 scripts/register_non_display_recovery_v1.py
           python3 tests/provider_upstream_semantic_guard_test.py
           python3 tests/provider_html_filter_security_test.py
@@ -160,9 +156,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -f .github/workflows/pr-final-minimizer-short.yml
+          rm -f \
+            .github/workflows/pr-final-minimizer-short.yml \
+            scripts/upgrade_non_display_recovery_html_security_v1.py \
+            scripts/provider_patches/non_display_recovery_html_security_v3.py \
+            scripts/provider_patches/animesamaco_nondisplay_security_v3.py \
+            scripts/provider_patches/animevostfr_nondisplay_security_v3.py \
+            scripts/provider_patches/coflix_nondisplay_security_v3.py \
+            scripts/provider_patches/neko_sama_nondisplay_security_v3.py \
+            scripts/provider_patches/sekai_nondisplay_security_v3.py \
+            scripts/provider_patches/voiranime_rip_nondisplay_security_v3.py
           git diff --name-only | tee /tmp/final-files.txt
-          if grep -Ev '^(PROVENANCE\.json|provider-overrides\.json|provider-v3-materialization\.json|providers/.*|manifest\.json|manifest-hub46\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|nuvio-client-id-state\.json|automation/PLATFORM-RUNTIME-CONTRACTS\.md|automation/non-display-recovery-exact-proof\.json|automation/non-display-recovery-parity\.json|\.github/workflows/pr-final-minimizer-short\.yml)$' /tmp/final-files.txt; then
+          if grep -Ev '^(PROVENANCE\.json|provider-overrides\.json|provider-v3-materialization\.json|providers/.*|manifest\.json|manifest-hub46\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|nuvio-client-id-state\.json|automation/PLATFORM-RUNTIME-CONTRACTS\.md|automation/non-display-recovery-exact-proof\.json|automation/non-display-recovery-parity\.json|scripts/provider_patches/non_display_recovery_runtime_v1\.py|scripts/upgrade_non_display_recovery_html_security_v1\.py|scripts/provider_patches/non_display_recovery_html_security_v3\.py|scripts/provider_patches/.*_nondisplay_security_v3\.py|\.github/workflows/pr-final-minimizer-short\.yml)$' /tmp/final-files.txt; then
             echo 'Unexpected path changed by secured provider finalization' >&2
             exit 1
           fi
