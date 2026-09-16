@@ -4,7 +4,8 @@ import runpy
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
-runpy.run_path(str(ROOT/'scripts/temp_cross_device_audit_fix_20260916.py'), run_name='__main__')
+ns=runpy.run_path(str(ROOT/'scripts/temp_cross_device_audit_fix_20260916.py'), run_name='cross_device_base')
+ns['main']()
 
 p=ROOT/'tests/global_stream_presentation_test.py'
 t=p.read_text(encoding='utf-8')
