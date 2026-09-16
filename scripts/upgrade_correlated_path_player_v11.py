@@ -8,8 +8,8 @@ APPLY = ROOT / "scripts/apply_provider_overrides.py"
 SAFETY = ROOT / "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 OWNERSHIP = ROOT / "tests/global_core_runtime_ownership_test.py"
 
-OLD_RULE = 'if(/\\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path))return true;\n    if(/\\/(?:shell|video|stream)(?:\\.php|[/?#.-]|$)/i.test(path)){'
-NEW_RULE = 'if(/\\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path))return true;\n    if(/^\\/stream\\/(?:[^/?#]+\\/){1,4}[^/?#]+\\/?$/i.test(path))return true;\n    if(/\\/(?:shell|video|stream)(?:\\.php|[/?#.-]|$)/i.test(path)){'
+OLD_RULE = 'if(/\\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path))return true;\n      if(/\\/(?:shell|video|stream)(?:\\.php|[/?#.-]|$)/i.test(path)){'
+NEW_RULE = 'if(/\\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path))return true;\n      if(/^\\/stream\\/(?:[^/?#]+\\/){1,4}[^/?#]+\\/?$/i.test(path))return true;\n      if(/\\/(?:shell|video|stream)(?:\\.php|[/?#.-]|$)/i.test(path)){'
 
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
