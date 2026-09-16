@@ -95,4 +95,19 @@ t=t.replace('== EXPECTED','== VISIBLE_EXPECTED')
 t=t.replace('f"providers={EXPECTED} provider_timeout_ms=', 'f"providers_visible={VISIBLE_EXPECTED} providers_active={ACTIVE_EXPECTED} provider_timeout_ms=')
 p.write_text(t,encoding='utf-8')
 
-print('retry: presentation, sanitizer, launcher and active/visible scope contracts aligned')
+# Global guard must protect the new owner order too: media validation first,
+# final client-visible branding afterwards. The old condition rejected all 46
+# rows solely because it required the opposite historical order.
+p=ROOT/'tests/global_stream_output_guard_test.py'
+t=p.read_text(encoding='utf-8')
+t=t.replace(
+    'if branding >= 0 and sanitizer <= branding:\n        weak.append(provider_id)',
+    'if branding >= 0 and branding <= sanitizer:\n        weak.append(provider_id)'
+)
+t=t.replace(
+    'managed_terminal_sanitizer={len(rows)} startfix_v3=true fail_closed_v6=true v7_extension_accepted=true',
+    'managed_media_sanitizer={len(rows)} startfix_v3=true fail_closed_v6=true v7_extension_accepted=true final_branding_after_media=true'
+)
+p.write_text(t,encoding='utf-8')
+
+print('retry: presentation, sanitizer, launcher, scope and global guard contracts aligned')
