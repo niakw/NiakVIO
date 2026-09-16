@@ -1,7 +1,7 @@
 # NiakVIO — durable secondary task ledger
 
 This file is a durable anti-forgetting ledger for secondary work. `MEMORY.md` remains the recovery source of truth and must mirror this ledger at every checkpoint.
-Last audited against the active repair branch: 2026-09-13.
+Last audited against current `main`: 2026-09-16.
 
 ## Priority rule
 
@@ -35,9 +35,9 @@ Last audited against the active repair branch: 2026-09-13.
 
 - **Hub-46 native transport**
   - Keep global catalogue at 96 providers while Labs use the exact physical 46-provider scope.
-  - Finish native workflow wiring to `native-hub46/manifest.json`, including iOS and explicit Desktop/Android consistency.
+  - Keep all five Native workflows wired consistently to the immutable Hub-46 transport; Android, iOS and Desktop wiring is implemented.
   - The transport manifest must end in literal `manifest.json` for official Nuvio repository base resolution.
-  - Regenerate Hub-46 against the final repaired provider SHA; do not certify Labs against the historical infrastructure-proof provider SHA.
+  - Current Hub-46 transport is pinned to immutable provider publication `425756cf1646380fb8172f380d176758c3734ce6`; preserve the pinned-blob invariant and repin only after a deliberately accepted new provider publication.
 
 - **Five native Labs on one frozen SHA**
   - TV Android / NuvioTV.
@@ -89,10 +89,10 @@ Last audited against the active repair branch: 2026-09-13.
   - Remove obsolete `temp-*.yml` workflows after extracting useful evidence.
   - Never rearm stale contradictory cleanup workflows such as removal of the weekly upstream watch.
   - Remove obsolete temp scripts/triggers only after confirming they are not referenced by tests/docs.
-  - Keep branch cleanup for the end; do not touch `main` during the current `fix/labs-5.21.44-20260912` repair phase without explicit authorization.
+  - Use `main` as the only active write/publication target. Current branches are `main` and `brain-learning/proposals`; branch cleanup is otherwise complete.
 
 - **Manifests, projections and fixed point**
-  - Keep root 96-provider catalogue and all projections internally consistent.
+  - Keep the 96-provider recovery census (46 current + 50 historical) and all current 46-row projections internally consistent.
   - Regenerate root/VF/no-anime/VF-no-anime/Hub-46 projections from the same final provider state.
   - Validate content hashes, source-qualified filenames, deterministic rebuild, reverse reconstruction and fixed-point/idempotence.
   - Do not certify stale pinned bytes.

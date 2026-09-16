@@ -1,3 +1,16 @@
+## 5.21.48 — Hub-46 immuable, publication stable et Labs natifs
+
+- Stabilise le catalogue courant à **46 lignes** (44 actives + 2 désactivées conservées) tout en gardant le census de récupération de **96 Provider Objects** avec 50 historiques.
+- Finalise la publication Provider v3/minimizer en fixed point et conserve les bundles adressés par contenu.
+- Restaure le transport Native Hub-46 immuable : `native-hub46/manifest.json` pointe vers le commit provider `425756cf1646380fb8172f380d176758c3734ce6`, et un test vérifie que chaque blob épinglé existe réellement.
+- Ferme la régression `loaded=0` Native causée par des URLs provider épinglées vers un ancien SHA où les nouveaux filenames n’existaient pas.
+- Valide PR #120 via Provider Non-Regression, Media Type & Playback, Workflow Gate, Verify & Publish et CodeQL avant merge normal.
+- Conserve le timeout Core à 25 s, les timers/runtime Desktop dans `CORE.RUNTIME_COMPAT.V1`, l’isolation A→B→C des générations et les réponses terminales 403 en fail-closed.
+- Lance les cinq Labs natifs de première classe : TV Android, Mobile Android, Mobile iOS, Desktop macOS et Desktop Windows, avec preuve exhaustive Hub-46 requise avant certification.
+- Ajoute des caches de prébuild exact-client pour les prochains Labs afin d’éviter les recompilations natives inutiles sans court-circuiter les tests runtime/matrice.
+- Corrige le parsing d’hôte de sécurité CodeQL #889 et conserve la validation CodeQL verte.
+- Réaligne les contrats/documentations courants sur `main` et 5.21.48 et retire les scripts/workflows de migration temporaires devenus obsolètes.
+
 ## 5.21.16 — ProviderBases propres, Learning autonome et finalisation pré-release
 
 - Formalise la reconstruction **knowledge-only** des ProviderBases : informations utiles et routes structurées sont conservées, mais le JavaScript exécutable tiers n'est pas utilisé comme base canonique.

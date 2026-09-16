@@ -356,6 +356,7 @@ def synchronize_global_version(version: str, manifest_path: pathlib.Path) -> Non
         for key in ("general", "vf"):
             row = manifest_meta.setdefault(key, {})
             row["version"] = version
+            row["name"] = versioned_manifest_name(row.get("name"), version)
         dump(catalog_path, catalog)
 
     for path in (

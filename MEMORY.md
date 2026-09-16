@@ -1,8 +1,24 @@
 # NiakVIO — Recovery Memory
 
-Last authoritative checkpoint: 2026-09-07 Europe/Paris.
+Last authoritative checkpoint: 2026-09-16 Europe/Paris.
 
 This file is the durable recovery source of truth for the active NiakVIO work. Prefer current repository state and exact GitHub Actions/native logs over older chat summaries. Update this file automatically at every important correction, failure, publication, native proof, security proof, or architecture decision before moving to the next risky step.
+
+## 2026-09-16 — authoritative current checkpoint
+
+- Current public release is **5.21.48**. `manifest.json`, VF/no-anime projections, package metadata and release hashes are on 5.21.48.
+- **`main` is the only active write/publication target.** `brain-learning/proposals` remains proposal storage only. Current branch inventory is now exactly these two branches; do not recreate a persistent workbench/repair branch.
+- Recovery census is **96 Provider Objects = 46 current rows + 50 historical archive rows**. Current physical manifest has **44 active + 2 disabled-retained** rows; active Native scope is defined by `automation/evidence/hub-lab-matrix-46.json`.
+- PR **#120** restored immutable Hub-46 provider transport and was merged normally at `e401e61688dd79996002f9e37b9abfc923846735`. Native transport pins provider publication **`425756cf1646380fb8172f380d176758c3734ce6`** and `tests/native_hub46_transport_manifest_test.py` proves every pinned blob exists at that exact commit.
+- Final PR #120 gates were green: Provider Non-Regression, Media Type & Playback, Workflow Gate, Verify & Publish and CodeQL. CodeQL #889 is already fixed on main by `c60ec1871dc5d3b2217e69581d2c2a5a6615fc84`; do not duplicate it.
+- Full five-Lab validation was triggered from `6b28f3b2c53f5ca6cfb4bc11a3af139c21d6dee1`: Android TV+Mobile run **35033132967**, iOS run **35033132980**, Desktop macOS+Windows run **35033133048**. At this checkpoint all five runtime jobs are still executing their real corpus; do not call a platform green before its exhaustive Hub-46 matrix and evidence upload complete.
+- Future Native runs restore exact-client prebuild caches for TV Android, Mobile Android, iOS, macOS and Windows. Keys bind exact official-client SHA + OS/toolchain + relevant NiakVIO harness/native-manifest hash; no permissive `restore-keys`; runtime and matrix gates still execute.
+- `CORE.RUNTIME_COMPAT.V1` owns missing host timers (`setTimeout`/`clearTimeout`) and Desktop runtime portability globally. StreamZo/Frenchstream timer failures must not become provider-specific hacks. Core timeout remains **25 s**; A→B→C stale-generation suppression and HTTP 403 fail-closed remain mandatory.
+- Historical full32 regression/ZERO lists remain evidence, not an automatic mutation queue. Re-prove any regression against current 5.21.48 bytes. Named follow-ups retained from recent work include AnimeVOSTFR/Kurage/VoirAnime historical regression checks, HindMoviez timeout/search variability, AnimePahe runner/runtime I/O, and AnimeSalt browser-positive/runner-403 behavior. Nakios short/troll HLS remains correctly fail-closed.
+- Repository privacy audit found no tracked-content occurrence of the user’s obvious personal name/surname, personal Gmail address, Pollestres, Perpignan or LinkedIn profile URL. Git **commit author metadata** does contain a personal author identity/email on some commits; do not rewrite history while immutable SHAs/current Labs depend on it. Any history scrub must be a later dedicated repin/republication migration.
+- Current cleanup: `VALIDATION.json` is aligned to 5.21.48/main/current runs; Provider Non-Regression push policy is back on `main`; obsolete one-shot `temp_*` migration scripts and the dead workbench recovery finalizer are removed; provider catalogue visible release-name synchronization is repaired.
+
+**Everything below this checkpoint is retained as historical recovery evidence unless explicitly restated above or by newer repository/runtime evidence.**
 
 ## Repository topology / execution policy
 

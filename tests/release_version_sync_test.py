@@ -80,8 +80,8 @@ def write_release_fixture(root: pathlib.Path, version: str) -> None:
         json.dumps(
             {
                 "manifestMeta": {
-                    "general": {"name": "General", "version": version},
-                    "vf": {"name": "VF", "version": version},
+                    "general": {"name": f"NiakVIO v{version}", "version": version},
+                    "vf": {"name": f"NiakVIO v{version} — VF uniquement", "version": version},
                 }
             }
         )
@@ -114,6 +114,8 @@ with tempfile.TemporaryDirectory() as tmp:
     catalog = json.loads((root / "provider_catalog.json").read_text())
     assert catalog["manifestMeta"]["general"]["version"] == "9.8.7"
     assert catalog["manifestMeta"]["vf"]["version"] == "9.8.7"
+    assert catalog["manifestMeta"]["general"]["name"] == "NiakVIO v9.8.7"
+    assert catalog["manifestMeta"]["vf"]["name"] == "NiakVIO v9.8.7 — VF uniquement"
     assert "nuvio_client_compatibility" not in sources
 
 # Regression lock for the real failure mode that occurred during the main
