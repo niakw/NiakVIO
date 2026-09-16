@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 from typing import Any
-import non_display_recovery_followup_v2 as common
+import non_display_recovery_followup_v2_fixed as common
 
 MANAGED_FIX_ID = "PROVIDER.SEKAI.NONDISPLAY.RECOVERY.V2"
 MARKER = common.MARKER
