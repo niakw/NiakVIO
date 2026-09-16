@@ -309,7 +309,28 @@ async function canonicalResolution(id,input,metadata,season,episode,semantic){
   return null;
 }
 function objectRequest(a){return a&&typeof a==="object"&&!Array.isArray(a)}
-function provisional(a){
+/* NUVIO_REQUEST_SCOPED_METADATA_HANDOFF_V1 */
+function matchingIncomingContext(a){
+  try{
+    if(!g||!g.__nuvioMediaContext||typeof g.__nuvioMediaContext!=="object")return null;
+    var ctx=g.__nuvioMediaContext,first=a&&a[0],obj=objectRequest(first),q=obj?first:null;
+    var input=obj?s(q.mediaType||q.type||q.category||"movie"):s(a&&a[1]||"movie");
+    var namespace=namespaceOf(input),raw=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first),source=sourceIdentity(raw);
+    if(source.kind==="tmdb"){
+      if(s(ctx.tmdbId)!==source.id)return null;
+    }else if(source.kind==="imdb"){
+      if(s(ctx.imdbId).toLowerCase()!==source.id)return null;
+    }else return null;
+    var ctxNamespace=s(ctx.tmdbNamespace).toLowerCase();
+    if(ctxNamespace&&ctxNamespace!==namespace)return null;
+    var metadata=ctx.tmdbMetadata;
+    if(!metadata||typeof metadata!=="object")return null;
+    var declaredId=s(metadata.__nuvioTmdbId||metadata.id);
+    if(source.kind==="tmdb"&&declaredId&&declaredId!==source.id)return null;
+    return{tmdbId:s(ctx.tmdbId),imdbId:s(ctx.imdbId).toLowerCase(),tmdbNamespace:ctxNamespace||namespace,tmdbMetadata:metadata};
+  }catch(_){return null}
+}
+function provisional(a,incomingContext){
   var first=a[0],obj=objectRequest(first),q=obj?Object.assign({},first):null;
   var input=obj?s(q.mediaType||q.type||q.category||"movie"):s(a[1]||"movie");
   var raw=s(input).toLowerCase(),namespace=namespaceOf(input);
@@ -343,7 +364,7 @@ function provisional(a){
     imdbId:resolvedImdbId,
     tmdbNamespace:namespace,
     tmdbIdentity:namespace+":"+(resolvedTmdbId||resolvedImdbId||source.id),
-    tmdbMetadata:null,
+    tmdbMetadata:incomingContext&&incomingContext.tmdbMetadata||null,
     canonicalMediaType:type,
     tmdbResolutionDegraded:true,
     tmdbVerificationDeferred:true,
@@ -443,7 +464,7 @@ function requiresSemanticPreflight(a){
   return semantic.indexOf(namespace)<0;
 }
 
-async function resolve(a){
+async function resolve(a,incomingContext){
   var first=a[0],obj=objectRequest(first),q=obj?Object.assign({},first):null;
   var input=obj?s(q.mediaType||q.type||q.category||"movie"):s(a[1]||"movie");
   var namespace=namespaceOf(input);
@@ -453,7 +474,7 @@ async function resolve(a){
   // classification so transport aliases can never suppress a valid anime match.
   // Per-request isolation: canonical type/metadata must come only from the
   // current work request (plus TMDB), never from a previous getStreams call.
-  var metadata=obj&&(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q);
+  var metadata=(obj&&(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q))||(incomingContext&&incomingContext.tmdbMetadata)||null;
   var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first),source=sourceIdentity(id);
   var season=obj?q.season:a[2],episode=obj?q.episode:a[3];
   var resolved=await canonicalResolution(id,input,metadata,season,episode,semantic);
@@ -599,6 +620,7 @@ function install(o,k){
       // The previous fetch wrapper stays installed during settlement grace, so a
       // stale catch/retry still hits its token-bound wrapper and is rejected.
       if(g){priorController=g.__nuvioProviderAbortController||null;priorDone=g.__nuvioProviderInvocationDone||null}
+      var incomingContext=matchingIncomingContext(originalArgs);
       if(g&&Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"))delete g.__nuvioMediaContext;
       if(g){
         var priorSerial=Number(g.__nuvioProviderRequestSerial||requestSerial);
@@ -628,7 +650,7 @@ function install(o,k){
       // Gate 2: build request-local provisional transport without TMDB by default.
       // A provider whose declared DATA contract requires a title-based catalogue
       // lookup is the only exception: resolve TMDB once before its first call.
-      var a=provisional(originalArgs);
+      var a=provisional(originalArgs,incomingContext);
       if(!a||deadlineExpired(requestDeadline))return [];
       if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
       if(a.__nuvioContext)a.__nuvioContext.requestToken=requestToken;
@@ -639,7 +661,7 @@ function install(o,k){
       var needsIdNormalization=requestHasExternalIdentity(originalArgs);
       var needsSemanticPreflight=requiresSemanticPreflight(originalArgs);
       if(needsPlanMetadata||needsIdNormalization||needsSemanticPreflight){
-        preResolved=await resolve(originalArgs);
+        preResolved=await resolve(originalArgs,incomingContext);
         if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
         // Ambiguous anime-via-tv/movie transport is fail-closed before provider
         // network unless canonical metadata positively classifies the work.
@@ -662,7 +684,7 @@ function install(o,k){
       // with verified context, so the same verified object is reused with no
       // second metadata call.
       if(!verified){
-        verified=preResolved||await resolve(originalArgs);
+        verified=preResolved||await resolve(originalArgs,incomingContext);
         if(!verified||deadlineExpired(requestDeadline))return [];
         if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
       }

@@ -177,3 +177,42 @@ const provider=require(process.argv[2]);
 ''')
 
 print('global media resolver: runtime-only TMDB credentials, launch gate, canonical anime + tv/movie transport, and deferred verification passed')
+
+
+# REQUEST_SCOPED_METADATA_HANDOFF_V1_TEST
+metadata_echo_base = mod.apply("""
+\"use strict\";
+async function getStreams(tmdbId, mediaType) {
+  const ctx=globalThis.__nuvioMediaContext||{};
+  const meta=ctx.tmdbMetadata||{};
+  return [{url:\"https://media.example/ok.m3u8\", seenTitle:String(meta.title||meta.name||\"\")}];
+}
+module.exports={getStreams};
+""", options={"semantic_types": ["movie", "tv"]})
+run_case(metadata_echo_base, """
+let calls=0;
+global.fetch=async(url)=>{calls++;throw new Error('matching request metadata must avoid TMDB network: '+url)};
+global.__nuvioMediaContext={tmdbId:'157336',tmdbNamespace:'movie',tmdbMetadata:{id:157336,title:'Interstellar',genres:[{id:12,name:'Adventure'}],original_language:'en',keywords:{keywords:[]}}};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams('157336','movie');
+  if(!Array.isArray(value)||!value.length||value[0].seenTitle!=='Interstellar')throw new Error('matching metadata was not handed off: '+JSON.stringify(value));
+  if(calls!==0)throw new Error('matching metadata caused network '+calls);
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+run_case(metadata_echo_base, """
+let calls=0;
+global.fetch=async(url)=>{
+  calls++;
+  if(!String(url).includes('/movie/157336?'))throw new Error('unexpected endpoint '+url);
+  return {ok:true,status:200,json:async()=>({id:157336,title:'Interstellar',genres:[{id:12,name:'Adventure'}],original_language:'en',keywords:{keywords:[]}})};
+};
+global.__nuvioMediaContext={tmdbId:'1396',tmdbNamespace:'tv',tmdbMetadata:{id:1396,name:'Breaking Bad',genres:[{id:18,name:'Drama'}],original_language:'en'}};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams('157336','movie');
+  if(!Array.isArray(value)||!value.length)throw new Error('stale-context case suppressed output');
+  if(value[0].seenTitle)throw new Error('stale metadata leaked: '+JSON.stringify(value));
+  if(calls!==1)throw new Error('stale context did not verify current identity exactly once: '+calls);
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
