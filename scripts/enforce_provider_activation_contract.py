@@ -22,6 +22,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "manifest.json"
 DEFAULT_CERTIFICATION = ROOT / "automation/provider-playable-certification.json"
+LANES = {"movie", "tv", "anime"}
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -37,6 +38,13 @@ def dump(path: Path, value: Any) -> None:
 
 def cid(value: object) -> str:
     return str(value or "").strip().casefold().replace("_", "-")
+
+
+def semantic_types(row: dict[str, Any]) -> set[str]:
+    values = row.get("canonicalSupportedTypes")
+    if not isinstance(values, list) or not values:
+        values = row.get("supportedTypes") or []
+    return {cid(value) for value in values if cid(value) in LANES}
 
 
 def file_sha(row: dict[str, Any]) -> str | None:
@@ -65,12 +73,16 @@ def exact_certified(row: dict[str, Any], cert: dict[str, Any] | None) -> tuple[b
         return False, "bundle_missing"
     if str(cert.get("bundleSha256") or "") != current_sha:
         return False, "bundle_sha_mismatch"
-    required = {cid(value) for value in cert.get("requiredTypes") or [] if cid(value)}
-    certified = {cid(value) for value in cert.get("certifiedTypes") or [] if cid(value)}
-    if not required:
+    manifest_required = semantic_types(row)
+    cert_required = {cid(value) for value in cert.get("requiredTypes") or [] if cid(value) in LANES}
+    certified = {cid(value) for value in cert.get("certifiedTypes") or [] if cid(value) in LANES}
+    if not manifest_required:
         return False, "no_declared_semantic_lane"
-    if not bool(cert.get("certified")) or not required <= certified:
-        return False, "missing_playable_lane:" + ",".join(sorted(required - certified))
+    if cert_required != manifest_required:
+        return False, "certificate_lane_scope_mismatch"
+    missing = manifest_required - certified
+    if not bool(cert.get("certified")) or missing:
+        return False, "missing_playable_lane:" + ",".join(sorted(missing))
     return True, "exact_bundle_all_lanes_playable"
 
 
