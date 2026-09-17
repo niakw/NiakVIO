@@ -52,6 +52,19 @@ for forbidden in (
 ):
     assert forbidden not in text, f"Domain Refresh must never invoke Repair: {forbidden}"
 
+# Domain Refresh is strictly scoped to providers whose address authority changed.
+# It may validate the global publication fixed point, but it may never use its
+# maintenance window to transform/prune unrelated provider generations.
+assert "scripts/validate_domain_refresh_non_destructive.py" in text
+assert "scripts/reconcile_domain_refresh_provenance.py" in text
+assert "provider-v3-materialization.before.json" in text
+assert "provenance.before.json" in text
+assert 'ARGS+=(--provider "$provider_id")' in text
+assert 'reconcile_provider_domain_metadata.py --rebuild "${ARGS[@]}"' in text
+assert "python scripts/prune_unreferenced_providers.py" not in text
+assert "python scripts/finalize_provider_v3_minimizer.py --check" in text
+assert "python scripts/finalize_provider_v3_minimizer.py\n" not in text
+
 commit_lines = [line.strip() for line in text.splitlines() if "git commit -m " in line]
 assert len(commit_lines) == 2, commit_lines
 assert "chore(domains): stage Provider v3 domain generation" in commit_lines[0]
@@ -149,4 +162,4 @@ assert "fs27.lol" not in patch["runtime_domain_replacements"], "current host mus
 assert patch["runtime_domain_replacements"]["api.example.old"] == "api.example.new"
 assert patch["notes"] == ["must remain byte-for-byte unrelated"]
 
-print("CORE domain refresh v2 contract passed: hub registry authority + registry persistence + CONFIG-only rebuild + cache-safe bump + activation-neutral integrity")
+print("CORE domain refresh v2 contract passed: hub registry authority + scoped CONFIG-only rebuild + non-destructive proof preservation + activation-neutral integrity")
