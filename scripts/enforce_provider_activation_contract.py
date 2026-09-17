@@ -22,6 +22,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "manifest.json"
 DEFAULT_CERTIFICATION = ROOT / "automation/provider-playable-certification.json"
+DEFAULT_MINIMUM_BULK_YIELD = 0.75
+MIN_BULK_PROVIDER_COUNT = 8
 LANES = {"movie", "tv", "anime"}
 
 
@@ -132,12 +134,20 @@ def enforce(
         })
         rows.append(row)
     output = {**manifest, "scrapers": rows}
+    active_before = [cid(row.get("id")) for row in (manifest.get("scrapers") or []) if isinstance(row, dict) and row.get("enabled") is not False]
+    certified_before = [row["providerId"] for row in decisions if row["wasEnabled"] and row["exactCertified"]]
+    yield_ratio = (len(certified_before) / len(active_before)) if active_before else 1.0
     report = {
         "schemaVersion": 1,
         "authority": "provider-activation-contract-v1",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "manifestVersion": manifest.get("version"),
         "changed": changed,
+        "activeBefore": active_before,
+        "activeBeforeCount": len(active_before),
+        "exactCertifiedBefore": certified_before,
+        "exactCertifiedBeforeCount": len(certified_before),
+        "bootstrapYieldRatio": round(yield_ratio, 4),
         "keptActive": kept,
         "disabledNow": disabled,
         "reenabledNow": reenabled,
@@ -156,12 +166,21 @@ def main() -> int:
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--allow-reenable", action="store_true")
     parser.add_argument("--apply-lifecycle", action="store_true")
+    parser.add_argument("--minimum-bulk-yield", type=float, default=DEFAULT_MINIMUM_BULK_YIELD)
+    parser.add_argument("--require-yield", action="store_true", help="exit non-zero when a significant batch is below the architecture yield floor")
     args = parser.parse_args()
 
     manifest_path = args.manifest.resolve()
     certification = load(args.certification.resolve())
     manifest = load(manifest_path)
     output, report = enforce(manifest, certification, allow_reenable=args.allow_reenable)
+    minimum_yield = max(0.0, min(float(args.minimum_bulk_yield), 1.0))
+    significant_batch = int(report["activeBeforeCount"]) >= MIN_BULK_PROVIDER_COUNT
+    architecture_ok = (not significant_batch) or float(report["bootstrapYieldRatio"]) >= minimum_yield
+    report["minimumBulkYield"] = minimum_yield
+    report["significantBatch"] = significant_batch
+    report["architectureState"] = "auto-yield-sufficient" if architecture_ok else "architecture-defect-low-auto-yield"
+    report["massDisableBlocked"] = bool(significant_batch and not architecture_ok and report["disabledNow"])
     args.report.resolve().parent.mkdir(parents=True, exist_ok=True)
     dump(args.report.resolve(), report)
     print(
@@ -169,12 +188,21 @@ def main() -> int:
         f"active_after={len(report['activeAfter'])} disabled_now={len(report['disabledNow'])} "
         f"reenabled_now={len(report['reenabledNow'])} changed={str(report['changed']).lower()} apply={str(args.apply).lower()}"
     )
+    print(
+        "FIELD_PROVIDER_ACTIVATION_YIELD "
+        f"certified={report['exactCertifiedBeforeCount']}/{report['activeBeforeCount']} "
+        f"ratio={report['bootstrapYieldRatio']:.4f} floor={minimum_yield:.4f} "
+        f"architecture={report['architectureState']} mass_disable_blocked={str(report['massDisableBlocked']).lower()}"
+    )
     for row in report["decisions"]:
         if not row["exactCertified"]:
             print(
                 "FIELD_PROVIDER_ACTIVATION_UNCERTIFIED "
                 f"provider={row['providerId']} reason={row['reason']} action={row['action']}"
             )
+    if (args.apply or args.require_yield) and not architecture_ok:
+        print("FIELD_PROVIDER_ACTIVATION_REFUSED reason=architecture_yield_below_floor")
+        return 3
     if args.apply:
         dump(manifest_path, output)
         if args.apply_lifecycle:
