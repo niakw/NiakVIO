@@ -7,12 +7,12 @@ on:
       - .github/workflows/temp-kehflix-repair-v62e.yml
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 45
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
@@ -66,7 +66,7 @@ jobs:
           rows=[]
           for t in selected:
               r=q.run(t); rows.append(r)
-              print('V62E_LANE',json.dumps({k:r.get(k) for k in ['provider_id','semantic_type','status','debug_stage','raw','playable','verified','contradictions','duration_ms','debug_model','debug_fetches']},default=str,sort_keys=True))
+              print('V62E_LANE',json.dumps({k:r.get(k) for k in ['provider_id','semantic_type','status','debug_stage','raw','playable','verified','contradictions','duration_ms']},default=str,sort_keys=True))
           by={str(r.get('semantic_type') or '').casefold():r for r in rows}
           assert {'movie','tv','anime'} <= set(by), sorted(by)
           for lane in ('movie','tv','anime'):
@@ -75,3 +75,33 @@ jobs:
               assert int(r.get('verified') or 0)>0, (lane,r.get('verified'))
           print('V62E_KEHFLIX_ALL_LANES_OK movie=verified tv=verified anime=verified')
           PY
+
+      - name: Persist only verified Kehflix materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import subprocess
+          allowed_exact={
+              'provider-overrides.json','manifest.json','PROVENANCE.json',
+              'automation/provider-v3-materialization.json',
+          }
+          changed=[]
+          for line in subprocess.check_output(['git','status','--porcelain'],text=True).splitlines():
+              path=line[3:]
+              if ' -> ' in path: path=path.split(' -> ',1)[1]
+              changed.append(path)
+          bad=[p for p in changed if p not in allowed_exact and not p.startswith('providers/kehflix') and not p.startswith('health-output/')]
+          if bad:
+              raise SystemExit('V62E_UNEXPECTED_DIFF '+repr(bad))
+          print('V62E_CHANGED',changed)
+          PY
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add provider-overrides.json manifest.json PROVENANCE.json automation/provider-v3-materialization.json 'providers/kehflix'*.js
+          if git diff --cached --quiet; then
+            echo 'V62E_PERSIST no material changes'
+            exit 0
+          fi
+          git commit -m 'fix(providers): verify Kehflix anime terminal media'
+          git push origin HEAD:fix/non-display-recovery-20260916
