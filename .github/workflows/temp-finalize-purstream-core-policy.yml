@@ -52,6 +52,12 @@ jobs:
           new = '''provider_owned_tokens = (\n    'function badHost(u){return u.includes("example.com")};',\n    'globalThis.console.log("provider debug");',\n    'globalThis.getStreams=async function(){return []};',\n)\npositions = [provider_slice.find(token) for token in provider_owned_tokens]\nassert all(position >= 0 for position in positions), positions\nassert positions == sorted(positions), positions\n'''
           if text.count(old) != 1:
               raise SystemExit('provider ownership assertion anchor drifted')
+          text = text.replace(old, new, 1)
+
+          old = 'b\'var expected="\\xf0\\x9f\\x92\\xa5 MovieBlast \\xe2\\x80\\xa2 1080p VFF \\xe2\\x80\\xa2 raw upstream title";\'\n        b\'if(!r||r.name!==expected||r.title!==expected||r.quality!=="1080p"||r.language!=="VF"||r.format!=="HLS")\'\n'
+          new = 'b\'var expected="\\xf0\\x9f\\x92\\xa5 MovieBlast - 1080p";\'\n        b\'if(!r||r.name!==expected||r.title!==expected||r.sourceName!=="1080p VFF"||r.sourceTitle!=="raw upstream title"||r.quality!=="1080p"||r.language!=="VF"||r.format!=="HLS")\'\n'
+          if text.count(old) != 1:
+              raise SystemExit('stale Branding V17 expectation anchor drifted')
           test.write_text(text.replace(old, new, 1), encoding='utf-8')
           PY
 
