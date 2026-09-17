@@ -19,56 +19,76 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Align stale runtime revision contract and normalize policy
+      - name: Normalize Core policy and rebuild published Core
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('scripts/normalize_core_media_policy.py')
-          text = p.read_text(encoding='utf-8')
+
+          policy = Path('scripts/normalize_core_media_policy.py')
+          text = policy.read_text(encoding='utf-8')
           old = 'field-safety-v7-stream-scoped-p2p-vod-duration'
           new = 'field-safety-v9-correlated-player-fallback'
           if text.count(old) != 1:
               raise SystemExit(f'expected exactly one stale runtime revision anchor, found {text.count(old)}')
-          p.write_text(text.replace(old, new, 1), encoding='utf-8')
+          policy.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          hls = Path('scripts/provider_patches/hls_runtime_integrity_v1.py')
+          text = hls.read_text(encoding='utf-8')
+          unsafe = [
+              '          try{console.warn("[Nuvio HLS integrity] rejected invalid/strict-unknown native media",proof.reason||"invalid",String(stream&&stream.url||"").slice(0,180))}catch(_e){}\n',
+              '        try{console.warn("[Nuvio HLS integrity] rejected malformed playlist after bounded recovery",String(stream&&stream.url||"").slice(0,180))}catch(_e){}\n',
+          ]
+          for line in unsafe:
+              if text.count(line) != 1:
+                  raise SystemExit('HLS console-sensitive anchor drifted')
+              text = text.replace(line, '', 1)
+          hls.write_text(text, encoding='utf-8')
           PY
+
           python3 scripts/normalize_core_media_policy.py --apply
+          python3 scripts/reapply_published_overrides.py
           python3 tests/core_media_policy_test.py
           python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 tests/hls_playback_integrity_test.py
+          python3 tests/provider_security_hardening_test.py
+          python3 scripts/normalize_published_security_finalization.py --check
           python3 scripts/normalize_core_media_policy.py --check
+          python3 scripts/audit_provider_v3_static.py
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
           python3 tests/release_hash_scope_test.py
           git diff --check
+
           python3 - <<'PY'
           import subprocess
-          allowed = {
-              'scripts/normalize_core_media_policy.py',
-              'provider-overrides.json',
-              'FILE-HASHES.json',
-              'PATCH-SHA256SUMS.txt',
-              'SHA256SUMS.json',
-              'automation/PLATFORM-RUNTIME-CONTRACTS.md',
-          }
           rows = subprocess.check_output(['git','status','--porcelain'], text=True).splitlines()
-          changed = {row[3:] for row in rows if len(row) >= 4}
-          unexpected = sorted(changed - allowed)
-          if unexpected:
-              raise SystemExit('unexpected normalization outputs: ' + ', '.join(unexpected))
-          required = {'scripts/normalize_core_media_policy.py', 'provider-overrides.json'}
-          missing = sorted(required - changed)
+          changed = [row[3:] for row in rows if len(row) >= 4]
+          if not changed:
+              raise SystemExit('expected final Core normalization to change tracked files')
+          forbidden = [p for p in changed if p.startswith('.github/') or p.startswith('tests/')]
+          if forbidden:
+              raise SystemExit('unexpected generated edits: ' + ', '.join(forbidden))
+          required = {
+              'scripts/normalize_core_media_policy.py',
+              'scripts/provider_patches/hls_runtime_integrity_v1.py',
+              'provider-overrides.json',
+          }
+          missing = sorted(required - set(changed))
           if missing:
-              raise SystemExit('expected normalization outputs missing: ' + ', '.join(missing))
-          print('normalized files:', ', '.join(sorted(changed)))
+              raise SystemExit('expected final Core outputs missing: ' + ', '.join(missing))
+          print('final Core changed files:')
+          for path in changed:
+              print(path)
           PY
 
-      - name: Commit normalized policy
+      - name: Commit normalized policy and rebuilt artifacts
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'Niak'
           git config user.email 'foissy.tommy@gmail.com'
-          git add scripts/normalize_core_media_policy.py provider-overrides.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json automation/PLATFORM-RUNTIME-CONTRACTS.md
-          git commit -m 'fix(core): normalize Purstream policy state'
+          git add -A
+          git commit -m 'fix(core): finalize Purstream and HLS security policy'
           git push origin HEAD:hotfix/purstream-core-policy-final-20260917
