@@ -3,11 +3,15 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts/check_provider_non_regression_v1.py"
+SCRIPTS = ROOT / "scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+SCRIPT = SCRIPTS / "check_provider_non_regression_v1.py"
 REGISTRY = ROOT / "automation/provider-proof-invalidations.json"
 
 
