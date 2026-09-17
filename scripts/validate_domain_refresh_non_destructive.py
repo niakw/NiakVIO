@@ -81,10 +81,10 @@ def validate_provider_files(before_manifest: dict[str, Any], after_manifest: dic
         for source in (before_rows.get(pid), after_rows.get(pid)):
             if isinstance(source, dict):
                 path = str(source.get("filename") or "").strip()
-                if path.startswith("providers/"):
+                if path.startswith(("providers/", "provider-disabled/")):
                     allowed_paths.add(path)
     proc = subprocess.run(
-        ["git", "diff", "--name-only", "--", "providers/"],
+        ["git", "diff", "--name-only", "--", "providers/", "provider-disabled/"],
         cwd=ROOT,
         text=True,
         capture_output=True,

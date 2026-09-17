@@ -25,7 +25,7 @@ import materialize_provider_v3_all as allmat
 import refresh_authoritative_hub_domains as refresh
 import resolve_provider_hubs as resolver
 import reconcile_domain_refresh_static_authority as static_authority
-from current_provider_scope import active_provider_ids, visible_provider_count
+from current_provider_scope import active_provider_ids, visible_provider_ids, visible_provider_count
 from provider_patch_blocks import (
     decode_managed_data,
     owned_span,
@@ -142,6 +142,8 @@ def sync_registry_terminal(registry: dict[str, Any], provider_id: str, terminal:
     old_direct = row.get("direct")
     old_candidates = list(row.get("direct_candidates") or [])
     row["direct"] = normalized
+    if row.get("curated_entry"):
+        row["declared_terminal"] = normalized
     row["direct_candidates"] = _unique_urls([normalized, old_direct, *old_candidates])
 
     allowed: list[str] = []
@@ -227,8 +229,11 @@ def sync_patch_domain_authority(
     for name in ("runtime_domain_replacements", "domain_substitutions"):
         mapping = patch.get(name)
         if not isinstance(mapping, dict):
-            mapping = {}
-            patch[name] = mapping
+            if before_host and before_host != next_host:
+                mapping = {}
+                patch[name] = mapping
+            else:
+                continue
         if _rewrite_connected_domain_map(mapping, before_host, next_host):
             changed.append(name)
 
@@ -341,7 +346,13 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
 
         old_rel = str(entry.get("filename") or "")
         old_path = ROOT / old_rel
-        if not old_rel.startswith("providers/") or not old_path.is_file():
+        if old_rel.startswith("providers/"):
+            publication_dir = "providers"
+        elif old_rel.startswith("provider-disabled/"):
+            publication_dir = "provider-disabled"
+        else:
+            raise RuntimeError(f"{provider_id}: current provider outside managed publication folders: {old_rel}")
+        if not old_path.is_file():
             raise RuntimeError(f"{provider_id}: published provider missing: {old_rel}")
         before = old_path.read_text(encoding="utf-8")
         fix_id = _config_fix_id(before, provider_id)
@@ -368,7 +379,7 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
 
         raw = after.encode("utf-8")
         digest = hashlib.sha256(raw).hexdigest()
-        new_rel = f"providers/{source_qualified_provider_name(provider_id, old_path, digest)}"
+        new_rel = f"{publication_dir}/{source_qualified_provider_name(provider_id, old_path, digest)}"
         new_path = ROOT / new_rel
         new_path.write_bytes(raw)
         entry["filename"] = new_rel
@@ -410,7 +421,7 @@ def main() -> int:
         raise SystemExit("provider-domain-history.json providers must be object")
 
     manifest_scope = load(MANIFEST_PATH)
-    current_provider_ids = active_provider_ids()
+    current_provider_ids = visible_provider_ids() if args.include_disabled else active_provider_ids()
     if not current_provider_ids:
         raise SystemExit("domain refresh has no active providers")
 

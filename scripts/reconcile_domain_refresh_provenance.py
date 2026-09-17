@@ -36,6 +36,14 @@ def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
 def canonical_minimizer_proof(filename: str, digest: str) -> dict[str, Any]:
     """Build the exact proof expected by the authoritative final minimizer.
 
@@ -45,11 +53,9 @@ def canonical_minimizer_proof(filename: str, digest: str) -> dict[str, Any]:
     exact bytes and to the current minimizer tool.
     """
     path = (ROOT / filename).resolve()
-    providers = (ROOT / "providers").resolve()
-    try:
-        path.relative_to(providers)
-    except ValueError as exc:
-        raise SystemExit(f"unsafe provider publication path: {filename}") from exc
+    safe_roots = ((ROOT / "providers").resolve(), (ROOT / "provider-disabled").resolve())
+    if not any(_relative_to(path, root) for root in safe_roots):
+        raise SystemExit(f"unsafe provider publication path: {filename}")
     if not path.is_file():
         raise SystemExit(f"missing provider publication asset: {filename}")
 
@@ -116,7 +122,7 @@ def main() -> int:
         filename = str(manifest_row.get("filename") or "").strip()
         material_filename = str(material_row.get("file") or "").strip()
         digest = str(material_row.get("sha256") or "").strip().casefold()
-        if not filename.startswith("providers/") or len(digest) != 64:
+        if not filename.startswith(("providers/", "provider-disabled/")) or len(digest) != 64:
             raise SystemExit(f"{provider_id}: invalid current publication identity")
         if material_filename and material_filename != filename:
             raise SystemExit(

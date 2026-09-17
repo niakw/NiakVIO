@@ -942,7 +942,7 @@
       ],
       "capability": "html_scraper",
       "official_hub": "https://mmodlist.org/",
-      "official_site": "https://uhdmovies.autos",
+      "official_site": "https://uhdmovies.my",
       "manifest_overrides": {
         "enabled": true
       },
@@ -950,7 +950,8 @@
         "https://uhdmovies.autos"
       ],
       "domain_substitutions": {
-        "uhdmovies.pink": "uhdmovies.autos"
+        "uhdmovies.pink": "uhdmovies.my",
+        "uhdmovies.autos": "uhdmovies.my"
       },
       "candidate_learned_routes": [
         "/?s={query}",
@@ -1146,7 +1147,9 @@
         },
         "evidenceDestructive": false
       },
-      "runtime_domain_replacements": {},
+      "runtime_domain_replacements": {
+        "uhdmovies.autos": "uhdmovies.my"
+      },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
         "effective_coverage_ratio": 1.0,
@@ -2127,7 +2130,7 @@
         "movie",
         "tv"
       ],
-      "official_site": "https://desiflix.onl",
+      "official_site": "https://desiflix.codes",
       "official_api": "https://manifest.desitvhub.eu.org",
       "learned_routes": [
         "/stream/movie/{id}.json",
@@ -2327,8 +2330,12 @@
         "evidenceDestructive": false
       },
       "official_hub": "https://desiflix.me",
-      "runtime_domain_replacements": {},
-      "domain_substitutions": {},
+      "runtime_domain_replacements": {
+        "desiflix.onl": "desiflix.codes"
+      },
+      "domain_substitutions": {
+        "desiflix.onl": "desiflix.codes"
+      },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
         "effective_coverage_ratio": 1.0,

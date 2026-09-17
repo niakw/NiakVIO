@@ -201,16 +201,27 @@ def aliases_for(provider_id: str, cfg: dict[str, Any]) -> list[str]:
     return sorted({compact(value) for value in values if compact(value)})
 
 
+def curated_entry_hosts(cfg: dict[str, Any]) -> set[str]:
+    values=[]
+    if is_http_url(cfg.get("curated_entry")):
+        values.append(host(str(cfg.get("curated_entry"))))
+    for value in cfg.get("curated_entries") or []:
+        if is_http_url(value): values.append(host(str(value)))
+    return {value for value in values if value}
+
+
 def exact_allowed_hosts(cfg: dict[str, Any]) -> set[str]:
     values: list[str] = []
     values.extend(str(item) for item in cfg.get("allowed_terminal_hosts") or [])
     values.extend(str(item) for item in cfg.get("known_hosts") or [])
+    entry_hosts = curated_entry_hosts(cfg)
     for url in cfg.get("direct_candidates") or []:
-        values.append(host(str(url)))
+        if host(str(url)) not in entry_hosts:
+            values.append(host(str(url)))
     for url in cfg.get("historical_terminal_candidates") or []:
         values.append(host(str(url)))
     fallback = cfg.get("direct_fallback")
-    if fallback:
+    if fallback and host(str(fallback)) not in entry_hosts:
         values.append(host(str(fallback)))
     return {item.lower().strip(".") for item in values if item}
 
@@ -435,6 +446,10 @@ def merge_hub_registry(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
         target.setdefault("blocked_hosts", row.get("blocked_hosts") or [])
         target.setdefault("allowed_terminal_host_patterns", row.get("allowed_terminal_host_patterns") or [])
         target.setdefault("terminal_markers", row.get("terminal_markers") or [])
+        if is_http_url(row.get("curated_entry")):
+            target["curated_entry"] = str(row.get("curated_entry")).strip()
+        if is_http_url(row.get("declared_terminal")):
+            target["declared_terminal"] = str(row.get("declared_terminal")).strip()
         target.setdefault("search_confirmation_runs", int(row.get("search_confirmation_runs") or 2))
 
         sources = [dict(item) for item in (target.get("sources") or []) if isinstance(item, dict)]
@@ -462,8 +477,17 @@ def merge_hub_registry(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
             sources.append({"type": "search", "query": query, "priority": 35})
 
         direct_values: list[str] = []
+        terminal_direct_values: list[str] = []
+        curated_entry = row.get("curated_entry")
+        if is_http_url(curated_entry):
+            direct_values.append(str(curated_entry).strip())
+        declared_terminal = row.get("declared_terminal")
+        if is_http_url(declared_terminal):
+            terminal_direct_values.append(str(declared_terminal).strip())
+            direct_values.append(str(declared_terminal).strip())
         direct = row.get("direct")
         if is_http_url(direct):
+            terminal_direct_values.append(str(direct).strip())
             direct_values.append(str(direct).strip())
         direct_values.extend(str(item).strip() for item in row.get("direct_candidates") or [] if is_http_url(item))
         direct_values.extend(str(item).strip() for item in target.get("direct_candidates") or [] if is_http_url(item))
@@ -474,7 +498,8 @@ def merge_hub_registry(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
 
         allowed = set(str(item) for item in target.get("allowed_terminal_hosts") or [] if item)
         allowed.update(str(item) for item in row.get("allowed_terminal_hosts") or [] if item)
-        allowed.update(host(url) for url in direct_values if host(url))
+        allowed.update(host(url) for url in terminal_direct_values if host(url))
+        allowed.difference_update(curated_entry_hosts(target))
         target["allowed_terminal_hosts"] = sorted(allowed)
 
         dedup_sources: list[dict[str, Any]] = []
@@ -500,7 +525,9 @@ def merge_hub_registry(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
             candidates.insert(0, str(direct))
         target["direct_candidates"] = list(dict.fromkeys(candidates))
         allowed = set(target.get("allowed_terminal_hosts") or [])
-        allowed.update(host(url) for url in target["direct_candidates"] if host(url))
+        entry_hosts = curated_entry_hosts(target)
+        allowed.update(host(url) for url in target["direct_candidates"] if host(url) and host(url) not in entry_hosts)
+        allowed.difference_update(entry_hosts)
         target["allowed_terminal_hosts"] = sorted(allowed)
 
         # Previous domains and replacement sources are trusted peer candidates,
@@ -535,14 +562,16 @@ def merge_hub_registry(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
 
 
 def discovery_source_hosts(cfg: dict[str, Any]) -> set[str]:
-    """Hosts used only to discover a provider address; never valid terminals."""
-    return {
+    """Hosts used only to discover/enter a provider address; never valid terminals."""
+    values = {
         host(str(source.get("url")))
         for source in cfg.get("sources") or []
         if source.get("url")
         and str(source.get("type") or "").strip().casefold() in {"hub", "telegram_public"}
         and host(str(source.get("url")))
     }
+    values.update(curated_entry_hosts(cfg))
+    return values
 
 
 def candidate_score(provider_id: str, cfg: dict[str, Any], url: str, label: str, index: int, total: int) -> int:

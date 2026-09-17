@@ -1,0 +1,864 @@
+{
+  "schema_version": 9,
+  "rows": [
+    {
+      "provider_id": "uhdmovies",
+      "provider_name": "📺 UHDMovies",
+      "semantic_type": "movie",
+      "fixture_title": "Interstellar",
+      "status": "no_streams",
+      "debug_stage": "provider_network_http_error",
+      "debug_model": {
+        "strategy": "html_scraper",
+        "source_runtime_family": "catalogue-form-html",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 1,
+        "route_kinds": [
+          "search"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://uhdmovies.my",
+        "official_hub": "https://mmodlist.org/",
+        "official_api": null
+      },
+      "debug_fetch_count": 22,
+      "debug_provider_fetch_count": 21,
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/movie/157336?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/movie/157336?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 96
+        },
+        {
+          "url": "https://uhdmovies.my/?s=Interstellar",
+          "response_url": "https://uhdmovies.my/search/Interstellar",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 222
+        },
+        {
+          "url": "https://uhdmovies.my/search/Interstellar/",
+          "response_url": "https://uhdmovies.my/search/Interstellar/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 30
+        },
+        {
+          "url": "https://uhdmovies.my/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.my/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 32
+        },
+        {
+          "url": "https://uhdmovies.my/download-interstellar-2014-english-audio-english-1080p-2160p-4k-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.my/download-interstellar-2014-english-audio-english-1080p-2160p-4k-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 27
+        },
+        {
+          "url": "https://uhdmovies.my/download-interstellar-2014-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.my/download-interstellar-2014-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 31
+        },
+        {
+          "url": "https://uhdmovies.my/download-the-source-aka-ourika-2024-season-1-hindi-1080p/",
+          "response_url": "https://uhdmovies.my/download-the-source-aka-ourika-2024-season-1-hindi-1080p/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 29
+        },
+        {
+          "url": "https://uhdmovies.my/download-the-wolf-pack-2019-hindi-1080p/",
+          "response_url": "https://uhdmovies.my/download-the-wolf-pack-2019-hindi-1080p/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 29
+        },
+        {
+          "url": "https://uhdmovies.my/download-hi-venus-2022-season-1-hindi-audio-1080p-x264-1080p-hevc-web-dl-esub/",
+          "response_url": "https://uhdmovies.my/download-hi-venus-2022-season-1-hindi-audio-1080p-x264-1080p-hevc-web-dl-esub/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 29
+        },
+        {
+          "url": "https://uhdmovies.my/download-thanksgiving-2023-english-audio-2160p-4k-1080p-x264-hevc-hdr-dovi-web-dl-esubs/",
+          "response_url": "https://uhdmovies.my/download-thanksgiving-2023-english-audio-2160p-4k-1080p-x264-hevc-hdr-dovi-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 29
+        },
+        {
+          "url": "https://uhdmovies.my/download-night-teeth-2021-hindi-english-1080p-10bit-hdr-web-dl-esubs/",
+          "response_url": "https://uhdmovies.my/download-night-teeth-2021-hindi-english-1080p-10bit-hdr-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 29
+        },
+        {
+          "url": "https://uhdmovies.my/download-the-suicide-squad-2021-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.my/download-the-suicide-squad-2021-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 27
+        },
+        {
+          "url": "https://uhdmovies.my/download-joker-2019-dual-audio-hindi-english-2160p-4k-1080p-10bit-1080p-x264-remux-hdr-dovi-bluray-esubs/",
+          "response_url": "https://uhdmovies.my/download-joker-2019-dual-audio-hindi-english-2160p-4k-1080p-10bit-1080p-x264-remux-hdr-dovi-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 29
+        },
+        {
+          "url": "https://uhdmovies.my/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.my/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 23
+        },
+        {
+          "url": "https://uhdmovies.my/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.my/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 28
+        },
+        {
+          "url": "https://uhdmovies.my/download-the-source-aka-ourika-2024-season-1-hindi-1080p/",
+          "response_url": "https://uhdmovies.my/download-the-source-aka-ourika-2024-season-1-hindi-1080p/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 21
+        },
+        {
+          "url": "https://uhdmovies.my/download-the-wolf-pack-2019-hindi-1080p/",
+          "response_url": "https://uhdmovies.my/download-the-wolf-pack-2019-hindi-1080p/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 22
+        },
+        {
+          "url": "https://uhdmovies.my/download-joker-2019-dual-audio-hindi-english-2160p-4k-1080p-10bit-1080p-x264-remux-hdr-dovi-bluray-esubs/",
+          "response_url": "https://uhdmovies.my/download-joker-2019-dual-audio-hindi-english-2160p-4k-1080p-10bit-1080p-x264-remux-hdr-dovi-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 28
+        },
+        {
+          "url": "https://uhdmovies.my/download-the-shawshank-redemption-1994-dual-audio-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs-2/",
+          "response_url": "https://uhdmovies.my/download-the-shawshank-redemption-1994-dual-audio-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs-2/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 29
+        },
+        {
+          "url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs%2F",
+          "response_url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs%2F",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 1084
+        },
+        {
+          "url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs%2F&",
+          "response_url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs%2F&",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 1069
+        },
+        {
+          "url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-the-source-aka-ourika-2024-season-1-hindi-1080p%2F",
+          "response_url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-the-source-aka-ourika-2024-season-1-hindi-1080p%2F",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 988
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 4025
+    },
+    {
+      "provider_id": "uhdmovies",
+      "provider_name": "📺 UHDMovies",
+      "semantic_type": "tv",
+      "fixture_title": "Breaking Bad",
+      "status": "no_streams",
+      "debug_stage": "provider_network_http_error",
+      "debug_model": {
+        "strategy": "html_scraper",
+        "source_runtime_family": "catalogue-form-html",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 1,
+        "route_kinds": [
+          "search"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://uhdmovies.my",
+        "official_hub": "https://mmodlist.org/",
+        "official_api": null
+      },
+      "debug_fetch_count": 21,
+      "debug_provider_fetch_count": 20,
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/1396?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/1396?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 46
+        },
+        {
+          "url": "https://uhdmovies.my/?s=Breaking%20Bad",
+          "response_url": "https://uhdmovies.my/search/Breaking%20Bad",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 312
+        },
+        {
+          "url": "https://uhdmovies.my/download-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.my/download-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 57
+        },
+        {
+          "url": "https://uhdmovies.my/download-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs/",
+          "response_url": "https://uhdmovies.my/download-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 53
+        },
+        {
+          "url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs%2F",
+          "response_url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs%2F",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 1294
+        },
+        {
+          "url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs%2F&",
+          "response_url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs%2F&",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 731
+        },
+        {
+          "url": "https://uhdmovies.my/download-breaking-bad-hindi-1080p-2160p/",
+          "response_url": "https://uhdmovies.my/download-breaking-bad-hindi-1080p-2160p/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 123
+        },
+        {
+          "url": "https://uhdmovies.my/download-breaking-bad-hindi-1080p-2160p/",
+          "response_url": "https://uhdmovies.my/download-breaking-bad-hindi-1080p-2160p/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 54
+        },
+        {
+          "url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-breaking-bad-hindi-1080p-2160p%2F",
+          "response_url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-breaking-bad-hindi-1080p-2160p%2F",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 982
+        },
+        {
+          "url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-breaking-bad-hindi-1080p-2160p%2F&",
+          "response_url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-breaking-bad-hindi-1080p-2160p%2F&",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 846
+        },
+        {
+          "url": "https://uhdmovies.my/download-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "response_url": "https://uhdmovies.my/download-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 125
+        },
+        {
+          "url": "https://uhdmovies.my/download-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "response_url": "https://uhdmovies.my/download-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 53
+        },
+        {
+          "url": "https://uhdmovies.my/download-xo-kitty-2023-season-03-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "response_url": "https://uhdmovies.my/download-xo-kitty-2023-season-03-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 138
+        },
+        {
+          "url": "https://uhdmovies.my/download-sins-ofkujo-2026-season-01-multi-audio-hindi-english-japanese-1080p-x264-web-dl-esubs/",
+          "response_url": "https://uhdmovies.my/download-sins-ofkujo-2026-season-01-multi-audio-hindi-english-japanese-1080p-x264-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 118
+        },
+        {
+          "url": "https://uhdmovies.my/download-it-takes-a-village-2026-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "response_url": "https://uhdmovies.my/download-it-takes-a-village-2026-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 118
+        },
+        {
+          "url": "https://uhdmovies.my/download-agent-from-above-2026-season-01-dual-audio-hindi-chinese-tamil-telugu-1080p-x264-hevc-hdr-dovi-web-dl-esubs/",
+          "response_url": "https://uhdmovies.my/download-agent-from-above-2026-season-01-dual-audio-hindi-chinese-tamil-telugu-1080p-x264-hevc-hdr-dovi-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 116
+        },
+        {
+          "url": "https://uhdmovies.my/download-joy-of-life-2019-season-1-dual-audio-hindi-chinese-1080p-x264-web-dl-esubs/",
+          "response_url": "https://uhdmovies.my/download-joy-of-life-2019-season-1-dual-audio-hindi-chinese-1080p-x264-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 122
+        },
+        {
+          "url": "https://uhdmovies.my/download-goat-2160p-bluray-movie-download-goat-2026-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "response_url": "https://uhdmovies.my/download-goat-2160p-bluray-movie-download-goat-2026-dual-audio-hindi-english-1080p-x264-web-dl-esubs/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 137
+        },
+        {
+          "url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs%2F",
+          "response_url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs%2F",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 977
+        },
+        {
+          "url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs%2F&",
+          "response_url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-the-bad-guys-breaking-in-2025-season-1-dual-audio-hindi-english-1080p-x264-web-dl-esubs%2F&",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 814
+        },
+        {
+          "url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-xo-kitty-2023-season-03-dual-audio-hindi-english-1080p-x264-web-dl-esubs%2F",
+          "response_url": "https://uhdmovies.my/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fuhdmovies.my%2Fdownload-xo-kitty-2023-season-03-dual-audio-hindi-english-1080p-x264-web-dl-esubs%2F",
+          "method": "GET",
+          "status": 401,
+          "content_type": "application/json",
+          "duration_ms": 841
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 8180
+    },
+    {
+      "provider_id": "desiflix",
+      "provider_name": "🇮🇳 DesiFlix",
+      "semantic_type": "movie",
+      "fixture_title": "Interstellar",
+      "status": "no_streams",
+      "debug_stage": "provider_network_exception",
+      "debug_model": {
+        "strategy": "api_stream_resolver",
+        "source_runtime_family": "stremio-json",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 2,
+        "route_kinds": [
+          "api"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://desiflix.codes",
+        "official_hub": "https://desiflix.me",
+        "official_api": "https://manifest.desitvhub.eu.org"
+      },
+      "debug_fetch_count": 4,
+      "debug_provider_fetch_count": 3,
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/movie/157336?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/movie/157336?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 45
+        },
+        {
+          "url": "https://desiflix.stremioaddon.workers.dev/stream/movie/tt0816692.json",
+          "response_url": "",
+          "method": "GET",
+          "status": 0,
+          "duration_ms": 7000,
+          "error": "AbortError"
+        },
+        {
+          "url": "https://desiflix.stremioaddon.workers.dev/stream/movie/157336.json",
+          "response_url": "",
+          "method": "GET",
+          "status": 0,
+          "duration_ms": 7000,
+          "error": "AbortError"
+        },
+        {
+          "url": "https://manifest.desitvhub.eu.org/stream/movie/tt0816692.json",
+          "response_url": "",
+          "method": "GET",
+          "status": 0,
+          "duration_ms": 7001,
+          "error": "AbortError"
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 21053
+    },
+    {
+      "provider_id": "desiflix",
+      "provider_name": "🇮🇳 DesiFlix",
+      "semantic_type": "tv",
+      "fixture_title": "Breaking Bad",
+      "status": "no_streams",
+      "debug_stage": "provider_network_exception",
+      "debug_model": {
+        "strategy": "api_stream_resolver",
+        "source_runtime_family": "stremio-json",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 2,
+        "route_kinds": [
+          "api"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://desiflix.codes",
+        "official_hub": "https://desiflix.me",
+        "official_api": "https://manifest.desitvhub.eu.org"
+      },
+      "debug_fetch_count": 4,
+      "debug_provider_fetch_count": 3,
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/1396?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/1396?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 44
+        },
+        {
+          "url": "https://desiflix.stremioaddon.workers.dev/stream/series/tt0903747:1:1.json",
+          "response_url": "",
+          "method": "GET",
+          "status": 0,
+          "duration_ms": 7001,
+          "error": "AbortError"
+        },
+        {
+          "url": "https://desiflix.stremioaddon.workers.dev/stream/series/1396:1:1.json",
+          "response_url": "",
+          "method": "GET",
+          "status": 0,
+          "duration_ms": 7000,
+          "error": "AbortError"
+        },
+        {
+          "url": "https://manifest.desitvhub.eu.org/stream/series/tt0903747:1:1.json",
+          "response_url": "",
+          "method": "GET",
+          "status": 0,
+          "duration_ms": 7000,
+          "error": "AbortError"
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 21051
+    },
+    {
+      "provider_id": "animesalt",
+      "provider_name": "🧂 AnimeSalt",
+      "semantic_type": "anime",
+      "fixture_title": "Jujutsu Kaisen",
+      "status": "no_streams",
+      "debug_stage": "provider_network_http_error",
+      "debug_model": {
+        "strategy": "html_scraper",
+        "source_runtime_family": "catalogue-html-embed",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "supported_types": [
+          "anime"
+        ],
+        "route_count": 2,
+        "route_kinds": [
+          "detail"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://animesalt.cx",
+        "official_hub": "https://animesalt.ac/",
+        "official_api": null
+      },
+      "debug_fetch_count": 5,
+      "debug_provider_fetch_count": 4,
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/95479?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/95479?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 44
+        },
+        {
+          "url": "https://animesalt.cx/?tmdbId=95479&type=tv&season=1&episode=1",
+          "response_url": "https://animesalt.cx/?tmdbId=95479&type=tv&season=1&episode=1",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "duration_ms": 166
+        },
+        {
+          "url": "https://animesalt.cx/?tmdbId=95479&type=movie",
+          "response_url": "https://animesalt.cx/?tmdbId=95479&type=movie",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 327
+        },
+        {
+          "url": "https://animesalt.cx/",
+          "response_url": "https://animesalt.cx/",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "duration_ms": 131
+        },
+        {
+          "url": "https://animesalt.cx/?tmdbId=95479&type=tv&season=1&episode=1",
+          "response_url": "https://animesalt.cx/?tmdbId=95479&type=tv&season=1&episode=1",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 469
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 1544
+    },
+    {
+      "provider_id": "allwish",
+      "provider_name": "🌟 All-Wish",
+      "semantic_type": "anime",
+      "fixture_title": "Jujutsu Kaisen",
+      "status": "no_streams",
+      "debug_stage": "provider_network_http_error",
+      "debug_model": {
+        "strategy": "mixed_embed_resolver",
+        "source_runtime_family": "tmdb-direct-api",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "anime"
+        ],
+        "route_count": 7,
+        "route_kinds": [
+          "player",
+          "detail",
+          "search",
+          "unknown"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://all-wish.me",
+        "official_hub": "https://t.me/s/allwishme",
+        "official_api": null
+      },
+      "debug_fetch_count": 22,
+      "debug_provider_fetch_count": 21,
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/95479?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/95479?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "duration_ms": 44
+        },
+        {
+          "url": "https://all-wish.me/filter?keyword=Jujutsu%20Kaisen",
+          "response_url": "https://all-wish.me/filter?keyword=Jujutsu%20Kaisen",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "duration_ms": 206
+        },
+        {
+          "url": "https://all-wish.me/filter?keyword=Jujutsu%20Kaisen",
+          "response_url": "https://all-wish.me/filter?keyword=Jujutsu%20Kaisen",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 574
+        },
+        {
+          "url": "https://all-wish.me/watch/jujutsu-kaisen-hidden-inventory-premature-death-p5fd1/ep-1",
+          "response_url": "https://all-wish.me/watch/jujutsu-kaisen-hidden-inventory-premature-death-p5fd1/ep-1",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "duration_ms": 162
+        },
+        {
+          "url": "https://all-wish.me/watch/jujutsu-kaisen-the-culling-game-part-1-cnold/ep-12",
+          "response_url": "https://all-wish.me/watch/jujutsu-kaisen-the-culling-game-part-1-cnold/ep-12",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 463
+        },
+        {
+          "url": "https://all-wish.me/watch/jujutsu-kaisen-the-culling-game-part-1-cnold/ep-12",
+          "response_url": "https://all-wish.me/watch/jujutsu-kaisen-the-culling-game-part-1-cnold/ep-12",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "duration_ms": 166
+        },
+        {
+          "url": "https://all-wish.me/watch/jujutsu-kaisen-the-culling-game-part-1-cnold/filter",
+          "response_url": "https://all-wish.me/watch/jujutsu-kaisen-the-culling-game-part-1-cnold/filter",
+          "method": "GET",
+          "status": 404,
+          "content_type": "text/html",
+          "duration_ms": 508
+        },
+        {
+          "url": "https://all-wish.me/watch/jujutsu-kaisen-the-culling-game-part-1-cnold",
+          "response_url": "https://all-wish.me/watch/jujutsu-kaisen-the-culling-game-part-1-cnold",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "duration_ms": 121
+        },
+        {
+          "url": "https://all-wish.me/watch/toilet-bound-hanako-kun-season-2-part-2-uasks",
+          "response_url": "https://all-wish.me/watch/toilet-bound-hanako-kun-season-2-part-2-uasks",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 601
+        },
+        {
+          "url": "https://all-wish.me/watch/tatsuki-fujmoto-17-26-zsue5",
+          "response_url": "https://all-wish.me/watch/tatsuki-fujmoto-17-26-zsue5",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "duration_ms": 160
+        },
+        {
+          "url": "https://all-wish.me/watch/saiyuki-3ptbw",
+          "response_url": "https://all-wish.me/watch/saiyuki-3ptbw",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 284
+        },
+        {
+          "url": "https://all-wish.me/watch/seraph-of-the-end-vampire-reign-wzhqu",
+          "response_url": "https://all-wish.me/watch/seraph-of-the-end-vampire-reign-wzhqu",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "duration_ms": 150
+        },
+        {
+          "url": "https://all-wish.me/watch/tsubasa-reservoir-chronicle-season-two-ynlzd",
+          "response_url": "https://all-wish.me/watch/tsubasa-reservoir-chronicle-season-two-ynlzd",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 550
+        },
+        {
+          "url": "https://all-wish.me/watch/filter",
+          "response_url": "https://all-wish.me/watch/filter",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "duration_ms": 67
+        },
+        {
+          "url": "https://all-wish.me/watch/getbackers-sb3h9",
+          "response_url": "https://all-wish.me/watch/getbackers-sb3h9",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 305
+        },
+        {
+          "url": "https://all-wish.me/watch/jujutsu-kaisen-tv-8ssye/ep-24",
+          "response_url": "https://all-wish.me/watch/jujutsu-kaisen-tv-8ssye/ep-24",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "duration_ms": 73
+        },
+        {
+          "url": "https://all-wish.me/watch/jujutsu-kaisen-specials-libnr/ep-2",
+          "response_url": "https://all-wish.me/watch/jujutsu-kaisen-specials-libnr/ep-2",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "duration_ms": 289
+        },
+        {
+          "url": "https://all-wish.me/watch/jujutsu-kaisen-specials-libnr/ep-2",
+          "response_url": "https://all-wish.me/watch/jujutsu-kaisen-specials-libnr/ep-2",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "duration_ms": 126
+        },
+        {
+          "url": "https://all-wish.me/watch/jujutsu-kaisen-specials-libnr/filter",
+          "response_url": "https://all-wish.me/watch/jujutsu-kaisen-specials-libnr/filter",
+          "method": "GET",
+          "status": 404,
+          "content_type": "text/html",
+          "duration_ms": 513
+        },
+        {
+          "url": "https://all-wish.me/watch/jujutsu-kaisen-specials-libnr",
+          "response_url": "https://all-wish.me/watch/jujutsu-kaisen-specials-libnr",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "duration_ms": 167
+        },
+        {
+          "url": "https://all-wish.me/watch/fullmetal-alchemist-brotherhood-9s0fl",
+          "response_url": "https://all-wish.me/watch/fullmetal-alchemist-brotherhood-9s0fl",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "duration_ms": 65
+        },
+        {
+          "url": "https://all-wish.me/watch/that-time-i-got-reincarnated-as-a-slime-oad-mtc6d",
+          "response_url": "https://all-wish.me/watch/that-time-i-got-reincarnated-as-a-slime-oad-mtc6d",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "duration_ms": 176
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 6302
+    }
+  ]
+}

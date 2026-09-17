@@ -201,6 +201,36 @@ def resolve_authoritative_curated_entry_domain(
         observed["candidate_score"] = row.get("score")
         validations.append(observed)
         if not validation.get("ok"):
+            declared = str(cfg.get("declared_terminal") or "").strip().rstrip("/")
+            entry = str(cfg.get("curated_entry") or "").strip().rstrip("/")
+            if declared and entry and candidate.rstrip("/") == declared:
+                hostname = hubresolver.host(declared)
+                blocked = {str(x).casefold().strip(".") for x in cfg.get("blocked_hosts") or []}
+                structurally_safe = (
+                    hubresolver.is_provider_terminal_site_url(declared)
+                    and bool(hostname)
+                    and hostname not in hubresolver.discovery_source_hosts(cfg)
+                    and hostname not in blocked
+                    and not hostname.endswith(hubresolver.SOCIAL_HOST_SUFFIXES + hubresolver.SEARCH_HOST_SUFFIXES + hubresolver.INFRASTRUCTURE_HOST_SUFFIXES)
+                    and hubresolver.same_brand(provider_id, declared, cfg)
+                )
+                if structurally_safe:
+                    item.update({
+                        "status": "site_authoritative",
+                        "reason": "curated_declared_terminal_after_entry_blocked",
+                        "official_site": declared,
+                        "site_final_url": declared,
+                        "selected_source_type": "curated_declared_terminal",
+                        "selected_source": entry,
+                        "candidate_score": row.get("score"),
+                        "terminal_probe_skipped": True,
+                        "site_validations": validations,
+                        "sources": [],
+                        "api_candidates": [],
+                        "api_probes": [],
+                        "validated_api": None,
+                    })
+                    return item
             continue
         terminal = str(validation.get("final_url") or candidate).strip().rstrip("/")
         if not terminal or not hubresolver.is_provider_terminal_site_url(terminal):

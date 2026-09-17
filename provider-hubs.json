@@ -659,28 +659,24 @@
       "manifest_status": "Inactif",
       "category": "International",
       "hub": null,
-      "direct": "https://desiflix.onl/",
+      "direct": "https://desiflix.codes/",
       "source": "curated_user_registry",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "Curated entry is address authority; its current same-provider terminal remains authoritative under runner anti-bot without becoming playback proof.",
       "aliases": [
         "desiflix"
       ],
       "direct_candidates": [
+        "https://desiflix.codes/",
         "https://desiflix.onl/"
       ],
       "allowed_terminal_hosts": [
+        "desiflix.codes",
         "desiflix.onl"
       ],
       "search_queries": [
         "\"DesiFlix\" official domain"
       ],
       "sources": [
-        {
-          "type": "hub",
-          "url": "https://desiflix.me/",
-          "priority": 100,
-          "purpose": "Authoritative address reference"
-        },
         {
           "type": "search",
           "query": "\"DesiFlix\" official domain",
@@ -691,7 +687,10 @@
       "search_confirmation_runs": 2,
       "activation_eligible": false,
       "manual_off_reason": "manual_off_compromised_or_inappropriate_redirect",
-      "manual_off_date": "2026-09-15"
+      "manual_off_date": "2026-09-15",
+      "resolver": "curated_entry",
+      "curated_entry": "https://desiflix.onl/",
+      "declared_terminal": "https://desiflix.codes/"
     },
     "allanime": {
       "id": "allanime",
@@ -779,10 +778,10 @@
       "name": "AnimeSalt",
       "manifest_status": "Actif",
       "category": "International / Anime",
-      "hub": "https://animesalt.ac/",
+      "hub": null,
       "direct": "https://animesalt.cx/",
       "source": "curated_user_registry",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "Curated entry is address authority; its current same-provider terminal remains authoritative under runner anti-bot without becoming playback proof.",
       "aliases": [
         "animesalt"
       ],
@@ -799,12 +798,6 @@
       ],
       "sources": [
         {
-          "type": "hub",
-          "url": "https://animesalt.ac/",
-          "priority": 100,
-          "purpose": "Authoritative address reference"
-        },
-        {
           "type": "search",
           "query": "\"AnimeSalt\" official domain",
           "priority": 35,
@@ -812,7 +805,10 @@
         }
       ],
       "search_confirmation_runs": 2,
-      "last_verified": "2026-08-30"
+      "last_verified": "2026-08-30",
+      "resolver": "curated_entry",
+      "curated_entry": "https://animesalt.ac/",
+      "declared_terminal": "https://animesalt.cx/"
     },
     "hdghartv": {
       "id": "hdghartv",
@@ -1059,17 +1055,19 @@
       "name": "UHDMovies",
       "manifest_status": "Actif",
       "category": "International",
-      "hub": "https://mmodlist.org/",
-      "direct": "https://uhdmovies.autos/",
+      "hub": null,
+      "direct": "https://uhdmovies.my/",
       "source": "curated_user_registry",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "Curated entry is address authority; its current same-provider terminal remains authoritative under runner anti-bot without becoming playback proof.",
       "aliases": [
         "uhdmovies"
       ],
       "direct_candidates": [
+        "https://uhdmovies.my/",
         "https://uhdmovies.autos/"
       ],
       "allowed_terminal_hosts": [
+        "uhdmovies.my",
         "uhdmovies.autos"
       ],
       "search_queries": [
@@ -1077,19 +1075,16 @@
       ],
       "sources": [
         {
-          "type": "hub",
-          "url": "https://mmodlist.org/",
-          "priority": 100,
-          "purpose": "Authoritative address reference"
-        },
-        {
           "type": "search",
           "query": "\"UHDMovies\" official domain",
           "priority": 35,
           "purpose": "Fallback discovery when curated sources fail"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "resolver": "curated_entry",
+      "curated_entry": "https://mmodlist.org/?type=uhdmovies",
+      "declared_terminal": "https://uhdmovies.my/"
     },
     "vidsrc": {
       "id": "vidsrc",
@@ -2207,8 +2202,8 @@
         {
           "type": "telegram_public",
           "url": "https://t.me/s/allwishme",
-          "priority": 115,
-          "purpose": "Official public Telegram channel description containing the current domain"
+          "priority": 120,
+          "purpose": "Official public Telegram description containing current domain"
         },
         {
           "type": "search",
