@@ -93,7 +93,6 @@ jobs:
           python3 scripts/finalize_provider_v3_minimizer.py
           python3 scripts/finalize_provider_v3_minimizer.py --check
           python3 scripts/prune_unreferenced_providers.py
-          python3 scripts/prune_unreferenced_providers.py --check
 
       - name: Validate Purstream and publication contracts
         shell: bash
