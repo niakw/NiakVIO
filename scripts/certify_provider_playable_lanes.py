@@ -313,6 +313,7 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=6)
     parser.add_argument("--seed", default=None)
     parser.add_argument("--include-disabled", action="store_true")
+    parser.add_argument("--provider", action="append", default=[], help="limit certification to one or more provider ids")
     parser.add_argument("--require-active", action="store_true")
     args = parser.parse_args()
 
@@ -321,11 +322,13 @@ def main() -> int:
     fixtures = fixture_index()
     targets = corpus_targets()
     seed = str(args.seed if args.seed is not None else default_seed())
+    provider_filter = {canonical(value) for value in args.provider if canonical(value)}
     rows = [
         row for row in manifest.get("scrapers") or []
         if isinstance(row, dict)
         and canonical(row.get("id"))
         and (args.include_disabled or row.get("enabled") is not False)
+        and (not provider_filter or canonical(row.get("id")) in provider_filter)
     ]
 
     results: list[dict[str, Any]] = []
