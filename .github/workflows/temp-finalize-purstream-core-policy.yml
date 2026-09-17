@@ -19,12 +19,24 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Normalize Core media policy and release hashes
+      - name: Align stale runtime revision contract and normalize policy
         shell: bash
         run: |
           set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/normalize_core_media_policy.py')
+          text = p.read_text(encoding='utf-8')
+          old = 'field-safety-v7-stream-scoped-p2p-vod-duration'
+          new = 'field-safety-v9-correlated-player-fallback'
+          if text.count(old) != 1:
+              raise SystemExit(f'expected exactly one stale runtime revision anchor, found {text.count(old)}')
+          p.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
           python3 scripts/normalize_core_media_policy.py --apply
           python3 tests/core_media_policy_test.py
+          python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 scripts/normalize_core_media_policy.py --check
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
           python3 tests/release_hash_scope_test.py
@@ -32,6 +44,7 @@ jobs:
           python3 - <<'PY'
           import subprocess
           allowed = {
+              'scripts/normalize_core_media_policy.py',
               'provider-overrides.json',
               'FILE-HASHES.json',
               'PATCH-SHA256SUMS.txt',
@@ -43,8 +56,10 @@ jobs:
           unexpected = sorted(changed - allowed)
           if unexpected:
               raise SystemExit('unexpected normalization outputs: ' + ', '.join(unexpected))
-          if 'provider-overrides.json' not in changed:
-              raise SystemExit('expected provider-overrides.json normalization was not produced')
+          required = {'scripts/normalize_core_media_policy.py', 'provider-overrides.json'}
+          missing = sorted(required - changed)
+          if missing:
+              raise SystemExit('expected normalization outputs missing: ' + ', '.join(missing))
           print('normalized files:', ', '.join(sorted(changed)))
           PY
 
@@ -54,6 +69,6 @@ jobs:
           set -euo pipefail
           git config user.name 'Niak'
           git config user.email 'foissy.tommy@gmail.com'
-          git add provider-overrides.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json automation/PLATFORM-RUNTIME-CONTRACTS.md
+          git add scripts/normalize_core_media_policy.py provider-overrides.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json automation/PLATFORM-RUNTIME-CONTRACTS.md
           git commit -m 'fix(core): normalize Purstream policy state'
           git push origin HEAD:hotfix/purstream-core-policy-final-20260917
