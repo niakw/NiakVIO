@@ -4,7 +4,7 @@
   "source": {
     "pullRequest": 122,
     "headSha": "4e9729d865f6a069bda567fbeac520d714bef4bd",
-    "note": "Repairs were proven on workbench but did not all survive publication; exact-bundle reproof is mandatory after restoration."
+    "note": "Repairs were proven on workbench but did not all survive publication; restored authority must preserve V1 plus any #122 V2/inline capability not functionally superseded, and exact-bundle reproof is mandatory."
   },
   "rules": {
     "missingRequiredScript": "hard_fail",
@@ -16,7 +16,8 @@
     "animesama-co": {
       "requiredScripts": [
         "scripts/provider_patches/animesamaco_site_runtime_v1.py",
-        "scripts/provider_patches/animesamaco_nondisplay_runtime_v1.py"
+        "scripts/provider_patches/animesamaco_nondisplay_runtime_v1.py",
+        "scripts/provider_patches/animesamaco_nondisplay_recovery_v2.py"
       ],
       "lanes": [
         "anime"
@@ -42,7 +43,8 @@
     "neko-sama": {
       "requiredScripts": [
         "scripts/provider_patches/neko_sama_runtime_v1.py",
-        "scripts/provider_patches/neko_sama_nondisplay_runtime_v1.py"
+        "scripts/provider_patches/neko_sama_nondisplay_runtime_v1.py",
+        "scripts/provider_patches/neko_sama_nondisplay_recovery_v2.py"
       ],
       "lanes": [
         "anime"
@@ -50,7 +52,9 @@
     },
     "sekai": {
       "requiredScripts": [
-        "scripts/provider_patches/sekai_nondisplay_runtime_v1.py"
+        "scripts/provider_patches/sekai_nondisplay_runtime_v1.py",
+        "scripts/provider_patches/sekai_nondisplay_recovery_v2.py",
+        "scripts/provider_patches/sekai_inline_media_runtime_v1.py"
       ],
       "lanes": [
         "anime"
@@ -58,7 +62,8 @@
     },
     "voiranime-rip": {
       "requiredScripts": [
-        "scripts/provider_patches/voiranime_rip_nondisplay_runtime_v1.py"
+        "scripts/provider_patches/voiranime_rip_nondisplay_runtime_v1.py",
+        "scripts/provider_patches/voiranime_rip_nondisplay_recovery_v2.py"
       ],
       "lanes": [
         "anime"
