@@ -23,17 +23,21 @@ jobs:
           set -euo pipefail
           cat > scripts/sync_manifest_projection_rows.py <<'PY'
           #!/usr/bin/env python3
+          """Keep derived manifests byte-equivalent to current root provider rows.
+
+          VF membership is intentionally preserved here: language classification belongs to
+          generate_language_manifests.py. Targeted provider publication may update row state,
+          version or filename, but must not perform network language reclassification.
+          No-anime membership is deterministic from semantic provider capabilities and is
+          therefore rebuilt on every sync.
+          """
           from __future__ import annotations
           import argparse, json
           from pathlib import Path
           from typing import Any
+          from generate_language_manifests import build_no_anime_manifest, nested_entry
 
           ROOT = Path(__file__).resolve().parents[1]
-          PROJECTIONS = (
-              (Path('vf/manifest.json'), 'VF uniquement'),
-              (Path('no-anime/manifest.json'), 'Without anime providers'),
-              (Path('vf-no-anime/manifest.json'), 'VF uniquement — Without anime providers'),
-          )
 
           def load(path: Path) -> dict[str, Any]:
               value = json.loads(path.read_text(encoding='utf-8'))
@@ -44,41 +48,44 @@ jobs:
           def canonical(value: object) -> str:
               return str(value or '').strip().casefold()
 
-          def nested(row: dict[str, Any]) -> dict[str, Any]:
-              out = dict(row)
-              filename = str(out.get('filename') or '')
-              if filename and not filename.startswith(('http://','https://','/','../')):
-                  out['filename'] = '../' + filename
-              return out
-
-          def expected_projection(root_manifest: dict[str, Any], current: dict[str, Any], suffix: str) -> dict[str, Any]:
+          def synced_vf(root_manifest: dict[str, Any], current_vf: dict[str, Any]) -> dict[str, Any]:
               root_rows = {
                   canonical(row.get('id')): row
                   for row in root_manifest.get('scrapers') or []
                   if isinstance(row, dict) and canonical(row.get('id'))
               }
               rows = []
-              for old in current.get('scrapers') or []:
+              for old in current_vf.get('scrapers') or []:
                   if not isinstance(old, dict):
                       continue
                   pid = canonical(old.get('id'))
                   source = root_rows.get(pid)
                   if source is None:
-                      raise SystemExit(f'projection contains provider absent from root: {old.get("id")}')
-                  rows.append(nested(source))
+                      raise SystemExit(f'VF projection contains provider absent from root: {old.get("id")}')
+                  rows.append(nested_entry(source))
               return {
-                  'name': f"{root_manifest.get('name','NiakVIO')} — {suffix}",
+                  'name': f"{root_manifest.get('name','NiakVIO')} — VF uniquement",
                   'version': root_manifest.get('version'),
                   'scrapers': rows,
               }
 
-          def sync(*, check: bool = False) -> int:
+          def expected_all() -> dict[Path, dict[str, Any]]:
               root_manifest = load(ROOT / 'manifest.json')
+              current_vf = load(ROOT / 'vf/manifest.json')
+              vf = synced_vf(root_manifest, current_vf)
+              no_anime = build_no_anime_manifest(root_manifest)
+              vf_no_anime = build_no_anime_manifest(vf)
+              return {
+                  Path('vf/manifest.json'): vf,
+                  Path('no-anime/manifest.json'): no_anime,
+                  Path('vf-no-anime/manifest.json'): vf_no_anime,
+              }
+
+          def sync(*, check: bool = False) -> int:
               drift = []
-              for relative, suffix in PROJECTIONS:
+              for relative, expected in expected_all().items():
                   path = ROOT / relative
                   current = load(path)
-                  expected = expected_projection(root_manifest, current, suffix)
                   if current != expected:
                       drift.append(str(relative))
                       if not check:
@@ -131,14 +138,17 @@ jobs:
           root=json.load(open('manifest.json'))
           root_by={str(r.get('id','')).casefold():r for r in root.get('scrapers',[]) if isinstance(r,dict)}
           for rel in ['vf/manifest.json','no-anime/manifest.json','vf-no-anime/manifest.json']:
-              doc=json.load(open(rel)); mism=[]
+              doc=json.load(open(rel)); mism=[]; missing_files=[]
               for row in doc.get('scrapers',[]):
                   src=root_by[str(row.get('id','')).casefold()]
                   exp=dict(src); f=str(exp.get('filename') or '')
                   if f and not f.startswith(('http://','https://','/','../')): exp['filename']='../'+f
                   if row != exp: mism.append(row.get('id'))
-              print('PARITY',rel,'rows',len(doc.get('scrapers',[])),'mismatch',mism[:10])
+                  target=(Path(rel).parent / str(row.get('filename') or '')).resolve()
+                  if str(row.get('filename') or '') and not target.is_file(): missing_files.append((row.get('id'),str(target)))
+              print('PARITY',rel,'rows',len(doc.get('scrapers',[])),'mismatch',mism[:10],'missing_files',missing_files[:10])
               assert not mism
+              assert not missing_files
           vf=json.load(open('vf/manifest.json'))
           pur=next(r for r in vf['scrapers'] if str(r.get('id')).casefold()=='purstream')
           rootpur=root_by['purstream']
