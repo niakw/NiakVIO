@@ -8,12 +8,12 @@ on:
       - .github/workflows/temp-hub-authority-v61.yml
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  repair:
+  verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 55
+    timeout-minutes: 45
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
@@ -31,12 +31,7 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Apply permanent V61 patches
-        run: |
-          python scripts/apply_hub_authority_v61_patch.py
-          python scripts/apply_targeted_materializer_security_v61.py
-
-      - name: Validate permanent contracts
+      - name: Validate persisted V61 contracts
         run: |
           set -euo pipefail
           python -m py_compile scripts/resolve_provider_hubs.py scripts/domain_refresh_transaction_v2.py scripts/reconcile_domain_refresh_static_authority.py scripts/validate_domain_refresh_static_non_destructive.py scripts/reconcile_domain_refresh_provenance.py scripts/provider_patches/flemmix_current_runtime_v1.py scripts/materialize_provider_v3_one.py
@@ -49,46 +44,51 @@ jobs:
           python tests/provider_v3_final_stage_minimizer_gate_test.py
           python tests/domain_refresh_non_destructive_workflow_test.py
           python tests/domain_refresh_workflow_test.py
-
-      - name: Snapshot static authority
-        run: cp automation/provider-v3-static-knowledge.json "$RUNNER_TEMP/static-before.json"
-
-      - name: Resolve live Flemmix hub
-        run: |
-          set -euo pipefail
-          mkdir -p health-output automation/evidence
-          python scripts/domain_refresh_priority_wrapper.py --mode deep --include-disabled --workers 1 --timeout 12 --provider flemmix --apply --output health-output/v61-flemmix-hub-report.json --changes-output health-output/v61-flemmix-changes.json
-          python scripts/validate_flemmix_hub_v61_state.py
-          python scripts/reconcile_domain_refresh_static_authority.py --changes health-output/v61-flemmix-changes.json --check
-          python scripts/validate_domain_refresh_static_non_destructive.py --before-static "$RUNNER_TEMP/static-before.json" --changes health-output/v61-flemmix-changes.json
+          python tests/provider_domain_graph_cycle_test.py
           python scripts/validate_provider_domain_graph.py provider-overrides.json
-
-      - name: Rematerialize and finalize Flemmix only
-        run: |
-          set -euo pipefail
-          NUVIO_PROVIDER_V3_CONTEXT=release NIAKVIO_PROVIDER_V3_FINAL_MINIMIZE=1 python scripts/materialize_provider_v3_one.py flemmix
-          python scripts/reconcile_domain_refresh_provenance.py --changes health-output/v61-flemmix-changes.json
           python scripts/validate_published_provider_config.py --expected 46
           python scripts/finalize_provider_v3_minimizer.py --check
-          python tests/flemmix_runtime_domain_authority_test.py
-          python tests/provider_domain_graph_cycle_test.py
+          python scripts/audit_provider_v3_static.py
 
-      - name: Probe live Flemmix runtime
-        run: python scripts/probe_flemmix_runtime_v61.py
-
-      - name: Persist V61 repair
+      - name: Verify persisted Flemmix authority
         run: |
           set -euo pipefail
-          git diff --check
-          git config user.name 'NiakVIO Repair Bot'
-          git config user.email 'actions@users.noreply.github.com'
-          # The Actions token has contents:write but cannot update workflow files.
-          # Persist the validated code/data/evidence here; domain-refresh.yml is
-          # committed separately through the GitHub connector with workflow access.
-          git add scripts/resolve_provider_hubs.py scripts/domain_refresh_transaction_v2.py scripts/reconcile_domain_refresh_static_authority.py scripts/validate_domain_refresh_static_non_destructive.py scripts/reconcile_domain_refresh_provenance.py scripts/provider_patches/flemmix_current_runtime_v1.py scripts/materialize_provider_v3_one.py scripts/apply_hub_authority_v61_patch.py scripts/apply_targeted_materializer_security_v61.py scripts/validate_flemmix_hub_v61_state.py scripts/probe_flemmix_runtime_v61.py tests/provider_hub_registry_test.py tests/domain_refresh_static_authority_test.py tests/domain_refresh_static_non_destructive_test.py tests/domain_refresh_provenance_minimizer_test.py tests/flemmix_runtime_domain_authority_test.py tests/provider_v3_one_security_finalization_test.py tests/domain_refresh_non_destructive_workflow_test.py provider-overrides.json provider-hubs.json provider-domain-history.json automation/provider-v3-static-knowledge.json manifest.json provider-v3-materialization.json PROVENANCE.json providers/ automation/evidence/flemmix-hub-authority-v61.json automation/evidence/flemmix-runtime-v61.json
-          git diff --cached --quiet && { echo 'V61 no changes to persist'; exit 1; }
-          git commit -m 'fix(domains): make authoritative hubs monotonic'
-          git restore .github/workflows/domain-refresh.yml
-          git pull --rebase origin fix/non-display-recovery-20260916
-          git push origin HEAD:fix/non-display-recovery-20260916
-          echo "V61_PERSISTED $(git rev-parse HEAD)"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          overrides=json.load(open('provider-overrides.json'))['provider_patches']['flemmix']
+          hubs=json.load(open('provider-hubs.json'))['providers']['flemmix']
+          static=json.load(open('automation/provider-v3-static-knowledge.json'))['providers']['flemmix']['model']
+          manifest=json.load(open('manifest.json'))
+          row=next(x for x in manifest['scrapers'] if str(x.get('id','')).casefold()=='flemmix')
+          expected='https://flemmix.party'
+          assert str(overrides.get('official_site','')).rstrip('/')==expected, overrides.get('official_site')
+          assert str(hubs.get('direct','')).rstrip('/')==expected, hubs.get('direct')
+          assert str(static.get('officialSite','')).rstrip('/')==expected, static.get('officialSite')
+          assert str(static.get('knownSite','')).rstrip('/')==expected, static.get('knownSite')
+          assert str(row.get('filename','')).startswith('providers/flemmix--nuvio--'), row.get('filename')
+          assert Path(row['filename']).is_file(), row['filename']
+          print('V61_PERSISTED_AUTHORITY_OK',expected,row['filename'])
+          PY
+          python scripts/probe_flemmix_runtime_v61.py
+
+      - name: Verify live Domain Refresh idempotence
+        run: |
+          set -euo pipefail
+          mkdir -p health-output/v61-fixed-point
+          cp provider-overrides.json "$RUNNER_TEMP/overrides.before.json"
+          cp provider-hubs.json "$RUNNER_TEMP/hubs.before.json"
+          cp automation/provider-v3-static-knowledge.json "$RUNNER_TEMP/static.before.json"
+          python scripts/domain_refresh_priority_wrapper.py --mode deep --include-disabled --workers 1 --timeout 12 --provider flemmix --apply --output health-output/v61-fixed-point/report.json --changes-output health-output/v61-fixed-point/changes.json
+          python - <<'PY'
+          import json
+          changes=json.load(open('health-output/v61-fixed-point/changes.json'))
+          changed=changes.get('changed') or []
+          registry=changes.get('registry_changed') or []
+          assert not changed, changes
+          assert not registry, changes
+          print('V61_DOMAIN_REFRESH_FIXED_POINT changed=0 registry=0')
+          PY
+          python scripts/finalize_provider_v3_minimizer.py --check
+          python scripts/validate_provider_domain_graph.py provider-overrides.json
+          git diff --exit-code -- provider-overrides.json provider-hubs.json automation/provider-v3-static-knowledge.json manifest.json provider-v3-materialization.json PROVENANCE.json providers/
