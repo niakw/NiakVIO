@@ -1,0 +1,39 @@
+name: TEMP - Repair Pipeline Smoke V53C
+
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-repair-pipeline-smoke-v53c.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - name: Targeted repair smoke
+        shell: bash
+        run: |
+          set +e
+          python scripts/run_provider_repair_fast_targeted_v1.py \
+            --provider animesama-co --workers 2 --timeout 35 --attempts 2 --defer-global-guard
+          rc=$?
+          echo "V53C_RC=$rc"
+          if [ -f automation/provider-repair-fast-summary.json ]; then
+            python - <<'PY'
+          import json
+          print('V53C_SUMMARY '+json.dumps(json.load(open('automation/provider-repair-fast-summary.json')),sort_keys=True))
+          PY
+          fi
+          git status --short
+          exit $rc
