@@ -420,6 +420,8 @@ def materialize_one(provider_id: str) -> dict[str, object]:
     entry["filename"] = relative
     entry["version"] = allmat.base_version(entry.get("version"))
     allmat.write_json(allmat.DEFAULT_SOURCE_MANIFEST, manifest)
+    from sync_manifest_projection_rows import sync as sync_manifest_projections
+    sync_manifest_projections(check=False)
 
     report = {
         "provider": provider_id,
