@@ -299,8 +299,19 @@ def validate_telegram_discovery_only(text: str | None = None) -> None:
         raise AssertionError(f"telegram DATA marker count={value.count(TELEGRAM_DATA_MARKER)}")
     if value.count(TELEGRAM_RUNTIME_MARKER) != 1:
         raise AssertionError(f"telegram runtime marker count={value.count(TELEGRAM_RUNTIME_MARKER)}")
+    # DATA-side filtering has evolved from the original regex to a stronger
+    # parsed-host boundary check. Accept either representation, but require the
+    # complete Telegram root set so this migration stays idempotent across the
+    # hardened ProviderBase implementation.
+    legacy_data_guard = 't\\.me|telegram\\.me|telegram\\.dog' in value
+    parsed_data_guard = (
+        'parsed_host = (urlsplit(text).hostname or "").casefold().rstrip(".")' in value
+        and 'telegram_roots = {"t.me", "telegram.me", "telegram.dog"}' in value
+        and 'parsed_host.endswith("." + root)' in value
+    )
+    if not (legacy_data_guard or parsed_data_guard):
+        raise AssertionError("telegram discovery-only DATA guard missing")
     for needle in (
-        't\\.me|telegram\\.me|telegram\\.dog',
         'function _runtimeDiscoveryOnlyUrl(url)',
         'host === "t.me" || host.endsWith(".t.me")',
         'if (_runtimeDiscoveryOnlyUrl(url)) throw new Error("provider_discovery_only_host");',
