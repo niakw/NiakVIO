@@ -2641,7 +2641,8 @@
         "/ajax/server?get={id}"
       ],
       "provider_lego_scripts": [
-        "scripts/provider_patches/anikototv_runtime_v2.py"
+        "scripts/provider_patches/anikototv_runtime_v2.py",
+        "scripts/provider_patches/anikototv_megaplay_embed_fallback_v3.py"
       ],
       "provider_lego_options": {
         "scripts/provider_patches/anikototv_runtime_v2.py": {
@@ -2652,7 +2653,8 @@
             "https://anikoto.net",
             "https://anikototv.se"
           ]
-        }
+        },
+        "scripts/provider_patches/anikototv_megaplay_embed_fallback_v3.py": {}
       },
       "candidate_learned_routes": [
         "/search?keyword={query}",
@@ -2854,8 +2856,10 @@
       },
       "notes": [
         "AniKoto runtime v2 is the durable authority for browser-like MegaPlay/CDN transport; no anti-bot token is fabricated and terminal 403 remains fail-closed.",
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
-      ]
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
+        "V40 MegaPlay contract: plaintext sources are used when present; current encrypted enc payloads preserve only the already identity-correlated, HTTP-verified MegaPlay embed for Core player handling. No fake direct HLS is emitted."
+      ],
+      "preserve_embed_urls": true
     },
     "animekai": {
       "capability": "mixed_embed_resolver",
@@ -7027,11 +7031,13 @@
         "anime"
       ],
       "notes": [
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
+        "V40 current Sekai authority: locate the title-matched sekai.one catalogue page, parse inline atob host + episode MP4 template without executing upstream JavaScript, and range-verify media before output."
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/sekai_nondisplay_recovery_v1.py",
-        "scripts/provider_patches/sekai_nondisplay_recovery_v2.py"
+        "scripts/provider_patches/sekai_nondisplay_recovery_v2.py",
+        "scripts/provider_patches/sekai_inline_media_runtime_v1.py"
       ],
       "provider_lego_options": {
         "scripts/provider_patches/sekai_nondisplay_recovery_v1.py": {
@@ -7043,6 +7049,9 @@
           "provider": "sekai",
           "base": "https://sekai.one",
           "max_streams": 4
+        },
+        "scripts/provider_patches/sekai_inline_media_runtime_v1.py": {
+          "base": "https://sekai.one"
         }
       }
     },
@@ -7051,7 +7060,8 @@
         "StreamZo is configured through shared Core catalogue/target-media capabilities; no provider-specific recovery engine is allowed.",
         "Core resolves TMDB identity/type first and passes canonical metadata to generic catalogue recovery.",
         "Current site contract uses /{slug} for movies and /series/{slug} for series, then data-embed/data-src player wrappers; stale /api/mirrors/film is not authoritative.",
-        "NIAKVIO_STREAMZO_SUGGEST_AUTHORITY_V1: /api/web/suggest exact href replaces stale generated-slug execution."
+        "NIAKVIO_STREAMZO_SUGGEST_AUTHORITY_V1: /api/web/suggest exact href replaces stale generated-slug execution.",
+        "V40 requalification must use a currently present catalogue episode (Jujutsu Kaisen S1E3 or S2E1); current S1E1 is absent upstream and must not be scored as a parser regression."
       ],
       "capability": "mixed_embed_resolver",
       "official_hub": null,
@@ -9502,7 +9512,7 @@
       "api_recipe": {
         "proofModelVersion": 5,
         "allowGenericFallback": false,
-        "movieRoute": "https://enc-dec.app/db/flix/find?tmdb_id={tmdbId}&type=movie",
+        "movieRoute": "/db/flix/find?tmdb_id={tmdbId}&type=movie",
         "movieRequest": {
           "method": "GET",
           "headers": {
@@ -9511,19 +9521,19 @@
           }
         },
         "base": "https://enc-dec.app",
-        "directRoute": "/db/flix/find?tmdb_id={tmdbId}&type=movie",
         "directRequest": {
           "method": "GET",
           "headers": {
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "tvRoute": "/db/flix/find?tmdb_id={tmdbId}&type=tv"
       },
       "candidate_api_recipe": {
         "proofModelVersion": 5,
         "allowGenericFallback": false,
-        "movieRoute": "https://enc-dec.app/db/flix/find?tmdb_id={tmdbId}&type=movie",
+        "movieRoute": "/db/flix/find?tmdb_id={tmdbId}&type=movie",
         "movieRequest": {
           "method": "GET",
           "headers": {
@@ -9532,14 +9542,14 @@
           }
         },
         "base": "https://enc-dec.app",
-        "directRoute": "/db/flix/find?tmdb_id={tmdbId}&type=movie",
         "directRequest": {
           "method": "GET",
           "headers": {
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "tvRoute": "/db/flix/find?tmdb_id={tmdbId}&type=tv"
       },
       "route_data_state": "repair",
       "repair_disposition": {
@@ -9608,7 +9618,17 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      }
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/yflix_current_runtime_v2.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/yflix_current_runtime_v2.py": {}
+      },
+      "notes": [
+        "V40 namespace correction: movie requests use type=movie and TV requests use type=tv. A TV request must never reuse the numeric TMDB id on the movie namespace (TMDB 1396 otherwise resolves to the unrelated film Mirror).",
+        "Current downstream YFlix/1Movies/SolarMovie AJAX frontends are unavailable from the GitHub runner; execution therefore fails closed after the identity-correct enc-dec.app DB stage instead of manufacturing playback proof."
+      ]
     },
     "allanime": {
       "capability": "mixed_embed_resolver",
