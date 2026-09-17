@@ -114,7 +114,7 @@ jobs:
           set -euo pipefail
           git config user.name 'NiakVIO Repair Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add scripts/domain_refresh_transaction_v2.py scripts/reconcile_domain_refresh_provenance.py scripts/validate_domain_refresh_non_destructive.py scripts/resolve_provider_hubs.py scripts/refresh_authoritative_hub_domains.py provider-hubs.json provider-overrides.json provider-domain-history.json manifest.json provider-v3-materialization.json automation/provider-v3-static-knowledge.json PROVENANCE.json automation/evidence/final-address-authorities-v65.json 'providers/desiflix'*.js 'providers/uhdmovies'*.js 'providers/animesalt'*.js 'providers/allwish'*.js 'provider-disabled/desiflix'*.js 'provider-disabled/uhdmovies'*.js 'provider-disabled/animesalt'*.js 'provider-disabled/allwish'*.js
+          git add -A -- scripts/domain_refresh_transaction_v2.py scripts/reconcile_domain_refresh_provenance.py scripts/validate_domain_refresh_non_destructive.py scripts/resolve_provider_hubs.py scripts/refresh_authoritative_hub_domains.py provider-hubs.json provider-overrides.json provider-domain-history.json manifest.json provider-v3-materialization.json automation/provider-v3-static-knowledge.json PROVENANCE.json automation/evidence/final-address-authorities-v65.json providers provider-disabled
           if git diff --cached --quiet; then echo V65I_PERSIST_NOOP; exit 0; fi
           git commit -m 'fix(domains): separate curated entries from terminals'
           git push origin HEAD:fix/non-display-recovery-20260916
