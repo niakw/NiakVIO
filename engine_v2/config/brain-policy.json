@@ -104,5 +104,29 @@
       "publicationAllowed": false,
       "architectureEvolution": "PR-only"
     }
+  },
+  "providerOnboarding": {
+    "minimumAutoCertificationRatio": 0.75,
+    "massDisableFractionCeiling": 0.25,
+    "lowYieldInterpretation": "architecture_defect_not_provider_population_failure",
+    "clusterFirstRepair": true,
+    "repairOrder": [
+      "core_global",
+      "capability_family",
+      "provider_local_learning"
+    ],
+    "certificationSequence": [
+      "known_positive_fixture_exact_bundle",
+      "provider_targeted_fixture_pool",
+      "rotating_recent_fixture_pool",
+      "native_runtime_fallback",
+      "brain_learning"
+    ],
+    "nodePositiveCanCertify": true,
+    "nodeNegativeCanDisable": false,
+    "nativeFallbackRequiredWhenNodeNegative": true,
+    "nativeFallbackRequiredWhenNodeContradictsPriorPositive": true,
+    "exactBundlePositiveWitnessRequiredForActivation": true,
+    "unresolvedAction": "repair_or_learning_not_mass_disable"
   }
 }
