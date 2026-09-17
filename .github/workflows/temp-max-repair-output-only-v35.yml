@@ -42,7 +42,10 @@ jobs:
               const u=String(row&&row.url||'');
               console.log('TERMINAL18',pid,JSON.stringify(await probe(u,{ms:18000,headers:row&&row.headers||{}})));
               console.log('TERMINAL25',pid,JSON.stringify(await probe(u,{ms:25000,headers:row&&row.headers||{}})));
-              if(/^https?:\/\//.test(u))console.log('TERMINAL_RANGE',pid,JSON.stringify(await probe(u,{ms:18000,headers:Object.assign({},row&&row.headers||{},Range:'bytes=0-2047')})));
+              if(/^https?:\/\//.test(u)){
+                const rangeHeaders=Object.assign({},row&&row.headers||{}, {'Range':'bytes=0-2047'});
+                console.log('TERMINAL_RANGE',pid,JSON.stringify(await probe(u,{ms:18000,headers:rangeHeaders})));
+              }
             }
           }
           (async()=>{
