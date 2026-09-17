@@ -5,6 +5,15 @@ on:
     branches: [main]
     paths:
       - "provider-overrides.json"
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "no-anime/manifest.json"
+      - "vf-no-anime/manifest.json"
+      - "scripts/generate_language_manifests.py"
+      - "scripts/validate_language_projection.py"
+      - "scripts/sync_manifest_projection_rows.py"
+      - "scripts/materialize_provider_v3_one.py"
+      - "scripts/domain_refresh_transaction_v2.py"
       - "scripts/build_brain_repair_proposal.py"
       - "tests/brain_repair_proposal_test.py"
       - "tests/provider_v3_strategy_plan_contract_test.py"
@@ -17,6 +26,15 @@ on:
     branches: [main]
     paths:
       - "provider-overrides.json"
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "no-anime/manifest.json"
+      - "vf-no-anime/manifest.json"
+      - "scripts/generate_language_manifests.py"
+      - "scripts/validate_language_projection.py"
+      - "scripts/sync_manifest_projection_rows.py"
+      - "scripts/materialize_provider_v3_one.py"
+      - "scripts/domain_refresh_transaction_v2.py"
       - "scripts/build_brain_repair_proposal.py"
       - "tests/brain_repair_proposal_test.py"
       - ".github/workflows/provider-overrides-gate.yml"
@@ -64,6 +82,31 @@ jobs:
           python tests/brain_repair_proposal_test.py
           python tests/overrides_test.py
           python tests/provider_v3_strategy_plan_contract_test.py
+
+      - name: Validate manifest projection parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/sync_manifest_projection_rows.py --check
+          python scripts/validate_language_projection.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for rel in ['vf/manifest.json','no-anime/manifest.json','vf-no-anime/manifest.json']:
+              doc=json.load(open(rel))
+              missing=[]
+              for row in doc.get('scrapers',[]):
+                  filename=str(row.get('filename') or '')
+                  if not filename:
+                      missing.append((row.get('id'),'empty filename'))
+                      continue
+                  target=(Path(rel).parent / filename).resolve()
+                  if not target.is_file():
+                      missing.append((row.get('id'),str(target)))
+              if missing:
+                  raise SystemExit(f'{rel}: missing projected bundles: {missing[:20]}')
+              print(f'MANIFEST_PROJECTION_TARGETS_OK {rel} providers={len(doc.get("scrapers",[]))}')
+          PY
 
       - name: Validate Repair Brain contracts
         run: |
