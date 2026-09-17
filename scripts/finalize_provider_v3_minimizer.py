@@ -36,7 +36,7 @@ MANIFEST = ROOT / "manifest.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
 PROVIDERS = ROOT / "providers"
 MINIMIZER = ROOT / "scripts" / "provider_v3_minimizer.py"
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -59,7 +59,6 @@ def _tool_sha() -> str:
 
 
 def _provider_rows(manifest: dict[str, Any]) -> list[dict[str, Any]]:
-    """Return only executable rows; visible disabled rows are publication metadata."""
     rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
     ids = [str(row.get("id") or "").strip().casefold() for row in rows]
     if any(not value for value in ids) or len(set(ids)) != len(ids):
@@ -99,12 +98,6 @@ def _proof_metrics(
     result: Any,
     bytes_changed: bool,
 ) -> tuple[int, int, str]:
-    """Keep publication-transform metrics stable across fixed-point checks.
-
-    On the transformation pass the metrics describe bytes actually removed. A
-    second pass necessarily observes zero removable bytes, but that must not
-    rewrite the historical proof for the exact same minimized asset/tool.
-    """
     if bytes_changed:
         return (
             int(result.saved_bytes),
@@ -200,6 +193,7 @@ def finalize(*, check: bool) -> dict[str, Any]:
             "tool_sha256": tool_sha,
             "production_enabled": True,
             "terser_allowed": False,
+            "one_physical_line": True,
             "saved_bytes": proof_saved,
             "transformed_lines": proof_lines,
             "skipped_reason": proof_skipped,
@@ -217,10 +211,6 @@ def finalize(*, check: bool) -> dict[str, Any]:
             entry["filename"] = new_relative
             current_version = str(entry.get("version") or "1.0.0")
             floor = floors.get(provider_id)
-            # Reapply may already have changed the exact same provider in this
-            # accepted transaction. If its version is already strictly above the
-            # published floor, minimization changes the same generation and must
-            # not invent a second cache bump.
             if floor and version_is_strictly_above_floor(current_version, floor):
                 already_versioned += 1
             else:
@@ -237,6 +227,7 @@ def finalize(*, check: bool) -> dict[str, Any]:
                 "verified": True,
                 "tool": "raw-bytes",
                 "mangle": False,
+                "one_physical_line": True,
                 "sha256": digest,
             })
             row["final_fixed_point"] = fixed
@@ -253,9 +244,13 @@ def finalize(*, check: bool) -> dict[str, Any]:
                 expected_stale = True
                 row["sha256"] = digest
             fixed = row.get("final_fixed_point")
-            if isinstance(fixed, dict) and str(fixed.get("sha256") or "").casefold() != digest:
-                expected_stale = True
-                fixed["sha256"] = digest
+            if isinstance(fixed, dict):
+                if str(fixed.get("sha256") or "").casefold() != digest:
+                    expected_stale = True
+                    fixed["sha256"] = digest
+                if fixed.get("one_physical_line") is not True:
+                    expected_stale = True
+                    fixed["one_physical_line"] = True
 
         if expected_stale:
             stale = True
@@ -268,7 +263,7 @@ def finalize(*, check: bool) -> dict[str, Any]:
         print(
             "FIELD_PROVIDER_V3_MINIMIZER_PUBLICATION "
             f"providers={provider_count} changed=0 saved_bytes=0 "
-            f"tool_sha={tool_sha[:16]} fixed_point=true terser_allowed=false"
+            f"tool_sha={tool_sha[:16]} fixed_point=true one_line=true terser_allowed=false"
         )
         return {"changed": 0, "saved_bytes": 0, "tool_sha256": tool_sha}
 
@@ -282,7 +277,8 @@ def finalize(*, check: bool) -> dict[str, Any]:
         "FIELD_PROVIDER_V3_MINIMIZER_PUBLICATION "
         f"providers={provider_count} changed={changed} saved_bytes={saved_total} "
         f"transformed_lines={transformed_total} skipped_templates={skipped_templates} "
-        f"already_versioned={already_versioned} tool_sha={tool_sha[:16]} terser_allowed=false"
+        f"already_versioned={already_versioned} tool_sha={tool_sha[:16]} "
+        "one_line=true terser_allowed=false"
     )
     return {
         "changed": changed,

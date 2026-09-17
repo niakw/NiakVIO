@@ -22,7 +22,9 @@ module = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(module)
 
-node_script = """
+# Raw Python literal is intentional: the JavaScript regex must receive the two
+# escape sequences \r and \n, not physical CR/LF bytes interpolated by Python.
+node_script = r"""
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
@@ -32,20 +34,23 @@ const files = fs.readdirSync(dir).filter(x => x.endsWith('.js')).sort();
 if (files.length !== expected) throw new Error('expected ' + expected + ' preview files, got ' + files.length);
 for (const file of files) {
   const source = fs.readFileSync(path.join(dir, file), 'utf8');
+  if (/\r|\n/.test(source)) throw new Error(file + ': provider is not one physical line');
   new vm.Script(source, {filename: file});
 }
-process.stdout.write('NODE_MINIMIZER_PARSE_OK files=' + files.length);
+process.stdout.write('NODE_MINIMIZER_PARSE_OK files=' + files.length + ' one_line=1');
 """
 
 with tempfile.TemporaryDirectory() as tmp:
     preview_dir = Path(tmp) / "preview"
     report = module.write_preview(preview_dir, syntax_check=False)
     assert report["provider_count"] == EXPECTED
+    assert report["totals"]["one_line_providers"] == EXPECTED
 
     paths = sorted(preview_dir.glob("*.js"))
     assert len(paths) == EXPECTED
     for path in paths:
         text = path.read_text(encoding="utf-8")
+        assert "\n" not in text and "\r" not in text, path.name
         ids = validate_managed_fixes(text)
         assert ids, path.name
         assert text.count("/* BEGIN NIAKVIO_PROVIDER */") == 1, path.name
@@ -61,10 +66,10 @@ with tempfile.TemporaryDirectory() as tmp:
         check=False,
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
-    assert f"NODE_MINIMIZER_PARSE_OK files={EXPECTED}" in proc.stdout
+    assert f"NODE_MINIMIZER_PARSE_OK files={EXPECTED} one_line=1" in proc.stdout
 
 print(
     "PROVIDER_V3_MINIMIZER_PREVIEW_OK "
     f"providers={EXPECTED} saved_bytes={report['totals']['saved_bytes']} "
-    f"transformed_lines={report['totals']['transformed_lines']}"
+    f"transformed_lines={report['totals']['transformed_lines']} one_line=1"
 )

@@ -68,6 +68,11 @@ def _strip_previous(text: str) -> str:
     return "".join(parts)
 
 
+def managed_fix_insertion_baseline(text: str) -> str:
+    """Exact pre-insertion bytes for legacy safety-wrapper migration."""
+    return _strip_previous(text)
+
+
 WRAPPER = r'''
 /* SAFETY_MARKER */
 ;(function(g,c){

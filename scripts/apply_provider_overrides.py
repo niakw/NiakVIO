@@ -216,6 +216,7 @@ def _assert_v3_patch_ownership(
     after: str,
     patch_script: str,
     managed_fix_id: str | None,
+    insertion_baseline: str | None = None,
 ) -> None:
     """A v3 patch may alter only its own STARTFIX/CLOSEFIX rectangle."""
     is_v3 = (
@@ -252,10 +253,14 @@ def _assert_v3_patch_ownership(
             )
         return
 
-    # New Lego insertion: deleting the new rectangle must recover the previous
-    # provider byte-for-byte, except for separator newlines at the insertion seam.
+    # New Lego insertion: deleting the new rectangle must recover the exact
+    # expected insertion baseline, except for separator whitespace at the seam.
+    # A patch may opt into a *specific* legacy -> managed migration baseline;
+    # this does not weaken ownership because arbitrary outside mutations still
+    # fail against the explicitly computed baseline.
+    expected_before = before if insertion_baseline is None else insertion_baseline
     without_new = after[:new_span[0]] + after[new_span[1]:]
-    if not _only_whitespace_gap_diff(before, without_new):
+    if not _only_whitespace_gap_diff(expected_before, without_new):
         raise ValueError(
             f"v3 patch mutated bytes outside new owned fix {fix_id}: {patch_script}"
         )
@@ -289,7 +294,22 @@ def _apply_patch_script(
 
     managed_fix_id = getattr(module, "MANAGED_FIX_ID", None)
     managed_fix_optional = bool(getattr(module, "MANAGED_FIX_OPTIONAL", False))
-    _assert_v3_patch_ownership(text, result, patch_script, managed_fix_id)
+    insertion_baseline = None
+    if managed_fix_id and owned_span(text, str(managed_fix_id)) is None:
+        baseline_fn = getattr(module, "managed_fix_insertion_baseline", None)
+        if baseline_fn is not None:
+            if not callable(baseline_fn):
+                raise TypeError(
+                    f"provider patch {patch_script} managed_fix_insertion_baseline must be callable"
+                )
+            insertion_baseline = baseline_fn(text)
+            if not isinstance(insertion_baseline, str):
+                raise TypeError(
+                    f"provider patch {patch_script} managed_fix_insertion_baseline must return str"
+                )
+    _assert_v3_patch_ownership(
+        text, result, patch_script, managed_fix_id, insertion_baseline
+    )
 
     try:
         validate_managed_fixes(result)

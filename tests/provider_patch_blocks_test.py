@@ -11,6 +11,8 @@ from apply_provider_overrides import _apply_fixed_endpoint, _fixed_endpoint_fix_
 from provider_patch_blocks import (
     decode_managed_data,
     render_managed_fix,
+    replace_core_fix,
+    replace_provider_fix,
     strip_all_managed_fixes,
     validate_managed_fixes,
 )
@@ -110,5 +112,35 @@ except ValueError:
     pass
 else:
     raise AssertionError("legacy fixed endpoint must never seed ProviderBase")
+
+# Published Provider v3 is one physical line. New Provider/Core Lego blocks must
+# still be insertable and marker-decodable before the final minimizer runs again.
+monoline = (
+    '/* BEGIN NIAKVIO_PROVIDER */'
+    '/* NIAKVIO_PROVIDER_ID:demo */'
+    '/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */'
+    'const seed=1;'
+    '/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */'
+    '/* END NIAKVIO_PROVIDER */'
+)
+monoline = replace_provider_fix(
+    monoline,
+    'PROVIDER.DEMO.RUNTIME.V1',
+    'const providerEdit=true;',
+    data={'revision': 1},
+)
+monoline = replace_core_fix(
+    monoline,
+    'CORE.DEMO.RUNTIME.V1',
+    'const coreEdit=true;',
+    data={'revision': 1},
+)
+assert validate_managed_fixes(monoline) == [
+    'CORE.DEMO.RUNTIME.V1',
+    'PROVIDER.DEMO.RUNTIME.V1',
+]
+assert monoline.count('STARTFIX:') == 2
+assert monoline.count('FIXDATA:') == 2
+assert monoline.count('CLOSEFIX:') == 2
 
 print("managed provider fix Lego contract passed")
