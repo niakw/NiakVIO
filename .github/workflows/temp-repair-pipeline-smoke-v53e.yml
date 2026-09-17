@@ -1,0 +1,73 @@
+name: TEMP - Repair Pipeline Smoke V53E
+
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-repair-pipeline-smoke-v53e.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  repair-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+
+      - name: Upgrade Telegram validator to current secure implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/upgrade_provider_base_runtime_v11.py')
+          s=p.read_text(encoding='utf-8')
+          old='''    for needle in (\n        't\\\\.me|telegram\\\\.me|telegram\\\\.dog',\n        'function _runtimeDiscoveryOnlyUrl(url)',\n        'host === "t.me" || host.endsWith(".t.me")',\n        'if (_runtimeDiscoveryOnlyUrl(url)) throw new Error("provider_discovery_only_host");',\n        'filter(value => /^https?:/i.test(value) && !_runtimeDiscoveryOnlyUrl(value));',\n    ):\n        if needle not in value:\n            raise AssertionError(f"telegram discovery-only guard missing: {needle}")\n'''
+          new='''    # DATA-side filtering has evolved from the original regex to a stronger\n    # parsed-host boundary check. Accept either representation, but require the\n    # complete Telegram root set so this migration stays idempotent across the\n    # hardened ProviderBase implementation.\n    legacy_data_guard = 't\\\\.me|telegram\\\\.me|telegram\\\\.dog' in value\n    parsed_data_guard = (\n        'parsed_host = (urlsplit(text).hostname or "").casefold().rstrip(".")' in value\n        and 'telegram_roots = {"t.me", "telegram.me", "telegram.dog"}' in value\n        and 'parsed_host.endswith("." + root)' in value\n    )\n    if not (legacy_data_guard or parsed_data_guard):\n        raise AssertionError("telegram discovery-only DATA guard missing")\n    for needle in (\n        'function _runtimeDiscoveryOnlyUrl(url)',\n        'host === "t.me" || host.endsWith(".t.me")',\n        'if (_runtimeDiscoveryOnlyUrl(url)) throw new Error("provider_discovery_only_host");',\n        'filter(value => /^https?:/i.test(value) && !_runtimeDiscoveryOnlyUrl(value));',\n    ):\n        if needle not in value:\n            raise AssertionError(f"telegram discovery-only guard missing: {needle}")\n'''
+          if old not in s:
+              raise SystemExit('validator anchor not found')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          PY
+          python3 -m py_compile scripts/upgrade_provider_base_runtime_v11.py
+          python3 scripts/upgrade_provider_base_runtime_v11.py
+          python3 tests/provider_runtime_origin_hub_separation_test.py
+          git diff --check
+
+      - name: Persist validator repair only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add scripts/upgrade_provider_base_runtime_v11.py
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix(repair): accept hardened Telegram discovery guard'
+            git pull --rebase origin fix/non-display-recovery-20260916
+            git push origin HEAD:fix/non-display-recovery-20260916
+          fi
+
+      - name: Continue targeted repair pipeline after validator repair
+        shell: bash
+        run: |
+          set +e
+          git reset --hard HEAD
+          python3 scripts/run_provider_repair_fast_targeted_v1.py \
+            --provider animesama-co --workers 2 --timeout 35 --attempts 2 --defer-global-guard
+          rc=$?
+          echo "V53E_PIPELINE_RC=$rc"
+          if [ -f automation/provider-repair-fast-summary.json ]; then
+            python3 - <<'PY'
+          import json
+          print('V53E_SUMMARY',json.dumps(json.load(open('automation/provider-repair-fast-summary.json')),sort_keys=True))
+          PY
+          fi
+          git status --short
+          exit $rc
