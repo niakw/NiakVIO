@@ -40,7 +40,7 @@ WRAPPER = r'''
       re=/<iframe[^>]+src=["']([^"']+)["']/gi;while((m=re.exec(String(html||"")))&&out.length<12){var u=_absolute(m[1],base);if(/^https?:/i.test(u)&&/(?:vidsrc|vsembed|voe\.|\/embed\/)/i.test(u)&&!seen[u]){seen[u]=1;out.push(u);}}
       return out;
     }
-    function links(html,base){var out=[],seen=Object.create(null),re=/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,m;while((m=re.exec(String(html||"")))&&out.length<200){var u=_absolute(m[1],base);if(!u||seen[u])continue;seen[u]=1;out.push({url:u,text:String(m[2]||"").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim()});}return out;}
+    function visible(v){var src=String(v==null?"":v),out="",inTag=false;for(var i=0;i<src.length;i++){var ch=src.charAt(i);if(ch==="<"){inTag=true;out+=" ";continue}if(ch===">"){inTag=false;continue}if(!inTag)out+=ch}return out.replace(/\s+/g," ").trim()} function links(html,base){var out=[],seen=Object.create(null),re=/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,m;while((m=re.exec(String(html||"")))&&out.length<200){var u=_absolute(m[1],base);if(!u||seen[u])continue;seen[u]=1;out.push({url:u,text:visible(m[2])});}return out;}
     async function page(url,ref){var r=await _fetch(url,{headers:headers(ref,false)});return {url:r.url||url,text:await r.text()};}
     async function current(tmdbId,mediaType,season,episode){
       var lane=_mediaNamespace(mediaType),meta=await _tmdb(tmdbId,mediaType);if(!meta||!meta.title||!BASE)return [];
