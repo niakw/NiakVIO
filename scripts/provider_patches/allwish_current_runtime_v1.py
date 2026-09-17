@@ -40,7 +40,7 @@ WRAPPER = r'''
         var path="";try{path=new URL(href).pathname.toLowerCase()}catch(_e){}
         var score=0;
         for(var i=0;i<expected.length;i++){var s=expected[i];if(s.length>=4&&path.indexOf("/watch/"+s)>=0)score=Math.max(score,80);}
-        var body=_slug(String(m[4]||"").replace(/<[^>]+>/g," "));
+        var rawBody=String(m[4]||""),bodyText="",inTag=false;for(var bi=0;bi<rawBody.length;bi++){var ch=rawBody.charAt(bi);if(ch==="<"){inTag=true;bodyText+=" ";continue}if(ch===">"){inTag=false;continue}if(!inTag)bodyText+=ch}var body=_slug(bodyText);
         for(var j=0;j<expected.length;j++){
           var e=expected[j];if(!e)continue;
           if(body===e)score=Math.max(score,320);
