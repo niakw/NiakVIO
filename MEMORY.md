@@ -113,6 +113,13 @@ This section supersedes older branch-topology assumptions below for the active r
 - V34 output-positive but terminal not confirmed: hindmoviez:movie, vidfast:movie, vidfast:tv, kurage:anime
 - V34 still zero/no acceptable output on tested fixtures: flemmix:tv, flemmix:movie, uhdmovies:movie, 4khdhub:movie, uhdmovies:tv, persianstremio:movie, persianstremio:tv, 4khdhub:tv, kehflix:anime, desiflix:movie, hindmoviez:tv, animesultra:anime, animesalt:anime, animetsu:anime, moviesmod:movie, moviesmod:tv, mugiwarastream:anime, neko-sama:anime, animesama-co:anime, anikototv:anime, sekai:anime, streamzo:anime, vostfree:anime, yflix:movie, yflix:tv, anime-ultime:anime, animevost-fr:anime, fullanime:anime, mallumv:movie, showbox:movie, showbox:tv, allwish:anime, voiranime-rip:anime
 
+<!-- MAX_REPAIR_20260917_V43_RESULT -->
+### V43 full residual live requalification
+- Newly playable/proven residual lanes: anikototv:anime
+- Verified non-direct player lanes: anikototv:anime
+- Output-positive but playback/player verification not established: uhdmovies:tv
+- Still zero across alternate current fixtures: flemmix:movie, flemmix:tv, persianstremio:movie, persianstremio:tv, 4khdhub:movie, 4khdhub:tv, animesalt:anime, uhdmovies:movie, animesultra:anime, kehflix:anime, moviesmod:tv, moviesmod:movie, neko-sama:anime, animetsu:anime, vostfree:anime, mugiwarastream:anime, desiflix:movie, yflix:movie, animevost-fr:anime, fullanime:anime, anime-ultime:anime, showbox:movie, showbox:tv, mallumv:movie, animesama-co:anime, yflix:tv, voiranime-rip:anime, allwish:anime
+
 ## 2026-09-16 — authoritative current checkpoint
 
 - Current public release is **5.21.48**. `manifest.json`, VF/no-anime projections, package metadata and release hashes are on 5.21.48.
