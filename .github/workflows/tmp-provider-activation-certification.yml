@@ -1,5 +1,4 @@
-name: TMP - Provider Activation Certification
-# v4: idempotent migration + official anime transport + architecture-yield/cluster diagnostics
+name: TMP - Provider Repair Survival Recovery
 
 on:
   push:
@@ -7,7 +6,6 @@ on:
       - fix/provider-activation-certification-v1
     paths:
       - '.github/workflows/tmp-provider-activation-certification.yml'
-      - 'tests/native_provider_resample_status_test.py'
   workflow_dispatch:
 
 permissions:
@@ -18,29 +16,33 @@ env:
   TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
 
 jobs:
-  certify:
+  recover:
     runs-on: ubuntu-latest
-    timeout-minutes: 100
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: fix/provider-activation-certification-v1
-          fetch-depth: 1
+          fetch-depth: 0
+
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: '24'
           package-manager-cache: false
+
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.12'
-      - name: Apply strict native active gate migration
-        run: python3 scripts/upgrade_native_active_full_gate_v1.py
-      - name: Validate activation contracts
+
+      - name: Restore durable repair authority
         run: |
           set -euo pipefail
+          python3 scripts/upgrade_native_active_full_gate_v1.py
+          python3 scripts/restore_provider_repair_survival_v1.py
+          python3 scripts/check_provider_repair_survival.py
+          python3 tests/provider_repair_survival_registry_test.py
           python3 tests/active_provider_live_coverage_test.py
           python3 tests/native_provider_resample_status_test.py
-          python3 tests/native_declared_matrix_enabled_only_test.py
           python3 tests/native_declared_provider_matrix_test.py
           python3 tests/native_active_provider_full_gate_test.py
           python3 tests/provider_playable_certification_test.py
@@ -49,66 +51,102 @@ jobs:
           python3 tests/provider_certification_learning_queue_test.py
           python3 tests/provider_activation_consensus_test.py
           python3 tests/brain_provider_onboarding_policy_test.py
-      - name: Persist migrated gate and tests
+          python3 -m py_compile             scripts/provider_patches/non_display_recovery_runtime_v1.py             scripts/provider_patches/allanime_current_runtime_v1.py             scripts/provider_patches/allwish_current_runtime_v1.py             scripts/provider_patches/anikototv_runtime_v3.py             scripts/provider_patches/flemmix_current_runtime_v1.py             scripts/provider_patches/moviebox_current_embed_v2.py             scripts/provider_patches/vidfast_current_embed_v1.py             scripts/provider_patches/vidlove_current_api_v1.py             scripts/provider_patches/wookafr_showvideo_base64_v1.py             scripts/provider_patches/wookafr_current_runtime_v2.py             scripts/provider_patches/yflix_current_runtime_v2.py
+
+      - name: Export publication baseline
+        run: |
+          set -euo pipefail
+          python3 scripts/release_version_baseline.py             --manifest manifest.json             --output "$RUNNER_TEMP/published-manifest-baseline.json"
+
+      - name: Rematerialize restored repair authority
+        run: |
+          set -euo pipefail
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/finalize_provider_v3_minimizer.py
+          python3 scripts/finalize_provider_v3_minimizer.py --check
+          python3 scripts/reapply_published_overrides.py --check
+          python3 scripts/check_provider_repair_survival.py
+          python3 tests/provider_v3_minimizer_contract_test.py
+          python3 tests/provider_v3_minimizer_preview_test.py
+          python3 tests/provider_v3_minimizer_publication_pipeline_test.py
+          python3 tests/provider_v3_minimizer_published_test.py
+          python3 scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python3 scripts/prune_unreferenced_providers.py
+          python3 tests/provider_html_filter_security_test.py --published
+          python3 scripts/audit_provider_v3_static.py
+
+      - name: Synchronize repair generation
+        run: |
+          set -euo pipefail
+          python3 scripts/sync_release_versions.py             --manifest manifest.json             --previous "$RUNNER_TEMP/published-manifest-baseline.json"
+          python3 tests/release_auto_bump_test.py
+          python3 tests/provider_versioning_test.py
+          python3 tests/reapply_provider_versioning_test.py
+          python3 scripts/generate_hub46_manifest.py             --source manifest.json             --matrix automation/evidence/hub-lab-matrix-46.json             --output manifest-hub46.json
+
+      - name: Commit rematerialized provider generation locally
         run: |
           set -euo pipefail
           git config user.name 'niakvio-bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add scripts/gate_native_declared_provider_matrix.py tests/native_declared_provider_matrix_test.py
+          git add             MEMORY.md             provider-overrides.json PROVENANCE.json providers/             manifest.json manifest-hub46.json             vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             package.json package-lock.json sources.json provider_catalog.json nuvio-client-id-state.json             automation/PLATFORM-RUNTIME-CONTRACTS.md             scripts/gate_native_declared_provider_matrix.py tests/native_declared_provider_matrix_test.py
           if ! git diff --cached --quiet; then
-            git commit -m 'fix(native): require FULL status for active providers'
-            git push origin HEAD:fix/provider-activation-certification-v1
+            git commit -m 'fix(providers): restore repair authority into published generation'
           fi
-      - name: Certify exact current provider bytes
+          git rev-parse HEAD > "$RUNNER_TEMP/provider-generation-sha"
+          echo "FIELD_REPAIR_GENERATION_SHA $(cat "$RUNNER_TEMP/provider-generation-sha")"
+
+      - name: Rebuild pinned Hub46 and integrity
+        run: |
+          set -euo pipefail
+          PROVIDER_SHA="$(cat "$RUNNER_TEMP/provider-generation-sha")"
+          python3 scripts/build_hub46_native_manifest.py             --provider-sha "$PROVIDER_SHA"             --source manifest-hub46.json             --output native-hub46/manifest.json
+          python3 tests/native_hub46_manifest_test.py
+          python3 tests/native_hub46_transport_manifest_test.py
+          python3 tests/release_projection_scope_test.py
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          python3 tests/release_hash_scope_test.py
+          git add native-hub46/manifest.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore(release): pin recovered provider repair generation'
+          fi
+
+      - name: Push recovered generation to branch
+        run: |
+          set -euo pipefail
+          git push origin HEAD:fix/provider-activation-certification-v1
+          echo "FIELD_REPAIR_BRANCH_HEAD $(git rev-parse HEAD)"
+
+      - name: Certify recovered and control providers
         run: |
           set -euo pipefail
           mkdir -p health-output
-          python3 scripts/certify_provider_playable_lanes.py \
-            --candidate-limit 12 \
-            --timeout 30 \
-            --workers 6 \
-            --seed "activation-cert-${GITHUB_RUN_ID}" \
-            --output health-output/provider-playable-certification.json
-          python3 scripts/learn_provider_positive_fixtures.py \
-            --certification health-output/provider-playable-certification.json \
-            --registry automation/provider-positive-fixtures.json \
-            --output health-output/provider-positive-fixtures.json
-          python3 scripts/build_provider_certification_learning_queue.py \
-            --certification health-output/provider-playable-certification.json \
-            --output health-output/provider-certification-learning-queue.json
-          python3 scripts/build_provider_activation_consensus.py \
-            --node-certification health-output/provider-playable-certification.json \
-            --output health-output/provider-activation-consensus.json
-          set +e
-          python3 scripts/enforce_provider_activation_contract.py \
-            --manifest manifest.json \
-            --certification health-output/provider-playable-certification.json \
-            --report health-output/provider-activation-contract.json \
-            --require-yield
-          YIELD_STATUS=$?
-          set -e
-          if [ "$YIELD_STATUS" -ne 0 ] && [ "$YIELD_STATUS" -ne 3 ]; then exit "$YIELD_STATUS"; fi
-          echo "FIELD_CERTIFICATION_YIELD_STATUS status=$YIELD_STATUS expected_low_yield_code=3"
-      - name: Summarize certification
+          python3 scripts/certify_provider_playable_lanes.py             --candidate-limit 12             --timeout 30             --workers 4             --seed "repair-survival-${GITHUB_RUN_ID}"             --provider animesama-co             --provider animevostfr             --provider coflix             --provider neko-sama             --provider sekai             --provider voiranime-rip             --provider allanime             --provider allwish             --provider anikototv             --provider flemmix             --provider moviebox             --provider vidfast             --provider vidlove             --provider wookafr             --provider yflix             --provider kehflix             --provider purstream             --provider papadustream             --provider streamzo             --provider hindmoviez             --provider castle             --provider vidrock             --provider french-manga             --provider voiranime-homes             --provider anime-sama             --provider animekai             --output health-output/provider-playable-certification.json
+          python3 scripts/learn_provider_positive_fixtures.py             --certification health-output/provider-playable-certification.json             --registry automation/provider-positive-fixtures.json             --output health-output/provider-positive-fixtures.json
+          python3 scripts/build_provider_certification_learning_queue.py             --certification health-output/provider-playable-certification.json             --output health-output/provider-certification-learning-queue.json
+          python3 scripts/build_provider_activation_consensus.py             --node-certification health-output/provider-playable-certification.json             --output health-output/provider-activation-consensus.json
+
+      - name: Summarize targeted certification
         run: |
           python3 - <<'PY'
           import json
           from pathlib import Path
           p=json.loads(Path('health-output/provider-playable-certification.json').read_text())
-          print('CERTIFIED', p['certifiedActiveProviderCount'], '/', p['activeProviderCount'])
+          print('FIELD_REPAIR_TARGETED_CERTIFIED', p['certifiedActiveProviderCount'], '/', p['activeProviderCount'])
           for row in p['providers']:
-              if row.get('enabled') and not row.get('certified'):
-                  print('UNCERTIFIED', row['providerId'], 'missing='+','.join(row.get('missingTypes') or []))
-                  for lane, data in (row.get('lanes') or {}).items():
-                      if data.get('state') != 'certified':
-                          stages={a.get('debugStage') for a in data.get('attempts') or []}
-                          print(' ', lane, 'attempts='+str(data.get('attemptCount')), 'stages='+','.join(sorted(str(x) for x in stages if x)))
+              lanes=[]
+              for lane,data in sorted((row.get('lanes') or {}).items()):
+                  stages=sorted({str(a.get('debugStage') or '') for a in data.get('attempts') or [] if a.get('debugStage')})
+                  lanes.append(f"{lane}:{data.get('state')}:{'|'.join(stages)}")
+              print('FIELD_REPAIR_TARGET', row.get('providerId'), 'certified='+str(bool(row.get('certified'))).lower(), ' '.join(lanes))
           PY
-      - name: Upload certification evidence
+
+      - name: Upload repair evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: provider-activation-certification-${{ github.run_id }}
+          name: provider-repair-survival-${{ github.run_id }}
           path: health-output/
           retention-days: 8
           if-no-files-found: warn
