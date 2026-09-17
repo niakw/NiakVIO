@@ -10,6 +10,7 @@ MARKER = "NIAKVIO_ALLWISH_CURRENT_RUNTIME_V1"
 
 WRAPPER = r'''
 /* NIAKVIO_ALLWISH_CURRENT_RUNTIME_V1 */
+/* NIAKVIO_ALLWISH_EXACT_TITLE_SELECTION_V70 */
 ;(function(){
   "use strict";
   try{
@@ -40,7 +41,11 @@ WRAPPER = r'''
         var score=0;
         for(var i=0;i<expected.length;i++){var s=expected[i];if(s.length>=4&&path.indexOf("/watch/"+s)>=0)score=Math.max(score,80);}
         var body=_slug(String(m[4]||"").replace(/<[^>]+>/g," "));
-        for(var j=0;j<expected.length;j++){var e=expected[j];if(e&&body.indexOf(e)>=0)score=Math.max(score,100);}
+        for(var j=0;j<expected.length;j++){
+          var e=expected[j];if(!e)continue;
+          if(body===e)score=Math.max(score,320);
+          else if(body.indexOf(e)>=0)score=Math.max(score,100);
+        }
         if(score>0)out.push({href:href,id:attr(attrs,"data-tip"),score:score});
       }
       out.sort(function(a,b){return b.score-a.score});return out;
