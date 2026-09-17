@@ -1,0 +1,41 @@
+name: CORE - Temporary Workflow Hygiene
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: temporary-workflow-hygiene-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Reject temporary workflow residue
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Reject temp-prefixed workflow files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t temp_workflows < <(find .github/workflows -maxdepth 1 -type f \( -name 'temp-*.yml' -o -name 'temp-*.yaml' \) -printf '%f\n' | sort)
+          if ((${#temp_workflows[@]})); then
+            printf 'TEMP_WORKFLOW_RESIDUE %s\n' "${temp_workflows[@]}" >&2
+            exit 1
+          fi
+          echo 'FIELD_TEMP_WORKFLOW_HYGIENE status=ok residue=0'
