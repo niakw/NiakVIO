@@ -1,0 +1,118 @@
+name: TEMP - Provider v3 One-Line Finalize V74
+
+on:
+  push:
+    branches: [hotfix/projection-disabled-relative-path-20260917]
+    paths: [.github/workflows/temp-monoline-finalize-v74.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade-and-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: hotfix/projection-disabled-relative-path-20260917
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+
+      - name: Adapt edit/version paths for one-line publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('scripts/provider_patch_blocks.py')
+          text = p.read_text(encoding='utf-8')
+          old_provider = '''        if clean_v3:\n            if before and not before.endswith(("\\n", "\\r")):\n                raise ValueError(\n                    f"provider Lego insertion point is not a line boundary: {fid}"\n                )\n            output = before + block + after\n        else:\n            lead = "" if not before or before.endswith(("\\n", "\\r")) else "\\n"\n            tail = "" if not after or after.startswith(("\\n", "\\r")) else "\\n"\n            output = before + lead + block + tail + after\n'''
+          new_provider = '''        # Published Provider v3 bundles are one physical line. Editing is\n        # deliberately allowed to re-introduce temporary line boundaries around\n        # a newly inserted Lego; the publication minimizer removes them again.\n        lead = "" if not before or before.endswith(("\\n", "\\r")) else "\\n"\n        tail = "" if not after or after.startswith(("\\n", "\\r")) else "\\n"\n        output = before + lead + block + tail + after\n'''
+          old_core = '''        if clean_v3:\n            if before and not before.endswith(("\\n", "\\r")):\n                raise ValueError(\n                    f"Core Lego insertion point is not a line boundary: {fid}"\n                )\n            output = before + block + after\n        else:\n            lead = "" if not before or before.endswith(("\\n", "\\r")) else "\\n"\n            tail = "" if not after or after.startswith(("\\n", "\\r")) else "\\n"\n            output = before + lead + block + tail + after\n'''
+          new_core = '''        # Same edit contract as Provider Lego: one-line publication is a final\n        # byte transform, not a restriction on the editable intermediate form.\n        lead = "" if not before or before.endswith(("\\n", "\\r")) else "\\n"\n        tail = "" if not after or after.startswith(("\\n", "\\r")) else "\\n"\n        output = before + lead + block + tail + after\n'''
+          if text.count(old_provider) != 1 or text.count(old_core) != 1:
+              raise SystemExit('provider_patch_blocks edit anchors drifted')
+          text = text.replace(old_provider, new_provider).replace(old_core, new_core)
+          p.write_text(text, encoding='utf-8')
+
+          p = Path('scripts/sync_release_versions.py')
+          text = p.read_text(encoding='utf-8')
+          old = '    if filename.startswith("providers/"):\n        return f"../{filename}"\n'
+          new = '    if filename.startswith(("providers/", "provider-disabled/")):\n        return f"../{filename}"\n'
+          if text.count(old) != 1:
+              raise SystemExit('sync_release_versions projection filename anchor drifted')
+          p.write_text(text.replace(old, new), encoding='utf-8')
+
+          p = Path('scripts/finalize_provider_v3_minimizer.py')
+          text = p.read_text(encoding='utf-8')
+          if text.count('SCHEMA_VERSION = 2') != 1:
+              raise SystemExit('final minimizer proof schema anchor drifted')
+          p.write_text(text.replace('SCHEMA_VERSION = 2', 'SCHEMA_VERSION = 3'), encoding='utf-8')
+
+          p = Path('tests/provider_patch_blocks_test.py')
+          text = p.read_text(encoding='utf-8')
+          anchor = 'print("managed provider fix Lego contract passed")\n'
+          addition = r'''
+# Current publication is one physical line. Marker ownership must remain fully
+# editable even when the requested Lego did not previously exist.
+from provider_patch_blocks import replace_core_fix, replace_provider_fix, validate_managed_fixes
+monoline = (
+    '/* BEGIN NIAKVIO_PROVIDER */'
+    '/* NIAKVIO_PROVIDER_ID:demo */'
+    '/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */'
+    'const seed=1;'
+    '/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */'
+    '/* END NIAKVIO_PROVIDER */'
+)
+monoline = replace_provider_fix(
+    monoline,
+    'PROVIDER.DEMO.RUNTIME.V1',
+    'const providerEdit=true;',
+    data={'revision': 1},
+)
+monoline = replace_core_fix(
+    monoline,
+    'CORE.DEMO.RUNTIME.V1',
+    'const coreEdit=true;',
+    data={'revision': 1},
+)
+assert validate_managed_fixes(monoline) == [
+    'CORE.DEMO.RUNTIME.V1',
+    'PROVIDER.DEMO.RUNTIME.V1',
+]
+assert monoline.count('STARTFIX:') == 2
+assert monoline.count('CLOSEFIX:') == 2
+
+print("managed provider fix Lego contract passed")
+'''
+          if text.count(anchor) != 1:
+              raise SystemExit('provider_patch_blocks_test print anchor drifted')
+          p.write_text(text.replace(anchor, addition), encoding='utf-8')
+          PY
+
+      - name: Validate one-line minimizer on current portfolio
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/provider_patch_blocks_test.py
+          python tests/provider_v3_minimizer_contract_test.py
+          python tests/provider_v3_minimizer_preview_test.py
+          python tests/provider_v3_minimizer_publication_pipeline_test.py
+          python scripts/provider_v3_minimizer.py --syntax-check
+          python -m py_compile scripts/provider_v3_minimizer.py scripts/provider_patch_blocks.py scripts/sync_release_versions.py scripts/finalize_provider_v3_minimizer.py
+
+      - name: Persist validated adaptation and self-clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/temp-monoline-finalize-v74.yml
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add scripts/provider_patch_blocks.py scripts/sync_release_versions.py scripts/finalize_provider_v3_minimizer.py tests/provider_patch_blocks_test.py .github/workflows/temp-monoline-finalize-v74.yml
+          git commit -m 'fix(minimizer): keep one-line bundles editable and projection-safe'
+          git push origin HEAD:hotfix/projection-disabled-relative-path-20260917
