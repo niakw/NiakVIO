@@ -1,0 +1,199 @@
+name: TEMP - Residual Rotation V55
+
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-residual-rotation-v55.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  rotate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+
+      - name: Rotate every current missing lane using canonical catalogue policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from __future__ import annotations
+          import json, sys
+          from concurrent.futures import ThreadPoolExecutor, as_completed
+          from pathlib import Path
+          sys.path.insert(0,'scripts')
+          import rotating_corpus as rc
+          import field_priority_probe as fp
+          from promote_target_media_v3 import probe as strict_media_probe
+
+          root=Path('.')
+          manifest=json.load(open('manifest.json',encoding='utf-8'))
+          overrides=json.load(open('provider-overrides.json',encoding='utf-8'))
+          rows={str(r.get('id') or '').strip().casefold().replace('_','-'):r for r in manifest.get('scrapers') or [] if isinstance(r,dict)}
+          patches=overrides.get('provider_patches') or {}
+          raw_reg=json.load(open('.github/triggers/nuvio-client-lab.json',encoding='utf-8')).get('fixtures') or []
+
+          def cid(v): return str(v or '').strip().casefold().replace('_','-')
+          def lane_of(f): return rc.canonical_lane(f)
+          def normalize_fixture(raw):
+              f=dict(raw.get('fixture') if isinstance(raw,dict) and isinstance(raw.get('fixture'),dict) else raw)
+              if isinstance(raw,dict) and raw.get('slug'): f['slug']=raw['slug']
+              f['slug']=str(f.get('slug') or '').strip()
+              f['lane']=lane_of(f)
+              return f
+          def with_metadata(f):
+              x=dict(f); lane=x['lane']; year=int(x.get('year') or 0); tid=int(str(x.get('tmdbId') or '0'))
+              if lane=='movie':
+                  meta={'id':tid,'mediaType':'movie','type':'movie','category':'movie','title':x.get('title'),'original_title':x.get('title'),'release_date':f'{year or 2000}-01-01','year':year,'alternative_titles':{'titles':[]},'anime':False}
+              else:
+                  meta={'id':tid,'mediaType':'tv','type':'tv','category':'anime' if lane=='anime' else 'tv','name':x.get('title'),'original_name':x.get('title'),'first_air_date':f'{year or 2000}-01-01','year':year,'alternative_titles':{'results':[]},'anime':lane=='anime'}
+              x['metadata']=meta
+              return x
+          def media_fixture(f):
+              out={k:v for k,v in f.items() if k not in ('metadata','lane')}
+              out['type']=out.get('mediaType')
+              return out
+          historical={
+            ('mugiwarastream','anime'):[{'slug':'hell-mode-s02e11-historical','tmdbId':'280049','mediaType':'anime','category':'anime','title':'Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing','year':2026,'season':2,'episode':11,'expectedDurationMinutes':24}],
+          }
+          targeted={}
+          for raw in raw_reg:
+              if not isinstance(raw,dict) or not isinstance(raw.get('fixture'),dict): continue
+              f=normalize_fixture(raw)
+              for p in raw.get('providers') or []:
+                  targeted.setdefault((cid(p),f['lane']),[]).append(f)
+
+          queue=[]
+          for pid,row in sorted(patches.items()):
+              if not isinstance(row,dict): continue
+              d=row.get('repair_disposition')
+              if not isinstance(d,dict): continue
+              for lane in d.get('missingLanes') or []:
+                  if lane in ('movie','tv','anime') and pid in rows:
+                      queue.append((pid,lane))
+          print('V55_QUEUE',len(queue),queue,flush=True)
+
+          states={}
+          for pid,lane in queue:
+              candidates=[]
+              candidates.extend(historical.get((pid,lane),[]))
+              candidates.extend(targeted.get((pid,lane),[]))
+              candidates.extend(rc.rotated_candidates(lane,seed='residual-v55',provider=pid))
+              seen=set(); uniq=[]
+              for f0 in candidates:
+                  f=normalize_fixture(f0)
+                  key=(str(f.get('tmdbId')),int(f.get('season') or 0),int(f.get('episode') or 0),lane)
+                  if key in seen: continue
+                  seen.add(key); uniq.append(f)
+              states[(pid,lane)]={'candidates':uniq,'attempts':[],'done':False,'status':None,'proof':None}
+
+          def one(key,f):
+              pid,lane=key; row=rows[pid]
+              result=fp.probe(row,with_metadata(f),12)
+              return key,f,result
+
+          round_no=0
+          while True:
+              jobs=[]
+              for key,st in states.items():
+                  if st['done']: continue
+                  idx=len(st['attempts'])
+                  if idx>=len(st['candidates']):
+                      st['done']=True; st['status']='catalogue_unproven_not_broken'; continue
+                  jobs.append((key,st['candidates'][idx]))
+              if not jobs: break
+              round_no+=1
+              print(f'V55_ROUND {round_no} jobs={len(jobs)}',flush=True)
+              with ThreadPoolExecutor(max_workers=min(12,len(jobs))) as ex:
+                  futs={ex.submit(one,key,f):(key,f) for key,f in jobs}
+                  for fut in as_completed(futs):
+                      key,f=futs[fut]; pid,lane=key; st=states[key]
+                      try: _,_,r=fut.result()
+                      except Exception as e:
+                          r={'classification':'runtime_error','strict':{'stream_count':0,'error_class':f'probe_exception:{type(e).__name__}'},'diagnostic':None}
+                      cls=str(r.get('classification') or '')
+                      att={'slug':f.get('slug'),'tmdbId':f.get('tmdbId'),'season':f.get('season'),'episode':f.get('episode'),'classification':cls,'streams':int((r.get('strict') or {}).get('stream_count') or 0),'httpStatuses':(r.get('strict') or {}).get('http_statuses') or [],'errorClass':(r.get('strict') or {}).get('error_class')}
+                      st['attempts'].append(att)
+                      print('V55_ATTEMPT',pid,lane,json.dumps(att,ensure_ascii=False,sort_keys=True),flush=True)
+                      if cls in ('automatic_streams','settings_profile_gap'):
+                          source=root/str(rows[pid].get('filename') or '')
+                          strict=strict_media_probe(source,media_fixture(f),timeout_seconds=55)
+                          rr=strict.get('result') or {}
+                          proof={'ok':bool(strict.get('ok')),'playable':int(rr.get('playable_stream_count') or 0),'verified':int(rr.get('content_verified_count') or rr.get('identity_verified_count') or 0),'contradictions':int(rr.get('identity_contradiction_count') or 0),'fixture':f}
+                          st['proof']=proof; st['done']=True
+                          st['status']='terminal_verified' if proof['ok'] else 'output_unverified'
+                          print('V55_PROOF',pid,lane,json.dumps({k:v for k,v in proof.items() if k!='fixture'},sort_keys=True),flush=True)
+                      elif cls in ('timeout','http_or_antibot_block','runtime_error'):
+                          st['done']=True; st['status']='technical_failure'
+                      else:
+                          # clean runtime zero/no provider result is a catalogue miss;
+                          # canonical policy rotates to the next same-lane fixture.
+                          pass
+
+          summary={}
+          for (pid,lane),st in sorted(states.items()):
+              summary[f'{pid}:{lane}']={'status':st['status'],'attemptCount':len(st['attempts']),'attempts':st['attempts'],'proof':st['proof']}
+          counts={}
+          for v in summary.values(): counts[v['status']]=counts.get(v['status'],0)+1
+          report={'schemaVersion':1,'policy':'rotating-corpus-clean-zero-rotates-v1','laneCount':len(summary),'counts':counts,'lanes':summary}
+          Path('automation/evidence').mkdir(parents=True,exist_ok=True)
+          Path('automation/evidence/residual-lane-rotation-v55.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print('V55_SUMMARY',json.dumps(counts,sort_keys=True),flush=True)
+          for k,v in summary.items(): print('V55_VERDICT',k,v['status'],'attempts='+str(v['attemptCount']),flush=True)
+
+          # Only strict terminal/current identity proof may close a lane. Raw output,
+          # embeds without verified media, catalogue exhaustion and runner blocks do not.
+          changed=[]
+          for key,v in summary.items():
+              if v['status']!='terminal_verified': continue
+              pid,lane=key.split(':',1); row=patches.get(pid) or {}; d=row.get('repair_disposition') or {}
+              req=[str(x) for x in d.get('requiredLanes') or []]
+              proven=[str(x) for x in d.get('provenLanes') or []]
+              if lane not in proven: proven.append(lane)
+              d['provenLanes']=[x for x in req if x in set(proven)] + [x for x in proven if x not in req]
+              d['currentVerifiedLanes']=list(d['provenLanes'])
+              d['missingLanes']=[x for x in req if x not in set(d['provenLanes'])]
+              d['completeCapabilityProof']=not d['missingLanes']
+              d['recoveryStatus']='proven' if not d['missingLanes'] else 'repair'
+              ls=d.get('laneStatuses') if isinstance(d.get('laneStatuses'),dict) else {}
+              vals=[str(x) for x in ls.get(lane) or []]
+              if 'playable_verified' not in vals: vals.append('playable_verified')
+              if 'v55_rotating_terminal_proven' not in vals: vals.append('v55_rotating_terminal_proven')
+              ls[lane]=vals; d['laneStatuses']=ls
+              codes=[str(x) for x in d.get('reasonCodes') or []]
+              if 'v55_rotating_terminal_proven' not in codes: codes.append('v55_rotating_terminal_proven')
+              d['reasonCodes']=codes; row['repair_disposition']=d; changed.append(key)
+          Path('provider-overrides.json').write_text(json.dumps(overrides,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print('V55_LEDGER_PROMOTED',changed,flush=True)
+          PY
+
+      - name: Validate strict promotions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/validate_published_overrides.py
+          python3 scripts/validate_provider_domain_graph.py provider-overrides.json
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/core_runtime_nonregression_contract_test.py
+          git diff --check
+
+      - name: Persist evidence and terminal-only ledger gains
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add automation/evidence/residual-lane-rotation-v55.json provider-overrides.json
+          git commit -m 'test(repair): replace generic residual zero with rotating lane evidence' || true
+          git pull --rebase origin fix/non-display-recovery-20260916
+          git push origin HEAD:fix/non-display-recovery-20260916
