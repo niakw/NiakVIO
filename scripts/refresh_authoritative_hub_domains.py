@@ -162,6 +162,88 @@ def resolve_authoritative_hub_domain(
 
 
 
+def resolve_authoritative_curated_entry_domain(
+    provider_id: str,
+    cfg: dict[str, Any],
+    history_row: dict[str, Any],
+    mode: str,
+    timeout: float,
+) -> dict[str, Any]:
+    """Follow a curated provider entry URL to its current terminal.
+
+    Unlike hub discovery, the curated entry itself is a provider route and may
+    legitimately redirect as the site rotates domains. The final URL is promoted
+    only after the normal terminal safety + same-brand validation succeeds.
+    """
+    item: dict[str, Any] = {
+        "provider_id": provider_id,
+        "status": "hub_unresolved",
+        "terminal_probe_skipped": False,
+        "authority_kind": "curated_entry",
+    }
+    if hubresolver.has_authoritative_hub_source(cfg):
+        return resolve_authoritative_hub_domain(provider_id, cfg, history_row, mode, timeout)
+    if not hubresolver.has_authoritative_curated_entry_source(cfg):
+        item["status"] = "not_applicable"
+        item["reason"] = "no_authoritative_route_source"
+        return item
+
+    candidates = hubresolver._seed_known_candidates(cfg, history_row)
+    validations: list[dict[str, Any]] = []
+    for row in candidates:
+        candidate = _candidate_url(row)
+        if not candidate:
+            continue
+        validation = hubresolver.validate_terminal(provider_id, cfg, candidate, timeout)
+        observed = dict(validation)
+        observed["source_type"] = row.get("source_type")
+        observed["source"] = row.get("source")
+        observed["candidate_score"] = row.get("score")
+        validations.append(observed)
+        if not validation.get("ok"):
+            continue
+        terminal = str(validation.get("final_url") or candidate).strip().rstrip("/")
+        if not terminal or not hubresolver.is_provider_terminal_site_url(terminal):
+            continue
+        item.update({
+            "status": "site_authoritative",
+            "reason": "curated_entry_redirect_terminal_validated",
+            "official_site": terminal,
+            "site_final_url": terminal,
+            "selected_source_type": row.get("source_type") or "curated_direct",
+            "selected_source": row.get("source") or "provider-hubs.json",
+            "candidate_score": row.get("score"),
+            "terminal_probe_skipped": False,
+            "site_validations": validations,
+            "sources": [],
+            "api_candidates": [],
+            "api_probes": [],
+            "validated_api": None,
+        })
+        return item
+
+    item["reason"] = "curated_entry_no_safe_terminal_candidate"
+    item["site_validations"] = validations
+    item["sources"] = []
+    return item
+
+
+def resolve_authoritative_route_domain(
+    provider_id: str,
+    cfg: dict[str, Any],
+    history_row: dict[str, Any],
+    mode: str,
+    timeout: float,
+) -> dict[str, Any]:
+    """Resolve either a discovery hub or a redirect-following curated entry."""
+    if hubresolver.has_authoritative_hub_source(cfg):
+        item = resolve_authoritative_hub_domain(provider_id, cfg, history_row, mode, timeout)
+        item.setdefault("authority_kind", "hub")
+        return item
+    return resolve_authoritative_curated_entry_domain(provider_id, cfg, history_row, mode, timeout)
+
+
+
 def _domain_host(value: str) -> str:
     raw=str(value or "").strip()
     if not raw:return ""

@@ -818,8 +818,12 @@ def has_authoritative_hub_source(cfg: dict[str, Any]) -> bool:
     )
 
 
-def has_authoritative_direct_source(cfg: dict[str, Any]) -> bool:
-    """Explicit registry direct URLs supersede history/search when no hub exists."""
+def has_authoritative_curated_entry_source(cfg: dict[str, Any]) -> bool:
+    """Return True for a curated provider entry URL when no hub exists.
+
+    These URLs are *entry authorities*, not immutable terminal domains: an HTTP
+    redirect is expected to rotate the provider to its current terminal host.
+    """
     if has_authoritative_hub_source(cfg):
         return False
     if is_http_url(cfg.get("direct_fallback")):
@@ -827,8 +831,13 @@ def has_authoritative_direct_source(cfg: dict[str, Any]) -> bool:
     return any(is_http_url(url) for url in (cfg.get("direct_candidates") or []))
 
 
+def has_authoritative_direct_source(cfg: dict[str, Any]) -> bool:
+    """Backward-compatible alias for curated entry authority."""
+    return has_authoritative_curated_entry_source(cfg)
+
+
 def has_authoritative_route_source(cfg: dict[str, Any]) -> bool:
-    return has_authoritative_hub_source(cfg) or has_authoritative_direct_source(cfg)
+    return has_authoritative_hub_source(cfg) or has_authoritative_curated_entry_source(cfg)
 
 
 def _seed_known_candidates(cfg: dict[str, Any], history_row: dict[str, Any]) -> list[dict[str, Any]]:
@@ -871,7 +880,7 @@ def _seed_known_candidates(cfg: dict[str, Any], history_row: dict[str, Any]) -> 
                 "source": "provider routing history",
             })
     current = history_row.get("current") if isinstance(history_row, dict) else None
-    if (not has_authoritative_direct_source(cfg)) and isinstance(current, dict) and is_http_url(current.get("url")):
+    if (not has_authoritative_curated_entry_source(cfg)) and isinstance(current, dict) and is_http_url(current.get("url")):
         candidates.append({
             "url": str(current["url"]).rstrip("/"),
             "label": "last-known-good domain",

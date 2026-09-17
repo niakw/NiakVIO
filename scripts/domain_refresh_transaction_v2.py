@@ -428,7 +428,7 @@ def main() -> int:
             continue
         if selected and provider_id not in selected:
             continue
-        if not resolver.has_authoritative_hub_source(cfg):
+        if not resolver.has_authoritative_route_source(cfg):
             continue
         disabled = str(cfg.get("manifest_status") or "").casefold() in {
             "désactivé",
@@ -443,8 +443,9 @@ def main() -> int:
         "schema_version": 5,
         "generated_at": resolver.now_iso(),
         "mode": args.mode,
-        "authority": "provider-hubs-authoritative-terminal",
+        "authority": "provider-route-authoritative-terminal",
         "terminal_validation_required": False,
+        "source_validation_policy": "hub=discovery-only; curated_entry=follow-redirect-and-validate",
         "scope_provider_count": len(current_provider_ids),
         "providers": {},
         "applied": 0,
@@ -455,7 +456,7 @@ def main() -> int:
     with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, min(args.workers, 16))) as pool:
         futures = {
             pool.submit(
-                refresh.resolve_authoritative_hub_domain,
+                refresh.resolve_authoritative_route_domain,
                 provider_id,
                 cfg,
                 history_row,

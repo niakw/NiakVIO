@@ -276,7 +276,8 @@ direct_authority_cfg = {
     'direct_candidates': ['https://direct.example/'],
     'direct_fallback': 'https://direct.example/',
 }
-assert resolver.has_authoritative_direct_source(direct_authority_cfg)
+assert resolver.has_authoritative_curated_entry_source(direct_authority_cfg)
+assert resolver.has_authoritative_direct_source(direct_authority_cfg)  # compatibility alias
 direct_seed = resolver._seed_known_candidates(direct_authority_cfg, authority_history)
 assert [row['source_type'] for row in direct_seed] == ['curated_direct']
 assert all(row['source_type'] != 'history_lkg' for row in direct_seed)
@@ -287,7 +288,8 @@ fallback_authority_cfg = {
     'direct_candidates': [],
     'direct_fallback': 'https://direct.example/',
 }
-assert resolver.has_authoritative_direct_source(fallback_authority_cfg)
+assert resolver.has_authoritative_curated_entry_source(fallback_authority_cfg)
+assert resolver.has_authoritative_direct_source(fallback_authority_cfg)  # compatibility alias
 fallback_seed = resolver._seed_known_candidates(fallback_authority_cfg, authority_history)
 assert [row['url'] for row in fallback_seed] == ['https://direct.example']
 assert all(row['source_type'] != 'history_lkg' for row in fallback_seed)
