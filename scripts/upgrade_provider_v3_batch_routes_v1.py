@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Idempotently wire current clean-v3 route Lego for the #9-#18 provider batch.
+"""Idempotently wire clean-v3 route Lego for surviving providers in the old #9-#18 batch.
 
-This migration only edits declarative provider-overrides DATA. It does not fetch
-or execute upstream provider JavaScript. The provider-owned Lego themselves are
-NiakVIO source under scripts/provider_patches/.
+This migration predates the current 46-provider scope. Historical providers that
+have been removed from ``provider-overrides.json`` are archive knowledge and must
+not make current repair fail. The migration also follows the current semantic
+contract: AniKotoTV is canonical anime-only; ``tv`` may be a transport alias, but
+``movie`` must never be manufactured.
 """
 from __future__ import annotations
 
@@ -29,11 +31,16 @@ def _load() -> dict[str, Any]:
     return value
 
 
-def _row(patches: dict[str, Any], provider_id: str) -> dict[str, Any]:
+def _required_row(patches: dict[str, Any], provider_id: str) -> dict[str, Any]:
     row = patches.get(provider_id)
     if not isinstance(row, dict):
-        raise AssertionError(f"missing provider patch row: {provider_id}")
+        raise AssertionError(f"missing current provider patch row: {provider_id}")
     return row
+
+
+def _optional_row(patches: dict[str, Any], provider_id: str) -> dict[str, Any] | None:
+    row = patches.get(provider_id)
+    return row if isinstance(row, dict) else None
 
 
 def _set_legos(row: dict[str, Any], script: str, options: dict[str, Any]) -> None:
@@ -53,7 +60,7 @@ def patch() -> bool:
     patches = value["provider_patches"]
     before = json.dumps(value, ensure_ascii=False, sort_keys=True)
 
-    desiflix = _row(patches, "desiflix")
+    desiflix = _required_row(patches, "desiflix")
     desiflix["published_types"] = ["movie", "tv"]
     desiflix["learned_routes"] = [
         "/stream/movie/{id}.json",
@@ -61,8 +68,7 @@ def patch() -> bool:
     ]
     # Live CI evidence on 2026-09-12: the declared manifest host still
     # answers but its IMDb routes intermittently stall, while the Worker
-    # mirror returns the same current addon catalogue promptly. Runtime order
-    # follows availability evidence; the official manifest remains fallback.
+    # mirror returns the same current addon catalogue promptly.
     _set_legos(
         desiflix,
         DESIFLIX,
@@ -72,33 +78,35 @@ def patch() -> bool:
         },
     )
 
-    allmovieland = _row(patches, "allmovieland")
-    allmovieland["published_types"] = ["movie", "tv"]
-    # These are stable provider route shapes. Dynamic AWS/player/playlist URLs
-    # are runtime traversal evidence and are intentionally not persisted here.
-    allmovieland["learned_routes"] = [
-        "/index.php?story={query}&do=search&subaction=search",
-        "/play/{id}",
-        "/playlist/{id}.txt",
-    ]
-    _set_legos(
-        allmovieland,
-        ALLMOVIELAND,
-        {
-            "sites": [
-                "https://allmovieland.to",
-                "https://allmovieland.art",
-                "https://allmovieland.one",
-                "https://allmovieland.io",
-            ]
-        },
-    )
+    # allmovieland belonged to the historical 96-provider portfolio. If it is
+    # still present in a migration fixture, keep the old migration idempotent;
+    # if it has been removed from current overrides, skip it completely.
+    allmovieland = _optional_row(patches, "allmovieland")
+    if allmovieland is not None:
+        allmovieland["published_types"] = ["movie", "tv"]
+        allmovieland["learned_routes"] = [
+            "/index.php?story={query}&do=search&subaction=search",
+            "/play/{id}",
+            "/playlist/{id}.txt",
+        ]
+        _set_legos(
+            allmovieland,
+            ALLMOVIELAND,
+            {
+                "sites": [
+                    "https://allmovieland.to",
+                    "https://allmovieland.art",
+                    "https://allmovieland.one",
+                    "https://allmovieland.io",
+                ]
+            },
+        )
 
-    anikoto = _row(patches, "anikototv")
-    anikoto["published_types"] = ["anime", "movie"]
+    anikoto = _required_row(patches, "anikototv")
+    anikoto["published_types"] = ["anime"]
     # The public AniKotoAPI project documents these as the native site routes
-    # it wraps internally. Do not persist the wrapper's /api/* endpoints on the
-    # source-site domains: those are a different HTTP service.
+    # it wraps internally. These routes are valid for anime identity/playback;
+    # they do not imply a canonical movie lane.
     anikoto["learned_routes"] = [
         "/search?keyword={query}",
         "/watch/{slug}",
@@ -132,11 +140,13 @@ def validate() -> None:
     patches = value["provider_patches"]
     expected = {
         "desiflix": (DESIFLIX, {"movie", "tv"}),
-        "allmovieland": (ALLMOVIELAND, {"movie", "tv"}),
-        "anikototv": (ANIKOTOTV, {"anime", "movie"}),
+        "anikototv": (ANIKOTOTV, {"anime"}),
     }
+    if isinstance(patches.get("allmovieland"), dict):
+        expected["allmovieland"] = (ALLMOVIELAND, {"movie", "tv"})
+
     for provider_id, (script, required_types) in expected.items():
-        row = _row(patches, provider_id)
+        row = _required_row(patches, provider_id)
         scripts = set(str(v) for v in row.get("provider_lego_scripts") or [])
         if script not in scripts:
             raise AssertionError(f"{provider_id}: missing clean-v3 route Lego {script}")
@@ -155,11 +165,15 @@ def validate() -> None:
     if desi_opts.get("fallbackBases") != ["https://manifest.desitvhub.eu.org"]:
         raise AssertionError("desiflix: official manifest fallback order mismatch")
 
-    all_routes = patches["allmovieland"]["learned_routes"]
-    if any("session" in str(v).lower() or "aws" in str(v).lower() for v in all_routes):
-        raise AssertionError("allmovieland: dynamic traversal URL leaked into stable DATA")
+    if isinstance(patches.get("allmovieland"), dict):
+        all_routes = patches["allmovieland"]["learned_routes"]
+        if any("session" in str(v).lower() or "aws" in str(v).lower() for v in all_routes):
+            raise AssertionError("allmovieland: dynamic traversal URL leaked into stable DATA")
 
-    ani_routes = [str(v).lower() for v in patches["anikototv"]["learned_routes"]]
+    anikoto = patches["anikototv"]
+    if set(str(v).casefold() for v in anikoto.get("published_types") or []) != {"anime"}:
+        raise AssertionError("anikototv: canonical movie widening is forbidden")
+    ani_routes = [str(v).lower() for v in anikoto["learned_routes"]]
     if any("/v4/" in v or v.startswith("/api/") for v in ani_routes):
         raise AssertionError("anikototv: wrapper/obsolete route survived native-site migration")
     for required in ("/ajax/episode/list/{id}", "/ajax/server/list?servers={id}", "/ajax/server?get={id}"):
@@ -170,9 +184,12 @@ def validate() -> None:
 def main() -> int:
     changed = patch()
     validate()
+    value = _load()
+    has_allmovieland = isinstance((value.get("provider_patches") or {}).get("allmovieland"), dict)
     print(
         "PROVIDER_V3_BATCH_ROUTES_V1_OK "
-        f"changed={str(changed).lower()} providers=desiflix,allmovieland,anikototv"
+        f"changed={str(changed).lower()} current=desiflix,anikototv "
+        f"historical_allmovieland_present={str(has_allmovieland).lower()} anikototv_semantic=anime-only"
     )
     return 0
 
