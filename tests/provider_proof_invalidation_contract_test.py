@@ -57,7 +57,37 @@ def main() -> int:
         else:
             raise AssertionError("malformed proof invalidation registry must fail closed")
 
-    print("PROVIDER_PROOF_INVALIDATION_CONTRACT_OK allwish_lanes=movie,tv provider_positive=invalidated malformed=fail_closed")
+    # An evidence-backed contradiction must remove the exact same lanes from
+    # both proof obligations and semantic floor. Unrelated semantic losses stay hard.
+    module.changed_scope = lambda matrix, base_ref, force_all: (["allwish"], [], False)
+    module.git_json = lambda ref, path: {}
+    module.current_activation_debt = lambda: {}
+    matrix = {"providers": [{
+        "provider": "allwish",
+        "snapshotStates": {"5.21.36": {"icon": module.GREEN}},
+        "historicalVerifiedLanes": ["movie", "tv"],
+        "contractDrift": {
+            "currentSemanticTypes": ["anime"],
+            "lostSemanticTypes": ["movie", "tv"],
+            "hlsM3u8Lost": False,
+        },
+        "nonRegressionStatus": "CONTRACT_REGRESSION",
+    }]}
+    candidate = {"rows": [{"provider": "allwish", "semantic_type": "anime", "status": "no_streams"}]}
+    module.load_proof_invalidations = lambda: {"allwish": row}
+    result = module.candidate_gate(matrix, candidate, "HEAD^", True)
+    obligation = result["obligations"]["allwish"]
+    assert result["passed"] is True, result
+    assert obligation["lostSemanticTypesRaw"] == ["movie", "tv"], obligation
+    assert obligation["lostSemanticTypes"] == [], obligation
+
+    module.load_proof_invalidations = lambda: {}
+    result = module.candidate_gate(matrix, candidate, "HEAD^", True)
+    assert result["passed"] is False, result
+    assert result["obligations"]["allwish"]["lostSemanticTypes"] == ["movie", "tv"], result
+    assert "semantic_capability_regression" in result["obligations"]["allwish"]["failures"], result
+
+    print("PROVIDER_PROOF_INVALIDATION_CONTRACT_OK allwish_lanes=movie,tv semantic_floor=same-lanes-invalidated unrelated=fail_closed malformed=fail_closed")
     return 0
 
 

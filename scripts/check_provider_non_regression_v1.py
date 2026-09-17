@@ -315,7 +315,11 @@ def candidate_gate(
 
         contract = row.get("contractDrift") or {}
         current_semantic = {canon(x) for x in contract.get("currentSemanticTypes") or [] if canon(x)}
-        lost_types = sorted({canon(x) for x in contract.get("lostSemanticTypes") or [] if canon(x)})
+        lost_types_raw = {canon(x) for x in contract.get("lostSemanticTypes") or [] if canon(x)}
+        # An evidence-backed contradiction invalidates the historical lane as proof.
+        # The same invalidated lane therefore cannot survive indirectly as a semantic
+        # capability floor; unrelated semantic/HLS losses remain hard failures.
+        lost_types = sorted(lost_types_raw - invalidated_lanes)
         hls_lost = bool(contract.get("hlsM3u8Lost"))
 
         partial_failed = set()
@@ -379,6 +383,7 @@ def candidate_gate(
             "requireAnyVerifiedLane": require_any,
             "partialRegressionFailedLanes": sorted(partial_failed),
             "unrecoveredPartialRegressionLanes": unrecovered_partial,
+            "lostSemanticTypesRaw": sorted(lost_types_raw),
             "lostSemanticTypes": lost_types,
             "hlsM3u8Lost": hls_lost,
             "externalDriftRecorded": bool(row.get("externalDriftAccepted")),
@@ -402,7 +407,7 @@ def candidate_gate(
         "rollingBaselineSource": f"{base_ref}:provider-v3-quick-yield.json",
         "historicalFloorSource": "automation/provider-history-matrix.json schema v3",
         "proofInvalidationSource": str(DEFAULT_INVALIDATIONS.relative_to(ROOT)),
-        "proofInvalidationPolicy": "only active, evidence-backed contradiction records may remove invalidated historical/rolling lanes from the candidate floor; all other floors remain unchanged",
+        "proofInvalidationPolicy": "only active, evidence-backed contradiction records may remove the same invalidated historical/rolling lanes and semantic floor from the candidate obligation; all unrelated floors remain unchanged",
         "candidateSource": str(DEFAULT_CANDIDATE.relative_to(ROOT)),
         "disabledHistoricalDebtPolicy": "audited route debt is allowed for current provider-folder identities when provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden",
         "disabledDebtProviderCount": len(sorted(set(disabled_debt))),
