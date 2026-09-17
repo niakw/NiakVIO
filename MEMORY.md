@@ -120,6 +120,18 @@ This section supersedes older branch-topology assumptions below for the active r
 - Output-positive but playback/player verification not established: uhdmovies:tv
 - Still zero across alternate current fixtures: flemmix:movie, flemmix:tv, persianstremio:movie, persianstremio:tv, 4khdhub:movie, 4khdhub:tv, animesalt:anime, uhdmovies:movie, animesultra:anime, kehflix:anime, moviesmod:tv, moviesmod:movie, neko-sama:anime, animetsu:anime, vostfree:anime, mugiwarastream:anime, desiflix:movie, yflix:movie, animevost-fr:anime, fullanime:anime, anime-ultime:anime, showbox:movie, showbox:tv, mallumv:movie, animesama-co:anime, yflix:tv, voiranime-rip:anime, allwish:anime
 
+<!-- MAX_REPAIR_20260917_V45_RESULT -->
+### V45 domain-clean full residual requalification
+- Queue from current missingLanes: 29 lanes.
+- Newly verified lanes: none
+- Recovered specifically from V43 zero set: none
+- Verified non-direct player lanes: none
+- Output-positive but playback/player verification not established: uhdmovies:tv
+- Still zero after clean domain graph: 4khdhub:movie, 4khdhub:tv, allwish:anime, anime-ultime:anime, animesalt:anime, animesama-co:anime, animesultra:anime, animetsu:anime, animevost-fr:anime, desiflix:movie, flemmix:movie, flemmix:tv, fullanime:anime, kehflix:anime, mallumv:movie, moviesmod:movie, moviesmod:tv, mugiwarastream:anime, neko-sama:anime, persianstremio:movie, persianstremio:tv, showbox:movie, showbox:tv, uhdmovies:movie, voiranime-rip:anime, vostfree:anime, yflix:movie, yflix:tv
+- Zero lanes whose official site is blocked/unreachable from runner: allwish:anime[site=403], anime-ultime:anime[site=403], animesalt:anime[site=403], animesultra:anime[site=0], desiflix:movie[site=403], flemmix:movie[site=403], flemmix:tv[site=403], fullanime:anime[site=403], showbox:movie[site=0], showbox:tv[site=0], vostfree:anime[site=403], yflix:movie[site=0], yflix:tv[site=0]
+- Zero lanes despite reachable official site: 4khdhub:movie[site=200], 4khdhub:tv[site=200], animesama-co:anime[site=200], animetsu:anime[site=200], animevost-fr:anime[site=200], kehflix:anime[site=200], mallumv:movie[site=200], moviesmod:movie[site=200], moviesmod:tv[site=200], mugiwarastream:anime[site=200], neko-sama:anime[site=200], persianstremio:movie[site=200], persianstremio:tv[site=200], uhdmovies:movie[site=200], voiranime-rip:anime[site=200]
+- Official-site preflight: 4khdhub=200->https://hdhub4u.bi/; allwish=403->https://all-wish.me/; anime-ultime=403->https://v5.anime-ultime.net/; animesalt=403->https://animesalt.cx/; animesama-co=200->https://animesama.co/; animesultra=0->https://v2.animesultra.org; animetsu=200->https://omg10.com/4/10829438; animevost-fr=200->https://animevost.fr/; desiflix=403->https://desiflix.onl/; flemmix=403->https://flemmix.cloud/; fullanime=403->https://www.fullanime.fr/; kehflix=200->https://kehflix.wiki/; mallumv=200->https://mallumv.space/; moviesmod=200->https://moviesmod.zone/; mugiwarastream=200->https://www.mugiwara-no-streaming.com/; neko-sama=200->https://animes-sama.su/; persianstremio=200->https://persianstremio.vercel.app/install; showbox=0->; uhdmovies=200->https://uhdmovies.my/; voiranime-rip=200->https://voiranime.rip/; vostfree=403->https://ipv4.vostfree.ws/; yflix=0->
+
 ## 2026-09-16 — authoritative current checkpoint
 
 - Current public release is **5.21.48**. `manifest.json`, VF/no-anime projections, package metadata and release hashes are on 5.21.48.
