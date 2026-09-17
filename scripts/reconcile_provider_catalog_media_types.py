@@ -26,6 +26,8 @@ PROJECTIONS = (
     ROOT / "vf-no-anime" / "manifest.json",
 )
 CANONICAL = {"movie", "tv", "anime"}
+# Keep `series` readable as legacy input so reconciliation can detect and remove
+# it; current publication never synthesizes it.
 TRANSPORT = CANONICAL | {"series"}
 EXPECTED_CURRENT = visible_provider_count()
 
@@ -40,11 +42,14 @@ def norm(values: object, allowed: set[str]) -> list[str]:
 
 
 def expected_transport(canonical: list[str]) -> list[str]:
+    """Project semantics onto the current Nuvio launch surface.
+
+    Preserve movie/tv/anime verbatim and add only the TV launch alias required
+    by anime providers. The legacy `series` transport alias is never synthesized.
+    """
     out = list(canonical)
-    if ("anime" in canonical or "tv" in canonical) and "tv" not in out:
+    if "anime" in canonical and "tv" not in out:
         out.append("tv")
-    if ("anime" in canonical or "tv" in canonical) and "series" not in out:
-        out.append("series")
     return out
 
 
