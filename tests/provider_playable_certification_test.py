@@ -48,5 +48,19 @@ manifest_row = {
     "canonicalSupportedTypes": ["anime"],
 }
 assert cert.semantic_types(manifest_row) == ["anime"]
+assert cert.fixture_runtime_media_type({
+    "tmdbId": "95479",
+    "mediaType": "anime",
+    "category": "anime",
+    "title": "Jujutsu Kaisen",
+    "season": 1,
+    "episode": 1,
+}) == "tv"
+assert cert.fixture_runtime_media_type({
+    "tmdbId": "157336",
+    "mediaType": "movie",
+    "category": "movie",
+    "title": "Interstellar",
+}) == "movie"
 
 print("provider playable certification ordering tests passed")
