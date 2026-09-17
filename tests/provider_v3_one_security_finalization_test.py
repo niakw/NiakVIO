@@ -17,4 +17,11 @@ assert "filename = published_name(provider_id, previous_path, digest)" in text
 assert 'filename = f"{provider_id}-{digest[:16]}.js"' not in text
 assert text.index("# PROVIDER_V3_FINAL_STAGE_MINIMIZER_GATE_V1") < text.index("TARGETED_MATERIALIZER_PUBLISHED_NAME_V61")
 
-print("targeted Provider v3 materializer finalization contract passed: security + canonical content-addressed name")
+assert "TARGETED_MATERIALIZER_LEDGER_V61" in text
+assert "ledger = allmat.load(allmat.DEFAULT_REPORT)" in text
+assert "rows[matches[0]] = report" in text
+assert 'ledger["generation"] = aggregate.hexdigest()' in text
+assert "allmat.write_json(allmat.DEFAULT_REPORT, ledger)" in text
+assert "FIELD_PROVIDER_V3_ONE_LEDGER" in text
+
+print("targeted Provider v3 materializer finalization contract passed: security + canonical content-addressed name + atomic ledger row")
