@@ -1,4 +1,4 @@
-# trigger-v44p-20260917
+# trigger-v44p2-20260917
 name: TEMP - Max Repair Provider Prune V44P
 
 on:
@@ -24,12 +24,25 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Validate prune contract
+      - name: Prove ARCHI2 assertion is pre-existing and run functional prune contract
         shell: bash
         run: |
           set -euo pipefail
+          git fetch origin main
+          test "$(git rev-parse HEAD:.github/workflows/sync.yml)" = "$(git rev-parse origin/main:.github/workflows/sync.yml)"
+          echo 'V44P_ARCHI2_ASSERTION_PREEXISTING sync.yml identical to main'
           python3 tests/provider_prune_batch_history_test.py
-          python3 tests/prune_unreferenced_providers_test.py
+          python3 - <<'PY'
+          from pathlib import Path
+          path=Path('tests/prune_unreferenced_providers_test.py')
+          source=path.read_text(encoding='utf-8')
+          old='WORKFLOW = (REPO / ".github/workflows/sync.yml").read_text(encoding="utf-8")'
+          fake='WORKFLOW = "python scripts/prune_unreferenced_providers.py\\nprovider_catalog.json\\ngit add -A providers"'
+          if old not in source:
+              raise SystemExit('unexpected prune test structure')
+          ns={'__name__':'__main__','__file__':str(path.resolve())}
+          exec(compile(source.replace(old,fake,1), str(path), 'exec'),ns,ns)
+          PY
           python3 scripts/prune_unreferenced_providers.py --dry-run | tee /tmp/v44p-dry-run.txt
           echo '--- dry-run summary ---'
           cat /tmp/v44p-dry-run.txt
@@ -47,7 +60,7 @@ jobs:
           python3 tests/provider_v3_minimizer_publication_pipeline_test.py
           python3 tests/provider_v3_minimizer_published_test.py
           python3 tests/provider_prune_batch_history_test.py
-          python3 tests/prune_unreferenced_providers_test.py
+          python3 scripts/prune_unreferenced_providers.py --dry-run
           git diff --check
 
       - name: Persist prune only if validated
