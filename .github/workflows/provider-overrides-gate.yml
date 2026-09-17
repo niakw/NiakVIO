@@ -6,6 +6,8 @@ on:
     paths:
       - "provider-overrides.json"
       - "scripts/build_brain_repair_proposal.py"
+      - "scripts/validate_provider_domain_graph.py"
+      - "tests/provider_domain_graph_cycle_test.py"
       - "tests/brain_repair_proposal_test.py"
       - "tests/provider_v3_strategy_plan_contract_test.py"
       - "scripts/provider_base_store.py"
@@ -18,6 +20,8 @@ on:
     paths:
       - "provider-overrides.json"
       - "scripts/build_brain_repair_proposal.py"
+      - "scripts/validate_provider_domain_graph.py"
+      - "tests/provider_domain_graph_cycle_test.py"
       - "tests/brain_repair_proposal_test.py"
       - ".github/workflows/provider-overrides-gate.yml"
   workflow_dispatch:
@@ -60,10 +64,12 @@ jobs:
         run: |
           set -euo pipefail
           python -m json.tool provider-overrides.json >/dev/null
-          python -m py_compile scripts/build_brain_repair_proposal.py scripts/run_brain_learning_sandbox.py
+          python -m py_compile scripts/build_brain_repair_proposal.py scripts/run_brain_learning_sandbox.py scripts/validate_provider_domain_graph.py
           python tests/brain_repair_proposal_test.py
           python tests/overrides_test.py
           python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/provider_domain_graph_cycle_test.py
+          python scripts/validate_provider_domain_graph.py provider-overrides.json
 
       - name: Validate Repair Brain contracts
         run: |
