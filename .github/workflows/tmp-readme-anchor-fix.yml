@@ -1,0 +1,75 @@
+name: TMP README Results Anchor Fix
+
+on:
+  push:
+    branches:
+      - hotfix/readme-results-anchor-20260917
+    paths:
+      - '.github/workflows/tmp-readme-anchor-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout hotfix branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: hotfix/readme-results-anchor-20260917
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Patch current and legacy README anchors
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/update_provider_device_results.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''    anchor = "\\n---\\n\\n# Architecture technique"\n    if anchor not in readme:\n        raise ValueError("README insertion anchor not found")\n    return readme.replace(anchor, "\\n---\\n\\n" + section + "\\n\\n---\\n\\n# Architecture technique", 1)\n'''
+          new = '''    anchors = (\n        "\\n---\\n\\n## 🧪 Compatibilité native",\n        "\\n---\\n\\n# Architecture technique",\n    )\n    for anchor in anchors:\n        if anchor not in readme:\n            continue\n        heading = anchor.removeprefix("\\n---\\n\\n")\n        return readme.replace(\n            anchor,\n            "\\n---\\n\\n" + section + "\\n\\n---\\n\\n" + heading,\n            1,\n        )\n    raise ValueError("README insertion anchor not found")\n'''
+          if text.count(old) != 1:
+              raise SystemExit('README anchor patch point changed')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
+      - name: Validate renderer insertion and idempotence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/update_provider_device_results.py
+          cp README.fr.md /tmp/readme.md
+          cp automation/provider-device-results.json /tmp/results.json
+          python3 scripts/update_provider_device_results.py \
+            --diagnostics-root /tmp/no-diagnostics \
+            --run-id anchor-test \
+            --results /tmp/results.json \
+            --readme /tmp/readme.md
+          python3 scripts/update_provider_device_results.py \
+            --diagnostics-root /tmp/no-diagnostics \
+            --run-id anchor-test-2 \
+            --results /tmp/results.json \
+            --readme /tmp/readme.md
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('/tmp/readme.md').read_text(encoding='utf-8')
+          assert text.count('<!-- NIAKVIO_PROVIDER_RESULTS_START -->') == 1
+          assert text.count('<!-- NIAKVIO_PROVIDER_RESULTS_END -->') == 1
+          assert text.count('## 🧪 Compatibilité native') == 1
+          assert text.index('<!-- NIAKVIO_PROVIDER_RESULTS_START -->') < text.index('## 🧪 Compatibilité native')
+          print('README_RESULTS_ANCHOR_OK')
+          PY
+          git diff --check
+
+      - name: Commit validated fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Niak'
+          git config user.email 'foissy.tommy@gmail.com'
+          git add scripts/update_provider_device_results.py
+          git commit -m 'fix(docs): restore provider results README insertion'
+          git push origin HEAD:hotfix/readme-results-anchor-20260917
