@@ -7,32 +7,52 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 PATH = ROOT / "provider-overrides.json"
-LEGO = "scripts/provider_patches/non_display_recovery_runtime_v1.py"
 PROVIDERS = {
-    "animesama-co": "https://animesama.co",
-    "animevostfr": "https://v2.animevostfr.org",
-    "coflix": "https://coflix.wiki",
-    "neko-sama": "https://animes-sama.su",
-    "sekai": "https://sekai.one",
-    "voiranime-rip": "https://voiranime.rip",
+    "animesama-co": {
+        "script": "scripts/provider_patches/animesamaco_nondisplay_runtime_v1.py",
+        "base": "https://animesama.co"
+    },
+    "animevostfr": {
+        "script": "scripts/provider_patches/animevostfr_nondisplay_runtime_v1.py",
+        "base": "https://v2.animevostfr.org"
+    },
+    "coflix": {
+        "script": "scripts/provider_patches/coflix_nondisplay_runtime_v1.py",
+        "base": "https://coflix.wiki"
+    },
+    "neko-sama": {
+        "script": "scripts/provider_patches/neko_sama_nondisplay_runtime_v1.py",
+        "base": "https://animes-sama.su"
+    },
+    "sekai": {
+        "script": "scripts/provider_patches/sekai_nondisplay_runtime_v1.py",
+        "base": "https://sekai.one"
+    },
+    "voiranime-rip": {
+        "script": "scripts/provider_patches/voiranime_rip_nondisplay_runtime_v1.py",
+        "base": "https://voiranime.rip"
+    }
 }
 
 
 def apply_document(doc: dict[str, Any]) -> list[str]:
     patches = doc.setdefault("provider_patches", {})
     changed: list[str] = []
-    for provider, base in PROVIDERS.items():
+    for provider, spec in PROVIDERS.items():
         row = patches.get(provider)
         if not isinstance(row, dict):
             raise ValueError(f"missing provider patch row: {provider}")
-        scripts = row.setdefault("provider_lego_scripts", [])
-        if LEGO not in scripts:
-            scripts.append(LEGO)
+        lego = str(spec["script"])
+        scripts = [x for x in row.setdefault("provider_lego_scripts", []) if x != "scripts/provider_patches/non_display_recovery_runtime_v1.py"]
+        if lego not in scripts:
+            scripts.append(lego)
             changed.append(provider)
+        row["provider_lego_scripts"] = scripts
         options = row.setdefault("provider_lego_options", {})
-        wanted = {"provider": provider, "base": base, "max_streams": 4}
-        if options.get(LEGO) != wanted:
-            options[LEGO] = wanted
+        options.pop("scripts/provider_patches/non_display_recovery_runtime_v1.py", None)
+        wanted = {"provider": provider, "base": spec["base"], "max_streams": 4}
+        if options.get(lego) != wanted:
+            options[lego] = wanted
             if provider not in changed:
                 changed.append(provider)
 
@@ -63,14 +83,15 @@ def apply_document(doc: dict[str, Any]) -> list[str]:
 
 def validate_document(doc: dict[str, Any]) -> None:
     patches = doc.get("provider_patches") or {}
-    for provider, base in PROVIDERS.items():
+    for provider, spec in PROVIDERS.items():
         row = patches.get(provider)
         if not isinstance(row, dict):
             raise AssertionError(provider)
-        if LEGO not in (row.get("provider_lego_scripts") or []):
+        lego = str(spec["script"])
+        if lego not in (row.get("provider_lego_scripts") or []):
             raise AssertionError(f"{provider}: recovery Lego missing")
         options = row.get("provider_lego_options") or {}
-        if (options.get(LEGO) or {}).get("base") != base:
+        if (options.get(lego) or {}).get("base") != spec["base"]:
             raise AssertionError(f"{provider}: recovery base drift")
     coflix = patches["coflix"]
     if coflix.get("official_site") != "https://coflix.wiki":
