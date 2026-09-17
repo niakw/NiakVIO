@@ -1,5 +1,18 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-18 — continuation checkpoint: repair authority exists but is not yet wired
+
+- Verified current public `main` at **c02c9919c98dd8ff6729350f44a48f19a5cb571f**; root manifest reports **5.21.51**.
+- Active repair branch is **`fix/provider-activation-certification-v1`**. At verification it is **61 commits ahead / 1 commit behind** current `main`; do not merge it wholesale.
+- `MEMORY.md` on `main` is stale: it still begins with the 2026-09-16 / 5.21.48 checkpoint. The 2026-09-17 repair-survival diagnosis exists only on this repair branch at this point.
+- PR #122 head **4e9729d865f6a069bda567fbeac520d714bef4bd** remains historical evidence only; it was not merged.
+- The branch now contains restored provider-repair scripts plus `automation/provider-repair-survival-registry.json`, `scripts/check_provider_repair_survival.py`, and `scripts/restore_provider_repair_survival_v1.py`.
+- Critical continuation state: **`provider-overrides.json` on this branch is still byte-equivalent to current main for the affected repair rows**. The restored scripts are present in the tree, but their Provider Lego references have not yet been re-applied to structured authority. Therefore no repaired provider may be called restored/delivered yet.
+- Exact affected durable-script set to re-wire and then re-prove: AnimeSama.co, AnimeVOSTFR, Coflix, Neko-Sama, Sekai, VoirAnime.rip, AllAnime, AllWish, AnikotoTV v3, Flemmix, MovieBox, VidFast, VidLove, WookaFR, Yflix. Kehflix, Purstream, HindMoviez, Papadustream and StreamZo additionally require proof-state/lane reconciliation without blindly copying historical proof.
+- User acceptance regression to preserve in the re-proof set: **HellMode S2E12** currently yielded French-Manga 480p and VoirAnime.homes 480p but showed the wrong season/content; anime VF/VOSTFR badges still regress on some streams; Kurage can still render without a language badge and as `Inconnue`. These are blocking semantic/presentation regressions, not cosmetic-only defects.
+- Mandatory next transaction: re-apply durable repair authority with `restore_provider_repair_survival_v1.py`; hard-fail `check_provider_repair_survival.py`; rematerialize/finalize; re-check survival after minimization; bump/sync the provider generation; pin Hub46; then exact-bundle targeted certification. Historical #122 lane proof must **not** auto-certify the new bundle.
+- Do not publish/merge until the exact post-rematerialization bundle survives the repair-survival registry and positive/native evidence is reconciled.
+
 ## 2026-09-17 — provider repair survival failure + activation architecture checkpoint
 
 **Authoritative correction to prior claims:** several provider repairs reported as successful on 2026-09-16/17 were real on the repair workbench but did **not** all survive into the final published `main` generation. PR #122 (`fix/non-display-recovery-20260916`, head `4e9729d865f6a069bda567fbeac520d714bef4bd`) was closed without merge. Later PR #127 rematerialized/minimized providers from `main`, so provider Lego/repair scripts that existed only on #122 were omitted from the final authority. Do not call those repairs delivered until they are restored, rematerialized, re-proven and merged.
