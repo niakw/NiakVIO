@@ -15,6 +15,7 @@ import provider_live_request_contract_bridge_v19 as live_request_bridge  # noqa:
 import runtime_route_plan_cap_v1 as route_policy  # noqa: E402
 import runtime_structured_plan_cap_v1 as structured_policy  # noqa: E402
 import runtime_execution_authority_cap_v1 as authority_policy  # noqa: E402
+from current_provider_scope import active_provider_ids  # noqa: E402
 
 
 def main() -> int:
@@ -27,11 +28,32 @@ def main() -> int:
         raise SystemExit("route recovery report must be an object")
     if int(value.get("schemaVersion") or 0) != recovery.PROOF_VERSION:
         raise SystemExit(f"route recovery proof version={value.get('schemaVersion')}, expected={recovery.PROOF_VERSION}")
-    if int(value.get("providerCount") or 0) != recovery.EXPECTED:
-        raise SystemExit(f"route recovery providerCount={value.get('providerCount')}, expected={recovery.EXPECTED}")
+
+    # Provider cardinality is current repository DATA, never a historical constant.
+    # The merged repair report consumed here is authoritative only when it covers
+    # every currently active provider exactly once. Targeted reports are merged
+    # into that full active scope before reaching this apply step.
+    expected_ids = active_provider_ids()
+    expected = len(expected_ids)
+    provider_count = int(value.get("providerCount") or 0)
+    if provider_count != expected:
+        raise SystemExit(f"route recovery providerCount={provider_count}, expected_active={expected}")
     providers = value.get("providers") if isinstance(value.get("providers"), list) else []
-    if len(providers) != recovery.EXPECTED:
-        raise SystemExit(f"route recovery providers rows={len(providers)}, expected={recovery.EXPECTED}")
+    if len(providers) != expected:
+        raise SystemExit(f"route recovery providers rows={len(providers)}, expected_active={expected}")
+    report_ids = {
+        str((row or {}).get("providerId") or (row or {}).get("provider") or (row or {}).get("id") or "")
+        .strip().casefold().replace("_", "-")
+        for row in providers if isinstance(row, dict)
+    }
+    report_ids.discard("")
+    if report_ids != expected_ids:
+        missing = sorted(expected_ids - report_ids)
+        extra = sorted(report_ids - expected_ids)
+        raise SystemExit(
+            "route recovery active provider identity mismatch "
+            f"missing={','.join(missing) or '-'} extra={','.join(extra) or '-'}"
+        )
 
     summary = recovery.apply_recovery(value)
     # V19 cannot invent authority: it runs only after the exact HTTP recovery has
@@ -54,7 +76,7 @@ def main() -> int:
 
     print(
         "FIELD_ROUTE_RECOVERY_REPORT_APPLIED "
-        f"providers={summary['patchedProviders']} evidence_routes={summary['provenRoutes']} recipes={summary['apiRecipes']} "
+        f"active_scope={expected} providers={summary['patchedProviders']} evidence_routes={summary['provenRoutes']} recipes={summary['apiRecipes']} "
         f"v19_bridged_providers={bridge_summary['bridgedProviders']} v19_bridged_plans={bridge_summary['bridgedPlans']} "
         f"normal_entry_target={route_summary['target']} runtime_route_max={route_summary['maxAfter']} "
         f"runtime_optimized={route_summary['optimizedProviders']} runtime_exceptions={route_summary['exceptionProviders']} "
