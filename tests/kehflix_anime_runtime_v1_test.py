@@ -13,6 +13,7 @@ text = PATCH.read_text(encoding="utf-8")
 for needle in (
     "NIAKVIO_KEHFLIX_ANIME_RUNTIME_V1",
     "NIAKVIO_PROVIDER_RUNTIME_RESOLVER_V1",
+    'ctx.canonicalMediaType||ctx.mediaType||(obj&&(obj.mediaType||obj.type))||args[1]',
     'raw!=="anime"',
     'return null;',
     '/api/streams/episode?id=',
@@ -49,4 +50,4 @@ assert module.LEGO in row["provider_lego_scripts"]
 assert row["provider_lego_options"][module.LEGO]["targetStreams"] == 4
 assert module.apply_document(fixture) is False
 
-print("KEHFLIX_ANIME_RUNTIME_V1_TEST_OK semantic=anime native_delegate=movie,tv host_hardcodes=0")
+print("KEHFLIX_ANIME_RUNTIME_V1_TEST_OK semantic=anime transport=tv semantic_precedence=core_context native_delegate=movie,tv host_hardcodes=0")
