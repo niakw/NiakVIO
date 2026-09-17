@@ -1,0 +1,47 @@
+name: TEMP Fix CodeQL hygiene contract
+
+on:
+  push:
+    branches:
+      - hotfix/codeql-main-exact-sha-20260917
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout hotfix branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: hotfix/codeql-main-exact-sha-20260917
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Replace obsolete CodeQL push prohibition
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('tests/repository_hygiene_contract_test.py')
+          text = p.read_text(encoding='utf-8')
+          old = 'assert "\\n  push:" not in codeql, "CodeQL must not run on every push"\n'
+          new = '''assert "\\n  push:\\n    branches: [main]" in codeql, (\n    "CodeQL must analyze every main push for the exact-SHA Final Gate"\n)\nassert "\\n  push:\\n  pull_request:" not in codeql, (\n    "CodeQL push trigger must stay scoped to main"\n)\n'''
+          if text.count(old) != 1:
+              raise SystemExit('obsolete CodeQL hygiene assertion anchor drifted')
+          p.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          python3 tests/repository_hygiene_contract_test.py
+          git diff --check
+
+      - name: Commit test contract update
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Niak'
+          git config user.email 'foissy.tommy@gmail.com'
+          git add tests/repository_hygiene_contract_test.py
+          git commit -m 'test(ci): require exact-SHA CodeQL on main'
+          git push origin HEAD:hotfix/codeql-main-exact-sha-20260917
