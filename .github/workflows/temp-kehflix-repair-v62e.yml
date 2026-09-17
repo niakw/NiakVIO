@@ -35,6 +35,9 @@ jobs:
           python tests/kehflix_anime_runtime_v1_test.py
           python scripts/register_kehflix_anime_runtime_v1.py
           NUVIO_PROVIDER_V3_CONTEXT=release NIAKVIO_PROVIDER_V3_FINAL_MINIMIZE=1 python scripts/materialize_provider_v3_one.py kehflix
+          mkdir -p health-output
+          printf '%s\n' '{"changed":["kehflix"]}' > health-output/v62e-kehflix-changes.json
+          python scripts/reconcile_domain_refresh_provenance.py --changes health-output/v62e-kehflix-changes.json
           python scripts/validate_published_provider_config.py --expected 46
           python scripts/finalize_provider_v3_minimizer.py --check
           python - <<'PY'
