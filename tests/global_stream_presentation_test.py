@@ -26,7 +26,7 @@ normalizer = load_path(NORMALIZER, "normalize_stream_presentation_v12")
 normalizer.normalize(apply=False)
 normalizer.assert_contract()
 presentation = load_path(PATCHES / "global_stream_presentation_v1.py", "global_stream_presentation_v1")
-assert presentation.REVISION == "all-providers-client-projection-evidence-language-v24"
+assert presentation.REVISION == "all-providers-client-projection-evidence-language-v25"
 presentation_source = (PATCHES / "global_stream_presentation_v1.py").read_text(encoding="utf-8")
 assert "\\nfunction" not in presentation_source, "raw presentation wrapper contains a literal \\n before function declaration"
 
@@ -34,7 +34,7 @@ assert "\\nfunction" not in presentation_source, "raw presentation wrapper conta
 def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None, *, return_raw: bool = False):
     patched = presentation.apply(source, context={"provider_id": provider_id})
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
-    assert "all-providers-client-projection-evidence-language-v24" in patched
+    assert "all-providers-client-projection-evidence-language-v25" in patched
     assert patched == presentation.apply(patched, context={"provider_id": provider_id})
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw)
@@ -163,6 +163,23 @@ assert vo["language"] == "VO" and "🌐 VO" in vo["description"] and "🇫🇷" 
 vo_multi = run("module.exports={getStreams:async()=>[{name:'Test',url:'https://x.example/a.m3u8',language:'MULTI'}]};\n", "cineby", "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))")
 assert vo_multi["language"] == "MULTI" and "🌐 MULTI" in vo_multi["description"]
 
+# Regression: explicit VF/VOSTFR evidence carried in provider labels survives even
+# when r.language is absent; a French catalogue projection alone must not invent VF.
+label_vost = run("module.exports={getStreams:async()=>[{name:'Source | VOSTFR',url:'https://x.example/a.m3u8'}]};\n", "coflix", "p.getStreams({mediaType:'anime',title:'Anime'}).then(v=>console.log(JSON.stringify(v[0])))")
+assert label_vost["language"] == "VOSTFR", label_vost
+assert "vostfr" in label_vost["badgeIds"], label_vost
+
+french_unknown = run("module.exports={getStreams:async()=>[{name:'French-Manga - Inconnue',url:'https://x.example/a.m3u8'}]};\n", "french-manga", "p.getStreams({mediaType:'anime',title:'Anime'}).then(v=>console.log(JSON.stringify(v[0])))")
+assert french_unknown.get("language") in (None, ""), french_unknown
+assert "vf" not in french_unknown["badgeIds"] and "vostfr" not in french_unknown["badgeIds"], french_unknown
+
+# Regression: VO-only provider profiles keep an authoritative VO fallback. This is
+# the Kurage case that previously rendered without a language badge / as Inconnue.
+kurage_unknown = run("module.exports={getStreams:async()=>[{name:'Kurage - Inconnue',url:'https://x.example/a.m3u8'}]};\n", "kurage", "p.getStreams({mediaType:'anime',title:'Anime'}).then(v=>console.log(JSON.stringify(v[0])))")
+assert kurage_unknown["language"] == "VO", kurage_unknown
+assert "vo" in kurage_unknown["badgeIds"], kurage_unknown
+assert "🌐 VO" in kurage_unknown["description"], kurage_unknown
+
 # Series/anime identity is title/year/SxxExx; provider-owned layout never survives.
 tv = run("module.exports={getStreams:async()=>[{name:'Purstream',url:'https://x.example/a.m3u8',description:'PRIVATE PROVIDER LAYOUT',language:'VF'}]};\n", "purstream", "p.getStreams({mediaType:'tv',title:'Breaking Bad',year:2008,season:1,episode:1}).then(v=>console.log(JSON.stringify(v[0])))")
 assert tv["description"].splitlines()[0] == "📺 Breaking Bad • 2008 • S01E01"
@@ -215,4 +232,4 @@ assert native_cached["calls"] == 0, native_cached
 assert native_cached["row"]["duration"] == 169, native_cached
 assert "Interstellar • 2014" in native_cached["row"]["description"], native_cached
 
-print("global stream presentation V23 language-role tests passed")
+print("global stream presentation V25 evidence-language tests passed")
