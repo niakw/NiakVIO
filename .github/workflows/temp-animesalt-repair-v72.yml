@@ -1,0 +1,99 @@
+name: TEMP - AnimeSalt Repair V72
+
+on:
+  push:
+    branches: [fix/non-display-recovery-20260916]
+    paths: [.github/workflows/temp-animesalt-repair-v72.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+
+      - name: Register and materialize AnimeSalt current resolver
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/animesalt_current_runtime_test.py
+          mkdir -p health-output automation/evidence
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('provider-overrides.json');o=json.loads(p.read_text());row=o['provider_patches']['animesalt']
+          script='scripts/provider_patches/animesalt_current_runtime_v1.py'
+          scripts=row.setdefault('provider_lego_scripts',[])
+          if script not in scripts:scripts.append(script)
+          row.setdefault('provider_lego_options',{}).setdefault(script,{})
+          p.write_text(json.dumps(o,ensure_ascii=False,indent=2)+'\n')
+          m=json.loads(Path('manifest.json').read_text());mr=next(x for x in m.get('scrapers',[]) if str(x.get('id','')).lower()=='animesalt')
+          Path('health-output/v72-old-file.txt').write_text(str(mr.get('filename') or ''))
+          print('V72_REGISTERED',script)
+          PY
+          NUVIO_PROVIDER_V3_CONTEXT=release python scripts/materialize_provider_v3_one.py animesalt
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          old=Path('health-output/v72-old-file.txt').read_text().strip();m=json.loads(Path('manifest.json').read_text());row=next(x for x in m.get('scrapers',[]) if str(x.get('id','')).lower()=='animesalt');new=str(row.get('filename') or '')
+          print('V72_PUBLICATION',old,'->',new)
+          if old and old!=new and old.startswith('providers/'):
+              p=Path(old)
+              if p.exists():p.unlink();print('V72_OLD_ASSET_REMOVED',old)
+          Path('health-output/v72-changes.json').write_text(json.dumps({'schema_version':2,'changed':['animesalt'],'bundle_updates':[{'provider':'animesalt','from':old,'to':new}]},indent=2)+'\n')
+          PY
+          python scripts/reconcile_domain_refresh_provenance.py --changes health-output/v72-changes.json
+          python scripts/finalize_provider_v3_minimizer.py --check
+          python tests/provider_v3_minimizer_published_test.py
+          python scripts/validate_provider_domain_graph.py provider-overrides.json
+          python scripts/audit_provider_v3_static.py
+
+      - name: Probe AnimeSalt anime S1E1
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()));import audit_provider_quick_yield as q
+          q.TIMEOUT=60;tasks,_=q.build_tasks();rows=[]
+          for t in tasks:
+              if str(t.get('provider_id') or '').casefold()!='animesalt':continue
+              x=q.run(t);rows.append(x);print('V72_RUNTIME',json.dumps({k:x.get(k) for k in ['provider_id','semantic_type','status','debug_stage','raw','playable','verified','contradictions','duration_ms','debug_fetches']},default=str,sort_keys=True))
+          assert rows,'missing animesalt task';anime=next((x for x in rows if str(x.get('semantic_type') or '').casefold()=='anime'),None);assert anime,rows
+          assert int(anime.get('contradictions') or 0)==0,anime
+          assert int(anime.get('raw') or 0)>=1,anime
+          urls=[str(f.get('url') or '') for f in (anime.get('debug_fetches') or [])]
+          assert any('/series/' in u for u in urls),urls
+          assert any('/episode/' in u for u in urls),urls
+          player=[f for f in (anime.get('debug_fetches') or []) if '/video/' in str(f.get('url') or '')]
+          assert player,urls
+          assert any(int(f.get('status') or 0)==200 for f in player),player
+          assert anime.get('status') in ('playable_verified','returned_unplayable'),anime
+          Path('automation/evidence/animesalt-repair-v72.json').write_text(json.dumps({'schema_version':1,'rows':rows},ensure_ascii=False,indent=2,default=str)+'\n')
+          print('V72_ANIMESALT_CURRENT_PLAYER_PROVEN',anime.get('status'),anime.get('verified'))
+          PY
+
+      - name: Persist AnimeSalt repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot';git config user.email 'actions@users.noreply.github.com'
+          git add provider-overrides.json manifest.json provider-v3-materialization.json PROVENANCE.json automation/evidence/animesalt-repair-v72.json providers/animesalt*.js
+          git add -u providers/animesalt*.js || true
+          if git diff --cached --quiet;then echo V72_PERSIST_NOOP;exit 0;fi
+          git commit -m 'fix(animesalt): use current series episode player'
+          git push origin HEAD:fix/non-display-recovery-20260916
