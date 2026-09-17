@@ -2,15 +2,16 @@
 """NiakVIO-aware Provider v3 JavaScript one-line minimizer.
 
 This is deliberately not a generic JavaScript minifier. Publication output is
-one physical line while preserving NiakVIO managed markers, string payloads,
-runtime/security markers and editability. Terser, identifier mangling, syntax
-folding and expression reordering are forbidden.
+one physical line while preserving NiakVIO managed markers, string/regex
+payloads, runtime/security markers and editability. Terser, identifier mangling,
+syntax folding and expression reordering are forbidden.
 
 The transformer only:
 - removes unmanaged comments;
 - flattens code line breaks to one safe separator;
 - removes indentation that follows a physical line break;
-- preserves quoted strings byte-for-byte (except JavaScript line continuations);
+- preserves quoted strings and regular-expression literals byte-for-byte
+  (except JavaScript string line continuations);
 - converts untagged template literal physical line breaks to ``\\n`` escapes so
   the cooked runtime string is unchanged;
 - preserves protected comment payloads/markers on the one physical output line.
@@ -82,7 +83,12 @@ _PREFIX_TEMPLATE_WORDS = {
     "of",
     "instanceof",
 }
+_REGEX_PREFIX_WORDS = _PREFIX_TEMPLATE_WORDS | {
+    "else",
+    "do",
+}
 _IDENTIFIER_TAIL_RE = re.compile(r"([A-Za-z_$][A-Za-z0-9_$]*)$")
+_REGEX_FLAGS = set("dgimsuvy")
 
 
 class MinimizeResult:
@@ -120,7 +126,7 @@ def _rstrip_horizontal(out: list[str]) -> None:
         out.pop()
 
 
-def _tail(out: list[str], limit: int = 160) -> str:
+def _tail(out: list[str], limit: int = 192) -> str:
     if not out:
         return ""
     return "".join(out[-limit:])
@@ -153,6 +159,26 @@ def _tagged_template_risk(out: list[str]) -> bool:
     if tail.endswith("=>"):
         return False
     return True
+
+
+def _regex_allowed(out: list[str]) -> bool:
+    """Conservatively decide whether ``/`` may start a regex literal.
+
+    We only claim regex syntax in expression-prefix positions. Ambiguous division
+    stays ordinary code. This is enough to protect regex payload quotes/slashes
+    without rewriting any regex byte.
+    """
+    tail = _tail(out).rstrip()
+    if not tail:
+        return True
+    match = _IDENTIFIER_TAIL_RE.search(tail)
+    if match:
+        return match.group(1) in _REGEX_PREFIX_WORDS
+    if tail.endswith("=>"):
+        return True
+    if tail.endswith(("++", "--")):
+        return False
+    return tail[-1] in "([{,:;=!?&|+-*%^~<>"
 
 
 def _flatten_protected_block(comment: str) -> str:
@@ -192,6 +218,50 @@ def _consume_string(text: str, i: int, quote: str, out: list[str]) -> tuple[int,
         out.append(ch)
         i += 1
     raise ValueError("unterminated JavaScript string literal")
+
+
+def _consume_regex(text: str, i: int, out: list[str]) -> int:
+    """Copy one JavaScript regex literal exactly, including character classes."""
+    out.append("/")
+    i += 1
+    in_class = False
+    while i < len(text):
+        ch = text[i]
+        if ch in "\r\n":
+            raise ValueError("bare physical line break inside JavaScript regex literal")
+        if ch == "\\":
+            if i + 1 >= len(text):
+                raise ValueError("unterminated escape in JavaScript regex literal")
+            if text[i + 1] in "\r\n":
+                raise ValueError("line continuation inside JavaScript regex literal")
+            out.append(ch)
+            out.append(text[i + 1])
+            i += 2
+            continue
+        if ch == "[" and not in_class:
+            in_class = True
+            out.append(ch)
+            i += 1
+            continue
+        if ch == "]" and in_class:
+            in_class = False
+            out.append(ch)
+            i += 1
+            continue
+        if ch == "/" and not in_class:
+            out.append(ch)
+            i += 1
+            seen_flags: set[str] = set()
+            while i < len(text) and text[i] in _REGEX_FLAGS:
+                if text[i] in seen_flags:
+                    break
+                seen_flags.add(text[i])
+                out.append(text[i])
+                i += 1
+            return i
+        out.append(ch)
+        i += 1
+    raise ValueError("unterminated JavaScript regex literal")
 
 
 def minimize_text(text: str) -> MinimizeResult:
@@ -327,6 +397,10 @@ def minimize_text(text: str) -> MinimizeResult:
             i = end + 2
             continue
 
+        if ch == "/" and _regex_allowed(out):
+            i = _consume_regex(source, i, out)
+            continue
+
         if ch in "\r\n":
             _rstrip_horizontal(out)
             _linebreak_guard(out)
@@ -368,7 +442,7 @@ def audit_text(text: str) -> dict:
     return {
         "bytes": len(encoded),
         "sha256": hashlib.sha256(encoded).hexdigest(),
-        "lines": 1 if text else 0,
+        "lines": text.count("\n") + text.count("\r") + (1 if text else 0),
         "physical_linebreaks": text.count("\n") + text.count("\r"),
         "template_literal_tokens": text.count("`"),
         "markers": {marker: text.count(marker) for marker in MARKERS},
@@ -454,10 +528,13 @@ def portfolio_report(*, syntax_check: bool = False) -> dict:
 
     for path in files:
         original = path.read_text(encoding="utf-8")
-        result = minimize_text(original)
-        validate_transform(original, result.text)
-        if syntax_check:
-            _node_check(result.text, path.name)
+        try:
+            result = minimize_text(original)
+            validate_transform(original, result.text)
+            if syntax_check:
+                _node_check(result.text, path.name)
+        except Exception as exc:
+            raise ValueError(f"{path.name}: one-line minimizer failed: {exc}") from exc
 
         before = audit_text(original)
         after = audit_text(result.text)
@@ -488,7 +565,7 @@ def portfolio_report(*, syntax_check: bool = False) -> dict:
             "preserve every managed Provider v3 marker cardinality",
             "preserve NIAKVIO_/NUVIO_ runtime/security marker comments",
             "preserve license/source-directive payloads as protected comments",
-            "preserve quoted string payloads and JavaScript string continuations",
+            "preserve quoted string and regular-expression literal payloads",
             "escape physical line breaks only inside untagged template literals",
             "fail closed on tagged templates because raw payload semantics differ",
             "fail closed on restricted-keyword/postfix ASI-sensitive line breaks",
