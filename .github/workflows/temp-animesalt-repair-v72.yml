@@ -1,4 +1,4 @@
-# V72 retry after correcting escaped /episode/ static guard
+# V72 retry after correcting escaped /episode/ static guard and final-stage minimizer context
 name: TEMP - AnimeSalt Repair V72
 
 on:
@@ -45,7 +45,7 @@ jobs:
           Path('health-output/v72-old-file.txt').write_text(str(mr.get('filename') or ''))
           print('V72_REGISTERED',script)
           PY
-          NUVIO_PROVIDER_V3_CONTEXT=release python scripts/materialize_provider_v3_one.py animesalt
+          NUVIO_PROVIDER_V3_CONTEXT=release NIAKVIO_PROVIDER_V3_FINAL_MINIMIZE=1 python scripts/materialize_provider_v3_one.py animesalt
           python - <<'PY'
           import json
           from pathlib import Path
