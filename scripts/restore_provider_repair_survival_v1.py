@@ -76,6 +76,21 @@ NONDISPLAY_PROVIDERS={
         "max_streams": 4
     }
 }
+NONDISPLAY_FOLLOWUPS={
+    "animesama-co":[
+        ("scripts/provider_patches/animesamaco_nondisplay_recovery_v2.py",{"provider":"animesama-co","base":"https://animesama.co","max_streams":4})
+    ],
+    "neko-sama":[
+        ("scripts/provider_patches/neko_sama_nondisplay_recovery_v2.py",{"provider":"neko-sama","base":"https://animes-sama.su","max_streams":4})
+    ],
+    "sekai":[
+        ("scripts/provider_patches/sekai_nondisplay_recovery_v2.py",{"provider":"sekai","base":"https://sekai.one","max_streams":4}),
+        ("scripts/provider_patches/sekai_inline_media_runtime_v1.py",{"base":"https://sekai.one"})
+    ],
+    "voiranime-rip":[
+        ("scripts/provider_patches/voiranime_rip_nondisplay_recovery_v2.py",{"provider":"voiranime-rip","base":"https://voiranime.rip","max_streams":4})
+    ]
+}
 
 def unique(values):
     out=[]
@@ -117,6 +132,11 @@ def main()->int:
             row["official_site"]="https://coflix.wiki"
             row["published_types"]=["movie","tv"]
         if provider=="sekai": row["official_site"]="https://sekai.one"
+        for followup,followup_options in NONDISPLAY_FOLLOWUPS.get(provider,[]):
+            if followup not in scripts:
+                scripts.append(followup); changed.append(provider)
+            options[followup]=followup_options
+        row["provider_lego_scripts"]=unique(scripts)
         mark_reproof(row)
 
     for provider,cfg in LOST.items():
