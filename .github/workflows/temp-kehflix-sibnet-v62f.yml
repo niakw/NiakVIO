@@ -1,0 +1,101 @@
+name: TEMP - Kehflix Sibnet Extraction V62F
+
+on:
+  push:
+    branches: [fix/non-display-recovery-20260916]
+    paths:
+      - .github/workflows/temp-kehflix-sibnet-v62f.yml
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Resolve current anime sources and inspect iframe media patterns
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import html,json,re,urllib.parse,urllib.request,http.cookiejar
+          base='https://kehflix.wiki'; title=base+'/title/tv/95479-jujutsu-kaisen'
+          jar=http.cookiejar.CookieJar(); opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+          def get(url,referer=None,timeout=18,limit=2000000):
+              h={'User-Agent':'Mozilla/5.0','Accept':'text/html,application/json,text/plain,*/*'}
+              if referer:h['Referer']=referer
+              req=urllib.request.Request(url,headers=h)
+              try:
+                  with opener.open(req,timeout=timeout) as r:
+                      return r.status,r.read(limit),dict(r.headers),r.geturl()
+              except Exception as e:
+                  st=getattr(e,'code',0) or 0
+                  try:b=e.read(limit)
+                  except Exception:b=repr(e).encode()
+                  return st,b,dict(getattr(e,'headers',{}) or {}),url
+          st,raw,_,_=get(title,base+'/')
+          text=raw.decode('utf-8','replace')
+          keys=[]
+          for pat in [r'[?&]k=([^&"\'<>\\\s]+)',r'\bk\s*[:=]\s*["\']([^"\']{20,})["\']',r'([A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,})']:
+              for v in re.findall(pat,text):
+                  v=html.unescape(urllib.parse.unquote(v)).strip()
+                  if v not in keys:keys.append(v)
+          payload=None
+          for key in keys[:16]:
+              q=urllib.parse.urlencode({'id':'95479','season':'1','episode':'1','k':key})
+              s,b,_,_=get(base+'/api/streams/episode?'+q,title)
+              if s==200:
+                  try:
+                      d=json.loads(b.decode('utf-8','replace'))
+                      if d.get('ok') and isinstance(d.get('sources'),list):payload=d;break
+                  except Exception:pass
+          if payload is None:raise SystemExit('no episode payload')
+          iframes=[]
+          for src in payload['sources']:
+              if isinstance(src,dict) and str(src.get('type') or '').lower()=='iframe':
+                  u=urllib.parse.urljoin(base+'/',str(src.get('src') or src.get('url') or ''))
+                  if u.startswith('http'):iframes.append(u)
+          print('V62F_IFRAMES',iframes)
+          if not iframes:raise SystemExit('no iframes')
+          for idx,u in enumerate(iframes):
+              s,b,h,final=get(u,title)
+              body=b.decode('utf-8','replace')
+              print('V62F_PAGE',idx,s,final,h.get('Content-Type'),'len',len(body))
+              # Generic URL-like strings and known player assignment contexts.
+              vals=[]
+              patterns=[
+                  r'''https?:\\?/\\?/[^"'<>\s]+''',
+                  r'''["']([^"']+\.(?:mp4|m3u8)(?:\?[^"']*)?)["']''',
+                  r'''(?:src|file|video|url)\s*[:=]\s*["']([^"']+)["']''',
+                  r'''player[^\n]{0,300}''',
+              ]
+              for pat in patterns:
+                  for m in re.findall(pat,body,re.I):
+                      v=m if isinstance(m,str) else m[0]
+                      v=html.unescape(v).replace('\\/','/').strip()
+                      if v not in vals:vals.append(v)
+              print('V62F_PATTERNS',idx,json.dumps(vals[:100],ensure_ascii=False))
+              for needle in ('mp4','m3u8','player','video_src','file:','src:','sources'):
+                  pos=body.lower().find(needle.lower())
+                  if pos>=0:
+                      print('V62F_SNIP',idx,needle,body[max(0,pos-500):pos+1200].replace('\n',' ')[:1800])
+              # Probe every candidate that can be made absolute and looks media-like.
+              seen=[]
+              for v in vals:
+                  if not isinstance(v,str):continue
+                  if not any(x in v.lower() for x in ('.mp4','.m3u8','video')):continue
+                  try:c=urllib.parse.urljoin(final,v)
+                  except Exception:continue
+                  if not c.startswith('http') or c in seen:continue
+                  seen.append(c)
+                  ps,pb,ph,pfinal=get(c,final,15,131072)
+                  print('V62F_MEDIA_PROBE',idx,ps,pfinal,ph.get('Content-Type'),'bytes',len(pb),'prefix',pb[:60])
+          PY
