@@ -1,5 +1,75 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-17 — provider repair survival failure + activation architecture checkpoint
+
+**Authoritative correction to prior claims:** several provider repairs reported as successful on 2026-09-16/17 were real on the repair workbench but did **not** all survive into the final published `main` generation. PR #122 (`fix/non-display-recovery-20260916`, head `4e9729d865f6a069bda567fbeac520d714bef4bd`) was closed without merge. Later PR #127 rematerialized/minimized providers from `main`, so provider Lego/repair scripts that existed only on #122 were omitted from the final authority. Do not call those repairs delivered until they are restored, rematerialized, re-proven and merged.
+
+### Confirmed repair-survival regressions from #122 head -> current main
+
+- AnimeSama.co: #122 had `animesamaco_nondisplay_recovery_v1.py` + `v2.py`; current main retains only `animesamaco_site_runtime_v1.py`.
+- AnimeVOSTFR: #122 had `animevostfr_nondisplay_recovery_v1.py` with anime lane proven; current main lost the script and current verified/proven anime lane.
+- Coflix: #122 had `coflix_nondisplay_recovery_v1.py` with movie/tv proven; current main lost the script and proof.
+- Neko-Sama: #122 had runtime + nondisplay recovery v1/v2; current main retains only the base runtime.
+- Sekai: #122 had nondisplay recovery v1/v2 + inline-media runtime with anime terminal playback proven; current main lost all three provider Lego scripts and the lane proof.
+- VoirAnime.rip: #122 had nondisplay recovery v1/v2; current main lost both.
+- AllAnime: #122 had `allanime_current_runtime_v1.py` with anime proven; current main lost it.
+- AllWish: #122 had `allwish_current_runtime_v1.py` and corrected anime-only semantic state; current main lost that patch and reverted required/missing lanes.
+- AnikotoTV: #122 had `anikototv_runtime_v3.py` and anime proven; current main regressed to `anikototv_runtime_v2.py`.
+- Flemmix: #122 had `flemmix_current_runtime_v1.py`; current main lost it.
+- MovieBox: #122 had `moviebox_current_embed_v2.py`, movie/tv proven, state on; current main lost the script and returned to off/no-proven-route.
+- VidFast: #122 had `vidfast_current_embed_v1.py` with movie/tv proven; current main lost it.
+- VidLove: #122 had `vidlove_current_api_v1.py` with movie/tv proven; current main lost it.
+- WookaFR: #122 had `wookafr_lecteurvideo_priority_v1.py` + `wookafr_showvideo_base64_v1.py` + `wookafr_current_runtime_v2.py`; current main retains only the first.
+- Yflix: #122 had `yflix_current_runtime_v2.py`; current main lost it.
+- Kehflix, Purstream, HindMoviez, Papadustream and StreamZo show additional proof-state/lane regressions even where some runtime Lego survived. In particular Kehflix lost current verified movie/tv evidence; Purstream lost verified movie/tv evidence; Papadustream lost movie proof; StreamZo lost anime proof.
+
+This explains why user Native TV acceptance after the supposedly final release showed a much smaller provider set than expected. The failure was not merely catalogue coverage: **repair persistence/publication authority was incomplete.**
+
+### Mandatory repair-survival invariant
+
+A provider repair is not "delivered" merely because a workbench probe or temporary branch is green. It is delivered only when all of the following hold on the exact published SHA:
+1. the intended provider Lego/structured DATA survives in `provider-overrides.json`;
+2. the published manifest points to a bundle rematerialized from that authority;
+3. the exact published bundle contains the intended managed repair markers/behavior;
+4. a positive fixture is reproduced after rematerialization;
+5. native fallback evidence is used when Node and real Nuvio disagree;
+6. the survival check is repeated after minimization/finalization and after merge to `main`.
+
+Future finalizers must fail if a previously proven provider repair disappears from structured authority or if a provider's required repair-script set shrinks without an explicit evidence-backed supersession record.
+
+### Activation / Brain architecture correction
+
+User acceptance contract: an ACTIVE provider must be capable of reaching its catalogue and returning at least one real playable stream for each declared semantic lane. A reachable domain/catalogue route alone is insufficient.
+
+The old activation architecture was too permissive:
+- `declared-types-qualified` could pass with `playableVerified=false`;
+- availability logic deliberately did not disable on `no_streams`;
+- Native matrix computed FULL/PARTIAL/RESAMPLE/ZERO but historically did not require FULL for every active provider.
+
+Work in branch `fix/provider-activation-certification-v1` adds:
+- exact-bundle positive fixture certification per provider/lane;
+- positive fixture memory;
+- FULL-only active Native certification;
+- Node-negative => native fallback, never direct disable;
+- a 75% minimum bulk onboarding auto-certification yield. Below 75% for a significant batch is an **architecture defect**, not evidence that most providers are broken;
+- mass-disable guard (>25% unresolved is blocked);
+- failure clustering so Brain repairs common Core/capability families before provider-local patches;
+- activation consensus across Node exact-bundle proof, exact-bundle positive memory and Native Lab evidence.
+
+Initial Node-only census run 35283227014 reported 13/44 and is **not authoritative for disable** because it contradicted known Native/user positives. It exposed harness defects. One confirmed defect: anime was incorrectly invoked as runtime type `anime` instead of official Nuvio ABI transport `tv`; this is being corrected. Concurrency is also reduced to limit self-induced anti-bot/rate-limit failures.
+
+Five authoritative Native Labs triggered from main SHA `21ef6b8caa2c348bc8d8d84e5c3dfa9229fe4645`:
+- Android TV + Android Mobile run 35281607961;
+- iOS run 35281607933;
+- Desktop macOS + Windows run 35281607943.
+Do not call provider coverage final until these runs finish and their provider/lane evidence is reconciled with the restored repair authority.
+
+User acceptance observations on the current published generation:
+- movie test: Purstream 720p, StreamZo 2160p, Castle 720p, VidRock 1080p, HindMoviez;
+- HOTD S1E2: Purstream 720p, StreamZo 1080p, VidRock 1080p, Castle 576p/720p, HindMoviez 480p;
+- HellMode S2E12: French-Manga 480p, VoirAnime.homes 480p.
+Kehflix disappearing despite prior positive output is a primary regression signal and must be explicitly covered by repair-survival/native proof.
+
 Last authoritative checkpoint: 2026-09-16 Europe/Paris.
 
 This file is the durable recovery source of truth for the active NiakVIO work. Prefer current repository state and exact GitHub Actions/native logs over older chat summaries. Update this file automatically at every important correction, failure, publication, native proof, security proof, or architecture decision before moving to the next risky step.
