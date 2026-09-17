@@ -84,7 +84,7 @@ jobs:
           import subprocess
           allowed_exact={
               'provider-overrides.json','manifest.json','PROVENANCE.json',
-              'automation/provider-v3-materialization.json',
+              'provider-v3-materialization.json',
           }
           changed=[]
           for line in subprocess.check_output(['git','status','--porcelain'],text=True).splitlines():
@@ -98,7 +98,7 @@ jobs:
           PY
           git config user.name 'NiakVIO Repair Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add provider-overrides.json manifest.json PROVENANCE.json automation/provider-v3-materialization.json 'providers/kehflix'*.js
+          git add provider-overrides.json manifest.json PROVENANCE.json provider-v3-materialization.json 'providers/kehflix'*.js
           if git diff --cached --quiet; then
             echo 'V62E_PERSIST no material changes'
             exit 0
