@@ -22,7 +22,9 @@ module = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(module)
 
-node_script = """
+# Raw Python literal is intentional: the JavaScript regex must receive the two
+# escape sequences \r and \n, not physical CR/LF bytes interpolated by Python.
+node_script = r"""
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
