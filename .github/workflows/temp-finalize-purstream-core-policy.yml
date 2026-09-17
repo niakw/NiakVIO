@@ -1,0 +1,59 @@
+name: TEMP Finalize Purstream Core Policy
+
+on:
+  push:
+    branches:
+      - hotfix/purstream-core-policy-final-20260917
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout hotfix branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: hotfix/purstream-core-policy-final-20260917
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Normalize Core media policy and release hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/normalize_core_media_policy.py --apply
+          python3 tests/core_media_policy_test.py
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          python3 tests/release_hash_scope_test.py
+          git diff --check
+          python3 - <<'PY'
+          import subprocess
+          allowed = {
+              'provider-overrides.json',
+              'FILE-HASHES.json',
+              'PATCH-SHA256SUMS.txt',
+              'SHA256SUMS.json',
+              'automation/PLATFORM-RUNTIME-CONTRACTS.md',
+          }
+          rows = subprocess.check_output(['git','status','--porcelain'], text=True).splitlines()
+          changed = {row[3:] for row in rows if len(row) >= 4}
+          unexpected = sorted(changed - allowed)
+          if unexpected:
+              raise SystemExit('unexpected normalization outputs: ' + ', '.join(unexpected))
+          if 'provider-overrides.json' not in changed:
+              raise SystemExit('expected provider-overrides.json normalization was not produced')
+          print('normalized files:', ', '.join(sorted(changed)))
+          PY
+
+      - name: Commit normalized policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Niak'
+          git config user.email 'foissy.tommy@gmail.com'
+          git add provider-overrides.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json automation/PLATFORM-RUNTIME-CONTRACTS.md
+          git commit -m 'fix(core): normalize Purstream policy state'
+          git push origin HEAD:hotfix/purstream-core-policy-final-20260917
