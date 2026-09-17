@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
-"""Fail publication unless every active manifest provider is live-qualified.
+"""Fail publication unless every active manifest provider is playably qualified.
 
-An active provider cannot be compensated by a disabled provider. A provider proven
-blocked/unreachable may be advanced by the sequential discovery loop for audit
-purposes, but it does not satisfy publication while it remains enabled=true.
-Qualification means 100% of the provider's declared semantic types have live route
-proof (or verified direct output per declared type); internal request-shape coverage
-is not a publication criterion.
+Active means useful to the user, not merely reachable: every declared semantic lane
+must have current-run playable/identity-safe proof for the exact provider bundle.
+A successful catalogue/search/player HTTP route with zero playable output is useful
+repair evidence, but it can never qualify an enabled provider for publication.
 """
 from __future__ import annotations
 
@@ -56,46 +54,56 @@ def main() -> int:
             continue
         state = str(row.get("completionState") or "").strip()
         live_routes = int(row.get("liveValidatedRouteCount") or 0)
-        playable = bool(row.get("playableVerified"))
+        playable = row.get("playableVerified") is True
+        final_bundle = row.get("finalBundleVerified") is not False
         type_coverage = float(row.get("declaredTypeCoverageRatio") or row.get("effectiveCoverageRatio") or 0.0)
         type_complete = row.get("typeComplete") is True
         required_types = [cid(value) for value in row.get("requiredTypes") or [] if cid(value)]
         validated_types = [cid(value) for value in row.get("validatedTypes") or [] if cid(value)]
+        playable_types = [cid(value) for value in row.get("playableChainValidatedTypes") or [] if cid(value)]
         missing_types = [cid(value) for value in row.get("missingTypes") or [] if cid(value)]
         advanced = row.get("advancedToNextProvider") is True
 
-        route_qualified = (
-            state == "declared-types-qualified"
+        # New reports expose playableChainValidatedTypes. Legacy reports may not,
+        # so they can only qualify when the aggregate playableVerified bit is true.
+        # A newly generated report with per-lane playable evidence must prove every
+        # required lane explicitly.
+        lane_playable = True
+        if "playableChainValidatedTypes" in row:
+            lane_playable = set(required_types) <= set(playable_types)
+
+        qualified_now = (
+            state in {"declared-types-qualified", "direct-output-verified"}
             and type_complete
             and type_coverage >= 1.0
             and not missing_types
-            and live_routes > 0
-        )
-        direct_qualified = (
-            state == "direct-output-verified"
-            and type_complete
-            and type_coverage >= 1.0
-            and not missing_types
+            and bool(required_types)
+            and set(required_types) <= set(validated_types)
             and playable
+            and lane_playable
+            and final_bundle
+            and advanced
+            and (live_routes > 0 or state == "direct-output-verified")
         )
-        if advanced and (route_qualified or direct_qualified):
+        if qualified_now:
             qualified.add(provider_id)
             continue
         failures.append(
-            f"{provider_id}: active but not declared-type live-qualified "
-            f"state={state or 'missing'} liveRoutes={live_routes} "
+            f"{provider_id}: active but not playable-qualified "
+            f"state={state or 'missing'} liveRoutes={live_routes} playable={playable} finalBundle={final_bundle} "
             f"types={','.join(validated_types) or 'none'}/{','.join(required_types) or 'none'} "
-            f"missing={','.join(missing_types) or 'none'} coverage={type_coverage:.3f}/1.000 playable={playable}"
+            f"playableTypes={','.join(playable_types) or ('legacy-aggregate' if playable else 'none')} "
+            f"missing={','.join(missing_types) or 'none'} coverage={type_coverage:.3f}/1.000"
         )
 
     print(
         "FIELD_ACTIVE_PROVIDER_LIVE_COVERAGE "
         f"catalogue={len(rows)} active={len(active)} qualified={len(qualified)} "
-        f"missing={len(active - qualified)} declared_type_gate=1.000"
+        f"missing={len(active - qualified)} declared_type_gate=1.000 playable_gate=true"
     )
     if failures:
         raise AssertionError(
-            "active provider declared-type live coverage gate failed: "
+            "active provider playable coverage gate failed: "
             f"qualified={len(qualified)}/{len(active)}\n" + "\n".join(failures)
         )
     if len(qualified) != len(active):
