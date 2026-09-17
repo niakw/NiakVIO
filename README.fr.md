@@ -61,6 +61,8 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/mani
 
 **Guide manifest :** [`docs/fr/how-to-add-manifest.md`](docs/fr/how-to-add-manifest.md)
 
+**Mise à jour / réinstallation / cache :** [`docs/fr/niakvio-update-reinstall-cache.md`](docs/fr/niakvio-update-reinstall-cache.md)
+
 ### Feed StreamBadge
 
 ```text
@@ -134,6 +136,8 @@ Un provider ou manifest autonome peut très bien convenir. NiakVIO prend surtout
 
 > [!TIP]
 > **Stack cible simple :** 1 couche providers + 1 addon métadonnées/catalogue + 1 addon sous-titres + 1 service de suivi. Évitez d’empiler plusieurs packs providers qui se disputent le même rôle, sauf si vous les testez volontairement.
+
+**Première installation ?** [`Installer Nuvio + NiakVIO pas à pas`](docs/fr/nuvio-installation.md)
 
 ---
 
