@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "requested_at": "2026-09-17T18:34:00Z",
-  "accepted_main_sha": "7432516a43637400494256cb982009519a503e6d",
+  "requested_at": "2026-09-17T18:45:00Z",
+  "accepted_main_sha": "9954757de3eceaa3816870374b0fba36d3e46bd3",
   "target_release": "auto",
-  "reason": "Finalize accepted main after PR #123 restored derived manifest projection parity and aligned the structured-language presentation guard. The inherited Verify & Publish failure is the known provider-v3 final minimizer fixed-point debt: 44 active published bundles each report saved=1, already reproduced on pre-hotfix main. Run the dedicated finalization pipeline, rebuild synchronized projections and release hashes, and publish only if origin/main stays pinned to the accepted trigger base."
+  "reason": "Retry accepted Provider v3 finalization after PR #124 aligned release-integrity validation with the repository lifecycle contract: active artifacts stay under providers/, explicitly disabled visible artifacts stay under provider-disabled/, and Hub46 remains active-only. Reconfirm the 44-provider minimizer fixed point, rebuild derived projections and pinned transport, validate hashes/integrity, and publish atomically only if origin/main remains pinned to this trigger base."
 }
