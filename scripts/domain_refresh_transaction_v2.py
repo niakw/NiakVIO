@@ -540,6 +540,8 @@ def main() -> int:
             f"changed={len(static_changed)} providers={','.join(static_changed) if static_changed else '-'}"
         )
         bundle_updates = rebuild_provider_configs(changed_provider_ids)
+        from sync_manifest_projection_rows import sync as sync_manifest_projections
+        sync_manifest_projections(check=False)
 
     changes = {
         "schema_version": 2,

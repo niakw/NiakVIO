@@ -501,6 +501,8 @@ def main() -> int:
     ledger["providerCount"] = len(rows)
     ledger["expectedProviderCount"] = len(rows)
     allmat.write_json(allmat.DEFAULT_REPORT, ledger)
+    from sync_manifest_projection_rows import sync as sync_manifest_projections
+    sync_manifest_projections(check=False)
     print(
         "FIELD_PROVIDER_V3_ONE_LEDGER "
         f"provider={target} file={report.get('file')} sha256={str(report.get('sha256') or '')[:16]} "
