@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "authority": "provider-upstream-drift-v1",
+  "providers": {
+    "movieshunt": {
+      "active": true,
+      "lanes": [
+        "movie"
+      ],
+      "baselineRef": "20bbb1143da0cb591f18c58ecc1d791b39345778",
+      "baselineAsset": "providers/movieshunt--nuvio--5ffc0f6282266f66.js",
+      "candidateRef": "0f60b209d6ced4057346f0fcedd867e0b0846306",
+      "baselineAttempts": 3,
+      "candidateAttempts": 3,
+      "baselineVerified": false,
+      "candidateVerified": false,
+      "baselineFailureStage": "provider_network_http_error",
+      "candidateFailureStage": "provider_network_http_error",
+      "verdict": "external_drift_both_fail",
+      "observedAt": "2026-09-17T21:01:04Z",
+      "evidenceRefs": [
+        "github-actions:35274174393",
+        "github-actions:35274174393/artifacts/10518619656"
+      ],
+      "artifactDigest": "sha256:c2bb42e5aded3b2dfd72e9edd9ca9d74c798aeb51306c62ea53ee9832dcbf158",
+      "summary": "Three same-run candidate attempts and three attempts with the exact previously accepted main MoviesHunt bundle all fail at provider_network_http_error. The historical movie proof remains valid historically; the present failure is upstream drift and must not be treated as a Core/provider-byte regression."
+    }
+  }
+}

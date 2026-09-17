@@ -14,6 +14,7 @@ DEFAULT_MATRIX = ROOT / "automation" / "provider-history-matrix.json"
 DEFAULT_CANDIDATE = ROOT / "provider-v3-quick-yield.json"
 DEFAULT_OUT = ROOT / "automation" / "provider-non-regression-gate.json"
 DEFAULT_INVALIDATIONS = ROOT / "automation" / "provider-proof-invalidations.json"
+DEFAULT_UPSTREAM_DRIFT = ROOT / "automation" / "provider-upstream-drift-evidence.json"
 CURRENT_MANIFEST = ROOT / "manifest.json"
 CURRENT_OVERRIDES = ROOT / "provider-overrides.json"
 HISTORY = ("5.21.0", "5.21.16", "5.21.36")
@@ -75,6 +76,85 @@ def invalidated_lanes_for(invalidations: dict[str, dict[str, Any]], provider_id:
     if not isinstance(row, dict):
         return set()
     return {canon(x) for x in row.get("invalidatedLanes") or [] if canon(x)}
+
+
+def _exact_commit_sha(value: object) -> bool:
+    raw = str(value or "").strip().casefold()
+    if len(raw) != 40:
+        return False
+    try:
+        int(raw, 16)
+    except ValueError:
+        return False
+    return True
+
+
+def load_upstream_drift(path: Path = DEFAULT_UPSTREAM_DRIFT) -> dict[str, dict[str, Any]]:
+    if not path.exists():
+        return {}
+    doc = load(path)
+    if int(doc.get("schemaVersion") or 0) != 1:
+        raise ValueError("upstream drift schemaVersion must be 1")
+    if doc.get("authority") != "provider-upstream-drift-v1":
+        raise ValueError("upstream drift authority mismatch")
+    raw = doc.get("providers")
+    if not isinstance(raw, dict):
+        raise ValueError("upstream drift providers must be an object")
+    out: dict[str, dict[str, Any]] = {}
+    allowed_stages = {"provider_network_http_error", "provider_network_exception", "timeout"}
+    for raw_pid, raw_row in raw.items():
+        pid = canon(raw_pid)
+        if not pid or not isinstance(raw_row, dict):
+            raise ValueError("upstream drift provider row invalid")
+        if raw_row.get("active") is not True:
+            continue
+        lanes = sorted({canon(x) for x in raw_row.get("lanes") or [] if canon(x)})
+        if not lanes or any(lane not in {"movie", "tv", "anime"} for lane in lanes):
+            raise ValueError(f"{pid}: upstream drift must name canonical lanes")
+        baseline_ref = str(raw_row.get("baselineRef") or "").strip().casefold()
+        candidate_ref = str(raw_row.get("candidateRef") or "").strip().casefold()
+        if not _exact_commit_sha(baseline_ref) or not _exact_commit_sha(candidate_ref):
+            raise ValueError(f"{pid}: upstream drift requires exact baseline/candidate commit SHAs")
+        asset = str(raw_row.get("baselineAsset") or "").strip()
+        if not asset.startswith("providers/") or not asset.endswith(".js"):
+            raise ValueError(f"{pid}: upstream drift baselineAsset must be a published provider bundle")
+        if int(raw_row.get("baselineAttempts") or 0) < 2 or int(raw_row.get("candidateAttempts") or 0) < 2:
+            raise ValueError(f"{pid}: upstream drift requires repeated A/B attempts")
+        if raw_row.get("baselineVerified") is not False or raw_row.get("candidateVerified") is not False:
+            raise ValueError(f"{pid}: upstream drift requires both baseline and candidate to fail current verification")
+        baseline_stage = canon(raw_row.get("baselineFailureStage"))
+        candidate_stage = canon(raw_row.get("candidateFailureStage"))
+        if baseline_stage != candidate_stage or baseline_stage not in allowed_stages:
+            raise ValueError(f"{pid}: upstream drift requires the same bounded network failure stage on both sides")
+        if raw_row.get("verdict") != "external_drift_both_fail":
+            raise ValueError(f"{pid}: upstream drift verdict mismatch")
+        refs = [str(x).strip() for x in raw_row.get("evidenceRefs") or [] if str(x).strip()]
+        digest = str(raw_row.get("artifactDigest") or "").strip().casefold()
+        digest_hex = digest.removeprefix("sha256:")
+        if len(refs) < 2 or len(digest_hex) != 64:
+            raise ValueError(f"{pid}: upstream drift requires durable run/artifact evidence")
+        try:
+            int(digest_hex, 16)
+        except ValueError as exc:
+            raise ValueError(f"{pid}: invalid upstream drift artifact digest") from exc
+        row = dict(raw_row)
+        row["lanes"] = lanes
+        row["baselineRef"] = baseline_ref
+        row["candidateRef"] = candidate_ref
+        row["evidenceRefs"] = refs
+        out[pid] = row
+    return out
+
+
+def active_upstream_drift_lanes(
+    evidence: dict[str, dict[str, Any]], provider_id: str, base_ref: str
+) -> set[str]:
+    row = evidence.get(canon(provider_id))
+    if not isinstance(row, dict):
+        return set()
+    if canon(row.get("baselineRef")) != canon(base_ref):
+        return set()
+    return {canon(x) for x in row.get("lanes") or [] if canon(x)}
 
 
 def git_text(ref: str, path: str) -> str:
@@ -290,10 +370,12 @@ def candidate_gate(
     baseline_lanes = verified_lanes_from_quick(git_json(base_ref, "provider-v3-quick-yield.json"))
     activation_debt = current_activation_debt()
     invalidations = load_proof_invalidations()
+    upstream_drifts = load_upstream_drift()
 
     obligations: dict[str, Any] = {}
     failures: list[dict[str, Any]] = []
     disabled_debt: list[str] = []
+    upstream_drift_debt: list[str] = []
 
     for pid in scope:
         row = rows[pid]
@@ -304,6 +386,8 @@ def candidate_gate(
         historical_positive = bool(historical_positive_versions)
         invalidation = invalidations.get(pid) if isinstance(invalidations.get(pid), dict) else {}
         invalidated_lanes = invalidated_lanes_for(invalidations, pid)
+        upstream_drift = upstream_drifts.get(pid) if isinstance(upstream_drifts.get(pid), dict) else {}
+        upstream_drift_lanes = active_upstream_drift_lanes(upstream_drifts, pid, base_ref)
         historical_specific_raw = {canon(x) for x in row.get("historicalVerifiedLanes") or [] if canon(x)}
         rolling_raw = set(baseline_lanes.get(pid) or set())
         historical_specific = historical_specific_raw - invalidated_lanes
@@ -311,7 +395,9 @@ def candidate_gate(
         required_lanes = historical_specific | rolling
         provider_positive_invalidated = bool(invalidation.get("invalidateProviderPositive"))
         got = set(candidate_lanes.get(pid) or set())
-        missing = sorted(required_lanes - got)
+        missing_all = required_lanes - got
+        missing_external_drift = sorted(missing_all & upstream_drift_lanes)
+        missing = sorted(missing_all - upstream_drift_lanes)
 
         contract = row.get("contractDrift") or {}
         current_semantic = {canon(x) for x in contract.get("currentSemanticTypes") or [] if canon(x)}
@@ -323,14 +409,24 @@ def candidate_gate(
             partial_failed = {
                 canon(x) for x in row.get("explicitCurrentFailedLanes") or [] if canon(x)
             } & current_semantic
-        unrecovered_partial = sorted(partial_failed - got)
+        unrecovered_partial_all = partial_failed - got
+        unrecovered_partial_external_drift = sorted(unrecovered_partial_all & upstream_drift_lanes)
+        unrecovered_partial = sorted(unrecovered_partial_all - upstream_drift_lanes)
 
         require_any = historical_positive and not required_lanes and not provider_positive_invalidated
-        any_missing = require_any and not got
+        any_missing_external_drift = require_any and not got and bool(upstream_drift_lanes)
+        any_missing = require_any and not got and not upstream_drift_lanes
         debt = activation_debt.get(pid)
         debt_accepted = isinstance(debt, dict)
         debt_reasons: list[str] = []
+        drift_reasons: list[str] = []
         provider_failures: list[str] = []
+        if missing_external_drift:
+            drift_reasons.append("missing_verified_lanes")
+        if any_missing_external_drift:
+            drift_reasons.append("historical_positive_without_candidate_verified_lane")
+        if unrecovered_partial_external_drift:
+            drift_reasons.append("partial_regression_not_recovered")
 
         if missing:
             if debt_accepted:
@@ -361,6 +457,8 @@ def candidate_gate(
         }
         if debt_reasons:
             disabled_debt.append(pid)
+        if drift_reasons:
+            upstream_drift_debt.append(pid)
         obligations[pid] = {
             "historicalPositiveVersions": historical_positive_versions,
             "proofInvalidationApplied": bool(invalidation),
@@ -376,12 +474,19 @@ def candidate_gate(
             "candidateVerifiedLanes": sorted(got),
             "candidateLaneStatuses": observed_statuses,
             "missingVerifiedLanes": missing,
+            "missingVerifiedLanesExternalDrift": missing_external_drift,
             "requireAnyVerifiedLane": require_any,
             "partialRegressionFailedLanes": sorted(partial_failed),
             "unrecoveredPartialRegressionLanes": unrecovered_partial,
+            "unrecoveredPartialRegressionLanesExternalDrift": unrecovered_partial_external_drift,
             "lostSemanticTypes": lost_types,
             "hlsM3u8Lost": hls_lost,
-            "externalDriftRecorded": bool(row.get("externalDriftAccepted")),
+            "upstreamDriftApplied": bool(drift_reasons),
+            "upstreamDriftAuthority": "provider-upstream-drift-v1" if drift_reasons else None,
+            "upstreamDriftLanes": sorted(upstream_drift_lanes),
+            "upstreamDriftReasons": drift_reasons,
+            "upstreamDriftEvidenceRefs": upstream_drift.get("evidenceRefs") if drift_reasons else [],
+            "externalDriftRecorded": bool(row.get("externalDriftAccepted")) or bool(drift_reasons),
             "disabledDebtAccepted": bool(debt_reasons),
             "disabledDebtState": debt.get("routeDataState") if isinstance(debt, dict) else None,
             "disabledDebtReasons": debt_reasons,
@@ -403,6 +508,10 @@ def candidate_gate(
         "historicalFloorSource": "automation/provider-history-matrix.json schema v3",
         "proofInvalidationSource": str(DEFAULT_INVALIDATIONS.relative_to(ROOT)),
         "proofInvalidationPolicy": "only active, evidence-backed contradiction records may remove invalidated historical/rolling lanes from the candidate floor; all other floors remain unchanged",
+        "upstreamDriftSource": str(DEFAULT_UPSTREAM_DRIFT.relative_to(ROOT)),
+        "upstreamDriftPolicy": "same-run repeated A/B proof that exact accepted baseline bytes and candidate bytes fail at the same bounded network stage may waive only live lane reproduction for that exact baseRef; semantic/HLS contract deletion remains forbidden",
+        "upstreamDriftProviderCount": len(sorted(set(upstream_drift_debt))),
+        "upstreamDriftProviders": sorted(set(upstream_drift_debt)),
         "candidateSource": str(DEFAULT_CANDIDATE.relative_to(ROOT)),
         "disabledHistoricalDebtPolicy": "audited route debt is allowed for current provider-folder identities when provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden",
         "disabledDebtProviderCount": len(sorted(set(disabled_debt))),
