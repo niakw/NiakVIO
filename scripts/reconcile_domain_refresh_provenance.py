@@ -2,14 +2,19 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
+
+from provider_v3_minimizer import minimize_text, validate_transform
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 MATERIALIZATION = ROOT / "provider-v3-materialization.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
+MINIMIZER = ROOT / "scripts" / "provider_v3_minimizer.py"
+MINIMIZER_PROOF_SCHEMA = 2
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -25,6 +30,54 @@ def write(path: Path, value: dict[str, Any]) -> None:
 
 def canon(value: object) -> str:
     return str(value or "").strip().casefold()
+
+
+def sha256(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def canonical_minimizer_proof(filename: str, digest: str) -> dict[str, Any]:
+    """Build the exact proof expected by the authoritative final minimizer.
+
+    Domain refresh may update a touched provider's content-addressed asset, but it
+    must never merely transplant an old proof to the new SHA. Verify the current
+    bytes are already a minimizer fixed point, then bind a fresh proof to those
+    exact bytes and to the current minimizer tool.
+    """
+    path = (ROOT / filename).resolve()
+    providers = (ROOT / "providers").resolve()
+    try:
+        path.relative_to(providers)
+    except ValueError as exc:
+        raise SystemExit(f"unsafe provider publication path: {filename}") from exc
+    if not path.is_file():
+        raise SystemExit(f"missing provider publication asset: {filename}")
+
+    original = path.read_text(encoding="utf-8")
+    actual_digest = sha256(original.encode("utf-8"))
+    if actual_digest != digest:
+        raise SystemExit(
+            f"provider publication digest mismatch: {filename} materialization={digest} actual={actual_digest}"
+        )
+
+    result = minimize_text(original)
+    validate_transform(original, result.text)
+    if result.text != original:
+        raise SystemExit(
+            f"provider publication is not minimizer fixed-point before provenance sync: {filename}"
+        )
+
+    return {
+        "schema_version": MINIMIZER_PROOF_SCHEMA,
+        "tool": "scripts/provider_v3_minimizer.py",
+        "tool_sha256": sha256(MINIMIZER.read_bytes()),
+        "production_enabled": True,
+        "terser_allowed": False,
+        "saved_bytes": int(result.saved_bytes),
+        "transformed_lines": int(result.transformed_lines),
+        "skipped_reason": str(result.skipped_reason or ""),
+        "sha256": digest,
+    }
 
 
 def main() -> int:
@@ -53,6 +106,7 @@ def main() -> int:
         raise SystemExit("PROVENANCE.json providers map required")
 
     changed = []
+    proof_refreshed = []
     for provider_id in sorted(selected):
         manifest_row = manifest_rows.get(provider_id)
         material_row = material_rows.get(provider_id)
@@ -60,9 +114,20 @@ def main() -> int:
         if not all(isinstance(x, dict) for x in (manifest_row, material_row, provenance_row)):
             raise SystemExit(f"{provider_id}: incomplete publication provenance state")
         filename = str(manifest_row.get("filename") or "").strip()
+        material_filename = str(material_row.get("file") or "").strip()
         digest = str(material_row.get("sha256") or "").strip().casefold()
         if not filename.startswith("providers/") or len(digest) != 64:
             raise SystemExit(f"{provider_id}: invalid current publication identity")
+        if material_filename and material_filename != filename:
+            raise SystemExit(
+                f"{provider_id}: manifest/materialization publication mismatch: "
+                f"manifest={filename} materialization={material_filename}"
+            )
+
+        # DOMAIN_REFRESH_MINIMIZER_PROOF_V61: prove the newly addressed asset is
+        # already final-minimizer fixed-point before updating any provenance.
+        minimizer_proof = canonical_minimizer_proof(filename, digest)
+
         before = json.dumps(provenance_row, ensure_ascii=False, sort_keys=True)
         provenance_row["published_filename"] = filename
         provenance_row["sha256"] = digest
@@ -71,9 +136,9 @@ def main() -> int:
         fixed = provenance_row.get("final_fixed_point")
         if isinstance(fixed, dict):
             fixed["sha256"] = digest
-        minimizer = provenance_row.get("final_minimizer")
-        if isinstance(minimizer, dict):
-            minimizer["sha256"] = digest
+        if provenance_row.get("final_minimizer") != minimizer_proof:
+            provenance_row["final_minimizer"] = minimizer_proof
+            proof_refreshed.append(provider_id)
         if before != json.dumps(provenance_row, ensure_ascii=False, sort_keys=True):
             changed.append(provider_id)
 
@@ -82,7 +147,8 @@ def main() -> int:
     print(
         "FIELD_DOMAIN_REFRESH_PROVENANCE "
         f"scope={','.join(sorted(selected)) if selected else '-'} "
-        f"changed={','.join(changed) if changed else '-'}"
+        f"changed={','.join(changed) if changed else '-'} "
+        f"minimizer_proof={','.join(proof_refreshed) if proof_refreshed else '-'}"
     )
     return 0
 
