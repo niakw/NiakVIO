@@ -1,0 +1,114 @@
+name: TEMP - MoviesMod Terminal Diagnosis V63
+
+on:
+  push:
+    branches: [fix/non-display-recovery-20260916]
+    paths:
+      - .github/workflows/temp-moviesmod-v63.yml
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+
+      - name: Inspect current MoviesMod model and bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          o=json.load(open('provider-overrides.json'))['provider_patches']['moviesmod']
+          m=json.load(open('manifest.json'))
+          row=next(x for x in m['scrapers'] if str(x.get('id','')).casefold()=='moviesmod')
+          print('V63_MANIFEST',json.dumps(row,sort_keys=True))
+          print('V63_PATCH',json.dumps(o,ensure_ascii=False,sort_keys=True)[:30000])
+          p=Path(row['filename']); text=p.read_text(encoding='utf-8')
+          print('V63_FILE',p,'BYTES',len(text))
+          for needle in ('pubonrace','modpro.blog','moviesmod.zone','providerValuePlan','searchRequestPlan','NIAKVIO_PROVIDER_RUNTIME_RESOLVER_V1'):
+              print('V63_NEEDLE',needle,text.find(needle))
+          PY
+
+      - name: Probe MoviesMod lanes with bounded debug
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import audit_provider_quick_yield as q
+          q.TIMEOUT=32
+          tasks,_=q.build_tasks()
+          selected=[t for t in tasks if str(t.get('provider_id') or '').casefold()=='moviesmod']
+          for t in selected:
+              r=q.run(t)
+              print('V63_LANE',json.dumps({k:r.get(k) for k in ['provider_id','semantic_type','status','debug_stage','raw','playable','verified','contradictions','duration_ms','debug_model','debug_fetches','debug_provider_value_trace']},default=str,sort_keys=True))
+          PY
+
+      - name: Inspect live search detail and episode player candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,re,urllib.parse,urllib.request
+          UA='Mozilla/5.0'
+          def get(url,referer=None,timeout=12):
+              h={'User-Agent':UA,'Accept':'text/html,application/json,text/plain,*/*'}
+              if referer:h['Referer']=referer
+              req=urllib.request.Request(url,headers=h)
+              try:
+                  with urllib.request.urlopen(req,timeout=timeout) as r:
+                      return r.status,r.read(1500000).decode('utf-8','replace'),dict(r.headers),r.geturl()
+              except Exception as e:
+                  st=getattr(e,'code',0) or 0
+                  try:b=e.read(300000).decode('utf-8','replace')
+                  except Exception:b=repr(e)
+                  return st,b,dict(getattr(e,'headers',{}) or {}),url
+          def candidates(label,url,referer=None):
+              st,body,h,final=get(url,referer)
+              print('V63_PAGE',label,'status',st,'final',final,'len',len(body),'ct',h.get('Content-Type'))
+              links=[]
+              for raw in re.findall(r'''(?:href|src|data-src|data-url)\s*=\s*["']([^"']+)["']''',body,re.I):
+                  try:u=urllib.parse.urljoin(final,raw)
+                  except Exception:continue
+                  if u.startswith('http') and u not in links:links.append(u)
+              filtered=[u for u in links if any(k in u.lower() for k in ('download','episode','watch','embed','stream','player','video','modpro','pubonrace','hubcloud','gdflix','drive','workers','oembed'))]
+              print('V63_CANDIDATES',label,json.dumps(filtered[:100]))
+              return st,body,final,filtered
+          # Known current TV detail from V59; enumerate exact live episode/player chain.
+          _,_,detail,tvlinks=candidates('tv-detail','https://moviesmod.ai.in/download-breaking-bad-hindi/','https://moviesmod.zone/search/Breaking%20Bad')
+          episode=[u for u in tvlinks if 'episodes.modpro.blog' in u][:12]
+          for i,u in enumerate(episode):
+              _,body,final,links=candidates(f'tv-episode-{i}',u,detail)
+              for j,v in enumerate(links[:20]):
+                  if any(x in v.lower() for x in ('pubonrace','embed','stream','player','video')):
+                      st,b,h,end=get(v,final,8)
+                      print('V63_PLAYER_PROBE',i,j,st,end,h.get('Content-Type'),b[:180].replace('\n',' '))
+          # Discover current Interstellar result without trusting a stale slug.
+          st,body,h,final=get('https://moviesmod.zone/search/Interstellar')
+          print('V63_MOVIE_SEARCH',st,final,'len',len(body))
+          movie=[]
+          for raw in re.findall(r'''href\s*=\s*["']([^"']+)["']''',body,re.I):
+              u=urllib.parse.urljoin(final,raw)
+              if 'interstellar' in u.lower() and u not in movie:movie.append(u)
+          print('V63_MOVIE_RESULTS',json.dumps(movie[:30]))
+          for i,u in enumerate(movie[:4]): candidates(f'movie-detail-{i}',u,final)
+          PY
