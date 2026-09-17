@@ -38,7 +38,7 @@ assert EXPECTED > 0
 sample = """/* BEGIN NIAKVIO_PROVIDER */
 /* NIAKVIO_PROVIDER_ID:demo */
 /* NIAKVIO_PROVIDER_BASE_OWNED_V3 */
-// removable explanatory comment
+// removable explanatory comment with a `documentation tick`
 const title = "  literal indentation stays";
 /* STARTFIX:PROVIDER.DEMO.CONFIG.V1 */
 /* FIXDATA:PROVIDER.DEMO.CONFIG.V1:e30= */
@@ -54,6 +54,7 @@ function getStreams(){ return []; }
 """
 result = module.minimize_text(sample)
 module.validate_transform(sample, result.text)
+module._node_check(result.text, "contract-sample.js")
 assert result.saved_bytes > 0
 assert result.transformed_lines > 0
 assert "\n" not in result.text and "\r" not in result.text
@@ -67,6 +68,12 @@ assert "`line one\\n    ${title}\\nline three`" in result.text
 assert "license payload" in result.text
 assert "sourceURL=provider-demo.js" in result.text
 assert module.minimize_text(result.text).text == result.text
+
+# Regex literals may contain quote/backtick-looking bytes and must remain opaque.
+regex_sample = r'''const r=/["'`/]+\/x/gi; const ok=r.test("x");'''
+regex_result = module.minimize_text(regex_sample).text
+assert regex_result == regex_sample
+module._node_check(regex_result, "regex-sample.js")
 
 # Tagged templates can observe String.raw and therefore fail closed rather than
 # silently changing semantics while forcing one physical line.
@@ -114,6 +121,7 @@ assert validate_managed_fixes(edited) == [
     "PROVIDER.EDIT-DEMO.RUNTIME.V1",
 ]
 republished = module.minimize_text(edited).text
+module._node_check(republished, "edited-republished.js")
 assert "\n" not in republished and "\r" not in republished
 assert republished.count("STARTFIX:") == 2
 assert republished.count("CLOSEFIX:") == 2
@@ -122,7 +130,10 @@ assert validate_managed_fixes(republished) == [
     "PROVIDER.EDIT-DEMO.RUNTIME.V1",
 ]
 
-report = module.portfolio_report(syntax_check=False)
+# The whole actual active portfolio must both become one-line and still parse in
+# Node. This replaces the old false invariant that counted raw backticks inside
+# removable comments as though they were template delimiters.
+report = module.portfolio_report(syntax_check=True)
 assert report["mode"] == "niakvio-safe-one-line-minimizer"
 assert report["production_enabled"] is True
 assert report["terser_allowed"] is False
@@ -140,7 +151,7 @@ for row in report["providers"]:
 
 with tempfile.TemporaryDirectory() as tmp:
     preview = Path(tmp) / "preview"
-    preview_report = module.write_preview(preview, syntax_check=False)
+    preview_report = module.write_preview(preview, syntax_check=True)
     assert preview_report["provider_count"] == EXPECTED
     assert len(list(preview.glob("*.js"))) == EXPECTED
     for path in preview.glob("*.js"):
@@ -150,5 +161,5 @@ with tempfile.TemporaryDirectory() as tmp:
 print(
     "PROVIDER_V3_MINIMIZER_CONTRACT_OK "
     f"providers={EXPECTED} saved_preview={report['totals']['saved_bytes']} "
-    "one_line=1 edit_roundtrip=1 template_safe=1 markers_safe=1 terser=0"
+    "one_line=1 edit_roundtrip=1 template_safe=1 regex_safe=1 markers_safe=1 node_parse=1 terser=0"
 )
