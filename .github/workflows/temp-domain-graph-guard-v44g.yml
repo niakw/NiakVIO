@@ -1,0 +1,34 @@
+name: TEMP - Domain Graph Guard V44G
+
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths:
+      - '.github/workflows/temp-domain-graph-guard-v44g.yml'
+      - 'scripts/validate_provider_domain_graph.py'
+      - 'tests/provider_domain_graph_cycle_test.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-domain-graph:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Run regression and current full-config graph validation
+        run: |
+          set -euo pipefail
+          python3 tests/provider_domain_graph_cycle_test.py
+          python3 scripts/validate_provider_domain_graph.py provider-overrides.json
+          python3 tests/domain_refresh_transaction_guard_test.py
+          python3 tests/domain_refresh_priority_wrapper_test.py
+          python3 tests/domain_refresh_guard_wrapper_test.py
+          git diff --check
