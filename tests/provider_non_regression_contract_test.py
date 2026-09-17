@@ -23,6 +23,16 @@ if source.count(old_branch_assert) != 1:
 source = source.replace(old_branch_assert, new_branch_assert, 1)
 source = source.replace("rolling 96-provider floor", "rolling current-provider floor", 1)
 
+# The durable gate now splits an unrecovered partial lane into blocking debt and
+# same-run evidence-scoped upstream drift. Keep the historical implementation's
+# textual contract aligned with the stricter split instead of requiring the old
+# unsplit assignment literally.
+old_partial_token = "'unrecovered_partial = sorted(partial_failed - got)'"
+new_partial_token = "'unrecovered_partial = sorted(unrecovered_partial_all - upstream_drift_lanes)'"
+if source.count(old_partial_token) != 1:
+    raise AssertionError("provider non-regression partial-lane compatibility anchor changed")
+source = source.replace(old_partial_token, new_partial_token, 1)
+
 # Activation semantics now live directly in the durable implementation:
 # physical provider-folder membership owns activation, while routeDataState owns
 # repair/off debt. Do not rewrite those assertions to historical hub-presence or
@@ -37,3 +47,5 @@ assert "manual_off_reason" in _gate_source
 assert "manual-user-off-v1" in _gate_source
 assert "semantic_capability_regression" in _gate_source
 assert "historical_hls_m3u8_regression" in _gate_source
+assert "provider-upstream-drift-v1" in _gate_source
+assert "upstreamDriftApplied" in _gate_source

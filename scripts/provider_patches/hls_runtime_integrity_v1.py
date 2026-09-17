@@ -406,7 +406,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         remaining-=1;
         var proof=await nativeFirstSegmentProof(stream);
         if(proof.state==="invalid"||(proof.state==="unknown"&&config.failClosedUnknown)){
-          try{console.warn("[Nuvio HLS integrity] rejected invalid/strict-unknown native media",proof.reason||"invalid",String(stream&&stream.url||"").slice(0,180))}catch(_e){}
           return null;
         }
         return config.inspectMasterFacts&&proof.facts?enrichMasterFacts(stream,proof.facts):stream;
@@ -420,7 +419,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       if(!config.probeAllUrls&&!hlsHint(stream))return stream;
       var output=await validateOrRecover(stream);
       if(!output){
-        try{console.warn("[Nuvio HLS integrity] rejected malformed playlist after bounded recovery",String(stream&&stream.url||"").slice(0,180))}catch(_e){}
       }
       return output;
     }));

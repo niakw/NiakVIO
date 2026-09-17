@@ -291,8 +291,7 @@
         "Hub/API requests are bounded to 5 seconds inside the shared recipe engine; unavailable endpoints return zero streams instead of stalling a client.",
         "Movie stream route is /stream/{id}; episodic stream route is /stream/{id}/episode?season={season}&episode={episode}.",
         "Content identity, stream facts, presentation and platform compatibility remain shared Core/capability layers.",
-        "Purstream API requests reproduce the current service contract headers (Chrome UA + application/json); the generic NiakVIO UA is not used for this provider.",
-        "HTTP 401/403/429 from the known Purstream API is treated as a transport/anti-bot block: do not query the status hub, because domain rotation cannot repair that failure and the hub may itself block the synchronous NuvioTV bridge."
+        "Purstream has no provider-specific repair hooks; content identity, stream facts, presentation and platform compatibility are handled by shared Core/capability layers."
       ],
       "capability": "official_domain_hub",
       "official_hub": "https://purstream.wiki",
