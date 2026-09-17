@@ -45,6 +45,7 @@ jobs:
           python tests/domain_refresh_static_non_destructive_test.py
           python tests/flemmix_runtime_domain_authority_test.py
           python tests/provider_v3_one_security_finalization_test.py
+          python tests/provider_v3_final_stage_minimizer_gate_test.py
           python tests/domain_refresh_non_destructive_workflow_test.py
           python tests/domain_refresh_workflow_test.py
 
@@ -61,10 +62,10 @@ jobs:
           python scripts/validate_domain_refresh_static_non_destructive.py --before-static "$RUNNER_TEMP/static-before.json" --changes health-output/v61-flemmix-changes.json
           python scripts/validate_provider_domain_graph.py provider-overrides.json
 
-      - name: Rematerialize Flemmix only
+      - name: Rematerialize and finalize Flemmix only
         run: |
           set -euo pipefail
-          python scripts/materialize_provider_v3_one.py flemmix
+          NUVIO_PROVIDER_V3_CONTEXT=release NIAKVIO_PROVIDER_V3_FINAL_MINIMIZE=1 python scripts/materialize_provider_v3_one.py flemmix
           python scripts/reconcile_domain_refresh_provenance.py --changes health-output/v61-flemmix-changes.json
           python scripts/validate_published_provider_config.py --expected 46
           python scripts/finalize_provider_v3_minimizer.py --check
