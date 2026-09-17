@@ -6,6 +6,10 @@ name: "SEC - CodeQL"
 # Historical provider-old/ and evidence/upstream snapshots are never current code.
 
 on:
+  # SEC - Final Gate requires a CodeQL analysis for the exact tested main SHA.
+  # Run on every main push so release/security-only commits cannot deadlock it.
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
     paths:

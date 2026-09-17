@@ -260,7 +260,12 @@ assert "python" in codeql
 assert "security-extended" in codeql
 assert "group: niakvio-codeql" in codeql
 assert "cancel-in-progress: true" in codeql
-assert "\n  push:" not in codeql, "CodeQL must not run on every push"
+assert "\n  push:\n    branches: [main]" in codeql, (
+    "CodeQL must analyze every main push for the exact-SHA Final Gate"
+)
+assert "\n  push:\n  pull_request:" not in codeql, (
+    "CodeQL push trigger must stay scoped to main"
+)
 codeql_refs = []
 for action in ("github/codeql-action/init@", "github/codeql-action/analyze@"):
     lines = [line.strip() for line in codeql.splitlines() if f"uses: {action}" in line]
