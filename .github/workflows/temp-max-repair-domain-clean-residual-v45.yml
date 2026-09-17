@@ -1,0 +1,172 @@
+name: TEMP - Max Repair Domain Clean Residual V45
+
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-max-repair-domain-clean-residual-v45.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  requalify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+
+      - name: Prove clean domain graph before provider verdicts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/provider_domain_graph_cycle_test.py
+          python3 scripts/validate_provider_domain_graph.py provider-overrides.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('provider-overrides.json',encoding='utf-8'))['provider_patches']['flemmix']
+          print('V45_FLEMMIX_OFFICIAL',d.get('official_site'))
+          for key in ('domain_substitutions','replacements','runtime_domain_replacements'):
+              print('V45_FLEMMIX_MAP',key,json.dumps(d.get(key) or {},sort_keys=True))
+          assert d.get('official_site') == 'https://flemmix.cloud'
+          for key in ('domain_substitutions','replacements','runtime_domain_replacements'):
+              assert 'flemmix.cloud' not in (d.get(key) or {}), (key,d.get(key))
+          PY
+
+      - name: Probe all current missing lanes with site reachability context
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/v45.cjs <<'NODE'
+          const fs=require('fs'),path=require('path'),{spawn}=require('child_process');
+          const manifest=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const overrides=JSON.parse(fs.readFileSync('provider-overrides.json','utf8'));
+          const FIX={
+            movie:[
+              {id:'157336',type:'movie',title:'Interstellar',year:'2014',season:1,episode:1},
+              {id:'118340',type:'movie',title:'Guardians of the Galaxy Vol. 2',year:'2017',season:1,episode:1}
+            ],
+            tv:[
+              {id:'1396',type:'tv',title:'Breaking Bad',year:'2008',season:1,episode:1},
+              {id:'94997',type:'tv',title:'House of the Dragon',year:'2022',season:1,episode:1},
+              {id:'94605',type:'tv',title:'Arcane',year:'2021',season:1,episode:1}
+            ],
+            anime:[
+              {id:'95479',type:'anime',title:'Jujutsu Kaisen',year:'2020',season:1,episode:1},
+              {id:'95479',type:'anime',title:'Jujutsu Kaisen',year:'2020',season:1,episode:3},
+              {id:'37854',type:'anime',title:'One Piece',year:'1999',season:1,episode:1178}
+            ]
+          };
+          function providerFile(pid){const a=(manifest.scrapers||[]).filter(x=>String(x&&x.id||'').toLowerCase()===String(pid).toLowerCase());if(a.length!==1)throw new Error(`manifest_exact:${pid}:${a.length}`);const f=path.resolve(String(a[0].filename||''));if(!fs.existsSync(f))throw new Error(`provider_file:${pid}:${f}`);return f}
+          function metadata(s){return s.type==='movie'?{id:Number(s.id),title:s.title,original_title:s.title,release_date:`${s.year}-01-01`,alternative_titles:{titles:[]}}:{id:Number(s.id),name:s.title,original_name:s.title,first_air_date:`${s.year}-01-01`,alternative_titles:{results:[]}}}
+          async function fetchProbe(url,headers={}){if(!/^https?:\/\//i.test(String(url||'')))return{ok:false,status:0,kind:'bad-url',final:String(url||'')};const c=new AbortController(),t=setTimeout(()=>c.abort(),9000);try{const r=await fetch(url,{headers,redirect:'follow',signal:c.signal});const ct=r.headers.get('content-type')||'';let bytes=0;if(/html|json|text|mpegurl/i.test(ct)){const b=await r.text();bytes=b.length}else{const b=Buffer.from(await r.arrayBuffer());bytes=b.length}return{ok:r.ok,status:r.status,ctype:ct,bytes,final:r.url}}catch(e){return{ok:false,status:0,error:String(e&&e.message||e),final:String(url||'')}}finally{clearTimeout(t)}}
+          async function verify(row){const u=String(row&&row.url||'');if(!/^https?:\/\//i.test(u))return{ok:false,kind:'bad-url'};const c=new AbortController(),t=setTimeout(()=>c.abort(),9000);try{const h=Object.assign({},row&&row.headers||{});if(row&&row.isDirect===false){const r=await fetch(u,{headers:h,redirect:'follow',signal:c.signal}),ct=r.headers.get('content-type')||'',body=await r.text();return{ok:r.ok&&/html|xhtml/i.test(ct)&&body.length>150,kind:'embed',status:r.status,ctype:ct,bytes:body.length,final:r.url}}
+            if(/\.m3u8(?:[?#]|$)/i.test(u)){const r=await fetch(u,{headers:h,redirect:'follow',signal:c.signal}),ct=r.headers.get('content-type')||'',body=await r.text();return{ok:r.ok&&body.includes('#EXTM3U'),kind:'hls',status:r.status,ctype:ct,bytes:body.length,final:r.url}}
+            h.Range='bytes=0-1023';const r=await fetch(u,{headers:h,redirect:'follow',signal:c.signal}),ct=r.headers.get('content-type')||'',b=Buffer.from(await r.arrayBuffer());return{ok:(r.status===200||r.status===206)&&b.length>0&&(/video|audio|octet-stream|matroska/i.test(ct)||/\.(mp4|mkv|webm|mpd)(?:[?#]|$)/i.test(u)),kind:'binary',status:r.status,ctype:ct,bytes:b.length,final:r.url}}
+            catch(e){return{ok:false,kind:'error',error:String(e&&e.message||e)}}finally{clearTimeout(t)}}
+          async function child(pid,lane,idx){const s=FIX[lane][Number(idx)],f=providerFile(pid),m=metadata(s),ns=s.type==='movie'?'movie':'tv';globalThis.__nuvioMediaContext={tmdbId:String(s.id),tmdbNamespace:ns,tmdbMetadata:m,canonicalMediaType:s.type,season:s.season,episode:s.episode};globalThis.__nuvioTmdbMetadataCacheV1={[`${ns}:${s.id}`]:m};globalThis.__nuvioProviderDeadlineMs=Date.now()+24000;let rows=[],error='';try{const mod=require(f);rows=await Promise.race([Promise.resolve(mod.getStreams(String(s.id),s.type,s.season,s.episode)),new Promise((_,rej)=>setTimeout(()=>rej(new Error('provider_timeout')),25000))])}catch(e){error=String(e&&e.message||e)}rows=Array.isArray(rows)?rows:[];const proofs=[];for(const r of rows.slice(0,4))proofs.push(await verify(r));const out={pid,lane,idx:Number(idx),fixture:`${s.title} S${s.season}E${s.episode}`,count:rows.length,rows:rows.slice(0,4).map(r=>({url:String(r&&r.url||''),title:String(r&&r.title||r&&r.name||''),isDirect:r&&r.isDirect,quality:r&&r.quality,language:r&&r.language})),terminalOk:proofs.some(p=>p.ok&&(p.kind==='hls'||p.kind==='binary')),embedOk:proofs.some(p=>p.ok&&p.kind==='embed'),proofs,error};console.log('CHILD\t'+JSON.stringify(out))}
+          function run(pid,lane,idx){return new Promise(resolve=>{const cp=spawn(process.execPath,[__filename,'--child',pid,lane,String(idx)],{stdio:['ignore','pipe','pipe']});let o='',e='';cp.stdout.on('data',d=>o+=d);cp.stderr.on('data',d=>e+=d);const timer=setTimeout(()=>cp.kill('SIGKILL'),35000);cp.on('close',(code,signal)=>{clearTimeout(timer);const l=o.split(/\r?\n/).find(x=>x.startsWith('CHILD\t'));let r=null;try{r=l?JSON.parse(l.slice(6)):null}catch{}if(!r)r={pid,lane,idx,count:0,terminalOk:false,embedOk:false,proofs:[],error:`child_failed code=${code} signal=${signal} ${e.slice(-1200)}`};console.log('V45_ATTEMPT',JSON.stringify(r));resolve(r)})})}
+          function rank(r){return r&&r.terminalOk?4:r&&r.embedOk?3:r&&r.count>0?1:0}
+          async function lane(pid,lane){const attempts=[];for(let i=0;i<(FIX[lane]||[]).length;i++){const r=await run(pid,lane,i);attempts.push(r);if(rank(r)>=3)break}attempts.sort((a,b)=>rank(b)-rank(a)||(b.count||0)-(a.count||0));return{pid,lane,best:attempts[0]||null,attempts}}
+          async function parent(){const queue=[];for(const [pid,row] of Object.entries(overrides.provider_patches||{})){const d=row&&row.repair_disposition;if(!d||typeof d!=='object')continue;const missing=Array.isArray(d.missingLanes)?d.missingLanes.map(String):[];for(const l of missing)if(FIX[l])queue.push([pid,l])}console.log('V45_QUEUE',queue.length,JSON.stringify(queue));const pids=[...new Set(queue.map(x=>x[0]))];const sites={};let si=0;async function sw(){while(true){const i=si++;if(i>=pids.length)return;const pid=pids[i],row=(overrides.provider_patches||{})[pid]||{},url=String(row.official_site||'');sites[pid]=await fetchProbe(url,{'User-Agent':'Mozilla/5.0'});console.log('V45_SITE',JSON.stringify({pid,url,...sites[pid]}))}}await Promise.all(Array.from({length:6},()=>sw()));let cursor=0;const results={};async function worker(){while(true){const i=cursor++;if(i>=queue.length)return;const [pid,l]=queue[i];try{results[pid+':'+l]=await lane(pid,l)}catch(e){results[pid+':'+l]={pid,lane:l,best:{pid,lane:l,count:0,terminalOk:false,embedOk:false,error:String(e&&e.message||e)},attempts:[]};console.log('V45_LANE_ERROR',pid,l,String(e&&e.message||e))}}}await Promise.all(Array.from({length:6},()=>worker()));fs.writeFileSync('/tmp/v45.json',JSON.stringify({queue,sites,results},null,2));const summary={};for(const [k,v] of Object.entries(results)){const b=v.best||{};summary[k]={fixture:b.fixture||'',count:b.count||0,terminalOk:!!b.terminalOk,embedOk:!!b.embedOk,error:b.error||'',urls:(b.rows||[]).map(x=>x.url),site:sites[b.pid||k.split(':')[0]]||null}}console.log('V45_SUMMARY',JSON.stringify(summary,null,2))}
+          if(process.argv[2]==='--child')child(process.argv[3],process.argv[4],process.argv[5]).then(()=>process.exit(0));else parent().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/v45.cjs
+
+      - name: Reconcile verified lanes and write V43 to V45 comparison
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          raw=json.load(open('/tmp/v45.json')); results=raw.get('results') or {}; sites=raw.get('sites') or {}
+          old_zeros={
+            'flemmix:movie','flemmix:tv','persianstremio:movie','persianstremio:tv','4khdhub:movie','4khdhub:tv','animesalt:anime','uhdmovies:movie','animesultra:anime','kehflix:anime','moviesmod:tv','moviesmod:movie','neko-sama:anime','animetsu:anime','vostfree:anime','mugiwarastream:anime','desiflix:movie','yflix:movie','animevost-fr:anime','fullanime:anime','anime-ultime:anime','showbox:movie','showbox:tv','mallumv:movie','animesama-co:anime','yflix:tv','voiranime-rip:anime','allwish:anime'
+          }
+          p=Path('provider-overrides.json'); data=json.loads(p.read_text()); rows=data.get('provider_patches') or {}
+          newly=[]; players=[]; zeros=[]; output_only=[]; recovered_from_v43=[]; blocked_sites=[]; reachable_zero=[]
+          for key,val in sorted(results.items()):
+              b=(val or {}).get('best') or {}; pid=str(b.get('pid') or key.split(':',1)[0]); lane=str(b.get('lane') or key.split(':',1)[1]); count=int(b.get('count') or 0); terminal=b.get('terminalOk') is True; embed=b.get('embedOk') is True
+              site=sites.get(pid) or {}; status=int(site.get('status') or 0)
+              if not (count>0 and (terminal or embed)):
+                  if count>0: output_only.append(key)
+                  else:
+                      zeros.append(key)
+                      if status in (0,401,403,429,451,502,503,504): blocked_sites.append(f'{key}[site={status}]')
+                      elif 200 <= status < 400: reachable_zero.append(f'{key}[site={status}]')
+                  continue
+              row=rows.get(pid)
+              if not isinstance(row,dict): continue
+              d=row.get('repair_disposition') if isinstance(row.get('repair_disposition'),dict) else {'schemaVersion':1,'authority':'provider-repair-disposition-v1'}
+              req=[str(x) for x in d.get('requiredLanes') or []]; proven=set(str(x) for x in d.get('provenLanes') or []); was=lane in proven; proven.add(lane); ordered=[x for x in req if x in proven]
+              if lane not in ordered: ordered.append(lane)
+              d['provenLanes']=ordered; d['currentVerifiedLanes']=list(ordered); d['missingLanes']=[x for x in req if x not in proven]; d['completeCapabilityProof']=not d['missingLanes']; d['recoveryStatus']='proven' if not d['missingLanes'] else 'repair'; d['quarantined']=False; d['terminalState']=None
+              ls=d.get('laneStatuses') if isinstance(d.get('laneStatuses'),dict) else {}; vals=[str(x) for x in ls.get(lane) or []]; status_name='playable_verified' if terminal else 'player_verified'
+              if status_name not in vals: vals.append(status_name)
+              ls[lane]=vals; d['laneStatuses']=ls; codes=[str(x) for x in d.get('reasonCodes') or [] if str(x)]; code='v45_domain_clean_terminal_proven' if terminal else 'v45_domain_clean_player_embed_proven'
+              if code not in codes: codes.append(code)
+              d['reasonCodes']=codes; row['repair_disposition']=d
+              if not was:newly.append(key)
+              if embed and not terminal:players.append(key)
+              if key in old_zeros:recovered_from_v43.append(key)
+          p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
+          mem=Path('MEMORY.md'); text=mem.read_text(encoding='utf-8'); mark='<!-- MAX_REPAIR_20260917_V45_RESULT -->'
+          site_lines=[]
+          for pid in sorted(sites):
+              s=sites[pid] or {}; site_lines.append(f"{pid}={s.get('status',0)}->{s.get('final','')}")
+          sec=(mark+'\n### V45 domain-clean full residual requalification\n'
+               +'- Queue from current missingLanes: '+str(len(results))+' lanes.\n'
+               +'- Newly verified lanes: '+(', '.join(newly) if newly else 'none')+'\n'
+               +'- Recovered specifically from V43 zero set: '+(', '.join(recovered_from_v43) if recovered_from_v43 else 'none')+'\n'
+               +'- Verified non-direct player lanes: '+(', '.join(players) if players else 'none')+'\n'
+               +'- Output-positive but playback/player verification not established: '+(', '.join(output_only) if output_only else 'none')+'\n'
+               +'- Still zero after clean domain graph: '+(', '.join(zeros) if zeros else 'none')+'\n'
+               +'- Zero lanes whose official site is blocked/unreachable from runner: '+(', '.join(blocked_sites) if blocked_sites else 'none')+'\n'
+               +'- Zero lanes despite reachable official site: '+(', '.join(reachable_zero) if reachable_zero else 'none')+'\n'
+               +'- Official-site preflight: '+'; '.join(site_lines)+'\n\n')
+          if mark not in text:
+              anchor='## 2026-09-16 — authoritative current checkpoint'; text=text.replace(anchor,sec+anchor,1) if anchor in text else text.rstrip()+'\n\n'+sec
+          mem.write_text(text,encoding='utf-8')
+          print('V45_NEWLY',newly)
+          print('V45_RECOVERED_FROM_V43',recovered_from_v43)
+          print('V45_PLAYERS',players)
+          print('V45_OUTPUT_ONLY',output_only)
+          print('V45_ZERO',zeros)
+          print('V45_BLOCKED_SITE_ZEROS',blocked_sites)
+          print('V45_REACHABLE_SITE_ZEROS',reachable_zero)
+          PY
+          python3 scripts/validate_provider_domain_graph.py provider-overrides.json
+          python3 scripts/validate_published_overrides.py
+
+      - name: Persist V45 ledger only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add provider-overrides.json MEMORY.md
+          if ! git diff --cached --quiet; then git commit -m 'docs: reconcile domain-clean residual live proof V45'; fi
+          git reset --hard HEAD
+          git clean -fd
+          git pull --rebase origin fix/non-display-recovery-20260916
+          git push origin HEAD:fix/non-display-recovery-20260916
+
+      - name: Core and domain non-regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/provider_domain_graph_cycle_test.py
+          python3 scripts/validate_provider_domain_graph.py provider-overrides.json
+          python3 scripts/validate_published_overrides.py
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/core_runtime_nonregression_contract_test.py
+          git diff --check
