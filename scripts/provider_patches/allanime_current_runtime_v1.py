@@ -16,7 +16,7 @@ WRAPPER = r'''
     if(typeof _spv4GetStreams!=="function"||_spv4GetStreams.__niakvioAllAnimeCurrentV1)return;
     var original=_spv4GetStreams,BASE="https://ww2.aniwatch.fit",UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36";
     function headers(ref){return {"User-Agent":UA,"Accept":"text/html,application/xhtml+xml,text/plain,*/*","Accept-Language":"en-US,en;q=0.9","Referer":ref||BASE+"/"};}
-    function clean(v){return String(v==null?"":v).replace(/<[^>]+>/g," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;/gi,"'").replace(/\s+/g," ").trim();}
+    function clean(v){var src=String(v==null?"":v),out="",inTag=false;for(var i=0;i<src.length;i++){var ch=src.charAt(i);if(ch==="<"){inTag=true;out+=" ";continue}if(ch===">"){inTag=false;continue}if(!inTag)out+=ch}return out.replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;/gi,"'").replace(/\s+/g," ").trim();}
     function project(row){
       if(row&&row.state==="ok"&&row.metadata)row=row.metadata;
       if(!row||typeof row!=="object")return null;
