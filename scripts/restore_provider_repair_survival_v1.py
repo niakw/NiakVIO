@@ -56,7 +56,8 @@ def unique(values):
 
 def mark_reproof(row:dict[str,Any])->None:
     disp=row.setdefault("repair_disposition",{})
-    required=list(disp.get("requiredLanes") or row.get("published_types") or [])
+    required=list(row.get("published_types") or disp.get("requiredLanes") or [])
+    disp["requiredLanes"]=required
     disp["currentVerifiedLanes"]=[]
     disp["provenLanes"]=[]
     disp["missingLanes"]=required
@@ -81,7 +82,9 @@ def main()->int:
         row["provider_lego_scripts"]=unique(scripts)
         options=row.setdefault("provider_lego_options",{})
         options[NONDISPLAY]=opts
-        if provider=="coflix": row["official_site"]="https://coflix.wiki"
+        if provider=="coflix":
+            row["official_site"]="https://coflix.wiki"
+            row["published_types"]=["movie","tv"]
         if provider=="sekai": row["official_site"]="https://sekai.one"
         mark_reproof(row)
 
