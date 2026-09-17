@@ -38,7 +38,7 @@ jobs:
           row=next(x for x in m.get('scrapers',[]) if str(x.get('id','')).lower()=='allwish')
           Path('health-output/v70-old-file.txt').write_text(str(row.get('filename') or ''))
           PY
-          NIAKVIO_MATERIALIZATION_CONTEXT=release python scripts/materialize_provider_v3_one.py allwish
+          NUVIO_PROVIDER_V3_CONTEXT=release python scripts/materialize_provider_v3_one.py allwish
           python - <<'PY'
           import json
           from pathlib import Path
