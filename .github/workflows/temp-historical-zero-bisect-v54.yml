@@ -1,0 +1,98 @@
+name: TEMP - Historical Zero Bisect V54
+
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-historical-zero-bisect-v54.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  bisect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+
+      - name: Freeze current residual lane queue
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          d=json.load(open('provider-overrides.json',encoding='utf-8'))
+          q=[]
+          for pid,row in sorted((d.get('provider_patches') or {}).items()):
+              disp=(row or {}).get('repair_disposition') if isinstance(row,dict) else None
+              if not isinstance(disp,dict): continue
+              for lane in disp.get('missingLanes') or []:
+                  if lane in ('movie','tv','anime'): q.append([pid,lane])
+          open('/tmp/v54-queue.json','w').write(json.dumps(q))
+          print('V54_QUEUE',len(q),q)
+          PY
+
+      - name: Build snapshot-neutral probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/v54.cjs <<'NODE'
+          const fs=require('fs'),path=require('path'),{spawn}=require('child_process');
+          const queue=JSON.parse(fs.readFileSync('/tmp/v54-queue.json','utf8'));
+          const FIX={
+            movie:{id:'157336',type:'movie',title:'Interstellar',year:'2014',season:1,episode:1},
+            tv:{id:'1396',type:'tv',title:'Breaking Bad',year:'2008',season:1,episode:1},
+            anime:{id:'95479',type:'anime',title:'Jujutsu Kaisen',year:'2020',season:1,episode:1}
+          };
+          function md(s){return s.type==='movie'?{id:Number(s.id),title:s.title,original_title:s.title,release_date:`${s.year}-01-01`,alternative_titles:{titles:[]}}:{id:Number(s.id),name:s.title,original_name:s.title,first_air_date:`${s.year}-01-01`,alternative_titles:{results:[]}}}
+          function pf(root,pid){const m=JSON.parse(fs.readFileSync(path.join(root,'manifest.json'),'utf8'));const a=(m.scrapers||[]).filter(x=>String(x&&x.id||'').toLowerCase()===pid);if(a.length!==1)throw new Error(`manifest:${pid}:${a.length}`);const raw=String(a[0].filename||'');return path.isAbsolute(raw)?raw:path.join(root,raw)}
+          async function child(root,pid,lane){const s=FIX[lane],f=pf(root,pid),meta=md(s),ns=s.type==='movie'?'movie':'tv';globalThis.__nuvioMediaContext={tmdbId:String(s.id),tmdbNamespace:ns,tmdbMetadata:meta,canonicalMediaType:s.type,season:s.season,episode:s.episode};globalThis.__nuvioTmdbMetadataCacheV1={[`${ns}:${s.id}`]:meta};globalThis.__nuvioProviderDeadlineMs=Date.now()+14000;let rows=[],error='';try{const mod=require(f);rows=await Promise.race([Promise.resolve(mod.getStreams(String(s.id),s.type,s.season,s.episode)),new Promise((_,rej)=>setTimeout(()=>rej(new Error('provider_timeout')),15000))])}catch(e){error=String(e&&e.message||e)}rows=Array.isArray(rows)?rows:[];console.log('CHILD\t'+JSON.stringify({pid,lane,count:rows.length,error,urls:rows.slice(0,2).map(r=>String(r&&r.url||''))}))}
+          function run(root,pid,lane){return new Promise(resolve=>{const cp=spawn(process.execPath,[__filename,'--child',root,pid,lane],{stdio:['ignore','pipe','pipe']});let o='',e='';cp.stdout.on('data',d=>o+=d);cp.stderr.on('data',d=>e+=d);const t=setTimeout(()=>cp.kill('SIGKILL'),19000);cp.on('close',(code,signal)=>{clearTimeout(t);const l=o.split(/\r?\n/).find(x=>x.startsWith('CHILD\t'));let r=null;try{r=l?JSON.parse(l.slice(6)):null}catch{}if(!r)r={pid,lane,count:0,error:`child_failed:${code}:${signal}:${e.slice(-500)}`,urls:[]};resolve(r)})})}
+          async function parent(root,label){let cursor=0,out=[];async function worker(){while(true){const i=cursor++;if(i>=queue.length)return;const [pid,lane]=queue[i];out.push(await run(root,pid,lane))}}await Promise.all(Array.from({length:8},()=>worker()));out.sort((a,b)=>(a.pid+':'+a.lane).localeCompare(b.pid+':'+b.lane));const positive=out.filter(x=>x.count>0),zero=out.filter(x=>!x.count);console.log('V54_SNAPSHOT\t'+JSON.stringify({label,total:out.length,positive:positive.length,zero:zero.length,positiveLanes:positive.map(x=>`${x.pid}:${x.lane}=${x.count}`),zeroLanes:zero.map(x=>`${x.pid}:${x.lane}`),errors:zero.filter(x=>x.error).map(x=>`${x.pid}:${x.lane}:${x.error}`).slice(0,20)}));fs.writeFileSync(`/tmp/v54-${label}.json`,JSON.stringify(out,null,2))}
+          if(process.argv[2]==='--child')child(process.argv[3],process.argv[4],process.argv[5]).then(()=>process.exit(0));else parent(process.argv[2],process.argv[3]).catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node --check /tmp/v54.cjs
+
+      - name: Probe historical snapshots with identical harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          refs=(
+            'e0da60ab3c6306c69623384f007957146e3fc2f7:main_base'
+            'e823cb9625da3707469c395cb4473c420afa6d35:pre_v41'
+            '0b91677bab6b2ccb58892b0af3d6afefaf23a144:v42'
+            'HEAD:current'
+          )
+          for item in "${refs[@]}"; do
+            ref="${item%%:*}"; label="${item##*:}"; dir="/tmp/snap-$label"
+            if [ "$ref" = HEAD ]; then
+              ref="$(git rev-parse HEAD)"
+            fi
+            git worktree add --detach "$dir" "$ref"
+            node /tmp/v54.cjs "$dir" "$label"
+            git worktree remove --force "$dir"
+          done
+
+      - name: Compare regression direction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,glob
+          rows={}
+          for p in glob.glob('/tmp/v54-*.json'):
+              label=p.rsplit('/',1)[-1][4:-5]
+              data=json.load(open(p)); rows[label]={f"{r['pid']}:{r['lane']}":int(r.get('count') or 0) for r in data}
+          keys=sorted(set().union(*(set(v) for v in rows.values())))
+          print('V54_TRANSITIONS')
+          for k in keys:
+              vals={label:rows[label].get(k,0) for label in ('main_base','pre_v41','v42','current') if label in rows}
+              if len(set(1 if v>0 else 0 for v in vals.values()))>1:
+                  print(k,vals)
+          print('V54_COUNTS',{label:sum(v>0 for v in data.values()) for label,data in rows.items()})
+          PY
