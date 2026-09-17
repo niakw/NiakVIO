@@ -230,6 +230,10 @@ jobs:
                   continue
               if path.startswith('provider-bases/') and path not in active_base_paths:
                   continue
+              # Disabled/archive lifecycle artifacts stay visible to CodeQL for audit,
+              # but they are not release-reachable active provider/base references.
+              if path.startswith(('provider-disabled/','provider-old/')):
+                  continue
               if current_path is not None and current_path.is_file():
                   bad.append(item)
                   if path.startswith(('providers/','provider-bases/')):

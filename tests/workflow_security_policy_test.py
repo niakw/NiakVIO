@@ -60,6 +60,9 @@ for required_path in (
     if f"- '{required_path}'" not in security_gate:
         errors.append(f"security-final-gate.yml: missing security trigger for {required_path}")
 
+if "path.startswith(('provider-disabled/','provider-old/'))" not in security_gate:
+    errors.append('security-final-gate.yml: disabled/archive provider artifacts must remain visible to CodeQL but outside release-reachable alert blocking scope')
+
 if errors:
     raise SystemExit('workflow security policy failed:\n- ' + '\n- '.join(errors))
 print('workflow security policy tests passed')

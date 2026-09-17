@@ -7,9 +7,9 @@
       "lanes": [
         "movie"
       ],
-      "baselineRef": "20bbb1143da0cb591f18c58ecc1d791b39345778",
-      "baselineAsset": "providers/movieshunt--nuvio--5ffc0f6282266f66.js",
-      "candidateRef": "0f60b209d6ced4057346f0fcedd867e0b0846306",
+      "baselineRef": "c7745a0d711d3b68ec1000d2fa2d48b792f1d664",
+      "baselineAsset": "providers/movieshunt--nuvio--ada6dfaed36e5715.js",
+      "candidateRef": "70efdc16295db2730958051e4c73d1349cecddf1",
       "baselineAttempts": 3,
       "candidateAttempts": 3,
       "baselineVerified": false,
@@ -17,13 +17,13 @@
       "baselineFailureStage": "provider_network_http_error",
       "candidateFailureStage": "provider_network_http_error",
       "verdict": "external_drift_both_fail",
-      "observedAt": "2026-09-17T21:01:04Z",
+      "observedAt": "2026-09-17T21:36:21Z",
       "evidenceRefs": [
-        "github-actions:35274174393",
-        "github-actions:35274174393/artifacts/10518619656"
+        "github-actions:35277558618",
+        "github-actions:35277558618/artifacts/10520698822"
       ],
-      "artifactDigest": "sha256:c2bb42e5aded3b2dfd72e9edd9ca9d74c798aeb51306c62ea53ee9832dcbf158",
-      "summary": "Three same-run candidate attempts and three attempts with the exact previously accepted main MoviesHunt bundle all fail at provider_network_http_error. The historical movie proof remains valid historically; the present failure is upstream drift and must not be treated as a Core/provider-byte regression."
+      "artifactDigest": "sha256:45cd1ce333adf2168319b6f15fe698a27fe7d28cde6fc90f86aeb71981451920",
+      "summary": "Three same-run attempts with the exact c774 accepted main MoviesHunt bundle and three attempts with the PR #129 candidate all fail at provider_network_http_error. The historical movie proof remains valid historically; the present failure is upstream drift and must not be treated as a Core/provider-byte regression."
     }
   }
 }
