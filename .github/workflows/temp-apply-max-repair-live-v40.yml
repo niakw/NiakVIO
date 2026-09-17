@@ -1,0 +1,125 @@
+name: TEMP - Apply Max Repair Live V40
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-apply-max-repair-live-v40.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apply-prove-persist:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - name: Apply and materialize V40 contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_max_repair_live_contracts_v5.py
+          python3 -m py_compile \
+            scripts/provider_patches/sekai_inline_media_runtime_v1.py \
+            scripts/provider_patches/yflix_current_runtime_v2.py \
+            scripts/provider_patches/anikototv_megaplay_embed_fallback_v3.py \
+            scripts/upgrade_max_repair_live_contracts_v5.py
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/validate_published_overrides.py
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/core_runtime_nonregression_contract_test.py
+      - name: Probe real materialized providers
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/v40-probe.cjs <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const manifest=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          function exact(pid){let r=(manifest.scrapers||[]).filter(x=>String(x&&x.id||'').toLowerCase()===pid.toLowerCase());if(r.length!==1)throw new Error('manifest:'+pid+':'+r.length);return r[0]}
+          function meta(s){return s.type==='movie'?{id:Number(s.id),title:s.title,original_title:s.title,release_date:`${s.year}-01-01`,alternative_titles:{titles:[]}}:{id:Number(s.id),name:s.title,original_name:s.title,first_air_date:`${s.year}-01-01`,alternative_titles:{results:[]}}}
+          async function terminal(row){let u=String(row&&row.url||'');if(!/^https?:\/\//i.test(u))return{ok:false,status:0,kind:'non-http'};let privateProof=!!(row&&row.__nuvioCorrelatedPlayerFallbackV1);let c=new AbortController(),t=setTimeout(()=>c.abort(),9000);try{let headers=Object.assign({},row.headers||{});if(privateProof){let r=await fetch(u,{headers,redirect:'follow',signal:c.signal});let ct=r.headers.get('content-type')||'',body=await r.text();return{ok:r.ok&&/html/i.test(ct)&&body.length>200,status:r.status,kind:'embed',ctype:ct,bytes:body.length,final:r.url,privateProof:true}}
+            if(/\.m3u8(?:[?#]|$)/i.test(u)){let r=await fetch(u,{headers,redirect:'follow',signal:c.signal});let body=await r.text(),ct=r.headers.get('content-type')||'';return{ok:r.ok&&body.includes('#EXTM3U'),status:r.status,kind:'hls',ctype:ct,bytes:body.length,final:r.url}}
+            headers.Range='bytes=0-1023';let r=await fetch(u,{headers,redirect:'follow',signal:c.signal});let b=Buffer.from(await r.arrayBuffer()),ct=r.headers.get('content-type')||'';return{ok:(r.status===200||r.status===206)&&b.length>0&&(/video|octet-stream|matroska/i.test(ct)||/\.(mp4|mkv|webm)(?:[?#]|$)/i.test(u)),status:r.status,kind:'binary',ctype:ct,bytes:b.length,final:r.url}
+          }catch(e){return{ok:false,status:0,kind:privateProof?'embed':'media',error:String(e&&e.message||e),privateProof}}finally{clearTimeout(t)}}
+          async function run(label,s){let e=exact(s.pid),file=path.resolve(String(e.filename||'')),m=meta(s),ns=s.type==='movie'?'movie':'tv';globalThis.__nuvioMediaContext={tmdbId:String(s.id),tmdbNamespace:ns,tmdbMetadata:m,canonicalMediaType:s.type,season:s.season,episode:s.episode};globalThis.__nuvioTmdbMetadataCacheV1={[`${ns}:${s.id}`]:m};globalThis.__nuvioProviderDeadlineMs=Date.now()+24000;delete require.cache[file];let mod=require(file),rows=[];try{rows=await Promise.race([Promise.resolve(mod.getStreams(String(s.id),s.type,s.season,s.episode)),new Promise((_,rej)=>setTimeout(()=>rej(new Error('provider_timeout')),25000))])}catch(e){console.log('PROBE_ERROR',label,String(e&&e.message||e));rows=[]}rows=Array.isArray(rows)?rows:[];let proofs=[];for(let r of rows.slice(0,4))proofs.push(await terminal(r));let out={label,pid:s.pid,count:rows.length,urls:rows.slice(0,5).map(r=>String(r&&r.url||'')),privateProof:rows.some(r=>!!(r&&r.__nuvioCorrelatedPlayerFallbackV1)),terminalOk:proofs.some(p=>p.ok&&!p.privateProof),embedOk:proofs.some(p=>p.ok&&p.privateProof),proofs};console.log('V40_PROBE',JSON.stringify(out));return out}
+          async function yflixIdentity(type,id,title){let r=await fetch(`https://enc-dec.app/db/flix/find?tmdb_id=${id}&type=${type}`,{headers:{'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145.0.0.0 Safari/537.36','Accept':'application/json'}}),j=await r.json(),row=Array.isArray(j)?j[0]:j,info=row&&row.info||{};let ok=r.ok&&String(info.tmdb_id)===String(id)&&String(info.type).toLowerCase()===type&&String(info.title_en||'').toLowerCase()===title.toLowerCase();let out={type,id,status:r.status,ok,title:info.title_en,upstreamType:info.type};console.log('YFLIX_IDENTITY',JSON.stringify(out));return out}
+          (async()=>{let result={};result.sekai=await run('sekai_jjk_s1e1',{pid:'sekai',id:'95479',type:'anime',title:'Jujutsu Kaisen',year:'2020',season:1,episode:1});result.streamzo=await run('streamzo_jjk_s1e3',{pid:'streamzo',id:'95479',type:'anime',title:'Jujutsu Kaisen',year:'2020',season:1,episode:3});result.anikoto=await run('anikoto_jjk_s1e1',{pid:'anikototv',id:'95479',type:'anime',title:'Jujutsu Kaisen',year:'2020',season:1,episode:1});result.yflix_movie=await run('yflix_interstellar',{pid:'yflix',id:'157336',type:'movie',title:'Interstellar',year:'2014',season:1,episode:1});result.yflix_tv=await run('yflix_breaking_bad',{pid:'yflix',id:'1396',type:'tv',title:'Breaking Bad',year:'2008',season:1,episode:1});result.yflixIdentityMovie=await yflixIdentity('movie','157336','Interstellar');result.yflixIdentityTv=await yflixIdentity('tv','1396','Breaking Bad');fs.writeFileSync('/tmp/v40.json',JSON.stringify(result,null,2));console.log('V40_SUMMARY',JSON.stringify(result,null,2))})().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/v40-probe.cjs
+      - name: Reconcile only proved V40 lanes
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          try: result=json.load(open('/tmp/v40.json'))
+          except Exception: result={}
+          p=Path('provider-overrides.json'); data=json.loads(p.read_text(encoding='utf-8')); rows=data.get('provider_patches') or {}
+          for pid,key,lane in [('sekai','sekai','anime'),('streamzo','streamzo','anime')]:
+              proof=result.get(key) or {}
+              if not (int(proof.get('count') or 0)>0 and proof.get('terminalOk') is True): continue
+              row=rows.get(pid) or {}; d=row.get('repair_disposition') if isinstance(row.get('repair_disposition'),dict) else {'schemaVersion':1,'authority':'provider-repair-disposition-v1'}
+              req=[str(x) for x in d.get('requiredLanes') or []]; proven=set(str(x) for x in d.get('provenLanes') or []); proven.add(lane)
+              d['provenLanes']=[x for x in req if x in proven] or sorted(proven); d['currentVerifiedLanes']=list(d['provenLanes']); d['missingLanes']=[x for x in req if x not in proven]; d['completeCapabilityProof']=not d['missingLanes']; d['recoveryStatus']='proven' if not d['missingLanes'] else 'repair'; d['quarantined']=False; d['terminalState']=None
+              ls=d.get('laneStatuses') if isinstance(d.get('laneStatuses'),dict) else {}; vals=[str(x) for x in ls.get(lane) or []];
+              if 'playable_verified' not in vals: vals.append('playable_verified')
+              ls[lane]=vals; d['laneStatuses']=ls; codes=[str(x) for x in d.get('reasonCodes') or [] if str(x)]; code='v40_current_terminal_playback_proven';
+              if code not in codes: codes.append(code)
+              d['reasonCodes']=codes; row['repair_disposition']=d
+          # AniKoto: correlated player proof is valuable but is not a terminal-media proof.
+          a=result.get('anikoto') or {}; row=rows.get('anikototv') or {}; d=row.get('repair_disposition') if isinstance(row.get('repair_disposition'),dict) else None
+          if d is not None and int(a.get('count') or 0)>0 and a.get('embedOk') is True:
+              ls=d.get('laneStatuses') if isinstance(d.get('laneStatuses'),dict) else {}; vals=[str(x) for x in ls.get('anime') or []];
+              if 'correlated_player_verified' not in vals: vals.append('correlated_player_verified')
+              ls['anime']=vals; d['laneStatuses']=ls; codes=[str(x) for x in d.get('reasonCodes') or [] if str(x)]; code='v40_current_correlated_embed_verified';
+              if code not in codes: codes.append(code)
+              d['reasonCodes']=codes; d['recoveryStatus']='repair'; row['repair_disposition']=d
+          # YFlix identity correction is proven independently from playback frontends.
+          y_ok=bool((result.get('yflixIdentityMovie') or {}).get('ok')) and bool((result.get('yflixIdentityTv') or {}).get('ok'))
+          if y_ok:
+              row=rows.get('yflix') or {}; d=row.get('repair_disposition') if isinstance(row.get('repair_disposition'),dict) else None
+              if d is not None:
+                  codes=[str(x) for x in d.get('reasonCodes') or [] if str(x)]; code='v40_movie_tv_namespace_identity_proven';
+                  if code not in codes: codes.append(code)
+                  d['reasonCodes']=codes; row['repair_disposition']=d
+          p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print('V40_RECONCILED',{'sekai':result.get('sekai'), 'streamzo':result.get('streamzo'), 'anikoto':result.get('anikoto'), 'yflixIdentity':y_ok})
+          PY
+          python3 scripts/validate_published_overrides.py
+      - name: Persist V40 repair materialization
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A -- provider-overrides.json providers provider-bases sources.json manifest.json scripts
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: materialize current residual provider repairs'
+            git pull --rebase origin fix/non-display-recovery-20260916
+            git push origin HEAD:fix/non-display-recovery-20260916
+          fi
+      - name: V40 proof gate
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          r=json.load(open('/tmp/v40.json'))
+          bad=[]
+          for key in ('sekai','streamzo'):
+              x=r.get(key) or {}
+              if int(x.get('count') or 0)<1 or x.get('terminalOk') is not True: bad.append((key,x))
+          a=r.get('anikoto') or {}
+          if int(a.get('count') or 0)<1 or not (a.get('terminalOk') or a.get('embedOk')): bad.append(('anikoto',a))
+          for key in ('yflixIdentityMovie','yflixIdentityTv'):
+              if not (r.get(key) or {}).get('ok'): bad.append((key,r.get(key)))
+          if bad: raise SystemExit('V40 proof failures: '+repr(bad))
+          print('V40_PROOF_GATE_OK')
+          PY
