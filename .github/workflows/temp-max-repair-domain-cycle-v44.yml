@@ -1,0 +1,189 @@
+name: TEMP - Max Repair Domain Cycle V44
+
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-max-repair-domain-cycle-v44.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  NUVIO_PROVIDER_V3_CONTEXT: publication
+
+jobs:
+  repair-domain-cycle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Prove the exact cloud-me cycle is repairable by the transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path('scripts').resolve()))
+          import domain_refresh_transaction_v2 as tx
+
+          patch = {
+              'official_site': 'https://flemmix.me',
+              'official_hub': 'https://ww1.wiflix-adresses.fun/',
+              'domain_substitutions': {
+                  'flemmix.men': 'flemmix.cloud',
+                  'flemmix.cloud': 'flemmix.me',
+              },
+              'replacements': {
+                  'flemmix.me': 'flemmix.cloud',
+              },
+              'runtime_domain_replacements': {
+                  'flemmix.cloud': 'flemmix.me',
+                  'flemmix.vip': 'flemmix.me',
+              },
+          }
+          changed = tx.sync_patch_domain_authority(
+              patch,
+              {'hub': 'https://ww1.wiflix-adresses.fun/'},
+              'https://flemmix.cloud',
+          )
+          assert patch['official_site'] == 'https://flemmix.cloud', patch
+          for name in ('domain_substitutions','replacements','runtime_domain_replacements'):
+              mapping = patch.get(name) or {}
+              assert 'flemmix.cloud' not in mapping, (name, mapping)
+              for source, target in mapping.items():
+                  sh, th = tx.domain_host(source), tx.domain_host(target)
+                  if sh.startswith('api.') or th.startswith('api.'):
+                      continue
+                  assert th == 'flemmix.cloud', (name, source, target)
+          assert patch['domain_substitutions'].get('flemmix.men') == 'flemmix.cloud'
+          assert patch['replacements'].get('flemmix.me') == 'flemmix.cloud'
+          assert patch['runtime_domain_replacements'].get('flemmix.vip') == 'flemmix.cloud'
+          print('V44_EXACT_CYCLE_TRANSACTION_OK', changed)
+          PY
+
+      - name: Snapshot polluted Flemmix state
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          d=json.load(open('provider-overrides.json',encoding='utf-8'))['provider_patches']['flemmix']
+          print('V44_BEFORE_OFFICIAL', d.get('official_site'))
+          for n in ('domain_substitutions','replacements','runtime_domain_replacements'):
+              print('V44_BEFORE_MAP',n,json.dumps(d.get(n) or {},sort_keys=True))
+          PY
+
+      - name: Re-run authoritative Domain Refresh for Flemmix only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python3 scripts/domain_refresh_priority_wrapper.py \
+            --mode deep \
+            --include-disabled \
+            --workers 1 \
+            --timeout 12 \
+            --provider flemmix \
+            --apply \
+            --output health-output/v44-flemmix-hub-report.json \
+            --changes-output health-output/v44-flemmix-domain-changes.json
+          cat health-output/v44-flemmix-hub-report.json
+          cat health-output/v44-flemmix-domain-changes.json
+
+      - name: Reconcile metadata and rebuild deterministic publication bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/provider_domain_metadata_reconcile_test.py
+          python3 scripts/reconcile_provider_domain_metadata.py --rebuild
+          python3 scripts/finalize_provider_v3_minimizer.py
+          python3 scripts/finalize_provider_v3_minimizer.py --check
+          python3 tests/provider_v3_minimizer_publication_pipeline_test.py
+          python3 tests/provider_v3_minimizer_published_test.py
+          python3 scripts/audit_provider_v3_static.py
+
+      - name: Fail closed on canonical-source edges or any combined site-domain cycle
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import resolve_provider_hubs as resolver
+
+          o=json.load(open('provider-overrides.json',encoding='utf-8'))
+          h=json.load(open('provider-hubs.json',encoding='utf-8'))
+          p=o['provider_patches']['flemmix']
+          r=h['providers']['flemmix']
+          expected=resolver.host(r.get('direct') or '')
+          official=resolver.host(p.get('official_site') or '')
+          print('V44_AFTER_OFFICIAL',p.get('official_site'),'registry=',r.get('direct'))
+          if expected != 'flemmix.cloud':
+              raise SystemExit('authoritative Flemmix hub did not resolve to flemmix.cloud: '+repr((expected,r.get('direct'))))
+          if official != expected:
+              raise SystemExit('official_site/registry mismatch: '+repr((official,expected)))
+
+          maps={}
+          graph={}
+          for name in ('domain_substitutions','replacements','runtime_domain_replacements'):
+              mapping=p.get(name) or {}
+              maps[name]=mapping
+              for source,target in mapping.items():
+                  sh=resolver.host(source if '://' in str(source) else 'https://'+str(source))
+                  th=resolver.host(target if '://' in str(target) else 'https://'+str(target))
+                  if not sh or not th or sh.startswith('api.') or th.startswith('api.'):
+                      continue
+                  if sh == expected:
+                      raise SystemExit(f'canonical host is an outgoing source in {name}: {source}->{target}')
+                  if sh == th:
+                      raise SystemExit(f'self-loop in {name}: {source}->{target}')
+                  graph.setdefault(sh,set()).add(th)
+              print('V44_AFTER_MAP',name,json.dumps(mapping,sort_keys=True))
+
+          def visit(node,path,active,done):
+              if node in active:
+                  i=path.index(node) if node in path else 0
+                  raise SystemExit('combined domain cycle: '+' -> '.join(path[i:]+[node]))
+              if node in done:return
+              active.add(node);path.append(node)
+              for nxt in sorted(graph.get(node,())):visit(nxt,path,active,done)
+              path.pop();active.remove(node);done.add(node)
+          done=set()
+          for node in sorted(graph):visit(node,[],set(),done)
+          print('V44_DOMAIN_GRAPH_OK nodes=',len(graph),'canonical=',expected)
+          PY
+          python3 tests/priority_tv_year_domain_refresh_test.py
+          python3 tests/domain_refresh_transaction_guard_test.py
+          python3 tests/domain_refresh_priority_wrapper_test.py
+          python3 tests/domain_refresh_guard_wrapper_test.py
+          python3 scripts/validate_published_overrides.py
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/core_runtime_nonregression_contract_test.py
+          git diff --check
+
+      - name: Persist corrected Flemmix authority on repair branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git status --short
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix(domains): reconcile Flemmix canonical authority'
+          fi
+          git fetch origin fix/non-display-recovery-20260916
+          git pull --rebase origin fix/non-display-recovery-20260916
+          git push origin HEAD:fix/non-display-recovery-20260916
+          echo "V44_PERSISTED sha=$(git rev-parse HEAD)"
