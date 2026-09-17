@@ -1,0 +1,64 @@
+name: TEMP - Max Repair Shape Deep V38
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-max-repair-shape-deep-v38.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - name: Deep response-shape diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/v38.cjs <<'NODE'
+          const UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36';
+          async function get(url,headers={},ms=12000){
+            const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);
+            try{const r=await fetch(url,{redirect:'follow',signal:c.signal,headers:Object.assign({'User-Agent':UA,'Accept':'text/html,application/json,text/plain,*/*','Accept-Language':'en-US,en;q=0.9'},headers)});const body=await r.text();return{status:r.status,url:r.url,ctype:r.headers.get('content-type')||'',body}}
+            catch(e){return{status:0,url,ctype:'',body:'',error:String(e&&e.message||e)}}finally{clearTimeout(t)}
+          }
+          function cut(v,n=900){let s='';try{s=typeof v==='string'?v:JSON.stringify(v)}catch{ s=String(v)}return s.length>n?s.slice(0,n)+'…':s}
+          function urls(body){return [...String(body||'').matchAll(/https?:\/\/[^"'<>\\\s]+/g)].map(m=>m[0]).slice(0,30)}
+          function snippets(body,tokens){const s=String(body||''),out=[];for(const token of tokens){let pos=0,n=0;while((pos=s.toLowerCase().indexOf(token.toLowerCase(),pos))>=0&&n<4){out.push({token,at:pos,text:s.slice(Math.max(0,pos-260),Math.min(s.length,pos+700))});pos+=token.length;n++}}return out}
+          (async()=>{
+            for(const [label,url] of [
+              ['yflix_movie','https://enc-dec.app/db/flix/find?tmdb_id=157336&type=movie'],
+              ['yflix_tv','https://enc-dec.app/db/flix/find?tmdb_id=1396&type=tv']]){
+              const x=await get(url);let j=null;try{j=JSON.parse(x.body)}catch{}
+              const row=Array.isArray(j)?j[0]:j, info=row&&row.info, eps=row&&row.episodes;
+              console.log('YFLIX',JSON.stringify({label,status:x.status,info,episodeKeys:eps&&typeof eps==='object'?Object.keys(eps).slice(0,12):[],episode1:eps&&eps[Object.keys(eps)[0]],episode2:eps&&eps[Object.keys(eps)[1]]},null,2));
+            }
+            const sz=await get('https://streamzo.fr/series/jujutsu-kaisen');
+            const tags=[...sz.body.matchAll(/<button\b[^>]*class=["'][^"']*\bsd-ep\b[^"']*["'][^>]*>/gi)].map(m=>m[0]);
+            const ep1=tags.find(t=>/data-season=["']?1\b/i.test(t)&&/data-ep=["']?1\b/i.test(t))||tags[0]||'';
+            console.log('STREAMZO_EP1_TAG',cut(ep1,3000));
+            const src=(/data-src=["']([^"']+)/i.exec(ep1)||[])[1]||'';
+            if(src){const u=new URL(src,'https://streamzo.fr').toString(),p=await get(u,{Referer:'https://streamzo.fr/series/jujutsu-kaisen'});console.log('STREAMZO_EMBED',JSON.stringify({request:u,status:p.status,final:p.url,ctype:p.ctype,bytes:p.body.length,urls:urls(p.body),snippets:snippets(p.body,['iframe','m3u8','mp4','vidzy','file:','source'])},null,2))}
+            const sk=await get('https://sekai.one/jujutsu-kaisen?v=13');
+            console.log('SEKAI_JJK_DETAIL',JSON.stringify({status:sk.status,bytes:sk.body.length,snippets:snippets(sk.body,['futur.link','iframe','episode','m3u8','source','videojs','player'])},null,2));
+            const fm=(/https:\/\/cdn\.futur\.link\/embed\/iframe\?[^"'<>\s]+/i.exec(sk.body)||[])[0];
+            if(fm){const f=await get(fm,{Referer:'https://sekai.one/jujutsu-kaisen?v=13'});console.log('SEKAI_FUTUR',JSON.stringify({request:fm,status:f.status,final:f.url,ctype:f.ctype,bytes:f.body.length,urls:urls(f.body),snippets:snippets(f.body,['m3u8','mp4','source','file','iframe','fetch','api'])},null,2))}
+            const mpHeaders={Referer:'https://megaplay.buzz/stream/s-2/10789/sub',Origin:'https://megaplay.buzz'};
+            const srcs=await get('https://megaplay.buzz/stream/getSources?id=116363',Object.assign({'X-Requested-With':'XMLHttpRequest'},mpHeaders));
+            console.log('MEGAPLAY_SOURCES',cut(srcs.body,5000));
+            for(const asset of [
+              'https://megaplay.buzz/lib/e1-player.min.js?v=2.20assdsdsad',
+              'https://megaplay.buzz/lib/app.main.js?v=21789484400',
+              'https://megaplay.buzz/lib/newclient.min.js?v=4.16',
+              'https://megaplay.buzz/lib/jw_player.js?v=1.0']){
+              const a=await get(asset,{Referer:'https://megaplay.buzz/stream/s-2/10789/sub'});console.log('MEGAPLAY_ASSET',JSON.stringify({asset,status:a.status,bytes:a.body.length,snippets:snippets(a.body,['getSources','enc','decrypt','atob','crypto','subtle','AES','server'])},null,2));
+            }
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/v38.cjs
