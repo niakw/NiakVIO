@@ -1,0 +1,120 @@
+name: TEMP - Flemmix Canonical V60
+
+on:
+  push:
+    branches: [fix/non-display-recovery-20260916]
+    paths:
+      - .github/workflows/temp-flemmix-canonical-v60.yml
+
+permissions:
+  contents: write
+
+jobs:
+  flemmix:
+    runs-on: ubuntu-24.04
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+
+      - name: Validate source authority regression
+        run: |
+          set -euo pipefail
+          python3 tests/flemmix_runtime_domain_authority_test.py
+
+      - name: Capture current Flemmix baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path('scripts').resolve()))
+          import audit_provider_quick_yield as q
+          q.TIMEOUT=55
+          tasks,_=q.build_tasks()
+          selected=[t for t in tasks if str(t.get('provider_id') or '').casefold()=='flemmix']
+          rows=[q.run(t) for t in selected]
+          Path('/tmp/flemmix-baseline.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2)+'\n')
+          print('V60_BASELINE',json.dumps([{'type':r.get('semantic_type'),'status':r.get('status'),'raw':r.get('raw'),'verified':r.get('verified'),'stage':r.get('debug_stage')} for r in rows],sort_keys=True))
+          PY
+
+      - name: Materialize only Flemmix from canonical DATA
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/materialize_provider_v3_one.py flemmix
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.load(open('manifest.json'))
+          row=next(x for x in m['scrapers'] if str(x.get('id','')).casefold()=='flemmix')
+          p=Path(row['filename'])
+          s=p.read_text(encoding='utf-8')
+          if 'BASE="https://flemmix.me"' in s:
+              raise SystemExit('V60 stale hardcoded Flemmix .me BASE survived materialization')
+          if 'NIAKVIO_PROVIDER_MODEL.officialSite' not in s:
+              raise SystemExit('V60 canonical model authority missing from generated Flemmix bundle')
+          print('V60_FILE',row['filename'])
+          PY
+          python3 scripts/validate_published_provider_config.py --expected 46
+          git diff --check
+
+      - name: Probe canonical Flemmix candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, sys
+          from pathlib import Path
+          from urllib.parse import urlsplit
+          sys.path.insert(0, str(Path('scripts').resolve()))
+          import audit_provider_quick_yield as q
+          q.TIMEOUT=55
+          tasks,_=q.build_tasks()
+          selected=[t for t in tasks if str(t.get('provider_id') or '').casefold()=='flemmix']
+          rows=[q.run(t) for t in selected]
+          baseline=json.loads(Path('/tmp/flemmix-baseline.json').read_text())
+          def count(rows,key): return sum(int(r.get(key) or 0) for r in rows)
+          if count(rows,'verified') < count(baseline,'verified'):
+              raise SystemExit('V60 Flemmix candidate regressed verified output')
+          compact=[]
+          for r in rows:
+              fetches=[]
+              for f in r.get('debug_fetches') or []:
+                  if not isinstance(f,dict): continue
+                  u=str(f.get('url') or '')
+                  if 'themoviedb.org' in u: continue
+                  try: p=urlsplit(u); host=p.hostname or ''; path=p.path
+                  except Exception: host=''; path=u
+                  fetches.append({'host':host,'path':path[:220],'status':f.get('status'),'error':str(f.get('error') or '')[:160] or None})
+              compact.append({'type':r.get('semantic_type'),'status':r.get('status'),'raw':r.get('raw'),'playable':r.get('playable'),'verified':r.get('verified'),'stage':r.get('debug_stage'),'fetches':fetches[:24]})
+          out={'schemaVersion':1,'baselineVerified':count(baseline,'verified'),'candidateVerified':count(rows,'verified'),'rows':compact}
+          Path('automation/evidence/flemmix-canonical-v60.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n')
+          print('V60_CANDIDATE',json.dumps(out,sort_keys=True))
+          PY
+
+      - name: Persist canonical Flemmix bundle and evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add manifest.json provider-overrides.json providers/ automation/evidence/flemmix-canonical-v60.json
+          if git diff --cached --quiet; then
+            echo 'V60 no material changes'
+            exit 0
+          fi
+          git commit -m 'fix(flemmix): materialize canonical domain runtime'
+          git pull --rebase origin fix/non-display-recovery-20260916
+          git push origin HEAD:fix/non-display-recovery-20260916
