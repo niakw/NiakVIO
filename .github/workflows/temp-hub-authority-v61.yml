@@ -39,10 +39,11 @@ jobs:
       - name: Validate permanent contracts
         run: |
           set -euo pipefail
-          python -m py_compile scripts/resolve_provider_hubs.py scripts/domain_refresh_transaction_v2.py scripts/reconcile_domain_refresh_static_authority.py scripts/validate_domain_refresh_static_non_destructive.py scripts/provider_patches/flemmix_current_runtime_v1.py scripts/materialize_provider_v3_one.py
+          python -m py_compile scripts/resolve_provider_hubs.py scripts/domain_refresh_transaction_v2.py scripts/reconcile_domain_refresh_static_authority.py scripts/validate_domain_refresh_static_non_destructive.py scripts/reconcile_domain_refresh_provenance.py scripts/provider_patches/flemmix_current_runtime_v1.py scripts/materialize_provider_v3_one.py
           python tests/provider_hub_registry_test.py
           python tests/domain_refresh_static_authority_test.py
           python tests/domain_refresh_static_non_destructive_test.py
+          python tests/domain_refresh_provenance_minimizer_test.py
           python tests/flemmix_runtime_domain_authority_test.py
           python tests/provider_v3_one_security_finalization_test.py
           python tests/provider_v3_final_stage_minimizer_gate_test.py
@@ -81,9 +82,13 @@ jobs:
           git diff --check
           git config user.name 'NiakVIO Repair Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add scripts/resolve_provider_hubs.py scripts/domain_refresh_transaction_v2.py scripts/reconcile_domain_refresh_static_authority.py scripts/validate_domain_refresh_static_non_destructive.py scripts/provider_patches/flemmix_current_runtime_v1.py scripts/materialize_provider_v3_one.py scripts/apply_hub_authority_v61_patch.py scripts/apply_targeted_materializer_security_v61.py scripts/validate_flemmix_hub_v61_state.py scripts/probe_flemmix_runtime_v61.py tests/provider_hub_registry_test.py tests/domain_refresh_static_authority_test.py tests/domain_refresh_static_non_destructive_test.py tests/flemmix_runtime_domain_authority_test.py tests/provider_v3_one_security_finalization_test.py tests/domain_refresh_non_destructive_workflow_test.py .github/workflows/domain-refresh.yml provider-overrides.json provider-hubs.json provider-domain-history.json automation/provider-v3-static-knowledge.json manifest.json provider-v3-materialization.json PROVENANCE.json providers/ automation/evidence/flemmix-hub-authority-v61.json automation/evidence/flemmix-runtime-v61.json
+          # The Actions token has contents:write but cannot update workflow files.
+          # Persist the validated code/data/evidence here; domain-refresh.yml is
+          # committed separately through the GitHub connector with workflow access.
+          git add scripts/resolve_provider_hubs.py scripts/domain_refresh_transaction_v2.py scripts/reconcile_domain_refresh_static_authority.py scripts/validate_domain_refresh_static_non_destructive.py scripts/reconcile_domain_refresh_provenance.py scripts/provider_patches/flemmix_current_runtime_v1.py scripts/materialize_provider_v3_one.py scripts/apply_hub_authority_v61_patch.py scripts/apply_targeted_materializer_security_v61.py scripts/validate_flemmix_hub_v61_state.py scripts/probe_flemmix_runtime_v61.py tests/provider_hub_registry_test.py tests/domain_refresh_static_authority_test.py tests/domain_refresh_static_non_destructive_test.py tests/domain_refresh_provenance_minimizer_test.py tests/flemmix_runtime_domain_authority_test.py tests/provider_v3_one_security_finalization_test.py tests/domain_refresh_non_destructive_workflow_test.py provider-overrides.json provider-hubs.json provider-domain-history.json automation/provider-v3-static-knowledge.json manifest.json provider-v3-materialization.json PROVENANCE.json providers/ automation/evidence/flemmix-hub-authority-v61.json automation/evidence/flemmix-runtime-v61.json
           git diff --cached --quiet && { echo 'V61 no changes to persist'; exit 1; }
           git commit -m 'fix(domains): make authoritative hubs monotonic'
+          git restore .github/workflows/domain-refresh.yml
           git pull --rebase origin fix/non-display-recovery-20260916
           git push origin HEAD:fix/non-display-recovery-20260916
           echo "V61_PERSISTED $(git rev-parse HEAD)"
