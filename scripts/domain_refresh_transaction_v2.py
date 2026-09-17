@@ -505,6 +505,8 @@ def main() -> int:
         history["updated_at"] = resolver.now_iso()
         write(HISTORY_PATH, history)
         bundle_updates = rebuild_provider_configs(changed_provider_ids)
+        from sync_manifest_projection_rows import sync as sync_manifest_projections
+        sync_manifest_projections(check=False)
 
     changes = {
         "schema_version": 2,
