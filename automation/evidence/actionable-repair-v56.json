@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "repairRc": 0,
+  "targetedProviders": [
+    "animevost-fr",
+    "playimdb",
+    "uhdmovies"
+  ],
+  "providersWithProvenRoutes": 3,
+  "provenRouteCount": 44,
+  "playableProviders": [
+    "playimdb"
+  ],
+  "verifiedProviders": [
+    "playimdb"
+  ],
+  "lostUpstreamPositivePairs": [],
+  "rows": [
+    {
+      "provider": "animevost-fr",
+      "routeStatus": "proven",
+      "routeCount": 18,
+      "recipe": false,
+      "playable": 0,
+      "verified": 0,
+      "status": "no_streams",
+      "debugStage": "provider_network_zero_result"
+    },
+    {
+      "provider": "playimdb",
+      "routeStatus": "proven",
+      "routeCount": 2,
+      "recipe": true,
+      "playable": 3,
+      "verified": 3,
+      "status": "playable_verified",
+      "debugStage": "provider_returned_streams"
+    },
+    {
+      "provider": "uhdmovies",
+      "routeStatus": "proven",
+      "routeCount": 24,
+      "recipe": false,
+      "playable": 0,
+      "verified": 0,
+      "status": "no_streams",
+      "debugStage": "provider_network_http_error"
+    }
+  ]
+}
