@@ -3539,13 +3539,19 @@
       },
       "provider_lego_scripts": [
         "scripts/provider_patches/animesamaco_site_runtime_v1.py",
-        "scripts/provider_patches/animesamaco_nondisplay_runtime_v1.py"
+        "scripts/provider_patches/animesamaco_nondisplay_runtime_v1.py",
+        "scripts/provider_patches/animesamaco_nondisplay_recovery_v2.py"
       ],
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ],
       "provider_lego_options": {
         "scripts/provider_patches/animesamaco_nondisplay_runtime_v1.py": {
+          "provider": "animesama-co",
+          "base": "https://animesama.co",
+          "max_streams": 4
+        },
+        "scripts/provider_patches/animesamaco_nondisplay_recovery_v2.py": {
           "provider": "animesama-co",
           "base": "https://animesama.co",
           "max_streams": 4
@@ -5980,13 +5986,19 @@
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/neko_sama_runtime_v1.py",
-        "scripts/provider_patches/neko_sama_nondisplay_runtime_v1.py"
+        "scripts/provider_patches/neko_sama_nondisplay_runtime_v1.py",
+        "scripts/provider_patches/neko_sama_nondisplay_recovery_v2.py"
       ],
       "provider_lego_options": {
         "scripts/provider_patches/neko_sama_runtime_v1.py": {
           "base": "https://animes-sama.su"
         },
         "scripts/provider_patches/neko_sama_nondisplay_runtime_v1.py": {
+          "provider": "neko-sama",
+          "base": "https://animes-sama.su",
+          "max_streams": 4
+        },
+        "scripts/provider_patches/neko_sama_nondisplay_recovery_v2.py": {
           "provider": "neko-sama",
           "base": "https://animes-sama.su",
           "max_streams": 4
@@ -7018,13 +7030,23 @@
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ],
       "provider_lego_scripts": [
-        "scripts/provider_patches/sekai_nondisplay_runtime_v1.py"
+        "scripts/provider_patches/sekai_nondisplay_runtime_v1.py",
+        "scripts/provider_patches/sekai_nondisplay_recovery_v2.py",
+        "scripts/provider_patches/sekai_inline_media_runtime_v1.py"
       ],
       "provider_lego_options": {
         "scripts/provider_patches/sekai_nondisplay_runtime_v1.py": {
           "provider": "sekai",
           "base": "https://sekai.one",
           "max_streams": 4
+        },
+        "scripts/provider_patches/sekai_nondisplay_recovery_v2.py": {
+          "provider": "sekai",
+          "base": "https://sekai.one",
+          "max_streams": 4
+        },
+        "scripts/provider_patches/sekai_inline_media_runtime_v1.py": {
+          "base": "https://sekai.one"
         }
       }
     },
@@ -8804,10 +8826,16 @@
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ],
       "provider_lego_scripts": [
-        "scripts/provider_patches/voiranime_rip_nondisplay_runtime_v1.py"
+        "scripts/provider_patches/voiranime_rip_nondisplay_runtime_v1.py",
+        "scripts/provider_patches/voiranime_rip_nondisplay_recovery_v2.py"
       ],
       "provider_lego_options": {
         "scripts/provider_patches/voiranime_rip_nondisplay_runtime_v1.py": {
+          "provider": "voiranime-rip",
+          "base": "https://voiranime.rip",
+          "max_streams": 4
+        },
+        "scripts/provider_patches/voiranime_rip_nondisplay_recovery_v2.py": {
           "provider": "voiranime-rip",
           "base": "https://voiranime.rip",
           "max_streams": 4
