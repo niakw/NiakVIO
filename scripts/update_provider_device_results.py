@@ -482,10 +482,20 @@ def replace_section(readme: str, section: str) -> str:
         before, rest = readme.split(START, 1)
         _old, after = rest.split(END, 1)
         return before.rstrip() + "\n\n" + section + after
-    anchor = "\n---\n\n# Architecture technique"
-    if anchor not in readme:
-        raise ValueError("README insertion anchor not found")
-    return readme.replace(anchor, "\n---\n\n" + section + "\n\n---\n\n# Architecture technique", 1)
+    anchors = (
+        "\n---\n\n## 🧪 Compatibilité native",
+        "\n---\n\n# Architecture technique",
+    )
+    for anchor in anchors:
+        if anchor not in readme:
+            continue
+        heading = anchor.removeprefix("\n---\n\n")
+        return readme.replace(
+            anchor,
+            "\n---\n\n" + section + "\n\n---\n\n" + heading,
+            1,
+        )
+    raise ValueError("README insertion anchor not found")
 
 
 def main() -> int:
