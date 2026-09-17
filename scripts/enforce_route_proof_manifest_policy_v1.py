@@ -82,7 +82,14 @@ def main() -> int:
     # diagnostic would violate this owner's activation-neutral contract.
     movix_proof = recovered.get("movix")
     if not isinstance(movix_proof, dict):
-        raise SystemExit("MOVIX route proof missing")
+        # Targeted repair reports are allowed to omit MOVIX entirely. This owner
+        # diagnoses MOVIX only when MOVIX evidence is in scope; it must not turn
+        # an unrelated targeted run into a global dependency or invent state.
+        print(
+            "ROUTE_PROOF_MANIFEST_POLICY_V1_OK "
+            "movix_scope=absent state=not-in-report activation_mutated=false"
+        )
+        return 0
     movix_patch_present = isinstance(patches.get("movix"), dict)
     movix_patch = patches.get("movix") if movix_patch_present else {}
 

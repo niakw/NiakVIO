@@ -148,4 +148,39 @@ with tempfile.TemporaryDirectory(prefix="niakvio-route-policy-positive-") as raw
     assert evidence.get("proven_route_count") == 1, health_movix
     assert evidence.get("activation_destructive") is False, health_movix
 
+with tempfile.TemporaryDirectory(prefix="niakvio-route-policy-targeted-") as raw:
+    tmp = Path(raw)
+    report = tmp / "report.json"
+    manifest = tmp / "manifest.json"
+    overrides = tmp / "overrides.json"
+    health = tmp / "health.json"
+    report_value = {"schemaVersion": 5, "providers": [{"providerId": "animesama-co", "status": "proven", "routes": ["/search"]}]}
+    manifest_value = {"scrapers": [{"id": "MOVIX", "enabled": True}, {"id": "ANIMESAMA-CO", "enabled": True}]}
+    overrides_value = {"provider_patches": {"animesama-co": {"learned_routes": ["/search"]}}}
+    health_value = {"providers": [{"id": "movix", "enabled": True, "action": "unchanged"}]}
+    dump(report, report_value)
+    dump(manifest, manifest_value)
+    dump(overrides, overrides_value)
+    dump(health, health_value)
+    before = {
+        "manifest": manifest.read_bytes(),
+        "overrides": overrides.read_bytes(),
+        "health": health.read_bytes(),
+    }
+    done = subprocess.run(
+        [
+            sys.executable, str(SCRIPT),
+            "--report", str(report),
+            "--manifest", str(manifest),
+            "--overrides", str(overrides),
+            "--health-report", str(health),
+        ],
+        cwd=ROOT, capture_output=True, text=True, check=False,
+    )
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert "movix_scope=absent" in done.stdout, done.stdout
+    assert manifest.read_bytes() == before["manifest"], "targeted non-MOVIX report mutated manifest"
+    assert overrides.read_bytes() == before["overrides"], "targeted non-MOVIX report mutated overrides"
+    assert health.read_bytes() == before["health"], "targeted non-MOVIX report mutated health"
+
 print("route-proof diagnostic-only activation policy tests passed: manifest+override activation bytes preserved")
