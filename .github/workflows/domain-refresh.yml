@@ -19,7 +19,9 @@ on:
       - 'scripts/domain_refresh_guard_wrapper.py'
       - 'scripts/sanitize_provider_hub_registry.py'
       - 'scripts/validate_domain_refresh_transaction.py'
+      - 'scripts/validate_domain_refresh_non_destructive.py'
       - 'scripts/reconcile_provider_domain_metadata.py'
+      - 'scripts/reconcile_domain_refresh_provenance.py'
       - 'scripts/refresh_authoritative_hub_domains.py'
       - 'scripts/resolve_provider_hubs.py'
       - 'scripts/provider_base_store.py'
@@ -68,6 +70,8 @@ jobs:
           cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"
           cp provider-hubs.json "$RUNNER_TEMP/provider-hubs.before.json"
           cp provider-domain-history.json "$RUNNER_TEMP/provider-domain-history.before.json"
+          cp provider-v3-materialization.json "$RUNNER_TEMP/provider-v3-materialization.before.json"
+          cp PROVENANCE.json "$RUNNER_TEMP/provenance.before.json"
           git rev-parse HEAD > "$RUNNER_TEMP/domain-base-sha"
 
       - name: Sanitize stale registry constructors before resolution
@@ -88,17 +92,34 @@ jobs:
             --output health-output/provider-hub-report.json \
             --changes-output health-output/domain-site-changes.json
 
-      - name: Reconcile provider-owned domain metadata
+      - name: Reconcile only providers changed by Domain Refresh
+        shell: bash
         run: |
           set -euo pipefail
           python tests/provider_domain_metadata_reconcile_test.py
-          python scripts/reconcile_provider_domain_metadata.py --rebuild
-          python scripts/finalize_provider_v3_minimizer.py
+          mapfile -t CHANGED < <(python - <<'PY'
+          import json
+          d=json.load(open('health-output/domain-site-changes.json',encoding='utf-8'))
+          for provider_id in sorted({str(x).strip().lower() for x in d.get('changed') or [] if str(x).strip()}):
+              print(provider_id)
+          PY
+          )
+          if [ "${#CHANGED[@]}" -gt 0 ]; then
+            ARGS=()
+            for provider_id in "${CHANGED[@]}"; do ARGS+=(--provider "$provider_id"); done
+            python scripts/reconcile_provider_domain_metadata.py --rebuild "${ARGS[@]}"
+          else
+            echo 'FIELD_DOMAIN_METADATA_RECONCILE scope=- changed=0 providers=-'
+          fi
+          python scripts/reconcile_domain_refresh_provenance.py \
+            --changes health-output/domain-site-changes.json
+          # Domain Refresh is not allowed to transform every provider. Existing
+          # publication bytes must already be a minimizer fixed point after the
+          # targeted CONFIG-only rebuild; otherwise publication fails closed.
           python scripts/finalize_provider_v3_minimizer.py --check
-          python tests/provider_v3_minimizer_publication_pipeline_test.py
           python tests/provider_v3_minimizer_published_test.py
 
-      - name: Fail closed on rollback, stale fallback or template terminal
+      - name: Fail closed on rollback, cycles or any non-domain side effect
         run: |
           set -euo pipefail
           python tests/domain_refresh_transaction_guard_test.py
@@ -110,6 +131,13 @@ jobs:
             --before-history "$RUNNER_TEMP/provider-domain-history.before.json" \
             --report health-output/provider-hub-report.json \
             --changes health-output/domain-site-changes.json
+          python scripts/validate_domain_refresh_non_destructive.py \
+            --before-overrides "$RUNNER_TEMP/provider-overrides.before.json" \
+            --before-manifest "$RUNNER_TEMP/published-manifest-baseline.json" \
+            --before-materialization "$RUNNER_TEMP/provider-v3-materialization.before.json" \
+            --before-provenance "$RUNNER_TEMP/provenance.before.json" \
+            --changes health-output/domain-site-changes.json
+          python scripts/validate_provider_domain_graph.py provider-overrides.json
 
       - name: Keep no-op history byte-stable
         run: |
@@ -171,8 +199,10 @@ jobs:
             --source manifest.json \
             --matrix automation/evidence/hub-lab-matrix-46.json \
             --output manifest-hub46.json
-          python scripts/prune_unreferenced_providers.py
 
+          # Domain Refresh never owns repository-wide provider garbage collection.
+          # The CONFIG transaction already replaces/deletes only generations of
+          # providers it changed; unrelated historical generations are untouched.
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add \
