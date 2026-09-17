@@ -1,0 +1,92 @@
+name: TMP - Provider Activation Certification
+
+on:
+  push:
+    branches:
+      - fix/provider-activation-certification-v1
+    paths:
+      - '.github/workflows/tmp-provider-activation-certification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/provider-activation-certification-v1
+          fetch-depth: 1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Apply strict native active gate migration
+        run: python3 scripts/upgrade_native_active_full_gate_v1.py
+      - name: Validate activation contracts
+        run: |
+          set -euo pipefail
+          python3 tests/active_provider_live_coverage_test.py
+          python3 tests/native_provider_resample_status_test.py
+          python3 tests/native_declared_matrix_enabled_only_test.py
+          python3 tests/native_declared_provider_matrix_test.py
+          python3 tests/native_active_provider_full_gate_test.py
+          python3 tests/provider_playable_certification_test.py
+          python3 tests/provider_positive_fixture_memory_test.py
+      - name: Persist migrated gate and tests
+        run: |
+          set -euo pipefail
+          git config user.name 'niakvio-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add scripts/gate_native_declared_provider_matrix.py tests/native_declared_provider_matrix_test.py
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix(native): require FULL status for active providers'
+            git push origin HEAD:fix/provider-activation-certification-v1
+          fi
+      - name: Certify exact current provider bytes
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python3 scripts/certify_provider_playable_lanes.py \
+            --candidate-limit 12 \
+            --timeout 30 \
+            --workers 12 \
+            --seed "activation-cert-${GITHUB_RUN_ID}" \
+            --output health-output/provider-playable-certification.json
+          python3 scripts/learn_provider_positive_fixtures.py \
+            --certification health-output/provider-playable-certification.json \
+            --registry automation/provider-positive-fixtures.json \
+            --output health-output/provider-positive-fixtures.json
+      - name: Summarize certification
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('health-output/provider-playable-certification.json').read_text())
+          print('CERTIFIED', p['certifiedActiveProviderCount'], '/', p['activeProviderCount'])
+          for row in p['providers']:
+              if row.get('enabled') and not row.get('certified'):
+                  print('UNCERTIFIED', row['providerId'], 'missing='+','.join(row.get('missingTypes') or []))
+                  for lane, data in (row.get('lanes') or {}).items():
+                      if data.get('state') != 'certified':
+                          stages={a.get('debugStage') for a in data.get('attempts') or []}
+                          print(' ', lane, 'attempts='+str(data.get('attemptCount')), 'stages='+','.join(sorted(str(x) for x in stages if x)))
+          PY
+      - name: Upload certification evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: provider-activation-certification-${{ github.run_id }}
+          path: health-output/
+          retention-days: 8
+          if-no-files-found: warn
