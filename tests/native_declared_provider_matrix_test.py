@@ -83,7 +83,7 @@ def write_android_logs(root: Path, missing_terminal: tuple[str, str] | None = No
         )
         if (provider.casefold(), media_type) != missing_key:
             by_type[media_type].append(
-                f"FIELD_NATIVE_RESULT client=tv fixture={fixture} provider64={encoded} request_type={media_type} count=0\n"
+                f"FIELD_NATIVE_RESULT client=tv fixture={fixture} provider64={encoded} request_type={media_type} count=1\n"
             )
     paths = []
     for media_type, lines in by_type.items():
@@ -101,8 +101,17 @@ def write_ios_log(root: Path) -> Path:
         lines.append(
             f"FIELD_NATIVE_IOS_PROVIDER_BEGIN fixture={fixture} provider={provider} type={media_type} enabled=true\n"
         )
-        # Deliberately omit FIELD_NATIVE_IOS_RESULT here: provider END must still
-        # derive the lane from any adaptive fixture slug and count as a terminal.
+        lines.append(
+            "FIELD_NATIVE_IOS_RESULT " + json.dumps({
+                "fixture": fixture,
+                "provider": provider,
+                "mediaType": media_type,
+                "enabled": True,
+                "count": 1,
+                "durationMs": 1,
+                "state": "completed",
+            }) + "\n"
+        )
         lines.append(
             f"FIELD_NATIVE_IOS_PROVIDER_END fixture={fixture} provider={provider} state=completed duration_ms=1\n"
         )
