@@ -21,6 +21,12 @@ SOURCE_PATHS = (
     ROOT / "scripts/provider_patches/voiranime_anime_runtime_v2.py",
     ROOT / "scripts/provider_patches/dle_anime_runtime_v1.py",
     ROOT / "scripts/provider_patches/neko_sama_runtime_v1.py",
+    ROOT / "scripts/provider_patches/non_display_recovery_runtime_v1.py",
+    ROOT / "scripts/provider_patches/sekai_inline_media_runtime_v1.py",
+    ROOT / "scripts/provider_patches/flemmix_current_runtime_v1.py",
+    ROOT / "scripts/provider_patches/allanime_current_runtime_v1.py",
+    ROOT / "scripts/provider_patches/allwish_current_runtime_v1.py",
+    ROOT / "scripts/provider_patches/wookafr_current_runtime_v2.py",
 )
 
 BAD_PATTERNS = (
