@@ -1,5 +1,5 @@
 name: TMP - Provider Repair Survival Recovery
-# retry after repair-survival continuation checkpoint 2026-09-18
+# retry after repair authority + S02E12 + language badge fixes 2026-09-18
 
 on:
   push:
@@ -42,6 +42,10 @@ jobs:
           python3 scripts/restore_provider_repair_survival_v1.py
           python3 scripts/check_provider_repair_survival.py
           python3 tests/provider_repair_survival_registry_test.py
+          python3 tests/dle_anime_runtime_registration_v1_test.py
+          python3 tests/dle_anime_season_identity_v2_test.py
+          python3 scripts/normalize_stream_presentation_v12.py --check
+          python3 tests/global_stream_presentation_test.py
           python3 tests/active_provider_live_coverage_test.py
           python3 tests/native_provider_resample_status_test.py
           python3 tests/native_declared_provider_matrix_test.py
@@ -52,7 +56,7 @@ jobs:
           python3 tests/provider_certification_learning_queue_test.py
           python3 tests/provider_activation_consensus_test.py
           python3 tests/brain_provider_onboarding_policy_test.py
-          python3 -m py_compile             scripts/provider_patches/non_display_recovery_runtime_v1.py             scripts/provider_patches/allanime_current_runtime_v1.py             scripts/provider_patches/allwish_current_runtime_v1.py             scripts/provider_patches/anikototv_runtime_v3.py             scripts/provider_patches/flemmix_current_runtime_v1.py             scripts/provider_patches/moviebox_current_embed_v2.py             scripts/provider_patches/vidfast_current_embed_v1.py             scripts/provider_patches/vidlove_current_api_v1.py             scripts/provider_patches/wookafr_showvideo_base64_v1.py             scripts/provider_patches/wookafr_current_runtime_v2.py             scripts/provider_patches/yflix_current_runtime_v2.py
+          python3 -m py_compile             scripts/provider_patches/non_display_recovery_runtime_v1.py             scripts/provider_patches/allanime_current_runtime_v1.py             scripts/provider_patches/allwish_current_runtime_v1.py             scripts/provider_patches/anikototv_runtime_v3.py             scripts/provider_patches/flemmix_current_runtime_v1.py             scripts/provider_patches/moviebox_current_embed_v2.py             scripts/provider_patches/vidfast_current_embed_v1.py             scripts/provider_patches/vidlove_current_api_v1.py             scripts/provider_patches/wookafr_showvideo_base64_v1.py             scripts/provider_patches/wookafr_current_runtime_v2.py             scripts/provider_patches/yflix_current_runtime_v2.py             scripts/provider_patches/dle_anime_runtime_v1.py             scripts/provider_patches/global_stream_presentation_v1.py
 
       - name: Export publication baseline
         run: |
@@ -123,7 +127,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p health-output
-          python3 scripts/certify_provider_playable_lanes.py             --candidate-limit 12             --timeout 30             --workers 4             --seed "repair-survival-${GITHUB_RUN_ID}"             --provider animesama-co             --provider animevostfr             --provider coflix             --provider neko-sama             --provider sekai             --provider voiranime-rip             --provider allanime             --provider allwish             --provider anikototv             --provider flemmix             --provider moviebox             --provider vidfast             --provider vidlove             --provider wookafr             --provider yflix             --provider kehflix             --provider purstream             --provider papadustream             --provider streamzo             --provider hindmoviez             --provider castle             --provider vidrock             --provider french-manga             --provider voiranime-homes             --provider anime-sama             --provider animekai             --output health-output/provider-playable-certification.json
+          python3 scripts/certify_provider_playable_lanes.py             --candidate-limit 12             --timeout 30             --workers 4             --seed "repair-survival-${GITHUB_RUN_ID}"             --provider animesama-co             --provider animevostfr             --provider coflix             --provider neko-sama             --provider sekai             --provider voiranime-rip             --provider allanime             --provider allwish             --provider anikototv             --provider flemmix             --provider moviebox             --provider vidfast             --provider vidlove             --provider wookafr             --provider yflix             --provider kehflix             --provider purstream             --provider papadustream             --provider streamzo             --provider hindmoviez             --provider kurage             --provider castle             --provider vidrock             --provider french-manga             --provider voiranime-homes             --provider anime-sama             --provider animekai             --output health-output/provider-playable-certification.json
           python3 scripts/learn_provider_positive_fixtures.py             --certification health-output/provider-playable-certification.json             --registry automation/provider-positive-fixtures.json             --output health-output/provider-positive-fixtures.json
           python3 scripts/build_provider_certification_learning_queue.py             --certification health-output/provider-playable-certification.json             --output health-output/provider-certification-learning-queue.json
           python3 scripts/build_provider_activation_consensus.py             --node-certification health-output/provider-playable-certification.json             --output health-output/provider-activation-consensus.json
