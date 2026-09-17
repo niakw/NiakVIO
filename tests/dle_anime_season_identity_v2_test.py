@@ -22,7 +22,7 @@ spec.loader.exec_module(module)
 
 assert "function seasonSignal(row,season)" in module.WRAPPER
 assert "function episodeNode(data,season,episode)" in module.WRAPPER
-assert "q.season>1&&!node.seasonVerified&&!hit._seasonVerified" in module.WRAPPER
+assert "Number(q.season)>1&&!node.seasonVerified&&!hit._seasonVerified" in module.WRAPPER
 
 CONFIG = {
     "base": "https://anime.example",
