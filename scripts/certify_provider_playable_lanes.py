@@ -152,7 +152,11 @@ def parse_probe(stdout: str) -> dict[str, Any] | None:
 
 def probe_fixture(bundle: Path, fixture: dict[str, Any], timeout: int) -> dict[str, Any]:
     clean_fixture = {key: value for key, value in fixture.items() if key not in {"slug", "lane"}}
-    # Nuvio plugin ABI transports semantic anime through the tv lane. Preserve the\n    # semantic lane in certification metadata, but execute the exact same runtime\n    # media type as official TV/Mobile/Desktop clients.\n    clean_fixture["mediaType"] = fixture_runtime_media_type(fixture)\n    command = [
+    # Nuvio plugin ABI transports semantic anime through the tv lane. Preserve the
+    # semantic lane in certification metadata, but execute the exact same runtime
+    # media type as official TV/Mobile/Desktop clients.
+    clean_fixture["mediaType"] = fixture_runtime_media_type(fixture)
+    command = [
         "node",
         str(PROBE),
         str(bundle),
