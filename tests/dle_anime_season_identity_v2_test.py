@@ -9,7 +9,9 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PATCHES = ROOT / "scripts" / "provider_patches"
+SCRIPTS = ROOT / "scripts"
+PATCHES = SCRIPTS / "provider_patches"
+sys.path.insert(0, str(SCRIPTS))
 sys.path.insert(0, str(PATCHES))
 SOURCE = PATCHES / "dle_anime_runtime_v1.py"
 
