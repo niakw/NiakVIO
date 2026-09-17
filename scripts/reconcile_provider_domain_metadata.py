@@ -10,6 +10,10 @@ Only hosts already known as the provider's own current/historical terminals are
 rewritten. External/CDN assets are left untouched. When reconciliation rebuilds
 Provider CONFIG bytes, it preserves the accepted generation's filename grammar;
 it must never turn one unqualified provider into a source-qualified outlier.
+
+When --provider is supplied, reconciliation is strictly limited to those current
+provider ids. Domain Refresh uses this mode so unrelated providers/proofs can
+never be rewritten as a side effect of an address rotation.
 """
 from __future__ import annotations
 
@@ -155,6 +159,7 @@ def reconcile_patch(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--rebuild", action="store_true")
+    parser.add_argument("--provider", action="append", default=[])
     args = parser.parse_args()
 
     overrides = load(OVERRIDES)
@@ -163,9 +168,15 @@ def main() -> int:
     patches = rows(overrides, "provider_patches")
     registry_rows = rows(registry, "providers")
     history_rows = rows(history, "providers")
+    selected = {str(value or "").strip().casefold() for value in args.provider if str(value or "").strip()}
+    unknown = selected - set(patches)
+    if unknown:
+        raise SystemExit("unknown provider selection: " + ",".join(sorted(unknown)))
 
     changed: dict[str, list[str]] = {}
     for provider_id, patch in sorted(patches.items()):
+        if selected and provider_id not in selected:
+            continue
         fields = reconcile_patch(
             provider_id,
             patch,
@@ -183,6 +194,7 @@ def main() -> int:
 
     print(
         "FIELD_DOMAIN_METADATA_RECONCILE "
+        f"scope={','.join(sorted(selected)) if selected else 'all'} "
         f"changed={len(changed)} providers={','.join(sorted(changed)) if changed else '-'}"
     )
     return 0
