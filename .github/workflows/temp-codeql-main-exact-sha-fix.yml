@@ -1,0 +1,59 @@
+name: TEMP Fix exact-SHA CodeQL main gate
+
+on:
+  push:
+    branches:
+      - hotfix/codeql-main-exact-sha-20260917
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout hotfix branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: hotfix/codeql-main-exact-sha-20260917
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Align exact-SHA CodeQL and Final Gate triggers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          codeql = Path('.github/workflows/codeql.yml')
+          text = codeql.read_text(encoding='utf-8')
+          old = "on:\n  pull_request:\n"
+          new = "on:\n  # Final Gate requires a CodeQL analysis for the exact main SHA.\n  # Scan every main push so release/security-only commits cannot deadlock it.\n  push:\n    branches: [main]\n  pull_request:\n"
+          if text.count(old) != 1:
+              raise SystemExit('codeql trigger anchor drifted')
+          codeql.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          final_gate = Path('.github/workflows/security-final-gate.yml')
+          text = final_gate.read_text(encoding='utf-8')
+          old = "    paths:\n      - '.github/workflows/security-final-gate.yml'\n"
+          new = "    paths:\n      - '.github/workflows/security-final-gate.yml'\n      - '.github/workflows/codeql.yml'\n"
+          if text.count(old) != 1:
+              raise SystemExit('final-gate path anchor drifted')
+          final_gate.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
+          grep -A8 '^on:' .github/workflows/codeql.yml
+          grep -A8 '^  push:' .github/workflows/security-final-gate.yml
+          git diff --check
+
+      - name: Commit durable workflow fix and remove temporary workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/temp-codeql-main-exact-sha-fix.yml
+          git config user.name 'Niak'
+          git config user.email 'foissy.tommy@gmail.com'
+          git add .github/workflows/codeql.yml .github/workflows/security-final-gate.yml .github/workflows/temp-codeql-main-exact-sha-fix.yml
+          git commit -m 'fix(ci): align CodeQL with exact-SHA final gate'
+          git push origin HEAD:hotfix/codeql-main-exact-sha-20260917
