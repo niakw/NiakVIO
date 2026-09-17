@@ -1,0 +1,75 @@
+name: TEMP - Reconcile Media Contract V47
+
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-reconcile-media-contract-v47.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  NUVIO_PROVIDER_V3_CONTEXT: publication
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+
+      - name: Show semantic drift before reconciliation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          m={r['id']:r for r in json.load(open('manifest.json'))['scrapers']}
+          c={r['scraper']['id']:r['scraper'] for r in json.load(open('provider_catalog.json'))['providers']}
+          for pid in sorted(set(m)&set(c)):
+              a=m[pid].get('canonicalSupportedTypes') or m[pid].get('supportedTypes') or []
+              b=c[pid].get('canonicalSupportedTypes') or c[pid].get('supportedTypes') or []
+              if a != b: print('V47_DRIFT',pid,'manifest=',a,'catalog=',b)
+          PY
+
+      - name: Apply authoritative manifest to catalog and projections
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/reconcile_provider_catalog_media_types.py --apply
+          python3 scripts/reconcile_provider_catalog_media_types.py
+
+      - name: Validate semantic and transport contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/canonical_media_types_test.py
+          python3 tests/provider_anime_semantic_transport_contract_test.py
+          python3 scripts/enforce_provider_v3_semantic_transport_contract_v5.py --check
+          python3 tests/global_media_type_pre_network_gate_test.py
+          python3 tests/global_media_type_resolution_test.py
+          python3 tests/provider_stream_scope_architecture_test.py
+          python3 scripts/validate_published_overrides.py
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/core_runtime_nonregression_contract_test.py
+          git diff --check
+
+      - name: Persist media-contract reconciliation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add provider_catalog.json manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json
+          if ! git diff --cached --quiet; then git commit -m 'fix(media): reconcile catalog with current semantic contract'; fi
+          git fetch origin fix/non-display-recovery-20260916
+          git pull --rebase origin fix/non-display-recovery-20260916
+          git push origin HEAD:fix/non-display-recovery-20260916
+          echo "V47_PERSISTED sha=$(git rev-parse HEAD)"
