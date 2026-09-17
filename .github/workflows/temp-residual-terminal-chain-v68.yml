@@ -1,0 +1,137 @@
+name: TEMP - Residual Terminal Protocols V68
+
+on:
+  push:
+    branches: [fix/non-display-recovery-20260916]
+    paths: [.github/workflows/temp-residual-terminal-chain-v68.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  trace:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+
+      - name: Resolve UHDMovies cloud POST protocol
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import html,re,urllib.request,urllib.parse,http.cookiejar
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36'
+          jar=http.cookiejar.CookieJar();opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+          def req(url,referer='',data=None):
+              h={'User-Agent':UA,'Accept':'text/html,application/xhtml+xml,*/*;q=0.8','Accept-Language':'en-US,en;q=0.9'}
+              if referer:h['Referer']=referer
+              if data is not None:h['Content-Type']='application/x-www-form-urlencoded'
+              try:
+                  with opener.open(urllib.request.Request(url,data=data,headers=h),timeout=20) as r:
+                      b=r.read(900000);return r.status,r.geturl(),r.headers.get('content-type',''),b.decode('utf-8','replace')
+              except Exception as e:
+                  b=''
+                  try:b=e.read(500000).decode('utf-8','replace')
+                  except Exception:pass
+                  return getattr(e,'code',0),getattr(e,'url',url),'',b
+          page='https://uhdmovies.my/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/'
+          st,final,ct,body=req(page);m=re.search(r'href=["\']([^"\']*cloud\.unblockedgames\.world/\?sid=[^"\']+)',html.unescape(body),re.I);assert m,'no UHD handoff';handoff=html.unescape(m.group(1));print('V68_UHD_HANDOFF_URL',handoff)
+          st2,f2,ct2,b2=req(handoff,page);print('V68_UHD_LANDING',st2,f2,ct2,'bytes',len(b2));norm=html.unescape(b2.replace('\\/','/'))
+          print('V68_UHD_LANDING_BODY',re.sub(r'\s+',' ',norm)[:12000])
+          fm=re.search(r'<form\b([\s\S]*?)</form>',norm,re.I)
+          if fm:
+              form=fm.group(0);action=re.search(r'action=["\']([^"\']*)',form,re.I);action=urllib.parse.urljoin(f2,action.group(1) if action else f2)
+              fields=[]
+              for im in re.finditer(r'<input\b([^>]*)>',form,re.I):
+                  attrs=im.group(1);nm=re.search(r'name=["\']([^"\']+)',attrs,re.I);val=re.search(r'value=["\']([^"\']*)',attrs,re.I)
+                  if nm:fields.append((nm.group(1),html.unescape(val.group(1) if val else '')))
+              print('V68_UHD_FORM_ACTION',action,'FIELDS',fields)
+              payload=urllib.parse.urlencode(fields).encode()
+              st3,f3,ct3,b3=req(action,f2,payload);print('V68_UHD_POST',st3,f3,ct3,'bytes',len(b3));n3=html.unescape(b3.replace('\\/','/'));print('V68_UHD_POST_BODY',re.sub(r'\s+',' ',n3)[:16000])
+              urls=[]
+              for pat in [r'(?:href|src|action|data-(?:src|url|link|href|file|stream|player))\s*=\s*["\']([^"\']+)',r'https?://[^\s"\'<>]+']:
+                  for mm in re.finditer(pat,n3,re.I):
+                      raw=mm.group(1) if mm.lastindex else mm.group(0);u=urllib.parse.urljoin(f3,raw)
+                      if u.startswith('http') and u not in urls:urls.append(u)
+              for u in urls[:120]:
+                  if any(x in u.lower() for x in ['hubcloud','vcloud','drive','stream','download','file','pixeldrain','gofile','cloud','workers','api','video','m3u8','mp4']):print('V68_UHD_TERMINAL_CANDIDATE',u[:800])
+          PY
+
+      - name: Resolve AnimeSalt exact S1E1 player chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import html,re,urllib.request,urllib.parse,http.cookiejar
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36'
+          jar=http.cookiejar.CookieJar();opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+          def get(url,referer=''):
+              h={'User-Agent':UA,'Accept':'text/html,application/xhtml+xml,*/*;q=0.8','Accept-Language':'en-US,en;q=0.9'}
+              if referer:h['Referer']=referer
+              try:
+                  with opener.open(urllib.request.Request(url,headers=h),timeout=20) as r:return r.status,r.geturl(),r.headers.get('content-type',''),r.read(900000).decode('utf-8','replace')
+              except Exception as e:
+                  b=''
+                  try:b=e.read(500000).decode('utf-8','replace')
+                  except Exception:pass
+                  return getattr(e,'code',0),getattr(e,'url',url),'',b
+          series='https://animesalt.cx/series/jujutsu-kaisen/';ep='https://animesalt.cx/episode/jujutsu-kaisen-1x1/'
+          st,f,ct,b=get(ep,series);print('V68_SALT_EP',st,f,ct,'bytes',len(b));n=html.unescape(b.replace('\\/','/'));print('V68_SALT_EP_HEAD',re.sub(r'\s+',' ',n)[:9000])
+          candidates=[]
+          pats=[r'<iframe\b[^>]*src=["\']([^"\']+)',r'(?:file|source|videoUrl|streamUrl|playerUrl|src)\s*[:=]\s*["\']([^"\']+)',r'data-(?:src|url|player|embed|file)=["\']([^"\']+)']
+          for pat in pats:
+              for m in re.finditer(pat,n,re.I):
+                  u=urllib.parse.urljoin(f,m.group(1));
+                  if u.startswith('http') and u not in candidates:candidates.append(u)
+          for u in candidates[:120]:print('V68_SALT_CANDIDATE',u[:800])
+          for token in ['section player','data-type','data-post','data-nume','player','iframe','as-cdn','server','doo_player','ajax']:
+              for m in list(re.finditer(token,n,re.I))[:15]:print('V68_SALT_CTX',token,re.sub(r'\s+',' ',n[max(0,m.start()-700):m.start()+1700])[:2400])
+          likely=[u for u in candidates if any(x in u.lower() for x in ['as-cdn','embed','player','video']) and 'image.' not in u.lower() and 'javascript' not in u.lower()]
+          for u in likely[:12]:
+              st2,f2,ct2,b2=get(u,f);print('V68_SALT_PLAYER_FETCH',st2,f2,ct2,'bytes',len(b2));n2=html.unescape(b2.replace('\\/','/'))
+              for pat in [r'https?://[^\s"\'<>]+\.(?:m3u8|mp4)(?:\?[^\s"\'<>]*)?',r'(?:file|src|source)\s*[:=]\s*["\']([^"\']+)']:
+                  for mm in re.finditer(pat,n2,re.I):
+                      raw=mm.group(1) if mm.lastindex else mm.group(0);print('V68_SALT_MEDIA',urllib.parse.urljoin(f2,raw)[:900])
+          PY
+
+      - name: Resolve AllWish live API protocol
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import html,re,urllib.request,urllib.parse,json,http.cookiejar
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36'
+          jar=http.cookiejar.CookieJar();opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+          base='https://all-wish.me/';ep=base+'watch/jujutsu-kaisen-tv-8ssye/ep-1'
+          def get(url,ref=ep):
+              h={'User-Agent':UA,'Accept':'*/*','X-Requested-With':'XMLHttpRequest','Referer':ref}
+              try:
+                  with opener.open(urllib.request.Request(url,headers=h),timeout=20) as r:return r.status,r.geturl(),r.headers.get('content-type',''),r.read(1000000).decode('utf-8','replace')
+              except Exception as e:
+                  b=''
+                  try:b=e.read(500000).decode('utf-8','replace')
+                  except Exception:pass
+                  return getattr(e,'code',0),getattr(e,'url',url),'',b
+          for path in ['animesuge/js/main.js?1.1.22','animesuge/js/mapper.js?1.7','js/zencloud-player.js']:
+              st,f,ct,b=get(urllib.parse.urljoin(base,path));print('V68_WISH_JS',path,st,f,ct,'bytes',len(b))
+              for token in ['ajax/server','api/seasons','episode','servers','data-link-id','data-ids','media-servers','media-episode']:
+                  for m in list(re.finditer(token,b,re.I))[:20]:print('V68_WISH_JSCTX',path,token,re.sub(r'\s+',' ',b[max(0,m.start()-700):m.start()+1900])[:2600])
+          endpoints=['anime/getinfo/1103','api/seasons/1103','ajax/episode/list/1103']
+          results={}
+          for x in endpoints:
+              st,f,ct,b=get(urllib.parse.urljoin(base,x));print('V68_WISH_API',x,st,f,ct,'bytes',len(b),'BODY',re.sub(r'\s+',' ',b)[:12000]);results[x]=b
+          # discover ids/slugs/server keys from returned HTML/JSON
+          blob='\n'.join(results.values())
+          for pat,label in [(r'data-(?:id|ids|link-id|slug|episode-id|server)=["\']([^"\']+)', 'ATTR'),(r'/ajax/[A-Za-z0-9_/?=&.%-]+','AJAX'),(r'/api/[A-Za-z0-9_/?=&.%-]+','API')]:
+              vals=[]
+              for m in re.finditer(pat,blob,re.I):
+                  v=m.group(1) if m.lastindex else m.group(0)
+                  if v not in vals:vals.append(v)
+              print('V68_WISH_DISCOVER',label,vals[:100])
+          PY
