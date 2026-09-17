@@ -76,17 +76,24 @@ def main() -> int:
     }
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
 
+    # Route-proof diagnostics must work even when a current provider has no
+    # provider-overrides row. The report + manifest are sufficient authorities for
+    # route presence and publication state; inventing a DATA patch just to record a
+    # diagnostic would violate this owner's activation-neutral contract.
     movix_proof = recovered.get("movix")
-    movix_patch = patches.get("movix") if isinstance(patches.get("movix"), dict) else None
-    if not isinstance(movix_proof, dict) or not isinstance(movix_patch, dict):
-        raise SystemExit("MOVIX route proof/DATA missing")
+    if not isinstance(movix_proof, dict):
+        raise SystemExit("MOVIX route proof missing")
+    movix_patch_present = isinstance(patches.get("movix"), dict)
+    movix_patch = patches.get("movix") if movix_patch_present else {}
 
     proven_routes = [str(value) for value in movix_proof.get("routes") or [] if str(value).strip()]
     route_proof = movix_patch.get("route_proof") if isinstance(movix_patch.get("route_proof"), dict) else {}
     live_gate = movix_patch.get("live_route_gate") if isinstance(movix_patch.get("live_route_gate"), dict) else {}
+    report_status = str(movix_proof.get("status") or "").strip().casefold()
     explicit_block = (
-        str(live_gate.get("completion_state") or "").casefold() == "terminal-blocked"
-        or int(route_proof.get("provenRouteCount") or 0) == 0
+        report_status in {"no-proven-route", "unproven", "blocked", "off"}
+        or str(live_gate.get("completion_state") or "").casefold() == "terminal-blocked"
+        or (bool(route_proof) and int(route_proof.get("provenRouteCount") or 0) == 0)
     )
 
     manifest_rows = manifest.get("scrapers") if isinstance(manifest.get("scrapers"), list) else []
@@ -152,7 +159,10 @@ def main() -> int:
     if (override_enabled_present_after, override_enabled_after) != (override_enabled_present, override_enabled_before):
         raise SystemExit("route proof attempted to mutate MOVIX override activation")
 
-    patches["movix"] = movix_patch
+    if movix_patch_present:
+        patches["movix"] = movix_patch
+    elif "movix" in patches:
+        raise SystemExit("route proof invented MOVIX provider patch")
     overrides["provider_patches"] = patches
     write(args.manifest, manifest)
     write(args.overrides, overrides)
@@ -161,6 +171,7 @@ def main() -> int:
     print(
         "ROUTE_PROOF_MANIFEST_POLICY_V1_OK "
         f"movix_routes={len(proven_routes)} movix_enabled={str(movix_manifest.get('enabled')).lower()} "
+        f"movix_patch_present={str(movix_patch_present).lower()} "
         f"state={state} activation_mutated=false health_action={report_row.get('action')}"
     )
     return 0
