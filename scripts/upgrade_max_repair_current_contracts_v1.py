@@ -22,6 +22,9 @@ def load() -> dict[str, Any]:
     for pid in ("wookafr", "vidlove", "vidfast"):
         if not isinstance(patches.get(pid), dict):
             raise AssertionError(f"provider patch missing: {pid}")
+    capabilities = value.get("provider_capabilities")
+    if not isinstance(capabilities, dict):
+        raise AssertionError("provider_capabilities missing")
     return value
 
 
@@ -43,6 +46,7 @@ def patch() -> bool:
     value = load()
     before = json.dumps(value, ensure_ascii=False, sort_keys=True)
     patches = value["provider_patches"]
+    capabilities = value["provider_capabilities"]
 
     wooka = patches["wookafr"]
     add_script(wooka, WOOKA_DECODER)
@@ -53,7 +57,17 @@ def patch() -> bool:
 
     vidlove = patches["vidlove"]
     add_script(vidlove, VIDLOVE_SELECTOR)
-    vidlove["capability"] = "direct_api_hls"
+    # ProviderBase has a real bounded JSON API recipe and its executable reader
+    # understands api_stream_resolver/direct_media. `direct_api_hls` was a local
+    # label invented by this one-shot and is not a runtime strategy; persisting it
+    # makes the strategy-plan gate fail and can make a later reapply inconsistent.
+    vidlove["capability"] = "api_stream_resolver"
+    vidlove_capability = capabilities.setdefault("vidlove", {})
+    if not isinstance(vidlove_capability, dict):
+        raise AssertionError("VidLove provider capability must be an object")
+    vidlove_capability["strategy"] = "api_stream_resolver"
+    vidlove_capability["validation"] = "provider_native"
+    vidlove_capability["requires_direct_media"] = True
     vidlove["official_site"] = "https://player.vidlove.cc"
     vidlove["official_api"] = "https://api.vidlove.cc"
     vidlove["published_types"] = ["movie", "tv"]
@@ -115,7 +129,9 @@ def patch() -> bool:
 
 
 def validate() -> None:
-    patches = load()["provider_patches"]
+    value = load()
+    patches = value["provider_patches"]
+    capabilities = value["provider_capabilities"]
     wooka = patches["wookafr"]
     if WOOKA_DECODER not in (wooka.get("provider_lego_scripts") or []):
         raise AssertionError("Wooka showVideo decoder missing")
@@ -125,6 +141,10 @@ def validate() -> None:
     vidlove = patches["vidlove"]
     if VIDLOVE_SELECTOR not in (vidlove.get("provider_lego_scripts") or []):
         raise AssertionError("VidLove source selector missing")
+    if vidlove.get("capability") != "api_stream_resolver":
+        raise AssertionError("VidLove runtime strategy mismatch")
+    if (capabilities.get("vidlove") or {}).get("strategy") != "api_stream_resolver":
+        raise AssertionError("VidLove capability strategy mismatch")
     recipe = vidlove.get("api_recipe") or {}
     if recipe.get("base") != "https://api.vidlove.cc":
         raise AssertionError("VidLove API base mismatch")
