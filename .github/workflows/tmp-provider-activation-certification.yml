@@ -1,5 +1,5 @@
 name: TMP - Provider Activation Certification
-# v3: official anime transport + architecture-yield/cluster diagnostics
+# v4: idempotent migration + official anime transport + architecture-yield/cluster diagnostics
 
 on:
   push:
@@ -47,6 +47,8 @@ jobs:
           python3 tests/provider_positive_fixture_memory_test.py
           python3 tests/provider_activation_bulk_yield_guard_test.py
           python3 tests/provider_certification_learning_queue_test.py
+          python3 tests/provider_activation_consensus_test.py
+          python3 tests/brain_provider_onboarding_policy_test.py
       - name: Persist migrated gate and tests
         run: |
           set -euo pipefail
@@ -74,6 +76,9 @@ jobs:
           python3 scripts/build_provider_certification_learning_queue.py \
             --certification health-output/provider-playable-certification.json \
             --output health-output/provider-certification-learning-queue.json
+          python3 scripts/build_provider_activation_consensus.py \
+            --node-certification health-output/provider-playable-certification.json \
+            --output health-output/provider-activation-consensus.json
           set +e
           python3 scripts/enforce_provider_activation_contract.py \
             --manifest manifest.json \
