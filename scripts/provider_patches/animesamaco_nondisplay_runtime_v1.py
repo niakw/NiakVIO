@@ -2,7 +2,7 @@
 """Provider-owned v3 adapter for the shared non-display recovery runtime."""
 from __future__ import annotations
 from typing import Any
-from scripts.provider_patches import non_display_recovery_runtime_v1 as shared
+import non_display_recovery_runtime_v1 as shared
 
 MANAGED_FIX_ID = "PROVIDER.ANIMESAMA-CO.NONDISPLAY.RECOVERY.V1"
 PROVIDER_ID = "animesama-co"
