@@ -20,6 +20,10 @@ for needle in (
     'stream-gw',
     'txt(s.type).toLowerCase()==="iframe"',
     "_crawlDirectMedia([url],referer,depth)",
+    "async function embeddedPlayerMedia(url,referer,source)",
+    "(?:mp4|m3u8)",
+    "absRef(raw,page)",
+    "direct=await embeddedPlayerMedia(pr.url,titleUrl,pr.source)",
     "__nuvioCorrelatedPlayerFallbackV1={url:url}",
     '__niakvioProviderRuntimeResolverV1={provider:"kehflix",resolve:resolve}',
 ):
@@ -50,4 +54,4 @@ assert module.LEGO in row["provider_lego_scripts"]
 assert row["provider_lego_options"][module.LEGO]["targetStreams"] == 4
 assert module.apply_document(fixture) is False
 
-print("KEHFLIX_ANIME_RUNTIME_V1_TEST_OK semantic=anime transport=tv semantic_precedence=core_context native_delegate=movie,tv host_hardcodes=0")
+print("KEHFLIX_ANIME_RUNTIME_V1_TEST_OK semantic=anime transport=tv semantic_precedence=core_context embedded_media=generic native_delegate=movie,tv host_hardcodes=0")
