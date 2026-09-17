@@ -29,7 +29,7 @@ WRAPPER = r'''
 ;(function(g,c){"use strict";
 function txt(v){return String(v==null?"":v).trim()}
 function uniq(v){return Array.from(new Set((v||[]).filter(Boolean)))}
-function req(args){var first=args[0],obj=first&&typeof first==="object"&&!Array.isArray(first)?first:null,ctx={};try{ctx=g&&g.__nuvioMediaContext||{}}catch(_e){}var raw=txt((obj&&(obj.canonicalMediaType||obj.semanticType||obj.mediaType||obj.type))||args[1]||ctx.canonicalMediaType||ctx.mediaType||"movie").toLowerCase();if(raw==="series")raw="tv";if(raw!=="anime")return null;var id=txt((obj&&(obj.tmdbId||obj.tmdb_id||obj.id))||(typeof first==="string"?first:"")||ctx.tmdbId);if(!/^\d+$/.test(id))return null;return{type:"anime",transport:"tv",tmdbId:id,season:Math.max(1,Number((obj&&obj.season)!=null?obj.season:args[2])||1),episode:Math.max(1,Number((obj&&obj.episode)!=null?obj.episode:args[3])||1)}}
+function req(args){var first=args[0],obj=first&&typeof first==="object"&&!Array.isArray(first)?first:null,ctx={};try{ctx=g&&g.__nuvioMediaContext||{}}catch(_e){}var raw=txt((obj&&(obj.canonicalMediaType||obj.semanticType))||ctx.canonicalMediaType||ctx.mediaType||(obj&&(obj.mediaType||obj.type))||args[1]||"movie").toLowerCase();if(raw==="series")raw="tv";if(raw!=="anime")return null;var id=txt((obj&&(obj.tmdbId||obj.tmdb_id||obj.id))||ctx.tmdbId||(typeof first==="string"?first:"")||"");if(!/^\d+$/.test(id))return null;return{type:"anime",transport:"tv",tmdbId:id,season:Math.max(1,Number((obj&&obj.season)!=null?obj.season:args[2])||1),episode:Math.max(1,Number((obj&&obj.episode)!=null?obj.episode:args[3])||1)}}
 function base(){var out="";try{out=txt(NIAKVIO_PROVIDER_MODEL.officialSite||NIAKVIO_PROVIDER_MODEL.knownSite)}catch(_e){}if(!out)out=txt(c.base);return out.replace(/\/$/,"")}
 function slug(v){try{if(typeof _slug==="function")return _slug(v)}catch(_e){}return txt(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")}
 async function response(url,opt){try{return typeof _fetch==="function"?await _fetch(url,opt||{}):await g.fetch(url,opt||{})}catch(_e){return null}}
@@ -70,6 +70,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             "identity": "core-tmdb-tv-metadata-to-current-title-page",
             "semanticLanes": ["anime"],
             "nativeDelegation": ["movie", "tv"],
+            "semanticTransportBoundary": "prefer-core-canonical-anime-over-provider-tv-transport",
             "sourcePriority": ["same-origin-gateway", "episode-correlated-player", "verified-direct-media"],
             "correlatedPlayerFallback": True,
             "legacyExecutableSeed": False,
