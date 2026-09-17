@@ -45,6 +45,14 @@ jobs:
                   raise SystemExit('HLS console-sensitive anchor drifted')
               text = text.replace(line, '', 1)
           hls.write_text(text, encoding='utf-8')
+
+          test = Path('tests/core_media_policy_test.py')
+          text = test.read_text(encoding='utf-8')
+          old = 'assert unsafe.decode("utf-8") in provider_slice\n'
+          new = '''provider_owned_tokens = (\n    'function badHost(u){return u.includes("example.com")};',\n    'globalThis.console.log("provider debug");',\n    'globalThis.getStreams=async function(){return []};',\n)\npositions = [provider_slice.find(token) for token in provider_owned_tokens]\nassert all(position >= 0 for position in positions), positions\nassert positions == sorted(positions), positions\n'''
+          if text.count(old) != 1:
+              raise SystemExit('provider ownership assertion anchor drifted')
+          test.write_text(text.replace(old, new, 1), encoding='utf-8')
           PY
 
           python3 scripts/normalize_core_media_policy.py --apply
@@ -67,13 +75,18 @@ jobs:
           changed = [row[3:] for row in rows if len(row) >= 4]
           if not changed:
               raise SystemExit('expected final Core normalization to change tracked files')
-          forbidden = [p for p in changed if p.startswith('.github/') or p.startswith('tests/')]
+          forbidden = [p for p in changed if p.startswith('.github/')]
           if forbidden:
-              raise SystemExit('unexpected generated edits: ' + ', '.join(forbidden))
+              raise SystemExit('unexpected generated workflow edits: ' + ', '.join(forbidden))
+          allowed_test = {'tests/core_media_policy_test.py'}
+          unexpected_tests = [p for p in changed if p.startswith('tests/') and p not in allowed_test]
+          if unexpected_tests:
+              raise SystemExit('unexpected generated test edits: ' + ', '.join(unexpected_tests))
           required = {
               'scripts/normalize_core_media_policy.py',
               'scripts/provider_patches/hls_runtime_integrity_v1.py',
               'provider-overrides.json',
+              'tests/core_media_policy_test.py',
           }
           missing = sorted(required - set(changed))
           if missing:
