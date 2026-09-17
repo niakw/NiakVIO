@@ -61,6 +61,8 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/mani
 
 **Manifest guide:** [`docs/how-to-add-manifest.md`](docs/how-to-add-manifest.md)
 
+**Plugin update / reinstall / cache recovery:** [`docs/niakvio-update-reinstall-cache.md`](docs/niakvio-update-reinstall-cache.md)
+
 ### StreamBadge feed
 
 ```text
@@ -134,6 +136,8 @@ A standalone provider or manifest can be perfectly useful. NiakVIO becomes valua
 
 > [!TIP]
 > **Simple target stack:** 1 provider layer + 1 metadata/catalogue addon + 1 subtitle addon + 1 tracking service. Avoid stacking several provider packs that compete for the same role unless you are deliberately testing them.
+
+**New to Nuvio?** [`Install Nuvio + NiakVIO step by step`](docs/nuvio-installation.md)
 
 ---
 
