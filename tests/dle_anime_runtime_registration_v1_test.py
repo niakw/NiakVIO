@@ -3,10 +3,15 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts" / "register_dle_anime_runtime_v1.py"
+SCRIPTS = ROOT / "scripts"
+PATCHES = SCRIPTS / "provider_patches"
+sys.path.insert(0, str(SCRIPTS))
+sys.path.insert(0, str(PATCHES))
+SCRIPT = SCRIPTS / "register_dle_anime_runtime_v1.py"
 spec = importlib.util.spec_from_file_location("register_dle_anime_runtime_v1", SCRIPT)
 assert spec and spec.loader
 module = importlib.util.module_from_spec(spec)
@@ -24,4 +29,16 @@ for pid, target in module.TARGETS.items():
     assert row["provider_lego_options"][lego]["provider"] == pid
     assert row["proof_search_bases"] == [target["base"]]
 assert isinstance(changed, bool)
-print("provider-owned DLE facade registration test passed: french-manga + voiranime-homes")
+
+# Facades must remain constructible against the exact shared parser revision.
+# This catches stale textual anchors before the expensive rematerialization step.
+import french_manga_dle_runtime_v1 as french_manga
+import voiranime_homes_dle_runtime_v1 as voiranime_homes
+fm_wrapper = french_manga._french_manga_wrapper()
+vh_wrapper = voiranime_homes._voiranime_homes_wrapper()
+assert french_manga.SEARCH_ITEM_MARKER in fm_wrapper
+assert voiranime_homes.SEARCH_ITEM_MARKER in vh_wrapper
+assert "function seasonSignal(row,season)" in fm_wrapper
+assert "function seasonSignal(row,season)" in vh_wrapper
+
+print("provider-owned DLE facade registration/apply test passed: french-manga + voiranime-homes")
