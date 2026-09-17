@@ -1,0 +1,44 @@
+name: TEMP - Max Repair Network Trace V36
+on:
+  push:
+    branches: [fix/non-display-recovery-20260916]
+    paths: ['.github/workflows/temp-max-repair-network-trace-v36.yml']
+permissions:
+  contents: read
+jobs:
+  trace:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Trace every residual lane network path
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/v36.cjs <<'NODE'
+          const fs=require('fs'),path=require('path'),{spawn}=require('child_process');
+          const manifest=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const overrides=JSON.parse(fs.readFileSync('provider-overrides.json','utf8'));
+          function file(pid){let x=(manifest.scrapers||[]).filter(r=>String(r&&r.id||'').toLowerCase()===String(pid).toLowerCase());if(x.length!==1)throw Error('manifest:'+pid+':'+x.length);return path.resolve(x[0].filename)}
+          function fixture(lane,v=0){if(lane==='movie')return{id:'157336',type:'movie',title:'Interstellar',year:'2014'};if(lane==='tv')return{id:'1396',type:'tv',title:'Breaking Bad',year:'2008',season:1,episode:1};return v?{id:'37854',type:'anime',title:'One Piece',year:'1999',season:1,episode:1178}:{id:'95479',type:'anime',title:'Jujutsu Kaisen',year:'2020',season:1,episode:1}}
+          function metadata(s){return s.type==='movie'?{id:+s.id,title:s.title,original_title:s.title,release_date:s.year+'-01-01',alternative_titles:{titles:[]}}:{id:+s.id,name:s.title,original_name:s.title,first_air_date:s.year+'-01-01',alternative_titles:{results:[]}}}
+          async function child(pid,lane,v){
+            const s=fixture(lane,+v||0),ns=s.type==='movie'?'movie':'tv',m=metadata(s),trace=[];const native=globalThis.fetch;
+            globalThis.fetch=async function(input,opts){const u=String(input&&input.url||input||''),method=String(opts&&opts.method||'GET').toUpperCase(),t=Date.now();try{const r=await native(input,opts);if(trace.length<14)trace.push({method,url:u,status:r.status,final:r.url,ctype:r.headers.get('content-type')||'',ms:Date.now()-t});return r}catch(e){if(trace.length<14)trace.push({method,url:u,status:0,error:String(e&&e.message||e),ms:Date.now()-t});throw e}};
+            globalThis.__nuvioMediaContext={tmdbId:String(s.id),tmdbNamespace:ns,tmdbMetadata:m,canonicalMediaType:s.type};globalThis.__nuvioTmdbMetadataCacheV1={[ns+':'+s.id]:m};globalThis.__nuvioProviderDeadlineMs=Date.now()+25000;
+            let rows=[],error='';try{const f=file(pid);delete require.cache[f];const mod=require(f);rows=await Promise.race([Promise.resolve(mod.getStreams(String(s.id),s.type,s.season,s.episode)),new Promise((_,rej)=>setTimeout(()=>rej(Error('provider_timeout')),26000))])}catch(e){error=String(e&&e.message||e)}
+            rows=Array.isArray(rows)?rows:[];console.log('TRACE_RESULT\t'+JSON.stringify({pid,lane,fixture:s.title,count:rows.length,error,trace,urls:rows.slice(0,3).map(r=>String(r&&r.url||'')),titles:rows.slice(0,3).map(r=>String(r&&r.title||r&&r.name||''))}));
+          }
+          function run(pid,lane,v){return new Promise(resolve=>{const cp=spawn(process.execPath,[__filename,'--child',pid,lane,String(v)],{stdio:['ignore','pipe','pipe']});let out='',err='';const timer=setTimeout(()=>cp.kill('SIGKILL'),35000);cp.stdout.on('data',d=>out+=d);cp.stderr.on('data',d=>err+=d);cp.on('close',(code,signal)=>{clearTimeout(timer);const line=out.split(/\r?\n/).find(x=>x.startsWith('TRACE_RESULT\t'));let row;try{row=line?JSON.parse(line.slice(13)):null}catch{};if(!row)row={pid,lane,fixture:fixture(lane,v).title,count:0,error:'child_failed code='+code+' signal='+signal+' '+err.slice(-400),trace:[],urls:[]};console.log('TRACE_ATTEMPT',JSON.stringify(row));resolve(row)})})}
+          async function parent(){
+            const q=[];for(const [pid,row] of Object.entries(overrides.provider_patches||{})){const d=row&&row.repair_disposition||{},missing=Array.isArray(d.missingLanes)?d.missingLanes:[];for(const lane of missing)if(['movie','tv','anime'].includes(String(lane)))q.push([pid,String(lane)])}
+            console.log('V36_QUEUE',q.length,JSON.stringify(q));let i=0;async function worker(){while(true){const n=i++;if(n>=q.length)return;const [p,l]=q[n];const a=await run(p,l,0);if(l==='anime'&&a.count===0)await run(p,l,1)}}await Promise.all(Array.from({length:6},worker));
+          }
+          if(process.argv[2]==='--child')child(process.argv[3],process.argv[4],process.argv[5]).then(()=>process.exit(0));else parent().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/v36.cjs
