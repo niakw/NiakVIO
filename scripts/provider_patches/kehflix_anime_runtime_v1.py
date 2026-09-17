@@ -10,8 +10,8 @@ fall back to the native runtime for every other lane.
 The resolver derives the title slug from Core TMDB metadata, obtains the site's
 short-lived signed title key from the exact title page, calls the exact episode
 API, and prioritizes same-origin gateway rows / correlated players before raw
-media. No provider response token, title, fixture id, CDN hostname or media URL
-is baked into the patch.
+media. No provider response token, title, fixture id, player/CDN hostname or
+media URL is baked into the patch.
 """
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ function decorate(rows,source){var out=[];for(var i=0;i<(rows||[]).length;i++){v
 function correlatedPlayer(url,referer,source){var rows=[];try{if(typeof _streams==="function")rows=_streams([url],referer)}catch(_e){}rows=decorate(rows,source);for(var i=0;i<rows.length;i++){if(rows[i]&&typeof rows[i]==="object")rows[i].__nuvioCorrelatedPlayerFallbackV1={url:url}}return rows}
 async function crawl(url,referer,source,depth){try{if(typeof _crawlDirectMedia==="function"){var rows=await _crawlDirectMedia([url],referer,depth);if(rows&&rows.length)return decorate(rows,source)}}catch(_e){}return[]}
 async function episodePayload(b,titleUrl,key,q){var u=b+"/api/streams/episode?id="+encodeURIComponent(q.tmdbId)+"&season="+encodeURIComponent(String(q.season))+"&episode="+encodeURIComponent(String(q.episode))+"&k="+encodeURIComponent(key),r=await response(u,{headers:{Referer:titleUrl}});if(!r||r.ok===false)return null;try{var d=await r.json();return d&&d.ok===true&&Array.isArray(d.sources)?d:null}catch(_e){return null}}
-async function resolveSources(b,titleUrl,sources){var gateways=[],players=[],media=[];for(var i=0;i<sources.length&&i<16;i++){var s=sources[i];if(!s||typeof s!=="object")continue;var raw=txt(s.src||s.url),u=abs(raw,b);if(!u||/^https?:\/\/(?:t\.me|telegram\.me)(?:\/|$)/i.test(u))continue;if(/^\/api\/stream-gw\?/i.test(raw)){gateways.push({url:u,source:s});continue}var isDirect=false,isPlayer=false;try{isDirect=typeof _directMedia==="function"&&_directMedia(u)}catch(_e){}try{isPlayer=typeof _playerLike==="function"&&_playerLike(u)}catch(_e){}if(txt(s.type).toLowerCase()==="iframe"||(!isDirect&&isPlayer))players.push({url:u,source:s});else if(isDirect||/^https?:\/\//i.test(u))media.push({url:u,source:s})}
+async function resolveSources(b,titleUrl,sources){var gateways=[],players=[],media=[];for(var i=0;i<sources.length&&i<16;i++){var s=sources[i];if(!s||typeof s!=="object")continue;var raw=txt(s.src||s.url),u=abs(raw,b);if(!u)continue;if(/^\/api\/stream-gw\?/i.test(raw)){gateways.push({url:u,source:s});continue}var isDirect=false,isPlayer=false;try{isDirect=typeof _directMedia==="function"&&_directMedia(u)}catch(_e){}try{isPlayer=typeof _playerLike==="function"&&_playerLike(u)}catch(_e){}if(txt(s.type).toLowerCase()==="iframe"||(!isDirect&&isPlayer))players.push({url:u,source:s});else if(/^https?:\/\//i.test(u))media.push({url:u,source:s})}
 var out=[];
 for(var gidx=0;gidx<gateways.length&&out.length<c.targetStreams;gidx++){var gr=gateways[gidx],rows=[];try{if(typeof _streams==="function")rows=_streams([gr.url],titleUrl)}catch(_e){}out=out.concat(decorate(rows,gr.source))}
 for(var p=0;p<players.length&&out.length<c.targetStreams;p++){var pr=players[p],direct=await crawl(pr.url,titleUrl,pr.source,2);if(direct.length)out=out.concat(direct);else out=out.concat(correlatedPlayer(pr.url,titleUrl,pr.source))}
