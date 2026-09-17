@@ -1,0 +1,56 @@
+name: TEMP - Max Repair Output-only V35
+on:
+  push:
+    branches: [fix/non-display-recovery-20260916]
+    paths: ['.github/workflows/temp-max-repair-output-only-v35.yml']
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Diagnose current embeds and slow terminals
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/v35.cjs <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const manifest=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36';
+          function entry(id){const x=(manifest.scrapers||[]).filter(r=>String(r&&r.id||'').toLowerCase()===id);if(x.length!==1)throw Error('manifest '+id+' '+x.length);return path.resolve(x[0].filename)}
+          async function probe(url,opts={}){const c=new AbortController(),t=setTimeout(()=>c.abort(),opts.ms||18000);try{const r=await fetch(url,{redirect:'follow',signal:c.signal,headers:Object.assign({'User-Agent':UA,'Accept':'text/html,application/xhtml+xml,application/json,text/plain,*/*','Accept-Language':'en-US,en;q=0.9'},opts.headers||{})});let body='';try{body=await r.text()}catch{};return {url,status:r.status,ok:r.ok,ctype:r.headers.get('content-type')||'',bytes:body.length,final:r.url,sample:body.slice(0,120).replace(/\s+/g,' ')}}catch(e){return {url,status:0,ok:false,error:String(e&&e.message||e)}}finally{clearTimeout(t)}}
+          async function vidfast(){
+            const urls=[
+              'https://vidfast.vc/movie/157336','https://vidfast.vc/embed/movie/157336','https://vidfast.to/embed/movie/157336',
+              'https://vidfast.vc/tv/1396/1/1','https://vidfast.vc/embed/tv/1396/1/1','https://vidfast.to/embed/tv/1396/1/1'
+            ];
+            for(const u of urls)console.log('VIDFAST_URL',JSON.stringify(await probe(u,{headers:{Referer:new URL(u).origin+'/'}})));
+          }
+          function meta(type,id,title,year){return type==='movie'?{id:+id,title,original_title:title,release_date:year+'-01-01',alternative_titles:{titles:[]}}:{id:+id,name:title,original_name:title,first_air_date:year+'-01-01',alternative_titles:{results:[]}}}
+          async function provider(pid,type,id,title,year,season,episode){
+            const ns=type==='movie'?'movie':'tv',m=meta(type,id,title,year);globalThis.__nuvioMediaContext={tmdbId:String(id),tmdbNamespace:ns,tmdbMetadata:m,canonicalMediaType:type};globalThis.__nuvioTmdbMetadataCacheV1={[ns+':'+id]:m};globalThis.__nuvioProviderDeadlineMs=Date.now()+25000;
+            const f=entry(pid);delete require.cache[f];const mod=require(f);let rows=[];try{rows=await Promise.race([Promise.resolve(mod.getStreams(String(id),type,season,episode)),new Promise((_,r)=>setTimeout(()=>r(Error('provider_timeout')),26000))])}catch(e){console.log('PROVIDER_ERROR',pid,String(e&&e.message||e));return}
+            rows=Array.isArray(rows)?rows:[];console.log('PROVIDER_ROWS',pid,rows.length,JSON.stringify(rows.slice(0,3).map(x=>({url:x&&x.url,headers:x&&x.headers,title:x&&x.title,name:x&&x.name}))));
+            for(const row of rows.slice(0,3)){
+              const u=String(row&&row.url||'');
+              console.log('TERMINAL18',pid,JSON.stringify(await probe(u,{ms:18000,headers:row&&row.headers||{}})));
+              console.log('TERMINAL25',pid,JSON.stringify(await probe(u,{ms:25000,headers:row&&row.headers||{}})));
+              if(/^https?:\/\//.test(u))console.log('TERMINAL_RANGE',pid,JSON.stringify(await probe(u,{ms:18000,headers:Object.assign({},row&&row.headers||{},Range:'bytes=0-2047')})));
+            }
+          }
+          (async()=>{
+            await vidfast();
+            await provider('vidfast','movie','157336','Interstellar','2014');
+            await provider('vidfast','tv','1396','Breaking Bad','2008',1,1);
+            await provider('hindmoviez','movie','157336','Interstellar','2014');
+            await provider('kurage','anime','95479','Jujutsu Kaisen','2020',1,1);
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/v35.cjs
