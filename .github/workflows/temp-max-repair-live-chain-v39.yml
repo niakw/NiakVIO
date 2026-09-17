@@ -1,0 +1,61 @@
+name: TEMP - Max Repair Live Chain V39
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-max-repair-live-chain-v39.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - name: Prove current live chains
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/v39.cjs <<'NODE'
+          const UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36';
+          async function req(url,opt={}){const c=new AbortController(),t=setTimeout(()=>c.abort(),opt.ms||12000);try{const r=await fetch(url,{method:opt.method||'GET',redirect:'follow',signal:c.signal,headers:Object.assign({'User-Agent':UA,'Accept':'application/json,text/html,text/plain,*/*'},opt.headers||{}),body:opt.body});const body=await r.text();let json=null;try{json=JSON.parse(body)}catch{}return{status:r.status,url:r.url,ctype:r.headers.get('content-type')||'',body,json}}catch(e){return{status:0,url,body:'',json:null,error:String(e&&e.message||e)}}finally{clearTimeout(t)}}
+          async function postJson(url,obj){return req(url,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(obj)})}
+          function cut(v,n=1400){let s='';try{s=typeof v==='string'?v:JSON.stringify(v)}catch{s=String(v)}return s.length>n?s.slice(0,n)+'…':s}
+          function pickServer(parsed){if(!parsed||typeof parsed!=='object')return null;for(const group of Object.values(parsed)){if(group&&typeof group==='object'){for(const row of Object.values(group)){if(row&&typeof row==='object'&&row.lid)return row}}}return null}
+          async function yflix(label,tmdb,type,season,episode){
+            const db=await req(`https://enc-dec.app/db/flix/find?tmdb_id=${tmdb}&type=${type}`),row=Array.isArray(db.json)?db.json[0]:db.json;
+            const ep=row&&row.episodes&&row.episodes[String(season)]&&row.episodes[String(season)][String(episode)],eid=ep&&ep.eid;
+            console.log('YF_DB',JSON.stringify({label,status:db.status,info:row&&row.info,episode:ep}));
+            if(!eid)return;
+            const ee=await req(`https://enc-dec.app/api/enc-movies-flix?text=${encodeURIComponent(eid)}`),enc=ee.json&&ee.json.result;console.log('YF_ENC_EID',JSON.stringify({label,status:ee.status,eid,enc:cut(enc,220)}));
+            for(const base of ['https://yflix.to','https://1movies.bz','https://solarmovie.fi']){
+              const lr=await req(`${base}/ajax/links/list?eid=${encodeURIComponent(eid)}&_=${encodeURIComponent(enc||'')}`,{headers:{Referer:base+'/',Accept:'application/json'}});
+              console.log('YF_SERVERS_RAW',JSON.stringify({label,base,status:lr.status,final:lr.url,body:cut(lr.body,1000)}));
+              if(!lr.json||!lr.json.result)continue;
+              const pp=await postJson('https://enc-dec.app/api/parse-html',{text:lr.json.result}),parsed=pp.json&&pp.json.result,srv=pickServer(parsed);
+              console.log('YF_SERVERS_PARSED',JSON.stringify({label,base,status:pp.status,parsed,srv}));
+              if(!srv||!srv.lid)continue;
+              const el=await req(`https://enc-dec.app/api/enc-movies-flix?text=${encodeURIComponent(srv.lid)}`),encLid=el.json&&el.json.result;
+              const vr=await req(`${base}/ajax/links/view?id=${encodeURIComponent(srv.lid)}&_=${encodeURIComponent(encLid||'')}`,{headers:{Referer:base+'/',Accept:'application/json'}});
+              console.log('YF_VIEW_RAW',JSON.stringify({label,base,status:vr.status,body:cut(vr.body,1200)}));
+              if(!vr.json||!vr.json.result)continue;
+              const dec=await postJson('https://enc-dec.app/api/dec-movies-flix',{text:vr.json.result});
+              console.log('YF_DECRYPT',JSON.stringify({label,base,status:dec.status,result:dec.json&&dec.json.result||dec.body}));
+              break;
+            }
+          }
+          async function probeRange(label,url,headers={}){const x=await req(url,{headers:Object.assign({Range:'bytes=0-1023'},headers),ms:10000});console.log('RANGE',JSON.stringify({label,url,status:x.status,final:x.url,ctype:x.ctype,bytes:x.body.length,error:x.error||''}))}
+          (async()=>{
+            await yflix('movie','157336','movie',1,1);
+            await yflix('tv','1396','tv',1,1);
+            for(const endpoint of ['getSourcesNew','getSources']){const x=await req(`https://megaplay.buzz/stream/${endpoint}?id=116363`,{headers:{Referer:'https://megaplay.buzz/stream/s-2/10789/sub','X-Requested-With':'XMLHttpRequest',Origin:'https://megaplay.buzz'}});console.log('MEGAPLAY',JSON.stringify({endpoint,status:x.status,keys:x.json&&typeof x.json==='object'?Object.keys(x.json):[],body:cut(x.body,3500)}))}
+            await probeRange('sekai_jjk_ep1','https://5.mugiwara.one/jujutsu/jujutsu-1.mp4',{Referer:'https://sekai.one/jujutsu-kaisen?v=13'});
+            const sz=await req('https://streamzo.fr/series/jujutsu-kaisen');const tags=[...sz.body.matchAll(/<button\b[^>]*class=["'][^"']*\bsd-ep\b[^"']*["'][^>]*>/gi)].map(m=>m[0]);console.log('STREAMZO_TAGS',JSON.stringify(tags.slice(0,15)));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node /tmp/v39.cjs
