@@ -4,11 +4,14 @@ from __future__ import annotations
 import importlib.util
 import json
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "scripts" / "provider_patches" / "dle_anime_runtime_v1.py"
+PATCHES = ROOT / "scripts" / "provider_patches"
+sys.path.insert(0, str(PATCHES))
+SOURCE = PATCHES / "dle_anime_runtime_v1.py"
 
 spec = importlib.util.spec_from_file_location("dle_anime_runtime_v1", SOURCE)
 assert spec and spec.loader
