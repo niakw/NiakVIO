@@ -81,7 +81,14 @@ assert provider_findings == {
     "provider_console_unsandboxed",
 }, provider_findings
 assert known_unsafe_findings(core_slice) == [], known_unsafe_findings(core_slice)
-assert unsafe.decode("utf-8") in provider_slice
+provider_owned_tokens = (
+    'function badHost(u){return u.includes("example.com")};',
+    'globalThis.console.log("provider debug");',
+    'globalThis.getStreams=async function(){return []};',
+)
+positions = [provider_slice.find(token) for token in provider_owned_tokens]
+assert all(position >= 0 for position in positions), positions
+assert positions == sorted(positions), positions
 assert "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1" in text
 assert "NUVIO_PROVIDER_SECURITY_HARDENING_V1" not in provider_slice
 assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in text
@@ -123,8 +130,8 @@ with tempfile.NamedTemporaryFile("wb", suffix=".js", delete=False) as handle:
         b'\nvar __nuvioTestPlaylist="#EXTM3U\\n#EXT-X-VERSION:3\\n#EXTINF:120,\\nsegment-1.ts\\n#EXTINF:120,\\nsegment-2.ts\\n#EXT-X-ENDLIST\\n";'
         b'globalThis.fetch=async function(url){return{ok:true,status:200,url:String(url),headers:{get:function(name){return String(name).toLowerCase()==="content-type"?"application/vnd.apple.mpegurl":null}},text:async function(){return __nuvioTestPlaylist}}};'
         b'Promise.resolve(globalThis.getStreams("603","movie")).then(function(rows){var r=rows[0];'
-        b'var expected="\xf0\x9f\x92\xa5 MovieBlast \xe2\x80\xa2 1080p VFF \xe2\x80\xa2 raw upstream title";'
-        b'if(!r||r.name!==expected||r.title!==expected||r.quality!=="1080p"||r.language!=="VF"||r.format!=="HLS")'
+        b'var expected="\xf0\x9f\x92\xa5 MovieBlast - 1080p";'
+        b'if(!r||r.name!==expected||r.title!==expected||r.sourceName!=="1080p VFF"||r.sourceTitle!=="raw upstream title"||r.quality!=="1080p"||r.language!=="VF"||r.format!=="HLS")'
         b'{console.error(JSON.stringify(r));process.exit(4)}console.log(JSON.stringify(r))'
         b'}).catch(function(e){console.error(e);process.exit(5)});\n'
     )
