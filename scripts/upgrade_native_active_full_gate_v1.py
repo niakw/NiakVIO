@@ -136,6 +136,11 @@ def patch_test() -> None:
             f"FIELD_NATIVE_IOS_PROVIDER_END fixture={fixture} provider={provider} state=completed duration_ms=1\\n"
         )
 '''
+    if new in text:
+        # Already migrated by an earlier workflow run. Keep the one-shot upgrader
+        # safe to invoke again while a temporary validation workflow is iterated.
+        TEST.write_text(text, encoding="utf-8")
+        return
     text = replace_once(text, old, new, "ios positive test")
     TEST.write_text(text, encoding="utf-8")
 
