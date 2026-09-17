@@ -1,0 +1,125 @@
+name: TEMP - Domain Refresh Non-Destructive V48
+
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-domain-refresh-nondestructive-v48.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NUVIO_PROVIDER_V3_CONTEXT: publication
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+
+      - name: Static and contract tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile \
+            scripts/reconcile_provider_domain_metadata.py \
+            scripts/reconcile_domain_refresh_provenance.py \
+            scripts/validate_domain_refresh_non_destructive.py
+          python tests/domain_refresh_non_destructive_workflow_test.py
+          python tests/domain_refresh_workflow_test.py
+          python tests/provider_domain_metadata_reconcile_test.py
+          python tests/domain_refresh_transaction_guard_test.py
+          python tests/domain_refresh_priority_wrapper_test.py
+          python tests/domain_refresh_guard_wrapper_test.py
+          python tests/priority_tv_year_domain_refresh_test.py
+          python tests/provider_domain_graph_cycle_test.py
+          python scripts/validate_provider_domain_graph.py provider-overrides.json
+          python scripts/finalize_provider_v3_minimizer.py --check
+
+      - name: Inject the exact historical Flemmix cloud-me rollback cycle locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          p='provider-overrides.json'
+          d=json.load(open(p,encoding='utf-8'))
+          f=d['provider_patches']['flemmix']
+          f['official_site']='https://flemmix.me'
+          for name in ('domain_substitutions','replacements','runtime_domain_replacements'):
+              m=f.get(name)
+              if not isinstance(m,dict):
+                  m={};f[name]=m
+              m['flemmix.cloud']='flemmix.me'
+              m['flemmix.me']='flemmix.cloud'
+          open(p,'w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+          print('V48_INJECTED Flemmix cloud<->me cycle')
+          PY
+          cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"
+          cp provider-hubs.json "$RUNNER_TEMP/provider-hubs.before.json"
+          cp provider-domain-history.json "$RUNNER_TEMP/provider-domain-history.before.json"
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          cp provider-v3-materialization.json "$RUNNER_TEMP/materialization.before.json"
+          cp PROVENANCE.json "$RUNNER_TEMP/provenance.before.json"
+
+      - name: Repair only Flemmix through the real Domain Refresh transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python scripts/domain_refresh_priority_wrapper.py \
+            --mode deep --include-disabled --workers 1 --timeout 12 \
+            --provider flemmix --apply \
+            --output health-output/v48-hub-report.json \
+            --changes-output health-output/v48-domain-changes.json
+          cat health-output/v48-domain-changes.json
+          python - <<'PY'
+          import json
+          d=json.load(open('health-output/v48-domain-changes.json',encoding='utf-8'))
+          assert d.get('changed') == ['flemmix'], d
+          PY
+
+      - name: Run only scoped post-transaction reconciliation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/reconcile_provider_domain_metadata.py --rebuild --provider flemmix
+          python scripts/reconcile_domain_refresh_provenance.py --changes health-output/v48-domain-changes.json
+          python scripts/finalize_provider_v3_minimizer.py --check
+
+      - name: Prove no V42-plus repair evidence or unrelated provider changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/domain_refresh_guard_wrapper.py \
+            --before-overrides "$RUNNER_TEMP/provider-overrides.before.json" \
+            --before-hubs "$RUNNER_TEMP/provider-hubs.before.json" \
+            --before-history "$RUNNER_TEMP/provider-domain-history.before.json" \
+            --report health-output/v48-hub-report.json \
+            --changes health-output/v48-domain-changes.json
+          python scripts/validate_domain_refresh_non_destructive.py \
+            --before-overrides "$RUNNER_TEMP/provider-overrides.before.json" \
+            --before-manifest "$RUNNER_TEMP/manifest.before.json" \
+            --before-materialization "$RUNNER_TEMP/materialization.before.json" \
+            --before-provenance "$RUNNER_TEMP/provenance.before.json" \
+            --changes health-output/v48-domain-changes.json
+          python scripts/validate_provider_domain_graph.py provider-overrides.json
+          python - <<'PY'
+          import json
+          f=json.load(open('provider-overrides.json',encoding='utf-8'))['provider_patches']['flemmix']
+          assert f['official_site'].rstrip('/') == 'https://flemmix.cloud', f['official_site']
+          for name in ('domain_substitutions','replacements','runtime_domain_replacements'):
+              m=f.get(name) or {}
+              assert 'flemmix.cloud' not in m, (name,m)
+              assert m.get('flemmix.me') == 'flemmix.cloud', (name,m)
+          print('V48_FLEMMIX_CANONICAL_OK cloud=terminal outgoing_from_cloud=0')
+          PY
+          git diff --check
+          echo 'V48_DOMAIN_REFRESH_NON_DESTRUCTIVE_OK'
