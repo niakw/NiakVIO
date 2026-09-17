@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "authority": "provider-repair-survival-registry-v1",
+  "source": {
+    "pullRequest": 122,
+    "headSha": "4e9729d865f6a069bda567fbeac520d714bef4bd",
+    "note": "Repairs were proven on workbench but did not all survive publication; exact-bundle reproof is mandatory after restoration."
+  },
+  "rules": {
+    "missingRequiredScript": "hard_fail",
+    "scriptShrinkRequiresExplicitSupersession": true,
+    "historicalProofDoesNotAutoCertify": true,
+    "exactPublishedBundleReproofRequired": true
+  },
+  "providers": {
+    "animesama-co": {
+      "requiredScripts": [
+        "scripts/provider_patches/animesamaco_site_runtime_v1.py",
+        "scripts/provider_patches/non_display_recovery_runtime_v1.py"
+      ],
+      "lanes": [
+        "anime"
+      ]
+    },
+    "animevostfr": {
+      "requiredScripts": [
+        "scripts/provider_patches/non_display_recovery_runtime_v1.py"
+      ],
+      "lanes": [
+        "anime"
+      ]
+    },
+    "coflix": {
+      "requiredScripts": [
+        "scripts/provider_patches/non_display_recovery_runtime_v1.py"
+      ],
+      "lanes": [
+        "movie",
+        "tv"
+      ]
+    },
+    "neko-sama": {
+      "requiredScripts": [
+        "scripts/provider_patches/neko_sama_runtime_v1.py",
+        "scripts/provider_patches/non_display_recovery_runtime_v1.py"
+      ],
+      "lanes": [
+        "anime"
+      ]
+    },
+    "sekai": {
+      "requiredScripts": [
+        "scripts/provider_patches/non_display_recovery_runtime_v1.py"
+      ],
+      "lanes": [
+        "anime"
+      ]
+    },
+    "voiranime-rip": {
+      "requiredScripts": [
+        "scripts/provider_patches/non_display_recovery_runtime_v1.py"
+      ],
+      "lanes": [
+        "anime"
+      ]
+    },
+    "allanime": {
+      "requiredScripts": [
+        "scripts/provider_patches/allanime_current_runtime_v1.py"
+      ],
+      "lanes": [
+        "anime"
+      ]
+    },
+    "allwish": {
+      "requiredScripts": [
+        "scripts/provider_patches/allwish_current_runtime_v1.py"
+      ],
+      "lanes": [
+        "anime"
+      ]
+    },
+    "anikototv": {
+      "requiredScripts": [
+        "scripts/provider_patches/anikototv_runtime_v3.py"
+      ],
+      "lanes": [
+        "anime"
+      ]
+    },
+    "flemmix": {
+      "requiredScripts": [
+        "scripts/provider_patches/flemmix_current_runtime_v1.py"
+      ],
+      "lanes": [
+        "movie",
+        "tv"
+      ]
+    },
+    "moviebox": {
+      "requiredScripts": [
+        "scripts/provider_patches/moviebox_current_embed_v2.py"
+      ],
+      "lanes": [
+        "movie",
+        "tv"
+      ]
+    },
+    "vidfast": {
+      "requiredScripts": [
+        "scripts/provider_patches/vidfast_current_embed_v1.py"
+      ],
+      "lanes": [
+        "movie",
+        "tv"
+      ]
+    },
+    "vidlove": {
+      "requiredScripts": [
+        "scripts/provider_patches/vidlove_current_api_v1.py"
+      ],
+      "lanes": [
+        "movie",
+        "tv"
+      ]
+    },
+    "wookafr": {
+      "requiredScripts": [
+        "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py",
+        "scripts/provider_patches/wookafr_showvideo_base64_v1.py",
+        "scripts/provider_patches/wookafr_current_runtime_v2.py"
+      ],
+      "lanes": [
+        "movie",
+        "tv"
+      ]
+    },
+    "yflix": {
+      "requiredScripts": [
+        "scripts/provider_patches/yflix_current_runtime_v2.py"
+      ],
+      "lanes": [
+        "movie",
+        "tv"
+      ]
+    }
+  }
+}
