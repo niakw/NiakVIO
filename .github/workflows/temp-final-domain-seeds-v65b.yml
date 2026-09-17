@@ -1,0 +1,271 @@
+name: TEMP - Final Address Authorities V65B
+
+on:
+  push:
+    branches: [fix/non-display-recovery-20260916]
+    paths:
+      - .github/workflows/temp-final-domain-seeds-v65b.yml
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+
+      - name: Repair visible-disabled Domain Refresh semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace(path, old, new, count=1):
+              p=Path(path); text=p.read_text(encoding='utf-8')
+              if old not in text: raise SystemExit(f'V65B_PATCH_MISSING {path}: {old[:100]!r}')
+              text=text.replace(old,new,count)
+              p.write_text(text,encoding='utf-8')
+
+          tx='scripts/domain_refresh_transaction_v2.py'
+          replace(tx,
+              'from current_provider_scope import active_provider_ids, visible_provider_count',
+              'from current_provider_scope import active_provider_ids, disabled_provider_ids, visible_provider_ids, visible_provider_count')
+          replace(tx,
+              '    current_provider_ids = active_provider_ids()\n    if not current_provider_ids:',
+              '    active_ids = active_provider_ids()\n    disabled_ids = disabled_provider_ids()\n    current_provider_ids = visible_provider_ids() if args.include_disabled else active_ids\n    if not current_provider_ids:')
+          replace(tx,
+              '    bundle_updates: list[dict[str, str]] = []\n    if args.apply:',
+              '    bundle_updates: list[dict[str, str]] = []\n    active_changed_provider_ids: list[str] = []\n    disabled_changed_provider_ids: list[str] = []\n    if args.apply:')
+          replace(tx,
+              '        bundle_updates = rebuild_provider_configs(changed_provider_ids)',
+              '        active_changed_provider_ids = [pid for pid in changed_provider_ids if pid in active_ids]\n        disabled_changed_provider_ids = [pid for pid in changed_provider_ids if pid in disabled_ids]\n        bundle_updates = rebuild_provider_configs(active_changed_provider_ids)')
+          replace(tx,
+              '        "changed": sorted(set(changed_provider_ids)),\n        "registry_changed": sorted(set(registry_changed_ids)),',
+              '        "changed": sorted(set(active_changed_provider_ids)),\n        "address_changed": sorted(set(changed_provider_ids)),\n        "disabled_address_changed": sorted(set(disabled_changed_provider_ids)),\n        "registry_changed": sorted(set(registry_changed_ids)),')
+
+          static='scripts/reconcile_domain_refresh_static_authority.py'
+          replace(static,
+              '    if changes is not None:\n        out.update(canon(value) for value in changes.get("changed") or [] if canon(value))',
+              '    if changes is not None:\n        values = changes.get("address_changed") if "address_changed" in changes else changes.get("changed")\n        out.update(canon(value) for value in values or [] if canon(value))')
+
+          static_guard='scripts/validate_domain_refresh_static_non_destructive.py'
+          replace(static_guard,
+              'def touched_ids(changes: dict[str, Any]) -> set[str]:\n    return {canon(value) for value in changes.get("changed") or [] if canon(value)}',
+              'def touched_ids(changes: dict[str, Any]) -> set[str]:\n    values = changes.get("address_changed") if "address_changed" in changes else changes.get("changed")\n    return {canon(value) for value in values or [] if canon(value)}')
+
+          guard='scripts/validate_domain_refresh_non_destructive.py'
+          replace(guard,
+              'def changed_ids(changes: dict[str, Any]) -> set[str]:\n    return {canon(x) for x in changes.get("changed") or [] if canon(x)}',
+              'def publication_changed_ids(changes: dict[str, Any]) -> set[str]:\n    return {canon(x) for x in changes.get("changed") or [] if canon(x)}\n\n\ndef authority_changed_ids(changes: dict[str, Any]) -> set[str]:\n    values = changes.get("address_changed") if "address_changed" in changes else changes.get("changed")\n    return {canon(x) for x in values or [] if canon(x)}')
+          replace(guard,
+              '    touched = changed_ids(changes)\n\n    before_patches',
+              '    publication_touched = publication_changed_ids(changes)\n    authority_touched = authority_changed_ids(changes)\n\n    before_patches')
+          replace(guard,'        if pid not in touched:\n            if before != after:\n                raise AssertionError(f"{pid}: untouched provider patch mutated")',
+                        '        if pid not in authority_touched:\n            if before != after:\n                raise AssertionError(f"{pid}: untouched provider patch mutated")')
+          replace(guard,'        if pid not in touched:\n            if before != after:\n                raise AssertionError(f"{pid}: untouched manifest row mutated")',
+                        '        if pid not in publication_touched:\n            if before != after:\n                raise AssertionError(f"{pid}: untouched manifest row mutated")')
+          replace(guard,'        if pid not in touched:\n            if before != after:\n                raise AssertionError(f"{pid}: untouched materialization row mutated")',
+                        '        if pid not in publication_touched:\n            if before != after:\n                raise AssertionError(f"{pid}: untouched materialization row mutated")')
+          replace(guard,'        if pid not in touched and before_prov_rows[pid] != after_prov_rows[pid]:',
+                        '        if pid not in publication_touched and before_prov_rows[pid] != after_prov_rows[pid]:')
+          replace(guard,'    validate_provider_files(before_manifest, after_manifest, touched)\n    declared_updates = {canon(row.get("provider")) for row in changes.get("bundle_updates") or [] if isinstance(row, dict)}\n    if declared_updates != touched:\n        raise AssertionError(f"bundle update accounting mismatch touched={sorted(touched)} bundles={sorted(declared_updates)}")',
+                        '    validate_provider_files(before_manifest, after_manifest, publication_touched)\n    declared_updates = {canon(row.get("provider")) for row in changes.get("bundle_updates") or [] if isinstance(row, dict)}\n    if declared_updates != publication_touched:\n        raise AssertionError(f"bundle update accounting mismatch touched={sorted(publication_touched)} bundles={sorted(declared_updates)}")')
+          replace(guard,
+              '        "changed": sorted(touched),\n        "preserved_provider_patches": len(before_patches) - len(touched),\n        "preserved_manifest_rows": len(before_manifest_rows) - len(touched),',
+              '        "changed": sorted(publication_touched),\n        "address_changed": sorted(authority_touched),\n        "preserved_provider_patches": len(before_patches) - len(authority_touched),\n        "preserved_manifest_rows": len(before_manifest_rows) - len(publication_touched),')
+
+          print('V65B_INCLUDE_DISABLED_SOURCE_PATCHED')
+          PY
+
+          cat > tests/domain_refresh_include_disabled_scope_test.py <<'PY'
+          from pathlib import Path
+          ROOT=Path(__file__).resolve().parents[1]
+          tx=(ROOT/'scripts/domain_refresh_transaction_v2.py').read_text(encoding='utf-8')
+          static=(ROOT/'scripts/reconcile_domain_refresh_static_authority.py').read_text(encoding='utf-8')
+          guard=(ROOT/'scripts/validate_domain_refresh_non_destructive.py').read_text(encoding='utf-8')
+          sguard=(ROOT/'scripts/validate_domain_refresh_static_non_destructive.py').read_text(encoding='utf-8')
+          assert 'visible_provider_ids() if args.include_disabled else active_ids' in tx
+          assert '"address_changed": sorted(set(changed_provider_ids))' in tx
+          assert '"disabled_address_changed": sorted(set(disabled_changed_provider_ids))' in tx
+          assert 'rebuild_provider_configs(active_changed_provider_ids)' in tx
+          assert 'changes.get("address_changed") if "address_changed" in changes else changes.get("changed")' in static
+          assert 'authority_changed_ids' in guard and 'publication_changed_ids' in guard
+          assert 'address_changed' in sguard
+          print('DOMAIN_REFRESH_INCLUDE_DISABLED_SCOPE_OK')
+          PY
+          python tests/domain_refresh_include_disabled_scope_test.py
+          python tests/domain_refresh_transaction_guard_test.py
+          python tests/domain_refresh_static_authority_test.py
+          python tests/domain_refresh_static_non_destructive_test.py
+
+      - name: Install current curated address authorities
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from urllib.parse import urlparse
+          path=Path('provider-hubs.json'); doc=json.loads(path.read_text(encoding='utf-8')); rows=doc['providers']
+          def uniq(values):
+              out=[]
+              for v in values:
+                  v=str(v or '').strip()
+                  if v and v not in out: out.append(v)
+              return out
+          def host(url): return (urlparse(str(url)).hostname or '').lower()
+          def keep_search(row): return [dict(s) for s in row.get('sources') or [] if isinstance(s,dict) and str(s.get('type') or '').lower()=='search']
+          def install_redirect(pid,entry,terminal):
+              row=rows[pid]; old=row.get('direct'); oldc=list(row.get('direct_candidates') or [])
+              row['hub']=None; row['resolver']='redirect'; row['direct']=terminal
+              row['direct_candidates']=uniq([terminal,old,*oldc])
+              row['allowed_terminal_hosts']=uniq([host(terminal),*(row.get('allowed_terminal_hosts') or []),*[host(x) for x in row['direct_candidates']]])
+              row['sources']=[{'type':'redirect','url':entry,'priority':120,'purpose':'Curated address entry; follow HTTP redirect to current terminal'},*keep_search(row)]
+              row['source']='curated_user_registry'
+              row['schema_notes']='Curated address entry is authoritative; follow its live HTTP redirect and publish the validated same-provider terminal.'
+          install_redirect('desiflix','https://desiflix.onl/','https://desiflix.codes/')
+          install_redirect('uhdmovies','https://mmodlist.org/?type=uhdmovies','https://uhdmovies.my/')
+          install_redirect('animesalt','https://animesalt.ac/','https://animesalt.cx/')
+          row=rows['allwish']; old=row.get('direct'); oldc=list(row.get('direct_candidates') or [])
+          row['hub']='https://t.me/s/allwishme'; row['resolver']='telegram_description'; row['direct']='https://all-wish.me/'
+          row['direct_candidates']=uniq(['https://all-wish.me/',old,*oldc])
+          row['allowed_terminal_hosts']=uniq(['all-wish.me',*(row.get('allowed_terminal_hosts') or []),*[host(x) for x in row['direct_candidates']]])
+          row['sources']=[{'type':'telegram_public','url':'https://t.me/s/allwishme','priority':120,'purpose':'Official public Telegram description containing current domain'},*keep_search(row)]
+          row['source']='curated_user_registry'; row['schema_notes']='Official public Telegram description is the address authority; publish the current same-provider terminal announced there.'
+          path.write_text(json.dumps(doc,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          PY
+
+          cat > tests/provider_address_authority_v65_test.py <<'PY'
+          import json
+          from pathlib import Path
+          ROOT=Path(__file__).resolve().parents[1]
+          rows=json.loads((ROOT/'provider-hubs.json').read_text(encoding='utf-8'))['providers']
+          expected={'desiflix':('https://desiflix.onl/','https://desiflix.codes/'),'uhdmovies':('https://mmodlist.org/?type=uhdmovies','https://uhdmovies.my/'),'animesalt':('https://animesalt.ac/','https://animesalt.cx/')}
+          for pid,(entry,terminal) in expected.items():
+              row=rows[pid]; assert row.get('resolver')=='redirect'; assert str(row.get('direct') or '').rstrip('/')==terminal.rstrip('/')
+              assert any(s.get('type')=='redirect' and s.get('url')==entry for s in row.get('sources') or []), pid
+          row=rows['allwish']; assert row.get('resolver')=='telegram_description'; assert str(row.get('hub') or '').rstrip('/')=='https://t.me/s/allwishme'; assert str(row.get('direct') or '').rstrip('/')=='https://all-wish.me'
+          print('PROVIDER_ADDRESS_AUTHORITY_V65_OK')
+          PY
+          python tests/provider_address_authority_v65_test.py
+          python tests/provider_hub_registry_test.py
+
+      - name: Snapshot and refresh active plus visible-disabled addresses
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp provider-overrides.json "$RUNNER_TEMP/overrides.before.json"
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          cp provider-v3-materialization.json "$RUNNER_TEMP/material.before.json"
+          cp automation/provider-v3-static-knowledge.json "$RUNNER_TEMP/static.before.json"
+          cp PROVENANCE.json "$RUNNER_TEMP/provenance.before.json"
+          mkdir -p health-output automation/evidence
+          python scripts/domain_refresh_transaction_v2.py \
+            --provider desiflix --provider uhdmovies --provider animesalt --provider allwish \
+            --include-disabled --mode quick --timeout 18 --workers 4 --apply \
+            --output health-output/v65b-address-report.json \
+            --changes-output health-output/v65b-address-changes.json
+          python - <<'PY'
+          import json
+          r=json.load(open('health-output/v65b-address-report.json',encoding='utf-8'))
+          c=json.load(open('health-output/v65b-address-changes.json',encoding='utf-8'))
+          expected={'desiflix':'https://desiflix.codes','uhdmovies':'https://uhdmovies.my','animesalt':'https://animesalt.cx','allwish':'https://all-wish.me'}
+          for pid,url in expected.items():
+              row=r['providers'].get(pid); print('V65B_DOMAIN',pid,json.dumps(row,sort_keys=True))
+              assert row and row.get('status')=='site_authoritative', (pid,row)
+              assert str(row.get('official_site') or '').rstrip('/')==url, (pid,row.get('official_site'))
+          assert 'desiflix' in (c.get('address_changed') or []) or 'desiflix' not in (c.get('changed') or []), c
+          assert set(c.get('changed') or []).isdisjoint(set(c.get('disabled_address_changed') or [])), c
+          print('V65B_CHANGES',json.dumps(c,sort_keys=True))
+          PY
+
+      - name: Reconcile active publication and validate disabled address-only mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/reconcile_domain_refresh_static_authority.py --changes health-output/v65b-address-changes.json --check
+          mapfile -t CHANGED < <(python - <<'PY'
+          import json
+          d=json.load(open('health-output/v65b-address-changes.json',encoding='utf-8'))
+          for p in sorted(set(d.get('changed') or [])): print(p)
+          PY
+          )
+          if [ "${#CHANGED[@]}" -gt 0 ]; then
+            ARGS=(); for p in "${CHANGED[@]}"; do ARGS+=(--provider "$p"); done
+            python scripts/reconcile_provider_domain_metadata.py --rebuild "${ARGS[@]}"
+          fi
+          python scripts/reconcile_domain_refresh_provenance.py --changes health-output/v65b-address-changes.json
+          python scripts/finalize_provider_v3_minimizer.py --check
+          python tests/provider_v3_minimizer_published_test.py
+          python scripts/validate_provider_domain_graph.py provider-overrides.json
+          python scripts/audit_provider_v3_static.py
+          python scripts/validate_domain_refresh_non_destructive.py \
+            --before-overrides "$RUNNER_TEMP/overrides.before.json" \
+            --before-manifest "$RUNNER_TEMP/manifest.before.json" \
+            --before-materialization "$RUNNER_TEMP/material.before.json" \
+            --before-provenance "$RUNNER_TEMP/provenance.before.json" \
+            --changes health-output/v65b-address-changes.json
+          python scripts/validate_domain_refresh_static_non_destructive.py \
+            --before-static "$RUNNER_TEMP/static.before.json" \
+            --changes health-output/v65b-address-changes.json
+
+      - name: Probe current active lanes on promoted domains
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import audit_provider_quick_yield as q
+          q.TIMEOUT=55
+          wanted={'desiflix','uhdmovies','animesalt','allwish'}
+          tasks,_=q.build_tasks(); rows=[]
+          for t in tasks:
+              pid=str(t.get('provider_id') or '').casefold()
+              if pid not in wanted: continue
+              r=q.run(t); rows.append(r)
+              print('V65B_RUNTIME',json.dumps({k:r.get(k) for k in ['provider_id','semantic_type','status','debug_stage','raw','playable','verified','contradictions','duration_ms','debug_fetches']},default=str,sort_keys=True))
+          Path('automation/evidence/final-address-authorities-v65.json').write_text(json.dumps({'schema_version':2,'rows':rows},ensure_ascii=False,indent=2,default=str)+'\n',encoding='utf-8')
+          by={p:[] for p in wanted}
+          for r in rows: by[str(r.get('provider_id') or '').casefold()].append(r)
+          for pid in sorted(wanted): print('V65B_PROVIDER_SUMMARY',pid,[(r.get('semantic_type'),r.get('status'),r.get('verified')) for r in by[pid]] or [('disabled_or_no_active_task',None,None)])
+          expected={'uhdmovies':'uhdmovies.my','animesalt':'animesalt.cx','allwish':'all-wish.me'}
+          for pid,host in expected.items():
+              if not by[pid]: continue
+              urls=[str(f.get('url') or '') for r in by[pid] for f in (r.get('debug_fetches') or [])]
+              assert any(host in u for u in urls), (pid,host,urls[:20])
+          print('V65B_ACTIVE_RUNTIME_ROUTING_OK')
+          PY
+
+      - name: Persist V65B source contracts, addresses and evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add \
+            scripts/domain_refresh_transaction_v2.py scripts/reconcile_domain_refresh_static_authority.py \
+            scripts/validate_domain_refresh_non_destructive.py scripts/validate_domain_refresh_static_non_destructive.py \
+            tests/domain_refresh_include_disabled_scope_test.py tests/provider_address_authority_v65_test.py \
+            provider-hubs.json provider-overrides.json provider-domain-history.json manifest.json provider-v3-materialization.json \
+            automation/provider-v3-static-knowledge.json PROVENANCE.json automation/evidence/final-address-authorities-v65.json \
+            'providers/uhdmovies'*.js 'providers/animesalt'*.js 'providers/allwish'*.js 'providers/desiflix'*.js
+          if git diff --cached --quiet; then echo 'V65B_PERSIST no material changes'; exit 0; fi
+          git commit -m 'fix(domains): refresh active and disabled address authorities'
+          git push origin HEAD:fix/non-display-recovery-20260916
