@@ -1,0 +1,66 @@
+name: TMP Apply Upstream Drift Policy
+
+on:
+  push:
+    branches:
+      - hotfix/purstream-core-policy-final-20260917
+    paths:
+      - '.github/workflows/tmp-apply-upstream-drift-policy.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout hotfix branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: hotfix/purstream-core-policy-final-20260917
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Import validated evidence policy from diagnostic branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin diag/movieshunt-ab-20260917:refs/remotes/origin/diag/movieshunt-ab-20260917
+          for path in \
+            scripts/check_provider_non_regression_v1.py \
+            automation/provider-upstream-drift-evidence.json \
+            tests/provider_upstream_drift_evidence_test.py \
+            tests/provider_non_regression_contract_test.py
+          do
+            mkdir -p "$(dirname "$path")"
+            git show "origin/diag/movieshunt-ab-20260917:$path" > "$path"
+          done
+
+      - name: Validate policy and refresh release integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/check_provider_non_regression_v1.py
+          python3 tests/provider_upstream_drift_evidence_test.py
+          python3 tests/provider_non_regression_contract_test.py
+          python3 scripts/build_provider_history_matrix_v3.py
+          python3 scripts/check_provider_non_regression_v1.py
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          python3 tests/release_hash_scope_test.py
+          git diff --check
+
+      - name: Commit validated drift policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Niak'
+          git config user.email 'foissy.tommy@gmail.com'
+          git add \
+            scripts/check_provider_non_regression_v1.py \
+            automation/provider-upstream-drift-evidence.json \
+            tests/provider_upstream_drift_evidence_test.py \
+            tests/provider_non_regression_contract_test.py \
+            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json automation/PLATFORM-RUNTIME-CONTRACTS.md
+          git commit -m 'fix(gate): recognize evidence-scoped upstream drift'
+          git push origin HEAD:hotfix/purstream-core-policy-final-20260917
