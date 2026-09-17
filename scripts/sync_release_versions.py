@@ -61,12 +61,6 @@ def canonical_id(value: object) -> str:
 
 
 def highest_historical_release(manifest_path: pathlib.Path) -> tuple[int, int, int] | None:
-    """Return the highest release ever present on main first-parent history.
-
-    This is deliberately history-backed rather than a hard-coded floor. A merge
-    may reintroduce older manifest/package bytes, but it must never make clients
-    observe a release lower than one that was already published from main.
-    """
     git_dir = ROOT / ".git"
     if not git_dir.exists():
         return None
@@ -102,7 +96,6 @@ def highest_historical_release(manifest_path: pathlib.Path) -> tuple[int, int, i
 
 
 def normalize_visible_manifest_name(value: object) -> str:
-    """Remove only NiakVIO's generated visible version, preserving projection suffixes."""
     text = str(value or "").strip()
     if not text:
         return text
@@ -110,7 +103,6 @@ def normalize_visible_manifest_name(value: object) -> str:
 
 
 def versioned_manifest_name(value: object, version: str) -> str:
-    """Expose the release version once in NiakVIO names, idempotently."""
     text = normalize_visible_manifest_name(value)
     if not text.startswith("NiakVIO"):
         return text
@@ -120,8 +112,6 @@ def versioned_manifest_name(value: object, version: str) -> str:
 def comparable_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
     clone = json.loads(json.dumps(manifest))
     clone.pop("version", None)
-    # The visible name mirrors the authoritative version. Ignore that generated
-    # projection when deciding whether content itself requires another bump.
     if "name" in clone:
         clone["name"] = normalize_visible_manifest_name(clone.get("name"))
     return clone
@@ -137,13 +127,12 @@ def vf_filename(value: object) -> str:
     filename = str(value or "").strip()
     if not filename or filename.startswith(("http://", "https://", "../")):
         return filename
-    if filename.startswith("providers/"):
+    if filename.startswith(("providers/", "provider-disabled/")):
         return f"../{filename}"
     return filename
 
 
 def auto_accept_safe_nuvio_client_heads() -> None:
-    """Persist contract-safe client HEAD advances without blocking provider publication."""
     if os.environ.get("GITHUB_ACTIONS") != "true":
         return
     if os.environ.get("NUVIO_SKIP_CLIENT_UPSTREAM_GUARD") == "1":
@@ -235,13 +224,8 @@ def finalize_provider_versions(previous_path: pathlib.Path, manifest_path: pathl
                 current_version = minimum
             bumped.append(cid)
         elif current_version is None or current_version < old_version:
-            # Never regress a provider cache version even if an upstream row carries
-            # an older/stale value while the client-visible payload is unchanged.
             row["version"] = format_semver(old_version)
 
-    # VF and the no-anime manifests are projections of the principal catalogue.
-    # Keep cache-visible ids, versions and hashed bundle filenames synchronized
-    # without changing projection membership here.
     def sync_projection(path: pathlib.Path, source_by_id: dict[str, dict[str, Any]], label: str) -> None:
         if not path.exists():
             return
@@ -402,9 +386,6 @@ def main() -> int:
     )
     synchronize_global_version(version, manifest_path)
 
-    # Keep official-client HEAD monitoring and safe auto-advance active during
-    # publication, but do not conflate unreviewed future upstream HEAD drift with
-    # the pinned client contract used to validate the provider generation.
     auto_accept_safe_nuvio_client_heads()
 
     print(
