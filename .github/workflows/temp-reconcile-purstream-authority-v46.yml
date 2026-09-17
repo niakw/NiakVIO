@@ -1,0 +1,126 @@
+name: TEMP - Reconcile Purstream Authority V46
+
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-reconcile-purstream-authority-v46.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  NUVIO_PROVIDER_V3_CONTEXT: publication
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+
+      - name: Prove current Purstream split authority before mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          o=json.load(open('provider-overrides.json',encoding='utf-8'))['provider_patches']['purstream']
+          h=json.load(open('provider-hubs.json',encoding='utf-8'))['providers']['purstream']
+          print('V46_BEFORE_SITE',o.get('official_site'))
+          print('V46_BEFORE_API',o.get('official_api'))
+          print('V46_REGISTRY_DIRECT',h.get('direct'))
+          for k in ('domain_substitutions','replacements','runtime_domain_replacements'):
+              print('V46_BEFORE_MAP',k,json.dumps(o.get(k) or {},sort_keys=True))
+          assert str(h.get('direct') or '').rstrip('/') == 'https://purstream.mx', h.get('direct')
+          assert str(o.get('official_api') or '').startswith('https://api.purstream.ad/'), o.get('official_api')
+          PY
+
+      - name: Resolve authoritative Purstream terminal through official Domain Refresh
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python3 scripts/domain_refresh_priority_wrapper.py \
+            --mode deep --include-disabled --workers 1 --timeout 12 \
+            --provider purstream --apply \
+            --output health-output/v46-purstream-hub-report.json \
+            --changes-output health-output/v46-purstream-domain-changes.json
+          cat health-output/v46-purstream-hub-report.json
+          cat health-output/v46-purstream-domain-changes.json
+
+      - name: Assert site authority moved to mx while API authority stays ad
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from urllib.parse import urlsplit
+          o=json.load(open('provider-overrides.json',encoding='utf-8'))['provider_patches']['purstream']
+          h=json.load(open('provider-hubs.json',encoding='utf-8'))['providers']['purstream']
+          assert str(o.get('official_site') or '').rstrip('/') == 'https://purstream.mx', o.get('official_site')
+          assert str(h.get('direct') or '').rstrip('/') == 'https://purstream.mx', h.get('direct')
+          assert urlsplit(str(o.get('official_api') or '')).hostname == 'api.purstream.ad', o.get('official_api')
+          for k in ('domain_substitutions','replacements','runtime_domain_replacements'):
+              m=o.get(k) or {}
+              assert 'purstream.mx' not in m, (k,m)
+              for source,target in m.items():
+                  sh=urlsplit(source if '://' in str(source) else 'https://'+str(source)).hostname or ''
+                  th=urlsplit(target if '://' in str(target) else 'https://'+str(target)).hostname or ''
+                  if sh.startswith('api.'):
+                      assert th == 'api.purstream.ad', (k,source,target)
+                  elif 'purstream' in sh:
+                      assert th == 'purstream.mx', (k,source,target)
+              print('V46_AFTER_MAP',k,json.dumps(m,sort_keys=True))
+          print('V46_AFTER_SITE',o.get('official_site'))
+          print('V46_AFTER_API',o.get('official_api'))
+          PY
+          python3 tests/provider_domain_graph_cycle_test.py
+          python3 scripts/validate_provider_domain_graph.py provider-overrides.json
+
+      - name: Reconcile generated metadata and prune superseded bundles
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/provider_domain_metadata_reconcile_test.py
+          python3 scripts/reconcile_provider_domain_metadata.py --rebuild
+          python3 scripts/finalize_provider_v3_minimizer.py
+          python3 scripts/finalize_provider_v3_minimizer.py --check
+          python3 scripts/prune_unreferenced_providers.py
+          python3 scripts/prune_unreferenced_providers.py --check
+
+      - name: Validate Purstream and publication contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/overrides_test.py
+          python3 tests/provider_domain_graph_cycle_test.py
+          python3 scripts/validate_provider_domain_graph.py provider-overrides.json
+          python3 tests/priority_tv_year_domain_refresh_test.py
+          python3 tests/domain_refresh_transaction_guard_test.py
+          python3 tests/domain_refresh_priority_wrapper_test.py
+          python3 tests/domain_refresh_guard_wrapper_test.py
+          python3 scripts/validate_published_overrides.py
+          python3 tests/global_core_runtime_ownership_test.py
+          python3 tests/core_runtime_nonregression_contract_test.py
+          python3 scripts/audit_provider_v3_static.py
+          git diff --check
+
+      - name: Persist authoritative Purstream reconciliation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          if ! git diff --cached --quiet; then git commit -m 'fix(domains): reconcile Purstream site authority'; fi
+          git fetch origin fix/non-display-recovery-20260916
+          git pull --rebase origin fix/non-display-recovery-20260916
+          git push origin HEAD:fix/non-display-recovery-20260916
+          echo "V46_PERSISTED sha=$(git rev-parse HEAD)"
