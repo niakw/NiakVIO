@@ -92,9 +92,9 @@ const vfPlusVost = presentStreamCandidate({
   language: "VF",
   description: "VOSTFR available",
 }, { title: "Film", year: 2026, mediaType: "movie" }, vfProvider);
-assert.equal(vfPlusVost.language, "MULTI (VF/VO)");
-assert.match(vfPlusVost.description, /🇫🇷 MULTI \(VF\/VO\)/);
-assert.doesNotMatch(vfPlusVost.description, /VOSTFR available/);
+assert.equal(vfPlusVost.language, "VF");
+assert.match(vfPlusVost.description, /🇫🇷 VF/);
+assert.doesNotMatch(vfPlusVost.description, /VOSTFR available|MULTI/);
 
 const series = presentStreamCandidate({
   name: "Purstream",
