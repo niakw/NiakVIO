@@ -1,0 +1,74 @@
+name: TEMP - Kehflix Anime Repair V62E
+
+on:
+  push:
+    branches: [fix/non-display-recovery-20260916]
+    paths:
+      - .github/workflows/temp-kehflix-repair-v62e.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+
+      - name: Register and materialize Kehflix anime resolver
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/kehflix_anime_runtime_v1_test.py
+          python scripts/register_kehflix_anime_runtime_v1.py
+          NUVIO_PROVIDER_V3_CONTEXT=release NIAKVIO_PROVIDER_V3_FINAL_MINIMIZE=1 python scripts/materialize_provider_v3_one.py kehflix
+          python scripts/validate_published_provider_config.py --expected 46
+          python scripts/finalize_provider_v3_minimizer.py --check
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          manifest=json.load(open('manifest.json'))
+          row=next(x for x in manifest['scrapers'] if str(x.get('id','')).casefold()=='kehflix')
+          text=Path(row['filename']).read_text(encoding='utf-8')
+          for needle in ('NIAKVIO_KEHFLIX_ANIME_RUNTIME_V1','NUVIO_GLOBAL_PROVIDER_RUNTIME_DISPATCH_V1'):
+              assert needle in text, needle
+          print('V62E_BUNDLE',row['filename'])
+          PY
+
+      - name: Probe all Kehflix semantic lanes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import audit_provider_quick_yield as q
+          q.TIMEOUT=55
+          tasks,_=q.build_tasks()
+          selected=[t for t in tasks if str(t.get('provider_id') or '').casefold()=='kehflix']
+          rows=[]
+          for t in selected:
+              r=q.run(t); rows.append(r)
+              print('V62E_LANE',json.dumps({k:r.get(k) for k in ['provider_id','semantic_type','status','debug_stage','raw','playable','verified','contradictions','duration_ms','debug_model','debug_fetches']},default=str,sort_keys=True))
+          by={str(r.get('semantic_type') or '').casefold():r for r in rows}
+          assert {'movie','tv','anime'} <= set(by), sorted(by)
+          for lane in ('movie','tv','anime'):
+              r=by[lane]
+              assert r.get('status')=='playable_verified', (lane,r.get('status'),r.get('debug_stage'))
+              assert int(r.get('verified') or 0)>0, (lane,r.get('verified'))
+          print('V62E_KEHFLIX_ALL_LANES_OK movie=verified tv=verified anime=verified')
+          PY
