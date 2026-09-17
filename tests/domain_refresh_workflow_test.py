@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "domain-refresh.yml"
 TRANSACTION = ROOT / "scripts" / "domain_refresh_transaction_v2.py"
 VALIDATOR = ROOT / "scripts" / "validate_release_integrity.py"
+OBSOLETE_FLEMMIX_UPGRADER = ROOT / "scripts" / "upgrade_flemmix_current_domain_v1.py"
 
 text = WORKFLOW.read_text(encoding="utf-8")
 source = TRANSACTION.read_text(encoding="utf-8")
@@ -43,6 +44,7 @@ assert "git diff --exit-code -- scripts/provider_patches provider-bases provider
 assert "update_provider_v3_domain_config.py" not in text, "partial officialSite-only updater must not own Domain Refresh"
 assert "validate_domain_refresh_scope.py" not in text, "old official_site-only scope validator is obsolete"
 assert "materialize_provider_v3_all.py" not in text, "domain changes must not rematerialize/rewrite the global Core"
+assert not OBSOLETE_FLEMMIX_UPGRADER.exists(), "obsolete hard-coded Flemmix rollback upgrader must never return"
 for forbidden in (
     "run_adaptive_deep_repair.py",
     "run_adaptive_quick_repair.py",
