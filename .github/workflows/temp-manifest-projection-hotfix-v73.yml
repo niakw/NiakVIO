@@ -1,0 +1,60 @@
+name: TEMP - Manifest Projection Hotfix V73
+on:
+  push:
+    branches: [hotfix/manifest-projection-parity-20260917]
+    paths:
+      - '.github/workflows/temp-manifest-projection-hotfix-v73.yml'
+permissions:
+  contents: write
+jobs:
+  hotfix:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: hotfix/manifest-projection-parity-20260917
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Regenerate derived manifests from current production root
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/validate_language_projection.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=json.load(open('manifest.json'))
+          root_by={str(r.get('id','')).casefold():r for r in root.get('scrapers',[]) if isinstance(r,dict)}
+          for rel in ['vf/manifest.json','no-anime/manifest.json','vf-no-anime/manifest.json']:
+              doc=json.load(open(rel)); mism=[]; missing=[]
+              for row in doc.get('scrapers',[]):
+                  src=root_by[str(row.get('id','')).casefold()]
+                  exp=dict(src); f=str(exp.get('filename') or '')
+                  if f and not f.startswith(('http://','https://','/','../')): exp['filename']='../'+f
+                  if row != exp: mism.append(row.get('id'))
+                  filename=str(row.get('filename') or '')
+                  target=(Path(rel).parent / filename).resolve()
+                  if not filename or not target.is_file(): missing.append((row.get('id'),filename))
+              print('HOTFIX_PARITY',rel,'providers',len(doc.get('scrapers',[])),'mismatch',mism,'missing',missing)
+              assert not mism
+              assert not missing
+          vf=json.load(open('vf/manifest.json'))
+          pur=next(r for r in vf['scrapers'] if str(r.get('id')).casefold()=='purstream')
+          src=root_by['purstream']
+          assert pur['version']==src['version']
+          assert pur['filename']=='../'+src['filename']
+          print('HOTFIX_PURSTREAM_OK',pur['version'],pur['filename'])
+          PY
+      - name: Persist production manifest hotfix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json
+          git diff --cached --exit-code && { echo 'nothing to persist'; exit 1; } || true
+          git commit -m 'fix(manifests): restore derived projection parity'
+          git push origin HEAD:hotfix/manifest-projection-parity-20260917
