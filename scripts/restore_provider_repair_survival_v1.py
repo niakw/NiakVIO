@@ -13,7 +13,6 @@ from typing import Any
 ROOT=Path(__file__).resolve().parents[1]
 OVERRIDES=ROOT/"provider-overrides.json"
 
-NONDISPLAY="scripts/provider_patches/non_display_recovery_runtime_v1.py"
 LOST={
     "allanime":{"scripts":["scripts/provider_patches/allanime_current_runtime_v1.py"]},
     "allwish":{"scripts":["scripts/provider_patches/allwish_current_runtime_v1.py"],"published_types":["anime"]},
@@ -40,12 +39,42 @@ LOST={
     "yflix":{"scripts":["scripts/provider_patches/yflix_current_runtime_v2.py"],"options":{"scripts/provider_patches/yflix_current_runtime_v2.py":{}}}
 }
 NONDISPLAY_PROVIDERS={
-    "animesama-co":{"provider":"animesama-co","base":"https://animesama.co","max_streams":4},
-    "animevostfr":{"provider":"animevostfr","base":"https://v2.animevostfr.org","max_streams":4},
-    "coflix":{"provider":"coflix","base":"https://coflix.wiki","max_streams":4},
-    "neko-sama":{"provider":"neko-sama","base":"https://animes-sama.su","max_streams":4},
-    "sekai":{"provider":"sekai","base":"https://sekai.one","max_streams":4},
-    "voiranime-rip":{"provider":"voiranime-rip","base":"https://voiranime.rip","max_streams":4}
+    "animesama-co": {
+        "script": "scripts/provider_patches/animesamaco_nondisplay_runtime_v1.py",
+        "provider": "animesama-co",
+        "base": "https://animesama.co",
+        "max_streams": 4
+    },
+    "animevostfr": {
+        "script": "scripts/provider_patches/animevostfr_nondisplay_runtime_v1.py",
+        "provider": "animevostfr",
+        "base": "https://v2.animevostfr.org",
+        "max_streams": 4
+    },
+    "coflix": {
+        "script": "scripts/provider_patches/coflix_nondisplay_runtime_v1.py",
+        "provider": "coflix",
+        "base": "https://coflix.wiki",
+        "max_streams": 4
+    },
+    "neko-sama": {
+        "script": "scripts/provider_patches/neko_sama_nondisplay_runtime_v1.py",
+        "provider": "neko-sama",
+        "base": "https://animes-sama.su",
+        "max_streams": 4
+    },
+    "sekai": {
+        "script": "scripts/provider_patches/sekai_nondisplay_runtime_v1.py",
+        "provider": "sekai",
+        "base": "https://sekai.one",
+        "max_streams": 4
+    },
+    "voiranime-rip": {
+        "script": "scripts/provider_patches/voiranime_rip_nondisplay_runtime_v1.py",
+        "provider": "voiranime-rip",
+        "base": "https://voiranime.rip",
+        "max_streams": 4
+    }
 }
 
 def unique(values):
@@ -73,15 +102,17 @@ def main()->int:
     doc=json.loads(OVERRIDES.read_text(encoding="utf-8"))
     patches=doc.setdefault("provider_patches",{})
     changed=[]
-    for provider,opts in NONDISPLAY_PROVIDERS.items():
+    for provider,cfg in NONDISPLAY_PROVIDERS.items():
         row=patches.get(provider)
         if not isinstance(row,dict): raise SystemExit(f"missing provider patch row: {provider}")
-        scripts=list(row.get("provider_lego_scripts") or [])
-        if NONDISPLAY not in scripts:
-            scripts.append(NONDISPLAY); changed.append(provider)
+        script=str(cfg["script"])
+        scripts=[x for x in (row.get("provider_lego_scripts") or []) if x!="scripts/provider_patches/non_display_recovery_runtime_v1.py"]
+        if script not in scripts:
+            scripts.append(script); changed.append(provider)
         row["provider_lego_scripts"]=unique(scripts)
         options=row.setdefault("provider_lego_options",{})
-        options[NONDISPLAY]=opts
+        options.pop("scripts/provider_patches/non_display_recovery_runtime_v1.py",None)
+        options[script]={"provider":provider,"base":cfg["base"],"max_streams":int(cfg.get("max_streams") or 4)}
         if provider=="coflix":
             row["official_site"]="https://coflix.wiki"
             row["published_types"]=["movie","tv"]
