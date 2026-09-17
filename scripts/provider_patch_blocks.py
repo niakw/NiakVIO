@@ -9,7 +9,9 @@ searches/replaces fragments inside its previous implementation.
 
 Provider-specific configuration is rendered before the JavaScript body and
 recorded as a deterministic base64 JSON data marker. Malformed, nested or
-duplicated ownership markers fail closed.
+duplicated ownership markers fail closed. Published bundles may be one physical
+line: edit operations are allowed to temporarily re-introduce line boundaries;
+the final publication minimizer removes them again.
 """
 from __future__ import annotations
 
@@ -25,6 +27,7 @@ _FIX_ID_RE = re.compile(r"^[A-Z0-9][A-Z0-9_.:-]{2,95}$")
 PROVIDER_BEGIN_MARKER = "/* BEGIN NIAKVIO_PROVIDER */"
 PROVIDER_END_MARKER = "/* END NIAKVIO_PROVIDER */"
 
+
 def _is_clean_v3_provider(text: str) -> bool:
     source = str(text or "")
     return (
@@ -32,7 +35,6 @@ def _is_clean_v3_provider(text: str) -> bool:
         and source.count(PROVIDER_BEGIN_MARKER) == 1
         and source.count(PROVIDER_END_MARKER) == 1
     )
-
 
 
 def _fix_id(value: str) -> str:
@@ -116,17 +118,14 @@ def _owned_span(text: str, fix_id: str) -> tuple[int, int] | None:
 
 
 def has_managed_fix(text: str, fix_id: str) -> bool:
-    """Return True only when exactly one valid owned block already exists."""
     return _owned_span(str(text or ""), fix_id) is not None
 
 
 def owned_span(text: str, fix_id: str) -> tuple[int, int] | None:
-    """Public exact span for one validated managed brick."""
     return _owned_span(str(text or ""), fix_id)
 
 
 def strip_managed_fix(text: str, fix_id: str) -> str:
-    """Delete exactly one owned rectangle; never trim or rewrite neighboring bytes."""
     source = str(text or "")
     span = _owned_span(source, fix_id)
     if span is None:
@@ -140,7 +139,6 @@ def strip_legacy_iife(
     *,
     invocation_anchor: str = '})(typeof globalThis!=="undefined"?globalThis:this',
 ) -> str:
-    """Remove one pre-managed marker-owned IIFE as one indivisible legacy block."""
     positions = [match.start() for match in re.finditer(re.escape(marker), text)]
     if not positions:
         return text
@@ -199,7 +197,6 @@ def _render_current_owned_fix(
     *,
     data: dict[str, Any] | None = None,
 ) -> str:
-    """Render one current v3 rectangle including its owned CLOSEFIX line ending."""
     return render_managed_fix(fix_id, javascript, data=data) + "\n"
 
 
@@ -210,12 +207,6 @@ def replace_managed_fix(
     *,
     data: dict[str, Any] | None = None,
 ) -> str:
-    """Replace one whole Lego block.
-
-    In Provider architecture v3 every managed Lego lives inside the single
-    BEGIN/END PROVIDER envelope. PROVIDER.* bricks stay before the Core boundary;
-    CORE.* bricks stay after it. No managed brick may escape the provider.
-    """
     source = str(text or "")
     fid = _fix_id(fix_id)
     has_provider_envelope = (
@@ -259,6 +250,13 @@ def _first_core_fix_start(text: str, begin: int, provider_end: int) -> int:
     return min(starts) if starts else provider_end
 
 
+def _insert_editable_block(before: str, block: str, after: str) -> str:
+    """Insert a multiline editable block into either multiline or monoline bytes."""
+    lead = "" if not before or before.endswith(("\n", "\r")) else "\n"
+    tail = "" if not after or after.startswith(("\n", "\r")) else "\n"
+    return before + lead + block + tail + after
+
+
 def replace_provider_fix(
     text: str,
     fix_id: str,
@@ -266,7 +264,6 @@ def replace_provider_fix(
     *,
     data: dict[str, Any] | None = None,
 ) -> str:
-    """Own one PROVIDER.* Lego before every CORE.* Lego, inside Provider."""
     source = str(text or "")
     fid = _fix_id(fix_id)
     if not fid.startswith("PROVIDER."):
@@ -280,28 +277,13 @@ def replace_provider_fix(
     provider_limit = _first_core_fix_start(source, begin, provider_end)
     span = _owned_span(source, fid)
     clean_v3 = _is_clean_v3_provider(source)
-    block = (
-        _render_current_owned_fix(fid, javascript, data=data)
-        if clean_v3
-        else render_managed_fix(fid, javascript, data=data)
-    )
+    block = _render_current_owned_fix(fid, javascript, data=data) if clean_v3 else render_managed_fix(fid, javascript, data=data)
     if span is not None:
         if not (begin < span[0] < span[1] <= provider_limit):
             raise ValueError(f"provider Lego escaped provider section: {fid}")
         output = source[:span[0]] + block + source[span[1]:]
     else:
-        before = source[:provider_limit]
-        after = source[provider_limit:]
-        if clean_v3:
-            if before and not before.endswith(("\n", "\r")):
-                raise ValueError(
-                    f"provider Lego insertion point is not a line boundary: {fid}"
-                )
-            output = before + block + after
-        else:
-            lead = "" if not before or before.endswith(("\n", "\r")) else "\n"
-            tail = "" if not after or after.startswith(("\n", "\r")) else "\n"
-            output = before + lead + block + tail + after
+        output = _insert_editable_block(source[:provider_limit], block, source[provider_limit:])
     assert_single_managed_fix(output, fid)
     return output
 
@@ -313,7 +295,6 @@ def replace_core_fix(
     *,
     data: dict[str, Any] | None = None,
 ) -> str:
-    """Own one CORE.* Lego after all PROVIDER.* Lego and before END PROVIDER."""
     source = str(text or "")
     fid = _fix_id(fix_id)
     if not fid.startswith("CORE."):
@@ -325,35 +306,17 @@ def replace_core_fix(
     if provider_end <= begin:
         raise ValueError("Provider envelope is malformed")
 
-    # A CORE Lego is always appended at the end of the generated Lego chain.
-    # Reapplication replaces the complete owned block in place.
     span = _owned_span(source, fid)
     clean_v3 = _is_clean_v3_provider(source)
-    block = (
-        _render_current_owned_fix(fid, javascript, data=data)
-        if clean_v3
-        else render_managed_fix(fid, javascript, data=data)
-    )
+    block = _render_current_owned_fix(fid, javascript, data=data) if clean_v3 else render_managed_fix(fid, javascript, data=data)
     if span is not None:
         if not (begin < span[0] < span[1] <= provider_end):
             raise ValueError(f"Core Lego escaped Provider envelope: {fid}")
         output = source[:span[0]] + block + source[span[1]:]
     else:
-        before = source[:provider_end]
-        after = source[provider_end:]
-        if clean_v3:
-            if before and not before.endswith(("\n", "\r")):
-                raise ValueError(
-                    f"Core Lego insertion point is not a line boundary: {fid}"
-                )
-            output = before + block + after
-        else:
-            lead = "" if not before or before.endswith(("\n", "\r")) else "\n"
-            tail = "" if not after or after.startswith(("\n", "\r")) else "\n"
-            output = before + lead + block + tail + after
+        output = _insert_editable_block(source[:provider_end], block, source[provider_end:])
     assert_single_managed_fix(output, fid)
 
-    # Once any CORE.* Lego exists, no PROVIDER.* Lego may appear after it.
     out_begin = output.index(PROVIDER_BEGIN_MARKER)
     out_end = output.index(PROVIDER_END_MARKER)
     first_core = _first_core_fix_start(output, out_begin, out_end)
@@ -365,6 +328,7 @@ def replace_core_fix(
             raise ValueError(f"Provider Lego ordered after Core Lego: {owned_id}")
     return output
 
+
 def replace_managed_fix_in_place(
     text: str,
     fix_id: str,
@@ -372,7 +336,6 @@ def replace_managed_fix_in_place(
     *,
     data: dict[str, Any] | None = None,
 ) -> tuple[str, bool]:
-    """Replace an existing managed block at the same byte position."""
     span = _owned_span(text, fix_id)
     if span is None:
         return text, False
@@ -448,7 +411,6 @@ def decode_managed_data(text: str, fix_id: str) -> dict[str, Any]:
 
 
 def managed_fix_ids(text: str) -> list[str]:
-    """Return every fix id after proving exact STARTFIX/CLOSEFIX ownership."""
     source = str(text or "")
     syntax_pairs = (
         (
@@ -496,7 +458,6 @@ def managed_fix_ids(text: str) -> list[str]:
 
 
 def validate_managed_fixes(text: str) -> list[str]:
-    """Fail closed on duplicate, nested, malformed or undecodable fix blocks."""
     return managed_fix_ids(text)
 
 
@@ -506,7 +467,6 @@ def strip_all_managed_fixes(
     restore_replaced_source: bool = True,
     require_provider_base_restore: bool = False,
 ) -> tuple[str, list[str]]:
-    """Remove all managed fixes and optionally restore exact provider-base source."""
     source = str(text or "")
     fix_ids = validate_managed_fixes(source)
     spans: list[tuple[int, int, str, str]] = []
