@@ -1,0 +1,70 @@
+name: TEMP Branch Finalize One-Line Providers
+
+on:
+  push:
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: hotfix/one-line-minimizer-final-20260917
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Finalize branch publication
+        env:
+          NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --ignore-scripts --no-audit --no-fund
+          cp manifest.json "$RUNNER_TEMP/published-manifest-baseline.json"
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/finalize_provider_v3_minimizer.py
+          python3 scripts/finalize_provider_v3_minimizer.py --check
+          python3 scripts/reapply_published_overrides.py --check
+          python3 tests/provider_v3_minimizer_contract_test.py
+          python3 tests/provider_v3_minimizer_preview_test.py
+          python3 tests/provider_v3_minimizer_publication_pipeline_test.py
+          python3 tests/provider_v3_minimizer_published_test.py
+          python3 scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python3 scripts/prune_unreferenced_providers.py
+          python3 tests/provider_html_filter_security_test.py --published
+          python3 scripts/audit_provider_v3_static.py
+          python3 scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/published-manifest-baseline.json"
+          python3 tests/release_auto_bump_test.py
+          python3 tests/provider_versioning_test.py
+          python3 tests/reapply_provider_versioning_test.py
+          python3 scripts/generate_hub46_manifest.py --source manifest.json --matrix automation/evidence/hub-lab-matrix-46.json --output manifest-hub46.json
+
+          rm .github/workflows/temp-branch-finalize.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m 'chore: materialize one-line Provider v3 generation'
+          PROVIDER_SHA="$(git rev-parse HEAD)"
+
+          python3 scripts/build_hub46_native_manifest.py --provider-sha "$PROVIDER_SHA" --source manifest-hub46.json --output native-hub46/manifest.json
+          python3 tests/native_hub46_manifest_test.py
+          python3 tests/native_hub46_transport_manifest_test.py
+          python3 tests/release_projection_scope_test.py
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          python3 tests/release_hash_scope_test.py
+          git add native-hub46/manifest.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore: pin one-line Provider v3 release integrity'
+          fi
+          git push origin HEAD:hotfix/one-line-minimizer-final-20260917
