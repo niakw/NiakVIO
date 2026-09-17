@@ -1,0 +1,313 @@
+name: TEMP - Hub Authority Repair V61
+
+on:
+  push:
+    branches: [fix/non-display-recovery-20260916]
+    paths:
+      - '.github/workflows/temp-hub-authority-v61.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+
+      - name: Patch permanent hub authority contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new, marker=None):
+              p=Path(path); s=p.read_text(encoding='utf-8')
+              if marker and marker in s:
+                  return
+              if old not in s:
+                  raise SystemExit(f'V61 expected patch anchor missing: {path}')
+              if s.count(old) != 1:
+                  raise SystemExit(f'V61 ambiguous patch anchor: {path} count={s.count(old)}')
+              p.write_text(s.replace(old,new),encoding='utf-8')
+
+          # Hub output must outrank stale direct fallback. A fallback exists only
+          # for a hub that returned no valid terminal at all.
+          replace_once(
+              'scripts/resolve_provider_hubs.py',
+              '''    fallback = str(cfg.get("direct_fallback") or "").strip().rstrip("/")
+              if fallback and host(fallback) != host(hub_url):
+                  candidates.append({"url": fallback, "label": "curated direct fallback", "score": 70, "document_index": -1, "fallback": True})
+              _sort_official_candidates(candidates, resolver)
+          ''',
+              '''    fallback = str(cfg.get("direct_fallback") or "").strip().rstrip("/")
+              # HUB_AUTHORITY_STRICT_V61: a stale curated direct fallback must never
+              # compete with a terminal explicitly advertised by an authoritative hub.
+              # It is only a last-known fallback when the hub yields no valid terminal.
+              if not candidates and fallback and host(fallback) != host(hub_url):
+                  candidates.append({"url": fallback, "label": "curated direct fallback", "score": 70, "document_index": -1, "fallback": True})
+              _sort_official_candidates(candidates, resolver)
+          ''',
+              'HUB_AUTHORITY_STRICT_V61',
+          )
+
+          # Domain transaction must align static address authority before its first
+          # CONFIG rebuild, otherwise stale static officialSite can undo the hub result.
+          replace_once(
+              'scripts/domain_refresh_transaction_v2.py',
+              'import resolve_provider_hubs as resolver\n',
+              'import resolve_provider_hubs as resolver\nimport reconcile_domain_refresh_static_authority as static_authority\n',
+              'import reconcile_domain_refresh_static_authority as static_authority',
+          )
+          replace_once(
+              'scripts/domain_refresh_transaction_v2.py',
+              '''        history["updated_at"] = resolver.now_iso()
+                  write(HISTORY_PATH, history)
+                  bundle_updates = rebuild_provider_configs(changed_provider_ids)
+          ''',
+              '''        history["updated_at"] = resolver.now_iso()
+                  write(HISTORY_PATH, history)
+
+                  # DOMAIN_REFRESH_STATIC_AUTHORITY_V61: targeted rematerialization also
+                  # consumes durable static knowledge. Keep only address-owned fields in
+                  # lock-step with the freshly resolved provider patch before rebuilding.
+                  static_doc = load(STATIC_KNOWLEDGE_PATH)
+                  static_rows = static_doc.get("providers") or {}
+                  patches = config.get("provider_patches") or {}
+                  static_changed = []
+                  for provider_id in sorted(set(changed_provider_ids)):
+                      row = static_rows.get(provider_id) if isinstance(static_rows, dict) else None
+                      patch = patches.get(provider_id) if isinstance(patches, dict) else None
+                      model = row.get("model") if isinstance(row, dict) else None
+                      if not isinstance(model, dict) or not isinstance(patch, dict):
+                          raise RuntimeError(f"{provider_id}: static authority state missing")
+                      if static_authority.sync_model(model, patch):
+                          static_changed.append(provider_id)
+                  if static_changed:
+                      write(STATIC_KNOWLEDGE_PATH, static_doc)
+                  print(
+                      "FIELD_DOMAIN_STATIC_AUTHORITY_TX "
+                      f"changed={len(static_changed)} providers={','.join(static_changed) if static_changed else '-'}"
+                  )
+                  bundle_updates = rebuild_provider_configs(changed_provider_ids)
+          ''',
+              'DOMAIN_REFRESH_STATIC_AUTHORITY_V61',
+          )
+
+          # Flemmix runtime must fail closed if model authority is absent; no retired
+          # terminal may ever be embedded as a fallback in provider code.
+          replace_once(
+              'scripts/provider_patches/flemmix_current_runtime_v1.py',
+              '''          try{raw=_text((NIAKVIO_PROVIDER_MODEL&&(
+                        NIAKVIO_PROVIDER_MODEL.officialSite||NIAKVIO_PROVIDER_MODEL.knownSite
+                      ))||"https://flemmix.cloud");}catch(_e){raw="https://flemmix.cloud";}
+                      try{raw=_substituteDomain(raw);}catch(_e){}
+                      return String(raw||"https://flemmix.cloud").replace(/\\/+$/g,"");
+          ''',
+              '''          try{raw=_text((NIAKVIO_PROVIDER_MODEL&&(
+                        NIAKVIO_PROVIDER_MODEL.officialSite||NIAKVIO_PROVIDER_MODEL.knownSite
+                      ))||"");}catch(_e){raw="";}
+                      try{raw=_substituteDomain(raw);}catch(_e){}
+                      return String(raw||"").replace(/\\/+$/g,"");
+          ''',
+              'NIAKVIO_FLEMMIX_NO_STATIC_TERMINAL_FALLBACK_V61',
+          )
+          p=Path('scripts/provider_patches/flemmix_current_runtime_v1.py')
+          s=p.read_text(encoding='utf-8')
+          if 'NIAKVIO_FLEMMIX_NO_STATIC_TERMINAL_FALLBACK_V61' not in s:
+              s=s.replace('/* NIAKVIO_FLEMMIX_CURRENT_RUNTIME_V1 */','/* NIAKVIO_FLEMMIX_CURRENT_RUNTIME_V1 */\n/* NIAKVIO_FLEMMIX_NO_STATIC_TERMINAL_FALLBACK_V61 */',1)
+          s=s.replace('var lane=_mediaNamespace(mediaType),meta=await _tmdb(tmdbId,mediaType);if(!meta||!meta.title)return [];',
+                      'var lane=_mediaNamespace(mediaType),meta=await _tmdb(tmdbId,mediaType);if(!meta||!meta.title||!BASE)return [];')
+          p.write_text(s,encoding='utf-8')
+
+          # Regression: live hub candidate .party must beat stale .cloud fallback.
+          p=Path('tests/provider_hub_registry_test.py'); s=p.read_text(encoding='utf-8')
+          marker='# HUB_AUTHORITY_STRICT_V61_REGRESSION'
+          if marker not in s:
+              s += '''\n\n# HUB_AUTHORITY_STRICT_V61_REGRESSION\nflemmix_authority_cfg = copy.deepcopy(hubs['flemmix'])\nflemmix_authority_cfg['direct_fallback'] = 'https://flemmix.cloud/'\nflemmix_authority_cfg['direct_candidates'] = ['https://flemmix.cloud/']\nflemmix_html = '<a href="https://flemmix.party/">Flemmix - Domaine principal</a>'\nflemmix_candidates, preferred = resolver.choose_official(\n    'flemmix', flemmix_authority_cfg, flemmix_authority_cfg['hub'], flemmix_html\n)\nassert preferred == 'https://flemmix.party', flemmix_candidates\nassert all(resolver.host(row['url']) != 'flemmix.cloud' for row in flemmix_candidates), flemmix_candidates\n'''
+              p.write_text(s,encoding='utf-8')
+
+          # Runtime regression now forbids every baked-in Flemmix terminal.
+          p=Path('tests/flemmix_runtime_domain_authority_test.py'); s=p.read_text(encoding='utf-8')
+          s=s.replace('assert \'"https://flemmix.cloud"\' in text, "Flemmix fallback must be the current canonical .cloud host"\n',
+                      'for retired in ("https://flemmix.me", "https://flemmix.kim", "https://flemmix.cloud", "https://flemmix.party"):\n    assert retired not in text, f"Flemmix runtime must not bake terminal {retired}"\nassert "NIAKVIO_FLEMMIX_NO_STATIC_TERMINAL_FALLBACK_V61" in text\n')
+          s=s.replace('print("flemmix runtime domain authority regression passed: canonical model-owned host, no retired .me pin")',
+                      'print("flemmix runtime domain authority regression passed: model-owned terminal only, no baked-in domain")')
+          p.write_text(s,encoding='utf-8')
+
+          # Permanent Domain Refresh workflow: snapshot, verify and publish static authority.
+          p=Path('.github/workflows/domain-refresh.yml'); s=p.read_text(encoding='utf-8')
+          if "scripts/reconcile_domain_refresh_static_authority.py" not in s:
+              s=s.replace("      - 'scripts/reconcile_provider_domain_metadata.py'\n",
+                          "      - 'scripts/reconcile_provider_domain_metadata.py'\n      - 'scripts/reconcile_domain_refresh_static_authority.py'\n      - 'scripts/validate_domain_refresh_static_non_destructive.py'\n")
+          if "tests/domain_refresh_static_authority_test.py" not in s:
+              s=s.replace("      - 'tests/provider_domain_metadata_reconcile_test.py'\n",
+                          "      - 'tests/provider_domain_metadata_reconcile_test.py'\n      - 'tests/domain_refresh_static_authority_test.py'\n      - 'tests/domain_refresh_static_non_destructive_test.py'\n")
+          if 'provider-v3-static-knowledge.before.json' not in s:
+              s=s.replace('          cp provider-v3-materialization.json "$RUNNER_TEMP/provider-v3-materialization.before.json"\n',
+                          '          cp provider-v3-materialization.json "$RUNNER_TEMP/provider-v3-materialization.before.json"\n          cp automation/provider-v3-static-knowledge.json "$RUNNER_TEMP/provider-v3-static-knowledge.before.json"\n')
+          if 'reconcile_domain_refresh_static_authority.py --changes' not in s:
+              s=s.replace('          if [ "${#CHANGED[@]}" -gt 0 ]; then\n',
+                          '          python scripts/reconcile_domain_refresh_static_authority.py --changes health-output/domain-site-changes.json --check\n          if [ "${#CHANGED[@]}" -gt 0 ]; then\n')
+          if 'validate_domain_refresh_static_non_destructive.py' not in s.split('- name: Keep no-op history byte-stable')[0]:
+              anchor='''          python scripts/validate_domain_refresh_non_destructive.py \\
+            --before-overrides "$RUNNER_TEMP/provider-overrides.before.json" \\
+            --before-manifest "$RUNNER_TEMP/published-manifest-baseline.json" \\
+            --before-materialization "$RUNNER_TEMP/provider-v3-materialization.before.json" \\
+            --before-provenance "$RUNNER_TEMP/provenance.before.json" \\
+            --changes health-output/domain-site-changes.json
+          '''
+              repl=anchor+'''python scripts/validate_domain_refresh_static_non_destructive.py \\
+            --before-static "$RUNNER_TEMP/provider-v3-static-knowledge.before.json" \\
+            --changes health-output/domain-site-changes.json
+          '''
+              if anchor not in s: raise SystemExit('V61 domain workflow static guard anchor missing')
+              s=s.replace(anchor,repl,1)
+          if 'python tests/domain_refresh_static_authority_test.py' not in s:
+              s=s.replace('          python tests/provider_domain_metadata_reconcile_test.py\n',
+                          '          python tests/provider_domain_metadata_reconcile_test.py\n          python tests/domain_refresh_static_authority_test.py\n          python tests/domain_refresh_static_non_destructive_test.py\n',1)
+          if 'automation/provider-v3-static-knowledge.json' not in s.split('git add \\',1)[1].split('\n\n',1)[0]:
+              s=s.replace('            provider-v3-materialization.json providers/ \\
+',
+                          '            provider-v3-materialization.json automation/provider-v3-static-knowledge.json providers/ \\
+')
+          p.write_text(s,encoding='utf-8')
+
+          # Workflow contract protects the new architecture permanently.
+          p=Path('tests/domain_refresh_non_destructive_workflow_test.py'); s=p.read_text(encoding='utf-8')
+          if 'DOMAIN_REFRESH_STATIC_AUTHORITY_WORKFLOW_V61' not in s:
+              s += '''\n# DOMAIN_REFRESH_STATIC_AUTHORITY_WORKFLOW_V61\nworkflow = (ROOT / '.github/workflows/domain-refresh.yml').read_text(encoding='utf-8')\nassert 'reconcile_domain_refresh_static_authority.py' in workflow\nassert 'validate_domain_refresh_static_non_destructive.py' in workflow\nassert 'provider-v3-static-knowledge.before.json' in workflow\nassert 'automation/provider-v3-static-knowledge.json' in workflow\n'''
+              p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Run permanent hub/static contract tests
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/resolve_provider_hubs.py scripts/domain_refresh_transaction_v2.py scripts/reconcile_domain_refresh_static_authority.py scripts/validate_domain_refresh_static_non_destructive.py scripts/provider_patches/flemmix_current_runtime_v1.py
+          python tests/provider_hub_registry_test.py
+          python tests/domain_refresh_static_authority_test.py
+          python tests/domain_refresh_static_non_destructive_test.py
+          python tests/flemmix_runtime_domain_authority_test.py
+          python tests/domain_refresh_non_destructive_workflow_test.py
+          python tests/domain_refresh_workflow_test.py
+
+      - name: Snapshot before live Flemmix rotation
+        run: |
+          cp automation/provider-v3-static-knowledge.json "$RUNNER_TEMP/static-before.json"
+          cp provider-overrides.json "$RUNNER_TEMP/overrides-before.json"
+          cp manifest.json "$RUNNER_TEMP/manifest-before.json"
+
+      - name: Resolve live Flemmix hub and publish targeted DATA
+        run: |
+          set -euo pipefail
+          mkdir -p health-output automation/evidence
+          python scripts/domain_refresh_priority_wrapper.py \
+            --mode deep --include-disabled --workers 1 --timeout 12 \
+            --provider flemmix --apply \
+            --output health-output/v61-flemmix-hub-report.json \
+            --changes-output health-output/v61-flemmix-changes.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.load(open('health-output/v61-flemmix-hub-report.json'))
+          row=report['providers']['flemmix']
+          terminal=str(row.get('official_site') or '').rstrip('/')
+          print('V61_HUB_TERMINAL',terminal,'source=',row.get('selected_source'),'score=',row.get('candidate_score'))
+          if terminal != 'https://flemmix.party':
+              raise SystemExit(f'V61 hub resolver did not select current Flemmix terminal: {terminal!r}')
+          overrides=json.load(open('provider-overrides.json'))
+          patch=overrides['provider_patches']['flemmix']
+          if str(patch.get('official_site') or '').rstrip('/') != terminal:
+              raise SystemExit('V61 override authority mismatch')
+          static=json.load(open('automation/provider-v3-static-knowledge.json'))
+          model=static['providers']['flemmix']['model']
+          if str(model.get('officialSite') or '').rstrip('/') != terminal or str(model.get('knownSite') or '').rstrip('/') != terminal:
+              raise SystemExit(f'V61 static authority mismatch: {model.get("officialSite")} {model.get("knownSite")}')
+          hubs=json.load(open('provider-hubs.json'))['providers']['flemmix']
+          if str(hubs.get('direct') or '').rstrip('/') != terminal:
+              raise SystemExit(f'V61 registry terminal mismatch: {hubs.get("direct")}')
+          Path('automation/evidence/flemmix-hub-authority-v61.json').write_text(json.dumps({
+              'schemaVersion':1,'hub':'https://ww1.wiflix-adresses.fun/','resolved':terminal,
+              'selectedSource':row.get('selected_source'),'candidateScore':row.get('candidate_score'),
+              'staticOfficialSite':model.get('officialSite'),'staticKnownSite':model.get('knownSite'),
+          },ensure_ascii=False,indent=2)+'\n')
+          PY
+          python scripts/reconcile_domain_refresh_static_authority.py --changes health-output/v61-flemmix-changes.json --check
+          python scripts/validate_domain_refresh_static_non_destructive.py --before-static "$RUNNER_TEMP/static-before.json" --changes health-output/v61-flemmix-changes.json
+          python scripts/validate_provider_domain_graph.py provider-overrides.json
+
+      - name: Rematerialize Flemmix only and prove runtime uses hub terminal
+        run: |
+          set -euo pipefail
+          python scripts/materialize_provider_v3_one.py flemmix
+          python scripts/reconcile_domain_refresh_provenance.py --changes health-output/v61-flemmix-changes.json
+          python scripts/validate_published_provider_config.py --expected 46
+          python scripts/finalize_provider_v3_minimizer.py --check
+          python tests/flemmix_runtime_domain_authority_test.py
+          python tests/provider_domain_graph_cycle_test.py
+          python - <<'PY'
+          import json,sys
+          from pathlib import Path
+          from urllib.parse import urlsplit
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import audit_provider_quick_yield as q
+          q.TIMEOUT=55
+          tasks,_=q.build_tasks()
+          selected=[t for t in tasks if str(t.get('provider_id') or '').casefold()=='flemmix']
+          rows=[q.run(t) for t in selected]
+          forbidden={'flemmix.me','flemmix.kim','flemmix.cloud','flemmix.casa','flemmix.garden','flemmix.men','flemmix.vip','flemmix.ws','flemmix.app'}
+          compact=[]; observed=set()
+          for r in rows:
+              fetches=[]
+              for f in r.get('debug_fetches') or []:
+                  if not isinstance(f,dict): continue
+                  u=str(f.get('url') or '')
+                  if 'themoviedb.org' in u: continue
+                  h=(urlsplit(u).hostname or '').casefold()
+                  if h: observed.add(h)
+                  fetches.append({'host':h,'path':urlsplit(u).path[:180],'status':f.get('status'),'error':str(f.get('error') or '')[:120] or None})
+              compact.append({'type':r.get('semantic_type'),'status':r.get('status'),'raw':r.get('raw'),'playable':r.get('playable'),'verified':r.get('verified'),'stage':r.get('debug_stage'),'fetches':fetches[:30]})
+          print('V61_FLEMMIX_PROBE',json.dumps(compact,sort_keys=True))
+          bad=sorted(observed & forbidden)
+          if bad: raise SystemExit('V61 runtime still called retired Flemmix hosts: '+','.join(bad))
+          if 'flemmix.party' not in observed:
+              raise SystemExit('V61 runtime never reached current hub terminal flemmix.party; observed='+','.join(sorted(observed)))
+          Path('automation/evidence/flemmix-runtime-v61.json').write_text(json.dumps({'schemaVersion':1,'terminal':'flemmix.party','observedHosts':sorted(observed),'rows':compact},ensure_ascii=False,indent=2)+'\n')
+          PY
+
+      - name: Persist permanent repair and live evidence
+        run: |
+          set -euo pipefail
+          git diff --check
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add \
+            scripts/resolve_provider_hubs.py scripts/domain_refresh_transaction_v2.py \
+            scripts/reconcile_domain_refresh_static_authority.py scripts/validate_domain_refresh_static_non_destructive.py \
+            scripts/provider_patches/flemmix_current_runtime_v1.py \
+            tests/provider_hub_registry_test.py tests/domain_refresh_static_authority_test.py \
+            tests/domain_refresh_static_non_destructive_test.py tests/flemmix_runtime_domain_authority_test.py \
+            tests/domain_refresh_non_destructive_workflow_test.py .github/workflows/domain-refresh.yml \
+            provider-overrides.json provider-hubs.json provider-domain-history.json \
+            automation/provider-v3-static-knowledge.json manifest.json provider-v3-materialization.json PROVENANCE.json providers/ \
+            automation/evidence/flemmix-hub-authority-v61.json automation/evidence/flemmix-runtime-v61.json
+          git diff --cached --stat
+          git diff --cached --quiet && { echo 'V61 no changes to persist'; exit 1; }
+          git commit -m 'fix(domains): make authoritative hubs monotonic'
+          git pull --rebase origin fix/non-display-recovery-20260916
+          git push origin HEAD:fix/non-display-recovery-20260916
+          echo "V61_PERSISTED $(git rev-parse HEAD)"
