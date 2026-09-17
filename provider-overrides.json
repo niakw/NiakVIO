@@ -245,9 +245,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -586,9 +586,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -862,14 +862,15 @@
           "tv"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "recoveryStatus": "repair-reproof-required",
         "provenRouteCount": 1,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-zero-result",
-          "recovery_proven"
+          "recovery_proven",
+          "repair_survival_restored_requires_exact_bundle_reproof"
         ],
         "laneStatuses": {
           "movie": [
@@ -896,9 +897,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -921,7 +922,11 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      }
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/flemmix_current_runtime_v1.py"
+      ],
+      "provider_lego_options": {}
     },
     "uhdmovies": {
       "notes": [
@@ -1139,9 +1144,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -1382,9 +1387,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie"
         ],
@@ -1629,9 +1634,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -1854,9 +1859,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -2081,9 +2086,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -2321,9 +2326,9 @@
       "domain_substitutions": {},
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -2585,9 +2590,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime",
           "movie",
@@ -2629,10 +2634,19 @@
         "/ajax/server?get={id}"
       ],
       "provider_lego_scripts": [
-        "scripts/provider_patches/anikototv_runtime_v2.py"
+        "scripts/provider_patches/anikototv_runtime_v3.py"
       ],
       "provider_lego_options": {
         "scripts/provider_patches/anikototv_runtime_v2.py": {
+          "mirrors": [
+            "https://anikototv.to",
+            "https://anikoto.cz",
+            "https://anikoto.me",
+            "https://anikoto.net",
+            "https://anikototv.se"
+          ]
+        },
+        "scripts/provider_patches/anikototv_runtime_v3.py": {
           "mirrors": [
             "https://anikototv.to",
             "https://anikoto.cz",
@@ -2793,14 +2807,15 @@
           "anime"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "no-proven-route",
+        "recoveryStatus": "repair-reproof-required",
         "provenRouteCount": 0,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-zero-result",
-          "recovery_no-proven-route"
+          "recovery_no-proven-route",
+          "repair_survival_restored_requires_exact_bundle_reproof"
         ],
         "laneStatuses": {
           "anime": [
@@ -2816,9 +2831,9 @@
       "domain_substitutions": {},
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -3028,9 +3043,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -3070,9 +3085,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -3459,14 +3474,15 @@
           "anime"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "recoveryStatus": "repair-reproof-required",
         "provenRouteCount": 4,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-http-error",
-          "recovery_proven"
+          "recovery_proven",
+          "repair_survival_restored_requires_exact_bundle_reproof"
         ],
         "laneStatuses": {
           "anime": [
@@ -3497,9 +3513,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -3522,11 +3538,19 @@
         "sequential": true
       },
       "provider_lego_scripts": [
-        "scripts/provider_patches/animesamaco_site_runtime_v1.py"
+        "scripts/provider_patches/animesamaco_site_runtime_v1.py",
+        "scripts/provider_patches/animesamaco_nondisplay_runtime_v1.py"
       ],
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
-      ]
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/animesamaco_nondisplay_runtime_v1.py": {
+          "provider": "animesama-co",
+          "base": "https://animesama.co",
+          "max_streams": 4
+        }
+      }
     },
     "animesultra": {
       "capability": "mixed_embed_resolver",
@@ -3543,9 +3567,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -3789,9 +3813,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -4000,9 +4024,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -4205,14 +4229,15 @@
           "anime"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "recoveryStatus": "repair-reproof-required",
         "provenRouteCount": 11,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-zero-result",
-          "recovery_proven"
+          "recovery_proven",
+          "repair_survival_restored_requires_exact_bundle_reproof"
         ],
         "laneStatuses": {
           "anime": [
@@ -4229,7 +4254,17 @@
       ],
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
-      ]
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/animevostfr_nondisplay_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/animevostfr_nondisplay_runtime_v1.py": {
+          "provider": "animevostfr",
+          "base": "https://v2.animevostfr.org",
+          "max_streams": 4
+        }
+      }
     },
     "castle": {
       "capability": "api_stream_resolver",
@@ -4283,9 +4318,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -4482,7 +4517,7 @@
       ],
       "capability": "mixed_embed_resolver",
       "official_hub": "https://coflix.domains/",
-      "official_site": "https://coflix.ac",
+      "official_site": "https://coflix.wiki",
       "manifest_overrides": {
         "logo": "https://coflix.ac/favicon.ico",
         "supportsExternalPlayer": false,
@@ -4490,8 +4525,7 @@
       },
       "published_types": [
         "movie",
-        "tv",
-        "anime"
+        "tv"
       ],
       "learned_routes": [
         "/film/{slug}/",
@@ -4518,16 +4552,15 @@
         }
       },
       "domain_substitutions": {
-        "coflix.cymru": "coflix.ac",
-        "coflix.blue": "coflix.ac",
-        "coflix.wiki": "coflix.ac",
-        "coflix.life": "coflix.ac",
-        "coflix.fr": "coflix.ac",
-        "coflix.boston": "coflix.ac",
-        "coflix.to": "coflix.ac",
-        "coflix.blog": "coflix.ac",
-        "coflix.esq": "coflix.ac",
-        "coflix.group": "coflix.ac"
+        "coflix.cymru": "coflix.wiki",
+        "coflix.blue": "coflix.wiki",
+        "coflix.life": "coflix.wiki",
+        "coflix.fr": "coflix.wiki",
+        "coflix.boston": "coflix.wiki",
+        "coflix.to": "coflix.wiki",
+        "coflix.blog": "coflix.wiki",
+        "coflix.esq": "coflix.wiki",
+        "coflix.group": "coflix.wiki"
       },
       "candidate_learned_routes": [
         "/?s={query}",
@@ -4573,9 +4606,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime",
           "movie",
@@ -4746,7 +4779,6 @@
         "forcedEnabled": true,
         "routeDataState": "repair",
         "requiredLanes": [
-          "anime",
           "movie",
           "tv"
         ],
@@ -4754,12 +4786,11 @@
         "exactLockedLanes": [],
         "provenLanes": [],
         "missingLanes": [
-          "anime",
           "movie",
           "tv"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "recoveryStatus": "repair-reproof-required",
         "provenRouteCount": 12,
         "terminalState": null,
         "quarantined": false,
@@ -4767,7 +4798,8 @@
           "declared_lane_unproven",
           "quick_provider-network-http-error",
           "quick_provider-network-zero-result",
-          "recovery_proven"
+          "recovery_proven",
+          "repair_survival_restored_requires_exact_bundle_reproof"
         ],
         "laneStatuses": {
           "anime": [
@@ -4783,7 +4815,7 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {
-        "coflix.group": "coflix.ac"
+        "coflix.group": "coflix.wiki"
       },
       "api_recipe": {
         "proofModelVersion": 5,
@@ -4796,6 +4828,16 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
+        }
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/coflix_nondisplay_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/coflix_nondisplay_runtime_v1.py": {
+          "provider": "coflix",
+          "base": "https://coflix.wiki",
+          "max_streams": 4
         }
       }
     },
@@ -4858,9 +4900,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -5116,9 +5158,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -5400,9 +5442,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -5597,9 +5639,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -5937,11 +5979,17 @@
         "/anime/{slug}-saison-1/"
       ],
       "provider_lego_scripts": [
-        "scripts/provider_patches/neko_sama_runtime_v1.py"
+        "scripts/provider_patches/neko_sama_runtime_v1.py",
+        "scripts/provider_patches/neko_sama_nondisplay_runtime_v1.py"
       ],
       "provider_lego_options": {
         "scripts/provider_patches/neko_sama_runtime_v1.py": {
           "base": "https://animes-sama.su"
+        },
+        "scripts/provider_patches/neko_sama_nondisplay_runtime_v1.py": {
+          "provider": "neko-sama",
+          "base": "https://animes-sama.su",
+          "max_streams": 4
         }
       },
       "candidate_learned_routes": [
@@ -5953,9 +6001,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -6112,14 +6160,15 @@
           "anime"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "recoveryStatus": "repair-reproof-required",
         "provenRouteCount": 2,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-zero-result",
-          "recovery_proven"
+          "recovery_proven",
+          "repair_survival_restored_requires_exact_bundle_reproof"
         ],
         "laneStatuses": {
           "anime": [
@@ -6411,9 +6460,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime",
           "movie",
@@ -6474,9 +6523,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -6732,7 +6781,7 @@
     "sekai": {
       "capability": "html_scraper",
       "official_hub": null,
-      "official_site": "https://sekai.one/?v=15",
+      "official_site": "https://sekai.one",
       "candidate_config_reconciliation": {
         "version": 3,
         "route_plan_source": "embedded-provider-js",
@@ -6901,7 +6950,7 @@
           "anime"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "recoveryStatus": "repair-reproof-required",
         "provenRouteCount": 4,
         "terminalState": null,
         "quarantined": false,
@@ -6909,7 +6958,8 @@
           "declared_lane_unproven",
           "quick_provider-network-exception",
           "quick_provider-network-http-error",
-          "recovery_proven"
+          "recovery_proven",
+          "repair_survival_restored_requires_exact_bundle_reproof"
         ],
         "laneStatuses": {
           "anime": [
@@ -6937,9 +6987,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -6966,7 +7016,17 @@
       ],
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
-      ]
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/sekai_nondisplay_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/sekai_nondisplay_runtime_v1.py": {
+          "provider": "sekai",
+          "base": "https://sekai.one",
+          "max_streams": 4
+        }
+      }
     },
     "streamzo": {
       "notes": [
@@ -7049,9 +7109,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime",
           "movie",
@@ -7345,9 +7405,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -7547,9 +7607,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -7719,14 +7779,15 @@
           "tv"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "no-proven-route",
+        "recoveryStatus": "repair-reproof-required",
         "provenRouteCount": 0,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-zero-result",
-          "recovery_no-proven-route"
+          "recovery_no-proven-route",
+          "repair_survival_restored_requires_exact_bundle_reproof"
         ],
         "laneStatuses": {
           "movie": [
@@ -7737,7 +7798,11 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/vidfast_current_embed_v1.py"
+      ],
+      "provider_lego_options": {}
     },
     "vidrock": {
       "capability": "html_scraper",
@@ -7936,9 +8001,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -7998,9 +8063,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -8447,9 +8512,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -8518,9 +8583,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -8698,14 +8763,15 @@
           "anime"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "recoveryStatus": "repair-reproof-required",
         "provenRouteCount": 4,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-zero-result",
-          "recovery_proven"
+          "recovery_proven",
+          "repair_survival_restored_requires_exact_bundle_reproof"
         ],
         "laneStatuses": {
           "anime": [
@@ -8736,7 +8802,17 @@
       ],
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
-      ]
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/voiranime_rip_nondisplay_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/voiranime_rip_nondisplay_runtime_v1.py": {
+          "provider": "voiranime-rip",
+          "base": "https://voiranime.rip",
+          "max_streams": 4
+        }
+      }
     },
     "vostfree": {
       "capability": "mixed_embed_resolver",
@@ -8946,9 +9022,9 @@
       "official_site": "https://ipv4.vostfree.ws",
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -9025,9 +9101,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -9193,14 +9269,15 @@
           "tv"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "recoveryStatus": "repair-reproof-required",
         "provenRouteCount": 6,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-zero-result",
-          "recovery_proven"
+          "recovery_proven",
+          "repair_survival_restored_requires_exact_bundle_reproof"
         ],
         "laneStatuses": {
           "movie": [
@@ -9218,12 +9295,15 @@
         "wookafr.boston": "wookafr.blog"
       },
       "provider_lego_scripts": [
-        "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py"
+        "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py",
+        "scripts/provider_patches/wookafr_showvideo_base64_v1.py",
+        "scripts/provider_patches/wookafr_current_runtime_v2.py"
       ],
       "provider_lego_options": {
         "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py": {
           "priority_host": "lecteurvideo.com"
-        }
+        },
+        "scripts/provider_patches/wookafr_current_runtime_v2.py": {}
       }
     },
     "yflix": {
@@ -9427,14 +9507,15 @@
           "tv"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "recoveryStatus": "repair-reproof-required",
         "provenRouteCount": 5,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-zero-result",
-          "recovery_proven"
+          "recovery_proven",
+          "repair_survival_restored_requires_exact_bundle_reproof"
         ],
         "laneStatuses": {
           "movie": [
@@ -9448,9 +9529,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -9473,6 +9554,12 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/yflix_current_runtime_v2.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/yflix_current_runtime_v2.py": {}
       }
     },
     "allanime": {
@@ -9513,9 +9600,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -9665,14 +9752,15 @@
           "anime"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "proven",
+        "recoveryStatus": "repair-reproof-required",
         "provenRouteCount": 4,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-zero-result",
-          "recovery_proven"
+          "recovery_proven",
+          "repair_survival_restored_requires_exact_bundle_reproof"
         ],
         "laneStatuses": {
           "anime": [
@@ -9686,7 +9774,11 @@
       },
       "published_types": [
         "anime"
-      ]
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/allanime_current_runtime_v1.py"
+      ],
+      "provider_lego_options": {}
     },
     "allwish": {
       "capability": "html_scraper",
@@ -9711,9 +9803,9 @@
       ],
       "live_route_gate": {
         "completion_state": "stream-capability-unproven",
-        "effective_coverage_ratio": 0.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 0.0,
+        "effective_coverage_ratio": 0,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 0,
         "required_types": [
           "movie",
           "tv"
@@ -9861,25 +9953,24 @@
         "forcedEnabled": true,
         "routeDataState": "repair",
         "requiredLanes": [
-          "movie",
-          "tv"
+          "anime"
         ],
         "currentVerifiedLanes": [],
         "exactLockedLanes": [],
         "provenLanes": [],
         "missingLanes": [
-          "movie",
-          "tv"
+          "anime"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "no-proven-route",
+        "recoveryStatus": "repair-reproof-required",
         "provenRouteCount": 0,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-returned-streams",
-          "recovery_no-proven-route"
+          "recovery_no-proven-route",
+          "repair_survival_restored_requires_exact_bundle_reproof"
         ],
         "laneStatuses": {
           "movie": [
@@ -9909,7 +10000,14 @@
         "globalCorpusExhausted": true,
         "historicalWrongContent": true,
         "requiresFreshIdentitySafePositive": true
-      }
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/allwish_current_runtime_v1.py"
+      ],
+      "published_types": [
+        "anime"
+      ],
+      "provider_lego_options": {}
     },
     "anime-ultime": {
       "capability": "mixed_embed_resolver",
@@ -10115,9 +10213,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -10216,9 +10314,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -10435,9 +10533,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -10631,9 +10729,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie"
         ],
@@ -10830,9 +10928,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -10987,7 +11085,7 @@
           "tv"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "no-proven-route",
+        "recoveryStatus": "repair-reproof-required",
         "provenRouteCount": 0,
         "terminalState": null,
         "quarantined": true,
@@ -10995,7 +11093,8 @@
           "declared_lane_unproven",
           "explicit_quarantine",
           "quick_provider-network-http-error",
-          "recovery_no-proven-route"
+          "recovery_no-proven-route",
+          "repair_survival_restored_requires_exact_bundle_reproof"
         ],
         "laneStatuses": {
           "movie": [
@@ -11008,7 +11107,11 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {},
-      "domain_substitutions": {}
+      "domain_substitutions": {},
+      "provider_lego_scripts": [
+        "scripts/provider_patches/moviebox_current_embed_v2.py"
+      ],
+      "provider_lego_options": {}
     },
     "showbox": {
       "capability": "html_scraper",
@@ -11030,9 +11133,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -11260,9 +11363,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -11417,14 +11520,15 @@
           "tv"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "no-proven-route",
+        "recoveryStatus": "repair-reproof-required",
         "provenRouteCount": 0,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-zero-result",
-          "recovery_no-proven-route"
+          "recovery_no-proven-route",
+          "repair_survival_restored_requires_exact_bundle_reproof"
         ],
         "laneStatuses": {
           "movie": [
@@ -11435,7 +11539,11 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/vidlove_current_api_v1.py"
+      ],
+      "provider_lego_options": {}
     }
   },
   "route_override_defaults": {
