@@ -1,0 +1,96 @@
+name: TEMP - Residual Runtime Repair V66
+
+on:
+  push:
+    branches: [fix/non-display-recovery-20260916]
+    paths: [.github/workflows/temp-runtime-repair-v66.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - name: Locate current bundles and extractor code
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          m=json.loads(Path('provider-v3-materialization.json').read_text())
+          rows=m if isinstance(m,list) else m.get('providers') or m.get('materializations') or []
+          if isinstance(rows,dict): rows=[dict(v,provider=k) if isinstance(v,dict) else {'provider':k,'file':v} for k,v in rows.items()]
+          wanted={'uhdmovies','animesalt','allwish'}
+          for r in rows:
+              pid=str(r.get('provider') or r.get('provider_id') or '').lower()
+              if pid not in wanted: continue
+              path=Path(r.get('file') or '')
+              print('V66_BUNDLE',pid,path)
+              text=path.read_text(encoding='utf-8',errors='replace')
+              terms={'uhdmovies':['oembed','wp-json','extract','crawl','download'], 'animesalt':['tmdbId','animesalt','extract','player','iframe'], 'allwish':['filter?keyword','all-wish','extract','episode','match']}[pid]
+              for term in terms:
+                  for mm in list(re.finditer(re.escape(term),text,re.I))[:5]:
+                      a=max(0,mm.start()-700); b=min(len(text),mm.end()+1100)
+                      chunk=text[a:b].replace('\n',' ')
+                      chunk=re.sub(r'https?://[^\s"\'<>]+',lambda x:x.group(0)[:180],chunk)
+                      print('V66_CODE',pid,term,chunk[:1900])
+          PY
+
+      - name: Inspect current live page structures
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import html,re,urllib.request,urllib.parse
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36'
+          targets={
+            'uhd_movie':'https://uhdmovies.my/download-interstellar-2014-dual-audio-hindi-english-2160p-4k-1080p-x264-10bit-remux-hdr-dovi-hevc-bluray-esubs/',
+            'uhd_tv':'https://uhdmovies.my/download-breaking-bad-season-01-05-2008-2013-english-audio-1080p-2160p-hevc-bluray-esubs/',
+            'animesalt':'https://animesalt.cx/?tmdbId=95479&type=tv&season=1&episode=1',
+            'allwish_search':'https://all-wish.me/filter?keyword=Jujutsu%20Kaisen',
+            'allwish_episode':'https://all-wish.me/watch/jujutsu-kaisen-tv-8ssye/ep-1',
+          }
+          def fetch(url):
+              req=urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'text/html,application/xhtml+xml','Accept-Language':'en-US,en;q=0.9'})
+              try:
+                  with urllib.request.urlopen(req,timeout=20) as r:
+                      body=r.read(900000).decode('utf-8','replace'); return r.status,r.geturl(),r.headers.get('content-type',''),body
+              except Exception as e:
+                  status=getattr(e,'code',0); body=''
+                  try: body=e.read(400000).decode('utf-8','replace')
+                  except Exception: pass
+                  return status,url,'',body
+          for key,url in targets.items():
+              status,final,ct,body=fetch(url)
+              print('V66_PAGE',key,status,final,ct,'bytes',len(body))
+              normalized=html.unescape(body.replace('\\/','/'))
+              urls=[]
+              for pat in [r'(?:href|src|action|data-(?:src|url|link|href|video|embed|player|file|stream))\s*=\s*["\']([^"\']+)',r'https?://[^\s"\'<>]+']:
+                  for m in re.finditer(pat,normalized,re.I):
+                      raw=m.group(1) if m.lastindex else m.group(0)
+                      try: u=urllib.parse.urljoin(final,raw)
+                      except Exception: continue
+                      if u.startswith('http') and u not in urls: urls.append(u)
+              def score(u):
+                  s=0; l=u.lower()
+                  for t,w in [('download',10),('hubcloud',20),('vcloud',20),('drive',12),('stream',15),('embed',15),('player',15),('watch',7),('api',8),('ajax',8),('get',2),('server',8),('episode',6)]:
+                      if t in l:s+=w
+                  if any(x in l for x in ['.css','.jpg','.png','.svg','.woff','.js?ver=']):s-=20
+                  return s
+              for u in sorted(urls,key=score,reverse=True)[:80]: print('V66_URL',key,score(u),u[:500])
+              for pat,name in [(r'<iframe\b[^>]{0,1000}>','IFRAME'),(r'<form\b[^>]{0,1200}>','FORM'),(r'<a\b[^>]{0,900}>[\s\S]{0,180}?</a>','ANCHOR')]:
+                  hits=[]
+                  for m in re.finditer(pat,normalized,re.I):
+                      x=re.sub(r'\s+',' ',m.group(0));
+                      if any(t in x.lower() for t in ['download','stream','watch','server','hubcloud','vcloud','drive','player','episode','jujutsu','interstellar','breaking']): hits.append(x[:1200])
+                  for x in hits[:40]: print('V66_'+name,key,x)
+          PY
