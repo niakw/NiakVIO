@@ -83,7 +83,16 @@ def validate_hash_inventory(expected_version: str) -> list[str]:
     return errors
 
 
-def validate_manifest_paths(relative: str, *, nested: bool) -> list[str]:
+def validate_manifest_paths(relative: str, *, nested: bool, allow_disabled: bool = True) -> list[str]:
+    """Validate manifest provider references against lifecycle-owned directories.
+
+    ``providers/`` is executable/active publication. ``provider-disabled/`` is a
+    distinct, non-executable retention scope for providers that remain visible in
+    catalogue projections while explicitly ``enabled: false``.  Never infer
+    disabled state from the path itself: the row flag owns the transition and the
+    path must agree with it.  Active-only manifests (Hub46) set
+    ``allow_disabled=False`` so a disabled row cannot leak into execution scope.
+    """
     errors: list[str] = []
     manifest = load(relative)
     manifest_dir = (ROOT / relative).parent.resolve()
@@ -94,6 +103,7 @@ def validate_manifest_paths(relative: str, *, nested: bool) -> list[str]:
             continue
         provider_id = str(entry.get("id") or "").strip()
         filename = str(entry.get("filename") or "").strip()
+        disabled = entry.get("enabled") is False
         if not provider_id:
             errors.append(f"{relative}: scraper #{index} has no id")
         elif provider_id.casefold() in seen:
@@ -105,16 +115,27 @@ def validate_manifest_paths(relative: str, *, nested: bool) -> list[str]:
         if filename.startswith(("http://", "https://", "/")):
             errors.append(f"{relative}:{provider_id}: external/absolute provider filename is forbidden: {filename}")
             continue
-        if nested:
-            if not filename.startswith("../providers/"):
-                errors.append(f"{relative}:{provider_id}: nested filename must start ../providers/: {filename}")
-        elif filename.startswith("../") or not filename.startswith("providers/"):
-            errors.append(f"{relative}:{provider_id}: root filename must start providers/: {filename}")
+
+        if disabled and not allow_disabled:
+            errors.append(f"{relative}:{provider_id}: disabled provider is forbidden in active-only manifest")
+            continue
+
+        lifecycle_dir = "provider-disabled" if disabled else "providers"
+        expected_prefix = f"../{lifecycle_dir}/" if nested else f"{lifecycle_dir}/"
+        if not filename.startswith(expected_prefix):
+            state = "disabled" if disabled else "active"
+            errors.append(
+                f"{relative}:{provider_id}: {state} filename must start {expected_prefix}: {filename}"
+            )
+
         resolved = (manifest_dir / filename).resolve()
+        lifecycle_root = (ROOT / lifecycle_dir).resolve()
         try:
-            resolved.relative_to((ROOT / "providers").resolve())
+            resolved.relative_to(lifecycle_root)
         except ValueError:
-            errors.append(f"{relative}:{provider_id}: filename escapes providers/: {filename}")
+            errors.append(
+                f"{relative}:{provider_id}: filename escapes {lifecycle_dir}/ lifecycle scope: {filename}"
+            )
             continue
         if not resolved.is_file():
             errors.append(f"{relative}:{provider_id}: referenced provider file does not exist: {filename}")
@@ -156,7 +177,7 @@ def main() -> int:
                 errors.append(f"{workflow.relative_to(ROOT)}:{line_number}: {match.group(0)}")
 
     errors.extend(validate_manifest_paths(ROOT_MANIFEST, nested=False))
-    errors.extend(validate_manifest_paths(HUB46_MANIFEST, nested=False))
+    errors.extend(validate_manifest_paths(HUB46_MANIFEST, nested=False, allow_disabled=False))
     errors.extend(validate_manifest_paths(VF_MANIFEST, nested=True))
     errors.extend(validate_manifest_paths(NO_ANIME_MANIFEST, nested=True))
     errors.extend(validate_manifest_paths(VF_NO_ANIME_MANIFEST, nested=True))
