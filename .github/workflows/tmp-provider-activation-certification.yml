@@ -1,5 +1,5 @@
 name: TMP - Provider Repair Survival Recovery
-# retry after DLE facade rebase + #122 V2/inline survival restoration 2026-09-18
+# retry after HTML-filter security scanner fixes 2026-09-18
 
 on:
   push:
@@ -46,6 +46,7 @@ jobs:
           python3 tests/dle_anime_season_identity_v2_test.py
           python3 scripts/normalize_stream_presentation_v12.py --check
           python3 tests/global_stream_presentation_test.py
+          python3 tests/provider_html_filter_security_test.py
           python3 tests/active_provider_live_coverage_test.py
           python3 tests/native_provider_resample_status_test.py
           python3 tests/native_declared_provider_matrix_test.py
