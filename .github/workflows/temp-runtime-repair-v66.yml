@@ -30,11 +30,17 @@ jobs:
           rows=m if isinstance(m,list) else m.get('providers') or m.get('materializations') or []
           if isinstance(rows,dict): rows=[dict(v,provider=k) if isinstance(v,dict) else {'provider':k,'file':v} for k,v in rows.items()]
           wanted={'uhdmovies','animesalt','allwish'}
-          for r in rows:
-              pid=str(r.get('provider') or r.get('provider_id') or '').lower()
-              if pid not in wanted: continue
-              path=Path(r.get('file') or '')
-              print('V66_BUNDLE',pid,path)
+          by={str(r.get('provider') or r.get('provider_id') or '').lower():r for r in rows if isinstance(r,dict)}
+          for pid in sorted(wanted):
+              r=by.get(pid,{})
+              candidates=[]
+              raw=str(r.get('file') or '')
+              if raw: candidates.append(Path(raw))
+              for root in (Path('providers'),Path('provider-disabled')):
+                  candidates.extend(sorted(root.glob(pid+'*.js')))
+              path=next((p for p in candidates if p.is_file()),None)
+              print('V66_BUNDLE',pid,path or 'MISSING','ledger',raw)
+              if not path: continue
               text=path.read_text(encoding='utf-8',errors='replace')
               terms={'uhdmovies':['oembed','wp-json','extract','crawl','download'], 'animesalt':['tmdbId','animesalt','extract','player','iframe'], 'allwish':['filter?keyword','all-wish','extract','episode','match']}[pid]
               for term in terms:
@@ -86,11 +92,11 @@ jobs:
                       if t in l:s+=w
                   if any(x in l for x in ['.css','.jpg','.png','.svg','.woff','.js?ver=']):s-=20
                   return s
-              for u in sorted(urls,key=score,reverse=True)[:80]: print('V66_URL',key,score(u),u[:500])
+              for u in sorted(urls,key=score,reverse=True)[:100]: print('V66_URL',key,score(u),u[:500])
               for pat,name in [(r'<iframe\b[^>]{0,1000}>','IFRAME'),(r'<form\b[^>]{0,1200}>','FORM'),(r'<a\b[^>]{0,900}>[\s\S]{0,180}?</a>','ANCHOR')]:
                   hits=[]
                   for m in re.finditer(pat,normalized,re.I):
-                      x=re.sub(r'\s+',' ',m.group(0));
+                      x=re.sub(r'\s+',' ',m.group(0))
                       if any(t in x.lower() for t in ['download','stream','watch','server','hubcloud','vcloud','drive','player','episode','jujutsu','interstellar','breaking']): hits.append(x[:1200])
-                  for x in hits[:40]: print('V66_'+name,key,x)
+                  for x in hits[:60]: print('V66_'+name,key,x)
           PY
