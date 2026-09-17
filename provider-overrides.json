@@ -2641,11 +2641,10 @@
         "/ajax/server?get={id}"
       ],
       "provider_lego_scripts": [
-        "scripts/provider_patches/anikototv_runtime_v2.py",
-        "scripts/provider_patches/anikototv_megaplay_embed_fallback_v3.py"
+        "scripts/provider_patches/anikototv_runtime_v3.py"
       ],
       "provider_lego_options": {
-        "scripts/provider_patches/anikototv_runtime_v2.py": {
+        "scripts/provider_patches/anikototv_runtime_v3.py": {
           "mirrors": [
             "https://anikototv.to",
             "https://anikoto.cz",
@@ -2653,8 +2652,7 @@
             "https://anikoto.net",
             "https://anikototv.se"
           ]
-        },
-        "scripts/provider_patches/anikototv_megaplay_embed_fallback_v3.py": {}
+        }
       },
       "candidate_learned_routes": [
         "/search?keyword={query}",
@@ -2807,18 +2805,20 @@
           "anime"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "no-proven-route",
+        "recoveryStatus": "repair",
         "provenRouteCount": 0,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-zero-result",
-          "recovery_no-proven-route"
+          "recovery_no-proven-route",
+          "v42_current_correlated_player_verified"
         ],
         "laneStatuses": {
           "anime": [
-            "no_streams"
+            "no_streams",
+            "correlated_player_verified"
           ],
           "movie": [
             "no_streams"
@@ -2857,7 +2857,8 @@
       "notes": [
         "AniKoto runtime v2 is the durable authority for browser-like MegaPlay/CDN transport; no anti-bot token is fabricated and terminal 403 remains fail-closed.",
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
-        "V40 MegaPlay contract: plaintext sources are used when present; current encrypted enc payloads preserve only the already identity-correlated, HTTP-verified MegaPlay embed for Core player handling. No fake direct HLS is emitted."
+        "V40 MegaPlay contract: plaintext sources are used when present; current encrypted enc payloads preserve only the already identity-correlated, HTTP-verified MegaPlay embed for Core player handling. No fake direct HLS is emitted.",
+        "V41 AniKoto uses one standalone V3 owned runtime. MegaPlay plaintext sources remain direct media; encrypted enc responses preserve only the already identity-correlated, HTTP-verified player embed for Core/player handling."
       ],
       "preserve_embed_urls": true
     },
@@ -6960,13 +6961,15 @@
         "requiredLanes": [
           "anime"
         ],
-        "currentVerifiedLanes": [],
-        "exactLockedLanes": [],
-        "provenLanes": [],
-        "missingLanes": [
+        "currentVerifiedLanes": [
           "anime"
         ],
-        "completeCapabilityProof": false,
+        "exactLockedLanes": [],
+        "provenLanes": [
+          "anime"
+        ],
+        "missingLanes": [],
+        "completeCapabilityProof": true,
         "recoveryStatus": "proven",
         "provenRouteCount": 4,
         "terminalState": null,
@@ -6975,11 +6978,13 @@
           "declared_lane_unproven",
           "quick_provider-network-exception",
           "quick_provider-network-http-error",
-          "recovery_proven"
+          "recovery_proven",
+          "v42_current_terminal_playback_proven"
         ],
         "laneStatuses": {
           "anime": [
-            "no_streams"
+            "no_streams",
+            "playable_verified"
           ],
           "movie": [
             "no_streams"
@@ -7061,7 +7066,8 @@
         "Core resolves TMDB identity/type first and passes canonical metadata to generic catalogue recovery.",
         "Current site contract uses /{slug} for movies and /series/{slug} for series, then data-embed/data-src player wrappers; stale /api/mirrors/film is not authoritative.",
         "NIAKVIO_STREAMZO_SUGGEST_AUTHORITY_V1: /api/web/suggest exact href replaces stale generated-slug execution.",
-        "V40 requalification must use a currently present catalogue episode (Jujutsu Kaisen S1E3 or S2E1); current S1E1 is absent upstream and must not be scored as a parser regression."
+        "V40 requalification must use a currently present catalogue episode (Jujutsu Kaisen S1E3 or S2E1); current S1E1 is absent upstream and must not be scored as a parser regression.",
+        "V41 live requalification uses Jujutsu Kaisen S1E3 because the current upstream page exposes S1E3/S1E6 but not S1E1; catalog absence is not a parser failure."
       ],
       "capability": "mixed_embed_resolver",
       "official_hub": null,
@@ -7311,18 +7317,18 @@
           "tv"
         ],
         "currentVerifiedLanes": [
+          "anime",
           "movie",
           "tv"
         ],
         "exactLockedLanes": [],
         "provenLanes": [
+          "anime",
           "movie",
           "tv"
         ],
-        "missingLanes": [
-          "anime"
-        ],
-        "completeCapabilityProof": false,
+        "missingLanes": [],
+        "completeCapabilityProof": true,
         "recoveryStatus": "proven",
         "provenRouteCount": 5,
         "terminalState": null,
@@ -7331,11 +7337,13 @@
           "declared_lane_unproven",
           "quick_gate-runtime-plan-missing",
           "quick_provider-returned-streams",
-          "recovery_proven"
+          "recovery_proven",
+          "v42_current_terminal_playback_proven"
         ],
         "laneStatuses": {
           "anime": [
-            "no_streams"
+            "no_streams",
+            "playable_verified"
           ],
           "movie": [
             "playable_verified"
@@ -9579,7 +9587,8 @@
         "reasonCodes": [
           "declared_lane_unproven",
           "quick_provider-network-zero-result",
-          "recovery_proven"
+          "recovery_proven",
+          "v42_movie_tv_namespace_identity_proven"
         ],
         "laneStatuses": {
           "movie": [
@@ -9628,6 +9637,10 @@
       "notes": [
         "V40 namespace correction: movie requests use type=movie and TV requests use type=tv. A TV request must never reuse the numeric TMDB id on the movie namespace (TMDB 1396 otherwise resolves to the unrelated film Mirror).",
         "Current downstream YFlix/1Movies/SolarMovie AJAX frontends are unavailable from the GitHub runner; execution therefore fails closed after the identity-correct enc-dec.app DB stage instead of manufacturing playback proof."
+      ],
+      "published_types": [
+        "movie",
+        "tv"
       ]
     },
     "allanime": {
