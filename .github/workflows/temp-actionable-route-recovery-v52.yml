@@ -1,0 +1,82 @@
+name: TEMP - Actionable Route Recovery V52
+
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-actionable-route-recovery-v52.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+
+      - name: Inspect actionable current contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          d=json.load(open('provider-overrides.json',encoding='utf-8'))
+          ids=['4khdhub','uhdmovies','persianstremio','desiflix','kehflix','animesama-co','moviesmod','mugiwarastream','neko-sama','voiranime-rip','animevost-fr','mallumv','animetsu']
+          patches=d.get('provider_patches') or {}; caps=d.get('provider_capabilities') or {}
+          keys=('official_site','official_hub','official_api','capability','published_types','learned_routes','api_recipe','candidate_api_recipe','provider_lego_scripts','runtime_domain_replacements','domain_substitutions','repair_disposition')
+          for pid in ids:
+              p=patches.get(pid) or {}
+              out={k:p.get(k) for k in keys if k in p}
+              out['provider_capability']=caps.get(pid)
+              print('V52_CONFIG\t'+pid+'\t'+json.dumps(out,sort_keys=True))
+          PY
+
+      - name: Recover current routes without applying anything
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python scripts/recover_provider_routes_from_upstreams.py \
+            --workers 6 --timeout 35 --attempts 2 \
+            --out health-output/v52-recovery.json \
+            --provider 4khdhub \
+            --provider uhdmovies \
+            --provider persianstremio \
+            --provider desiflix \
+            --provider kehflix \
+            --provider animesama-co \
+            --provider moviesmod \
+            --provider mugiwarastream \
+            --provider neko-sama \
+            --provider voiranime-rip \
+            --provider animevost-fr \
+            --provider mallumv \
+            --provider animetsu
+          python - <<'PY'
+          import json
+          d=json.load(open('health-output/v52-recovery.json',encoding='utf-8'))
+          print('V52_TOP',json.dumps({k:d.get(k) for k in ('providerCount','providersWithProvenRoutes','provenRouteCount','taskCount')},sort_keys=True))
+          raw=d.get('providers') or {}
+          if isinstance(raw,list):
+              rows={str(x.get('provider') or x.get('id') or ''):x for x in raw if isinstance(x,dict)}
+          else: rows=raw if isinstance(raw,dict) else {}
+          for pid,row in sorted(rows.items()):
+              if not isinstance(row,dict): continue
+              compact={k:row.get(k) for k in ('status','provenRouteCount','positiveExecutionEvidence','provenRoutes','failedRoutes','reason','error','laneResults','routeProof','apiRecipe','candidateApiRecipe') if k in row}
+              print('V52_RECOVERY\t'+pid+'\t'+json.dumps(compact,sort_keys=True))
+          PY
+
+      - name: Prove diagnostic is non-persistent
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- provider-overrides.json manifest.json PROVENANCE.json provider-v3-materialization.json providers/ scripts/provider_patches
+          echo V52_DIAGNOSTIC_NON_PERSISTENT_OK
