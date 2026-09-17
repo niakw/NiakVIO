@@ -18,7 +18,7 @@ def _french_manga_wrapper() -> str:
     stored in onclick="location.href='...'".  The numeric news id is normally the
     prefix of that target URL, while the visible title lives in .search-title.
     """
-    needle = "    return out\n  }\n  function bestCandidate"
+    needle = "    return out\n  }\n  function seasonSignal"
     replacement = r'''    /* NIAKVIO_FRENCH_MANGA_SEARCH_ITEM_V2 */
     var itemRe=/onclick=(["'])[^"']*location\.href\s*=\s*['"]([^'"]+)['"][^"']*\1/gi,im;
     while((im=itemRe.exec(html||""))!==null&&out.length<100){
@@ -29,9 +29,9 @@ def _french_manga_wrapper() -> str:
     }
     return out
   }
-  function bestCandidate'''
+  function seasonSignal'''
     if needle not in common.WRAPPER:
-        raise ValueError("shared DLE candidate parser anchor missing")
+        raise ValueError("shared DLE candidate parser/season anchor missing")
     return common.WRAPPER.replace(needle, replacement, 1)
 
 
