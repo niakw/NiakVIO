@@ -1,22 +1,29 @@
 #!/usr/bin/env python3
-"""NiakVIO-aware Provider v3 JavaScript minimizer.
+"""NiakVIO-aware Provider v3 JavaScript one-line minimizer.
 
-This is deliberately not a generic JavaScript minifier. It preserves strings,
-template literal payloads, managed Provider v3 markers, security/runtime markers,
-licenses and source directives; never renames identifiers; never folds or
-reorders expressions; and never uses Terser.
+This is deliberately not a generic JavaScript minifier. Publication output is
+one physical line while preserving NiakVIO managed markers, string payloads,
+runtime/security markers and editability. Terser, identifier mangling, syntax
+folding and expression reordering are forbidden.
 
-Production transformations are restricted to safe line-level operations while
-the lexer is in ordinary JavaScript code (including template-expression code):
-leading/trailing horizontal whitespace, blank code-only lines, and standalone
-non-contract comments. Literal/comment payload bytes that are not explicitly
-classified as removable are left untouched.
+The transformer only:
+- removes unmanaged comments;
+- flattens code line breaks to one safe separator;
+- removes indentation that follows a physical line break;
+- preserves quoted strings byte-for-byte (except JavaScript line continuations);
+- converts untagged template literal physical line breaks to ``\\n`` escapes so
+  the cooked runtime string is unchanged;
+- preserves protected comment payloads/markers on the one physical output line.
+
+Tagged templates fail closed because their ``raw`` payload would observe the
+difference between a physical line break and an escape sequence.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 import tempfile
 from pathlib import Path
@@ -28,10 +35,11 @@ MANIFEST = ROOT / "manifest.json"
 PRODUCTION_ENABLED = True
 TERSER_ALLOWED = False
 TRANSFORMATIONS_ENABLED = [
-    "code-line-leading-indentation",
-    "code-line-trailing-whitespace",
-    "code-blank-lines",
-    "unmanaged-full-line-comments",
+    "one-physical-line",
+    "code-linebreak-to-space",
+    "post-linebreak-indentation-removal",
+    "unmanaged-comment-removal",
+    "untagged-template-linebreak-escape",
 ]
 
 MARKERS = (
@@ -57,7 +65,24 @@ PROTECTED_COMMENT_TOKENS = (
     "@cc_on",
 )
 
-_CODEISH = {"code", "template_expr"}
+_RESTRICTED_LINEBREAK_RE = re.compile(
+    r"(?:^|[^A-Za-z0-9_$])(return|throw|break|continue|yield|async)\s*$"
+)
+_PREFIX_TEMPLATE_WORDS = {
+    "return",
+    "throw",
+    "case",
+    "delete",
+    "void",
+    "typeof",
+    "yield",
+    "await",
+    "new",
+    "in",
+    "of",
+    "instanceof",
+}
+_IDENTIFIER_TAIL_RE = re.compile(r"([A-Za-z_$][A-Za-z0-9_$]*)$")
 
 
 class MinimizeResult:
@@ -77,169 +102,258 @@ class MinimizeResult:
         self.skipped_reason = str(skipped_reason)
 
 
-def _split_line_ending(line: str) -> tuple[str, str]:
-    if line.endswith("\r\n"):
-        return line[:-2], "\r\n"
-    if line.endswith("\n") or line.endswith("\r"):
-        return line[:-1], line[-1:]
-    return line, ""
+def _protected_comment(text: str) -> bool:
+    stripped = str(text or "").strip()
+    if stripped.startswith("/*!"):
+        return True
+    folded = stripped.casefold()
+    return any(token.casefold() in folded for token in PROTECTED_COMMENT_TOKENS)
 
 
-def _ctx(kind: str, **extra: int) -> dict[str, int | str]:
-    row: dict[str, int | str] = {"kind": kind}
-    row.update(extra)
-    return row
+def _append_space(out: list[str]) -> None:
+    if out and not out[-1].isspace():
+        out.append(" ")
 
 
-def _kind(stack: list[dict[str, int | str]]) -> str:
-    return str(stack[-1]["kind"])
+def _rstrip_horizontal(out: list[str]) -> None:
+    while out and out[-1] in {" ", "\t", "\f", "\v"}:
+        out.pop()
 
 
-def _scan_line(line: str, stack: list[dict[str, int | str]]) -> None:
-    """Advance a conservative JS lexical stack using original source bytes."""
-    i = 0
-    while i < len(line):
-        kind = _kind(stack)
-        ch = line[i]
-        nxt = line[i + 1] if i + 1 < len(line) else ""
+def _tail(out: list[str], limit: int = 160) -> str:
+    if not out:
+        return ""
+    return "".join(out[-limit:])
 
-        if kind == "block_comment":
-            if ch == "*" and nxt == "/":
-                stack.pop()
+
+def _linebreak_guard(out: list[str]) -> None:
+    tail = _tail(out).rstrip(" \t\f\v")
+    if not tail:
+        return
+    if _RESTRICTED_LINEBREAK_RE.search(tail):
+        raise ValueError(
+            "ASI-sensitive line break after restricted keyword cannot be flattened safely"
+        )
+    if tail.endswith(("++", "--")):
+        raise ValueError(
+            "ASI-sensitive line break after postfix update cannot be flattened safely"
+        )
+
+
+def _tagged_template_risk(out: list[str]) -> bool:
+    tail = _tail(out).rstrip()
+    if not tail:
+        return False
+    match = _IDENTIFIER_TAIL_RE.search(tail)
+    if match and match.group(1) in _PREFIX_TEMPLATE_WORDS:
+        return False
+    last = tail[-1]
+    if last in "=([{,:;!?&|+-*%~<>":
+        return False
+    if tail.endswith("=>"):
+        return False
+    return True
+
+
+def _flatten_protected_block(comment: str) -> str:
+    return comment.replace("\r\n", " ").replace("\r", " ").replace("\n", " ")
+
+
+def _consume_string(text: str, i: int, quote: str, out: list[str]) -> tuple[int, int]:
+    transformed = 0
+    out.append(quote)
+    i += 1
+    while i < len(text):
+        ch = text[i]
+        if ch == "\\":
+            if i + 1 >= len(text):
+                out.append(ch)
+                return i + 1, transformed
+            nxt = text[i + 1]
+            if nxt == "\r":
+                transformed += 1
                 i += 2
-            else:
-                i += 1
-            continue
-
-        if kind in {"single", "double"}:
-            quote = "'" if kind == "single" else '"'
-            if ch == "\\":
+                if i < len(text) and text[i] == "\n":
+                    i += 1
+                continue
+            if nxt == "\n":
+                transformed += 1
                 i += 2
                 continue
-            if ch == quote:
-                stack.pop()
-            i += 1
+            out.append(ch)
+            out.append(nxt)
+            i += 2
             continue
+        if ch == quote:
+            out.append(ch)
+            return i + 1, transformed
+        if ch in "\r\n":
+            raise ValueError("bare physical line break inside quoted JavaScript string")
+        out.append(ch)
+        i += 1
+    raise ValueError("unterminated JavaScript string literal")
+
+
+def minimize_text(text: str) -> MinimizeResult:
+    source = str(text or "")
+    out: list[str] = []
+    stack: list[dict[str, int | str]] = [{"kind": "code"}]
+    i = 0
+    transformed = 0
+
+    while i < len(source):
+        state = stack[-1]
+        kind = str(state["kind"])
+        ch = source[i]
+        nxt = source[i + 1] if i + 1 < len(source) else ""
 
         if kind == "template":
             if ch == "\\":
+                if i + 1 >= len(source):
+                    out.append(ch)
+                    i += 1
+                    continue
+                nxt = source[i + 1]
+                if nxt == "\r":
+                    transformed += 1
+                    i += 2
+                    if i < len(source) and source[i] == "\n":
+                        i += 1
+                    continue
+                if nxt == "\n":
+                    transformed += 1
+                    i += 2
+                    continue
+                out.append(ch)
+                out.append(nxt)
                 i += 2
                 continue
             if ch == "`":
+                out.append(ch)
                 stack.pop()
                 i += 1
                 continue
             if ch == "$" and nxt == "{":
-                stack.append(_ctx("template_expr", depth=1))
+                out.append("${")
+                stack.append({"kind": "template_expr", "depth": 1})
                 i += 2
                 continue
+            if ch == "\r":
+                out.append("\\n")
+                transformed += 1
+                i += 1
+                if i < len(source) and source[i] == "\n":
+                    i += 1
+                continue
+            if ch == "\n":
+                out.append("\\n")
+                transformed += 1
+                i += 1
+                continue
+            out.append(ch)
             i += 1
             continue
 
-        # Ordinary code or template-expression code.
-        if ch == "/" and nxt == "/":
-            return
-        if ch == "/" and nxt == "*":
-            stack.append(_ctx("block_comment"))
-            i += 2
-            continue
-        if ch == "'":
-            stack.append(_ctx("single"))
+        if kind == "template_expr" and ch == "{":
+            state["depth"] = int(state.get("depth", 1)) + 1
+            out.append(ch)
             i += 1
             continue
-        if ch == '"':
-            stack.append(_ctx("double"))
+        if kind == "template_expr" and ch == "}":
+            depth = int(state.get("depth", 1)) - 1
+            out.append(ch)
             i += 1
+            if depth <= 0:
+                stack.pop()
+            else:
+                state["depth"] = depth
             continue
+
+        if ch in {"'", '"'}:
+            i, count = _consume_string(source, i, ch, out)
+            transformed += count
+            continue
+
         if ch == "`":
-            stack.append(_ctx("template"))
+            if _tagged_template_risk(out):
+                raise ValueError(
+                    "tagged template literal cannot be flattened without changing raw payload"
+                )
+            out.append(ch)
+            stack.append({"kind": "template"})
             i += 1
             continue
 
-        if kind == "template_expr":
-            if ch == "{":
-                stack[-1]["depth"] = int(stack[-1].get("depth", 1)) + 1
+        if ch == "/" and nxt == "/":
+            start = i
+            i += 2
+            while i < len(source) and source[i] not in "\r\n":
                 i += 1
-                continue
-            if ch == "}":
-                depth = int(stack[-1].get("depth", 1)) - 1
-                if depth <= 0:
-                    stack.pop()
+            comment = source[start:i]
+            if _protected_comment(comment):
+                payload = comment[2:].strip()
+                out.append(f"/* {payload} */")
+            else:
+                _append_space(out)
+            transformed += 1
+            if i < len(source):
+                _rstrip_horizontal(out)
+                _linebreak_guard(out)
+                _append_space(out)
+                if source[i] == "\r":
+                    i += 1
+                    if i < len(source) and source[i] == "\n":
+                        i += 1
                 else:
-                    stack[-1]["depth"] = depth
-                i += 1
-                continue
+                    i += 1
+                while i < len(source) and source[i] in " \t\f\v":
+                    i += 1
+                transformed += 1
+            continue
 
+        if ch == "/" and nxt == "*":
+            end = source.find("*/", i + 2)
+            if end < 0:
+                raise ValueError("unterminated JavaScript block comment")
+            comment = source[i : end + 2]
+            if _protected_comment(comment):
+                flattened = _flatten_protected_block(comment)
+                if flattened != comment:
+                    transformed += 1
+                out.append(flattened)
+            else:
+                _append_space(out)
+                transformed += 1
+            i = end + 2
+            continue
+
+        if ch in "\r\n":
+            _rstrip_horizontal(out)
+            _linebreak_guard(out)
+            _append_space(out)
+            if ch == "\r":
+                i += 1
+                if i < len(source) and source[i] == "\n":
+                    i += 1
+            else:
+                i += 1
+            while i < len(source) and source[i] in " \t\f\v":
+                i += 1
+            transformed += 1
+            continue
+
+        out.append(ch)
         i += 1
 
+    if len(stack) != 1 or str(stack[0].get("kind")) != "code":
+        raise ValueError(f"unterminated JavaScript lexical state: {stack!r}")
 
-def _protected_comment(stripped: str) -> bool:
-    if stripped.startswith("/*!"):
-        return True
-    return any(token.casefold() in stripped.casefold() for token in PROTECTED_COMMENT_TOKENS)
-
-
-def _removable_full_line_comment(body: str, start_kind: str, end_kind: str) -> bool:
-    if start_kind not in _CODEISH or end_kind not in _CODEISH:
-        return False
-    stripped = body.strip()
-    if not stripped or _protected_comment(stripped):
-        return False
-    if stripped.startswith("//"):
-        return True
-    if (
-        stripped.startswith("/*")
-        and stripped.endswith("*/")
-        and stripped.count("/*") == 1
-        and stripped.count("*/") == 1
-    ):
-        return True
-    return False
-
-
-def minimize_text(text: str) -> MinimizeResult:
-    stack: list[dict[str, int | str]] = [_ctx("code")]
-    out: list[str] = []
-    transformed = 0
-
-    for raw_line in text.splitlines(keepends=True):
-        body, ending = _split_line_ending(raw_line)
-        original_body = body
-        start_kind = _kind(stack)
-
-        # All lexical decisions are made from original bytes. Only horizontal
-        # whitespace outside protected literal/comment payloads is touched.
-        if start_kind in _CODEISH:
-            body = body.lstrip(" \t")
-
-        _scan_line(original_body, stack)
-        end_kind = _kind(stack)
-
-        if end_kind in _CODEISH:
-            body = body.rstrip(" \t")
-
-        remove_comment = _removable_full_line_comment(
-            original_body,
-            start_kind,
-            end_kind,
-        )
-        drop_blank = (
-            not body
-            and bool(ending)
-            and start_kind in _CODEISH
-            and end_kind in _CODEISH
-        )
-
-        # Dropping a whole comment/blank physical line leaves the previous
-        # nonblank line's terminator in place, so adjacent statements retain a
-        # line boundary for ASI-sensitive runtimes.
-        candidate = "" if remove_comment or drop_blank else body + ending
-        if candidate != raw_line:
-            transformed += 1
-        out.append(candidate)
-
+    _rstrip_horizontal(out)
     minimized = "".join(out)
-    saved = len(text.encode("utf-8")) - len(minimized.encode("utf-8"))
+    if "\n" in minimized or "\r" in minimized:
+        raise ValueError("one-line minimizer emitted a physical line break")
+
+    saved = len(source.encode("utf-8")) - len(minimized.encode("utf-8"))
     if saved < 0:
         raise ValueError(f"minimizer increased provider bytes: saved={saved}")
     return MinimizeResult(
@@ -251,17 +365,11 @@ def minimize_text(text: str) -> MinimizeResult:
 
 def audit_text(text: str) -> dict:
     encoded = text.encode("utf-8")
-    lines = text.splitlines()
-    indentation = sum(len(line) - len(line.lstrip(" \t")) for line in lines)
-    trailing = sum(len(line) - len(line.rstrip(" \t")) for line in lines)
-    blank = sum(1 for line in lines if not line.strip())
     return {
         "bytes": len(encoded),
         "sha256": hashlib.sha256(encoded).hexdigest(),
-        "lines": len(lines),
-        "blank_lines": blank,
-        "indentation_bytes": indentation,
-        "trailing_space_bytes": trailing,
+        "lines": 1 if text else 0,
+        "physical_linebreaks": text.count("\n") + text.count("\r"),
         "template_literal_tokens": text.count("`"),
         "markers": {marker: text.count(marker) for marker in MARKERS},
     }
@@ -273,6 +381,8 @@ def validate_transform(original: str, minimized: str) -> None:
 
     if after["bytes"] > before["bytes"]:
         raise ValueError("minimizer increased provider bytes")
+    if after["physical_linebreaks"] != 0:
+        raise ValueError("published provider is not one physical line")
     if before["markers"] != after["markers"]:
         raise ValueError("minimizer changed Provider v3 structural markers")
     if before["template_literal_tokens"] != after["template_literal_tokens"]:
@@ -339,7 +449,7 @@ def portfolio_report(*, syntax_check: bool = False) -> dict:
         "bytes_after": 0,
         "saved_bytes": 0,
         "transformed_lines": 0,
-        "skipped_templates": 0,
+        "one_line_providers": 0,
     }
 
     for path in files:
@@ -364,26 +474,28 @@ def portfolio_report(*, syntax_check: bool = False) -> dict:
         totals["bytes_after"] += after["bytes"]
         totals["saved_bytes"] += result.saved_bytes
         totals["transformed_lines"] += result.transformed_lines
+        totals["one_line_providers"] += int(after["physical_linebreaks"] == 0)
 
     return {
-        "schema_version": 4,
-        "mode": "niakvio-safe-minimizer",
+        "schema_version": 5,
+        "mode": "niakvio-safe-one-line-minimizer",
         "production_enabled": PRODUCTION_ENABLED,
         "terser_allowed": TERSER_ALLOWED,
         "provider_count": len(files),
         "transformations_enabled": list(TRANSFORMATIONS_ENABLED),
         "safety_contract": [
+            "publish every active Provider v3 bundle as exactly one physical line",
             "preserve every managed Provider v3 marker cardinality",
             "preserve NIAKVIO_/NUVIO_ runtime/security marker comments",
-            "preserve license and source directive comments",
-            "remove only standalone non-contract comments",
-            "preserve bytes inside multiline strings, template payloads and multiline block comments",
-            "track nested template expressions before touching line whitespace",
+            "preserve license/source-directive payloads as protected comments",
+            "preserve quoted string payloads and JavaScript string continuations",
+            "escape physical line breaks only inside untagged template literals",
+            "fail closed on tagged templates because raw payload semantics differ",
+            "fail closed on restricted-keyword/postfix ASI-sensitive line breaks",
             "never rename identifiers",
             "never reorder or fold expressions",
             "never use Terser",
-            "retain a physical line boundary between adjacent nonblank code lines",
-            f"require idempotence and Node syntax on all {len(files)} current active providers",
+            f"require deterministic fixed-point and Node syntax on all {len(files)} current active providers",
         ],
         "totals": totals,
         "providers": rows,
@@ -449,7 +561,7 @@ def main() -> int:
             f"providers={report['provider_count']} "
             f"bytes_before={totals['bytes_before']} bytes_after={totals['bytes_after']} "
             f"saved_bytes={totals['saved_bytes']} transformed_lines={totals['transformed_lines']} "
-            f"skipped_templates={totals['skipped_templates']} "
+            f"one_line={totals['one_line_providers']} "
             f"production_enabled={str(PRODUCTION_ENABLED).lower()} terser_allowed=false"
         )
     return 0
