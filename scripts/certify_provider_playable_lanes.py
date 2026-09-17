@@ -30,6 +30,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from native_media_type_contract import fixture_runtime_media_type  # noqa: E402
 from rotating_corpus import (  # noqa: E402
     all_fixtures,
     canonical_lane,
@@ -151,7 +152,7 @@ def parse_probe(stdout: str) -> dict[str, Any] | None:
 
 def probe_fixture(bundle: Path, fixture: dict[str, Any], timeout: int) -> dict[str, Any]:
     clean_fixture = {key: value for key, value in fixture.items() if key not in {"slug", "lane"}}
-    command = [
+    # Nuvio plugin ABI transports semantic anime through the tv lane. Preserve the\n    # semantic lane in certification metadata, but execute the exact same runtime\n    # media type as official TV/Mobile/Desktop clients.\n    clean_fixture["mediaType"] = fixture_runtime_media_type(fixture)\n    command = [
         "node",
         str(PROBE),
         str(bundle),
@@ -217,6 +218,7 @@ def probe_fixture(bundle: Path, fixture: dict[str, Any], timeout: int) -> dict[s
         "contradictions": contradictions,
         "debugStage": stage or status,
         "durationMs": int(payload.get("duration_ms") or round((time.monotonic() - started) * 1000)),
+        "runtimeMediaType": clean_fixture.get("mediaType"),
     }
 
 
@@ -274,6 +276,7 @@ def certify_provider(
                 "verified": probe["verified"],
                 "contradictions": probe["contradictions"],
                 "durationMs": probe["durationMs"],
+                "runtimeMediaType": probe.get("runtimeMediaType"),
             })
             if probe["positive"]:
                 witness = {
