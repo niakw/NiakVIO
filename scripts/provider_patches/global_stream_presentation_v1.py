@@ -21,7 +21,7 @@ MANAGED_FIX_ID = "CORE.STREAM_PRESENTATION.V1"
 FACTS_PATH = Path(__file__).with_name("global_stream_facts_v1.py")
 IDENTITY_PATH = Path(__file__).with_name("global_stream_identity_v1.py")
 PROVIDER_CATALOG_PATH = Path(__file__).resolve().parents[2] / "provider_catalog.json"
-REVISION = "all-providers-client-projection-evidence-language-v24"
+REVISION = "all-providers-client-projection-evidence-language-v25"
 
 
 def _apply_module(path: Path, module_name: str, text: str, context: dict[str, Any]) -> str:
@@ -66,7 +66,7 @@ def _provider_language_profile(provider_id: str) -> dict[str, str]:
         }
         projections = entry.get("projections") if isinstance(entry.get("projections"), dict) else {}
         vf = projections.get("vf") is True or "fr" in languages
-        return {"mode": "vf" if vf else "vo", "fallback": "VF" if vf else "VO"}
+        return {"mode": "vf" if vf else "vo", "fallback": "" if vf else "VO"}
     return {"mode": "vo", "fallback": "VO"}
 
 
@@ -133,7 +133,23 @@ function quality(r){
   var h=Number(r&&r.height||0);if(h>=2000)best=Math.max(best,2160);else if(h>=1350)best=Math.max(best,1440);else if(h>=900)best=Math.max(best,1080);else if(h>=650)best=Math.max(best,720);else if(h>=450)best=Math.max(best,480);
   return best?String(best)+"p":"";
 }
-function language(r){var explicit=meaningful(r&&r.language)?s(r.language):"",all=[r&&r.language,r&&r.languages,r&&r.languageTracks,r&&r.audioLanguage,r&&r.audioLanguages,r&&r.audioTracks].map(s).join(" "),u=explicit.toUpperCase(),a=all.toUpperCase(),vfMode=s(c.providerLanguageMode).toLowerCase()==="vf";function isMulti(x){return /\bMULTI(?:[- ]?AUDIO|LANG(?:UE)?S?)?\b/.test(x)||/\bDUAL(?:[- ]?AUDIO)?\b/.test(x)}function isVost(x){return /\bVOSTFR\b/.test(x)||/\bVOST[ ._-]?FR\b/.test(x)||/\bVO[ ._-]?ST[ ._-]?FR\b/.test(x)}function isVfq(x){return /\bVFQ\b/.test(x)||/\bFR[ ._-]?CA\b/.test(x)||/\bFRENCH[ ._-]?(?:CANADA|CANADIAN|QUEBEC)\b/.test(x)||/\b(?:QUEBEC|QU[ÉE]B[ÉE]COIS)\b/.test(x)}function isVf(x){return /\b(?:VF|VFF|FR|FRA|FRE|FRENCH|FRANCAIS|FRANÇAIS|FR[ ._-]?FR)\b/.test(x)}function isVo(x){return /\bVO\b/.test(x)||/\bORIGINAL(?:[ ._-]?(?:AUDIO|LANG(?:UAGE)?))?\b/.test(x)||/\b(?:EN|ENG|ENGLISH)\b/.test(x)}var hasVost=isVost(a),hasVf=isVf(a)||isVfq(a);if(isMulti(u)||isMulti(a)||(hasVost&&hasVf))return vfMode?"MULTI (VF/VO)":"MULTI";if(isVost(u))return"VOSTFR";if(isVfq(u))return"VFQ";if(isVf(u))return"VF";if(isVo(u))return"VO";if(!u){if(hasVost)return"VOSTFR";if(hasVf)return"VF";if(isVo(a))return"VO"}return""}
+function language(r){
+  var explicit=meaningful(r&&r.language)?s(r.language):"",structured=[r&&r.language,r&&r.languages,r&&r.languageTracks,r&&r.audioLanguage,r&&r.audioLanguages,r&&r.audioTracks].map(s).join(" "),labels=[r&&r.label,r&&r.sourceLabel,r&&r.audio,r&&r.name,r&&r.title].map(s).join(" "),u=explicit.toUpperCase(),a=structured.toUpperCase(),b=labels.toUpperCase(),vfMode=s(c.providerLanguageMode).toLowerCase()==="vf";
+  function isMulti(x){return /\bMULTI(?:[- ]?AUDIO|LANG(?:UE)?S?)?\b/.test(x)||/\bDUAL(?:[- ]?AUDIO)?\b/.test(x)}
+  function isVost(x){return /\bVOSTFR\b/.test(x)||/\bVOST[ ._-]?FR\b/.test(x)||/\bVO[ ._-]?ST[ ._-]?FR\b/.test(x)}
+  function isVfq(x){return /\bVFQ\b/.test(x)||/\bFR[ ._-]?CA\b/.test(x)||/\bFRENCH[ ._-]?(?:CANADA|CANADIAN|QUEBEC)\b/.test(x)||/\b(?:QUEBEC|QU[ÉE]B[ÉE]COIS)\b/.test(x)}
+  function isVf(x){return /\b(?:VF|VFF|FR|FRA|FRE|FRENCH|FRANCAIS|FRANÇAIS|FR[ ._-]?FR)\b/.test(x)}
+  function isVo(x){return /\bVO\b/.test(x)||/\bORIGINAL(?:[ ._-]?(?:AUDIO|LANG(?:UAGE)?))?\b/.test(x)||/\b(?:EN|ENG|ENGLISH)\b/.test(x)}
+  function strongVf(x){return /\b(?:VF|VFF|FR[ ._-]?FR)\b/.test(x)}
+  function strongVfq(x){return /\b(?:VFQ|FR[ ._-]?CA)\b/.test(x)}
+  function strongVo(x){return /\bVO\b/.test(x)||/\bORIGINAL(?:[ ._-]?(?:AUDIO|LANG(?:UAGE)?))?\b/.test(x)}
+  var hasVost=isVost(a)||isVost(b),hasVf=isVf(a)||isVfq(a)||strongVf(b)||strongVfq(b);
+  if(isMulti(u)||isMulti(a)||isMulti(b)||(hasVost&&hasVf))return vfMode?"MULTI (VF/VO)":"MULTI";
+  if(isVost(u))return"VOSTFR";if(isVfq(u))return"VFQ";if(isVf(u))return"VF";if(isVo(u))return"VO";
+  if(!u){if(isVost(a))return"VOSTFR";if(isVfq(a))return"VFQ";if(isVf(a))return"VF";if(isVo(a))return"VO";if(isVost(b))return"VOSTFR";if(strongVfq(b))return"VFQ";if(strongVf(b))return"VF";if(strongVo(b))return"VO"}
+  if(!vfMode&&meaningful(c.languageFallback))return s(c.languageFallback).toUpperCase();
+  return""
+}
 function detailedLanguage(r,fallback){
   var raw=s(r&&r.language),all=[raw,r&&r.languages,r&&r.languageTracks,r&&r.audioLanguage,r&&r.audioLanguages,r&&r.audioTracks].map(s).join(" ").toLowerCase().replace(/[_-]+/g," ").replace(/\s+/g," ").trim();
   var aliases=[["malayalam","Malayalam"],["kannada","Kannada"],["bengali","Bengali"],["punjabi","Punjabi"],["gujarati","Gujarati"],["japanese","Japanese"],["english","English"],["telugu","Telugu"],["marathi","Marathi"],["korean","Korean"],["hindi","Hindi"],["tamil","Tamil"],["urdu","Urdu"],["ml","Malayalam"],["kn","Kannada"],["bn","Bengali"],["pa","Punjabi"],["gu","Gujarati"],["ja","Japanese"],["jpn","Japanese"],["en","English"],["eng","English"],["te","Telugu"],["mr","Marathi"],["ko","Korean"],["kor","Korean"],["hi","Hindi"],["ta","Tamil"],["ur","Urdu"]];
