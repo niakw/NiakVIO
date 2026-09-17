@@ -1,23 +1,14 @@
 #!/usr/bin/env python3
 """NiakVIO-aware Provider v3 JavaScript one-line minimizer.
 
-This is deliberately not a generic JavaScript minifier. Publication output is
-one physical line while preserving NiakVIO managed markers, string/regex
-payloads, runtime/security markers and editability. Terser, identifier mangling,
-syntax folding and expression reordering are forbidden.
+Publication output is exactly one physical line while NiakVIO managed markers,
+string/regex payloads, runtime/security markers and editability are preserved.
+This is deliberately not a generic minifier: Terser, identifier mangling,
+expression folding and reordering are forbidden.
 
-The transformer only:
-- removes unmanaged comments;
-- flattens code line breaks to one safe separator;
-- removes indentation that follows a physical line break;
-- preserves quoted strings and regular-expression literals byte-for-byte
-  (except JavaScript string line continuations);
-- converts untagged template literal physical line breaks to ``\\n`` escapes so
-  the cooked runtime string is unchanged;
-- preserves protected comment payloads/markers on the one physical output line.
-
-Tagged templates fail closed because their ``raw`` payload would observe the
-difference between a physical line break and an escape sequence.
+Untagged template physical line breaks become ``\\n`` escapes (same cooked
+value); tagged templates fail closed because String.raw semantics would change.
+ASI-sensitive line breaks also fail closed instead of being guessed away.
 """
 from __future__ import annotations
 
@@ -51,42 +42,19 @@ MARKERS = (
     "FIXDATA:",
     "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
 )
-
 PROTECTED_COMMENT_TOKENS = (
-    "NIAKVIO_",
-    "NUVIO_",
-    "STARTFIX:",
-    "CLOSEFIX:",
-    "FIXDATA:",
-    "SPDX-License-Identifier",
-    "@license",
-    "@preserve",
-    "sourceURL",
-    "sourceMappingURL",
-    "@cc_on",
+    "NIAKVIO_", "NUVIO_", "STARTFIX:", "CLOSEFIX:", "FIXDATA:",
+    "SPDX-License-Identifier", "@license", "@preserve", "sourceURL",
+    "sourceMappingURL", "@cc_on",
 )
-
 _RESTRICTED_LINEBREAK_RE = re.compile(
     r"(?:^|[^A-Za-z0-9_$])(return|throw|break|continue|yield|async)\s*$"
 )
 _PREFIX_TEMPLATE_WORDS = {
-    "return",
-    "throw",
-    "case",
-    "delete",
-    "void",
-    "typeof",
-    "yield",
-    "await",
-    "new",
-    "in",
-    "of",
-    "instanceof",
+    "return", "throw", "case", "delete", "void", "typeof", "yield",
+    "await", "new", "in", "of", "instanceof",
 }
-_REGEX_PREFIX_WORDS = _PREFIX_TEMPLATE_WORDS | {
-    "else",
-    "do",
-}
+_REGEX_PREFIX_WORDS = _PREFIX_TEMPLATE_WORDS | {"else", "do"}
 _IDENTIFIER_TAIL_RE = re.compile(r"([A-Za-z_$][A-Za-z0-9_$]*)$")
 _REGEX_FLAGS = set("dgimsuvy")
 
@@ -94,14 +62,8 @@ _REGEX_FLAGS = set("dgimsuvy")
 class MinimizeResult:
     __slots__ = ("text", "saved_bytes", "transformed_lines", "skipped_reason")
 
-    def __init__(
-        self,
-        *,
-        text: str,
-        saved_bytes: int,
-        transformed_lines: int,
-        skipped_reason: str = "",
-    ) -> None:
+    def __init__(self, *, text: str, saved_bytes: int, transformed_lines: int,
+                 skipped_reason: str = "") -> None:
         self.text = text
         self.saved_bytes = int(saved_bytes)
         self.transformed_lines = int(transformed_lines)
@@ -127,9 +89,7 @@ def _rstrip_horizontal(out: list[str]) -> None:
 
 
 def _tail(out: list[str], limit: int = 192) -> str:
-    if not out:
-        return ""
-    return "".join(out[-limit:])
+    return "".join(out[-limit:]) if out else ""
 
 
 def _linebreak_guard(out: list[str]) -> None:
@@ -137,13 +97,9 @@ def _linebreak_guard(out: list[str]) -> None:
     if not tail:
         return
     if _RESTRICTED_LINEBREAK_RE.search(tail):
-        raise ValueError(
-            "ASI-sensitive line break after restricted keyword cannot be flattened safely"
-        )
+        raise ValueError("ASI-sensitive line break after restricted keyword cannot be flattened safely")
     if tail.endswith(("++", "--")):
-        raise ValueError(
-            "ASI-sensitive line break after postfix update cannot be flattened safely"
-        )
+        raise ValueError("ASI-sensitive line break after postfix update cannot be flattened safely")
 
 
 def _tagged_template_risk(out: list[str]) -> bool:
@@ -153,21 +109,13 @@ def _tagged_template_risk(out: list[str]) -> bool:
     match = _IDENTIFIER_TAIL_RE.search(tail)
     if match and match.group(1) in _PREFIX_TEMPLATE_WORDS:
         return False
-    last = tail[-1]
-    if last in "=([{,:;!?&|+-*%~<>":
+    if tail[-1] in "=([{,:;!?&|+-*%~<>":
         return False
-    if tail.endswith("=>"):
-        return False
-    return True
+    return not tail.endswith("=>")
 
 
 def _regex_allowed(out: list[str]) -> bool:
-    """Conservatively decide whether ``/`` may start a regex literal.
-
-    We only claim regex syntax in expression-prefix positions. Ambiguous division
-    stays ordinary code. This is enough to protect regex payload quotes/slashes
-    without rewriting any regex byte.
-    """
+    """Claim regex syntax only in conservative expression-prefix positions."""
     tail = _tail(out).rstrip()
     if not tail:
         return True
@@ -206,8 +154,7 @@ def _consume_string(text: str, i: int, quote: str, out: list[str]) -> tuple[int,
                 transformed += 1
                 i += 2
                 continue
-            out.append(ch)
-            out.append(nxt)
+            out.extend((ch, nxt))
             i += 2
             continue
         if ch == quote:
@@ -230,12 +177,9 @@ def _consume_regex(text: str, i: int, out: list[str]) -> int:
         if ch in "\r\n":
             raise ValueError("bare physical line break inside JavaScript regex literal")
         if ch == "\\":
-            if i + 1 >= len(text):
-                raise ValueError("unterminated escape in JavaScript regex literal")
-            if text[i + 1] in "\r\n":
-                raise ValueError("line continuation inside JavaScript regex literal")
-            out.append(ch)
-            out.append(text[i + 1])
+            if i + 1 >= len(text) or text[i + 1] in "\r\n":
+                raise ValueError("unterminated/continued escape in JavaScript regex literal")
+            out.extend((ch, text[i + 1]))
             i += 2
             continue
         if ch == "[" and not in_class:
@@ -294,8 +238,7 @@ def minimize_text(text: str) -> MinimizeResult:
                     transformed += 1
                     i += 2
                     continue
-                out.append(ch)
-                out.append(nxt)
+                out.extend((ch, nxt))
                 i += 2
                 continue
             if ch == "`":
@@ -346,9 +289,7 @@ def minimize_text(text: str) -> MinimizeResult:
 
         if ch == "`":
             if _tagged_template_risk(out):
-                raise ValueError(
-                    "tagged template literal cannot be flattened without changing raw payload"
-                )
+                raise ValueError("tagged template literal cannot be flattened without changing raw payload")
             out.append(ch)
             stack.append({"kind": "template"})
             i += 1
@@ -361,8 +302,7 @@ def minimize_text(text: str) -> MinimizeResult:
                 i += 1
             comment = source[start:i]
             if _protected_comment(comment):
-                payload = comment[2:].strip()
-                out.append(f"/* {payload} */")
+                out.append(f"/* {comment[2:].strip()} */")
             else:
                 _append_space(out)
             transformed += 1
@@ -385,11 +325,10 @@ def minimize_text(text: str) -> MinimizeResult:
             end = source.find("*/", i + 2)
             if end < 0:
                 raise ValueError("unterminated JavaScript block comment")
-            comment = source[i : end + 2]
+            comment = source[i:end + 2]
             if _protected_comment(comment):
                 flattened = _flatten_protected_block(comment)
-                if flattened != comment:
-                    transformed += 1
+                transformed += int(flattened != comment)
                 out.append(flattened)
             else:
                 _append_space(out)
@@ -421,20 +360,15 @@ def minimize_text(text: str) -> MinimizeResult:
 
     if len(stack) != 1 or str(stack[0].get("kind")) != "code":
         raise ValueError(f"unterminated JavaScript lexical state: {stack!r}")
-
     _rstrip_horizontal(out)
     minimized = "".join(out)
     if "\n" in minimized or "\r" in minimized:
         raise ValueError("one-line minimizer emitted a physical line break")
-
     saved = len(source.encode("utf-8")) - len(minimized.encode("utf-8"))
     if saved < 0:
         raise ValueError(f"minimizer increased provider bytes: saved={saved}")
-    return MinimizeResult(
-        text=minimized,
-        saved_bytes=saved,
-        transformed_lines=transformed,
-    )
+    return MinimizeResult(text=minimized, saved_bytes=saved,
+                          transformed_lines=transformed)
 
 
 def audit_text(text: str) -> dict:
@@ -444,7 +378,9 @@ def audit_text(text: str) -> dict:
         "sha256": hashlib.sha256(encoded).hexdigest(),
         "lines": text.count("\n") + text.count("\r") + (1 if text else 0),
         "physical_linebreaks": text.count("\n") + text.count("\r"),
-        "template_literal_tokens": text.count("`"),
+        # Diagnostic only. Raw backticks in comments/regex are not semantic
+        # template delimiters and therefore are intentionally not an invariant.
+        "raw_backticks": text.count("`"),
         "markers": {marker: text.count(marker) for marker in MARKERS},
     }
 
@@ -452,16 +388,12 @@ def audit_text(text: str) -> dict:
 def validate_transform(original: str, minimized: str) -> None:
     before = audit_text(original)
     after = audit_text(minimized)
-
     if after["bytes"] > before["bytes"]:
         raise ValueError("minimizer increased provider bytes")
     if after["physical_linebreaks"] != 0:
         raise ValueError("published provider is not one physical line")
     if before["markers"] != after["markers"]:
         raise ValueError("minimizer changed Provider v3 structural markers")
-    if before["template_literal_tokens"] != after["template_literal_tokens"]:
-        raise ValueError("minimizer changed template literal token cardinality")
-
     expected = minimize_text(original).text
     if expected != minimized:
         raise ValueError("minimized bytes are not the deterministic NiakVIO transform")
@@ -480,8 +412,7 @@ def provider_files() -> list[Path]:
     filenames = [
         str(row.get("filename") or "").strip()
         for row in (manifest.get("scrapers") or [])
-        if isinstance(row, dict)
-        and row.get("enabled") is not False
+        if isinstance(row, dict) and row.get("enabled") is not False
         and str(row.get("filename") or "").startswith("providers/")
     ]
     if not filenames or len(filenames) != len(set(filenames)):
@@ -503,14 +434,8 @@ def _node_check(text: str, name: str) -> None:
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / name
         path.write_text(text, encoding="utf-8")
-        proc = subprocess.run(
-            ["node", "--check", str(path)],
-            cwd=ROOT,
-            text=True,
-            capture_output=True,
-            timeout=20,
-            check=False,
-        )
+        proc = subprocess.run(["node", "--check", str(path)], cwd=ROOT, text=True,
+                              capture_output=True, timeout=20, check=False)
         if proc.returncode != 0:
             raise ValueError(f"Node parse failed for {name}: {proc.stdout}{proc.stderr}")
 
@@ -519,13 +444,9 @@ def portfolio_report(*, syntax_check: bool = False) -> dict:
     files = provider_files()
     rows = []
     totals = {
-        "bytes_before": 0,
-        "bytes_after": 0,
-        "saved_bytes": 0,
-        "transformed_lines": 0,
-        "one_line_providers": 0,
+        "bytes_before": 0, "bytes_after": 0, "saved_bytes": 0,
+        "transformed_lines": 0, "one_line_providers": 0,
     }
-
     for path in files:
         original = path.read_text(encoding="utf-8")
         try:
@@ -535,18 +456,14 @@ def portfolio_report(*, syntax_check: bool = False) -> dict:
                 _node_check(result.text, path.name)
         except Exception as exc:
             raise ValueError(f"{path.name}: one-line minimizer failed: {exc}") from exc
-
         before = audit_text(original)
         after = audit_text(result.text)
-        row = {
-            "file": path.name,
-            "before": before,
-            "after": after,
+        rows.append({
+            "file": path.name, "before": before, "after": after,
             "saved_bytes": result.saved_bytes,
             "transformed_lines": result.transformed_lines,
             "skipped_reason": result.skipped_reason,
-        }
-        rows.append(row)
+        })
         totals["bytes_before"] += before["bytes"]
         totals["bytes_after"] += after["bytes"]
         totals["saved_bytes"] += result.saved_bytes
@@ -569,8 +486,7 @@ def portfolio_report(*, syntax_check: bool = False) -> dict:
             "escape physical line breaks only inside untagged template literals",
             "fail closed on tagged templates because raw payload semantics differ",
             "fail closed on restricted-keyword/postfix ASI-sensitive line breaks",
-            "never rename identifiers",
-            "never reorder or fold expressions",
+            "never rename identifiers", "never reorder or fold expressions",
             "never use Terser",
             f"require deterministic fixed-point and Node syntax on all {len(files)} current active providers",
         ],
@@ -585,13 +501,13 @@ def write_preview(directory: Path, *, syntax_check: bool = True) -> dict:
     if resolved == providers_root or providers_root in resolved.parents:
         raise SystemExit("minimizer preview may never write inside providers/")
     resolved.mkdir(parents=True, exist_ok=True)
-
     report = portfolio_report(syntax_check=syntax_check)
     by_name = {path.name: path for path in provider_files()}
     for row in report["providers"]:
         path = by_name[row["file"]]
-        minimized = minimize_provider_text(path.read_text(encoding="utf-8"))
-        (resolved / path.name).write_text(minimized, encoding="utf-8")
+        (resolved / path.name).write_text(
+            minimize_provider_text(path.read_text(encoding="utf-8")), encoding="utf-8"
+        )
     return report
 
 
@@ -603,12 +519,9 @@ def main() -> int:
     parser.add_argument("--syntax-check", action="store_true")
     parser.add_argument("--published-fixed-point", action="store_true")
     args = parser.parse_args()
-
     report = portfolio_report(syntax_check=args.syntax_check)
-
     if args.preview_dir:
         report = write_preview(args.preview_dir, syntax_check=True)
-
     if args.published_fixed_point:
         non_fixed = []
         for path in provider_files():
@@ -619,7 +532,6 @@ def main() -> int:
         if non_fixed:
             detail = ", ".join(f"{name}:{saved}" for name, saved in non_fixed[:20])
             raise SystemExit(f"published providers are not minimizer fixed-point: {detail}")
-
     payload = json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     if args.output:
         resolved = args.output.resolve()
@@ -628,17 +540,15 @@ def main() -> int:
             raise SystemExit("minimizer report may never write inside providers/")
         resolved.parent.mkdir(parents=True, exist_ok=True)
         resolved.write_text(payload, encoding="utf-8")
-
     totals = report["totals"]
     if args.json:
         print(payload, end="")
     else:
         print(
             "FIELD_PROVIDER_V3_MINIMIZER "
-            f"providers={report['provider_count']} "
-            f"bytes_before={totals['bytes_before']} bytes_after={totals['bytes_after']} "
-            f"saved_bytes={totals['saved_bytes']} transformed_lines={totals['transformed_lines']} "
-            f"one_line={totals['one_line_providers']} "
+            f"providers={report['provider_count']} bytes_before={totals['bytes_before']} "
+            f"bytes_after={totals['bytes_after']} saved_bytes={totals['saved_bytes']} "
+            f"transformed_lines={totals['transformed_lines']} one_line={totals['one_line_providers']} "
             f"production_enabled={str(PRODUCTION_ENABLED).lower()} terser_allowed=false"
         )
     return 0
