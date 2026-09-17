@@ -15,7 +15,7 @@ WRAPPER = r'''
   try{
     if(typeof _spv4GetStreams!=="function"||_spv4GetStreams.__niakvioWookaCurrentV2)return;
     var original=_spv4GetStreams,BASE="https://wookafr.boston/",UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36";
-    function clean(v){return String(v==null?"":v).replace(/<[^>]+>/g," ").replace(/&amp;/gi,"&").replace(/&#038;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;/gi,"'").replace(/\s+/g," ").trim()}
+    function clean(v){var src=String(v==null?"":v),out="",inTag=false;for(var i=0;i<src.length;i++){var ch=src.charAt(i);if(ch==="<"){inTag=true;out+=" ";continue}if(ch===">"){inTag=false;continue}if(!inTag)out+=ch}return out.replace(/&amp;/gi,"&").replace(/&#038;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;/gi,"'").replace(/\s+/g," ").trim()}
     function norm(v){try{return clean(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}catch(_e){return clean(v).toLowerCase()}}
     function hdr(ref){return {"User-Agent":UA,"Accept":"text/html,application/xhtml+xml,text/plain,*/*","Accept-Language":"fr-FR,fr;q=0.9,en;q=0.8","Referer":ref||BASE}}
     function mediaContext(tmdbId){try{var c=globalThis&&globalThis.__nuvioMediaContext;if(c&&String(c.tmdbId||"")===String(tmdbId||"")&&c.tmdbMetadata)return c.tmdbMetadata}catch(_e){}return null}
