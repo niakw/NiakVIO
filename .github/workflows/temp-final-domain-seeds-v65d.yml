@@ -1,0 +1,220 @@
+name: TEMP - Final Address Authorities V65D
+
+on:
+  push:
+    branches: [fix/non-display-recovery-20260916]
+    paths:
+      - .github/workflows/temp-final-domain-seeds-v65d.yml
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 80
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+
+      - name: Reuse V65C source transformation and close fallback alias
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import re, subprocess, sys, textwrap
+          from pathlib import Path
+          src=Path('.github/workflows/temp-final-domain-seeds-v65c.yml').read_text(encoding='utf-8')
+          marker='      - name: Upgrade curated-entry authority and disabled publication support'
+          section=src.split(marker,1)[1].split('      - name: Install user-curated address entry contracts',1)[0]
+          m=re.search(r"python - <<'PY'\n([\s\S]*?)\n\s{10}PY\n",section)
+          if not m: raise SystemExit('V65D_CANNOT_EXTRACT_V65C_TRANSFORM')
+          block=textwrap.dedent(m.group(1))
+          subprocess.run([sys.executable,'-c',block],check=True)
+
+          p=Path('scripts/resolve_provider_hubs.py')
+          s=p.read_text(encoding='utf-8')
+          old='''    fallback = cfg.get("direct_fallback")\n    if fallback:\n        values.append(host(str(fallback)))'''
+          new='''    fallback = cfg.get("direct_fallback")\n    if fallback and host(str(fallback)) not in entry_hosts:\n        values.append(host(str(fallback)))'''
+          if old not in s: raise SystemExit('V65D_FALLBACK_PATCH_MISSING')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          print('V65D_SOURCE_TRANSFORM_OK')
+          PY
+
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          ROOT=Path('.').resolve(); sys.path.insert(0,str(ROOT/'scripts'))
+          import refresh_authoritative_hub_domains as refresh
+          import resolve_provider_hubs as resolver
+          cfg={'curated_entry':'https://entry.example/','declared_terminal':'https://provider.example/','direct_candidates':['https://entry.example/','https://provider.example/'],'direct_fallback':'https://entry.example/','allowed_terminal_hosts':['provider.example'],'aliases':['provider'],'sources':[]}
+          assert 'entry.example' in resolver.discovery_source_hosts(cfg)
+          assert 'entry.example' not in resolver.exact_allowed_hosts(cfg)
+          original=resolver.validate_terminal
+          try:
+              resolver.validate_terminal=lambda pid,cfg,url,timeout:{'url':url,'final_url':url,'status':403,'ok':False,'content_type':'text/html'}
+              row=refresh.resolve_authoritative_curated_entry_domain('provider',cfg,{},'quick',1)
+          finally:
+              resolver.validate_terminal=original
+          assert row['status']=='site_authoritative',row
+          assert row['official_site']=='https://provider.example',row
+          assert row['reason']=='curated_declared_terminal_after_entry_blocked',row
+          print('V65D_CURATED_ENTRY_FALLBACK_OK')
+          PY
+          python tests/domain_refresh_include_disabled_publication_v65_test.py
+          python tests/domain_refresh_transaction_guard_test.py
+          python tests/domain_refresh_static_authority_test.py
+
+      - name: Install exact current address contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from urllib.parse import urlparse
+          path=Path('provider-hubs.json'); doc=json.loads(path.read_text(encoding='utf-8')); rows=doc['providers']
+          def uniq(vals):
+              out=[]
+              for v in vals:
+                  v=str(v or '').strip()
+                  if v and v not in out: out.append(v)
+              return out
+          def host(v): return (urlparse(str(v)).hostname or '').lower()
+          def search_sources(row): return [dict(x) for x in row.get('sources') or [] if isinstance(x,dict) and str(x.get('type') or '').lower()=='search']
+          def entry(pid,source,terminal):
+              row=rows[pid]; old=row.get('direct'); oldc=list(row.get('direct_candidates') or [])
+              row['hub']=None; row['resolver']='curated_entry'; row['curated_entry']=source; row['declared_terminal']=terminal; row['direct']=terminal
+              row['direct_candidates']=uniq([terminal,old,*oldc])
+              row['allowed_terminal_hosts']=uniq([host(terminal),*(row.get('allowed_terminal_hosts') or []),*[host(x) for x in row['direct_candidates'] if host(x)!=host(source)]])
+              row['sources']=search_sources(row); row['source']='curated_user_registry'
+              row['schema_notes']='Curated entry is the address entry authority; its redirect terminal is preferred, while a curator-declared same-provider terminal may survive runner anti-bot blocking without counting as playback proof.'
+          entry('desiflix','https://desiflix.onl/','https://desiflix.codes/')
+          entry('uhdmovies','https://mmodlist.org/?type=uhdmovies','https://uhdmovies.my/')
+          entry('animesalt','https://animesalt.ac/','https://animesalt.cx/')
+          row=rows['allwish']; old=row.get('direct'); oldc=list(row.get('direct_candidates') or [])
+          row['hub']='https://t.me/s/allwishme'; row['resolver']='telegram_description'; row['direct']='https://all-wish.me/'
+          row['direct_candidates']=uniq(['https://all-wish.me/',old,*oldc]); row['allowed_terminal_hosts']=uniq(['all-wish.me',*(row.get('allowed_terminal_hosts') or [])])
+          row['sources']=[{'type':'telegram_public','url':'https://t.me/s/allwishme','priority':120,'purpose':'Official public Telegram description containing current domain'},*search_sources(row)]
+          row['source']='curated_user_registry'
+          path.write_text(json.dumps(doc,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          PY
+
+          python - <<'PY'
+          import json,sys
+          from pathlib import Path
+          ROOT=Path('.').resolve();sys.path.insert(0,str(ROOT/'scripts'))
+          import resolve_provider_hubs as resolver
+          rows=json.loads(Path('provider-hubs.json').read_text(encoding='utf-8'))['providers']
+          merged=resolver.merge_hub_registry(json.loads(Path('provider-overrides.json').read_text(encoding='utf-8')))
+          expected={'desiflix':('https://desiflix.onl/','https://desiflix.codes/'),'uhdmovies':('https://mmodlist.org/?type=uhdmovies','https://uhdmovies.my/'),'animesalt':('https://animesalt.ac/','https://animesalt.cx/')}
+          for pid,(entry,terminal) in expected.items():
+              assert rows[pid]['curated_entry']==entry
+              assert rows[pid]['declared_terminal'].rstrip('/')==terminal.rstrip('/')
+              assert merged[pid]['direct_candidates'][0].rstrip('/')==entry.rstrip('/'),(pid,merged[pid]['direct_candidates'][:4])
+              assert resolver.host(entry) not in resolver.exact_allowed_hosts(merged[pid]),pid
+              assert resolver.host(terminal) in resolver.exact_allowed_hosts(merged[pid]),pid
+          assert rows['allwish']['resolver']=='telegram_description'
+          assert str(rows['allwish']['hub']).rstrip('/')=='https://t.me/s/allwishme'
+          assert str(rows['allwish']['direct']).rstrip('/')=='https://all-wish.me'
+          print('V65D_ADDRESS_CONTRACTS_OK')
+          PY
+          python tests/provider_hub_registry_test.py
+
+      - name: Refresh all four addresses including disabled DESIFLIX
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp provider-overrides.json "$RUNNER_TEMP/overrides.before.json"
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          cp provider-v3-materialization.json "$RUNNER_TEMP/material.before.json"
+          cp automation/provider-v3-static-knowledge.json "$RUNNER_TEMP/static.before.json"
+          cp PROVENANCE.json "$RUNNER_TEMP/provenance.before.json"
+          mkdir -p health-output automation/evidence
+          python scripts/domain_refresh_transaction_v2.py \
+            --provider desiflix --provider uhdmovies --provider animesalt --provider allwish \
+            --include-disabled --mode quick --timeout 18 --workers 4 --apply \
+            --output health-output/v65d-address-report.json \
+            --changes-output health-output/v65d-address-changes.json
+          python - <<'PY'
+          import json
+          r=json.load(open('health-output/v65d-address-report.json',encoding='utf-8'));c=json.load(open('health-output/v65d-address-changes.json',encoding='utf-8'))
+          expected={'desiflix':'https://desiflix.codes','uhdmovies':'https://uhdmovies.my','animesalt':'https://animesalt.cx','allwish':'https://all-wish.me'}
+          for pid,url in expected.items():
+              row=r['providers'].get(pid);print('V65D_DOMAIN',pid,json.dumps(row,sort_keys=True))
+              assert row and row.get('status')=='site_authoritative',(pid,row)
+              assert str(row.get('official_site') or '').rstrip('/')==url,(pid,row.get('official_site'))
+          print('V65D_CHANGES',json.dumps(c,sort_keys=True))
+          PY
+
+      - name: Reconcile and validate complete domain transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/reconcile_domain_refresh_static_authority.py --changes health-output/v65d-address-changes.json --check
+          mapfile -t CHANGED < <(python - <<'PY'
+          import json
+          d=json.load(open('health-output/v65d-address-changes.json',encoding='utf-8'))
+          for p in sorted(set(d.get('changed') or [])): print(p)
+          PY
+          )
+          if [ "${#CHANGED[@]}" -gt 0 ]; then
+            ARGS=();for p in "${CHANGED[@]}";do ARGS+=(--provider "$p");done
+            python scripts/reconcile_provider_domain_metadata.py --rebuild "${ARGS[@]}"
+          fi
+          python scripts/reconcile_domain_refresh_provenance.py --changes health-output/v65d-address-changes.json
+          python scripts/finalize_provider_v3_minimizer.py --check
+          python tests/provider_v3_minimizer_published_test.py
+          python scripts/validate_provider_domain_graph.py provider-overrides.json
+          python scripts/audit_provider_v3_static.py
+          python scripts/validate_domain_refresh_non_destructive.py --before-overrides "$RUNNER_TEMP/overrides.before.json" --before-manifest "$RUNNER_TEMP/manifest.before.json" --before-materialization "$RUNNER_TEMP/material.before.json" --before-provenance "$RUNNER_TEMP/provenance.before.json" --changes health-output/v65d-address-changes.json
+          python scripts/validate_domain_refresh_static_non_destructive.py --before-static "$RUNNER_TEMP/static.before.json" --changes health-output/v65d-address-changes.json
+
+      - name: Probe all four current provider lanes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,str(Path('scripts').resolve()))
+          import audit_provider_quick_yield as q
+          q.TIMEOUT=60;wanted={'desiflix','uhdmovies','animesalt','allwish'};tasks,_=q.build_tasks();rows=[]
+          for t in tasks:
+              if str(t.get('provider_id') or '').casefold() not in wanted:continue
+              r=q.run(t);rows.append(r)
+              print('V65D_RUNTIME',json.dumps({k:r.get(k) for k in ['provider_id','semantic_type','status','debug_stage','raw','playable','verified','contradictions','duration_ms','debug_fetches']},default=str,sort_keys=True))
+          Path('automation/evidence/final-address-authorities-v65.json').write_text(json.dumps({'schema_version':4,'rows':rows},ensure_ascii=False,indent=2,default=str)+'\n',encoding='utf-8')
+          by={p:[] for p in wanted}
+          for r in rows:by[str(r.get('provider_id') or '').casefold()].append(r)
+          expected={'desiflix':'desiflix.codes','uhdmovies':'uhdmovies.my','animesalt':'animesalt.cx','allwish':'all-wish.me'}
+          for pid in sorted(wanted):
+              assert by[pid],f'missing task {pid}'
+              print('V65D_PROVIDER_SUMMARY',pid,[(r.get('semantic_type'),r.get('status'),r.get('verified')) for r in by[pid]])
+              urls=[str(f.get('url') or '') for r in by[pid] for f in (r.get('debug_fetches') or [])]
+              assert any(expected[pid] in u for u in urls),(pid,expected[pid],urls[:24])
+          print('V65D_RUNTIME_DOMAIN_ROUTING_OK')
+          PY
+
+      - name: Persist verified V65D transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot';git config user.email 'actions@users.noreply.github.com'
+          git add scripts/domain_refresh_transaction_v2.py scripts/reconcile_domain_refresh_provenance.py scripts/validate_domain_refresh_non_destructive.py scripts/resolve_provider_hubs.py scripts/refresh_authoritative_hub_domains.py \
+            tests/domain_refresh_curated_entry_declared_fallback_v65_test.py tests/domain_refresh_include_disabled_publication_v65_test.py provider-hubs.json provider-overrides.json provider-domain-history.json manifest.json provider-v3-materialization.json automation/provider-v3-static-knowledge.json PROVENANCE.json automation/evidence/final-address-authorities-v65.json \
+            'providers/desiflix'*.js 'providers/uhdmovies'*.js 'providers/animesalt'*.js 'providers/allwish'*.js 'provider-disabled/desiflix'*.js 'provider-disabled/uhdmovies'*.js 'provider-disabled/animesalt'*.js 'provider-disabled/allwish'*.js
+          if git diff --cached --quiet;then echo 'V65D_PERSIST no material changes';exit 0;fi
+          git commit -m 'fix(domains): persist curated entries across blocked redirects'
+          git push origin HEAD:fix/non-display-recovery-20260916
