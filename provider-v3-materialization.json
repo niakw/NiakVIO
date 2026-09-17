@@ -2,7 +2,7 @@
   "schemaVersion": 3,
   "sourceSha": "e936461a168ba840640fb196bd27b6cf43b791ea",
   "context": "workspace",
-  "generation": "b9b4334670c8a86fa8927501b7e14c7456b135f0faf6d07969c2ee2672a19205",
+  "generation": "91e64bc9dc97456bbedf09a2b6f8b1f4b6f96964dd987c51bf94f4dee9d1b2fc",
   "providerCount": 46,
   "expectedProviderCount": 46,
   "providers": [
@@ -230,9 +230,9 @@
     },
     {
       "provider": "flemmix",
-      "file": "providers/flemmix--nuvio--b3a534e56e494c93.js",
-      "sha256": "b3a534e56e494c93c24f6e4379173afd3c97c2f4400e3e964782b29ba64fb34a",
-      "providerDataSha256": "64814f75e63769c95d4c7386523111468c967ac6778ebde1a4564934941dc835",
+      "file": "providers/flemmix--nuvio--078ded0ed9d2da19.js",
+      "sha256": "078ded0ed9d2da1923965621dda1e1051eef7628b4fd8c92a4b0f35cfd0cf25a",
+      "providerDataSha256": "dce4c1601cc81e729c0c6b5398cd24bff4696776443fb1d826072927035ecb23",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -248,10 +248,17 @@
         "CORE.STREAM_IDENTITY.V1",
         "CORE.STREAM_PRESENTATION.V1",
         "CORE.STREAM_SANITIZER.V6",
-        "PROVIDER.FLEMMIX.CONFIG.V1"
+        "PROVIDER.FLEMMIX.CONFIG.V1",
+        "PROVIDER.FLEMMIX.CURRENT.RUNTIME.V1"
       ],
       "coreCount": 13,
       "applied": [
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/flemmix_current_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.FLEMMIX.CURRENT.RUNTIME.V1"
+        },
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
@@ -269,12 +276,6 @@
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
         },
         {
           "type": "patch_script",
@@ -320,15 +321,21 @@
         },
         {
           "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "path": "scripts/provider_patches/stream_output_sanitizer_v11.py",
           "phase": "discovery",
-          "scope": "global_provider_branding"
+          "scope": "global_terminal_stream_sanitizer"
         },
         {
           "type": "patch_script",
-          "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
           "phase": "discovery",
-          "scope": "global_terminal_stream_sanitizer"
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "deviceSpecificJs": false,
@@ -339,11 +346,22 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
+      "staticAuthorityReconciledProviders": [
+        "flemmix"
+      ],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
-        "enabled": false,
-        "savedBytes": 0,
-        "transformedLines": 0,
-        "skippedReason": "final-stage-only"
+        "enabled": true,
+        "savedBytes": 1,
+        "transformedLines": 1,
+        "skippedReason": ""
+      },
+      "securityFinalization": {
+        "revision": 1,
+        "normalized": true,
+        "consoleSinkChanges": 2,
+        "consoleShadow": false,
+        "hostnameChanges": 0
       }
     },
     {
@@ -5223,6 +5241,6 @@
   "staticKnowledgeProviderCount": 46,
   "domainAuthorityOnlyUpdate": true,
   "domainAuthorityUpdatedProviders": [
-    "vidlove"
+    "flemmix"
   ]
 }

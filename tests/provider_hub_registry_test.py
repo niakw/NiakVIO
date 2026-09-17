@@ -540,3 +540,15 @@ assert unsafe_history['demo']['current']['url'] == 'https://demo.example'
 assert unsafe_history['demo']['current']['source_type'] == 'curated_direct'
 
 print('unsafe terminal payloads must never become provider origins')
+
+
+# HUB_AUTHORITY_STRICT_V61_REGRESSION
+flemmix_authority_cfg = copy.deepcopy(hubs['flemmix'])
+flemmix_authority_cfg['direct_fallback'] = 'https://flemmix.cloud/'
+flemmix_authority_cfg['direct_candidates'] = ['https://flemmix.cloud/']
+flemmix_html = '<a href="https://flemmix.party/">Flemmix - Domaine principal</a>'
+flemmix_candidates, preferred = resolver.choose_official(
+    'flemmix', flemmix_authority_cfg, flemmix_authority_cfg['hub'], flemmix_html
+)
+assert preferred == 'https://flemmix.party', flemmix_candidates
+assert all(resolver.host(row['url']) != 'flemmix.cloud' for row in flemmix_candidates), flemmix_candidates

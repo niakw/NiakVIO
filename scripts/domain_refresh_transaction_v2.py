@@ -24,6 +24,7 @@ from typing import Any
 import materialize_provider_v3_all as allmat
 import refresh_authoritative_hub_domains as refresh
 import resolve_provider_hubs as resolver
+import reconcile_domain_refresh_static_authority as static_authority
 from current_provider_scope import active_provider_ids, visible_provider_count
 from provider_patch_blocks import (
     decode_managed_data,
@@ -504,6 +505,28 @@ def main() -> int:
         write(REGISTRY_PATH, registry)
         history["updated_at"] = resolver.now_iso()
         write(HISTORY_PATH, history)
+
+        # DOMAIN_REFRESH_STATIC_AUTHORITY_V61: rematerialization also consumes
+        # durable static knowledge. Align address-only fields before the first
+        # CONFIG rebuild so stale static DATA cannot undo the hub transaction.
+        static_doc = load(STATIC_KNOWLEDGE_PATH)
+        static_rows = static_doc.get("providers") or {}
+        patches = config.get("provider_patches") or {}
+        static_changed: list[str] = []
+        for provider_id in sorted(set(changed_provider_ids)):
+            row = static_rows.get(provider_id) if isinstance(static_rows, dict) else None
+            patch = patches.get(provider_id) if isinstance(patches, dict) else None
+            model = row.get("model") if isinstance(row, dict) else None
+            if not isinstance(model, dict) or not isinstance(patch, dict):
+                raise RuntimeError(f"{provider_id}: static authority state missing")
+            if static_authority.sync_model(model, patch):
+                static_changed.append(provider_id)
+        if static_changed:
+            write(STATIC_KNOWLEDGE_PATH, static_doc)
+        print(
+            "FIELD_DOMAIN_STATIC_AUTHORITY_TX "
+            f"changed={len(static_changed)} providers={','.join(static_changed) if static_changed else '-'}"
+        )
         bundle_updates = rebuild_provider_configs(changed_provider_ids)
 
     changes = {

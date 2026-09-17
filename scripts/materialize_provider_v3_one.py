@@ -15,6 +15,8 @@ import json
 from pathlib import Path
 
 import materialize_provider_v3_all as allmat
+from provider_security_hardening import assert_hardened, harden_bytes
+from reapply_published_overrides import published_name
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -349,7 +351,15 @@ def materialize_one(provider_id: str) -> dict[str, object]:
         include_global_core=True,
         config_path=allmat.DEFAULT_OVERRIDES,
     )
+
+    # TARGETED_MATERIALIZER_SECURITY_FINALIZATION_V61
+    # Match the authoritative publication pipeline: deterministic security
+    # normalization owns the final provider bytes after Provider/Core composition.
+    # This is not a post-publication mutation; it is part of composition before
+    # minimizer/fixed-point validation and before the asset is written.
+    bundle, security_report = harden_bytes(bundle)
     text = bundle.decode("utf-8", errors="strict")
+    assert_hardened(text)
 
     if text.count("/* BEGIN NIAKVIO_PROVIDER */") != 1:
         raise ValueError(f"{provider_id}: BEGIN PROVIDER cardinality")
@@ -413,7 +423,13 @@ def materialize_one(provider_id: str) -> dict[str, object]:
     bundle = text.encode("utf-8")
 
     digest = hashlib.sha256(bundle).hexdigest()
-    filename = f"{provider_id}-{digest[:16]}.js"
+    # TARGETED_MATERIALIZER_PUBLISHED_NAME_V61
+    # Reuse the authoritative finalizer grammar so fixed-point bytes also have
+    # a fixed-point content-addressed reference. Never invent a second naming
+    # convention in the targeted rebuild path.
+    previous_relative = str(entry.get("filename") or "").strip()
+    previous_path = Path(previous_relative) if previous_relative else Path(f"{provider_id}--nuvio--seed.js")
+    filename = published_name(provider_id, previous_path, digest)
     relative = f"providers/{filename}"
     allmat.DEFAULT_OUT.mkdir(parents=True, exist_ok=True)
     (allmat.DEFAULT_OUT / filename).write_bytes(bundle)
@@ -439,6 +455,13 @@ def materialize_one(provider_id: str) -> dict[str, object]:
         "staticAuthorityReconciledProviders": authority_changed,
         "domainSubstitutionReconciledProviders": changed_domains,
         "minimizer": minimizer_report,
+        "securityFinalization": {
+            "revision": 1,
+            "normalized": bool(security_report.get("changed")),
+            "consoleSinkChanges": int(security_report.get("consoleSinkChanges") or 0),
+            "consoleShadow": bool(security_report.get("consoleShadow")),
+            "hostnameChanges": int(security_report.get("hostnameChanges") or 0),
+        },
     }
     print(
         "FIELD_PROVIDER_V3_ONE_MATERIALIZED "
@@ -451,7 +474,38 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("provider_id")
     args = parser.parse_args()
-    materialize_one(args.provider_id)
+    report = materialize_one(args.provider_id)
+
+    # TARGETED_MATERIALIZER_LEDGER_V61
+    # materialize_one() changes the published manifest identity, therefore the
+    # same transaction must replace the matching materialization row. Leaving the
+    # old row behind makes provenance reconciliation observe two different assets.
+    ledger = allmat.load(allmat.DEFAULT_REPORT)
+    rows = [row for row in ledger.get("providers") or [] if isinstance(row, dict)]
+    target = allmat.canonical_id(str(report.get("provider") or ""))
+    matches = [index for index, row in enumerate(rows) if allmat.canonical_id(str(row.get("provider") or "")) == target]
+    if len(matches) != 1:
+        raise ValueError(f"{target}: materialization ledger row cardinality={len(matches)} expected=1")
+    rows[matches[0]] = report
+    ledger["providers"] = rows
+
+    aggregate = hashlib.sha256()
+    for row in rows:
+        row_provider = allmat.canonical_id(str(row.get("provider") or ""))
+        row_digest = str(row.get("sha256") or "").strip().casefold()
+        if not row_provider or len(row_digest) != 64:
+            raise ValueError(f"invalid materialization ledger row: {row_provider!r}")
+        aggregate.update(row_provider.encode("utf-8"))
+        aggregate.update(bytes.fromhex(row_digest))
+    ledger["generation"] = aggregate.hexdigest()
+    ledger["providerCount"] = len(rows)
+    ledger["expectedProviderCount"] = len(rows)
+    allmat.write_json(allmat.DEFAULT_REPORT, ledger)
+    print(
+        "FIELD_PROVIDER_V3_ONE_LEDGER "
+        f"provider={target} file={report.get('file')} sha256={str(report.get('sha256') or '')[:16]} "
+        f"generation={ledger['generation'][:16]}"
+    )
     return 0
 
 

@@ -9,8 +9,10 @@ assert 'BASE="https://flemmix.me"' not in text, "Flemmix runtime must not hardco
 assert "NIAKVIO_PROVIDER_MODEL.officialSite" in text, "Flemmix runtime must read canonical officialSite authority"
 assert "NIAKVIO_PROVIDER_MODEL.knownSite" in text, "Flemmix runtime must retain knownSite fallback"
 assert "_substituteDomain(raw)" in text, "Flemmix runtime base must pass through domain substitutions"
-assert '"https://flemmix.cloud"' in text, "Flemmix fallback must be the current canonical .cloud host"
+for retired in ("https://flemmix.me", "https://flemmix.kim", "https://flemmix.cloud", "https://flemmix.party"):
+    assert retired not in text, f"Flemmix runtime must not bake terminal {retired}"
+assert "NIAKVIO_FLEMMIX_NO_STATIC_TERMINAL_FALLBACK_V61" in text
 assert '"domainAuthority": "provider-model-official-site"' in text
 assert '"legacyHostHardcoded": False' in text
 
-print("flemmix runtime domain authority regression passed: canonical model-owned host, no retired .me pin")
+print("flemmix runtime domain authority regression passed: model-owned terminal only, no baked-in domain")

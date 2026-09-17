@@ -675,7 +675,10 @@ def choose_official(provider_id: str, cfg: dict[str, Any], hub_url: str, documen
                 candidates.append({"url": url.rstrip("/"), "label": label, "score": score, "document_index": index})
 
     fallback = str(cfg.get("direct_fallback") or "").strip().rstrip("/")
-    if fallback and host(fallback) != host(hub_url):
+    # HUB_AUTHORITY_STRICT_V61: an authoritative hub candidate always outranks
+    # stale direct/LKG data. The fallback exists only when the hub exposes no
+    # valid terminal at all.
+    if not candidates and fallback and host(fallback) != host(hub_url):
         candidates.append({"url": fallback, "label": "curated direct fallback", "score": 70, "document_index": -1, "fallback": True})
     _sort_official_candidates(candidates, resolver)
     return candidates, candidates[0]["url"] if candidates else None

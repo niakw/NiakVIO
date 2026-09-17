@@ -10,6 +10,7 @@ MARKER = "NIAKVIO_FLEMMIX_CURRENT_RUNTIME_V1"
 
 WRAPPER = r'''
 /* NIAKVIO_FLEMMIX_CURRENT_RUNTIME_V1 */
+/* NIAKVIO_FLEMMIX_NO_STATIC_TERMINAL_FALLBACK_V61 */
 ;(function(){
   "use strict";
   try{
@@ -19,9 +20,9 @@ WRAPPER = r'''
           var raw="";
           try{raw=_text((NIAKVIO_PROVIDER_MODEL&&(
             NIAKVIO_PROVIDER_MODEL.officialSite||NIAKVIO_PROVIDER_MODEL.knownSite
-          ))||"https://flemmix.cloud");}catch(_e){raw="https://flemmix.cloud";}
+          ))||"");}catch(_e){raw="";}
           try{raw=_substituteDomain(raw);}catch(_e){}
-          return String(raw||"https://flemmix.cloud").replace(/\/+$/g,"");
+          return String(raw||"").replace(/\/+$/g,"");
         })(),
         UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36";
     function headers(ref,json){return {"User-Agent":UA,"Accept-Language":"fr-FR,fr;q=0.9,en;q=0.7","Accept":json?"application/json,text/plain,*/*":"text/html,application/xhtml+xml,text/plain,*/*","Referer":ref||BASE+"/"};}
@@ -42,7 +43,7 @@ WRAPPER = r'''
     function links(html,base){var out=[],seen=Object.create(null),re=/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,m;while((m=re.exec(String(html||"")))&&out.length<200){var u=_absolute(m[1],base);if(!u||seen[u])continue;seen[u]=1;out.push({url:u,text:String(m[2]||"").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim()});}return out;}
     async function page(url,ref){var r=await _fetch(url,{headers:headers(ref,false)});return {url:r.url||url,text:await r.text()};}
     async function current(tmdbId,mediaType,season,episode){
-      var lane=_mediaNamespace(mediaType),meta=await _tmdb(tmdbId,mediaType);if(!meta||!meta.title)return [];
+      var lane=_mediaNamespace(mediaType),meta=await _tmdb(tmdbId,mediaType);if(!meta||!meta.title||!BASE)return [];
       var searchUrl=BASE+"/search?q="+encodeURIComponent(meta.title),rows;
       try{var sr=await _fetch(searchUrl,{headers:headers(BASE+"/",true)});rows=await sr.json()}catch(_e){return []}
       if(!Array.isArray(rows))return [];

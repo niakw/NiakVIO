@@ -24,3 +24,11 @@ assert 'if selected and provider_id not in selected' in RECONCILE
 assert 'published_filename' in PROVENANCE and 'final_minimizer' in PROVENANCE
 
 print('DOMAIN_REFRESH_NON_DESTRUCTIVE_WORKFLOW_OK scoped_reconcile=1 global_minimizer_apply=0 global_prune=0 repair_evidence_guard=1 unrelated_bundle_guard=1')
+
+
+# DOMAIN_REFRESH_STATIC_AUTHORITY_WORKFLOW_V61
+workflow = (ROOT / '.github/workflows/domain-refresh.yml').read_text(encoding='utf-8')
+assert 'reconcile_domain_refresh_static_authority.py' in workflow
+assert 'validate_domain_refresh_static_non_destructive.py' in workflow
+assert 'provider-v3-static-knowledge.before.json' in workflow
+assert 'automation/provider-v3-static-knowledge.json' in workflow
