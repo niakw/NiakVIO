@@ -44,9 +44,11 @@ qualified = {
             "typeComplete": True,
             "requiredTypes": ["movie", "tv"],
             "validatedTypes": ["movie", "tv"],
+            "playableChainValidatedTypes": ["movie", "tv"],
             "missingTypes": [],
             "advancedToNextProvider": True,
-            "playableVerified": False,
+            "playableVerified": True,
+            "finalBundleVerified": True,
         },
         {
             "providerId": "b",
@@ -56,9 +58,11 @@ qualified = {
             "typeComplete": True,
             "requiredTypes": ["movie"],
             "validatedTypes": ["movie"],
+            "playableChainValidatedTypes": ["movie"],
             "missingTypes": [],
             "advancedToNextProvider": True,
             "playableVerified": True,
+            "finalBundleVerified": True,
         },
         {
             "providerId": "c",
@@ -68,21 +72,34 @@ qualified = {
             "typeComplete": False,
             "requiredTypes": ["movie"],
             "validatedTypes": [],
+            "playableChainValidatedTypes": [],
             "missingTypes": ["movie"],
             "advancedToNextProvider": True,
             "playableVerified": False,
+            "finalBundleVerified": False,
         },
     ]
 }
 result = run(manifest, qualified)
 assert result.returncode == 0, result.stdout + result.stderr
 assert "active=2 qualified=2 missing=0" in result.stdout, result.stdout
-assert "declared_type_gate=1.000" in result.stdout, result.stdout
+assert "playable_gate=true" in result.stdout, result.stdout
+
+# The exact historical loophole: a provider may traverse every declared route but
+# return no playable stream. It must never remain active.
+route_only = json.loads(json.dumps(qualified))
+route_only["providers"][0]["playableVerified"] = False
+route_only["providers"][0]["playableChainValidatedTypes"] = []
+result = run(manifest, route_only)
+assert result.returncode != 0
+assert "qualified=1/2" in (result.stdout + result.stderr)
+assert "playable=False" in (result.stdout + result.stderr)
 
 partial_type = json.loads(json.dumps(qualified))
 partial_type["providers"][0]["declaredTypeCoverageRatio"] = 0.5
 partial_type["providers"][0]["typeComplete"] = False
 partial_type["providers"][0]["validatedTypes"] = ["movie"]
+partial_type["providers"][0]["playableChainValidatedTypes"] = ["movie"]
 partial_type["providers"][0]["missingTypes"] = ["tv"]
 result = run(manifest, partial_type)
 assert result.returncode != 0
@@ -92,10 +109,11 @@ assert "missing=tv" in (result.stdout + result.stderr)
 blocked_active = json.loads(json.dumps(qualified))
 blocked_active["providers"][1]["completionState"] = "terminal-blocked"
 blocked_active["providers"][1]["playableVerified"] = False
+blocked_active["providers"][1]["playableChainValidatedTypes"] = []
 result = run(manifest, blocked_active)
 assert result.returncode != 0
 assert "qualified=1/2" in (result.stdout + result.stderr)
-assert "b: active but not declared-type live-qualified" in (result.stdout + result.stderr)
+assert "b: active but not playable-qualified" in (result.stdout + result.stderr)
 
 missing_active = {"providers": [qualified["providers"][0], qualified["providers"][2]]}
 result = run(manifest, missing_active)
@@ -111,7 +129,6 @@ active_count = sum(
 assert active_count > 0, "current manifest must contain at least one active provider"
 
 print(
-    f"Active provider live coverage tests passed: current active={active_count}, publication requires "
-    f"{active_count}/{active_count} active providers, and each active provider must prove 100% of its "
-    "declared semantic types."
+    f"Active provider playable coverage tests passed: current active={active_count}; route-only proof is rejected and "
+    "every declared semantic lane needs current playable/identity-safe proof."
 )
