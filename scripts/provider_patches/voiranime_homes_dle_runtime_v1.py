@@ -13,7 +13,7 @@ SEARCH_ITEM_MARKER = "NIAKVIO_VOIRANIME_HOMES_SEARCH_ITEM_V2"
 
 def _voiranime_homes_wrapper() -> str:
     """Extend the shared DLE parser with VoirAnime-Homes' live AJAX card shape."""
-    needle = "    return out\n  }\n  function bestCandidate"
+    needle = "    return out\n  }\n  function seasonSignal"
     replacement = r'''    /* NIAKVIO_VOIRANIME_HOMES_SEARCH_ITEM_V2 */
     var itemRe=/onclick=(["'])[^"']*location\.href\s*=\s*['"]([^'"]+)['"][^"']*\1/gi,im;
     while((im=itemRe.exec(html||""))!==null&&out.length<100){
@@ -24,9 +24,9 @@ def _voiranime_homes_wrapper() -> str:
     }
     return out
   }
-  function bestCandidate'''
+  function seasonSignal'''
     if needle not in common.WRAPPER:
-        raise ValueError("shared DLE candidate parser anchor missing")
+        raise ValueError("shared DLE candidate parser/season anchor missing")
     return common.WRAPPER.replace(needle, replacement, 1)
 
 
