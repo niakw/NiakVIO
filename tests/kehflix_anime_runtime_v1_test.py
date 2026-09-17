@@ -16,7 +16,7 @@ for needle in (
     'raw!=="anime"',
     'return null;',
     '/api/streams/episode?id=',
-    '/api/stream-gw\\?/i',
+    'stream-gw',
     'txt(s.type).toLowerCase()==="iframe"',
     "_crawlDirectMedia([url],referer,depth)",
     "__nuvioCorrelatedPlayerFallbackV1={url:url}",
