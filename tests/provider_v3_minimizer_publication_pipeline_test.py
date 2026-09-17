@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable contract for the final NiakVIO Provider v3 minimizer transaction."""
+"""Executable contract for the final NiakVIO Provider v3 one-line minimizer transaction."""
 from __future__ import annotations
 
 import importlib.util
@@ -13,7 +13,6 @@ sys.path.insert(0, str(ROOT / "scripts"))
 SCRIPT = ROOT / "scripts/finalize_provider_v3_minimizer.py"
 SYNTHETIC_ACTIVE = 3
 DISABLED_ID = "disabled-demo"
-
 
 spec = importlib.util.spec_from_file_location("finalize_provider_v3_minimizer", SCRIPT)
 module = importlib.util.module_from_spec(spec)
@@ -39,18 +38,17 @@ with tempfile.TemporaryDirectory() as tmp_raw:
             f"/* NIAKVIO_PROVIDER_ID:{provider_id} */\n"
             "/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n"
             "\n"
-            "  // removable publication comment\n"
+            "// removable publication comment\n"
             f"/* STARTFIX:PROVIDER.{provider_id.upper()}.CONFIG.V1 */\n"
-            "  const NIAKVIO_PROVIDER_MODEL = Object.freeze({});   \n"
+            f"/* FIXDATA:PROVIDER.{provider_id.upper()}.CONFIG.V1:e30= */\n"
+            "const NIAKVIO_PROVIDER_MODEL = Object.freeze({});\n"
             f"/* CLOSEFIX:PROVIDER.{provider_id.upper()}.CONFIG.V1 */\n"
             "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */\n"
-            "  const message = `literal ${\"  keep me\"}`;\n"
-            "  function getStreams(){ return []; }\n"
+            "const message = `literal ${\"  keep me\"}`;\n"
+            "function getStreams(){ return []; }\n"
             "/* END NIAKVIO_PROVIDER */\n"
         )
         (tmp / filename).write_text(text, encoding="utf-8")
-        # Simulate the preceding durable-reapply stage already consuming the
-        # cache-safe version bump for this same accepted provider generation.
         manifest["scrapers"].append({
             "id": provider_id,
             "version": "1.0.1",
@@ -119,6 +117,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         "published_filename": disabled_filename,
         "sha256": "disabled-stable",
     }
+
     first_proofs = {}
     for row in [row for row in out_manifest["scrapers"] if row.get("enabled") is not False]:
         provider_id = row["id"]
@@ -126,23 +125,20 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         assert row["filename"].startswith(f"providers/{provider_id}--nuvio--"), row
         assert row["filename"].endswith(".js"), row
         text = (tmp / row["filename"]).read_text(encoding="utf-8")
-        assert "  const NIAKVIO_PROVIDER_MODEL" not in text
-        assert "  function getStreams" not in text
+        assert "\n" not in text and "\r" not in text, row
         assert "removable publication comment" not in text
         assert "`literal ${\"  keep me\"}`" in text
-        assert "\n\n" not in text
         assert text.count("STARTFIX:") == 1
+        assert text.count("FIXDATA:") == 1
         assert text.count("CLOSEFIX:") == 1
         proof = out_provenance["providers"][provider_id]["final_minimizer"]
-        assert proof["schema_version"] == 2
+        assert proof["schema_version"] == 3
         assert proof["terser_allowed"] is False
         assert proof["production_enabled"] is True
         assert proof["saved_bytes"] > 0
         assert proof["sha256"] == out_provenance["providers"][provider_id]["sha256"]
         first_proofs[provider_id] = dict(proof)
 
-    # A second application is a strict fixed point: no provider version may
-    # bump and the original transformation metrics remain the stable proof.
     second = module.finalize(check=False)
     assert second["changed"] == 0, second
     after_second = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -152,4 +148,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         assert provenance_second["providers"][provider_id]["final_minimizer"] == proof
     module.finalize(check=True)
 
-print(f"PROVIDER_V3_MINIMIZER_PUBLICATION_PIPELINE_OK providers={SYNTHETIC_ACTIVE} disabled_preserved=1 fixed_point=1 no_double_bump=1 template_safe=1 terser=0")
+print(
+    f"PROVIDER_V3_MINIMIZER_PUBLICATION_PIPELINE_OK providers={SYNTHETIC_ACTIVE} "
+    "disabled_preserved=1 fixed_point=1 no_double_bump=1 one_line=1 template_safe=1 terser=0"
+)
