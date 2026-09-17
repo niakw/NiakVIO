@@ -1,0 +1,110 @@
+name: TEMP - VidLove Persist V50C
+
+on:
+  push:
+    branches: ['fix/non-display-recovery-20260916']
+    paths: ['.github/workflows/temp-vidlove-persist-v50c.yml']
+
+permissions:
+  contents: write
+
+env:
+  NUVIO_PROVIDER_V3_CONTEXT: publication
+
+jobs:
+  persist:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/non-display-recovery-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+
+      - name: Apply durable contract and prove scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp provider-overrides.json "$RUNNER_TEMP/overrides-before.json"
+          python scripts/upgrade_max_repair_current_contracts_v1.py
+          python - <<'PY'
+          import json, os
+          before=json.load(open(os.environ['RUNNER_TEMP']+'/overrides-before.json',encoding='utf-8'))
+          after=json.load(open('provider-overrides.json',encoding='utf-8'))
+          bp=before.get('provider_patches') or {}; ap=after.get('provider_patches') or {}
+          bc=before.get('provider_capabilities') or {}; ac=after.get('provider_capabilities') or {}
+          patch_changed=[k for k in sorted(set(bp)|set(ap)) if bp.get(k)!=ap.get(k)]
+          cap_changed=[k for k in sorted(set(bc)|set(ac)) if bc.get(k)!=ac.get(k)]
+          assert patch_changed == ['vidlove'], patch_changed
+          assert cap_changed == ['vidlove'], cap_changed
+          v=ap['vidlove']; c=ac['vidlove']
+          assert v.get('capability')=='api_stream_resolver', v.get('capability')
+          assert c.get('strategy')=='api_stream_resolver', c.get('strategy')
+          assert (v.get('api_recipe') or {}).get('base')=='https://api.vidlove.cc'
+          assert (v.get('api_recipe') or {}).get('directRoute')
+          print('V50C_SCOPE_OK patch=vidlove capability=vidlove strategy=api_stream_resolver')
+          PY
+
+      - name: Rebuild only VidLove
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,sys
+          from pathlib import Path
+          sys.path.insert(0,'scripts')
+          import domain_refresh_transaction_v2 as t
+          updates=t.rebuild_provider_configs(['vidlove'])
+          assert len(updates)==1 and updates[0]['provider']=='vidlove', updates
+          Path('health-output').mkdir(exist_ok=True)
+          Path('health-output/v50c-changes.json').write_text(json.dumps({'schema_version':2,'changed':['vidlove'],'registry_changed':[],'bundle_updates':updates,'allowed_patch_fields':[],'core_mutation':False},indent=2)+'\n',encoding='utf-8')
+          print('V50C_BUNDLE',json.dumps(updates,sort_keys=True))
+          PY
+          python scripts/reconcile_domain_refresh_provenance.py --changes health-output/v50c-changes.json
+          python scripts/finalize_provider_v3_minimizer.py --check
+
+      - name: Strict gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python scripts/validate_published_overrides.py
+          python scripts/validate_provider_domain_graph.py provider-overrides.json
+          python tests/global_core_runtime_ownership_test.py
+          python tests/core_runtime_nonregression_contract_test.py
+          python scripts/audit_provider_v3_static.py
+          python tests/domain_refresh_workflow_test.py
+          git diff --check
+
+      - name: V42 proof smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/v42-smoke.cjs <<'NODE'
+          const fs=require('fs'),path=require('path'),{spawn}=require('child_process');
+          const manifest=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const specs={sekai:{pid:'sekai',id:'95479',type:'anime',title:'Jujutsu Kaisen',year:'2020',season:1,episode:1},streamzo:{pid:'streamzo',id:'95479',type:'anime',title:'Jujutsu Kaisen',year:'2020',season:1,episode:3},anikoto:{pid:'anikototv',id:'95479',type:'anime',title:'Jujutsu Kaisen',year:'2020',season:1,episode:1}};
+          function file(pid){const a=(manifest.scrapers||[]).filter(x=>String(x&&x.id||'').toLowerCase()===pid);if(a.length!==1)throw new Error('manifest:'+pid+':'+a.length);return path.resolve(a[0].filename)}
+          function md(s){return {id:Number(s.id),name:s.title,original_name:s.title,first_air_date:`${s.year}-01-01`,alternative_titles:{results:[]}}}
+          async function check(row){const u=String(row&&row.url||'');if(!/^https?:\/\//i.test(u))return{ok:false};const c=new AbortController(),t=setTimeout(()=>c.abort(),10000);try{const h=Object.assign({},row&&row.headers||{});if(/\.m3u8(?:[?#]|$)/i.test(u)){const r=await fetch(u,{headers:h,redirect:'follow',signal:c.signal}),body=await r.text();return{ok:r.ok&&body.includes('#EXTM3U'),kind:'hls',status:r.status,ctype:r.headers.get('content-type')||''}}if(row&&row.isDirect===false){const r=await fetch(u,{headers:h,redirect:'follow',signal:c.signal}),body=await r.text(),ct=r.headers.get('content-type')||'';return{ok:r.ok&&/html/i.test(ct)&&body.length>200,kind:'embed',status:r.status,ctype:ct}}h.Range='bytes=0-1023';const r=await fetch(u,{headers:h,redirect:'follow',signal:c.signal}),b=Buffer.from(await r.arrayBuffer()),ct=r.headers.get('content-type')||'';return{ok:(r.status===200||r.status===206)&&b.length>0&&(/video|octet-stream|matroska/i.test(ct)||/\.(mp4|mkv|webm)(?:[?#]|$)/i.test(u)),kind:'binary',status:r.status,ctype:ct}}catch(e){return{ok:false,error:String(e&&e.message||e)}}finally{clearTimeout(t)}}
+          async function child(label){const s=specs[label],f=file(s.pid),m=md(s);globalThis.__nuvioMediaContext={tmdbId:String(s.id),tmdbNamespace:'tv',tmdbMetadata:m,canonicalMediaType:s.type,season:s.season,episode:s.episode};globalThis.__nuvioTmdbMetadataCacheV1={[`tv:${s.id}`]:m};globalThis.__nuvioProviderDeadlineMs=Date.now()+26000;let rows=[];try{const mod=require(f);rows=await Promise.race([Promise.resolve(mod.getStreams(String(s.id),s.type,s.season,s.episode)),new Promise((_,rej)=>setTimeout(()=>rej(new Error('provider_timeout')),27000))])}catch(e){}rows=Array.isArray(rows)?rows:[];const proofs=[];for(const r of rows.slice(0,3))proofs.push(await check(r));console.log('CHILD\t'+JSON.stringify({label,count:rows.length,terminalOk:proofs.some(p=>p.ok&&(p.kind==='hls'||p.kind==='binary')),embedOk:proofs.some(p=>p.ok&&p.kind==='embed'),proofs}))}
+          function run(label){return new Promise(resolve=>{const p=spawn(process.execPath,[__filename,'--child',label],{stdio:['ignore','pipe','pipe']});let o='';p.stdout.on('data',d=>o+=d);const timer=setTimeout(()=>p.kill('SIGKILL'),35000);p.on('close',()=>{clearTimeout(timer);const l=o.split(/\r?\n/).find(x=>x.startsWith('CHILD\t'));resolve(l?JSON.parse(l.slice(6)):{label,count:0})})})}
+          async function id(type,id,title){try{const r=await fetch(`https://enc-dec.app/db/flix/find?tmdb_id=${id}&type=${type}`,{headers:{'User-Agent':'Mozilla/5.0 Chrome/145 Safari/537.36','Accept':'application/json'}}),j=await r.json(),x=Array.isArray(j)?j[0]:j,info=x&&x.info||{};return r.ok&&String(info.tmdb_id)===id&&String(info.type).toLowerCase()===type&&String(info.title_en||'').toLowerCase()===title.toLowerCase()}catch(e){return false}}
+          async function parent(){const a=await run('sekai'),b=await run('streamzo'),c=await run('anikoto'),ym=await id('movie','157336','Interstellar'),yt=await id('tv','1396','Breaking Bad');console.log('V50C_V42',JSON.stringify({a,b,c,ym,yt}));if(!(a.terminalOk&&b.terminalOk&&c.embedOk&&ym&&yt))process.exit(1)}
+          if(process.argv[2]==='--child')child(process.argv[3]).then(()=>process.exit(0));else parent().catch(()=>process.exit(1));
+          NODE
+          node /tmp/v42-smoke.cjs
+
+      - name: Persist VidLove only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Repair Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add provider-overrides.json manifest.json provider-v3-materialization.json PROVENANCE.json providers/
+          git diff --cached --quiet && { echo 'V50C no material diff'; exit 1; }
+          git commit -m 'fix(providers): normalize VidLove API strategy'
+          git pull --rebase origin fix/non-display-recovery-20260916
+          git push origin HEAD:fix/non-display-recovery-20260916
