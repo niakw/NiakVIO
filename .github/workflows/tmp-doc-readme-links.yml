@@ -1,0 +1,81 @@
+name: TMP - Patch tutorial README links
+
+on:
+  push:
+    branches: [docs/nuvio-install-refresh-guides-20260917]
+    paths: [.github/workflows/tmp-doc-readme-links.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  patch-readmes:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: docs/nuvio-install-refresh-guides-20260917
+          fetch-depth: 0
+      - name: Insert tutorial links in requested README blocks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              Path('README.md'): [
+                  (
+                      "**Manifest guide:** [`docs/how-to-add-manifest.md`](docs/how-to-add-manifest.md)\n",
+                      "**Manifest guide:** [`docs/how-to-add-manifest.md`](docs/how-to-add-manifest.md)\n\n"
+                      "**Plugin update / reinstall / cache recovery:** [`docs/niakvio-update-reinstall-cache.md`](docs/niakvio-update-reinstall-cache.md)\n",
+                  ),
+                  (
+                      "> **Simple target stack:** 1 provider layer + 1 metadata/catalogue addon + 1 subtitle addon + 1 tracking service. Avoid stacking several provider packs that compete for the same role unless you are deliberately testing them.\n",
+                      "> **Simple target stack:** 1 provider layer + 1 metadata/catalogue addon + 1 subtitle addon + 1 tracking service. Avoid stacking several provider packs that compete for the same role unless you are deliberately testing them.\n\n"
+                      "**New to Nuvio?** [`Install Nuvio + NiakVIO step by step`](docs/nuvio-installation.md)\n",
+                  ),
+              ],
+              Path('README.fr.md'): [
+                  (
+                      "**Guide manifest :** [`docs/fr/how-to-add-manifest.md`](docs/fr/how-to-add-manifest.md)\n",
+                      "**Guide manifest :** [`docs/fr/how-to-add-manifest.md`](docs/fr/how-to-add-manifest.md)\n\n"
+                      "**Mise à jour / réinstallation / cache :** [`docs/fr/niakvio-update-reinstall-cache.md`](docs/fr/niakvio-update-reinstall-cache.md)\n",
+                  ),
+                  (
+                      "> **Stack cible simple :** 1 couche providers + 1 addon métadonnées/catalogue + 1 addon sous-titres + 1 service de suivi. Évitez d’empiler plusieurs packs providers qui se disputent le même rôle, sauf si vous les testez volontairement.\n",
+                      "> **Stack cible simple :** 1 couche providers + 1 addon métadonnées/catalogue + 1 addon sous-titres + 1 service de suivi. Évitez d’empiler plusieurs packs providers qui se disputent le même rôle, sauf si vous les testez volontairement.\n\n"
+                      "**Première installation ?** [`Installer Nuvio + NiakVIO pas à pas`](docs/fr/nuvio-installation.md)\n",
+                  ),
+              ],
+          }
+
+          for path, items in replacements.items():
+              text = path.read_text(encoding='utf-8')
+              for old, new in items:
+                  if old not in text:
+                      raise SystemExit(f'missing README anchor in {path}: {old!r}')
+                  if new in text:
+                      continue
+                  text = text.replace(old, new, 1)
+              path.write_text(text, encoding='utf-8')
+
+          # Lightweight link/placement assertions.
+          en = Path('README.md').read_text(encoding='utf-8')
+          fr = Path('README.fr.md').read_text(encoding='utf-8')
+          assert en.index('docs/niakvio-update-reinstall-cache.md') < en.index('## ✨ Why NiakVIO?')
+          assert en.index('docs/nuvio-installation.md') > en.index('## 🧩 Recommended Nuvio setup')
+          assert en.index('docs/nuvio-installation.md') < en.index('## 🔄 How NiakVIO works')
+          assert fr.index('docs/fr/niakvio-update-reinstall-cache.md') < fr.index('## ✨ Pourquoi NiakVIO ?')
+          assert fr.index('docs/fr/nuvio-installation.md') > fr.index('## 🧩 Configuration Nuvio recommandée')
+          assert fr.index('docs/fr/nuvio-installation.md') < fr.index('## 🔄 Comment fonctionne NiakVIO')
+          PY
+      - name: Commit README links
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'NiakVIO Docs Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add README.md README.fr.md
+          git commit -m 'docs: link Nuvio install and recovery guides from README'
+          git push origin HEAD:docs/nuvio-install-refresh-guides-20260917
