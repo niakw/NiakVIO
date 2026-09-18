@@ -8,6 +8,9 @@ on:
     paths:
       - '.github/workflows/tmp-provider-manifest46-census.yml'
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
