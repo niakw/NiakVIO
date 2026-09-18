@@ -1,0 +1,85 @@
+name: TMP - V37 Domain Refresh 4K
+
+on:
+  pull_request:
+    branches:
+      - tmp/v37-domain-base
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NIAKVIO_TRACE_RESPONSE_SHAPE: '1'
+  NUVIO_PROVIDER_V3_CONTEXT: workspace
+
+jobs:
+  domain-4k:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.base_ref || 'fix/provider-activation-certification-v1' }}
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Snapshot 4K authority
+        run: |
+          mkdir -p health-output
+          python3 - <<'PY'
+          import json
+          p=json.load(open('provider-overrides.json'))['provider_patches']['4khdhub']
+          h=json.load(open('provider-hubs.json'))['providers']['4khdhub']
+          print('FIELD_V37_BEFORE site='+str(p.get('official_site'))+' hub='+str(p.get('official_hub'))+' direct='+str(h.get('direct'))+' blocked='+','.join(h.get('blocked_hosts') or []))
+          PY
+      - name: Run official Domain Refresh apply in disposable workspace
+        run: |
+          set -euo pipefail
+          python3 scripts/sanitize_provider_hub_registry.py --registry provider-hubs.json
+          python3 scripts/domain_refresh_priority_wrapper.py             --mode quick --include-disabled --workers 8 --timeout 8             --apply             --output health-output/provider-hub-report.json             --changes-output health-output/domain-site-changes.json
+          python3 scripts/reconcile_provider_domain_metadata.py --rebuild
+      - name: Inspect 4K authority after refresh
+        run: |
+          python3 - <<'PY'
+          import json
+          p=json.load(open('provider-overrides.json'))['provider_patches']['4khdhub']
+          h=json.load(open('provider-hubs.json'))['providers']['4khdhub']
+          hist=json.load(open('provider-domain-history.json'))
+          row=(hist.get('providers') or hist).get('4khdhub') or {}
+          print('FIELD_V37_AFTER site='+str(p.get('official_site'))+' hub='+str(p.get('official_hub'))+' direct='+str(h.get('direct'))+' current='+str((row.get('current') or {}).get('url')))
+          print('FIELD_V37_SUBS '+json.dumps(p.get('domain_substitutions') or {},separators=(',',':')))
+          PY
+      - name: Materialize and certify 4K
+        run: |
+          set -euo pipefail
+          python3 scripts/materialize_provider_v3_one.py 4khdhub
+          python3 scripts/certify_provider_playable_lanes.py             --manifest manifest.json --include-disabled --provider 4khdhub             --candidate-limit 12 --timeout 30 --workers 2             --seed "v37-domain-4k-${GITHUB_RUN_ID}"             --output health-output/v37-4k.json
+      - name: Summarize 4K
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('health-output/v37-4k.json')
+          if not p.is_file(): raise SystemExit(0)
+          j=json.loads(p.read_text()); row=j['providers'][0]; lanes=row.get('lanes') or {}
+          gl=[k for k,v in lanes.items() if (v or {}).get('state')=='certified']
+          stages=sorted({a.get('debugStage') for v in lanes.values() for a in (v or {}).get('attempts') or [] if a.get('debugStage')})
+          hosts=sorted({n.get('host') for v in lanes.values() for a in (v or {}).get('attempts') or [] for n in a.get('networkTrace') or [] if n.get('host')})
+          print('FIELD_V37_RESULT green='+(','.join(gl) or '-')+' full='+str(bool(row.get('certified'))).lower()+' stages='+('|'.join(stages) or '-')+' hosts='+('|'.join(hosts) or '-'))
+          PY
+      - name: Upload V37 evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: v37-domain-4k-${{ github.run_id }}
+          path: health-output/
+          retention-days: 8
