@@ -22,6 +22,7 @@ WRAPPER = r'''
   function argsOf(a){
     var first=a[0],obj=first&&typeof first==="object"&&!Array.isArray(first)?first:null,ctx={};try{ctx=g.__nuvioMediaContext||{}}catch(_e){}
     var type=s((obj&&(obj.canonicalMediaType||obj.semanticType||obj.mediaType||obj.type))||a[1]||ctx.canonicalMediaType||ctx.mediaType||"").toLowerCase();
+    if(type==="tv")type="anime";
     if(type!=="anime")return null;
     var meta=(obj&&obj.tmdbMetadata)||ctx.tmdbMetadata||ctx.fixtureMetadata||{};
     return {tmdbId:s((obj&&(obj.tmdbId||obj.id))||first),title:s((obj&&(obj.title||obj.name))||meta.title||meta.name||meta.original_name||ctx.title||""),season:Number((obj&&obj.season)||a[2]||ctx.season)||1,episode:Number((obj&&obj.episode)||a[3]||ctx.episode)||1};
