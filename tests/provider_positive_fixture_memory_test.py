@@ -64,4 +64,34 @@ assert demo["lanes"]["tv"]["fixtureSlug"] == "old-show"
 assert demo["lanes"]["tv"]["state"] == "stale-or-unverified"
 assert demo["lanes"]["tv"]["lastFailedBundleSha256"] == "abc"
 
+
+targeted_registry = {
+    "providers": {
+        "demo": registry["providers"]["demo"],
+        "unseen": {
+            "certified": True,
+            "registryState": "certified",
+            "lanes": {
+                "movie": {
+                    "state": "certified",
+                    "fixtureSlug": "stable-film",
+                    "knownPositiveFixtures": ["stable-film"],
+                }
+            },
+        },
+    }
+}
+targeted = dict(certification)
+targeted["fullManifestCensus"] = False
+targeted_merged = memory.merge(targeted, targeted_registry)
+assert targeted_merged["providers"]["unseen"]["certified"] is True
+assert targeted_merged["providers"]["unseen"]["registryState"] == "certified"
+assert targeted_merged["providers"]["unseen"]["lanes"]["movie"]["state"] == "certified"
+
+full = dict(certification)
+full["fullManifestCensus"] = True
+full_merged = memory.merge(full, targeted_registry)
+assert full_merged["providers"]["unseen"]["certified"] is False
+assert full_merged["providers"]["unseen"]["registryState"] == "not-observed-in-latest-full-manifest-certification"
+
 print("provider positive fixture memory tests passed")
