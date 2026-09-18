@@ -239,16 +239,14 @@ jobs:
           mem=Path('MEMORY.md')
           text=mem.read_text(encoding='utf-8').rstrip()
           marker='## 2026-09-18 — VidLove V1 materialization + Kehflix projection publication candidate'
-          block=f"""
-
-{marker}
-
-- Publication runner {os.environ.get('GITHUB_RUN_ID','unknown')} executed from exact base SHA {os.environ.get('GITHUB_SHA','unknown')}.
-- VidLove was rematerialized through the canonical Provider v3 materializer with proof-owned V1 authority preserved. Exact publication candidate: {pub['vidlove']['file']}, API base {pub['vidlove']['apiBase']}.
-- Fresh terminal proof on the exact generated VidLove bundle: {json.dumps(proof['rows'],ensure_ascii=False,separators=(',',':'))}.
-- Kehflix was rebuilt through the CONFIG-only Domain Refresh path, preserving provider/Core bytes outside CONFIG. Exact candidate: {pub['kehflix']['file']}, official site {pub['kehflix']['officialSite']}.
-- Static Provider v3 audit and final minimizer fixed-point passed before publication. Final repository SHA and downstream Domain Refresh/Verify verdict remain pending until the self-publication commit lands and those workflows complete.
-"""
+          block=(
+              "\n\n"+marker+"\n\n"
+              +f"- Publication runner {os.environ.get('GITHUB_RUN_ID','unknown')} executed from exact base SHA {os.environ.get('GITHUB_SHA','unknown')}.\n"
+              +f"- VidLove was rematerialized through the canonical Provider v3 materializer with proof-owned V1 authority preserved. Exact publication candidate: {pub['vidlove']['file']}, API base {pub['vidlove']['apiBase']}.\n"
+              +f"- Fresh terminal proof on the exact generated VidLove bundle: {json.dumps(proof['rows'],ensure_ascii=False,separators=(',',':'))}.\n"
+              +f"- Kehflix was rebuilt through the CONFIG-only Domain Refresh path, preserving provider/Core bytes outside CONFIG. Exact candidate: {pub['kehflix']['file']}, official site {pub['kehflix']['officialSite']}.\n"
+              +"- Static Provider v3 audit and final minimizer fixed-point passed before publication. Final repository SHA and downstream Domain Refresh/Verify verdict remain pending until the self-publication commit lands and those workflows complete.\n"
+          )
           if marker not in text:
               mem.write_text(text+block.rstrip()+'\n',encoding='utf-8')
           PY
