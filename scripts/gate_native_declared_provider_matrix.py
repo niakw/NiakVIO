@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import hashlib
 import json
 import re
 from collections import Counter, defaultdict
@@ -153,7 +154,9 @@ def main() -> int:
     expected: set[tuple[str, str]] = set()
     provider_ids: set[str] = set()
     display: dict[str, str] = {}
+    bundle_sha_by_provider: dict[str, str] = {}
     disabled_ids: set[str] = set()
+    manifest_base = args.manifest.resolve().parent
     for row in manifest.get("scrapers") or []:
         provider = str(row.get("id") or "").strip()
         if not provider:
@@ -167,6 +170,13 @@ def main() -> int:
             continue
         provider_ids.add(key)
         display[key] = provider
+        filename = str(row.get("filename") or "").strip()
+        bundle_path = (manifest_base / filename).resolve() if filename else None
+        bundle_sha_by_provider[key] = (
+            hashlib.sha256(bundle_path.read_bytes()).hexdigest()
+            if bundle_path is not None and bundle_path.is_file()
+            else ""
+        )
         declared = {
             str(value).strip().casefold()
             for value in (row.get("supportedTypes") or [])
@@ -311,11 +321,13 @@ def main() -> int:
             "providerId": provider,
             "status": status,
             "lanes": outcomes,
+            "bundleSha256": bundle_sha_by_provider.get(provider) or None,
         })
         lane_text = ",".join(f"{media_type}:{outcomes[media_type]}" for media_type in lanes)
         print(
             "FIELD_NATIVE_PROVIDER_STATUS "
-            f"client={args.client} provider={display.get(provider, provider)} status={status} lanes={lane_text}"
+            f"client={args.client} provider={display.get(provider, provider)} status={status} lanes={lane_text} "
+            f"bundle_sha={bundle_sha_by_provider.get(provider) or 'missing'}"
         )
 
     health_state = "passed" if not nonfull else "failed"
