@@ -623,7 +623,8 @@
       "notes": [
         "Resolve Flemmix from its official address hub; the active domain is flemmix.kim.",
         "Do not retain ww547.wiflix-hd.vip as LKG after DNS failure; rewrite legacy Flemmix/Wiflix hostnames to flemmix.kim.",
-        "Cloudflare/browser verification is not by itself provider-unreachable; final activation remains governed by runtime media proof."
+        "Cloudflare/browser verification is not by itself provider-unreachable; final activation remains governed by runtime media proof.",
+        "2026-09-18 route-survival repair: restore execution route/recipe knowledge proven on PR #122 and lost during #127/rematerialization; preserve current Domain Refresh authority and newer Lego implementations."
       ],
       "official_hub": "https://ww1.wiflix-adresses.fun/",
       "official_site": "https://flemmix.party",
@@ -637,7 +638,9 @@
         "tv"
       ],
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/api/v2/themoviedb?id={tmdbId}",
+        "/search?q={title}",
+        "/embed/video/{id}?expires={expires}&signature={signature}"
       ],
       "core_options": {
         "desktop_runtime_compat": {
@@ -709,7 +712,9 @@
         "/{slug}",
         "/film/{slug}",
         "/films/{slug}",
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/api/v2/themoviedb?id={tmdbId}",
+        "/search?q={title}",
+        "/embed/video/{id}?expires={expires}&signature={signature}"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -7617,7 +7622,8 @@
     },
     "vidfast": {
       "notes": [
-        "Use VidFast documented movie/tv embed routes. Do not force direct-media validation on the iframe URL."
+        "Use VidFast documented movie/tv embed routes. Do not force direct-media validation on the iframe URL.",
+        "2026-09-18 route-survival repair: restore execution route/recipe knowledge proven on PR #122 and lost during #127/rematerialization; preserve current Domain Refresh authority and newer Lego implementations."
       ],
       "capability": "iframe_player",
       "preserve_embed_urls": true,
@@ -7626,7 +7632,9 @@
       },
       "learned_routes": [
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}/{season}/{episode}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -7660,7 +7668,9 @@
         "/?tmdbId={tmdbId}&type=movie",
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
         "/",
-        "/api"
+        "/api",
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}/{season}/{episode}"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -9088,7 +9098,8 @@
       "capability": "mixed_embed_resolver",
       "notes": [
         "Use the latest Wooka terminal domain announced by the official Telegram address channel.",
-        "Wooka player crawl preserves all discovered embeds but prioritizes lecteurvideo.com before the ProviderBase bounded seed budget; current lecteurvideo pages are structurally parsed and still pass shared terminal/identity guards."
+        "Wooka player crawl preserves all discovered embeds but prioritizes lecteurvideo.com before the ProviderBase bounded seed budget; current lecteurvideo pages are structurally parsed and still pass shared terminal/identity guards.",
+        "2026-09-18 route-survival repair: restore execution route/recipe knowledge proven on PR #122 and lost during #127/rematerialization; preserve current Domain Refresh authority and newer Lego implementations."
       ],
       "official_hub": "https://t.me/s/Wookafr2",
       "official_site": "https://wookafr.boston",
@@ -9128,7 +9139,11 @@
         "/?s={query}",
         "/streaming/{slug}/",
         "/api/v2/themoviedb?id={tmdbId}",
-        "/streaming/series/{slug}/"
+        "/streaming/series/{slug}/",
+        "/?s={title}",
+        "/streaming/{category}/{slug}/",
+        "/streaming/episodes/{slug}-saison-{season}-episode-{episode}/",
+        "https://lecteurvideo.com/embed.php?id={id}&tp={type}&url={source}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -9170,7 +9185,11 @@
         "/streaming/series/breaking-bad-2008/",
         "/search/{slug}/",
         "/streaming/aventure/{slug}/",
-        "/streaming/episodes/{slug}-saison-1-episode-1/"
+        "/streaming/episodes/{slug}-saison-1-episode-1/",
+        "/?s={title}",
+        "/streaming/{category}/{slug}/",
+        "/streaming/episodes/{slug}-saison-{season}-episode-{episode}/",
+        "https://lecteurvideo.com/embed.php?id={id}&tp={type}&url={source}"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -9478,7 +9497,7 @@
       "api_recipe": {
         "proofModelVersion": 5,
         "allowGenericFallback": false,
-        "movieRoute": "https://enc-dec.app/db/flix/find?tmdb_id={tmdbId}&type=movie",
+        "movieRoute": "/db/flix/find?tmdb_id={tmdbId}&type=movie",
         "movieRequest": {
           "method": "GET",
           "headers": {
@@ -9494,12 +9513,13 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "tvRoute": "/db/flix/find?tmdb_id={tmdbId}&type=tv"
       },
       "candidate_api_recipe": {
         "proofModelVersion": 5,
         "allowGenericFallback": false,
-        "movieRoute": "https://enc-dec.app/db/flix/find?tmdb_id={tmdbId}&type=movie",
+        "movieRoute": "/db/flix/find?tmdb_id={tmdbId}&type=movie",
         "movieRequest": {
           "method": "GET",
           "headers": {
@@ -9515,7 +9535,8 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "tvRoute": "/db/flix/find?tmdb_id={tmdbId}&type=tv"
       },
       "route_data_state": "repair",
       "repair_disposition": {
@@ -9591,7 +9612,10 @@
       ],
       "provider_lego_options": {
         "scripts/provider_patches/yflix_current_runtime_v2.py": {}
-      }
+      },
+      "notes": [
+        "2026-09-18 route-survival repair: restore execution route/recipe knowledge proven on PR #122 and lost during #127/rematerialization; preserve current Domain Refresh authority and newer Lego implementations."
+      ]
     },
     "allanime": {
       "capability": "direct_media",
@@ -9610,7 +9634,8 @@
       },
       "notes": [
         "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias.",
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
+        "2026-09-18 route-survival repair: restore execution route/recipe knowledge proven on PR #122 and lost during #127/rematerialization; preserve current Domain Refresh authority and newer Lego implementations."
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -9627,7 +9652,10 @@
       "learned_routes": [
         "/api",
         "/api/v2/themoviedb?id={id}",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/?s={title}",
+        "/{slug}/",
+        "/{slug}-episode-{episode}/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -9658,7 +9686,10 @@
       "candidate_learned_routes": [
         "/api",
         "/api/v2/themoviedb?id={id}",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/?s={title}",
+        "/{slug}/",
+        "/{slug}-episode-{episode}/"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -9830,7 +9861,11 @@
       "learned_routes": [
         "/player",
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/filter?keyword={title}",
+        "/ajax/episode/list/{id}",
+        "/ajax/server/list?servers={serverKey}",
+        "/ajax/server?get={serverId}"
       ],
       "live_route_gate": {
         "completion_state": "stream-capability-unproven",
@@ -9865,7 +9900,11 @@
         "/player",
         "/ajax/episode/list/",
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/filter?keyword={title}",
+        "/ajax/episode/list/{id}",
+        "/ajax/server/list?servers={serverKey}",
+        "/ajax/server?get={serverId}"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -10018,7 +10057,8 @@
       "notes": [
         "Fresh 2026-09-13 adaptive corpus proof is zero on all declared lanes; previous playable_verified lane claims are invalidated.",
         "Historical manual cross-fixture evidence returned the same very short media for unrelated works, so it is wrong-content/fixture-invariant evidence, not a valid stream proof.",
-        "Route knowledge is retained for diagnosis, but activation does not imply live capability proof; runtime must fail closed until fresh identity-safe media proof exists."
+        "Route knowledge is retained for diagnosis, but activation does not imply live capability proof; runtime must fail closed until fresh identity-safe media proof exists.",
+        "2026-09-18 route-survival repair: restore execution route/recipe knowledge proven on PR #122 and lost during #127/rematerialization; preserve current Domain Refresh authority and newer Lego implementations."
       ],
       "current_stream_proof": {
         "schemaVersion": 1,
@@ -10939,7 +10979,10 @@
       "manifest_overrides": {
         "enabled": true
       },
-      "notes": "Fail-closed safety quarantine: non_playable_html_output. Published bundle is inert; re-enable only after fresh strict identity and direct-media proof.",
+      "notes": [
+        "Fail-closed safety quarantine: non_playable_html_output. Published bundle is inert; re-enable only after fresh strict identity and direct-media proof.",
+        "2026-09-18 route-survival repair: restore execution route/recipe knowledge proven on PR #122 and lost during #127/rematerialization; preserve current Domain Refresh authority and newer Lego implementations."
+      ],
       "quarantine_reason": "non_playable_html_output",
       "candidate_config_reconciliation": {
         "version": 3,
@@ -10955,7 +10998,9 @@
       },
       "learned_routes": [
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "https://vidsrcme.ru/vs_src.php?type=movie&id={tmdbId}",
+        "https://vidsrcme.ru/vs_src.php?type=tv&id={tmdbId}&season={season}&episode={episode}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -10989,7 +11034,9 @@
         "/stream/series/",
         "/stream/movie/",
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "https://vidsrcme.ru/vs_src.php?type=movie&id={tmdbId}",
+        "https://vidsrcme.ru/vs_src.php?type=tv&id={tmdbId}&season={season}&episode={episode}"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -11350,7 +11397,8 @@
         "enabled": true
       },
       "notes": [
-        "Clean ProviderBase reconstruction models VidLove as a bounded multi-source JSON API recipe derived from the upstream provider contract."
+        "Clean ProviderBase reconstruction models VidLove as a bounded multi-source JSON API recipe derived from the upstream provider contract.",
+        "2026-09-18 route-survival repair: restore execution route/recipe knowledge proven on PR #122 and lost during #127/rematerialization; preserve current Domain Refresh authority and newer Lego implementations."
       ],
       "candidate_api_recipe": {
         "base": "https://ballerinacappuccinalovestungtungtungsahur.com",
@@ -11576,6 +11624,33 @@
       ],
       "provider_lego_options": {
         "scripts/provider_patches/vidlove_current_api_v2.py": {}
+      },
+      "api_recipe": {
+        "proofModelVersion": 5,
+        "allowGenericFallback": false,
+        "base": "https://api.vidlove.cc",
+        "referer": "https://player.vidlove.cc/",
+        "origin": "https://player.vidlove.cc",
+        "directRoute": "/{media}?id={tmdbId}&mode=json&season={season}&episode={episode}",
+        "directRequest": {
+          "method": "GET",
+          "headers": {
+            "Accept": "application/json,text/plain,*/*",
+            "Origin": "https://player.vidlove.cc",
+            "Referer": "https://player.vidlove.cc/"
+          }
+        },
+        "requestHeaders": {
+          "Accept": "application/json,text/plain,*/*",
+          "Origin": "https://player.vidlove.cc",
+          "Referer": "https://player.vidlove.cc/"
+        },
+        "playbackHeaders": {
+          "Origin": "https://player.vidlove.cc"
+        },
+        "sources": [],
+        "requestTimeoutMs": 8000,
+        "minStreamsBeforeStop": 1
       }
     }
   },
