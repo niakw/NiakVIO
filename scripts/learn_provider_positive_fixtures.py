@@ -90,13 +90,15 @@ def merge(certification: dict[str, Any], registry: dict[str, Any]) -> dict[str, 
         current["lanes"] = lanes
         providers[provider] = current
 
-    for provider, raw in list(providers.items()):
-        if provider in seen or not isinstance(raw, dict):
-            continue
-        stale = dict(raw)
-        stale["certified"] = False
-        stale["registryState"] = "not-observed-in-latest-certification"
-        providers[provider] = stale
+    full_manifest_census = bool(certification.get("fullManifestCensus"))
+    if full_manifest_census:
+        for provider, raw in list(providers.items()):
+            if provider in seen or not isinstance(raw, dict):
+                continue
+            stale = dict(raw)
+            stale["certified"] = False
+            stale["registryState"] = "not-observed-in-latest-full-manifest-certification"
+            providers[provider] = stale
 
     return {
         "schemaVersion": 1,
