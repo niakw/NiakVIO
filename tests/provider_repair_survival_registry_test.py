@@ -14,4 +14,13 @@ assert reg["providers"]["vidfast"]["requiredScripts"]==["scripts/provider_patche
 assert reg["providers"]["vidlove"]["requiredScripts"]==["scripts/provider_patches/vidlove_current_api_v2.py"]
 assert len(reg["providers"]["wookafr"]["requiredScripts"])==3
 assert reg["rules"]["historicalProofDoesNotAutoCertify"] is True
+
+overrides=json.loads((ROOT/"provider-overrides.json").read_text(encoding="utf-8"))
+patches=overrides["provider_patches"]
+assert patches["allwish"]["provider_lego_scripts"]==["scripts/provider_patches/allwish_current_runtime_v2.py"]
+assert patches["vidfast"]["provider_lego_scripts"]==["scripts/provider_patches/vidfast_current_runtime_v2.py"]
+assert patches["vidlove"]["provider_lego_scripts"]==["scripts/provider_patches/vidlove_current_api_v2.py"]
+assert "scripts/provider_patches/allwish_current_runtime_v1.py" not in patches["allwish"].get("provider_lego_options",{})
+assert "scripts/provider_patches/vidfast_current_embed_v1.py" not in patches["vidfast"].get("provider_lego_options",{})
+assert "scripts/provider_patches/vidlove_current_api_v1.py" not in patches["vidlove"].get("provider_lego_options",{})
 print("provider repair survival registry tests passed")
