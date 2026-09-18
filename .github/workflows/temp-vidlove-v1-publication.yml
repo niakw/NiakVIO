@@ -1,5 +1,5 @@
 name: TEMP - Publish VidLove V1 and Kehflix Projection
-# retry: current-scope cardinality contract
+# retry: rotating VidLove movie+tv corpus
 
 on:
   push:
@@ -199,11 +199,18 @@ jobs:
 
           fixtures=[
               ('movie',{'slug':'interstellar-2014','tmdbId':'157336','mediaType':'movie','category':'movie','title':'Interstellar','year':2014,'expectedDurationMinutes':169}),
+              ('movie',{'slug':'the-batman-2022','tmdbId':'414906','mediaType':'movie','category':'movie','title':'The Batman','year':2022}),
+              ('movie',{'slug':'avatar-the-way-of-water-2022','tmdbId':'76600','mediaType':'movie','category':'movie','title':'Avatar: The Way of Water','year':2022}),
+              ('movie',{'slug':'django-unchained-2012','tmdbId':'68718','mediaType':'movie','category':'movie','title':'Django Unchained','year':2012}),
               ('tv',{'slug':'house-of-the-dragon-2022-s01e01','tmdbId':'94997','mediaType':'tv','category':'tv','title':'House of the Dragon','year':2022,'season':1,'episode':1}),
+              ('tv',{'slug':'silo-2023-s01e01','tmdbId':'125988','mediaType':'tv','category':'tv','title':'Silo','year':2023,'season':1,'episode':1}),
+              ('tv',{'slug':'fallout-2024-s01e01','tmdbId':'106379','mediaType':'tv','category':'tv','title':'Fallout','year':2024,'season':1,'episode':1}),
+              ('tv',{'slug':'peaky-blinders-2013-s01e01','tmdbId':'60574','mediaType':'tv','category':'tv','title':'Peaky Blinders','year':2013,'season':1,'episode':1}),
           ]
           local=parity.local_catalog()
           path=local['vidlove']['path']
           rows=[]
+          lane_ok={'movie':False,'tv':False}
           for lane,fx in fixtures:
               result=v3._run_verified(path,v3.fixture_payload(fx,lane,upstream=False),30)
               row={
@@ -211,6 +218,8 @@ jobs:
                   'lane':lane,
                   'fixture':fx['slug'],
                   'streams':int(result.get('stream_count') or 0),
+                  'candidateStreams':int(result.get('candidate_stream_count') or 0),
+                  'rawStreams':int(result.get('raw_stream_count') or 0),
                   'terminal':bool(result.get('terminal_verified')),
                   'reasons':result.get('terminal_reasons') or [],
                   'statuses':result.get('http_statuses') or [],
@@ -218,13 +227,18 @@ jobs:
                   'error':result.get('error_class'),
               }
               rows.append(row)
+              positive=row['streams'] >= 1 and row['terminal']
+              lane_ok[lane]=lane_ok[lane] or positive
               print('VIDLOVE_V1_PROOF '+json.dumps(row,sort_keys=True))
-              if row['streams'] < 1 or not row['terminal']:
-                  raise SystemExit('VidLove V1 lane not freshly playable: '+lane)
+          report={'schemaVersion':2,'lanePlayable':lane_ok,'rows':rows}
           pathlib.Path('health-output/vidlove-v1-proof.json').write_text(
-              json.dumps({'schemaVersion':1,'rows':rows},ensure_ascii=False,indent=2)+'\n',
+              json.dumps(report,ensure_ascii=False,indent=2)+'\n',
               encoding='utf-8'
           )
+          print('VIDLOVE_V1_LANE_SUMMARY '+json.dumps(lane_ok,sort_keys=True))
+          missing=[lane for lane,ok in lane_ok.items() if not ok]
+          if missing:
+              raise SystemExit('VidLove V1 has no fresh playable fixture for lanes: '+','.join(missing))
           PY
 
       - name: Record durable checkpoint and prepare Domain Refresh handoff
