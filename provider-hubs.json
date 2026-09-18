@@ -2950,44 +2950,35 @@
       "manifest_status": "Onboarding",
       "category": "Francophone",
       "hub": "https://kehflix.wiki/",
-      "direct": "https://kehflix.lol/",
+      "direct": "https://kehflix.com/",
       "telegram": null,
       "api": null,
       "source": "provider_onboarding_workflow",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "kehflix.wiki is the authoritative address hub only; kehflix.com is the current runtime terminal advertised by that hub. Never publish .wiki as the runtime site and never restore stale kehflix.lol.",
       "aliases": [
         "kehflix"
       ],
       "direct_candidates": [
-        "https://kehflix.lol/",
         "https://kehflix.com/"
       ],
       "allowed_terminal_hosts": [
-        "kehflix.lol",
         "kehflix.com"
       ],
       "search_queries": [
-        "\"Kehflix\" adresse officielle",
         "site:kehflix.wiki Kehflix"
       ],
       "sources": [
         {
           "type": "hub",
           "url": "https://kehflix.wiki/",
-          "priority": 100,
-          "purpose": "Authoritative address reference"
-        },
-        {
-          "type": "search",
-          "query": "\"Kehflix\" adresse officielle",
-          "priority": 35,
-          "purpose": "Fallback route discovery"
+          "priority": 120,
+          "purpose": "Authoritative current-address hub; resolve the runtime domain advertised by the hub"
         },
         {
           "type": "search",
           "query": "site:kehflix.wiki Kehflix",
-          "priority": 35,
-          "purpose": "Fallback route discovery"
+          "priority": 20,
+          "purpose": "Fallback verification only; hub remains authoritative"
         }
       ],
       "search_confirmation_runs": 2
