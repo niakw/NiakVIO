@@ -1893,3 +1893,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The next failure was not provider-specific: `upgrade_provider_base_runtime_v11.validate_telegram_discovery_only()` still required obsolete regex source text `t\\.me|telegram\\.me|telegram\\.dog`, while current ProviderBase already implements stricter DNS-boundary checks for `t.me`, `telegram.me`, and `telegram.dog`. Validator is aligned to current behavior and gets a dedicated regression test.
 - Fixed-point workflow run **35397598805** completed green and pushed **`a3ec54bfb08b15e88c1f4ba1cb7dd68bc0e6184d`**, reconciling VidLove/Kehflix manifest, materialization, provenance and minimizer metadata. Domain Refresh failure on 847 belongs to the pre-fixed-point SHA and is obsolete.
 
+## 2026-09-18 — Repair retry 23 reached test phase; test import defect only
+
+- Retry 23 baseline fluctuated to **16/46** and correctly expanded automatic Repair to **33 targets**, reactivating MoviesHunt, Kurage and VoirAnime as disposition-ON providers that no longer verified in the same run.
+- All current-scope migrations, ProviderBase v11 Telegram behavior validation and source-plan migrations passed. The run stopped before route recovery only because the newly added `provider_telegram_discovery_only_contract_test.py` imported the migration script without first putting `scripts/` on `sys.path`, causing a test-only `ModuleNotFoundError` for an existing sibling module.
+- Retry 24 fixes only that test harness import path and resumes the same regression-aware Repair. Do not downgrade provider status from retry 23; no provider recovery network phase executed.
+

@@ -1,11 +1,11 @@
 {
   "schemaVersion": 3,
-  "requestedAt": "2026-09-18T23:40:00+02:00",
-  "retry": 23,
+  "requestedAt": "2026-09-18T23:44:00+02:00",
+  "retry": 24,
   "mode": "repair",
-  "scope": "historical-green-regressions-after-telegram-contract-fix",
+  "scope": "historical-green-regressions-after-telegram-test-import-fix",
   "targetProviders": [],
-  "goal": "Continue current Repair V6 on unresolved plus freshly regressed historical greens. Telegram discovery-only validation must follow current DNS-boundary behavior, not obsolete regex source text.",
+  "goal": "Continue the same 33-target regression-aware Repair V6. Previous retry reached all migrations/contracts and failed only because the new Telegram contract test omitted scripts/ from sys.path.",
   "branch": "main",
   "publication": false
 }
