@@ -3726,6 +3726,22 @@ async function _resolveExternalIdentityPlan(meta, mediaType, season, episode) {
   }
   return [];
 }
+async function _providerRuntimeResolverV1(tmdbId, mediaType, season, episode) {
+  try {
+    const resolver = typeof globalThis !== "undefined"
+      ? globalThis.__niakvioProviderRuntimeResolverV1
+      : null;
+    if (!resolver || typeof resolver !== "object" || typeof resolver.resolve !== "function") return [];
+    const owner = _text(resolver.provider).trim().toLowerCase();
+    const expected = _text(NIAKVIO_PROVIDER_MODEL.providerId).trim().toLowerCase();
+    if (!owner || !expected || owner !== expected) return [];
+    const out = await resolver.resolve([tmdbId, mediaType, season, episode]);
+    if (!Array.isArray(out)) return [];
+    return out.filter(row => row && typeof row === "object" && /^https?:\/\//i.test(_text(row.url))).slice(0, 40);
+  } catch (_) {
+    return [];
+  }
+}
 async function getStreams(tmdbId, mediaType, season, episode) {
   const type = String(mediaType || "movie").toLowerCase();
   if (NIAKVIO_PROVIDER_MODEL.supportedTypes.length &&
@@ -3733,6 +3749,11 @@ async function getStreams(tmdbId, mediaType, season, episode) {
       !(type === "tv" && NIAKVIO_PROVIDER_MODEL.supportedTypes.includes("anime"))) {
     return [];
   }
+
+  /* NIAKVIO_PROVIDER_RUNTIME_RESOLVER_CONSUMER_V36 */
+  const providerOwned = await _providerRuntimeResolverV1(tmdbId, type, season, episode);
+  if (providerOwned.length) return providerOwned;
+
   if (!_runtimePlanAvailable()) return [];
   const strategy = NIAKVIO_PROVIDER_MODEL.strategy;
 
