@@ -157,21 +157,31 @@ def sanitized_provider_fetch_trace(debug: dict[str, Any], *, limit: int = 8) -> 
     for raw in debug.get("fetches") or []:
         if not isinstance(raw, dict):
             continue
-        source_url = str(raw.get("response_url") or raw.get("url") or "").strip()
+        request_url = str(raw.get("url") or "").strip()
+        response_url = str(raw.get("response_url") or "").strip()
         try:
-            parsed = urlsplit(source_url)
+            request_parsed = urlsplit(request_url) if request_url else None
+            response_parsed = urlsplit(response_url) if response_url else None
         except ValueError:
             continue
-        host = str(parsed.hostname or "").casefold()
+        request_host = str((request_parsed.hostname if request_parsed else "") or "").casefold()
+        response_host = str((response_parsed.hostname if response_parsed else "") or "").casefold()
+        host = response_host or request_host
         if not host or host == "api.themoviedb.org":
             continue
-        path = str(parsed.path or "/")[:240]
+        request_path = str((request_parsed.path if request_parsed else "") or "/")[:240]
+        response_path = str((response_parsed.path if response_parsed else "") or request_path or "/")[:240]
         shape = raw.get("json_shape")
         if not isinstance(shape, dict):
             shape = None
         rows.append({
             "host": host[:160],
-            "path": path,
+            "path": response_path,
+            "requestHost": request_host[:160] or None,
+            "requestPath": request_path,
+            "responseHost": response_host[:160] or None,
+            "responsePath": response_path,
+            "redirected": bool(request_host and response_host and request_host != response_host),
             "method": str(raw.get("method") or "GET").upper()[:12],
             "status": int(raw.get("status") or 0),
             "contentType": str(raw.get("content_type") or "")[:96] or None,
