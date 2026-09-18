@@ -353,12 +353,47 @@ def telegram_links(document: str, base: str) -> list[dict[str, Any]]:
     return output
 
 
+def _anchor_context_label(document: str, match: re.Match[str], anchor_text: str) -> str:
+    """Keep strong nearby address semantics instead of only <a> text.
+
+    Address hubs often render the canonical domain in a card whose button text is
+    merely "Entrer".  Preserve only bounded semantic markers from the nearby
+    card so primary/current/verified signals survive without letting unrelated
+    page text dominate candidate scoring.
+    """
+    window = document[max(0, match.start() - 1400):min(len(document), match.end() + 500)]
+    plain = re.sub(r"<[^>]+>", " ", html.unescape(window))
+    plain = re.sub(r"\s+", " ", plain).strip()
+    folded = compact(plain)
+    positive = (
+        "accesprincipal", "adresseverifiee", "adresseverifie", "verifiedaddress",
+        "verifiedonline", "enligne", "plateformeprincipale", "versionprincipale",
+        "principal", "primary", "current", "actuel", "officiel", "official",
+    )
+    negative = (
+        "backup", "secours", "miroir", "mirror", "alternative", "fallback",
+        "indisponibilite", "indisponible", "old", "ancien",
+    )
+    markers: list[str] = []
+    for token in positive:
+        if token in folded:
+            markers.append(token)
+    for token in negative:
+        if token in folded:
+            markers.append(token)
+    if not markers:
+        return anchor_text
+    return (anchor_text + " " + " ".join(markers)).strip()
+
+
 def links(document: str, base: str) -> list[tuple[str, str, int]]:
     output: list[tuple[str, str, int]] = []
     pattern = re.compile(r"<a\b[^>]*href=[\"']([^\"']+)[\"'][^>]*>([\s\S]*?)</a>", re.I)
-    for index, (href, label) in enumerate(pattern.findall(document)):
+    for index, match in enumerate(pattern.finditer(document)):
+        href, label = match.group(1), match.group(2)
         text = re.sub(r"<[^>]+>", " ", html.unescape(label))
         text = re.sub(r"\s+", " ", text).strip()
+        text = _anchor_context_label(document, match, text)
         url = urllib.parse.urljoin(base, html.unescape(href))
         url = _decode_search_redirect(url)
         if url.startswith(("http://", "https://")):
@@ -566,8 +601,19 @@ def candidate_score(provider_id: str, cfg: dict[str, Any], url: str, label: str,
     score = 55 if brand else 25
     if label_match:
         score += 30
-    if any(token in normalized for token in ("official", "officiel", "actuel", "verifie", "verified", "principal")):
-        score += 10
+    positive_markers = (
+        "official", "officiel", "actuel", "current", "verifie", "verified",
+        "principal", "primary", "accesprincipal", "adresseverifiee", "enligne",
+        "plateformeprincipale", "versionprincipale",
+    )
+    negative_markers = (
+        "backup", "secours", "miroir", "mirror", "alternative", "fallback",
+        "ancien", "indisponible", "indisponibilite",
+    )
+    if any(token in normalized for token in positive_markers):
+        score += 15
+    if any(token in normalized for token in negative_markers):
+        score -= 25
     if resolver == "service_catalogue" and any(token in normalized for token in ("catalogue", "streaming", "service")):
         score += 20
     if resolver == "latest_telegram_domain":
