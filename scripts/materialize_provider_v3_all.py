@@ -449,14 +449,11 @@ def provider_model(
             return "detail"
         return "other"
 
-    if patch_proof >= 5 and patch_routes:
-        patch_families = {route_family(value) for value in patch_routes}
-        route_values = [
-            *patch_routes,
-            *(value for value in static_routes if route_family(value) not in patch_families),
-        ]
-    else:
-        route_values = [*patch_routes, *static_routes]
+    # MATERIALIZER_ROUTE_AUTHORITY_MONOTONIC_V29
+    # Never erase independently proven static routes merely because a newer patch
+    # contains another route in the same coarse family. Current patch routes run
+    # first; proof-v5 static routes remain bounded fallbacks and are de-duplicated.
+    route_values = [*patch_routes, *static_routes]
     routes: list[str] = []
     if proof_version >= 5:
         for value in route_values:
@@ -466,10 +463,19 @@ def provider_model(
 
     static_recipe = static_model.get("apiRecipe") if isinstance(static_model.get("apiRecipe"), dict) else None
     static_recipe_proof = int(static_recipe.get("proofModelVersion") or 0) if isinstance(static_recipe, dict) else 0
-    if patch_recipe is not None and patch_recipe_proof >= 5:
+    if (
+        patch_recipe is not None
+        and patch_recipe_proof >= 5
+        and _recipe_is_provider_execution_authority(patch_recipe)
+    ):
         candidate_recipe = patch_recipe
-    elif not patch_has_execution_authority and static_recipe is not None and static_recipe_proof >= 5:
+    elif static_recipe is not None and static_recipe_proof >= 5:
+        # A route/search/value patch in another capability family must not erase
+        # an independently proven API recipe.
         candidate_recipe = static_recipe
+    elif patch_recipe is not None and patch_recipe_proof >= 5:
+        # Metadata/identity helpers may remain last-resort recipe knowledge.
+        candidate_recipe = patch_recipe
     else:
         candidate_recipe = None
     recipe_proof = int(candidate_recipe.get("proofModelVersion") or 0) if isinstance(candidate_recipe, dict) else 0
