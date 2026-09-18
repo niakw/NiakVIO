@@ -43,6 +43,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   "use strict";
 
   function s(v){return String(v==null?"":v).trim()}
+  function diag(stage,detail){try{var row={stage:s(stage).slice(0,64),lane:"",providerId:"castle",stepIndex:-1,route:s(detail).slice(0,240)};g.__nuvioProviderValueTraceV18=row;var hist=Array.isArray(g.__nuvioProviderValueTraceHistoryV21)?g.__nuvioProviderValueTraceHistoryV21:[];hist.push(row);while(hist.length>48)hist.shift();g.__nuvioProviderValueTraceHistoryV21=hist}catch(_e){}}
   function rows(v){return Array.isArray(v)?v:[]}
   function dataBlock(v){
     if(v&&typeof v==="object"&&v.data&&typeof v.data==="object")return v.data;
@@ -164,6 +165,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       padding:CryptoJS.pad.Pkcs7
     });
     var decoded=s(plainWord.toString(CryptoJS.enc.Utf8));
+    diag("castle_decrypt","plain="+(decoded?1:0)+";len="+String(decoded.length));
     if(!decoded)throw new Error("castle_decrypt_empty");
     return decoded;
   }
@@ -219,6 +221,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   }
   function strictMovieId(value,meta){
     var list=searchRows(value);
+    diag("castle_search_rows","count="+String(list.length));
     if(!list.length)return "";
     var target=normalized(meta.title),best=null,bestScore=0;
     for(var i=0;i<list.length;i++){
@@ -234,6 +237,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       if(expectedYear&&rowYear)score+=expectedYear===rowYear?10:-30;
       if(score>bestScore){bestScore=score;best=row}
     }
+    diag("castle_search_match","best="+String(bestScore)+";accepted="+(best&&bestScore>=80?1:0));
     if(!best||bestScore<80)return "";
     return s(best.id||best.redirectId||best.redirectIdStr||best.movieId);
   }
@@ -336,6 +340,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       found=await search(sec,meta.title);
       movieId=strictMovieId(found,meta);
     }
+    diag("castle_movie_id","selected="+(movieId?1:0));
     if(!movieId)return [];
     var detail=await details(sec,movieId),activeMovieId=movieId;
     if(meta.type==="tv"&&meta.season&&meta.episode){
