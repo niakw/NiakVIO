@@ -1,0 +1,136 @@
+name: TMP - V38 Native TV Three
+
+on:
+  pull_request:
+    branches:
+      - tmp/v38-native-tv-base
+
+permissions:
+  contents: read
+
+jobs:
+  tv-three:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - name: Checkout exact NiakVIO candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.base_ref || 'fix/provider-activation-certification-v1' }}
+          path: niakvio
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up JDK
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Resolve accepted TV client and three-provider scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p niakvio/health-output
+          python3 - <<'PY' > "$RUNNER_TEMP/tv_sha"
+          import json
+          d=json.load(open('niakvio/sources.json'))
+          print(d['nuvio_client_compatibility']['clients']['nuvio-tv']['accepted_ref'])
+          PY
+          TV_SHA="$(cat "$RUNNER_TEMP/tv_sha")"
+          test "${#TV_SHA}" = 40
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
+          git -C nuvio-tv checkout "$TV_SHA"
+          touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
+          cat > niakvio/automation/tmp-v38-native-scope.json <<'JSON'
+          {
+            "providerCount": 3,
+            "rows": [
+              {"manifestId":"castle","provider":"castle"},
+              {"manifestId":"4khdhub","provider":"4khdhub"},
+              {"manifestId":"allanime","provider":"allanime"}
+            ]
+          }
+          JSON
+
+      - name: Materialize current repair candidate and stage TV
+        shell: bash
+        env:
+          NIAKVIO_MATERIALIZE_NATIVE: '1'
+          NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/tmp-v38-native-scope.json
+        run: |
+          set -euo pipefail
+          touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
+          python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE"
+
+      - name: Set up Gradle runtime
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+        with:
+          cache-disabled: true
+
+      - name: Enable KVM
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
+
+      - name: Run two fixtures on one TV emulator
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        env:
+          NIAKVIO_MATERIALIZE_NATIVE: '1'
+          NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/tmp-v38-native-scope.json
+          NIAKVIO_TARGET_FIXTURES: "interstellar jujutsu-kaisen-s01e01"
+          NIAKVIO_TARGET_PROVIDER: all
+          NIAKVIO_PLAYER_PROBES: '1'
+          NIAKVIO_TV_PRIORITY_APPEND: '0'
+          NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: '25'
+          NIAKVIO_PR_PROVIDER_LIMIT: '3'
+        with:
+          api-level: 31
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          cores: 2
+          ram-size: 2048M
+          force-avd-creation: false
+          emulator-boot-timeout: 600
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: |
+            set +e
+            bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
+            rc=$?
+            echo "FIELD_V38_TV_SUITE_RC rc=$rc"
+            exit 0
+
+      - name: Summarize target providers
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          for p in castle 4khdhub allanime; do
+            echo "FIELD_V38_PROVIDER_BEGIN provider=$p"
+            grep -h -i -E "provider=($p)|providerId=($p)|\b$p\b" tv-native-corpus-*.log 2>/dev/null | tail -n 120 || true
+            echo "FIELD_V38_PROVIDER_END provider=$p"
+          done
+          grep -h -E 'FIELD_NATIVE_(RESULT|TV_RESULT|PLAYER|CORPUS_TV_STATUS)|FIELD_PROVIDER' tv-native-corpus-*.log 2>/dev/null | tail -n 600 > niakvio/health-output/v38-native-summary.log || true
+
+      - name: Upload targeted TV evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: v38-native-tv-three-${{ github.run_id }}
+          path: |
+            tv-native-corpus-*.log
+            niakvio/health-output/
+          retention-days: 3
+          if-no-files-found: warn
