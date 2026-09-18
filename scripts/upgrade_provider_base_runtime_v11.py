@@ -300,9 +300,10 @@ def validate_telegram_discovery_only(text: str | None = None) -> None:
     if value.count(TELEGRAM_RUNTIME_MARKER) != 1:
         raise AssertionError(f"telegram runtime marker count={value.count(TELEGRAM_RUNTIME_MARKER)}")
     for needle in (
-        't\\.me|telegram\\.me|telegram\\.dog',
         'function _runtimeDiscoveryOnlyUrl(url)',
         'host === "t.me" || host.endsWith(".t.me")',
+        'host === "telegram.me" || host.endsWith(".telegram.me")',
+        'host === "telegram.dog" || host.endsWith(".telegram.dog")',
         'if (_runtimeDiscoveryOnlyUrl(url)) throw new Error("provider_discovery_only_host");',
         'filter(value => /^https?:/i.test(value) && !_runtimeDiscoveryOnlyUrl(value));',
     ):

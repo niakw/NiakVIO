@@ -254,6 +254,7 @@ def main() -> int:
         "tests/provider_repair_v8_partial_typed_resolver_test.py",
         "tests/provider_text_body_request_v9_test.py",
         "tests/provider_source_plan_v10_regression_test.py",
+        "tests/provider_telegram_discovery_only_contract_test.py",
         "tests/provider_external_identity_route_v11_test.py",
         "tests/provider_source_plan_v12_regression_test.py",
         "tests/provider_route_plan_v13_regression_test.py",

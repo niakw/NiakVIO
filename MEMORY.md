@@ -1885,3 +1885,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - After a targeted provider proof/materialization, public bytes are now reconciled generically back into content-addressed manifest + provider-v3-materialization metadata before acceptance.
 - VidLove and Kehflix were used as the first live fixed-point application. The final manifest file, materialization file, SHA-256 and Provider CONFIG data hash are required to agree on the exact referenced bytes.
 - This closes the class of bug where a post-proof materialize_one() changed the public bundle after an earlier audit had already reconciled hashes.
+
+## 2026-09-18 — Repair retry 22 reached current migrations; Telegram validator stale
+
+- Retry 22 on SHA `847986dd5fb9202e6f221e053aa2626d78e18003` proved the regression-aware scope works: fresh adaptive baseline selected **32 targets = 30 unresolved + MoviesHunt + VoirAnime freshly regressed**, with 11 still-current greens protected.
+- Current-scope source-plan migrations now pass; archived AllMovieLand/AnimeZeY/AniMoFlix no longer block the current catalogue, and the source-plan V5 gate completed successfully.
+- The next failure was not provider-specific: `upgrade_provider_base_runtime_v11.validate_telegram_discovery_only()` still required obsolete regex source text `t\\.me|telegram\\.me|telegram\\.dog`, while current ProviderBase already implements stricter DNS-boundary checks for `t.me`, `telegram.me`, and `telegram.dog`. Validator is aligned to current behavior and gets a dedicated regression test.
+- Fixed-point workflow run **35397598805** completed green and pushed **`a3ec54bfb08b15e88c1f4ba1cb7dd68bc0e6184d`**, reconciling VidLove/Kehflix manifest, materialization, provenance and minimizer metadata. Domain Refresh failure on 847 belongs to the pre-fixed-point SHA and is obsolete.
+
