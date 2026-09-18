@@ -75,7 +75,10 @@ def _safe_authoritative_candidate(
         return False
     if not url or not hostname or not hubresolver.is_provider_terminal_site_url(url):
         return False
-    if hostname in hubresolver.discovery_source_hosts(cfg):
+    if (
+        hostname in hubresolver.discovery_source_hosts(cfg)
+        and hostname not in hubresolver.exact_allowed_hosts(cfg)
+    ):
         return False
     if hostname in {str(item).casefold().strip(".") for item in cfg.get("blocked_hosts") or []}:
         return False
