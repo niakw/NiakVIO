@@ -1,4 +1,5 @@
 name: TMP - Manifest46 Exact Census
+# census-trigger: manifest-5.21.57-exact-green-yield
 
 on:
   push:
@@ -74,7 +75,15 @@ jobs:
           assert p.get('fullManifestCensus') is True, p
           assert p.get('manifestProviderCount') == 46, p.get('manifestProviderCount')
           assert p.get('selectedProviderCount') == 46, p.get('selectedProviderCount')
-          print('FIELD_PROVIDER_MANIFEST46_ASSERT certified='+str(p.get('certifiedProviderCount'))+'/46 full_manifest=true')
+          manifest=json.loads(Path('manifest.json').read_text())
+          cert_by={str(r.get('providerId') or '').casefold():r for r in p.get('providers') or []}
+          assert p.get('manifestVersion') == manifest.get('version'), (p.get('manifestVersion'), manifest.get('version'))
+          for row in manifest.get('scrapers') or []:
+              pid=str(row.get('id') or '').casefold()
+              cert=cert_by.get(pid)
+              assert cert is not None, pid
+              assert cert.get('filename') == row.get('filename'), (pid, cert.get('filename'), row.get('filename'))
+          print('FIELD_PROVIDER_MANIFEST46_ASSERT green='+str(p.get('greenProviderCount'))+'/46 full='+str(p.get('certifiedProviderCount'))+'/46 exact_manifest=true')
           PY
 
       - name: Persist exact-bundle memory and learning
@@ -107,7 +116,7 @@ jobs:
           import json
           from pathlib import Path
           p=json.loads(Path('automation/provider-playable-certification.json').read_text())
-          print('FIELD_MANIFEST46_CERTIFIED '+str(p.get('certifiedProviderCount'))+'/46')
+          print('FIELD_MANIFEST46_YIELD green='+str(p.get('greenProviderCount'))+'/46 full='+str(p.get('certifiedProviderCount'))+'/46')
           for row in p.get('providers') or []:
               lanes=[]
               for lane,data in sorted((row.get('lanes') or {}).items()):
@@ -117,7 +126,7 @@ jobs:
           q=json.loads(Path('automation/provider-certification-learning-queue.json').read_text())
           a=json.loads(Path('automation/provider-activation-contract-dry-run.json').read_text())
           print('FIELD_MANIFEST46_ARCHITECTURE '+str(q.get('architectureState'))+' clusters='+str(len(q.get('clusters') or [])))
-          print('FIELD_MANIFEST46_DRY_RUN certified='+str(a.get('exactCertifiedManifestCount'))+'/46 mass_disable_blocked='+str(bool(a.get('massDisableBlocked'))).lower())
+          print('FIELD_MANIFEST46_DRY_RUN green='+str(a.get('exactGreenManifestCount'))+'/46 full='+str(a.get('exactCertifiedManifestCount'))+'/46 mass_disable_blocked='+str(bool(a.get('massDisableBlocked'))).lower())
           PY
 
       - name: Commit census evidence
