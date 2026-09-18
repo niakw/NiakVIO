@@ -1879,3 +1879,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Targeted publication reconciler now synchronizes `PROVENANCE.json` together with manifest/materialization before minimizer fixed-point validation, closing the VidLove post-proof filename/hash drift class.
 - Acceptance target stays **>=35/46 with at least one terminal-playable lane**. Current validated score is **17/46**, so the gap is **+18 providers**; do not claim recovery until the fresh Repair/non-regression run proves it.
 
+
+## 2026-09-18 — Targeted publication fixed-point reconciliation
+
+- After a targeted provider proof/materialization, public bytes are now reconciled generically back into content-addressed manifest + provider-v3-materialization metadata before acceptance.
+- VidLove and Kehflix were used as the first live fixed-point application. The final manifest file, materialization file, SHA-256 and Provider CONFIG data hash are required to agree on the exact referenced bytes.
+- This closes the class of bug where a post-proof materialize_one() changed the public bundle after an earlier audit had already reconciled hashes.
