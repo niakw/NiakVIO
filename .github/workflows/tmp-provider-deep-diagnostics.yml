@@ -1,0 +1,97 @@
+name: TMP - Provider Deep Diagnostics
+
+on:
+  push:
+    branches:
+      - fix/provider-activation-certification-v1
+    paths:
+      - '.github/workflows/tmp-provider-deep-diagnostics.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/provider-activation-certification-v1
+          fetch-depth: 1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Probe representative exact-bundle failures
+        run: |
+          set -euo pipefail
+          mkdir -p health-output/deep-provider-diagnostics
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest=json.loads(Path('manifest.json').read_text())
+          trigger=json.loads(Path('.github/triggers/nuvio-client-lab.json').read_text())
+          rows={str(r.get('id','')).lower():r for r in manifest.get('scrapers',[])}
+          fixtures={}
+          def walk(v):
+              if isinstance(v,dict):
+                  if isinstance(v.get('slug'),str) and isinstance(v.get('fixture'),dict):
+                      x=dict(v['fixture']); x['slug']=v['slug']; fixtures[v['slug']]=x
+                  elif isinstance(v.get('slug'),str) and ('tmdbId' in v or 'tmdb_id' in v):
+                      fixtures[v['slug']]=dict(v)
+                  for vv in v.values(): walk(vv)
+              elif isinstance(v,list):
+                  for vv in v: walk(vv)
+          walk(trigger)
+          wanted=[
+            ('allanime','failure-frame-s01e01'),
+            ('allwish','jujutsu-kaisen-2020-s01e01'),
+            ('anikototv','jujutsu-kaisen-s01e01'),
+            ('animesama-co','jujutsu-kaisen-s01e01'),
+            ('castle','interstellar'),
+            ('flemmix','interstellar'),
+            ('kehflix','interstellar'),
+            ('moviebox','interstellar'),
+            ('papadustream','interstellar'),
+            ('vidfast','interstellar'),
+            ('vidlove','interstellar'),
+            ('voiranime-rip','jujutsu-kaisen-s01e01'),
+            ('wookafr','interstellar'),
+            ('yflix','tenet-2020'),
+          ]
+          with Path('health-output/deep-provider-diagnostics/inputs.tsv').open('w') as f:
+              for provider,slug in wanted:
+                  row=rows.get(provider)
+                  fx=fixtures.get(slug)
+                  if not row or not fx:
+                      print('FIELD_DEEP_DIAG_INPUT_MISSING',provider,slug,bool(row),bool(fx))
+                      continue
+                  if provider in {'allanime','allwish','anikototv','animesama-co','voiranime-rip'}:
+                      fx['mediaType']='tv'
+                  f.write(provider+'\t'+str(row['filename'])+'\t'+slug+'\t'+json.dumps(fx,separators=(',',':'))+'\n')
+          PY
+          while IFS=$'\t' read -r provider filename slug fixture; do
+            echo "FIELD_DEEP_DIAG_BEGIN provider=$provider fixture=$slug file=$filename"
+            set +e
+            timeout 45s node scripts/nuvio_tv_probe_tmdb_ci.cjs "$filename" "$fixture" '{}' > "health-output/deep-provider-diagnostics/$provider-$slug.out" 2> "health-output/deep-provider-diagnostics/$provider-$slug.err"
+            rc=$?
+            set -e
+            echo "$rc" > "health-output/deep-provider-diagnostics/$provider-$slug.rc"
+            tail -n 5 "health-output/deep-provider-diagnostics/$provider-$slug.err" || true
+            tail -n 3 "health-output/deep-provider-diagnostics/$provider-$slug.out" || true
+            echo "FIELD_DEEP_DIAG_END provider=$provider fixture=$slug rc=$rc"
+          done < health-output/deep-provider-diagnostics/inputs.tsv
+      - name: Upload deep diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: provider-deep-diagnostics-${{ github.run_id }}
+          path: health-output/deep-provider-diagnostics/
+          retention-days: 8
+          if-no-files-found: error
