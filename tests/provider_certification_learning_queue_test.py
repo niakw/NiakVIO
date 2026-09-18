@@ -14,7 +14,7 @@ payload = {
     "authority": "exact-bundle-playable-lane-certification-v1",
     "manifestVersion": "x",
     "manifestProviderCount": 46,
-    "selectedProviderCount": 4,
+    "selectedProviderCount": 5,
     "selectedActiveProviderCount": 4,
     "certifiedProviderCount": 1,
     "activeProviderCount": 4,
@@ -25,6 +25,7 @@ payload = {
         {"providerId": "b", "enabled": True, "certified": False, "missingTypes": ["movie"], "lanes": {"movie": {"state": "uncertified", "attemptCount": 2, "attempts": [{"debugStage": "provider_network_zero_result"}]}}},
         {"providerId": "c", "enabled": True, "certified": False, "missingTypes": ["tv"], "lanes": {"tv": {"state": "uncertified", "attemptCount": 2, "attempts": [{"debugStage": "provider_network_exception"}]}}},
         {"providerId": "d", "enabled": True, "certified": True, "missingTypes": [], "lanes": {}},
+        {"providerId": "e", "enabled": False, "certified": False, "missingTypes": ["movie"], "lanes": {"movie": {"state": "uncertified", "attemptCount": 2, "attempts": [{"debugStage": "provider_network_exception"}]}}},
     ],
 }
 out = mod.build(payload)
@@ -33,7 +34,12 @@ assert out["clusters"][0]["failureClass"] == "route_or_catalog_resolution"
 assert out["clusters"][0]["providers"] == ["a", "b"]
 assert any(row["failureClass"] == "runtime_compatibility" for row in out["clusters"])
 assert out["manifestProviderCount"] == 46
-assert out["selectedProviderCount"] == 4
+assert out["selectedProviderCount"] == 5
+assert out["repairEligibleProviderCount"] == 3
+assert out["disabledRetainedProviderCount"] == 1
+assert [row["providerId"] for row in out["disabledProviders"]] == ["e"]
+assert "e" not in {row["providerId"] for row in out["providers"]}
+assert all("e" not in row["providers"] for row in out["clusters"])
 assert out["fullManifestCensus"] is False
 assert out["autoCertificationRatio"] is None
 assert out["architectureState"] == "targeted-diagnostic-no-global-yield"
