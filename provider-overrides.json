@@ -8695,8 +8695,18 @@
         "anime"
       ],
       "notes": [
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
-      ]
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
+        "Provider-local runtime executes the proven VoirAnime.rip search→episode→embed chain; ARM/Cinemeta remain identity helpers only."
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/voiranime_rip_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/voiranime_rip_runtime_v1.py": {
+          "base": "https://voiranime.rip",
+          "maxStreams": 4
+        }
+      }
     },
     "vostfree": {
       "capability": "mixed_embed_resolver",
