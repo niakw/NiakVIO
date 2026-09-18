@@ -2067,4 +2067,42 @@ This ledger is not complete merely because provider yield improves. Final comple
   - `provider-domain-history.json`: current=`https://kehflix.wiki`; prior `.lol` retained as superseded redirect-only evidence.
 - Commits: registry `7eb228a85d412b48e2439961e34346431b274637`, history `47b35a99686a9606d1bd61184fc5029fec29fc00`.
 - Next proof is mandatory: run official Domain Refresh targeted to Kehflix, materialize one provider, then exact certify. Do not patch provider-overrides by hand as the long-term owner; Domain Refresh must regenerate correct runtime authority from the corrected registry.
+## 2026-09-18 — Authoritative PR122→127 chronology correction + Kehflix regression isolated
+
+- Full structured chronology was re-audited at exact PR heads:
+  - PR122 head `4e9729d865f6a069bda567fbeac520d714bef4bd`.
+  - PR123 head `90a09bce47bb658445e29bf149bdc556e89a4d12`.
+  - PR124 head `c4f079ad3bac4f4fe5db2986d3bbb56841f026fb`.
+  - PR125 head `f239d9457b99b928de3b883218b67f20687bbba6`.
+  - PR126 head `accb22895b44374b17847d4419467aa34e5d3608`.
+  - PR127 head `879812fb16ae1325d4a1bc977d5b5f3aa9292c27`.
+- Critical correction: **PR123, PR124, PR125 and PR126 have the exact same provider-overrides blob** (`be4cc493d7999c8daa8d4c18b3119d988f313f90`). Therefore the large PR122→PR123 loss of provider Lego/routes is not a sequence of intentional #123/#125 removals: PR122 was closed without merge and PR123 restarted from main.
+- PR125 minimizer is not currently implicated in structured route loss. Sample exact Provider Models (AllAnime, AllWish, AniKoto, MovieBox) are semantically identical before/after PR125; broaden checks only if another signal appears.
+- PR127 changed structured provider authority mainly for **domain/address state** on ten providers. Absence of a PR122-only route in PR127 is **not by itself evidence of supersession**. Route precedence is now:
+  1. newest terminal playable user/Native/exact-bundle proof;
+  2. newer explicitly evidence-backed provider-Lego supersession;
+  3. PR122 repaired route/Lego when still functionally proven and no newer functional supersession exists;
+  4. post-PR122 main snapshots are baselines only, not supersession evidence;
+  5. Domain Refresh owns provider catalogue/current-site domains.
+- Historical raw-bundle replay PR #168 / run **35380342951** successfully replays PR125/PR127, but the first PR122 slice was invalid because checkout did not fetch the closed/unmerged PR122 commit before `git show`. GitHub API confirms PR122 `manifest.json` exists. Workflow fixed at commit `64a8481aa7e5befb0c890e9138d25e15edb5a80e`; fixed PR122-only replay is PR #170 / run **35381128402**.
+- PR125 exact-bundle replay with the current harness:
+  - Kehflix = **FULL movie+tv+anime** on `kehflix.wiki`.
+  - PapaDustream = movie green partial.
+  - AllAnime, AllWish, Flemmix, MovieBox, VidFast, VidLove, WookaFR, YFlix, Castle = zero under the current backend/harness for the tested fixtures.
+- PR127 exact-bundle replay already proves:
+  - Kehflix = **ZERO**, requests collapse to `kehflix.com`.
+  - Castle = zero on `api.hlowb.com`.
+  - VidLove = zero on `player.vidlove.cc`.
+  - PapaDustream remains movie green partial.
+  - AllAnime, AllWish, Flemmix, MovieBox, VidFast, WookaFR, YFlix remain zero for this replay.
+- Separate current-authority A/B run **35379535563** is decisive for VidLove: PR122 V1 + `api.vidlove.cc` recipe certifies **FULL movie+tv** today, while the newer V2 alternate backend stays red. Therefore the old “V2 must always supersede V1” invariant is retired for VidLove; **latest playable evidence wins**. AllWish V1 in the same A/B remains zero, so its V2 supersession remains.
+- **Kehflix regression is now isolated to Domain Refresh authority.** Current source authorities already say `kehflix.wiki` is canonical and explicitly reject `kehflix.lol` as redirect-only:
+  - provider-domain-history current = `https://kehflix.wiki`;
+  - provider-hubs direct = `https://kehflix.wiki/`, allowed terminals .wiki/.com, blocked .lol.
+  - stale provider-overrides still projected `official_site=https://kehflix.lol` and `wiki -> lol`.
+- Official disposable Domain Refresh proof PR #171 / run **35381169562** fixes that contradiction without provider-local hardcoding:
+  - `FIELD_DOMAIN_REFRESH_V2 ... applied=1 registry=1 bundles=1`;
+  - final authority site/direct/history = `kehflix.wiki`;
+  - rematerialized Kehflix certifies **FULL movie+tv+anime**, host only `kehflix.wiki`.
+- Kehflix is therefore a **real +1 recovery candidate beyond the current 22/46 potential**, pending persistence on the repair branch and final frozen census. Do not count it as 23/46 until the Domain Refresh transaction is actually persisted and re-certified on that branch.
 
