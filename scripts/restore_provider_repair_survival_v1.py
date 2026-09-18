@@ -160,6 +160,8 @@ def main()->int:
         row["provider_lego_scripts"]=unique(scripts)
         if cfg.get("published_types"): row["published_types"]=list(cfg["published_types"])
         options=row.setdefault("provider_lego_options",{})
+        for old_script in (cfg.get("replace") or {}):
+            options.pop(old_script,None)
         for script,value in (cfg.get("options") or {}).items():
             options[script]=value
         mark_reproof(row)
