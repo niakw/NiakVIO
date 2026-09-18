@@ -6,6 +6,7 @@ on:
       - tmp/v27-recovery-base
       - tmp/v27b-recovery-base
       - tmp/v27c-recovery-base
+      - tmp/v27d-recovery-base
   workflow_dispatch:
 
 permissions:
@@ -44,6 +45,7 @@ jobs:
             scripts/materialize_provider_v3_all.py \
             scripts/provider_base_store.py \
             scripts/provider_patches/anikototv_runtime_v3.py
+          node --check scripts/nuvio_tv_probe_tmdb_ci.cjs
           python3 scripts/check_provider_repair_survival.py
 
       - name: Rematerialize latest repair authority in disposable workspace
