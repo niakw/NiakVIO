@@ -1,15 +1,15 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-18T13:00:05.713688+00:00",
+  "generated_at": "2026-09-18T19:04:23.102109+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 44,
   "status_counts": {
-    "healthy": 2,
-    "reachable": 0,
-    "blocked": 1,
+    "healthy": 1,
+    "reachable": 1,
+    "blocked": 2,
     "degraded": 1,
-    "no_streams": 20,
-    "provider_unreachable": 18,
+    "no_streams": 21,
+    "provider_unreachable": 16,
     "runtime_error": 0,
     "unavailable": 2,
     "excluded": 0
@@ -537,18 +537,14 @@
     },
     {
       "id": "hindmoviez",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
-      "hosts": [
-        "abc.favegraddeufru-1750.workers.dev"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "share.kujeucoixeti-6043.workers.dev": {
           "last_checked_at": "2026-09-18T13:00:05.713688+00:00",
@@ -1555,7 +1551,7 @@
     },
     {
       "id": "animesalt",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2139,7 +2135,7 @@
     },
     {
       "id": "papadustream",
-      "status": "provider_unreachable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2928,7 +2924,7 @@
     },
     {
       "id": "anime-ultime",
-      "status": "provider_unreachable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2982,7 +2978,7 @@
     },
     {
       "id": "moviebox",
-      "status": "no_streams",
+      "status": "reachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
