@@ -1,0 +1,294 @@
+name: TEMP - Publish VidLove V1 and Kehflix Projection
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/temp-vidlove-v1-publication.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-temp-vidlove-v1-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NUVIO_PROVIDER_V3_CONTEXT: main
+      NIAKVIO_PROVIDER_V3_FINAL_MINIMIZE: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Prove proof-owned recipe authority before materialization
+        run: |
+          set -euo pipefail
+          python tests/provider_v3_sequential_reconstruction_contract_test.py
+          python tests/provider_v3_final_stage_minimizer_gate_test.py
+
+      - name: Materialize exact VidLove V1 and Kehflix current CONFIG
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib
+          import json
+          import sys
+          from pathlib import Path
+
+          ROOT=Path('.').resolve()
+          sys.path.insert(0,str(ROOT/'scripts'))
+          import domain_refresh_transaction_v2 as domain
+          import materialize_provider_v3_one as one
+          from provider_patch_blocks import decode_managed_data, validate_managed_fixes
+          from sync_manifest_projection_rows import sync as sync_projections
+
+          def load(path):
+              return json.loads(Path(path).read_text(encoding='utf-8'))
+          def write(path,value):
+              Path(path).write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          def canon(v):
+              return str(v or '').strip().casefold()
+          def cfg_id(pid):
+              return 'PROVIDER.'+pid.upper()+'.CONFIG.V1'
+          def data_digest(data):
+              raw=json.dumps(data,ensure_ascii=False,sort_keys=True,separators=(',',':'))
+              return hashlib.sha256(raw.encode('utf-8')).hexdigest()
+
+          before_manifest=load('manifest.json')
+          before_vidlove=next(r for r in before_manifest['scrapers'] if canon(r.get('id'))=='vidlove')
+          old_vidlove=ROOT/str(before_vidlove['filename'])
+
+          report=one.materialize_one('vidlove')
+          manifest=load('manifest.json')
+          vidlove=next(r for r in manifest['scrapers'] if canon(r.get('id'))=='vidlove')
+          workspace_path=ROOT/str(vidlove['filename'])
+          raw=workspace_path.read_bytes()
+          digest=hashlib.sha256(raw).hexdigest()
+          published_rel=f"providers/{domain.source_qualified_provider_name('vidlove',old_vidlove,digest)}"
+          published_path=ROOT/published_rel
+          if workspace_path != published_path:
+              published_path.write_bytes(raw)
+              workspace_path.unlink(missing_ok=True)
+          vidlove['filename']=published_rel
+          report['file']=published_rel
+          report['sha256']=digest
+          write('manifest.json',manifest)
+          sync_projections(check=False)
+
+          material=load('provider-v3-materialization.json')
+          rows=[r for r in material.get('providers') or [] if isinstance(r,dict)]
+          target=next((r for r in rows if canon(r.get('provider'))=='vidlove'),None)
+          if target is None:
+              raise SystemExit('vidlove materialization row missing')
+          target.clear()
+          target.update(report)
+          material['generation']=domain._generation(rows)
+          material['providerCount']=domain.CURRENT_PROVIDER_COUNT
+          material['expectedProviderCount']=domain.CURRENT_PROVIDER_COUNT
+          write('provider-v3-materialization.json',material)
+
+          updates=domain.rebuild_provider_configs(['kehflix'])
+          if len(updates)!=1 or updates[0].get('provider')!='kehflix':
+              raise SystemExit(f'unexpected Kehflix rebuild: {updates!r}')
+
+          import finalize_provider_v3_minimizer as minim
+          minim.finalize(check=False)
+          sync_projections(check=False)
+
+          manifest=load('manifest.json')
+          material=load('provider-v3-materialization.json')
+          rows=[r for r in material.get('providers') or [] if isinstance(r,dict)]
+          by_id={canon(r.get('provider')):r for r in rows}
+          for pid in ('vidlove','kehflix'):
+              entry=next(r for r in manifest['scrapers'] if canon(r.get('id'))==pid)
+              rel=str(entry['filename'])
+              p=ROOT/rel
+              raw=p.read_bytes()
+              text=raw.decode('utf-8')
+              fix=cfg_id(pid)
+              if fix not in validate_managed_fixes(text):
+                  raise SystemExit(f'{pid}: CONFIG Lego missing after final minimizer')
+              data=decode_managed_data(text,fix)
+              row=by_id[pid]
+              row['file']=rel
+              row['sha256']=hashlib.sha256(raw).hexdigest()
+              row['providerDataSha256']=data_digest(data)
+          material['generation']=domain._generation(rows)
+          material['providerCount']=domain.CURRENT_PROVIDER_COUNT
+          material['expectedProviderCount']=domain.CURRENT_PROVIDER_COUNT
+          material['targetedPublicationReconciledProviders']=['kehflix','vidlove']
+          write('provider-v3-materialization.json',material)
+          sync_projections(check=False)
+
+          manifest=load('manifest.json')
+          ventry=next(r for r in manifest['scrapers'] if canon(r.get('id'))=='vidlove')
+          vtext=(ROOT/ventry['filename']).read_text(encoding='utf-8')
+          fixes=validate_managed_fixes(vtext)
+          assert 'PROVIDER.VIDLOVE.CURRENT.API.V1' in fixes, fixes
+          assert 'NIAKVIO_VIDLOVE_CURRENT_API_V1' in vtext
+          vdata=decode_managed_data(vtext,'PROVIDER.VIDLOVE.CONFIG.V1')
+          recipe=vdata.get('apiRecipe') or {}
+          assert recipe.get('base')=='https://api.vidlove.cc', recipe
+          assert recipe.get('referer')=='https://player.vidlove.cc/', recipe
+          assert recipe.get('directRoute')=='/{media}?id={tmdbId}&mode=json&season={season}&episode={episode}', recipe
+
+          kentry=next(r for r in manifest['scrapers'] if canon(r.get('id'))=='kehflix')
+          ktext=(ROOT/kentry['filename']).read_text(encoding='utf-8')
+          kdata=decode_managed_data(ktext,'PROVIDER.KEHFLIX.CONFIG.V1')
+          assert str(kdata.get('officialSite') or '').rstrip('/')=='https://kehflix.com', kdata
+          assert str(kdata.get('knownSite') or '').rstrip('/')=='https://kehflix.com', kdata
+          assert (kdata.get('domainSubstitutions') or {}).get('kehflix.lol')=='kehflix.com', kdata
+          assert (kdata.get('domainSubstitutions') or {}).get('kehflix.wiki')!='kehflix.lol', kdata
+
+          Path('health-output').mkdir(exist_ok=True)
+          write('health-output/targeted-publication-report.json',{
+              'baseSha':'0f8bf4840ff173a218ba094b513567348c265c7d',
+              'vidlove':{'file':ventry['filename'],'sha256':by_id['vidlove']['sha256'],'apiBase':recipe.get('base')},
+              'kehflix':{'file':kentry['filename'],'sha256':by_id['kehflix']['sha256'],'officialSite':kdata.get('officialSite')},
+          })
+          print('TARGETED_PUBLICATION_STRUCTURED_OK '+json.dumps(load('health-output/targeted-publication-report.json'),sort_keys=True))
+          PY
+
+      - name: Verify static and publication contracts before network proof
+        run: |
+          set -euo pipefail
+          python scripts/audit_provider_v3_static.py
+          python scripts/finalize_provider_v3_minimizer.py --check
+          python tests/provider_v3_minimizer_published_test.py
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/provider_v3_workflow_ownership_test.py
+          python scripts/sync_manifest_projection_rows.py --check
+          git diff --check
+
+      - name: Prove exact rematerialized VidLove movie and TV lanes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python - <<'PY'
+          import json
+          import pathlib
+          import sys
+          root=pathlib.Path('.').resolve()
+          sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as parity
+          import run_provider_upstream_parity_v3 as v3
+
+          fixtures=[
+              ('movie',{'slug':'interstellar-2014','tmdbId':'157336','mediaType':'movie','category':'movie','title':'Interstellar','year':2014,'expectedDurationMinutes':169}),
+              ('tv',{'slug':'house-of-the-dragon-2022-s01e01','tmdbId':'94997','mediaType':'tv','category':'tv','title':'House of the Dragon','year':2022,'season':1,'episode':1}),
+          ]
+          local=parity.local_catalog()
+          path=local['vidlove']['path']
+          rows=[]
+          for lane,fx in fixtures:
+              result=v3._run_verified(path,v3.fixture_payload(fx,lane,upstream=False),30)
+              row={
+                  'providerId':'vidlove',
+                  'lane':lane,
+                  'fixture':fx['slug'],
+                  'streams':int(result.get('stream_count') or 0),
+                  'terminal':bool(result.get('terminal_verified')),
+                  'reasons':result.get('terminal_reasons') or [],
+                  'statuses':result.get('http_statuses') or [],
+                  'durations':result.get('terminal_media_duration_seconds') or [],
+                  'error':result.get('error_class'),
+              }
+              rows.append(row)
+              print('VIDLOVE_V1_PROOF '+json.dumps(row,sort_keys=True))
+              if row['streams'] < 1 or not row['terminal']:
+                  raise SystemExit('VidLove V1 lane not freshly playable: '+lane)
+          pathlib.Path('health-output/vidlove-v1-proof.json').write_text(
+              json.dumps({'schemaVersion':1,'rows':rows},ensure_ascii=False,indent=2)+'\n',
+              encoding='utf-8'
+          )
+          PY
+
+      - name: Record durable checkpoint and prepare Domain Refresh handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          proof=json.load(open('health-output/vidlove-v1-proof.json',encoding='utf-8'))
+          pub=json.load(open('health-output/targeted-publication-report.json',encoding='utf-8'))
+          mem=Path('MEMORY.md')
+          text=mem.read_text(encoding='utf-8').rstrip()
+          marker='## 2026-09-18 — VidLove V1 materialization + Kehflix projection publication candidate'
+          block=f"""
+
+{marker}
+
+- Publication runner {os.environ.get('GITHUB_RUN_ID','unknown')} executed from exact base SHA {os.environ.get('GITHUB_SHA','unknown')}.
+- VidLove was rematerialized through the canonical Provider v3 materializer with proof-owned V1 authority preserved. Exact publication candidate: {pub['vidlove']['file']}, API base {pub['vidlove']['apiBase']}.
+- Fresh terminal proof on the exact generated VidLove bundle: {json.dumps(proof['rows'],ensure_ascii=False,separators=(',',':'))}.
+- Kehflix was rebuilt through the CONFIG-only Domain Refresh path, preserving provider/Core bytes outside CONFIG. Exact candidate: {pub['kehflix']['file']}, official site {pub['kehflix']['officialSite']}.
+- Static Provider v3 audit and final minimizer fixed-point passed before publication. Final repository SHA and downstream Domain Refresh/Verify verdict remain pending until the self-publication commit lands and those workflows complete.
+"""
+          if marker not in text:
+              mem.write_text(text+block.rstrip()+'\n',encoding='utf-8')
+          PY
+          cat > .github/triggers/domain-refresh <<EOF
+          Trigger file for the Refresh official provider domains workflow.
+          Update this file to start a new run through a controlled push to main.
+
+          last_trigger: ${GITHUB_RUN_ID}
+          reason: publish-vidlove-v1-and-kehflix-explicit-current-projection
+          base_sha: ${GITHUB_SHA}
+          EOF
+          rm .github/workflows/temp-vidlove-v1-publication.yml
+
+      - name: Publish only the fully proven targeted generation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          git status --short
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git diff --cached --quiet && { echo TARGETED_PUBLICATION_ALREADY_CURRENT; exit 0; }
+          git commit -m 'fix(providers): publish proven VidLove V1 and Kehflix projection'
+          FINAL_SHA="$(git rev-parse HEAD)"
+          git fetch origin main
+          CURRENT_SHA="$(git rev-parse origin/main)"
+          if [ "$CURRENT_SHA" != "${GITHUB_SHA}" ]; then
+            echo "FIELD_TARGETED_PUBLICATION_SKIPPED reason=main_advanced observed=${GITHUB_SHA} current=$CURRENT_SHA candidate=$FINAL_SHA" >&2
+            exit 1
+          fi
+          git push origin HEAD:main
+          echo "FIELD_TARGETED_PUBLICATION_OK base=${GITHUB_SHA} final=$FINAL_SHA"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: targeted-vidlove-kehflix-${{ github.run_id }}
+          path: |
+            health-output/targeted-publication-report.json
+            health-output/vidlove-v1-proof.json
+          retention-days: 14
+          if-no-files-found: warn
