@@ -1993,4 +1993,22 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Therefore the 4KHDHub domain problem is **stale published Domain Refresh state**, not a wrong refresh algorithm. Do not hand-edit provider-overrides to own domains.
 - After correct authority + one-provider rematerialization, 4KHDHub still remained red, but execution advanced to `4khdhub.one -> player.autoembed.cc`. Remaining issue is provider extraction/runtime knowledge, not address resolution.
 - Upstream LKG knowledge already contains the real 4KHDHub contract at `upstream-lkg/providers/e64aea603b3c3786a9f03e2a7b5dbee7e5666918a0ad606aeec87469ffafc4ec.js`: strict movie-card search scoring, HubDrive/HubCloud redirect decoding, episode selection, and direct media extraction. This LKG is knowledge-only; rebuild as owned Lego rather than executing upstream bytes.
+## 2026-09-18 — PR #122 → #127 route-authority loss confirmed and repaired
+
+- Cross-diffed `provider-overrides.json` at PR #122 head `4e9729d865f6a069bda567fbeac520d714bef4bd`, PR #127 head `879812fb16ae1325d4a1bc977d5b5f3aa9292c27`, and current `fix/provider-activation-certification-v1`.
+- Confirmed that #127/rematerialization **did lose execution-route knowledge from #122** for multiple providers while keeping compilation/survival green. This is a concrete root cause for the unexpectedly low ~20–22/46 activation score.
+- Lost-and-now-restored authority on current branch:
+  - AllAnime: `/?s={title}`, `/{slug}/`, `/{slug}-episode-{episode}/`.
+  - AllWish: title filter + episode list + server list + server resolve routes.
+  - Flemmix: typed search `/search?q={title}` + signed embed route.
+  - MovieBox: direct current `vidsrcme.ru/vs_src.php` movie + TV routes from #122 knowledge.
+  - VidFast: documented `/movie/{tmdbId}` and `/tv/{tmdbId}/{season}/{episode}`.
+  - WookaFR: title search/current detail/episode route + `lecteurvideo.com/embed.php`.
+  - YFlix: restored TV DB route alongside movie route in both api_recipe and candidate_api_recipe.
+  - VidLove: restored the #122 proven `api.vidlove.cc` api_recipe while retaining the newer candidate/Lego path for fallback comparison.
+- Route restoration commit: `5253d3f4c00ce76b1d9f56388ce110c5b519aa62`.
+- Survival contract test added at `tests/pr122_route_authority_survival_test.py`, commit `37d2aea58a4783d2036cc3c407b78704b78ee870`.
+- Critical invariant going forward: Provider repair survival must validate not only managed-fix markers/scripts, but also **semantic route/recipe authority**. A rematerialization that drops a previously proved route family is a regression even when the generated bundle compiles and all repair markers survive.
+- Current domains/Domain Refresh and newer provider Lego versions remain authoritative; this repair restores lost route knowledge only and does not roll back domain updates or newer runtimes.
+- Next execution: materialize/test the restored providers in parallel one-provider jobs, then compare actual >=1-green lane count. Do not claim recovery until terminal playable proof exists.
 
