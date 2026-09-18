@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
@@ -87,6 +87,95 @@ jobs:
             tail -n 3 "health-output/deep-provider-diagnostics/$provider-$slug.out" || true
             echo "FIELD_DEEP_DIAG_END provider=$provider fixture=$slug rc=$rc"
           done < health-output/deep-provider-diagnostics/inputs.tsv
+      - name: Persist sanitized diagnostic ledger on evidence branch
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from urllib.parse import urlsplit
+          root=Path('health-output/deep-provider-diagnostics')
+          rows=[]
+          for out in sorted(root.glob('*.out')):
+              stem=out.stem
+              payload=None
+              for raw in reversed(out.read_text(encoding='utf-8',errors='replace').splitlines()):
+                  raw=raw.strip()
+                  if not raw.startswith('{'):
+                      continue
+                  try:
+                      value=json.loads(raw)
+                  except Exception:
+                      continue
+                  if isinstance(value,dict) and 'playable_stream_count' in value:
+                      payload=value
+                      break
+              provider=stem.split('-',1)[0]
+              fixture=stem[len(provider)+1:] if stem.startswith(provider+'-') else stem
+              rc_path=out.with_suffix('.rc')
+              rc=int(rc_path.read_text().strip() or 0) if rc_path.exists() else None
+              if payload is None:
+                  rows.append({'provider':provider,'fixture':fixture,'rc':rc,'state':'no_probe_payload'})
+                  continue
+              debug=payload.get('debug') if isinstance(payload.get('debug'),dict) else {}
+              trace=[]
+              for item in debug.get('fetches') or []:
+                  if not isinstance(item,dict):
+                      continue
+                  raw_url=str(item.get('response_url') or item.get('url') or '')
+                  try:
+                      u=urlsplit(raw_url)
+                  except Exception:
+                      continue
+                  host=(u.hostname or '').lower()
+                  if not host or host=='api.themoviedb.org':
+                      continue
+                  trace.append({
+                      'host':host[:160],
+                      'path':(u.path or '/')[:240],
+                      'method':str(item.get('method') or 'GET').upper()[:12],
+                      'status':int(item.get('status') or 0),
+                      'contentType':str(item.get('content_type') or '')[:96] or None,
+                      'durationMs':int(item.get('duration_ms') or 0),
+                      'error':str(item.get('error') or '')[:64] or None,
+                  })
+                  if len(trace)>=10:
+                      break
+              rows.append({
+                  'provider':provider,
+                  'fixture':fixture,
+                  'rc':rc,
+                  'state':'probe_payload',
+                  'status':'playable_verified' if int(payload.get('playable_stream_count') or 0)>0 and int(payload.get('content_verified_count') or payload.get('identity_verified_count') or 0)>0 else 'not_certified',
+                  'raw':int(payload.get('raw_stream_count') or 0),
+                  'playable':int(payload.get('playable_stream_count') or 0),
+                  'verified':int(payload.get('content_verified_count') or payload.get('identity_verified_count') or 0),
+                  'contradictions':int(payload.get('identity_contradiction_count') or 0),
+                  'debugStage':str(debug.get('stage') or ''),
+                  'providerValueTrace':debug.get('provider_value_trace_v18'),
+                  'providerValueTraceHistory':debug.get('provider_value_trace_history_v21') or [],
+                  'networkTrace':trace,
+              })
+          payload={
+              'schemaVersion':1,
+              'authority':'tmp-provider-deep-diagnostics-sanitized-v1',
+              'sourceBranch':'fix/provider-activation-certification-v1',
+              'sourceSha':os.environ.get('GITHUB_SHA'),
+              'runId':os.environ.get('GITHUB_RUN_ID'),
+              'providers':rows,
+          }
+          Path('automation/tmp-provider-deep-diagnostics-latest.json').write_text(
+              json.dumps(payload,ensure_ascii=False,indent=2)+'\n',encoding='utf-8'
+          )
+          PY
+          git config user.name 'niakvio-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add automation/tmp-provider-deep-diagnostics-latest.json
+          git commit -m 'test(providers): persist sanitized deep diagnostics' || true
+          git push --force origin HEAD:refs/heads/tmp/provider-deep-diagnostics-evidence
+
       - name: Upload deep diagnostics
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
