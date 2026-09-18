@@ -166,6 +166,9 @@ def sanitized_provider_fetch_trace(debug: dict[str, Any], *, limit: int = 8) -> 
         if not host or host == "api.themoviedb.org":
             continue
         path = str(parsed.path or "/")[:240]
+        shape = raw.get("json_shape")
+        if not isinstance(shape, dict):
+            shape = None
         rows.append({
             "host": host[:160],
             "path": path,
@@ -174,6 +177,7 @@ def sanitized_provider_fetch_trace(debug: dict[str, Any], *, limit: int = 8) -> 
             "contentType": str(raw.get("content_type") or "")[:96] or None,
             "durationMs": int(raw.get("duration_ms") or 0),
             "error": str(raw.get("error") or "")[:64] or None,
+            "jsonShape": shape,
         })
         if len(rows) >= max(1, limit):
             break
