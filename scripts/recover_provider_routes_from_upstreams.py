@@ -1228,6 +1228,17 @@ def _proof_v5_execution_authority(patch: dict[str, Any], model: dict[str, Any]) 
             recipe_version = 0
     if max(versions or [0]) < PROOF_VERSION or recipe_version < PROOF_VERSION:
         return False, None
+    if isinstance(recipe, dict):
+        for key in ("base", "searchRoute", "movieRoute", "episodeRoute", "directRoute"):
+            raw = str(recipe.get(key) or "").strip()
+            if not raw.startswith(("http://", "https://")):
+                continue
+            try:
+                host = (urllib.parse.urlsplit(raw).hostname or "").casefold()
+            except ValueError:
+                return False, None
+            if host in _REPAIR_RECIPE_NON_EXECUTABLE_HOSTS:
+                return False, None
     return True, copy.deepcopy(recipe)
 
 

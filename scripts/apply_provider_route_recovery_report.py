@@ -15,6 +15,40 @@ import provider_live_request_contract_bridge_v19 as live_request_bridge  # noqa:
 import runtime_route_plan_cap_v1 as route_policy  # noqa: E402
 import runtime_structured_plan_cap_v1 as structured_policy  # noqa: E402
 import runtime_execution_authority_cap_v1 as authority_policy  # noqa: E402
+import current_provider_scope as current_scope  # noqa: E402
+
+
+def validate_report_scope(value: dict[str, object]) -> list[dict[str, object]]:
+    expected_ids = current_scope.active_provider_ids()
+    expected_count = len(expected_ids)
+    if int(value.get("providerCount") or 0) != expected_count:
+        raise SystemExit(
+            f"route recovery providerCount={value.get('providerCount')}, expected_current_active={expected_count}"
+        )
+    catalogue_count = int(value.get("catalogueProviderCount") or expected_count)
+    if catalogue_count != expected_count:
+        raise SystemExit(
+            f"route recovery catalogueProviderCount={catalogue_count}, expected_current_active={expected_count}"
+        )
+    providers = value.get("providers") if isinstance(value.get("providers"), list) else []
+    provider_ids = [
+        current_scope.cid(row.get("providerId"))
+        for row in providers
+        if isinstance(row, dict)
+    ]
+    if len(providers) != expected_count or len(provider_ids) != expected_count:
+        raise SystemExit(
+            f"route recovery providers rows={len(providers)}, expected_current_active={expected_count}"
+        )
+    if len(provider_ids) != len(set(provider_ids)):
+        raise SystemExit("route recovery report contains duplicate provider ids")
+    observed = set(provider_ids)
+    if observed != expected_ids:
+        raise SystemExit(
+            "route recovery active identity mismatch: "
+            f"missing={sorted(expected_ids-observed)} extra={sorted(observed-expected_ids)}"
+        )
+    return providers
 
 
 def main() -> int:
@@ -27,11 +61,7 @@ def main() -> int:
         raise SystemExit("route recovery report must be an object")
     if int(value.get("schemaVersion") or 0) != recovery.PROOF_VERSION:
         raise SystemExit(f"route recovery proof version={value.get('schemaVersion')}, expected={recovery.PROOF_VERSION}")
-    if int(value.get("providerCount") or 0) != recovery.EXPECTED:
-        raise SystemExit(f"route recovery providerCount={value.get('providerCount')}, expected={recovery.EXPECTED}")
-    providers = value.get("providers") if isinstance(value.get("providers"), list) else []
-    if len(providers) != recovery.EXPECTED:
-        raise SystemExit(f"route recovery providers rows={len(providers)}, expected={recovery.EXPECTED}")
+    providers = validate_report_scope(value)
 
     summary = recovery.apply_recovery(value)
     # V19 cannot invent authority: it runs only after the exact HTTP recovery has

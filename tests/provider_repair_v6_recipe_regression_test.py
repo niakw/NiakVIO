@@ -136,4 +136,33 @@ assert terminal is not None, terminal
 assert terminal.get("directRoute") == "/?s={query}", terminal
 assert terminal.get("terminalSearchProof") is True, terminal
 
+# Legacy proof-v5 recipes on metadata helpers were promoted before the current
+# non-executable-host policy existed. They must not survive merely because their
+# proofModelVersion is 5; otherwise apiRecipe-first returns [] and blocks the
+# provider-specific source plan forever.
+blocked_patch = {
+    "route_proof_version": 5,
+    "api_recipe": {
+        "proofModelVersion": 5,
+        "base": "https://arm.haglund.dev",
+        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
+        "allowGenericFallback": False,
+    },
+}
+blocked_model = {"routeProofVersion": 5}
+preserve, recipe = recovery._proof_v5_execution_authority(blocked_patch, blocked_model)
+assert preserve is False and recipe is None, (preserve, recipe)
+
+valid_patch = {
+    "route_proof_version": 5,
+    "api_recipe": {
+        "proofModelVersion": 5,
+        "base": "https://api.provider.example",
+        "directRoute": "/stream/{tmdbId}",
+        "allowGenericFallback": False,
+    },
+}
+preserve, recipe = recovery._proof_v5_execution_authority(valid_patch, {"routeProofVersion": 5})
+assert preserve is True and recipe["base"] == "https://api.provider.example", (preserve, recipe)
+
 print("provider repair v6 recipe regressions passed")

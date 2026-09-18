@@ -1911,3 +1911,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The failure was test-only: the new version-agnostic assertion used Python raw regex `(\\\\d+)`, matching a literal backslash-d instead of digits, so it could not see current V34. Correct expression is `(\\d+)`.
 - Retry 26 changes only that regex + trigger. No provider status changes are inferred from retry 25.
 
+## 2026-09-18 — Repair 26 reached real network recovery; apply gate was historical
+
+- Retry **26** finally passed every migration and pre-network contract, then executed real route recovery on **32 targets** with 12 workers. Targeted report: **24/32 with proven routes, 156 routes, 1 new simple recipe**. Merged current-active report: **33/44 with proven routes, 232 routes, 5 recipes**.
+- Fresh upstream stream-positive regressions inside the targeted report include **AnimeVOSTFR (2 streams), Neko-Sama (2), VoirAnime (6), VoirAnime-rip (2)**; these are immediate recovery candidates once the report applies. Route proof alone is not counted as provider-green.
+- The run stopped only at `apply_provider_route_recovery_report.py`: it still referenced removed `recover.EXPECTED`. Merged report correctly describes **44 active providers**, while the repository now derives active scope dynamically from `current_provider_scope.py`. Application validation now requires exact current active count + identity set, never a magic historical cardinality.
+- Common stale-authority defect confirmed: multiple current regressions still carry proof-v5 `api_recipe` pointing to `arm.haglund.dev/api/v2/themoviedb`, even though Repair already classifies `arm.haglund.dev` and `v3-cinemeta.strem.io` as non-executable metadata helpers. Existing proof-v5 authority now obeys the same host policy as new recipe synthesis; blocked helper recipes are demoted instead of being preserved forever and short-circuiting provider-specific source plans.
+- Retry **27** is dedicated to applying/rematerializing this evidence and measuring terminal yield. Historical 46/46 remains the regression baseline; current acceptance is still unclaimed until >=35/46 terminal-playable is re-proved.
+
