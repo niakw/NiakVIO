@@ -1,0 +1,809 @@
+{
+  "schemaVersion": 1,
+  "authority": "provider-certification-cluster-learning-v1",
+  "generatedAt": "2026-09-18T05:17:10.456309+00:00",
+  "sourceAuthority": "exact-bundle-playable-lane-certification-v1",
+  "manifestVersion": "5.21.56",
+  "manifestProviderCount": 46,
+  "selectedProviderCount": 46,
+  "certifiedSelectedProviderCount": 19,
+  "selectedActiveProviderCount": 44,
+  "certifiedActiveProviderCount": 19,
+  "fullManifestCensus": true,
+  "autoCertificationRatio": 0.413,
+  "architectureState": "architecture-defect-low-auto-yield",
+  "strategy": "largest_shared_failure_cluster_first",
+  "clusters": [
+    {
+      "failureClass": "route_or_catalog_resolution",
+      "lane": "anime",
+      "stages": [
+        "provider_network_zero_result"
+      ],
+      "providerCount": 9,
+      "providers": [
+        "allanime",
+        "anikototv",
+        "anime-ultime",
+        "animesultra",
+        "animetsu",
+        "animevost-fr",
+        "kehflix",
+        "papadustream",
+        "vostfree"
+      ],
+      "repairScope": "core_or_capability_family_first"
+    },
+    {
+      "failureClass": "request_transport_or_upstream",
+      "lane": "movie",
+      "stages": [
+        "provider_network_http_error"
+      ],
+      "providerCount": 6,
+      "providers": [
+        "flemmix",
+        "moviebox",
+        "movieshunt",
+        "persianstremio",
+        "vidlove",
+        "wookafr"
+      ],
+      "repairScope": "core_or_capability_family_first"
+    },
+    {
+      "failureClass": "request_transport_or_upstream",
+      "lane": "tv",
+      "stages": [
+        "provider_network_http_error"
+      ],
+      "providerCount": 5,
+      "providers": [
+        "flemmix",
+        "moviebox",
+        "persianstremio",
+        "vidlove",
+        "wookafr"
+      ],
+      "repairScope": "core_or_capability_family_first"
+    },
+    {
+      "failureClass": "route_or_catalog_resolution",
+      "lane": "movie",
+      "stages": [
+        "provider_network_zero_result"
+      ],
+      "providerCount": 5,
+      "providers": [
+        "4khdhub",
+        "castle",
+        "kehflix",
+        "mallumv",
+        "showbox"
+      ],
+      "repairScope": "core_or_capability_family_first"
+    },
+    {
+      "failureClass": "route_or_catalog_resolution",
+      "lane": "tv",
+      "stages": [
+        "provider_network_zero_result"
+      ],
+      "providerCount": 5,
+      "providers": [
+        "4khdhub",
+        "castle",
+        "kehflix",
+        "papadustream",
+        "showbox"
+      ],
+      "repairScope": "core_or_capability_family_first"
+    },
+    {
+      "failureClass": "request_transport_or_upstream",
+      "lane": "anime",
+      "stages": [
+        "provider_network_http_error"
+      ],
+      "providerCount": 4,
+      "providers": [
+        "allwish",
+        "animesalt",
+        "fullanime",
+        "voiranime"
+      ],
+      "repairScope": "core_or_capability_family_first"
+    },
+    {
+      "failureClass": "runtime_compatibility",
+      "lane": "movie",
+      "stages": [
+        "provider_network_exception"
+      ],
+      "providerCount": 2,
+      "providers": [
+        "desiflix",
+        "yflix"
+      ],
+      "repairScope": "core_or_capability_family_first"
+    },
+    {
+      "failureClass": "request_transport_or_upstream",
+      "lane": "movie",
+      "stages": [
+        "provider_network_http_error",
+        "timeout"
+      ],
+      "providerCount": 1,
+      "providers": [
+        "moviesmod"
+      ],
+      "repairScope": "core_or_capability_family_first"
+    },
+    {
+      "failureClass": "request_transport_or_upstream",
+      "lane": "movie",
+      "stages": [
+        "provider_network_http_error",
+        "provider_network_zero_result"
+      ],
+      "providerCount": 1,
+      "providers": [
+        "uhdmovies"
+      ],
+      "repairScope": "core_or_capability_family_first"
+    },
+    {
+      "failureClass": "request_transport_or_upstream",
+      "lane": "tv",
+      "stages": [
+        "provider_network_http_error",
+        "timeout"
+      ],
+      "providerCount": 1,
+      "providers": [
+        "moviesmod"
+      ],
+      "repairScope": "core_or_capability_family_first"
+    },
+    {
+      "failureClass": "request_transport_or_upstream",
+      "lane": "tv",
+      "stages": [
+        "provider_network_http_error",
+        "provider_network_zero_result"
+      ],
+      "providerCount": 1,
+      "providers": [
+        "uhdmovies"
+      ],
+      "repairScope": "core_or_capability_family_first"
+    },
+    {
+      "failureClass": "runtime_compatibility",
+      "lane": "tv",
+      "stages": [
+        "provider_network_exception",
+        "timeout"
+      ],
+      "providerCount": 1,
+      "providers": [
+        "desiflix"
+      ],
+      "repairScope": "core_or_capability_family_first"
+    },
+    {
+      "failureClass": "runtime_compatibility",
+      "lane": "tv",
+      "stages": [
+        "provider_network_exception"
+      ],
+      "providerCount": 1,
+      "providers": [
+        "yflix"
+      ],
+      "repairScope": "core_or_capability_family_first"
+    }
+  ],
+  "providers": [
+    {
+      "providerId": "4khdhub",
+      "enabled": true,
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "lanes": [
+        {
+          "lane": "movie",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        },
+        {
+          "lane": "tv",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "allanime",
+      "enabled": true,
+      "missingTypes": [
+        "anime"
+      ],
+      "lanes": [
+        {
+          "lane": "anime",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "allwish",
+      "enabled": true,
+      "missingTypes": [
+        "anime"
+      ],
+      "lanes": [
+        {
+          "lane": "anime",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "anikototv",
+      "enabled": true,
+      "missingTypes": [
+        "anime"
+      ],
+      "lanes": [
+        {
+          "lane": "anime",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "anime-ultime",
+      "enabled": true,
+      "missingTypes": [
+        "anime"
+      ],
+      "lanes": [
+        {
+          "lane": "anime",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "animesalt",
+      "enabled": true,
+      "missingTypes": [
+        "anime"
+      ],
+      "lanes": [
+        {
+          "lane": "anime",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "animesultra",
+      "enabled": true,
+      "missingTypes": [
+        "anime"
+      ],
+      "lanes": [
+        {
+          "lane": "anime",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "animetsu",
+      "enabled": true,
+      "missingTypes": [
+        "anime"
+      ],
+      "lanes": [
+        {
+          "lane": "anime",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "animevost-fr",
+      "enabled": true,
+      "missingTypes": [
+        "anime"
+      ],
+      "lanes": [
+        {
+          "lane": "anime",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "castle",
+      "enabled": true,
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "lanes": [
+        {
+          "lane": "movie",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        },
+        {
+          "lane": "tv",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "desiflix",
+      "enabled": false,
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "lanes": [
+        {
+          "lane": "movie",
+          "failureClass": "runtime_compatibility",
+          "stages": [
+            "provider_network_exception"
+          ],
+          "attemptCount": 12
+        },
+        {
+          "lane": "tv",
+          "failureClass": "runtime_compatibility",
+          "stages": [
+            "provider_network_exception",
+            "timeout"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "flemmix",
+      "enabled": true,
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "lanes": [
+        {
+          "lane": "movie",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error"
+          ],
+          "attemptCount": 12
+        },
+        {
+          "lane": "tv",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "fullanime",
+      "enabled": false,
+      "missingTypes": [
+        "anime"
+      ],
+      "lanes": [
+        {
+          "lane": "anime",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "kehflix",
+      "enabled": true,
+      "missingTypes": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "lanes": [
+        {
+          "lane": "anime",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        },
+        {
+          "lane": "movie",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        },
+        {
+          "lane": "tv",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "mallumv",
+      "enabled": true,
+      "missingTypes": [
+        "movie"
+      ],
+      "lanes": [
+        {
+          "lane": "movie",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "moviebox",
+      "enabled": true,
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "lanes": [
+        {
+          "lane": "movie",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error"
+          ],
+          "attemptCount": 12
+        },
+        {
+          "lane": "tv",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "movieshunt",
+      "enabled": true,
+      "missingTypes": [
+        "movie"
+      ],
+      "lanes": [
+        {
+          "lane": "movie",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "moviesmod",
+      "enabled": true,
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "lanes": [
+        {
+          "lane": "movie",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error",
+            "timeout"
+          ],
+          "attemptCount": 12
+        },
+        {
+          "lane": "tv",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error",
+            "timeout"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "papadustream",
+      "enabled": true,
+      "missingTypes": [
+        "tv",
+        "anime"
+      ],
+      "lanes": [
+        {
+          "lane": "anime",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        },
+        {
+          "lane": "tv",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "persianstremio",
+      "enabled": true,
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "lanes": [
+        {
+          "lane": "movie",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error"
+          ],
+          "attemptCount": 12
+        },
+        {
+          "lane": "tv",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "showbox",
+      "enabled": true,
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "lanes": [
+        {
+          "lane": "movie",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        },
+        {
+          "lane": "tv",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "uhdmovies",
+      "enabled": true,
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "lanes": [
+        {
+          "lane": "movie",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error",
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        },
+        {
+          "lane": "tv",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error",
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "vidlove",
+      "enabled": true,
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "lanes": [
+        {
+          "lane": "movie",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error"
+          ],
+          "attemptCount": 12
+        },
+        {
+          "lane": "tv",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "voiranime",
+      "enabled": true,
+      "missingTypes": [
+        "anime"
+      ],
+      "lanes": [
+        {
+          "lane": "anime",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "vostfree",
+      "enabled": true,
+      "missingTypes": [
+        "anime"
+      ],
+      "lanes": [
+        {
+          "lane": "anime",
+          "failureClass": "route_or_catalog_resolution",
+          "stages": [
+            "provider_network_zero_result"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "wookafr",
+      "enabled": true,
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "lanes": [
+        {
+          "lane": "movie",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error"
+          ],
+          "attemptCount": 12
+        },
+        {
+          "lane": "tv",
+          "failureClass": "request_transport_or_upstream",
+          "stages": [
+            "provider_network_http_error"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    },
+    {
+      "providerId": "yflix",
+      "enabled": true,
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "lanes": [
+        {
+          "lane": "movie",
+          "failureClass": "runtime_compatibility",
+          "stages": [
+            "provider_network_exception"
+          ],
+          "attemptCount": 12
+        },
+        {
+          "lane": "tv",
+          "failureClass": "runtime_compatibility",
+          "stages": [
+            "provider_network_exception"
+          ],
+          "attemptCount": 12
+        }
+      ]
+    }
+  ]
+}

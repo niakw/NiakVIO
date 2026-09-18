@@ -1,0 +1,1840 @@
+{
+  "schemaVersion": 1,
+  "authority": "provider-activation-consensus-v1",
+  "generatedAt": "2026-09-18T05:17:10.507483+00:00",
+  "manifestVersion": "5.21.56",
+  "manifestProviderCount": 46,
+  "certifiedManifestCount": 19,
+  "activeCandidateCount": 44,
+  "certifiedCount": 19,
+  "certifiedActiveCount": 19,
+  "pendingNativeFallbackCount": 25,
+  "autoCertificationRatio": 0.413,
+  "activeAutoCertificationRatio": 0.4318,
+  "minimumAutoCertificationRatio": 0.75,
+  "architectureState": "architecture-defect-low-auto-yield",
+  "negativeNodeEvidenceCanDisable": false,
+  "providers": [
+    {
+      "providerId": "anime-sama",
+      "filename": "providers/anime-sama--nuvio--5ef45e41d0a03459.js",
+      "bundleSha256": "5ef45e41d0a03459866e45818ad739ad29ed082f7efd621dd203bdc2ce3cfd62",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [
+        "anime"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "jujutsu-kaisen-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "jujutsu-kaisen-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "purstream",
+      "filename": "providers/purstream--nuvio--73c72db44910761c.js",
+      "bundleSha256": "73c72db44910761c7b66055fc612b28e0b43d6cc539094ad59fd248a61e4a4e2",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [
+        "movie",
+        "tv"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "interstellar"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "interstellar"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "breaking-bad-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "breaking-bad-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "flemmix",
+      "filename": "providers/flemmix--nuvio--60e51ab20e6d456b.js",
+      "bundleSha256": "60e51ab20e6d456b04b3d9260fb2d9b16ffde1207d37a10dd4fd758f202c33cf",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "uhdmovies",
+      "filename": "providers/uhdmovies--nuvio--9cb4ef1ca1ae4c45.js",
+      "bundleSha256": "9cb4ef1ca1ae4c450fba7a1fe5f8fb80de44eba13e628dd6b4b9cc7b73bc2f58",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error",
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error",
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "movieshunt",
+      "filename": "providers/movieshunt--nuvio--32c8d9baafa0a684.js",
+      "bundleSha256": "32c8d9baafa0a6848f481d22cc6b1c36a7bfadca69ad940ac825708a53c140df",
+      "requiredTypes": [
+        "movie"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "movie"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "hindmoviez",
+      "filename": "providers/hindmoviez--nuvio--e32b9098820bfdbb.js",
+      "bundleSha256": "e32b9098820bfdbbe18025e01b304796253eee883acfe6499584bac1b3f63eb2",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [
+        "movie",
+        "tv"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "sinners-2025"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "sinners-2025"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "breaking-bad-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "breaking-bad-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "4khdhub",
+      "filename": "providers/4khdhub--nuvio--2fcb40b4cf6f353b.js",
+      "bundleSha256": "2fcb40b4cf6f353b9a3a1ebd23d159517c13685bf95c0e386b66ea6742af5ebb",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "persianstremio",
+      "filename": "providers/persianstremio--nuvio--af6627347c1c4352.js",
+      "bundleSha256": "af6627347c1c43525658aee2dda56f3515efe873f8b028f53b55ef239fa0be4a",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "kehflix",
+      "filename": "providers/kehflix--nuvio--09ea94acc27c9159.js",
+      "bundleSha256": "09ea94acc27c9159e54f7629a9a7592cb1377f4360dfe71c0754e9308cc65635",
+      "requiredTypes": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        },
+        "anime": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "anikototv",
+      "filename": "providers/anikototv--nuvio--3598925e265cde22.js",
+      "bundleSha256": "3598925e265cde226f85b1be9e565456d00e3782e178446324f884c7c0112358",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "anime"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "animekai",
+      "filename": "providers/animekai--nuvio--7cbfb964a5959eba.js",
+      "bundleSha256": "7cbfb964a5959eba33b51db8297d74c03dcb6e6d17fe4fe5fcb6664cd20ca236",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [
+        "anime"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "tokyo-ghoul-2014-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "tokyo-ghoul-2014-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "animesalt",
+      "filename": "providers/animesalt--nuvio--34b24cde31e0f91e.js",
+      "bundleSha256": "34b24cde31e0f91eca88a18ed730460fe91878c013a668420d96882ae90db8f7",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "anime"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "animesama-co",
+      "filename": "providers/animesama-co--nuvio--6bb70d87822ff54a.js",
+      "bundleSha256": "6bb70d87822ff54a9991e223dd2cba1b109396f8ab0b2720b00c08b2bcdbd07e",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [
+        "anime"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "hunter-x-hunter-2011-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "hunter-x-hunter-2011-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "animesultra",
+      "filename": "providers/animesultra--nuvio--8cbeafa87b3652a3.js",
+      "bundleSha256": "8cbeafa87b3652a37feab5993385448a21e8a3816db6b5f03fc2d2ecd9000175",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "anime"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "animetsu",
+      "filename": "providers/animetsu--nuvio--97edd010364da395.js",
+      "bundleSha256": "97edd010364da395460c23be59f448cdf4b94505acc131274030e717ad6df0c4",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "anime"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "animevostfr",
+      "filename": "providers/animevostfr--nuvio--d5a160f58e934de8.js",
+      "bundleSha256": "d5a160f58e934de8b615ecb87d1298dd3a377319d6c43ff1157eb3c5df1b8b8f",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [
+        "anime"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "jujutsu-kaisen-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "jujutsu-kaisen-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "castle",
+      "filename": "providers/castle--nuvio--32a060543479cd1f.js",
+      "bundleSha256": "32a060543479cd1f7d78876041980c048d68265c8212abcb618b23115b8522a6",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "coflix",
+      "filename": "providers/coflix--nuvio--5b6d662cf9cb721c.js",
+      "bundleSha256": "5b6d662cf9cb721c84cf478f74b109a8cc16382ec027019490ca877323f6d206",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [
+        "movie",
+        "tv"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "interstellar"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "interstellar"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "breaking-bad-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "breaking-bad-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "french-manga",
+      "filename": "providers/french-manga--nuvio--4d346d611aada4cf.js",
+      "bundleSha256": "4d346d611aada4cf8cf2b966a36008f0ee0601a871d741868b34c3698313e95f",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [
+        "anime"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "jujutsu-kaisen-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "jujutsu-kaisen-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "kurage",
+      "filename": "providers/kurage--nuvio--ddefb03f1bb80182.js",
+      "bundleSha256": "ddefb03f1bb8018266b79e63cc198352b6d6802c01c0a096eec5ea2ffdc3221f",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [
+        "anime"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "gachiakuta-2025-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "gachiakuta-2025-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "moviesmod",
+      "filename": "providers/moviesmod--nuvio--44cb0f3d5cbc7e27.js",
+      "bundleSha256": "44cb0f3d5cbc7e276fd5d23f76dc76618ec7a268f323d5e366779fdaf439c708",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error",
+                "timeout"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error",
+                "timeout"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "mugiwarastream",
+      "filename": "providers/mugiwarastream--nuvio--0b4accf18a8c4ce5.js",
+      "bundleSha256": "0b4accf18a8c4ce506b4bbc1b4ee0e022c135c8027500b2262b5aa7a7d83e1a7",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [
+        "anime"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "jujutsu-kaisen-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "jujutsu-kaisen-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "neko-sama",
+      "filename": "providers/neko-sama--nuvio--ee8ef1167e209718.js",
+      "bundleSha256": "ee8ef1167e209718c547d7fc823994a8a01f82aac43c3049209c9da64799ab7c",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [
+        "anime"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "dan-da-dan-2024-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "dan-da-dan-2024-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "papadustream",
+      "filename": "providers/papadustream--nuvio--b952de58422924bb.js",
+      "bundleSha256": "b952de58422924bb37655fb147a612f17987677667ee6daf758a36063afe8d8b",
+      "requiredTypes": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "certifiedTypes": [
+        "movie"
+      ],
+      "missingTypes": [
+        "tv",
+        "anime"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "interstellar"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "interstellar"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        },
+        "anime": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "playimdb",
+      "filename": "providers/playimdb--nuvio--e082069c6239c778.js",
+      "bundleSha256": "e082069c6239c7788517bd59dabde31060ac6585b93b36262c28c70e3c5a2843",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [
+        "movie",
+        "tv"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "interstellar"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "interstellar"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "breaking-bad-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "breaking-bad-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "sekai",
+      "filename": "providers/sekai--nuvio--29355a52c8c08712.js",
+      "bundleSha256": "29355a52c8c0871230725b5972e85e1b421cd5d0180352f6a8533f916a8bb30f",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [
+        "anime"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "jujutsu-kaisen-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "jujutsu-kaisen-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "streamzo",
+      "filename": "providers/streamzo--nuvio--4a94e488c52f573f.js",
+      "bundleSha256": "4a94e488c52f573f9bc7b1f46a81f970546fa30235c7270cfa94ae90fc32cfa9",
+      "requiredTypes": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "certifiedTypes": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "interstellar"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "interstellar"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "revenant-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "revenant-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        },
+        "anime": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "mushoku-tensei-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "mushoku-tensei-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "videasy",
+      "filename": "providers/videasy--nuvio--4357968f906d6142.js",
+      "bundleSha256": "4357968f906d61423a4338bf55b86dfb61dfcfb428d6751e50969d25470fc532",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [
+        "movie",
+        "tv"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "sinners-2025"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "sinners-2025"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "breaking-bad-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "breaking-bad-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "vidfast",
+      "filename": "providers/vidfast--nuvio--95194e168e78f414.js",
+      "bundleSha256": "95194e168e78f4143246569d825cdfd0c4e08ae51b647fe391246698aef4aa0f",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [
+        "movie",
+        "tv"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "avengers-infinity-war-2018"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "avengers-infinity-war-2018"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "house-of-the-dragon-2022-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "house-of-the-dragon-2022-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "vidrock",
+      "filename": "providers/vidrock--nuvio--6b0c757e26e2274b.js",
+      "bundleSha256": "6b0c757e26e2274b417092283645f23e2eae90e403d5ac6966ab96a80cd5a642",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [
+        "movie",
+        "tv"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "mad-max-fury-road-2015"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "mad-max-fury-road-2015"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "silo-2023-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "silo-2023-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "voiranime",
+      "filename": "providers/voiranime--nuvio--5317c87b561c98df.js",
+      "bundleSha256": "5317c87b561c98dfdcee71dd1e24e88320adff50721a33059d4bc60b53b41ba8",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "anime"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "voiranime-homes",
+      "filename": "providers/voiranime-homes--nuvio--306249a272e98c11.js",
+      "bundleSha256": "306249a272e98c1147ad5746dcfd624a7602ccd8ee3116b89ed7f13953ca7ea3",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [
+        "anime"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "sakamoto-days-2025-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "sakamoto-days-2025-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "voiranime-rip",
+      "filename": "providers/voiranime-rip--nuvio--c1857cb2554b788f.js",
+      "bundleSha256": "c1857cb2554b788fc1e942d62b24983647d428248b66494ec2deaa0182ad557f",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [
+        "anime"
+      ],
+      "missingTypes": [],
+      "certified": true,
+      "activationAction": "keep_or_activate",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "certified",
+          "positiveEvidence": [
+            {
+              "source": "node_exact_bundle",
+              "fixtureSlug": "boruto-naruto-next-generations-2017-s01e01"
+            },
+            {
+              "source": "positive_fixture_memory_exact_bundle",
+              "fixtureSlug": "boruto-naruto-next-generations-2017-s01e01"
+            }
+          ],
+          "inconclusiveOrNegativeEvidence": [],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "vostfree",
+      "filename": "providers/vostfree--nuvio--75d401e973135ffb.js",
+      "bundleSha256": "75d401e973135ffbbda02e4807162b62e35958d30e4b1875694b5fdb22fccde5",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "anime"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "wookafr",
+      "filename": "providers/wookafr--nuvio--4ecd11313e694d83.js",
+      "bundleSha256": "4ecd11313e694d83502b1e13a15db5eb394ddb256ba766d82d49f435d5192f0e",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "yflix",
+      "filename": "providers/yflix--nuvio--a1892ee562c160c9.js",
+      "bundleSha256": "a1892ee562c160c961d3280fcab12483cec47d08f691249f39e715eac32e5663",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_exception"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_exception"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "allanime",
+      "filename": "providers/allanime--nuvio--83d51615daf8b593.js",
+      "bundleSha256": "83d51615daf8b59363f595f6b325fd7d6d096e257eb777f5c3c4d2d65e301520",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "anime"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "allwish",
+      "filename": "providers/allwish--nuvio--3d06210c302b9c02.js",
+      "bundleSha256": "3d06210c302b9c028fe8229257ca005001347956b5d6a746420848524110be30",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "anime"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "anime-ultime",
+      "filename": "providers/anime-ultime--nuvio--80acd660f69b17cc.js",
+      "bundleSha256": "80acd660f69b17cc3197bf9911e4a889c0e16c243dc1291e99aed684264d3c0e",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "anime"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "animevost-fr",
+      "filename": "providers/animevost-fr--nuvio--c323402d6cc01bd6.js",
+      "bundleSha256": "c323402d6cc01bd6eac1fc7b5116945f7769b201357c4d5482ece718978b45f7",
+      "requiredTypes": [
+        "anime"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "anime"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "anime": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "mallumv",
+      "filename": "providers/mallumv--nuvio--26b4c598fe9bc7a0.js",
+      "bundleSha256": "26b4c598fe9bc7a0b62ad8201e10561b899af0d89536240d62cf39082a6c83c0",
+      "requiredTypes": [
+        "movie"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "movie"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "moviebox",
+      "filename": "providers/moviebox--nuvio--72e170d0758c9e71.js",
+      "bundleSha256": "72e170d0758c9e71785726b9b098bfe585644751effbb5c4e11343ceb6d2ca23",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "showbox",
+      "filename": "providers/showbox--nuvio--e02f0098be84ee17.js",
+      "bundleSha256": "e02f0098be84ee17fab37de16937ada247a2fa08416a979427f7dcc231edf259",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_zero_result"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    },
+    {
+      "providerId": "vidlove",
+      "filename": "providers/vidlove--nuvio--83651672106d77d0.js",
+      "bundleSha256": "83651672106d77d014b51449eb2d5876f8d4faec23980ba68c4ba0357fd57389",
+      "requiredTypes": [
+        "movie",
+        "tv"
+      ],
+      "certifiedTypes": [],
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "certified": false,
+      "activationAction": "native_fallback_then_brain",
+      "disableEligible": false,
+      "lanes": {
+        "movie": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        },
+        "tv": {
+          "state": "native-fallback-required",
+          "positiveEvidence": [],
+          "inconclusiveOrNegativeEvidence": [
+            {
+              "source": "node_probe",
+              "state": "uncertified",
+              "stages": [
+                "provider_network_http_error"
+              ],
+              "authoritativeForDisable": false
+            }
+          ],
+          "nodeNegativeCanDisable": false
+        }
+      }
+    }
+  ]
+}
