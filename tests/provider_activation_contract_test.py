@@ -54,5 +54,20 @@ out, report = activation.enforce(synthetic_manifest, certification, allow_reenab
 assert out["scrapers"][0]["enabled"] is False
 assert out["scrapers"][0]["activationState"] == "repair-learning-required"
 assert report["disabledNow"] == [provider]
+assert report["manifestProviderCount"] == 1
+assert report["fullManifestCensus"] is False
+assert report["bootstrapYieldRatio"] is None
+
+full_certification = dict(certification)
+full_certification.update({
+    "fullManifestCensus": True,
+    "manifestProviderCount": 1,
+    "selectedProviderCount": 1,
+})
+full_out, full_report = activation.enforce(synthetic_manifest, full_certification, allow_reenable=False)
+assert full_report["fullManifestCensus"] is True
+assert full_report["manifestProviderCount"] == 1
+assert full_report["exactCertifiedManifestCount"] == 0
+assert full_report["bootstrapYieldRatio"] == 0.0
 
 print("provider activation exact-bundle contract tests passed")
