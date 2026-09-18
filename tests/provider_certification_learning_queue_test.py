@@ -13,8 +13,13 @@ spec.loader.exec_module(mod)
 payload = {
     "authority": "exact-bundle-playable-lane-certification-v1",
     "manifestVersion": "x",
+    "manifestProviderCount": 46,
+    "selectedProviderCount": 4,
+    "selectedActiveProviderCount": 4,
+    "certifiedProviderCount": 1,
     "activeProviderCount": 4,
     "certifiedActiveProviderCount": 1,
+    "fullManifestCensus": False,
     "providers": [
         {"providerId": "a", "enabled": True, "certified": False, "missingTypes": ["movie"], "lanes": {"movie": {"state": "uncertified", "attemptCount": 2, "attempts": [{"debugStage": "provider_network_zero_result"}]}}},
         {"providerId": "b", "enabled": True, "certified": False, "missingTypes": ["movie"], "lanes": {"movie": {"state": "uncertified", "attemptCount": 2, "attempts": [{"debugStage": "provider_network_zero_result"}]}}},
@@ -27,4 +32,21 @@ assert out["clusters"][0]["providerCount"] == 2
 assert out["clusters"][0]["failureClass"] == "route_or_catalog_resolution"
 assert out["clusters"][0]["providers"] == ["a", "b"]
 assert any(row["failureClass"] == "runtime_compatibility" for row in out["clusters"])
+assert out["manifestProviderCount"] == 46
+assert out["selectedProviderCount"] == 4
+assert out["fullManifestCensus"] is False
+assert out["autoCertificationRatio"] is None
+assert out["architectureState"] == "targeted-diagnostic-no-global-yield"
+
+full = dict(payload)
+full.update({
+    "selectedProviderCount": 46,
+    "certifiedProviderCount": 35,
+    "fullManifestCensus": True,
+})
+full_out = mod.build(full)
+assert full_out["fullManifestCensus"] is True
+assert full_out["autoCertificationRatio"] == round(35 / 46, 4)
+assert full_out["architectureState"] == "auto-yield-sufficient"
+
 print("provider certification cluster-learning tests passed")
