@@ -48,7 +48,7 @@ def build(certification: dict[str, Any]) -> dict[str, Any]:
     clusters: dict[tuple[str, str, tuple[str, ...]], list[str]] = defaultdict(list)
     providers: list[dict[str, Any]] = []
     for row in certification.get("providers") or []:
-        if not isinstance(row, dict) or row.get("enabled") is not True or row.get("certified") is True:
+        if not isinstance(row, dict) or row.get("certified") is True:
             continue
         pid = str(row.get("providerId") or "").strip()
         lane_rows = []
@@ -71,6 +71,7 @@ def build(certification: dict[str, Any]) -> dict[str, Any]:
             })
         providers.append({
             "providerId": pid,
+            "enabled": row.get("enabled") is not False,
             "missingTypes": list(row.get("missingTypes") or []),
             "lanes": lane_rows,
         })
