@@ -1949,3 +1949,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - V34 is now monotone: presentation revision >=22 is validated as a semantic floor and left byte-unchanged; only a V21 predecessor is upgraded to V22. The contract test now requires revision >=22 plus the actual strongest-quality/Hindi-detail guarantees. This prevents future migrations from downgrading newer Core presentation logic.
 - Resume is retriggered from the same Repair 28 applied checkpoint; still no repeated route recovery.
 
+
+
+## 2026-09-19 — Observable Repair 28 resume launched from verified main
+
+- Repository state was re-verified before continuing: `main` was exactly **66d41ae101f7d86e5b8322e122a8aaf6e8e5df50**, only `main` + `brain-learning/proposals` remained, and there were **0 open PRs**. The observable resume workflow itself then advanced `main` to **f1b1c3a959dae4d4ecc5215beb0e9ecc2de75bdc**.
+- Repair 28 artifact **10570987798** from run **35401694913** was downloaded and independently inspected. Its immediate adaptive baseline is **14/46 terminal-playable**, its targeted recovery scope is **33 providers / 25 route-proven**, and the merged applied report is **44 active / 33 route-proven**. Route proof is not counted as provider-green.
+- The targeted upstream report contains real stream-positive tasks for **AnimeSama.co, Kehflix, Kurage, Neko-Sama, StreamZo, VoirAnime and VoirAnime-rip**. This is recovery evidence only; the authoritative provider score remains pending rematerialization + current-byte quick-yield.
+- The existing `TEMP - Resume Repair 28 Post Apply` workflow is read-only and does not persist its final push-run verdict in repository state. A parallel temporary workflow `TEMP - Repair 28 Observable Resume` was therefore added on `main`. It reuses the exact Repair 28 checkpoint only after provider-input compatibility proof, runs the current policy/sanitizer/migrations/materialization/contracts, executes the authoritative /46 census, and commits either the candidate score or the exact failed/last stage back to `main`.
+- Acceptance is still **>=35/46 with at least one terminal-playable lane**. No recovery claim is made until the observable candidate evidence lands.
