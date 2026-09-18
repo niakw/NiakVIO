@@ -11362,7 +11362,8 @@
       },
       "notes": [
         "Clean ProviderBase reconstruction models VidLove as a bounded multi-source JSON API recipe derived from the upstream provider contract.",
-        "2026-09-18 route-survival repair: restore execution route/recipe knowledge proven on PR #122 and lost during #127/rematerialization; preserve current Domain Refresh authority and newer Lego implementations."
+        "2026-09-18 route-survival repair: restore execution route/recipe knowledge proven on PR #122 and lost during #127/rematerialization; preserve current Domain Refresh authority and newer Lego implementations.",
+        "2026-09-18 A/B proof run 35379535563: PR122 VidLove V1 + restored api.vidlove.cc recipe certifies FULL movie+tv; V2 alternate backend remains red and is removed from execution authority."
       ],
       "candidate_api_recipe": {
         "base": "https://ballerinacappuccinalovestungtungtungsahur.com",
@@ -11542,7 +11543,7 @@
           }
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "on",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -11550,28 +11551,29 @@
         "activationAuthority": "provider-folder-lifecycle",
         "declaredHub": null,
         "forcedEnabled": true,
-        "routeDataState": "repair",
+        "routeDataState": "on",
         "requiredLanes": [
           "movie",
           "tv"
         ],
-        "currentVerifiedLanes": [],
-        "exactLockedLanes": [],
-        "provenLanes": [],
-        "missingLanes": [
+        "currentVerifiedLanes": [
           "movie",
           "tv"
         ],
-        "completeCapabilityProof": false,
-        "recoveryStatus": "repair-reproof-required",
+        "exactLockedLanes": [],
+        "provenLanes": [
+          "movie",
+          "tv"
+        ],
+        "missingLanes": [],
+        "completeCapabilityProof": true,
+        "recoveryStatus": "pr122-v1-api-recipe-reproved",
         "provenRouteCount": 0,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
-          "declared_lane_unproven",
-          "quick_provider-network-zero-result",
-          "recovery_no-proven-route",
-          "repair_survival_restored_requires_exact_bundle_reproof"
+          "exact_bundle_playable_movie",
+          "exact_bundle_playable_tv"
         ],
         "laneStatuses": {
           "movie": [
@@ -11584,10 +11586,10 @@
         "evidenceDestructive": false
       },
       "provider_lego_scripts": [
-        "scripts/provider_patches/vidlove_current_api_v2.py"
+        "scripts/provider_patches/vidlove_current_api_v1.py"
       ],
       "provider_lego_options": {
-        "scripts/provider_patches/vidlove_current_api_v2.py": {}
+        "scripts/provider_patches/vidlove_current_api_v1.py": {}
       }
     }
   },
