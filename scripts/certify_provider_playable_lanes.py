@@ -20,6 +20,7 @@ import concurrent.futures
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -445,6 +446,7 @@ def main() -> int:
                     "lanes": {},
                     "certified": False,
                     "failure": type(exc).__name__,
+                    "failureMessage": str(exc)[:300] or None,
                 })
 
     results.sort(key=lambda row: str(row.get("providerId") or ""))
