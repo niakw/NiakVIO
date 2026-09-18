@@ -1,6 +1,6 @@
 {
   "schema_version": 63,
-  "updated_at": "2026-09-18T19:04:23.102109+00:00",
+  "updated_at": "2026-09-18T22:37:48.835597+00:00",
   "providers": {
     "anime-sama": {
       "last_checked_at": "2026-09-10T22:39:16.750383+00:00",
@@ -1546,15 +1546,15 @@
       "host_health": {}
     },
     "animesalt": {
-      "last_checked_at": "2026-09-18T19:04:23.102109+00:00",
-      "last_status": "blocked",
+      "last_checked_at": "2026-09-18T22:37:48.835597+00:00",
+      "last_status": "no_streams",
       "last_score": 100,
       "last_sha256": "f035a7c79703bd30195d0df5f733412672551a4f6e799a2610a0e833eb3b869f",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
-      "consecutive_blocked": 1,
-      "consecutive_no_streams": 0,
+      "consecutive_blocked": 0,
+      "consecutive_no_streams": 1,
       "auto_disabled": false,
       "last_success_at": null,
       "hosts": [],
@@ -3081,29 +3081,44 @@
       "host_health": {}
     },
     "vidlove": {
-      "last_checked_at": "2026-09-10T22:39:16.750383+00:00",
-      "last_status": "no_streams",
+      "last_checked_at": "2026-09-18T22:37:48.835597+00:00",
+      "last_status": "healthy",
       "last_score": 100,
-      "last_sha256": "b43e7626bc7457048a4232504c58c56b8f457d9a75f716f3ecd0fb0ebd60bb97",
+      "last_sha256": "5575654cd46d475dfe4a75fb21400438213273c875db007c66ef0ce724a8e2ba",
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
+      "consecutive_successes": 1,
       "consecutive_blocked": 0,
-      "consecutive_no_streams": 1,
+      "consecutive_no_streams": 0,
       "auto_disabled": false,
-      "last_success_at": "2026-08-15T04:51:20.797206+00:00",
-      "hosts": [],
-      "response_categories": [],
+      "last_success_at": "2026-09-18T22:37:48.835597+00:00",
+      "hosts": [
+        "a2.whysosigmabro.fun"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "ballerinacappuccinalovestungtungtungsahur.com": {
-          "last_checked_at": "2026-08-15T04:51:20.797206+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 123,
+          "last_checked_at": "2026-09-18T22:37:48.835597+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "a2.whysosigmabro.fun": {
+          "last_checked_at": "2026-09-18T22:37:48.835597+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 222,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       }

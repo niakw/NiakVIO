@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-18T19:04:23.102109+00:00",
+  "generated_at": "2026-09-18T22:37:48.835597+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 44,
   "status_counts": {
-    "healthy": 1,
-    "reachable": 1,
-    "blocked": 2,
+    "healthy": 2,
+    "reachable": 0,
+    "blocked": 1,
     "degraded": 1,
     "no_streams": 21,
     "provider_unreachable": 16,
     "runtime_error": 0,
-    "unavailable": 2,
+    "unavailable": 3,
     "excluded": 0
   },
   "policy": {
@@ -1420,7 +1420,7 @@
     },
     {
       "id": "kehflix",
-      "status": "no_streams",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -1551,7 +1551,7 @@
     },
     {
       "id": "animesalt",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2978,7 +2978,7 @@
     },
     {
       "id": "moviebox",
-      "status": "reachable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3018,24 +3018,39 @@
     },
     {
       "id": "vidlove",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "a2.whysosigmabro.fun"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "ballerinacappuccinalovestungtungtungsahur.com": {
-          "last_checked_at": "2026-08-15T04:51:20.797206+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 123,
+          "last_checked_at": "2026-09-18T22:37:48.835597+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 2,
+          "consecutive_successes": 0,
+          "consecutive_blocked": 0
+        },
+        "a2.whysosigmabro.fun": {
+          "last_checked_at": "2026-09-18T22:37:48.835597+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 206,
+          "latency_ms": 222,
+          "kind": "mp4",
+          "consecutive_hard_failures": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         }
       },
