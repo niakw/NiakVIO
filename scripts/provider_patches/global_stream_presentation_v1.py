@@ -146,6 +146,8 @@ function language(r){
   var hasVost=isVost(a)||isVost(b),hasVf=isVf(a)||isVfq(a)||strongVf(b)||strongVfq(b);
   if(isMulti(u)||isMulti(a)||isMulti(b)||(hasVost&&hasVf))return vfMode?"MULTI (VF/VO)":"MULTI";
   if(isVost(u))return"VOSTFR";if(isVfq(u))return"VFQ";if(isVf(u))return"VF";if(isVo(u))return"VO";
+  if(/^(?:SUB|SUBBED|SUBTITLE(?:D)?|SOUS[ ._-]?TITR(?:E|ES|É|ÉS))$/.test(u))return vfMode?"VOSTFR":(meaningful(c.languageFallback)?s(c.languageFallback).toUpperCase():"VO");
+  if(/^(?:DUB|DUBBED|DOUBLAGE)$/.test(u))return vfMode?"VF":(meaningful(c.languageFallback)?s(c.languageFallback).toUpperCase():"VO");
   if(!u){if(isVost(a))return"VOSTFR";if(isVfq(a))return"VFQ";if(isVf(a))return"VF";if(isVo(a))return"VO";if(isVost(b))return"VOSTFR";if(strongVfq(b))return"VFQ";if(strongVf(b))return"VF";if(strongVo(b))return"VO"}
   if(!vfMode&&meaningful(c.languageFallback))return s(c.languageFallback).toUpperCase();
   return""
@@ -157,6 +159,7 @@ function detailedLanguage(r,fallback){
   var u=raw.toLowerCase().replace(/[_-]+/g," ").replace(/\s+/g," ").trim();
   if(/^(?:(?:fr|fra|fre|french|francais|français|fr fr)(?:\s|$)|fr ca(?:\s|$))/i.test(u))return fallback||"VF";
   if(/^(?:vf|vff|vfq|vostfr|vo|multi|multi audio|dual audio)$/i.test(u))return fallback||raw.toUpperCase();
+  if(/^(?:sub|subbed|subtitle(?:d)?|sous[ ._-]?titr(?:e|es|é|és)|dub|dubbed|doublage)$/i.test(u))return fallback||"";
   if(meaningful(raw)&&raw.length<=32&&/^[A-Za-zÀ-ÿ .()/-]+$/.test(raw))return raw;
   return fallback||"";
 }
