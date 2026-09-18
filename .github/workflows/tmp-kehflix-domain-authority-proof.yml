@@ -1,0 +1,115 @@
+name: TMP - Kehflix Domain Authority Proof
+
+on:
+  pull_request:
+    branches:
+      - tmp/kehflix-domain-authority-base
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NIAKVIO_TRACE_RESPONSE_SHAPE: '1'
+  NUVIO_PROVIDER_V3_CONTEXT: workspace
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.base_ref || 'fix/provider-activation-certification-v1' }}
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Preflight semantic authority
+        run: |
+          set -euo pipefail
+          python3 tests/provider_semantic_authority_ledger_test.py
+          python3 tests/kehflix_terminal_domain_v1_test.py
+          python3 tests/provider_patch_quickjs_compat_test.py
+
+      - name: Run official Domain Refresh for Kehflix
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python3 scripts/domain_refresh_transaction_v2.py \
+            --apply \
+            --provider kehflix \
+            --mode quick \
+            --timeout 8 \
+            --workers 1 \
+            --output health-output/kehflix-domain-report.json \
+            --changes-output health-output/kehflix-domain-changes.json
+
+      - name: Assert corrected domain authority
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          o=json.load(open('provider-overrides.json'))['provider_patches']['kehflix']
+          h=json.load(open('provider-hubs.json'))['providers']['kehflix']
+          d=json.load(open('provider-domain-history.json'))['providers']['kehflix']
+          assert o.get('official_site')=='https://kehflix.wiki', o.get('official_site')
+          assert (o.get('domain_substitutions') or {}).get('kehflix.lol')=='kehflix.wiki', o.get('domain_substitutions')
+          assert 'kehflix.wiki' not in (o.get('domain_substitutions') or {}), o.get('domain_substitutions')
+          assert h.get('direct')=='https://kehflix.wiki/', h.get('direct')
+          assert (d.get('current') or {}).get('host')=='kehflix.wiki', d.get('current')
+          print('FIELD_KEHFLIX_DOMAIN_AUTHORITY site='+o['official_site']+' direct='+h['direct']+' current='+d['current']['host'])
+          PY
+
+      - name: Materialize Kehflix from corrected authority
+        run: |
+          set -euo pipefail
+          python3 scripts/materialize_provider_v3_one.py kehflix | tee health-output/kehflix-materialize.log
+
+      - name: Certify Kehflix
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          python3 scripts/certify_provider_playable_lanes.py \
+            --manifest manifest.json \
+            --include-disabled \
+            --provider kehflix \
+            --candidate-limit 6 \
+            --timeout 25 \
+            --workers 1 \
+            --seed "kehflix-domain-authority-${GITHUB_RUN_ID}" \
+            --output health-output/kehflix-cert.json \
+            2>&1 | tee health-output/kehflix-cert.log
+
+      - name: Summarize
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('health-output/kehflix-cert.json')
+          if not p.exists():
+              print('FIELD_KEHFLIX_DOMAIN_RESULT missing=true'); raise SystemExit
+          row=(json.loads(p.read_text()).get('providers') or [{}])[0]
+          lanes=row.get('lanes') or {}
+          green=[k for k,v in lanes.items() if (v or {}).get('state')=='certified']
+          stages=sorted({str(a.get('debugStage') or '') for v in lanes.values() for a in (v or {}).get('attempts') or [] if a.get('debugStage')})
+          hosts=sorted({str(n.get('host') or '') for v in lanes.values() for a in (v or {}).get('attempts') or [] for n in a.get('networkTrace') or [] if n.get('host')})
+          print('FIELD_KEHFLIX_DOMAIN_RESULT green='+(','.join(green) or '-')+' full='+str(bool(row.get('certified'))).lower()+' stages='+('|'.join(stages) or '-')+' hosts='+('|'.join(hosts) or '-'))
+          PY
+
+      - name: Upload proof
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: kehflix-domain-authority-${{ github.run_id }}
+          path: health-output/
+          retention-days: 8
+          if-no-files-found: warn
