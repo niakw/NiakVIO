@@ -7822,9 +7822,11 @@
         "evidenceDestructive": false
       },
       "provider_lego_scripts": [
-        "scripts/provider_patches/vidfast_current_embed_v1.py"
+        "scripts/provider_patches/vidfast_current_runtime_v2.py"
       ],
-      "provider_lego_options": {}
+      "provider_lego_options": {
+        "scripts/provider_patches/vidfast_current_runtime_v2.py": {}
+      }
     },
     "vidrock": {
       "capability": "html_scraper",
@@ -9102,12 +9104,12 @@
         }
       },
       "domain_substitutions": {
-        "wookafr.app": "wookafr.blog",
-        "wookafr.center": "wookafr.blog",
-        "wookafr.cymru": "wookafr.blog",
-        "wookafr.fyi": "wookafr.blog",
-        "wookafr.to": "wookafr.blog",
-        "wookafr.boston": "wookafr.blog"
+        "wookafr.app": "wookafr.boston",
+        "wookafr.center": "wookafr.boston",
+        "wookafr.cymru": "wookafr.boston",
+        "wookafr.fyi": "wookafr.boston",
+        "wookafr.to": "wookafr.boston",
+        "wookafr.blog": "wookafr.boston"
       },
       "candidate_config_reconciliation": {
         "version": 3,
@@ -9318,9 +9320,9 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {
-        "wookafr.center": "wookafr.blog",
-        "wookafr.app": "wookafr.blog",
-        "wookafr.boston": "wookafr.blog"
+        "wookafr.center": "wookafr.boston",
+        "wookafr.app": "wookafr.boston",
+        "wookafr.blog": "wookafr.boston"
       },
       "provider_lego_scripts": [
         "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py",
@@ -10030,7 +10032,7 @@
         "requiresFreshIdentitySafePositive": true
       },
       "provider_lego_scripts": [
-        "scripts/provider_patches/allwish_current_runtime_v1.py"
+        "scripts/provider_patches/allwish_current_runtime_v2.py"
       ],
       "published_types": [
         "anime"
@@ -11569,9 +11571,11 @@
         "evidenceDestructive": false
       },
       "provider_lego_scripts": [
-        "scripts/provider_patches/vidlove_current_api_v1.py"
+        "scripts/provider_patches/vidlove_current_api_v2.py"
       ],
-      "provider_lego_options": {}
+      "provider_lego_options": {
+        "scripts/provider_patches/vidlove_current_api_v2.py": {}
+      }
     }
   },
   "route_override_defaults": {
