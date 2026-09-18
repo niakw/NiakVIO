@@ -1897,4 +1897,21 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The final request to `fetch.nexabloom.top/.../<32hex>/<32hex>/master.m3u8` still returns HTTP **403** from the GitHub/Node environment after successful AES decrypt, HMAC signing and terminal-context propagation.
 - Do **not** keep guessing crypto/header changes from this point. Provider-side extraction is proven through terminal URL derivation; remaining Node failure is an external terminal-gate/runtime-environment case until Native/manual evidence says otherwise. Per NiakVIO acceptance policy, Node-negative alone must not disable or erase a provider with stronger Native/manual evidence.
 - AniKoto remains red in the exact Node activation KPI for now, but its repair queue is reclassified from catalogue/decrypt bug to **terminal environment/Native fallback reconciliation**.
+### 2026-09-18 — V31 red24 mass-diagnostic checkpoint
+
+- Parallel red-provider diagnostic run **35358176143** completed successfully after targeted rematerialization of 24 previously red providers (AniKoto/4KHDHub excluded because independently under diagnosis).
+- **Three previously-red providers now have real targeted playable evidence on the current branch**:
+  - `kehflix`: **tv + anime** certified in V31.
+  - `movieshunt`: **movie** certified.
+  - `voiranime`: **anime** certified.
+- These are targeted gains, not yet a new exact manifest46 census. If the previous 20 exact-green providers retain their lanes, the provisional lower target moves 20 -> **23/46**, leaving **12 additional gains** to reach the >=35/46 contract. Do not publish 23 as an exact census until old positives are regression-checked.
+- V31 remaining clusters:
+  - **provider_network_zero_result (9)**: allanime, anime-ultime, animesultra, animetsu, animevost-fr, castle, mallumv, showbox, vostfree.
+  - **provider_network_http_error (8)**: allwish, animesalt, flemmix, fullanime, moviebox, moviesmod, uhdmovies, vidlove.
+  - **provider_network_exception (2)**: desiflix, yflix.
+  - **exception + HTTP error (1)**: persianstremio.
+  - **HTTP error + timeout (1)**: wookafr.
+- Priority is the 9-provider 200->0 cluster because it offers the best chance of multi-provider Core/plan fixes without external anti-bot dependency.
+- ShowBox static knowledge proves a Learning false-positive: historical root/query routes were marked live-validated from HTTP-200 service metadata even though they produced no provider value or stream. The actual historical proxy contract is `/api/media/<movie|tv>/...` plus cookie/token and FebBox traversal. Future Learning must distinguish transport-live 2xx from execution-authoritative causal proof.
+- AniKoto V30b remains extraction-complete but terminal-CDN 403 in Node even after WebCrypto AES + HMAC signing + playback context. No more blind crypto/header changes; reconcile Native/manual evidence.
 
