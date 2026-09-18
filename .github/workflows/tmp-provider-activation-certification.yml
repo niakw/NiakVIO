@@ -1,5 +1,5 @@
 name: TMP - Provider Repair Survival Recovery
-# retry after HTML-filter security scanner fixes 2026-09-18
+# retry after Castle Wooka Anikoto repair + manifest-46 certification contract 2026-09-18
 
 on:
   push:
@@ -139,7 +139,7 @@ jobs:
           import json
           from pathlib import Path
           p=json.loads(Path('health-output/provider-playable-certification.json').read_text())
-          print('FIELD_REPAIR_TARGETED_CERTIFIED', p['certifiedActiveProviderCount'], '/', p['activeProviderCount'])
+          print('FIELD_REPAIR_TARGETED_CERTIFIED', p.get('certifiedProviderCount', p['certifiedActiveProviderCount']), 'selected='+str(p.get('selectedProviderCount', p['providerCount'])), 'manifest-total='+str(p.get('manifestProviderCount', 46)), 'global-kpi=false')
           for row in p['providers']:
               lanes=[]
               for lane,data in sorted((row.get('lanes') or {}).items()):
