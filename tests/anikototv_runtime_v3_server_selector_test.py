@@ -7,6 +7,9 @@ src=(ROOT/'scripts'/'provider_patches'/'anikototv_runtime_v3.py').read_text(enco
 assert 'playerUrl.searchParams.get("s")' in src
 assert r'/\/stream\/s-(\d+)\//i.exec(playerUrl.pathname)' in src
 assert 'api+="&s="+encodeURIComponent(sv)' in src
+assert 'sessionCookie=mergeCookies(cookie,page.cookie)' in src
+assert 'playbackCookie=mergeCookies(sessionCookie,sources.cookie)' in src
+assert 'headers:megaPlaybackHeaders(direct,page.url||url,playbackCookie)' in src
 assert 'searchParams.set(' not in src
 assert 'searchParams.delete(' not in src
 
