@@ -10,6 +10,10 @@ assert 'api+="&s="+encodeURIComponent(sv)' in src
 assert 'sessionCookie=mergeCookies(cookie,page.cookie)' in src
 assert 'playbackCookie=mergeCookies(sessionCookie,sources.cookie)' in src
 assert 'headers:megaPlaybackHeaders(direct,page.url||url,playbackCookie)' in src
+assert 'async function signMegaMedia(file)' in src
+assert 'MpCdnT0k3n!9f2K#xQ7vL5mR8wN1pY4s' in src
+assert 'file=await signMegaMedia(file)' in src
+assert 'parsedUrl.search=' in src
 assert 'searchParams.set(' not in src
 assert 'searchParams.delete(' not in src
 
