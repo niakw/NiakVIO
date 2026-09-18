@@ -53,10 +53,12 @@ certification = {
 out, report = activation.enforce(synthetic_manifest, certification, allow_reenable=False)
 assert out["scrapers"][0]["enabled"] is False
 assert out["scrapers"][0]["activationState"] == "repair-learning-required"
-assert report["disabledNow"] == [provider]
+assert report["proposedDisable"] == [provider]
 assert report["manifestProviderCount"] == 1
 assert report["fullManifestCensus"] is False
 assert report["bootstrapYieldRatio"] is None
+assert "disabledNow" not in report
+assert report["projectedActiveAfter"] == []
 
 full_certification = dict(certification)
 full_certification.update({
