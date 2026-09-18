@@ -134,20 +134,34 @@ def enforce(
         })
         rows.append(row)
     output = {**manifest, "scrapers": rows}
-    active_before = [cid(row.get("id")) for row in (manifest.get("scrapers") or []) if isinstance(row, dict) and row.get("enabled") is not False]
+    manifest_rows = [row for row in (manifest.get("scrapers") or []) if isinstance(row, dict) and cid(row.get("id"))]
+    manifest_total = len(manifest_rows)
+    active_before = [cid(row.get("id")) for row in manifest_rows if row.get("enabled") is not False]
     certified_before = [row["providerId"] for row in decisions if row["wasEnabled"] and row["exactCertified"]]
-    yield_ratio = (len(certified_before) / len(active_before)) if active_before else 1.0
+    certified_manifest = [row["providerId"] for row in decisions if row["exactCertified"]]
+    full_manifest_census = (
+        bool(certification.get("fullManifestCensus"))
+        and int(certification.get("manifestProviderCount") or 0) == manifest_total
+        and int(certification.get("selectedProviderCount") or certification.get("providerCount") or 0) == manifest_total
+    )
+    yield_ratio = (len(certified_manifest) / manifest_total) if full_manifest_census and manifest_total else None
+    active_yield_ratio = (len(certified_before) / len(active_before)) if active_before else 1.0
     report = {
         "schemaVersion": 1,
         "authority": "provider-activation-contract-v1",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "manifestVersion": manifest.get("version"),
         "changed": changed,
+        "fullManifestCensus": full_manifest_census,
+        "manifestProviderCount": manifest_total,
+        "exactCertifiedManifest": certified_manifest,
+        "exactCertifiedManifestCount": len(certified_manifest),
         "activeBefore": active_before,
         "activeBeforeCount": len(active_before),
         "exactCertifiedBefore": certified_before,
         "exactCertifiedBeforeCount": len(certified_before),
-        "bootstrapYieldRatio": round(yield_ratio, 4),
+        "bootstrapYieldRatio": round(yield_ratio, 4) if yield_ratio is not None else None,
+        "activeYieldRatio": round(active_yield_ratio, 4),
         "keptActive": kept,
         "disabledNow": disabled,
         "reenabledNow": reenabled,
@@ -175,12 +189,23 @@ def main() -> int:
     manifest = load(manifest_path)
     output, report = enforce(manifest, certification, allow_reenable=args.allow_reenable)
     minimum_yield = max(0.0, min(float(args.minimum_bulk_yield), 1.0))
-    significant_batch = int(report["activeBeforeCount"]) >= MIN_BULK_PROVIDER_COUNT
-    architecture_ok = (not significant_batch) or float(report["bootstrapYieldRatio"]) >= minimum_yield
+    significant_batch = int(report["manifestProviderCount"]) >= MIN_BULK_PROVIDER_COUNT
+    full_manifest_census = bool(report["fullManifestCensus"])
+    global_ratio = report.get("bootstrapYieldRatio")
+    architecture_ok = (
+        full_manifest_census
+        and ((not significant_batch) or (global_ratio is not None and float(global_ratio) >= minimum_yield))
+    )
     report["minimumBulkYield"] = minimum_yield
     report["significantBatch"] = significant_batch
-    report["architectureState"] = "auto-yield-sufficient" if architecture_ok else "architecture-defect-low-auto-yield"
-    report["massDisableBlocked"] = bool(significant_batch and not architecture_ok and report["disabledNow"])
+    report["architectureState"] = (
+        "auto-yield-sufficient"
+        if architecture_ok
+        else "architecture-defect-low-auto-yield"
+        if full_manifest_census
+        else "targeted-diagnostic-no-global-yield"
+    )
+    report["massDisableBlocked"] = bool((not architecture_ok) and report["disabledNow"])
     args.report.resolve().parent.mkdir(parents=True, exist_ok=True)
     dump(args.report.resolve(), report)
     print(
@@ -188,18 +213,31 @@ def main() -> int:
         f"active_after={len(report['activeAfter'])} disabled_now={len(report['disabledNow'])} "
         f"reenabled_now={len(report['reenabledNow'])} changed={str(report['changed']).lower()} apply={str(args.apply).lower()}"
     )
-    print(
-        "FIELD_PROVIDER_ACTIVATION_YIELD "
-        f"certified={report['exactCertifiedBeforeCount']}/{report['activeBeforeCount']} "
-        f"ratio={report['bootstrapYieldRatio']:.4f} floor={minimum_yield:.4f} "
-        f"architecture={report['architectureState']} mass_disable_blocked={str(report['massDisableBlocked']).lower()}"
-    )
+    if report["fullManifestCensus"]:
+        print(
+            "FIELD_PROVIDER_ACTIVATION_YIELD "
+            f"certified_manifest={report['exactCertifiedManifestCount']}/{report['manifestProviderCount']} "
+            f"certified_active={report['exactCertifiedBeforeCount']}/{report['activeBeforeCount']} "
+            f"ratio={report['bootstrapYieldRatio']:.4f} floor={minimum_yield:.4f} "
+            f"architecture={report['architectureState']} mass_disable_blocked={str(report['massDisableBlocked']).lower()}"
+        )
+    else:
+        print(
+            "FIELD_PROVIDER_ACTIVATION_YIELD "
+            f"certified_manifest=unknown/{report['manifestProviderCount']} "
+            f"selected_evidence_exact={report['exactCertifiedManifestCount']} "
+            f"global_ratio=unknown floor={minimum_yield:.4f} "
+            f"architecture={report['architectureState']} mass_disable_blocked=true"
+        )
     for row in report["decisions"]:
         if not row["exactCertified"]:
             print(
                 "FIELD_PROVIDER_ACTIVATION_UNCERTIFIED "
                 f"provider={row['providerId']} reason={row['reason']} action={row['action']}"
             )
+    if (args.apply or args.require_yield) and not full_manifest_census:
+        print("FIELD_PROVIDER_ACTIVATION_REFUSED reason=full_manifest_census_required")
+        return 3
     if (args.apply or args.require_yield) and not architecture_ok:
         print("FIELD_PROVIDER_ACTIVATION_REFUSED reason=architecture_yield_below_floor")
         return 3
