@@ -1,0 +1,147 @@
+name: TMP - Manifest46 Exact Census
+
+on:
+  push:
+    branches:
+      - fix/provider-activation-certification-v1
+    paths:
+      - '.github/workflows/tmp-provider-manifest46-census.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/provider-activation-certification-v1
+          fetch-depth: 0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Preflight exact manifest authority
+        run: |
+          set -euo pipefail
+          python3 tests/provider_repair_survival_registry_test.py
+          python3 tests/provider_positive_fixture_memory_test.py
+          python3 tests/provider_playable_certification_test.py
+          python3 tests/provider_activation_bulk_yield_guard_test.py
+          python3 tests/provider_certification_learning_queue_test.py
+          python3 tests/provider_activation_consensus_test.py
+          python3 tests/provider_activation_contract_test.py
+          python3 scripts/check_provider_repair_survival.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('manifest.json').read_text())
+          rows=p.get('scrapers') or []
+          assert len(rows)==46, len(rows)
+          assert sum(1 for r in rows if r.get('enabled') is not False)==44
+          print('FIELD_MANIFEST46_PREFLIGHT version='+str(p.get('version'))+' total=46 active=44')
+          PY
+
+      - name: Certify exact complete manifest 46
+        run: |
+          set -euo pipefail
+          mkdir -p health-output automation
+          python3 scripts/certify_provider_playable_lanes.py \
+            --include-disabled \
+            --candidate-limit 12 \
+            --timeout 30 \
+            --workers 4 \
+            --seed "manifest46-stable-${GITHUB_RUN_ID}" \
+            --output automation/provider-playable-certification.json
+          cp automation/provider-playable-certification.json health-output/provider-playable-certification.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('automation/provider-playable-certification.json').read_text())
+          assert p.get('fullManifestCensus') is True, p
+          assert p.get('manifestProviderCount') == 46, p.get('manifestProviderCount')
+          assert p.get('selectedProviderCount') == 46, p.get('selectedProviderCount')
+          print('FIELD_PROVIDER_MANIFEST46_ASSERT certified='+str(p.get('certifiedProviderCount'))+'/46 full_manifest=true')
+          PY
+
+      - name: Persist exact-bundle memory and learning
+        run: |
+          set -euo pipefail
+          python3 scripts/learn_provider_positive_fixtures.py \
+            --certification automation/provider-playable-certification.json \
+            --registry automation/provider-positive-fixtures.json \
+            --output automation/provider-positive-fixtures.json
+          python3 scripts/build_provider_certification_learning_queue.py \
+            --certification automation/provider-playable-certification.json \
+            --output automation/provider-certification-learning-queue.json
+          python3 scripts/build_provider_activation_consensus.py \
+            --node-certification automation/provider-playable-certification.json \
+            --positive-registry automation/provider-positive-fixtures.json \
+            --output automation/provider-activation-consensus.json
+          python3 scripts/enforce_provider_activation_contract.py \
+            --certification automation/provider-playable-certification.json \
+            --report automation/provider-activation-contract-dry-run.json
+
+          cp automation/provider-positive-fixtures.json health-output/provider-positive-fixtures.json
+          cp automation/provider-certification-learning-queue.json health-output/provider-certification-learning-queue.json
+          cp automation/provider-activation-consensus.json health-output/provider-activation-consensus.json
+          cp automation/provider-activation-contract-dry-run.json health-output/provider-activation-contract-dry-run.json
+
+      - name: Summarize manifest 46
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('automation/provider-playable-certification.json').read_text())
+          print('FIELD_MANIFEST46_CERTIFIED '+str(p.get('certifiedProviderCount'))+'/46')
+          for row in p.get('providers') or []:
+              lanes=[]
+              for lane,data in sorted((row.get('lanes') or {}).items()):
+                  stages=sorted({str(a.get('debugStage') or '') for a in data.get('attempts') or [] if a.get('debugStage')})
+                  lanes.append(f"{lane}:{data.get('state')}:{'|'.join(stages)}")
+              print('FIELD_MANIFEST46_PROVIDER',row.get('providerId'),'enabled='+str(bool(row.get('enabled'))).lower(),'certified='+str(bool(row.get('certified'))).lower(),' '.join(lanes))
+          q=json.loads(Path('automation/provider-certification-learning-queue.json').read_text())
+          a=json.loads(Path('automation/provider-activation-contract-dry-run.json').read_text())
+          print('FIELD_MANIFEST46_ARCHITECTURE '+str(q.get('architectureState'))+' clusters='+str(len(q.get('clusters') or [])))
+          print('FIELD_MANIFEST46_DRY_RUN certified='+str(a.get('exactCertifiedManifestCount'))+'/46 mass_disable_blocked='+str(bool(a.get('massDisableBlocked'))).lower())
+          PY
+
+      - name: Commit census evidence
+        run: |
+          set -euo pipefail
+          git config user.name 'niakvio-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git pull --rebase origin fix/provider-activation-certification-v1
+          git add \
+            automation/provider-playable-certification.json \
+            automation/provider-positive-fixtures.json \
+            automation/provider-certification-learning-queue.json \
+            automation/provider-activation-consensus.json \
+            automation/provider-activation-contract-dry-run.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'test(providers): persist stabilized manifest-46 census'
+            git push origin HEAD:fix/provider-activation-certification-v1
+          fi
+
+      - name: Upload census evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: manifest46-census-${{ github.run_id }}
+          path: health-output/
+          retention-days: 8
+          if-no-files-found: warn
