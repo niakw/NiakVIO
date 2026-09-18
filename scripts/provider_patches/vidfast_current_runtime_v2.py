@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from typing import Any
-from provider_patch_blocks import replace_managed_fix
+from provider_patch_blocks import replace_managed_fix, strip_managed_fix
 
 MANAGED_FIX_ID = "PROVIDER.VIDFAST.CURRENT.RUNTIME.V2"
 MARKER = "NIAKVIO_VIDFAST_CURRENT_RUNTIME_V2"
@@ -31,6 +31,7 @@ var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(modul
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
+    text = strip_managed_fix(text, "PROVIDER.VIDFAST.CURRENT.EMBED.V1")
     cfg = {
         "base": "https://vidfast.vc",
         "api": "https://enc-dec.app/api",
