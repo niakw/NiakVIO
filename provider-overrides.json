@@ -11400,7 +11400,7 @@
           }
         ]
       },
-      "route_data_state": "repair",
+      "route_data_state": "on",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -11408,27 +11408,29 @@
         "activationAuthority": "provider-folder-lifecycle",
         "declaredHub": null,
         "forcedEnabled": true,
-        "routeDataState": "repair",
+        "routeDataState": "on",
         "requiredLanes": [
           "movie",
           "tv"
         ],
-        "currentVerifiedLanes": [],
-        "exactLockedLanes": [],
-        "provenLanes": [],
-        "missingLanes": [
+        "currentVerifiedLanes": [
           "movie",
           "tv"
         ],
-        "completeCapabilityProof": false,
-        "recoveryStatus": "no-proven-route",
+        "exactLockedLanes": [],
+        "provenLanes": [
+          "movie",
+          "tv"
+        ],
+        "missingLanes": [],
+        "completeCapabilityProof": true,
+        "recoveryStatus": "pr122-v1-api-recipe-reproved",
         "provenRouteCount": 0,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
-          "declared_lane_unproven",
-          "quick_provider-network-zero-result",
-          "recovery_no-proven-route"
+          "exact_bundle_playable_movie",
+          "exact_bundle_playable_tv"
         ],
         "laneStatuses": {
           "movie": [
@@ -11439,6 +11441,39 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "api_recipe": {
+        "proofModelVersion": 5,
+        "allowGenericFallback": false,
+        "base": "https://api.vidlove.cc",
+        "referer": "https://player.vidlove.cc/",
+        "origin": "https://player.vidlove.cc",
+        "directRoute": "/{media}?id={tmdbId}&mode=json&season={season}&episode={episode}",
+        "directRequest": {
+          "method": "GET",
+          "headers": {
+            "Accept": "application/json,text/plain,*/*",
+            "Origin": "https://player.vidlove.cc",
+            "Referer": "https://player.vidlove.cc/"
+          }
+        },
+        "requestHeaders": {
+          "Accept": "application/json,text/plain,*/*",
+          "Origin": "https://player.vidlove.cc",
+          "Referer": "https://player.vidlove.cc/"
+        },
+        "playbackHeaders": {
+          "Origin": "https://player.vidlove.cc"
+        },
+        "sources": [],
+        "requestTimeoutMs": 8000,
+        "minStreamsBeforeStop": 1
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/vidlove_current_api_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/vidlove_current_api_v1.py": {}
       }
     }
   },
