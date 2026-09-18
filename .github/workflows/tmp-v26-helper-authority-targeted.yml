@@ -1,0 +1,124 @@
+name: TMP - V26 Helper Authority Targeted
+
+on:
+  pull_request:
+    branches:
+      - tmp/v26-helper-base
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  targeted:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: tmp/v26-helper-base
+          fetch-depth: 0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Verify V26 authority contract
+        run: |
+          set -euo pipefail
+          python3 tests/materializer_authority_monotonic_v25_test.py
+          python3 -m py_compile scripts/materialize_provider_v3_all.py
+          python3 scripts/check_provider_repair_survival.py
+
+      - name: Rematerialize in disposable workspace
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          cp manifest.json health-output/manifest-before-v26.json
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/reapply_published_overrides.py --check
+          cp manifest.json health-output/manifest-after-v26.json
+
+      - name: Inspect regenerated runtime plans
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re
+          from pathlib import Path
+          ids={'anime-ultime','animesultra','vostfree','flemmix','anime-sama'}
+          m=json.loads(Path('manifest.json').read_text())
+          for row in m.get('scrapers') or []:
+              pid=str(row.get('id') or '').lower()
+              if pid not in ids: continue
+              p=Path(str(row.get('filename') or '').replace('../',''))
+              text=p.read_text()
+              mm=re.search(r'(?:const|let|var)\s+NIAKVIO_PROVIDER_MODEL\s*=\s*Object\.freeze\((\{.*?\})\);',text,re.S)
+              if not mm:
+                  print('FIELD_V26_MODEL',pid,'model=missing','file='+str(p))
+                  continue
+              model=json.loads(mm.group(1))
+              print('FIELD_V26_MODEL',pid,
+                    'routes='+json.dumps(model.get('routes') or [],separators=(',',':')),
+                    'apiBase='+str((model.get('apiRecipe') or {}).get('base') or ''),
+                    'site='+str(model.get('officialSite') or ''),
+                    'file='+str(p))
+          PY
+
+      - name: Targeted exact-bundle certification
+        run: |
+          set -euo pipefail
+          python3 scripts/certify_provider_playable_lanes.py \
+            --include-disabled \
+            --provider anime-ultime \
+            --provider animesultra \
+            --provider vostfree \
+            --provider flemmix \
+            --provider anime-sama \
+            --candidate-limit 12 \
+            --timeout 30 \
+            --workers 2 \
+            --seed "v26-helper-${GITHUB_RUN_ID}" \
+            --output health-output/v26-targeted-certification.json
+
+      - name: Summarize targeted proof
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('health-output/v26-targeted-certification.json').read_text())
+          green=[]
+          for row in p.get('providers') or []:
+              lanes=row.get('lanes') or {}
+              gl=[k for k,v in lanes.items() if (v or {}).get('state')=='certified']
+              if gl: green.append(row.get('providerId'))
+              stages=sorted({
+                  str(a.get('debugStage') or '')
+                  for v in lanes.values()
+                  for a in (v or {}).get('attempts') or []
+                  if a.get('debugStage')
+              })
+              print('FIELD_V26_RESULT',row.get('providerId'),
+                    'green='+(','.join(gl) or '-'),
+                    'full='+str(bool(row.get('certified'))).lower(),
+                    'stages='+('|'.join(stages) or '-'))
+          print('FIELD_V26_GREEN',str(len(green))+'/5',','.join(sorted(green)))
+          PY
+
+      - name: Upload V26 evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: v26-helper-targeted-${{ github.run_id }}
+          path: health-output/
+          retention-days: 8
+          if-no-files-found: warn
