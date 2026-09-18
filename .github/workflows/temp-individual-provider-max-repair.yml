@@ -11,6 +11,8 @@ on:
       - 'tests/route_recovery_rotating_corpus_test.py'
       - 'tests/provider_terminal_chain_repairs_test.py'
       - 'tests/voiranime_rip_runtime_contract_test.py'
+      - 'tests/voiranime_episode_selection_contract_test.py'
+      - 'scripts/provider_patches/voiranime_anime_runtime_v2.py'
       - 'scripts/provider_patches/voiranime_rip_runtime_v1.py'
       - 'scripts/provider_patches/neko_sama_runtime_v1.py'
       - 'scripts/provider_patches/animesamaco_site_runtime_v1.py'
@@ -148,6 +150,7 @@ jobs:
           python tests/route_recovery_rotating_corpus_test.py
           python tests/provider_terminal_chain_repairs_test.py
           python tests/voiranime_rip_runtime_contract_test.py
+          python tests/voiranime_episode_selection_contract_test.py
           test "$(find automation/individual-route-proofs -name '*.json' -type f | wc -l | tr -d ' ')" = "46"
           python scripts/merge_provider_route_recovery_reports.py             automation/individual-route-proofs             --scope all             --out automation/provider-route-recovery-individual-all.json
           python scripts/merge_provider_route_recovery_reports.py             automation/individual-route-proofs             --scope active             --out automation/provider-route-recovery-individual-active.json
