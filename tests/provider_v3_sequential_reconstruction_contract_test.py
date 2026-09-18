@@ -29,9 +29,11 @@ assert 'result["probe_attempt"] = attempt' in source
 assert "runtime_recovered_types" in source
 assert "FIELD_PROVIDER_FIXTURE_SKIPPED_TYPE_ALREADY_PROVED" in source
 from validate_provider_v3_routes_sequential import build_provider_queue, SEMANTIC_FIXTURE_FALLBACKS
+from current_provider_scope import visible_provider_count, visible_provider_ids
 assert len(SEMANTIC_FIXTURE_FALLBACKS["movie"]) >= 4
 queue_rows, queue_count = build_provider_queue()
-assert queue_count == 96
+assert queue_count == visible_provider_count(), (queue_count, visible_provider_count())
+assert {row["provider_id"] for row in queue_rows} == visible_provider_ids()
 desiflix = next(row for row in queue_rows if row["provider_id"] == "desiflix")
 desiflix_movies = [task["fixture_slug"] for task in desiflix["tasks"] if task["semantic_type"] == "movie"]
 assert "interstellar" in desiflix_movies
