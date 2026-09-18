@@ -85,6 +85,32 @@ provider_recipe={
 }
 assert m._recipe_is_provider_execution_authority(provider_recipe) is True
 
+# Proof-v5 patch routes must never erase an independently proven static route,
+# even when both are classified in the same coarse family.
+patch={
+    'route_proof_version':5,
+    'learned_routes':['/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}'],
+}
+static={'model':{
+    'routeProofVersion':5,
+    'routes':['/{slug}/','/{slug}-episode-{episode}/'],
+}}
+model=m.provider_model('synthetic',patch,cap,static)
+assert '/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}' in model['routes'], model['routes']
+assert '/{slug}/' in model['routes'], model['routes']
+assert '/{slug}-episode-{episode}/' in model['routes'], model['routes']
+
+# Proof in another family must not erase a valid static API recipe.
+static_recipe={
+    'proofModelVersion':5,
+    'base':'https://provider-api.example',
+    'directRoute':'/movie/{tmdbId}',
+}
+patch={'route_proof_version':5,'learned_routes':['/?s={title}']}
+static={'model':{'routeProofVersion':5,'apiRecipe':static_recipe}}
+model=m.provider_model('synthetic',patch,cap,static)
+assert model['apiRecipe']==static_recipe, model['apiRecipe']
+
 # A fresh patch route must not erase independent structured static plans.
 patch={
     'route_proof_version':5,
