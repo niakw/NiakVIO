@@ -18,6 +18,9 @@ MARKER = "NIAKVIO_MUGIWARA_EPISODE_FAIL_CLOSED_V2"
 
 OLD = '''if(pageUrl){var specialized=await fallback(pageUrl,q);if(Array.isArray(specialized)&&specialized.length)return specialized}if(Array.isArray(nativeResult)&&nativeResult.length)return nativeResult;return[]'''
 NEW = '''if(pageUrl){var specialized=await fallback(pageUrl,q);if(Array.isArray(specialized)&&specialized.length)return specialized;/* NIAKVIO_MUGIWARA_EPISODE_FAIL_CLOSED_V2 */if(q.type!=="movie")return[]}if(Array.isArray(nativeResult)&&nativeResult.length)return nativeResult;return[]'''
+CURRENT_NO_MARKER = '''/* NIAKVIO_MUGIWARA_SPECIALIZED_FALLBACK_PRIORITY_V1 */if(pageUrl){var specialized=await fallback(pageUrl,q);if(Array.isArray(specialized)&&specialized.length)return specialized;if(q.type!=="movie")return[]}'''
+CURRENT_WITH_MARKER = '''/* NIAKVIO_MUGIWARA_SPECIALIZED_FALLBACK_PRIORITY_V1 */if(pageUrl){var specialized=await fallback(pageUrl,q);if(Array.isArray(specialized)&&specialized.length)return specialized;/* NIAKVIO_MUGIWARA_EPISODE_FAIL_CLOSED_V2 */if(q.type!=="movie")return[]}'''
+
 
 
 def patch() -> bool:
@@ -25,9 +28,19 @@ def patch() -> bool:
     if MARKER in text:
         validate(text)
         return False
-    if text.count(OLD) != 1:
-        raise AssertionError(f"Mugiwara episodic fallback anchor count={text.count(OLD)}")
-    text = text.replace(OLD, NEW, 1)
+    if text.count(OLD) == 1:
+        text = text.replace(OLD, NEW, 1)
+    elif text.count(CURRENT_NO_MARKER) == 1 and text.count('if(q.type!=="movie")return[]') >= 2:
+        # A newer discovery-first runtime already contains the V2 behavior but
+        # was authored after the original text migration and lost its marker.
+        # Preserve those bytes semantically; only restore the durable marker.
+        text = text.replace(CURRENT_NO_MARKER, CURRENT_WITH_MARKER, 1)
+    else:
+        raise AssertionError(
+            "Mugiwara episodic fail-closed behavior/anchor missing: "
+            f"legacy={text.count(OLD)} current={text.count(CURRENT_NO_MARKER)} "
+            f"episodic_guards={text.count('if(q.type!==\"movie\")return[]')}"
+        )
     TARGET.write_text(text, encoding="utf-8")
     validate(text)
     return True

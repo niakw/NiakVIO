@@ -1935,3 +1935,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - To avoid a fourth ~6-minute upstream recovery replay, the post-apply artifact from run **35401694913** (artifact **10570987798**) is reused only after proving provider inputs are unchanged from source SHA **4cc56e288a498e016ac5823e28089b3d333406ef**. A temporary read-only resume workflow starts at policy/sanitize/materialize and runs the real candidate quick-yield census. It does not publish.
 - Do not infer recovered provider count from route proof. The next authoritative number is the rematerialized candidate `verified_provider_count` emitted by this resume workflow.
 
+## 2026-09-19 — Post-apply resume reached Mugiwara migration
+
+- Resume workflow **35402655245** proved the source provider inputs were unchanged from Repair 28, restored the exact applied checkpoint, passed the new visible-identity sanitizer (**46 providers, 0 unsafe routes removed**) and passed the current-scope Movix policy.
+- It stopped inside ProviderBase preparation at `upgrade_mugiwara_episode_failclosed_v2.py`. Current Mugiwara runtime already contains the intended episodic fail-close twice around the newer discovery-first/specialized-fallback flow, but the old V2 marker comment is absent; the migration incorrectly required the pre-revision text anchor.
+- Migration now recognizes that exact newer behavior and restores only `NIAKVIO_MUGIWARA_EPISODE_FAIL_CLOSED_V2` inside the already fail-closed specialized fallback. Runtime semantics are unchanged; the existing V34 contract can again prove the durable marker + behavior.
+- The temporary post-apply resume is retriggered; upstream recovery is still not repeated.
+
