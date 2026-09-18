@@ -164,6 +164,8 @@ with tempfile.TemporaryDirectory() as tmp:
     assert ok.returncode == 0, ok.stdout + ok.stderr
     assert expected_summary in ok.stdout, ok.stdout
     assert f"completed={route_count}" in ok.stdout
+    status_lines = [line for line in ok.stdout.splitlines() if line.startswith("FIELD_NATIVE_PROVIDER_STATUS ")]
+    assert status_lines and all("bundle_sha=" in line and "bundle_sha=missing" not in line for line in status_lines), ok.stdout
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
