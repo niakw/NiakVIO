@@ -158,6 +158,17 @@ function sanitizedJsonShape(value, depth = 0) {
       item: first === undefined ? null : sanitizedJsonShape(first, depth + 1),
     };
   }
+  if (typeof value === 'string') {
+    const out = { kind: 'string', length: Math.min(value.length, 1000000) };
+    try {
+      const parsed = new URL(value);
+      if (/^https?:$/.test(parsed.protocol)) {
+        out.urlHost = String(parsed.hostname || '').toLowerCase().slice(0, 160);
+        out.urlPath = String(parsed.pathname || '/').slice(0, 240);
+      }
+    } catch {}
+    return out;
+  }
   if (typeof value === 'object') {
     const keys = Object.keys(value).slice(0, 24);
     const fields = {};
