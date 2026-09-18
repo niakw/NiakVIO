@@ -107,4 +107,17 @@ item = {
 result = prioritize_authoritative_item(item)
 assert result["official_site"] == "https://z.example", result
 
+# Real registry-chain regression: Kehflix explicit current terminal must survive
+# provider-hubs.json -> merge_hub_registry -> authoritative resolver.
+real_config = wrapper.transaction.resolver.load_json(ROOT / "provider-overrides.json", {})
+real_hubs = wrapper.current_registry_hub_configs(real_config)
+kehflix = real_hubs["kehflix"]
+assert kehflix["hub"].rstrip("/") == "https://kehflix.wiki", kehflix
+assert kehflix["direct"].rstrip("/") == "https://kehflix.com", kehflix
+assert kehflix["direct_authority"] == "explicit_current", kehflix
+explicit = wrapper.refresh._explicit_current_direct_candidate(kehflix)
+assert explicit is not None, kehflix
+assert explicit["url"] == "https://kehflix.com", explicit
+assert explicit["registry_explicit_current"] is True, explicit
+
 print("domain refresh current-registry scope and semantic priority tests passed")
