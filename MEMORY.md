@@ -1876,4 +1876,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Commit **2530d7a99d42cc953a2b4e47a496d6265aa2d155** completes monotone route authority by capability family: a proof-v5 patch route replaces stale routes of the same family only, while independently proven `search/api/player/detail` families remain available. This prevents a new hub/search proof from erasing unrelated terminal/player knowledge.
 - Commit **35799063e8763538eb10c9cee569c1aa768a4a36** adds a contract proving that a fresh search route suppresses stale search knowledge but preserves static detail/player/API routes.
 - Continue with a fresh fast two-provider run from current HEAD; no result from failed V29 changes the 20/46 census.
+### 2026-09-18 — AniKoto terminal-context repair checkpoint
+
+- Fast diagnostic **35357284191 / V29b** completed successfully on per-provider materialization.
+- **AniKotoTV** now proves the full provider chain and successful decryption: stage trace shows `anikoto_megaplay_crypto webcrypto=1` then `anikoto_megaplay_terminal direct=1`. The decrypted terminal is a real HLS URL on `fetch.nexabloom.top/.../master.m3u8`; the remaining failure is HTTP **403** on the terminal probe.
+- Root cause in V3: helper functions for merged MegaPlay cookies and host-aware playback headers existed, but `resolveMega()` returned the direct URL without the `sources` response cookie/playback context. Thus successful extraction was followed by a contextless terminal request.
+- Commit **6e7b182c64c2e9b6ca1aedbd23a7d3403ed1213f** now merges caller+player cookies, sends them to `getSources`, merges any response cookie, and returns `megaPlaybackHeaders()` with the decrypted terminal. Commit **f73ed8ee68f0382ffa1e7843f38f105a24dacbbf** adds a contract requiring this propagation.
+- **4KHDHub** V29b: current authority is `4khdhub.one` (not old `.bi`); catalogue/detail pages return 200 and generic extraction reaches `player.autoembed.cc/embed/movie/`, where Node fetch throws `TypeError` / status 0. Treat this as external-player transport/runtime work, not Domain Refresh failure.
+- ShowBox historical knowledge decoded without executing upstream code: canonical proxy base is `https://id-mapping-api-showbox-proxy.hf.space/api/media`, with movie/TV routes below that base and downstream FebBox share-key/file-list/quality-list flow. Current generated root `/` request is therefore an incorrect route contract.
 
