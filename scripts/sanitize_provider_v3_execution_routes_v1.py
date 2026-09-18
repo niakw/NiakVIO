@@ -12,12 +12,12 @@ import argparse
 import json
 import re
 from pathlib import Path
-from current_provider_scope import active_provider_count
+from current_provider_scope import cid, visible_provider_ids
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
-EXPECTED = active_provider_count()
+EXPECTED_IDS = visible_provider_ids()
 
 SEARCH_EMPTY_RE = re.compile(
     r"([?&](?:s|q|query|keyword|search|story)=)(?:\.{3})?(?=&|#|$)",
@@ -124,8 +124,16 @@ def main() -> int:
     path = args.knowledge.resolve()
     payload = load(path)
     providers = payload.get("providers")
-    if not isinstance(providers, dict) or len(providers) != EXPECTED:
-        raise ValueError(f"expected {EXPECTED} provider knowledge rows")
+    if not isinstance(providers, dict):
+        raise ValueError("provider knowledge rows must be an object")
+    actual_ids = {cid(value) for value in providers if cid(value)}
+    if actual_ids != EXPECTED_IDS or len(providers) != len(actual_ids):
+        raise ValueError(
+            "provider knowledge/current-visible identity mismatch: "
+            f"knowledge_only={sorted(actual_ids - EXPECTED_IDS)} "
+            f"visible_only={sorted(EXPECTED_IDS - actual_ids)} "
+            f"knowledge_rows={len(providers)} visible={len(EXPECTED_IDS)}"
+        )
 
     removed = 0
     repaired = 0

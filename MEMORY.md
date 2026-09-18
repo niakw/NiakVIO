@@ -1927,3 +1927,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The next failure is purely historical policy debt: `enforce_route_proof_manifest_policy_v1.py` still hard-required **Movix** proof/DATA/manifest even though Movix is not in the current 46-provider manifest. The gate is now current-scope aware: absent Movix => explicit not-applicable no-op; if Movix is ever current again, its activation-preservation contract remains enforced.
 - Retry **28** continues through policy -> rematerialization -> candidate census. Do not claim score improvement from upstream probe streams alone.
 
+## 2026-09-19 — Repair 28 post-apply checkpoint; visible-vs-active sanitizer bug
+
+- Repair retry **28** passed route recovery application again (**44 active patched, 224 evidence routes, 8 recipes**) and passed the corrected current-scope Movix policy: `ROUTE_PROOF_MANIFEST_POLICY_V1_OK current_scope=46 movix_current=false state=not-applicable`.
+- It then failed before rematerialization in `sanitize_provider_v3_execution_routes_v1.py`: the sanitizer used `active_provider_count()=44` to validate `automation/provider-v3-static-knowledge.json`, but static knowledge intentionally contains **all 46 visible providers** (44 active + 2 disabled). This is a scope-type bug, not provider DATA corruption.
+- Sanitizer authority is changed from active cardinality to the **exact visible provider ID set**. Missing/extra/duplicate knowledge identities now fail with explicit set diffs; disabled-visible knowledge is retained by design.
+- To avoid a fourth ~6-minute upstream recovery replay, the post-apply artifact from run **35401694913** (artifact **10570987798**) is reused only after proving provider inputs are unchanged from source SHA **4cc56e288a498e016ac5823e28089b3d333406ef**. A temporary read-only resume workflow starts at policy/sanitize/materialize and runs the real candidate quick-yield census. It does not publish.
+- Do not infer recovered provider count from route proof. The next authoritative number is the rematerialized candidate `verified_provider_count` emitted by this resume workflow.
+
