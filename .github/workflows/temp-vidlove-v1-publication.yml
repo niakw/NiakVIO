@@ -1,5 +1,5 @@
 name: TEMP - Publish VidLove V1 and Kehflix Projection
-# retry: validate moviebox partial lane proof
+# retry: publish validated moviebox multi-fixture proof
 
 on:
   push:
@@ -285,16 +285,16 @@ jobs:
           import json
           import os
           from pathlib import Path
-          proof=json.load(open('health-output/vidlove-v1-proof.json',encoding='utf-8'))
+          proof=json.load(open('health-output/vidlove-moviebox-multifixture.json',encoding='utf-8'))
           pub=json.load(open('health-output/targeted-publication-report.json',encoding='utf-8'))
           mem=Path('MEMORY.md')
           text=mem.read_text(encoding='utf-8').rstrip()
-          marker='## 2026-09-18 — VidLove V1 materialization + Kehflix projection publication candidate'
+          marker='## 2026-09-18 — VidLove moviebox materialization + Kehflix projection publication candidate'
           block=(
               "\n\n"+marker+"\n\n"
               +f"- Publication runner {os.environ.get('GITHUB_RUN_ID','unknown')} executed from exact base SHA {os.environ.get('GITHUB_SHA','unknown')}.\n"
-              +f"- VidLove was rematerialized through the canonical Provider v3 materializer with proof-owned V1 authority preserved. Exact publication candidate: {pub['vidlove']['file']}, API base {pub['vidlove']['apiBase']}.\n"
-              +f"- Fresh terminal proof on the exact generated VidLove bundle: {json.dumps(proof['rows'],ensure_ascii=False,separators=(',',':'))}.\n"
+              +f"- VidLove was rematerialized through the canonical Provider v3 materializer with moviebox pinned from fresh multi-fixture proof. Exact publication candidate: {pub['vidlove']['file']}, API base {pub['vidlove']['apiBase']}.\n"
+              +f"- Fresh multi-fixture terminal proof on the exact generated VidLove bundle: {json.dumps(proof['rows'],ensure_ascii=False,separators=(',',':'))}.\n"
               +f"- Kehflix was rebuilt through the CONFIG-only Domain Refresh path, preserving provider/Core bytes outside CONFIG. Exact candidate: {pub['kehflix']['file']}, official site {pub['kehflix']['officialSite']}.\n"
               +"- Static Provider v3 audit and final minimizer fixed-point passed before publication. Final repository SHA and downstream Domain Refresh/Verify verdict remain pending until the self-publication commit lands and those workflows complete.\n"
           )
@@ -306,7 +306,7 @@ jobs:
           Update this file to start a new run through a controlled push to main.
 
           last_trigger: ${GITHUB_RUN_ID}
-          reason: publish-vidlove-v1-and-kehflix-explicit-current-projection
+          reason: publish-vidlove-moviebox-and-kehflix-explicit-current-projection
           base_sha: ${GITHUB_SHA}
           EOF
           rm .github/workflows/temp-vidlove-v1-publication.yml

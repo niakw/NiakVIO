@@ -1824,3 +1824,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - VidLove must therefore be represented as partial evidence, not stale FULL and not blanket ZERO. A generic fresh-proof V2 is being added so fresh negative movie evidence cannot erase an independently fresh positive TV lane; legacy AllWish global invalidation remains supported.
 - Next runner pins moviebox and probes four movie + four TV fixtures. Publication remains fail-closed until the TV lane reproduces and the final structured/materialized bundle passes static/minimizer gates.
 
+## 2026-09-18 — Targeted publication checkpoint filename bug
+
+- Runner **35394322299** did not fail on VidLove or Kehflix. It passed canonical rematerialization, static audit and minimizer fixed-point, then proved VidLove `moviebox` on **3/4 movie fixtures + 4/4 TV fixtures** with terminal media validation.
+- The job failed only in the durable-checkpoint step because it still read deleted artifact name `health-output/vidlove-v1-proof.json` after the proof step had been renamed to `health-output/vidlove-moviebox-multifixture.json`. Publication was therefore skipped despite positive provider proof.
+- The temporary publication workflow now reads the actual multi-fixture artifact. No additional provider diagnosis is required before rerunning this targeted publication.
+
