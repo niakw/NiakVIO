@@ -413,12 +413,23 @@ def provider_model(
     patch_search_plan = proof5_rows(patch.get("search_request_plan"))
     patch_provider_value_plan = proof5_rows(patch.get("provider_value_plan"))
     patch_external_identity_plan = proof5_rows(patch.get("external_identity_plan"))
-    # MATERIALIZER_EXECUTION_AUTHORITY_MONOTONIC_V27
-    # Execution authority is scoped per capability family. A new route proof must
-    # never erase an independently proven search/value/external-identity plan.
-    # Structured proof-v5 rows are merged patch-first and deduplicated so NiakVIO
-    # can accumulate working knowledge across hubs/providers without last-write
-    # destroying unrelated execution capabilities.
+    # MATERIALIZER_EXECUTION_AUTHORITY_MONOTONIC_V28
+    # Authority is monotone per capability family: fresh proof for one family may
+    # replace stale proof in that same family, but must not erase independently
+    # proven search/value/external-identity knowledge.
+    patch_has_execution_authority = bool(
+        patch_proof >= 5 and (
+            patch_routes
+            or (
+                patch_recipe is not None
+                and patch_recipe_proof >= 5
+                and _recipe_is_provider_execution_authority(patch_recipe)
+            )
+            or patch_search_plan
+            or patch_provider_value_plan
+            or patch_external_identity_plan
+        )
+    )
     proof_version = max(patch_proof, static_proof)
 
     static_routes = [
@@ -441,17 +452,26 @@ def provider_model(
     static_recipe_proof = int(static_recipe.get("proofModelVersion") or 0) if isinstance(static_recipe, dict) else 0
     if patch_recipe is not None and patch_recipe_proof >= 5:
         candidate_recipe = patch_recipe
-    elif static_recipe is not None and static_recipe_proof >= 5:
+    elif not patch_has_execution_authority and static_recipe is not None and static_recipe_proof >= 5:
         candidate_recipe = static_recipe
     else:
         candidate_recipe = None
     recipe_proof = int(candidate_recipe.get("proofModelVersion") or 0) if isinstance(candidate_recipe, dict) else 0
     api_recipe = candidate_recipe if proof_version >= 5 and recipe_proof >= 5 else None
 
-    def merge_execution_rows(patch_key: str, static_key: str, limit: int) -> list[dict[str, Any]]:
+    def merge_execution_rows(
+        patch_key: str,
+        static_key: str,
+        limit: int,
+        *,
+        extras: list[dict[str, Any]] | None = None,
+    ) -> list[dict[str, Any]]:
         merged: list[dict[str, Any]] = []
         seen: set[str] = set()
-        for source in (patch.get(patch_key), static_model.get(static_key)):
+        sources: list[object] = [patch.get(patch_key), static_model.get(static_key)]
+        if extras:
+            sources.append(extras)
+        for source in sources:
             for row in proof5_rows(source):
                 key = json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
                 if key in seen:
@@ -475,6 +495,46 @@ def provider_model(
                         return merged
         return merged
 
+    derived_search_plans = _derived_search_request_plans(static_model, static_row)
+    search_request_plan = merge_execution_rows(
+        "search_request_plan",
+        "searchRequestPlan",
+        6,
+        extras=derived_search_plans,
+    )
+    provider_value_plan = merge_execution_rows(
+        "provider_value_plan",
+        "providerValuePlan",
+        12,
+    )
+    external_identity_plan = merge_execution_rows(
+        "external_identity_plan",
+        "externalIdentityPlan",
+        4,
+    )
+    proof_search_bases = merge_execution_strings(
+        "proof_search_bases",
+        "proofSearchBases",
+        6,
+    )
+    for row in search_request_plan:
+        base = str(row.get("base") or "").strip()
+        if base and base not in proof_search_bases and len(proof_search_bases) < 6:
+            proof_search_bases.append(base)
+    proof_detail_bases = merge_execution_strings(
+        "proof_detail_bases",
+        "proofDetailBases",
+        6,
+    )
+    proof_protected_hosts = [
+        value.casefold()
+        for value in merge_execution_strings(
+            "proof_protected_hosts",
+            "proofProtectedHosts",
+            24,
+        )
+    ]
+
     return {
         "knownSite": official_site,
         "strategy": str(
@@ -495,16 +555,16 @@ def provider_model(
         "routeProofVersion": proof_version,
         "proofSearchBases": proof_search_bases,
         # PROVIDER_EXTERNAL_IDENTITY_BASE_V11
-        "proofDetailBases": execution_strings("proof_detail_bases", "proofDetailBases", 6),
+        "proofDetailBases": proof_detail_bases,
         # PROVIDER_SEARCH_REQUEST_PLAN_V14
-        "proofProtectedHosts": [value.casefold() for value in execution_strings("proof_protected_hosts", "proofProtectedHosts", 24)],
-        "searchRequestPlan": search_request_plan[:6],
+        "proofProtectedHosts": proof_protected_hosts,
+        "searchRequestPlan": search_request_plan,
         # PROVIDER_RESPONSE_VALUE_CORRELATION_V20
         # PROVIDER_CORRELATED_VALUE_PLAN_V18
         # PROVIDER_VALUE_CAUSAL_DEPTH_V20_5
-        "providerValuePlan": execution_list("provider_value_plan", "providerValuePlan")[:12],
+        "providerValuePlan": provider_value_plan,
         # PROVIDER_STRUCTURED_EXTERNAL_ID_V13
-        "externalIdentityPlan": execution_list("external_identity_plan", "externalIdentityPlan")[:4],
+        "externalIdentityPlan": external_identity_plan,
         "sourceRuntimeFamily": str(static_model.get("sourceRuntimeFamily") or "unknown"),
         "identityInput": identity_input(patch, routes, api_recipe),
         "strictIdentity": bool(patch.get("strict_identity", False)),
