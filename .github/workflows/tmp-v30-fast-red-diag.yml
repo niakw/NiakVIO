@@ -1,0 +1,128 @@
+name: TMP - V30 Fast Red Diagnostics
+
+on:
+  pull_request:
+    branches:
+      - tmp/v30-fast-red-base
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NIAKVIO_TRACE_RESPONSE_SHAPE: '1'
+  NUVIO_PROVIDER_V3_CONTEXT: workspace
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.base_ref || 'fix/provider-activation-certification-v1' }}
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Preflight
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python3 tests/provider_patch_quickjs_compat_test.py
+          python3 tests/provider_base_template_identity_test.py
+          node --check scripts/nuvio_tv_probe_tmdb_ci.cjs
+
+      - name: Materialize and probe six red providers
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, subprocess, os
+          from pathlib import Path
+          cases = [
+            ("4khdhub", {"tmdbId":"157336","mediaType":"movie","title":"Interstellar","year":2014,"category":"movie","expectedDurationMinutes":169}),
+            ("castle", {"tmdbId":"157336","mediaType":"movie","title":"Interstellar","year":2014,"category":"movie","expectedDurationMinutes":169}),
+            ("animetsu", {"tmdbId":"240411","mediaType":"tv","title":"Dan Da Dan","year":2024,"season":1,"episode":1,"category":"anime","expectedDurationMinutes":24}),
+            ("allanime", {"tmdbId":"259902","mediaType":"tv","title":"Failure Frame","year":2024,"season":1,"episode":1,"category":"anime","expectedDurationMinutes":24}),
+            ("animevost-fr", {"tmdbId":"42509","mediaType":"tv","title":"Steins;Gate","year":2011,"season":1,"episode":1,"category":"anime","expectedDurationMinutes":24}),
+            ("mallumv", {"tmdbId":"299536","mediaType":"movie","title":"Avengers: Infinity War","year":2018,"category":"movie","expectedDurationMinutes":149}),
+          ]
+          env=os.environ.copy()
+          for provider, fixture in cases:
+              print("FIELD_V30_BEGIN",provider,flush=True)
+              mat=subprocess.run(
+                  ["python3","scripts/materialize_provider_v3_one.py",provider],
+                  cwd=".",env=env,text=True,capture_output=True
+              )
+              print("FIELD_V30_MATERIALIZE",provider,"rc="+str(mat.returncode),flush=True)
+              if mat.stdout: print(mat.stdout[-4000:],flush=True)
+              if mat.stderr: print(mat.stderr[-2000:],flush=True)
+              if mat.returncode:
+                  continue
+              manifest=json.loads(Path("manifest.json").read_text())
+              row=next(r for r in manifest.get("scrapers",[]) if str(r.get("id") or "").lower()==provider)
+              bundle=str(row.get("filename") or "").replace("../","")
+              proc=subprocess.run(
+                  ["node","scripts/nuvio_tv_probe_tmdb_ci.cjs",bundle,json.dumps(fixture,separators=(",",":")),"{}"],
+                  cwd=".",env=env,text=True,capture_output=True
+              )
+              Path(f"health-output/v30-{provider}.log").write_text(proc.stdout + "\nSTDERR\n" + proc.stderr)
+              payload=None
+              for line in reversed(proc.stdout.splitlines()):
+                  if not line.lstrip().startswith("{"): continue
+                  try: x=json.loads(line)
+                  except Exception: continue
+                  if "playable_stream_count" in x:
+                      payload=x; break
+              if not payload:
+                  print("FIELD_V30_RESULT",provider,"probe_payload=missing","rc="+str(proc.returncode),flush=True)
+                  continue
+              d=payload.get("debug") or {}
+              print("FIELD_V30_RESULT",provider,
+                    "stage="+str(d.get("stage") or ""),
+                    "raw="+str(payload.get("raw_stream_count") or 0),
+                    "playable="+str(payload.get("playable_stream_count") or 0),
+                    "verified="+str(payload.get("content_verified_count") or payload.get("identity_verified_count") or 0),
+                    "rc="+str(proc.returncode),flush=True)
+              for tr in (d.get("provider_value_trace_history_v21") or [])[-24:]:
+                  stage=str(tr.get("stage") or "").replace(" ","_")[:64]
+                  detail=str(tr.get("route") or "")[:160]
+                  low=detail.lower()
+                  if "://" in detail or any(k in low for k in ["cookie=","token=","authorization=","secret=","api_key=","bearer=","enc="]):
+                      detail=""
+                  print("FIELD_V30_TRACE",provider,stage,detail,flush=True)
+              for fetch in (d.get("fetches") or [])[-20:]:
+                  try:
+                      from urllib.parse import urlsplit
+                      rq=urlsplit(str(fetch.get("url") or ""))
+                      rs=urlsplit(str(fetch.get("response_url") or fetch.get("url") or ""))
+                      if rq.hostname=="api.themoviedb.org": continue
+                      shape=fetch.get("json_shape")
+                      shape_summary=""
+                      if isinstance(shape,dict):
+                          shape_summary=json.dumps(shape,separators=(",",":"))[:900]
+                      print("FIELD_V30_FETCH",provider,
+                            str(rq.hostname or ""),str(rq.path or "/"),
+                            "->",str(rs.hostname or ""),str(rs.path or "/"),
+                            "status="+str(fetch.get("status") or 0),
+                            "shape="+shape_summary,flush=True)
+                  except Exception:
+                      pass
+              print("FIELD_V30_END",provider,flush=True)
+          PY
+
+      - name: Upload V30 diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: v30-fast-red-diag-${{ github.run_id }}
+          path: health-output/
+          retention-days: 8
+          if-no-files-found: warn
