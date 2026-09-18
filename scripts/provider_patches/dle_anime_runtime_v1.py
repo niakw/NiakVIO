@@ -93,12 +93,14 @@ WRAPPER = r'''
     for(var k in value){if(!Object.prototype.hasOwnProperty.call(value,k))continue;var low=s(k).toLowerCase();if(low===String(episode)||low==="episode-"+episode||low==="ep-"+episode||low==="e"+episode)return {language:language||"VOSTFR",value:value[k],seasonVerified:!!seasonVerified}}
     return null
   }
-  function episodeNode(data,season,episode){
-    if(!data||typeof data!=="object")return null;var langs=["vf","vostfr","VOSTFR","VF"];
-    for(var li=0;li<langs.length;li++){var lang=langs[li],branch=data[lang];if(!branch||typeof branch!=="object")continue;var scoped=explicitSeasonBranch(branch,season),hit=scoped&&episodeFrom(scoped,episode,String(lang).toLowerCase()==="vf"?"VF":"VOSTFR",true,0);if(hit)return hit}
-    var rootScoped=explicitSeasonBranch(data,season);if(rootScoped){for(var lj=0;lj<langs.length;lj++){var sl=langs[lj],sb=rootScoped[sl];if(sb&&typeof sb==="object"){var sh=episodeFrom(sb,episode,String(sl).toLowerCase()==="vf"?"VF":"VOSTFR",true,0);if(sh)return sh}}var rh=episodeFrom(rootScoped,episode,"VOSTFR",true,0);if(rh)return rh}
-    for(var l=0;l<langs.length;l++){var lg=langs[l],generic=data[lg];if(!generic||typeof generic!=="object")continue;var gh=episodeFrom(generic,episode,String(lg).toLowerCase()==="vf"?"VF":"VOSTFR",false,0);if(gh)return gh}
-    return episodeFrom(data,episode,"VOSTFR",false,0)
+  function episodeNodes(data,season,episode){
+    if(!data||typeof data!=="object")return[];var langs=["vf","vostfr","VOSTFR","VF"],out=[],seen=Object.create(null);
+    function add(hit){if(!hit)return;var key=s(hit.language)+"|";try{key+=JSON.stringify(hit.value)}catch(_e){key+=String(out.length)}if(seen[key])return;seen[key]=1;out.push(hit)}
+    for(var li=0;li<langs.length;li++){var lang=langs[li],branch=data[lang];if(!branch||typeof branch!=="object")continue;var scoped=explicitSeasonBranch(branch,season),hit=scoped&&episodeFrom(scoped,episode,String(lang).toLowerCase()==="vf"?"VF":"VOSTFR",true,0);add(hit)}
+    var rootScoped=explicitSeasonBranch(data,season);if(rootScoped){for(var lj=0;lj<langs.length;lj++){var sl=langs[lj],sb=rootScoped[sl];if(sb&&typeof sb==="object")add(episodeFrom(sb,episode,String(sl).toLowerCase()==="vf"?"VF":"VOSTFR",true,0))}add(episodeFrom(rootScoped,episode,"VOSTFR",true,0))}
+    if(out.length)return out;
+    for(var l=0;l<langs.length;l++){var lg=langs[l],generic=data[lg];if(!generic||typeof generic!=="object")continue;add(episodeFrom(generic,episode,String(lg).toLowerCase()==="vf"?"VF":"VOSTFR",false,0))}
+    add(episodeFrom(data,episode,"VOSTFR",false,0));return out
   }
   function collectUrls(value,base,out,depth){
     if(depth>5||value==null||out.length>=20)return;
@@ -110,11 +112,9 @@ WRAPPER = r'''
     q=await metadata(q);if(!q.titles.length)return [];
     var hit=null;for(var i=0;i<q.titles.length&&i<6&&!hit;i++){var title=q.titles[i],queries=Number(q.season)>1?[title+" saison "+q.season,title+" season "+q.season,title]:[title];for(var qi=0;qi<queries.length&&!hit;qi++)hit=await searchOne(queries[qi],title,q.season)}if(!hit||!hit.id)return [];
     var ep=await responseJson(c.base+"/engine/ajax/manga_episodes_api.php?id="+encodeURIComponent(hit.id),{headers:headers(hit.url||c.base+"/","application/json,text/plain,*/*")});if(!ep||!ep.data)return [];
-    var node=episodeNode(ep.data,q.season,q.episode);if(!node)return [];if(Number(q.season)>1&&!node.seasonVerified&&!hit._seasonVerified)return [];
-    var players=[];collectUrls(node.value,hit.url||c.base+"/",players,0);if(!players.length)return [];
-    var rows=[];if(typeof _crawlDirectMedia==="function")try{rows=await _crawlDirectMedia(players,hit.url||c.base+"/",3)}catch(_e){rows=[]}
-    if(!Array.isArray(rows)||!rows.length){for(var p=0;p<players.length&&p<c.maxStreams;p++)rows.push({url:players[p],headers:{Referer:hit.url||c.base+"/"}})}
-    var out=[],seen=Object.create(null);for(var z=0;z<rows.length&&out.length<c.maxStreams;z++){var r=rows[z];if(!r||!/^https?:\/\//i.test(s(r.url))||seen[r.url])continue;seen[r.url]=1;r.provider=c.provider;r.name=r.name||c.name;r.title=r.title||c.name+" | "+node.language;r.language=r.language||node.language;out.push(r)}return out
+    var nodes=episodeNodes(ep.data,q.season,q.episode);if(!nodes.length)return [];
+    var buckets=[];for(var ni=0;ni<nodes.length;ni++){var node=nodes[ni];if(Number(q.season)>1&&!node.seasonVerified&&!hit._seasonVerified)continue;var players=[];collectUrls(node.value,hit.url||c.base+"/",players,0);if(!players.length)continue;var rows=[];if(typeof _crawlDirectMedia==="function")try{rows=await _crawlDirectMedia(players,hit.url||c.base+"/",3)}catch(_e){rows=[]}if(!Array.isArray(rows)||!rows.length){for(var p=0;p<players.length&&p<c.maxStreams;p++)rows.push({url:players[p],headers:{Referer:hit.url||c.base+"/"}})}var bucket=[];for(var z=0;z<rows.length&&bucket.length<c.maxStreams;z++){var raw=rows[z];if(!raw||!/^https?:\/\//i.test(s(raw.url)))continue;var r=Object.assign({},raw);r.provider=c.provider;r.name=r.name||c.name;r.title=r.title||c.name+" | "+node.language;r.language=node.language||r.language||"";bucket.push(r)}if(bucket.length)buckets.push(bucket)}
+    var out=[],seen=Object.create(null),pos=0,advanced=true;while(out.length<c.maxStreams&&advanced){advanced=false;for(var bi=0;bi<buckets.length&&out.length<c.maxStreams;bi++){var bucket=buckets[bi];if(pos>=bucket.length)continue;advanced=true;var r=bucket[pos],key=s(r.url)+"|"+s(r.language);if(seen[key])continue;seen[key]=1;out.push(r)}pos++}return out
   }
   async function resolve(args,_ctx){var q=request(args);if(q===null)return null;if(!q||!q.tmdbId)return [];return await resolveDle(q)}
   try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:c.provider,resolve:resolve}}catch(_e){}
