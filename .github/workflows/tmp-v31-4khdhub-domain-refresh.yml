@@ -1,0 +1,125 @@
+name: TMP - V31 4KHDHub Domain Refresh
+
+on:
+  pull_request:
+    branches:
+      - tmp/v31-4khdhub-base
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NIAKVIO_TRACE_RESPONSE_SHAPE: '1'
+
+jobs:
+  targeted:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.base_ref || 'fix/provider-activation-certification-v1' }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Preflight materializer and Domain Refresh
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python3 -m py_compile scripts/materialize_provider_v3_all.py scripts/domain_refresh_transaction_v2.py scripts/domain_refresh_priority_wrapper.py
+          python3 tests/materializer_authority_monotonic_v25_test.py
+          python3 tests/domain_refresh_priority_wrapper_test.py
+          python3 tests/domain_refresh_transaction_guard_test.py
+          cp provider-overrides.json health-output/provider-overrides-before.json
+          cp provider-domain-history.json health-output/provider-domain-history-before.json
+
+      - name: Apply targeted Domain Refresh
+        run: |
+          set -euo pipefail
+          python3 scripts/domain_refresh_priority_wrapper.py             --mode quick             --provider 4khdhub             --include-disabled             --workers 1             --timeout 8             --apply             --output health-output/v31-domain-report.json             --changes-output health-output/v31-domain-changes.json
+
+      - name: Reconcile normal publication metadata
+        run: |
+          set -euo pipefail
+          python3 tests/provider_domain_metadata_reconcile_test.py
+          python3 scripts/reconcile_provider_domain_metadata.py --rebuild
+          python3 scripts/finalize_provider_v3_minimizer.py
+          python3 scripts/finalize_provider_v3_minimizer.py --check
+
+      - name: Assert 4KHDHub authority
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re
+          from pathlib import Path
+          o=json.loads(Path('provider-overrides.json').read_text())
+          p=o['provider_patches']['4khdhub']
+          assert p.get('official_site','').rstrip('/') == 'https://4khdhub.one', p.get('official_site')
+          blocked={'hdhub4u.ms','hdhub4u.bi'}
+          subs=p.get('domain_substitutions') or {}
+          assert not any(str(v).lower() in blocked for v in subs.values()), subs
+          m=json.loads(Path('manifest.json').read_text())
+          row=next(x for x in m['scrapers'] if x['id'].lower()=='4khdhub')
+          fp=Path(str(row['filename']).replace('../',''))
+          text=fp.read_text()
+          mm=re.search(r'(?:const|let|var)\s+NIAKVIO_PROVIDER_MODEL\s*=\s*Object\.freeze\((\{.*?\})\);',text,re.S)
+          model=json.loads(mm.group(1))
+          print('FIELD_V31_MODEL',json.dumps({
+            'officialSite':model.get('officialSite'),
+            'officialHub':model.get('officialHub'),
+            'origins':model.get('origins'),
+            'domainSubstitutions':model.get('domainSubstitutions'),
+            'file':str(fp),
+          },separators=(',',':')))
+          assert model.get('officialSite','').rstrip('/') == 'https://4khdhub.one'
+          PY
+
+      - name: Certify 4KHDHub after normal Domain Refresh
+        run: |
+          set -euo pipefail
+          python3 scripts/certify_provider_playable_lanes.py             --manifest manifest.json             --include-disabled             --provider 4khdhub             --candidate-limit 6             --timeout 30             --workers 1             --seed "v31-4khdhub-${GITHUB_RUN_ID}"             --output health-output/v31-certification.json
+
+      - name: Summarize V31
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          for name in ('v31-domain-report.json','v31-domain-changes.json','v31-certification.json'):
+              p=Path('health-output')/name
+              if not p.exists():
+                  continue
+              j=json.loads(p.read_text())
+              if name=='v31-certification.json':
+                  for row in j.get('providers') or []:
+                      print('FIELD_V31_RESULT',row.get('providerId'),
+                            'green='+','.join(row.get('certifiedTypes') or []),
+                            'full='+str(bool(row.get('certified'))).lower())
+                      for lane,v in (row.get('lanes') or {}).items():
+                          for a in (v or {}).get('attempts') or []:
+                              print('FIELD_V31_ATTEMPT',lane,a.get('fixtureSlug'),
+                                    'stage='+str(a.get('debugStage') or ''),
+                                    'trace='+json.dumps(a.get('networkTrace') or [],separators=(',',':'))[:5000])
+              else:
+                  print('FIELD_V31_'+name.upper().replace('.','_'),json.dumps(j,separators=(',',':'))[:8000])
+          PY
+
+      - name: Upload V31 evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: v31-4khdhub-${{ github.run_id }}
+          path: health-output/
+          retention-days: 8
+          if-no-files-found: warn
