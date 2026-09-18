@@ -83,4 +83,54 @@ rows = refresh._redirect_candidates_from_source_observations(redirect_cfg, redir
 assert rows and rows[0]["url"] == "https://papadustream-latest.watch", rows
 assert rows[0]["source_redirect"] is True, rows
 
+
+# Regression: some providers expose their official site as the address hub itself.
+# The host remains a valid terminal only when the current registry explicitly
+# declares it as direct/allowed terminal authority.
+same_host_cfg = {
+    "hub": "https://4khdhub.one/",
+    "resolver": "alias_outbound",
+    "aliases": ["4khdhub"],
+    "terminal_aliases": ["4khdhub"],
+    "direct_candidates": ["https://4khdhub.one/"],
+    "allowed_terminal_hosts": ["4khdhub.one"],
+    "blocked_hosts": ["hdhub4u.ms", "hdhub4u.bi"],
+    "sources": [
+        {"type": "hub", "url": "https://4khdhub.one/", "priority": 120},
+    ],
+}
+candidate = {
+    "url": "https://4khdhub.one/",
+    "source_type": "hub",
+    "label": "4KHDHub",
+}
+assert refresh._safe_authoritative_candidate("4khdhub", same_host_cfg, candidate) is True
+assert resolver.candidate_score(
+    "4khdhub",
+    same_host_cfg,
+    "https://4khdhub.one/",
+    "4KHDHub",
+    0,
+    1,
+) >= 0
+
+# Without explicit terminal authority, a discovery-only hub host remains rejected.
+source_only_cfg = {
+    "hub": "https://hub.example/",
+    "resolver": "official_outbound",
+    "aliases": ["provider"],
+    "sources": [{"type": "hub", "url": "https://hub.example/", "priority": 100}],
+}
+source_only = {"url": "https://hub.example/", "source_type": "hub", "label": "Provider"}
+assert refresh._safe_authoritative_candidate("provider", source_only_cfg, source_only) is False
+assert resolver.candidate_score(
+    "provider",
+    source_only_cfg,
+    "https://hub.example/",
+    "Provider",
+    0,
+    1,
+) < 0
+
+print("authoritative hub domain refresh explicit-terminal co-location contract passed")
 print("authoritative hub domain refresh skips terminal validation and accepts current hub destination")
