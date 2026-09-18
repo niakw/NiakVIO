@@ -1891,4 +1891,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The observed V30 terminal path has exactly the signing shape `/.../<32hex>/<32hex>/master.m3u8`, making missing CDN signing a concrete explanation for the 403.
 - Commit **b03b315b9294b4487ee22b3fa5f5fc4c48f580cf** adds async `signMegaMedia()`: WebCrypto HMAC-SHA256 primary, CryptoJS fallback, 90-second payload, URL token append without QuickJS-forbidden URLSearchParams mutation. `finalSource()` now signs the normalized decrypted media before returning it.
 - Commit **bbead1b539c956f2d5d2b9e0f0b71792a8b441b9** adds the corresponding contract. Next action is a single-provider AniKoto reproof; do not count a gain until terminal media is actually playable.
+### 2026-09-18 — AniKoto signed-terminal CI classification checkpoint
+
+- V30b run **35358058398** proves AniKoto reaches a decrypted, signed terminal HLS URL. Provider trace is `anikoto_megaplay_crypto webcrypto=1` -> `anikoto_megaplay_sign webcrypto=1` -> `anikoto_megaplay_terminal direct=1;context=1`.
+- The final request to `fetch.nexabloom.top/.../<32hex>/<32hex>/master.m3u8` still returns HTTP **403** from the GitHub/Node environment after successful AES decrypt, HMAC signing and terminal-context propagation.
+- Do **not** keep guessing crypto/header changes from this point. Provider-side extraction is proven through terminal URL derivation; remaining Node failure is an external terminal-gate/runtime-environment case until Native/manual evidence says otherwise. Per NiakVIO acceptance policy, Node-negative alone must not disable or erase a provider with stronger Native/manual evidence.
+- AniKoto remains red in the exact Node activation KPI for now, but its repair queue is reclassified from catalogue/decrypt bug to **terminal environment/Native fallback reconciliation**.
 
