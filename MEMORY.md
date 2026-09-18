@@ -1899,3 +1899,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - All current-scope migrations, ProviderBase v11 Telegram behavior validation and source-plan migrations passed. The run stopped before route recovery only because the newly added `provider_telegram_discovery_only_contract_test.py` imported the migration script without first putting `scripts/` on `sys.path`, causing a test-only `ModuleNotFoundError` for an existing sibling module.
 - Retry 24 fixes only that test harness import path and resumes the same regression-aware Repair. Do not downgrade provider status from retry 23; no provider recovery network phase executed.
 
+## 2026-09-18 — Repair retry 24 blocked by stale V33 label, not behavior
+
+- Retry 24 passed the repaired Telegram contract and all migrations/tests through latest-request cancellation. It then stopped before route recovery because `provider_native_abort_ignorant_cancellation_test.py` required the literal media revision `tmdb-data-contract-launch-gate-v33-25s-isolated-failfast`, while current Core is V34 (`tmdb-data-contract-launch-gate-v34-anime-pre-network-semantic-gate`).
+- The same test already executes the real abort-ignorant native-fetch cancellation scenario. It now accepts revision >=33 and continues to require the actual cancellation/fail-fast functions plus the Node behavioral proof. No runtime behavior is weakened.
+- Retry 25 resumes the same regression-aware Repair; retry 24 never reached `recover_provider_routes_from_upstreams.py`, so it provides no new provider-health verdict.
+

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import re
 import subprocess
 import tempfile
 from pathlib import Path
@@ -26,11 +27,14 @@ async function getStreams(tmdbId, mediaType) {
 module.exports = { getStreams };
 '''
 
-# V33 keeps V31/V32 latest-request cancellation, restores the 25 s provider
-# budget, and adds isolated per-fetch fail-fast without allowing stale fallback.
+# V33 introduced the required contract; later revisions (currently V34) may
+# extend semantic gating without invalidating cancellation. Pin behavior, not an
+# obsolete revision label.
 source = PATCH.read_text(encoding="utf-8")
+revision = re.search(r'tmdb-data-contract-launch-gate-v(\\d+)-[^"]+', source)
+assert revision, "media contract revision missing"
+assert int(revision.group(1)) >= 33, revision.group(0)
 for needle in (
-    "tmdb-data-contract-launch-gate-v33-25s-isolated-failfast",
     "function requestAbortPromise(controller,requestToken)",
     "function invokeNativeWithBudget(native,self,args,requestController,requestToken)",
     "Promise.race([base.apply(this,args),timeoutPromise,abortPromise])",
@@ -89,4 +93,4 @@ with tempfile.TemporaryDirectory() as tmp:
     test.write_text(runner, encoding="utf-8")
     subprocess.run(["node", str(test), str(provider)], check=True, timeout=5)
 
-print("provider native abort-ignorant cancellation contract passed on media fail-fast v33")
+print("provider native abort-ignorant cancellation contract passed on media contract", revision.group(0))
