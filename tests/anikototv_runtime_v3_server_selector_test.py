@@ -18,3 +18,7 @@ m=re.search(r'/stream/s-(\d+)/', sample, re.I)
 assert m and m.group(1)=='2'
 
 print('AniKotoTV v3 MegaPlay server-selector contract passed')
+assert 'g.crypto&&g.crypto.subtle' in src
+assert '__crypto_aes_decrypt_raw' in src
+assert 'await finalSource(sources.body)' in src
+assert 'anikoto_megaplay_terminal' in src
