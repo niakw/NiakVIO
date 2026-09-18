@@ -407,6 +407,8 @@ def main() -> int:
     active = [row for row in results if row.get("enabled")]
     certified_active = [row for row in active if row.get("certified")]
     certified_selected = [row for row in results if row.get("certified")]
+    green_active = [row for row in active if row.get("certifiedTypes")]
+    green_selected = [row for row in results if row.get("certifiedTypes")]
     full_manifest_census = (
         not provider_filter
         and bool(args.include_disabled)
@@ -426,8 +428,10 @@ def main() -> int:
         "providerCount": len(results),
         "activeProviderCount": len(active),
         "certifiedProviderCount": len(certified_selected),
+        "greenProviderCount": len(green_selected),
         "uncertifiedProviderCount": len(results) - len(certified_selected),
         "certifiedActiveProviderCount": len(certified_active),
+        "greenActiveProviderCount": len(green_active),
         "uncertifiedActiveProviderCount": len(active) - len(certified_active),
         "fullManifestCensus": full_manifest_census,
         "providers": results,
@@ -438,13 +442,14 @@ def main() -> int:
         "FIELD_PROVIDER_PLAYABLE_CERTIFICATION "
         f"selected={len(results)} manifest={manifest_provider_count} "
         f"active_selected={len(active)} active_manifest={manifest_active_provider_count} "
+        f"green_selected={len(green_selected)} green_active={len(green_active)} "
         f"certified_selected={len(certified_selected)} certified_active={len(certified_active)} "
         f"full_manifest={str(full_manifest_census).lower()}"
     )
     if full_manifest_census:
         print(
             "FIELD_PROVIDER_MANIFEST_CERTIFICATION "
-            f"certified={len(certified_selected)} total={manifest_provider_count}"
+            f"green={len(green_selected)} full={len(certified_selected)} total={manifest_provider_count}"
         )
     else:
         print(
