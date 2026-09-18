@@ -83,4 +83,45 @@ rows = refresh._redirect_candidates_from_source_observations(redirect_cfg, redir
 assert rows and rows[0]["url"] == "https://papadustream-latest.watch", rows
 assert rows[0]["source_redirect"] is True, rows
 
+
+
+# Regression: a registry-pinned current direct terminal must outrank a stale hub
+# card, but only when the provider opts into explicit_current authority.
+pinned_hub = "https://kehflix.example.wiki/"
+pinned_current = "https://kehflix.example.com"
+pinned_stale = "https://kehflix.example.lol"
+pinned_cfg = {
+    "hub": pinned_hub,
+    "direct": pinned_current + "/",
+    "direct_authority": "explicit_current",
+    "allowed_terminal_hosts": ["kehflix.example.com"],
+    "sources": [{"type": "hub", "url": pinned_hub, "priority": 120}],
+}
+calls = []
+original_fetch = resolver.fetch
+
+def fake_pinned_fetch(url: str, timeout: float = 10.0):
+    calls.append(url)
+    if url == pinned_hub:
+        return (
+            200,
+            pinned_hub,
+            f'<html><body><a href="{pinned_stale}/">old card</a></body></html>',
+            {"Content-Type": "text/html; charset=UTF-8"},
+        )
+    raise AssertionError(f"terminal must not be fetched during pinned refresh: {url}")
+
+try:
+    resolver.fetch = fake_pinned_fetch
+    pinned = refresh.resolve_authoritative_hub_domain(
+        "kehflix-demo", pinned_cfg, {}, "quick", 0.2
+    )
+finally:
+    resolver.fetch = original_fetch
+
+assert calls == [pinned_hub], calls
+assert pinned["official_site"] == pinned_current, pinned
+assert pinned["reason"] == "registry_explicit_current_terminal_authority", pinned
+assert pinned["site_candidates"][0]["registry_explicit_current"] is True, pinned
+
 print("authoritative hub domain refresh skips terminal validation and accepts current hub destination")
