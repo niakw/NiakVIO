@@ -103,6 +103,46 @@ def recovery_rows(data: dict[str, Any]) -> dict[str, dict[str, Any]]:
     }
 
 
+def apply_current_stream_proof(
+    provider: str,
+    required: set[str],
+    current: set[str],
+    lane_statuses: dict[str, dict[str, set[str]]],
+    proof: dict[str, Any],
+) -> set[str]:
+    """Apply fresh stream evidence lane-by-lane, with legacy global fallback."""
+    out = set(current)
+    lane_proofs = proof.get("laneProofs") if isinstance(proof.get("laneProofs"), dict) else {}
+    if lane_proofs:
+        for semantic in required:
+            raw = lane_proofs.get(semantic)
+            if not isinstance(raw, dict):
+                continue
+            positive = raw.get("streamPositive")
+            if positive is True:
+                out.add(semantic)
+                lane_statuses[provider][semantic].discard("fresh_identity_safe_positive_required")
+                lane_statuses[provider][semantic].add("playable_verified")
+                lane_statuses[provider][semantic].add("fresh_stream_positive")
+            elif positive is False:
+                out.discard(semantic)
+                lane_statuses[provider][semantic].discard("playable_verified")
+                lane_statuses[provider][semantic].discard("fresh_stream_positive")
+                lane_statuses[provider][semantic].add("fresh_identity_safe_positive_required")
+        return out
+
+    if (
+        proof.get("requiresFreshIdentitySafePositive") is True
+        and proof.get("streamPositive") is False
+    ):
+        out.clear()
+        for semantic in required:
+            lane_statuses[provider][semantic].discard("playable_verified")
+            lane_statuses[provider][semantic].discard("fresh_stream_positive")
+            lane_statuses[provider][semantic].add("fresh_identity_safe_positive_required")
+    return out
+
+
 def exact_locked_lanes(
     locks: dict[str, Any],
     manifest_rows: dict[str, dict[str, Any]],
@@ -195,19 +235,15 @@ def main() -> int:
 
         required = set(declared_lanes(manifest_row))
         current = set(verified.get(provider) or set())
-        # NIAKVIO_FRESH_STREAM_PROOF_GUARD_V1
-        # Explicit fresh invalidation is newer authority than historical quick-yield.
-        # Keep old rows as evidence, but they cannot restore a proven lane until
-        # a fresh identity-safe positive replaces current_stream_proof.
+        # NIAKVIO_FRESH_STREAM_PROOF_GUARD_V2
         current_stream_proof = patch.get("current_stream_proof") if isinstance(patch.get("current_stream_proof"), dict) else {}
-        if (
-            current_stream_proof.get("requiresFreshIdentitySafePositive") is True
-            and current_stream_proof.get("streamPositive") is False
-        ):
-            current = set()
-            for semantic in required:
-                lane_statuses[provider][semantic].discard("playable_verified")
-                lane_statuses[provider][semantic].add("fresh_identity_safe_positive_required")
+        current = apply_current_stream_proof(
+            provider,
+            required,
+            current,
+            lane_statuses,
+            current_stream_proof,
+        )
         protected = set(locked.get(provider) or set())
         proven = current | protected
         missing = sorted(required - proven)

@@ -91,6 +91,14 @@ assert 'route_state = "repair"' in finalizer
 assert 'route_state = "off"' in finalizer
 assert '"activeBrokenProviderAllowed": True' in finalizer
 assert '"forceAllProvidersEnabled": False' in finalizer
+for token in (
+    "def apply_current_stream_proof(",
+    'proof.get("laneProofs")',
+    'positive is True',
+    'positive is False',
+    '"fresh_stream_positive"',
+):
+    assert token in finalizer, f"fresh per-lane stream proof contract lost: {token}"
 
 for token in (
     '"core/"',

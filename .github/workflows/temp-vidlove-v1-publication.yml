@@ -1,5 +1,5 @@
 name: TEMP - Publish VidLove V1 and Kehflix Projection
-# retry: fan out VidLove backend selectors
+# retry: validate moviebox partial lane proof
 
 on:
   push:
@@ -183,13 +183,13 @@ jobs:
           python scripts/sync_manifest_projection_rows.py --check
           git diff --check
 
-      - name: Fan out exact VidLove backend selectors
+      - name: Validate pinned moviebox lane evidence across fixtures
         shell: bash
         run: |
           set -euo pipefail
           test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python tests/fresh_stream_lane_proof_test.py
           python - <<'PY'
-          import copy
           import json
           import pathlib
           import sys
@@ -197,69 +197,84 @@ jobs:
           root=pathlib.Path('.').resolve()
           sys.path.insert(0,str(root/'scripts'))
           import materialize_provider_v3_one as one
-          import run_provider_upstream_parity as parity
           import run_provider_upstream_parity_v3 as v3
 
           overrides_path=root/'provider-overrides.json'
-          base_overrides=json.loads(overrides_path.read_text(encoding='utf-8'))
-          sources=['moviebox','ipcloud','tcloud','vidapi','vixsrc','1embed','xpass','vidrift','lookmovie','vidnest']
+          overrides=json.loads(overrides_path.read_text(encoding='utf-8'))
+          patch=overrides['provider_patches']['vidlove']
+          recipe=dict(patch['api_recipe'])
+          recipe['directRoute']='/{media}?id={tmdbId}&mode=json&sources=moviebox&hevc=1&season={season}&episode={episode}'
+          recipe['sources']=[]
+          patch['api_recipe']=recipe
+          overrides_path.write_text(json.dumps(overrides,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+
+          report=one.materialize_one('vidlove')
+          path=root/str(report['file'])
           fixtures=[
               ('movie',{'slug':'interstellar-2014','tmdbId':'157336','mediaType':'movie','category':'movie','title':'Interstellar','year':2014,'expectedDurationMinutes':169}),
+              ('movie',{'slug':'the-batman-2022','tmdbId':'414906','mediaType':'movie','category':'movie','title':'The Batman','year':2022}),
+              ('movie',{'slug':'django-unchained-2012','tmdbId':'68718','mediaType':'movie','category':'movie','title':'Django Unchained','year':2012}),
+              ('movie',{'slug':'the-avengers-2012','tmdbId':'24428','mediaType':'movie','category':'movie','title':'The Avengers','year':2012}),
               ('tv',{'slug':'house-of-the-dragon-2022-s01e01','tmdbId':'94997','mediaType':'tv','category':'tv','title':'House of the Dragon','year':2022,'season':1,'episode':1}),
+              ('tv',{'slug':'silo-2023-s01e01','tmdbId':'125988','mediaType':'tv','category':'tv','title':'Silo','year':2023,'season':1,'episode':1}),
+              ('tv',{'slug':'peaky-blinders-2013-s01e01','tmdbId':'60574','mediaType':'tv','category':'tv','title':'Peaky Blinders','year':2013,'season':1,'episode':1}),
+              ('tv',{'slug':'fallout-2024-s01e01','tmdbId':'106379','mediaType':'tv','category':'tv','title':'Fallout','year':2024,'season':1,'episode':1}),
           ]
           rows=[]
-          for source in sources:
-              current=copy.deepcopy(base_overrides)
-              patch=current['provider_patches']['vidlove']
-              recipe=copy.deepcopy(patch['api_recipe'])
-              recipe['directRoute']=f"/{{media}}?id={{tmdbId}}&mode=json&sources={source}&hevc=1&season={{season}}&episode={{episode}}"
-              recipe['sources']=[]
-              patch['api_recipe']=recipe
-              overrides_path.write_text(json.dumps(current,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          for lane,fx in fixtures:
+              result=v3._run_verified(path,v3.fixture_payload(fx,lane,upstream=False),25)
+              row={
+                  'lane':lane,
+                  'fixture':fx['slug'],
+                  'streams':int(result.get('stream_count') or 0),
+                  'candidateStreams':int(result.get('candidate_stream_count') or 0),
+                  'terminal':bool(result.get('terminal_verified')),
+                  'reasons':result.get('terminal_reasons') or [],
+                  'statuses':result.get('http_statuses') or [],
+                  'error':result.get('error_class'),
+              }
+              rows.append(row)
+              print('VIDLOVE_MOVIEBOX_PROOF '+json.dumps(row,sort_keys=True))
 
-              report=one.materialize_one('vidlove')
-              path=root/str(report['file'])
-              lane_rows=[]
-              for lane,fx in fixtures:
-                  result=v3._run_verified(path,v3.fixture_payload(fx,lane,upstream=False),25)
-                  row={
-                      'source':source,
-                      'lane':lane,
-                      'fixture':fx['slug'],
-                      'streams':int(result.get('stream_count') or 0),
-                      'candidateStreams':int(result.get('candidate_stream_count') or 0),
-                      'terminal':bool(result.get('terminal_verified')),
-                      'reasons':result.get('terminal_reasons') or [],
-                      'statuses':result.get('http_statuses') or [],
-                      'error':result.get('error_class'),
-                  }
-                  lane_rows.append(row)
-                  rows.append(row)
-                  print('VIDLOVE_SOURCE_PROOF '+json.dumps(row,sort_keys=True))
-              if all(r['terminal'] and r['streams']>0 for r in lane_rows):
-                  print('VIDLOVE_SOURCE_FULL '+source)
-
-          overrides_path.write_text(json.dumps(base_overrides,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-          summary={
-              'schemaVersion':1,
-              'sources':sources,
-              'rows':rows,
-              'fullSources':[
-                  source for source in sources
-                  if all(
-                      any(r['source']==source and r['lane']==lane and r['terminal'] and r['streams']>0 for r in rows)
-                      for lane in ('movie','tv')
-                  )
-              ],
-              'movieSources':[source for source in sources if any(r['source']==source and r['lane']=='movie' and r['terminal'] and r['streams']>0 for r in rows)],
-              'tvSources':[source for source in sources if any(r['source']==source and r['lane']=='tv' and r['terminal'] and r['streams']>0 for r in rows)],
+          positives={
+              lane:sum(1 for row in rows if row['lane']==lane and row['terminal'] and row['streams']>0)
+              for lane in ('movie','tv')
           }
+          if positives['tv'] < 1:
+              raise SystemExit('moviebox TV lane lost fresh terminal proof')
+
+          overrides=json.loads(overrides_path.read_text(encoding='utf-8'))
+          patch=overrides['provider_patches']['vidlove']
+          patch['current_stream_proof']={
+              'schemaVersion':2,
+              'authority':'vidlove-moviebox-multifixture-current',
+              'testedSource':'moviebox',
+              'laneProofs':{
+                  'movie':{
+                      'streamPositive':positives['movie']>0,
+                      'testedFixtures':sum(1 for row in rows if row['lane']=='movie'),
+                      'terminalPositiveFixtures':positives['movie'],
+                  },
+                  'tv':{
+                      'streamPositive':positives['tv']>0,
+                      'testedFixtures':sum(1 for row in rows if row['lane']=='tv'),
+                      'terminalPositiveFixtures':positives['tv'],
+                  },
+              },
+              'requiresFreshIdentitySafePositive':True,
+          }
+          overrides_path.write_text(json.dumps(overrides,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+
+          import finalize_provider_repair_disposition_v1_impl as finalizer
+          finalizer.main()
+          report=one.materialize_one('vidlove')
+
           pathlib.Path('health-output').mkdir(exist_ok=True)
-          pathlib.Path('health-output/vidlove-source-fanout.json').write_text(
-              json.dumps(summary,ensure_ascii=False,indent=2)+'\n',encoding='utf-8'
+          pathlib.Path('health-output/vidlove-moviebox-multifixture.json').write_text(
+              json.dumps({'schemaVersion':2,'positives':positives,'rows':rows,'file':report['file']},ensure_ascii=False,indent=2)+'\n',
+              encoding='utf-8'
           )
-          print('VIDLOVE_SOURCE_FANOUT '+json.dumps(summary,sort_keys=True))
-          raise SystemExit('diagnostic-only: backend fanout complete; no provider publication')
+          print('VIDLOVE_MOVIEBOX_MULTIFIXTURE '+json.dumps({'positives':positives,'file':report['file']},sort_keys=True))
           PY
 
       - name: Record durable checkpoint and prepare Domain Refresh handoff

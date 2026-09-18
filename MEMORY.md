@@ -1817,3 +1817,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The next diagnostic fans out the 10 structured VidLove backends already present in historical candidate knowledge: moviebox, ipcloud, tcloud, vidapi, vixsrc, 1embed, xpass, vidrift, lookmovie, vidnest. Each is tested through a freshly materialized canonical VidLove bundle on one movie and one TV fixture with terminal-media validation.
 - Publication remains fail-closed. If no backend is terminal-positive, current V1 executable proof is stale and VidLove must be requalified to `repair`; Kehflix publication must then be decoupled from VidLove drift instead of remaining blocked by it.
 
+## 2026-09-18 — VidLove fan-out proves partial TV lane
+
+- Backend fan-out run 35393879296 completed on SHA bb1b41073eb41e5a66c0d64f8e0af333a5f6aca1 after canonical materialization/static/minimizer gates passed.
+- Across 10 structured backends, no source was FULL movie+tv and no movie source was terminal-positive on Interstellar. moviebox was the only positive backend: House of the Dragon S01E01 returned 1 terminal stream with hls_segment_media. vidapi produced HLS candidates on both lanes but failed terminal validation as hls_segment_non_media; the remaining sources returned zero/404-style results.
+- VidLove must therefore be represented as partial evidence, not stale FULL and not blanket ZERO. A generic fresh-proof V2 is being added so fresh negative movie evidence cannot erase an independently fresh positive TV lane; legacy AllWish global invalidation remains supported.
+- Next runner pins moviebox and probes four movie + four TV fixtures. Publication remains fail-closed until the TV lane reproduces and the final structured/materialized bundle passes static/minimizer gates.
+
