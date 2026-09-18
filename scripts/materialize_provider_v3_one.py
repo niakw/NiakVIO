@@ -65,14 +65,12 @@ def reconcile_provider_authority(
     static_knowledge: dict[str, object],
     provider_id: str,
 ) -> list[str]:
-    """Project current canonical Provider DATA over stale historical overrides.
+    """Reconcile static fallback knowledge without overriding published authority.
 
-    ``automation/provider-v3-static-knowledge.json`` is enriched immediately before
-    the strict sequential loop and is therefore the current canonical DATA for the
-    provider being materialized. ``provider-overrides.json`` can still retain useful
-    historical aliases and migration evidence, but an old endpoint/recipe must not
-    override that current model or redirect one of its canonical hosts away from the
-    current terminal.
+    Domain Refresh/provider-overrides owns current site/hub/API address authority.
+    Static knowledge is useful as a missing-field fallback and historical evidence,
+    but may be older than a completed Domain Refresh transaction and must therefore
+    never roll a published terminal/recipe base backward.
 
     Only provider N is touched here. This preserves the strict N -> proof -> N+1
     contract instead of pre-mutating future providers.
@@ -90,24 +88,30 @@ def reconcile_provider_authority(
 
     changed = False
 
-    def assign(key: str, value: object) -> None:
+    def fill_if_missing(key: str, value: object) -> None:
+        """Static knowledge is fallback only; Domain Refresh/provider DATA wins."""
         nonlocal changed
+        if str(patch.get(key) or "").strip():
+            return
         text = str(value or "").strip()
         if not text:
             return
-        if patch.get(key) != text:
-            patch[key] = text
-            changed = True
+        patch[key] = text
+        changed = True
 
-    assign("official_site", model.get("officialSite") or model.get("knownSite"))
-    assign("official_hub", model.get("officialHub"))
-    assign("official_api", model.get("officialApi"))
+    # MATERIALIZER_DOMAIN_REFRESH_AUTHORITY_V29
+    # provider-overrides address fields are publication authority owned by Domain
+    # Refresh. Static knowledge can seed a missing field but must never roll a
+    # published current terminal/hub/API back to an older observation.
+    fill_if_missing("official_site", model.get("officialSite") or model.get("knownSite"))
+    fill_if_missing("official_hub", model.get("officialHub"))
+    fill_if_missing("official_api", model.get("officialApi"))
 
     fixed_api = str(model.get("fixedApi") or "").strip()
     if fixed_api:
         fixed = patch.get("fixed_endpoint")
         fixed = copy.deepcopy(fixed) if isinstance(fixed, dict) else {}
-        if fixed.get("api") != fixed_api:
+        if not str(fixed.get("api") or "").strip():
             fixed["api"] = fixed_api
             patch["fixed_endpoint"] = fixed
             changed = True
@@ -134,9 +138,9 @@ def reconcile_provider_authority(
             or model.get("knownSite")
             or ""
         ).strip()
-        if canonical_base and reconciled_recipe.get("base") != canonical_base:
+        if canonical_base and not str(reconciled_recipe.get("base") or "").strip():
             reconciled_recipe["base"] = canonical_base
-        if canonical_referer and reconciled_recipe.get("referer") != canonical_referer:
+        if canonical_referer and not str(reconciled_recipe.get("referer") or "").strip():
             reconciled_recipe["referer"] = canonical_referer
         if reconciled_recipe != patch_recipe:
             patch["api_recipe"] = reconciled_recipe
