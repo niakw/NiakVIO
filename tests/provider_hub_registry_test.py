@@ -540,3 +540,38 @@ assert unsafe_history['demo']['current']['url'] == 'https://demo.example'
 assert unsafe_history['demo']['current']['source_type'] == 'curated_direct'
 
 print('unsafe terminal payloads must never become provider origins')
+
+
+# HTML-card authority regression from real Kehflix hub markup: the resolver must
+# use nearby card semantics, not only the anchor text "Entrer".
+kehflix_html = r'''
+<div class="glass edge-light rounded-panel overflow-hidden">
+  <div class="flex-1 p-6 sm:p-8">
+    <span>Accès principal</span>
+    <p>kehflix.com</p>
+    <p>Adresse vérifiée · en ligne</p>
+    <p>Redirection en pause — entre quand tu veux.</p>
+  </div>
+  <a href="https://kehflix.com" class="btn-primary">Entrer</a>
+</div>
+<div class="rounded-panel">
+  <span>Backup miroir</span>
+  <a href="https://kehflix.lol">Entrer</a>
+</div>
+'''
+kehflix_cfg = {
+    'hub': 'https://kehflix.wiki/',
+    'aliases': ['kehflix'],
+    'resolver': 'official_outbound',
+    'official_link_labels': ['Entrer', 'Accès principal', 'Adresse vérifiée'],
+    'allowed_terminal_hosts': ['kehflix.com', 'kehflix.lol'],
+    'sources': [{'type': 'hub', 'url': 'https://kehflix.wiki/', 'priority': 120}],
+}
+kehflix_candidates, kehflix_selected = resolver.choose_official(
+    'kehflix', kehflix_cfg, 'https://kehflix.wiki/', kehflix_html
+)
+assert kehflix_selected == 'https://kehflix.com', kehflix_candidates
+assert kehflix_candidates[0]['url'] == 'https://kehflix.com', kehflix_candidates
+assert 'accesprincipal' in resolver.compact(kehflix_candidates[0]['label'])
+assert 'adresseverifiee' in resolver.compact(kehflix_candidates[0]['label'])
+assert int(kehflix_candidates[0]['score']) > int(kehflix_candidates[-1]['score'])
