@@ -14,7 +14,7 @@ WRAPPER = r'''
   "use strict";
   try{
     if(typeof _spv4GetStreams!=="function"||_spv4GetStreams.__niakvioAllAnimeCurrentV1)return;
-    var original=_spv4GetStreams,BASE="https://ww2.aniwatch.fit",UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36";
+    var original=_spv4GetStreams,BASE=(function(){try{return new URL(String(NIAKVIO_PROVIDER_MODEL.officialSite||NIAKVIO_PROVIDER_MODEL.knownSite||"")).origin}catch(_e){return""}})(),UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36";
     function headers(ref){return {"User-Agent":UA,"Accept":"text/html,application/xhtml+xml,text/plain,*/*","Accept-Language":"en-US,en;q=0.9","Referer":ref||BASE+"/"};}
     function clean(v){var src=String(v==null?"":v),out="",inTag=false;for(var i=0;i<src.length;i++){var ch=src.charAt(i);if(ch==="<"){inTag=true;out+=" ";continue}if(ch===">"){inTag=false;continue}if(!inTag)out+=ch}return out.replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;/gi,"'").replace(/\s+/g," ").trim();}
     function project(row){
@@ -66,6 +66,7 @@ WRAPPER = r'''
       return out;
     }
     async function current(tmdbId,mediaType,season,episode){
+      if(!BASE)return [];
       var lane=String(mediaType||"").toLowerCase();if(lane!=="anime"&&lane!=="tv")return [];
       var ep=Math.floor(Number(episode)||0);if(ep<=0)return [];
       var meta=await metadata(tmdbId,mediaType);if(!meta||!meta.title)return [];
