@@ -1,11 +1,11 @@
 {
   "schemaVersion": 3,
-  "requestedAt": "2026-09-18T23:05:00+02:00",
-  "retry": 19,
+  "requestedAt": "2026-09-18T23:12:00+02:00",
+  "retry": 20,
   "mode": "repair",
-  "scope": "current-disposition-unresolved-only-scalability-verification",
+  "scope": "current-disposition-unresolved-only-fresh-evidence-verification",
   "targetProviders": [],
-  "goal": "Verify canonical Repair V6 targets only current repair/unknown debt, never current ON providers, while preserving partial-lane repair eligibility and portfolio non-regression. This is the scaling gate before expanding the catalogue toward ~300 providers.",
+  "goal": "Verify canonical Repair V6 on current unresolved debt only, after clearing stale tracked run artifacts. Current ON providers must have zero overlap with the fresh recovery report and existing positive lanes must survive portfolio/non-regression gates.",
   "branch": "main",
   "publication": false
 }

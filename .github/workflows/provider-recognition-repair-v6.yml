@@ -88,6 +88,9 @@ jobs:
           ALLOW_LOSS: ${{ inputs.allow_upstream_positive_loss || 'false' }}
         run: |
           set -euo pipefail
+          # Current-run evidence only. Never let a skipped/failed Repair read
+          # tracked artifacts produced by an earlier run.
+          rm -f             automation/provider-route-recovery-v6-targeted.json             automation/provider-repair-v6-summary.json             automation/provider-repair-portfolio-candidate.json             automation/provider-repair-portfolio-retry.json             automation/provider-repair-portfolio-losses.json
           if [ "${{ github.event_name }}" = "schedule" ]; then
             MODE=learn
           elif [ "${{ github.event_name }}" = "push" ]; then

@@ -27,7 +27,7 @@ for mode in ('learn', 'force', 'repair'):
     assert mode in workflow
 assert 'schedule:' in workflow
 assert 'allow_upstream_positive_loss' in workflow
-assert 'Verify known-green providers were not network re-probed' in workflow
+assert 'Verify current green providers were not network re-probed' in workflow
 assert 'targetProviders' in workflow
 assert 'CANONICAL_REPAIR_ARGS' in workflow
 assert 'provider-repair-portfolio-baseline.json' in workflow

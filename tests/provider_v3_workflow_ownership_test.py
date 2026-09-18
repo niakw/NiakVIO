@@ -59,7 +59,7 @@ for required in (
     "MODE=repair",
     "DISPATCH_MODE:-force",
     "provider-repair-skip.json",
-    "Verify known-green providers were not network re-probed",
+    "Verify current green providers were not network re-probed",
     "Enforce four-version floor on repair candidate",
     "python scripts/build_provider_history_matrix_v3.py",
     "python scripts/check_provider_non_regression_v1.py --candidate-gate --all --base-ref HEAD",

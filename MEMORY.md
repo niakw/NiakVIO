@@ -1838,3 +1838,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - New pure contract `tests/provider_repair_unresolved_scope_test.py` covers ON exclusion, repair/unknown inclusion, skip exclusion and explicit targeting.
 - Trigger retry 19 starts a real unresolved-only Repair run on this rule. Success criterion is not merely completion: the run must log zero overlap with current ON providers and preserve existing positives.
 
+## 2026-09-18 — Repair V6 fresh-run proof integrity + workflow contract
+
+- Unresolved-only Repair run **35394943082** failed before network recovery because two workflow-contract tests still required the historical step label `Verify known-green providers were not network re-probed`. Both contracts now require the current label `Verify current green providers were not network re-probed`.
+- The always-run verification also exposed stale-evidence reuse: because network Repair was skipped, it read the repository's tracked historical `provider-route-recovery-v6-targeted.json` and falsely reported overlap with current green providers.
+- Repair V6 now deletes targeted recovery/summary/candidate/retry/loss artifacts immediately before executing the current run. Therefore a skipped or failed current Repair cannot inherit old evidence.
+- VidLove/Kehflix publication run **35395034473** independently passed materialization, static audit, minimizer fixed-point and strategy-plan checks, then stopped only on the second obsolete workflow-label contract. The provider proof was not the failure. The temporary publication workflow is retriggered after these contract fixes.
+
