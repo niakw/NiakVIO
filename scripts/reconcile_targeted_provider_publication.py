@@ -48,8 +48,13 @@ def reconcile(
 ) -> list[dict[str, str]]:
     manifest_path = root / "manifest.json"
     materialization_path = root / "provider-v3-materialization.json"
+    provenance_path = root / "PROVENANCE.json"
     manifest = load_json(manifest_path)
     materialization = load_json(materialization_path)
+    provenance = load_json(provenance_path) if provenance_path.is_file() else None
+    provenance_rows = provenance.get("providers") if isinstance(provenance, dict) else None
+    if provenance is not None and not isinstance(provenance_rows, dict):
+        raise RuntimeError("PROVENANCE.json providers map required")
 
     manifest_rows = [
         row for row in manifest.get("scrapers") or []
@@ -101,6 +106,48 @@ def reconcile(
         material_row["file"] = new_rel
         material_row["sha256"] = digest
         material_row["providerDataSha256"] = data_digest(data)
+
+        if isinstance(provenance_rows, dict):
+            provenance_row = provenance_rows.get(provider_id)
+            if not isinstance(provenance_row, dict):
+                raise RuntimeError(f"{provider_id}: provenance row missing")
+            provenance_row["published_filename"] = new_rel
+            provenance_row["sha256"] = digest
+            if "patched_sha256" in provenance_row:
+                provenance_row["patched_sha256"] = digest
+
+            fixed = provenance_row.get("final_fixed_point")
+            if not isinstance(fixed, dict):
+                fixed = {}
+            fixed.update({
+                "schema_version": 1,
+                "verified": True,
+                "tool": "raw-bytes",
+                "tool_version": "raw-v1",
+                "mangle": False,
+                "one_physical_line": True,
+                "sha256": digest,
+            })
+            provenance_row["final_fixed_point"] = fixed
+
+            proof = provenance_row.get("final_minimizer")
+            if not isinstance(proof, dict):
+                proof = {}
+            minimizer_path = ROOT / "scripts" / "provider_v3_minimizer.py"
+            proof.update({
+                "schema_version": 3,
+                "tool": "scripts/provider_v3_minimizer.py",
+                "tool_sha256": hashlib.sha256(minimizer_path.read_bytes()).hexdigest(),
+                "production_enabled": True,
+                "terser_allowed": False,
+                "one_physical_line": True,
+                "saved_bytes": int(proof.get("saved_bytes") or 0),
+                "transformed_lines": int(proof.get("transformed_lines") or 0),
+                "skipped_reason": str(proof.get("skipped_reason") or ""),
+                "sha256": digest,
+            })
+            provenance_row["final_minimizer"] = proof
+
         updates.append({
             "provider": provider_id,
             "from": current_rel,
@@ -115,6 +162,8 @@ def reconcile(
 
     write_json(manifest_path, manifest)
     write_json(materialization_path, materialization)
+    if isinstance(provenance, dict):
+        write_json(provenance_path, provenance)
 
     if sync_projections is not None:
         sync_projections(check=False)

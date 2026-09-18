@@ -1,11 +1,11 @@
 {
   "schemaVersion": 3,
-  "requestedAt": "2026-09-18T23:21:00+02:00",
-  "retry": 21,
+  "requestedAt": "2026-09-18T23:33:00+02:00",
+  "retry": 22,
   "mode": "repair",
-  "scope": "unresolved-only-after-current-capability-fixture-and-adaptive-census-fix",
+  "scope": "unresolved-plus-fresh-regressions-after-current-scope-migration-fix",
   "targetProviders": [],
-  "goal": "Run canonical Repair V6 on current unresolved providers only after removing stale anime-movie lane assumptions. Preserve current green providers, use fresh run-owned evidence, and verify portfolio yield with bounded adaptive clean-zero catalogue rotation.",
+  "goal": "Repair all current unresolved providers plus any disposition-ON provider that fails the fresh adaptive census in the same run. Historical archived providers must not be touched by current migrations. Preserve only greens that remain verified now.",
   "branch": "main",
   "publication": false
 }

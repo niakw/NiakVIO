@@ -22,6 +22,16 @@ targets, excluded = unresolved_target_scope(active, set(), set(), disposition)
 assert targets == ["repair-b", "unknown-c"], (targets, excluded)
 assert excluded == ["green-a", "green-d"], (targets, excluded)
 
+targets, excluded = unresolved_target_scope(
+    active,
+    set(),
+    set(),
+    disposition,
+    current_verified={"green-a"},
+)
+assert targets == ["repair-b", "unknown-c", "green-d"], (targets, excluded)
+assert excluded == ["green-a"], (targets, excluded)
+
 targets, excluded = unresolved_target_scope(active, {"repair-b"}, set(), disposition)
 assert targets == ["unknown-c"], (targets, excluded)
 assert excluded == ["green-a", "green-d"], (targets, excluded)

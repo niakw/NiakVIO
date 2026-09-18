@@ -144,14 +144,25 @@ jobs:
               for r in disposition.get('providers') or []
               if isinstance(r,dict) and str(r.get('routeDataState') or '').strip().lower()=='on'
           }
+          baseline=json.load(open('automation/provider-repair-portfolio-baseline.json'))
+          fresh_verified={
+              str(value or '').strip().lower()
+              for value in baseline.get('verified_providers') or []
+              if str(value or '').strip()
+          }
+          protected_green=current_green & fresh_verified
+          regressed_green=current_green - fresh_verified
           report=json.load(open('automation/provider-route-recovery-v6-targeted.json'))
           tested={str(r.get('providerId','')).lower() for r in report.get('providers',[]) if isinstance(r,dict)}
-          forbidden=skip | current_green
+          forbidden=skip | protected_green
           overlap=sorted(forbidden & tested)
           assert not overlap, overlap
+          missed_regressions=sorted((regressed_green - skip) - tested)
+          assert not missed_regressions, missed_regressions
           print(
               f'PROVIDER_REPAIR_UNRESOLVED_SCOPE_PROOF tested={len(tested)} '
-              f'current_green={len(current_green)} skip_file={len(skip)} overlap=0'
+              f'protected_green={len(protected_green)} regressed_green={len(regressed_green)} '
+              f'skip_file={len(skip)} overlap=0 missed_regressions=0'
           )
           PY
 

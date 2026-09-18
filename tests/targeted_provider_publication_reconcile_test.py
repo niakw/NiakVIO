@@ -50,6 +50,18 @@ with tempfile.TemporaryDirectory() as tmp_name:
         }]
     }), encoding="utf-8")
 
+    (root / "PROVENANCE.json").write_text(json.dumps({
+        "providers": {
+            "vidlove": {
+                "published_filename": "providers/vidlove--nuvio--old000000000000.js",
+                "sha256": "0" * 64,
+                "patched_sha256": "0" * 64,
+                "final_fixed_point": {"sha256": "0" * 64},
+                "final_minimizer": {"sha256": "0" * 64, "saved_bytes": 7, "transformed_lines": 3},
+            }
+        }
+    }), encoding="utf-8")
+
     sync_calls = []
     def sync_stub(*, check: bool):
         assert check is False
@@ -59,8 +71,10 @@ with tempfile.TemporaryDirectory() as tmp_name:
     assert sync_calls == [False], sync_calls
     manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
     material = json.loads((root / "provider-v3-materialization.json").read_text(encoding="utf-8"))
+    provenance = json.loads((root / "PROVENANCE.json").read_text(encoding="utf-8"))
     mrow = manifest["scrapers"][0]
     prow = material["providers"][0]
+    vrow = provenance["providers"]["vidlove"]
 
     assert mrow["filename"] == prow["file"]
     assert mrow["filename"].startswith("providers/vidlove--nuvio--")
@@ -68,6 +82,13 @@ with tempfile.TemporaryDirectory() as tmp_name:
     assert (root / mrow["filename"]).read_bytes() == raw
     assert prow["sha256"] == digest
     assert prow["providerDataSha256"] == data_digest(data)
+    assert vrow["published_filename"] == mrow["filename"]
+    assert vrow["sha256"] == digest
+    assert vrow["patched_sha256"] == digest
+    assert vrow["final_fixed_point"]["sha256"] == digest
+    assert vrow["final_minimizer"]["sha256"] == digest
+    assert vrow["final_minimizer"]["saved_bytes"] == 7
+    assert vrow["final_minimizer"]["transformed_lines"] == 3
     assert material["providerCount"] == 1
     assert material["expectedProviderCount"] == 1
     assert material["targetedPublicationFixedPointProviders"] == ["vidlove"]

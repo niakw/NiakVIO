@@ -13,6 +13,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
+MANIFEST = ROOT / "manifest.json"
 
 
 def _load() -> dict[str, Any]:
@@ -25,6 +26,15 @@ def _load() -> dict[str, Any]:
     return value
 
 
+def _current_provider_ids() -> set[str]:
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    return {
+        str(row.get("id") or "").strip().casefold()
+        for row in manifest.get("scrapers") or []
+        if isinstance(row, dict) and str(row.get("id") or "").strip()
+    }
+
+
 def _row(patches: dict[str, Any], provider_id: str) -> dict[str, Any]:
     row = patches.get(provider_id)
     if not isinstance(row, dict):
@@ -35,75 +45,61 @@ def _row(patches: dict[str, Any], provider_id: str) -> dict[str, Any]:
 def patch() -> bool:
     value = _load()
     patches = value["provider_patches"]
+    current = _current_provider_ids()
     before = json.dumps(value, ensure_ascii=False, sort_keys=True)
 
-    # AnimeSama.co is a current DLE-style site distinct from anime-sama.to/store.
-    # The old /film/episode-1.html + template-php fetch plan is live-404. Keep
-    # current observed detail/season/episode shapes as candidates; the batch probe
-    # must execute them before any route can become final authority.
-    animesama = _row(patches, "animesama-co")
-    animesama["official_site"] = "https://animesama.co"
-    animesama["published_types"] = ["movie", "anime"]
-    animesama["identity_input"] = {
-        "mode": "catalog_search",
-        "requires_tmdb_before_run": True,
-        "required_fields": ["title", "year", "mediaType"],
-    }
-    animesama["learned_urls"] = ["https://animesama.co/"]
-    animesama["learned_routes"] = [
-        "/catalogue/?search={query}",
-        "/anime/{id}-{slug}.html",
-        "/anime/{id}-{slug}/saison-{season}.html",
-        "/anime/{id}-{slug}/saison-{season}/episode-{episode}.html",
-    ]
-    substitutions = animesama.get("domain_substitutions")
-    substitutions = dict(substitutions) if isinstance(substitutions, dict) else {}
-    substitutions["anime-sama.store"] = "animesama.co"
-    animesama["domain_substitutions"] = substitutions
+    if "animesama-co" in current:
+        animesama = _row(patches, "animesama-co")
+        animesama["official_site"] = "https://animesama.co"
+        animesama["published_types"] = ["anime"]
+        animesama["identity_input"] = {
+            "mode": "catalog_search",
+            "requires_tmdb_before_run": True,
+            "required_fields": ["title", "year", "mediaType"],
+        }
+        animesama["learned_urls"] = ["https://animesama.co/"]
+        animesama["learned_routes"] = [
+            "/catalogue/?search={query}",
+            "/anime/{id}-{slug}.html",
+            "/anime/{id}-{slug}/saison-{season}.html",
+            "/anime/{id}-{slug}/saison-{season}/episode-{episode}.html",
+        ]
+        substitutions = animesama.get("domain_substitutions")
+        substitutions = dict(substitutions) if isinstance(substitutions, dict) else {}
+        substitutions["anime-sama.store"] = "animesama.co"
+        animesama["domain_substitutions"] = substitutions
 
-    # AnimeZeY's operator-published alternate worker is current and the old
-    # /1:search plan cannot execute because it has no query identity. /0:search?q=
-    # is an operator-observed search shape. It remains candidate DATA until the
-    # runtime probe reaches it and proves coherent output.
-    animezey = _row(patches, "animezey")
-    animezey["official_site"] = "https://1.animezeydl.workers.dev"
-    animezey["published_types"] = ["movie", "tv"]
-    animezey["identity_input"] = {
-        "mode": "catalog_search",
-        "requires_tmdb_before_run": True,
-        "required_fields": ["title", "year", "mediaType"],
-    }
-    animezey["learned_urls"] = ["https://1.animezeydl.workers.dev/"]
-    animezey["learned_routes"] = [
-        "/0:search?q={query}",
-        "/download.aspx",
-    ]
-    animezey["domain_substitutions"] = {
-        "1.animezey23112022.workers.dev": "1.animezeydl.workers.dev",
-        "animezey16082023.animezey16082023.workers.dev": "1.animezeydl.workers.dev",
-    }
-    animezey["output_url_host_rewrites"] = [
-        {
+    if "animezey" in current:
+        animezey = _row(patches, "animezey")
+        animezey["official_site"] = "https://1.animezeydl.workers.dev"
+        animezey["published_types"] = ["movie", "tv"]
+        animezey["identity_input"] = {
+            "mode": "catalog_search",
+            "requires_tmdb_before_run": True,
+            "required_fields": ["title", "year", "mediaType"],
+        }
+        animezey["learned_urls"] = ["https://1.animezeydl.workers.dev/"]
+        animezey["learned_routes"] = ["/0:search?q={query}", "/download.aspx"]
+        animezey["domain_substitutions"] = {
+            "1.animezey23112022.workers.dev": "1.animezeydl.workers.dev",
+            "animezey16082023.animezey16082023.workers.dev": "1.animezeydl.workers.dev",
+        }
+        animezey["output_url_host_rewrites"] = [{
             "fromHost": "animezey16082023.animezey16082023.workers.dev",
             "toHost": "1.animezeydl.workers.dev",
-        }
-    ]
+        }]
 
-    # AniMoFlix is currently HTTP-blocked on its known terminal. Do not invent a
-    # replacement host. Remove only route templates that were observed rendering
-    # empty placeholders (e.g. /saison-//episode-/), so diagnostics spend their
-    # budget on syntactically valid provider paths.
-    animoflix = _row(patches, "animoflix")
-    animoflix["learned_routes"] = [
-        "/?s={query}",
-        "/anime/{slug}/",
-        "/anime/{slug}/film/",
-        "/anime/{slug}/episode-{episode}/",
-        "/anime/{slug}/saison-{season}/episode-{episode}/",
-    ]
+    if "animoflix" in current:
+        animoflix = _row(patches, "animoflix")
+        animoflix["learned_routes"] = [
+            "/?s={query}",
+            "/anime/{slug}/",
+            "/anime/{slug}/film/",
+            "/anime/{slug}/episode-{episode}/",
+            "/anime/{slug}/saison-{season}/episode-{episode}/",
+        ]
 
-    after = json.dumps(value, ensure_ascii=False, sort_keys=True)
-    changed = after != before
+    changed = json.dumps(value, ensure_ascii=False, sort_keys=True) != before
     if changed:
         OVERRIDES.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return changed
@@ -112,28 +108,34 @@ def patch() -> bool:
 def validate() -> None:
     value = _load()
     patches = value["provider_patches"]
+    current = _current_provider_ids()
 
-    animesama = _row(patches, "animesama-co")
-    if animesama.get("official_site") != "https://animesama.co":
-        raise AssertionError("animesama-co: current .co terminal not selected")
-    stale = {"/film/episode-{episode}.html", "/template-php/defaut/fetch.php"}
-    if stale.intersection(set(animesama.get("learned_routes") or [])):
-        raise AssertionError("animesama-co: stale live-404 routes survived")
-    if "/anime/{id}-{slug}/saison-{season}/episode-{episode}.html" not in (animesama.get("learned_routes") or []):
-        raise AssertionError("animesama-co: current episode route missing")
+    if "animesama-co" in current:
+        animesama = _row(patches, "animesama-co")
+        if animesama.get("official_site") != "https://animesama.co":
+            raise AssertionError("animesama-co: current .co terminal not selected")
+        if set(animesama.get("published_types") or []) != {"anime"}:
+            raise AssertionError("animesama-co: historical movie lane survived current canonical capability")
+        stale = {"/film/episode-{episode}.html", "/template-php/defaut/fetch.php"}
+        if stale.intersection(set(animesama.get("learned_routes") or [])):
+            raise AssertionError("animesama-co: stale live-404 routes survived")
+        if "/anime/{id}-{slug}/saison-{season}/episode-{episode}.html" not in (animesama.get("learned_routes") or []):
+            raise AssertionError("animesama-co: current episode route missing")
 
-    animezey = _row(patches, "animezey")
-    if animezey.get("official_site") != "https://1.animezeydl.workers.dev":
-        raise AssertionError("animezey: current alternate worker not selected")
-    routes = list(animezey.get("learned_routes") or [])
-    if "/0:search?q={query}" not in routes or "/1:search" in routes:
-        raise AssertionError("animezey: executable search identity route not normalized")
+    if "animezey" in current:
+        animezey = _row(patches, "animezey")
+        if animezey.get("official_site") != "https://1.animezeydl.workers.dev":
+            raise AssertionError("animezey: current alternate worker not selected")
+        routes = list(animezey.get("learned_routes") or [])
+        if "/0:search?q={query}" not in routes or "/1:search" in routes:
+            raise AssertionError("animezey: executable search identity route not normalized")
 
-    animoflix = _row(patches, "animoflix")
-    for route in animoflix.get("learned_routes") or []:
-        text = str(route)
-        if "saison-//" in text or "episode-/" in text or "/anime//" in text:
-            raise AssertionError(f"animoflix: malformed empty-placeholder route survived: {text}")
+    if "animoflix" in current:
+        animoflix = _row(patches, "animoflix")
+        for route in animoflix.get("learned_routes") or []:
+            text = str(route)
+            if "saison-//" in text or "episode-/" in text or "/anime//" in text:
+                raise AssertionError(f"animoflix: malformed empty-placeholder route survived: {text}")
 
 
 def main() -> int:
@@ -141,7 +143,7 @@ def main() -> int:
     validate()
     print(
         "PROVIDER_V3_BATCH_ROUTES_V2_OK "
-        f"changed={str(changed).lower()} providers=animesama-co,animezey,animoflix "
+        f"changed={str(changed).lower()} providers=" + ",".join(sorted(_current_provider_ids() & {"animesama-co","animezey","animoflix"})) + " "
         "livePromotion=false"
     )
     return 0

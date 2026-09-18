@@ -46,8 +46,9 @@ def unresolved_target_scope(
     skipped: set[str],
     requested: set[str],
     disposition: dict[str, Any],
+    current_verified: set[str] | None = None,
 ) -> tuple[list[str], list[str]]:
-    """Return automatic unresolved targets and current green exclusions."""
+    """Return unresolved targets plus any current-green provider that regressed."""
     state_by_provider = {
         cid(row.get("provider")): str(row.get("routeDataState") or "").strip().casefold()
         for row in disposition.get("providers") or []
@@ -61,6 +62,13 @@ def unresolved_target_scope(
             for provider in active_catalogue
             if state_by_provider.get(provider) != "on"
         }
+        if current_verified is not None:
+            selected.update(
+                provider
+                for provider in active_catalogue
+                if state_by_provider.get(provider) == "on"
+                and provider not in current_verified
+            )
     targets = [
         provider
         for provider in active_catalogue
@@ -69,7 +77,9 @@ def unresolved_target_scope(
     auto_excluded_green = [
         provider
         for provider in active_catalogue
-        if not requested and state_by_provider.get(provider) == "on"
+        if not requested
+        and state_by_provider.get(provider) == "on"
+        and (current_verified is None or provider in current_verified)
     ]
     return targets, auto_excluded_green
 
@@ -142,25 +152,53 @@ def main() -> int:
         raise SystemExit("requested providers are explicitly OFF/disabled: " + ",".join(disabled_requested))
 
     disposition = load(DISPOSITION) if DISPOSITION.exists() else {"providers": []}
+    attempts = max(1, min(int(args.attempts), 4))
+
+    # The fresh portfolio census is part of target selection. A provider that was
+    # previously marked ON but no longer verifies in this same run is a regression,
+    # not a protected green, and must automatically re-enter Repair.
+    baseline_portfolio = capture_portfolio_yield(PORTFOLIO_BASELINE)
+    baseline_verified = {
+        cid(value)
+        for value in (baseline_portfolio.get("verified_providers") or [])
+        if cid(value)
+    }
     targets, auto_excluded_green = unresolved_target_scope(
         active_catalogue,
         skipped,
         requested,
         disposition,
+        current_verified=baseline_verified,
     )
+    state_by_provider = {
+        cid(row.get("provider")): str(row.get("routeDataState") or "").strip().casefold()
+        for row in disposition.get("providers") or []
+        if isinstance(row, dict) and cid(row.get("provider"))
+    }
+    regression_reactivated = [
+        provider
+        for provider in targets
+        if not requested
+        and state_by_provider.get(provider) == "on"
+        and provider not in baseline_verified
+    ]
     if not targets:
-        raise SystemExit("no unresolved provider selected for repair")
+        raise SystemExit("no unresolved or freshly regressed provider selected for repair")
 
-    attempts = max(1, min(int(args.attempts), 4))
     print(
         "FIELD_PROVIDER_REPAIR_SCOPE "
         f"mode={args.mode} catalogue={len(catalogue)} active={len(active_catalogue)} targeted={len(targets)} "
         f"skip_file={len(skipped)} disposition_green_excluded={len(auto_excluded_green)} "
+        f"regression_reactivated={len(regression_reactivated)} "
         f"attempts={attempts} providers={','.join(targets)}",
         flush=True,
     )
+    if regression_reactivated:
+        print(
+            "FIELD_PROVIDER_REPAIR_REGRESSIONS providers=" + ",".join(regression_reactivated),
+            flush=True,
+        )
 
-    baseline_portfolio = capture_portfolio_yield(PORTFOLIO_BASELINE)
     run(
         sys.executable,
         "scripts/provider_runtime_plan_lkg_v1.py",
@@ -345,6 +383,7 @@ def main() -> int:
         "activeProviderCount": len(active_catalogue),
         "skippedAlreadyGreenProviders": sorted(skipped),
         "autoExcludedCurrentGreenProviders": sorted(auto_excluded_green),
+        "freshRegressionReactivatedProviders": sorted(regression_reactivated),
         "dispositionScopedUnresolvedOnly": not bool(requested),
         "targetedProviderCount": len(targets),
         "targetedProviders": targets,
