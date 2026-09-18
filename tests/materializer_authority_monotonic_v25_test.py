@@ -121,6 +121,49 @@ assert model['externalIdentityPlan']==static_external, model['externalIdentityPl
 assert model['proofSearchBases']==['https://search.example'], model['proofSearchBases']
 assert model['proofDetailBases']==['https://detail.example'], model['proofDetailBases']
 
+# Reusable proof-v5 search routeData must become an executable generic search plan.
+patch={'route_proof_version':0}
+static={'model':{
+    'routeProofVersion':5,
+    'routeData':[
+        {
+            'role':'search',
+            'origin':'https://catalog.example',
+            'route':'/api/search?q={query}',
+            'method':'GET',
+            'semanticType':'movie',
+            'requestSpecReusable':True,
+            'requestSpec':{'method':'GET','headers':{'accept':'application/json'}},
+            'proofModelVersion':5,
+        },
+        {
+            'role':'search',
+            'origin':'https://catalog.example',
+            'route':'/api/search?q={query}',
+            'method':'GET',
+            'semanticType':'tv',
+            'requestSpecReusable':True,
+            'requestSpec':{'method':'GET','headers':{'accept':'application/json'}},
+            'proofModelVersion':5,
+        },
+        {
+            'role':'search',
+            'origin':'https://catalog.example',
+            'route':'/api/search?q=fixture-specific',
+            'method':'GET',
+            'semanticType':'movie',
+            'requestSpecReusable':True,
+            'proofModelVersion':5,
+        },
+    ],
+}}
+model=m.provider_model('synthetic',patch,cap,static)
+assert len(model['searchRequestPlan'])==1, model['searchRequestPlan']
+assert model['searchRequestPlan'][0]['base']=='https://catalog.example'
+assert model['searchRequestPlan'][0]['route']=='/api/search?q={query}'
+assert set(model['searchRequestPlan'][0]['semanticTypes'])=={'movie','tv'}
+assert model['proofSearchBases']==['https://catalog.example']
+
 one=(ROOT/'scripts'/'materialize_provider_v3_one.py').read_text(encoding='utf-8')
 assert '# MATERIALIZER_EXECUTION_AUTHORITY_MONOTONIC_V25' in one
 assert 'patch["api_recipe"] = canonical_recipe' not in one
