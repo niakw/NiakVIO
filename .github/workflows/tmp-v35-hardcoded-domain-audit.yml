@@ -1,0 +1,74 @@
+name: TMP - V35 Hardcoded Domain Audit
+
+on:
+  pull_request:
+    branches:
+      - tmp/v35-domain-audit-base
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.base_ref || 'fix/provider-activation-certification-v1' }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Audit red-provider Lego hardcoded domains
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python3 - <<'PY' | tee health-output/v35-domain-audit.json
+          import json,re
+          from pathlib import Path
+          exact=json.loads(Path('automation/exact-52157-census-status.json').read_text())
+          overrides=json.loads(Path('provider-overrides.json').read_text())
+          red={str(r.get('id') or '').lower() for r in exact.get('providers',[]) if r.get('enabled') is not False and not r.get('greenLanes')}
+          rows=[]
+          for pid in sorted(red):
+              patch=(overrides.get('provider_patches') or {}).get(pid) or {}
+              site=str(patch.get('official_site') or '')
+              site_host=''
+              try:
+                  from urllib.parse import urlsplit
+                  site_host=(urlsplit(site).hostname or '').lower()
+              except Exception:
+                  pass
+              for script in patch.get('provider_lego_scripts') or []:
+                  p=Path(str(script))
+                  if not p.is_file(): continue
+                  text=p.read_text(errors='ignore')
+                  urls=sorted(set(re.findall(r'https?://[A-Za-z0-9.-]+',text)))
+                  hosts=[]
+                  for u in urls:
+                      try:
+                          from urllib.parse import urlsplit
+                          h=(urlsplit(u).hostname or '').lower()
+                      except Exception:
+                          continue
+                      if not h: continue
+                      if h in {'api.themoviedb.org','arm.haglund.dev'}: continue
+                      hosts.append(h)
+                  dynamic=('NIAKVIO_PROVIDER_MODEL.officialSite' in text or 'NIAKVIO_PROVIDER_MODEL.knownSite' in text)
+                  rows.append({'providerId':pid,'script':str(script),'officialHost':site_host,'hardcodedHosts':sorted(set(hosts)),'consumesModelSite':dynamic})
+          print(json.dumps({'rows':rows},separators=(',',':')))
+          for row in rows:
+              if row['hardcodedHosts'] and not row['consumesModelSite']:
+                  print('FIELD_V35_HARDCODE provider=%s script=%s official=%s hosts=%s'%(row['providerId'],row['script'],row['officialHost'] or '-',','.join(row['hardcodedHosts'])))
+          PY
+
+      - name: Upload V35 evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: v35-domain-audit-${{ github.run_id }}
+          path: health-output/
+          retention-days: 8
