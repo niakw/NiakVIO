@@ -436,11 +436,27 @@ def provider_model(
         str(value).strip() for value in (static_model.get("routes") or [])
         if str(value).strip() and str(value).strip() != "/"
     ]
-    route_values = (
-        patch_routes
-        if patch_proof >= 5 and patch_routes
-        else [*patch_routes, *static_routes]
-    )
+
+    def route_family(value: str) -> str:
+        text = str(value or "").strip().casefold()
+        if re.search(r"/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword|search|story)=", text):
+            return "search"
+        if re.search(r"/api(?:[./?#]|$)", text):
+            return "api"
+        if re.search(r"/(?:player|embed|play)(?:[/?#]|$)", text):
+            return "player"
+        if re.search(r"\{(?:tmdb_?id|imdb_?id|id|slug|title)\}|/(?:title|movie|film|series|tv|show|watch|media)(?:[/?#]|$)", text):
+            return "detail"
+        return "other"
+
+    if patch_proof >= 5 and patch_routes:
+        patch_families = {route_family(value) for value in patch_routes}
+        route_values = [
+            *patch_routes,
+            *(value for value in static_routes if route_family(value) not in patch_families),
+        ]
+    else:
+        route_values = [*patch_routes, *static_routes]
     routes: list[str] = []
     if proof_version >= 5:
         for value in route_values:
