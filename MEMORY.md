@@ -1830,3 +1830,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The job failed only in the durable-checkpoint step because it still read deleted artifact name `health-output/vidlove-v1-proof.json` after the proof step had been renamed to `health-output/vidlove-moviebox-multifixture.json`. Publication was therefore skipped despite positive provider proof.
 - The temporary publication workflow now reads the actual multi-fixture artifact. No additional provider diagnosis is required before rerunning this targeted publication.
 
+## 2026-09-18 — Repair V6 automatic scope made truly unresolved-only
+
+- Canonical scalability defect confirmed: automatic Repair V6 used `active_catalogue - provider-repair-skip`. With **44 active providers** and only **2** current skip entries, it could still network-probe **42 providers**, including already-green providers.
+- Repair V6 now derives automatic scope from current `provider-repair-disposition.json`: `routeDataState=on` is excluded; `repair` and missing/unknown state remain eligible. Explicit `--provider` still works. The skip file remains a secondary exact-proof guard.
+- Route-recovery worker default is raised to its existing safe cap of **12**. The workflow now fails if any current ON provider appears in the targeted recovery report.
+- New pure contract `tests/provider_repair_unresolved_scope_test.py` covers ON exclusion, repair/unknown inclusion, skip exclusion and explicit targeting.
+- Trigger retry 19 starts a real unresolved-only Repair run on this rule. Success criterion is not merely completion: the run must log zero overlap with current ON providers and preserve existing positives.
+

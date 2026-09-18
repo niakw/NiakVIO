@@ -34,13 +34,20 @@ assert 'provider-repair-portfolio-baseline.json' in workflow
 assert 'provider-repair-portfolio-candidate.json' in workflow
 assert 'provider-repair-portfolio-retry.json' in workflow
 
-# Provider-wide skip is now legal only for exact full-capability current proof.
-# Partial green providers remain repair-eligible and are protected lane-by-lane.
+# Provider-wide skip remains an exact-proof optimization, while automatic
+# Repair scope is derived from current disposition for catalogue-scale work.
 assert skip.get('schemaVersion') == 2
 assert set((skip.get('providers') or {}).keys()) == {'castle', 'persianstremio'}
 assert 'entire declared capability surface' in str(skip.get('policy') or '')
 assert 'Partial green lanes are protected' in str(skip.get('policy') or '')
-assert 'provider not in skipped' in pipeline
+for marker in (
+    'def unresolved_target_scope(',
+    'state_by_provider.get(provider) != "on"',
+    'auto_excluded_green',
+    '"dispositionScopedUnresolvedOnly": not bool(requested)',
+    '"autoExcludedCurrentGreenProviders": sorted(auto_excluded_green)',
+):
+    assert marker in pipeline, marker
 assert 'for provider in targets:' in pipeline
 assert 'cmd.extend(["--provider", provider])' in pipeline
 

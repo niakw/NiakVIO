@@ -1,11 +1,11 @@
 {
   "schemaVersion": 3,
-  "requestedAt": "2026-09-11T01:21:11+02:00",
-  "retry": 18,
+  "requestedAt": "2026-09-18T23:05:00+02:00",
+  "retry": 19,
   "mode": "repair",
-  "scope": "full-unresolved-portfolio-after-v21-11-proof-first-guard-and-core-idempotence-drift",
+  "scope": "current-disposition-unresolved-only-scalability-verification",
   "targetProviders": [],
-  "goal": "Replay the canonical full unresolved Repair V6 on the current main after making the previously missing Neko-Sama V21.11 migration explicitly proof-first and non-destructive. Reach ProviderBase/materialize_provider_v3_all so the durable native-vod-duration-proof-v9 HLS runtime is reprojected into all 96 published bundles, preserve every current positive lane, keep unresolved providers explicit as repair/off debt, and require portfolio/non-regression gates before any publication.",
+  "goal": "Verify canonical Repair V6 targets only current repair/unknown debt, never current ON providers, while preserving partial-lane repair eligibility and portfolio non-regression. This is the scaling gate before expanding the catalogue toward ~300 providers.",
   "branch": "main",
   "publication": false
 }

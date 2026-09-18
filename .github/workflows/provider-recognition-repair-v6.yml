@@ -126,7 +126,7 @@ jobs:
           test -s provider-v3-quick-yield.json
           python scripts/check_provider_non_regression_v1.py --candidate-gate --all --base-ref HEAD
 
-      - name: Verify known-green providers were not network re-probed
+      - name: Verify current green providers were not network re-probed
         if: always()
         shell: bash
         run: |
@@ -135,11 +135,21 @@ jobs:
           python - <<'PY'
           import json
           skip=set((json.load(open('automation/provider-repair-skip.json')).get('providers') or {}).keys())
+          disposition=json.load(open('automation/provider-repair-disposition.json'))
+          current_green={
+              str(r.get('provider','')).strip().lower()
+              for r in disposition.get('providers') or []
+              if isinstance(r,dict) and str(r.get('routeDataState') or '').strip().lower()=='on'
+          }
           report=json.load(open('automation/provider-route-recovery-v6-targeted.json'))
           tested={str(r.get('providerId','')).lower() for r in report.get('providers',[]) if isinstance(r,dict)}
-          overlap=sorted(skip & tested)
+          forbidden=skip | current_green
+          overlap=sorted(forbidden & tested)
           assert not overlap, overlap
-          print(f'PROVIDER_REPAIR_SKIP_PROOF tested={len(tested)} skipped={len(skip)} overlap=0')
+          print(
+              f'PROVIDER_REPAIR_UNRESOLVED_SCOPE_PROOF tested={len(tested)} '
+              f'current_green={len(current_green)} skip_file={len(skip)} overlap=0'
+          )
           PY
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

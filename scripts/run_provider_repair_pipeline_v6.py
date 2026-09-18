@@ -41,6 +41,39 @@ def cid(value: object) -> str:
     return str(value or "").strip().casefold().replace("_", "-")
 
 
+def unresolved_target_scope(
+    active_catalogue: list[str],
+    skipped: set[str],
+    requested: set[str],
+    disposition: dict[str, Any],
+) -> tuple[list[str], list[str]]:
+    """Return automatic unresolved targets and current green exclusions."""
+    state_by_provider = {
+        cid(row.get("provider")): str(row.get("routeDataState") or "").strip().casefold()
+        for row in disposition.get("providers") or []
+        if isinstance(row, dict) and cid(row.get("provider"))
+    }
+    if requested:
+        selected = set(requested)
+    else:
+        selected = {
+            provider
+            for provider in active_catalogue
+            if state_by_provider.get(provider) != "on"
+        }
+    targets = [
+        provider
+        for provider in active_catalogue
+        if provider in selected and provider not in skipped
+    ]
+    auto_excluded_green = [
+        provider
+        for provider in active_catalogue
+        if not requested and state_by_provider.get(provider) == "on"
+    ]
+    return targets, auto_excluded_green
+
+
 def run(*args: str, timeout: int | None = None) -> None:
     print("FIELD_PROVIDER_REPAIR_CMD " + " ".join(args), flush=True)
     subprocess.run(list(args), cwd=ROOT, env=os.environ.copy(), check=True, timeout=timeout)
@@ -69,7 +102,7 @@ def main() -> int:
     parser.add_argument("--mode", choices=("repair", "learn", "force"), default="repair")
     parser.add_argument("--skip-file", type=Path, default=DEFAULT_SKIP.relative_to(ROOT))
     parser.add_argument("--provider", action="append", default=[])
-    parser.add_argument("--workers", type=int, default=8)
+    parser.add_argument("--workers", type=int, default=12)
     parser.add_argument("--timeout", type=int, default=55)
     parser.add_argument("--attempts", type=int, default=3)
     parser.add_argument("--allow-upstream-positive-loss", action="store_true")
@@ -107,14 +140,22 @@ def main() -> int:
     disabled_requested = sorted(requested - set(active_catalogue))
     if disabled_requested:
         raise SystemExit("requested providers are explicitly OFF/disabled: " + ",".join(disabled_requested))
-    targets = [provider for provider in active_catalogue if provider not in skipped and (not requested or provider in requested)]
+
+    disposition = load(DISPOSITION) if DISPOSITION.exists() else {"providers": []}
+    targets, auto_excluded_green = unresolved_target_scope(
+        active_catalogue,
+        skipped,
+        requested,
+        disposition,
+    )
     if not targets:
         raise SystemExit("no unresolved provider selected for repair")
 
     attempts = max(1, min(int(args.attempts), 4))
     print(
         "FIELD_PROVIDER_REPAIR_SCOPE "
-        f"mode={args.mode} catalogue={len(catalogue)} active={len(active_catalogue)} targeted={len(targets)} skipped_green={len(skipped)} "
+        f"mode={args.mode} catalogue={len(catalogue)} active={len(active_catalogue)} targeted={len(targets)} "
+        f"skip_file={len(skipped)} disposition_green_excluded={len(auto_excluded_green)} "
         f"attempts={attempts} providers={','.join(targets)}",
         flush=True,
     )
@@ -303,6 +344,8 @@ def main() -> int:
         "catalogueProviderCount": len(catalogue),
         "activeProviderCount": len(active_catalogue),
         "skippedAlreadyGreenProviders": sorted(skipped),
+        "autoExcludedCurrentGreenProviders": sorted(auto_excluded_green),
+        "dispositionScopedUnresolvedOnly": not bool(requested),
         "targetedProviderCount": len(targets),
         "targetedProviders": targets,
         "maxAttemptsPerTask": attempts,
