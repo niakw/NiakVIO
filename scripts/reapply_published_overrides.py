@@ -41,6 +41,8 @@ from provider_base_store import (
     compose_provider_bundle,
     is_clean_reconstructed,
     is_clean_reconstruction_candidate,
+    provider_base_template_refresh_required,
+    refresh_clean_provider_bases_to_current_template,
     resolve_base,
     resolve_runtime_base,
 )
@@ -969,6 +971,21 @@ def main() -> int:
         loaded = json.loads(PROVENANCE.read_text(encoding="utf-8"))
         if not isinstance(loaded, dict) or not isinstance(loaded.get("providers"), dict):
             raise ValueError("invalid PROVENANCE.json structure")
+        if provider_base_template_refresh_required(loaded):
+            if args.check:
+                raise ValueError(
+                    "ProviderBase template drift detected during --check; "
+                    "run publication once without --check to refresh clean bases"
+                )
+            refresh = refresh_clean_provider_bases_to_current_template()
+            print(
+                "FIELD_PROVIDER_BASE_TEMPLATE_AUTO_REFRESH "
+                f"providers={refresh['providers']} refreshed={refresh['refreshed']} "
+                f"template={refresh['template_sha256']}"
+            )
+            loaded = json.loads(PROVENANCE.read_text(encoding="utf-8"))
+            if not isinstance(loaded, dict) or not isinstance(loaded.get("providers"), dict):
+                raise ValueError("invalid PROVENANCE.json structure after ProviderBase refresh")
         provenance = loaded
         provenance_rows = loaded["providers"]
 
