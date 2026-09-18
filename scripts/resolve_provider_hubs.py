@@ -354,14 +354,24 @@ def telegram_links(document: str, base: str) -> list[dict[str, Any]]:
 
 
 def _anchor_context_label(document: str, match: re.Match[str], anchor_text: str) -> str:
-    """Keep strong nearby address semantics instead of only <a> text.
+    """Keep strong nearby address semantics without bleeding across link cards.
 
-    Address hubs often render the canonical domain in a card whose button text is
-    merely "Entrer".  Preserve only bounded semantic markers from the nearby
-    card so primary/current/verified signals survive without letting unrelated
-    page text dominate candidate scoring.
+    Many address hubs render the canonical domain in text immediately before a
+    CTA whose own label is only "Entrer".  The previous implementation sampled a
+    wide symmetric window, so a following backup card could inherit "principal"
+    and a backup link could inherit the previous primary card.  Bound the context
+    to text introduced since the previous anchor and ending at the current anchor.
     """
-    window = document[max(0, match.start() - 1400):min(len(document), match.end() + 500)]
+    search_floor = max(0, match.start() - 1600)
+    left = max(search_floor, match.start() - 900)
+    lowered = document.casefold()
+    previous_anchor_end = lowered.rfind("</a", search_floor, match.start())
+    if previous_anchor_end >= 0:
+        previous_close = document.find(">", previous_anchor_end, match.start())
+        if previous_close >= 0:
+            left = max(left, previous_close + 1)
+
+    window = document[left:match.end()]
     plain = re.sub(r"<[^>]+>", " ", html.unescape(window))
     plain = re.sub(r"\s+", " ", plain).strip()
     folded = compact(plain)
@@ -384,7 +394,6 @@ def _anchor_context_label(document: str, match: re.Match[str], anchor_text: str)
     if not markers:
         return anchor_text
     return (anchor_text + " " + " ".join(markers)).strip()
-
 
 def links(document: str, base: str) -> list[tuple[str, str, int]]:
     output: list[tuple[str, str, int]] = []
@@ -504,7 +513,7 @@ def merge_hub_registry(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
             # Registry current-terminal authority must survive config merging.
             # Without this, direct_authority=explicit_current is silently lost
             # before refresh_authoritative_hub_domains can enforce it.
-            target.setdefault("direct", direct_value)
+            target["direct"] = direct_value
         for field in (
             "direct_authority",
             "direct_authority_source",
@@ -512,15 +521,23 @@ def merge_hub_registry(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
         ):
             value = row.get(field)
             if value not in (None, ""):
-                target.setdefault(field, value)
+                target[field] = value
+
+        explicit_current = str(target.get("direct_authority") or "").strip().casefold() == "explicit_current"
         direct_values.extend(str(item).strip() for item in row.get("direct_candidates") or [] if is_http_url(item))
-        direct_values.extend(str(item).strip() for item in target.get("direct_candidates") or [] if is_http_url(item))
+        if not explicit_current:
+            direct_values.extend(str(item).strip() for item in target.get("direct_candidates") or [] if is_http_url(item))
         direct_values = list(dict.fromkeys(direct_values))
         if direct_values:
             target["direct_candidates"] = direct_values
-            target.setdefault("direct_fallback", direct_values[0])
+            if explicit_current:
+                target["direct_fallback"] = direct_values[0]
+            else:
+                target.setdefault("direct_fallback", direct_values[0])
 
-        allowed = set(str(item) for item in target.get("allowed_terminal_hosts") or [] if item)
+        allowed = set() if explicit_current else set(
+            str(item) for item in target.get("allowed_terminal_hosts") or [] if item
+        )
         allowed.update(str(item) for item in row.get("allowed_terminal_hosts") or [] if item)
         allowed.update(host(url) for url in direct_values if host(url))
         target["allowed_terminal_hosts"] = sorted(allowed)

@@ -120,4 +120,28 @@ assert explicit is not None, kehflix
 assert explicit["url"] == "https://kehflix.com", explicit
 assert explicit["registry_explicit_current"] is True, explicit
 
+original_gather = wrapper.refresh.hubresolver.gather_candidates
+try:
+    def mutating_gather(_provider_id, cfg, _history_row, _mode, _timeout):
+        cfg["direct"] = "https://kehflix.lol/"
+        cfg["allowed_terminal_hosts"] = ["kehflix.com", "kehflix.lol"]
+        return ([{
+            "url": "https://kehflix.lol",
+            "label": "stale hub card",
+            "score": 100,
+            "source_type": "hub",
+            "source": "https://kehflix.wiki/",
+        }], [])
+
+    wrapper.refresh.hubresolver.gather_candidates = mutating_gather
+    protected = wrapper.refresh.resolve_authoritative_hub_domain(
+        "kehflix", dict(kehflix), {}, "quick", 1.0
+    )
+finally:
+    wrapper.refresh.hubresolver.gather_candidates = original_gather
+
+assert protected["official_site"] == "https://kehflix.com", protected
+assert protected["reason"] == "registry_explicit_current_terminal_authority", protected
+assert protected["site_candidates"][0]["url"] == "https://kehflix.com", protected
+
 print("domain refresh current-registry scope and semantic priority tests passed")

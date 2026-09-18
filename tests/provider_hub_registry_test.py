@@ -575,9 +575,26 @@ assert kehflix_candidates[0]['url'] == 'https://kehflix.com', kehflix_candidates
 assert 'accesprincipal' in resolver.compact(kehflix_candidates[0]['label'])
 assert 'adresseverifiee' in resolver.compact(kehflix_candidates[0]['label'])
 assert int(kehflix_candidates[0]['score']) > int(kehflix_candidates[-1]['score'])
+kehflix_backup = next(row for row in kehflix_candidates if row['url'] == 'https://kehflix.lol')
+backup_label = resolver.compact(kehflix_backup['label'])
+assert 'principal' not in backup_label, kehflix_candidates
+assert 'adresseverifiee' not in backup_label, kehflix_candidates
 
 # Registry merge must preserve explicit current-terminal authority fields.
-merged_kehflix = resolver.merge_hub_registry({'official_domain_hubs': {}})['kehflix']
+merged_kehflix = resolver.merge_hub_registry({
+    'official_domain_hubs': {
+        'kehflix': {
+            'hub': 'https://kehflix.wiki/',
+            'direct': 'https://kehflix.lol/',
+            'direct_fallback': 'https://kehflix.lol/',
+            'direct_candidates': ['https://kehflix.lol/'],
+            'allowed_terminal_hosts': ['kehflix.lol'],
+        },
+    },
+})['kehflix']
 assert merged_kehflix['direct'] == 'https://kehflix.com/', merged_kehflix
+assert merged_kehflix['direct_fallback'] == 'https://kehflix.com/', merged_kehflix
+assert merged_kehflix['direct_candidates'][0] == 'https://kehflix.com/', merged_kehflix
+assert 'kehflix.lol' not in merged_kehflix['allowed_terminal_hosts'], merged_kehflix
 assert merged_kehflix['direct_authority'] == 'explicit_current', merged_kehflix
 assert merged_kehflix['direct_authority_source'] == 'user-confirmed-official-hub-current-address', merged_kehflix

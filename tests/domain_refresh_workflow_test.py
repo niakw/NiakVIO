@@ -121,6 +121,25 @@ assert row["direct_candidates"][0] == "https://fs27.lol/"
 assert "https://fs16.lol/" in row["direct_candidates"]
 assert row["allowed_terminal_hosts"][0] == "fs27.lol"
 
+pinned_registry = {
+    "providers": {
+        "kehflix": {
+            "id": "kehflix",
+            "direct": "https://kehflix.com/",
+            "direct_authority": "explicit_current",
+            "direct_candidates": ["https://kehflix.com/"],
+            "allowed_terminal_hosts": ["kehflix.com"],
+        }
+    }
+}
+try:
+    module.sync_registry_terminal(pinned_registry, "kehflix", "https://kehflix.lol")
+except RuntimeError as exc:
+    assert "explicit_current" in str(exc), exc
+else:
+    raise AssertionError("explicit_current terminal must refuse a contradictory hub observation")
+assert pinned_registry["providers"]["kehflix"]["direct"] == "https://kehflix.com/"
+
 # Regression 3: only domain-connected runtime maps follow a terminal rotation;
 # unrelated API replacement DATA must remain untouched.
 patch = {

@@ -147,6 +147,11 @@ def resolve_authoritative_hub_domain(
         item["reason"] = "no_authoritative_hub_source"
         return item
 
+    # Snapshot curated authority before network discovery.  Discovery helpers
+    # are observation code and may never demote an explicit current terminal,
+    # even if a stale hub card is returned or a future helper mutates its config.
+    authority_cfg = dict(cfg)
+    explicit_current = _explicit_current_direct_candidate(authority_cfg)
     candidates, observations = hubresolver.gather_candidates(
         provider_id,
         cfg,
@@ -154,10 +159,9 @@ def resolve_authoritative_hub_domain(
         mode,
         timeout,
     )
-    explicit_current = _explicit_current_direct_candidate(cfg)
     candidates = [
         *([explicit_current] if explicit_current else []),
-        *_redirect_candidates_from_source_observations(cfg, observations),
+        *_redirect_candidates_from_source_observations(authority_cfg, observations),
         *[
             dict(row)
             for row in candidates
@@ -168,7 +172,7 @@ def resolve_authoritative_hub_domain(
     deduped: dict[str, dict[str, Any]] = {}
     for row in candidates:
         url = _candidate_url(row)
-        if not url or not _safe_authoritative_candidate(provider_id, cfg, row):
+        if not url or not _safe_authoritative_candidate(provider_id, authority_cfg, row):
             continue
         previous = deduped.get(url)
         if previous is None or int(row.get("score") or 0) > int(previous.get("score") or 0):

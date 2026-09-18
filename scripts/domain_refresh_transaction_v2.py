@@ -136,6 +136,15 @@ def sync_registry_terminal(registry: dict[str, Any], provider_id: str, terminal:
     if not terminal_host:
         return False
 
+    authority = canonical(row.get("direct_authority"))
+    pinned_direct = str(row.get("direct") or "").strip().rstrip("/")
+    if authority == "explicit_current" and resolver.is_http_url(pinned_direct):
+        if pinned_direct.casefold() != terminal.casefold():
+            raise RuntimeError(
+                f"{provider_id}: refuses observed terminal {terminal!r}; "
+                f"registry explicit_current is pinned to {pinned_direct!r}"
+            )
+
     normalized = terminal + "/"
     before = json.dumps(row, ensure_ascii=False, sort_keys=True)
     old_direct = row.get("direct")
@@ -484,8 +493,9 @@ def main() -> int:
                     item["reason"] = "missing_provider_patch_domain_refresh_may_not_add_provider"
                 else:
                     terminal = str(item.get("official_site") or "").strip().rstrip("/")
-                    patch_fields = sync_patch_domain_authority(patch, cfg, terminal)
+                    # Guard registry authority before mutating any provider patch DATA.
                     registry_changed = sync_registry_terminal(registry, provider_id, terminal)
+                    patch_fields = sync_patch_domain_authority(patch, cfg, terminal)
                     if registry_changed:
                         registry_changed_ids.append(provider_id)
                     if patch_fields:
