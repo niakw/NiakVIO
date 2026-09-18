@@ -1942,3 +1942,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Migration now recognizes that exact newer behavior and restores only `NIAKVIO_MUGIWARA_EPISODE_FAIL_CLOSED_V2` inside the already fail-closed specialized fallback. Runtime semantics are unchanged; the existing V34 contract can again prove the durable marker + behavior.
 - The temporary post-apply resume is retriggered; upstream recovery is still not repeated.
 
+## 2026-09-19 — V34 migration was capable of downgrading presentation V24
+
+- Post-apply resume on **d047b88c** passed sanitizer and reconciled Mugiwara V2 marker without changing its fail-closed behavior, then exposed a more serious migration bug in `upgrade_manual_tv_live_regressions_v34.py`.
+- Current global stream presentation is **V24** (`all-providers-client-projection-evidence-language-v24`) and already contains the V22 strongest-quality + detailed-language guarantees. V34 nevertheless unconditionally replaced `quality()` and `detailedLanguage()` with its old V22 implementations, then failed because the revision string was no longer literally `strongest-evidence-v22`. That is a backwards migration hazard.
+- V34 is now monotone: presentation revision >=22 is validated as a semantic floor and left byte-unchanged; only a V21 predecessor is upgraded to V22. The contract test now requires revision >=22 plus the actual strongest-quality/Hindi-detail guarantees. This prevents future migrations from downgrading newer Core presentation logic.
+- Resume is retriggered from the same Repair 28 applied checkpoint; still no repeated route recovery.
+

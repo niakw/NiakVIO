@@ -73,9 +73,34 @@ def replace_function(text: str, name: str, replacement: str) -> str:
     return text[:start] + replacement.strip() + text[end:]
 
 
+def _presentation_revision(text: str) -> int:
+    match = re.search(r'REVISION\s*=\s*"[^"]*-v(\d+)"', text)
+    return int(match.group(1)) if match else 0
+
+
+def _validate_presentation_floor(text: str) -> None:
+    revision = _presentation_revision(text)
+    if revision < 22:
+        raise AssertionError(f"presentation revision below V22 floor: v{revision}")
+    for needle in (
+        'best=Math.max(best,Number(m[1]||0))',
+        '["hindi","Hindi"]',
+        "function quality(r)",
+        "function detailedLanguage(r,fallback)",
+    ):
+        if needle not in text:
+            raise AssertionError(f"presentation V22+ guarantee missing: {needle}")
+
+
 def patch_presentation() -> bool:
     text = PRESENTATION.read_text(encoding="utf-8")
     before = text
+    revision = _presentation_revision(text)
+    if revision >= 22:
+        _validate_presentation_floor(text)
+        return False
+    if revision != 21:
+        raise AssertionError(f"unsupported presentation predecessor revision: v{revision}")
     text = text.replace(
         'REVISION = "all-providers-client-projection-language-detail-v21"',
         'REVISION = "all-providers-client-projection-strongest-evidence-v22"',
@@ -172,10 +197,8 @@ def validate() -> None:
     presentation = PRESENTATION.read_text(encoding="utf-8")
     base = PROVIDER_BASE.read_text(encoding="utf-8")
     compositor = COMPOSITOR.read_text(encoding="utf-8")
+    _validate_presentation_floor(presentation)
     required = (
-        (presentation, "strongest-evidence-v22"),
-        (presentation, 'best=Math.max(best,Number(m[1]||0))'),
-        (presentation, '["hindi","Hindi"]'),
         (base, "NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34"),
         (base, '_spv34RouteMediaCompatible(route, mediaType)'),
         (compositor, "NUVIO_STREAM_SANITIZER_V8_SELECTION"),

@@ -80,9 +80,14 @@ with tempfile.TemporaryDirectory() as tmp:
     test.write_text(runner, encoding="utf-8")
     subprocess.run(["node", str(test), str(provider)], check=True, timeout=20)
 
+presentation_source = (ROOT / "scripts/provider_patches/global_stream_presentation_v1.py").read_text(encoding="utf-8")
 provider_base = (ROOT / "scripts/provider_base_store.py").read_text(encoding="utf-8")
 compositor = (ROOT / "scripts/apply_provider_overrides.py").read_text(encoding="utf-8")
 mugiwara = (ROOT / "scripts/provider_patches/mugiwarastream_packed_runtime_v1.py").read_text(encoding="utf-8")
+revision = __import__("re").search(r'REVISION\s*=\s*"[^"]*-v(\d+)"', presentation_source)
+assert revision and int(revision.group(1)) >= 22, revision.group(0) if revision else None
+assert 'best=Math.max(best,Number(m[1]||0))' in presentation_source
+assert '["hindi","Hindi"]' in presentation_source
 assert "NIAKVIO_PROVIDER_ROUTE_MEDIA_COMPAT_V34" in provider_base
 assert "_spv34RouteMediaCompatible(route, mediaType)" in provider_base
 assert "stream_output_sanitizer_v8.py" in compositor
