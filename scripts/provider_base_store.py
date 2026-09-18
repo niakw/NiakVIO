@@ -79,9 +79,9 @@ DERIVED_BASE_MARKERS = (
 
 CLEAN_RECONSTRUCTION_SOURCE = "niakvio-clean-reconstruction-v3"
 CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE = "niakvio-clean-reconstruction-v3-candidate"
-CLEAN_RECONSTRUCTION_AUTHORING_VERSION = 3
+CLEAN_RECONSTRUCTION_AUTHORING_VERSION = 4
 PROVIDER_BASE_OWNED_MARKER = "NIAKVIO_PROVIDER_BASE_OWNED_V3"
-CURRENT_PROVIDER_MODEL_AUTHORING = "niakvio-owned-v3"
+CURRENT_PROVIDER_MODEL_AUTHORING = "niakvio-owned-v4"
 PROVIDER_BASE_AUTHORING_MARKER = f"NIAKVIO_PROVIDER_BASE_AUTHORING:{CURRENT_PROVIDER_MODEL_AUTHORING}"
 INITIAL_RECONSTRUCTION_SCOPE = 96
 
@@ -737,7 +737,7 @@ def build_clean_provider_seed(
     """
     del provider_id, manifest_entry, known_site, provider_model
     template = r'''/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */
-/* NIAKVIO_PROVIDER_BASE_AUTHORING:niakvio-owned-v3 */
+/* NIAKVIO_PROVIDER_BASE_AUTHORING:niakvio-owned-v4 */
 "use strict";
 
 function _uniq(values) {
@@ -4627,6 +4627,81 @@ module.exports = {
     return template.encode("utf-8")
 
 
+def current_provider_base_template_sha256() -> str:
+    """Cryptographic identity of the exact common ProviderBase skeleton."""
+    return sha256(build_clean_provider_seed("__niakvio_provider_base_template__"))
+
+
+def refresh_clean_provider_bases_to_current_template() -> dict[str, Any]:
+    """Atomically rebase every verified NiakVIO-owned clean ProviderBase.
+
+    Historical/upstream/provider JS is never consulted. The only source is the
+    current owned common skeleton returned by build_clean_provider_seed().
+    """
+    provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
+    rows = provenance.get("providers")
+    if not isinstance(rows, dict):
+        raise ValueError("PROVENANCE.providers must be an object")
+
+    template = build_clean_provider_seed("__niakvio_provider_base_template__")
+    template_sha = sha256(template)
+    validate_base(template, "__niakvio_provider_base_template__")
+    refreshed_at = datetime.now(timezone.utc).isoformat()
+    refreshed: list[str] = []
+
+    for raw_id, row in rows.items():
+        provider_id = canonical_id(str(raw_id or ""))
+        if not provider_id or not isinstance(row, dict):
+            continue
+        owned_clean = (
+            str(row.get("base_source") or "") == CLEAN_RECONSTRUCTION_SOURCE
+            and row.get("clean_reconstruction_verified") is True
+        )
+        if not owned_clean:
+            continue
+        relative, digest = write_base(provider_id, template)
+        if digest != template_sha:
+            raise ValueError(f"{provider_id}: current ProviderBase template SHA drift")
+        row["base_filename"] = relative
+        row["base_sha256"] = digest
+        row["published_runtime_base_filename"] = relative
+        row["published_runtime_base_sha256"] = digest
+        row["published_runtime_base_source"] = "canonical-providerbase"
+        row["clean_reconstruction_authoring_version"] = CLEAN_RECONSTRUCTION_AUTHORING_VERSION
+        row["provider_base_template_sha256"] = template_sha
+        row["provider_base_template_refreshed_at"] = refreshed_at
+        row["provider_base_role"] = "canonical-v4-common-skeleton"
+        refreshed.append(provider_id)
+
+    store = provenance.get("provider_base_store")
+    if not isinstance(store, dict):
+        store = {}
+        provenance["provider_base_store"] = store
+    store.update(
+        provider_base_store_metadata(
+            provider_count=len(rows),
+            unique_base_count=len(refreshed),
+            clean_reconstructed=len(refreshed),
+            reconstruction_required=max(0, len(rows) - len(refreshed)),
+            previous_store=store,
+        )
+    )
+    store["template_sha256"] = template_sha
+    store["template_identity_policy"] = "exact-current-owned-skeleton-sha256"
+    store["template_refreshed_at"] = refreshed_at
+
+    PROVENANCE.write_text(
+        json.dumps(provenance, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return {
+        "providers": len(rows),
+        "refreshed": len(refreshed),
+        "template_sha256": template_sha,
+        "refreshed_ids": refreshed,
+    }
+
+
 def compose_provider_bundle(
     provider_id: str,
     base_data: bytes,
@@ -4718,6 +4793,8 @@ def provider_base_store_metadata(
         "reconstruction_required": int(reconstruction_required),
         "authoring_version": CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
         "authoring_policy": "niakvio-owned-clean-reconstruction-only",
+        "template_sha256": current_provider_base_template_sha256(),
+        "template_identity_policy": "exact-current-owned-skeleton-sha256",
         "clean_source": CLEAN_RECONSTRUCTION_SOURCE,
         "legacy_provider_role": "compatibility-lkg-and-knowledge-only",
         "upstream_code_role": "knowledge-only",
@@ -4942,6 +5019,16 @@ def validate_all(*, validate_artifacts: bool = False) -> dict[str, Any]:
         assert path is not None
         data = path.read_bytes()
         assert_base_layering(data, provider_id)
+        if is_clean_reconstructed(row):
+            expected_template_sha = current_provider_base_template_sha256()
+            actual_template_sha = sha256(data)
+            recorded_template_sha = str(row.get("provider_base_template_sha256") or "").strip().casefold()
+            if actual_template_sha != expected_template_sha or recorded_template_sha != expected_template_sha:
+                raise ValueError(
+                    f"{provider_id}: ProviderBase template drift "
+                    f"recorded={recorded_template_sha or 'missing'} "
+                    f"actual={actual_template_sha} expected={expected_template_sha}"
+                )
         if validate_artifacts:
             validate_base(data, provider_id)
         bases.add(path.relative_to(ROOT).as_posix())
@@ -4969,6 +5056,7 @@ def main() -> int:
     sub.add_parser("migrate-existing")
     sub.add_parser("repair-legacy")
     sub.add_parser("repair-derived")
+    sub.add_parser("refresh-template")
     validate_parser = sub.add_parser("validate")
     validate_parser.add_argument(
         "--artifacts",
@@ -4994,6 +5082,12 @@ def main() -> int:
             f"FIELD_PROVIDER_BASE_DERIVED_REPAIR providers={result['providers']} "
             f"repaired={result['repaired']} invalidated={result['invalidated']} "
             f"ids={','.join(result['repaired_ids']) or 'none'}"
+        )
+    elif args.command == "refresh-template":
+        result = refresh_clean_provider_bases_to_current_template()
+        print(
+            f"FIELD_PROVIDER_BASE_TEMPLATE_REFRESH providers={result['providers']} "
+            f"refreshed={result['refreshed']} template={result['template_sha256']}"
         )
     else:
         result = validate_all(validate_artifacts=bool(args.artifacts))
