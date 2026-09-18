@@ -4632,6 +4632,37 @@ def current_provider_base_template_sha256() -> str:
     return sha256(build_clean_provider_seed("__niakvio_provider_base_template__"))
 
 
+def provider_base_template_refresh_required(provenance: dict[str, Any] | None) -> bool:
+    """Return True when verified clean bases are not the exact current skeleton."""
+    payload = provenance if isinstance(provenance, dict) else {}
+    rows = payload.get("providers")
+    if not isinstance(rows, dict):
+        return False
+    expected = current_provider_base_template_sha256()
+    store = payload.get("provider_base_store")
+    store = store if isinstance(store, dict) else {}
+    if int(store.get("authoring_version") or 0) < CLEAN_RECONSTRUCTION_AUTHORING_VERSION:
+        return True
+    if str(store.get("template_sha256") or "").strip().casefold() != expected:
+        return True
+    for row in rows.values():
+        if not isinstance(row, dict):
+            continue
+        owned_clean = (
+            str(row.get("base_source") or "") == CLEAN_RECONSTRUCTION_SOURCE
+            and row.get("clean_reconstruction_verified") is True
+        )
+        if not owned_clean:
+            continue
+        if int(row.get("clean_reconstruction_authoring_version") or 0) < CLEAN_RECONSTRUCTION_AUTHORING_VERSION:
+            return True
+        if str(row.get("provider_base_template_sha256") or "").strip().casefold() != expected:
+            return True
+        if str(row.get("base_sha256") or "").strip().casefold() != expected:
+            return True
+    return False
+
+
 def refresh_clean_provider_bases_to_current_template() -> dict[str, Any]:
     """Atomically rebase every verified NiakVIO-owned clean ProviderBase.
 
