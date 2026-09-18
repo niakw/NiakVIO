@@ -638,7 +638,9 @@
         "tv"
       ],
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/api/v2/themoviedb?id={tmdbId}",
+        "/search?q={title}",
+        "/embed/video/{id}?expires={expires}&signature={signature}"
       ],
       "core_options": {
         "desktop_runtime_compat": {
@@ -710,7 +712,9 @@
         "/{slug}",
         "/film/{slug}",
         "/films/{slug}",
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/api/v2/themoviedb?id={tmdbId}",
+        "/search?q={title}",
+        "/embed/video/{id}?expires={expires}&signature={signature}"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -840,7 +844,8 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "referer": "https://flemmix.party"
       },
       "route_data_state": "repair",
       "repair_disposition": {
@@ -894,7 +899,8 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "referer": "https://flemmix.party"
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -4775,7 +4781,8 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "referer": "https://coflix.group"
       },
       "route_data_state": "repair",
       "repair_disposition": {
@@ -4836,7 +4843,8 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "referer": "https://coflix.group"
       },
       "provider_lego_scripts": [
         "scripts/provider_patches/coflix_nondisplay_runtime_v1.py"
@@ -7628,7 +7636,9 @@
       },
       "learned_routes": [
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}/{season}/{episode}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -7662,7 +7672,9 @@
         "/?tmdbId={tmdbId}&type=movie",
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
         "/",
-        "/api"
+        "/api",
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}/{season}/{episode}"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -9131,7 +9143,11 @@
         "/?s={query}",
         "/streaming/{slug}/",
         "/api/v2/themoviedb?id={tmdbId}",
-        "/streaming/series/{slug}/"
+        "/streaming/series/{slug}/",
+        "/?s={title}",
+        "/streaming/{category}/{slug}/",
+        "/streaming/episodes/{slug}-saison-{season}-episode-{episode}/",
+        "https://lecteurvideo.com/embed.php?id={id}&tp={type}&url={source}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -9173,7 +9189,11 @@
         "/streaming/series/breaking-bad-2008/",
         "/search/{slug}/",
         "/streaming/aventure/{slug}/",
-        "/streaming/episodes/{slug}-saison-1-episode-1/"
+        "/streaming/episodes/{slug}-saison-1-episode-1/",
+        "/?s={title}",
+        "/streaming/{category}/{slug}/",
+        "/streaming/episodes/{slug}-saison-{season}-episode-{episode}/",
+        "https://lecteurvideo.com/embed.php?id={id}&tp={type}&url={source}"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -9481,7 +9501,7 @@
       "api_recipe": {
         "proofModelVersion": 5,
         "allowGenericFallback": false,
-        "movieRoute": "https://enc-dec.app/db/flix/find?tmdb_id={tmdbId}&type=movie",
+        "movieRoute": "/db/flix/find?tmdb_id={tmdbId}&type=movie",
         "movieRequest": {
           "method": "GET",
           "headers": {
@@ -9497,12 +9517,13 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "tvRoute": "/db/flix/find?tmdb_id={tmdbId}&type=tv"
       },
       "candidate_api_recipe": {
         "proofModelVersion": 5,
         "allowGenericFallback": false,
-        "movieRoute": "https://enc-dec.app/db/flix/find?tmdb_id={tmdbId}&type=movie",
+        "movieRoute": "/db/flix/find?tmdb_id={tmdbId}&type=movie",
         "movieRequest": {
           "method": "GET",
           "headers": {
@@ -9518,7 +9539,8 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "tvRoute": "/db/flix/find?tmdb_id={tmdbId}&type=tv"
       },
       "route_data_state": "repair",
       "repair_disposition": {
@@ -9634,7 +9656,10 @@
       "learned_routes": [
         "/api",
         "/api/v2/themoviedb?id={id}",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/?s={title}",
+        "/{slug}/",
+        "/{slug}-episode-{episode}/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -9665,7 +9690,10 @@
       "candidate_learned_routes": [
         "/api",
         "/api/v2/themoviedb?id={id}",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/?s={title}",
+        "/{slug}/",
+        "/{slug}-episode-{episode}/"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -9837,7 +9865,11 @@
       "learned_routes": [
         "/player",
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/filter?keyword={title}",
+        "/ajax/episode/list/{id}",
+        "/ajax/server/list?servers={serverKey}",
+        "/ajax/server?get={serverId}"
       ],
       "live_route_gate": {
         "completion_state": "stream-capability-unproven",
@@ -9872,7 +9904,11 @@
         "/player",
         "/ajax/episode/list/",
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/filter?keyword={title}",
+        "/ajax/episode/list/{id}",
+        "/ajax/server/list?servers={serverKey}",
+        "/ajax/server?get={serverId}"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -10966,7 +11002,9 @@
       },
       "learned_routes": [
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "https://vidsrcme.ru/vs_src.php?type=movie&id={tmdbId}",
+        "https://vidsrcme.ru/vs_src.php?type=tv&id={tmdbId}&season={season}&episode={episode}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -11000,7 +11038,9 @@
         "/stream/series/",
         "/stream/movie/",
         "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "https://vidsrcme.ru/vs_src.php?type=movie&id={tmdbId}",
+        "https://vidsrcme.ru/vs_src.php?type=tv&id={tmdbId}&season={season}&episode={episode}"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -11590,6 +11630,33 @@
       ],
       "provider_lego_options": {
         "scripts/provider_patches/vidlove_current_api_v1.py": {}
+      },
+      "api_recipe": {
+        "proofModelVersion": 5,
+        "allowGenericFallback": false,
+        "base": "https://api.vidlove.cc",
+        "referer": "https://player.vidlove.cc/",
+        "origin": "https://player.vidlove.cc",
+        "directRoute": "/{media}?id={tmdbId}&mode=json&season={season}&episode={episode}",
+        "directRequest": {
+          "method": "GET",
+          "headers": {
+            "Accept": "application/json,text/plain,*/*",
+            "Origin": "https://player.vidlove.cc",
+            "Referer": "https://player.vidlove.cc/"
+          }
+        },
+        "requestHeaders": {
+          "Accept": "application/json,text/plain,*/*",
+          "Origin": "https://player.vidlove.cc",
+          "Referer": "https://player.vidlove.cc/"
+        },
+        "playbackHeaders": {
+          "Origin": "https://player.vidlove.cc"
+        },
+        "sources": [],
+        "requestTimeoutMs": 8000,
+        "minStreamsBeforeStop": 1
       }
     }
   },
