@@ -2945,20 +2945,21 @@
       "manifest_status": "Onboarding",
       "category": "Francophone",
       "hub": "https://kehflix.wiki/",
-      "direct": "https://kehflix.lol/",
+      "direct": "https://kehflix.wiki/",
       "telegram": null,
       "api": null,
       "source": "provider_onboarding_workflow",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "Kehflix authoritative hub is kehflix.wiki. Runtime terminal proof: kehflix.wiki preserves catalogue/detail paths; kehflix.com is alternate live terminal; kehflix.lol is redirect-only and must never be selected as runtime terminal.",
       "aliases": [
         "kehflix"
       ],
       "direct_candidates": [
-        "https://kehflix.lol/",
-        "https://kehflix.com/"
+        "https://kehflix.wiki/",
+        "https://kehflix.com/",
+        "https://kehflix.lol/"
       ],
       "allowed_terminal_hosts": [
-        "kehflix.lol",
+        "kehflix.wiki",
         "kehflix.com"
       ],
       "search_queries": [
@@ -2985,7 +2986,10 @@
           "purpose": "Fallback route discovery"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "blocked_hosts": [
+        "kehflix.lol"
+      ]
     },
     "1shows": {
       "id": "1shows",
