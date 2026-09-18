@@ -7,6 +7,8 @@ src=(ROOT/'scripts'/'provider_patches'/'anikototv_runtime_v3.py').read_text(enco
 assert 'playerUrl.searchParams.get("s")' in src
 assert r'/\/stream\/s-(\d+)\//i.exec(playerUrl.pathname)' in src
 assert 'api+="&s="+encodeURIComponent(sv)' in src
+assert 'searchParams.set(' not in src
+assert 'searchParams.delete(' not in src
 
 # Current provider evidence uses player routes such as /stream/s-2/10789/sub.
 # The runtime must preserve server selector 2 when calling getSources.
