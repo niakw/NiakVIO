@@ -1,0 +1,146 @@
+name: TMP - V27 Targeted Recovery
+
+on:
+  pull_request:
+    branches:
+      - tmp/v27-recovery-base
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  targeted:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: tmp/v27-recovery-base
+          fetch-depth: 0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Verify V26 V27 contracts
+        run: |
+          set -euo pipefail
+          python3 tests/materializer_authority_monotonic_v25_test.py
+          python3 tests/anikototv_runtime_v3_server_selector_test.py
+          python3 tests/provider_base_absolute_route_domain_substitution_test.py
+          python3 -m py_compile \
+            scripts/materialize_provider_v3_all.py \
+            scripts/provider_base_store.py \
+            scripts/provider_patches/anikototv_runtime_v3.py
+          python3 scripts/check_provider_repair_survival.py
+
+      - name: Rematerialize latest repair authority in disposable workspace
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          cp manifest.json health-output/manifest-before-v27.json
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/reapply_published_overrides.py --check
+          cp manifest.json health-output/manifest-after-v27.json
+
+      - name: Inspect regenerated provider plans
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re
+          from pathlib import Path
+          ids={'anikototv','4khdhub','anime-ultime','animesultra','vostfree','anime-sama'}
+          m=json.loads(Path('manifest.json').read_text())
+          for row in m.get('scrapers') or []:
+              pid=str(row.get('id') or '').lower()
+              if pid not in ids: continue
+              p=Path(str(row.get('filename') or '').replace('../',''))
+              text=p.read_text()
+              mm=re.search(r'(?:const|let|var)\s+NIAKVIO_PROVIDER_MODEL\s*=\s*Object\.freeze\((\{.*?\})\);',text,re.S)
+              if not mm:
+                  print('FIELD_V27_MODEL',pid,'model=missing','file='+str(p))
+                  continue
+              model=json.loads(mm.group(1))
+              print('FIELD_V27_MODEL',pid,
+                    'routes='+json.dumps(model.get('routes') or [],separators=(',',':')),
+                    'domainSubstitutions='+json.dumps(model.get('domainSubstitutions') or {},separators=(',',':')),
+                    'apiBase='+str((model.get('apiRecipe') or {}).get('base') or ''),
+                    'site='+str(model.get('officialSite') or ''),
+                    'file='+str(p))
+              if pid=='anikototv':
+                  print('FIELD_V27_ANIKOTO_SELECTOR',
+                        'marker='+str('NIAKVIO_ANIKOTOTV_RUNTIME_V3' in text).lower(),
+                        'pathSelector='+str('/stream\\/s-' in text or 'stream\\/s-' in text).lower())
+              if pid=='4khdhub':
+                  print('FIELD_V27_4K_DOMAIN',
+                        'absoluteSubstitution='+str('NIAKVIO_PROVIDER_ABSOLUTE_ROUTE_DOMAIN_SUBSTITUTION_V35' in text).lower())
+          PY
+
+      - name: Targeted exact-bundle certification
+        run: |
+          set -euo pipefail
+          python3 scripts/certify_provider_playable_lanes.py \
+            --include-disabled \
+            --provider anikototv \
+            --provider 4khdhub \
+            --provider anime-ultime \
+            --provider animesultra \
+            --provider vostfree \
+            --provider anime-sama \
+            --candidate-limit 12 \
+            --timeout 30 \
+            --workers 2 \
+            --seed "v27-recovery-${GITHUB_RUN_ID}" \
+            --output health-output/v27-targeted-certification.json
+
+      - name: Summarize targeted proof
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('health-output/v27-targeted-certification.json').read_text())
+          green=[]
+          for row in p.get('providers') or []:
+              lanes=row.get('lanes') or {}
+              gl=[k for k,v in lanes.items() if (v or {}).get('state')=='certified']
+              if gl: green.append(row.get('providerId'))
+              stages=sorted({
+                  str(a.get('debugStage') or '')
+                  for v in lanes.values()
+                  for a in (v or {}).get('attempts') or []
+                  if a.get('debugStage')
+              })
+              hosts=sorted({
+                  str(n.get('host') or '')
+                  for v in lanes.values()
+                  for a in (v or {}).get('attempts') or []
+                  for n in a.get('networkTrace') or []
+                  if n.get('host')
+              })
+              print('FIELD_V27_RESULT',row.get('providerId'),
+                    'green='+(','.join(gl) or '-'),
+                    'full='+str(bool(row.get('certified'))).lower(),
+                    'stages='+('|'.join(stages) or '-'),
+                    'hosts='+('|'.join(hosts) or '-'))
+          print('FIELD_V27_GREEN',str(len(green))+'/6',','.join(sorted(green)))
+          PY
+
+      - name: Upload V27 evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: v27-targeted-${{ github.run_id }}
+          path: health-output/
+          retention-days: 8
+          if-no-files-found: warn
