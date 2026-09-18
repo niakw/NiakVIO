@@ -63,4 +63,13 @@ assert cert.fixture_runtime_media_type({
     "title": "Interstellar",
 }) == "movie"
 
+
+manifest = cert.load(ROOT / "manifest.json", {}) or {}
+manifest_rows = [
+    row for row in manifest.get("scrapers") or []
+    if isinstance(row, dict) and cert.canonical(row.get("id"))
+]
+assert len(manifest_rows) == 46, len(manifest_rows)
+assert sum(1 for row in manifest_rows if row.get("enabled") is not False) == 44
+
 print("provider playable certification ordering tests passed")
