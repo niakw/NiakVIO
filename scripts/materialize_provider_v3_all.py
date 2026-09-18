@@ -363,19 +363,37 @@ def provider_model(
     recipe_proof = int(candidate_recipe.get("proofModelVersion") or 0) if isinstance(candidate_recipe, dict) else 0
     api_recipe = candidate_recipe if proof_version >= 5 and recipe_proof >= 5 else None
 
+    # MATERIALIZER_FIELD_LEVEL_MONOTONIC_AUTHORITY_V27
+    # A fresh proof in one execution family must not erase independent proven
+    # structured knowledge from another family. Patch DATA wins only when that
+    # exact field contains usable values; otherwise static proof remains fallback.
     def execution_list(patch_key: str, static_key: str) -> list[dict[str, Any]]:
-        if patch_has_execution_authority:
-            value = patch.get(patch_key)
-        else:
-            value = patch.get(patch_key) or static_model.get(static_key)
-        return [dict(row) for row in (value or []) if isinstance(row, dict)] if isinstance(value, list) else []
+        patch_value = patch.get(patch_key)
+        if isinstance(patch_value, list):
+            patch_rows = [
+                dict(row) for row in patch_value
+                if isinstance(row, dict) and int(row.get("proofModelVersion") or 0) >= 5
+            ]
+            if patch_rows:
+                return patch_rows
+        static_value = static_model.get(static_key)
+        if isinstance(static_value, list):
+            return [
+                dict(row) for row in static_value
+                if isinstance(row, dict) and int(row.get("proofModelVersion") or 0) >= 5
+            ]
+        return []
 
     def execution_strings(patch_key: str, static_key: str, limit: int) -> list[str]:
-        if patch_has_execution_authority:
-            value = patch.get(patch_key)
-        else:
-            value = patch.get(patch_key) or static_model.get(static_key)
-        return [str(item).strip() for item in (value or []) if str(item).strip()][:limit] if isinstance(value, list) else []
+        patch_value = patch.get(patch_key)
+        if isinstance(patch_value, list):
+            patch_items = [str(item).strip() for item in patch_value if str(item).strip()]
+            if patch_items:
+                return patch_items[:limit]
+        static_value = static_model.get(static_key)
+        if isinstance(static_value, list):
+            return [str(item).strip() for item in static_value if str(item).strip()][:limit]
+        return []
 
     return {
         "knownSite": official_site,
