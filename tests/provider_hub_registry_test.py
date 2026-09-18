@@ -575,3 +575,9 @@ assert kehflix_candidates[0]['url'] == 'https://kehflix.com', kehflix_candidates
 assert 'accesprincipal' in resolver.compact(kehflix_candidates[0]['label'])
 assert 'adresseverifiee' in resolver.compact(kehflix_candidates[0]['label'])
 assert int(kehflix_candidates[0]['score']) > int(kehflix_candidates[-1]['score'])
+
+# Registry merge must preserve explicit current-terminal authority fields.
+merged_kehflix = resolver.merge_hub_registry({'official_domain_hubs': {}})['kehflix']
+assert merged_kehflix['direct'] == 'https://kehflix.com/', merged_kehflix
+assert merged_kehflix['direct_authority'] == 'explicit_current', merged_kehflix
+assert merged_kehflix['direct_authority_source'] == 'user-confirmed-official-hub-current-address', merged_kehflix
