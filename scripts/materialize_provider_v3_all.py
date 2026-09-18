@@ -104,6 +104,46 @@ def _identity_route_allowed(value: object) -> bool:
     return lowered.rstrip("/") not in {"/license", "license"}
 
 
+# MATERIALIZER_NON_PROVIDER_HELPER_AUTHORITY_V26
+# Metadata/identity helpers may be useful fallback inputs, but they are not a
+# provider execution backend. A helper-only proof must therefore never suppress
+# provider-owned static routes discovered from the provider's own catalogue.
+NON_PROVIDER_EXECUTION_HELPER_HOSTS = {
+    "arm.haglund.dev",
+    "v3-cinemeta.strem.io",
+    "api.themoviedb.org",
+}
+
+
+def _recipe_execution_hosts(recipe: dict[str, Any] | None) -> set[str]:
+    if not isinstance(recipe, dict):
+        return set()
+    hosts: set[str] = set()
+    for key in (
+        "base", "api", "baseUrl", "endpoint", "statusUrl",
+        "movieRoute", "episodeRoute", "directRoute", "searchRoute",
+    ):
+        raw = str(recipe.get(key) or "").strip()
+        if not raw or not re.match(r"^https?://", raw, re.I):
+            continue
+        try:
+            host = str(urlparse(raw).hostname or "").casefold()
+        except ValueError:
+            host = ""
+        if host:
+            hosts.add(host)
+    return hosts
+
+
+def _recipe_is_provider_execution_authority(recipe: dict[str, Any] | None) -> bool:
+    hosts = _recipe_execution_hosts(recipe)
+    if not hosts:
+        # Relative-only recipes can still be provider execution DATA when their
+        # base is supplied by officialSite/officialApi.
+        return isinstance(recipe, dict)
+    return any(host not in NON_PROVIDER_EXECUTION_HELPER_HOSTS for host in hosts)
+
+
 def _identity_mode_from_plan(
     routes: list[str],
     api_recipe: dict[str, Any] | None,
@@ -297,7 +337,11 @@ def provider_model(
     patch_has_execution_authority = bool(
         patch_proof >= 5 and (
             patch_routes
-            or (patch_recipe is not None and patch_recipe_proof >= 5)
+            or (
+                patch_recipe is not None
+                and patch_recipe_proof >= 5
+                and _recipe_is_provider_execution_authority(patch_recipe)
+            )
             or patch_search_plan
             or patch_provider_value_plan
             or patch_external_identity_plan
