@@ -151,7 +151,7 @@ def enforce(
         "authority": "provider-activation-contract-v1",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "manifestVersion": manifest.get("version"),
-        "changed": changed,
+        "proposalChanged": changed,
         "fullManifestCensus": full_manifest_census,
         "manifestProviderCount": manifest_total,
         "exactCertifiedManifest": certified_manifest,
@@ -163,10 +163,10 @@ def enforce(
         "bootstrapYieldRatio": round(yield_ratio, 4) if yield_ratio is not None else None,
         "activeYieldRatio": round(active_yield_ratio, 4),
         "keptActive": kept,
-        "disabledNow": disabled,
-        "reenabledNow": reenabled,
-        "activeAfter": [cid(row.get("id")) for row in rows if row.get("enabled") is not False],
-        "disabledAfter": [cid(row.get("id")) for row in rows if row.get("enabled") is False],
+        "proposedDisable": disabled,
+        "proposedReenable": reenabled,
+        "projectedActiveAfter": [cid(row.get("id")) for row in rows if row.get("enabled") is not False],
+        "projectedDisabledAfter": [cid(row.get("id")) for row in rows if row.get("enabled") is False],
         "decisions": decisions,
     }
     return output, report
@@ -205,13 +205,32 @@ def main() -> int:
         if full_manifest_census
         else "targeted-diagnostic-no-global-yield"
     )
-    report["massDisableBlocked"] = bool((not architecture_ok) and report["disabledNow"])
+    report["massDisableBlocked"] = bool((not architecture_ok) and report["proposedDisable"])
+    can_apply = bool(args.apply and full_manifest_census and architecture_ok)
+    report["applied"] = False
+    report["changed"] = False
+    report["disabledNow"] = []
+    report["reenabledNow"] = []
+    report["activeAfter"] = list(report["activeBefore"])
+    report["disabledAfter"] = [
+        cid(row.get("id")) for row in (manifest.get("scrapers") or [])
+        if isinstance(row, dict) and cid(row.get("id")) and row.get("enabled") is False
+    ]
+    if can_apply:
+        report["applied"] = True
+        report["changed"] = bool(report["proposalChanged"])
+        report["disabledNow"] = list(report["proposedDisable"])
+        report["reenabledNow"] = list(report["proposedReenable"])
+        report["activeAfter"] = list(report["projectedActiveAfter"])
+        report["disabledAfter"] = list(report["projectedDisabledAfter"])
     args.report.resolve().parent.mkdir(parents=True, exist_ok=True)
     dump(args.report.resolve(), report)
     print(
         "FIELD_PROVIDER_ACTIVATION_CONTRACT "
-        f"active_after={len(report['activeAfter'])} disabled_now={len(report['disabledNow'])} "
-        f"reenabled_now={len(report['reenabledNow'])} changed={str(report['changed']).lower()} apply={str(args.apply).lower()}"
+        f"active_after={len(report['activeAfter'])} proposed_disabled={len(report['proposedDisable'])} "
+        f"disabled_now={len(report['disabledNow'])} proposed_reenabled={len(report['proposedReenable'])} "
+        f"reenabled_now={len(report['reenabledNow'])} changed={str(report['changed']).lower()} "
+        f"applied={str(report['applied']).lower()} apply_requested={str(args.apply).lower()}"
     )
     if report["fullManifestCensus"]:
         print(
@@ -241,7 +260,7 @@ def main() -> int:
     if (args.apply or args.require_yield) and not architecture_ok:
         print("FIELD_PROVIDER_ACTIVATION_REFUSED reason=architecture_yield_below_floor")
         return 3
-    if args.apply:
+    if can_apply:
         dump(manifest_path, output)
         if args.apply_lifecycle:
             if manifest_path != DEFAULT_MANIFEST.resolve():
