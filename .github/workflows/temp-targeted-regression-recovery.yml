@@ -1,0 +1,141 @@
+name: TEMP - Targeted Regression Recovery Probes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/temp-targeted-regression-recovery.yml'
+      - 'scripts/provider_patches/animesamaco_site_runtime_v1.py'
+      - 'scripts/provider_patches/neko_sama_runtime_v1.py'
+      - 'scripts/provider_patches/voiranime_anime_runtime_v2.py'
+      - 'scripts/provider_patches/voiranime_rip_runtime_v1.py'
+      - 'scripts/provider_patches/kurage_runtime_v1.py'
+      - 'provider-overrides.json'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-targeted-regression-recovery
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NIAKVIO_QUICK_YIELD_TIMEOUT: '60'
+      NIAKVIO_QUICK_YIELD_MAX_SAMPLES: '4'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate repair contracts
+        run: |
+          set -euo pipefail
+          python tests/provider_terminal_chain_repairs_test.py
+          python tests/voiranime_rip_runtime_contract_test.py
+          python tests/voiranime_episode_selection_contract_test.py
+
+      - name: Materialize current provider bytes
+        run: |
+          set -euo pipefail
+          python tests/provider_domain_metadata_reconcile_test.py
+          python scripts/reconcile_provider_domain_metadata.py --rebuild
+          python scripts/materialize_provider_base_v3_store.py
+          python scripts/materialize_provider_v3_all.py
+          python scripts/validate_published_provider_config.py
+          python tests/provider_js_lego_ownership_test.py
+
+      - name: Probe recovered regressions adaptively
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p automation
+          python - <<'PY'
+          import concurrent.futures
+          import json
+          import os
+          import sys
+          from collections import defaultdict
+          from pathlib import Path
+
+          ROOT=Path.cwd()
+          sys.path.insert(0,str(ROOT/"scripts"))
+          import audit_provider_quick_yield as audit
+
+          targets={"animesama-co","neko-sama","voiranime","voiranime-rip","kurage"}
+          tasks,_=audit.build_tasks()
+          selected=[task for task in tasks if task["provider_id"] in targets]
+          observed={task["provider_id"] for task in selected}
+          assert observed==targets,(sorted(targets-observed),sorted(observed-targets))
+          rows=[]
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:
+              futures=[pool.submit(audit.run,task) for task in selected]
+              for future in concurrent.futures.as_completed(futures):
+                  rows.append(future.result())
+
+          by=defaultdict(list)
+          for row in rows:
+              by[row["provider_id"]].append(row)
+          summary={}
+          for provider in sorted(targets):
+              lanes=by[provider]
+              verified=sorted({
+                  str(row.get("semantic_type"))
+                  for row in lanes
+                  if int(row.get("verified") or 0)>0 and int(row.get("contradictions") or 0)==0
+              })
+              playable=sorted({
+                  str(row.get("semantic_type"))
+                  for row in lanes
+                  if int(row.get("playable") or 0)>0 and int(row.get("contradictions") or 0)==0
+              })
+              summary[provider]={
+                  "verifiedLanes":verified,
+                  "playableLanes":playable,
+                  "statuses":{str(row.get("semantic_type")):row.get("status") for row in lanes},
+                  "debugStages":{str(row.get("semantic_type")):row.get("debug_stage") for row in lanes},
+                  "sampleTitles":{str(row.get("semantic_type")):row.get("sample_titles") for row in lanes},
+                  "contradictions":sum(int(row.get("contradictions") or 0) for row in lanes),
+              }
+          payload={
+              "schemaVersion":1,
+              "runId":int(os.environ["GITHUB_RUN_ID"]),
+              "triggerSha":os.environ["GITHUB_SHA"],
+              "providers":summary,
+              "verifiedProviderCount":sum(1 for v in summary.values() if v["verifiedLanes"]),
+              "verifiedProviders":[k for k,v in summary.items() if v["verifiedLanes"]],
+              "contradictionProviders":[k for k,v in summary.items() if v["contradictions"]>0],
+          }
+          out=ROOT/"automation/provider-targeted-regression-recovery-latest.json"
+          out.write_text(json.dumps(payload,indent=2,sort_keys=True)+"\n")
+          print("FIELD_TARGETED_REGRESSION_RECOVERY "+json.dumps(payload,sort_keys=True))
+          PY
+
+      - name: Persist targeted verdict
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f automation/provider-targeted-regression-recovery-latest.json || exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add automation/provider-targeted-regression-recovery-latest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "ci(repair): persist targeted regression verdict"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
