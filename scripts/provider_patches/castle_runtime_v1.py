@@ -118,12 +118,22 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     for(var i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i)&255;
     return out;
   }
-  function keyBytes(secKey){
-    var primary;
-    try{primary=base64Bytes(secKey)}catch(_e){primary=utf8Bytes(s(secKey))}
+  function buildKey(primary){
     var suffix=utf8Bytes(c.keySuffix),out=new Uint8Array(16),offset=0;
     for(var i=0;i<primary.length&&offset<16;i++)out[offset++]=primary[i];
     for(var j=0;j<suffix.length&&offset<16;j++)out[offset++]=suffix[j];
+    return out;
+  }
+  function keyCandidates(secKey){
+    var out=[],seen={};
+    function add(primary,label){
+      if(!primary||!primary.length)return;
+      var key=buildKey(primary),hex=bytesHex(key);
+      if(seen[hex])return;
+      seen[hex]=1;out.push({key:key,label:label});
+    }
+    try{add(base64Bytes(secKey),"base64")}catch(_e){}
+    add(utf8Bytes(s(secKey)),"raw");
     return out;
   }
   function bytesToText(value){
@@ -140,8 +150,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     var out="";for(var i=0;i<bytes.length;i++)out+=bytes[i].toString(16).padStart(2,"0");
     return out;
   }
-  function decrypt(cipher,secKey){
-    var key=keyBytes(secKey),encrypted=base64Bytes(cipher);
+  function decryptWithKey(cipher,key){
+    var encrypted=base64Bytes(cipher);
     try{
       if(g&&typeof g.__crypto_aes_decrypt_raw==="function"){
         var plain=g.__crypto_aes_decrypt_raw(
@@ -154,20 +164,19 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         if(nativeText)return nativeText;
       }
     }catch(_e){}
-    if(typeof require!=="function")throw new Error("castle_crypto_unavailable");
-    var CryptoJS=require("crypto-js");
-    var keyWord=CryptoJS.enc.Hex.parse(bytesHex(key));
-    var cipherWord=CryptoJS.enc.Base64.parse(s(cipher));
-    var params=CryptoJS.lib.CipherParams.create({ciphertext:cipherWord});
-    var plainWord=CryptoJS.AES.decrypt(params,keyWord,{
-      iv:keyWord,
-      mode:CryptoJS.mode.CBC,
-      padding:CryptoJS.pad.Pkcs7
-    });
-    var decoded=s(plainWord.toString(CryptoJS.enc.Utf8));
-    diag("castle_decrypt","plain="+(decoded?1:0)+";len="+String(decoded.length));
-    if(!decoded)throw new Error("castle_decrypt_empty");
-    return decoded;
+    if(typeof require!=="function")return "";
+    try{
+      var CryptoJS=require("crypto-js");
+      var keyWord=CryptoJS.enc.Hex.parse(bytesHex(key));
+      var cipherWord=CryptoJS.enc.Base64.parse(s(cipher));
+      var params=CryptoJS.lib.CipherParams.create({ciphertext:cipherWord});
+      var plainWord=CryptoJS.AES.decrypt(params,keyWord,{
+        iv:keyWord,
+        mode:CryptoJS.mode.CBC,
+        padding:CryptoJS.pad.Pkcs7
+      });
+      return s(plainWord.toString(CryptoJS.enc.Utf8));
+    }catch(_e){return ""}
   }
   async function securityKey(){
     var q=new URLSearchParams({
@@ -185,8 +194,20 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     return JSON.parse(value);
   }
   async function encryptedJson(url,secKey,init){
-    var response=await request(url,init);
-    return safeJson(decrypt(await cipherText(response),secKey));
+    var response=await request(url,init),cipher=await cipherText(response),candidates=keyCandidates(secKey);
+    diag("castle_key_candidates","secLen="+String(s(secKey).length)+";count="+String(candidates.length));
+    for(var i=0;i<candidates.length;i++){
+      var decoded=decryptWithKey(cipher,candidates[i].key);
+      if(!decoded)continue;
+      try{
+        var parsed=safeJson(decoded);
+        diag("castle_decrypt","mode="+candidates[i].label+";json=1;len="+String(decoded.length));
+        return parsed;
+      }catch(_e){
+        diag("castle_decrypt","mode="+candidates[i].label+";json=0;len="+String(decoded.length));
+      }
+    }
+    throw new Error("castle_decrypt_no_valid_json");
   }
   async function search(secKey,keyword){
     var q=new URLSearchParams({
