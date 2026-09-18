@@ -499,7 +499,20 @@ def merge_hub_registry(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
         direct_values: list[str] = []
         direct = row.get("direct")
         if is_http_url(direct):
-            direct_values.append(str(direct).strip())
+            direct_value = str(direct).strip()
+            direct_values.append(direct_value)
+            # Registry current-terminal authority must survive config merging.
+            # Without this, direct_authority=explicit_current is silently lost
+            # before refresh_authoritative_hub_domains can enforce it.
+            target.setdefault("direct", direct_value)
+        for field in (
+            "direct_authority",
+            "direct_authority_source",
+            "direct_authority_observed_at",
+        ):
+            value = row.get(field)
+            if value not in (None, ""):
+                target.setdefault(field, value)
         direct_values.extend(str(item).strip() for item in row.get("direct_candidates") or [] if is_http_url(item))
         direct_values.extend(str(item).strip() for item in target.get("direct_candidates") or [] if is_http_url(item))
         direct_values = list(dict.fromkeys(direct_values))
