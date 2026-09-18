@@ -202,12 +202,27 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       secKey
     );
   }
+  function searchRows(value){
+    var out=[],seen=[];
+    function walk(v,depth){
+      if(v==null||depth>5)return;
+      if(Array.isArray(v)){for(var i=0;i<v.length;i++)walk(v[i],depth+1);return}
+      if(typeof v!=="object")return;
+      if(seen.indexOf(v)>=0)return;seen.push(v);
+      var id=s(v.id||v.redirectId||v.redirectIdStr||v.movieId),title=s(v.title||v.name||v.movieName||v.originalTitle||v.original_name);
+      if(id&&title)out.push(v);
+      var keys=Object.keys(v);
+      for(var j=0;j<keys.length;j++)walk(v[keys[j]],depth+1);
+    }
+    walk(dataBlock(value),0);
+    return out;
+  }
   function strictMovieId(value,meta){
-    var data=dataBlock(value),list=rows(data.rows||data.results||data.list);
+    var list=searchRows(value);
     if(!list.length)return "";
     var target=normalized(meta.title),best=null,bestScore=0;
     for(var i=0;i<list.length;i++){
-      var row=list[i]||{},candidate=normalized(row.title||row.name);
+      var row=list[i]||{},candidate=normalized(row.title||row.name||row.movieName||row.originalTitle||row.original_name);
       if(!candidate)continue;
       var score=0;
       if(candidate===target)score=100;
@@ -215,12 +230,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         var ratio=Math.min(candidate.length,target.length)/Math.max(candidate.length,target.length);
         if(ratio>=0.72)score=80+Math.round(ratio*10);
       }
-      var expectedYear=Number(meta.year||0),rowYear=Number(row.year||row.releaseYear||row.release_year||0);
+      var expectedYear=Number(meta.year||0),rawYear=s(row.year||row.releaseYear||row.release_year||row.releaseDate||row.release_date),ym=rawYear.match(/(?:19|20)\d{2}/),rowYear=ym?Number(ym[0]):0;
       if(expectedYear&&rowYear)score+=expectedYear===rowYear?10:-30;
       if(score>bestScore){bestScore=score;best=row}
     }
     if(!best||bestScore<80)return "";
-    return s(best.id||best.redirectId||best.redirectIdStr);
+    return s(best.id||best.redirectId||best.redirectIdStr||best.movieId);
   }
   async function details(secKey,movieId){
     var q=new URLSearchParams({
