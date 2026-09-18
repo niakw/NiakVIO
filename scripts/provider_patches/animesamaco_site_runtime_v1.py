@@ -48,7 +48,7 @@ function resultRows(html){var out=[],re=/<a[^>]+href=["']([^"']*\/anime\/[^"'#?]
 function choose(rows,expected){var n=norm(expected),best=null,bestScore=999;for(var i=0;i<rows.length;i++){var label=norm(rows[i].label),score=50;if(label===n)score=0;else if(label.indexOf(n)===0)score=5;else if(label.indexOf(n)>=0)score=10;else continue;if(/\b(?:film|movie)\b/.test(label))score+=30;if(/\b0\b/.test(label)&&!/\b0\b/.test(n))score+=20;if(score<bestScore){best=rows[i];bestScore=score}}return best}
 function videoShells(html){var out=[],seen={};function add(u,lang){u=s(u).replace(/&amp;/gi,'&').replace(/\\\//g,'/');if(!/^https?:\/\/video\.sibnet\.ru\/shell\.php\?videoid=\d+/i.test(u)||seen[u])return;seen[u]=1;out.push({url:u,lang:lang})}var block=/videoUrls\s*=\s*\{([\s\S]*?)\}/i.exec(html);if(block){var re=/(vostfr|vf)\s*:\s*["']([^"']+)["']/gi,m;while((m=re.exec(block[1]))!==null)add(m[2],m[1].toLowerCase())}var frame=/<iframe[^>]+src=["']([^"']+)["']/gi,x;while((x=frame.exec(html))!==null)add(x[1],"vf");return out}
 function sibnetMp4(html,base){var m=/player\.src\s*\(\s*\[\s*\{\s*src\s*:\s*["']([^"']+\.mp4[^"']*)["']/i.exec(html);if(!m)m=/["'](\/v\/[^"']+\.mp4[^"']*)["']/i.exec(html);if(!m)return"";try{return new URL(m[1].replace(/\\\//g,'/'),base).toString()}catch(_e){return""}}
-async function resolveShell(row,episodeUrl,q,expectedTitle){var shell=await text(row.url,{referer:episodeUrl,headers:headers(episodeUrl)});if(!shell)return null;var media=sibnetMp4(shell.text,shell.url);if(!media)return null;var label=row.lang==="vf"?"VF":"VOSTFR";return{name:"AnimeSamaCo | "+label,title:expectedTitle+" | S"+q.season+"E"+q.episode+" | "+label,url:media,quality:"HD",language:label,provider:"animesama-co",isDirect:true,headers:headers(shell.url,"video/mp4,*/*")}}
+async function resolveShell(row,episodeUrl,q,expectedTitle){var ref=s(c.sibnetReferer||"https://video.sibnet.ru/");var shell=await text(row.url,{referer:ref,headers:headers(ref)});if(!shell)return null;var media=sibnetMp4(shell.text,shell.url);if(!media)return null;var label=row.lang==="vf"?"VF":"VOSTFR";return{name:"AnimeSamaCo | "+label,title:expectedTitle+" | S"+q.season+"E"+q.episode+" | "+label,url:media,quality:"HD",language:label,provider:"animesama-co",isDirect:true,headers:headers(ref,"video/mp4,*/*")}}
 async function resolve(a,_ctx){var q=request(a);if(q===null)return null;if(!q||!q.tmdbId)return[];var m=await meta(q),t=title(m);if(!t)return[];var search=await text(c.base+"/template-php/defaut/fetch.php",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded","Referer":c.base+"/"},body:"query="+encodeURIComponent(t)});if(!search)return[];var picked=choose(resultRows(search.text),t);if(!picked)return[];var root=picked.url.replace(/\.html(?:[?#].*)?$/i,'');var episodeUrl=root+"/saison-"+q.season+"/episode-"+q.episode+".html";var episode=await text(episodeUrl,{referer:picked.url});if(!episode)return[];var identity=(episode.text.match(/<title[^>]*>([\s\S]*?)<\/title>/i)||[])[1]||"";var ni=norm(identity),nt=norm(t);if(ni.indexOf(nt)<0||ni.indexOf("saison "+q.season)<0||ni.indexOf("episode "+q.episode)<0)return[];var shells=videoShells(episode.text),out=[],seen={};for(var i=0;i<shells.length&&out.length<3;i++){var st=await resolveShell(shells[i],episode.url,q,t);if(st&&st.url&&!seen[st.url]){seen[st.url]=1;out.push(st)}}return out}
 try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:"animesama-co",resolve:resolve}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
@@ -59,6 +59,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     cfg = {
         "base": "https://animesama.co",
         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145 Safari/537.36",
+        "sibnetReferer": "https://video.sibnet.ru/",
     }
     cfg.update(dict(options or {}))
     cfg["base"] = str(cfg.get("base") or "").rstrip("/")
@@ -70,7 +71,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         MANAGED_FIX_ID,
         js.lstrip(),
         data={
-            "runtimeFamily": "animesamaco-search-episode-sibnet-v2",
+            "runtimeFamily": "animesamaco-search-episode-sibnet-v3-canonical-referer",
             "identity": "exact-search-title-plus-season-episode-page",
             "runtimeResolverRegistration": True,
             "coreFinalOutputOwnership": True,

@@ -9,9 +9,9 @@ import anime_catalogue_runtime_common as common
 
 MANAGED_FIX_ID = "PROVIDER.NEKO-SAMA.RUNTIME.V1"
 MARKER = "NIAKVIO_NEKO_SAMA_RUNTIME_V2"
-CONTRACT_MARKER = "NIAKVIO_NEKO_SEARCH_SEASON_EPLISTER_V2"
+CONTRACT_MARKER = "NIAKVIO_NEKO_SEARCH_SEASON_EPLISTER_V3_TERMINAL_CRAWL"
 
-NEKO_BLOCK = r'''  /* NIAKVIO_NEKO_SEARCH_SEASON_EPLISTER_V2 */
+NEKO_BLOCK = r'''  /* NIAKVIO_NEKO_SEARCH_SEASON_EPLISTER_V3_TERMINAL_CRAWL */
   function nekoEpisodes(html){
     var out=[],seen={},src=s(html),start=src.indexOf("eplister");if(start<0)return out;
     var end=src.indexOf("</ul>",start),block=end>=0?src.slice(start,end):src.slice(start,start+100000);
@@ -59,7 +59,7 @@ NEKO_BLOCK = r'''  /* NIAKVIO_NEKO_SEARCH_SEASON_EPLISTER_V2 */
     var series=await nekoFindSeries(meta);if(!series||!series.episodes||!series.episodes.length)return [];
     var ep=null;for(var i=0;i<series.episodes.length;i++)if(series.episodes[i].num===meta.episode){ep=series.episodes[i];break}if(!ep)return [];
     var eh=await text(ep.url,"text/html,*/*"),buttons=nekoButtons(eh),ordered=buttons.filter(function(b){return b.language==="VF"}).concat(buttons.filter(function(b){return b.language==="VOSTFR"})),out=[],have={};
-    for(var j=0;j<ordered.length&&out.length<2;j++){var btn=ordered[j],language=btn.language;if(have[language])continue;var u=btn.url;if(u.indexOf("animes-sama.su")>=0){var ph=await text(u,"text/html,*/*"),im=ph.match(/class=["'][^"']*player-iframe[^"']*["'][\s\S]{0,400}?src=["']([^"']+)["']/i)||ph.match(/<iframe[^>]*src=["']([^"']+)["']/i);if(!im)continue;u=abs(im[1].replace(/&#0*38;/g,"&"),btn.url)}if(!u)continue;out.push(stream(u,c.name+" ["+language+"] "+(ep.label||("Épisode "+meta.episode)),language,"HD",null,{"Referer":ep.url}));have[language]=1}
+    for(var j=0;j<ordered.length&&out.length<2;j++){var btn=ordered[j],language=btn.language;if(have[language])continue;var u=btn.url;if(u.indexOf("animes-sama.su")>=0){var ph=await text(u,"text/html,*/*"),im=ph.match(/class=["'][^"']*player-iframe[^"']*["'][\s\S]{0,400}?src=["']([^"']+)["']/i)||ph.match(/<iframe[^>]*src=["']([^"']+)["']/i);if(!im)continue;u=abs(im[1].replace(/&#0*38;/g,"&"),btn.url)}if(!u)continue;var direct=[];try{if(typeof _crawlDirectMedia==="function")direct=await _crawlDirectMedia([u],ep.url,2)}catch(_e){direct=[]}if(!Array.isArray(direct)||!direct.length)continue;var st=Object.assign({},direct[0]);st.name=c.name+" ["+language+"]";st.title=(st.title||c.name)+" ["+language+"] "+(ep.label||("Épisode "+meta.episode));st.language=language;st.provider="neko-sama";if(!st.headers)st.headers={"Referer":ep.url};out.push(st);have[language]=1}
     return out
   }'''
 
