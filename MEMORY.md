@@ -2011,4 +2011,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Critical invariant going forward: Provider repair survival must validate not only managed-fix markers/scripts, but also **semantic route/recipe authority**. A rematerialization that drops a previously proved route family is a regression even when the generated bundle compiles and all repair markers survive.
 - Current domains/Domain Refresh and newer provider Lego versions remain authoritative; this repair restores lost route knowledge only and does not roll back domain updates or newer runtimes.
 - Next execution: materialize/test the restored providers in parallel one-provider jobs, then compare actual >=1-green lane count. Do not claim recovery until terminal playable proof exists.
+## 2026-09-18 — PR122 route restore batch partial result
+
+- Temporary parallel proof PR #166 / run 35379041184 tests the eight providers whose route/recipe authority was lost after PR #122.
+- First completed rows:
+  - VidFast rematerialized from current authority with restored #122 `/movie/{tmdbId}` + `/tv/{tmdbId}/{season}/{episode}` and certifies FULL movie+tv. This validates route restoration but is **not a net census gain** because VidFast was already green in the frozen 5.21.57 census.
+  - Flemmix remains zero; current runtime reaches `flemmix.party` and ARM but ends in `provider_network_http_error`. Restoring the #122 search/signed-embed routes alone does not recover it.
+  - VidLove remains zero; despite restoring the #122 `api.vidlove.cc` api_recipe, current V2 provider Lego still executes the newer `ballerinacappuccinalovestungtungtungsahur.com` candidate path. This proves a provider-Lego-vs-structured-authority precedence bug: restored DATA can remain unused by a newer custom Lego.
+- Do not count a route-survival restore as recovered unless the exact rematerialized bundle returns terminal playable proof.
 
