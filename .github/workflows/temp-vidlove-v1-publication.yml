@@ -1,5 +1,5 @@
 name: TEMP - Publish VidLove V1 and Kehflix Projection
-# retry: rotating VidLove movie+tv corpus
+# retry: diagnose VidLove HLS playback context
 
 on:
   push:
@@ -183,7 +183,7 @@ jobs:
           python scripts/sync_manifest_projection_rows.py --check
           git diff --check
 
-      - name: Prove exact rematerialized VidLove movie and TV lanes
+      - name: Diagnose exact VidLove HLS playback context
         shell: bash
         run: |
           set -euo pipefail
@@ -192,53 +192,99 @@ jobs:
           import json
           import pathlib
           import sys
+          import urllib.error
+          import urllib.parse
           root=pathlib.Path('.').resolve()
           sys.path.insert(0,str(root/'scripts'))
+          import parity_hls_terminal_probe as hls
           import run_provider_upstream_parity as parity
           import run_provider_upstream_parity_v3 as v3
 
-          fixtures=[
-              ('movie',{'slug':'interstellar-2014','tmdbId':'157336','mediaType':'movie','category':'movie','title':'Interstellar','year':2014,'expectedDurationMinutes':169}),
-              ('movie',{'slug':'the-batman-2022','tmdbId':'414906','mediaType':'movie','category':'movie','title':'The Batman','year':2022}),
-              ('movie',{'slug':'avatar-the-way-of-water-2022','tmdbId':'76600','mediaType':'movie','category':'movie','title':'Avatar: The Way of Water','year':2022}),
-              ('movie',{'slug':'django-unchained-2012','tmdbId':'68718','mediaType':'movie','category':'movie','title':'Django Unchained','year':2012}),
-              ('tv',{'slug':'house-of-the-dragon-2022-s01e01','tmdbId':'94997','mediaType':'tv','category':'tv','title':'House of the Dragon','year':2022,'season':1,'episode':1}),
-              ('tv',{'slug':'silo-2023-s01e01','tmdbId':'125988','mediaType':'tv','category':'tv','title':'Silo','year':2023,'season':1,'episode':1}),
-              ('tv',{'slug':'fallout-2024-s01e01','tmdbId':'106379','mediaType':'tv','category':'tv','title':'Fallout','year':2024,'season':1,'episode':1}),
-              ('tv',{'slug':'peaky-blinders-2013-s01e01','tmdbId':'60574','mediaType':'tv','category':'tv','title':'Peaky Blinders','year':2013,'season':1,'episode':1}),
-          ]
+          fx={'slug':'interstellar-2014','tmdbId':'157336','mediaType':'movie','category':'movie','title':'Interstellar','year':2014,'expectedDurationMinutes':169}
           local=parity.local_catalog()
           path=local['vidlove']['path']
-          rows=[]
-          lane_ok={'movie':False,'tv':False}
-          for lane,fx in fixtures:
-              result=v3._run_verified(path,v3.fixture_payload(fx,lane,upstream=False),30)
-              row={
-                  'providerId':'vidlove',
-                  'lane':lane,
-                  'fixture':fx['slug'],
-                  'streams':int(result.get('stream_count') or 0),
-                  'candidateStreams':int(result.get('candidate_stream_count') or 0),
-                  'rawStreams':int(result.get('raw_stream_count') or 0),
-                  'terminal':bool(result.get('terminal_verified')),
-                  'reasons':result.get('terminal_reasons') or [],
-                  'statuses':result.get('http_statuses') or [],
-                  'durations':result.get('terminal_media_duration_seconds') or [],
-                  'error':result.get('error_class'),
+          raw=v3._worker_raw(path,v3.fixture_payload(fx,'movie',upstream=False),30)
+          streams=[row for row in raw.get('streams') or [] if isinstance(row,dict)]
+          if not streams:
+              raise SystemExit('VidLove diagnostic: provider returned no candidate stream')
+          stream=streams[0]
+          base_headers={str(k):str(v) for k,v in (stream.get('headers') or {}).items()}
+          variants={
+              'current':dict(base_headers),
+              'no_origin':{k:v for k,v in base_headers.items() if k.casefold()!='origin'},
+              'no_referer':{k:v for k,v in base_headers.items() if k.casefold() not in {'referer','referrer'}},
+              'none':{},
+              'referer_only':{k:v for k,v in base_headers.items() if k.casefold() in {'referer','referrer'}},
+              'origin_only':{k:v for k,v in base_headers.items() if k.casefold()=='origin'},
+          }
+          results=[]
+          for name,headers in variants.items():
+              probe=v3._probe_terminal({'url':stream.get('url'),'headers':headers},30)
+              results.append({
+                  'variant':name,
+                  'headerKeys':sorted(headers),
+                  'verified':bool(probe.get('verified')),
+                  'kind':probe.get('kind'),
+                  'status':probe.get('status'),
+                  'reason':probe.get('reason'),
+              })
+
+          detail={'candidateHost':urllib.parse.urlparse(str(stream.get('url') or '')).hostname,'candidateHeaderKeys':sorted(base_headers),'variants':results}
+          try:
+              status,final,ctype,body=hls._fetch(str(stream['url']),base_headers,30,playlist=True)
+              parsed=hls.parse_hls(body,final)
+              depth=0
+              while parsed.get('master') and parsed.get('variants') and depth<2:
+                  status,final,ctype,body=hls._fetch(parsed['variants'][0],base_headers,30,playlist=True)
+                  parsed=hls.parse_hls(body,final)
+                  depth+=1
+              detail['playlist']={
+                  'status':status,
+                  'contentType':ctype,
+                  'depth':depth,
+                  'master':bool(parsed.get('master')),
+                  'segmentCount':len(parsed.get('segments') or []),
+                  'variantCount':len(parsed.get('variants') or []),
+                  'complete':bool(parsed.get('complete')),
               }
-              rows.append(row)
-              positive=row['streams'] >= 1 and row['terminal']
-              lane_ok[lane]=lane_ok[lane] or positive
-              print('VIDLOVE_V1_PROOF '+json.dumps(row,sort_keys=True))
-          report={'schemaVersion':2,'lanePlayable':lane_ok,'rows':rows}
-          pathlib.Path('health-output/vidlove-v1-proof.json').write_text(
-              json.dumps(report,ensure_ascii=False,indent=2)+'\n',
-              encoding='utf-8'
+              segments=list(parsed.get('segments') or [])
+              if segments:
+                  segment=segments[0]
+                  try:
+                      ss,sfinal,sctype,sbody=hls._fetch(segment,base_headers,30,playlist=False)
+                      head=sbody.lstrip()[:128].lower()
+                      if head.startswith(b'#extm3u'):
+                          head_kind='nested_hls'
+                      elif head.startswith(b'<!doctype') or head.startswith(b'<html'):
+                          head_kind='html'
+                      elif head.startswith(b'{') or head.startswith(b'['):
+                          head_kind='json'
+                      elif hls._segment_media(sctype,sbody):
+                          head_kind='media'
+                      elif sbody:
+                          head_kind='other_non_media'
+                      else:
+                          head_kind='empty'
+                      detail['segment']={
+                          'status':ss,
+                          'contentType':sctype,
+                          'host':urllib.parse.urlparse(sfinal).hostname,
+                          'headKind':head_kind,
+                          'bytes':len(sbody),
+                      }
+                  except urllib.error.HTTPError as exc:
+                      detail['segment']={'status':int(exc.code),'headKind':'http_error'}
+                  except Exception as exc:
+                      detail['segment']={'headKind':type(exc).__name__[:80]}
+          except Exception as exc:
+              detail['playlistError']=type(exc).__name__[:80]
+
+          pathlib.Path('health-output').mkdir(exist_ok=True)
+          pathlib.Path('health-output/vidlove-playback-header-diagnostic.json').write_text(
+              json.dumps(detail,ensure_ascii=False,indent=2)+'\n',encoding='utf-8'
           )
-          print('VIDLOVE_V1_LANE_SUMMARY '+json.dumps(lane_ok,sort_keys=True))
-          missing=[lane for lane,ok in lane_ok.items() if not ok]
-          if missing:
-              raise SystemExit('VidLove V1 has no fresh playable fixture for lanes: '+','.join(missing))
+          print('VIDLOVE_PLAYBACK_HEADER_DIAGNOSTIC '+json.dumps(detail,sort_keys=True))
+          raise SystemExit('diagnostic-only: no provider publication')
           PY
 
       - name: Record durable checkpoint and prepare Domain Refresh handoff
@@ -303,5 +349,6 @@ jobs:
           path: |
             health-output/targeted-publication-report.json
             health-output/vidlove-v1-proof.json
+            health-output/vidlove-playback-header-diagnostic.json
           retention-days: 14
           if-no-files-found: warn
