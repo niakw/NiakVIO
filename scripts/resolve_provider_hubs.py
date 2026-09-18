@@ -49,6 +49,24 @@ INFRASTRUCTURE_HOST_SUFFIXES = (
     "cloudflare.com", "github.com", "githubusercontent.com", "jsdelivr.net",
     "gstatic.com", "googleapis.com", "cdnjs.com", "unpkg.com",
 )
+
+
+def host_matches_suffixes(hostname: str, suffixes: Iterable[str]) -> bool:
+    """Match a DNS suffix only on a label boundary.
+
+    Raw str.endswith("x.com") incorrectly classifies kehflix.com as X/Twitter.
+    Exact host equality or a preceding dot is required for every domain suffix.
+    """
+    value = str(hostname or "").casefold().strip(".")
+    if not value:
+        return False
+    for raw_suffix in suffixes:
+        suffix = str(raw_suffix or "").casefold().strip(".")
+        if suffix and (value == suffix or value.endswith("." + suffix)):
+            return True
+    return False
+
+
 PARKING_MARKERS = (
     "domain is for sale", "buy this domain", "domain parked", "sedo domain parking",
     "this domain may be for sale", "website is under construction",
@@ -433,7 +451,7 @@ def links(document: str, base: str) -> list[tuple[str, str, int]]:
 
 def _default_source_type(url: str, resolver: str) -> str:
     hostname = host(url)
-    if hostname.endswith(("t.me", "telegram.me")) or resolver in {"latest_telegram_domain", "telegram_description"}:
+    if host_matches_suffixes(hostname, ("t.me", "telegram.me")) or resolver in {"latest_telegram_domain", "telegram_description"}:
         return "telegram_public"
     if resolver == "redirect":
         return "redirect"
@@ -589,7 +607,10 @@ def merge_hub_registry(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
         blocked = {str(item).lower().strip(".") for item in target.get("blocked_hosts") or [] if item}
         historical = []
         for peer_host in sorted(historical_hosts):
-            if not peer_host or peer_host in blocked or peer_host in SOCIAL_HOST_SUFFIXES + SEARCH_HOST_SUFFIXES + INFRASTRUCTURE_HOST_SUFFIXES:
+            if not peer_host or peer_host in blocked or host_matches_suffixes(
+                peer_host,
+                SOCIAL_HOST_SUFFIXES + SEARCH_HOST_SUFFIXES + INFRASTRUCTURE_HOST_SUFFIXES,
+            ):
                 continue
             candidate = f"https://{peer_host}"
             if candidate.rstrip("/") not in {url.rstrip("/") for url in target["direct_candidates"]}:
@@ -617,7 +638,10 @@ def candidate_score(provider_id: str, cfg: dict[str, Any], url: str, label: str,
     hub_hosts = discovery_source_hosts(cfg)
     if candidate_host in hub_hosts:
         return -1
-    if candidate_host.endswith(SOCIAL_HOST_SUFFIXES + SEARCH_HOST_SUFFIXES + INFRASTRUCTURE_HOST_SUFFIXES):
+    if host_matches_suffixes(
+        candidate_host,
+        SOCIAL_HOST_SUFFIXES + SEARCH_HOST_SUFFIXES + INFRASTRUCTURE_HOST_SUFFIXES,
+    ):
         return -1
     if candidate_host in {str(item).lower() for item in cfg.get("blocked_hosts") or []}:
         return -1
@@ -720,8 +744,9 @@ def choose_official(provider_id: str, cfg: dict[str, Any], hub_url: str, documen
                     if (
                         candidate_host
                         and candidate_host not in source_hosts
-                        and not candidate_host.endswith(
-                            SOCIAL_HOST_SUFFIXES + SEARCH_HOST_SUFFIXES + INFRASTRUCTURE_HOST_SUFFIXES
+                        and not host_matches_suffixes(
+                            candidate_host,
+                            SOCIAL_HOST_SUFFIXES + SEARCH_HOST_SUFFIXES + INFRASTRUCTURE_HOST_SUFFIXES,
                         )
                     ):
                         score = 45 + context_bonus
@@ -778,7 +803,10 @@ def search_candidates(provider_id: str, cfg: dict[str, Any], query: str, timeout
                 continue
             for result_url, label, index in links(document, final):
                 result_host = host(result_url)
-                if not result_host or result_host.endswith(SEARCH_HOST_SUFFIXES + SOCIAL_HOST_SUFFIXES + INFRASTRUCTURE_HOST_SUFFIXES):
+                if not result_host or host_matches_suffixes(
+                    result_host,
+                    SEARCH_HOST_SUFFIXES + SOCIAL_HOST_SUFFIXES + INFRASTRUCTURE_HOST_SUFFIXES,
+                ):
                     continue
                 if not same_brand(provider_id, result_url, cfg):
                     continue

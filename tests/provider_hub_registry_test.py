@@ -542,6 +542,15 @@ assert unsafe_history['demo']['current']['source_type'] == 'curated_direct'
 print('unsafe terminal payloads must never become provider origins')
 
 
+# DNS suffix filters must respect label boundaries.  In particular,
+# kehflix.com must never be mistaken for x.com merely because its hostname ends
+# with the same characters.
+assert resolver.host_matches_suffixes('x.com', resolver.SOCIAL_HOST_SUFFIXES)
+assert resolver.host_matches_suffixes('mobile.x.com', resolver.SOCIAL_HOST_SUFFIXES)
+assert not resolver.host_matches_suffixes('kehflix.com', resolver.SOCIAL_HOST_SUFFIXES)
+assert not resolver.host_matches_suffixes('nottelegram.me', ('telegram.me',))
+assert resolver.host_matches_suffixes('sub.telegram.me', ('telegram.me',))
+
 # HTML-card authority regression from real Kehflix hub markup: the resolver must
 # use nearby card semantics, not only the anchor text "Entrer".
 kehflix_html = r'''

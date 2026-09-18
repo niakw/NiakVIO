@@ -48,10 +48,11 @@ def _safe_authoritative_candidate(
         return False
     if hostname in {str(item).casefold().strip(".") for item in cfg.get("blocked_hosts") or []}:
         return False
-    if hostname.endswith(
+    if hubresolver.host_matches_suffixes(
+        hostname,
         hubresolver.SOCIAL_HOST_SUFFIXES
         + hubresolver.SEARCH_HOST_SUFFIXES
-        + hubresolver.INFRASTRUCTURE_HOST_SUFFIXES
+        + hubresolver.INFRASTRUCTURE_HOST_SUFFIXES,
     ):
         return False
     return True
