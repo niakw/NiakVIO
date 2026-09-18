@@ -57,6 +57,46 @@ def _safe_authoritative_candidate(
     return True
 
 
+def _explicit_current_direct_candidate(cfg: dict[str, Any]) -> dict[str, Any] | None:
+    """Return a registry-pinned current terminal when explicitly authorized.
+
+    Some address hubs retain stale cards while separately publishing a newer
+    terminal. In those cases the curated registry may record the current
+    terminal with direct_authority=explicit_current. This is opt-in: ordinary
+    providers continue to follow live hub extraction unchanged.
+    """
+    authority = str(cfg.get("direct_authority") or "").strip().casefold()
+    if authority != "explicit_current":
+        return None
+    direct = str(cfg.get("direct") or "").strip().rstrip("/")
+    hostname = hubresolver.host(direct)
+    if not direct or not hostname or not hubresolver.is_provider_terminal_site_url(direct):
+        return None
+    if hostname in hubresolver.discovery_source_hosts(cfg):
+        return None
+    blocked = {str(item).casefold().strip(".") for item in cfg.get("blocked_hosts") or []}
+    if hostname in blocked:
+        return None
+    allowed = {str(item).casefold().strip(".") for item in cfg.get("allowed_terminal_hosts") or []}
+    if allowed and hostname not in allowed:
+        return None
+    source = str(cfg.get("hub") or "").strip()
+    if not source:
+        for row in cfg.get("sources") or []:
+            if isinstance(row, dict) and str(row.get("type") or "").casefold() in ALLOWED_SOURCE_TYPES:
+                source = str(row.get("url") or "").strip()
+                if source:
+                    break
+    return {
+        "url": direct,
+        "label": "registry explicit current terminal",
+        "score": 1000,
+        "source_type": "hub",
+        "source": source,
+        "registry_explicit_current": True,
+    }
+
+
 def _redirect_candidates_from_source_observations(
     cfg: dict[str, Any],
     observations: list[dict[str, Any]],
@@ -114,7 +154,9 @@ def resolve_authoritative_hub_domain(
         mode,
         timeout,
     )
+    explicit_current = _explicit_current_direct_candidate(cfg)
     candidates = [
+        *([explicit_current] if explicit_current else []),
         *_redirect_candidates_from_source_observations(cfg, observations),
         *[
             dict(row)
@@ -147,7 +189,11 @@ def resolve_authoritative_hub_domain(
     terminal = _candidate_url(selected)
     item.update({
         "status": "site_authoritative",
-        "reason": "authoritative_hub_primary_domain_observed_no_terminal_probe",
+        "reason": (
+            "registry_explicit_current_terminal_authority"
+            if selected.get("registry_explicit_current")
+            else "authoritative_hub_primary_domain_observed_no_terminal_probe"
+        ),
         "official_site": terminal,
         "site_final_url": terminal,
         "selected_source_type": selected.get("source_type"),
