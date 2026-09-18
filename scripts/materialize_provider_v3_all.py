@@ -413,25 +413,24 @@ def provider_model(
     patch_search_plan = proof5_rows(patch.get("search_request_plan"))
     patch_provider_value_plan = proof5_rows(patch.get("provider_value_plan"))
     patch_external_identity_plan = proof5_rows(patch.get("external_identity_plan"))
-    # MATERIALIZER_EXECUTION_AUTHORITY_MONOTONIC_V25
-    patch_has_execution_authority = bool(
-        patch_proof >= 5 and (
-            patch_routes
-            or (
-                patch_recipe is not None
-                and patch_recipe_proof >= 5
-                and _recipe_is_provider_execution_authority(patch_recipe)
-            )
-            or patch_search_plan
-            or patch_provider_value_plan
-            or patch_external_identity_plan
-        )
-    )
+    # MATERIALIZER_EXECUTION_AUTHORITY_MONOTONIC_V27
+    # Execution authority is scoped per capability family. A new route proof must
+    # never erase an independently proven search/value/external-identity plan.
+    # Structured proof-v5 rows are merged patch-first and deduplicated so NiakVIO
+    # can accumulate working knowledge across hubs/providers without last-write
+    # destroying unrelated execution capabilities.
     proof_version = max(patch_proof, static_proof)
-    routes: list[str] = []
-    route_values = patch_routes if patch_has_execution_authority else [
-        *(patch.get("learned_routes") or []), *(static_model.get("routes") or [])
+
+    static_routes = [
+        str(value).strip() for value in (static_model.get("routes") or [])
+        if str(value).strip() and str(value).strip() != "/"
     ]
+    route_values = (
+        patch_routes
+        if patch_proof >= 5 and patch_routes
+        else [*patch_routes, *static_routes]
+    )
+    routes: list[str] = []
     if proof_version >= 5:
         for value in route_values:
             item = str(value).strip()
@@ -439,53 +438,42 @@ def provider_model(
                 routes.append(item)
 
     static_recipe = static_model.get("apiRecipe") if isinstance(static_model.get("apiRecipe"), dict) else None
-    candidate_recipe = patch_recipe if patch_recipe is not None else (None if patch_has_execution_authority else static_recipe)
+    static_recipe_proof = int(static_recipe.get("proofModelVersion") or 0) if isinstance(static_recipe, dict) else 0
+    if patch_recipe is not None and patch_recipe_proof >= 5:
+        candidate_recipe = patch_recipe
+    elif static_recipe is not None and static_recipe_proof >= 5:
+        candidate_recipe = static_recipe
+    else:
+        candidate_recipe = None
     recipe_proof = int(candidate_recipe.get("proofModelVersion") or 0) if isinstance(candidate_recipe, dict) else 0
     api_recipe = candidate_recipe if proof_version >= 5 and recipe_proof >= 5 else None
 
-    # MATERIALIZER_FIELD_LEVEL_MONOTONIC_AUTHORITY_V27
-    # A fresh proof in one execution family must not erase independent proven
-    # structured knowledge from another family. Patch DATA wins only when that
-    # exact field contains usable values; otherwise static proof remains fallback.
-    def execution_list(patch_key: str, static_key: str) -> list[dict[str, Any]]:
-        patch_value = patch.get(patch_key)
-        if isinstance(patch_value, list):
-            patch_rows = [
-                dict(row) for row in patch_value
-                if isinstance(row, dict) and int(row.get("proofModelVersion") or 0) >= 5
-            ]
-            if patch_rows:
-                return patch_rows
-        static_value = static_model.get(static_key)
-        if isinstance(static_value, list):
-            return [
-                dict(row) for row in static_value
-                if isinstance(row, dict) and int(row.get("proofModelVersion") or 0) >= 5
-            ]
-        return []
+    def merge_execution_rows(patch_key: str, static_key: str, limit: int) -> list[dict[str, Any]]:
+        merged: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        for source in (patch.get(patch_key), static_model.get(static_key)):
+            for row in proof5_rows(source):
+                key = json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+                if key in seen:
+                    continue
+                seen.add(key)
+                merged.append(row)
+                if len(merged) >= limit:
+                    return merged
+        return merged
 
-    def execution_strings(patch_key: str, static_key: str, limit: int) -> list[str]:
-        patch_value = patch.get(patch_key)
-        if isinstance(patch_value, list):
-            patch_items = [str(item).strip() for item in patch_value if str(item).strip()]
-            if patch_items:
-                return patch_items[:limit]
-        static_value = static_model.get(static_key)
-        if isinstance(static_value, list):
-            return [str(item).strip() for item in static_value if str(item).strip()][:limit]
-        return []
-
-    derived_search_plans = _derived_search_request_plans(static_model, static_row)
-    search_request_plan = execution_list("search_request_plan", "searchRequestPlan")
-    if not search_request_plan:
-        search_request_plan = derived_search_plans
-    proof_search_bases = execution_strings("proof_search_bases", "proofSearchBases", 6)
-    if not proof_search_bases:
-        proof_search_bases = [
-            str(row.get("base") or "").strip()
-            for row in search_request_plan
-            if str(row.get("base") or "").strip()
-        ][:6]
+    def merge_execution_strings(patch_key: str, static_key: str, limit: int) -> list[str]:
+        merged: list[str] = []
+        for source in (patch.get(patch_key), static_model.get(static_key)):
+            if not isinstance(source, list):
+                continue
+            for value in source:
+                item = str(value).strip()
+                if item and item not in merged:
+                    merged.append(item)
+                    if len(merged) >= limit:
+                        return merged
+        return merged
 
     return {
         "knownSite": official_site,
