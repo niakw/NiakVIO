@@ -105,11 +105,10 @@
       "stages": [
         "provider_network_http_error"
       ],
-      "providerCount": 4,
+      "providerCount": 3,
       "providers": [
         "allwish",
         "animesalt",
-        "fullanime",
         "voiranime"
       ],
       "repairScope": "core_or_capability_family_first"
@@ -120,9 +119,8 @@
       "stages": [
         "provider_network_exception"
       ],
-      "providerCount": 2,
+      "providerCount": 1,
       "providers": [
-        "desiflix",
         "yflix"
       ],
       "repairScope": "core_or_capability_family_first"
@@ -176,19 +174,6 @@
       "providerCount": 1,
       "providers": [
         "uhdmovies"
-      ],
-      "repairScope": "core_or_capability_family_first"
-    },
-    {
-      "failureClass": "runtime_compatibility",
-      "lane": "tv",
-      "stages": [
-        "provider_network_exception",
-        "timeout"
-      ],
-      "providerCount": 1,
-      "providers": [
-        "desiflix"
       ],
       "repairScope": "core_or_capability_family_first"
     },
@@ -395,33 +380,6 @@
       ]
     },
     {
-      "providerId": "desiflix",
-      "enabled": false,
-      "missingTypes": [
-        "movie",
-        "tv"
-      ],
-      "lanes": [
-        {
-          "lane": "movie",
-          "failureClass": "runtime_compatibility",
-          "stages": [
-            "provider_network_exception"
-          ],
-          "attemptCount": 12
-        },
-        {
-          "lane": "tv",
-          "failureClass": "runtime_compatibility",
-          "stages": [
-            "provider_network_exception",
-            "timeout"
-          ],
-          "attemptCount": 12
-        }
-      ]
-    },
-    {
       "providerId": "flemmix",
       "enabled": true,
       "missingTypes": [
@@ -439,23 +397,6 @@
         },
         {
           "lane": "tv",
-          "failureClass": "request_transport_or_upstream",
-          "stages": [
-            "provider_network_http_error"
-          ],
-          "attemptCount": 12
-        }
-      ]
-    },
-    {
-      "providerId": "fullanime",
-      "enabled": false,
-      "missingTypes": [
-        "anime"
-      ],
-      "lanes": [
-        {
-          "lane": "anime",
           "failureClass": "request_transport_or_upstream",
           "stages": [
             "provider_network_http_error"
@@ -804,6 +745,25 @@
           "attemptCount": 12
         }
       ]
+    }
+  ],
+  "repairEligibleProviderCount": 25,
+  "disabledRetainedProviderCount": 2,
+  "disabledProviders": [
+    {
+      "providerId": "desiflix",
+      "missingTypes": [
+        "movie",
+        "tv"
+      ],
+      "state": "disabled-retained-not-repair-eligible"
+    },
+    {
+      "providerId": "fullanime",
+      "missingTypes": [
+        "anime"
+      ],
+      "state": "disabled-retained-not-repair-eligible"
     }
   ]
 }
