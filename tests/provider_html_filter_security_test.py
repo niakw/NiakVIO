@@ -25,7 +25,7 @@ SOURCE_PATHS = (
     ROOT / "scripts/provider_patches/sekai_inline_media_runtime_v1.py",
     ROOT / "scripts/provider_patches/flemmix_current_runtime_v1.py",
     ROOT / "scripts/provider_patches/allanime_current_runtime_v1.py",
-    ROOT / "scripts/provider_patches/allwish_current_runtime_v1.py",
+    ROOT / "scripts/provider_patches/allwish_current_runtime_v2.py",
     ROOT / "scripts/provider_patches/wookafr_current_runtime_v2.py",
 )
 
