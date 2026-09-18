@@ -95,9 +95,13 @@ def build(
     registry_by_id = registry.get("providers") if isinstance(registry.get("providers"), dict) else {}
 
     providers = []
-    active_rows = [
+    manifest_rows = [
         row for row in manifest.get("scrapers") or []
-        if isinstance(row, dict) and cid(row.get("id")) and row.get("enabled") is not False
+        if isinstance(row, dict) and cid(row.get("id"))
+    ]
+    active_rows = [
+        row for row in manifest_rows
+        if row.get("enabled") is not False
     ]
     for row in active_rows:
         provider = cid(row.get("id"))
@@ -189,20 +193,65 @@ def build(
         })
 
     certified = [row for row in providers if row["certified"]]
-    total = len(providers)
-    ratio = len(certified) / total if total else 1.0
+    active_total = len(providers)
+    active_ratio = len(certified) / active_total if active_total else 1.0
+
+    certified_manifest_ids = {row["providerId"] for row in certified}
+    for row in manifest_rows:
+        if row.get("enabled") is not False:
+            continue
+        provider = cid(row.get("id"))
+        filename = str(row.get("filename") or "")
+        bundle_sha = sha256_file((ROOT / filename).resolve()) if filename else None
+        required = semantic_types(row)
+        if not bundle_sha or not required:
+            continue
+        node_row = node_by_id.get(provider) if isinstance(node_by_id.get(provider), dict) else {}
+        reg_row = registry_by_id.get(provider) if isinstance(registry_by_id, dict) and isinstance(registry_by_id.get(provider), dict) else {}
+        lane_ok = []
+        for lane in required:
+            positive = False
+            node_lane = (node_row.get("lanes") or {}).get(lane) if isinstance(node_row.get("lanes"), dict) else None
+            if (
+                node_row.get("bundleSha256") == bundle_sha
+                and isinstance(node_lane, dict)
+                and node_lane.get("state") == "certified"
+            ):
+                positive = True
+            reg_lane = (reg_row.get("lanes") or {}).get(lane) if isinstance(reg_row.get("lanes"), dict) else None
+            if (
+                isinstance(reg_lane, dict)
+                and reg_lane.get("state") == "certified"
+                and reg_lane.get("bundleSha256") == bundle_sha
+            ):
+                positive = True
+            for item in native.get(provider) or []:
+                if (item.get("lanes") or {}).get(lane) == "positive":
+                    positive = True
+                    break
+            lane_ok.append(positive)
+        if lane_ok and all(lane_ok):
+            certified_manifest_ids.add(provider)
+
+    manifest_total = len(manifest_rows)
+    manifest_certified = len(certified_manifest_ids)
+    manifest_ratio = manifest_certified / manifest_total if manifest_total else 1.0
     minimum_yield = max(0.0, min(float(minimum_yield), 1.0))
     return {
         "schemaVersion": 1,
         "authority": "provider-activation-consensus-v1",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "manifestVersion": manifest.get("version"),
-        "activeCandidateCount": total,
+        "manifestProviderCount": manifest_total,
+        "certifiedManifestCount": manifest_certified,
+        "activeCandidateCount": active_total,
         "certifiedCount": len(certified),
-        "pendingNativeFallbackCount": total - len(certified),
-        "autoCertificationRatio": round(ratio, 4),
+        "certifiedActiveCount": len(certified),
+        "pendingNativeFallbackCount": active_total - len(certified),
+        "autoCertificationRatio": round(manifest_ratio, 4),
+        "activeAutoCertificationRatio": round(active_ratio, 4),
         "minimumAutoCertificationRatio": minimum_yield,
-        "architectureState": "auto-yield-sufficient" if total < 8 or ratio >= minimum_yield else "architecture-defect-low-auto-yield",
+        "architectureState": "auto-yield-sufficient" if manifest_total < 8 or manifest_ratio >= minimum_yield else "architecture-defect-low-auto-yield",
         "negativeNodeEvidenceCanDisable": False,
         "providers": providers,
     }
@@ -226,7 +275,8 @@ def main() -> int:
     args.output.resolve().write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         "FIELD_PROVIDER_ACTIVATION_CONSENSUS "
-        f"certified={payload['certifiedCount']}/{payload['activeCandidateCount']} "
+        f"certified_manifest={payload['certifiedManifestCount']}/{payload['manifestProviderCount']} "
+        f"certified_active={payload['certifiedActiveCount']}/{payload['activeCandidateCount']} "
         f"pending_native={payload['pendingNativeFallbackCount']} ratio={payload['autoCertificationRatio']:.4f} "
         f"architecture={payload['architectureState']}"
     )
