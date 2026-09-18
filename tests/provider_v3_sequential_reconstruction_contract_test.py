@@ -189,6 +189,48 @@ assert purstream["domain_substitutions"]["api.purstream.stream"] == "api.purstre
 future = purstream_overrides["provider_patches"]["future-provider"]["domain_substitutions"]
 assert future == {"old.future": "mid.future"}, future
 
+# Fresh proof-owned API recipe authority outranks stale static memory. This is
+# the exact VidLove V1 regression: provider-overrides carried current playable
+# api.vidlove.cc proof while static knowledge still described an older backend.
+vidlove_overrides = {
+    "provider_patches": {
+        "vidlove": {
+            "route_proof_version": 5,
+            "official_site": "https://player.vidlove.cc",
+            "api_recipe": {
+                "proofModelVersion": 5,
+                "base": "https://api.vidlove.cc",
+                "referer": "https://player.vidlove.cc/",
+                "origin": "https://player.vidlove.cc",
+                "directRoute": "/{media}?id={tmdbId}&mode=json&season={season}&episode={episode}",
+                "requestTimeoutMs": 8000,
+            },
+        }
+    }
+}
+vidlove_static = {
+    "providers": {
+        "vidlove": {
+            "model": {
+                "knownSite": "https://player.vidlove.cc",
+                "officialSite": "https://player.vidlove.cc",
+                "apiRecipe": {
+                    "base": "https://stale-api.example.invalid",
+                    "referer": "https://stale-player.example.invalid/",
+                    "directRoute": "/stale/{id}",
+                },
+            }
+        }
+    }
+}
+vidlove_before = dict(vidlove_overrides["provider_patches"]["vidlove"]["api_recipe"])
+module.reconcile_provider_authority(vidlove_overrides, vidlove_static, "vidlove")
+vidlove_recipe = vidlove_overrides["provider_patches"]["vidlove"]["api_recipe"]
+assert vidlove_recipe == vidlove_before, vidlove_recipe
+assert vidlove_recipe["base"] == "https://api.vidlove.cc", vidlove_recipe
+assert vidlove_recipe["referer"] == "https://player.vidlove.cc/", vidlove_recipe
+assert vidlove_recipe["directRoute"].startswith("/{media}?id={tmdbId}"), vidlove_recipe
+
 print(
     "Provider v3 sequential reconstruction contract passed: candidate N materialize -> "
     "live proof -> DATA finalize -> final N materialize -> final JS live proof -> only then N+1; "
