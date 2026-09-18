@@ -1914,4 +1914,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Priority is the 9-provider 200->0 cluster because it offers the best chance of multi-provider Core/plan fixes without external anti-bot dependency.
 - ShowBox static knowledge proves a Learning false-positive: historical root/query routes were marked live-validated from HTTP-200 service metadata even though they produced no provider value or stream. The actual historical proxy contract is `/api/media/<movie|tv>/...` plus cookie/token and FebBox traversal. Future Learning must distinguish transport-live 2xx from execution-authoritative causal proof.
 - AniKoto V30b remains extraction-complete but terminal-CDN 403 in Node even after WebCrypto AES + HMAC signing + playback context. No more blind crypto/header changes; reconcile Native/manual evidence.
+### 2026-09-18 — Provider runtime-resolver consumer V36 checkpoint
+
+- V31 root-cause audit found Vostfree already has a clean owned Lego `vostfree_dle_uqload_runtime_v1.py` that exposes `globalThis.__niakvioProviderRuntimeResolverV1={provider:"vostfree",resolve:...}`, while ProviderBase v4 had **no consumer for that contract**. The repair Lego therefore survived structurally but was never executed; V31 contacted ARM only.
+- Commit **523716b5df06ff6c171a8dad1f1aef293942d8a3** adds ProviderBase consumer V36. It runs after supported-type gating but **before generic runtime-plan availability**, verifies resolver owner equals the current provider id, invokes the bounded provider-owned resolver, accepts only HTTP(S) row objects, and leaves downstream Core final-output guards in ownership.
+- This is a generic architecture fix intended for current/future Lego providers, not a Vostfree-only shortcut. A dedicated contract test was added immediately afterward; next action is a Vostfree-only materialize+certify and a scan of all provider patch scripts using the resolver-v1 contract.
 
