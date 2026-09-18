@@ -67,6 +67,24 @@ def certification_by_id(certification: dict[str, Any]) -> dict[str, dict[str, An
     }
 
 
+def exact_positive_lanes(row: dict[str, Any], cert: dict[str, Any] | None) -> set[str]:
+    """Return exact-bundle playable lanes; one lane is enough for architecture yield."""
+    if not isinstance(cert, dict):
+        return set()
+    current_sha = file_sha(row)
+    if not current_sha or str(cert.get("bundleSha256") or "") != current_sha:
+        return set()
+    manifest_required = semantic_types(row)
+    cert_required = {cid(value) for value in cert.get("requiredTypes") or [] if cid(value) in LANES}
+    if not manifest_required or cert_required != manifest_required:
+        return set()
+    return {
+        cid(value)
+        for value in cert.get("certifiedTypes") or []
+        if cid(value) in manifest_required
+    }
+
+
 def exact_certified(row: dict[str, Any], cert: dict[str, Any] | None) -> tuple[bool, str]:
     if not isinstance(cert, dict):
         return False, "missing_certificate"
@@ -109,7 +127,9 @@ def enforce(
         row = dict(original)
         provider = cid(row.get("id"))
         was_enabled = row.get("enabled") is not False
-        ok, reason = exact_certified(row, certs.get(provider))
+        cert = certs.get(provider)
+        positive_lanes = exact_positive_lanes(row, cert)
+        ok, reason = exact_certified(row, cert)
         if ok:
             if was_enabled:
                 kept.append(provider)
@@ -129,6 +149,8 @@ def enforce(
             "providerId": provider,
             "wasEnabled": was_enabled,
             "exactCertified": ok,
+            "exactPositiveLanes": sorted(positive_lanes),
+            "hasExactPositiveLane": bool(positive_lanes),
             "reason": reason,
             "action": "disabled" if provider in disabled else "reenabled" if provider in reenabled else "kept",
         })
@@ -139,13 +161,15 @@ def enforce(
     active_before = [cid(row.get("id")) for row in manifest_rows if row.get("enabled") is not False]
     certified_before = [row["providerId"] for row in decisions if row["wasEnabled"] and row["exactCertified"]]
     certified_manifest = [row["providerId"] for row in decisions if row["exactCertified"]]
+    green_before = [row["providerId"] for row in decisions if row["wasEnabled"] and row["hasExactPositiveLane"]]
+    green_manifest = [row["providerId"] for row in decisions if row["hasExactPositiveLane"]]
     full_manifest_census = (
         bool(certification.get("fullManifestCensus"))
         and int(certification.get("manifestProviderCount") or 0) == manifest_total
         and int(certification.get("selectedProviderCount") or certification.get("providerCount") or 0) == manifest_total
     )
-    yield_ratio = (len(certified_manifest) / manifest_total) if full_manifest_census and manifest_total else None
-    active_yield_ratio = (len(certified_before) / len(active_before)) if active_before else 1.0
+    yield_ratio = (len(green_manifest) / manifest_total) if full_manifest_census and manifest_total else None
+    active_yield_ratio = (len(green_before) / len(active_before)) if active_before else 1.0
     report = {
         "schemaVersion": 1,
         "authority": "provider-activation-contract-v1",
@@ -156,10 +180,14 @@ def enforce(
         "manifestProviderCount": manifest_total,
         "exactCertifiedManifest": certified_manifest,
         "exactCertifiedManifestCount": len(certified_manifest),
+        "exactGreenManifest": green_manifest,
+        "exactGreenManifestCount": len(green_manifest),
         "activeBefore": active_before,
         "activeBeforeCount": len(active_before),
         "exactCertifiedBefore": certified_before,
         "exactCertifiedBeforeCount": len(certified_before),
+        "exactGreenBefore": green_before,
+        "exactGreenBeforeCount": len(green_before),
         "bootstrapYieldRatio": round(yield_ratio, 4) if yield_ratio is not None else None,
         "activeYieldRatio": round(active_yield_ratio, 4),
         "keptActive": kept,
@@ -235,16 +263,20 @@ def main() -> int:
     if report["fullManifestCensus"]:
         print(
             "FIELD_PROVIDER_ACTIVATION_YIELD "
-            f"certified_manifest={report['exactCertifiedManifestCount']}/{report['manifestProviderCount']} "
-            f"certified_active={report['exactCertifiedBeforeCount']}/{report['activeBeforeCount']} "
+            f"green_manifest={report['exactGreenManifestCount']}/{report['manifestProviderCount']} "
+            f"full_manifest={report['exactCertifiedManifestCount']}/{report['manifestProviderCount']} "
+            f"green_active={report['exactGreenBeforeCount']}/{report['activeBeforeCount']} "
+            f"full_active={report['exactCertifiedBeforeCount']}/{report['activeBeforeCount']} "
             f"ratio={report['bootstrapYieldRatio']:.4f} floor={minimum_yield:.4f} "
             f"architecture={report['architectureState']} mass_disable_blocked={str(report['massDisableBlocked']).lower()}"
         )
     else:
         print(
             "FIELD_PROVIDER_ACTIVATION_YIELD "
-            f"certified_manifest=unknown/{report['manifestProviderCount']} "
-            f"selected_evidence_exact={report['exactCertifiedManifestCount']} "
+            f"green_manifest=unknown/{report['manifestProviderCount']} "
+            f"full_manifest=unknown/{report['manifestProviderCount']} "
+            f"selected_green_exact={report['exactGreenManifestCount']} "
+            f"selected_full_exact={report['exactCertifiedManifestCount']} "
             f"global_ratio=unknown floor={minimum_yield:.4f} "
             f"architecture={report['architectureState']} mass_disable_blocked=true"
         )
