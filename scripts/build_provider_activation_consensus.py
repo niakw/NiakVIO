@@ -73,6 +73,11 @@ def parse_native_logs(paths: list[Path]) -> dict[str, list[dict[str, Any]]]:
                 "status": match.group("status").strip().upper(),
                 "lanes": lanes,
                 "log": path.name,
+                "bundleSha256": (
+                    match.group("bundle_sha").casefold()
+                    if match.group("bundle_sha") and match.group("bundle_sha") != "missing"
+                    else None
+                ),
             })
     return dict(evidence)
 
@@ -153,18 +158,24 @@ def build(
 
             for item in native.get(provider) or []:
                 outcome = (item.get("lanes") or {}).get(lane)
-                if outcome == "positive":
+                native_bundle_sha = str(item.get("bundleSha256") or "").casefold()
+                exact_native_bundle = bool(bundle_sha and native_bundle_sha == bundle_sha.casefold())
+                if outcome == "positive" and exact_native_bundle:
                     positive.append({
-                        "source": "native_lab",
+                        "source": "native_lab_exact_bundle",
                         "client": item.get("client"),
                         "status": item.get("status"),
                         "log": item.get("log"),
+                        "bundleSha256": native_bundle_sha,
                     })
                 elif outcome:
                     negative.append({
                         "source": "native_lab",
                         "client": item.get("client"),
                         "outcome": outcome,
+                        "log": item.get("log"),
+                        "bundleSha256": native_bundle_sha or None,
+                        "scope": "exact_bundle" if exact_native_bundle else "unscoped_or_bundle_mismatch",
                         "authoritativeForDisable": False,
                     })
 
@@ -226,7 +237,10 @@ def build(
             ):
                 positive = True
             for item in native.get(provider) or []:
-                if (item.get("lanes") or {}).get(lane) == "positive":
+                if (
+                    (item.get("lanes") or {}).get(lane) == "positive"
+                    and str(item.get("bundleSha256") or "").casefold() == bundle_sha.casefold()
+                ):
                     positive = True
                     break
             lane_ok.append(positive)
