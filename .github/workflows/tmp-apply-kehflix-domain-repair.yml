@@ -1,0 +1,96 @@
+name: TMP - Apply Kehflix Domain Repair
+
+on:
+  pull_request:
+    branches:
+      - tmp/apply-kehflix-domain-base
+
+permissions:
+  contents: write
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NIAKVIO_TRACE_RESPONSE_SHAPE: '1'
+  NUVIO_PROVIDER_V3_CONTEXT: workspace
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/provider-activation-certification-v1
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Lock branch head
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD | tee "$RUNNER_TEMP/base-sha"
+
+      - name: Apply official Kehflix Domain Refresh
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python3 scripts/domain_refresh_transaction_v2.py             --apply             --provider kehflix             --mode quick             --timeout 8             --workers 1             --output health-output/kehflix-domain-report.json             --changes-output health-output/kehflix-domain-changes.json
+
+      - name: Validate exact authority and playback
+        run: |
+          set -euo pipefail
+          python3 tests/provider_semantic_authority_ledger_test.py
+          python3 tests/kehflix_terminal_domain_v1_test.py
+          python3 tests/provider_patch_quickjs_compat_test.py
+          python3 - <<'PY'
+          import json
+          o=json.load(open('provider-overrides.json'))['provider_patches']['kehflix']
+          h=json.load(open('provider-hubs.json'))['providers']['kehflix']
+          d=json.load(open('provider-domain-history.json'))['providers']['kehflix']
+          assert o.get('official_site')=='https://kehflix.wiki', o
+          assert (o.get('domain_substitutions') or {}).get('kehflix.lol')=='kehflix.wiki', o
+          assert 'kehflix.wiki' not in (o.get('domain_substitutions') or {}), o
+          assert h.get('direct')=='https://kehflix.wiki/', h
+          assert (d.get('current') or {}).get('host')=='kehflix.wiki', d
+          PY
+          python3 scripts/materialize_provider_v3_one.py kehflix
+          python3 scripts/certify_provider_playable_lanes.py             --manifest manifest.json             --include-disabled             --provider kehflix             --candidate-limit 6             --timeout 25             --workers 1             --seed "kehflix-persist-${GITHUB_RUN_ID}"             --output health-output/kehflix-cert.json
+          python3 - <<'PY'
+          import json
+          row=(json.load(open('health-output/kehflix-cert.json')).get('providers') or [{}])[0]
+          lanes=row.get('lanes') or {}
+          green=[k for k,v in lanes.items() if (v or {}).get('state')=='certified']
+          assert set(green)>={'movie','tv','anime'}, (green,row)
+          assert row.get('certified') is True, row
+          print('FIELD_KEHFLIX_PERSIST_PROOF green='+','.join(green)+' full=true')
+          PY
+
+      - name: Commit exact Domain Refresh transaction
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add provider-overrides.json provider-hubs.json provider-domain-history.json             manifest.json provider-v3-materialization.json providers/ PROVENANCE.json
+          if git diff --cached --quiet; then
+            echo 'FIELD_KEHFLIX_PERSIST no_change=true'
+            exit 0
+          fi
+          git commit -m 'fix(domains): restore Kehflix canonical wiki authority'
+          BASE="$(cat "$RUNNER_TEMP/base-sha")"
+          git fetch origin fix/provider-activation-certification-v1
+          REMOTE="$(git rev-parse origin/fix/provider-activation-certification-v1)"
+          if [ "$REMOTE" != "$BASE" ]; then
+            echo "FIELD_KEHFLIX_PERSIST skipped=branch_advanced base=$BASE remote=$REMOTE"
+            exit 1
+          fi
+          git push origin HEAD:fix/provider-activation-certification-v1
+          echo "FIELD_KEHFLIX_PERSIST pushed=$(git rev-parse HEAD)"
