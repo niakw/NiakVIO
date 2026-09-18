@@ -2046,4 +2046,14 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The legacy-named test `tests/pr122_route_authority_survival_test.py` was rewritten as the PR127 supersession fence contract. It now fails if PR122-only routes leak back and explicitly requires the newer AllWish V2 / VidFast V2 / VidLove V2 Lego supersessions. Test commit: `a09fbe0679507c81e0aa3f2f4189133c6da5059c`.
 - Important correction to the earlier MEMORY checkpoint titled “PR #122 -> #127 route-authority loss confirmed and repaired”: that restore was **over-broad**. Historical #122 routes are evidence only; they are not globally authoritative. Route/recipe precedence is **latest evidence-backed supersession**, with PR127/later winning where they changed the family.
 - Next: audit the remaining PR127-changed provider Lego/base options for stale #122 domains, then parallel one-provider proof on the fenced batch. Do not count any route restore as a recovery without terminal playable proof.
+## 2026-09-18 — PR chain audit #122 → #127
+
+- PR #122 head `4e9729d865f6a069bda567fbeac520d714bef4bd` contained the large provider repair set but **was closed unmerged**. It had 340 commits.
+- PR #123 was based directly on `main` and therefore immediately lost any #122-only provider authority. This is the first point where the repaired route/recipe state diverges, even though #123 itself only changed derived manifests/synchronization.
+- PR #124 is release-integrity path handling only; no provider execution authority change.
+- PR #125 is the one-line minimizer publication. It did not edit `provider-overrides.json`, but it rewrote/minified hundreds of provider bundles and therefore **froze the already-amputated post-#122 state into published bundles**. It must still be checked for additional semantic/runtime regressions beyond the lost #122 authority.
+- PR #126 changes CodeQL/final-gate CI only; no provider behavior.
+- PR #127 rematerialized/rebuilt ~200 files from `main` after #126 and therefore inherited the post-#122 authority loss. #127 did not originate all losses; it republished the already-missing state while adding later Core/HLS fixes.
+- Exact provider-overrides chain proves that AllAnime, AllWish, Flemmix, MovieBox, VidFast, VidLove, WookaFR and YFlix #122-only authority is already absent at #123 and remains absent through #127.
+- This explains why checking only #122 vs #127 was insufficient. Durable rule: any large provider repair PR must either merge or export a machine-verifiable semantic authority ledger that subsequent PRs must import/fail on before publication.
 
