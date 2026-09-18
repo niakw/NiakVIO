@@ -266,12 +266,51 @@ def _runtime_domain_substitutions(patch: dict[str, Any], static_model: dict[str,
     return out
 
 
-def _derived_search_request_plans(static_model: dict[str, Any]) -> list[dict[str, Any]]:
-    """Promote reusable proof-v5 search routeData into the generic search engine."""
-    grouped: dict[tuple[str, str, str], dict[str, Any]] = {}
-    for raw in static_model.get("routeData") or []:
+def _derived_search_request_plans(
+    static_model: dict[str, Any],
+    static_row: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    """Promote reusable live proof into the generic search engine.
+
+    Sources are limited to proof-v5 routeData or recognized runtime requests that
+    were actually executed, live-validated and generalized without fixture residue.
+    """
+    candidates: list[dict[str, Any]] = [
+        dict(row) for row in static_model.get("routeData") or []
+        if isinstance(row, dict)
+    ]
+    row = static_row if isinstance(static_row, dict) else {}
+    knowledge = row.get("knowledge") if isinstance(row.get("knowledge"), dict) else {}
+    contract = knowledge.get("recognizedContract") if isinstance(knowledge.get("recognizedContract"), dict) else {}
+    for raw in [
+        *(contract.get("requests") or []),
+        *(contract.get("safeRuntimeDerivedRequests") or []),
+    ]:
         if not isinstance(raw, dict):
             continue
+        derivation = raw.get("derivation") if isinstance(raw.get("derivation"), dict) else {}
+        reusable = (
+            raw.get("validationState") == "live-validated"
+            and raw.get("executedEvidence") is True
+            and raw.get("httpUsed") is True
+            and derivation.get("reusable") is True
+            and not (derivation.get("fixtureSpecificValues") or [])
+            and not (derivation.get("dynamicQueryResidue") or [])
+        )
+        if not reusable:
+            continue
+        enriched = dict(raw)
+        enriched["origin"] = str(derivation.get("origin") or enriched.get("origin") or "").strip()
+        enriched["requestSpecReusable"] = True
+        enriched["proofModelVersion"] = max(5, int(enriched.get("proofModelVersion") or 0))
+        if not isinstance(enriched.get("requestSpec"), dict):
+            enriched["requestSpec"] = {
+                "method": str(enriched.get("method") or "GET").upper(),
+            }
+        candidates.append(enriched)
+
+    grouped: dict[tuple[str, str, str], dict[str, Any]] = {}
+    for raw in candidates:
         if str(raw.get("role") or "").strip().casefold() != "search":
             continue
         if int(raw.get("proofModelVersion") or 0) < 5:
@@ -298,7 +337,7 @@ def _derived_search_request_plans(static_model: dict[str, Any]) -> list[dict[str
             "route": route,
             "requestSpec": request_spec,
             "proofModelVersion": 5,
-            "sourceRole": "route-data-search-v5",
+            "sourceRole": "live-proof-search-v5",
             "semanticTypes": [],
         })
         semantic = str(raw.get("semanticType") or "").strip().casefold()
@@ -436,7 +475,7 @@ def provider_model(
             return [str(item).strip() for item in static_value if str(item).strip()][:limit]
         return []
 
-    derived_search_plans = _derived_search_request_plans(static_model)
+    derived_search_plans = _derived_search_request_plans(static_model, static_row)
     search_request_plan = execution_list("search_request_plan", "searchRequestPlan")
     if not search_request_plan:
         search_request_plan = derived_search_plans
