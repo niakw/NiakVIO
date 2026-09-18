@@ -21,7 +21,7 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
 assert "function seasonSignal(row,season)" in module.WRAPPER
-assert "function episodeNode(data,season,episode)" in module.WRAPPER
+assert "function episodeNodes(data,season,episode)" in module.WRAPPER
 assert "Number(q.season)>1&&!node.seasonVerified&&!hit._seasonVerified" in module.WRAPPER
 
 CONFIG = {
@@ -86,12 +86,16 @@ rows = run(
     },
     {
         "111": {"vostfr": {"12": ["https://cdn.example/s1e12.m3u8"]}},
-        "222": {"vostfr": {"12": ["https://cdn.example/s2e12.m3u8"]}},
+        "222": {
+            "vf": {"12": ["https://cdn.example/s2e12-vf.m3u8"]},
+            "vostfr": {"12": ["https://cdn.example/s2e12-vostfr.m3u8"]},
+        },
     },
 )
 assert rows, rows
-assert rows[0]["url"] == "https://cdn.example/s2e12.m3u8", rows
-assert rows[0]["language"] == "VOSTFR", rows
+by_language = {row["language"]: row["url"] for row in rows}
+assert by_language["VF"] == "https://cdn.example/s2e12-vf.m3u8", rows
+assert by_language["VOSTFR"] == "https://cdn.example/s2e12-vostfr.m3u8", rows
 
 # Fail closed: if a season-2 request only finds an unlabelled page whose API is
 # episode-only (no season scope), never silently return its E12 as S02E12.
