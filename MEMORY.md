@@ -2056,4 +2056,15 @@ This ledger is not complete merely because provider yield improves. Final comple
 - PR #127 rematerialized/rebuilt ~200 files from `main` after #126 and therefore inherited the post-#122 authority loss. #127 did not originate all losses; it republished the already-missing state while adding later Core/HLS fixes.
 - Exact provider-overrides chain proves that AllAnime, AllWish, Flemmix, MovieBox, VidFast, VidLove, WookaFR and YFlix #122-only authority is already absent at #123 and remains absent through #127.
 - This explains why checking only #122 vs #127 was insufficient. Durable rule: any large provider repair PR must either merge or export a machine-verifiable semantic authority ledger that subsequent PRs must import/fail on before publication.
+## 2026-09-18 — Kehflix #125→#127 domain regression isolated
+
+- Exact historical A/B with the current probe shows PR #125 Kehflix bundle `providers/kehflix--nuvio--5656d19e3fae22c9.js` is still **FULL movie+tv+anime** today.
+- #125 DATA: `officialSite=https://kehflix.wiki`, substitution `kehflix.lol -> kehflix.wiki`.
+- #127/current DATA had been inverted to `officialSite=https://kehflix.lol`, substitution `kehflix.wiki -> kehflix.lol`; Core/fix ownership is otherwise effectively the same.
+- Root cause is the Domain Refresh source registry/history, not the provider runtime: current `provider-hubs.json` and `provider-domain-history.json` still declared `.lol` as direct/current even though `scripts/upgrade_kehflix_terminal_domain_v1.py` and its regression test already document `.wiki` as canonical, `.com` as alternate, and `.lol` as redirect-only/rejected.
+- Domain authority source was corrected on current branch:
+  - `provider-hubs.json`: direct=`https://kehflix.wiki/`, allowed terminals `kehflix.wiki` + `kehflix.com`, `kehflix.lol` blocked as redirect-only.
+  - `provider-domain-history.json`: current=`https://kehflix.wiki`; prior `.lol` retained as superseded redirect-only evidence.
+- Commits: registry `7eb228a85d412b48e2439961e34346431b274637`, history `47b35a99686a9606d1bd61184fc5029fec29fc00`.
+- Next proof is mandatory: run official Domain Refresh targeted to Kehflix, materialize one provider, then exact certify. Do not patch provider-overrides by hand as the long-term owner; Domain Refresh must regenerate correct runtime authority from the corrected registry.
 
