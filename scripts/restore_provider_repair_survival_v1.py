@@ -15,7 +15,11 @@ OVERRIDES=ROOT/"provider-overrides.json"
 
 LOST={
     "allanime":{"scripts":["scripts/provider_patches/allanime_current_runtime_v1.py"]},
-    "allwish":{"scripts":["scripts/provider_patches/allwish_current_runtime_v1.py"],"published_types":["anime"]},
+    "allwish":{
+        "replace":{"scripts/provider_patches/allwish_current_runtime_v1.py":"scripts/provider_patches/allwish_current_runtime_v2.py"},
+        "scripts":["scripts/provider_patches/allwish_current_runtime_v2.py"],
+        "published_types":["anime"]
+    },
     "anikototv":{
         "replace":{"scripts/provider_patches/anikototv_runtime_v2.py":"scripts/provider_patches/anikototv_runtime_v3.py"},
         "scripts":["scripts/provider_patches/anikototv_runtime_v3.py"],
@@ -23,8 +27,14 @@ LOST={
     },
     "flemmix":{"scripts":["scripts/provider_patches/flemmix_current_runtime_v1.py"]},
     "moviebox":{"scripts":["scripts/provider_patches/moviebox_current_embed_v2.py"]},
-    "vidfast":{"scripts":["scripts/provider_patches/vidfast_current_embed_v1.py"]},
-    "vidlove":{"scripts":["scripts/provider_patches/vidlove_current_api_v1.py"]},
+    "vidfast":{
+        "replace":{"scripts/provider_patches/vidfast_current_embed_v1.py":"scripts/provider_patches/vidfast_current_runtime_v2.py"},
+        "scripts":["scripts/provider_patches/vidfast_current_runtime_v2.py"]
+    },
+    "vidlove":{
+        "replace":{"scripts/provider_patches/vidlove_current_api_v1.py":"scripts/provider_patches/vidlove_current_api_v2.py"},
+        "scripts":["scripts/provider_patches/vidlove_current_api_v2.py"]
+    },
     "wookafr":{
         "scripts":[
             "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py",
