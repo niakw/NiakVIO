@@ -1455,13 +1455,22 @@ def main() -> int:
     parser.add_argument("--attempts", type=int, default=int(os.environ.get("NIAKVIO_ROUTE_RECOVERY_ATTEMPTS", "3")))
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--provider", action="append", default=[])
+    parser.add_argument(
+        "--include-disabled",
+        action="store_true",
+        help="Allow report-only proof for disabled-retained manifest providers; never applies them.",
+    )
     parser.add_argument("--out", type=Path, default=OUT)
     args = parser.parse_args()
 
     all_local = manifest_catalog()
     active = active_provider_ids()
-    local = {provider_id: row for provider_id, row in all_local.items() if provider_id in active}
-    if set(local) != active:
+    if args.apply and args.include_disabled:
+        raise SystemExit("--include-disabled is report-only; disabled providers require an explicit reactivation decision")
+    local = all_local if args.include_disabled else {
+        provider_id: row for provider_id, row in all_local.items() if provider_id in active
+    }
+    if not args.include_disabled and set(local) != active:
         raise SystemExit(
             "route recovery active identity mismatch: "
             f"missing={sorted(active-set(local))} extra={sorted(set(local)-active)}"
@@ -1473,6 +1482,13 @@ def main() -> int:
     }
     requested = {cid(value) for value in args.provider if cid(value)}
     provider_ids = [provider_id for provider_id in local if not requested or provider_id in requested]
+    if requested:
+        unknown = requested - set(local)
+        if unknown:
+            raise SystemExit(
+                "requested providers are outside the selected recovery scope: "
+                + ",".join(sorted(unknown))
+            )
     lkg = lkg_rows()
     current_upstream = current_upstream_catalog(source_config())
     workers = max(1, min(12, int(args.workers)))
@@ -1520,6 +1536,7 @@ def main() -> int:
         "method": "upstream-provider-runtime-exact-http-proof",
         "providerCount": len(provider_ids),
         "catalogueProviderCount": len(local),
+        "scope": "all-manifest-report-only" if args.include_disabled else "active",
         "historicalUpstreamMappedCount": sum(1 for provider_id in provider_ids if source_map.get(provider_id)),
         "niakvioNativeCount": sum(1 for provider_id in provider_ids if not source_map.get(provider_id)),
         "providersWithProvenRoutes": len(proven),

@@ -1,0 +1,212 @@
+name: TEMP - Individual Provider Max Repair Sweep
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/temp-individual-provider-max-repair.yml'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: niakvio-individual-provider-max-repair
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+      - id: matrix
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+          manifest=json.loads(Path("manifest.json").read_text())
+          include=[]
+          for row in manifest.get("scrapers") or []:
+              pid=str(row.get("id") or "").strip().casefold()
+              filename=str(row.get("filename") or "")
+              if not pid:
+                  continue
+              disabled=(row.get("enabled") is False) or filename.startswith("provider-disabled/")
+              include.append({"provider":pid,"disabled":disabled})
+          assert len(include)==46, len(include)
+          print("matrix="+json.dumps({"include":include},separators=(",",":")))
+          PY
+
+  prove:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      max-parallel: 46
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      NIAKVIO_ROUTE_RECOVERY_TIMEOUT: '90'
+      NIAKVIO_ROUTE_RECOVERY_ATTEMPTS: '4'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Prove provider independently
+        shell: bash
+        env:
+          PROVIDER: ${{ matrix.provider }}
+          DISABLED: ${{ matrix.disabled }}
+        run: |
+          set -euo pipefail
+          mkdir -p automation/individual-route-proofs
+          extra=()
+          if [ "$DISABLED" = "true" ]; then extra+=(--include-disabled); fi
+          python scripts/recover_provider_routes_from_upstreams.py             --provider "$PROVIDER"             --workers 1             --timeout 90             --attempts 4             "${extra[@]}"             --out "automation/individual-route-proofs/${PROVIDER}.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          p=Path("automation/individual-route-proofs")/(os.environ["PROVIDER"]+".json")
+          d=json.loads(p.read_text())
+          assert d["providerCount"]==1, d
+          row=d["providers"][0]
+          assert row["providerId"]==os.environ["PROVIDER"], row
+          print("FIELD_INDIVIDUAL_PROVIDER_PROOF "+json.dumps({
+              "provider": row["providerId"],
+              "status": row.get("status"),
+              "routes": len(row.get("routes") or []),
+              "executionRoutes": len(row.get("executionRoutes") or []),
+              "streams": sum(int(t.get("streamCount") or 0) for t in row.get("tasks") or []),
+              "rawStreams": sum(int(t.get("rawStreamCount") or 0) for t in row.get("tasks") or []),
+              "disabled": os.environ["DISABLED"]=="true",
+          },sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: individual-route-proof-${{ matrix.provider }}
+          path: automation/individual-route-proofs/${{ matrix.provider }}.json
+          retention-days: 8
+          if-no-files-found: error
+
+  aggregate:
+    needs: prove
+    if: always() && !cancelled()
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NIAKVIO_QUICK_YIELD_TIMEOUT: '60'
+      NIAKVIO_QUICK_YIELD_MAX_SAMPLES: '4'
+      NIAKVIO_QUICK_YIELD_WORKERS: '20'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/download-artifact@484a0b528fb4d7bd804637ccb632e47a0e638317
+        with:
+          pattern: individual-route-proof-*
+          path: automation/individual-route-proofs
+          merge-multiple: true
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify independent proof completeness
+        run: |
+          python tests/individual_provider_route_proof_merge_test.py
+          test "$(find automation/individual-route-proofs -name '*.json' -type f | wc -l | tr -d ' ')" = "46"
+          python scripts/merge_provider_route_recovery_reports.py             automation/individual-route-proofs             --scope all             --out automation/provider-route-recovery-individual-all.json
+          python scripts/merge_provider_route_recovery_reports.py             automation/individual-route-proofs             --scope active             --out automation/provider-route-recovery-individual-active.json
+      - name: Apply active individual proofs only
+        run: |
+          set -euo pipefail
+          cp provider-v3-quick-yield.json automation/provider-individual-sweep-before.json || true
+          python scripts/apply_provider_route_recovery_report.py automation/provider-route-recovery-individual-active.json
+          python scripts/enforce_route_proof_manifest_policy_v1.py             --report automation/provider-route-recovery-individual-active.json             --manifest manifest.json             --overrides provider-overrides.json
+          python scripts/sanitize_provider_v3_execution_routes_v1.py
+          python scripts/materialize_provider_base_v3_store.py
+          python scripts/materialize_provider_v3_all.py
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/validate_published_provider_config.py
+          python tests/provider_js_lego_ownership_test.py
+          python tests/manual_tv_live_regressions_v34_test.py
+          python tests/global_stream_output_guard_test.py
+          python tests/episodic_identity_runtime_test.py
+          python tests/episodic_year_identity_regression_test.py
+          python tests/global_media_type_pre_network_gate_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/native_dual_id_identity_test.py
+          python tests/global_stream_presentation_test.py
+          python tests/global_stream_presentation_pipeline_test.py
+      - name: Run candidate terminal census
+        run: |
+          set -euo pipefail
+          python scripts/audit_provider_quick_yield.py
+          cp provider-v3-quick-yield.json automation/provider-individual-sweep-candidate.json
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          cand=json.loads(Path("automation/provider-individual-sweep-candidate.json").read_text())
+          active=json.loads(Path("automation/provider-route-recovery-individual-active.json").read_text())
+          allr=json.loads(Path("automation/provider-route-recovery-individual-all.json").read_text())
+          summary={
+            "schemaVersion":1,
+            "runId":int(os.environ["GITHUB_RUN_ID"]),
+            "triggerSha":os.environ["GITHUB_SHA"],
+            "providerCount":cand.get("provider_count"),
+            "verifiedProviderCount":cand.get("verified_provider_count"),
+            "verifiedProviders":cand.get("verified_providers"),
+            "playableProviderCount":cand.get("playable_provider_count"),
+            "wrongContentProviderCount":cand.get("wrong_content_provider_count"),
+            "wrongContentProviders":cand.get("wrong_content_providers"),
+            "activeProvidersWithProvenRoutes":active.get("providersWithProvenRoutes"),
+            "activeProvenRouteCount":active.get("provenRouteCount"),
+            "allProvidersWithProvenRoutes":allr.get("providersWithProvenRoutes"),
+            "allProvenRouteCount":allr.get("provenRouteCount"),
+            "acceptanceTarget":35,
+            "acceptanceReached":int(cand.get("verified_provider_count") or 0)>=35,
+          }
+          Path("automation/provider-individual-max-repair-latest.json").write_text(
+              json.dumps(summary,indent=2,sort_keys=True)+"\n"
+          )
+          print("FIELD_INDIVIDUAL_MAX_REPAIR "+json.dumps(summary,sort_keys=True))
+          PY
+      - name: Persist evidence only
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add             automation/provider-route-recovery-individual-all.json             automation/provider-route-recovery-individual-active.json             automation/provider-individual-sweep-candidate.json             automation/provider-individual-max-repair-latest.json || true
+          if git diff --cached --quiet; then
+            echo "No individual repair evidence to persist"
+            exit 0
+          fi
+          git commit -m "ci(repair): persist individual max-repair evidence"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
