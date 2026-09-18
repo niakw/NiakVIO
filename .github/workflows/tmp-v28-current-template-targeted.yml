@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - tmp/v28-current-template-base
+      - tmp/v28b-current-template-base
   workflow_dispatch:
 
 permissions:
@@ -41,6 +42,7 @@ jobs:
           python3 tests/materializer_authority_monotonic_v25_test.py
           python3 tests/anikototv_runtime_v3_server_selector_test.py
           python3 tests/provider_base_absolute_route_domain_substitution_test.py
+          python3 tests/provider_patch_quickjs_compat_test.py
           python3 -m py_compile scripts/materialize_provider_v3_all.py scripts/provider_base_store.py scripts/certify_provider_playable_lanes.py
           node --check scripts/nuvio_tv_probe_tmdb_ci.cjs
           python3 scripts/check_provider_repair_survival.py
