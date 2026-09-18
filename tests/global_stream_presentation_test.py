@@ -180,6 +180,15 @@ assert kurage_unknown["language"] == "VO", kurage_unknown
 assert "vo" in kurage_unknown["badgeIds"], kurage_unknown
 assert "🌐 VO" in kurage_unknown["description"], kurage_unknown
 
+# Generic role tokens from provider runtimes must not leak as a second language
+# vocabulary. Kurage can return SUB for its subtitle branch; Core canonicalizes it
+# to the provider's authoritative VO profile so Native clients see one badge truth.
+kurage_sub = run("module.exports={getStreams:async()=>[{name:'Kurage - Inconnue',url:'https://x.example/a.m3u8',language:'SUB'}]};\n", "kurage", "p.getStreams({mediaType:'anime',title:'Anime'}).then(v=>console.log(JSON.stringify(v[0])))")
+assert kurage_sub["language"] == "VO", kurage_sub
+assert "vo" in kurage_sub["badgeIds"], kurage_sub
+assert "SUB" not in kurage_sub["displayBadges"], kurage_sub
+assert "Inconnue" not in kurage_sub["title"], kurage_sub
+
 # Series/anime identity is title/year/SxxExx; provider-owned layout never survives.
 tv = run("module.exports={getStreams:async()=>[{name:'Purstream',url:'https://x.example/a.m3u8',description:'PRIVATE PROVIDER LAYOUT',language:'VF'}]};\n", "purstream", "p.getStreams({mediaType:'tv',title:'Breaking Bad',year:2008,season:1,episode:1}).then(v=>console.log(JSON.stringify(v[0])))")
 assert tv["description"].splitlines()[0] == "📺 Breaking Bad • 2008 • S01E01"
