@@ -1952,4 +1952,22 @@ This ledger is not complete merely because provider yield improves. Final comple
 - **AllAnime V30 attempt was invalid as provider evidence** because the temporary diagnostic used an incorrect manually supplied TMDB id for Failure Frame. Do not count that zero. Future probes must use exact repository corpus/certification fixtures only.
 - AllAnime architectural defect nevertheless confirmed statically: provider Lego hardcoded `ww2.aniwatch.fit` instead of consuming Domain Refresh DATA. Commit `21ac845b4bdcdbbccd0aaca8efe10096493cd159` makes the Lego consume `NIAKVIO_PROVIDER_MODEL.officialSite/knownSite` and adds a hardcode guard.
 - Important authority conflict exposed by that fix: `automation/manual-provider-evidence-20260915.json` has very recent user HLS-positive AllAnime evidence on `ww2.aniwatch.fit`, while current materialization projects AllAnime to `aniwatchtv.watch`. Do **not** hardcode either in provider override. Domain Refresh/LKG identity reconciliation must prevent a newly discovered domain from silently replacing a recent positive terminal when the candidate may belong to a different provider family.
+### 2026-09-18 — V32/V33/V34 parallel red-provider sweep
+
+- To stop serial provider-by-provider iteration, the 24 active zero-green providers are now covered by three parallel temporary batches:
+  - **V32 / run 35364467981 / PR #159**: every active-red provider whose Lego exposes `__niakvioProviderRuntimeResolverV1`, validating the new generic ProviderBase consumer V36.
+  - **V33 / run 35364557724 / PR #160**: eight live-network/zero-output providers — 4KHDHub, AllAnime, AniKotoTV, Animetsu, AnimeVOST.fr, Castle, MalluMV, ShowBox.
+  - **V34 / run 35364818625 / PR #161**: the remaining fifteen active reds outside V33/Vostfree, materialized one-by-one then certified in parallel.
+- **V33 completed successfully as a workflow but recovered 0/8 green providers.** This is a negative functional result, not a repair success.
+- V33 exact blockers:
+  - **4KHDHub**: runtime requests `hdhub4u.ms` but every request redirects to `hdhub4u.bi` root; generated historical slug guesses also redirect to root. Current Domain Refresh substitution is applied on request host, but server-side redirect authority sends it back to the stale/root site. Treat as address/route-chain mismatch, not missing V35.
+  - **AllAnime**: current Lego correctly uses `ww2.aniwatch.fit`; provider network is alive (root/API/TMDB helper all 200) but current fixtures still yield zero terminal output. Domain hardcode bug is fixed; extraction/catalogue contract remains.
+  - **AniKotoTV**: repeated fixtures prove decrypt + WebCrypto HMAC signing + terminal URL extraction; `fetch.nexabloom.top/.../master.m3u8` consistently returns 403. ProviderTrace shows `anikoto_megaplay_crypto webcrypto=1`, `anikoto_megaplay_sign webcrypto=1`, terminal direct/context=1.
+  - **Animetsu**: all learned routes collapse to `omg10.com`; still zero.
+  - **AnimeVOST.fr**: live search API is 200 for many aliases; some chains reach `gupload.xyz`, but no certified stream.
+  - **Castle**: security key endpoint and encrypted search both 200; trace exposes `castle_key_candidates secLen=16;count=2`; failure remains decrypt/search-result parse before movie details.
+  - **MalluMV**: search redirects from `mallumv.gay` to `mallumv.space` root and generic crawler follows unrelated current 2026 catalogue items; requires provider-specific fixture/correlation learning, not blind global-title crawling.
+  - **ShowBox**: still calls only proxy root `id-mapping-api-showbox-proxy.hf.space/`; structured `/api/media` route repair is not yet materialized in DATA, so service metadata is returned instead of media mapping.
+- ProviderBase resolver consumer V36 is now guarded by permanent test `tests/provider_runtime_resolver_consumer_v36_test.py`: resolver owner must equal current provider, returned rows must be HTTP(S), and consumer execution must happen before the generic runtime-plan availability gate.
+- AllAnime domain authority on the current branch is reconciled to recent manual positive evidence: `official_site=https://ww2.aniwatch.fit` with `aniwatchtv.watch -> ww2.aniwatch.fit` substitution. Do not regress this back to the unrelated candidate without stronger provider-identity proof.
 
