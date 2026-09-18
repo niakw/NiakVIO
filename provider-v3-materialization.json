@@ -2,7 +2,7 @@
   "schemaVersion": 3,
   "sourceSha": "e936461a168ba840640fb196bd27b6cf43b791ea",
   "context": "workspace",
-  "generation": "23c1a82f6277794b7a6bf46609c68ca727f32bf4e40b6863c1dddfd70d6469e8",
+  "generation": "91a7e54be646281e8a7aa58fb9ef0e6399f2cd95574f01219a4e559b72e77590",
   "providerCount": 46,
   "expectedProviderCount": 46,
   "providers": [
@@ -1009,9 +1009,9 @@
     },
     {
       "provider": "kehflix",
-      "file": "providers/kehflix--nuvio--0d83ea30cd5619f9.js",
-      "sha256": "0d83ea30cd5619f9035275915de8fa397649f191ecc167b304f9e198c2d07abf",
-      "providerDataSha256": "8e7a87683511e498f30b80a3372c11b9ca73bf9295c33d36defeea2968223879",
+      "file": "providers/kehflix--nuvio--ea173eb3c1ac4caa.js",
+      "sha256": "ea173eb3c1ac4caac0ea9651bbf467a668c31a42fee3c0b61b338a2e9578ae46",
+      "providerDataSha256": "fbc4557f2db64f8523755f150034b400139af7210377b6ea008434b9ef67ca4b",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -5102,11 +5102,12 @@
     },
     {
       "provider": "vidlove",
-      "file": "providers/vidlove-ec83947d30449c77.js",
-      "sha256": "ec83947d30449c77fca05cb4ad704e964d153f8a7a0f8c1d73276c4050f04bf8",
-      "providerDataSha256": "64f93170185603fd57c274ab14fe980679099b5b76f92a5c23b9b2baa6543bc0",
+      "file": "providers/vidlove--nuvio--32062b18dab60497.js",
+      "sha256": "32062b18dab6049791959523c8bebbf86cd850b2fe7ea11c98162f1fd88daa42",
+      "providerDataSha256": "c4d44e88f757ea1266c072dfeaffa0f756b39a0b5cb1370a14e41596b804d830",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
+        "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
         "CORE.MEDIA_ENRICHMENT.V1",
         "CORE.MEDIA_TYPE_RESOLUTION.V1",
@@ -5118,21 +5119,28 @@
         "CORE.STREAM_IDENTITY.V1",
         "CORE.STREAM_PRESENTATION.V1",
         "CORE.STREAM_SANITIZER.V6",
-        "PROVIDER.VIDLOVE.CONFIG.V1"
+        "PROVIDER.VIDLOVE.CONFIG.V1",
+        "PROVIDER.VIDLOVE.CURRENT.API.V1"
       ],
-      "coreCount": 11,
+      "coreCount": 12,
       "applied": [
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/vidlove_current_api_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.VIDLOVE.CURRENT.API.V1"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/global_media_enrichment_v1.py",
           "phase": "discovery",
           "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
         },
         {
           "type": "patch_script",
@@ -5178,15 +5186,21 @@
         },
         {
           "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_branding_v1.py",
-          "phase": "discovery",
-          "scope": "global_provider_branding"
-        },
-        {
-          "type": "patch_script",
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
         }
       ],
       "deviceSpecificJs": false,
@@ -5197,11 +5211,15 @@
       ],
       "legacyProviderJsExecuted": false,
       "upstreamJsExecuted": false,
+      "staticAuthorityReconciledProviders": [
+        "vidlove"
+      ],
+      "domainSubstitutionReconciledProviders": [],
       "minimizer": {
-        "enabled": false,
+        "enabled": true,
         "savedBytes": 0,
         "transformedLines": 0,
-        "skippedReason": "final-stage-only"
+        "skippedReason": ""
       }
     }
   ],
@@ -5223,8 +5241,10 @@
   "staticKnowledgeProviderCount": 46,
   "domainAuthorityOnlyUpdate": true,
   "domainAuthorityUpdatedProviders": [
-    "coflix",
-    "flemmix",
-    "videasy"
+    "kehflix"
+  ],
+  "targetedPublicationReconciledProviders": [
+    "kehflix",
+    "vidlove"
   ]
 }
