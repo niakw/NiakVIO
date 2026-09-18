@@ -19,6 +19,7 @@ jobs:
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
       NIAKVIO_QUICK_YIELD_WORKERS: '16'
       NIAKVIO_QUICK_YIELD_TIMEOUT: '45'
+      NIAKVIO_QUICK_YIELD_MAX_SAMPLES: '4'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:

@@ -117,7 +117,7 @@ def reconcile(
     write_json(materialization_path, materialization)
 
     if sync_projections is not None:
-        sync_projections(False)
+        sync_projections(check=False)
 
     return updates
 

@@ -13,6 +13,8 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
+from rotating_corpus import default_seed, rotated_candidates
+
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 CORPUS = ROOT / ".github" / "triggers" / "nuvio-client-lab.json"
@@ -20,6 +22,7 @@ PROBE = ROOT / "scripts" / "nuvio_tv_probe_tmdb_ci.cjs"
 OUTPUT = ROOT / "provider-v3-quick-yield.json"
 WORKERS = max(1, min(int(os.environ.get("NIAKVIO_QUICK_YIELD_WORKERS", "12")), 20))
 TIMEOUT = max(20, min(int(os.environ.get("NIAKVIO_QUICK_YIELD_TIMEOUT", "45")), 90))
+MAX_SAMPLES = max(1, min(int(os.environ.get("NIAKVIO_QUICK_YIELD_MAX_SAMPLES", "4")), 8))
 REPRESENTATIVE = {
     "movie": "interstellar",
     "tv": "breaking-bad-s01e01",
@@ -58,6 +61,42 @@ def parse_probe(stdout: str) -> dict[str, Any] | None:
         if isinstance(value, dict) and "playable_stream_count" in value:
             return value
     return None
+
+
+def _fixture_identity(fixture: dict[str, Any]) -> tuple[str, int, int, str]:
+    def integer(value: object) -> int:
+        try:
+            return int(value or 0)
+        except (TypeError, ValueError):
+            return 0
+    return (
+        str(fixture.get("tmdbId") or fixture.get("id") or "").strip(),
+        integer(fixture.get("season")),
+        integer(fixture.get("episode")),
+        str(fixture.get("mediaType") or fixture.get("category") or "").strip().casefold(),
+    )
+
+
+def _adaptive_fixtures(
+    provider_id: str,
+    media_type: str,
+    initial: dict[str, Any],
+    *,
+    anime_movie_only: bool = False,
+) -> list[dict[str, Any]]:
+    rows = [dict(initial)]
+    if anime_movie_only or MAX_SAMPLES <= 1:
+        return rows
+    seen = {_fixture_identity(initial)}
+    for candidate in rotated_candidates(media_type, seed=default_seed(), provider=provider_id):
+        identity = _fixture_identity(candidate)
+        if identity in seen:
+            continue
+        seen.add(identity)
+        rows.append(dict(candidate))
+        if len(rows) >= MAX_SAMPLES:
+            break
+    return rows
 
 
 def build_tasks() -> tuple[list[dict[str, Any]], int]:
@@ -105,17 +144,20 @@ def build_tasks() -> tuple[list[dict[str, Any]], int]:
             continue
         providers += 1
         for media_type in semantic_types(row):
-            fixture = (
-                anime_movie_fixture
-                if media_type == "movie" and provider_id in anime_movie_providers
-                else fixtures[media_type]
-            )
+            anime_movie_only = media_type == "movie" and provider_id in anime_movie_providers
+            fixture = anime_movie_fixture if anime_movie_only else fixtures[media_type]
             tasks.append({
                 "provider_id": provider_id,
                 "provider_name": str(row.get("name") or row.get("id") or provider_id),
                 "filename": filename,
                 "semantic_type": media_type,
                 "fixture": fixture,
+                "fixtures": _adaptive_fixtures(
+                    provider_id,
+                    media_type,
+                    fixture,
+                    anime_movie_only=anime_movie_only,
+                ),
             })
     return tasks, providers
 
@@ -197,7 +239,7 @@ def classify_debug_stage(task: dict[str, Any], probe: dict[str, Any], debug: dic
     return "provider_network_zero_result"
 
 
-def run(task: dict[str, Any]) -> dict[str, Any]:
+def run_single(task: dict[str, Any]) -> dict[str, Any]:
     started = time.monotonic()
     command = [
         "node", str(PROBE), str(ROOT / task["filename"]),
@@ -259,6 +301,49 @@ def run(task: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _compact_sample(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        key: row.get(key)
+        for key in (
+            "fixture_title", "status", "debug_stage",
+            "raw", "playable", "verified", "contradictions", "duration_ms",
+        )
+    }
+
+
+def run(task: dict[str, Any]) -> dict[str, Any]:
+    started = time.monotonic()
+    fixtures = [
+        row for row in (task.get("fixtures") or [task["fixture"]])
+        if isinstance(row, dict)
+    ]
+    if not fixtures:
+        fixtures = [task["fixture"]]
+    samples: list[dict[str, Any]] = []
+    final: dict[str, Any] | None = None
+    for fixture in fixtures:
+        current = dict(task)
+        current["fixture"] = fixture
+        row = run_single(current)
+        samples.append(_compact_sample(row))
+        final = row
+        clean_catalog_miss = (
+            row.get("status") == "no_streams"
+            and row.get("debug_stage") == "provider_network_zero_result"
+        )
+        if not clean_catalog_miss:
+            break
+    if final is None:
+        raise RuntimeError(f"{task.get('provider_id')}: empty adaptive fixture set")
+    result = dict(final)
+    result["sample_count"] = len(samples)
+    result["sample_titles"] = [str(row.get("fixture_title") or "") for row in samples]
+    result["adaptive_rotated"] = len(samples) > 1
+    result["samples"] = samples
+    result["duration_ms"] = round((time.monotonic() - started) * 1000)
+    return result
+
+
 def main() -> int:
     if not (str(os.environ.get("TMDB_API_KEY") or "").strip() or str(os.environ.get("TMDB_ACCESS_TOKEN") or "").strip()):
         raise SystemExit("TMDB_API_KEY or TMDB_ACCESS_TOKEN is required for quick yield census")
@@ -304,11 +389,16 @@ def main() -> int:
         if provider and provider not in stage_providers[stage]:
             stage_providers[stage].append(provider)
 
+    probe_count = sum(int(row.get("sample_count") or 1) for row in rows)
+    rotated_task_count = sum(1 for row in rows if row.get("adaptive_rotated") is True)
     report = {
-        "schema_version": 4,
-        "environment": "node-fast-real-stream-census-with-tmdb-runtime-context-fetch-trace-and-v21-plan-history",
+        "schema_version": 5,
+        "environment": "node-adaptive-real-stream-census-clean-zero-rotation-with-tmdb-runtime-context",
         "provider_count": provider_count,
         "task_count": len(tasks),
+        "probe_count": probe_count,
+        "rotated_task_count": rotated_task_count,
+        "max_samples_per_lane": MAX_SAMPLES,
         "raw_provider_count": len(raw_providers),
         "playable_provider_count": len(playable_providers),
         "accepted_playable_provider_count": len(accepted_playable_providers),
@@ -328,7 +418,7 @@ def main() -> int:
     OUTPUT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         "FIELD_PROVIDER_QUICK_YIELD "
-        f"providers={provider_count} tasks={len(tasks)} raw={len(raw_providers)} "
+        f"providers={provider_count} tasks={len(tasks)} probes={probe_count} rotated_tasks={rotated_task_count} raw={len(raw_providers)} "
         f"playable={len(playable_providers)} accepted_playable={len(accepted_playable_providers)} "
         f"verified={len(verified_providers)} wrong_content={len(wrong_content)}"
     )

@@ -50,7 +50,13 @@ with tempfile.TemporaryDirectory() as tmp_name:
         }]
     }), encoding="utf-8")
 
-    updates = reconcile(root, ["vidlove"])
+    sync_calls = []
+    def sync_stub(*, check: bool):
+        assert check is False
+        sync_calls.append(check)
+
+    updates = reconcile(root, ["vidlove"], sync_projections=sync_stub)
+    assert sync_calls == [False], sync_calls
     manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
     material = json.loads((root / "provider-v3-materialization.json").read_text(encoding="utf-8"))
     mrow = manifest["scrapers"][0]

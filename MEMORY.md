@@ -1861,3 +1861,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - A generic `reconcile_targeted_provider_publication.py` is being added so every targeted post-proof materialization ends by content-addressing the exact manifest bytes, updating materialization hashes/data hashes/generation, syncing projections and rerunning static/minimizer/publication contracts.
 - The stale AniKotoTV anime-movie assertion is also corrected: canonical `anime` capability must not acquire a fake movie lane from the transport `tv` alias.
 
+## 2026-09-18 — Adaptive census + fixed-point retry 2
+
+- Targeted publication fixed-point run **35395769943** exposed a generic API-contract bug in the new reconciler: `sync_manifest_projection_rows.sync` is keyword-only, but the reconciler called it positionally. The pure reconcile test had not exercised the callback, so it passed while live CI failed. The call is corrected to `sync_projections(check=False)` and the unit test now uses a keyword-only callback stub.
+- Quick-yield now implements catalogue-scale adaptive sampling: one semantic representative first, then at most three extra shared recent-corpus fixtures only after a clean `provider_network_zero_result`; all technical/error/wrong-content/unplayable/positive outcomes stop immediately. This removes the single-title false-ZERO class demonstrated by VidLove without hiding real provider failures.
+- The quick-yield contract no longer hard-codes the historical 96-provider census and no longer assumes named anime providers own a movie lane. It derives visible count from `current_provider_scope` and current canonical semantic capability.
+- Repair V6 retry **21** and Domain Refresh are retriggered together after the fixed-point callback correction. Acceptance remains **>=35/46 current providers with at least one terminal-playable lane** and remains unclaimed until fresh adaptive evidence confirms it.
+
