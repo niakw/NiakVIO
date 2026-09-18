@@ -1,0 +1,82 @@
+name: TMP - V32 Zero Cluster Diagnostic
+
+on:
+  pull_request:
+    branches:
+      - tmp/v32-zero-base
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NIAKVIO_TRACE_RESPONSE_SHAPE: '1'
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.base_ref || 'fix/provider-activation-certification-v1' }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Preflight engine contracts
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python3 -m py_compile scripts/materialize_provider_v3_all.py scripts/certify_provider_playable_lanes.py
+          python3 tests/materializer_authority_monotonic_v25_test.py
+          python3 tests/provider_patch_quickjs_compat_test.py
+          python3 tests/provider_base_template_identity_test.py
+          node --check scripts/nuvio_tv_probe_tmdb_ci.cjs
+
+      - name: Diagnose six zero providers
+        run: |
+          set -euo pipefail
+          python3 scripts/certify_provider_playable_lanes.py             --manifest manifest.json             --include-disabled             --provider allanime             --provider animevost-fr             --provider vostfree             --provider mallumv             --provider uhdmovies             --provider animetsu             --candidate-limit 2             --timeout 30             --workers 3             --seed "v32-zero-${GITHUB_RUN_ID}"             --output health-output/v32-certification.json
+
+      - name: Summarize zero cluster
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('health-output/v32-certification.json')
+          if not p.exists():
+              print('FIELD_V32 missing')
+              raise SystemExit(0)
+          j=json.loads(p.read_text())
+          for row in j.get('providers') or []:
+              print('FIELD_V32_PROVIDER',row.get('providerId'),
+                    'green='+','.join(row.get('certifiedTypes') or []),
+                    'failure='+str(row.get('failure') or ''),
+                    'failureMessage='+str(row.get('failureMessage') or '')[:180])
+              for lane,v in (row.get('lanes') or {}).items():
+                  for a in (v or {}).get('attempts') or []:
+                      print('FIELD_V32_ATTEMPT',row.get('providerId'),lane,a.get('fixtureSlug'),
+                            'stage='+str(a.get('debugStage') or ''),
+                            'trace='+json.dumps(a.get('networkTrace') or [],separators=(',',':'))[:9000],
+                            'providerTrace='+json.dumps(a.get('providerValueTrace') or [],separators=(',',':'))[:5000])
+          PY
+
+      - name: Upload V32 evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: v32-zero-cluster-${{ github.run_id }}
+          path: health-output/
+          retention-days: 8
+          if-no-files-found: warn
