@@ -266,6 +266,47 @@ def _runtime_domain_substitutions(patch: dict[str, Any], static_model: dict[str,
     return out
 
 
+def _derived_search_request_plans(static_model: dict[str, Any]) -> list[dict[str, Any]]:
+    """Promote reusable proof-v5 search routeData into the generic search engine."""
+    grouped: dict[tuple[str, str, str], dict[str, Any]] = {}
+    for raw in static_model.get("routeData") or []:
+        if not isinstance(raw, dict):
+            continue
+        if str(raw.get("role") or "").strip().casefold() != "search":
+            continue
+        if int(raw.get("proofModelVersion") or 0) < 5:
+            continue
+        if raw.get("requestSpecReusable") is not True:
+            continue
+        base = origin(raw.get("origin"))
+        route = str(raw.get("route") or "").strip()
+        if not base or not route or "{query}" not in route:
+            continue
+        host = str(urlparse(base).hostname or "").casefold()
+        if host in NON_PROVIDER_EXECUTION_HELPER_HOSTS:
+            continue
+        request_spec = raw.get("requestSpec") if isinstance(raw.get("requestSpec"), dict) else {
+            "method": str(raw.get("method") or "GET").upper(),
+        }
+        key = (
+            base,
+            route,
+            json.dumps(request_spec, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+        )
+        plan = grouped.setdefault(key, {
+            "base": base,
+            "route": route,
+            "requestSpec": request_spec,
+            "proofModelVersion": 5,
+            "sourceRole": "route-data-search-v5",
+            "semanticTypes": [],
+        })
+        semantic = str(raw.get("semanticType") or "").strip().casefold()
+        if semantic in {"movie", "tv", "anime"} and semantic not in plan["semanticTypes"]:
+            plan["semanticTypes"].append(semantic)
+    return list(grouped.values())[:6]
+
+
 def provider_model(
     provider_id: str,
     patch: dict[str, Any],
@@ -395,6 +436,18 @@ def provider_model(
             return [str(item).strip() for item in static_value if str(item).strip()][:limit]
         return []
 
+    derived_search_plans = _derived_search_request_plans(static_model)
+    search_request_plan = execution_list("search_request_plan", "searchRequestPlan")
+    if not search_request_plan:
+        search_request_plan = derived_search_plans
+    proof_search_bases = execution_strings("proof_search_bases", "proofSearchBases", 6)
+    if not proof_search_bases:
+        proof_search_bases = [
+            str(row.get("base") or "").strip()
+            for row in search_request_plan
+            if str(row.get("base") or "").strip()
+        ][:6]
+
     return {
         "knownSite": official_site,
         "strategy": str(
@@ -413,12 +466,12 @@ def provider_model(
         "routes": routes,
         "apiRecipe": api_recipe,
         "routeProofVersion": proof_version,
-        "proofSearchBases": execution_strings("proof_search_bases", "proofSearchBases", 6),
+        "proofSearchBases": proof_search_bases,
         # PROVIDER_EXTERNAL_IDENTITY_BASE_V11
         "proofDetailBases": execution_strings("proof_detail_bases", "proofDetailBases", 6),
         # PROVIDER_SEARCH_REQUEST_PLAN_V14
         "proofProtectedHosts": [value.casefold() for value in execution_strings("proof_protected_hosts", "proofProtectedHosts", 24)],
-        "searchRequestPlan": execution_list("search_request_plan", "searchRequestPlan")[:6],
+        "searchRequestPlan": search_request_plan[:6],
         # PROVIDER_RESPONSE_VALUE_CORRELATION_V20
         # PROVIDER_CORRELATED_VALUE_PLAN_V18
         # PROVIDER_VALUE_CAUSAL_DEPTH_V20_5
