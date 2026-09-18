@@ -1884,4 +1884,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Commit **6e7b182c64c2e9b6ca1aedbd23a7d3403ed1213f** now merges caller+player cookies, sends them to `getSources`, merges any response cookie, and returns `megaPlaybackHeaders()` with the decrypted terminal. Commit **f73ed8ee68f0382ffa1e7843f38f105a24dacbbf** adds a contract requiring this propagation.
 - **4KHDHub** V29b: current authority is `4khdhub.one` (not old `.bi`); catalogue/detail pages return 200 and generic extraction reaches `player.autoembed.cc/embed/movie/`, where Node fetch throws `TypeError` / status 0. Treat this as external-player transport/runtime work, not Domain Refresh failure.
 - ShowBox historical knowledge decoded without executing upstream code: canonical proxy base is `https://id-mapping-api-showbox-proxy.hf.space/api/media`, with movie/TV routes below that base and downstream FebBox share-key/file-list/quality-list flow. Current generated root `/` request is therefore an incorrect route contract.
+### 2026-09-18 — AniKoto MegaPlay CDN signing checkpoint
+
+- V30 terminal-context reproof **35357635766** still returned AniKoto red. Provider trace proves AES is successful (`webcrypto=1`, `direct=1;context=1`) and the only failure remains the decrypted terminal HLS request on `fetch.nexabloom.top`, HTTP 403.
+- Repository cross-check found an older NiakVIO MegaPlay implementation that signed media paths containing two 32-hex path components with a short-lived HMAC token. Current V3 retained the HMAC helper remnants but the newer async WebCrypto decrypt path returned the raw decrypted URL without applying that signing step.
+- The observed V30 terminal path has exactly the signing shape `/.../<32hex>/<32hex>/master.m3u8`, making missing CDN signing a concrete explanation for the 403.
+- Commit **b03b315b9294b4487ee22b3fa5f5fc4c48f580cf** adds async `signMegaMedia()`: WebCrypto HMAC-SHA256 primary, CryptoJS fallback, 90-second payload, URL token append without QuickJS-forbidden URLSearchParams mutation. `finalSource()` now signs the normalized decrypted media before returning it.
+- Commit **bbead1b539c956f2d5d2b9e0f0b71792a8b441b9** adds the corresponding contract. Next action is a single-provider AniKoto reproof; do not count a gain until terminal media is actually playable.
 
