@@ -1869,4 +1869,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - V28b artifact review showed the certificate layer was already computing sanitized provider stage diagnostics (`providerTrace`) but dropping them when serializing per-fixture attempts. This caused repeated probes without preserving the most useful provider-internal failure stage.
 - Commit **707c6ad80ac5276960994a0efed77216c4309a4e** now persists bounded `providerTrace` beside `networkTrace` for every certification attempt. This is safe-by-design: only stage/lane/step and terse counter/flag detail survive; URLs, credentials, tokens, cookies, encrypted blobs and arbitrary payload values are rejected by the sanitizer.
 - Immediate use: rerun AniKoto + 4KHDHub on current-template bundles. AniKoto already reaches MegaPlay `getSources` 200; new trace must expose whether WebCrypto/native/CryptoJS decrypt succeeds and whether terminal output is subsequently rejected. 4KHDHub trace must expose requestHost vs responseHost to determine whether `.bi` is generated or reached by redirect.
+### 2026-09-18 — Monotone route-family materializer checkpoint
+
+- Fast targeted run **35356878255 / V29** did not execute provider traffic: frozen base hit `NameError: proof_search_bases is not defined` inside `provider_model()`. This was a materializer snapshot defect, not AniKoto/4KHDHub evidence.
+- Current branch already contains the completed structured-plan merge (`searchRequestPlan`, `providerValuePlan`, `externalIdentityPlan`, proof search/detail bases) and no longer references the removed execution helper names.
+- Commit **2530d7a99d42cc953a2b4e47a496d6265aa2d155** completes monotone route authority by capability family: a proof-v5 patch route replaces stale routes of the same family only, while independently proven `search/api/player/detail` families remain available. This prevents a new hub/search proof from erasing unrelated terminal/player knowledge.
+- Commit **35799063e8763538eb10c9cee569c1aa768a4a36** adds a contract proving that a fresh search route suppresses stale search knowledge but preserves static detail/player/API routes.
+- Continue with a fresh fast two-provider run from current HEAD; no result from failed V29 changes the 20/46 census.
 
