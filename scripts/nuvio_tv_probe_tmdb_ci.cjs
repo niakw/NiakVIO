@@ -140,6 +140,36 @@ try { fixture = JSON.parse(process.argv[3] || '{}'); } catch { fixture = {}; }
 // remain visible. Bodies, cookies and request headers are never persisted.
 const originalFetch = globalThis.fetch;
 const trace = [];
+const traceResponseShape = process.env.NIAKVIO_TRACE_RESPONSE_SHAPE === '1';
+
+function safeShapeKey(raw) {
+  const key = String(raw || '');
+  return /^[A-Za-z_][A-Za-z0-9_.-]{0,63}$/.test(key) ? key : '<dynamic>';
+}
+
+function sanitizedJsonShape(value, depth = 0) {
+  if (depth > 2) return { kind: Array.isArray(value) ? 'array' : (value === null ? 'null' : typeof value) };
+  if (value === null) return { kind: 'null' };
+  if (Array.isArray(value)) {
+    const first = value.find((item) => item !== null && item !== undefined);
+    return {
+      kind: 'array',
+      length: Math.min(value.length, 1000000),
+      item: first === undefined ? null : sanitizedJsonShape(first, depth + 1),
+    };
+  }
+  if (typeof value === 'object') {
+    const keys = Object.keys(value).slice(0, 24);
+    const fields = {};
+    for (const rawKey of keys) {
+      const key = safeShapeKey(rawKey);
+      if (key === '<dynamic>' || Object.prototype.hasOwnProperty.call(fields, key)) continue;
+      fields[key] = sanitizedJsonShape(value[rawKey], depth + 1);
+    }
+    return { kind: 'object', keys: [...new Set(keys.map(safeShapeKey))].slice(0, 24), fields };
+  }
+  return { kind: typeof value };
+}
 if (typeof originalFetch === 'function') {
   globalThis.fetch = async function tracedFetch(input, init) {
     const started = Date.now();
@@ -149,6 +179,14 @@ if (typeof originalFetch === 'function') {
       const response = await originalFetch.call(this, input, init);
       let contentType = '';
       try { contentType = String(response?.headers?.get?.('content-type') || '').split(';')[0].slice(0, 96); } catch {}
+      let jsonShape = null;
+      if (traceResponseShape && /json/i.test(contentType) && response && typeof response.clone === 'function') {
+        try {
+          const clone = response.clone();
+          const raw = await clone.text();
+          if (raw.length <= 524288) jsonShape = sanitizedJsonShape(JSON.parse(raw));
+        } catch {}
+      }
       trace.push({
         url,
         response_url: safeUrl(response?.url || url),
@@ -156,6 +194,7 @@ if (typeof originalFetch === 'function') {
         status: Number(response?.status || 0),
         content_type: contentType,
         duration_ms: Date.now() - started,
+        ...(jsonShape ? { json_shape: jsonShape } : {}),
       });
       return response;
     } catch (error) {
