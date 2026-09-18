@@ -72,13 +72,32 @@ trace = cert.sanitized_provider_fetch_trace({
 assert trace == [{
     "host": "api.hlowb.com",
     "path": "/film-api/v1.1.0/movie/searchByKeyword",
+    "requestHost": "api.hlowb.com",
+    "requestPath": "/film-api/v1.1.0/movie/searchByKeyword",
+    "responseHost": "api.hlowb.com",
+    "responsePath": "/film-api/v1.1.0/movie/searchByKeyword",
+    "redirected": False,
     "method": "GET",
     "status": 200,
     "contentType": "application/json",
     "durationMs": 123,
     "error": None,
+    "jsonShape": None,
 }], trace
 assert "secret" not in str(trace)
+
+redirect_trace = cert.sanitized_provider_fetch_trace({
+    "fetches": [{
+        "url": "https://old.example/search?q=secret",
+        "response_url": "https://new.example/search?q=secret",
+        "method": "GET",
+        "status": 200,
+    }]
+})
+assert redirect_trace[0]["requestHost"] == "old.example"
+assert redirect_trace[0]["responseHost"] == "new.example"
+assert redirect_trace[0]["redirected"] is True
+assert "secret" not in str(redirect_trace)
 
 
 manifest = cert.load(ROOT / "manifest.json", {}) or {}
