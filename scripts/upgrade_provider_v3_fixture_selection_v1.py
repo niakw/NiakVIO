@@ -44,8 +44,11 @@ def patch() -> bool:
     changed = False
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     providers = anime_movie_provider_ids(manifest)
-    if "anikototv" not in providers:
-        raise AssertionError("anikototv must be covered by anime-movie fixture selection")
+    # Canonical semantic capability owns fixture selection. Transport aliases
+    # such as anime -> tv must never manufacture a movie lane. AniKotoTV is
+    # currently canonical anime-only, so it must not be forced through JJK0.
+    if "anikototv" in providers:
+        raise AssertionError("anikototv transport aliases must not create canonical movie capability")
 
     corpus = json.loads(CORPUS.read_text(encoding="utf-8"))
     fixtures = corpus.get("fixtures")

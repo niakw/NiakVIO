@@ -1,0 +1,100 @@
+name: TEMP - Finalize Targeted Provider Publication Fixed Point
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/temp-finalize-targeted-publication.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-temp-targeted-publication-fixed-point
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: main
+      NIAKVIO_PROVIDER_V3_FINAL_MINIMIZE: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Reconcile exact final provider bytes
+        run: |
+          set -euo pipefail
+          python tests/targeted_provider_publication_reconcile_test.py
+          python scripts/reconcile_targeted_provider_publication.py --provider vidlove --provider kehflix
+          python scripts/audit_provider_v3_static.py
+          python scripts/finalize_provider_v3_minimizer.py --check
+          python tests/provider_v3_minimizer_published_test.py
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/provider_v3_workflow_ownership_test.py
+          python scripts/sync_manifest_projection_rows.py --check
+          python scripts/validate_published_provider_config.py
+          git diff --check
+
+      - name: Prove targeted manifest and materialization fixed point
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          manifest=json.load(open('manifest.json',encoding='utf-8'))
+          material=json.load(open('provider-v3-materialization.json',encoding='utf-8'))
+          mm={str(r.get('id','')).lower():r for r in manifest.get('scrapers') or [] if isinstance(r,dict)}
+          pm={str(r.get('provider','')).lower():r for r in material.get('providers') or [] if isinstance(r,dict)}
+          for pid in ('vidlove','kehflix'):
+              m=mm[pid]; p=pm[pid]
+              assert m['filename']==p['file'], (pid,m['filename'],p['file'])
+              raw=Path(m['filename']).read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==p['sha256'], pid
+              if pid=='vidlove':
+                  text=raw.decode('utf-8')
+                  assert 'NIAKVIO_VIDLOVE_CURRENT_API_V1' in text
+                  assert 'https://api.vidlove.cc' in text
+                  assert 'sources=moviebox' in text
+          print('TARGETED_PUBLICATION_FIXED_POINT_OK providers=vidlove,kehflix')
+          PY
+
+      - name: Record fixed-point checkpoint and self-clean
+        run: |
+          set -euo pipefail
+          cat >> MEMORY.md <<'EOF'
+
+          ## 2026-09-18 — Targeted publication fixed-point reconciliation
+
+          - After a targeted provider proof/materialization, public bytes are now reconciled generically back into content-addressed manifest + provider-v3-materialization metadata before acceptance.
+          - VidLove and Kehflix were used as the first live fixed-point application. The final manifest file, materialization file, SHA-256 and Provider CONFIG data hash are required to agree on the exact referenced bytes.
+          - This closes the class of bug where a post-proof materialize_one() changed the public bundle after an earlier audit had already reconciled hashes.
+          EOF
+          rm .github/workflows/temp-finalize-targeted-publication.yml
+
+      - name: Publish fixed point
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git diff --cached --quiet && { echo TARGETED_FIXED_POINT_ALREADY_CURRENT; exit 0; }
+          git commit -m 'fix(providers): reconcile targeted publication fixed point'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${GITHUB_SHA}"
+          git push origin HEAD:main
