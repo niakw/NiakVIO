@@ -550,7 +550,10 @@ def candidate_score(provider_id: str, cfg: dict[str, Any], url: str, label: str,
     if not candidate_host or not is_public_url(url):
         return -1
     hub_hosts = discovery_source_hosts(cfg)
-    if candidate_host in hub_hosts:
+    # A discovery source is normally not a provider terminal. Exception: the
+    # registry explicitly declares that exact host as a direct/allowed terminal.
+    # This supports providers whose official site is also their address hub.
+    if candidate_host in hub_hosts and candidate_host not in exact_allowed_hosts(cfg):
         return -1
     if candidate_host.endswith(SOCIAL_HOST_SUFFIXES + SEARCH_HOST_SUFFIXES + INFRASTRUCTURE_HOST_SUFFIXES):
         return -1
