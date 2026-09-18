@@ -550,6 +550,7 @@ assert resolver.host_matches_suffixes('mobile.x.com', resolver.SOCIAL_HOST_SUFFI
 assert not resolver.host_matches_suffixes('kehflix.com', resolver.SOCIAL_HOST_SUFFIXES)
 assert not resolver.host_matches_suffixes('nottelegram.me', ('telegram.me',))
 assert resolver.host_matches_suffixes('sub.telegram.me', ('telegram.me',))
+assert resolver.compact('Accès principal · Adresse vérifiée') == 'accesprincipaladresseverifiee'
 
 # HTML-card authority regression from real Kehflix hub markup: the resolver must
 # use nearby card semantics, not only the anchor text "Entrer".

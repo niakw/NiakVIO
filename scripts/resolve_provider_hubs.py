@@ -25,6 +25,7 @@ import ipaddress
 import json
 import re
 import ssl
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -135,7 +136,9 @@ def host(url: str) -> str:
 
 
 def compact(value: str) -> str:
-    return re.sub(r"[^a-z0-9]", "", str(value).casefold())
+    folded = unicodedata.normalize("NFKD", str(value).casefold())
+    folded = "".join(char for char in folded if not unicodedata.combining(char))
+    return re.sub(r"[^a-z0-9]", "", folded)
 
 
 def canonical_provider_id(value: str) -> str:
