@@ -28,6 +28,36 @@ HISTORY_PATH = ROOT / "provider-domain-history.json"
 ALLOWED_SOURCE_TYPES = {"hub", "telegram_public", "redirect"}
 
 
+def _authoritative_hub_configs(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Curated provider-hubs.json outranks stale embedded hub configuration."""
+    legacy = hubresolver.merge_hub_registry(config)
+    clean_config = {"provider_patches": config.get("provider_patches") or {}}
+    curated = hubresolver.merge_hub_registry(clean_config)
+    legacy.update(curated)
+    return legacy
+
+
+def _host_carries_terminal_identity(hostname: str, cfg: dict[str, Any]) -> bool:
+    host_norm = re.sub(r"[^a-z0-9]+", "", str(hostname or "").casefold())
+    aliases = [
+        re.sub(r"[^a-z0-9]+", "", str(value or "").casefold())
+        for value in (cfg.get("terminal_aliases") or [])
+        if str(value or "").strip()
+    ]
+    aliases = [value for value in aliases if len(value) >= 4]
+    if not aliases:
+        return True
+    allowed = {
+        str(value or "").casefold().strip(".")
+        for value in (cfg.get("allowed_terminal_hosts") or [])
+        if str(value or "").strip()
+    }
+    hostname = str(hostname or "").casefold().strip(".")
+    if hostname in allowed:
+        return True
+    return any(alias in host_norm for alias in aliases)
+
+
 def _candidate_url(row: dict[str, Any]) -> str:
     return str(row.get("url") or "").strip().rstrip("/")
 
@@ -47,6 +77,8 @@ def _safe_authoritative_candidate(
     if hostname in hubresolver.discovery_source_hosts(cfg):
         return False
     if hostname in {str(item).casefold().strip(".") for item in cfg.get("blocked_hosts") or []}:
+        return False
+    if not _host_carries_terminal_identity(hostname, cfg):
         return False
     if hostname.endswith(
         hubresolver.SOCIAL_HOST_SUFFIXES
@@ -237,7 +269,7 @@ def main() -> int:
     args = parser.parse_args()
 
     config = hubresolver.load_json(CONFIG_PATH, {})
-    hubs = hubresolver.merge_hub_registry(config)
+    hubs = _authoritative_hub_configs(config)
     history = hubresolver.load_json(HISTORY_PATH, {"schema_version": 1, "providers": {}})
     history.setdefault("schema_version", 1)
     history_providers = history.setdefault("providers", {})
