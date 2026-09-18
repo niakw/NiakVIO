@@ -316,7 +316,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     var meta=contextMeta(args);if(!meta)return [];
     var sec=await securityKey();
     var found=await search(sec,meta.year?meta.title+" "+meta.year:meta.title);
-    var movieId=strictMovieId(found,meta);if(!movieId)return [];
+    var movieId=strictMovieId(found,meta);
+    if(!movieId&&meta.year){
+      found=await search(sec,meta.title);
+      movieId=strictMovieId(found,meta);
+    }
+    if(!movieId)return [];
     var detail=await details(sec,movieId),activeMovieId=movieId;
     if(meta.type==="tv"&&meta.season&&meta.episode){
       var root=dataBlock(detail),season=rows(root.seasons).find(function(x){return Number(x&&x.number)===meta.season});
