@@ -245,9 +245,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -586,9 +586,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -896,9 +896,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -1139,9 +1139,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -1382,9 +1382,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie"
         ],
@@ -1629,9 +1629,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -1854,9 +1854,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -2081,9 +2081,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -2321,9 +2321,9 @@
       "domain_substitutions": {},
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -2358,11 +2358,12 @@
         "Kehflix episodic playback uses /api/streams/episode?id&season&episode&k; Nuvio tv/anime remain semantic types while the provider runtime uses its episodic route.",
         "External embeds remain fallback observations; the signed same-origin runtime API is attempted first.",
         "Kehflix is currently enabled; activation remains governed by normal publication evidence and stream-level playback failures do not disable the whole provider.",
-        "Native HLS playback uses the generic Core first-segment container proof for up to three HLS rows: malformed TS/HTML payloads are rejected before player hand-off while timeout/network uncertainty remains non-blocking."
+        "Native HLS playback uses the generic Core first-segment container proof for up to three HLS rows: malformed TS/HTML payloads are rejected before player hand-off while timeout/network uncertainty remains non-blocking.",
+        "2026-09-18 domain authority: kehflix.wiki is the hub only; kehflix.com is the runtime terminal advertised by that hub. Do not publish .wiki as runtime and do not restore stale .lol."
       ],
       "capability": "html_scraper",
       "official_hub": "https://kehflix.wiki/",
-      "official_site": "https://kehflix.lol",
+      "official_site": "https://kehflix.com",
       "published_types": [
         "movie",
         "tv",
@@ -2414,19 +2415,22 @@
         "recognition_seed_is_http_proof": false
       },
       "domain_substitutions": {
-        "kehflix.wiki": "kehflix.lol"
+        "kehflix.lol": "kehflix.com"
       },
       "runtime_domain_replacements": {
-        "kehflix.wiki": "kehflix.lol"
+        "kehflix.lol": "kehflix.com"
       },
       "terminal_domain_proof": {
-        "schemaVersion": 2,
-        "observedAt": "2026-09-07",
-        "reverifiedAt": "2026-09-14",
-        "authority": "official-hub-live-path-proof",
-        "terminal": "kehflix.wiki",
-        "alternateLiveTerminal": "kehflix.com",
-        "rejectedRedirectOnly": "kehflix.lol",
+        "schemaVersion": 3,
+        "observedAt": "2026-09-18",
+        "reverifiedAt": "2026-09-18",
+        "authority": "official-hub-current-address",
+        "hub": "kehflix.wiki",
+        "terminal": "kehflix.com",
+        "rejectedRuntimeHosts": [
+          "kehflix.wiki",
+          "kehflix.lol"
+        ],
         "pathRetentionFixtures": [
           "interstellar-2014",
           "house-of-the-dragon-s03e01"
@@ -2585,9 +2589,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime",
           "movie",
@@ -2816,9 +2820,9 @@
       "domain_substitutions": {},
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -3028,9 +3032,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -3070,9 +3074,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -3497,9 +3501,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -3543,9 +3547,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -3789,9 +3793,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -4000,9 +4004,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -4283,9 +4287,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -4573,9 +4577,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime",
           "movie",
@@ -4858,9 +4862,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -5116,9 +5120,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -5400,9 +5404,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -5597,9 +5601,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -5953,9 +5957,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -6411,9 +6415,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime",
           "movie",
@@ -6474,9 +6478,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -6937,9 +6941,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -7049,9 +7053,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime",
           "movie",
@@ -7345,9 +7349,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -7547,9 +7551,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -7936,9 +7940,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -7998,9 +8002,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -8447,9 +8451,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -8518,9 +8522,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -8946,9 +8950,9 @@
       "official_site": "https://ipv4.vostfree.ws",
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -9025,9 +9029,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -9448,9 +9452,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -9513,9 +9517,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -9711,9 +9715,9 @@
       ],
       "live_route_gate": {
         "completion_state": "stream-capability-unproven",
-        "effective_coverage_ratio": 0.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 0.0,
+        "effective_coverage_ratio": 0,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 0,
         "required_types": [
           "movie",
           "tv"
@@ -10115,9 +10119,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -10216,9 +10220,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -10435,9 +10439,9 @@
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "anime"
         ],
@@ -10631,9 +10635,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie"
         ],
@@ -10830,9 +10834,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -11030,9 +11034,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
@@ -11260,9 +11264,9 @@
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
-        "effective_coverage_ratio": 1.0,
-        "required_coverage_ratio": 1.0,
-        "declared_type_coverage_ratio": 1.0,
+        "effective_coverage_ratio": 1,
+        "required_coverage_ratio": 1,
+        "declared_type_coverage_ratio": 1,
         "required_types": [
           "movie",
           "tv"
