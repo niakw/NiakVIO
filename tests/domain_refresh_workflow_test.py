@@ -65,6 +65,8 @@ for required in (
     "sync_registry_terminal",
     "sync_patch_domain_authority",
     "rebuild_provider_configs",
+    "provider_domain_projection_drift_ids",
+    '"projection_drift"',
     "replace_provider_fix",
     "domain refresh changed bytes outside CONFIG Lego",
     '"core_mutation": False',
@@ -139,6 +141,30 @@ except RuntimeError as exc:
 else:
     raise AssertionError("explicit_current terminal must refuse a contradictory hub observation")
 assert pinned_registry["providers"]["kehflix"]["direct"] == "https://kehflix.com/"
+
+# Regression 2b: stale published domain CONFIG must be distinguishable from
+# already-current structured authority.  This is the Kehflix state that used to
+# make Domain Refresh report applied=0/bundles=0 forever.
+stale_projection = {
+    "officialSite": "https://kehflix.lol",
+    "knownSite": "https://kehflix.lol/",
+    "officialHub": "https://kehflix.wiki/",
+    "domainSubstitutions": {"kehflix.wiki": "kehflix.lol"},
+}
+current_projection = {
+    "officialSite": "https://kehflix.com/",
+    "knownSite": "https://kehflix.com",
+    "officialHub": "https://kehflix.wiki",
+    "domainSubstitutions": {"kehflix.lol": "kehflix.com"},
+}
+assert module._normalized_domain_projection(stale_projection) != module._normalized_domain_projection(current_projection)
+equivalent_current_projection = {
+    "officialSite": "https://kehflix.com",
+    "knownSite": "https://kehflix.com/",
+    "officialHub": "https://kehflix.wiki/",
+    "domainSubstitutions": {"KEHFLIX.LOL": "KEHFLIX.COM"},
+}
+assert module._normalized_domain_projection(current_projection) == module._normalized_domain_projection(equivalent_current_projection)
 
 # Regression 3: only domain-connected runtime maps follow a terminal rotation;
 # unrelated API replacement DATA must remain untouched.

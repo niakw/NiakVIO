@@ -299,6 +299,80 @@ def _generation(rows: list[dict[str, Any]]) -> str:
     return aggregate.hexdigest()
 
 
+def _normalized_domain_projection(data: dict[str, Any]) -> dict[str, Any]:
+    """Extract only provider-domain DATA owned by Domain Refresh."""
+    def normalized_url(value: object) -> str:
+        return str(value or "").strip().rstrip("/")
+
+    substitutions = data.get("domainSubstitutions")
+    if not isinstance(substitutions, dict):
+        substitutions = {}
+    return {
+        "officialSite": normalized_url(data.get("officialSite")),
+        "knownSite": normalized_url(data.get("knownSite")),
+        "officialHub": normalized_url(data.get("officialHub")),
+        "domainSubstitutions": {
+            str(source or "").strip().casefold(): str(target or "").strip().casefold()
+            for source, target in substitutions.items()
+            if str(source or "").strip() and str(target or "").strip()
+        },
+    }
+
+
+def provider_domain_projection_drift_ids(provider_ids: list[str]) -> list[str]:
+    """Find stale published CONFIG domain DATA without treating it as provider repair.
+
+    A prior Domain Refresh can leave structured authority current while the
+    content-addressed bundle still contains yesterday's site.  In that state no
+    provider-overrides mutation occurs, so a changed-provider-only rebuild would
+    stay idempotently wrong.  Compare only domain-owned projection fields and
+    rematerialize those providers through the existing CONFIG-only path.
+    """
+    wanted = sorted(set(canonical(value) for value in provider_ids if canonical(value)))
+    if not wanted:
+        return []
+
+    manifest = load(MANIFEST_PATH)
+    overrides = load(CONFIG_PATH)
+    static = load(STATIC_KNOWLEDGE_PATH)
+    manifest_by_id = {
+        canonical(row.get("id")): row
+        for row in manifest.get("scrapers") or []
+        if isinstance(row, dict) and canonical(row.get("id"))
+    }
+    patches = overrides.get("provider_patches") or {}
+    capabilities = overrides.get("provider_capabilities") or {}
+    static_rows = static.get("providers") or {}
+    drift: list[str] = []
+
+    for provider_id in wanted:
+        entry = manifest_by_id.get(provider_id)
+        patch = patches.get(provider_id) if isinstance(patches, dict) else None
+        capability = capabilities.get(provider_id) if isinstance(capabilities, dict) else None
+        static_row = static_rows.get(provider_id) if isinstance(static_rows, dict) else None
+        if not all(isinstance(value, dict) for value in (entry, patch, capability, static_row)):
+            continue
+
+        rel = str(entry.get("filename") or "")
+        path = ROOT / rel
+        if not rel.startswith("providers/") or not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        fix_id = _config_fix_id(text, provider_id)
+        published = decode_managed_data(text, fix_id)
+
+        model = allmat.provider_model(provider_id, patch, capability, static_row)
+        expected = {
+            "officialSite": model.get("officialSite"),
+            "knownSite": model.get("knownSite"),
+            "officialHub": model.get("officialHub"),
+            "domainSubstitutions": model.get("domainSubstitutions") or {},
+        }
+        if _normalized_domain_projection(published) != _normalized_domain_projection(expected):
+            drift.append(provider_id)
+    return drift
+
+
 def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
     """Rebuild complete CONFIG DATA for changed providers, preserving Core bytes."""
     if not provider_ids:
@@ -507,21 +581,31 @@ def main() -> int:
             report["providers"][provider_id] = item
 
     bundle_updates: list[dict[str, str]] = []
+    projection_drift_ids: list[str] = []
     if args.apply:
-        # Persist structured authority first so the CONFIG rebuild reads exactly
-        # the same DATA that will be committed.
+        # Persist structured authority first so projection drift is measured
+        # against exactly the same DATA that will be committed.
         write(CONFIG_PATH, config)
         write(REGISTRY_PATH, registry)
         history["updated_at"] = resolver.now_iso()
         write(HISTORY_PATH, history)
-        bundle_updates = rebuild_provider_configs(changed_provider_ids)
+
+        resolved_provider_ids = [
+            provider_id
+            for provider_id, item in report["providers"].items()
+            if isinstance(item, dict) and item.get("status") == "site_authoritative"
+        ]
+        projection_drift_ids = provider_domain_projection_drift_ids(resolved_provider_ids)
+        rebuild_ids = sorted(set(changed_provider_ids) | set(projection_drift_ids))
+        bundle_updates = rebuild_provider_configs(rebuild_ids)
         from sync_manifest_projection_rows import sync as sync_manifest_projections
         sync_manifest_projections(check=False)
 
     changes = {
-        "schema_version": 2,
+        "schema_version": 3,
         "changed": sorted(set(changed_provider_ids)),
         "registry_changed": sorted(set(registry_changed_ids)),
+        "projection_drift": sorted(set(projection_drift_ids)),
         "bundle_updates": bundle_updates,
         "allowed_patch_fields": sorted(DOMAIN_PATCH_FIELDS),
         "core_mutation": False,
@@ -541,7 +625,8 @@ def main() -> int:
         "FIELD_DOMAIN_REFRESH_V2 "
         f"scope={len(current_provider_ids)} resolved={resolved} unresolved={unresolved} "
         f"applied={len(set(changed_provider_ids))} "
-        f"registry={len(set(registry_changed_ids))} bundles={len(bundle_updates)} "
+        f"registry={len(set(registry_changed_ids))} "
+        f"projection_drift={len(set(projection_drift_ids))} bundles={len(bundle_updates)} "
         "terminal_probe=false core_mutation=false"
     )
     return 0
