@@ -194,6 +194,35 @@ def sanitized_provider_fetch_trace(debug: dict[str, Any], *, limit: int = 8) -> 
     return rows
 
 
+def sanitized_provider_value_trace(debug: dict[str, Any], *, limit: int = 24) -> list[dict[str, Any]]:
+    """Persist bounded provider stage diagnostics without secrets or raw payloads."""
+    raw_rows = debug.get("provider_value_trace_history_v21") or []
+    rows: list[dict[str, Any]] = []
+    for raw in raw_rows if isinstance(raw_rows, list) else []:
+        if not isinstance(raw, dict):
+            continue
+        stage = re.sub(r"[^a-zA-Z0-9_.:-]+", "_", str(raw.get("stage") or ""))[:64]
+        lane = re.sub(r"[^a-zA-Z0-9_.:-]+", "_", str(raw.get("lane") or ""))[:24]
+        detail = str(raw.get("route") or "")[:180]
+        # Only retain deliberately terse diagnostic counters/flags. Drop URLs,
+        # credentials, encoded blobs and arbitrary provider response values.
+        if (
+            "://" in detail
+            or re.search(r"(?i)(cookie|token|authorization|secret|api[_-]?key|bearer|enc(?:rypted)?)\s*[:=]", detail)
+            or not re.fullmatch(r"[a-zA-Z0-9_ .,:;=|+\-/]*", detail)
+        ):
+            detail = ""
+        rows.append({
+            "stage": stage or None,
+            "lane": lane or None,
+            "stepIndex": int(raw.get("stepIndex") or -1),
+            "detail": detail or None,
+        })
+        if len(rows) >= max(1, limit):
+            break
+    return rows
+
+
 def probe_fixture(bundle: Path, fixture: dict[str, Any], timeout: int) -> dict[str, Any]:
     clean_fixture = {key: value for key, value in fixture.items() if key not in {"slug", "lane"}}
     # Nuvio plugin ABI transports semantic anime through the tv lane. Preserve the
@@ -268,6 +297,7 @@ def probe_fixture(bundle: Path, fixture: dict[str, Any], timeout: int) -> dict[s
         "durationMs": int(payload.get("duration_ms") or round((time.monotonic() - started) * 1000)),
         "runtimeMediaType": clean_fixture.get("mediaType"),
         "networkTrace": sanitized_provider_fetch_trace(debug),
+        "providerTrace": sanitized_provider_value_trace(debug),
     }
 
 
