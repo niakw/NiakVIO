@@ -86,19 +86,34 @@ def build(certification: dict[str, Any]) -> dict[str, Any]:
             "repairScope": "core_or_capability_family_first",
         })
     cluster_rows.sort(key=lambda row: (-row["providerCount"], row["failureClass"], row["lane"], row["providers"]))
-    active = int(certification.get("activeProviderCount") or 0)
-    certified = int(certification.get("certifiedActiveProviderCount") or 0)
-    ratio = certified / active if active else 1.0
+    manifest_total = int(certification.get("manifestProviderCount") or 0)
+    selected = int(certification.get("selectedProviderCount") or certification.get("providerCount") or 0)
+    certified_selected = int(certification.get("certifiedProviderCount") or 0)
+    active_selected = int(certification.get("selectedActiveProviderCount") or certification.get("activeProviderCount") or 0)
+    certified_active = int(certification.get("certifiedActiveProviderCount") or 0)
+    full_manifest = bool(certification.get("fullManifestCensus")) and manifest_total > 0 and selected == manifest_total
+    ratio = (certified_selected / manifest_total) if full_manifest and manifest_total else None
+    architecture_state = (
+        "auto-yield-sufficient"
+        if full_manifest and (manifest_total < 8 or (ratio is not None and ratio >= 0.75))
+        else "architecture-defect-low-auto-yield"
+        if full_manifest
+        else "targeted-diagnostic-no-global-yield"
+    )
     return {
         "schemaVersion": 1,
         "authority": "provider-certification-cluster-learning-v1",
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "sourceAuthority": certification.get("authority"),
         "manifestVersion": certification.get("manifestVersion"),
-        "activeProviderCount": active,
-        "certifiedActiveProviderCount": certified,
-        "autoCertificationRatio": round(ratio, 4),
-        "architectureState": "auto-yield-sufficient" if active < 8 or ratio >= 0.75 else "architecture-defect-low-auto-yield",
+        "manifestProviderCount": manifest_total,
+        "selectedProviderCount": selected,
+        "certifiedSelectedProviderCount": certified_selected,
+        "selectedActiveProviderCount": active_selected,
+        "certifiedActiveProviderCount": certified_active,
+        "fullManifestCensus": full_manifest,
+        "autoCertificationRatio": round(ratio, 4) if ratio is not None else None,
+        "architectureState": architecture_state,
         "strategy": "largest_shared_failure_cluster_first",
         "clusters": cluster_rows,
         "providers": providers,
@@ -112,12 +127,21 @@ def main() -> int:
     payload = build(load(args.certification.resolve()))
     args.output.resolve().parent.mkdir(parents=True, exist_ok=True)
     args.output.resolve().write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(
-        "FIELD_PROVIDER_CERTIFICATION_LEARNING "
-        f"certified={payload['certifiedActiveProviderCount']}/{payload['activeProviderCount']} "
-        f"ratio={payload['autoCertificationRatio']:.4f} architecture={payload['architectureState']} "
-        f"clusters={len(payload['clusters'])}"
-    )
+    if payload["fullManifestCensus"]:
+        print(
+            "FIELD_PROVIDER_CERTIFICATION_LEARNING "
+            f"certified={payload['certifiedSelectedProviderCount']}/{payload['manifestProviderCount']} "
+            f"ratio={payload['autoCertificationRatio']:.4f} architecture={payload['architectureState']} "
+            f"clusters={len(payload['clusters'])}"
+        )
+    else:
+        print(
+            "FIELD_PROVIDER_CERTIFICATION_LEARNING "
+            f"targeted_certified={payload['certifiedSelectedProviderCount']} "
+            f"selected={payload['selectedProviderCount']} manifest_total={payload['manifestProviderCount']} "
+            f"global_ratio=unknown architecture={payload['architectureState']} "
+            f"clusters={len(payload['clusters'])}"
+        )
     for row in payload["clusters"][:12]:
         print(
             "FIELD_PROVIDER_FAILURE_CLUSTER "
