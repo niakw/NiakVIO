@@ -57,6 +57,34 @@ static={'model':{'routeProofVersion':5,'apiRecipe':static_recipe}}
 model=m.provider_model('synthetic',patch,cap,static)
 assert model['apiRecipe']==static_recipe, model['apiRecipe']
 
+# A proof-v5 identity/helper recipe is not provider execution authority by itself.
+# It may remain available as a fallback recipe, but must not suppress current
+# provider-owned static catalogue routes.
+helper={
+    'proofModelVersion':5,
+    'base':'https://arm.haglund.dev',
+    'directRoute':'/api/v2/themoviedb?id={tmdbId}',
+    'allowGenericFallback':False,
+}
+patch={'route_proof_version':5,'api_recipe':helper}
+static={'model':{
+    'routeProofVersion':5,
+    'routes':['/?s={query}','/{slug}-streaming.html'],
+    'apiRecipe':helper,
+}}
+model=m.provider_model('synthetic',patch,cap,static)
+assert model['apiRecipe']==helper, model['apiRecipe']
+assert '/?s={query}' in model['routes'], model['routes']
+assert '/{slug}-streaming.html' in model['routes'], model['routes']
+assert m._recipe_is_provider_execution_authority(helper) is False
+
+provider_recipe={
+    'proofModelVersion':5,
+    'base':'https://provider.example',
+    'directRoute':'/api/streams?id={tmdbId}',
+}
+assert m._recipe_is_provider_execution_authority(provider_recipe) is True
+
 one=(ROOT/'scripts'/'materialize_provider_v3_one.py').read_text(encoding='utf-8')
 assert '# MATERIALIZER_EXECUTION_AUTHORITY_MONOTONIC_V25' in one
 assert 'patch["api_recipe"] = canonical_recipe' not in one
