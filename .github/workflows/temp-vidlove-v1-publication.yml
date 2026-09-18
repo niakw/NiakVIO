@@ -1,5 +1,5 @@
 name: TEMP - Publish VidLove V1 and Kehflix Projection
-# retry: diagnose VidLove HLS cookie session
+# retry: fan out VidLove backend selectors
 
 on:
   push:
@@ -183,90 +183,83 @@ jobs:
           python scripts/sync_manifest_projection_rows.py --check
           git diff --check
 
-      - name: Diagnose VidLove HLS cookie session and segment sample
+      - name: Fan out exact VidLove backend selectors
         shell: bash
         run: |
           set -euo pipefail
           test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
           python - <<'PY'
-          import http.cookiejar
+          import copy
           import json
           import pathlib
           import sys
-          import urllib.parse
-          import urllib.request
+
           root=pathlib.Path('.').resolve()
           sys.path.insert(0,str(root/'scripts'))
-          import parity_hls_terminal_probe as hls
+          import materialize_provider_v3_one as one
           import run_provider_upstream_parity as parity
           import run_provider_upstream_parity_v3 as v3
 
-          fx={'slug':'interstellar-2014','tmdbId':'157336','mediaType':'movie','category':'movie','title':'Interstellar','year':2014,'expectedDurationMinutes':169}
-          path=parity.local_catalog()['vidlove']['path']
-          raw=v3._worker_raw(path,v3.fixture_payload(fx,'movie',upstream=False),30)
-          streams=[row for row in raw.get('streams') or [] if isinstance(row,dict)]
-          if not streams:
-              raise SystemExit('VidLove cookie diagnostic: no candidate')
-          stream=streams[0]
-          headers={str(k):str(v) for k,v in (stream.get('headers') or {}).items()}
-          jar=http.cookiejar.CookieJar()
-          opener=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+          overrides_path=root/'provider-overrides.json'
+          base_overrides=json.loads(overrides_path.read_text(encoding='utf-8'))
+          sources=['moviebox','ipcloud','tcloud','vidapi','vixsrc','1embed','xpass','vidrift','lookmovie','vidnest']
+          fixtures=[
+              ('movie',{'slug':'interstellar-2014','tmdbId':'157336','mediaType':'movie','category':'movie','title':'Interstellar','year':2014,'expectedDurationMinutes':169}),
+              ('tv',{'slug':'house-of-the-dragon-2022-s01e01','tmdbId':'94997','mediaType':'tv','category':'tv','title':'House of the Dragon','year':2022,'season':1,'episode':1}),
+          ]
+          rows=[]
+          for source in sources:
+              current=copy.deepcopy(base_overrides)
+              patch=current['provider_patches']['vidlove']
+              recipe=copy.deepcopy(patch['api_recipe'])
+              recipe['directRoute']=f"/{{media}}?id={{tmdbId}}&mode=json&sources={source}&hevc=1&season={{season}}&episode={{episode}}"
+              recipe['sources']=[]
+              patch['api_recipe']=recipe
+              overrides_path.write_text(json.dumps(current,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 
-          def fetch(url, *, playlist):
-              req=urllib.request.Request(url,headers=hls._headers(headers,playlist=playlist),method='GET')
-              with opener.open(req,timeout=18) as resp:
-                  body=resp.read(hls.PLAYLIST_BYTES if playlist else hls.SEGMENT_BYTES)
-                  return int(resp.getcode() or 0),str(resp.geturl() or url),str(resp.headers.get('content-type') or ''),body
+              report=one.materialize_one('vidlove')
+              path=root/str(report['file'])
+              lane_rows=[]
+              for lane,fx in fixtures:
+                  result=v3._run_verified(path,v3.fixture_payload(fx,lane,upstream=False),25)
+                  row={
+                      'source':source,
+                      'lane':lane,
+                      'fixture':fx['slug'],
+                      'streams':int(result.get('stream_count') or 0),
+                      'candidateStreams':int(result.get('candidate_stream_count') or 0),
+                      'terminal':bool(result.get('terminal_verified')),
+                      'reasons':result.get('terminal_reasons') or [],
+                      'statuses':result.get('http_statuses') or [],
+                      'error':result.get('error_class'),
+                  }
+                  lane_rows.append(row)
+                  rows.append(row)
+                  print('VIDLOVE_SOURCE_PROOF '+json.dumps(row,sort_keys=True))
+              if all(r['terminal'] and r['streams']>0 for r in lane_rows):
+                  print('VIDLOVE_SOURCE_FULL '+source)
 
-          status,final,ctype,body=fetch(str(stream['url']),playlist=True)
-          parsed=hls.parse_hls(body,final)
-          depth=0
-          while parsed.get('master') and parsed.get('variants') and depth<2:
-              status,final,ctype,body=fetch(parsed['variants'][0],playlist=True)
-              parsed=hls.parse_hls(body,final)
-              depth+=1
-
-          segments=list(parsed.get('segments') or [])
-          indices=[]
-          for idx in (0,1,2,10,len(segments)//2,max(0,len(segments)-1)):
-              if segments and 0<=idx<len(segments) and idx not in indices:
-                  indices.append(idx)
-          samples=[]
-          for idx in indices:
-              try:
-                  ss,sfinal,sctype,sbody=fetch(segments[idx],playlist=False)
-                  head=sbody.lstrip()[:128].lower()
-                  kind='media' if hls._segment_media(sctype,sbody) else (
-                      'nested_hls' if head.startswith(b'#extm3u') else
-                      'html' if head.startswith(b'<!doctype') or head.startswith(b'<html') else
-                      'json' if head.startswith(b'{') or head.startswith(b'[') else
-                      'other_non_media' if sbody else 'empty'
+          overrides_path.write_text(json.dumps(base_overrides,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          summary={
+              'schemaVersion':1,
+              'sources':sources,
+              'rows':rows,
+              'fullSources':[
+                  source for source in sources
+                  if all(
+                      any(r['source']==source and r['lane']==lane and r['terminal'] and r['streams']>0 for r in rows)
+                      for lane in ('movie','tv')
                   )
-                  samples.append({
-                      'index':idx,'status':ss,'contentType':sctype,
-                      'host':urllib.parse.urlparse(sfinal).hostname,
-                      'kind':kind,'bytes':len(sbody)
-                  })
-              except Exception as exc:
-                  samples.append({'index':idx,'kind':type(exc).__name__[:80]})
-
-          detail={
-              'candidateHost':urllib.parse.urlparse(str(stream.get('url') or '')).hostname,
-              'cookieCount':len(list(jar)),
-              'cookieNames':sorted({cookie.name for cookie in jar}),
-              'playlist':{
-                  'status':status,'contentType':ctype,'depth':depth,
-                  'segments':len(segments),'complete':bool(parsed.get('complete'))
-              },
-              'samples':samples,
-              'anyMedia':any(row.get('kind')=='media' for row in samples),
+              ],
+              'movieSources':[source for source in sources if any(r['source']==source and r['lane']=='movie' and r['terminal'] and r['streams']>0 for r in rows)],
+              'tvSources':[source for source in sources if any(r['source']==source and r['lane']=='tv' and r['terminal'] and r['streams']>0 for r in rows)],
           }
           pathlib.Path('health-output').mkdir(exist_ok=True)
-          pathlib.Path('health-output/vidlove-hls-cookie-diagnostic.json').write_text(
-              json.dumps(detail,ensure_ascii=False,indent=2)+'\n',encoding='utf-8'
+          pathlib.Path('health-output/vidlove-source-fanout.json').write_text(
+              json.dumps(summary,ensure_ascii=False,indent=2)+'\n',encoding='utf-8'
           )
-          print('VIDLOVE_HLS_COOKIE_DIAGNOSTIC '+json.dumps(detail,sort_keys=True))
-          raise SystemExit('diagnostic-only: no provider publication')
+          print('VIDLOVE_SOURCE_FANOUT '+json.dumps(summary,sort_keys=True))
+          raise SystemExit('diagnostic-only: backend fanout complete; no provider publication')
           PY
 
       - name: Record durable checkpoint and prepare Domain Refresh handoff
