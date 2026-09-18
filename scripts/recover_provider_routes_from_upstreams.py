@@ -31,6 +31,7 @@ from typing import Any
 
 from provider_route_proof import derive_task_routes, route_role, unique
 from current_provider_scope import active_provider_ids
+from rotating_corpus import default_seed, rotated_candidates
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
@@ -42,6 +43,7 @@ OUT = ROOT / "automation" / "provider-route-recovery-v5.json"
 KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 PROOF_VERSION = 5
+MAX_FIXTURES_PER_LANE = max(1, min(int(os.environ.get("NIAKVIO_ROUTE_RECOVERY_MAX_FIXTURES_PER_LANE", "4")), 8))
 
 FIXTURES: dict[str, list[dict[str, Any]]] = {
     "movie": [{"slug": "interstellar", "tmdbId": "157336", "mediaType": "movie", "title": "Interstellar", "year": 2014}],
@@ -829,6 +831,29 @@ def _run_worker_adaptive(
     return best
 
 
+def _clean_catalogue_zero(result: dict[str, Any]) -> bool:
+    return bool(
+        str(result.get("status") or "").casefold() == "ok"
+        and not result.get("error")
+        and int(result.get("streams") or 0) == 0
+        and int(result.get("rawStreams") or 0) == 0
+        and (result.get("serverSuccess") or _worker_success_fetch_count(result) > 0)
+    )
+
+
+def _rotated_recovery_candidates(provider_id: str, semantic_type: str, seen_slugs: set[str]) -> list[dict[str, Any]]:
+    remaining = max(0, MAX_FIXTURES_PER_LANE - len(seen_slugs))
+    if remaining <= 0:
+        return []
+    rows = rotated_candidates(
+        semantic_type,
+        seed=default_seed(),
+        provider=provider_id,
+        exclude=seen_slugs,
+    )
+    return [copy.deepcopy(row) for row in rows[:remaining]]
+
+
 def recover_one(
     provider_id: str,
     local_row: dict[str, Any],
@@ -847,7 +872,15 @@ def recover_one(
     records: list[dict[str, Any]] = []
     tasks_report: list[dict[str, Any]] = []
     for semantic_type in semantic_types(local_row["entry"]):
-        for fixture in FIXTURES[semantic_type]:
+        queue = [copy.deepcopy(row) for row in FIXTURES[semantic_type]]
+        seen_slugs = {str(row.get("slug") or "") for row in queue}
+        base_count = len(queue)
+        lane_positive = False
+        lane_technical = False
+        index = 0
+        while index < len(queue):
+            fixture = queue[index]
+            rotated = index >= base_count
             result = _run_worker_adaptive(
                 provider_id,
                 source_path,
@@ -856,6 +889,11 @@ def recover_one(
                 timeout=timeout,
                 attempts=attempts,
             )
+            positive = int(result.get("streams") or 0) > 0 or int(result.get("rawStreams") or 0) > 0
+            clean_zero = _clean_catalogue_zero(result)
+            lane_positive = lane_positive or positive
+            lane_technical = lane_technical or (not positive and not clean_zero)
+
             # ROUTE_RECOVERY_CAUSAL_EXTERNAL_HINT_V11_1
             # Preserve the exact network order of infrastructure identity hints,
             # but carry no helper URL/method into provider execution authority.
@@ -891,9 +929,6 @@ def recover_one(
             for item in derived:
                 record = route_record(item, semantic_type, fixture["slug"], source_meta)
                 if record:
-                    # Task-level output counts are context, not causal attribution.
-                    # The request ordering marker is what allows recipe selection
-                    # to prove that a search request was actually terminal.
                     record["taskStreamCount"] = int(result.get("streams") or 0)
                     record["taskRawStreamCount"] = int(result.get("rawStreams") or 0)
                     record["taskLastRequestIndex"] = task_last_request_index
@@ -902,6 +937,7 @@ def recover_one(
             tasks_report.append({
                 "fixture": fixture["slug"],
                 "semanticType": semantic_type,
+                "rotatedFixture": rotated,
                 "workerStatus": result.get("status"),
                 "streamCount": result.get("streams", 0),
                 "rawStreamCount": result.get("rawStreams", 0),
@@ -909,8 +945,34 @@ def recover_one(
                 "serverSuccess": result.get("serverSuccess", False),
                 "providerRequestCount": provider_fetch_count,
                 "provenRouteCount": len(task_records),
+                "repairAttempts": int(result.get("repairAttempts") or 1),
                 "error": result.get("error"),
             })
+
+            index += 1
+            # Run the fixed regression representatives first. Only a clean zero
+            # unlocks deterministic provider-scoped rotating-corpus samples.
+            if index == base_count and not lane_positive and not lane_technical and len(queue) < MAX_FIXTURES_PER_LANE:
+                extras = _rotated_recovery_candidates(provider_id, semantic_type, seen_slugs)
+                for candidate in extras:
+                    slug = str(candidate.get("slug") or "")
+                    if not slug or slug in seen_slugs:
+                        continue
+                    seen_slugs.add(slug)
+                    queue.append(candidate)
+                    if len(queue) >= MAX_FIXTURES_PER_LANE:
+                        break
+                if len(queue) > base_count:
+                    print(
+                        "FIELD_ROUTE_RECOVERY_ROTATION "
+                        f"provider={provider_id} lane={semantic_type} "
+                        f"base={base_count} total={len(queue)}",
+                        flush=True,
+                    )
+            if rotated and positive:
+                break
+            if rotated and not clean_zero:
+                break
 
     deduped: list[dict[str, Any]] = []
     seen = set()
@@ -921,10 +983,6 @@ def recover_one(
         seen.add(fp)
         deduped.append(row)
     routes = unique([row.get("route") for row in deduped], 192)
-    # ROUTE_RECOVERY_HELPER_EVIDENCE_ONLY_V11_1
-    # TMDB/Cinemeta helper calls may carry critical identity evidence (IMDb, title,
-    # aliases), but they are not provider execution routes. Keep them in routeData
-    # and proven routes for causality while excluding them from the runtime plan.
     execution_routes = unique([
         row.get("route") for row in deduped
         if _repair_recipe_origin_allowed(row) and generic_execution_route(row)
@@ -943,7 +1001,6 @@ def recover_one(
         "apiRecipe": recipe,
         "tasks": tasks_report,
     }
-
 
 def _proof_execution_origin(origin: object, patch: dict[str, Any]) -> str:
     raw = str(origin or "").strip()
@@ -1545,6 +1602,7 @@ def main() -> int:
         "statusCounts": dict(sorted(counts.items())),
         "durationMs": round((time.monotonic() - started) * 1000),
         "maxAttemptsPerTask": attempts,
+        "maxFixturesPerLane": MAX_FIXTURES_PER_LANE,
         "staticCandidatesExecutable": False,
         "requestSpecModel": "ROUTE_RECOVERY_REQUEST_SPEC_V1",
         "proofRequirements": [

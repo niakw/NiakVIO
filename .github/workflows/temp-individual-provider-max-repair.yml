@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/temp-individual-provider-max-repair.yml'
+      - 'scripts/recover_provider_routes_from_upstreams.py'
+      - 'scripts/merge_provider_route_recovery_reports.py'
+      - 'tests/individual_provider_route_proof_merge_test.py'
+      - 'tests/route_recovery_rotating_corpus_test.py'
 
 permissions:
   contents: write
@@ -54,6 +58,7 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
       NIAKVIO_ROUTE_RECOVERY_TIMEOUT: '90'
       NIAKVIO_ROUTE_RECOVERY_ATTEMPTS: '4'
+      NIAKVIO_ROUTE_RECOVERY_MAX_FIXTURES_PER_LANE: '4'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -135,6 +140,7 @@ jobs:
       - name: Verify independent proof completeness
         run: |
           python tests/individual_provider_route_proof_merge_test.py
+          python tests/route_recovery_rotating_corpus_test.py
           test "$(find automation/individual-route-proofs -name '*.json' -type f | wc -l | tr -d ' ')" = "46"
           python scripts/merge_provider_route_recovery_reports.py             automation/individual-route-proofs             --scope all             --out automation/provider-route-recovery-individual-all.json
           python scripts/merge_provider_route_recovery_reports.py             automation/individual-route-proofs             --scope active             --out automation/provider-route-recovery-individual-active.json
@@ -142,6 +148,8 @@ jobs:
         run: |
           set -euo pipefail
           cp provider-v3-quick-yield.json automation/provider-individual-sweep-before.json || true
+          python tests/provider_domain_metadata_reconcile_test.py
+          python scripts/reconcile_provider_domain_metadata.py --rebuild
           python scripts/apply_provider_route_recovery_report.py automation/provider-route-recovery-individual-active.json
           python scripts/enforce_route_proof_manifest_policy_v1.py             --report automation/provider-route-recovery-individual-active.json             --manifest manifest.json             --overrides provider-overrides.json
           python scripts/sanitize_provider_v3_execution_routes_v1.py
