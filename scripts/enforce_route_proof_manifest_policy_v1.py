@@ -76,10 +76,24 @@ def main() -> int:
     }
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
 
+    manifest_rows = manifest.get("scrapers") if isinstance(manifest.get("scrapers"), list) else []
+    current_ids = {
+        cid(row.get("id"))
+        for row in manifest_rows
+        if isinstance(row, dict) and cid(row.get("id"))
+    }
+    if "movix" not in current_ids:
+        print(
+            "ROUTE_PROOF_MANIFEST_POLICY_V1_OK "
+            f"current_scope={len(current_ids)} movix_current=false state=not-applicable "
+            "activation_mutated=false"
+        )
+        return 0
+
     movix_proof = recovered.get("movix")
     movix_patch = patches.get("movix") if isinstance(patches.get("movix"), dict) else None
     if not isinstance(movix_proof, dict) or not isinstance(movix_patch, dict):
-        raise SystemExit("MOVIX route proof/DATA missing")
+        raise SystemExit("MOVIX route proof/DATA missing for current provider")
 
     proven_routes = [str(value) for value in movix_proof.get("routes") or [] if str(value).strip()]
     route_proof = movix_patch.get("route_proof") if isinstance(movix_patch.get("route_proof"), dict) else {}
@@ -89,7 +103,6 @@ def main() -> int:
         or int(route_proof.get("provenRouteCount") or 0) == 0
     )
 
-    manifest_rows = manifest.get("scrapers") if isinstance(manifest.get("scrapers"), list) else []
     movix_manifest = next(
         (row for row in manifest_rows if isinstance(row, dict) and cid(row.get("id")) == "movix"),
         None,

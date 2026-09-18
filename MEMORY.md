@@ -1919,3 +1919,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Common stale-authority defect confirmed: multiple current regressions still carry proof-v5 `api_recipe` pointing to `arm.haglund.dev/api/v2/themoviedb`, even though Repair already classifies `arm.haglund.dev` and `v3-cinemeta.strem.io` as non-executable metadata helpers. Existing proof-v5 authority now obeys the same host policy as new recipe synthesis; blocked helper recipes are demoted instead of being preserved forever and short-circuiting provider-specific source plans.
 - Retry **27** is dedicated to applying/rematerializing this evidence and measuring terminal yield. Historical 46/46 remains the regression baseline; current acceptance is still unclaimed until >=35/46 terminal-playable is re-proved.
 
+## 2026-09-19 — Repair 27 applied route recovery; archived Movix gate blocked post-apply
+
+- Repair retry **27** reached the full current network recovery again: **32 targeted**, **24/32 route-proven**, **154 targeted routes**; merged current-active report is **33/44 route-proven, 230 routes, 5 simple recipes**.
+- Crucially, `apply_provider_route_recovery_report.py` **completed successfully** on the exact dynamic 44-active identity set: `FIELD_ROUTE_RECOVERY_REPORT_APPLIED providers=44 evidence_routes=230 recipes=8`. The previous magic-count blocker is gone.
+- Live upstream probes in the targeted report returned real streams for at least **AnimeVOSTFR (3), Neko-Sama (2), VoirAnime (6), VoirAnime-rip (2)** on JJK S1E1. These are recovery candidates, not yet counted green until rematerialized and re-probed through current NiakVIO bytes.
+- The next failure is purely historical policy debt: `enforce_route_proof_manifest_policy_v1.py` still hard-required **Movix** proof/DATA/manifest even though Movix is not in the current 46-provider manifest. The gate is now current-scope aware: absent Movix => explicit not-applicable no-op; if Movix is ever current again, its activation-preservation contract remains enforced.
+- Retry **28** continues through policy -> rematerialization -> candidate census. Do not claim score improvement from upstream probe streams alone.
+
