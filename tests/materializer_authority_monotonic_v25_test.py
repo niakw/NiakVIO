@@ -121,6 +121,28 @@ assert model['externalIdentityPlan']==static_external, model['externalIdentityPl
 assert model['proofSearchBases']==['https://search.example'], model['proofSearchBases']
 assert model['proofDetailBases']==['https://detail.example'], model['proofDetailBases']
 
+# Route authority is monotone per family: a fresh search route replaces stale
+# search routes, but must preserve independent detail/player/API route knowledge.
+patch={
+    'route_proof_version':5,
+    'learned_routes':['/search?keyword={query}'],
+}
+static={'model':{
+    'routeProofVersion':5,
+    'routes':[
+        '/?s={query}',
+        '/watch/{slug}',
+        '/player?id={id}',
+        '/api/source?id={id}',
+    ],
+}}
+model=m.provider_model('synthetic',patch,cap,static)
+assert model['routes'][0]=='/search?keyword={query}', model['routes']
+assert '/?s={query}' not in model['routes'], model['routes']
+assert '/watch/{slug}' in model['routes'], model['routes']
+assert '/player?id={id}' in model['routes'], model['routes']
+assert '/api/source?id={id}' in model['routes'], model['routes']
+
 # Reusable proof-v5 search routeData must become an executable generic search plan.
 patch={'route_proof_version':0}
 static={'model':{
