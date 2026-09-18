@@ -5,8 +5,7 @@ ROOT=Path(__file__).resolve().parents[1]
 src=(ROOT/'scripts'/'provider_patches'/'anikototv_runtime_v3.py').read_text(encoding='utf-8')
 
 assert 'playerUrl.searchParams.get("s")' in src
-assert 'playerUrl.pathname' in src
-assert r's-(\\d+)' in src
+assert r'/\/stream\/s-(\d+)\//i.exec(playerUrl.pathname)' in src
 assert 'api+="&s="+encodeURIComponent(sv)' in src
 
 # Current provider evidence uses player routes such as /stream/s-2/10789/sub.
