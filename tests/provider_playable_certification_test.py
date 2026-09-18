@@ -63,6 +63,23 @@ assert cert.fixture_runtime_media_type({
     "title": "Interstellar",
 }) == "movie"
 
+trace = cert.sanitized_provider_fetch_trace({
+    "fetches": [
+        {"url": "https://api.themoviedb.org/3/movie/157336?api_key=secret", "method": "GET", "status": 200},
+        {"url": "https://api.hlowb.com/film-api/v1.1.0/movie/searchByKeyword?keyword=Interstellar&token=secret", "response_url": "https://api.hlowb.com/film-api/v1.1.0/movie/searchByKeyword?keyword=Interstellar&token=secret", "method": "GET", "status": 200, "content_type": "application/json", "duration_ms": 123},
+    ]
+})
+assert trace == [{
+    "host": "api.hlowb.com",
+    "path": "/film-api/v1.1.0/movie/searchByKeyword",
+    "method": "GET",
+    "status": 200,
+    "contentType": "application/json",
+    "durationMs": 123,
+    "error": None,
+}], trace
+assert "secret" not in str(trace)
+
 
 manifest = cert.load(ROOT / "manifest.json", {}) or {}
 manifest_rows = [
