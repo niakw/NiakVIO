@@ -1756,3 +1756,17 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The proven Desktop V3 identity augmentation (`scripts/augment_native_desktop_dual_id_context.py`) and the generalized `scripts/augment_nuvio_client_media_identity_bridge.py` still exist in `main`, but current official Native acceptance workflows do **not** apply them. Therefore IMDb-dependent zero rows on Desktop/Mobile may be host-contract gaps and must not automatically be blamed on provider bytes. Do not silently patch official Nuvio clients merely to make Labs green; keep this as an explicit compatibility/product-contract item.
 - Historical August StreamZo cross-client success remains compatibility evidence, not an exact frozen-release native baseline: the old `nuvio-client-lab` path was a Node transport lab and older Desktop canaries materialized a dynamic candidate with only a few providers. Use it to identify lost host/runtime capabilities, not as proof that every current Hub lane previously worked natively.
 - Final audit decision: **keep 5.21.48 frozen; no release bump from the Lab reds alone.** Separate follow-up queues: (1) harness defects — Android Mobile launcher resolution, macOS `mpv_create_failed`, exhaustive matrix semantics; (2) host/runtime contract — Desktop/Mobile canonical media identity hydration; (3) real product/provider UX — anime coverage, quality/language/badges, stale/late results and 4K. Do not let categories (1) or (2) overwrite positive user/native evidence from category (3).
+## 2026-09-18 — Branch consolidation + PR122/PR127 authority lock
+
+- Repository branch cleanup completed: only **`main`** and **`brain-learning/proposals`** remain. All diagnostic/census/proof `tmp/*` branches were deleted.
+- `fix/provider-activation-certification-v1` was archived before deletion as immutable tag **`archive/fix-provider-activation-certification-v1-20260918`**. Use the tag for historical comparison only; all new work continues on `main`.
+- Closed/unmerged PR **#122** is historical evidence, not a blanket restore source. Merged PR **#127** has precedence for every provider/config family it materially retrworked. Never restore a #122 route over a #127-reworked provider unless a later explicit A/B/current live proof demonstrates that exact #122 sub-route/resolver is the playable authority.
+- Existing example: VidLove is allowed to reuse its older V1/api.vidlove.cc authority only because a separate current A/B proved it FULL while V2 was red. This is evidence-based exception, not general rollback policy.
+- Kehflix authority is explicitly locked:
+  - **hub/address authority = `https://kehflix.wiki/`**
+  - **current runtime terminal = `https://kehflix.com`**
+  - **`kehflix.lol` = stale/historical, never current runtime**
+  - Domain Refresh must keep hub and runtime roles distinct and must not publish `.wiki` as the runtime terminal.
+- On `main`, `provider-hubs.json`, `provider-domain-history.json`, and `provider-overrides.json` were updated to this Kehflix authority. Existing Domain Refresh workflow is responsible for rematerializing/publishing provider bytes from those authorities; do not provider-local hardcode around Domain Refresh.
+- Current acceptance contract remains **>=35/46 providers with at least one real playable lane**. Repair markers, compilation, survival, or route presence do not count as provider success.
+
