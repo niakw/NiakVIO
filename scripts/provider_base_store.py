@@ -1299,7 +1299,10 @@ function _expandLearnedRoute(pattern, meta, mediaType, season, episode, bases) {
   let route = _text(pattern);
   if (/\$\{|encodeURIComponent\s*\(/i.test(route)) return [];
   if (!route || /^https?:\/\//i.test(route) && !/\{[^}]+\}/.test(route)) {
-    return /^https?:\/\//i.test(route) ? [route] : [];
+    if (!/^https?:\/\//i.test(route)) return [];
+    /* NIAKVIO_PROVIDER_ABSOLUTE_ROUTE_DOMAIN_SUBSTITUTION_V35 */
+    const absolute = _substituteDomain(route);
+    return absolute ? [absolute] : [];
   }
   const id = _text(meta && meta.tmdbId);
   const imdbId = _text(meta && meta.imdbId);
