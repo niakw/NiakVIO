@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-18",
+  "purpose": "Fail-closed semantic authority survival across provider rematerialization/publication.",
+  "policy": {
+    "routeRemovalRequiresExplicitSupersessionEvidence": true,
+    "currentDomainRefreshRemainsAuthoritative": true,
+    "compileOrMarkerSurvivalIsNotPlayableProof": true
+  },
+  "providers": {
+    "allanime": {
+      "requiredRoutes": [
+        "/?s={title}",
+        "/{slug}/",
+        "/{slug}-episode-{episode}/"
+      ]
+    },
+    "allwish": {
+      "requiredRoutes": [
+        "/filter?keyword={title}",
+        "/ajax/episode/list/{id}",
+        "/ajax/server/list?servers={serverKey}",
+        "/ajax/server?get={serverId}"
+      ]
+    },
+    "flemmix": {
+      "requiredRoutes": [
+        "/search?q={title}",
+        "/embed/video/{id}?expires={expires}&signature={signature}"
+      ],
+      "requiredRecipeReferer": "https://flemmix.party"
+    },
+    "moviebox": {
+      "requiredRoutes": [
+        "https://vidsrcme.ru/vs_src.php?type=movie&id={tmdbId}",
+        "https://vidsrcme.ru/vs_src.php?type=tv&id={tmdbId}&season={season}&episode={episode}"
+      ]
+    },
+    "vidfast": {
+      "requiredRoutes": [
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}/{season}/{episode}"
+      ]
+    },
+    "vidlove": {
+      "requiredApiRecipe": {
+        "base": "https://api.vidlove.cc",
+        "directRoute": "/{media}?id={tmdbId}&mode=json&season={season}&episode={episode}"
+      },
+      "requiredLegoScripts": [
+        "scripts/provider_patches/vidlove_current_api_v1.py"
+      ]
+    },
+    "wookafr": {
+      "requiredRoutes": [
+        "/?s={title}",
+        "/streaming/{category}/{slug}/",
+        "/streaming/episodes/{slug}-saison-{season}-episode-{episode}/",
+        "https://lecteurvideo.com/embed.php?id={id}&tp={type}&url={source}"
+      ]
+    },
+    "yflix": {
+      "requiredApiRecipe": {
+        "base": "https://enc-dec.app",
+        "movieRoute": "/db/flix/find?tmdb_id={tmdbId}&type=movie",
+        "tvRoute": "/db/flix/find?tmdb_id={tmdbId}&type=tv"
+      }
+    },
+    "coflix": {
+      "requiredRecipeReferer": "https://coflix.group"
+    }
+  }
+}
