@@ -47,10 +47,18 @@ def classify(stages: list[str]) -> str:
 def build(certification: dict[str, Any]) -> dict[str, Any]:
     clusters: dict[tuple[str, str, tuple[str, ...]], list[str]] = defaultdict(list)
     providers: list[dict[str, Any]] = []
+    disabled_providers: list[dict[str, Any]] = []
     for row in certification.get("providers") or []:
         if not isinstance(row, dict) or row.get("certified") is True:
             continue
         pid = str(row.get("providerId") or "").strip()
+        if row.get("enabled") is False:
+            disabled_providers.append({
+                "providerId": pid,
+                "missingTypes": list(row.get("missingTypes") or []),
+                "state": "disabled-retained-not-repair-eligible",
+            })
+            continue
         lane_rows = []
         for lane, data in sorted((row.get("lanes") or {}).items()):
             if not isinstance(data, dict) or data.get("state") == "certified":
@@ -116,6 +124,9 @@ def build(certification: dict[str, Any]) -> dict[str, Any]:
         "autoCertificationRatio": round(ratio, 4) if ratio is not None else None,
         "architectureState": architecture_state,
         "strategy": "largest_shared_failure_cluster_first",
+        "repairEligibleProviderCount": len(providers),
+        "disabledRetainedProviderCount": len(disabled_providers),
+        "disabledProviders": sorted(disabled_providers, key=lambda row: row["providerId"]),
         "clusters": cluster_rows,
         "providers": providers,
     }
