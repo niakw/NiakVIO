@@ -1667,7 +1667,8 @@
         "4KHDHub runtime domain discovery is materialized from NiakVIO's persisted terminal; upstream repository registries are maintenance-only and never fetched during playback.",
         "Reviewed current 4KHDHub authority is 4khdhub.one; HDHub4u is a separate catalogue and must not replace the 4KHDHub terminal.",
         "GET /?s={query} remains a candidate until the strict N-to-N live probe executes it against 4khdhub.one.",
-        "The canonical 4khdhub.one host must never be substituted to hdhub4u.* by historical override data."
+        "The canonical 4khdhub.one host must never be substituted to hdhub4u.* by historical override data.",
+        "Owned HubCloud-family Lego reconstructs search -> HubDrive/HubCloud -> direct-media from persisted LKG knowledge; catalogue origin remains Domain Refresh DATA."
       ],
       "official_hub": "https://hdhub4u.bi",
       "official_site": "https://hdhub4u.ms",
@@ -1884,6 +1885,15 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/hubcloud_catalogue_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/hubcloud_catalogue_runtime_v1.py": {
+          "provider": "4khdhub",
+          "name": "4KHDHub"
+        }
       }
     },
     "persianstremio": {
