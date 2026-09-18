@@ -358,6 +358,7 @@ def certify_provider(
                 "durationMs": probe["durationMs"],
                 "runtimeMediaType": probe.get("runtimeMediaType"),
                 "networkTrace": probe.get("networkTrace") or [],
+                "providerTrace": probe.get("providerTrace") or [],
             })
             if probe["positive"]:
                 witness = {
