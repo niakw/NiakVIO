@@ -144,4 +144,20 @@ assert protected["official_site"] == "https://kehflix.com", protected
 assert protected["reason"] == "registry_explicit_current_terminal_authority", protected
 assert protected["site_candidates"][0]["url"] == "https://kehflix.com", protected
 
+# Real registry-chain regression: 4KHDHub must not be conflated with the
+# separate HDHub4u catalogue. The current 4KHDHub terminal is explicitly
+# pinned and every stale HDHub4u terminal is excluded from provider authority.
+fourk = real_hubs["4khdhub"]
+assert fourk["direct"].rstrip("/") == "https://4khdhub.one", fourk
+assert fourk["direct_authority"] == "explicit_current", fourk
+assert fourk["aliases"] == ["4khdhub"], fourk
+assert fourk["terminal_aliases"] == ["4khdhub"], fourk
+assert "hdhub4u.ms" in fourk["blocked_hosts"], fourk
+assert "hdhub4u.bi" in fourk["blocked_hosts"], fourk
+assert fourk["allowed_terminal_hosts"] == ["4khdhub.one"], fourk
+fourk_explicit = wrapper.refresh._explicit_current_direct_candidate(fourk)
+assert fourk_explicit is not None, fourk
+assert fourk_explicit["url"] == "https://4khdhub.one", fourk_explicit
+assert fourk_explicit["registry_explicit_current"] is True, fourk_explicit
+
 print("domain refresh current-registry scope and semantic priority tests passed")

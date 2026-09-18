@@ -575,52 +575,54 @@
       "name": "4KHDHub",
       "manifest_status": "Actif",
       "category": "International",
-      "hub": "https://hdhub4u.bi/",
-      "direct": "https://hdhub4u.ms/",
+      "hub": "https://hdhub4u.ec/",
+      "direct": "https://4khdhub.one/",
       "source": "curated_user_registry",
       "aliases": [
-        "4khdhub",
-        "hdhub4u"
+        "4khdhub"
       ],
       "resolver": "alias_outbound",
       "last_verified": "2026-08-03",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "4KHDHub and HDHub4u are separate catalogues. 4khdhub.one is the current verified 4KHDHub terminal; hdhub4u.* remains discovery-only/stale for this provider and must never replace the 4KHDHub runtime terminal.",
       "direct_candidates": [
-        "https://hdhub4u.ms/",
-        "https://new5.hdhub4u.cl/",
-        "https://hdhub4u.bi/",
-        "https://new3.hdhub4u.cl/"
+        "https://4khdhub.one/"
       ],
       "allowed_terminal_hosts": [
-        "hdhub4u.ms",
-        "new5.hdhub4u.cl",
-        "hdhub4u.bi",
-        "new3.hdhub4u.cl"
+        "4khdhub.one"
       ],
       "search_queries": [
-        "\"4KHDHub\" official domain"
+        "\"4KHDHub\" \"4khdhub.one\""
       ],
       "sources": [
         {
           "type": "hub",
           "url": "https://hdhub4u.ec/",
           "priority": 100,
-          "purpose": "Authoritative address reference"
+          "purpose": "Historical address source retained only as a stale-source regression input; blocked HDHub4u terminals cannot replace 4KHDHub."
         },
         {
           "type": "search",
-          "query": "\"4KHDHub\" official domain",
+          "query": "\"4KHDHub\" \"4khdhub.one\"",
           "priority": 35,
-          "purpose": "Fallback discovery when curated sources fail"
+          "purpose": "Fallback verification of the 4KHDHub brand/domain only."
         }
       ],
       "search_confirmation_runs": 2,
       "terminal_aliases": [
-        "4khdhub",
-        "hdhub4u"
+        "4khdhub"
       ],
       "activation_eligible": true,
-      "manual_authority_date": "2026-09-15"
+      "manual_authority_date": "2026-09-15",
+      "blocked_hosts": [
+        "hdhub4u.ms",
+        "hdhub4u.bi",
+        "new5.hdhub4u.cl",
+        "new4.hdhub4u.cl",
+        "new3.hdhub4u.cl"
+      ],
+      "direct_authority": "explicit_current",
+      "direct_authority_source": "current-live-catalogue-and-historical-regression-proof",
+      "direct_authority_observed_at": "2026-09-19"
     },
     "playimdb": {
       "id": "playimdb",
