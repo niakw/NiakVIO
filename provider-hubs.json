@@ -575,52 +575,49 @@
       "name": "4KHDHub",
       "manifest_status": "Actif",
       "category": "International",
-      "hub": "https://hdhub4u.bi/",
-      "direct": "https://hdhub4u.ms/",
+      "hub": "https://4khdhub.one/",
+      "direct": "https://4khdhub.one/",
       "source": "curated_user_registry",
       "aliases": [
-        "4khdhub",
-        "hdhub4u"
+        "4khdhub"
       ],
       "resolver": "alias_outbound",
-      "last_verified": "2026-08-03",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "last_verified": "2026-09-18",
+      "schema_notes": "4KHDHub is a distinct provider from HDHub4u. Current live terminal is 4khdhub.one; cross-provider aliasing is forbidden.",
       "direct_candidates": [
-        "https://hdhub4u.ms/",
-        "https://new5.hdhub4u.cl/",
-        "https://hdhub4u.bi/",
-        "https://new3.hdhub4u.cl/"
+        "https://4khdhub.one/"
       ],
       "allowed_terminal_hosts": [
-        "hdhub4u.ms",
-        "new5.hdhub4u.cl",
-        "hdhub4u.bi",
-        "new3.hdhub4u.cl"
+        "4khdhub.one"
       ],
       "search_queries": [
         "\"4KHDHub\" official domain"
       ],
       "sources": [
         {
-          "type": "hub",
-          "url": "https://hdhub4u.ec/",
-          "priority": 100,
-          "purpose": "Authoritative address reference"
+          "type": "redirect",
+          "url": "https://4khdhub.one/",
+          "priority": 120,
+          "purpose": "Current live provider terminal observed by NiakVIO route proof"
         },
         {
           "type": "search",
           "query": "\"4KHDHub\" official domain",
           "priority": 35,
-          "purpose": "Fallback discovery when curated sources fail"
+          "purpose": "Fallback discovery when the current terminal fails"
         }
       ],
       "search_confirmation_runs": 2,
       "terminal_aliases": [
-        "4khdhub",
-        "hdhub4u"
+        "4khdhub"
       ],
       "activation_eligible": true,
-      "manual_authority_date": "2026-09-15"
+      "blocked_hosts": [
+        "hdhub4u.ms",
+        "hdhub4u.bi",
+        "new3.hdhub4u.cl",
+        "new5.hdhub4u.cl"
+      ]
     },
     "playimdb": {
       "id": "playimdb",
@@ -1536,10 +1533,9 @@
       "direct": "https://new3.hdhub4u.cl/",
       "source": "curated_user_registry",
       "aliases": [
-        "hdhub4u",
-        "4khdhub"
+        "hdhub4u"
       ],
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "HDHub4u is a distinct provider from 4KHDHub. Cross-provider aliasing is forbidden.",
       "search_queries": [
         "HDHub4u.Tv | HDHub4u.ec"
       ],
@@ -1559,8 +1555,7 @@
       ],
       "search_confirmation_runs": 2,
       "terminal_aliases": [
-        "hdhub4u",
-        "4khdhub"
+        "hdhub4u"
       ]
     },
     "moviesdrive": {
