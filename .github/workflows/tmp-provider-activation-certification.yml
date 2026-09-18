@@ -1,5 +1,5 @@
 name: TMP - Provider Repair Survival Recovery
-# retry after Anikoto MegaPlay AES Castle nested search Learning46 2026-09-18
+# authoritative full-manifest 46 census + durable positive memory 2026-09-18
 
 on:
   push:
@@ -57,7 +57,7 @@ jobs:
           python3 tests/provider_certification_learning_queue_test.py
           python3 tests/provider_activation_consensus_test.py
           python3 tests/brain_provider_onboarding_policy_test.py
-          python3 -m py_compile             scripts/provider_patches/non_display_recovery_runtime_v1.py             scripts/provider_patches/non_display_recovery_followup_v2.py             scripts/provider_patches/non_display_recovery_followup_v2_fixed.py             scripts/provider_patches/animesamaco_nondisplay_recovery_v2.py             scripts/provider_patches/neko_sama_nondisplay_recovery_v2.py             scripts/provider_patches/sekai_nondisplay_recovery_v2.py             scripts/provider_patches/voiranime_rip_nondisplay_recovery_v2.py             scripts/provider_patches/sekai_inline_media_runtime_v1.py             scripts/provider_patches/allanime_current_runtime_v1.py             scripts/provider_patches/allwish_current_runtime_v1.py             scripts/provider_patches/anikototv_runtime_v3.py             scripts/provider_patches/flemmix_current_runtime_v1.py             scripts/provider_patches/moviebox_current_embed_v2.py             scripts/provider_patches/vidfast_current_embed_v1.py             scripts/provider_patches/vidlove_current_api_v1.py             scripts/provider_patches/wookafr_showvideo_base64_v1.py             scripts/provider_patches/wookafr_current_runtime_v2.py             scripts/provider_patches/yflix_current_runtime_v2.py             scripts/provider_patches/dle_anime_runtime_v1.py             scripts/provider_patches/global_stream_presentation_v1.py
+          python3 -m py_compile             scripts/provider_patches/non_display_recovery_runtime_v1.py             scripts/provider_patches/non_display_recovery_followup_v2.py             scripts/provider_patches/non_display_recovery_followup_v2_fixed.py             scripts/provider_patches/animesamaco_nondisplay_recovery_v2.py             scripts/provider_patches/neko_sama_nondisplay_recovery_v2.py             scripts/provider_patches/sekai_nondisplay_recovery_v2.py             scripts/provider_patches/voiranime_rip_nondisplay_recovery_v2.py             scripts/provider_patches/sekai_inline_media_runtime_v1.py             scripts/provider_patches/allanime_current_runtime_v1.py             scripts/provider_patches/allwish_current_runtime_v1.py             scripts/provider_patches/allwish_current_runtime_v2.py             scripts/provider_patches/anikototv_runtime_v3.py             scripts/provider_patches/flemmix_current_runtime_v1.py             scripts/provider_patches/moviebox_current_embed_v2.py             scripts/provider_patches/vidfast_current_embed_v1.py             scripts/provider_patches/vidfast_current_runtime_v2.py             scripts/provider_patches/vidlove_current_api_v1.py             scripts/provider_patches/vidlove_current_api_v2.py             scripts/provider_patches/wookafr_showvideo_base64_v1.py             scripts/provider_patches/wookafr_current_runtime_v2.py             scripts/provider_patches/yflix_current_runtime_v2.py             scripts/provider_patches/dle_anime_runtime_v1.py             scripts/provider_patches/global_stream_presentation_v1.py
 
       - name: Export publication baseline
         run: |
@@ -124,29 +124,87 @@ jobs:
           git push origin HEAD:fix/provider-activation-certification-v1
           echo "FIELD_REPAIR_BRANCH_HEAD $(git rev-parse HEAD)"
 
-      - name: Certify recovered and control providers
+      - name: Certify complete manifest 46
         run: |
           set -euo pipefail
-          mkdir -p health-output
-          python3 scripts/certify_provider_playable_lanes.py             --candidate-limit 12             --timeout 30             --workers 4             --seed "repair-survival-${GITHUB_RUN_ID}"             --provider animesama-co             --provider animevostfr             --provider coflix             --provider neko-sama             --provider sekai             --provider voiranime-rip             --provider allanime             --provider allwish             --provider anikototv             --provider flemmix             --provider moviebox             --provider vidfast             --provider vidlove             --provider wookafr             --provider yflix             --provider kehflix             --provider purstream             --provider papadustream             --provider streamzo             --provider hindmoviez             --provider kurage             --provider castle             --provider vidrock             --provider french-manga             --provider voiranime-homes             --provider anime-sama             --provider animekai             --output health-output/provider-playable-certification.json
-          python3 scripts/learn_provider_positive_fixtures.py             --certification health-output/provider-playable-certification.json             --registry automation/provider-positive-fixtures.json             --output health-output/provider-positive-fixtures.json
-          python3 scripts/build_provider_certification_learning_queue.py             --certification health-output/provider-playable-certification.json             --output health-output/provider-certification-learning-queue.json
-          python3 scripts/build_provider_activation_consensus.py             --node-certification health-output/provider-playable-certification.json             --output health-output/provider-activation-consensus.json
+          mkdir -p health-output automation
+          python3 scripts/certify_provider_playable_lanes.py \
+            --include-disabled \
+            --candidate-limit 12 \
+            --timeout 30 \
+            --workers 4 \
+            --seed "manifest46-${GITHUB_RUN_ID}" \
+            --output health-output/provider-playable-certification.json
 
-      - name: Summarize targeted certification
-        run: |
           python3 - <<'PY'
           import json
           from pathlib import Path
           p=json.loads(Path('health-output/provider-playable-certification.json').read_text())
-          print('FIELD_REPAIR_TARGETED_CERTIFIED', p.get('certifiedProviderCount', p['certifiedActiveProviderCount']), 'selected='+str(p.get('selectedProviderCount', p['providerCount'])), 'manifest-total='+str(p.get('manifestProviderCount', 46)), 'global-kpi=false')
+          assert p.get('fullManifestCensus') is True, p
+          assert p.get('manifestProviderCount') == 46, p.get('manifestProviderCount')
+          assert p.get('selectedProviderCount') == 46, p.get('selectedProviderCount')
+          print('FIELD_PROVIDER_MANIFEST46_ASSERT certified='+str(p.get('certifiedProviderCount'))+'/46 full_manifest=true')
+          PY
+
+      - name: Persist exact-bundle certification memory
+        run: |
+          set -euo pipefail
+          cp health-output/provider-playable-certification.json automation/provider-playable-certification.json
+          python3 scripts/learn_provider_positive_fixtures.py \
+            --certification automation/provider-playable-certification.json \
+            --registry automation/provider-positive-fixtures.json \
+            --output automation/provider-positive-fixtures.json
+          python3 scripts/build_provider_certification_learning_queue.py \
+            --certification automation/provider-playable-certification.json \
+            --output automation/provider-certification-learning-queue.json
+          python3 scripts/build_provider_activation_consensus.py \
+            --node-certification automation/provider-playable-certification.json \
+            --positive-registry automation/provider-positive-fixtures.json \
+            --output automation/provider-activation-consensus.json
+          python3 scripts/enforce_provider_activation_contract.py \
+            --certification automation/provider-playable-certification.json \
+            --report automation/provider-activation-contract-dry-run.json
+
+          cp automation/provider-positive-fixtures.json health-output/provider-positive-fixtures.json
+          cp automation/provider-certification-learning-queue.json health-output/provider-certification-learning-queue.json
+          cp automation/provider-activation-consensus.json health-output/provider-activation-consensus.json
+          cp automation/provider-activation-contract-dry-run.json health-output/provider-activation-contract-dry-run.json
+
+      - name: Summarize manifest 46 certification
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('automation/provider-playable-certification.json').read_text())
+          print('FIELD_REPAIR_MANIFEST_CERTIFIED', str(p.get('certifiedProviderCount'))+'/46', 'full_manifest='+str(bool(p.get('fullManifestCensus'))).lower())
           for row in p['providers']:
               lanes=[]
               for lane,data in sorted((row.get('lanes') or {}).items()):
                   stages=sorted({str(a.get('debugStage') or '') for a in data.get('attempts') or [] if a.get('debugStage')})
                   lanes.append(f"{lane}:{data.get('state')}:{'|'.join(stages)}")
-              print('FIELD_REPAIR_TARGET', row.get('providerId'), 'certified='+str(bool(row.get('certified'))).lower(), ' '.join(lanes))
+              print('FIELD_REPAIR_MANIFEST_PROVIDER', row.get('providerId'), 'enabled='+str(bool(row.get('enabled'))).lower(), 'certified='+str(bool(row.get('certified'))).lower(), ' '.join(lanes))
+          q=json.loads(Path('automation/provider-certification-learning-queue.json').read_text())
+          print('FIELD_REPAIR_LEARNING46', 'architecture='+str(q.get('architectureState')), 'clusters='+str(len(q.get('clusters') or [])))
+          a=json.loads(Path('automation/provider-activation-contract-dry-run.json').read_text())
+          print('FIELD_REPAIR_ACTIVATION_DRY_RUN', 'certified='+str(a.get('exactCertifiedManifestCount'))+'/46', 'architecture='+str(a.get('architectureState')), 'mass_disable_blocked='+str(bool(a.get('massDisableBlocked'))).lower())
           PY
+
+      - name: Commit manifest 46 evidence
+        run: |
+          set -euo pipefail
+          git config user.name 'niakvio-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add \
+            automation/provider-playable-certification.json \
+            automation/provider-positive-fixtures.json \
+            automation/provider-certification-learning-queue.json \
+            automation/provider-activation-consensus.json \
+            automation/provider-activation-contract-dry-run.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'test(providers): persist exact manifest-46 certification evidence'
+            git push origin HEAD:fix/provider-activation-certification-v1
+          fi
 
       - name: Upload repair evidence
         if: always()
