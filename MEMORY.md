@@ -2029,4 +2029,21 @@ This ledger is not complete merely because provider yield improves. Final comple
 - AllWish PR122 V1 A/B remained red on `all-wish.me`; no rollback from V2 is justified there.
 - Full PR122 route-restore batch #166: VidFast remains FULL but was already baseline-green; AllAnime, AllWish, Flemmix, MovieBox, WookaFR, YFlix remain red after their lost routes were restored. Thus route-loss was a real architecture regression, but VidLove is the first new unique recovery directly attributable to reverting an execution-authority regression.
 - Unique current branch recovery count beyond frozen 5.21.57 is now **VoirAnime + MoviesHunt + VidLove**, so potential >=1-green score is **23/46** pending a frozen full census. **12 additional unique providers** are required for 35/46.
+## 2026-09-18 — PR #127 supersession fence correction
+
+- User caught a critical authority-ordering risk in the previous PR122 route restoration: **for any provider materially reworked/superseded by PR #127 or later, #127/later authority must win over #122.**
+- Exact structured diff used: PR #122 head `4e9729d865f6a069bda567fbeac520d714bef4bd` -> PR #127 head `879812fb16ae1325d4a1bc977d5b5f3aa9292c27` -> current repair branch.
+- PR122-only structured routes/recipes were removed again from eight providers where they had been reintroduced too broadly:
+  - AllAnime: removed old title/slug/episode route trio from learned + candidate routes.
+  - AllWish: removed old filter/episode/server route family from learned + candidate routes.
+  - Flemmix: removed old typed search + signed embed routes from learned + candidate routes.
+  - MovieBox: removed old `vidsrcme.ru/vs_src.php` absolute routes from learned + candidate routes.
+  - VidFast: removed old `/movie/{tmdbId}` + `/tv/{tmdbId}/{season}/{episode}` routes from learned + candidate routes.
+  - WookaFR: removed old title/category/episode/lecteurvideo route family from learned + candidate routes.
+  - YFlix: restored PR127 movie-only structured recipe; removed PR122 `tvRoute` from authoritative + candidate recipe.
+  - VidLove: removed PR122 `api.vidlove.cc` `api_recipe`; newer candidate/Lego authority remains.
+- Fence commit: `e112b08d5f6f01ce8a772e31a15a9d0bd0c3c210`.
+- The legacy-named test `tests/pr122_route_authority_survival_test.py` was rewritten as the PR127 supersession fence contract. It now fails if PR122-only routes leak back and explicitly requires the newer AllWish V2 / VidFast V2 / VidLove V2 Lego supersessions. Test commit: `a09fbe0679507c81e0aa3f2f4189133c6da5059c`.
+- Important correction to the earlier MEMORY checkpoint titled “PR #122 -> #127 route-authority loss confirmed and repaired”: that restore was **over-broad**. Historical #122 routes are evidence only; they are not globally authoritative. Route/recipe precedence is **latest evidence-backed supersession**, with PR127/later winning where they changed the family.
+- Next: audit the remaining PR127-changed provider Lego/base options for stale #122 domains, then parallel one-provider proof on the fenced batch. Do not count any route restore as a recovery without terminal playable proof.
 
