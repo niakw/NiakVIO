@@ -20,7 +20,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 LANES = ("movie", "tv", "anime")
 STATUS_RE = re.compile(
-    r"FIELD_NATIVE_PROVIDER_STATUS\s+client=(?P<client>\S+)\s+provider=(?P<provider>\S+)\s+status=(?P<status>\S+)\s+lanes=(?P<lanes>\S+)"
+    r"FIELD_NATIVE_PROVIDER_STATUS\\s+client=(?P<client>\\S+)\\s+provider=(?P<provider>\\S+)\\s+status=(?P<status>\\S+)\\s+lanes=(?P<lanes>\\S+)(?:\\s+bundle_sha=(?P<bundle_sha>[0-9a-fA-F]{64}|missing))?"
 )
 
 def load(path: Path, default: Any = None) -> Any:
