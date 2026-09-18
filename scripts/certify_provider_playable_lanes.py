@@ -327,11 +327,15 @@ def main() -> int:
     targets = corpus_targets()
     seed = str(args.seed if args.seed is not None else default_seed())
     provider_filter = {canonical(value) for value in args.provider if canonical(value)}
-    rows = [
+    manifest_rows = [
         row for row in manifest.get("scrapers") or []
-        if isinstance(row, dict)
-        and canonical(row.get("id"))
-        and (args.include_disabled or row.get("enabled") is not False)
+        if isinstance(row, dict) and canonical(row.get("id"))
+    ]
+    manifest_provider_count = len(manifest_rows)
+    manifest_active_provider_count = sum(1 for row in manifest_rows if row.get("enabled") is not False)
+    rows = [
+        row for row in manifest_rows
+        if (args.include_disabled or row.get("enabled") is not False)
         and (not provider_filter or canonical(row.get("id")) in provider_filter)
     ]
 
@@ -369,7 +373,13 @@ def main() -> int:
 
     results.sort(key=lambda row: str(row.get("providerId") or ""))
     active = [row for row in results if row.get("enabled")]
-    certified = [row for row in active if row.get("certified")]
+    certified_active = [row for row in active if row.get("certified")]
+    certified_selected = [row for row in results if row.get("certified")]
+    full_manifest_census = (
+        not provider_filter
+        and bool(args.include_disabled)
+        and len(results) == manifest_provider_count
+    )
     payload = {
         "schemaVersion": 1,
         "authority": "exact-bundle-playable-lane-certification-v1",
@@ -377,26 +387,46 @@ def main() -> int:
         "manifestVersion": manifest.get("version"),
         "seed": seed,
         "candidateLimit": max(1, int(args.candidate_limit)),
+        "manifestProviderCount": manifest_provider_count,
+        "manifestActiveProviderCount": manifest_active_provider_count,
+        "selectedProviderCount": len(results),
+        "selectedActiveProviderCount": len(active),
         "providerCount": len(results),
         "activeProviderCount": len(active),
-        "certifiedActiveProviderCount": len(certified),
-        "uncertifiedActiveProviderCount": len(active) - len(certified),
+        "certifiedProviderCount": len(certified_selected),
+        "uncertifiedProviderCount": len(results) - len(certified_selected),
+        "certifiedActiveProviderCount": len(certified_active),
+        "uncertifiedActiveProviderCount": len(active) - len(certified_active),
+        "fullManifestCensus": full_manifest_census,
         "providers": results,
     }
     args.output.resolve().parent.mkdir(parents=True, exist_ok=True)
     args.output.resolve().write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         "FIELD_PROVIDER_PLAYABLE_CERTIFICATION "
-        f"providers={len(results)} active={len(active)} certified={len(certified)} "
-        f"uncertified={len(active) - len(certified)}"
+        f"selected={len(results)} manifest={manifest_provider_count} "
+        f"active_selected={len(active)} active_manifest={manifest_active_provider_count} "
+        f"certified_selected={len(certified_selected)} certified_active={len(certified_active)} "
+        f"full_manifest={str(full_manifest_census).lower()}"
     )
+    if full_manifest_census:
+        print(
+            "FIELD_PROVIDER_MANIFEST_CERTIFICATION "
+            f"certified={len(certified_selected)} total={manifest_provider_count}"
+        )
+    else:
+        print(
+            "FIELD_PROVIDER_TARGETED_CERTIFICATION "
+            f"certified={len(certified_selected)} selected={len(results)} "
+            f"manifest_total={manifest_provider_count}"
+        )
     for row in active:
         if not row.get("certified"):
             print(
                 "FIELD_PROVIDER_PLAYABLE_UNCERTIFIED "
                 f"provider={row.get('providerId')} missing={','.join(row.get('missingTypes') or []) or 'unknown'}"
             )
-    if args.require_active and len(certified) != len(active):
+    if args.require_active and len(certified_active) != len(active):
         return 1
     return 0
 
