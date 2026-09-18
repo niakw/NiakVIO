@@ -204,10 +204,13 @@ def build(
         })
 
     certified = [row for row in providers if row["certified"]]
+    green = [row for row in providers if row.get("certifiedTypes")]
     active_total = len(providers)
-    active_ratio = len(certified) / active_total if active_total else 1.0
+    active_full_ratio = len(certified) / active_total if active_total else 1.0
+    active_green_ratio = len(green) / active_total if active_total else 1.0
 
     certified_manifest_ids = {row["providerId"] for row in certified}
+    green_manifest_ids = {row["providerId"] for row in green}
     for row in manifest_rows:
         if row.get("enabled") is not False:
             continue
@@ -244,12 +247,16 @@ def build(
                     positive = True
                     break
             lane_ok.append(positive)
+        if lane_ok and any(lane_ok):
+            green_manifest_ids.add(provider)
         if lane_ok and all(lane_ok):
             certified_manifest_ids.add(provider)
 
     manifest_total = len(manifest_rows)
     manifest_certified = len(certified_manifest_ids)
-    manifest_ratio = manifest_certified / manifest_total if manifest_total else 1.0
+    manifest_green = len(green_manifest_ids)
+    manifest_full_ratio = manifest_certified / manifest_total if manifest_total else 1.0
+    manifest_green_ratio = manifest_green / manifest_total if manifest_total else 1.0
     minimum_yield = max(0.0, min(float(minimum_yield), 1.0))
     return {
         "schemaVersion": 1,
@@ -258,14 +265,18 @@ def build(
         "manifestVersion": manifest.get("version"),
         "manifestProviderCount": manifest_total,
         "certifiedManifestCount": manifest_certified,
+        "greenManifestCount": manifest_green,
         "activeCandidateCount": active_total,
         "certifiedCount": len(certified),
         "certifiedActiveCount": len(certified),
+        "greenActiveCount": len(green),
         "pendingNativeFallbackCount": active_total - len(certified),
-        "autoCertificationRatio": round(manifest_ratio, 4),
-        "activeAutoCertificationRatio": round(active_ratio, 4),
+        "fullCertificationRatio": round(manifest_full_ratio, 4),
+        "activeFullCertificationRatio": round(active_full_ratio, 4),
+        "autoCertificationRatio": round(manifest_green_ratio, 4),
+        "activeAutoCertificationRatio": round(active_green_ratio, 4),
         "minimumAutoCertificationRatio": minimum_yield,
-        "architectureState": "auto-yield-sufficient" if manifest_total < 8 or manifest_ratio >= minimum_yield else "architecture-defect-low-auto-yield",
+        "architectureState": "auto-yield-sufficient" if manifest_total < 8 or manifest_green_ratio >= minimum_yield else "architecture-defect-low-auto-yield",
         "negativeNodeEvidenceCanDisable": False,
         "providers": providers,
     }
@@ -289,8 +300,10 @@ def main() -> int:
     args.output.resolve().write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         "FIELD_PROVIDER_ACTIVATION_CONSENSUS "
-        f"certified_manifest={payload['certifiedManifestCount']}/{payload['manifestProviderCount']} "
-        f"certified_active={payload['certifiedActiveCount']}/{payload['activeCandidateCount']} "
+        f"green_manifest={payload['greenManifestCount']}/{payload['manifestProviderCount']} "
+        f"full_manifest={payload['certifiedManifestCount']}/{payload['manifestProviderCount']} "
+        f"green_active={payload['greenActiveCount']}/{payload['activeCandidateCount']} "
+        f"full_active={payload['certifiedActiveCount']}/{payload['activeCandidateCount']} "
         f"pending_native={payload['pendingNativeFallbackCount']} ratio={payload['autoCertificationRatio']:.4f} "
         f"architecture={payload['architectureState']}"
     )
