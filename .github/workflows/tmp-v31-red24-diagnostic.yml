@@ -1,0 +1,157 @@
+name: TMP - V31 Red24 Diagnostic
+
+on:
+  pull_request:
+    branches:
+      - tmp/v31-red24-base
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NIAKVIO_TRACE_RESPONSE_SHAPE: '1'
+  NUVIO_PROVIDER_V3_CONTEXT: workspace
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.base_ref || 'fix/provider-activation-certification-v1' }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Preflight adaptive contracts
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python3 tests/provider_patch_quickjs_compat_test.py
+          python3 tests/materializer_authority_monotonic_v25_test.py
+          python3 tests/provider_base_absolute_route_domain_substitution_test.py
+          node --check scripts/nuvio_tv_probe_tmdb_ci.cjs
+
+      - name: Materialize red24 only
+        run: |
+          set -euo pipefail
+          python3 scripts/materialize_provider_v3_one.py flemmix
+          python3 scripts/materialize_provider_v3_one.py uhdmovies
+          python3 scripts/materialize_provider_v3_one.py movieshunt
+          python3 scripts/materialize_provider_v3_one.py persianstremio
+          python3 scripts/materialize_provider_v3_one.py desiflix
+          python3 scripts/materialize_provider_v3_one.py kehflix
+          python3 scripts/materialize_provider_v3_one.py animesalt
+          python3 scripts/materialize_provider_v3_one.py animesultra
+          python3 scripts/materialize_provider_v3_one.py animetsu
+          python3 scripts/materialize_provider_v3_one.py castle
+          python3 scripts/materialize_provider_v3_one.py moviesmod
+          python3 scripts/materialize_provider_v3_one.py voiranime
+          python3 scripts/materialize_provider_v3_one.py vostfree
+          python3 scripts/materialize_provider_v3_one.py wookafr
+          python3 scripts/materialize_provider_v3_one.py yflix
+          python3 scripts/materialize_provider_v3_one.py allanime
+          python3 scripts/materialize_provider_v3_one.py allwish
+          python3 scripts/materialize_provider_v3_one.py anime-ultime
+          python3 scripts/materialize_provider_v3_one.py animevost-fr
+          python3 scripts/materialize_provider_v3_one.py fullanime
+          python3 scripts/materialize_provider_v3_one.py mallumv
+          python3 scripts/materialize_provider_v3_one.py moviebox
+          python3 scripts/materialize_provider_v3_one.py showbox
+          python3 scripts/materialize_provider_v3_one.py vidlove
+          cp manifest.json health-output/manifest-v31.json
+
+      - name: One-fixture diagnostic census
+        run: |
+          set -euo pipefail
+          python3 scripts/certify_provider_playable_lanes.py \
+            --manifest manifest.json \
+            --include-disabled \
+            --provider flemmix \
+            --provider uhdmovies \
+            --provider movieshunt \
+            --provider persianstremio \
+            --provider desiflix \
+            --provider kehflix \
+            --provider animesalt \
+            --provider animesultra \
+            --provider animetsu \
+            --provider castle \
+            --provider moviesmod \
+            --provider voiranime \
+            --provider vostfree \
+            --provider wookafr \
+            --provider yflix \
+            --provider allanime \
+            --provider allwish \
+            --provider anime-ultime \
+            --provider animevost-fr \
+            --provider fullanime \
+            --provider mallumv \
+            --provider moviebox \
+            --provider showbox \
+            --provider vidlove \
+            --candidate-limit 1 \
+            --timeout 30 \
+            --workers 8 \
+            --seed "v31-red24-${GITHUB_RUN_ID}" \
+            --output health-output/v31-red24-certification.json
+
+      - name: Cluster diagnosis
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,collections
+          from pathlib import Path
+          p=json.loads(Path('health-output/v31-red24-certification.json').read_text())
+          clusters=collections.defaultdict(list)
+          greens=[]
+          for row in p.get('providers') or []:
+              pid=row.get('providerId')
+              gl=[]
+              attempts=[]
+              for lane,lr in (row.get('lanes') or {}).items():
+                  if (lr or {}).get('state')=='certified': gl.append(lane)
+                  attempts.extend((lr or {}).get('attempts') or [])
+              if gl: greens.append(pid)
+              stages=sorted({str(a.get('debugStage') or '') for a in attempts if a.get('debugStage')})
+              statuses=sorted({str(a.get('status') or '') for a in attempts if a.get('status')})
+              hosts=sorted({str(n.get('host') or '') for a in attempts for n in a.get('networkTrace') or [] if n.get('host')})
+              codes=sorted({int(n.get('status') or 0) for a in attempts for n in a.get('networkTrace') or [] if int(n.get('status') or 0)})
+              traces=[]
+              for a in attempts:
+                  traces.extend(a.get('providerTrace') or [])
+              traceStages=sorted({str(t.get('stage') or '') for t in traces if t.get('stage')})
+              key=(stages[0] if len(stages)==1 else '|'.join(stages)) or 'unknown'
+              clusters[key].append(pid)
+              print('FIELD_V31_PROVIDER',pid,
+                    'green='+(','.join(gl) or '-'),
+                    'status='+('|'.join(statuses) or '-'),
+                    'stage='+('|'.join(stages) or '-'),
+                    'codes='+(','.join(map(str,codes)) or '-'),
+                    'hosts='+('|'.join(hosts[:8]) or '-'),
+                    'traceStages='+('|'.join(traceStages[:12]) or '-'))
+          print('FIELD_V31_GREEN',str(len(greens))+'/24',','.join(sorted(greens)))
+          for key,ids in sorted(clusters.items()):
+              print('FIELD_V31_CLUSTER',key,'count='+str(len(ids)),'ids='+','.join(sorted(ids)))
+          PY
+
+      - name: Upload V31 evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: v31-red24-${{ github.run_id }}
+          path: health-output/
+          retention-days: 8
+          if-no-files-found: warn
