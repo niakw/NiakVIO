@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-09-18",
+  "authority": "user-manual-native-and-browser-observation",
+  "policy": {
+    "doNotRequestDuplicateManualTests": true,
+    "positiveManualEvidenceMustBeReconciledBeforeDisable": true,
+    "nodeNegativeDoesNotOverrideNativeOrManualPositive": true,
+    "manualPresentationDefectDoesNotInvalidateUnderlyingPlayableRoute": true
+  },
+  "sourceFiles": [
+    "automation/manual-provider-evidence-20260915.json",
+    "automation/manual-tv-live-matrix-20260912.json",
+    "automation/evidence/cross-device-20260916/README.md",
+    "automation/evidence/cross-device-20260916/final-live-proof.json"
+  ],
+  "cases": [
+    {
+      "media": "Interstellar",
+      "tmdbId": "157336",
+      "mediaType": "movie",
+      "provider": "purstream",
+      "result": "playable",
+      "observedQuality": "720p",
+      "note": "User raw TV test positive."
+    },
+    {
+      "media": "Interstellar",
+      "tmdbId": "157336",
+      "mediaType": "movie",
+      "provider": "papadustream",
+      "result": "playable",
+      "observedQuality": "480p",
+      "note": "User raw TV test positive; some late-arriving rows later exposed missing badges."
+    },
+    {
+      "media": "Interstellar",
+      "tmdbId": "157336",
+      "mediaType": "movie",
+      "provider": "castle",
+      "result": "playable",
+      "streams": 2,
+      "languages": [
+        "English",
+        "Hindi"
+      ],
+      "note": "User raw TV test positive; later-arriving rows could miss badges. Node-negative must not classify Castle dead."
+    },
+    {
+      "media": "Interstellar",
+      "tmdbId": "157336",
+      "mediaType": "movie",
+      "provider": "streamzo",
+      "result": "playable",
+      "observedQuality": "720p",
+      "note": "User raw TV test positive; presentation defect observed: '- Inconnue' title and French Dub evidence not projected as FR language."
+    },
+    {
+      "media": "Interstellar",
+      "tmdbId": "157336",
+      "mediaType": "movie",
+      "provider": "kehflix",
+      "result": "playable",
+      "streams": 10,
+      "note": "Historical user raw TV positive: 10 rows; presentation/badge defects existed. Treat later Node zero as drift/regression, not proof provider never worked."
+    },
+    {
+      "media": "Death Note episode 37",
+      "mediaType": "anime",
+      "provider": "allwish",
+      "result": "manual_hls_positive",
+      "note": "Browser evidence already stored: master/index HLS HTTP 200; integration pending."
+    },
+    {
+      "media": "One Piece episode",
+      "mediaType": "anime",
+      "provider": "allanime",
+      "result": "manual_hls_positive",
+      "note": "Browser evidence already stored: master/index HLS HTTP 200; catalogue reduced; integration pending."
+    },
+    {
+      "media": "Interstellar / House of the Dragon",
+      "provider": "4khdhub",
+      "result": "manual_route_positive",
+      "note": "Browser evidence already stored: movie and episodic routes reach HubDrive/HubCloud chain; integration pending."
+    },
+    {
+      "media": "Interstellar",
+      "provider": "moviesmod",
+      "result": "manual_terminal_positive",
+      "note": "Browser evidence already stored: route reaches direct media/download after interactive/redirection gate."
+    }
+  ]
+}
