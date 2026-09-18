@@ -31,7 +31,7 @@ module.exports = { getStreams };
 # extend semantic gating without invalidating cancellation. Pin behavior, not an
 # obsolete revision label.
 source = PATCH.read_text(encoding="utf-8")
-revision = re.search(r'tmdb-data-contract-launch-gate-v(\\d+)-[^"]+', source)
+revision = re.search(r'tmdb-data-contract-launch-gate-v(\d+)-[^"]+', source)
 assert revision, "media contract revision missing"
 assert int(revision.group(1)) >= 33, revision.group(0)
 for needle in (

@@ -1905,3 +1905,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The same test already executes the real abort-ignorant native-fetch cancellation scenario. It now accepts revision >=33 and continues to require the actual cancellation/fail-fast functions plus the Node behavioral proof. No runtime behavior is weakened.
 - Retry 25 resumes the same regression-aware Repair; retry 24 never reached `recover_provider_routes_from_upstreams.py`, so it provides no new provider-health verdict.
 
+## 2026-09-18 — Repair retry 25 stopped by escaped test regex only
+
+- Retry 25 again passed the regression-aware adaptive baseline, migrations, Telegram contract and every pre-network test up to native abort-ignorant cancellation. It still did **not** enter route recovery.
+- The failure was test-only: the new version-agnostic assertion used Python raw regex `(\\\\d+)`, matching a literal backslash-d instead of digits, so it could not see current V34. Correct expression is `(\\d+)`.
+- Retry 26 changes only that regex + trigger. No provider status changes are inferred from retry 25.
+
