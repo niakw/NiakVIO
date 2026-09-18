@@ -1,0 +1,237 @@
+name: TMP - Exact 5.21.57 Manifest46 Census
+# Pure census: no provider/manifest mutation before measurement.
+
+on:
+  push:
+    branches:
+      - fix/provider-activation-certification-v1
+    paths:
+      - '.github/workflows/tmp-exact-52157-manifest46-census.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/provider-activation-certification-v1
+          fetch-depth: 0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Lock exact 5.21.57 provider generation
+        run: |
+          set -euo pipefail
+          mkdir -p health-output automation
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path('manifest.json').read_text())
+          rows=m.get('scrapers') or []
+          assert m.get('version') == '5.21.57', m.get('version')
+          assert len(rows) == 46, len(rows)
+          lock={
+            'manifestVersion':m.get('version'),
+            'manifestProviderCount':len(rows),
+            'providers':[
+              {
+                'id':str(r.get('id')),
+                'filename':str(r.get('filename')),
+                'version':str(r.get('version')),
+                'enabled':bool(r.get('enabled')),
+              }
+              for r in rows
+            ],
+          }
+          Path('health-output/exact-52157-manifest-lock.json').write_text(
+            json.dumps(lock,indent=2,ensure_ascii=False)+'\n'
+          )
+          print('FIELD_EXACT_52157_LOCK version=5.21.57 providers=46')
+          for r in lock['providers']:
+            print('FIELD_EXACT_52157_PROVIDER',r['id'],r['filename'])
+          PY
+
+      - name: Run exact manifest46 census
+        id: census
+        shell: bash
+        run: |
+          set +e
+          python3 scripts/certify_provider_playable_lanes.py \
+            --include-disabled \
+            --candidate-limit 12 \
+            --timeout 30 \
+            --workers 4 \
+            --seed "exact-52157-${GITHUB_RUN_ID}" \
+            --output health-output/provider-playable-certification-5.21.57.json
+          rc=$?
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          echo "FIELD_EXACT_52157_CERTIFICATION_RC $rc"
+          exit 0
+
+      - name: Validate exact-bundle identity and summarize
+        if: always()
+        env:
+          CENSUS_RC: ${{ steps.census.outputs.rc }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          lock=json.loads(Path('health-output/exact-52157-manifest-lock.json').read_text())
+          current=json.loads(Path('manifest.json').read_text())
+          cert_path=Path('health-output/provider-playable-certification-5.21.57.json')
+          rc=int(os.environ.get('CENSUS_RC') or 999)
+
+          reasons=[]
+          if current.get('version') != lock.get('manifestVersion'):
+              reasons.append('manifest_version_changed')
+          cur_rows=current.get('scrapers') or []
+          if len(cur_rows) != 46:
+              reasons.append('manifest_count_changed')
+
+          expected={str(r['id']).lower():str(r['filename']) for r in lock['providers']}
+          current_map={str(r.get('id')).lower():str(r.get('filename')) for r in cur_rows}
+          if current_map != expected:
+              reasons.append('manifest_filenames_changed_during_census')
+
+          cert=None
+          if cert_path.exists():
+              cert=json.loads(cert_path.read_text())
+          else:
+              reasons.append('certification_output_missing')
+
+          any_green=[]
+          full=[]
+          mismatches=[]
+          provider_rows=[]
+          if cert is not None:
+              if cert.get('manifestVersion') != '5.21.57':
+                  reasons.append('cert_manifest_version_mismatch')
+              if cert.get('manifestProviderCount') != 46:
+                  reasons.append('cert_manifest_count_mismatch')
+              if cert.get('selectedProviderCount') != 46:
+                  reasons.append('cert_selected_count_mismatch')
+              if cert.get('fullManifestCensus') is not True:
+                  reasons.append('cert_not_full_manifest')
+
+              seen=set()
+              for p in cert.get('providers') or []:
+                  pid=str(p.get('providerId') or '').lower()
+                  seen.add(pid)
+                  fn=str(p.get('filename') or '')
+                  exp=expected.get(pid)
+                  if exp is None or fn != exp:
+                      mismatches.append({'id':pid,'expected':exp,'observed':fn})
+                  lanes=p.get('lanes') or {}
+                  green_lanes=sorted([k for k,v in lanes.items() if (v or {}).get('state') == 'certified'])
+                  if green_lanes:
+                      any_green.append(pid)
+                  if bool(p.get('certified')):
+                      full.append(pid)
+                  provider_rows.append({
+                    'id':pid,
+                    'filename':fn,
+                    'enabled':bool(p.get('enabled')),
+                    'fullCertified':bool(p.get('certified')),
+                    'greenLanes':green_lanes,
+                    'lanes':{k:(v or {}).get('state') for k,v in sorted(lanes.items())},
+                  })
+              if seen != set(expected):
+                  reasons.append('cert_provider_set_mismatch')
+              if mismatches:
+                  reasons.append('cert_filename_mismatch')
+
+          status={
+            'schemaVersion':1,
+            'targetManifestVersion':'5.21.57',
+            'targetProviderCount':46,
+            'certificationRc':rc,
+            'validExactBundle':not reasons,
+            'reasons':reasons,
+            'anyGreenCount':len(set(any_green)),
+            'fullCertifiedCount':len(set(full)),
+            'threshold75PercentCount':35,
+            'threshold75PercentMet':len(set(any_green)) >= 35,
+            'anyGreenProviders':sorted(set(any_green)),
+            'fullCertifiedProviders':sorted(set(full)),
+            'filenameMismatches':mismatches,
+            'providers':provider_rows,
+            'lock':lock,
+          }
+          Path('health-output/exact-52157-census-status.json').write_text(
+            json.dumps(status,indent=2,ensure_ascii=False)+'\n'
+          )
+          Path('automation/exact-52157-census-status.json').write_text(
+            json.dumps(status,indent=2,ensure_ascii=False)+'\n'
+          )
+          if cert is not None and not reasons:
+              Path('automation/provider-playable-certification-5.21.57.json').write_text(
+                json.dumps(cert,indent=2,ensure_ascii=False)+'\n'
+              )
+
+          print('FIELD_EXACT_52157_VALID',str(status['validExactBundle']).lower())
+          print('FIELD_EXACT_52157_ANY_GREEN',f"{status['anyGreenCount']}/46")
+          print('FIELD_EXACT_52157_FULL',f"{status['fullCertifiedCount']}/46")
+          print('FIELD_EXACT_52157_THRESHOLD35',str(status['threshold75PercentMet']).lower())
+          if reasons:
+              print('FIELD_EXACT_52157_REASONS','|'.join(reasons))
+          for r in provider_rows:
+              print('FIELD_EXACT_52157_RESULT',r['id'],
+                    'full='+str(r['fullCertified']).lower(),
+                    'green='+(','.join(r['greenLanes']) or '-'),
+                    'file='+r['filename'])
+          PY
+
+      - name: Persist exact 5.21.57 census evidence
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name 'niakvio-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add automation/exact-52157-census-status.json
+          if [ -f automation/provider-playable-certification-5.21.57.json ]; then
+            git add automation/provider-playable-certification-5.21.57.json
+          fi
+          if ! git diff --cached --quiet; then
+            git commit -m 'test(providers): persist exact 5.21.57 manifest46 census'
+            git push origin HEAD:fix/provider-activation-certification-v1
+          fi
+
+      - name: Upload exact census evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: exact-52157-manifest46-census-${{ github.run_id }}
+          path: health-output/
+          retention-days: 8
+          if-no-files-found: warn
+
+      - name: Enforce exact-census validity
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          from pathlib import Path
+          s=json.loads(Path('automation/exact-52157-census-status.json').read_text())
+          if not s.get('validExactBundle'):
+              sys.exit('exact 5.21.57 census identity validation failed: '+','.join(s.get('reasons') or []))
+          if int(s.get('certificationRc') or 0) != 0:
+              sys.exit('certification command failed rc='+str(s.get('certificationRc')))
+          PY
