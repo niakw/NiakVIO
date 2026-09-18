@@ -1769,4 +1769,30 @@ This ledger is not complete merely because provider yield improves. Final comple
   - Domain Refresh must keep hub and runtime roles distinct and must not publish `.wiki` as the runtime terminal.
 - On `main`, `provider-hubs.json`, `provider-domain-history.json`, and `provider-overrides.json` were updated to this Kehflix authority. Existing Domain Refresh workflow is responsible for rematerializing/publishing provider bytes from those authorities; do not provider-local hardcode around Domain Refresh.
 - Current acceptance contract remains **>=35/46 providers with at least one real playable lane**. Repair markers, compilation, survival, or route presence do not count as provider success.
+## 2026-09-18 — Main-only consolidation + Kehflix semantic hub authority
+
+- Repository cleanup completed: **only `main` and `brain-learning/proposals` remain as branches**. All `tmp/*` diagnostics/census/proof branches and `fix/provider-activation-certification-v1` were deleted.
+- The former repair branch was preserved before deletion as immutable tag **`archive/fix-provider-activation-certification-v1-20260918`**. Historical comparison may read that tag, but all active work is now **main-only**.
+- PR authority rule is locked:
+  - PR **#127** is the default authority for every provider/config family it materially reworked.
+  - closed/unmerged PR **#122** is historical evidence only and must never be bulk-restored over #127.
+  - a #122 sub-route/runtime may return only with newer explicit A/B/current playable proof.
+- Exact #122 -> #127 structured diff found **21 provider/family authority changes**. This confirms that a blind #122 rollback would be destructive for several providers (examples: AllAnime, AllWish, AniKoto, 4KHDHub, Flemmix, MovieBox, WookaFR, YFlix, VidLove, Kehflix).
+- Historical route-restore batch already proved that simply restoring #122 routes for AllAnime / AllWish / Flemmix / MovieBox / WookaFR / YFlix produces **no unique gain** under the current harness. Do not copy those routes into main just because they existed historically.
+- **VidLove** is an evidence-backed exception: separate current A/B proved PR122 V1 + `api.vidlove.cc` FULL movie+tv while newer V2 was red. Main now contains only the proved V1 source-selector Lego + API recipe + route_data_state=on. Provider Overrides Gate is green; final Verify & Publish remained blocked by unrelated Kehflix state and must be rerun after Kehflix converges.
+- Kehflix authority supplied by user and now treated as canonical:
+  - **hub/address page = `https://kehflix.wiki/`**
+  - **runtime terminal = `https://kehflix.com`**
+  - **`kehflix.lol` is stale/historical and must not be re-promoted**
+- Real Kehflix hub HTML supplied by user contains the decisive semantic card:
+  - `Accès principal`
+  - visible domain `kehflix.com`
+  - `Adresse vérifiée · en ligne`
+  - CTA `href="https://kehflix.com"` / `Entrer`
+  This fixture is now encoded in `tests/provider_hub_registry_test.py`.
+- Domain resolver defect found: generic `links()` kept only anchor text, so a CTA such as “Entrer” lost its surrounding primary/verified/current context. Resolver now preserves bounded nearby semantic markers and scores **principal/current/verified/online** positively while penalizing **backup/secours/miroir/alternative/fallback**.
+- Additional Domain Refresh defect found: `merge_hub_registry()` did not propagate `direct_authority*` or the current `direct` field into the merged resolver config. Thus an `explicit_current` authority written to provider-hubs.json silently disappeared before resolution. Main now preserves those fields.
+- Generic opt-in Domain Refresh policy added: `direct_authority=explicit_current` makes an explicitly curated current direct terminal outrank stale cards still present on an authoritative hub, while the hub remains the address source. Providers without that flag keep the normal live-hub behavior.
+- Kehflix registry now sets `direct=https://kehflix.com/`, `direct_authority=explicit_current`, allowed terminal only `kehflix.com`, and retains `kehflix.wiki` strictly as the authoritative address hub.
+- Domain Refresh guard correctly blocked repeated attempts to roll Kehflix back to historical `.lol`; that failure exposed the missing merge propagation above. Do not weaken that guard.
 
