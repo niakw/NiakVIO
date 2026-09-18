@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - tmp/historical-provider-ab-base
+      - tmp/historical-pr122-replay-base
   workflow_dispatch:
 
 permissions:
@@ -21,8 +22,6 @@ jobs:
       matrix:
         ref:
           - 4e9729d865f6a069bda567fbeac520d714bef4bd
-          - f239d9457b99b928de3b883218b67f20687bbba6
-          - 879812fb16ae1325d4a1bc977d5b5f3aa9292c27
         provider:
           - allanime
           - allwish
@@ -59,6 +58,15 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p health-output/historical
+          # Closed/unmerged PR heads are not guaranteed to be reachable from the
+          # normal checkout fetch. Fetch the historical object explicitly before
+          # replay so a missing local object cannot masquerade as a bad bundle.
+          if [ "$REF" = "4e9729d865f6a069bda567fbeac520d714bef4bd" ]; then
+            git fetch --no-tags origin pull/122/head:refs/remotes/origin/historical-pr122
+          else
+            git fetch --no-tags origin "$REF" || true
+          fi
+          git cat-file -e "$REF^{commit}"
           git show "$REF:manifest.json" > health-output/historical/source-manifest.json
           python3 - <<'PY'
           import json, os, subprocess
