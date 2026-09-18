@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parents[1]
+src=(ROOT/'scripts'/'provider_patches'/'anikototv_runtime_v3.py').read_text(encoding='utf-8')
+
+assert 'playerUrl.searchParams.get("s")' in src
+assert r'/\/stream\/s-(\d+)\//i.exec(playerUrl.pathname)' in src
+assert 'api+="&s="+encodeURIComponent(sv)' in src
+
+# Current provider evidence uses player routes such as /stream/s-2/10789/sub.
+# The runtime must preserve server selector 2 when calling getSources.
+sample='/stream/s-2/10789/sub'
+import re
+m=re.search(r'/stream/s-(\d+)/', sample, re.I)
+assert m and m.group(1)=='2'
+
+print('AniKotoTV v3 MegaPlay server-selector contract passed')
