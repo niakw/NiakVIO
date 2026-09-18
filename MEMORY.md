@@ -2019,4 +2019,14 @@ This ledger is not complete merely because provider yield improves. Final comple
   - Flemmix remains zero; current runtime reaches `flemmix.party` and ARM but ends in `provider_network_http_error`. Restoring the #122 search/signed-embed routes alone does not recover it.
   - VidLove remains zero; despite restoring the #122 `api.vidlove.cc` api_recipe, current V2 provider Lego still executes the newer `ballerinacappuccinalovestungtungtungsahur.com` candidate path. This proves a provider-Lego-vs-structured-authority precedence bug: restored DATA can remain unused by a newer custom Lego.
 - Do not count a route-survival restore as recovered unless the exact rematerialized bundle returns terminal playable proof.
+## 2026-09-18 — VidLove recovered by PR122 authority A/B
+
+- PR #167 / run **35379535563** directly A/B-tested the PR122 Lego versions against current structured DATA.
+- **VidLove V1 is a real unique recovery**: one-provider rematerialization `0952311daabb2235` certified **FULL movie+tv** with provider-returned streams through `api.vidlove.cc` and terminal CDN hosts `a2.whysosigmabro.fun` / `d.whysosigmabro.fun`.
+- Current VidLove V2 remained red because it hardcoded the alternate multi-source backend `ballerinacappuccinalovestungtungtungsahur.com`, bypassing the restored #122 `api_recipe`.
+- Execution authority is therefore switched back to `scripts/provider_patches/vidlove_current_api_v1.py` while retaining the restored proof-v5 `api.vidlove.cc` recipe. Commit: `496d03afff3c6332e6d82c7f64fb9b25b0b260b5`.
+- Contract test `tests/vidlove_pr122_v1_authority_test.py` added at `03650e6d553809d1a0ed974b1689fba5acfa0049`.
+- AllWish PR122 V1 A/B remained red on `all-wish.me`; no rollback from V2 is justified there.
+- Full PR122 route-restore batch #166: VidFast remains FULL but was already baseline-green; AllAnime, AllWish, Flemmix, MovieBox, WookaFR, YFlix remain red after their lost routes were restored. Thus route-loss was a real architecture regression, but VidLove is the first new unique recovery directly attributable to reverting an execution-authority regression.
+- Unique current branch recovery count beyond frozen 5.21.57 is now **VoirAnime + MoviesHunt + VidLove**, so potential >=1-green score is **23/46** pending a frozen full census. **12 additional unique providers** are required for 35/46.
 
