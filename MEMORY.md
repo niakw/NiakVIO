@@ -2105,4 +2105,32 @@ This ledger is not complete merely because provider yield improves. Final comple
   - final authority site/direct/history = `kehflix.wiki`;
   - rematerialized Kehflix certifies **FULL movie+tv+anime**, host only `kehflix.wiki`.
 - Kehflix is therefore a **real +1 recovery candidate beyond the current 22/46 potential**, pending persistence on the repair branch and final frozen census. Do not count it as 23/46 until the Domain Refresh transaction is actually persisted and re-certified on that branch.
+## 2026-09-18 — Completed historical A/B + Kehflix persisted
+
+- Fixed PR122 raw-bundle replay PR #170 / run **35381128402** completed successfully after explicitly fetching the closed/unmerged PR head.
+- Exact PR122 bundles replayed against the current backend/harness:
+  - **Kehflix = FULL movie+tv+anime** on `kehflix.wiki`.
+  - **VidLove = FULL movie+tv** via `api.vidlove.cc` -> whysosigmabro terminal hosts.
+  - **PapaDustream = movie green partial**.
+  - AllAnime, AllWish, Flemmix, MovieBox, WookaFR, YFlix, Castle = zero for current fixtures/backend.
+  - VidFast returned streams but did not certify in the raw PR122 replay; current V2/restored-authority batch separately certifies it FULL.
+- Domain-delta A/B PR #172 / run **35381281583** compared exact PR125 vs PR127 bundles for all ten providers whose structured domain authority changed in PR127:
+  - **Kehflix: PR125 FULL movie+tv+anime -> PR127 ZERO**.
+  - **AnimeSama.co: PR125 anime FULL -> PR127 ZERO**.
+  - **VoirAnime: PR125 anime FULL -> PR127 ZERO**.
+  - **MoviesHunt: PR125 movie FULL -> PR127 ZERO**.
+  - Purstream remains FULL movie+tv across both.
+  - VidEasy remains FULL movie+tv across both.
+  - 4KHDHub, UHDMovies, Flemmix and Coflix are zero in both historical snapshots under the current backend/harness.
+- Interpretation: PR127 introduced real domain/publication regressions for Kehflix, AnimeSama.co, VoirAnime and MoviesHunt. Later repairs already recovered AnimeSama.co in frozen 5.21.57, and current branch recoveries already recovered VoirAnime + MoviesHunt. Kehflix was the remaining unaccounted regression.
+- Official Kehflix Domain Refresh transaction was **persisted** to `fix/provider-activation-certification-v1` by run **35381533534**, commit **84b9d0d7e7baa05f6417dc5aff30215d66eaf814**:
+  - source authorities and published override/config all converge on `https://kehflix.wiki`;
+  - .lol redirect-only authority is removed/reversed;
+  - exact post-transaction certification = **FULL movie+tv+anime**.
+- Working potential >=1-green count is therefore **23/46** (frozen 20 + current unique recoveries VoirAnime, MoviesHunt, Kehflix), pending a new frozen full census. **12 additional unique providers** are still needed for the >=35/46 acceptance threshold.
+- PR122 route-restore batch PR #166 / run **35379041184** proves simple historical route restoration is not sufficient:
+  - VidFast current V2 + restored authority = FULL movie+tv (no net gain; already frozen-green).
+  - AllAnime, AllWish, Flemmix, MovieBox, WookaFR and YFlix remain red.
+  - VidLove with newer V2 remains red in that batch, while separate current A/B proves V1 + api.vidlove.cc FULL. The resolver/Lego choice, not merely the route list, is decisive.
+- Next route-authority check: A/B current Lego/domain with vs without PR122-only route families for the remaining red restored-route providers. Historical routes must not remain marked mandatory unless they are useful or backed by separate manual/terminal evidence.
 
