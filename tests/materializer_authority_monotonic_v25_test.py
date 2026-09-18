@@ -85,6 +85,42 @@ provider_recipe={
 }
 assert m._recipe_is_provider_execution_authority(provider_recipe) is True
 
+# A fresh patch route must not erase independent structured static plans.
+patch={
+    'route_proof_version':5,
+    'learned_routes':['/search?keyword={query}'],
+}
+static_search=[{
+    'route':'/search?keyword={query}',
+    'requestSpec':{'method':'GET'},
+    'proofModelVersion':5,
+}]
+static_values=[{
+    'sourceRole':'search-result-id',
+    'proofModelVersion':5,
+    'requestSpec':{'method':'GET'},
+}]
+static_external=[{
+    'base':'https://detail.example',
+    'route':'/series/{imdbId}',
+    'proofModelVersion':5,
+}]
+static={'model':{
+    'routeProofVersion':5,
+    'searchRequestPlan':static_search,
+    'providerValuePlan':static_values,
+    'externalIdentityPlan':static_external,
+    'proofSearchBases':['https://search.example'],
+    'proofDetailBases':['https://detail.example'],
+}}
+model=m.provider_model('synthetic',patch,cap,static)
+assert model['routes']==['/search?keyword={query}'], model['routes']
+assert model['searchRequestPlan']==static_search, model['searchRequestPlan']
+assert model['providerValuePlan']==static_values, model['providerValuePlan']
+assert model['externalIdentityPlan']==static_external, model['externalIdentityPlan']
+assert model['proofSearchBases']==['https://search.example'], model['proofSearchBases']
+assert model['proofDetailBases']==['https://detail.example'], model['proofDetailBases']
+
 one=(ROOT/'scripts'/'materialize_provider_v3_one.py').read_text(encoding='utf-8')
 assert '# MATERIALIZER_EXECUTION_AUTHORITY_MONOTONIC_V25' in one
 assert 'patch["api_recipe"] = canonical_recipe' not in one
