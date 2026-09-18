@@ -164,6 +164,31 @@ assert model['searchRequestPlan'][0]['route']=='/api/search?q={query}'
 assert set(model['searchRequestPlan'][0]['semanticTypes'])=={'movie','tv'}
 assert model['proofSearchBases']==['https://catalog.example']
 
+# Live-recognized generalized search requests are also reusable execution knowledge.
+patch={'route_proof_version':0}
+static={'model':{'routeProofVersion':5},'knowledge':{'recognizedContract':{
+    'requests':[{
+        'role':'search',
+        'route':'/?s={query}',
+        'method':'GET',
+        'semanticType':'movie',
+        'executedEvidence':True,
+        'httpUsed':True,
+        'validationState':'live-validated',
+        'derivation':{
+            'origin':'https://live-catalog.example',
+            'reusable':True,
+            'fixtureSpecificValues':[],
+            'dynamicQueryResidue':[],
+        },
+    }],
+}}}
+model=m.provider_model('synthetic',patch,cap,static)
+assert len(model['searchRequestPlan'])==1, model['searchRequestPlan']
+assert model['searchRequestPlan'][0]['base']=='https://live-catalog.example'
+assert model['searchRequestPlan'][0]['route']=='/?s={query}'
+assert model['proofSearchBases']==['https://live-catalog.example']
+
 one=(ROOT/'scripts'/'materialize_provider_v3_one.py').read_text(encoding='utf-8')
 assert '# MATERIALIZER_EXECUTION_AUTHORITY_MONOTONIC_V25' in one
 assert 'patch["api_recipe"] = canonical_recipe' not in one
