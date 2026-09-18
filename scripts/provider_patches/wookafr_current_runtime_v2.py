@@ -23,7 +23,8 @@ WRAPPER = r'''
       var row=mediaContext(tmdbId);if(row){var date=String(row.release_date||row.first_air_date||"");return {title:String(row.title||row.name||row.original_title||row.original_name||""),year:Number((date.match(/(?:19|20)\d{2}/)||[])[0]||0)||0,aliases:_uniq([row.title,row.name,row.original_title,row.original_name])}}
       try{return await _tmdb(tmdbId,lane==="movie"?"movie":"tv")}catch(_e){return null}
     }
-    function anchors(html,base){var out=[],m,re=/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;while((m=re.exec(String(html||"")))&&out.length<1200){var u=_absolute(clean(m[1]),base),label=clean(m[2]);if(u&&/^https?:/i.test(u))out.push({url:u,text:label})}return out}
+    function liveWookaUrl(u){try{var x=new URL(u),b=new URL(BASE);if(/^wookafr\./i.test(x.hostname)&&x.hostname.toLowerCase()!==b.hostname.toLowerCase())return b.origin+x.pathname+x.search+x.hash}catch(_e){}return u}
+    function anchors(html,base){var out=[],m,re=/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;while((m=re.exec(String(html||"")))&&out.length<1200){var u=liveWookaUrl(_absolute(clean(m[1]),base)),label=clean(m[2]);if(u&&/^https?:/i.test(u))out.push({url:u,text:label})}return out}
     function expectedTitles(m){return _uniq([m&&m.title].concat(m&&Array.isArray(m.aliases)?m.aliases:[])).map(norm).filter(Boolean)}
     function workCandidates(html,base,m,lane){
       var exp=expectedTitles(m),year=Number(m&&m.year||0)||0,out=[],seen=Object.create(null);
