@@ -1985,4 +1985,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Combined unique recoveries beyond frozen 5.21.57 are therefore **VoirAnime + MoviesHunt**, raising the current branch's potential >=1-green score from **20/46 to 22/46**, pending final frozen full census. **13 additional unique providers** are still required to reach 35/46.
 - Remaining V34 results: AllWish HTTP error; Anime-Ultime/AnimesUltra ARM zero; AnimeSalt HTTP error; Flemmix HTTP error; Kehflix zero on kehflix.com; MovieBox HTTP error after moviebox/vidsrc/downstream; MoviesMod HTTP error/timeouts; PersianStremio exception/HTTP error; UHDMovies mixed HTTP error/zero; VidLove HTTP error; WookaFR HTTP error/timeouts; Yflix network exceptions.
 - Quick-gain priority now shifts to providers with historical/native positive evidence or live 200 chains, especially Castle, AnimeVOST.fr, AllAnime and 4KHDHub. Pure 403/anti-bot cases stay behind them.
+### 2026-09-18 — V37 Domain Refresh 4K authority
+
+- V37 run **35365835334** executed the official Domain Refresh pipeline in a disposable workspace and proved that the algorithm itself correctly repairs 4KHDHub authority when actually run.
+- Before refresh the published branch was internally contradictory: registry direct was `https://4khdhub.one/` and explicitly blocked `hdhub4u.ms`, `hdhub4u.bi`, `new3.hdhub4u.cl`, `new5.hdhub4u.cl`, while provider-overrides still published `official_site=https://hdhub4u.ms` and `official_hub=https://hdhub4u.bi`.
+- Official refresh output is correct: `official_site=https://4khdhub.one`, `official_hub=https://4khdhub.one`, domain-history current `https://4khdhub.one`, and substitutions `4khdhub.click/hdhub4u.bi/hdhub4u.ms -> 4khdhub.one`.
+- Therefore the 4KHDHub domain problem is **stale published Domain Refresh state**, not a wrong refresh algorithm. Do not hand-edit provider-overrides to own domains.
+- After correct authority + one-provider rematerialization, 4KHDHub still remained red, but execution advanced to `4khdhub.one -> player.autoembed.cc`. Remaining issue is provider extraction/runtime knowledge, not address resolution.
+- Upstream LKG knowledge already contains the real 4KHDHub contract at `upstream-lkg/providers/e64aea603b3c3786a9f03e2a7b5dbee7e5666918a0ad606aeec87469ffafc4ec.js`: strict movie-card search scoring, HubDrive/HubCloud redirect decoding, episode selection, and direct media extraction. This LKG is knowledge-only; rebuild as owned Lego rather than executing upstream bytes.
 
