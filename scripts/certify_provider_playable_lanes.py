@@ -26,6 +26,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -150,6 +151,35 @@ def parse_probe(stdout: str) -> dict[str, Any] | None:
     return None
 
 
+def sanitized_provider_fetch_trace(debug: dict[str, Any], *, limit: int = 8) -> list[dict[str, Any]]:
+    """Persist only bounded provider-network shape: no query, headers, cookies or bodies."""
+    rows: list[dict[str, Any]] = []
+    for raw in debug.get("fetches") or []:
+        if not isinstance(raw, dict):
+            continue
+        source_url = str(raw.get("response_url") or raw.get("url") or "").strip()
+        try:
+            parsed = urlsplit(source_url)
+        except ValueError:
+            continue
+        host = str(parsed.hostname or "").casefold()
+        if not host or host == "api.themoviedb.org":
+            continue
+        path = str(parsed.path or "/")[:240]
+        rows.append({
+            "host": host[:160],
+            "path": path,
+            "method": str(raw.get("method") or "GET").upper()[:12],
+            "status": int(raw.get("status") or 0),
+            "contentType": str(raw.get("content_type") or "")[:96] or None,
+            "durationMs": int(raw.get("duration_ms") or 0),
+            "error": str(raw.get("error") or "")[:64] or None,
+        })
+        if len(rows) >= max(1, limit):
+            break
+    return rows
+
+
 def probe_fixture(bundle: Path, fixture: dict[str, Any], timeout: int) -> dict[str, Any]:
     clean_fixture = {key: value for key, value in fixture.items() if key not in {"slug", "lane"}}
     # Nuvio plugin ABI transports semantic anime through the tv lane. Preserve the
@@ -223,6 +253,7 @@ def probe_fixture(bundle: Path, fixture: dict[str, Any], timeout: int) -> dict[s
         "debugStage": stage or status,
         "durationMs": int(payload.get("duration_ms") or round((time.monotonic() - started) * 1000)),
         "runtimeMediaType": clean_fixture.get("mediaType"),
+        "networkTrace": sanitized_provider_fetch_trace(debug),
     }
 
 
@@ -281,6 +312,7 @@ def certify_provider(
                 "contradictions": probe["contradictions"],
                 "durationMs": probe["durationMs"],
                 "runtimeMediaType": probe.get("runtimeMediaType"),
+                "networkTrace": probe.get("networkTrace") or [],
             })
             if probe["positive"]:
                 witness = {
