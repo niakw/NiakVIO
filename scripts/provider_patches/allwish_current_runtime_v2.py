@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from typing import Any
-from provider_patch_blocks import replace_managed_fix
+from provider_patch_blocks import replace_managed_fix, strip_managed_fix
 
 MANAGED_FIX_ID = "PROVIDER.ALLWISH.CURRENT.RUNTIME.V2"
 MARKER = "NIAKVIO_ALLWISH_CURRENT_RUNTIME_V2"
@@ -39,6 +39,7 @@ WRAPPER = r'''
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
+    text = strip_managed_fix(text, "PROVIDER.ALLWISH.CURRENT.RUNTIME.V1")
     return replace_managed_fix(text, MANAGED_FIX_ID, WRAPPER, data={
         "scope": "provider-local-current-search-vrf-episode-server-megaplay-v2",
         "providerBaseModified": False,
