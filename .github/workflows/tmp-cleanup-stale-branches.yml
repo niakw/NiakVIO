@@ -1,0 +1,127 @@
+name: TMP - Cleanup stale branches
+
+on:
+  push:
+    paths:
+      - '.github/triggers/cleanup-stale-branches.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 1
+      - name: Delete stale temporary branches
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          branches=(
+            "tmp/apply-kehflix-domain-base"
+            "tmp/apply-kehflix-domain-run"
+            "tmp/census-base-52157"
+            "tmp/census-run-52157"
+            "tmp/domain-delta-ab-base"
+            "tmp/domain-delta-ab-run"
+            "tmp/historical-pr122-replay-base"
+            "tmp/historical-pr122-replay-run"
+            "tmp/historical-provider-ab-base"
+            "tmp/historical-provider-ab-retry-base"
+            "tmp/historical-provider-ab-retry-run"
+            "tmp/historical-provider-ab-run"
+            "tmp/kehflix-domain-authority-base"
+            "tmp/kehflix-domain-authority-run"
+            "tmp/pr122-lego-ab-base"
+            "tmp/pr122-lego-ab-run"
+            "tmp/pr122-route-restore-base"
+            "tmp/pr122-route-restore-run"
+            "tmp/provider-deep-diagnostics-evidence"
+            "tmp/v26-helper-base"
+            "tmp/v26-helper-run"
+            "tmp/v27-recovery-base"
+            "tmp/v27-recovery-run"
+            "tmp/v27b-recovery-base"
+            "tmp/v27b-recovery-run"
+            "tmp/v27c-recovery-base"
+            "tmp/v27c-recovery-run"
+            "tmp/v27d-recovery-base"
+            "tmp/v27d-recovery-run"
+            "tmp/v28-current-template-base"
+            "tmp/v28-current-template-run"
+            "tmp/v28b-current-template-base"
+            "tmp/v28b-current-template-run"
+            "tmp/v29-adaptive-base"
+            "tmp/v29-adaptive-run"
+            "tmp/v29-anikoto-base"
+            "tmp/v29-anikoto-run"
+            "tmp/v29-base"
+            "tmp/v29-fast-base"
+            "tmp/v29-fast-run"
+            "tmp/v29-run"
+            "tmp/v29-terminal-base"
+            "tmp/v29-terminal-run"
+            "tmp/v29b-anikoto-base"
+            "tmp/v29b-anikoto-run"
+            "tmp/v29b-base"
+            "tmp/v29b-fast-base"
+            "tmp/v29b-fast-run"
+            "tmp/v29b-run"
+            "tmp/v29c-base"
+            "tmp/v29c-run"
+            "tmp/v30-anikoto-base"
+            "tmp/v30-anikoto-run"
+            "tmp/v30-anikoto-terminal-base"
+            "tmp/v30-anikoto-terminal-run"
+            "tmp/v30-fast-red-base"
+            "tmp/v30-fast-red-run"
+            "tmp/v30-shape-base"
+            "tmp/v30-shape-run"
+            "tmp/v30b-anikoto-terminal-base"
+            "tmp/v30b-anikoto-terminal-run"
+            "tmp/v31-4khdhub-base"
+            "tmp/v31-4khdhub-run"
+            "tmp/v31-proof-base"
+            "tmp/v31-proof-run"
+            "tmp/v31-red24-base"
+            "tmp/v31-red24-run"
+            "tmp/v31b-4khdhub-base"
+            "tmp/v31b-4khdhub-run"
+            "tmp/v32-resolver-base"
+            "tmp/v32-resolver-run"
+            "tmp/v32-zero-base"
+            "tmp/v32-zero-run"
+            "tmp/v33-live-zero-base"
+            "tmp/v33-live-zero-run"
+            "tmp/v34-reds-base"
+            "tmp/v34-reds-run"
+            "tmp/v35-domain-audit-base"
+            "tmp/v35-domain-audit-run"
+            "tmp/v36-vostfree-base"
+            "tmp/v36-vostfree-run"
+            "tmp/v37-domain-base"
+            "tmp/v37-domain-run"
+            "tmp/v38-native-tv-base"
+            "tmp/v38-native-tv-run"
+          )
+          deleted=0
+          missing=0
+          failed=0
+          for branch in "${branches[@]}"; do
+            if git ls-remote --exit-code --heads origin "refs/heads/${branch}" >/dev/null 2>&1; then
+              if git push origin --delete "${branch}"; then
+                deleted=$((deleted+1))
+              else
+                echo "FAILED ${branch}" >&2
+                failed=$((failed+1))
+              fi
+            else
+              missing=$((missing+1))
+            fi
+          done
+          echo "FIELD_BRANCH_CLEANUP deleted=${deleted} missing=${missing} failed=${failed} requested=${#branches[@]}"
+          test "${failed}" -eq 0
