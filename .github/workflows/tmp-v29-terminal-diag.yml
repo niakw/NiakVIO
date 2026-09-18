@@ -1,0 +1,158 @@
+name: TMP - V29 Terminal Diagnostics
+
+on:
+  pull_request:
+    branches:
+      - tmp/v29-terminal-base
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NIAKVIO_TRACE_RESPONSE_SHAPE: '1'
+  NUVIO_PROVIDER_V3_CONTEXT: workspace
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.base_ref || 'fix/provider-activation-certification-v1' }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Preflight and materialize exact current template
+        run: |
+          set -euo pipefail
+          mkdir -p health-output
+          python3 tests/provider_patch_quickjs_compat_test.py
+          python3 tests/anikototv_runtime_v3_server_selector_test.py
+          node --check scripts/nuvio_tv_probe_tmdb_ci.cjs
+          python3 scripts/materialize_provider_v3_all.py             --source-manifest manifest.json             --output-dir providers             --report health-output/v29-materialization.json
+
+      - name: Run one exact AniKoto probe
+        run: |
+          set -euo pipefail
+          BUNDLE="$(python3 - <<'PY'
+          import json
+          m=json.load(open('manifest.json'))
+          row=next(r for r in m['scrapers'] if str(r.get('id','')).lower()=='anikototv')
+          print(str(row['filename']).replace('../',''))
+          PY
+          )"
+          echo "FIELD_V29_ANIKOTO_BUNDLE $BUNDLE"
+          node scripts/nuvio_tv_probe_tmdb_ci.cjs "$BUNDLE"             '{"tmdbId":"95479","mediaType":"tv","title":"Jujutsu Kaisen","year":2020,"season":1,"episode":1,"category":"anime","expectedDurationMinutes":24}'             '{}' | tee health-output/v29-anikoto-raw.log
+
+      - name: Summarize AniKoto internal trace
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re
+          from pathlib import Path
+          payload=None
+          for line in reversed(Path('health-output/v29-anikoto-raw.log').read_text().splitlines()):
+              if not line.lstrip().startswith('{'): continue
+              try:
+                  row=json.loads(line)
+              except Exception:
+                  continue
+              if 'playable_stream_count' in row:
+                  payload=row; break
+          if not payload:
+              raise SystemExit('no AniKoto probe payload')
+          d=payload.get('debug') or {}
+          print('FIELD_V29_ANIKOTO_RESULT',
+                'stage='+str(d.get('stage') or ''),
+                'raw='+str(payload.get('raw_stream_count') or 0),
+                'playable='+str(payload.get('playable_stream_count') or 0),
+                'verified='+str(payload.get('content_verified_count') or payload.get('identity_verified_count') or 0))
+          rows=d.get('provider_value_trace_history_v21') or []
+          for row in rows[-48:]:
+              stage=re.sub(r'[^A-Za-z0-9_.:-]+','_',str(row.get('stage') or ''))[:64]
+              detail=str(row.get('route') or '')[:180]
+              if '://' in detail or re.search(r'(?i)(cookie|token|authorization|secret|api[_-]?key|bearer|enc(?:rypted)?)\s*[:=]',detail):
+                  detail=''
+              print('FIELD_V29_ANIKOTO_TRACE',stage,detail)
+          for f in d.get('fetches') or []:
+              try:
+                  from urllib.parse import urlsplit
+                  rq=urlsplit(str(f.get('url') or ''))
+                  rs=urlsplit(str(f.get('response_url') or f.get('url') or ''))
+                  if rq.hostname=='api.themoviedb.org': continue
+                  print('FIELD_V29_ANIKOTO_FETCH',
+                        str(rq.hostname or ''),str(rq.path or '/'),
+                        '->',str(rs.hostname or ''),str(rs.path or '/'),
+                        'status='+str(f.get('status') or 0))
+              except Exception:
+                  pass
+          PY
+
+      - name: Run one exact 4KHDHub probe
+        run: |
+          set -euo pipefail
+          BUNDLE="$(python3 - <<'PY'
+          import json
+          m=json.load(open('manifest.json'))
+          row=next(r for r in m['scrapers'] if str(r.get('id','')).lower()=='4khdhub')
+          print(str(row['filename']).replace('../',''))
+          PY
+          )"
+          echo "FIELD_V29_4K_BUNDLE $BUNDLE"
+          node scripts/nuvio_tv_probe_tmdb_ci.cjs "$BUNDLE"             '{"tmdbId":"157336","mediaType":"movie","title":"Interstellar","year":2014,"category":"movie","expectedDurationMinutes":169}'             '{}' | tee health-output/v29-4k-raw.log
+
+      - name: Summarize 4KHDHub request versus response hosts
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from urllib.parse import urlsplit
+          payload=None
+          for line in reversed(Path('health-output/v29-4k-raw.log').read_text().splitlines()):
+              if not line.lstrip().startswith('{'): continue
+              try: row=json.loads(line)
+              except Exception: continue
+              if 'playable_stream_count' in row:
+                  payload=row; break
+          if not payload: raise SystemExit('no 4K payload')
+          d=payload.get('debug') or {}
+          print('FIELD_V29_4K_RESULT',
+                'stage='+str(d.get('stage') or ''),
+                'raw='+str(payload.get('raw_stream_count') or 0),
+                'playable='+str(payload.get('playable_stream_count') or 0))
+          print('FIELD_V29_4K_MODEL',json.dumps(d.get('model') or {},separators=(',',':')))
+          for f in d.get('fetches') or []:
+              try:
+                  rq=urlsplit(str(f.get('url') or ''))
+                  rs=urlsplit(str(f.get('response_url') or f.get('url') or ''))
+                  if rq.hostname=='api.themoviedb.org': continue
+                  print('FIELD_V29_4K_FETCH',
+                        str(rq.hostname or ''),str(rq.path or '/'),
+                        '->',str(rs.hostname or ''),str(rs.path or '/'),
+                        'status='+str(f.get('status') or 0),
+                        'redirected='+str((rq.hostname or '')!=(rs.hostname or '')).lower())
+              except Exception:
+                  pass
+          PY
+
+      - name: Upload V29 diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: v29-terminal-diag-${{ github.run_id }}
+          path: health-output/
+          retention-days: 8
+          if-no-files-found: warn
