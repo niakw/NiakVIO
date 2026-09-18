@@ -17,7 +17,10 @@ with tempfile.TemporaryDirectory(dir=ROOT) as td:
     bundle=d/"p.js"; bundle.write_text("module.exports={getStreams:async()=>[]};\n", encoding="utf-8")
     rel=bundle.relative_to(ROOT).as_posix()
     sha=mod.sha256_file(bundle)
-    manifest={"version":"x","scrapers":[{"id":"p","enabled":True,"filename":rel,"canonicalSupportedTypes":["movie"]}]}
+    manifest={"version":"x","scrapers":[
+        {"id":"p","enabled":True,"filename":rel,"canonicalSupportedTypes":["movie"]},
+        {"id":"retained","enabled":False,"filename":rel,"canonicalSupportedTypes":["movie"]},
+    ]}
     node={"providers":[{"providerId":"p","bundleSha256":sha,"lanes":{"movie":{"state":"uncertified","attempts":[{"debugStage":"provider_network_zero_result"}]}}}]}
     native={"p":[{"source":"native_lab","client":"tv","status":"FULL","lanes":{"movie":"positive"},"log":"tv.log"}]}
     out=mod.build(manifest,node=node,registry={},native=native)
@@ -26,6 +29,11 @@ with tempfile.TemporaryDirectory(dir=ROOT) as td:
     assert row["disableEligible"] is False
     assert row["lanes"]["movie"]["state"]=="certified"
     assert any(e["source"]=="native_lab" for e in row["lanes"]["movie"]["positiveEvidence"])
+    assert out["manifestProviderCount"] == 2
+    assert out["activeCandidateCount"] == 1
+    assert out["certifiedManifestCount"] == 1
+    assert out["autoCertificationRatio"] == 0.5
+    assert out["activeAutoCertificationRatio"] == 1.0
 
     no_native=mod.build(manifest,node=node,registry={},native={})
     row=no_native["providers"][0]
