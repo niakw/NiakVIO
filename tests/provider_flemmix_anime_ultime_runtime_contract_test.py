@@ -38,5 +38,9 @@ assert flemmix_js.count("c.base")==2, "only runtimeBase fallback may reference t
 compiled=flemmix_js.replace("CONFIG_PLACEHOLDER","{}")
 subprocess.run(["node","-e","new Function(process.argv[1]);",compiled],check=True)
 assert ov["anime-ultime"]["provider_lego_scripts"] == ["scripts/provider_patches/anime_ultime_runtime_v1.py"]
+assert "api_recipe" not in ov["anime-ultime"]
+assert "candidate_api_recipe" not in ov["anime-ultime"]
+assert ov["anime-ultime"]["learned_routes"] == ["/MenuSearch.html", "/VideoPlayer.html"]
+assert ov["anime-ultime"]["source_runtime_family"] == "menu-search-series-focus-player"
 
 print("Flemmix and Anime-Ultime provider runtime contracts passed")
