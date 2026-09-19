@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from rotating_corpus import all_fixtures, canonical_lane
+
 GOOD = "playable_verified"
 TECHNICAL_STAGES = {
     "gate_runtime_plan_missing",
@@ -48,6 +50,17 @@ def clean_fixture(value: object) -> dict[str, Any]:
     return {key: value.get(key) for key in allowed if value.get(key) is not None}
 
 
+def fixture_lookup() -> dict[tuple[str, str], dict[str, Any]]:
+    out: dict[tuple[str, str], dict[str, Any]] = {}
+    for fixture in all_fixtures():
+        title = str(fixture.get("title") or fixture.get("label") or "").strip().casefold()
+        if not title:
+            continue
+        lane = canonical_lane(fixture)
+        out.setdefault((lane, title), clean_fixture(fixture))
+    return out
+
+
 def upsert_front(rows: list[dict[str, Any]], item: dict[str, Any], *, limit: int) -> list[dict[str, Any]]:
     key = fixture_key(item.get("fixture") or {})
     kept = [row for row in rows if fixture_key(row.get("fixture") or {}) != key]
@@ -63,6 +76,7 @@ def main() -> int:
     args = p.parse_args()
 
     report = load(args.report, {})
+    lookup = fixture_lookup()
     history = load(args.history, {"schemaVersion": 1, "providers": {}})
     history["schemaVersion"] = 1
     providers = history.setdefault("providers", {})
@@ -92,6 +106,9 @@ def main() -> int:
             if not isinstance(sample, dict):
                 continue
             fixture = clean_fixture(sample.get("fixture"))
+            if not fixture:
+                title = str(sample.get("fixture_title") or "").strip().casefold()
+                fixture = dict(lookup.get((lane, title)) or {})
             if not fixture:
                 continue
             status = str(sample.get("status") or "")
