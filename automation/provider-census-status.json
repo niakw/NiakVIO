@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35472153629",
-  "triggerSha": "e187972f0fea8bafb9dae975b43d2aebcd8a55c1",
+  "runId": "35473000019",
+  "triggerSha": "ccfb7d84c1e177d0205f7c6c972af37bba5cc0dd",
   "providers": [
     {
       "provider": "4khdhub",
@@ -48,8 +48,8 @@
     },
     {
       "provider": "allwish",
-      "status": "PROVIDER NETWORK BLOCKED",
-      "color": "🟤",
+      "status": "PROVIDER JS BROKEN",
+      "color": "🟠",
       "declaredLanes": [
         "movie",
         "tv"
@@ -57,15 +57,15 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_http_error",
-        "tv=no_streams/provider_network_http_error"
+        "movie=no_streams/provider_waf_challenge",
+        "tv=no_streams/provider_waf_challenge"
       ],
-      "dominantIssue": "provider_network_http_error×2",
+      "dominantIssue": "provider_waf_challenge×2",
       "searchProgress": [
         "movie: 8 this run / 0 retained misses",
         "tv: 8 this run / 0 retained misses"
       ],
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -91,21 +91,21 @@
     },
     {
       "provider": "animesalt",
-      "status": "PROVIDER NETWORK BLOCKED",
-      "color": "🟤",
+      "status": "PROVIDER JS BROKEN",
+      "color": "🟠",
       "declaredLanes": [
         "anime"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_http_error"
+        "anime=no_streams/provider_waf_challenge"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "provider_waf_challenge",
       "searchProgress": [
         "anime: 8 this run / 0 retained misses"
       ],
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -151,21 +151,21 @@
     },
     {
       "provider": "animevost-fr",
-      "status": "PROVIDER NETWORK BLOCKED",
-      "color": "🟤",
+      "status": "PROVIDER JS BROKEN",
+      "color": "🟠",
       "declaredLanes": [
         "anime"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_http_error"
+        "anime=no_streams/provider_waf_challenge"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "provider_waf_challenge",
       "searchProgress": [
         "anime: 5 this run / 38 retained misses"
       ],
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -191,8 +191,8 @@
     },
     {
       "provider": "flemmix",
-      "status": "PROVIDER NETWORK BLOCKED",
-      "color": "🟤",
+      "status": "PROVIDER JS BROKEN",
+      "color": "🟠",
       "declaredLanes": [
         "movie",
         "tv"
@@ -200,35 +200,35 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_http_error",
-        "tv=no_streams/provider_network_http_error"
+        "movie=no_streams/provider_waf_challenge",
+        "tv=no_streams/provider_waf_challenge"
       ],
-      "dominantIssue": "provider_network_http_error×2",
+      "dominantIssue": "provider_waf_challenge×2",
       "searchProgress": [
         "movie: 8 this run / 0 retained misses",
         "tv: 8 this run / 0 retained misses"
       ],
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
     {
       "provider": "fullanime",
-      "status": "PROVIDER NETWORK BLOCKED",
-      "color": "🟤",
+      "status": "PROVIDER JS BROKEN",
+      "color": "🟠",
       "declaredLanes": [
         "anime"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_http_error"
+        "anime=no_streams/provider_waf_challenge"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "provider_waf_challenge",
       "searchProgress": [
         "anime: 8 this run / 0 retained misses"
       ],
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -277,8 +277,8 @@
     },
     {
       "provider": "moviesmod",
-      "status": "PROVIDER NETWORK BLOCKED",
-      "color": "🟤",
+      "status": "PROVIDER JS BROKEN",
+      "color": "🟠",
       "declaredLanes": [
         "movie",
         "tv"
@@ -286,22 +286,22 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_http_error",
-        "tv=no_streams/provider_network_http_error"
+        "movie=no_streams/provider_network_zero_result",
+        "tv=no_streams/provider_waf_challenge"
       ],
-      "dominantIssue": "provider_network_http_error×2",
+      "dominantIssue": "provider_network_zero_result, provider_waf_challenge",
       "searchProgress": [
-        "movie: 8 this run / 18 retained misses",
+        "movie: 8 this run / 19 retained misses",
         "tv: 8 this run / 18 retained misses"
       ],
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
     {
       "provider": "persianstremio",
-      "status": "PROVIDER NETWORK BLOCKED",
-      "color": "🟤",
+      "status": "NO PROOF",
+      "color": "🔵",
       "declaredLanes": [
         "movie",
         "tv"
@@ -309,15 +309,15 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_http_error",
-        "tv=no_streams/provider_network_http_error"
+        "movie=no_streams/provider_network_zero_result",
+        "tv=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_network_http_error×2",
+      "dominantIssue": "provider_network_zero_result×2",
       "searchProgress": [
-        "movie: 8 this run / 0 retained misses",
-        "tv: 8 this run / 1 retained misses"
+        "movie: 8 this run / 8 retained misses",
+        "tv: 8 this run / 9 retained misses"
       ],
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -358,7 +358,7 @@
       ],
       "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "movie: 8 this run / 26 retained misses"
+        "movie: 8 this run / 32 retained misses"
       ],
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
@@ -389,21 +389,21 @@
     },
     {
       "provider": "vostfree",
-      "status": "PROVIDER NETWORK BLOCKED",
-      "color": "🟤",
+      "status": "PROVIDER JS BROKEN",
+      "color": "🟠",
       "declaredLanes": [
         "anime"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_http_error"
+        "anime=no_streams/provider_waf_challenge"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "provider_waf_challenge",
       "searchProgress": [
         "anime: 8 this run / 0 retained misses"
       ],
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -1134,9 +1134,10 @@
   ],
   "counts": {
     "FULL OK": 24,
-    "NO PROOF": 6,
+    "NO PROOF": 7,
     "PARTIAL OK": 1,
-    "PROVIDER NETWORK BLOCKED": 15
+    "PROVIDER JS BROKEN": 7,
+    "PROVIDER NETWORK BLOCKED": 7
   },
   "brainQueue": [
     "4khdhub",
