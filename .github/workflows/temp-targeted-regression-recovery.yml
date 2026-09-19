@@ -81,6 +81,7 @@ jobs:
           python tests/provider_incomplete_player_url_rejection_test.py
           python tests/provider_runtime_dispatch_diagnostics_test.py
           python tests/provider_census_identity_diagnostics_test.py
+          python tests/provider_materialization_byte_validation_contract_test.py
 
       - name: Persist structured Provider CONFIG drifts on repair branch
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'tmp/provider-max-repair-proof-20260919' }}

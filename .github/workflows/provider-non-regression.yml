@@ -80,6 +80,7 @@ jobs:
           set -euo pipefail
           python tests/workflow_security_policy_test.py
           python tests/provider_non_regression_contract_test.py
+          python tests/provider_materialization_byte_validation_contract_test.py
           python tests/provider_v3_workflow_ownership_test.py
           python tests/provider_521_capability_regression_test.py
           python tests/global_media_type_pre_network_gate_test.py
