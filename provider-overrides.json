@@ -9561,7 +9561,8 @@
       },
       "notes": [
         "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias.",
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
+        "Current browser-observed runtime is HTML catalogue -> exact episode page -> terminal HLS; provider-local runtime owns this chain while Core owns final validation."
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -9755,7 +9756,11 @@
       },
       "published_types": [
         "anime"
-      ]
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/allanime_site_runtime_v1.py"
+      ],
+      "source_runtime_family": "catalogue-html"
     },
     "allwish": {
       "capability": "html_scraper",
