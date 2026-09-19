@@ -19,7 +19,7 @@ STATUS_META = {
     "FULL OK": ("🟢", "all declared semantic lanes have current verified playback"),
     "PARTIAL OK": ("🟡", "at least one declared lane has current verified playback"),
     "NO PROOF": ("🔵", "no tested work matched yet; keep rotating the corpus"),
-    "PROVIDER NETWORK BLOCKED": ("🟤", "provider/upstream transport failed (HTTP/DNS/timeout); JS break is not established"),
+    "PROVIDER NETWORK BLOCKED": ("🟤", "last meaningful provider/upstream request failed (HTTP/DNS/TLS/timeout); JS break is not established"),
     "PROVIDER JS BROKEN": ("🟠", "technical/provider implementation failure; repair and retest"),
     "PROVIDER JS FULLY BROKEN": ("🔴", "repeated technical failure without a retained positive proof; BRAIN LEARNING owns it"),
     "REGRESSION PROVIDER JS": ("🟣", "provider/lane was historically positive but current JS/runtime structure regressed"),

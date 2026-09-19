@@ -32,6 +32,49 @@ assert rows==[{
     "media_error":"",
 }]
 assert "token=secret" not in repr(rows)
+# Network classification is causal: an incidental failure before a later
+# successful provider request must not poison the entire probe.
+debug_mixed_http={
+    "model":{"supported_types":["movie"],"has_api_recipe":False,"route_count":1,"source_runtime_family":"catalogue-html"},
+    "fetches":[
+        {"url":"https://provider.example/optional-asset","status":404},
+        {"url":"https://provider.example/detail","status":200},
+    ],
+}
+assert classify_debug_stage(task,probe_zero,debug_mixed_http)=="provider_network_zero_result"
+
+debug_mixed_exception={
+    "model":{"supported_types":["movie"],"has_api_recipe":False,"route_count":1,"source_runtime_family":"catalogue-html"},
+    "fetches":[
+        {"url":"https://old-alias.example/search","status":0,"error":"TypeError"},
+        {"url":"https://provider.example/search","status":200},
+    ],
+}
+assert classify_debug_stage(task,probe_zero,debug_mixed_exception)=="provider_network_zero_result"
+
+debug_terminal_http={
+    "model":{"supported_types":["movie"],"has_api_recipe":False,"route_count":1,"source_runtime_family":"catalogue-html"},
+    "fetches":[
+        {"url":"https://provider.example/search","status":200},
+        {"url":"https://provider.example/player","status":403},
+    ],
+}
+assert classify_debug_stage(task,probe_zero,debug_terminal_http)=="provider_network_http_error"
+
+debug_terminal_exception={
+    "model":{"supported_types":["movie"],"has_api_recipe":False,"route_count":1,"source_runtime_family":"catalogue-html"},
+    "fetches":[
+        {"url":"https://provider.example/search","status":200},
+        {"url":"https://provider.example/player","status":0,"error":"AbortError"},
+    ],
+}
+assert classify_debug_stage(task,probe_zero,debug_terminal_exception)=="provider_network_exception"
+
+probe_source=(ROOT/"scripts/nuvio_tv_probe_tmdb_ci.cjs").read_text(encoding="utf-8")
+assert "const terminal = meaningful[meaningful.length - 1]" in probe_source
+assert "providerFetches.some((row) => Number(row.status) >= 400)" not in probe_source
+assert "providerFetches.some((row) => row.error)" not in probe_source
+
 print("provider census identity diagnostics passed")
 
 

@@ -379,9 +379,25 @@ def classify_debug_stage(task: dict[str, Any], probe: dict[str, Any], debug: dic
         ):
             return "source_plan_core_metadata_leak"
 
-    if any(row.get("error") for row in provider_fetches):
+    # Use the terminal meaningful provider request as the causal network verdict.
+    # Incidental 4xx/errors followed by a later successful route must not poison
+    # the whole probe (common with aliases, optional assets and crawl fallbacks).
+    meaningful_fetches = []
+    for row in provider_fetches:
+        raw_url = str(row.get("url") or "").strip()
+        try:
+            parsed = urlsplit(raw_url)
+            if parsed.scheme.casefold() not in {"http", "https"} or not parsed.hostname:
+                continue
+        except ValueError:
+            continue
+        meaningful_fetches.append(row)
+    if not meaningful_fetches:
+        return "provider_network_zero_result"
+    terminal = meaningful_fetches[-1]
+    if terminal.get("error"):
         return "provider_network_exception"
-    if any(int(row.get("status") or 0) >= 400 for row in provider_fetches):
+    if int(terminal.get("status") or 0) >= 400:
         return "provider_network_http_error"
     return "provider_network_zero_result"
 

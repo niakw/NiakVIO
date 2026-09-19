@@ -121,8 +121,11 @@ function debugStage(model, fixture, fetchTrace, result) {
   if (!fetchTrace.length) return 'provider_zero_before_network';
   const providerFetches = fetchTrace.filter((row) => !/api\.themoviedb\.org/i.test(row.url));
   if (!providerFetches.length) return 'provider_zero_before_provider_network';
-  if (providerFetches.some((row) => Number(row.status) >= 400)) return 'provider_network_http_error';
-  if (providerFetches.some((row) => row.error)) return 'provider_network_exception';
+  const meaningful = providerFetches.filter((row) => /^https?:\/\//i.test(String(row?.url || '')));
+  if (!meaningful.length) return 'provider_network_zero_result';
+  const terminal = meaningful[meaningful.length - 1];
+  if (terminal?.error) return 'provider_network_exception';
+  if (Number(terminal?.status || 0) >= 400) return 'provider_network_http_error';
   return 'provider_network_zero_result';
 }
 
