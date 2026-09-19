@@ -4,7 +4,7 @@
 This is deliberately not a challenge solver:
 - no stealth patching;
 - no CAPTCHA/Turnstile interaction;
-- no cf_clearance fabrication/export;
+- no browser-challenge clearance-cookie fabrication/export;
 - no cookie/body persistence.
 
 It answers one bounded question for CI: does normal browser navigation reach
