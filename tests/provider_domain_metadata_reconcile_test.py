@@ -78,6 +78,10 @@ assert hubs["hindmoviez"]["direct"] == "https://hindmovie.fit/"
 assert hubs["hindmoviez"]["direct_authority"] == "explicit_current"
 assert hubs["movieshunt"]["direct"] == "https://movieshunt.run/"
 assert hubs["movieshunt"]["direct_authority"] == "explicit_current"
+assert hubs["animesalt"]["direct"] == "https://animesalt.link/"
+assert hubs["animesalt"]["direct_authority"] == "explicit_current"
+assert hubs["animesalt"]["allowed_terminal_hosts"] == ["animesalt.link"]
+assert "animesalt.cx" in hubs["animesalt"]["blocked_hosts"]
 assert hubs["movieshunt"]["allowed_terminal_hosts"] == ["movieshunt.run"]
 assert "movieshunt.ws" in hubs["movieshunt"]["blocked_hosts"]
 assert "movieshunt.monster" in hubs["movieshunt"]["blocked_hosts"]

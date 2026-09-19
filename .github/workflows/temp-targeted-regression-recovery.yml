@@ -76,6 +76,7 @@ jobs:
         run: |
           set -euo pipefail
           python tests/provider_domain_metadata_reconcile_test.py
+          python tests/presentation_revision_parser_test.py
           python tests/provider_terminal_chain_repairs_test.py
           python tests/voiranime_rip_runtime_contract_test.py
           python tests/voiranime_episode_selection_contract_test.py
@@ -113,7 +114,7 @@ jobs:
           sys.path.insert(0,str(ROOT/"scripts"))
           import audit_provider_quick_yield as audit
 
-          targets={"animesama-co","neko-sama","voiranime","voiranime-rip","kurage","flemmix","anime-ultime","coflix","animesultra","sekai","moviesmod","movieshunt"}
+          targets={"animesama-co","neko-sama","voiranime","voiranime-rip","kurage","flemmix","anime-ultime","coflix","animesultra","sekai","moviesmod","movieshunt","animesalt"}
           tasks,_=audit.build_tasks()
           selected=[task for task in tasks if task["provider_id"] in targets]
           observed={task["provider_id"] for task in selected}
