@@ -40,11 +40,12 @@ async function metadata(q){var m=projected(q.metadata);if(!m)try{var fn=g&&g.__n
   var counts={};if(Array.isArray(m.seasons))for(var j=0;j<m.seasons.length;j++){var r=m.seasons[j]||{},sn=Number(r.season_number),ec=Number(r.episode_count);if(sn>0&&ec>0)counts[sn]=ec}
   return{title:s(m.name||m.title||m.original_name||m.original_title),aliases:uniq(vals).slice(0,8),seasonCounts:counts}
 }
-function headers(json){return{"User-Agent":c.ua,"Accept":"application/json, text/plain, */*","Content-Type":json?"application/json":"text/plain","Referer":c.referer,"Origin":c.origin}}
-async function jsonPost(query,variables){try{var r=await g.fetch(c.api,{method:"POST",headers:headers(true),body:JSON.stringify({query:query,variables:variables}),redirect:"follow"});if(!r||!r.ok)return null;var raw=await r.text();try{return JSON.parse(raw)}catch(_e){return null}}catch(_e){return null}}
+function searchHeaders(){return{"User-Agent":c.ua,"Accept":"application/json, text/plain, */*","Content-Type":"application/json","Referer":c.searchOrigin,"Origin":c.searchOrigin}}
+function sourceHeaders(){return{"User-Agent":c.ua,"Accept":"*/*","Referer":c.sourceReferer,"Origin":c.base}}
+async function jsonPost(query,variables){try{var r=await g.fetch(c.api,{method:"POST",headers:searchHeaders(),body:JSON.stringify({query:query,variables:variables}),redirect:"follow"});if(!r||!r.ok)return null;var raw=await r.text();try{return JSON.parse(raw)}catch(_e){return null}}catch(_e){return null}}
 function similarity(a,b){a=norm(a);b=norm(b);if(!a||!b)return 0;if(a===b)return 100;if(a.indexOf(b)>=0||b.indexOf(a)>=0)return 78;var aa=a.split(" ").filter(function(x){return x.length>=3}),bb=b.split(" ").filter(function(x){return x.length>=3}),hit=0;for(var i=0;i<aa.length;i++)if(bb.indexOf(aa[i])>=0)hit++;return Math.round(100*hit/Math.max(aa.length,bb.length,1))}
 var SEARCH_GQL='query( $search: SearchInput $limit: Int $page: Int $translationType: VaildTranslationTypeEnumType $countryOrigin: VaildCountryOriginEnumType ) { shows( search: $search limit: $limit page: $page translationType: $translationType countryOrigin: $countryOrigin ) { edges { _id name englishName availableEpisodes __typename } }}';
-var SOURCE_GQL='query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) { episode( showId: $showId translationType: $translationType episodeString: $episodeString ) { episodeString sourceUrls }}';
+var SOURCE_HASH="d405d0edd690624b66baba3068e0edc3ac90f1597d898a1ec8db4e5c43c00fec";
 async function searchOne(title,mode,q){var j=await jsonPost(SEARCH_GQL,{search:{allowAdult:false,allowUnknown:false,query:title},limit:40,page:1,translationType:mode,countryOrigin:"ALL"}),rows=j&&j.data&&j.data.shows&&j.data.shows.edges||[],best=null,bestScore=0;
   for(var i=0;i<rows.length;i++){var r=rows[i]||{},label=s(r.name||r.englishName),sc=similarity(label,title),sm=label.match(/(?:season|saison|\bs)\s*(\d+)/i);if(sm&&q.season)sc+=Number(sm[1])===q.season?25:-20;if(sc>bestScore){bestScore=sc;best=r}}
   return best&&best._id&&bestScore>=48?best:null
@@ -53,7 +54,7 @@ async function findShow(meta,q,mode){var names=meta.aliases||[meta.title];for(va
 function absoluteEpisode(q,meta){var n=q.episode,ok=true;for(var sn=1;sn<q.season;sn++){var ec=Number(meta&&meta.seasonCounts&&meta.seasonCounts[sn]);if(!ec){ok=false;break}n+=ec}return ok?n:q.episode}
 function b64Bytes(v){try{var raw=typeof atob==="function"?atob(v):(typeof Buffer!=="undefined"?Buffer.from(v,"base64").toString("binary"):""),a=new Uint8Array(raw.length);for(var i=0;i<raw.length;i++)a[i]=raw.charCodeAt(i)&255;return a}catch(_e){return null}}
 async function decryptParsed(v){try{var subtle=g&&g.crypto&&g.crypto.subtle;if(!subtle&&typeof crypto!=="undefined")subtle=crypto.subtle;if(!subtle)return null;var bytes=b64Bytes(v);if(!bytes||bytes.length<30)return null;var seed=new TextEncoder().encode("Xot36i3lK3:v1"),keyBytes=await subtle.digest("SHA-256",seed),key=await subtle.importKey("raw",keyBytes,{name:"AES-CTR"},false,["decrypt"]),counter=new Uint8Array(16);counter.set(bytes.slice(1,13),0);counter[15]=2;var ct=bytes.slice(13,bytes.length-16),plain=await subtle.decrypt({name:"AES-CTR",counter:counter,length:32},key,ct),raw=new TextDecoder().decode(plain),j=JSON.parse(raw);return j&&j.episode&&j.episode.sourceUrls||j&&j.sourceUrls||null}catch(_e){return null}}
-async function sourceRows(showId,mode,ep){var j=await jsonPost(SOURCE_GQL,{showId:showId,translationType:mode,episodeString:String(ep)}),data=j&&j.data;if(data&&data.episode&&Array.isArray(data.episode.sourceUrls))return data.episode.sourceUrls;if(data&&data.tobeparsed)return await decryptParsed(data.tobeparsed)||[];return[]}
+async function sourceRows(showId,mode,ep){var variables={showId:showId,translationType:mode,episodeString:String(ep)},url=c.api+"?variables="+encodeURIComponent(JSON.stringify(variables))+"&extensions="+encodeURIComponent(JSON.stringify({persistedQuery:{version:1,sha256Hash:SOURCE_HASH}}));try{var r=await g.fetch(url,{headers:sourceHeaders(),redirect:"follow"});if(!r||!r.ok)return[];var j=await r.json(),data=j&&j.data;if(data&&data.episode&&Array.isArray(data.episode.sourceUrls))return data.episode.sourceUrls;if(data&&data.tobeparsed)return await decryptParsed(data.tobeparsed)||[];return[]}catch(_e){return[]}}
 var HEX={"79":"A","7a":"B","7b":"C","7c":"D","7d":"E","7e":"F","7f":"G","70":"H","71":"I","72":"J","73":"K","74":"L","75":"M","76":"N","77":"O","68":"P","69":"Q","6a":"R","6b":"S","6c":"T","6d":"U","6e":"V","6f":"W","60":"X","61":"Y","62":"Z","59":"a","5a":"b","5b":"c","5c":"d","5d":"e","5e":"f","5f":"g","50":"h","51":"i","52":"j","53":"k","54":"l","55":"m","56":"n","57":"o","48":"p","49":"q","4a":"r","4b":"s","4c":"t","4d":"u","4e":"v","4f":"w","40":"x","41":"y","42":"z","08":"0","09":"1","0a":"2","0b":"3","0c":"4","0d":"5","0e":"6","0f":"7","00":"8","01":"9","15":"-","16":".","67":"_","46":"~","02":":","17":"/","07":"?","1b":"#","63":"[","65":"]","78":"@","19":"!","1c":"$","1e":"&","10":"(","11":")","12":"*","13":"+","14":",","03":";","05":"=","1d":"%"};
 function decodeSource(v){var x=s(v);if(x.indexOf("--")!==0)return x;var body=x.slice(2),out="";for(var i=0;i+1<body.length;i+=2)out+=HEX[body.slice(i,i+2)]||"";return out.replace(/([^:])\/\//g,"$1/").replace("/clock","/clock.json")}
 function quality(v){var m=s(v).match(/\b(2160|1080|720|480)p\b/i);return m?m[1]+"p":"HD"}
@@ -77,9 +78,11 @@ try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:"allanime",resolve:resol
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     cfg={
         "api":"https://api.allanime.day/api",
+        "base":"https://allanime.day",
         "clockBase":"https://allanime.day",
-        "referer":"https://youtu-chan.com/",
-        "origin":"https://youtu-chan.com",
+        "searchOrigin":"https://allmanga.to",
+        "sourceReferer":"https://youtu-chan.com",
+        "referer":"https://allanime.day/",
         "maxStreams":6,
         "ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0",
     }
@@ -87,7 +90,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     cfg["maxStreams"]=max(1,min(int(cfg.get("maxStreams") or 6),10))
     js=WRAPPER.replace("CONFIG_PLACEHOLDER",json.dumps(cfg,ensure_ascii=False,separators=(",",":")))
     return replace_managed_fix(text,MANAGED_FIX_ID,js.lstrip(),data={
-        "runtimeFamily":"allanime-graphql-source-clock-v2",
+        "runtimeFamily":"allanime-graphql-persisted-source-clock-v3",
         "identity":"core-tmdb-aliases-season-episode",
         "semanticLanes":["anime"],
         "runtimeResolverRegistration":True,
