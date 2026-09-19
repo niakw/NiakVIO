@@ -2555,3 +2555,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Repeated release/minimizer diagnostic commits were launching `TEMP - Current Bytes Full Provider Census` solely because the workflow listened to broad `tests/**` paths. Those long census runs can later persist evidence to `main`, racing accepted-release finalization even though the provider bytes/data never changed.
 - `.github/workflows/temp-current-bytes-full-provider-census.yml` no longer triggers on generic `tests/**` changes for either push or pull_request. Provider-affecting sources/data/corpus/workflow paths remain explicit triggers; test-only correctness is handled by Workflow Gate / Provider Non-Regression.
 - The workflow-file edit itself intentionally triggers one final census under the existing self-path. After that run drains, test-only commits must not create new census writers.
+
+### 2026-09-19 — AllAnime final-minimizer syntax blocker isolated; diagnostics hardened
+
+- Accepted-release finalizer run **35469069364** on trigger SHA **4b1221d72ec4fda32b944b7d982c6381f306d109** successfully reapplied durable provider repairs to all **44 active providers** and produced new content-addressed refs for all 44. The 19 source-vs-materialization drifts were therefore composable before minimization.
+- Publication still stopped fail-closed in `finalize_provider_v3_minimizer.py`: the minimized **AllAnime** artifact is syntactically invalid. No release bytes were pushed.
+- The prior compact diagnostic removed the 146k one-line source but still failed to expose Node's useful syntax message. `scripts/validate_provider_artifact.cjs` now performs a second **parse-only** `vm.Script` compile when `node --check` fails and emits a guaranteed short `syntax_summary=<ErrorName>: <message>` plus a compact location when available. Provider code is never executed.
+- Added `tests/provider_validation_syntax_diagnostics_test.py`, reproducing a >100k single-line invalid bundle and requiring compact source omission plus `syntax_summary=SyntaxError:`. `CORE - Workflow Gate` now runs this test explicitly.
+- Next action: once the diagnostic gate is green, rerun accepted-release finalization, capture the exact AllAnime minimized syntax error, repair the minimizer/source semantics, then complete atomic publication and post-release CORE/non-regression/census validation.
