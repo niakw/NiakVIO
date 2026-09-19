@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35466852707",
-  "triggerSha": "34dce887bb4edf5c91fd9010c457200b068f32cb",
+  "runId": "35467155597",
+  "triggerSha": "ebdf677a80c8cb5517a17686b2f34efe0ba9fa29",
   "providers": [
     {
       "provider": "4khdhub",
@@ -358,7 +358,7 @@
       ],
       "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "movie: 8 this run / 26 retained misses"
+        "movie: 8 this run / 25 retained misses"
       ],
       "action": "BRAIN LEARNING slot",
       "brainCheckRequired": true,
@@ -389,26 +389,22 @@
     },
     {
       "provider": "voiranime-rip",
-      "status": "FULL OK",
-      "color": "🟢",
+      "status": "PROVIDER JS BROKEN",
+      "color": "🟠",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [
-        "anime"
-      ],
-      "historicalProof": [
-        "anime: Naruto"
-      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
       "latestLaneVerdicts": [
-        "anime=OK"
+        "anime=wrong_content/provider_returned_wrong_content"
       ],
-      "dominantIssue": "none",
+      "dominantIssue": "provider_returned_wrong_content",
       "searchProgress": [
-        "anime: 8 this run / 21 retained misses"
+        "anime: 8 this run / 20 retained misses"
       ],
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
+      "action": "repair + retest; BRAIN checks",
+      "brainCheckRequired": true,
       "testedThisRun": true
     },
     {
@@ -1133,9 +1129,10 @@
     }
   ],
   "counts": {
-    "FULL OK": 24,
+    "FULL OK": 23,
     "NO PROOF": 7,
     "PARTIAL OK": 1,
+    "PROVIDER JS BROKEN": 1,
     "PROVIDER JS FULLY BROKEN": 14
   },
   "brainQueue": [
@@ -1157,6 +1154,7 @@
     "showbox",
     "uhdmovies",
     "vidfast",
+    "voiranime-rip",
     "vostfree",
     "wookafr",
     "yflix"
