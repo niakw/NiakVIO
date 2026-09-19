@@ -210,11 +210,15 @@ jobs:
         run: |
           set -euo pipefail
           test -f automation/provider-targeted-regression-recovery-latest.json || exit 0
+          verdict_tmp="/tmp/provider-targeted-regression-recovery-${GITHUB_RUN_ID}.json"
+          cp automation/provider-targeted-regression-recovery-latest.json "$verdict_tmp"
+          git fetch origin main
+          git reset --hard origin/main
+          mkdir -p automation
+          cp "$verdict_tmp" automation/provider-targeted-regression-recovery-latest.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add automation/provider-targeted-regression-recovery-latest.json
           git diff --cached --quiet && exit 0
           git commit -m "ci(repair): persist targeted regression verdict"
-          git fetch origin main
-          git rebase origin/main
           git push origin HEAD:main
