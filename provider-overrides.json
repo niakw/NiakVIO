@@ -919,6 +919,14 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/flemmix_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/flemmix_runtime_v1.py": {
+          "base": "https://flemmix.party"
+        }
       }
     },
     "uhdmovies": {
@@ -10130,7 +10138,15 @@
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
       ],
-      "official_site": "https://v5.anime-ultime.net"
+      "official_site": "https://v5.anime-ultime.net",
+      "provider_lego_scripts": [
+        "scripts/provider_patches/anime_ultime_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/anime_ultime_runtime_v1.py": {
+          "base": "https://v5.anime-ultime.net"
+        }
+      }
     },
     "animevost-fr": {
       "capability": "api_stream_resolver",
