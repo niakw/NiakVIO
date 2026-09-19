@@ -78,6 +78,13 @@ jobs:
           python3 tests/provider_v3_minimizer_publication_pipeline_test.py
           python3 tests/provider_v3_minimizer_published_test.py
           python3 scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          # prune_unreferenced_providers.py treats manifest-hub46.json as a current
+          # local retention authority. Provider reapplication changes content-addressed
+          # filenames, so reproject Hub46 before pruning superseded bundles.
+          python3 scripts/generate_hub46_manifest.py \
+            --source manifest.json \
+            --matrix automation/evidence/hub-lab-matrix-46.json \
+            --output manifest-hub46.json
           python3 scripts/prune_unreferenced_providers.py
           python3 tests/provider_html_filter_security_test.py --published
           python3 scripts/audit_provider_v3_static.py

@@ -27,6 +27,13 @@ assert "python3 scripts/sync_release_versions.py" in workflow
 assert '--previous "$RUNNER_TEMP/published-manifest-baseline.json"' in workflow
 assert workflow.index("python3 scripts/sync_release_versions.py") < workflow.index("python3 scripts/generate_release_hashes.py")
 assert workflow.index("python3 scripts/generate_release_hashes.py") < workflow.index("python3 scripts/validate_release_integrity.py")
+# Provider reapplication rewrites content-addressed filenames. Hub46 is a local
+# prune authority, so its projection must be refreshed before stale bundles are pruned.
+_first_reapply = workflow.index("python3 scripts/reapply_published_overrides.py")
+_first_hub46 = workflow.index("python3 scripts/generate_hub46_manifest.py")
+_prune = workflow.index("python3 scripts/prune_unreferenced_providers.py")
+assert _first_reapply < _first_hub46 < _prune
+assert workflow.count("python3 scripts/generate_hub46_manifest.py") >= 2
 assert "Stage provider generation locally" in workflow
 assert "Unexpected path changed by provider-generation finalization" in workflow
 assert "Commit final pinned release locally" in workflow

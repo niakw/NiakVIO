@@ -2353,3 +2353,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Repository Hygiene additionally exposed stale `manifest-hub46.json` content-addressed provider references after branch deletion. `CORE - Finalize Accepted Release` is the canonical atomic path that reapplies durable provider patches, regenerates content-addressed provider/manifests including Hub46/native Hub46, validates release integrity, and publishes only if main remains on the accepted SHA.
 - Next action from this checkpoint: trigger that accepted-release finalizer from the then-current main SHA, inspect its exact generated/published SHA, then rerun/inspect CORE, Provider Non-Regression and the unresolved census before promoting any provider status. This entry is diagnostic; the rematerialization is not marked complete until those gates prove it.
 
+### 2026-09-19 — Release finalizer Hub46/prune ordering regression
+
+- Accepted-release finalizer run **35454276828** on **30f977c3ac534d6c6e89d80c161102d0a4eaff61** successfully reapplied durable overrides to all **44 active providers** in its workspace, including MoviesMod, and reached both provider reapply and minimizer fixed points.
+- The run then failed before publication in `prune_unreferenced_providers.py`: `manifest-hub46.json` still referenced 14 superseded content-addressed provider filenames. The finalizer regenerated Hub46 only in the following step, so prune correctly failed closed on stale authoritative references.
+- Root cause is pipeline ordering, not provider rematerialization: after `reapply_published_overrides.py` changes content-addressed filenames, `manifest-hub46.json` must be reprojected before prune treats it as a local retention authority.
+- Fix: `release-finalize.yml` now regenerates `manifest-hub46.json` immediately after language projections and before prune; the later post-version Hub46 regeneration remains in place. `tests/release_version_sync_test.py` locks the required ordering and requires both Hub46 projection passes.
+- Validation remains pending until the corrected finalizer publishes atomically and downstream CORE/non-regression/census inspect the published SHA.
+
