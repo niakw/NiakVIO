@@ -14,6 +14,7 @@ on:
       - 'scripts/update_provider_census_proof_history.py'
       - 'scripts/audit_provider_quick_yield.py'
       - 'scripts/rotating_corpus.py'
+      - 'tests/allanime_site_runtime_contract_test.py'
       - 'PROVIDER_CENSUS_STATUS.md'
   pull_request:
     branches: [main]
@@ -24,6 +25,7 @@ on:
       - 'provider-hubs.json'
       - 'scripts/provider_base_store.py'
       - 'scripts/materialize_provider_v3_all.py'
+      - 'tests/allanime_site_runtime_contract_test.py'
 
 permissions:
   contents: write

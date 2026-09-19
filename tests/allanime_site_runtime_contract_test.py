@@ -2,9 +2,11 @@
 from pathlib import Path
 import json
 import subprocess
-from scripts.provider_v3_minimizer import minimize_text
+import sys
 
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from scripts.provider_v3_minimizer import minimize_text
 src=(ROOT/"scripts/provider_patches/allanime_site_runtime_v1.py").read_text(encoding="utf-8")
 ov=json.loads((ROOT/"provider-overrides.json").read_text(encoding="utf-8"))["provider_patches"]["allanime"]
 
