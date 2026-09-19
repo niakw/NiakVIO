@@ -10,7 +10,10 @@ assert '/template-php/defaut/fetch.php' in src
 assert "va-search-result-title" in src
 assert "function attr(" in src
 assert "function fallbackQueries" in src
-assert 'body:"query="+encodeURIComponent(q)' in src
+assert "function seasonHint" in src
+assert "base-=180" in src
+assert "return200" not in src and "return140" not in src
+assert 'body:"query="+encodeURIComponent(query)' in src
 assert '"/saison-"+q.season+"/episode-"+q.episode+"/"' in src
 assert 'await _crawlDirectMedia([row.url],episodeUrl,2)' in src
 assert '__niakvioProviderRuntimeResolverV1={provider:"voiranime-rip",resolve:resolve}' in src
