@@ -862,9 +862,26 @@ parsed.hash = "";
 return parsed.toString();
 } catch (_) { return ""; }
 }
+/* NIAKVIO_PROVIDER_INCOMPLETE_PLAYER_URL_REJECTION_V24_4 */
+function _incompletePlayerUrl(url) {
+  try {
+    const parsed = new URL(_text(url));
+    if (!/^https?:$/i.test(parsed.protocol)) return true;
+    const path = _text(parsed.pathname).replace(/\/+$/, "");
+    // A player family/type prefix without any content identity is a JavaScript
+    // template fragment, not an executable player URL. Following it can throw
+    // upstream or resolve unrelated/default content.
+    if (/\/(?:embed|player|watch|play|video|stream)\/(?:movie|tv|series|anime)$/i.test(path)
+        && !parsed.search && !parsed.hash) return true;
+    return false;
+  } catch (_) {
+    return true;
+  }
+}
 function _crawlEligible(url) {
   try {
     if (_directMedia(url)) return true;
+    if (_incompletePlayerUrl(url)) return false;
     const parsed = new URL(url);
     if (!/^https?:$/i.test(parsed.protocol)) return false;
     const host = _text(parsed.hostname).toLowerCase();
