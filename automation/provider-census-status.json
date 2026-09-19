@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35460541384",
-  "triggerSha": "3425668a399afe675c815250483ca3f69c441291",
+  "runId": "35460665695",
+  "triggerSha": "12012b1d5bbeb27eeb2fa4465b2e940708a18d89",
   "providers": [
     {
       "provider": "4khdhub",
@@ -171,21 +171,21 @@
     },
     {
       "provider": "animevost-fr",
-      "status": "PROVIDER JS BROKEN",
-      "color": "🟠",
+      "status": "NO PROOF",
+      "color": "🔵",
       "declaredLanes": [
         "anime"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_http_error"
+        "anime=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
         "anime: 8 this run / 32 retained misses"
       ],
-      "action": "repair + retest; BRAIN checks",
+      "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -211,29 +211,25 @@
     },
     {
       "provider": "desiflix",
-      "status": "PARTIAL OK",
-      "color": "🟡",
+      "status": "PROVIDER JS FULLY BROKEN",
+      "color": "🔴",
       "declaredLanes": [
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [
-        "movie"
-      ],
-      "historicalProof": [
-        "movie: Django Unchained"
-      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=OK",
+        "movie=no_streams/provider_network_exception",
         "tv=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "provider_network_exception",
+      "dominantIssue": "provider_network_exception×2",
       "searchProgress": [
-        "movie: 7 this run / 0 retained misses",
+        "movie: 8 this run / 0 retained misses",
         "tv: 8 this run / 0 retained misses"
       ],
-      "action": "protect green lanes; BRAIN checks missing lanes",
-      "brainCheckRequired": false,
+      "action": "BRAIN LEARNING slot",
+      "brainCheckRequired": true,
       "testedThisRun": true
     },
     {
@@ -362,7 +358,7 @@
       ],
       "dominantIssue": "provider_network_http_error×2",
       "searchProgress": [
-        "movie: 8 this run / 13 retained misses",
+        "movie: 8 this run / 12 retained misses",
         "tv: 8 this run / 15 retained misses"
       ],
       "action": "BRAIN LEARNING slot",
@@ -386,7 +382,7 @@
       "dominantIssue": "provider_network_http_error×2",
       "searchProgress": [
         "movie: 8 this run / 0 retained misses",
-        "tv: 8 this run / 1 retained misses"
+        "tv: 8 this run / 0 retained misses"
       ],
       "action": "BRAIN LEARNING slot",
       "brainCheckRequired": true,
@@ -429,7 +425,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "movie: 8 this run / 22 retained misses"
+        "movie: 8 this run / 20 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -460,21 +456,21 @@
     },
     {
       "provider": "voiranime-rip",
-      "status": "PROVIDER JS BROKEN",
-      "color": "🟠",
+      "status": "NO PROOF",
+      "color": "🔵",
       "declaredLanes": [
         "anime"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "anime=invalid_probe_output"
+        "anime=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "invalid_probe_output",
+      "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 1 this run / 6 retained misses"
+        "anime: 8 this run / 10 retained misses"
       ],
-      "action": "repair + retest; BRAIN checks",
+      "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -1126,10 +1122,9 @@
   ],
   "counts": {
     "FULL OK": 22,
-    "NO PROOF": 7,
-    "PARTIAL OK": 1,
-    "PROVIDER JS BROKEN": 6,
-    "PROVIDER JS FULLY BROKEN": 10
+    "NO PROOF": 9,
+    "PROVIDER JS BROKEN": 4,
+    "PROVIDER JS FULLY BROKEN": 11
   },
   "brainQueue": [
     "4khdhub",
@@ -1142,6 +1137,7 @@
     "animetsu",
     "animevost-fr",
     "animevostfr",
+    "desiflix",
     "flemmix",
     "fullanime",
     "mallumv",
