@@ -2504,3 +2504,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Targeted recovery **35464508422** proves UHDMovies can traverse the full current chain for Inception: `uhdmovies.my` search/detail -> `cloud.unblockedgames.world` landing forms -> `driveseed.org/file/...` -> `video-seed.dev/`, with the final response **HTTP 206**.
 - NiakVIO still returned `no_streams` because `followDownload()` only accepted extension/hostname-shaped direct URLs; unlike the shared `request()` path it did not honor `terminalResponse()`. A range/media response at an opaque URL was therefore discarded after being successfully reached.
 - Fix: `followDownload()` now treats HTTP 206 / Content-Range / video content-type as terminal media and returns the actual final URL. Contract test locks that branch. Fresh playable validation is pending before promotion.
+
+### 2026-09-19 — AniKotoTV active runtime path corrected
+
+- `provider-overrides.json` confirms AniKotoTV materializes `scripts/provider_patches/anikototv_runtime_v2.py`; edits to v1 are out-of-path and are not counted as a repair.
+- Targeted recovery **35464508422** reaches AniList plus MegaPlay stream pages and `/stream/getSources` with HTTP 200, then returns no stream.
+- The active v2 only handled plaintext MegaPlay source fields, while the repository's existing migration notes document an additional encoded-source response form. The active v2 now handles both the ordinary source field and that documented fallback before Core terminal validation.
+- Capability contracts now assert the fallback exists on the active v2. Fresh targeted proof remains required before promotion.
