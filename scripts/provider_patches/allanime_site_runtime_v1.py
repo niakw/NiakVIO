@@ -67,8 +67,11 @@ async function resolveRows(rows,mode,meta,q){var out=[],seen={},lang=mode==="dub
     }
   }return out
 }
+function siteSlug(v){return norm(v).replace(/\s+/g,"-").replace(/^-+|-+$/g,"")}
+async function siteFallback(meta,q){if(!c.siteBase)return[];var names=meta.aliases||[meta.title],abs=absoluteEpisode(q,meta),episodes=uniq([abs,q.episode]),modes=[{suffix:"english-subbed",lang:"VOSTA"},{suffix:"english-dubbed",lang:"English Dub"}],out=[],seen={};for(var ni=0;ni<names.length&&ni<4&&out.length<c.maxStreams;ni++){var slug=siteSlug(names[ni]);if(!slug)continue;for(var ei=0;ei<episodes.length&&out.length<c.maxStreams;ei++){for(var mi=0;mi<modes.length&&out.length<c.maxStreams;mi++){var page=c.siteBase.replace(/\/$/,"")+"/"+slug+"-episode-"+episodes[ei]+"-"+modes[mi].suffix,rows=[];try{if(typeof _crawlDirectMedia==="function")rows=await _crawlDirectMedia([page],page,3)}catch(_e){rows=[]}if(!Array.isArray(rows)||!rows.length)continue;for(var ri=0;ri<rows.length&&out.length<c.maxStreams;ri++){var row=rows[ri]||{},u=s(row.url);if(!/^https?:\/\//i.test(u)||seen[u])continue;seen[u]=1;var x=Object.assign({},row);x.provider="allanime";x.name="AllAnime | "+modes[mi].lang;x.title=meta.title+" | S"+q.season+"E"+q.episode+" | "+modes[mi].lang;x.language=modes[mi].lang;if(!x.headers)x.headers={"Referer":page,"User-Agent":c.ua};out.push(x)}if(out.length)return out}}}return out}
 async function resolve(a){var q=req(a);if(q===null)return null;if(!q||!q.tmdbId)return[];var meta=await metadata(q);if(!meta||!meta.title)return[];var modes=["sub","dub"],episodes=[q.episode],abs=absoluteEpisode(q,meta),out=[];if(abs!==q.episode)episodes.push(abs);
   for(var mi=0;mi<modes.length&&out.length<c.maxStreams;mi++){var mode=modes[mi],show=await findShow(meta,q,mode);if(!show)continue;for(var ei=0;ei<episodes.length&&out.length<c.maxStreams;ei++){var rows=await sourceRows(show._id,mode,episodes[ei]);if(!rows.length)continue;var got=await resolveRows(rows,mode,meta,q);for(var gi=0;gi<got.length&&out.length<c.maxStreams;gi++)out.push(got[gi]);if(got.length)break}}
+  if(!out.length)out=await siteFallback(meta,q)
   return out
 }
 try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:"allanime",resolve:resolve}}catch(_e){}
@@ -83,6 +86,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "searchOrigin":"https://allmanga.to",
         "sourceReferer":"https://youtu-chan.com",
         "referer":"https://allanime.day/",
+        "siteBase":"https://ww2.aniwatch.fit",
         "maxStreams":6,
         "ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0",
     }
