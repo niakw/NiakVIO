@@ -15,6 +15,10 @@ assert 'var semantic=s((obj&&obj.semanticType)||ctx.semanticType||"").toLowerCas
 assert 'if(semantic==="anime"||(type==="tv"&&!semantic))type="anime";' in src
 assert 'if(type!=="anime")return null;' in src
 assert 'c.site+"/index.php?do=search"' in src
+assert 'async function warm()' in src
+assert 'responseCookie' in src
+assert 'hs.Origin=c.site' in src
+assert 'if(cookie)h.Cookie=cookie' in src
 assert 'action_select_season' not in src
 assert 'provider:"vostfree",resolve:resolve' in src
 assert r'video\.sibnet\.ru' in src
