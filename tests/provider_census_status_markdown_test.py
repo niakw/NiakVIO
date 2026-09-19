@@ -141,4 +141,23 @@ regression_history = {
 row = build_status_rows(regression_report, regression_history)[0]
 assert row["status"] == "REGRESSION PROVIDER", row
 
+
+# Real DATA regression guard: these providers previously appeared as NO PROOF
+# even though their provider-local live route gates already covered every
+# declared semantic lane. Preserve that distinction across renderer refactors.
+actual_overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+route_proven_real_provider_ids = {
+    "4khdhub": {"movie", "tv"},
+    "animetsu": {"anime"},
+    "showbox": {"movie", "tv"},
+}
+for pid, expected_lanes in route_proven_real_provider_ids.items():
+    patch = actual_overrides["provider_patches"][pid]
+    gate = patch["live_route_gate"]
+    assert gate["completion_state"] == "declared-types-qualified", (pid, gate)
+    assert set(gate["required_types"]) == expected_lanes, (pid, gate)
+    assert set(gate["validated_types"]) == expected_lanes, (pid, gate)
+    assert gate.get("missing_types") == [], (pid, gate)
+    assert int(gate.get("live_validated_route_count") or 0) > 0, (pid, gate)
+
 print("provider census status/state-machine markdown contract passed")
