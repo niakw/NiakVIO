@@ -32,6 +32,7 @@ from provider_base_store import (  # noqa: E402
     build_provider_data_model,
     canonical_id,
     compose_provider_bundle,
+    NON_EXECUTABLE_KNOWLEDGE_HOSTS,
 )
 from apply_provider_overrides import apply_overrides  # noqa: E402
 from provider_patch_blocks import owned_span, validate_managed_fixes  # noqa: E402
@@ -226,6 +227,29 @@ def _runtime_domain_substitutions(patch: dict[str, Any], static_model: dict[str,
     return out
 
 
+def _api_recipe_execution_allowed(recipe: dict[str, Any] | None) -> bool:
+    """Reject metadata/helper recipes from provider execution authority."""
+    if not isinstance(recipe, dict):
+        return False
+    bases: list[str] = []
+    for key in ("base", "api", "baseUrl", "endpoint"):
+        value = str(recipe.get(key) or "").strip()
+        if value:
+            bases.append(value)
+    for key in ("directRoute", "movieRoute", "episodeRoute", "searchRoute"):
+        value = str(recipe.get(key) or "").strip()
+        if value.startswith(("http://", "https://")):
+            bases.append(value)
+    for value in bases:
+        try:
+            host = (urlparse(value).hostname or "").casefold().rstrip(".")
+        except ValueError:
+            return False
+        if host and host in NON_EXECUTABLE_KNOWLEDGE_HOSTS:
+            return False
+    return True
+
+
 def provider_model(
     provider_id: str,
     patch: dict[str, Any],
@@ -317,7 +341,15 @@ def provider_model(
     static_recipe = static_model.get("apiRecipe") if isinstance(static_model.get("apiRecipe"), dict) else None
     candidate_recipe = patch_recipe if patch_recipe is not None else (None if patch_has_execution_authority else static_recipe)
     recipe_proof = int(candidate_recipe.get("proofModelVersion") or 0) if isinstance(candidate_recipe, dict) else 0
-    api_recipe = candidate_recipe if proof_version >= 5 and recipe_proof >= 5 else None
+    recipe_allowed = _api_recipe_execution_allowed(candidate_recipe)
+    api_recipe = candidate_recipe if proof_version >= 5 and recipe_proof >= 5 and recipe_allowed else None
+    if isinstance(candidate_recipe, dict) and not recipe_allowed:
+        helper_routes = {
+            str(candidate_recipe.get(key) or "").strip()
+            for key in ("directRoute", "movieRoute", "episodeRoute", "searchRoute")
+            if str(candidate_recipe.get(key) or "").strip()
+        }
+        routes = [route for route in routes if route not in helper_routes]
 
     def execution_list(patch_key: str, static_key: str) -> list[dict[str, Any]]:
         if patch_has_execution_authority:
