@@ -27,8 +27,8 @@ assert ov["provider_lego_scripts"] == ["scripts/provider_patches/movieshunt_runt
 opts = ov["provider_lego_options"]["scripts/provider_patches/movieshunt_runtime_v1.py"]
 assert opts["base"] == "https://movieshunt.run"
 assert int(opts["maxStreams"]) == 6
-assert ov["learned_routes"] == ["/?s={query}"], ov["learned_routes"]
+assert ov["learned_routes"] == ["/search.html?q={query}", "/?s={query}"], ov["learned_routes"]
 assert ov["search_request_plan"][0]["base"] == "https://movieshunt.run"
-assert ov["search_request_plan"][0]["route"] == "/?s={query}"
+assert ov["search_request_plan"][0]["route"] == "/search.html?q={query}"
 
 print("MoviesHunt provider runtime/domain contract passed")
