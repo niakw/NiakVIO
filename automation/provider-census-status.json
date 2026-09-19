@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35473259178",
-  "triggerSha": "d25a52a82f47bea3051d1ff68debd164c9e5fa7b",
+  "runId": "35474129054",
+  "triggerSha": "c8e7bd60a49ac2cf40c4dd3bbfa602b42cf85f77",
   "providers": [
     {
       "provider": "4khdhub",
@@ -44,7 +44,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 4 works tested / 44 retained misses / 4 retained chain hits"
+        "anime: 4 works tested / 45 retained misses / 3 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -401,24 +401,24 @@
     },
     {
       "provider": "uhdmovies",
-      "status": "PROVIDER NETWORK BLOCKED",
-      "color": "🟤",
+      "status": "CHAIN REACHED",
+      "color": "🟣",
       "declaredLanes": [
         "movie"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_http_error"
+        "movie=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "movie: 8 works tested / 26 retained misses / 7 retained chain hits"
+        "movie: 8 works tested / 26 retained misses / 8 retained chain hits"
       ],
       "evidenceDepth": [
         "movie=chain_reached"
       ],
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "action": "finish terminal extractor/validation; do not promote before verified media",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -1206,11 +1206,11 @@
     }
   ],
   "counts": {
-    "CHAIN REACHED": 3,
+    "CHAIN REACHED": 4,
     "FULL OK": 24,
     "NO PROOF": 4,
     "PARTIAL OK": 1,
-    "PROVIDER NETWORK BLOCKED": 7,
+    "PROVIDER NETWORK BLOCKED": 6,
     "PROVIDER WAF/ANTIBOT": 7
   },
   "brainQueue": [
