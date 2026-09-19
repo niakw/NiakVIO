@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35466035863",
-  "triggerSha": "ce873d9f3ec92ba3959dd07d26ae7beeeae63326",
+  "runId": "35466088958",
+  "triggerSha": "e40b5af19a1df6096b2de744c5fafa694867c13d",
   "providers": [
     {
       "provider": "4khdhub",
@@ -286,10 +286,10 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_http_error",
+        "movie=no_streams/provider_network_zero_result",
         "tv=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_http_error×2",
+      "dominantIssue": "provider_network_zero_result, provider_network_http_error",
       "searchProgress": [
         "movie: 8 this run / 16 retained misses",
         "tv: 8 this run / 18 retained misses"
@@ -389,21 +389,21 @@
     },
     {
       "provider": "voiranime-rip",
-      "status": "PROVIDER JS BROKEN",
-      "color": "🟠",
+      "status": "NO PROOF",
+      "color": "🔵",
       "declaredLanes": [
         "anime"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "anime=wrong_content/provider_returned_wrong_content"
+        "anime=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_returned_wrong_content",
+      "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 6 this run / 15 retained misses"
+        "anime: 8 this run / 18 retained misses"
       ],
-      "action": "repair + retest; BRAIN checks",
+      "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -1130,9 +1130,9 @@
   ],
   "counts": {
     "FULL OK": 23,
-    "NO PROOF": 7,
+    "NO PROOF": 8,
     "PARTIAL OK": 1,
-    "PROVIDER JS BROKEN": 2,
+    "PROVIDER JS BROKEN": 1,
     "PROVIDER JS FULLY BROKEN": 13
   },
   "brainQueue": [
