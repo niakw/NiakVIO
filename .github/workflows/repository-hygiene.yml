@@ -1,5 +1,5 @@
 name: OPS - Repository Hygiene
-# Merged candidate branches are ephemeral: once their PR is closed, hygiene removes them.
+# Persistent branch policy: keep only main + brain-learning/proposals; delete every other closed/non-PR branch.
 
 on:
   workflow_dispatch:

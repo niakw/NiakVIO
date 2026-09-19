@@ -2330,3 +2330,16 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Post-import main checks exposed a concrete syntax regression in `scripts/provider_patches/movieshunt_runtime_v1.py`: `dynamicLookup()` missed the closing quote after `&page=1&per_page=30`.
 - This caused both the dedicated MoviesHunt Node parse contract and global override/minimizer composition to fail before live probes.
 - The source is corrected directly on `main`; functionality is still pending fresh rematerialized/current-main checks.
+
+
+### 2026-09-19 — Physical stale-branch deletion delegated to Repository Hygiene
+
+- User clarified the final branch policy: keep **`main`** plus **`brain-learning/proposals`** only. Brain Learning remains intentionally preserved.
+- The earlier four repair refs were only neutralized to main because the connector lacks DELETE-ref support; that did **not** satisfy physical deletion.
+- The existing `OPS - Repository Hygiene` workflow already has `contents: write` and executes `git push origin --delete` for every non-PR branch except `main` and `brain-learning/proposals`.
+- This workflow is now deliberately retriggered from main to physically delete:
+  - `fix/post-186-zero-batch-20260919`
+  - `fix/post-187-zero-batch-2-20260919`
+  - `fix/provider-census-state-machine-20260919`
+  - `tmp/provider-max-repair-proof-20260919`
+- Do not mark branch cleanup complete until GitHub branch inventory confirms only `main` and `brain-learning/proposals` remain.
