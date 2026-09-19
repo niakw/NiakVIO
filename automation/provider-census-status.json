@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35473000019",
-  "triggerSha": "ccfb7d84c1e177d0205f7c6c972af37bba5cc0dd",
+  "runId": "35473259178",
+  "triggerSha": "d25a52a82f47bea3051d1ff68debd164c9e5fa7b",
   "providers": [
     {
       "provider": "4khdhub",
@@ -19,8 +19,12 @@
       ],
       "dominantIssue": "provider_network_zero_result×2",
       "searchProgress": [
-        "movie: 4 this run / 46 retained misses",
-        "tv: 2 this run / 43 retained misses"
+        "movie: 4 works tested / 46 retained misses",
+        "tv: 2 works tested / 43 retained misses"
+      ],
+      "evidenceDepth": [
+        "movie=lookup_only",
+        "tv=lookup_only"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -28,8 +32,8 @@
     },
     {
       "provider": "allanime",
-      "status": "NO PROOF",
-      "color": "🔵",
+      "status": "CHAIN REACHED",
+      "color": "🟣",
       "declaredLanes": [
         "anime"
       ],
@@ -40,16 +44,19 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 4 this run / 48 retained misses"
+        "anime: 4 works tested / 44 retained misses / 4 retained chain hits"
       ],
-      "action": "continue corpus proof search; BRAIN checks",
+      "evidenceDepth": [
+        "anime=chain_reached"
+      ],
+      "action": "finish terminal extractor/validation; do not promote before verified media",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
     {
       "provider": "allwish",
-      "status": "PROVIDER JS BROKEN",
-      "color": "🟠",
+      "status": "PROVIDER WAF/ANTIBOT",
+      "color": "🟫",
       "declaredLanes": [
         "movie",
         "tv"
@@ -62,10 +69,14 @@
       ],
       "dominantIssue": "provider_waf_challenge×2",
       "searchProgress": [
-        "movie: 8 this run / 0 retained misses",
-        "tv: 8 this run / 0 retained misses"
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
       ],
-      "action": "repair + retest; BRAIN checks",
+      "evidenceDepth": [
+        "movie=none",
+        "tv=none"
+      ],
+      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -83,7 +94,10 @@
       ],
       "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "anime: 8 this run / 0 retained misses"
+        "anime: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none"
       ],
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
@@ -91,8 +105,8 @@
     },
     {
       "provider": "animesalt",
-      "status": "PROVIDER JS BROKEN",
-      "color": "🟠",
+      "status": "PROVIDER WAF/ANTIBOT",
+      "color": "🟫",
       "declaredLanes": [
         "anime"
       ],
@@ -103,9 +117,12 @@
       ],
       "dominantIssue": "provider_waf_challenge",
       "searchProgress": [
-        "anime: 8 this run / 0 retained misses"
+        "anime: 8 works tested / 0 retained misses"
       ],
-      "action": "repair + retest; BRAIN checks",
+      "evidenceDepth": [
+        "anime=none"
+      ],
+      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -123,7 +140,10 @@
       ],
       "dominantIssue": "provider_network_exception",
       "searchProgress": [
-        "anime: 8 this run / 0 retained misses"
+        "anime: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none"
       ],
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
@@ -143,7 +163,10 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 1 this run / 46 retained misses"
+        "anime: 1 works tested / 46 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=lookup_only"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -151,8 +174,8 @@
     },
     {
       "provider": "animevost-fr",
-      "status": "PROVIDER JS BROKEN",
-      "color": "🟠",
+      "status": "PROVIDER WAF/ANTIBOT",
+      "color": "🟫",
       "declaredLanes": [
         "anime"
       ],
@@ -163,9 +186,12 @@
       ],
       "dominantIssue": "provider_waf_challenge",
       "searchProgress": [
-        "anime: 5 this run / 38 retained misses"
+        "anime: 5 works tested / 38 retained misses"
       ],
-      "action": "repair + retest; BRAIN checks",
+      "evidenceDepth": [
+        "anime=lookup_only"
+      ],
+      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -183,7 +209,10 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 4 this run / 48 retained misses"
+        "anime: 4 works tested / 48 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=lookup_only"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -191,8 +220,8 @@
     },
     {
       "provider": "flemmix",
-      "status": "PROVIDER JS BROKEN",
-      "color": "🟠",
+      "status": "PROVIDER WAF/ANTIBOT",
+      "color": "🟫",
       "declaredLanes": [
         "movie",
         "tv"
@@ -205,17 +234,21 @@
       ],
       "dominantIssue": "provider_waf_challenge×2",
       "searchProgress": [
-        "movie: 8 this run / 0 retained misses",
-        "tv: 8 this run / 0 retained misses"
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
       ],
-      "action": "repair + retest; BRAIN checks",
+      "evidenceDepth": [
+        "movie=none",
+        "tv=none"
+      ],
+      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
     {
       "provider": "fullanime",
-      "status": "PROVIDER JS BROKEN",
-      "color": "🟠",
+      "status": "PROVIDER WAF/ANTIBOT",
+      "color": "🟫",
       "declaredLanes": [
         "anime"
       ],
@@ -226,16 +259,19 @@
       ],
       "dominantIssue": "provider_waf_challenge",
       "searchProgress": [
-        "anime: 8 this run / 0 retained misses"
+        "anime: 8 works tested / 0 retained misses"
       ],
-      "action": "repair + retest; BRAIN checks",
+      "evidenceDepth": [
+        "anime=none"
+      ],
+      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
     {
       "provider": "mallumv",
-      "status": "NO PROOF",
-      "color": "🔵",
+      "status": "CHAIN REACHED",
+      "color": "🟣",
       "declaredLanes": [
         "movie"
       ],
@@ -246,9 +282,12 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "movie: 1 this run / 43 retained misses"
+        "movie: 1 works tested / 42 retained misses / 1 retained chain hit"
       ],
-      "action": "continue corpus proof search; BRAIN checks",
+      "evidenceDepth": [
+        "movie=chain_reached"
+      ],
+      "action": "finish terminal extractor/validation; do not promote before verified media",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -268,8 +307,12 @@
       ],
       "dominantIssue": "provider_network_http_error×2",
       "searchProgress": [
-        "movie: 8 this run / 28 retained misses",
-        "tv: 8 this run / 32 retained misses"
+        "movie: 8 works tested / 28 retained misses",
+        "tv: 8 works tested / 32 retained misses"
+      ],
+      "evidenceDepth": [
+        "movie=chain_reached",
+        "tv=chain_reached"
       ],
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
@@ -277,8 +320,8 @@
     },
     {
       "provider": "moviesmod",
-      "status": "PROVIDER JS BROKEN",
-      "color": "🟠",
+      "status": "PROVIDER WAF/ANTIBOT",
+      "color": "🟫",
       "declaredLanes": [
         "movie",
         "tv"
@@ -286,22 +329,26 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
+        "movie=no_streams/provider_waf_challenge",
         "tv=no_streams/provider_waf_challenge"
       ],
-      "dominantIssue": "provider_network_zero_result, provider_waf_challenge",
+      "dominantIssue": "provider_waf_challenge×2",
       "searchProgress": [
-        "movie: 8 this run / 19 retained misses",
-        "tv: 8 this run / 18 retained misses"
+        "movie: 8 works tested / 19 retained misses",
+        "tv: 8 works tested / 18 retained misses"
       ],
-      "action": "repair + retest; BRAIN checks",
+      "evidenceDepth": [
+        "movie=lookup_only",
+        "tv=lookup_only"
+      ],
+      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
     {
       "provider": "persianstremio",
-      "status": "NO PROOF",
-      "color": "🔵",
+      "status": "CHAIN REACHED",
+      "color": "🟣",
       "declaredLanes": [
         "movie",
         "tv"
@@ -314,10 +361,14 @@
       ],
       "dominantIssue": "provider_network_zero_result×2",
       "searchProgress": [
-        "movie: 8 this run / 8 retained misses",
-        "tv: 8 this run / 9 retained misses"
+        "movie: 8 works tested / 0 retained misses / 8 retained chain hits",
+        "tv: 8 works tested / 1 retained misses / 8 retained chain hits"
       ],
-      "action": "continue corpus proof search; BRAIN checks",
+      "evidenceDepth": [
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "action": "finish terminal extractor/validation; do not promote before verified media",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -337,8 +388,12 @@
       ],
       "dominantIssue": "provider_network_zero_result×2",
       "searchProgress": [
-        "movie: 1 this run / 43 retained misses",
-        "tv: 1 this run / 42 retained misses"
+        "movie: 1 works tested / 43 retained misses",
+        "tv: 1 works tested / 42 retained misses"
+      ],
+      "evidenceDepth": [
+        "movie=lookup_only",
+        "tv=lookup_only"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -358,7 +413,10 @@
       ],
       "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "movie: 8 this run / 32 retained misses"
+        "movie: 8 works tested / 26 retained misses / 7 retained chain hits"
+      ],
+      "evidenceDepth": [
+        "movie=chain_reached"
       ],
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
@@ -380,8 +438,12 @@
       ],
       "dominantIssue": "provider_network_http_error×2",
       "searchProgress": [
-        "movie: 8 this run / 27 retained misses",
-        "tv: 8 this run / 26 retained misses"
+        "movie: 8 works tested / 27 retained misses",
+        "tv: 8 works tested / 26 retained misses"
+      ],
+      "evidenceDepth": [
+        "movie=none",
+        "tv=none"
       ],
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
@@ -389,8 +451,8 @@
     },
     {
       "provider": "vostfree",
-      "status": "PROVIDER JS BROKEN",
-      "color": "🟠",
+      "status": "PROVIDER WAF/ANTIBOT",
+      "color": "🟫",
       "declaredLanes": [
         "anime"
       ],
@@ -401,9 +463,12 @@
       ],
       "dominantIssue": "provider_waf_challenge",
       "searchProgress": [
-        "anime: 8 this run / 0 retained misses"
+        "anime: 8 works tested / 0 retained misses"
       ],
-      "action": "repair + retest; BRAIN checks",
+      "evidenceDepth": [
+        "anime=none"
+      ],
+      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -423,8 +488,12 @@
       ],
       "dominantIssue": "provider_network_exception×2",
       "searchProgress": [
-        "movie: 8 this run / 0 retained misses",
-        "tv: 8 this run / 0 retained misses"
+        "movie: 8 works tested / 0 retained misses",
+        "tv: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "movie=none",
+        "tv=none"
       ],
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
@@ -446,8 +515,12 @@
       ],
       "dominantIssue": "provider_network_exception×2",
       "searchProgress": [
-        "movie: 1 this run / 43 retained misses",
-        "tv: 1 this run / 42 retained misses"
+        "movie: 1 works tested / 43 retained misses",
+        "tv: 1 works tested / 42 retained misses"
+      ],
+      "evidenceDepth": [
+        "movie=lookup_only",
+        "tv=lookup_only"
       ],
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
@@ -1133,11 +1206,12 @@
     }
   ],
   "counts": {
+    "CHAIN REACHED": 3,
     "FULL OK": 24,
-    "NO PROOF": 7,
+    "NO PROOF": 4,
     "PARTIAL OK": 1,
-    "PROVIDER JS BROKEN": 7,
-    "PROVIDER NETWORK BLOCKED": 7
+    "PROVIDER NETWORK BLOCKED": 7,
+    "PROVIDER WAF/ANTIBOT": 7
   },
   "brainQueue": [
     "4khdhub",
