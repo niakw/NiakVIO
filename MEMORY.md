@@ -2563,3 +2563,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The prior compact diagnostic removed the 146k one-line source but still failed to expose Node's useful syntax message. `scripts/validate_provider_artifact.cjs` now performs a second **parse-only** `vm.Script` compile when `node --check` fails and emits a guaranteed short `syntax_summary=<ErrorName>: <message>` plus a compact location when available. Provider code is never executed.
 - Added `tests/provider_validation_syntax_diagnostics_test.py`, reproducing a >100k single-line invalid bundle and requiring compact source omission plus `syntax_summary=SyntaxError:`. `CORE - Workflow Gate` now runs this test explicitly.
 - Next action: once the diagnostic gate is green, rerun accepted-release finalization, capture the exact AllAnime minimized syntax error, repair the minimizer/source semantics, then complete atomic publication and post-release CORE/non-regression/census validation.
+
+### 2026-09-19 — AllAnime minimizer ASI root cause patched
+
+- Static audit of the AllAnime runtime found the concrete publication-syntax hazard that matches the finalizer failure: `resolve()` ended with an expression statement `if(!out.length)out=await siteFallback(meta,q)` followed by `return out` on the next physical line. The source relied on JavaScript ASI.
+- The one-line publication minimizer correctly preserves many restricted-keyword ASI cases, but flattening this general expression-statement newline yields invalid JavaScript (`...siteFallback(meta,q) return out`). The provider source now terminates that assignment explicitly with `;`.
+- `tests/allanime_site_runtime_contract_test.py` now runs the AllAnime wrapper through the real `provider_v3_minimizer.minimize_text()`, asserts a one-line result, and parses the minimized output with Node before also checking the readable wrapper.
+- This is a source-level semantic repair, not a relaxation of minimizer or byte validation. Accepted-release publication remains pending until the full finalizer proves the complete AllAnime bundle after all Core/Provider composition.
