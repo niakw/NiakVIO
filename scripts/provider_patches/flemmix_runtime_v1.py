@@ -45,7 +45,7 @@ try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:"flemmix",resolve:resolv
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     cfg = {
-        "base": "https://flemmix.party",
+        "base": "https://flemmix.me",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145 Safari/537.36",
     }
     cfg.update(dict(options or {}))
