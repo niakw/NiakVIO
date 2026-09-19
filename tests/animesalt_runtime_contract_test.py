@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import json
+import subprocess
 ROOT=Path(__file__).resolve().parents[1]
 hubs=json.loads((ROOT/"provider-hubs.json").read_text(encoding="utf-8"))["providers"]["animesalt"]
 overrides=json.loads((ROOT/"provider-overrides.json").read_text(encoding="utf-8"))["provider_patches"]["animesalt"]
@@ -27,4 +28,6 @@ assert 'data.videoSource||data.securedLink' in src
 assert 'semanticLanes": ["anime"]' in src
 js = src.split("WRAPPER = r'''",1)[1].split("'''",1)[0]
 assert js.count("c.base") == 2, "only runtimeBase fallback may reference legacy cfg base"
+compiled = js.replace("CONFIG_PLACEHOLDER", "{}")
+subprocess.run(["node", "-e", "new Function(process.argv[1]);", compiled], check=True)
 print("AnimeSalt runtime contract passed")
