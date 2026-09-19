@@ -76,5 +76,10 @@ assert hubs["wookafr"]["direct"] == "https://wookafr.tel/"
 assert hubs["wookafr"]["direct_authority"] == "explicit_current"
 assert hubs["hindmoviez"]["direct"] == "https://hindmovie.fit/"
 assert hubs["hindmoviez"]["direct_authority"] == "explicit_current"
+assert hubs["movieshunt"]["direct"] == "https://movieshunt.run/"
+assert hubs["movieshunt"]["direct_authority"] == "explicit_current"
+assert hubs["movieshunt"]["allowed_terminal_hosts"] == ["movieshunt.run"]
+assert "movieshunt.ws" in hubs["movieshunt"]["blocked_hosts"]
+assert "movieshunt.monster" in hubs["movieshunt"]["blocked_hosts"]
 
 print("provider domain metadata reconciliation tests passed")

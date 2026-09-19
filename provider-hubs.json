@@ -1872,38 +1872,45 @@
       "manifest_status": "Actif",
       "category": "International",
       "hub": "https://movieshunt.cc/",
-      "direct": "https://movieshunt.ws/",
+      "direct": "https://movieshunt.run/",
       "source": "curated_user_registry",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "MoviesHunt authority is provider-local. The current upstream provider source decodes its own movieshuntBase to movieshunt.run; ws/work/monster/casa are stale or redirect intermediates and must not replace the current terminal.",
       "aliases": [
         "movieshunt"
       ],
       "direct_candidates": [
-        "https://movieshunt.ws/",
-        "https://movieshunt.work/"
+        "https://movieshunt.run/"
       ],
       "allowed_terminal_hosts": [
-        "movieshunt.ws",
-        "movieshunt.work"
+        "movieshunt.run"
       ],
       "search_queries": [
-        "\"MoviesHunt\" official domain"
+        "\"MoviesHunt\" \"movieshunt.run\""
       ],
       "sources": [
         {
           "type": "hub",
           "url": "https://movieshunt.cc/",
           "priority": 100,
-          "purpose": "Authoritative address reference"
+          "purpose": "Historical address/discovery source only; current runtime terminal is taken from provider-local upstream source."
         },
         {
           "type": "search",
-          "query": "\"MoviesHunt\" official domain",
+          "query": "\"MoviesHunt\" \"movieshunt.run\"",
           "priority": 35,
-          "purpose": "Fallback discovery when curated sources fail"
+          "purpose": "Fallback verification only."
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "direct_authority": "explicit_current",
+      "direct_authority_source": "current-upstream-provider-static-decoder",
+      "direct_authority_observed_at": "2026-09-19",
+      "blocked_hosts": [
+        "movieshunt.ws",
+        "movieshunt.work",
+        "movieshunt.monster",
+        "movieshunt.casa"
+      ]
     },
     "animoflix": {
       "id": "animoflix",
