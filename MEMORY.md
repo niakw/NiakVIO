@@ -2386,3 +2386,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The recovery step will fail closed unless current `main` exactly equals its triggering `GITHUB_SHA`, then call the GitHub Actions API to enable `release-finalize.yml` and dispatch it manually with `expected_sha=<exact main SHA>`. Manual workflow runs are explicitly excluded from stale-run cancellation by Repository Hygiene.
 - This is only an activation bridge; publication authority remains the canonical `CORE - Finalize Accepted Release` workflow.
 
+### 2026-09-19 — Provider Lego HTML scanner hardening applied
+
+- The 9 provider-local runtime sources exposed by accepted-release rematerialization were hardened on main: Flemmix, UHDMovies, MoviesHunt, 4KHDHub, AnimeSalt, AnimeSultra, AnimeVOSTFR, MoviesMod and VoirAnime.rip. Regex-based HTML tag/script/style stripping was replaced with deterministic character scanning that skips script/style blocks before entity/whitespace normalization.
+- Source commits: `f76485b5` Flemmix, `88d7d5a2` UHDMovies, `c4447443` MoviesHunt, `2839233e` 4KHDHub, `44051e73` AnimeSalt, `bb1b1a87` AnimeSultra, `12bf60f0` AnimeVOSTFR, `cffbeb81` MoviesMod, `f086a7fe` VoirAnime.rip.
+- `tests/provider_html_filter_security_test.py` was upgraded in **17699b823403b32dafbd0b3f7b8eadf41c8962ca** to discover every `provider_lego_scripts` source declared by `provider-overrides.json` (currently 36 unique scripts) and scan them for forbidden HTML-filter regex patterns. This removes the previous hardcoded-11-source blind spot.
+- GitHub code-search results may lag raw branch contents, so status is not inferred from search indexing. Completion requires the accepted-release workflow to rematerialize/publish, then the published security gate and downstream provider gates to pass on the resulting SHA.
