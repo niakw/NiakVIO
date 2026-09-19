@@ -5,18 +5,15 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/temp-current-bytes-full-provider-census.yml'
-      - 'scripts/provider_patches/animevostfr_runtime_v1.py'
-      - 'tests/animevostfr_runtime_contract_test.py'
+      - 'scripts/provider_patches/**'
       - 'provider-overrides.json'
-      - 'tests/streamzo_episodic_identity_contract_test.py'
-      - 'scripts/provider_patches/streamzo_runtime_v1.py'
-      - 'tests/uhdmovies_runtime_contract_test.py'
-      - 'scripts/provider_patches/uhdmovies_runtime_v1.py'
-      - 'tests/provider_capability_recovery_contract_test.py'
-      - 'scripts/provider_patches/anime_catalogue_runtime_common.py'
+      - 'provider-hubs.json'
+      - 'scripts/provider_base_store.py'
+      - 'scripts/materialize_provider_v3_all.py'
+      - 'tests/**'
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: niakvio-temp-current-bytes-full-provider-census
@@ -125,3 +122,41 @@ jobs:
             automation/current-bytes-full-provider-census-summary.json
           retention-days: 8
           if-no-files-found: warn
+
+      - name: Persist exact census evidence
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f automation/current-bytes-full-provider-census-summary.json ]; then
+            echo "No completed census summary to persist"
+            exit 0
+          fi
+          run_id="${GITHUB_RUN_ID}"
+          cp automation/current-bytes-full-provider-census-summary.json "/tmp/census-summary-${run_id}.json"
+          cp automation/current-bytes-full-provider-census.json "/tmp/census-full-${run_id}.json"
+          verified="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path("automation/current-bytes-full-provider-census-summary.json").read_text())
+          print(f"{d.get('verifiedProviderCount',0)}/{d.get('providerCount',0)}")
+          PY
+          )"
+          # Rematerialization intentionally mutates the workspace. Evidence publication
+          # must not accidentally publish those candidate bytes or fail because they
+          # are unstaged.
+          git reset --hard "${GITHUB_SHA}"
+          git clean -fd
+          git fetch origin main
+          git rebase origin/main
+          mkdir -p automation
+          cp "/tmp/census-summary-${run_id}.json" "automation/current-bytes-full-provider-census-${run_id}-summary.json"
+          cp "/tmp/census-full-${run_id}.json" "automation/current-bytes-full-provider-census-${run_id}.json"
+          cp "/tmp/census-summary-${run_id}.json" automation/current-bytes-full-provider-census-latest-summary.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add             "automation/current-bytes-full-provider-census-${run_id}-summary.json"             "automation/current-bytes-full-provider-census-${run_id}.json"             automation/current-bytes-full-provider-census-latest-summary.json
+          git commit -m "ci(census): persist current bytes ${verified} from ${GITHUB_SHA::12}"
+          git push origin HEAD:main
