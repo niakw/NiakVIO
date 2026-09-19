@@ -2311,3 +2311,15 @@ This ledger is not complete merely because provider yield improves. Final comple
 - **AnimeSama.co was intentionally not re-imported** because the current scoped census already proves it **FULL OK**.
 - Functional promotion is still pending post-commit current-main census/probes; this entry records code/data integration, not a green verdict.
 - Cleanup intent: PR **#187** is superseded by this direct-main import. The four stale work refs are to be removed/neutralized after this exact main commit.
+
+
+### 2026-09-19 — Stale PR/branch cleanup completed
+
+- PR **#187** was closed unmerged because its useful changes were superseded by direct-main commit **d4c7ef24abe237eb5b8a23ce2e372dad0b82d62b**.
+- The four stale work branches were force-aligned to the exact main SHA so they contain **zero unique commits / zero code delta**:
+  - `fix/post-186-zero-batch-20260919`
+  - `fix/post-187-zero-batch-2-20260919`
+  - `fix/provider-census-state-machine-20260919`
+  - `tmp/provider-max-repair-proof-20260919`
+- Physical branch deletion is not exposed by the installed GitHub connector; refs were therefore neutralized to main rather than left diverged. Do not use them for future repair work.
+- Workstream policy remains **main-only**. `brain-learning/proposals` is intentionally preserved because it is the dedicated Brain proposal branch, not a repair branch.
