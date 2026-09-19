@@ -426,6 +426,17 @@ def materialize_one(provider_id: str) -> dict[str, object]:
         if text.count(boundary) != 1:
             raise ValueError(f"{provider_id}: minimizer changed Core boundary")
     bundle = text.encode("utf-8")
+    try:
+        verified_bundle, byte_validation = allmat.verify_bytes(bundle)
+    except Exception as exc:
+        raise RuntimeError(
+            f"{provider_id}: materialized provider artifact validation failed: {exc}"
+        ) from exc
+    if verified_bundle != bundle:
+        raise AssertionError(
+            f"{provider_id}: materialized byte validator rewrote provider bytes"
+        )
+    bundle = verified_bundle
 
     digest = hashlib.sha256(bundle).hexdigest()
     filename = f"{provider_id}-{digest[:16]}.js"
@@ -453,6 +464,13 @@ def materialize_one(provider_id: str) -> dict[str, object]:
         "devices": ["tv", "mobile", "desktop"],
         "legacyProviderJsExecuted": False,
         "upstreamJsExecuted": False,
+        "byteValidation": {
+            "tool": byte_validation.get("tool"),
+            "toolVersion": byte_validation.get("toolVersion"),
+            "phase": byte_validation.get("phase"),
+            "sourceSha256": byte_validation.get("sourceSha256"),
+            "fixedPointVerified": bool(byte_validation.get("fixedPointVerified")),
+        },
         "staticAuthorityReconciledProviders": authority_changed,
         "domainSubstitutionReconciledProviders": changed_domains,
         "minimizer": minimizer_report,
