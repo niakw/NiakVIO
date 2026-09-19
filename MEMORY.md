@@ -2273,3 +2273,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Brain queue emitted by the ledger contains 26 providers (the 16 NO PROOF plus 10 broken-class providers); FULL/PARTIAL providers are excluded from the repair census.
 - Anime-Sama publication fixed-point was independently repaired before this census: published bundle is now `providers/anime-sama--nuvio--9d49dc4a1ac63db2.js`, **0 physical line breaks**, and `provider_v3_minimizer_published_test.py` passed for all 44 active published bundles.
 - PR #188 is **not yet merge-ready** despite the successful scoped census: current remaining red checks are Verify & Publish (failure occurs after minimizer fixed-point passed) and Provider Non-Regression, whose candidate gate currently flags **movieshunt** and **voiranime-homes**. These must be diagnosed/corrected or explicitly requalified before merge.
+
+
+### 2026-09-19 — Census Markdown evidence persisted on PR #188
+
+- Exact `PROVIDER_CENSUS_STATUS.md` bytes from successful scoped census run **35447448840** were recovered from its GitHub Actions artifact and committed to PR **#188** at **8e3ee87a83bb2b13a871d02d5b51d7ceaa21c47d**.
+- The generated ledger now visibly reports **20 FULL OK / 16 NO PROOF / 10 PROVIDER JS FULLY BROKEN** across 46 providers, with colors, status semantics, retained proof labels, search progress, dominant issue, and next action.
+- This Markdown is on the PR branch, not yet on `main`, because #188 is still blocked by two unrelated gates. Once #188 merges, the exact generated Markdown will land on `main`; main must not be manually overwritten by the old renderer before the code migration.
