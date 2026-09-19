@@ -271,9 +271,11 @@ def main() -> int:
                     if explicit:
                         values = explicit
                         source = "5.21.0-fixture-semanticTypes"
-                    elif legacy:
-                        values = legacy
-                        source = "5.21.0-fixture-types"
+                    elif legacy and not values:
+                        # Legacy fixture `types` described the exercised/invocation
+                        # surface, not a canonical semantic declaration. Keep it
+                        # diagnostic-only: it must never invent a semantic floor.
+                        source = "5.21.0-fixture-types-unproven-transport-only"
             values, alias_reclassified = normalize_historical_semantic_types(
                 values,
                 current_semantic=current_types,
