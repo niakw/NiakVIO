@@ -635,7 +635,7 @@
         "tv"
       ],
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/search?q={query}"
       ],
       "core_options": {
         "desktop_runtime_compat": {
@@ -836,19 +836,6 @@
           }
         ]
       },
-      "candidate_api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
-      },
       "route_data_state": "repair",
       "repair_disposition": {
         "schemaVersion": 1,
@@ -889,19 +876,6 @@
         },
         "evidenceDestructive": false
       },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
-      },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
         "effective_coverage_ratio": 1,
@@ -937,7 +911,26 @@
         "scripts/provider_patches/flemmix_runtime_v1.py": {
           "base": "https://flemmix.me"
         }
-      }
+      },
+      "search_request_plan": [
+        {
+          "base": "https://flemmix.me",
+          "route": "/search?q={query}",
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "Accept": "application/json,text/html,*/*",
+              "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.7"
+            }
+          },
+          "proofModelVersion": 5,
+          "sourceRole": "catalog-search",
+          "semanticTypes": [
+            "movie",
+            "tv"
+          ]
+        }
+      ]
     },
     "uhdmovies": {
       "notes": [
@@ -8842,9 +8835,7 @@
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json"
       ],
-      "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
-      ],
+      "learned_routes": [],
       "route_proof_version": 5,
       "route_proof": {
         "version": 5,
@@ -8950,19 +8941,6 @@
           }
         ]
       },
-      "candidate_api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
-      },
       "route_data_state": "repair",
       "repair_disposition": {
         "schemaVersion": 1,
@@ -8997,20 +8975,6 @@
           ]
         },
         "evidenceDestructive": false
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        },
-        "referer": "https://ipv4.vostfree.ws"
       },
       "provider_lego_scripts": [
         "scripts/provider_patches/vostfree_dle_uqload_runtime_v1.py"
@@ -9052,6 +9016,34 @@
       ],
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+      ],
+      "search_request_plan": [
+        {
+          "base": "https://ipv4.vostfree.ws",
+          "route": "/index.php",
+          "requestSpec": {
+            "method": "POST",
+            "bodyKind": "form",
+            "body": {
+              "do": "search",
+              "subaction": "search",
+              "search_start": "0",
+              "full_search": "0",
+              "result_from": "1",
+              "story": "{query}"
+            },
+            "headers": {
+              "Content-Type": "application/x-www-form-urlencoded",
+              "Accept": "text/html,application/xhtml+xml,*/*",
+              "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.7"
+            }
+          },
+          "proofModelVersion": 5,
+          "sourceRole": "catalog-search",
+          "semanticTypes": [
+            "anime"
+          ]
+        }
       ]
     },
     "wookafr": {
