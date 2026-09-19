@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import json
 ROOT=Path(__file__).resolve().parents[1]
+hubs=json.loads((ROOT/"provider-hubs.json").read_text(encoding="utf-8"))["providers"]["animesalt"]
+overrides=json.loads((ROOT/"provider-overrides.json").read_text(encoding="utf-8"))["provider_patches"]["animesalt"]
+assert hubs["direct"]=="https://animesalt.cx/"
+assert hubs["direct_authority"]=="explicit_current"
+assert "animesalt.cx" in hubs["allowed_terminal_hosts"]
+assert "animesalt.link" in hubs.get("blocked_hosts",[])
+assert overrides["official_site"]=="https://animesalt.cx"
 src=(ROOT/"scripts/provider_patches/animesalt_runtime_v1.py").read_text(encoding="utf-8")
 assert "NIAKVIO_ANIMESALT_RUNTIME_V1" in src
 assert 'function runtimeBase()' in src
