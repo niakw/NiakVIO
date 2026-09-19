@@ -2485,3 +2485,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The diff was nine accumulated blank lines immediately before `NUVIO_GLOBAL_CORE_START_BOUNDARY_V1`: each stripped managed Core rectangle could leave a separator newline behind, then Core reconstruction inserted the boundary again.
 - `_strip_generated_core_tail()` now canonicalizes the stripped v3 gap to exactly one newline between the retained Provider bytes and `END PROVIDER`. This makes Core composition idempotent without relying on minification as a cleanup step.
 - This fix must be validated together with the final-stage-only minimizer change by a fresh Workflow Gate, AllAnime materialization, full census and Provider Non-Regression run before the previously inflated FULLY BROKEN statuses are trusted.
+
+### 2026-09-19 — AllAnime materialization blocker cleared
+
+- Provider Non-Regression on commit **e91c4f71c8988dae56019735a8418ecbe0eb274f** passed static anti-regression contracts, the exact four-version ledger, and crucially **Materialize exact current provider candidate bytes** across the complete active provider set. The previous hard stop at AllAnime index 37/44 is gone.
+- This validates the combined generic fixes: no hidden minimization in `apply_provider_overrides.py`, and canonical one-newline restoration when stripping/rebuilding the Core boundary. The AllAnime provider Lego did not need to be weakened or disabled.
+- The same run is now executing the real rematerialized current-provider census. Until that network stage completes, historical FULLY BROKEN inflation caused by the former materialization abort must not be treated as current provider verdicts.
