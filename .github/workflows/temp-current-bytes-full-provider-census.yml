@@ -11,6 +11,8 @@ on:
       - 'scripts/provider_base_store.py'
       - 'scripts/materialize_provider_v3_all.py'
       - 'tests/**'
+      - 'scripts/render_provider_census_status.py'
+      - 'PROVIDER_CENSUS_STATUS.md'
   pull_request:
     branches: [main]
     paths:
@@ -70,6 +72,7 @@ jobs:
           python tests/provider_published_capability_projection_test.py
           node tests/provider_hindmoviez_identity_contract_test.cjs
           python tests/provider_runtime_dispatch_diagnostics_test.py
+          python tests/provider_census_status_markdown_test.py
 
       - name: Project provider-local current domain metadata
         run: |
@@ -98,6 +101,7 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/audit_provider_quick_yield.py
+          python scripts/render_provider_census_status.py provider-v3-quick-yield.json --output PROVIDER_CENSUS_STATUS.md --run-id "$GITHUB_RUN_ID" --sha "$GITHUB_SHA"
           mkdir -p automation
           cp provider-v3-quick-yield.json automation/current-bytes-full-provider-census.json
           python - <<'PY'
@@ -137,6 +141,7 @@ jobs:
           path: |
             automation/current-bytes-full-provider-census.json
             automation/current-bytes-full-provider-census-summary.json
+            PROVIDER_CENSUS_STATUS.md
           retention-days: 8
           if-no-files-found: warn
 
@@ -154,6 +159,7 @@ jobs:
           run_id="${GITHUB_RUN_ID}"
           cp automation/current-bytes-full-provider-census-summary.json "/tmp/census-summary-${run_id}.json"
           cp automation/current-bytes-full-provider-census.json "/tmp/census-full-${run_id}.json"
+          cp PROVIDER_CENSUS_STATUS.md "/tmp/provider-census-status-${run_id}.md"
           verified="$(python - <<'PY'
           import json
           from pathlib import Path
@@ -171,9 +177,10 @@ jobs:
           mkdir -p automation
           cp "/tmp/census-summary-${run_id}.json" "automation/current-bytes-full-provider-census-${run_id}-summary.json"
           cp "/tmp/census-full-${run_id}.json" "automation/current-bytes-full-provider-census-${run_id}.json"
+          cp "/tmp/provider-census-status-${run_id}.md" PROVIDER_CENSUS_STATUS.md
           cp "/tmp/census-summary-${run_id}.json" automation/current-bytes-full-provider-census-latest-summary.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add             "automation/current-bytes-full-provider-census-${run_id}-summary.json"             "automation/current-bytes-full-provider-census-${run_id}.json"             automation/current-bytes-full-provider-census-latest-summary.json
+          git add "automation/current-bytes-full-provider-census-${run_id}-summary.json" "automation/current-bytes-full-provider-census-${run_id}.json" automation/current-bytes-full-provider-census-latest-summary.json PROVIDER_CENSUS_STATUS.md
           git commit -m "ci(census): persist current bytes ${verified} from ${GITHUB_SHA::12}"
           git push origin HEAD:main
