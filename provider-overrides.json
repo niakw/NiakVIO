@@ -605,13 +605,14 @@
       "notes": [
         "Provider-local current authority from user browser evidence: hub ww1.wiflix-adresses.fun explicitly advertised flemmix.cloud as active domain on 2026-09-19.",
         "Current observed catalogue route is DLE GET /index.php?do=search&subaction=search&search_start=0&full_search=0&story={query}; /search?q= on flemmix.me was a false/stale reconstruction.",
-        "Domain Refresh still owns future rotations; this correction is Flemmix-only and must not generalize to other providers."
+        "Domain Refresh still owns future rotations; this correction is Flemmix-only and must not generalize to other providers.",
+        "2026-09-20 current upstream Flemmix source and fresh public catalogue both expose flemmix.me with /search?q=; GitHub census observed Cloudflare challenge on flemmix.cloud. Runtime moved to the current .me catalogue contract; live media proof remains required."
       ],
       "official_hub": "https://ww1.wiflix-adresses.fun/",
-      "official_site": "https://flemmix.cloud",
+      "official_site": "https://flemmix.me",
       "manifest_overrides": {
         "supportsExternalPlayer": true,
-        "logo": "https://flemmix.cloud/favicon.ico",
+        "logo": "https://flemmix.me/favicon.ico",
         "enabled": true
       },
       "published_types": [
@@ -619,7 +620,7 @@
         "tv"
       ],
       "learned_routes": [
-        "/index.php?do=search&subaction=search&search_start=0&full_search=0&story={query}"
+        "/search?q={query}"
       ],
       "core_options": {
         "desktop_runtime_compat": {
@@ -634,64 +635,64 @@
         }
       },
       "domain_substitutions": {
-        "flemmix.casa": "flemmix.cloud",
-        "flemmix.gold": "flemmix.cloud",
-        "flemmix.voto": "flemmix.cloud",
-        "flemmix.garden": "flemmix.cloud",
-        "wiflix.name": "flemmix.cloud",
-        "wiflix-hd.vip": "flemmix.cloud",
-        "ww1.wiflix-adresses.fun": "flemmix.cloud",
-        "flemmix.menn": "flemmix.cloud",
-        "ww547.wiflix-hd.vip": "flemmix.cloud",
-        "flemmix.wales": "flemmix.cloud",
-        "flemmix.vip": "flemmix.cloud",
-        "flemmix.prof": "flemmix.cloud",
-        "wiflix.re": "flemmix.cloud",
-        "flemmix.cafe": "flemmix.cloud",
-        "flemmix.men": "flemmix.cloud",
-        "flemmix.kim": "flemmix.cloud",
-        "flemmix.party": "flemmix.cloud",
-        "flemmix.me": "flemmix.cloud"
+        "flemmix.casa": "flemmix.me",
+        "flemmix.gold": "flemmix.me",
+        "flemmix.voto": "flemmix.me",
+        "flemmix.garden": "flemmix.me",
+        "wiflix.name": "flemmix.me",
+        "wiflix-hd.vip": "flemmix.me",
+        "ww1.wiflix-adresses.fun": "flemmix.me",
+        "flemmix.menn": "flemmix.me",
+        "ww547.wiflix-hd.vip": "flemmix.me",
+        "flemmix.wales": "flemmix.me",
+        "flemmix.vip": "flemmix.me",
+        "flemmix.prof": "flemmix.me",
+        "wiflix.re": "flemmix.me",
+        "flemmix.cafe": "flemmix.me",
+        "flemmix.men": "flemmix.me",
+        "flemmix.kim": "flemmix.me",
+        "flemmix.party": "flemmix.me",
+        "flemmix.cloud": "flemmix.me"
       },
       "replacements": {
-        "flemmix.casa": "flemmix.cloud",
-        "flemmix.garden": "flemmix.cloud",
-        "flemmix.gold": "flemmix.cloud",
-        "flemmix.menn": "flemmix.cloud",
-        "flemmix.voto": "flemmix.cloud",
-        "wiflix-hd.vip": "flemmix.cloud",
-        "wiflix.name": "flemmix.cloud",
-        "ww1.wiflix-adresses.fun": "flemmix.cloud",
-        "ww547.wiflix-hd.vip": "flemmix.cloud",
-        "flemmix.men": "flemmix.cloud",
-        "flemmix.kim": "flemmix.cloud",
-        "flemmix.wales": "flemmix.cloud",
-        "flemmix.vip": "flemmix.cloud",
-        "flemmix.prof": "flemmix.cloud",
-        "wiflix.re": "flemmix.cloud",
-        "flemmix.cafe": "flemmix.cloud",
-        "flemmix.party": "flemmix.cloud",
-        "flemmix.me": "flemmix.cloud"
+        "flemmix.casa": "flemmix.me",
+        "flemmix.garden": "flemmix.me",
+        "flemmix.gold": "flemmix.me",
+        "flemmix.menn": "flemmix.me",
+        "flemmix.voto": "flemmix.me",
+        "wiflix-hd.vip": "flemmix.me",
+        "wiflix.name": "flemmix.me",
+        "ww1.wiflix-adresses.fun": "flemmix.me",
+        "ww547.wiflix-hd.vip": "flemmix.me",
+        "flemmix.men": "flemmix.me",
+        "flemmix.kim": "flemmix.me",
+        "flemmix.wales": "flemmix.me",
+        "flemmix.vip": "flemmix.me",
+        "flemmix.prof": "flemmix.me",
+        "wiflix.re": "flemmix.me",
+        "flemmix.cafe": "flemmix.me",
+        "flemmix.party": "flemmix.me",
+        "flemmix.cloud": "flemmix.me"
       },
       "runtime_domain_replacements": {
-        "flemmix.casa": "flemmix.cloud",
-        "flemmix.garden": "flemmix.cloud",
-        "flemmix.gold": "flemmix.cloud",
-        "flemmix.menn": "flemmix.cloud",
-        "flemmix.voto": "flemmix.cloud",
-        "wiflix-hd.vip": "flemmix.cloud",
-        "wiflix.name": "flemmix.cloud",
-        "ww1.wiflix-adresses.fun": "flemmix.cloud",
-        "ww547.wiflix-hd.vip": "flemmix.cloud",
-        "flemmix.men": "flemmix.cloud",
-        "flemmix.kim": "flemmix.cloud",
-        "flemmix.wales": "flemmix.cloud",
-        "flemmix.vip": "flemmix.cloud",
-        "flemmix.prof": "flemmix.cloud",
-        "wiflix.re": "flemmix.cloud",
-        "flemmix.cafe": "flemmix.cloud",
-        "flemmix.party": "flemmix.cloud",
-        "flemmix.me": "flemmix.cloud"
+        "flemmix.casa": "flemmix.me",
+        "flemmix.garden": "flemmix.me",
+        "flemmix.gold": "flemmix.me",
+        "flemmix.menn": "flemmix.me",
+        "flemmix.voto": "flemmix.me",
+        "wiflix-hd.vip": "flemmix.me",
+        "wiflix.name": "flemmix.me",
+        "ww1.wiflix-adresses.fun": "flemmix.me",
+        "ww547.wiflix-hd.vip": "flemmix.me",
+        "flemmix.men": "flemmix.me",
+        "flemmix.kim": "flemmix.me",
+        "flemmix.wales": "flemmix.me",
+        "flemmix.vip": "flemmix.me",
+        "flemmix.prof": "flemmix.me",
+        "wiflix.re": "flemmix.me",
+        "flemmix.cafe": "flemmix.me",
+        "flemmix.party": "flemmix.me",
+        "flemmix.cloud": "flemmix.me"
       },
       "candidate_learned_routes": [
         "/index.php?do=search&subaction=search&story={query}",
@@ -893,13 +894,13 @@
       ],
       "provider_lego_options": {
         "scripts/provider_patches/flemmix_runtime_v1.py": {
-          "base": "https://flemmix.cloud"
+          "base": "https://flemmix.me"
         }
       },
       "search_request_plan": [
         {
-          "base": "https://flemmix.cloud",
-          "route": "/index.php?do=search&subaction=search&search_start=0&full_search=0&story={query}",
+          "base": "https://flemmix.me",
+          "route": "/search?q={query}",
           "requestSpec": {
             "method": "GET",
             "headers": {

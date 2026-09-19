@@ -2625,3 +2625,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Le test census `CANDIDATE OK` avait aussi une assertion de wording obsolète; elle est alignée sur la sémantique actuelle ("current verified playable lane").
 
 - **Census trigger coverage alignée** : le workflow Current Bytes exécutait les contrats census/Core mais son filtre `paths` ne surveillait pas plusieurs de ces autorités. Il surveille désormais `scripts/apply_provider_overrides.py`, les tests census state/identity/history et `global_playback_integrity_policy_test.py`; une modification de ces contrats déclenche donc réellement un nouveau census au lieu de laisser le Markdown stale.
+
+## 2026-09-20 — Flemmix WAF: migration runtime vers flemmix.me
+
+- Le census GitHub observait un vrai challenge Cloudflare sur `flemmix.cloud`.
+- Recroisement : le source upstream Gowaru courant expose `BASE_URL=https://flemmix.me` et la page publique `flemmix.me` sert actuellement les catalogues films/séries. Le Lego NiakVIO était incohérent : son parser était déjà celui du nouveau site (`film-en-streaming`, `serie-en-streaming`, server tabs) mais sa recherche restait l'ancien DLE `/index.php?...story=` sur `.cloud`.
+- Correction provider-local : autorité/runtime `flemmix.me`, recherche `/search?q={query}`, substitutions anciennes→`.me`, hub actualisé. `.cloud` reste une ancienne/fallback evidence, pas une preuve de panne JS.
+- Un test Node synthétique couvre search → détail film → server tab → media HLS. Le provider ne sera promu vert qu'après preuve live du census.
