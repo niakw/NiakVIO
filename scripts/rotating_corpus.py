@@ -119,14 +119,60 @@ def regression_fixtures() -> list[dict[str, Any]]:
     return rows
 
 
+def health_fixtures() -> list[dict[str, Any]]:
+    """Return the third durable fixture source used by provider proof search.
+
+    health-config predates the rotating corpus and many rows have no slug. Give
+    them a deterministic identity so they can participate in retained proof and
+    miss history without mutating the source file.
+    """
+    data = _load(HEALTH_CORPUS)
+    fixtures = data.get("fixtures") if isinstance(data.get("fixtures"), dict) else {}
+    rows: list[dict[str, Any]] = []
+    for lane in LANES:
+        for raw in fixtures.get(lane) or []:
+            if not isinstance(raw, dict):
+                continue
+            row = dict(raw)
+            if not str(row.get("slug") or "").strip():
+                tmdb = str(row.get("tmdbId") or "").strip()
+                season = int(row.get("season") or 0)
+                episode = int(row.get("episode") or 0)
+                suffix = f"-s{season}e{episode}" if season or episode else ""
+                row["slug"] = f"health-{lane}-{tmdb}{suffix}"
+            normalized = _normalize_row(row, lane)
+            if normalized:
+                rows.append(normalized)
+    return rows
+
+
 def all_fixtures() -> list[dict[str, Any]]:
     # Global fixtures win duplicate slugs so exact lookup used by native Labs sees
     # the same recent-row metadata as the adaptive pool. Regression-only fixtures
     # remain available for explicit targeted diagnostics.
-    merged: dict[str, dict[str, Any]] = {row["slug"]: row for row in regression_fixtures()}
+    merged: dict[str, dict[str, Any]] = {row["slug"]: row for row in health_fixtures()}
+    for row in regression_fixtures():
+        merged[row["slug"]] = row
     for row in global_fixtures():
         merged[row["slug"]] = row
     return list(merged.values())
+
+
+def provider_census_candidates(
+    lane: str,
+    *,
+    seed: str | None = None,
+    provider: str = "",
+    exclude: Iterable[str] = (),
+) -> list[dict[str, Any]]:
+    """Rotate across all three durable fixture sources for census proof search."""
+    value = str(lane).strip().casefold()
+    if value not in LANES:
+        raise ValueError(f"unknown lane: {lane}")
+    resolved_seed = str(seed if seed is not None else default_seed())
+    excluded = {str(item).strip() for item in exclude if str(item).strip()}
+    rows = [row for row in all_fixtures() if row["lane"] == value and row["slug"] not in excluded]
+    return sorted(rows, key=lambda row: (_rank(resolved_seed, value, provider, row["slug"]), row["slug"]))
 
 
 def fixtures_by_lane(lane: str, *, global_only: bool = True) -> list[dict[str, Any]]:
