@@ -24,6 +24,8 @@ for needle in (
     '-episode-"+episodes[ei]+"-"+modes[mi].suffix',
     "function fetchSitePage(page)",
     "function siteCandidates(html,page)",
+    'typeof _extractUrls==="function"',
+    'typeof _spv241ExplicitPlayerPayloadUrls==="function"',
     "rows=await _crawlDirectMedia(candidates,doc.url,3)",
     "rows=await _crawlDirectMedia([doc.url],doc.url,3)",
     'provider:"allanime",resolve:resolve',
