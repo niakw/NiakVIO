@@ -1706,13 +1706,13 @@
     "4khdhub": {
       "capability": "html_scraper",
       "notes": [
-        "4KHDHub runtime domain discovery is materialized from NiakVIO's persisted terminal; upstream repository registries are maintenance-only and never fetched during playback.",
-        "Reviewed current 4KHDHub authority is 4khdhub.one; HDHub4u is a separate catalogue and must not replace the 4KHDHub terminal.",
-        "GET /?s={query} remains a candidate until the strict N-to-N live probe executes it against 4khdhub.one.",
-        "The canonical 4khdhub.one host must never be substituted to hdhub4u.* by historical override data."
+        "4KHDHub and HDHub4u are separate catalogues; current provider-local runtime authority is https://4khdhub.one and must never be rewritten to hdhub4u.*.",
+        "2026-09-19 runtime reconstruction follows current source semantics: local search -> movie/series detail -> download/episode item -> HubCloud/HubDrive -> direct workers/R2 media.",
+        "TMDB metadata remains Core-owned; provider upstream JavaScript and embedded upstream credentials are not executed.",
+        "Detail/episode URLs are discovered from current provider HTML and are not persisted as guessed route authority."
       ],
-      "official_hub": "https://hdhub4u.bi",
-      "official_site": "https://hdhub4u.ms",
+      "official_hub": "https://4khdhub.one/",
+      "official_site": "https://4khdhub.one",
       "manifest_overrides": {
         "enabled": true
       },
@@ -1725,14 +1725,10 @@
         }
       },
       "domain_substitutions": {
-        "4khdhub.click": "hdhub4u.ms",
-        "hdhub4u.bi": "hdhub4u.ms"
+        "4khdhub.click": "4khdhub.one"
       },
       "learned_routes": [
-        "/?s={query}",
-        "/{slug}-movie-7978/",
-        "/{slug}-series-1385/",
-        "/el-camino-a-{slug}-movie-movie-1175/"
+        "/?s={query}"
       ],
       "candidate_learned_routes": [
         "/?s={query}",
@@ -1897,7 +1893,7 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {
-        "hdhub4u.bi": "hdhub4u.ms"
+        "4khdhub.click": "4khdhub.one"
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -1926,6 +1922,19 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
+      },
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/4khdhub_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/4khdhub_runtime_v1.py": {
+          "base": "https://4khdhub.one",
+          "maxStreams": 8
+        }
       }
     },
     "persianstremio": {
