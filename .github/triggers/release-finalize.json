@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "requested_at": "2026-09-19T16:22:00Z",
-  "accepted_main_sha": "990470b1dfed9bde54c59ad59655fe2a38172424",
+  "requested_at": "2026-09-19T16:24:00Z",
+  "accepted_main_sha": "de742a45a18ed304da095f57af0f71815f8e50c2",
   "target_release": "auto",
-  "reason": "Retry accepted Provider v3 finalization after fixing Hub46-before-prune ordering and restoring verified full-tree integrity. Reapply durable provider patches, refresh Hub46 before prune, regenerate pinned native Hub46/hashes, validate integrity, and publish atomically only if main stays on this trigger."
+  "reason": "Re-emit the accepted Provider v3 finalization trigger after the release-finalize workflow was restored to a complete repository tree. Apply the Hub46-before-prune ordering fix, reapply durable provider patches, rebuild pinned projections/hashes, validate integrity, and publish atomically only if main stays on this trigger."
 }
