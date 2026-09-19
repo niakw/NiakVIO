@@ -75,6 +75,7 @@ jobs:
       - name: Validate repair contracts
         run: |
           set -euo pipefail
+          python tests/provider_domain_metadata_reconcile_test.py
           python tests/provider_terminal_chain_repairs_test.py
           python tests/voiranime_rip_runtime_contract_test.py
           python tests/voiranime_episode_selection_contract_test.py
@@ -106,12 +107,13 @@ jobs:
           import sys
           from collections import defaultdict
           from pathlib import Path
+          from urllib.parse import urlparse
 
           ROOT=Path.cwd()
           sys.path.insert(0,str(ROOT/"scripts"))
           import audit_provider_quick_yield as audit
 
-          targets={"animesama-co","neko-sama","voiranime","voiranime-rip","kurage","flemmix","anime-ultime","coflix","animesultra","sekai","moviesmod"}
+          targets={"animesama-co","neko-sama","voiranime","voiranime-rip","kurage","flemmix","anime-ultime","coflix","animesultra","sekai","moviesmod","movieshunt"}
           tasks,_=audit.build_tasks()
           selected=[task for task in tasks if task["provider_id"] in targets]
           observed={task["provider_id"] for task in selected}
@@ -138,12 +140,39 @@ jobs:
                   for row in lanes
                   if int(row.get("playable") or 0)>0 and int(row.get("contradictions") or 0)==0
               })
+              network={}
+              for row in lanes:
+                  lane=str(row.get("semantic_type"))
+                  compact=[]
+                  seen=set()
+                  for fetch in row.get("debug_fetches") or []:
+                      raw=str(fetch.get("response_url") or fetch.get("url") or "")
+                      try:
+                          parsed=urlparse(raw)
+                      except Exception:
+                          continue
+                      host=(parsed.hostname or "").casefold()
+                      path=parsed.path or "/"
+                      key=(host,path,str(fetch.get("method") or "GET"),fetch.get("status"))
+                      if not host or key in seen:
+                          continue
+                      seen.add(key)
+                      compact.append({
+                          "host":host,
+                          "path":path[:180],
+                          "method":str(fetch.get("method") or "GET")[:12],
+                          "status":fetch.get("status"),
+                      })
+                      if len(compact)>=16:
+                          break
+                  network[lane]=compact
               summary[provider]={
                   "verifiedLanes":verified,
                   "playableLanes":playable,
                   "statuses":{str(row.get("semantic_type")):row.get("status") for row in lanes},
                   "debugStages":{str(row.get("semantic_type")):row.get("debug_stage") for row in lanes},
                   "sampleTitles":{str(row.get("semantic_type")):row.get("sample_titles") for row in lanes},
+                  "network":network,
                   "contradictions":sum(int(row.get("contradictions") or 0) for row in lanes),
               }
           payload={
