@@ -592,7 +592,7 @@ def main() -> int:
         "resolved_scope": resolved_scope,
         "selected_providers": sorted(provider_filter) if provider_filter is not None else None,
         "environment": "node-adaptive-provider-targeted-first-real-stream-census-with-tmdb-runtime-context",
-        "fixture_selection_policy": "provider-targeted-first-then-representative-then-rotated",
+        "fixture_selection_policy": "retained-proof-first-then-provider-targeted-then-representative-then-three-corpus-rotated",
         "provider_count": provider_count,
         "task_count": len(tasks),
         "probe_count": probe_count,
@@ -615,7 +615,7 @@ def main() -> int:
         "rows": sorted(rows, key=lambda row: (row["provider_id"], row["semantic_type"])),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+    args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         "FIELD_PROVIDER_QUICK_YIELD "
         f"scope={resolved_scope} providers={provider_count} tasks={len(tasks)} probes={probe_count} rotated_tasks={rotated_task_count} raw={len(raw_providers)} "
