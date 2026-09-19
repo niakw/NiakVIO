@@ -82,18 +82,34 @@ def _adaptive_fixtures(
     media_type: str,
     initial: dict[str, Any],
     *,
+    preferred: list[dict[str, Any]] | None = None,
     anime_movie_only: bool = False,
 ) -> list[dict[str, Any]]:
-    rows = [dict(initial)]
-    if anime_movie_only or MAX_SAMPLES <= 1:
-        return rows
-    seen = {_fixture_identity(initial)}
-    for candidate in rotated_candidates(media_type, seed=default_seed(), provider=provider_id):
+    """Build a bounded provider-aware fixture queue.
+
+    Explicit corpus ownership is stronger catalogue evidence than the global
+    representative. Historical strict-46 proof used provider-targeted fixtures
+    first; quick-yield must preserve that ordering or it can manufacture false
+    ZERO states from an unrelated representative title.
+    """
+    rows: list[dict[str, Any]] = []
+    seen: set[tuple[str, int, int, str]] = set()
+
+    def add(candidate: dict[str, Any]) -> None:
         identity = _fixture_identity(candidate)
-        if identity in seen:
-            continue
+        if identity in seen or len(rows) >= MAX_SAMPLES:
+            return
         seen.add(identity)
         rows.append(dict(candidate))
+
+    for candidate in preferred or []:
+        add(candidate)
+    add(initial)
+
+    if anime_movie_only or MAX_SAMPLES <= len(rows):
+        return rows
+    for candidate in rotated_candidates(media_type, seed=default_seed(), provider=provider_id):
+        add(candidate)
         if len(rows) >= MAX_SAMPLES:
             break
     return rows
@@ -146,6 +162,20 @@ def build_tasks() -> tuple[list[dict[str, Any]], int]:
         for media_type in semantic_types(row):
             anime_movie_only = media_type == "movie" and provider_id in anime_movie_providers
             fixture = anime_movie_fixture if anime_movie_only else fixtures[media_type]
+            preferred: list[dict[str, Any]] = []
+            if not anime_movie_only:
+                for record in fixture_records.values():
+                    candidate = record.get("fixture")
+                    if not isinstance(candidate, dict):
+                        continue
+                    candidate_type = str(candidate.get("mediaType") or candidate.get("category") or "").strip().casefold()
+                    owners = {
+                        str(value or "").strip().casefold()
+                        for value in (record.get("providers") or [])
+                        if str(value or "").strip()
+                    }
+                    if candidate_type == media_type and provider_id in owners:
+                        preferred.append(candidate)
             tasks.append({
                 "provider_id": provider_id,
                 "provider_name": str(row.get("name") or row.get("id") or provider_id),
@@ -156,6 +186,7 @@ def build_tasks() -> tuple[list[dict[str, Any]], int]:
                     provider_id,
                     media_type,
                     fixture,
+                    preferred=preferred,
                     anime_movie_only=anime_movie_only,
                 ),
             })
@@ -327,11 +358,13 @@ def run(task: dict[str, Any]) -> dict[str, Any]:
         row = run_single(current)
         samples.append(_compact_sample(row))
         final = row
-        clean_catalog_miss = (
-            row.get("status") == "no_streams"
-            and row.get("debug_stage") == "provider_network_zero_result"
-        )
-        if not clean_catalog_miss:
+        # A single title-level no-stream, HTTP error or provider exception is
+        # not enough to classify the whole declared lane. Historical strict
+        # proof advanced to the next provider fixture; keep the same bounded
+        # behaviour here. Stop only once output (good or bad) is observed, or
+        # once the bounded fixture queue is exhausted.
+        keep_sampling = row.get("status") in {"no_streams", "timeout"}
+        if not keep_sampling:
             break
     if final is None:
         raise RuntimeError(f"{task.get('provider_id')}: empty adaptive fixture set")
@@ -393,7 +426,8 @@ def main() -> int:
     rotated_task_count = sum(1 for row in rows if row.get("adaptive_rotated") is True)
     report = {
         "schema_version": 5,
-        "environment": "node-adaptive-real-stream-census-clean-zero-rotation-with-tmdb-runtime-context",
+        "environment": "node-adaptive-provider-targeted-first-real-stream-census-with-tmdb-runtime-context",
+        "fixture_selection_policy": "provider-targeted-first-then-representative-then-rotated",
         "provider_count": provider_count,
         "task_count": len(tasks),
         "probe_count": probe_count,
