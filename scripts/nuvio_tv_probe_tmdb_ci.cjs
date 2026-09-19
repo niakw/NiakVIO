@@ -218,6 +218,17 @@ process.stdout.write = function debugWrite(chunk, encoding, callback) {
           tmdb_context_prehydrated: false,
           provider_value_trace_v18: providerValueTrace(),
           provider_value_trace_history_v21: providerValueTraceHistory(),
+          provider_runtime_dispatch_error_v1: (() => {
+            try {
+              const row = globalThis.__niakvioProviderRuntimeDispatchErrorV1;
+              if (!row || typeof row !== 'object') return null;
+              return {
+                provider: String(row.provider || '').slice(0, 80),
+                name: String(row.name || 'Error').slice(0, 80),
+                message: String(row.message || '').slice(0, 400),
+              };
+            } catch { return null; }
+          })(),
           fetch_count: trace.length,
           provider_fetch_count: trace.filter((row) => !/api\.themoviedb\.org/i.test(row.url)).length,
           fetches: trace.slice(0, 40),
