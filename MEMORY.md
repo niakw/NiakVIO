@@ -2526,3 +2526,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Added `scripts/provider_patches/animetsu_runtime_v1.py` and wired it as the sole provider Lego. The runtime uses Core TMDB metadata first, requires Animation + original language ja/zh/ko before the first Animetsu request, performs current JSON search/title-year matching, computes absolute episodes from Core season counts when available, calls the decoded `oppai` routes, and emits the upstream proxy URLs for Core HLS validation. Upstream JS remains unembedded/unexecuted.
 - Added `tests/animetsu_runtime_behavior_test.py`: it asserts the current search/source/proxy chain and proves a live-action TV fixture produces zero provider-network calls after the Core semantic gate.
 - Current state: **patch + contract pushed, real targeted playable validation pending**. Do not promote Animetsu until Actions reproduces a terminal playable stream.
+
+### 2026-09-19 — AniKoto playable source proven but published bytes stale; Animetsu staged
+
+- Current durable census is **23 FULL OK / 1 PARTIAL OK / 7 NO PROOF / 2 PROVIDER JS BROKEN / 13 PROVIDER JS FULLY BROKEN**.
+- AniKotoTV is no longer unresolved: targeted run **35465213543** proved anime playable through current MegaPlay `getSources` + encoded-source fallback to NexaBloom HLS, and the census promoted AniKotoTV to **FULL OK**.
+- CORE Verify & Publish run **35466088948** is red only because committed published AniKotoTV bytes still expose the historical AJAX route family (`/search?keyword`, `/watch`, `/ajax/server...`) while authoritative Provider DATA now expects `/api/v2/tmdb`, `/stream/{identityKind}/...`, and `/stream/getSources`. This is publication drift, not a failed current runtime.
+- Animetsu source DATA is likewise ahead of committed materialization: authoritative Provider DATA now binds `scripts/provider_patches/animetsu_runtime_v1.py` and `https://animetsu.live/v2/api`, while committed `provider-v3-materialization.json` still records only the old CONFIG fix and no provider Lego. Its persisted targeted trace still shows legacy `omg10.com`, so it must not be judged until rematerialized bytes are published.
+- Next action: canonical accepted-release finalization from current main, then rerun CORE/non-regression/census on the published SHA. No status promotion is inferred solely from source DATA.
