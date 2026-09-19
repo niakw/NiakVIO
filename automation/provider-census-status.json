@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35470196488",
-  "triggerSha": "76b148282c5a572956eb678d02a9ef53945979ae",
+  "runId": "35470585183",
+  "triggerSha": "2fd90c33a11d1a07683d4da6084eab5b721e1d58",
   "providers": [
     {
       "provider": "4khdhub",
@@ -286,12 +286,12 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
+        "movie=no_streams/provider_network_http_error",
         "tv=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_zero_result, provider_network_http_error",
+      "dominantIssue": "provider_network_http_error×2",
       "searchProgress": [
-        "movie: 8 this run / 19 retained misses",
+        "movie: 8 this run / 18 retained misses",
         "tv: 8 this run / 18 retained misses"
       ],
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
@@ -354,9 +354,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_http_error"
+        "movie=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "provider_network_exception",
       "searchProgress": [
         "movie: 8 this run / 26 retained misses"
       ],
@@ -397,9 +397,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_exception"
+        "anime=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_exception",
+      "dominantIssue": "provider_network_http_error",
       "searchProgress": [
         "anime: 8 this run / 0 retained misses"
       ],
@@ -432,8 +432,8 @@
     },
     {
       "provider": "yflix",
-      "status": "NO PROOF",
-      "color": "🔵",
+      "status": "PROVIDER NETWORK BLOCKED",
+      "color": "🟤",
       "declaredLanes": [
         "movie",
         "tv"
@@ -441,15 +441,15 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_zero_result"
+        "movie=no_streams/provider_network_exception",
+        "tv=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "provider_network_zero_result×2",
+      "dominantIssue": "provider_network_exception×2",
       "searchProgress": [
         "movie: 1 this run / 43 retained misses",
         "tv: 1 this run / 42 retained misses"
       ],
-      "action": "continue corpus proof search; BRAIN checks",
+      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -1134,9 +1134,9 @@
   ],
   "counts": {
     "FULL OK": 24,
-    "NO PROOF": 7,
+    "NO PROOF": 6,
     "PARTIAL OK": 1,
-    "PROVIDER NETWORK BLOCKED": 14
+    "PROVIDER NETWORK BLOCKED": 15
   },
   "brainQueue": [
     "4khdhub",
