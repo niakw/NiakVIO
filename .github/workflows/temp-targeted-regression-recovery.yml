@@ -220,7 +220,7 @@ jobs:
           PY
 
       - name: Persist targeted verdict
-        if: always()
+        if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         shell: bash
         run: |
           set -euo pipefail
