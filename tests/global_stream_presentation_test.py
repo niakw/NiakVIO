@@ -163,6 +163,17 @@ assert vo["language"] == "VO" and "🌐 VO" in vo["description"] and "🇫🇷" 
 vo_multi = run("module.exports={getStreams:async()=>[{name:'Test',url:'https://x.example/a.m3u8',language:'MULTI'}]};\n", "cineby", "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))")
 assert vo_multi["language"] == "MULTI" and "🌐 MULTI" in vo_multi["description"]
 
+# Detailed language evidence may live in provider/source labels even when the
+# coarse transport language is only VO. Preserve the specific language instead
+# of collapsing Hindi/Tamil/etc. back to generic VO.
+source_language_evidence = run(
+    "module.exports={getStreams:async()=>[{name:'Moviebox',url:'https://x.example/a.mp4',quality:'1080p',language:'VO',sourceName:'Example 1080P Hindi',sourceTitle:'Example 1080P Hindi'}]};\n",
+    "moviebox",
+    "p.getStreams({mediaType:'movie',title:'Film'}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert source_language_evidence["language"] == "Hindi", source_language_evidence
+assert "Hindi" in source_language_evidence["description"], source_language_evidence
+
 # Series/anime identity is title/year/SxxExx; provider-owned layout never survives.
 tv = run("module.exports={getStreams:async()=>[{name:'Purstream',url:'https://x.example/a.m3u8',description:'PRIVATE PROVIDER LAYOUT',language:'VF'}]};\n", "purstream", "p.getStreams({mediaType:'tv',title:'Breaking Bad',year:2008,season:1,episode:1}).then(v=>console.log(JSON.stringify(v[0])))")
 assert tv["description"].splitlines()[0] == "📺 Breaking Bad • 2008 • S01E01"
