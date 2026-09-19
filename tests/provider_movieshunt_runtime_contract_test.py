@@ -38,6 +38,10 @@ assert ov["search_request_plan"][0]["route"] == "/search.html?q={query}"
 # JSON lookup is only a dynamic fallback on the actual host reached by the
 # current /search.html response; it is not promoted as direct-domain authority.
 assert "movieshunt.monster" not in ov["learned_routes"]
+# Current live proof uses hubcloud.ist and needs one more bounded hop
+# (HubCloud -> HuntPlay -> terminal HLS) than the old cx-only path.
+assert r"hubcloud\.[a-z0-9.-]+\/(?:drive|video)\/" in src
+assert "_crawlDirectMedia([url],referer,3)" in src
 js=src.split("WRAPPER = r'''",1)[1].split("'''",1)[0].replace("CONFIG_PLACEHOLDER","{}")
 subprocess.run(["node","-e","new Function(process.argv[1]);",js],check=True)
 
