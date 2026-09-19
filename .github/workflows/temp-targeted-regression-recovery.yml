@@ -13,6 +13,9 @@ on:
       - 'scripts/provider_patches/flemmix_runtime_v1.py'
       - 'scripts/provider_patches/anime_ultime_runtime_v1.py'
       - 'tests/provider_flemmix_anime_ultime_runtime_contract_test.py'
+      - 'scripts/provider_patches/coflix_runtime_v1.py'
+      - 'scripts/provider_patches/animesultra_runtime_v1.py'
+      - 'tests/provider_coflix_animesultra_runtime_contract_test.py'
       - 'provider-overrides.json'
 
 permissions:
@@ -53,6 +56,7 @@ jobs:
           python tests/voiranime_episode_selection_contract_test.py
           python tests/dynamic_provider_scope_contract_test.py
           python tests/provider_flemmix_anime_ultime_runtime_contract_test.py
+          python tests/provider_coflix_animesultra_runtime_contract_test.py
 
       - name: Materialize current provider bytes
         run: |
@@ -81,13 +85,13 @@ jobs:
           sys.path.insert(0,str(ROOT/"scripts"))
           import audit_provider_quick_yield as audit
 
-          targets={"animesama-co","neko-sama","voiranime","voiranime-rip","kurage","flemmix","anime-ultime"}
+          targets={"animesama-co","neko-sama","voiranime","voiranime-rip","kurage","flemmix","anime-ultime","coflix","animesultra"}
           tasks,_=audit.build_tasks()
           selected=[task for task in tasks if task["provider_id"] in targets]
           observed={task["provider_id"] for task in selected}
           assert observed==targets,(sorted(targets-observed),sorted(observed-targets))
           rows=[]
-          with concurrent.futures.ThreadPoolExecutor(max_workers=min(8,len(selected))) as pool:
+          with concurrent.futures.ThreadPoolExecutor(max_workers=min(10,len(selected))) as pool:
               futures=[pool.submit(audit.run,task) for task in selected]
               for future in concurrent.futures.as_completed(futures):
                   rows.append(future.result())
