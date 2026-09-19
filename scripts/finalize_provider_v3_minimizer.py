@@ -152,8 +152,13 @@ def finalize(*, check: bool) -> dict[str, Any]:
         relative = str(entry.get("filename") or "").strip()
         path = _safe_provider_path(relative)
         original = path.read_text(encoding="utf-8")
-        result = minimize_text(original)
-        validate_transform(original, result.text)
+        try:
+            result = minimize_text(original)
+            validate_transform(original, result.text)
+        except Exception as exc:
+            raise ValueError(
+                f"{provider_id}: final minimizer failed for {relative}: {exc}"
+            ) from exc
         minimized = result.text.encode("utf-8")
         assert_hardened(result.text)
         validate_artifact(minimized, provider_id)
