@@ -1,17 +1,58 @@
 {
   "contradictionProviders": [],
   "providers": {
-    "anime-ultime": {
+    "allanime": {
       "contradictions": 0,
       "debugStages": {
-        "anime": "gate_runtime_plan_missing"
+        "anime": "provider_network_zero_result"
       },
       "network": {
         "anime": [
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/tv/76121",
+            "path": "/3/tv/95479",
+            "status": 200
+          },
+          {
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "path": "/",
+            "status": 200
+          },
+          {
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "path": "/az-lists/",
+            "status": 200
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "anime": [
+          "One Piece",
+          "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+          "Hell Teacher: Jigoku Sensei Nube",
+          "Jujutsu Kaisen"
+        ]
+      },
+      "statuses": {
+        "anime": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "anime-ultime": {
+      "contradictions": 0,
+      "debugStages": {
+        "anime": "provider_network_http_error"
+      },
+      "network": {
+        "anime": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/42509",
             "status": 200
           },
           {
@@ -26,9 +67,9 @@
       "sampleTitles": {
         "anime": [
           "Jujutsu Kaisen",
-          "MASHLE: MAGIC AND MUSCLES",
-          "KONOSUBA - God's blessing on this wonderful world!",
-          "DARLING in the FRANXX"
+          "Boruto: Naruto Next Generations",
+          "Sword Art Online",
+          "Steins;Gate"
         ]
       },
       "statuses": {
@@ -39,42 +80,7 @@
     "animesalt": {
       "contradictions": 0,
       "debugStages": {
-        "anime": "provider_network_exception"
-      },
-      "network": {
-        "anime": [
-          {
-            "host": "api.themoviedb.org",
-            "method": "GET",
-            "path": "/3/tv/95479",
-            "status": 200
-          },
-          {
-            "host": "animesalt.link",
-            "method": "GET",
-            "path": "/",
-            "status": 0
-          }
-        ]
-      },
-      "playableLanes": [],
-      "sampleTitles": {
-        "anime": [
-          "Mushoku Tensei: Jobless Reincarnation",
-          "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
-          "Hell Teacher: Jigoku Sensei Nube",
-          "Jujutsu Kaisen"
-        ]
-      },
-      "statuses": {
-        "anime": "no_streams"
-      },
-      "verifiedLanes": []
-    },
-    "animesama-co": {
-      "contradictions": 0,
-      "debugStages": {
-        "anime": "gate_runtime_plan_missing"
+        "anime": "provider_network_http_error"
       },
       "network": {
         "anime": [
@@ -85,10 +91,45 @@
             "status": 200
           },
           {
-            "host": "animes-sama.fr",
+            "host": "animesalt.cx",
+            "method": "GET",
+            "path": "/",
+            "status": 403
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "anime": [
+          "Death Note",
+          "Mushoku Tensei: Jobless Reincarnation",
+          "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+          "Hell Teacher: Jigoku Sensei Nube"
+        ]
+      },
+      "statuses": {
+        "anime": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "animesama-co": {
+      "contradictions": 0,
+      "debugStages": {
+        "anime": "provider_network_zero_result"
+      },
+      "network": {
+        "anime": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/259544",
+            "status": 200
+          },
+          {
+            "host": "animesama.co",
             "method": "POST",
             "path": "/template-php/defaut/fetch.php",
-            "status": 404
+            "status": 200
           }
         ]
       },
@@ -109,7 +150,7 @@
     "animesultra": {
       "contradictions": 0,
       "debugStages": {
-        "anime": "gate_runtime_plan_missing"
+        "anime": "provider_network_exception"
       },
       "network": {
         "anime": [
@@ -165,7 +206,7 @@
           {
             "host": "coflix.wiki",
             "method": "GET",
-            "path": "/film/stranger-things-chroniques-de-1985-saison-2-vostfr/",
+            "path": "/film/south-park-saison-29-vostfr/",
             "status": 200
           },
           {
@@ -183,8 +224,38 @@
           {
             "host": "vidzy.cc",
             "method": "GET",
-            "path": "/embed-s5felrzob5mh.html",
+            "path": "/embed-2nqqjxl06dwd.html",
             "status": 200
+          },
+          {
+            "host": "voe.sx",
+            "method": "GET",
+            "path": "/v/vjoyzbuzyvce",
+            "status": 404
+          },
+          {
+            "host": "voe.sx",
+            "method": "GET",
+            "path": "/e/vjoyzbuzyvce",
+            "status": 200
+          },
+          {
+            "host": "katherineschoolphone.com",
+            "method": "GET",
+            "path": "/e/vjoyzbuzyvce",
+            "status": 200
+          },
+          {
+            "host": "playmogo.com",
+            "method": "GET",
+            "path": "/v/92dq11gox6gv",
+            "status": 403
+          },
+          {
+            "host": "playmogo.com",
+            "method": "GET",
+            "path": "/e/92dq11gox6gv",
+            "status": 403
           },
           {
             "host": "api.themoviedb.org",
@@ -193,15 +264,21 @@
             "status": 200
           },
           {
+            "host": "test-videos.co.uk",
+            "method": "GET",
+            "path": "/vids/bigbuckbunny/mp4/av1/1080/Big_Buck_Bunny_1080_10s_5MB.mp4",
+            "status": 206
+          },
+          {
             "host": "u14.vidzy.cc",
             "method": "GET",
-            "path": "/hls2/05/00062/s5felrzob5mh_n/master.m3u8",
+            "path": "/hls2/06/00062/2nqqjxl06dwd_n/master.m3u8",
             "status": 200
           },
           {
             "host": "u14.vidzy.cc",
             "method": "GET",
-            "path": "/hls2/05/00062/s5felrzob5mh_n/index-v1-a1.m3u8",
+            "path": "/hls2/06/00062/2nqqjxl06dwd_n/index-v1-a1.m3u8",
             "status": 200
           }
         ],
@@ -237,40 +314,16 @@
             "status": 403
           },
           {
-            "host": "ww547.sandratableother.com",
+            "host": "ww19.sandratableother.com",
             "method": "GET",
             "path": "/",
-            "status": 200
+            "status": 429
           },
           {
             "host": "uqload.cx",
             "method": "GET",
             "path": "/embed-v8dv65a48f6x.html",
             "status": 403
-          },
-          {
-            "host": "1.multiup.us",
-            "method": "GET",
-            "path": "/player/embed_player.php",
-            "status": 200
-          },
-          {
-            "host": "ww547.multiup.us",
-            "method": "GET",
-            "path": "/",
-            "status": 200
-          },
-          {
-            "host": "filemoon.sx",
-            "method": "GET",
-            "path": "/v/su5g8zqbs5wr",
-            "status": 200
-          },
-          {
-            "host": "filemoon.sx",
-            "method": "GET",
-            "path": "/e/su5g8zqbs5wr",
-            "status": 200
           },
           {
             "host": "u14.vidzy.cc",
@@ -341,7 +394,7 @@
             "status": 403
           },
           {
-            "host": "ww547.multiup.us",
+            "host": "ww19.multiup.us",
             "method": "GET",
             "path": "/",
             "status": 200
@@ -397,48 +450,36 @@
     "flemmix": {
       "contradictions": 0,
       "debugStages": {
-        "movie": "gate_runtime_plan_missing",
-        "tv": "gate_runtime_plan_missing"
+        "movie": "provider_network_http_error",
+        "tv": "provider_network_http_error"
       },
       "network": {
         "movie": [
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/movie/872585",
+            "path": "/3/movie/315635",
             "status": 200
           },
           {
-            "host": "flemmix.me",
+            "host": "flemmix.cloud",
             "method": "GET",
-            "path": "/search",
+            "path": "/index.php",
             "status": 403
-          },
-          {
-            "host": "flemmix.me",
-            "method": "GET",
-            "path": "/search",
-            "status": 200
           }
         ],
         "tv": [
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/tv/82856",
+            "path": "/3/tv/43348",
             "status": 200
           },
           {
-            "host": "flemmix.me",
+            "host": "flemmix.cloud",
             "method": "GET",
-            "path": "/search",
+            "path": "/index.php",
             "status": 403
-          },
-          {
-            "host": "flemmix.me",
-            "method": "GET",
-            "path": "/search",
-            "status": 200
           }
         ]
       },
@@ -448,13 +489,13 @@
           "Interstellar",
           "Mon ninja et moi 3",
           "The Colony",
-          "Oppenheimer"
+          "Spider-Man: Homecoming"
         ],
         "tv": [
+          "House of the Dragon",
           "Breaking Bad",
           "Revenant",
-          "Riverdale",
-          "The Mandalorian"
+          "Pablo Escobar: The Drug Lord"
         ]
       },
       "statuses": {
@@ -466,20 +507,20 @@
     "kurage": {
       "contradictions": 0,
       "debugStages": {
-        "anime": "provider_network_exception"
+        "anime": "provider_returned_streams"
       },
       "network": {
         "anime": [
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/tv/85937",
+            "path": "/3/tv/95479",
             "status": 200
           },
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/tv/85937/season/1/episode/1",
+            "path": "/3/tv/95479/season/1/episode/1",
             "status": 200
           },
           {
@@ -492,23 +533,36 @@
             "host": "kurage.live",
             "method": "GET",
             "path": "/api/trpc/catalog.anilistInfo,episodes.source,episodes.source",
-            "status": 0
+            "status": 200
+          },
+          {
+            "host": "kurage.live",
+            "method": "GET",
+            "path": "/api/proxy/WERFFkICFh5GAFYGG09bUVJWW1hWHlpTFQhcA1NUF0cKBUpOV1BRC1QJXQMKBgBjBFdMUDN6VwEeTlsABFkbD0AEDkBSUV0MBwNVCgEPBA0",
+            "status": 206
+          },
+          {
+            "host": "kurage.live",
+            "method": "GET",
+            "path": "/api/proxy/WERFFkICFh5GAFIAG09bUVJWW1hWHlpTFQhcA1NUF0cKBUpOV1BRC1QJXQMKWQRCXkcEMChGMhAeTlsABFkbD0AEDkBSUV0MBgFTCwQLBAA",
+            "status": 206
           }
         ]
       },
-      "playableLanes": [],
+      "playableLanes": [
+        "anime"
+      ],
       "sampleTitles": {
         "anime": [
-          "Jujutsu Kaisen",
-          "Solo Leveling",
-          "Gachiakuta",
-          "Demon Slayer: Kimetsu no Yaiba"
+          "Jujutsu Kaisen"
         ]
       },
       "statuses": {
-        "anime": "no_streams"
+        "anime": "playable_verified"
       },
-      "verifiedLanes": []
+      "verifiedLanes": [
+        "anime"
+      ]
     },
     "movieshunt": {
       "contradictions": 0,
@@ -556,19 +610,19 @@
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/movie/533535",
+            "path": "/3/movie/315635",
             "status": 200
           },
           {
             "host": "moviesmod.ai.in",
             "method": "GET",
-            "path": "/search/tt6263850",
+            "path": "/search/Spider-Man%20%3A%20Homecoming",
             "status": 200
           },
           {
             "host": "moviesmod.ai.in",
             "method": "GET",
-            "path": "/download-deadpool-and-wolverine-2024-hindi-english-480p-720p-1080p/",
+            "path": "/download-spider-man-homecoming-2017-hindi-480p-720p-1080p/",
             "status": 200
           }
         ],
@@ -576,13 +630,19 @@
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/tv/87739",
+            "path": "/3/tv/44217",
             "status": 200
           },
           {
             "host": "moviesmod.ai.in",
             "method": "GET",
-            "path": "/search/tt10048342%201",
+            "path": "/search/Vikings%201",
+            "status": 200
+          },
+          {
+            "host": "moviesmod.ai.in",
+            "method": "GET",
+            "path": "/download-vikings-valhalla-season-1-3-hindi-480p-720p-1080p/",
             "status": 200
           }
         ]
@@ -590,16 +650,16 @@
       "playableLanes": [],
       "sampleTitles": {
         "movie": [
-          "Sinners",
           "Interstellar",
-          "Black Panther",
-          "Deadpool & Wolverine"
+          "Sinners",
+          "Dune: Part Two",
+          "Spider-Man: Homecoming"
         ],
         "tv": [
           "Breaking Bad",
-          "The Walking Dead",
-          "Vikings",
-          "The Queen's Gambit"
+          "Squid Game",
+          "The 100",
+          "Vikings"
         ]
       },
       "statuses": {
@@ -652,13 +712,13 @@
             "status": 200
           },
           {
-            "host": "prx-1476-ant.vmpx.online",
+            "host": "prx-1353-ant-23.vmpx.online",
             "method": "GET",
             "path": "/hls2/01/02361/q9xdgdyynd6b_,n,l,.urlset/master.m3u8",
             "status": 200
           },
           {
-            "host": "prx-1476-ant.vmpx.online",
+            "host": "prx-1353-ant-23.vmpx.online",
             "method": "GET",
             "path": "/hls2/01/02361/q9xdgdyynd6b_n/index-v1-a1.m3u8",
             "status": 200
@@ -718,6 +778,119 @@
       },
       "statuses": {
         "anime": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "uhdmovies": {
+      "contradictions": 0,
+      "debugStages": {
+        "movie": "provider_network_zero_result"
+      },
+      "network": {
+        "movie": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/movie/11324",
+            "status": 200
+          },
+          {
+            "host": "uhdmovies.my",
+            "method": "GET",
+            "path": "/search/Shutter+Island",
+            "status": 200
+          },
+          {
+            "host": "uhdmovies.my",
+            "method": "GET",
+            "path": "/download-shutter-island-2010-dual-audio-hindi-english-1080p-10bit-2160p-4k-hevc-bluray-esubs/",
+            "status": 200
+          },
+          {
+            "host": "cloud.unblockedgames.world",
+            "method": "GET",
+            "path": "/",
+            "status": 200
+          },
+          {
+            "host": "cloud.unblockedgames.world",
+            "method": "POST",
+            "path": "/",
+            "status": 200
+          },
+          {
+            "host": "cloud.unblockedgames.world",
+            "method": "POST",
+            "path": "/over-a-century-ago-on-november-16-one-of-the-most-significant-technological-innovations-ever-made-was-created/",
+            "status": 200
+          },
+          {
+            "host": "driveseed.org",
+            "method": "GET",
+            "path": "/r",
+            "status": 200
+          },
+          {
+            "host": "driveseed.org",
+            "method": "GET",
+            "path": "/file/3KgJC1DWgfGNHj5n18of",
+            "status": 200
+          },
+          {
+            "host": "cloud.unblockedgames.world",
+            "method": "POST",
+            "path": "/can-ai-replace-programmers/",
+            "status": 200
+          },
+          {
+            "host": "driveseed.org",
+            "method": "GET",
+            "path": "/file/dHVnCKf6Q6bRpt9srqV6",
+            "status": 200
+          },
+          {
+            "host": "cloud.unblockedgames.world",
+            "method": "POST",
+            "path": "/ai-in-education-personalized-learning-revolution/",
+            "status": 200
+          },
+          {
+            "host": "driveseed.org",
+            "method": "GET",
+            "path": "/file/H3yGUXf9QbTVjIFbtvj8",
+            "status": 200
+          },
+          {
+            "host": "cloud.unblockedgames.world",
+            "method": "POST",
+            "path": "/how-to-use-integrated-graphics-rather-than-a-gpu/",
+            "status": 200
+          },
+          {
+            "host": "driveseed.org",
+            "method": "GET",
+            "path": "/file/s7I96wSgUZg3OeVAodKg",
+            "status": 200
+          },
+          {
+            "host": "video-seed.dev",
+            "method": "GET",
+            "path": "/",
+            "status": 206
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "movie": [
+          "Interstellar",
+          "Barbie",
+          "Oppenheimer",
+          "Shutter Island"
+        ]
+      },
+      "statuses": {
+        "movie": "no_streams"
       },
       "verifiedLanes": []
     },
@@ -809,13 +982,13 @@
           {
             "host": "box-1096-q.vmbox.space",
             "method": "GET",
-            "path": "/hls/xqx2o2qnorokjiqbtepsj72dwaxinripimirflesf,qozx24i2rnu2mtwpkua,yozx24i2rnt2jrh7gwq,.urlset/master.m3u8",
+            "path": "/hls/xqx2o2qnorokjiqbtepsj72dwaxinripimirflesf,qozx24i2rnqpotwpkua,yozx24i2rnxplrh7gwq,.urlset/master.m3u8",
             "status": 200
           },
           {
             "host": "box-1096-q.vmbox.space",
             "method": "GET",
-            "path": "/hls/xqx2o2qnorokjiqbtepsj72dwaxinripimirflesfqozx24i2rnu2mtwpkua/index-v1-a1.m3u8",
+            "path": "/hls/xqx2o2qnorokjiqbtepsj72dwaxinripimirflesfqozx24i2rnqpotwpkua/index-v1-a1.m3u8",
             "status": 200
           },
           {
@@ -844,7 +1017,7 @@
     "voiranime-rip": {
       "contradictions": 0,
       "debugStages": {
-        "anime": "gate_runtime_plan_missing"
+        "anime": "provider_network_zero_result"
       },
       "network": {
         "anime": [
@@ -875,14 +1048,62 @@
         "anime": "no_streams"
       },
       "verifiedLanes": []
+    },
+    "vostfree": {
+      "contradictions": 0,
+      "debugStages": {
+        "anime": "provider_network_http_error"
+      },
+      "network": {
+        "anime": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/245285",
+            "status": 200
+          },
+          {
+            "host": "ipv4.vostfree.ws",
+            "method": "GET",
+            "path": "/",
+            "status": 403
+          },
+          {
+            "host": "ipv4.vostfree.ws",
+            "method": "POST",
+            "path": "/index.php",
+            "status": 200
+          },
+          {
+            "host": "ipv4.vostfree.ws",
+            "method": "GET",
+            "path": "/info-streaming.html",
+            "status": 403
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "anime": [
+          "Death Note",
+          "Jujutsu Kaisen",
+          "Mushoku Tensei: Jobless Reincarnation",
+          "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells"
+        ]
+      },
+      "statuses": {
+        "anime": "no_streams"
+      },
+      "verifiedLanes": []
     }
   },
-  "runId": 35418875698,
+  "runId": 35445070322,
   "schemaVersion": 1,
-  "triggerSha": "67ae7e6ca7a13b976284be15fd66afdfbbcba52f",
-  "verifiedProviderCount": 3,
+  "triggerSha": "482d93d384aab96c3763f8c25fcf160080ef40a9",
+  "verifiedProviderCount": 4,
   "verifiedProviders": [
     "coflix",
+    "kurage",
     "neko-sama",
     "voiranime"
   ]
