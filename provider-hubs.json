@@ -1444,17 +1444,21 @@
       "manifest_status": "Actif",
       "category": "International",
       "hub": null,
-      "direct": "https://moviesmod.zone/",
+      "direct": "https://moviesmod.army/",
       "source": "curated_user_registry",
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "aliases": [
         "moviesmod"
       ],
       "direct_candidates": [
-        "https://moviesmod.zone/"
+        "https://moviesmod.army/",
+        "https://moviesmod.zone/",
+        "https://moviesmod.cc/"
       ],
       "allowed_terminal_hosts": [
-        "moviesmod.zone"
+        "moviesmod.army",
+        "moviesmod.zone",
+        "moviesmod.cc"
       ],
       "search_queries": [
         "\"MoviesMod\" official domain"
@@ -1467,7 +1471,11 @@
           "purpose": "Fallback discovery when curated sources fail"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "direct_authority": "explicit_current",
+      "direct_authority_source": "provider-upstream-domain-registry",
+      "direct_authority_observed_at": "2026-09-19",
+      "last_verified": "2026-09-19"
     },
     "animetsu": {
       "id": "animetsu",
