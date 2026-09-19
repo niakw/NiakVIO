@@ -10763,14 +10763,17 @@
       }
     },
     "moviebox": {
-      "capability": "quarantined",
+      "capability": "api_stream_resolver",
       "official_hub": "https://moviiebox.lol/",
       "official_site": "https://moviebox.yachts",
       "manifest_overrides": {
         "enabled": true
       },
-      "notes": "Fail-closed safety quarantine: non_playable_html_output. Published bundle is inert; re-enable only after fresh strict identity and direct-media proof.",
-      "quarantine_reason": "non_playable_html_output",
+      "notes": [
+        "Recovered user browser proof: MovieBox HOTD resolved through data.vidsrcme.ru / vidsrcme.ru using exact TMDB + season + episode and reached a terminal HLS playlist.",
+        "Current NiakVIO-owned runtime reproduces only the vidsrcme TMDB resolver contract; upstream JavaScript is not executed.",
+        "Core owns terminal media probing, identity guard, timeout/cancellation and fail-closed HTTP handling."
+      ],
       "candidate_config_reconciliation": {
         "version": 3,
         "route_plan_source": "embedded-provider-js",
@@ -10784,8 +10787,8 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/vs_src.php?type={mediaType}&id={tmdbId}",
+        "/vs_src.php?type=tv&id={tmdbId}&season={season}&episode={episode}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -10925,7 +10928,7 @@
           }
         ]
       },
-      "route_data_state": "off",
+      "route_data_state": "repair",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -10933,7 +10936,7 @@
         "activationAuthority": "provider-folder-lifecycle",
         "declaredHub": "https://moviiebox.lol/",
         "forcedEnabled": true,
-        "routeDataState": "off",
+        "routeDataState": "repair",
         "requiredLanes": [
           "movie",
           "tv"
@@ -10946,15 +10949,14 @@
           "tv"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "no-proven-route",
+        "recoveryStatus": "current-contract-staged",
         "provenRouteCount": 0,
         "terminalState": null,
-        "quarantined": true,
+        "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
-          "explicit_quarantine",
-          "quick_provider-network-exception",
-          "recovery_no-proven-route"
+          "current_contract_staged",
+          "user_manual_vidsrcme_positive"
         ],
         "laneStatuses": {
           "movie": [
@@ -10967,7 +10969,24 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {},
-      "domain_substitutions": {}
+      "domain_substitutions": {},
+      "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "required_fields": [
+          "tmdbId",
+          "mediaType"
+        ]
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/moviebox_vidsrcme_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/moviebox_vidsrcme_runtime_v1.py": {
+          "base": "https://vidsrcme.ru",
+          "referer": "https://vidsrcme.ru/"
+        }
+      }
     },
     "showbox": {
       "capability": "html_scraper",
