@@ -30,7 +30,7 @@ for token in ("d405d0edd690624b66baba3068e0edc3ac90f1597d898a1ec8db4e5c43c00fec"
 assert "SOURCE_GQL" not in allanime
 
 anikoto=(ROOT/"scripts/provider_patches/anikototv_runtime_v2.py").read_text(encoding="utf-8")
-for token in ("NIAKVIO_ANIKOTOTV_RUNTIME_V3", "https://arm.haglund.dev/api/v2/tmdb", "megaplay.buzz", "/stream/getSources?id=", '"semanticLanes": ["anime"]'):
+for token in ("NIAKVIO_ANIKOTOTV_RUNTIME_V3", "https://arm.haglund.dev/api/v2/tmdb", "megaplay.buzz", "/stream/getSources?id=", "AES-CBC", "j&&j.enc", "await sourceFile(j)", '"semanticLanes": ["anime"]'):
     assert token in anikoto, token
 for stale in ("/ajax/anime/search", "/ajax/episode/list/", "/ajax/server/list", "/ajax/server?get="):
     assert stale not in anikoto, stale
