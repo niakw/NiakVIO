@@ -305,6 +305,7 @@ def render(
         "FULL OK",
         "PARTIAL OK",
         "NO PROOF",
+        "PROVIDER NETWORK BLOCKED",
         "PROVIDER JS BROKEN",
         "PROVIDER JS FULLY BROKEN",
         "REGRESSION PROVIDER JS",
