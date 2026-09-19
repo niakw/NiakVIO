@@ -63,3 +63,24 @@ The full provider census remains the live truth for current terminal status. Thi
 - preserve historical positive behavior without treating stale URLs as current authority.
 
 `PROVIDER_CENSUS_STATUS.md` is generated from the latest full census and should never be manually edited.
+
+## Evidence block D — exact user route captures recovered from prior test files
+
+Recovered from the original manual test files/logs, not reconstructed from the current provider code. Treat these as historical LKG evidence and fixture-selection guidance; current domains still require live revalidation.
+
+- **TV field test — Interstellar**: Purstream 720p; Castle English+Hindi; Papadustream 480p; DesiFlix 4K+720p; StreamZo returned wrong content labelled `Inconnue`; VidRock had one dead/403 720p row plus a working 1080p row; HindMoviez exposed four 480p rows that did not appear playable. This is evidence for quality correction, fail-closed 403 handling, wrong-content rejection and language preservation.
+- **TV field test — House of the Dragon S1E2**: Purstream 720p; PersianStreamio seven rows; Castle multi-quality/multi-dialect rows; DesiFlix several 4K/720p rows plus one `Inconnue`; VidRock 1080p+720p; HindMoviez rows appeared non-playable. Exact season/episode identity is mandatory.
+- **Anime field tests**: Ragna Crimson S1E4 had Anime-Sama playable + one dead `Inconnue` and Mugiwara 720p playable. Mushoku Tensei S3E11 loaded no providers/streams. Hell Mode S2E10: Anime-Sama 1080p appeared correct; Mugiwara returned eight 1080p rows for the wrong episode and mislabeled VOSTFR as VF. These cases remain regression fixtures for episode identity and language normalization.
+- **Global client behavior**: non-answering providers could remain visible for more than a minute; provider generations accumulated across navigation; late stale rows could reappear; stream titles lost normalization. These are Core/runtime invariants, not provider-specific exceptions.
+
+Exact provider route captures relevant to unresolved providers:
+- **AllAnime manual positive**: hub `allanime.sa.com` -> `ww2.aniwatch.fit`; One Piece search exposed separate sub/dub pages; an episode page resolved to `fetch.nexabloom.top/.../master.m3u8` and variant playlist, both HTTP 200. One Piece is therefore a retained provider-targeted positive fixture even when JJK is a catalogue miss.
+- **AniKotoTV historical positive**: `/ajax/anime/search?keyword=death+note` -> `/watch/death-note-.../ep-1` -> `/ajax/server?get=...`. This proves the older provider-local chain existed; it is historical evidence only after the 2026-09-19 upstream migration to ARM/MegaPlay.
+- **MoviesMod manual chain**: `/search/interstellar` -> Interstellar detail -> `links.modpro.blog/archives/... ` -> `cloud.unblockedgames.world/?sid=...` / `urlflix.xyz/gets/...` -> `driveseed.org/file/...` -> Google/video-seed direct path. The browser flow includes timed/human interstitials; a provider runtime must bypass only proven deterministic steps and otherwise fail closed.
+- **HDHub4u manual chain**: hub `hdhub4u.bi` -> terminal `new5.hdhub4u.cl` -> `/search.html?q=...` -> title/season page -> `greenmountmotors.com?id=...` -> `hblinks.co/archives/...` -> HubDrive/HubCDN/HubCloud -> terminal media. **This is HDHub4u evidence and must never be reassigned to 4KHDHub.**
+- **AllWish manual positive**: Telegram hub `t.me/s/allwishme` -> `all-wish.me/filter?keyword=death+note` -> `/watch/death-note-.../ep-37` -> `fetch.nexabloom.top/.../master.m3u8` and variant playlist HTTP 200.
+- **MovieBox manual positive**: hub `moviiebox.lol` -> `moviebox.yachts`; HOTD page -> `data.vidsrcme.ru/api.php?type=tv&tmdb=94997&season=1&episode=1` / `vidsrcme.ru/vs_src.php?... ` -> terminal `sagaciousslumber.site/.../master.m3u8` and variant playlist HTTP 200.
+- **Coflix manual chain**: `coflix.domains` -> active terminal; live search -> title page -> `/wp-json/coflix/v1/resolve?tmdb=...&type=tv&season=...&episode=...&tid=...`. This remains historical cross-check evidence for provider-local identity, independent from later site implementations.
+- **Movix/Purstream manual chain**: hub/terminal -> TMDB-backed title route -> watch route; observed terminal HLS through `neocine.embedseek.com`. Useful for client-quality/identity regression checks, not as generic routing for other providers.
+
+The raw source files also preserve older desktop logs in which MoviesHunt found an Interstellar catalogue match and older global audits classified MoviesHunt/AniKotoTV as strict healthy while several other providers were partial or non-media. Those historical classifications are not current status, but they are valid regression clues when the same provider now stops earlier in the chain.
