@@ -20,6 +20,9 @@ on:
       - 'tests/provider_sekai_runtime_contract_test.py'
       - 'scripts/provider_patches/moviesmod_runtime_v1.py'
       - 'tests/provider_moviesmod_runtime_contract_test.py'
+      - 'scripts/provider_patches/movieshunt_runtime_v1.py'
+      - 'tests/provider_movieshunt_runtime_contract_test.py'
+      - 'tests/provider_quick_yield_fixture_priority_test.py'
       - 'provider-overrides.json'
   pull_request:
     branches: [main]
@@ -86,6 +89,8 @@ jobs:
           python tests/provider_coflix_animesultra_runtime_contract_test.py
           python tests/provider_sekai_runtime_contract_test.py
           python tests/provider_moviesmod_runtime_contract_test.py
+          python tests/provider_movieshunt_runtime_contract_test.py
+          python tests/provider_quick_yield_fixture_priority_test.py
 
       - name: Materialize current provider bytes
         run: |
