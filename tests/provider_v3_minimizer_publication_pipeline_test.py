@@ -21,6 +21,9 @@ spec.loader.exec_module(module)
 
 assert module.PRODUCTION_ENABLED is True
 assert module.TERSER_ALLOWED is False
+source = SCRIPT.read_text(encoding="utf-8")
+assert 'final minimizer failed for {relative}' in source
+assert 'f"{provider_id}:' in source
 
 with tempfile.TemporaryDirectory() as tmp_raw:
     tmp = Path(tmp_raw)
