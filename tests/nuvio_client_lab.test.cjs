@@ -34,7 +34,8 @@ assert.equal(fs.existsSync(path.join(repositoryRoot, '.github/workflows/nuvio-cl
 assert.equal(labTrigger.policy.blocking, false);
 assert.equal(labTrigger.policy.require_identity_match, true);
 assert.equal(labTrigger.policy.block_identity_contradictions, true);
-assert.equal(labTrigger.fixtures.length, 12);
+assert.ok(labTrigger.fixtures.length >= 12, 'fixture corpus may grow but must retain the established minimum coverage');
+assert.equal(new Set(labTrigger.fixtures.map((row) => row.slug)).size, labTrigger.fixtures.length, 'fixture slugs must stay unique');
 assert.equal(labTrigger.fixtures.every((row) => Number(row.fixture.expectedDurationMinutes) > 0), true);
 assert.deepEqual(labTrigger.native_reader_acceptance.tv_priority_regressions, []);
 assert.equal(labTrigger.native_reader_acceptance.provider_scope, 'declared-type');

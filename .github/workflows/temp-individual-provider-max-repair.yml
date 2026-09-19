@@ -171,6 +171,7 @@ jobs:
           set -euo pipefail
           cp provider-v3-quick-yield.json automation/provider-individual-sweep-before.json || true
           python tests/provider_domain_metadata_reconcile_test.py
+          python tests/user_provider_manual_evidence_crosscheck_test.py
           python scripts/reconcile_provider_domain_metadata.py --rebuild
           python scripts/apply_provider_route_recovery_report.py automation/provider-route-recovery-individual-active.json
           python scripts/enforce_route_proof_manifest_policy_v1.py             --report automation/provider-route-recovery-individual-active.json             --manifest manifest.json             --overrides provider-overrides.json

@@ -2156,3 +2156,81 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Vostfree and Flemmix still contained stale executable ARM recipes in DATA even though their Provider Legos use provider-local site chains. Commit **974a4bc23b365dab2f68fd024b938c0c92435263** removes those stale recipes and records provider-local search plans (Vostfree DLE POST; Flemmix `/search?q={query}`).
 - Flemmix runtime now follows its own `NIAKVIO_PROVIDER_MODEL.officialSite/knownSite` rather than a frozen script base (**4de5f2d80d06dd4d7a64aaa2805bcce319f29c20**), with contract coverage added.
 - A brand-new MovieBox direct playback Lego was not committed because the execution safety layer blocked creation of new code automating that external playback chain. MovieBox remains ZERO/quarantined; its historical route evidence is preserved in `automation/USER-PROVIDER-EVIDENCE-LEDGER.md`.
+
+
+## 2026-09-19 — recovered route evidence applied to AnimeSalt/Vostfree
+
+- Work remains on branch `tmp/provider-max-repair-proof-20260919` / PR #186; do not treat this section as merged to main until that branch is integrated.
+- Recovered user browser evidence confirmed AnimeSalt's current chain uses `wp-admin/admin-ajax.php` POST `action_tr_search_suggest` and direct `as-cdn*.top/player/index.php?data=<hash>&do=getVideo`.
+- Commit **399c93557518e4a9cb672ea2be1a91ce2013af12** extended AnimeSalt's provider-local runtime to try that observed AJAX search before HTML search fallback and to accept the observed direct player endpoint.
+- Commit **56847a75cc653826cfddab145e2ce0ac4e1503ae** locked the AnimeSalt observed-route contract.
+- Recovered user evidence also proved Vostfree can serve episode players through `video.sibnet.ru/c.php?videoid=<id>`, while the current provider-local runtime only handled Uqload.
+- Commit **6ec15a5b125290d73486473c803daf087f40e0cd** added a fail-closed Sibnet fallback: it only returns a stream when the Sibnet player page exposes real MP4/HLS media; Uqload remains the first path.
+- Commit **9f6748c985d32c2121dada08377ad172e30d728a** locked the Sibnet fallback contract.
+- Functional green is **not claimed yet** for either provider. Required next proof is rematerialized current bytes + live terminal validation in the full census; any old R19 run is tied to its older SHA and must not be confused with the new branch HEAD.
+
+
+### AllAnime current-site reconstruction
+
+- Recovered browser evidence shows AllAnime's current terminal is `https://ww2.aniwatch.fit/`, with catalogue search `/?s=<title>`, series pages, episode pages and terminal HLS on `fetch.nexabloom.top` (browser HTTP 200).
+- Existing Provider DATA still described AllAnime as a stale `tmdb-direct-api` family. This was treated as a provider-model mismatch, not a Core failure.
+- Commit **1824e4c1c79a4e5f0551370210b3e4fa9fec9a25** added `scripts/provider_patches/allanime_site_runtime_v1.py`: Core TMDB identity -> HTML search -> title match -> exact/absolute episode -> episode page -> HLS extraction -> `#EXTM3U` verification.
+- Commit **490d71d22025331b666b38d34538c0f5ee02977a** bound provider `allanime` to this provider-local Lego and reclassified its source runtime family as `catalogue-html`.
+- Commit **5ed3c1e15c30200f1c4650ee93c8763937cb8c9a** added the static contract test.
+- No AllAnime green is claimed until the new branch HEAD is rematerialized and the full census verifies terminal playback.
+
+
+## 2026-09-19 — R19 route-evidence repair continuation
+
+- R19 full census run 35421303974: **18/46 FULL**, **0 wrong-content**. VidLove and VidRock are green again. AnimeSalt was not a network zero: bundle load failed with `SyntaxError: Invalid regular expression flags`.
+- AnimeSalt root cause: provider-local Python raw-string wrapper double-escaped JavaScript regex literals. Patched on `tmp/provider-max-repair-proof-20260919` at **06ffc0a576bc1b7285fc40509ede0e631d7b4eb3**; contract test now compiles the generated wrapper with Node at **9204abd5a1b68a15447b7a864467ad22379f2ae9**. Status: **patched, live census revalidation pending**.
+- Flemmix R19 used stale/false provider DATA: `flemmix.me` + JSON-like `/search?q=`. User browser evidence from 2026-09-19 proves official hub advertised **flemmix.cloud** and DLE GET `/index.php?do=search&subaction=search&search_start=0&full_search=0&story={query}` returned 200; season page and Vidara/JWPlayer/LuluVDO player families were observed.
+- Flemmix corrections: overrides/current route authority **f06e409f0b5a3ac8ad6c6995d44609df8cf8ac2e**; provider runtime DLE parser **7a9b7bb630d966eb6bd389d2a956575769b9bf06**; default runtime base cloud **c112943a2ec43260ceb461be11164ac2d73c9937**; contract test updated + JS compilation **5e5bb9bb45e571c0c3d17f5a94922c49eafbc011**; hub authority aligned **aeae6251049052cbd288edd2708cc8736bd74149** and locked in test **48fc7835a3ad614f0cb79ecd4987c6ad9397d599**. Status: **patched, live census revalidation pending**.
+- Vostfree current runtime already reproduces the user-proven DLE POST + Sibnet/Uqload chain structurally, but GitHub CI currently receives HTTP 403 on the search POST while the user's browser capture returned 200. Do not classify as broken route until network/session variance is separated from parser behavior.
+- MovieBox remains quarantined/no-proven-route and is lower priority; user evidence explicitly said not to spend time if browser/API path is proprietary/invisible.
+
+
+## 2026-09-19 — R19 harness drift and Anime-Sama DATA convergence
+
+- Real state rechecked before continuing: `main` had advanced to **274d25b64d6cd611990300c2ab93a6c12091dac8**; active repair/proof work remains PR **#186** on `tmp/provider-max-repair-proof-20260919`.
+- Initial R19 targeted run **35441590677** never reached provider probes: `tests/presentation_revision_parser_test.py` still hard-coded stream-presentation V25 while Core is already V26. Commit **63fb146dddcaf82812c65a9989c55b276d55eb0c** made the test forward-compatible (supported V22+ contract + current revision number), after which the targeted job passed its repair-contract stage and proceeded to materialization/probing.
+- R19 Verify & Publish run **35441683826** exposed a separate current DATA drift in the read-only static audit for **anime-sama**. Published CONFIG contains the current active rewrite `anime-sama.to -> animes-sama.fr`; `provider-overrides.json` additionally retained stale root alias `anime-sama.fr`, while current hub authority is `anime-sama.wiki -> animes-sama.fr` and no current terminal evidence requires that old alias.
+- Commit **a4af28854d919ea9d02ad1631f3229988018884e** removes only the stale `anime-sama.fr` DATA substitution. This is a DATA convergence fix, not a provider playback rewrite; live CI revalidation is pending.
+- Recovered MovieBox browser evidence is concrete: current-site search/detail reached `data.vidsrcme.ru/api.php?type=tv&tmdb=94997&season=1&episode=1` and then a real HLS request. Current MovieBox DATA still contains generic pseudo-routes and remains quarantined. No new playback automation has been added; evidence is preserved for future safe/provider-local diagnosis.
+- Recovered ShowBox history identifies the truncated route family (`/api/media`, with historical movie/TV mappings requiring provider settings/cookie). Current DATA still lacks a proven current executable route; verify generic settings/route support before any mutation rather than guessing cookie semantics.
+
+
+## 2026-09-19 — PR #186 resumed from real HEAD; harness/fixed-point blockers isolated
+
+- Resumed from PR **#186** instead of rebuilding prior provider work. Repair branch was **ce36e3def099802da5c55849ffd4acb31a446209** when rechecked; `main` was **68ed6df4ed5a707ad32b87ee616a1505acea5c9f**, so the PR was diverged (55 commits ahead / 3 behind).
+- Current branch Non-Regression run **35442750947** completed a real rematerialized 46-provider census at **19 FULL / 0 PARTIAL / 27 ZERO**, **0 wrong-content**. Its gate failure is only the historical MoviesHunt floor; this census is valid evidence for its tested SHA.
+- Targeted run **35442751024** reached CONFIG drift reconstruction for 13 providers and failed only because the workflow whitelist omitted generated `vf-no-anime/manifest.json`. This is a harness bug, not a provider verdict.
+- Verify & Publish run **35442750951** failed only because the newly rematerialized Anime-Sama bundle was one byte away from the safe minimizer fixed-point.
+- Commit **4ebef0558e324e18c45fb9e71470ac7fd34f911c** makes `rebuild_provider_configs()` canonicalize CONFIG replacements through the safe provider minimizer, reject a non-fixed published input, and still enforce byte identity outside the CONFIG Lego.
+- Commit **642cfac5251b6567b63e40c70491942d8476dc8f** allows the expected `vf-no-anime/manifest.json` projection in targeted CONFIG repair.
+- Commit **17a885222a4c1c508dce87c008e4414af9d2375a** makes the Anime-Sama rematerializer react to the generic rebuild-path change and prove `provider_v3_minimizer_published_test.py` before committing generated bytes.
+- Provider functionality is **not** upgraded by these harness fixes; fresh post-fix workflows remain required. The older census remains tied to its exact tested SHA.
+
+
+## 2026-09-19 — manual A/B/C evidence promoted to executable regression contracts
+
+- The three recovered user evidence families are still authoritative diagnostic inputs and were **not dropped**:
+  - **A** = real TV/Desktop behavior and presentation/late-result regressions;
+  - **B** = September browser route/hub captures;
+  - **C** = older VF/runtime parser and route diagnostics.
+- Added `tests/user_provider_manual_evidence_crosscheck_test.py` and wired it into Domain Refresh, Provider Non-Regression, targeted recovery, individual repair and full-current-bytes census workflows. The test protects provider-local route families without freezing historical domains, so current live/domain authority can supersede stale URLs.
+- Cross-check currently locks relevant anchors for AnimeSalt, Vostfree, Flemmix, UHDMovies, Mugiwara, StreamZo, AnimeSama.co and Sekai.
+- The cross-check exposed a real AnimeSama.co regression: NiakVIO had rewritten distinct DLE provider `animesama.co` to Anime-Sama catalogue terminal `animes-sama.fr`. Current Gowaru provider config still declares `https://animesama.co` and DLE `/anime/<id>-<slug>.html` routes.
+- AnimeSama.co DATA/hub/history are restored to distinct `.co` authority in commits **2c50077cee8d647fcfeb9e29651136eadfd28f5b**, **d62bec0c64845c5f177076ceb046ad0cb240fd37**, **e76cd230f70416c286a9b655e9dc911dc4a1a434**, **5674537ee886a0677e4b229cd7149b6e72771901**; stale ARM recipe and `.co -> animes-sama.fr` rewrites were removed. Contract lock: **fc77306f7a2f96dfe99356e45c29f49f97306a20** / **7042e8a66d5ce60ab949bf2ea13c54e2dc6748da**.
+- Sekai still carried stale ARM DATA beside its provider-local sitemap/script runtime. Commit **b61af817428f8dce652ae1895c3fb5a10ade5625** removes that stale authority and records `/sitemap.xml` + `/{slug}`; test lock **49fb241cce88601b480f4c8d5ef5fa076aa15dff**.
+- First post-cross-check runs showed Core Media Type & Playback fully green and Provider Overrides Gate green. Targeted/census failed before live probes only because the new evidence test matched escaped Sibnet too literally and the old AnimeSama.co test still expected the wrong `.fr` terminal. Those harness regressions were corrected at **8e3b9e9a50c9cfd1be4b6406dff1e02f672f904a** and **7042e8a66d5ce60ab949bf2ea13c54e2dc6748da**.
+- AllAnime A/B comparison: the manually captured HTML route remains historical evidence, but current upstream/public implementations in September 2026 use `api.allanime.day/api` GraphQL. Do not force the old HTML route simply to satisfy Block B; current live evidence must supersede it.
+
+
+## 2026-09-19 — provider-local ARM contamination batch
+
+- Cross-provider audit of the exact R19 ZERO set found three additional providers with the same structural contradiction already seen on Flemmix/Vostfree/Sekai: a complete NiakVIO-owned provider-local runtime was present, while Provider DATA still advertised stale generic ARM execution.
+- **Anime-Ultime** runtime is provider-local `/MenuSearch.html -> series episode/focus -> /VideoPlayer.html -> direct MP4`. **AnimesUltra** is provider-local DLE search -> `/engine/ajax/full-story.php?newsId=...` -> Sibnet/embed crawler. **VoirAnime.rip** is provider-local POST `/template-php/defaut/fetch.php` -> exact season/episode -> embed crawler.
+- Commit **ecfe92ab6ecf8b27fd5b9eca8d7b20fe06909a5e** removes `api_recipe` / `candidate_api_recipe` from all three, replaces stale ARM learned routes with their actual local route families, and marks their reconstruction authority as `provider-local-current-site`.
+- Regression locks: **f8f7fe9ff0ac4595a3893a73164786569926ca87** (Anime-Ultime), **cdd510eab40495b4b0a8899468f91e1c9d79a7c8** (AnimesUltra), **4506ef4a896691acde64de08cfa375be4d9fd641** (VoirAnime.rip).
+- Git integrity checked after the three distinct-file writes: branch HEAD **4506ef4a896691acde64de08cfa375be4d9fd641** contains all three test commits in one linear history. Functional green is still **not claimed** until rematerialized live probes/census run on a descendant SHA.

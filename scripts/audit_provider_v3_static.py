@@ -80,7 +80,14 @@ for row in rows:
     normalize_anime_transport_compatibility(entry)
     current_model=provider_model(pid,patch,capability,static_row)
     expected_data=build_provider_data_model(pid,entry,known_site=current_model.get("knownSite"),provider_model=current_model)
-    assert data==expected_data, pid
+    if data != expected_data:
+        keys=sorted(set(data)|set(expected_data))
+        diff={
+            key: {"published": data.get(key), "expected": expected_data.get(key)}
+            for key in keys
+            if data.get(key) != expected_data.get(key)
+        }
+        raise AssertionError((pid,"provider-data-drift",diff))
 
 assert set(rb)==seen
 visible=visible_provider_count()

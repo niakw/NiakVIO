@@ -29,7 +29,10 @@ permissions:
 
 concurrency:
   group: niakvio-temp-current-bytes-full-provider-census
-  cancel-in-progress: true
+  # Preserve the exact-SHA census already running when the repair branch advances.
+  # Newer commits queue behind it; evidence must record the SHA actually tested
+  # rather than repeatedly cancelling long validation before it produces an artifact.
+  cancel-in-progress: false
 
 jobs:
   census:
@@ -64,12 +67,14 @@ jobs:
           python tests/uhdmovies_runtime_contract_test.py
           python tests/provider_4khdhub_runtime_behavior_test.py
           python tests/animesalt_runtime_contract_test.py
+          python tests/allanime_site_runtime_contract_test.py
           python tests/vostfree_transport_contract_test.py
           python tests/provider_animesamaco_domain_data_contract_test.py
           python tests/provider_incomplete_player_url_rejection_test.py
           python tests/streamzo_episodic_identity_contract_test.py
           python tests/provider_js_lego_ownership_test.py
           python tests/provider_domain_metadata_reconcile_test.py
+          python tests/user_provider_manual_evidence_crosscheck_test.py
           python tests/provider_flemmix_anime_ultime_runtime_contract_test.py
           python tests/provider_movieshunt_runtime_contract_test.py
           python tests/provider_quick_yield_fixture_priority_test.py
@@ -152,7 +157,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Persist exact census evidence
-        if: always()
+        if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -190,3 +195,5 @@ jobs:
           git add "automation/current-bytes-full-provider-census-${run_id}-summary.json" "automation/current-bytes-full-provider-census-${run_id}.json" automation/current-bytes-full-provider-census-latest-summary.json PROVIDER_CENSUS_STATUS.md
           git commit -m "ci(census): persist current bytes ${verified} from ${GITHUB_SHA::12}"
           git push origin HEAD:main
+
+# PR_OBSERVABILITY_TRIGGER_20260919_R19_STATIC_FIXED

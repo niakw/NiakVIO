@@ -52,7 +52,8 @@
         "movieshunt",
         "1SHOWS",
         "allanime",
-        "vidsrc"
+        "vidsrc",
+        "moviesmod"
       ],
       "fixture": {
         "tmdbId": "157336",
@@ -61,6 +62,9 @@
         "year": 2014,
         "category": "movie",
         "expectedDurationMinutes": 169
+      },
+      "providerEvidencePriority": {
+        "moviesmod": 100
       }
     },
     {
@@ -503,6 +507,75 @@
           "Gekijouban Jujutsu Kaisen 0"
         ],
         "animeMovie": true
+      }
+    },
+    {
+      "slug": "death-note-s01e01-user-positive",
+      "providers": [
+        "ANIMESALT",
+        "VOSTFREE"
+      ],
+      "fixture": {
+        "tmdbId": "13916",
+        "mediaType": "anime",
+        "title": "Death Note",
+        "year": 2006,
+        "season": 1,
+        "episode": 1,
+        "category": "anime",
+        "expectedDurationMinutes": 23,
+        "aliases": [
+          "Death Note"
+        ]
+      },
+      "providerEvidencePriority": {
+        "animesalt": 100,
+        "vostfree": 100
+      }
+    },
+    {
+      "slug": "one-piece-s01e01-catalogue-positive",
+      "providers": [
+        "allanime"
+      ],
+      "fixture": {
+        "tmdbId": "37854",
+        "mediaType": "anime",
+        "title": "One Piece",
+        "year": 1999,
+        "season": 1,
+        "episode": 1,
+        "category": "anime",
+        "expectedDurationMinutes": 24,
+        "aliases": [
+          "One Piece"
+        ]
+      },
+      "providerEvidencePriority": {
+        "allanime": 100
+      }
+    },
+    {
+      "slug": "house-of-the-dragon-s01e01-flemmix-catalogue",
+      "providers": [
+        "FLEMMIX"
+      ],
+      "fixture": {
+        "tmdbId": "94997",
+        "mediaType": "tv",
+        "title": "House of the Dragon",
+        "year": 2022,
+        "season": 1,
+        "episode": 1,
+        "category": "tv",
+        "expectedDurationMinutes": 66,
+        "aliases": [
+          "House of the Dragon",
+          "Game of Thrones: House of the Dragon"
+        ]
+      },
+      "providerEvidencePriority": {
+        "flemmix": 80
       }
     }
   ],

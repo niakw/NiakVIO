@@ -82,6 +82,15 @@ assert hubs["animesalt"]["direct"] == "https://animesalt.cx/"
 assert hubs["animesalt"]["direct_authority"] == "explicit_current"
 assert hubs["animesalt"]["allowed_terminal_hosts"] == ["animesalt.cx"]
 assert "animesalt.link" in hubs["animesalt"]["blocked_hosts"]
+
+# AnimeSama.co is a distinct DLE provider and must never inherit the
+# Anime-Sama catalogue terminal through broad alias/domain reconciliation.
+assert hubs["animesama-co"]["direct"] == "https://animesama.co/"
+assert hubs["animesama-co"]["direct_authority"] == "explicit_current"
+assert hubs["animesama-co"]["allowed_terminal_hosts"] == ["animesama.co"]
+assert set(hubs["animesama-co"]["aliases"]) == {"animesama-co", "animesama.co"}
+assert "animes-sama.fr" in hubs["animesama-co"]["blocked_hosts"]
+
 assert hubs["movieshunt"]["allowed_terminal_hosts"] == ["movieshunt.run"]
 assert "movieshunt.ws" in hubs["movieshunt"]["blocked_hosts"]
 assert "movieshunt.monster" not in hubs["movieshunt"]["blocked_hosts"]
@@ -89,6 +98,16 @@ assert "movieshunt.monster" not in hubs["movieshunt"]["blocked_hosts"]
 # Current MoviesHunt executable search must follow the provider's WordPress
 # catalogue contract instead of the retired lookup.php JSON endpoint.
 overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))["provider_patches"]
+
+asco = overrides["animesama-co"]
+assert asco["official_site"] == "https://animesama.co"
+assert "api_recipe" not in asco
+assert "candidate_api_recipe" not in asco
+assert asco["domain_substitutions"].get("animesama.co") is None
+assert asco.get("runtime_domain_replacements", {}).get("animesama.co") is None
+assert "/template-php/defaut/fetch.php" in asco["learned_routes"]
+assert "/anime/{id}-{slug}.html" in asco["learned_routes"]
+
 movieshunt_plan = overrides["movieshunt"]["search_request_plan"]
 assert len(movieshunt_plan) == 1, movieshunt_plan
 assert movieshunt_plan[0]["base"] == "https://movieshunt.run", movieshunt_plan

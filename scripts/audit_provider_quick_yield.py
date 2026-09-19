@@ -77,6 +77,21 @@ def _fixture_identity(fixture: dict[str, Any]) -> tuple[str, int, int, str]:
     )
 
 
+def _provider_fixture_priority(record: dict[str, Any], provider_id: str) -> int:
+    raw = record.get("providerEvidencePriority")
+    if not isinstance(raw, dict):
+        return 0
+    wanted = str(provider_id or "").strip().casefold()
+    for key, value in raw.items():
+        if str(key or "").strip().casefold() != wanted:
+            continue
+        try:
+            return int(value or 0)
+        except (TypeError, ValueError):
+            return 0
+    return 0
+
+
 def _adaptive_fixtures(
     provider_id: str,
     media_type: str,
@@ -164,6 +179,7 @@ def build_tasks() -> tuple[list[dict[str, Any]], int]:
             fixture = anime_movie_fixture if anime_movie_only else fixtures[media_type]
             preferred: list[dict[str, Any]] = []
             if not anime_movie_only:
+                preferred_records: list[dict[str, Any]] = []
                 for record in fixture_records.values():
                     candidate = record.get("fixture")
                     if not isinstance(candidate, dict):
@@ -175,7 +191,16 @@ def build_tasks() -> tuple[list[dict[str, Any]], int]:
                         if str(value or "").strip()
                     }
                     if candidate_type == media_type and provider_id in owners:
-                        preferred.append(candidate)
+                        preferred_records.append(record)
+                preferred_records.sort(
+                    key=lambda record: _provider_fixture_priority(record, provider_id),
+                    reverse=True,
+                )
+                preferred = [
+                    record["fixture"]
+                    for record in preferred_records
+                    if isinstance(record.get("fixture"), dict)
+                ]
             tasks.append({
                 "provider_id": provider_id,
                 "provider_name": str(row.get("name") or row.get("id") or provider_id),

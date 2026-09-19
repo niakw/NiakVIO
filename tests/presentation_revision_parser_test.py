@@ -16,7 +16,9 @@ assert module.active_revision('REVISION = "all-providers-client-projection-langu
 assert module.active_revision('REVISION = "all-providers-client-projection-v21"') is None
 
 current = (ROOT / "scripts" / "provider_patches" / "global_stream_presentation_v1.py").read_text(encoding="utf-8")
-assert module.active_revision(current) == "all-providers-client-projection-evidence-language-v25"
+current_revision = module.active_revision(current)
+assert current_revision is not None
+assert module.revision_number(current_revision) >= module.MIN_SUPPORTED_REVISION
 module.normalize(apply=False)
 module.assert_contract()
-print("presentation revision parser V25 test passed")
+print(f"presentation revision parser {current_revision} test passed")

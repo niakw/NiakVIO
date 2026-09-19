@@ -442,6 +442,20 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
             data=data,
         )
         validate_managed_fixes(after)
+
+        # CONFIG-only rebuilds start from already published fixed-point bytes.
+        # Canonicalize the replacement through the same safe minimizer used by
+        # publication, then re-check the Core/outside-CONFIG byte invariant below.
+        before_fixed = allmat.minimize_text(before)
+        if before_fixed.text != before:
+            raise RuntimeError(
+                f"{provider_id}: published provider is not minimizer fixed-point before CONFIG rebuild"
+            )
+        minimized = allmat.minimize_text(after)
+        allmat.validate_transform(after, minimized.text)
+        after = minimized.text
+        validate_managed_fixes(after)
+
         after_span = owned_span(after, fix_id)
         if after_span is None:
             raise RuntimeError(f"{provider_id}: CONFIG span lost")

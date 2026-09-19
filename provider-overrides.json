@@ -19,7 +19,6 @@
         "enabled": true
       },
       "domain_substitutions": {
-        "anime-sama.fr": "animes-sama.fr",
         "anime-sama.to": "animes-sama.fr"
       },
       "published_types": [
@@ -35,7 +34,6 @@
         ]
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
         "/catalogue/{slug}/saison1/vostfr/episodes.js",
         "/catalogue/{slug}/saison1/vf/episodes.js"
       ],
@@ -265,20 +263,6 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        },
-        "referer": "https://anime-sama.to"
       }
     },
     "purstream": {
@@ -619,15 +603,15 @@
     "flemmix": {
       "capability": "mixed_embed_resolver",
       "notes": [
-        "Do not retain ww547.wiflix-hd.vip as LKG after DNS failure; rewrite legacy Flemmix/Wiflix hostnames to flemmix.kim.",
-        "Cloudflare/browser verification is not by itself provider-unreachable; final activation remains governed by runtime media proof.",
-        "2026-09-19 explicit-current authority: provider-hubs and current upstream/runtime agree on flemmix.me; stale Flemmix/Wiflix site aliases project to flemmix.me while Domain Refresh still owns future rotations."
+        "Provider-local current authority from user browser evidence: hub ww1.wiflix-adresses.fun explicitly advertised flemmix.cloud as active domain on 2026-09-19.",
+        "Current observed catalogue route is DLE GET /index.php?do=search&subaction=search&search_start=0&full_search=0&story={query}; /search?q= on flemmix.me was a false/stale reconstruction.",
+        "Domain Refresh still owns future rotations; this correction is Flemmix-only and must not generalize to other providers."
       ],
       "official_hub": "https://ww1.wiflix-adresses.fun/",
-      "official_site": "https://flemmix.me",
+      "official_site": "https://flemmix.cloud",
       "manifest_overrides": {
         "supportsExternalPlayer": true,
-        "logo": "https://flemmix.me/favicon.ico",
+        "logo": "https://flemmix.cloud/favicon.ico",
         "enabled": true
       },
       "published_types": [
@@ -635,7 +619,7 @@
         "tv"
       ],
       "learned_routes": [
-        "/search?q={query}"
+        "/index.php?do=search&subaction=search&search_start=0&full_search=0&story={query}"
       ],
       "core_options": {
         "desktop_runtime_compat": {
@@ -650,64 +634,64 @@
         }
       },
       "domain_substitutions": {
-        "flemmix.casa": "flemmix.me",
-        "flemmix.gold": "flemmix.me",
-        "flemmix.voto": "flemmix.me",
-        "flemmix.garden": "flemmix.me",
-        "wiflix.name": "flemmix.me",
-        "wiflix-hd.vip": "flemmix.me",
-        "ww1.wiflix-adresses.fun": "flemmix.me",
-        "flemmix.menn": "flemmix.me",
-        "ww547.wiflix-hd.vip": "flemmix.me",
-        "flemmix.wales": "flemmix.me",
-        "flemmix.vip": "flemmix.me",
-        "flemmix.prof": "flemmix.me",
-        "wiflix.re": "flemmix.me",
-        "flemmix.cafe": "flemmix.me",
-        "flemmix.men": "flemmix.me",
-        "flemmix.kim": "flemmix.me",
-        "flemmix.cloud": "flemmix.me",
-        "flemmix.party": "flemmix.me"
+        "flemmix.casa": "flemmix.cloud",
+        "flemmix.gold": "flemmix.cloud",
+        "flemmix.voto": "flemmix.cloud",
+        "flemmix.garden": "flemmix.cloud",
+        "wiflix.name": "flemmix.cloud",
+        "wiflix-hd.vip": "flemmix.cloud",
+        "ww1.wiflix-adresses.fun": "flemmix.cloud",
+        "flemmix.menn": "flemmix.cloud",
+        "ww547.wiflix-hd.vip": "flemmix.cloud",
+        "flemmix.wales": "flemmix.cloud",
+        "flemmix.vip": "flemmix.cloud",
+        "flemmix.prof": "flemmix.cloud",
+        "wiflix.re": "flemmix.cloud",
+        "flemmix.cafe": "flemmix.cloud",
+        "flemmix.men": "flemmix.cloud",
+        "flemmix.kim": "flemmix.cloud",
+        "flemmix.party": "flemmix.cloud",
+        "flemmix.me": "flemmix.cloud"
       },
       "replacements": {
-        "flemmix.casa": "flemmix.me",
-        "flemmix.garden": "flemmix.me",
-        "flemmix.gold": "flemmix.me",
-        "flemmix.menn": "flemmix.me",
-        "flemmix.voto": "flemmix.me",
-        "wiflix-hd.vip": "flemmix.me",
-        "wiflix.name": "flemmix.me",
-        "ww1.wiflix-adresses.fun": "flemmix.me",
-        "ww547.wiflix-hd.vip": "flemmix.me",
-        "flemmix.men": "flemmix.me",
-        "flemmix.kim": "flemmix.me",
-        "flemmix.cloud": "flemmix.me",
-        "flemmix.wales": "flemmix.me",
-        "flemmix.vip": "flemmix.me",
-        "flemmix.prof": "flemmix.me",
-        "wiflix.re": "flemmix.me",
-        "flemmix.cafe": "flemmix.me",
-        "flemmix.party": "flemmix.me"
+        "flemmix.casa": "flemmix.cloud",
+        "flemmix.garden": "flemmix.cloud",
+        "flemmix.gold": "flemmix.cloud",
+        "flemmix.menn": "flemmix.cloud",
+        "flemmix.voto": "flemmix.cloud",
+        "wiflix-hd.vip": "flemmix.cloud",
+        "wiflix.name": "flemmix.cloud",
+        "ww1.wiflix-adresses.fun": "flemmix.cloud",
+        "ww547.wiflix-hd.vip": "flemmix.cloud",
+        "flemmix.men": "flemmix.cloud",
+        "flemmix.kim": "flemmix.cloud",
+        "flemmix.wales": "flemmix.cloud",
+        "flemmix.vip": "flemmix.cloud",
+        "flemmix.prof": "flemmix.cloud",
+        "wiflix.re": "flemmix.cloud",
+        "flemmix.cafe": "flemmix.cloud",
+        "flemmix.party": "flemmix.cloud",
+        "flemmix.me": "flemmix.cloud"
       },
       "runtime_domain_replacements": {
-        "flemmix.casa": "flemmix.me",
-        "flemmix.garden": "flemmix.me",
-        "flemmix.gold": "flemmix.me",
-        "flemmix.menn": "flemmix.me",
-        "flemmix.voto": "flemmix.me",
-        "wiflix-hd.vip": "flemmix.me",
-        "wiflix.name": "flemmix.me",
-        "ww1.wiflix-adresses.fun": "flemmix.me",
-        "ww547.wiflix-hd.vip": "flemmix.me",
-        "flemmix.men": "flemmix.me",
-        "flemmix.kim": "flemmix.me",
-        "flemmix.cloud": "flemmix.me",
-        "flemmix.wales": "flemmix.me",
-        "flemmix.vip": "flemmix.me",
-        "flemmix.prof": "flemmix.me",
-        "wiflix.re": "flemmix.me",
-        "flemmix.cafe": "flemmix.me",
-        "flemmix.party": "flemmix.me"
+        "flemmix.casa": "flemmix.cloud",
+        "flemmix.garden": "flemmix.cloud",
+        "flemmix.gold": "flemmix.cloud",
+        "flemmix.menn": "flemmix.cloud",
+        "flemmix.voto": "flemmix.cloud",
+        "wiflix-hd.vip": "flemmix.cloud",
+        "wiflix.name": "flemmix.cloud",
+        "ww1.wiflix-adresses.fun": "flemmix.cloud",
+        "ww547.wiflix-hd.vip": "flemmix.cloud",
+        "flemmix.men": "flemmix.cloud",
+        "flemmix.kim": "flemmix.cloud",
+        "flemmix.wales": "flemmix.cloud",
+        "flemmix.vip": "flemmix.cloud",
+        "flemmix.prof": "flemmix.cloud",
+        "wiflix.re": "flemmix.cloud",
+        "flemmix.cafe": "flemmix.cloud",
+        "flemmix.party": "flemmix.cloud",
+        "flemmix.me": "flemmix.cloud"
       },
       "candidate_learned_routes": [
         "/index.php?do=search&subaction=search&story={query}",
@@ -909,17 +893,17 @@
       ],
       "provider_lego_options": {
         "scripts/provider_patches/flemmix_runtime_v1.py": {
-          "base": "https://flemmix.me"
+          "base": "https://flemmix.cloud"
         }
       },
       "search_request_plan": [
         {
-          "base": "https://flemmix.me",
-          "route": "/search?q={query}",
+          "base": "https://flemmix.cloud",
+          "route": "/index.php?do=search&subaction=search&search_start=0&full_search=0&story={query}",
           "requestSpec": {
             "method": "GET",
             "headers": {
-              "Accept": "application/json,text/html,*/*",
+              "Accept": "text/html,application/xhtml+xml,*/*",
               "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.7"
             }
           },
@@ -3322,7 +3306,7 @@
     "animesama-co": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://anime-sama.wiki/",
-      "official_site": "https://animes-sama.fr",
+      "official_site": "https://animesama.co",
       "manifest_overrides": {
         "enabled": true
       },
@@ -3342,11 +3326,13 @@
         "https://animesama.co/"
       ],
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/template-php/defaut/fetch.php",
+        "/anime/{id}-{slug}.html",
+        "/anime/{id}-{slug}/saison-{season}.html",
+        "/anime/{id}-{slug}/saison-{season}/episode-{episode}.html"
       ],
       "domain_substitutions": {
-        "anime-sama.store": "animes-sama.fr",
-        "animesama.co": "animes-sama.fr"
+        "anime-sama.store": "animesama.co"
       },
       "candidate_learned_routes": [
         "/catalogue/?search={query}",
@@ -3479,19 +3465,6 @@
           }
         ]
       },
-      "candidate_api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
-      },
       "route_data_state": "repair",
       "repair_disposition": {
         "schemaVersion": 1,
@@ -3527,23 +3500,6 @@
         },
         "evidenceDestructive": false
       },
-      "runtime_domain_replacements": {
-        "animesama.co": "animes-sama.fr"
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        },
-        "referer": "https://animesama.co"
-      },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
         "effective_coverage_ratio": 1,
@@ -3575,7 +3531,9 @@
       ],
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
-      ]
+      ],
+      "source_runtime_family": "dle-search-series-season-episode",
+      "reconstruction_state": "provider-local-current-site"
     },
     "animesultra": {
       "capability": "mixed_embed_resolver",
@@ -3588,7 +3546,8 @@
         "ww.animesultra.org": "v2.animesultra.org"
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/index.php?do=search&subaction=search&story={query}",
+        "/engine/ajax/full-story.php?newsId={id}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -3743,19 +3702,6 @@
           }
         ]
       },
-      "candidate_api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
-      },
       "route_data_state": "repair",
       "repair_disposition": {
         "schemaVersion": 1,
@@ -3791,20 +3737,6 @@
         },
         "evidenceDestructive": false
       },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        },
-        "referer": "https://v2.animesultra.org"
-      },
       "published_types": [
         "anime"
       ],
@@ -3819,7 +3751,9 @@
         "scripts/provider_patches/animesultra_runtime_v1.py": {
           "base": "https://v2.animesultra.org"
         }
-      }
+      },
+      "source_runtime_family": "dle-full-story-sibnet",
+      "reconstruction_state": "provider-local-current-site"
     },
     "animetsu": {
       "capability": "direct_media",
@@ -6801,7 +6735,7 @@
     "sekai": {
       "capability": "html_scraper",
       "official_hub": null,
-      "official_site": "https://sekai.one/?v=15",
+      "official_site": "https://sekai.one",
       "candidate_config_reconciliation": {
         "version": 3,
         "route_plan_source": "embedded-provider-js",
@@ -6827,7 +6761,7 @@
         "/meta/series/tt12343534.json"
       ],
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
+        "/sitemap.xml",
         "/{slug}"
       ],
       "route_proof_version": 5,
@@ -6935,19 +6869,6 @@
           }
         ]
       },
-      "candidate_api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
-      },
       "manifest_overrides": {
         "enabled": true
       },
@@ -6985,20 +6906,6 @@
           ]
         },
         "evidenceDestructive": false
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        },
-        "referer": "https://sekai.one/?v=15"
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -7039,7 +6946,9 @@
         "scripts/provider_patches/sekai_runtime_v1.py": {
           "base": "https://sekai.one"
         }
-      }
+      },
+      "source_runtime_family": "sitemap-script-family",
+      "reconstruction_state": "provider-local-current-site"
     },
     "streamzo": {
       "notes": [
@@ -8580,7 +8489,8 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/template-php/defaut/fetch.php",
+        "/{slug}/saison-{season}/episode-{episode}/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -8724,19 +8634,6 @@
           }
         ]
       },
-      "candidate_api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
-      },
       "identity_input": {
         "mode": "catalog_search",
         "requires_tmdb_before_run": true,
@@ -8780,20 +8677,6 @@
         },
         "evidenceDestructive": false
       },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        },
-        "referer": "https://voiranime.rip"
-      },
       "published_types": [
         "anime"
       ],
@@ -8809,7 +8692,9 @@
           "base": "https://voiranime.rip",
           "maxStreams": 4
         }
-      }
+      },
+      "source_runtime_family": "search-episode-embed",
+      "reconstruction_state": "provider-local-current-site"
     },
     "vostfree": {
       "capability": "mixed_embed_resolver",
@@ -9561,7 +9446,8 @@
       },
       "notes": [
         "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias.",
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
+        "Current browser-observed runtime is HTML catalogue -> exact episode page -> terminal HLS; provider-local runtime owns this chain while Core owns final validation."
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -9755,7 +9641,11 @@
       },
       "published_types": [
         "anime"
-      ]
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/allanime_site_runtime_v1.py"
+      ],
+      "source_runtime_family": "catalogue-html"
     },
     "allwish": {
       "capability": "html_scraper",
@@ -10003,7 +9893,8 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/MenuSearch.html",
+        "/VideoPlayer.html"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -10113,19 +10004,6 @@
           }
         ]
       },
-      "candidate_api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
-      },
       "manifest_overrides": {
         "enabled": true
       },
@@ -10163,20 +10041,6 @@
           ]
         },
         "evidenceDestructive": false
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        },
-        "referer": "https://v5.anime-ultime.net"
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -10218,7 +10082,9 @@
         "scripts/provider_patches/anime_ultime_runtime_v1.py": {
           "base": "https://v5.anime-ultime.net"
         }
-      }
+      },
+      "source_runtime_family": "menu-search-series-focus-player",
+      "reconstruction_state": "provider-local-current-site"
     },
     "animevost-fr": {
       "capability": "api_stream_resolver",

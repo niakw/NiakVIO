@@ -6,6 +6,7 @@ p=(ROOT/"scripts/provider_patches/uhdmovies_runtime_v1.py").read_text(encoding="
 for marker in [
     "NIAKVIO_UHDMOVIES_RUNTIME_V1",
     "function findPosts",
+    'b+"/search/"+encodeURIComponent(m.title).replace(/%20/g,"+")',
     'b+"/?s="+encodeURIComponent(m.title)',
     "function parseForm",
     'h.Cookie=token+"="+values[i]',

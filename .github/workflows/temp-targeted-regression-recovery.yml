@@ -20,6 +20,12 @@ on:
       - 'tests/provider_sekai_runtime_contract_test.py'
       - 'scripts/provider_patches/moviesmod_runtime_v1.py'
       - 'tests/provider_moviesmod_runtime_contract_test.py'
+      - 'scripts/provider_patches/allanime_site_runtime_v1.py'
+      - 'tests/allanime_site_runtime_contract_test.py'
+      - 'scripts/provider_patches/vostfree_dle_uqload_runtime_v1.py'
+      - 'tests/vostfree_transport_contract_test.py'
+      - 'scripts/provider_patches/uhdmovies_runtime_v1.py'
+      - 'tests/uhdmovies_runtime_contract_test.py'
       - 'scripts/provider_patches/movieshunt_runtime_v1.py'
       - 'tests/provider_movieshunt_runtime_contract_test.py'
       - 'tests/provider_quick_yield_fixture_priority_test.py'
@@ -43,6 +49,12 @@ on:
       - 'tests/provider_sekai_runtime_contract_test.py'
       - 'scripts/provider_patches/moviesmod_runtime_v1.py'
       - 'tests/provider_moviesmod_runtime_contract_test.py'
+      - 'scripts/provider_patches/allanime_site_runtime_v1.py'
+      - 'tests/allanime_site_runtime_contract_test.py'
+      - 'scripts/provider_patches/vostfree_dle_uqload_runtime_v1.py'
+      - 'tests/vostfree_transport_contract_test.py'
+      - 'scripts/provider_patches/uhdmovies_runtime_v1.py'
+      - 'tests/uhdmovies_runtime_contract_test.py'
       - 'provider-overrides.json'
 
 permissions:
@@ -79,7 +91,9 @@ jobs:
         run: |
           set -euo pipefail
           python tests/provider_domain_metadata_reconcile_test.py
+          python tests/user_provider_manual_evidence_crosscheck_test.py
           python tests/animesalt_runtime_contract_test.py
+          python tests/allanime_site_runtime_contract_test.py
           python tests/vostfree_transport_contract_test.py
           python tests/provider_animesamaco_domain_data_contract_test.py
           python tests/presentation_revision_parser_test.py
@@ -101,6 +115,131 @@ jobs:
           python tests/provider_incomplete_player_url_rejection_test.py
           python tests/provider_runtime_dispatch_diagnostics_test.py
           python tests/provider_census_identity_diagnostics_test.py
+
+      - name: Persist structured Provider CONFIG drifts on repair branch
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'tmp/provider-max-repair-proof-20260919' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="tmp/provider-max-repair-proof-20260919"
+          git fetch origin "$branch"
+          git checkout -B "$branch" "origin/$branch"
+          python - <<'PY'
+          import json,sys
+          from pathlib import Path
+          ROOT=Path.cwd()
+          sys.path.insert(0,str(ROOT/"scripts"))
+          from provider_patch_blocks import decode_managed_data, validate_managed_fixes
+          from materialize_provider_v3_all import provider_model, normalize_anime_transport_compatibility
+          from provider_base_store import build_provider_data_model, canonical_id
+          from current_provider_scope import active_provider_ids
+          from domain_refresh_transaction_v2 import rebuild_provider_configs
+          from sync_manifest_projection_rows import sync
+
+          def load(path):
+              return json.loads((ROOT/path).read_text(encoding="utf-8"))
+
+          manifest=load("manifest.json")
+          overrides=load("provider-overrides.json")
+          static=load("automation/provider-v3-static-knowledge.json")
+          patches=overrides["provider_patches"]
+          capabilities=overrides["provider_capabilities"]
+          static_rows=static["providers"]
+          active=active_provider_ids()
+          drift=[]
+          details={}
+          for row in manifest.get("scrapers") or []:
+              pid=canonical_id(row.get("id"))
+              if pid not in active:
+                  continue
+              patch=patches.get(pid)
+              capability=capabilities.get(pid)
+              static_row=static_rows.get(pid)
+              if not all(isinstance(v,dict) for v in (patch,capability,static_row)):
+                  raise SystemExit(f"{pid}: incomplete structured DATA")
+              path=ROOT/str(row.get("filename") or "")
+              if not path.is_file():
+                  raise SystemExit(f"{pid}: published file missing {path}")
+              text=path.read_text(encoding="utf-8")
+              ids=validate_managed_fixes(text)
+              config_id=f"PROVIDER.{pid.upper()}.CONFIG.V1"
+              if config_id not in ids:
+                  raise SystemExit(f"{pid}: CONFIG Lego missing")
+              published=decode_managed_data(text,config_id)
+              entry=json.loads(json.dumps(row))
+              normalize_anime_transport_compatibility(entry)
+              model=provider_model(pid,patch,capability,static_row)
+              expected=build_provider_data_model(pid,entry,known_site=model.get("knownSite"),provider_model=model)
+              if published!=expected:
+                  drift.append(pid)
+                  details[pid]=[
+                      key for key in sorted(set(published)|set(expected))
+                      if published.get(key)!=expected.get(key)
+                  ]
+          print("FIELD_PROVIDER_CONFIG_DRIFT",json.dumps({"providers":drift,"keys":details},sort_keys=True))
+          if not drift:
+              raise SystemExit(0)
+          updates=rebuild_provider_configs(drift)
+          if sorted(row.get("provider") for row in updates)!=sorted(drift):
+              raise SystemExit(f"unexpected rebuild scope drift={drift!r} updates={updates!r}")
+          sync(check=False)
+
+          # Recompute every changed provider against the post-rebuild manifest.
+          manifest=load("manifest.json")
+          rows={canonical_id(row.get("id")):row for row in manifest.get("scrapers") or []}
+          for pid in drift:
+              row=rows[pid]
+              entry=json.loads(json.dumps(row))
+              normalize_anime_transport_compatibility(entry)
+              model=provider_model(pid,patches[pid],capabilities[pid],static_rows[pid])
+              expected=build_provider_data_model(pid,entry,known_site=model.get("knownSite"),provider_model=model)
+              text=(ROOT/row["filename"]).read_text(encoding="utf-8")
+              published=decode_managed_data(text,f"PROVIDER.{pid.upper()}.CONFIG.V1")
+              assert published==expected,(pid,{
+                  key:{"published":published.get(key),"expected":expected.get(key)}
+                  for key in sorted(set(published)|set(expected))
+                  if published.get(key)!=expected.get(key)
+              })
+          print("FIELD_PROVIDER_CONFIG_REMATERIALIZED",json.dumps(sorted(drift)))
+          PY
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "Published Provider CONFIG DATA already current; no branch mutation"
+            exit 0
+          fi
+          git status --short
+          git diff --stat
+          python - <<'PY'
+          import subprocess
+          rows=subprocess.check_output(["git","status","--short"],text=True).splitlines()
+          touched=[row[3:] for row in rows if len(row)>=4]
+          allowed_exact={
+              "manifest.json",
+              "provider-v3-materialization.json",
+              "vf/manifest.json",
+              "no-anime/manifest.json",
+              "vf-no-anime/manifest.json",
+              "native-hub46/manifest.json",
+              "manifest-hub46.json",
+              "provider_catalog.json",
+          }
+          bad=[
+              p for p in touched
+              if p not in allowed_exact and not (
+                  p.startswith("providers/") and p.endswith(".js")
+              )
+          ]
+          if bad:
+              raise SystemExit(f"unexpected generated paths: {bad}")
+          PY
+          python scripts/audit_provider_v3_static.py
+          python tests/global_media_type_pre_network_gate_test.py
+          python tests/global_stream_output_guard_test.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "No generated changes"; exit 0; }
+          git commit -m "fix(data): rematerialize current provider CONFIG drifts"
+          git push origin HEAD:"$branch"
 
       - name: Materialize current provider bytes
         run: |
@@ -130,7 +269,7 @@ jobs:
           sys.path.insert(0,str(ROOT/"scripts"))
           import audit_provider_quick_yield as audit
 
-          targets={"animesama-co","neko-sama","voiranime","voiranime-rip","kurage","flemmix","anime-ultime","coflix","animesultra","sekai","moviesmod","movieshunt","animesalt"}
+          targets={"animesama-co","neko-sama","voiranime","voiranime-rip","kurage","flemmix","anime-ultime","coflix","animesultra","sekai","moviesmod","movieshunt","animesalt","allanime","vostfree","uhdmovies"}
           tasks,_=audit.build_tasks()
           selected=[task for task in tasks if task["provider_id"] in targets]
           observed={task["provider_id"] for task in selected}
@@ -207,7 +346,7 @@ jobs:
           PY
 
       - name: Persist targeted verdict
-        if: always()
+        if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         shell: bash
         run: |
           set -euo pipefail

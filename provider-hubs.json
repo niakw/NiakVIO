@@ -7,35 +7,39 @@
       "name": "AnimeSama.co (DLE Mirror)",
       "manifest_status": "Actif",
       "category": "Francophone / Anime",
-      "hub": "https://anime-sama.wiki/",
-      "direct": "https://animes-sama.fr/",
-      "source": "curated_user_registry",
+      "hub": "https://animesama.co/",
+      "direct": "https://animesama.co/",
+      "source": "current_upstream_provider_config",
       "aliases": [
-        "anime-sama",
-        "animesama"
+        "animesama-co",
+        "animesama.co"
       ],
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "AnimeSama.co is the distinct Gowaru DLE provider. Keep it separate from Anime-Sama catalogue authority; current provider source declares https://animesama.co.",
       "direct_candidates": [
-        "https://animes-sama.fr/",
-        "https://anime-sama.store/"
+        "https://animesama.co/"
       ],
       "allowed_terminal_hosts": [
-        "animes-sama.fr",
-        "anime-sama.store"
+        "animesama.co"
       ],
-      "search_queries": [],
+      "search_queries": [
+        "\"AnimeSama.co\" DLE"
+      ],
       "sources": [
         {
-          "type": "hub",
-          "url": "https://anime-sama.wiki/",
-          "priority": 110,
-          "purpose": "Official mirror access hub"
+          "type": "upstream_provider",
+          "url": "https://github.com/Gowaru/gowaru-nuvio-providers/blob/main/src/animesama-co/config.js",
+          "priority": 120,
+          "purpose": "Distinct provider-local DLE authority; must not inherit Anime-Sama catalogue hub."
         }
       ],
       "search_confirmation_runs": 2,
       "resolver": "official_outbound",
-      "allowed_terminal_host_patterns": [
-        "^animes?-sama[a-z0-9-]*\\.[a-z0-9-]{2,20}$"
+      "direct_authority": "explicit_current",
+      "direct_authority_source": "current-upstream-provider-config",
+      "direct_authority_observed_at": "2026-09-19",
+      "blocked_hosts": [
+        "animes-sama.fr",
+        "anime-sama.store"
       ]
     },
     "animesultra": {
@@ -2930,13 +2934,13 @@
         "flemmix",
         "wiflix"
       ],
-      "direct": "https://flemmix.me/",
-      "last_verified": "2026-08-30",
-      "schema_notes": "Provider-local runtime source generated 2026-09-18 targets flemmix.me and its /search?q= contract; party/cloud remain address aliases but must not overwrite the runtime base.",
+      "direct": "https://flemmix.cloud/",
+      "last_verified": "2026-09-19",
+      "schema_notes": "User browser evidence captured 2026-09-19: official address hub explicitly advertised flemmix.cloud as active; provider-local DLE GET search returned HTTP 200. Domain Refresh owns future rotations.",
       "direct_candidates": [
+        "https://flemmix.cloud/",
         "https://flemmix.me/",
-        "https://flemmix.party/",
-        "https://flemmix.cloud/"
+        "https://flemmix.party/"
       ],
       "allowed_terminal_hosts": [
         "flemmix.me",
@@ -2962,7 +2966,7 @@
       ],
       "validation_scope": "catalogue_terminal",
       "direct_authority": "explicit_current",
-      "direct_authority_source": "current-upstream-provider-source-and-live-terminal",
+      "direct_authority_source": "user-browser-official-hub-and-live-dle-search",
       "direct_authority_observed_at": "2026-09-19"
     },
     "animezey": {

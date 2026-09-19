@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import json
+import subprocess
 ROOT=Path(__file__).resolve().parents[1]
 hubs=json.loads((ROOT/"provider-hubs.json").read_text(encoding="utf-8"))["providers"]["animesalt"]
 overrides=json.loads((ROOT/"provider-overrides.json").read_text(encoding="utf-8"))["provider_patches"]["animesalt"]
@@ -13,7 +14,12 @@ src=(ROOT/"scripts/provider_patches/animesalt_runtime_v1.py").read_text(encoding
 assert "NIAKVIO_ANIMESALT_RUNTIME_V1" in src
 assert 'function runtimeBase()' in src
 assert 'm&&(m.officialSite||m.knownSite)||c.base' in src
+assert 'action=action_tr_search_suggest' in src
+assert 'runtimeBase()+"/wp-admin/admin-ajax.php"' in src
+assert '"&term="+encodeURIComponent(m.title)' in src
 assert 'runtimeBase()+"/?s="+encodeURIComponent(m.title)' in src
+assert r'player\/index\.php\?data=' in src
+assert 'data.videoSource||data.securedLink||data.file||data.url' in src
 assert 'action=action_select_season&season=' in src
 assert '"&post="+encodeURIComponent(chosen.post)' in src
 assert '/player/index.php?data=' in src
@@ -22,4 +28,6 @@ assert 'data.videoSource||data.securedLink' in src
 assert 'semanticLanes": ["anime"]' in src
 js = src.split("WRAPPER = r'''",1)[1].split("'''",1)[0]
 assert js.count("c.base") == 2, "only runtimeBase fallback may reference legacy cfg base"
+compiled = js.replace("CONFIG_PLACEHOLDER", "{}")
+subprocess.run(["node", "-e", "new Function(process.argv[1]);", compiled], check=True)
 print("AnimeSalt runtime contract passed")
