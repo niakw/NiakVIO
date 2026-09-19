@@ -2,6 +2,7 @@
 from pathlib import Path
 import json
 import subprocess
+from scripts.provider_v3_minimizer import minimize_text
 
 ROOT=Path(__file__).resolve().parents[1]
 src=(ROOT/"scripts/provider_patches/allanime_site_runtime_v1.py").read_text(encoding="utf-8")
@@ -38,6 +39,10 @@ assert ov["learned_routes"]==["/api","/apivtwo/clock.json"]
 assert ov["reconstruction_state"]=="provider-local-current-api"
 
 js=src.split("WRAPPER = r'''",1)[1].split("'''",1)[0].replace("CONFIG_PLACEHOLDER","{}")
+assert "if(!out.length)out=await siteFallback(meta,q);" in js
+minimized=minimize_text(js).text
+assert "\n" not in minimized and "\r" not in minimized
+subprocess.run(["node","-e","new Function(process.argv[1]);",minimized],check=True)
 subprocess.run(["node","-e","new Function(process.argv[1]);",js],check=True)
 
 print("AllAnime GraphQL + observed site fallback runtime contract passed")
