@@ -3,6 +3,7 @@
 const path = require('node:path');
 const os = require('node:os');
 const fs = require('node:fs');
+const vm = require('node:vm');
 const { spawnSync } = require('node:child_process');
 
 const ROOT = fs.realpathSync(path.resolve(__dirname, '..'));
@@ -131,10 +132,26 @@ if (syntax.error && syntax.error.code === 'ETIMEDOUT') {
   process.exit(1);
 }
 if (syntax.status !== 0) {
+  let parserSummary = '';
+  let parserLocation = '';
+  try {
+    // Parse only; never execute provider code. vm.Script gives us a stable,
+    // compact SyntaxError even when node --check emits a giant one-line source.
+    new vm.Script(source, { filename: path.basename(file), displayErrors: true });
+  } catch (error) {
+    const name = String(error && error.name || 'SyntaxError');
+    const message = String(error && error.message || 'syntax validation failed').replace(/\s+/g, ' ').trim();
+    parserSummary = `syntax_summary=${name}: ${message}`;
+    const stackLine = String(error && error.stack || '')
+      .split(/\r?\n/)
+      .find((line) => /:\d+(?::\d+)?\)?$/.test(line.trim()) && !line.includes('node:vm'));
+    if (stackLine) parserLocation = `syntax_location=${stackLine.trim()}`;
+  }
   const diagnostic = compactSyntaxDiagnostic(
     syntax.stderr || syntax.stdout || 'syntax validation failed'
   );
-  process.stderr.write((diagnostic || 'syntax validation failed') + '\n');
+  const parts = [parserSummary, parserLocation, diagnostic].filter(Boolean);
+  process.stderr.write((parts.join('\n') || 'syntax validation failed') + '\n');
   process.exitCode = 1;
   return;
 }
