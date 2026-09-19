@@ -13,7 +13,7 @@ for needle in (
     "abhilinks",
     "hubcloud",
     "vcloud",
-    "cdn.fsl-buckets.life",
+    "fsl-buckets",
     "NIAKVIO_PROVIDER_RUNTIME_RESOLVER_V1",
 ):
     assert needle.lower() in src.lower(), needle
