@@ -405,6 +405,29 @@ def provider_model(
     }
 
 
+def project_published_semantic_types(entry: dict[str, Any], patch: dict[str, Any]) -> bool:
+    """Project provider-owned published capability before transport aliases."""
+    values = patch.get("published_types")
+    if not isinstance(values, list) or not values:
+        return False
+    canonical: list[str] = []
+    for value in values:
+        item = str(value or "").strip().casefold()
+        if item in {"movie", "tv", "anime"} and item not in canonical:
+            canonical.append(item)
+    if not canonical:
+        raise ValueError("published_types must contain at least one canonical media type")
+    current = [
+        str(value or "").strip().casefold()
+        for value in (entry.get("canonicalSupportedTypes") or entry.get("supportedTypes") or [])
+        if str(value or "").strip().casefold() in {"movie", "tv", "anime"}
+    ]
+    changed = current != canonical
+    entry["canonicalSupportedTypes"] = canonical
+    entry["supportedTypes"] = list(canonical)
+    return changed
+
+
 def normalize_anime_transport_compatibility(entry: dict[str, Any]) -> bool:
     """Project canonical media capability onto Nuvio transport aliases."""
     canonical = []
@@ -530,17 +553,19 @@ def materialize_all(
     aggregate = hashlib.sha256()
 
     for index, entry in enumerate(rows, start=1):
-        normalize_anime_transport_compatibility(entry)
         provider_id = canonical_id(str(entry.get("id") or ""))
-        print(
-            "FIELD_PROVIDER_V3_MATERIALIZE_BEGIN "
-            f"index={index} total={len(rows)} provider={provider_id}",
-            flush=True,
-        )
         patch = patches.get(provider_id)
         capability = capabilities.get(provider_id)
         if not isinstance(patch, dict) or not isinstance(capability, dict):
             raise ValueError(f"{provider_id}: missing structured DATA")
+        projected_types = project_published_semantic_types(entry, patch)
+        normalize_anime_transport_compatibility(entry)
+        print(
+            "FIELD_PROVIDER_V3_MATERIALIZE_BEGIN "
+            f"index={index} total={len(rows)} provider={provider_id} "
+            f"published_types_projected={str(projected_types).lower()}",
+            flush=True,
+        )
 
         static_row = static_rows.get(provider_id)
         if not isinstance(static_row, dict):
