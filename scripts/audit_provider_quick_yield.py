@@ -272,15 +272,14 @@ def classify_debug_stage(task: dict[str, Any], probe: dict[str, Any], debug: dic
     if supported and requested not in supported and not (requested == "tv" and "anime" in supported):
         return "gate_type_capability"
 
-    if not bool(model.get("has_api_recipe")) and int(model.get("route_count") or 0) <= 0:
-        return "gate_runtime_plan_missing"
-
     dispatch_error = debug.get("provider_runtime_dispatch_error_v1")
     if isinstance(dispatch_error, dict) and str(dispatch_error.get("name") or "").strip():
         return "provider_runtime_hook_exception"
 
     provider_fetches = _provider_fetches(debug)
     if not provider_fetches:
+        if not bool(model.get("has_api_recipe")) and int(model.get("route_count") or 0) <= 0:
+            return "gate_runtime_plan_missing"
         family = str(model.get("source_runtime_family") or "unknown").casefold()
         return "gate_source_family_unknown" if family == "unknown" else "provider_zero_before_provider_network"
 
