@@ -2653,28 +2653,25 @@
     "anikototv": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://streamingsiteshub.com/",
-      "official_site": "https://anikototv.to/home",
+      "official_site": "https://megaplay.buzz",
       "published_types": [
         "anime"
       ],
       "learned_routes": [
-        "/search?keyword={query}",
-        "/watch/{slug}",
-        "/ajax/episode/list/{id}",
-        "/ajax/server/list?servers={id}",
-        "/ajax/server?get={id}"
+        "/api/v2/tmdb?id={tmdbId}&s={season}&e={episode}",
+        "/stream/{identityKind}/{identityId}/{episode}/{mode}",
+        "/stream/getSources?id={id}"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/anikototv_runtime_v2.py"
       ],
       "provider_lego_options": {
         "scripts/provider_patches/anikototv_runtime_v2.py": {
-          "mirrors": [
-            "https://anikototv.to",
-            "https://anikoto.cz",
-            "https://anikoto.me",
-            "https://anikoto.net",
-            "https://anikototv.se"
+          "mapping": "https://arm.haglund.dev/api/v2/tmdb",
+          "domain": "megaplay.buzz",
+          "modes": [
+            "sub",
+            "dub"
           ]
         }
       },
@@ -2874,8 +2871,9 @@
         "sequential": true
       },
       "notes": [
-        "AniKoto runtime v2 is the durable authority for browser-like MegaPlay/CDN transport; no anti-bot token is fabricated and terminal 403 remains fail-closed.",
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
+        "2026-09-19 upstream architecture migration: historical AniKoto /search, /watch and /ajax routes retired from execution authority. Current provider maps TMDB to MAL/AniList then resolves MegaPlay /stream/{mal|ani}/{id}/{absoluteEpisode}/{sub|dub} and /stream/getSources.",
+        "Authoritative semantic contract remains anime-only; Core TMDB identity and season/episode are converted to a provider identity without executing upstream JavaScript."
       ]
     },
     "animekai": {
