@@ -2498,3 +2498,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Root cause narrowed to the provider-local fallback parser: the episode page is fetched explicitly, but `siteCandidates()` only extracted literal `src/href/data-src` and raw `http(s)` strings. That is narrower than ProviderBase's proven URL decoder and misses escaped/scripted player payloads (the retained manual positive resolved to `fetch.nexabloom.top/.../master.m3u8`).
 - Fix: AllAnime `siteCandidates()` now merges ProviderBase `_extractUrls()` and explicit encoded-player payload extraction before the bounded terminal crawler. This preserves the provider-owned episode identity while reusing Core/ProviderBase URL decoding instead of duplicating a weaker regex.
 - Validation pending: targeted AllAnime census must show either a nested player/media request and terminal stream, or a more specific remaining blocker. Do not promote before that proof.
+
+### 2026-09-19 — UHDMovies terminal 206 false-negative fixed
+
+- Targeted recovery **35464508422** proves UHDMovies can traverse the full current chain for Inception: `uhdmovies.my` search/detail -> `cloud.unblockedgames.world` landing forms -> `driveseed.org/file/...` -> `video-seed.dev/`, with the final response **HTTP 206**.
+- NiakVIO still returned `no_streams` because `followDownload()` only accepted extension/hostname-shaped direct URLs; unlike the shared `request()` path it did not honor `terminalResponse()`. A range/media response at an opaque URL was therefore discarded after being successfully reached.
+- Fix: `followDownload()` now treats HTTP 206 / Content-Range / video content-type as terminal media and returns the actual final URL. Contract test locks that branch. Fresh playable validation is pending before promotion.
