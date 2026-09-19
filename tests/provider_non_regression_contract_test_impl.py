@@ -49,6 +49,8 @@ for token in (
 ):
     assert token in v3, f"historical semantic/transport separation lost: {token}"
 assert "values = canonical_semantic_types(manifest_row)" in v3
+assert 'source = "5.21.0-fixture-types-unproven-transport-only"' in v3
+assert "values = legacy" not in v3
 assert "type_floor = set().union(*(set(values) for values in historical_types.values()))" in v3
 
 assert 'git_json(base_ref, "provider-v3-quick-yield.json")' in gate
