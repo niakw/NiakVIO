@@ -7,8 +7,8 @@ ov=json.loads((ROOT/"provider-overrides.json").read_text(encoding="utf-8"))["pro
 hubs=json.loads((ROOT/"provider-hubs.json").read_text(encoding="utf-8"))["providers"]["moviesmod"]
 for needle in ("/search/","form","?go=","driveseed","instant download","resume cloud","NIAKVIO_MOVIESMOD_RUNTIME_V1"):
     assert needle.lower() in src.lower(), needle
-assert hubs["direct"] == "https://moviesmod.army/"
+assert hubs["direct"] == "https://moviesmod.ai.in/"
 assert hubs["direct_authority"] == "explicit_current"
 assert ov["provider_lego_scripts"] == ["scripts/provider_patches/moviesmod_runtime_v1.py"]
-assert ov["provider_lego_options"]["scripts/provider_patches/moviesmod_runtime_v1.py"]["base"] == "https://moviesmod.army"
+assert ov["provider_lego_options"]["scripts/provider_patches/moviesmod_runtime_v1.py"]["base"] == "https://moviesmod.ai.in"
 print("MoviesMod provider runtime/domain contract passed")
