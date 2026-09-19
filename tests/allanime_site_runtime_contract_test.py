@@ -19,6 +19,10 @@ for needle in (
     "clock.json",
     "function decodeSource",
     "function directPlayable",
+    "https://ww2.aniwatch.fit",
+    "siteFallback",
+    '-episode-"+episodes[ei]+"-"+modes[mi].suffix',
+    "_crawlDirectMedia([page],page,3)",
     'provider:"allanime",resolve:resolve',
 ):
     assert needle in src, needle
@@ -31,4 +35,4 @@ assert ov["reconstruction_state"]=="provider-local-current-api"
 js=src.split("WRAPPER = r'''",1)[1].split("'''",1)[0].replace("CONFIG_PLACEHOLDER","{}")
 subprocess.run(["node","-e","new Function(process.argv[1]);",js],check=True)
 
-print("AllAnime GraphQL runtime contract passed")
+print("AllAnime GraphQL + observed site fallback runtime contract passed")
