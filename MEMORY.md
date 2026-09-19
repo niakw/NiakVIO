@@ -2360,4 +2360,3 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Root cause is pipeline ordering, not provider rematerialization: after `reapply_published_overrides.py` changes content-addressed filenames, `manifest-hub46.json` must be reprojected before prune treats it as a local retention authority.
 - Fix: `release-finalize.yml` now regenerates `manifest-hub46.json` immediately after language projections and before prune; the later post-version Hub46 regeneration remains in place. `tests/release_version_sync_test.py` locks the required ordering and requires both Hub46 projection passes.
 - Validation remains pending until the corrected finalizer publishes atomically and downstream CORE/non-regression/census inspect the published SHA.
-
