@@ -22,7 +22,10 @@ for needle in (
     "https://ww2.aniwatch.fit",
     "siteFallback",
     '-episode-"+episodes[ei]+"-"+modes[mi].suffix',
-    "_crawlDirectMedia([page],page,3)",
+    "function fetchSitePage(page)",
+    "function siteCandidates(html,page)",
+    "rows=await _crawlDirectMedia(candidates,doc.url,3)",
+    "rows=await _crawlDirectMedia([doc.url],doc.url,3)",
     'provider:"allanime",resolve:resolve',
 ):
     assert needle in src, needle
