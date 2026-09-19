@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35474129054",
-  "triggerSha": "c8e7bd60a49ac2cf40c4dd3bbfa602b42cf85f77",
+  "runId": "35474716826",
+  "triggerSha": "761b49811a66924da13946af7d8087f4df998c79",
   "providers": [
     {
       "provider": "4khdhub",
@@ -13,6 +13,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_zero_result",
         "tv=no_streams/provider_network_zero_result"
@@ -39,6 +40,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_network_zero_result"
       ],
@@ -63,6 +65,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_waf_challenge",
         "tv=no_streams/provider_waf_challenge"
@@ -89,6 +92,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_network_http_error"
       ],
@@ -112,6 +116,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_waf_challenge"
       ],
@@ -135,6 +140,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_network_exception"
       ],
@@ -158,6 +164,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_network_zero_result"
       ],
@@ -181,6 +188,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_waf_challenge"
       ],
@@ -197,13 +205,16 @@
     },
     {
       "provider": "animevostfr",
-      "status": "NO PROOF",
-      "color": "🔵",
+      "status": "CANDIDATE OK",
+      "color": "🟦",
       "declaredLanes": [
         "anime"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [
+        "run 34309729426"
+      ],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_network_zero_result"
       ],
@@ -214,7 +225,7 @@
       "evidenceDepth": [
         "anime=lookup_only"
       ],
-      "action": "continue corpus proof search; BRAIN checks",
+      "action": "replay candidate proof against current bytes; publish only after current verified media",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -228,6 +239,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_waf_challenge",
         "tv=no_streams/provider_waf_challenge"
@@ -254,6 +266,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_waf_challenge"
       ],
@@ -277,6 +290,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_zero_result"
       ],
@@ -301,6 +315,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_http_error",
         "tv=no_streams/provider_network_http_error"
@@ -328,6 +343,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_waf_challenge",
         "tv=no_streams/provider_waf_challenge"
@@ -347,14 +363,17 @@
     },
     {
       "provider": "persianstremio",
-      "status": "CHAIN REACHED",
-      "color": "🟣",
+      "status": "CANDIDATE OK",
+      "color": "🟦",
       "declaredLanes": [
         "movie",
         "tv"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [
+        "run 34323567439"
+      ],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_zero_result",
         "tv=no_streams/provider_network_zero_result"
@@ -368,7 +387,7 @@
         "movie=chain_reached",
         "tv=chain_reached"
       ],
-      "action": "finish terminal extractor/validation; do not promote before verified media",
+      "action": "replay candidate proof against current bytes; publish only after current verified media",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -382,6 +401,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_zero_result",
         "tv=no_streams/provider_network_zero_result"
@@ -401,24 +421,25 @@
     },
     {
       "provider": "uhdmovies",
-      "status": "CHAIN REACHED",
-      "color": "🟣",
+      "status": "PROVIDER NETWORK BLOCKED",
+      "color": "🟤",
       "declaredLanes": [
         "movie"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result"
+        "movie=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "provider_network_http_error",
       "searchProgress": [
         "movie: 8 works tested / 26 retained misses / 8 retained chain hits"
       ],
       "evidenceDepth": [
         "movie=chain_reached"
       ],
-      "action": "finish terminal extractor/validation; do not promote before verified media",
+      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -432,6 +453,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_http_error",
         "tv=no_streams/provider_network_http_error"
@@ -458,6 +480,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_waf_challenge"
       ],
@@ -482,6 +505,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_exception",
         "tv=no_streams/provider_network_exception"
@@ -509,6 +533,7 @@
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
+      "candidateProof": [],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_exception",
         "tv=no_streams/provider_network_exception"
@@ -1206,11 +1231,12 @@
     }
   ],
   "counts": {
-    "CHAIN REACHED": 4,
+    "CANDIDATE OK": 2,
+    "CHAIN REACHED": 2,
     "FULL OK": 24,
-    "NO PROOF": 4,
+    "NO PROOF": 3,
     "PARTIAL OK": 1,
-    "PROVIDER NETWORK BLOCKED": 6,
+    "PROVIDER NETWORK BLOCKED": 7,
     "PROVIDER WAF/ANTIBOT": 7
   },
   "brainQueue": [
