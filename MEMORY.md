@@ -2592,3 +2592,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Census, targeted recovery and non-regression are wired to execute both the AllAnime current behavior test and the YFlix runtime behavior test. Live/candidate/published states must remain distinct.
 
 - **Census network causality corrigée** : le probe classait auparavant une lane en `provider_network_http_error` / `provider_network_exception` dès qu'une requête quelconque de la trace avait échoué, même si une route/alias suivante répondait 200. Cela gonflait `PROVIDER NETWORK BLOCKED` (ex. UHDMovies avec un 404 secondaire malgré une chaîne DriveSeed en 200, PersianStremio avec 503 puis fallback 200). La classification est désormais basée sur la **dernière requête provider HTTP(S) pertinente** : échec terminal = network blocked; ancien échec suivi d'un 2xx = `provider_network_zero_result` / preuve manquante. Les URL non HTTP(S) parasites sont ignorées. Le même contrat est appliqué dans `audit_provider_quick_yield.py` et `nuvio_tv_probe_tmdb_ci.cjs`, avec tests de causalité. Nouveau census requis avant de retenir le nombre réel de blocages réseau.
+
+## 2026-09-19 — statut NO PROOF approfondi + détection WAF/antibot
+
+- Première moitié du correctif : le probe distingue désormais une profondeur `lookup_only` vs `chain_reached` et reconnaît un vrai challenge navigateur/WAF à partir de preuves non sensibles (`cf-mitigated: challenge` ou marqueurs HTML challenge/CAPTCHA/Just a moment). Les corps ne sont jamais persistés.
+- La classification réseau reste causale sur la dernière requête pertinente; `provider_waf_challenge` est distinct d'un 403 ordinaire.
+- Le test de causalité cassé sur `687ec38b` avait uniquement un `NameError` de fixture de test; l'ordre des variables est corrigé ici.
+- Aucun solveur CAPTCHA/Cloudflare ni fabrication de `cf_clearance` n'est ajouté. La compatibilité autorisée reste fingerprint navigateur, headers/referer/origin et cookies de session normalement obtenus.
+- Le renderer/ledger doit encore être mis à jour dans le commit suivant pour exposer CHAIN REACHED et WAF/ANTIBOT; ne considérer aucun nouveau compteur comme validé avant ce second lot + CI.

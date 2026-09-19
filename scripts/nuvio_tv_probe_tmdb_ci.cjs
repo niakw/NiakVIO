@@ -124,6 +124,7 @@ function debugStage(model, fixture, fetchTrace, result) {
   const meaningful = providerFetches.filter((row) => /^https?:\/\//i.test(String(row?.url || '')));
   if (!meaningful.length) return 'provider_network_zero_result';
   const terminal = meaningful[meaningful.length - 1];
+  if (terminal?.challenge) return 'provider_waf_challenge';
   if (terminal?.error) return 'provider_network_exception';
   if (Number(terminal?.status || 0) >= 400) return 'provider_network_http_error';
   return 'provider_network_zero_result';
@@ -151,13 +152,31 @@ if (typeof originalFetch === 'function') {
     try {
       const response = await originalFetch.call(this, input, init);
       let contentType = '';
+      let challenge = '';
+      const status = Number(response?.status || 0);
       try { contentType = String(response?.headers?.get?.('content-type') || '').split(';')[0].slice(0, 96); } catch {}
+      if ([403, 429, 503].includes(status)) {
+        let server = '', cfRay = '', cfMitigated = '', body = '';
+        try {
+          server = String(response?.headers?.get?.('server') || '').toLowerCase();
+          cfRay = String(response?.headers?.get?.('cf-ray') || '');
+          cfMitigated = String(response?.headers?.get?.('cf-mitigated') || '').toLowerCase();
+        } catch {}
+        if (/text\/html/i.test(contentType)) {
+          try { body = String(await response.clone().text()).slice(0, 65536).toLowerCase(); } catch {}
+        }
+        const marker = /just a moment|checking your browser|verify you are human|attention required|captcha|challenge-platform|cf-browser-verification|security check/.test(body);
+        if (cfMitigated === 'challenge' || marker) {
+          challenge = (cfRay || server.includes('cloudflare') || cfMitigated === 'challenge') ? 'cloudflare' : 'generic';
+        }
+      }
       trace.push({
         url,
         response_url: safeUrl(response?.url || url),
         method,
-        status: Number(response?.status || 0),
+        status,
         content_type: contentType,
+        challenge,
         duration_ms: Date.now() - started,
       });
       return response;

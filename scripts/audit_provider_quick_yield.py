@@ -33,6 +33,7 @@ REPRESENTATIVE = {
 }
 TMDB_ERASED_HOST_RE = re.compile(r"^/+(?:api\.)?themoviedb\.org(?:/|$)", re.I)
 TMDB_CORE_ROUTE_RE = re.compile(r"^/3/(?:movie|tv)(?:/|$)", re.I)
+CHAIN_ROUTE_RE = re.compile(r"(?:/(?:watch|movie|tv|episode|episodes|ep|player|embed|links?|source|sources|server|servers|stream|streams|download|file|zfile|v)(?:/|$)|showid|episodestring|[?&](?:eid|lid)=)", re.I)
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -289,6 +290,24 @@ def _provider_fetches(debug: dict[str, Any]) -> list[dict[str, Any]]:
     return output
 
 
+def _provider_progress_stage(debug: dict[str, Any]) -> str:
+    """Describe how far a zero-stream provider got without calling it healthy."""
+    successful = []
+    for row in _provider_fetches(debug):
+        if row.get("error"):
+            continue
+        status = int(row.get("status") or 0)
+        if 200 <= status < 400:
+            successful.append(row)
+    if not successful:
+        return "none"
+    for row in successful:
+        for key in ("url", "response_url"):
+            if CHAIN_ROUTE_RE.search(str(row.get(key) or "")):
+                return "chain_reached"
+    return "lookup_only"
+
+
 def _provider_value_trace_history(debug: dict[str, Any]) -> list[dict[str, Any]]:
     rows = debug.get("provider_value_trace_history_v21")
     if not isinstance(rows, list):
@@ -395,6 +414,8 @@ def classify_debug_stage(task: dict[str, Any], probe: dict[str, Any], debug: dic
     if not meaningful_fetches:
         return "provider_network_zero_result"
     terminal = meaningful_fetches[-1]
+    if str(terminal.get("challenge") or "").strip():
+        return "provider_waf_challenge"
     if terminal.get("error"):
         return "provider_network_exception"
     if int(terminal.get("status") or 0) >= 400:
@@ -458,6 +479,7 @@ def run_single(task: dict[str, Any]) -> dict[str, Any]:
         "debug_model": debug.get("model"),
         "debug_fetch_count": int(debug.get("fetch_count") or 0),
         "debug_provider_fetch_count": len(_provider_fetches(debug)),
+        "debug_progress_stage": _provider_progress_stage(debug),
         "debug_fetches": debug.get("fetches") or [],
         "debug_provider_value_trace_v18": debug.get("provider_value_trace_v18"),
         "debug_provider_value_trace_history_v21": _provider_value_trace_history(debug),
@@ -480,7 +502,7 @@ def _compact_sample(row: dict[str, Any]) -> dict[str, Any]:
     return {
         key: row.get(key)
         for key in (
-            "fixture_title", "fixture", "status", "debug_stage",
+            "fixture_title", "fixture", "status", "debug_stage", "debug_progress_stage",
             "raw", "playable", "verified", "contradictions", "duration_ms",
         )
     }
@@ -514,6 +536,12 @@ def run(task: dict[str, Any]) -> dict[str, Any]:
         raise RuntimeError(f"{task.get('provider_id')}: empty adaptive fixture set")
     result = dict(final)
     result["sample_count"] = len(samples)
+    progress_rank = {"none": 0, "lookup_only": 1, "chain_reached": 2}
+    result["debug_progress_stage"] = max(
+        (str(row.get("debug_progress_stage") or "none") for row in samples),
+        key=lambda value: progress_rank.get(value, 0),
+        default="none",
+    )
     result["sample_titles"] = [str(row.get("fixture_title") or "") for row in samples]
     result["adaptive_rotated"] = len(samples) > 1
     result["samples"] = samples
