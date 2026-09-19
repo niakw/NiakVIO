@@ -2289,3 +2289,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Commit **0465c2a3dd893baf328482db97879bafa409c513** moves baseline selection before the candidate census, seeds `automation/provider-census-proof-history.json` from the accepted baseline quick-yield report, and runs the global candidate census with that proof history so retained winners are replayed first.
 - Contract commit **cbe78b9635a712124e74685c2802c46f86f52540** enforces workflow ordering: baseline selection → baseline fixture memory seed → candidate census.
 - A missing lane is therefore no longer called a regression merely because the candidate sampled a different catalogue work. A true regression requires failure after replaying the retained winning fixture.
+
+
+### 2026-09-19 — PR #188 merged; main-only execution restored
+
+- User explicitly requested **main-only execution**: no more repair branches / PR staging for this workstream.
+- PR **#188** was merged into `main` at **cdf8b20edbd4be169866ffd657e1f8f5b7a89b1f**.
+- The temporary PR188 publication diagnostic workflow was removed immediately on `main` at **9299c6aaadde41ee694ca498dd12a1e1d8cf3c28**.
+- From this point, provider/census fixes in this workstream are applied directly to `main`, with exact-SHA validation and MEMORY.md updates after each material advance.
