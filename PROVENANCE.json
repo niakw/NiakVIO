@@ -519,9 +519,9 @@
     },
     "4khdhub": {
       "id": "4khdhub",
-      "published_filename": "providers/4khdhub--nuvio--5f76a591e41ed587.js",
-      "sha256": "5f76a591e41ed58742c110e9251f662a5fcba07a86dcadb2eef38b29fb5090f3",
-      "patched_sha256": "5f76a591e41ed58742c110e9251f662a5fcba07a86dcadb2eef38b29fb5090f3",
+      "published_filename": "providers/4khdhub--nuvio--2fa163de9e02c22c.js",
+      "sha256": "2fa163de9e02c22c977145873533b28a934c52e0320e43d6425b8681db378274",
+      "patched_sha256": "2fa163de9e02c22c977145873533b28a934c52e0320e43d6425b8681db378274",
       "upstream_sha256": "c9940593c2ca77c694994781c462d21f1c07189aace946879ade166cb03da306",
       "local_patches": [
         {
@@ -1409,10 +1409,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "5f76a591e41ed58742c110e9251f662a5fcba07a86dcadb2eef38b29fb5090f3",
+        "sha256": "2fa163de9e02c22c977145873533b28a934c52e0320e43d6425b8681db378274",
         "one_physical_line": true
       },
-      "build_input_sha256": "d5098e2dda296418eed647e361c7d7d61e8b40ebd692ef3ce0c5d419e621b27b",
+      "build_input_sha256": "e5c2e87ec847a13ac5a6773bbe56684e7ca8d5d99e4ab5ce4408652281738dd0",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -1441,14 +1441,14 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32367,
+        "transformed_lines": 5995,
         "skipped_reason": "",
-        "sha256": "5f76a591e41ed58742c110e9251f662a5fcba07a86dcadb2eef38b29fb5090f3"
+        "sha256": "2fa163de9e02c22c977145873533b28a934c52e0320e43d6425b8681db378274"
       }
     },
     "4khdhubnew": {
@@ -2737,9 +2737,9 @@
     },
     "allwish": {
       "id": "allwish",
-      "published_filename": "providers/allwish--nuvio--e074550337ad0932.js",
-      "sha256": "e074550337ad0932208a4ae8015b3021dbcdb0bc6a059fbcc8f7dfa948f82543",
-      "patched_sha256": "e074550337ad0932208a4ae8015b3021dbcdb0bc6a059fbcc8f7dfa948f82543",
+      "published_filename": "providers/allwish--nuvio--7aaeebabb7bc3eb5.js",
+      "sha256": "7aaeebabb7bc3eb5dcc1b7e5f4bab74b0b06da1e5c3770906cc7b7a9e4929862",
+      "patched_sha256": "7aaeebabb7bc3eb5dcc1b7e5f4bab74b0b06da1e5c3770906cc7b7a9e4929862",
       "base_filename": "provider-bases/allwish--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -3052,6 +3052,18 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/allwish_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.ALLWISH.RUNTIME.V1"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_runtime_dispatch_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_runtime_dispatch"
         }
       ],
       "source": "aio",
@@ -3276,11 +3288,11 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "e074550337ad0932208a4ae8015b3021dbcdb0bc6a059fbcc8f7dfa948f82543",
+        "sha256": "7aaeebabb7bc3eb5dcc1b7e5f4bab74b0b06da1e5c3770906cc7b7a9e4929862",
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "a20e759fe32840da7ad964a674f85ef2320f2194e8e6fe2de55d7cc48ab47c7b",
+      "build_input_sha256": "bedd41cd31b94fed321c01bfc470e74973e430de05303174137fd4167650e0b2",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -3311,14 +3323,14 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32373,
+        "transformed_lines": 5989,
         "skipped_reason": "",
-        "sha256": "e074550337ad0932208a4ae8015b3021dbcdb0bc6a059fbcc8f7dfa948f82543"
+        "sha256": "7aaeebabb7bc3eb5dcc1b7e5f4bab74b0b06da1e5c3770906cc7b7a9e4929862"
       }
     },
     "anidb": {
@@ -4040,9 +4052,9 @@
     },
     "anikototv": {
       "id": "anikototv",
-      "published_filename": "providers/anikototv--nuvio--bdbd551522e3f4eb.js",
-      "sha256": "bdbd551522e3f4ebe571847008f9900dcc8e92846e0cb3bffa4a4c005106be68",
-      "patched_sha256": "bdbd551522e3f4ebe571847008f9900dcc8e92846e0cb3bffa4a4c005106be68",
+      "published_filename": "providers/anikototv--nuvio--43a1f79315700f51.js",
+      "sha256": "43a1f79315700f51719ac8cc302b25a8febaf11abdd82ea1ef7665e463e41db2",
+      "patched_sha256": "43a1f79315700f51719ac8cc302b25a8febaf11abdd82ea1ef7665e463e41db2",
       "base_filename": "provider-bases/anikototv--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -4385,6 +4397,12 @@
           "path": "scripts/provider_patches/anikototv_runtime_v2.py",
           "phase": "discovery",
           "scope": "PROVIDER.ANIKOTOTV.RUNTIME.V2"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_runtime_dispatch_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_runtime_dispatch"
         }
       ],
       "source": "aio",
@@ -4620,11 +4638,11 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "bdbd551522e3f4ebe571847008f9900dcc8e92846e0cb3bffa4a4c005106be68",
+        "sha256": "43a1f79315700f51719ac8cc302b25a8febaf11abdd82ea1ef7665e463e41db2",
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "3e9d580db01919bae0333a3831abe56e1c00a856a9460a9a294ba00b0993c44f",
+      "build_input_sha256": "bed8784f699a1e91acdad1e22c4e7af6237eaa843abd8f91fa2da8fbcf942d5e",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -4661,14 +4679,14 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32367,
+        "transformed_lines": 5989,
         "skipped_reason": "",
-        "sha256": "bdbd551522e3f4ebe571847008f9900dcc8e92846e0cb3bffa4a4c005106be68"
+        "sha256": "43a1f79315700f51719ac8cc302b25a8febaf11abdd82ea1ef7665e463e41db2"
       }
     },
     "anime-sama": {
@@ -5317,7 +5335,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "2757430abb08138dc6a62fc4d3ed54200b4d626a75380328bcce0283b2ed4696",
+      "build_input_sha256": "b5feb2bd77b75dcdec8222a8ca2d26000b410d4a211955ef7d5e91b1ffa24dfa",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -5354,12 +5372,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32367,
+        "transformed_lines": 5981,
         "skipped_reason": "",
         "sha256": "ede8709d471d413e3a618b6ab5503922b18ef497c63579ab43a90e3f93dc5f74"
       }
@@ -5968,7 +5986,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "7c5a754577ed0787f7f539e70ab8c501710e74c8dc046921427ce521b4fbf224",
+      "build_input_sha256": "a8645e6379d0b3b405d99f18228259c2a83e07db056688b00c408ad3f6f89767",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -5999,12 +6017,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32373,
+        "transformed_lines": 5989,
         "skipped_reason": "",
         "sha256": "b7f2ff4a420ea263bb31d257afd5f7b38315d4314285baeb43e9f26c03e1bdfb"
       }
@@ -6583,7 +6601,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "897506bf92821bbe13e9440d4674df2886b00db55993ab31e2eaa685f1db6ac5",
+      "build_input_sha256": "930c85ad975532ad2c6ef320e9eff48dd2876e0c73a99fc23f0d885179a2977c",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -6620,12 +6638,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32210,
+        "transformed_lines": 5920,
         "skipped_reason": "",
         "sha256": "4ec649d795273a49ff4ca16ea5f4adfce822b9d43a27ce1216f1fe77bb0df73d"
       }
@@ -8073,7 +8091,7 @@
         "sha256": "cf9af6979019c7c0b1be9faeacac766ccfcbf2eb8617670db48c74ea3415b0d9",
         "one_physical_line": true
       },
-      "build_input_sha256": "7390627c184d4dea111fe2b918b8ff0227a2d6b766dedf67966f18b1f09f1efa",
+      "build_input_sha256": "ab21edc3e91e858677658b502e12defe1332e4f8c8f802f93d5d5f9a42a68c03",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -8102,12 +8120,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32389,
+        "transformed_lines": 5999,
         "skipped_reason": "",
         "sha256": "cf9af6979019c7c0b1be9faeacac766ccfcbf2eb8617670db48c74ea3415b0d9"
       }
@@ -8744,7 +8762,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "828f17eed1d7c662b5d04e91f9a2ee8ec53cc754ef9fe728868f8aaaffe8d1e4",
+      "build_input_sha256": "7a2e56718c7d9d08be4e3e961f7fe70bbc09de94d3e95fffdcd3fbfd8aebd28d",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -8781,12 +8799,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32616,
+        "transformed_lines": 5993,
         "skipped_reason": "",
         "sha256": "aaa59bf007c9e66180e7fc02ada4c54ce113b3844e9c29dd25b18523c1f26f87"
       }
@@ -9575,7 +9593,7 @@
         "sha256": "02c3e3a99bbd0ffd534621243c22b105fae8b1b2f7437f255e1cfe86df0ecbc1",
         "one_physical_line": true
       },
-      "build_input_sha256": "e0bcf7e1adf28dda7acb038971fcb43be02fd49b4471e74d005e8343d1ebb441",
+      "build_input_sha256": "3d439ea1b0d277042a1c92a9c5c3bb960a56ee6c9952b90eb644c748b44b4b93",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -9604,21 +9622,21 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32375,
+        "transformed_lines": 5992,
         "skipped_reason": "",
         "sha256": "02c3e3a99bbd0ffd534621243c22b105fae8b1b2f7437f255e1cfe86df0ecbc1"
       }
     },
     "animetsu": {
       "id": "animetsu",
-      "published_filename": "providers/animetsu--nuvio--4051a743ce0a211b.js",
-      "sha256": "4051a743ce0a211b32a4e8f3c8e251458cfd58922c885421aabea4c262cd56d3",
-      "patched_sha256": "4051a743ce0a211b32a4e8f3c8e251458cfd58922c885421aabea4c262cd56d3",
+      "published_filename": "providers/animetsu--nuvio--156d142117f3345f.js",
+      "sha256": "156d142117f3345fa5f8ed21ac0f300bcd18f048be1fc5958762cab150fbc7c3",
+      "patched_sha256": "156d142117f3345fa5f8ed21ac0f300bcd18f048be1fc5958762cab150fbc7c3",
       "upstream_sha256": "243edd8c76b0995a72e02ba6ff7ca47add6063b1d471ebe378d3d6842bd8cadb",
       "local_patches": [
         {
@@ -10038,6 +10056,18 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/animetsu_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.ANIMETSU.RUNTIME.V1"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_runtime_dispatch_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_runtime_dispatch"
         }
       ],
       "source": "published-baseline",
@@ -10259,10 +10289,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "4051a743ce0a211b32a4e8f3c8e251458cfd58922c885421aabea4c262cd56d3",
+        "sha256": "156d142117f3345fa5f8ed21ac0f300bcd18f048be1fc5958762cab150fbc7c3",
         "one_physical_line": true
       },
-      "build_input_sha256": "ba6adb4e7fdeb343c769df6c6f760b477d7276ed609417eb5397ff5dc06a8a1d",
+      "build_input_sha256": "7b57fb2d4146fe62688263d6a96ee4083ca04243c4019a3b59754c375500775f",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -10291,14 +10321,14 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32166,
+        "transformed_lines": 5840,
         "skipped_reason": "",
-        "sha256": "4051a743ce0a211b32a4e8f3c8e251458cfd58922c885421aabea4c262cd56d3"
+        "sha256": "156d142117f3345fa5f8ed21ac0f300bcd18f048be1fc5958762cab150fbc7c3"
       }
     },
     "animevost-fr": {
@@ -10865,7 +10895,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "88feab639579a334b4fd6164f25d82784f0eed211aae7115d859e5c42b3fec57",
+      "build_input_sha256": "bc00053bc158cc279e29b67cbd981a9e3876db21cb4844b0a61fb87175a914e0",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -10896,21 +10926,21 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32516,
+        "transformed_lines": 5973,
         "skipped_reason": "",
         "sha256": "42062fd6bc5367b4e204519a0f3f4e31bd5b049b95de26b558b05c5eb2a9f814"
       }
     },
     "animevostfr": {
       "id": "animevostfr",
-      "published_filename": "providers/animevostfr--nuvio--68eff3c0955f8b3c.js",
-      "sha256": "68eff3c0955f8b3ca607c5240b3b7455b56ff403e0e2ec7a455f39df953b9489",
-      "patched_sha256": "68eff3c0955f8b3ca607c5240b3b7455b56ff403e0e2ec7a455f39df953b9489",
+      "published_filename": "providers/animevostfr--nuvio--398f74fb6223f154.js",
+      "sha256": "398f74fb6223f154f51f9804547b40a4cecdbc96873b77bc03b15e8d123bed62",
+      "patched_sha256": "398f74fb6223f154f51f9804547b40a4cecdbc96873b77bc03b15e8d123bed62",
       "base_filename": "provider-bases/animevostfr--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -11525,11 +11555,11 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "68eff3c0955f8b3ca607c5240b3b7455b56ff403e0e2ec7a455f39df953b9489",
+        "sha256": "398f74fb6223f154f51f9804547b40a4cecdbc96873b77bc03b15e8d123bed62",
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "1b61669e3132c2fa435a8147093270565b9bea2f851d7cc546f4a40376f0bd35",
+      "build_input_sha256": "8fa85988d49cd382c9dec057028175ecad21e78dedd29ca7feecf630b4d064eb",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -11566,14 +11596,14 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32367,
+        "transformed_lines": 5988,
         "skipped_reason": "",
-        "sha256": "68eff3c0955f8b3ca607c5240b3b7455b56ff403e0e2ec7a455f39df953b9489"
+        "sha256": "398f74fb6223f154f51f9804547b40a4cecdbc96873b77bc03b15e8d123bed62"
       }
     },
     "animeworld": {
@@ -14671,7 +14701,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "0416965896b602e63e1168248927998a07f8ee9d87162162e019d9f8ca47abd1",
+      "build_input_sha256": "ef808694b2f6ef19ec63e7538d58854758649b8f6b5990651d896658a72d3a8f",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -14708,12 +14738,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 33888,
+        "transformed_lines": 6219,
         "skipped_reason": "",
         "sha256": "f62ea8976a470dc1d9b2317523b71c081c8e25ff3dfc9ac918e4d4eeff98afee"
       }
@@ -18846,7 +18876,7 @@
         "sha256": "8d339efeca529564ec2e8d64ac074a5bf7c2906e1016905221cf3736e8f46507",
         "one_physical_line": true
       },
-      "build_input_sha256": "42c498ee1cd2e097ac9d01be968da1202930a7765e30b952c54b016f4524f562",
+      "build_input_sha256": "cffa2c288c61c7955d4bbbf3d4dbd33bae117e1425081145a75be5a59020b1d0",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -18875,12 +18905,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32816,
+        "transformed_lines": 6085,
         "skipped_reason": "",
         "sha256": "8d339efeca529564ec2e8d64ac074a5bf7c2906e1016905221cf3736e8f46507"
       }
@@ -24033,7 +24063,7 @@
         "sha256": "a503f8935cf255688fe7f15ea0b0df7f6b55627ab478537193d53e6778194205",
         "one_physical_line": true
       },
-      "build_input_sha256": "d0df3d272c7757b3b2285d018e7284f48555c93a0542d972cdedb1b5a4e39874",
+      "build_input_sha256": "0838366c78c5e18e94eb6c130dcfef132a8bd7a5ae66805545ab1b4f85b6687a",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -24062,12 +24092,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32820,
+        "transformed_lines": 6088,
         "skipped_reason": "",
         "sha256": "a503f8935cf255688fe7f15ea0b0df7f6b55627ab478537193d53e6778194205"
       }
@@ -24785,7 +24815,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "1fa5cc3f91bd4b248e30ffa793c152fbdaafdf3aa6c918dbe8f8d24fe1c7c146",
+      "build_input_sha256": "7339d4c1164976f1a1b5b126557bc34b9f1a41e5fcddf0145712979667c2cc68",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -24822,12 +24852,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32681,
+        "transformed_lines": 6050,
         "skipped_reason": "",
         "sha256": "291e7aa8ec41f23199577e4e48ac05f1975394b8213a898547654ff2d9810ef3"
       }
@@ -29786,7 +29816,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "6b5d3ed852c716a4d52978711c43c8d41d21134edbdbba8c7125c8078e129853",
+      "build_input_sha256": "bbe53d713b61d63b7c84e507584cf748a4e4b06e69b5b63b0a676d545b150b9b",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -29823,12 +29853,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32599,
+        "transformed_lines": 5927,
         "skipped_reason": "",
         "sha256": "1e6a1e4cc67a51c5e649c0f237e4c450e05ab714799da6b6f1d732da6818a54d"
       }
@@ -30250,7 +30280,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "3b013d852130a2ec1a3c6cb2064eff17c4423e780a6f66ed6ac841f721036eef",
+      "build_input_sha256": "58b808c9f610a534c9bde19fea9ca79b57a3988a3ad0de1284febe174cd6056d",
       "legacy_base_filename_before_clean_v3": "provider-bases/kehflix--base--8527dbcaa8de0ed3.js",
       "legacy_base_sha256_before_clean_v3": "8527dbcaa8de0ed3f34ada1008fabbce19f421ccabd0d6e3399af53c95424fdc",
       "clean_reconstruction_candidate": false,
@@ -30261,12 +30291,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32210,
+        "transformed_lines": 5920,
         "skipped_reason": "",
         "sha256": "af72fdb32f1503f6c6df519329a5ebfc71325ae7022a1d80d8f0840af455f968"
       }
@@ -31490,7 +31520,7 @@
         "sha256": "3220d9ee52e93cd3667be5b1388c6f28e725cbd02fe1513a48c3e9cbf62e41cc",
         "one_physical_line": true
       },
-      "build_input_sha256": "9adabfd6110ab64148037421d470241994ed1335baa12c7dd4b95fa37d790d4b",
+      "build_input_sha256": "fc00d033f9866d79c027f30a2579c684ae0f5b445a92236ca448cd46a427e4c9",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -31519,12 +31549,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32367,
+        "transformed_lines": 5989,
         "skipped_reason": "",
         "sha256": "3220d9ee52e93cd3667be5b1388c6f28e725cbd02fe1513a48c3e9cbf62e41cc"
       }
@@ -32113,7 +32143,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "5bb40a7ca0d1371ae52f99c3d544a451f6e6ea1646c19e2c49460ff813d88076",
+      "build_input_sha256": "0f3c41e5f3bf4aeefbde725c6da3bf6fe950e8ea5d068f53b3dfa2e47f9c8625",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -32144,12 +32174,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32210,
+        "transformed_lines": 5920,
         "skipped_reason": "",
         "sha256": "2cce0edca129a59860b0a010b0e29b932f3bee99918b6f6addbdb3d981ff4c37"
       }
@@ -34973,9 +35003,9 @@
     },
     "movieshunt": {
       "id": "movieshunt",
-      "published_filename": "providers/movieshunt--nuvio--919819b65e3b13a1.js",
-      "sha256": "919819b65e3b13a12225e81681548e2cea8c8dff7e1e7c370b6344a356e41874",
-      "patched_sha256": "919819b65e3b13a12225e81681548e2cea8c8dff7e1e7c370b6344a356e41874",
+      "published_filename": "providers/movieshunt--nuvio--8397507b6015a2d2.js",
+      "sha256": "8397507b6015a2d243ce28df4e6a7a1c21092325515ea9260ca9886e4c462b92",
+      "patched_sha256": "8397507b6015a2d243ce28df4e6a7a1c21092325515ea9260ca9886e4c462b92",
       "base_filename": "provider-bases/movieshunt--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -35512,11 +35542,11 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "919819b65e3b13a12225e81681548e2cea8c8dff7e1e7c370b6344a356e41874",
+        "sha256": "8397507b6015a2d243ce28df4e6a7a1c21092325515ea9260ca9886e4c462b92",
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "528785598be7311de74c4451cdf245815b28162ce8b9aeabc04877ba0f4bf2ae",
+      "build_input_sha256": "1f2f212d668ff8f2db4159afc7016c0e9cad06c693ff0acae3131be08d99026f",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -35553,14 +35583,14 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32156,
+        "transformed_lines": 5842,
         "skipped_reason": "",
-        "sha256": "919819b65e3b13a12225e81681548e2cea8c8dff7e1e7c370b6344a356e41874"
+        "sha256": "8397507b6015a2d243ce28df4e6a7a1c21092325515ea9260ca9886e4c462b92"
       }
     },
     "moviesmod": {
@@ -36310,7 +36340,7 @@
         "sha256": "df5b63826f4f944b782bcfd2bee1b279a577aa18054e80fe99edd5382a43b0a1",
         "one_physical_line": true
       },
-      "build_input_sha256": "4d5092efd4e67d6e4ba3128f3477c6cfcd8f036e5dd0c0dbe24cc8f01ae900b8",
+      "build_input_sha256": "12e373c8fecfe7e8e819940c98188c656c7389fc2e853f2c65f9ad5912816157",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -36339,12 +36369,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32367,
+        "transformed_lines": 5992,
         "skipped_reason": "",
         "sha256": "df5b63826f4f944b782bcfd2bee1b279a577aa18054e80fe99edd5382a43b0a1"
       }
@@ -37929,7 +37959,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "15e737bc2f63a82bd497095bf5e7f9d6e760beb56e59972e859d246cf5920141",
+      "build_input_sha256": "e6f4a37004ecce0b3d8b5e8c1e5208b78324d7174c7c7ac172f2305cc1599c5d",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -37966,12 +37996,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32459,
+        "transformed_lines": 6008,
         "skipped_reason": "",
         "sha256": "6aada4b6d0abe44ea4fab81c92adc2bd233d64a49a04154a99b061d83b236c3a"
       }
@@ -39772,7 +39802,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "6bcab12d5b1a248af0ee0299916cd896d3f7740f31503e1eecf3bb4a32ebd862",
+      "build_input_sha256": "a1997b063ebc122a961bd1b3f5327033355ed72fed03bfb26a6202d084a55e04",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -39809,12 +39839,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32567,
+        "transformed_lines": 6040,
         "skipped_reason": "",
         "sha256": "0170b56bcf429de7bd61f0abe547f65f01f3c2c717714fb0941cb58f4e99752e"
       }
@@ -41220,7 +41250,7 @@
         "sha256": "81bde95d4ee35d2018437060beacef5b3e6e709aab4b5752ac47780503dfcc1f",
         "one_physical_line": true
       },
-      "build_input_sha256": "9bb327653b41c63b5147b93a0cc03f70f2ee3d1539bf3e2d8f5b50979d009753",
+      "build_input_sha256": "69a16ebb93d11440d7d360e3d24d03e5bb2af8bab812378f29a2a95b7b5a06da",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -41249,12 +41279,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32367,
+        "transformed_lines": 5980,
         "skipped_reason": "",
         "sha256": "81bde95d4ee35d2018437060beacef5b3e6e709aab4b5752ac47780503dfcc1f"
       }
@@ -42408,7 +42438,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "5c12d0cc407947597fe5ebf4b10906406bc6c44e490ff4c3c2090e8de0b94686",
+      "build_input_sha256": "59bbb747285391dead51bd9143fc11926d98fd7afdc7bf812c6d99f066b07fb6",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -42445,12 +42475,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32209,
+        "transformed_lines": 5895,
         "skipped_reason": "",
         "sha256": "8866987f5ad12146186ec950080a1edcf22798c28a1b30b627598322730715a9"
       }
@@ -43005,7 +43035,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "c68beaba804e114641291a4bdaa9041d8d5160884bb80e78fda28349847f1813",
+      "build_input_sha256": "ae1545c27f055324d896d276f4b89a3f8f0bdf50748d045f5c25a2212da4eaf3",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -43042,12 +43072,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 31999,
+        "transformed_lines": 5765,
         "skipped_reason": "",
         "sha256": "449abd349028d9b2ea23aca939daf7d7b6dbd7d96d18ded0197e133eee1dbed2"
       }
@@ -43662,7 +43692,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "84e698f3aa3ba53d63e7a186d5a443a06ebbe517d3432884c64abd5b85a8068b",
+      "build_input_sha256": "625739e35e4331465bdcdaf3676c06978780b8197dd0f9ae03945ac4625840e6",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -43699,12 +43729,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 31999,
+        "transformed_lines": 5765,
         "skipped_reason": "",
         "sha256": "6ec022b83f2bbd4c5e6f214d40f4e8ee58c1776abf1dad20d7247548b9aefaab"
       }
@@ -44253,7 +44283,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "e71480f1bb7383779603b02d63cdbfe7c46a0ff61e45d3cd60e0aa0edacd40dc",
+      "build_input_sha256": "4c28b7d4e56045657d18deb479bf618aed1cac426d303eb34a655e0ec59b3ff7",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -44288,12 +44318,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32367,
+        "transformed_lines": 5993,
         "skipped_reason": "",
         "sha256": "3ad89193475aa3e76ce65c5ecb58a07b90083cbd2a9ce8693b6765bd21252263"
       }
@@ -44839,7 +44869,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "69370efc8e03501a5dac636f8837012b4cffe0a02143ddf70c2753ac746be076",
+      "build_input_sha256": "e4ca5317f957c683d6423e86a2a3ddbc5e04925f49251f290e1ae2306b8c4b1f",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -44870,12 +44900,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32209,
+        "transformed_lines": 5876,
         "skipped_reason": "",
         "sha256": "b5c91e7ba2c1b40b0d49eb51da57d09df3b3a32f654988360f756e2ea53f2b7d"
       }
@@ -46392,7 +46422,7 @@
         "sha256": "2dd85904967d3ebe1a4a8653f4917dc56f34d54be10eb7590b1b2de076b5bf8b",
         "one_physical_line": true
       },
-      "build_input_sha256": "72acadae1d1be51781477adea881e654157a245e920fe2033856b7436e503d67",
+      "build_input_sha256": "5371c702bb60e0edad50047aa6d8bf22e633475f4e3194a3324808580f5e37e7",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -46421,12 +46451,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32810,
+        "transformed_lines": 6083,
         "skipped_reason": "",
         "sha256": "2dd85904967d3ebe1a4a8653f4917dc56f34d54be10eb7590b1b2de076b5bf8b"
       }
@@ -47480,9 +47510,9 @@
     },
     "uhdmovies": {
       "id": "uhdmovies",
-      "published_filename": "providers/uhdmovies--nuvio--03ceb64ba4c557eb.js",
-      "sha256": "03ceb64ba4c557eb95b753ab62c734b80c489ca80157c44b470e65a2955bfe0d",
-      "patched_sha256": "03ceb64ba4c557eb95b753ab62c734b80c489ca80157c44b470e65a2955bfe0d",
+      "published_filename": "providers/uhdmovies--nuvio--8f29fa2605168735.js",
+      "sha256": "8f29fa260516873503a3ecea7cfa23b307ac3b90597dffcc10a3d9f0dcd5aa12",
+      "patched_sha256": "8f29fa260516873503a3ecea7cfa23b307ac3b90597dffcc10a3d9f0dcd5aa12",
       "base_filename": "provider-bases/uhdmovies--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -48058,11 +48088,11 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "03ceb64ba4c557eb95b753ab62c734b80c489ca80157c44b470e65a2955bfe0d",
+        "sha256": "8f29fa260516873503a3ecea7cfa23b307ac3b90597dffcc10a3d9f0dcd5aa12",
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "5a7244b28eba3685445b29f2137ce2c81674a875d889c62fd6c2fe3e4bd28ca7",
+      "build_input_sha256": "1a12b5fe81b1be4982e420d872600086d1aac7de5ca0bcd6fbf75e1de54d0158",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -48099,14 +48129,14 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32367,
+        "transformed_lines": 6000,
         "skipped_reason": "",
-        "sha256": "03ceb64ba4c557eb95b753ab62c734b80c489ca80157c44b470e65a2955bfe0d"
+        "sha256": "8f29fa260516873503a3ecea7cfa23b307ac3b90597dffcc10a3d9f0dcd5aa12"
       }
     },
     "vegamovies": {
@@ -49471,7 +49501,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "9ded3230a7745c53a291e33a7d66fc78fe84ce5f9df049e084524955651a78a8",
+      "build_input_sha256": "84eff1730c5ca45f110036ff44ed2d54f134db7d18855123269b04222d6fe7e6",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -49508,21 +49538,21 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32695,
+        "transformed_lines": 6001,
         "skipped_reason": "",
         "sha256": "1e45d5437f2eec103d0a255b588d8b3201a198e937935d0d831e43624cded450"
       }
     },
     "vidfast": {
       "id": "vidfast",
-      "published_filename": "providers/vidfast--nuvio--2ecc13222ca88375.js",
-      "sha256": "2ecc13222ca88375294bbe92aa0f55b2a5fe654422bdb02b1118b13550311c23",
-      "patched_sha256": "2ecc13222ca88375294bbe92aa0f55b2a5fe654422bdb02b1118b13550311c23",
+      "published_filename": "providers/vidfast--nuvio--9e5acbb12453f792.js",
+      "sha256": "9e5acbb12453f792e7891f8e518a11900f8a3a0535e2721f0f8a6ce31fe5533b",
+      "patched_sha256": "9e5acbb12453f792e7891f8e518a11900f8a3a0535e2721f0f8a6ce31fe5533b",
       "upstream_sha256": "9750c41a72fe7978d81eabd1b3704529cac0c13a7830a1d608afec5c892271cd",
       "local_patches": [
         {
@@ -49942,6 +49972,37 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/vidfast_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.VIDFAST.RUNTIME.V1"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_runtime_dispatch_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_runtime_dispatch"
+        },
+        {
+          "type": "provider_security_hardening",
+          "phase": "final-post-transform",
+          "revision": 1,
+          "scope": "all-published-providers",
+          "structured_parse_changes": 0,
+          "literal_decode_changes": 1,
+          "hostname_changes": 0,
+          "percent_decode_changes": 0,
+          "html_entity_decode_reorders": 0,
+          "console_sink_changes": 0,
+          "console_shadow": false
         }
       ],
       "source": "aio",
@@ -50178,10 +50239,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "2ecc13222ca88375294bbe92aa0f55b2a5fe654422bdb02b1118b13550311c23",
+        "sha256": "9e5acbb12453f792e7891f8e518a11900f8a3a0535e2721f0f8a6ce31fe5533b",
         "one_physical_line": true
       },
-      "build_input_sha256": "98061d5330a653f2d5b221a68cd5c2fbedc702dde6e6d3241de9aa4dfcf0a791",
+      "build_input_sha256": "2c3feeda16845c8de6775a9a70f53689a19ddec5fed31e85bc7b42e222526105",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -50210,14 +50271,14 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32449,
+        "transformed_lines": 5959,
         "skipped_reason": "",
-        "sha256": "2ecc13222ca88375294bbe92aa0f55b2a5fe654422bdb02b1118b13550311c23"
+        "sha256": "9e5acbb12453f792e7891f8e518a11900f8a3a0535e2721f0f8a6ce31fe5533b"
       }
     },
     "vidlink": {
@@ -51479,7 +51540,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "9cec60d04dc2c085efcee688effa6f7e33ed29422b0065886c85ad80b94e8b5f",
+      "build_input_sha256": "ff35e1bf79da03d40bfbf2213f881a1dd4fae6d74f9ac164f3cdc7e89433e2c9",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -51510,12 +51571,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32318,
+        "transformed_lines": 5945,
         "skipped_reason": "",
         "sha256": "82eb176c6947ee718c16b33db5fd574765e2bda6d1f7d1a68dec99a0ced8ddc7"
       }
@@ -53230,7 +53291,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "5358c5a5b0fa8a2f0569fc83485775df5bd9f0980ad822d9235178d073aabfb6",
+      "build_input_sha256": "8eb154e3d53ebbc075d7b2b7129f1c2f503aeadddd37883a6708f61e9f670f20",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -53267,12 +53328,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32668,
+        "transformed_lines": 6041,
         "skipped_reason": "",
         "sha256": "79a72f3de0bb52e0b632b833a98cbe861997f29487288ff4090efbb6cc1ee0cc"
       }
@@ -53909,7 +53970,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "541b990d528a456fb855f6dddf56d349d67f838b0192840c79dae23b1f81c46e",
+      "build_input_sha256": "cc32e3a8c7e33a163f12b6103dfba8088fb45e6f6de5a9cf67b310c3394a400f",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -53946,12 +54007,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32670,
+        "transformed_lines": 6071,
         "skipped_reason": "",
         "sha256": "2f4883eb85fd34c0ea0eee9531b498f5ff244810fe267bb52d2382da2da62b9d"
       }
@@ -54570,7 +54631,7 @@
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "002050a52448a1e80249db60ee66aca892310a9c2fff0f5569d273e73ba48ae5",
+      "build_input_sha256": "584cb990e2b183b9655904a39972812107be442d5256f6433266180fcfb98446",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -54607,21 +54668,21 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32681,
+        "transformed_lines": 6050,
         "skipped_reason": "",
         "sha256": "cf6eef6e86bd082bbab7a10dffeb7149d3a2fbeaca5bace80c95943add52849d"
       }
     },
     "voiranime-rip": {
       "id": "voiranime-rip",
-      "published_filename": "providers/voiranime-rip--nuvio--c6928ce77a093777.js",
-      "sha256": "c6928ce77a093777389fbdd37ed4144ace524dfeccbf4be0a2bb206dc9fec6e7",
-      "patched_sha256": "c6928ce77a093777389fbdd37ed4144ace524dfeccbf4be0a2bb206dc9fec6e7",
+      "published_filename": "providers/voiranime-rip--nuvio--3ee1c9ba82fd990e.js",
+      "sha256": "3ee1c9ba82fd990e79d6e8d4ef26fc374bd503e8225025498e77380a856b5d33",
+      "patched_sha256": "3ee1c9ba82fd990e79d6e8d4ef26fc374bd503e8225025498e77380a856b5d33",
       "base_filename": "provider-bases/voiranime-rip--base--ede6ce28ae5b4a72.js",
       "base_sha256": "ede6ce28ae5b4a72c7225411187d64c44b4099629e3badb44fa0c370a6b15313",
       "base_source": "niakvio-clean-reconstruction-v3",
@@ -55236,11 +55297,11 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "c6928ce77a093777389fbdd37ed4144ace524dfeccbf4be0a2bb206dc9fec6e7",
+        "sha256": "3ee1c9ba82fd990e79d6e8d4ef26fc374bd503e8225025498e77380a856b5d33",
         "one_physical_line": true
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "54c095f03da059ec152bdd291e2e6bca5b3a002641be0b9c8c139a7fc92fc498",
+      "build_input_sha256": "45c206cd6f1af790054b22682cbcebbad562ba620de6ed1fa9dabbd2a87296c9",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -55277,14 +55338,14 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32367,
+        "transformed_lines": 5985,
         "skipped_reason": "",
-        "sha256": "c6928ce77a093777389fbdd37ed4144ace524dfeccbf4be0a2bb206dc9fec6e7"
+        "sha256": "3ee1c9ba82fd990e79d6e8d4ef26fc374bd503e8225025498e77380a856b5d33"
       }
     },
     "vostfree": {
@@ -56046,7 +56107,7 @@
         "sha256": "bc058937ea1682ee37746645db3e0b62d994f9a4458a76a59d638e59e863d972",
         "one_physical_line": true
       },
-      "build_input_sha256": "75b5c7039f7d3ebdfd67a1832814d9805da966fc469a1e82645d6ac7380f6767",
+      "build_input_sha256": "f88961767faeea99bf38615dce4ff1731853e3b52aa6798dbe55b5e2649d999d",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -56075,12 +56136,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32705,
+        "transformed_lines": 6067,
         "skipped_reason": "",
         "sha256": "bc058937ea1682ee37746645db3e0b62d994f9a4458a76a59d638e59e863d972"
       }
@@ -57557,7 +57618,7 @@
         "sha256": "893a49f2c91a855cd0008d7c1d11178ebe615737c565585405fdb0a237f610b3",
         "one_physical_line": true
       },
-      "build_input_sha256": "146060c4320cfb67979869528c847d00fee96378aa6bfa2f53b6a7c4d267c0e5",
+      "build_input_sha256": "b1cb987f3003aba0cfb30bca4dfb2c9368d28a58b12d10bf908224f0c8285262",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -57586,12 +57647,12 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32795,
+        "transformed_lines": 6047,
         "skipped_reason": "",
         "sha256": "893a49f2c91a855cd0008d7c1d11178ebe615737c565585405fdb0a237f610b3"
       }
@@ -58179,9 +58240,9 @@
     },
     "yflix": {
       "id": "yflix",
-      "published_filename": "providers/yflix--nuvio--590b644a9c9e1c76.js",
-      "sha256": "590b644a9c9e1c7656e8125fdd6106a17f50936d6fbbae61b3260166ebdd98c4",
-      "patched_sha256": "590b644a9c9e1c7656e8125fdd6106a17f50936d6fbbae61b3260166ebdd98c4",
+      "published_filename": "providers/yflix--nuvio--edb6d5a147dbb4ca.js",
+      "sha256": "edb6d5a147dbb4ca858b88e6469f7ec6b15e822bcf910e3d154ecb04e95ce6d3",
+      "patched_sha256": "edb6d5a147dbb4ca858b88e6469f7ec6b15e822bcf910e3d154ecb04e95ce6d3",
       "upstream_sha256": "ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94",
       "local_patches": [
         {
@@ -58829,10 +58890,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "590b644a9c9e1c7656e8125fdd6106a17f50936d6fbbae61b3260166ebdd98c4",
+        "sha256": "edb6d5a147dbb4ca858b88e6469f7ec6b15e822bcf910e3d154ecb04e95ce6d3",
         "one_physical_line": true
       },
-      "build_input_sha256": "d60935fc7ae61c1ac5056b08cc80d56b5607a8a5b7a2f8ed9a3728c50815601b",
+      "build_input_sha256": "a4d015798d1837e4cca4e8ff8aca37a08fd3ae4ea981566db87ccb9447b643bf",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -58861,14 +58922,14 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32209,
+        "transformed_lines": 5876,
         "skipped_reason": "",
-        "sha256": "590b644a9c9e1c7656e8125fdd6106a17f50936d6fbbae61b3260166ebdd98c4"
+        "sha256": "edb6d5a147dbb4ca858b88e6469f7ec6b15e822bcf910e3d154ecb04e95ce6d3"
       }
     },
     "zinkmovies": {
@@ -59580,9 +59641,9 @@
     },
     "allanime": {
       "id": "allanime",
-      "published_filename": "providers/allanime--nuvio--cc58f7e9ad6c9dd2.js",
-      "sha256": "cc58f7e9ad6c9dd25ed8da3e93bf7e29fd53675250e26eb9dde93a558d820041",
-      "patched_sha256": "cc58f7e9ad6c9dd25ed8da3e93bf7e29fd53675250e26eb9dde93a558d820041",
+      "published_filename": "providers/allanime--nuvio--387c3ee79b2a4373.js",
+      "sha256": "387c3ee79b2a4373e31b34cfbd795976262c67e2c17b02f0d753def3b2f2ee8b",
+      "patched_sha256": "387c3ee79b2a4373e31b34cfbd795976262c67e2c17b02f0d753def3b2f2ee8b",
       "upstream_sha256": "7b6ee4d5c6b6dbc35b10d98003324126c313ce7e33d90e28fd378545590aee40",
       "local_patches": [
         {
@@ -60012,10 +60073,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "cc58f7e9ad6c9dd25ed8da3e93bf7e29fd53675250e26eb9dde93a558d820041",
+        "sha256": "387c3ee79b2a4373e31b34cfbd795976262c67e2c17b02f0d753def3b2f2ee8b",
         "one_physical_line": true
       },
-      "build_input_sha256": "1d606215bb32eb37da7cfb9ed1ed150b9dd6b93d0477c33a6a357ed9f0b97377",
+      "build_input_sha256": "1bb997994e0b2d92ddf7803e75dce361033fbda3b1df9a400af50d3a0541e86e",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -60044,14 +60105,14 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32200,
+        "transformed_lines": 5865,
         "skipped_reason": "",
-        "sha256": "cc58f7e9ad6c9dd25ed8da3e93bf7e29fd53675250e26eb9dde93a558d820041"
+        "sha256": "387c3ee79b2a4373e31b34cfbd795976262c67e2c17b02f0d753def3b2f2ee8b"
       }
     },
     "frenchstream": {
@@ -60725,9 +60786,9 @@
     },
     "moviebox": {
       "id": "moviebox",
-      "published_filename": "providers/moviebox--nuvio--f5da83b07ea55028.js",
-      "sha256": "f5da83b07ea550281065f9eef40deb7335677768292dda9b5eff154dadd7f0e6",
-      "patched_sha256": "f5da83b07ea550281065f9eef40deb7335677768292dda9b5eff154dadd7f0e6",
+      "published_filename": "providers/moviebox--nuvio--7d61fd4a66724241.js",
+      "sha256": "7d61fd4a6672424152a5df4cffb994bba94954b926c9d27276f655e45d226c01",
+      "patched_sha256": "7d61fd4a6672424152a5df4cffb994bba94954b926c9d27276f655e45d226c01",
       "upstream_sha256": "f19ec5a037e53220e1457e6db0cb9abee1d2f9f299c594dddefb14df7822c847",
       "local_patches": [
         {
@@ -61016,6 +61077,12 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
+        },
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/moviebox_vidsrcme_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.MOVIEBOX.VIDSRCME.RUNTIME.V1"
         }
       ],
       "source": "published-baseline",
@@ -61250,10 +61317,10 @@
         "tool": "raw-bytes",
         "tool_version": "raw-v1",
         "mangle": false,
-        "sha256": "f5da83b07ea550281065f9eef40deb7335677768292dda9b5eff154dadd7f0e6",
+        "sha256": "7d61fd4a6672424152a5df4cffb994bba94954b926c9d27276f655e45d226c01",
         "one_physical_line": true
       },
-      "build_input_sha256": "e67ac78ac54641cbc76c64d336dd5f08d385e04d5386639ecc544a4bf3779771",
+      "build_input_sha256": "8f50c567673d494bc2d09033d6c5612aef17b4772205930c1d7792a9266b5d2e",
       "clean_reconstruction_required": false,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only",
@@ -61282,14 +61349,14 @@
       "final_minimizer": {
         "schema_version": 3,
         "tool": "scripts/provider_v3_minimizer.py",
-        "tool_sha256": "8f2a391c1c966c5dcd97a15bba0ea092cd9b0372779b8ec34b3cd686dcf4dd35",
+        "tool_sha256": "aa7136c2471014d86af339a4cfe9e5ba4021e60f810b5d3fb1080583e6ef43c1",
         "production_enabled": true,
         "terser_allowed": false,
         "one_physical_line": true,
-        "saved_bytes": 0,
-        "transformed_lines": 2,
+        "saved_bytes": 32209,
+        "transformed_lines": 5890,
         "skipped_reason": "",
-        "sha256": "f5da83b07ea550281065f9eef40deb7335677768292dda9b5eff154dadd7f0e6"
+        "sha256": "7d61fd4a6672424152a5df4cffb994bba94954b926c9d27276f655e45d226c01"
       }
     },
     "netmirror": {
@@ -62925,7 +62992,7 @@
   },
   "provider_publication_contract": {
     "schema_version": 2,
-    "sha256": "19f3cc4576d05d66bcc8c3d7328b01428b770280ad3b01d38401e2dde179dd2a",
+    "sha256": "8e6f53558852628e22cf04e9bdec2b15239c343ead083d53ef18a851c4bac2dd",
     "provider_count": 44,
     "mode": "provider_base_plus_deterministic_core"
   }
