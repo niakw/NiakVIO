@@ -1895,7 +1895,7 @@
       "hub": "https://movieshunt.cc/",
       "direct": "https://movieshunt.run/",
       "source": "curated_user_registry",
-      "schema_notes": "MoviesHunt authority is provider-local. The current upstream provider source decodes its own movieshuntBase to movieshunt.run; ws/work/monster/casa are stale or redirect intermediates and must not replace the current terminal.",
+      "schema_notes": "MoviesHunt authority is provider-local. movieshunt.run remains the explicit-current entry authority; current live search redirects may traverse movieshunt.monster, which is an allowed intermediary but must not replace the direct authority without Domain Refresh promotion.",
       "aliases": [
         "movieshunt"
       ],
@@ -1929,7 +1929,6 @@
       "blocked_hosts": [
         "movieshunt.ws",
         "movieshunt.work",
-        "movieshunt.monster",
         "movieshunt.casa"
       ]
     },
