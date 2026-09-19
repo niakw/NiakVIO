@@ -82,6 +82,38 @@ def historical_positive(history: dict[str, Any], provider: str) -> bool:
     return any(historical_proofs(history, provider, lane) for lane in lanes)
 
 
+def _fixture_key(fixture: dict[str, Any]) -> tuple[str, str, str, int, int]:
+    def integer(value: object) -> int:
+        try:
+            return int(value or 0)
+        except (TypeError, ValueError):
+            return 0
+    return (
+        str(fixture.get("slug") or ""),
+        str(fixture.get("tmdbId") or ""),
+        str(fixture.get("mediaType") or fixture.get("category") or ""),
+        integer(fixture.get("season")),
+        integer(fixture.get("episode")),
+    )
+
+
+def _historical_proof_replayed(history: dict[str, Any], provider: str, row: dict[str, Any]) -> bool:
+    lane = str(row.get("semantic_type") or "")
+    proof_keys = {
+        _fixture_key(proof.get("fixture") or {})
+        for proof in historical_proofs(history, provider, lane)
+    }
+    if not proof_keys:
+        return False
+    for sample in row.get("samples") or []:
+        if not isinstance(sample, dict):
+            continue
+        fixture = sample.get("fixture") if isinstance(sample.get("fixture"), dict) else {}
+        if _fixture_key(fixture) in proof_keys:
+            return True
+    return False
+
+
 def _technical_run_count(history: dict[str, Any], provider: str, rows: list[dict[str, Any]]) -> int:
     values = []
     for row in rows:
@@ -109,9 +141,12 @@ def provider_state(provider: str, rows: list[dict[str, Any]], history: dict[str,
     repeated = _technical_run_count(history, provider, rows) >= 3
 
     # A clean HTTP/runtime success with zero streams is a catalogue miss, not a
-    # broken provider. Historical proof remains visible but does not turn a miss
-    # into a regression by itself.
+    # broken provider when we have never proved a matching work. If a retained
+    # winning fixture was replayed and also stopped matching, that is the exact
+    # regression-provider condition the ledger exists to expose.
     if stages and stages.issubset(NO_PROOF_STAGES):
+        if has_history and any(_historical_proof_replayed(history, provider, row) for row in rows):
+            return "REGRESSION PROVIDER"
         return "NO PROOF"
 
     if stages & JS_BROKEN_STAGES:
@@ -177,8 +212,13 @@ def _action(status: str) -> str:
     }.get(status, "BRAIN checks")
 
 
-def build_status_rows(report: dict[str, Any], history: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+def build_status_rows(
+    report: dict[str, Any],
+    history: dict[str, Any] | None = None,
+    baseline: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
     history = history or {}
+    baseline = baseline or {}
     by: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in report.get("rows") or []:
         if not isinstance(row, dict):
@@ -224,18 +264,32 @@ def build_status_rows(report: dict[str, Any], history: dict[str, Any] | None = N
             "searchProgress": progress,
             "action": _action(status),
             "brainCheckRequired": status not in {"FULL OK", "PARTIAL OK"},
+            "testedThisRun": True,
         })
+
+    # Unresolved-scope runs intentionally omit known FULL/PARTIAL providers.
+    # Carry their previous ledger rows forward rather than manufacturing an
+    # incomplete "global" table.
+    current = {row["provider"] for row in out}
+    for previous in baseline.get("providers") or []:
+        if not isinstance(previous, dict):
+            continue
+        provider = str(previous.get("provider") or "").strip().casefold()
+        if not provider or provider in current:
+            continue
+        carried = dict(previous)
+        carried["testedThisRun"] = False
+        out.append(carried)
     return out
 
 
 def render(
-    report: dict[str, Any],
-    *,
-    run_id: str,
+    report: dict[str, Any],\n    *,\n    run_id: str,
     sha: str,
     history: dict[str, Any] | None = None,
+    baseline: dict[str, Any] | None = None,
 ) -> str:
-    rows = build_status_rows(report, history)
+    rows = build_status_rows(report, history, baseline)
     states = Counter(row["status"] for row in rows)
     short_sha = sha[:12] if sha else "unknown"
 
@@ -273,8 +327,7 @@ def render(
         "**Important:** provider_network_zero_result is a catalogue miss / missing current proof, not a broken-provider verdict. "
         "A retained historical proof is replayed first on future censuses, while clean misses advance through the corpus.",
         "",
-        "| Provider | Status | Declared lanes | Current verified | Retained proof | Search progress | Latest lane verdicts | Dominant issue | Next action |",
-        "|---|---|---|---|---|---|---|---|---|",
+        "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Search progress | Latest lane verdicts | Dominant issue | Next action |",\n        "|---|---|---|---|---|---|---|---|---|---|",
     ])
 
     state_order = {
@@ -291,6 +344,7 @@ def render(
         status = row["status"]
         line = (
             f"| **{row['provider']}** | {row['color']} **{status}** | "
+            f"{'tested' if row.get('testedThisRun') else 'carried'} | "
             f"{', '.join(row['declaredLanes']) or '—'} | "
             f"{', '.join(row['currentVerifiedLanes']) or '—'} | "
             f"{'; '.join(row['historicalProof']) or '—'} | "
@@ -316,15 +370,17 @@ def main() -> int:
     parser.add_argument("--output", type=Path, default=Path("PROVIDER_CENSUS_STATUS.md"))
     parser.add_argument("--json-output", type=Path, default=None)
     parser.add_argument("--history", type=Path, default=Path("automation/provider-census-proof-history.json"))
+    parser.add_argument("--baseline-status", type=Path, default=Path("automation/provider-census-status.json"))
     parser.add_argument("--run-id", default="")
     parser.add_argument("--sha", default="")
     args = parser.parse_args()
 
     report = load(args.report)
     history = load(args.history) if args.history.is_file() else {}
-    rows = build_status_rows(report, history)
+    baseline = load(args.baseline_status) if args.baseline_status.is_file() else {}
+    rows = build_status_rows(report, history, baseline)
     args.output.write_text(
-        render(report, run_id=str(args.run_id), sha=str(args.sha), history=history),
+        render(report, run_id=str(args.run_id), sha=str(args.sha), history=history, baseline=baseline),
         encoding="utf-8",
     )
     if args.json_output is not None:
