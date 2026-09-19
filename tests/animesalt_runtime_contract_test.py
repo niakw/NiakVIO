@@ -15,7 +15,7 @@ assert 'function runtimeBase()' in src
 assert 'm&&(m.officialSite||m.knownSite)||c.base' in src
 assert 'action=action_tr_search_suggest' in src
 assert 'runtimeBase()+"/wp-admin/admin-ajax.php"' in src
-assert '"term="+encodeURIComponent(m.title)' in src
+assert '"&term="+encodeURIComponent(m.title)' in src
 assert 'runtimeBase()+"/?s="+encodeURIComponent(m.title)' in src
 assert '/player/index\\.php\\?data=' in src
 assert 'data.videoSource||data.securedLink||data.file||data.url' in src
