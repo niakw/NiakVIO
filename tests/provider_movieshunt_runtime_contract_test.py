@@ -15,6 +15,8 @@ for needle in (
     "vcloud",
     "fsl-buckets",
     "NIAKVIO_PROVIDER_RUNTIME_RESOLVER_V1",
+    "/search.html?q=",
+    ".html",
 ):
     assert needle.lower() in src.lower(), needle
 
