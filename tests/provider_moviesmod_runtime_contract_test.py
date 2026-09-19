@@ -11,4 +11,6 @@ assert hubs["direct"] == "https://moviesmod.ai.in/"
 assert hubs["direct_authority"] == "explicit_current"
 assert ov["provider_lego_scripts"] == ["scripts/provider_patches/moviesmod_runtime_v1.py"]
 assert ov["provider_lego_options"]["scripts/provider_patches/moviesmod_runtime_v1.py"]["base"] == "https://moviesmod.ai.in"
+assert 'return s(q.type==="movie"?(md.title||md.original_title||md.name):(md.name||md.original_name||md.title))' in src
+assert "md.imdb_id||md.imdbId" not in src
 print("MoviesMod provider runtime/domain contract passed")
