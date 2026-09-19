@@ -25,6 +25,7 @@ from typing import Any, Iterable
 ROOT = Path(__file__).resolve().parents[1]
 ROTATING_CORPUS = ROOT / ".github/triggers/rotating-popular-corpus.json"
 REGRESSION_CORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"
+HEALTH_CORPUS = ROOT / "health-config.json"
 LANES = ("movie", "tv", "anime")
 MIN_GLOBAL_YEAR = 2010
 
