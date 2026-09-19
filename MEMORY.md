@@ -2602,3 +2602,5 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Le renderer/ledger doit encore être mis à jour dans le commit suivant pour exposer CHAIN REACHED et WAF/ANTIBOT; ne considérer aucun nouveau compteur comme validé avant ce second lot + CI.
 
 - **Ledger exposé : CHAIN REACHED / WAF** : le renderer sépare maintenant NO PROOF (search/lookup-only), CHAIN REACHED (contenu/detail/episode/player spécifique atteint sans média terminal), PROVIDER WAF/ANTIBOT (challenge navigateur prouvé) et PARTIAL OK (au moins une lane réellement playable + vérifiée). La colonne ambiguë Search progress devient **Corpus progress** et **Evidence depth** rend la profondeur explicite.
+
+- **WAF propagé dans l'historique/non-régression** : `provider_waf_challenge` compte comme blocage externe/transitoire, jamais comme panne JS. Les comparaisons A/B et l'autorité upstream drift l'acceptent comme cause réseau distincte.

@@ -101,7 +101,7 @@ def load_upstream_drift(path: Path = DEFAULT_UPSTREAM_DRIFT) -> dict[str, dict[s
     if not isinstance(raw, dict):
         raise ValueError("upstream drift providers must be an object")
     out: dict[str, dict[str, Any]] = {}
-    allowed_stages = {"provider_network_http_error", "provider_network_exception", "timeout"}
+    allowed_stages = {"provider_waf_challenge", "provider_network_http_error", "provider_network_exception", "timeout"}
     for raw_pid, raw_row in raw.items():
         pid = canon(raw_pid)
         if not pid or not isinstance(raw_row, dict):

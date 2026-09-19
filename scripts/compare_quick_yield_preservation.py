@@ -19,7 +19,7 @@ from urllib.parse import urlsplit
 import compare_quick_yield_preservation_impl as impl
 
 _original_load = impl.load
-TRANSIENT_EXTERNAL_STAGES = {"timeout", "provider_network_exception"}
+TRANSIENT_EXTERNAL_STAGES = {"timeout", "provider_network_exception", "provider_waf_challenge"}
 MIN_EXTERNAL_DRIFT_RETRY_OBSERVATIONS = 2
 
 

@@ -22,6 +22,7 @@ TECHNICAL_STAGES = {
     "missing_tmdb_credential",
 }
 NETWORK_STAGES = {
+    "provider_waf_challenge",
     "provider_network_http_error",
     "provider_network_exception",
     "timeout",

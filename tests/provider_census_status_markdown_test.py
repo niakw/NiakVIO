@@ -58,6 +58,7 @@ assert rows["chain"]["status"] == "CHAIN REACHED"
 assert rows["waf"]["status"] == "PROVIDER WAF/ANTIBOT"
 assert rows["network-blocked"]["status"] == "PROVIDER NETWORK BLOCKED"
 assert rows["broken"]["status"] == "PROVIDER JS BROKEN"
+assert "provider_waf_challenge" in NETWORK_STAGES
 assert "provider_network_http_error" in NETWORK_STAGES
 assert "provider_network_exception" in NETWORK_STAGES
 assert "timeout" in NETWORK_STAGES
