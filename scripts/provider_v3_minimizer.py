@@ -8,7 +8,9 @@ expression folding and reordering are forbidden.
 
 Untagged template physical line breaks become ``\\n`` escapes (same cooked
 value); tagged templates fail closed because String.raw semantics would change.
-ASI-sensitive line breaks also fail closed instead of being guessed away.
+ASI-sensitive line breaks are made explicit when JavaScript ASI already terminates
+the restricted production (return/yield/break/continue/async -> semicolon).
+Illegal throw-newline and ambiguous postfix-update cases still fail closed.
 """
 from __future__ import annotations
 
@@ -32,6 +34,7 @@ TRANSFORMATIONS_ENABLED = [
     "post-linebreak-indentation-removal",
     "unmanaged-comment-removal",
     "untagged-template-linebreak-escape",
+    "asi-restricted-linebreak-to-semicolon",
 ]
 
 MARKERS = (
@@ -96,8 +99,17 @@ def _linebreak_guard(out: list[str]) -> None:
     tail = _tail(out).rstrip(" \t\f\v")
     if not tail:
         return
-    if _RESTRICTED_LINEBREAK_RE.search(tail):
-        raise ValueError("ASI-sensitive line break after restricted keyword cannot be flattened safely")
+    restricted = _RESTRICTED_LINEBREAK_RE.search(tail)
+    if restricted:
+        keyword = restricted.group(1)
+        if keyword == "throw":
+            # A LineTerminator is forbidden after throw; accepting it would hide
+            # invalid input rather than preserve JavaScript semantics.
+            raise ValueError("illegal line break after throw cannot be flattened safely")
+        # For return/yield/break/continue and a standalone async token, the
+        # physical LineTerminator already terminates the production. Make that
+        # ASI decision explicit before flattening to one physical line.
+        out.append(";")
     if tail.endswith(("++", "--")):
         raise ValueError("ASI-sensitive line break after postfix update cannot be flattened safely")
 
@@ -485,7 +497,8 @@ def portfolio_report(*, syntax_check: bool = False) -> dict:
             "preserve quoted string and regular-expression literal payloads",
             "escape physical line breaks only inside untagged template literals",
             "fail closed on tagged templates because raw payload semantics differ",
-            "fail closed on restricted-keyword/postfix ASI-sensitive line breaks",
+            "encode ASI-terminated restricted-keyword line breaks as explicit semicolons",
+            "fail closed on illegal throw-newline and postfix-update line breaks",
             "never rename identifiers", "never reorder or fold expressions",
             "never use Terser",
             f"require deterministic fixed-point and Node syntax on all {len(files)} current active providers",
