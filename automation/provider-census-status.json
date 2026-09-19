@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35458567765",
-  "triggerSha": "39682d43b1146c426816f25948b51119c0fa659f",
+  "runId": "35460005850",
+  "triggerSha": "d8c099756a3aa57ef2f5c332600ff7dfea9704fb",
   "providers": [
     {
       "provider": "4khdhub",
@@ -19,8 +19,8 @@
       ],
       "dominantIssue": "provider_network_zero_result×2",
       "searchProgress": [
-        "movie: 8 this run / 12 retained misses",
-        "tv: 8 this run / 22 retained misses"
+        "movie: 8 this run / 16 retained misses",
+        "tv: 8 this run / 28 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -40,7 +40,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 8 this run / 13 retained misses"
+        "anime: 8 this run / 17 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -71,21 +71,21 @@
     },
     {
       "provider": "anikototv",
-      "status": "NO PROOF",
-      "color": "🔵",
+      "status": "PROVIDER JS BROKEN",
+      "color": "🟠",
       "declaredLanes": [
         "anime"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_zero_result"
+        "anime=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "provider_network_http_error",
       "searchProgress": [
         "anime: 8 this run / 11 retained misses"
       ],
-      "action": "continue corpus proof search; BRAIN checks",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -163,7 +163,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 8 this run / 27 retained misses"
+        "anime: 8 this run / 34 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -171,21 +171,21 @@
     },
     {
       "provider": "animevost-fr",
-      "status": "NO PROOF",
-      "color": "🔵",
+      "status": "PROVIDER JS BROKEN",
+      "color": "🟠",
       "declaredLanes": [
         "anime"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_zero_result"
+        "anime=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "anime: 8 this run / 21 retained misses"
+        "anime: 8 this run / 26 retained misses"
       ],
-      "action": "continue corpus proof search; BRAIN checks",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -203,7 +203,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 8 this run / 12 retained misses"
+        "anime: 8 this run / 16 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -289,7 +289,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "movie: 8 this run / 27 retained misses"
+        "movie: 8 this run / 34 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -297,8 +297,8 @@
     },
     {
       "provider": "moviebox",
-      "status": "PROVIDER JS FULLY BROKEN",
-      "color": "🔴",
+      "status": "NO PROOF",
+      "color": "🔵",
       "declaredLanes": [
         "movie",
         "tv"
@@ -306,15 +306,15 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_exception",
-        "tv=no_streams/provider_network_exception"
+        "movie=no_streams/provider_network_zero_result",
+        "tv=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_network_exception×2",
+      "dominantIssue": "provider_network_zero_result×2",
       "searchProgress": [
-        "movie: 8 this run / 6 retained misses",
-        "tv: 8 this run / 6 retained misses"
+        "movie: 8 this run / 13 retained misses",
+        "tv: 8 this run / 14 retained misses"
       ],
-      "action": "BRAIN LEARNING slot",
+      "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -332,7 +332,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "movie: 8 this run / 12 retained misses"
+        "movie: 8 this run / 15 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -340,8 +340,8 @@
     },
     {
       "provider": "moviesmod",
-      "status": "PROVIDER JS BROKEN",
-      "color": "🟠",
+      "status": "PROVIDER JS FULLY BROKEN",
+      "color": "🔴",
       "declaredLanes": [
         "movie",
         "tv"
@@ -355,9 +355,9 @@
       "dominantIssue": "provider_network_http_error×2",
       "searchProgress": [
         "movie: 8 this run / 11 retained misses",
-        "tv: 8 this run / 13 retained misses"
+        "tv: 8 this run / 14 retained misses"
       ],
-      "action": "repair + retest; BRAIN checks",
+      "action": "BRAIN LEARNING slot",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -400,8 +400,8 @@
       ],
       "dominantIssue": "provider_network_zero_result×2",
       "searchProgress": [
-        "movie: 8 this run / 27 retained misses",
-        "tv: 8 this run / 27 retained misses"
+        "movie: 8 this run / 34 retained misses",
+        "tv: 8 this run / 34 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -421,7 +421,7 @@
       ],
       "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "movie: 8 this run / 14 retained misses"
+        "movie: 8 this run / 18 retained misses"
       ],
       "action": "BRAIN LEARNING slot",
       "brainCheckRequired": true,
@@ -429,8 +429,8 @@
     },
     {
       "provider": "vidfast",
-      "status": "NO PROOF",
-      "color": "🔵",
+      "status": "PROVIDER JS BROKEN",
+      "color": "🟠",
       "declaredLanes": [
         "movie",
         "tv"
@@ -438,15 +438,15 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_zero_result"
+        "movie=no_streams/provider_network_http_error",
+        "tv=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_zero_result×2",
+      "dominantIssue": "provider_network_http_error×2",
       "searchProgress": [
         "movie: 8 this run / 27 retained misses",
         "tv: 8 this run / 26 retained misses"
       ],
-      "action": "continue corpus proof search; BRAIN checks",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -460,11 +460,11 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "anime=wrong_content/provider_returned_wrong_content"
+        "anime=no_streams/provider_runtime_hook_exception"
       ],
-      "dominantIssue": "provider_returned_wrong_content",
+      "dominantIssue": "provider_runtime_hook_exception",
       "searchProgress": [
-        "anime: 7 this run / 6 retained misses"
+        "anime: 8 this run / 6 retained misses"
       ],
       "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
@@ -515,8 +515,8 @@
     },
     {
       "provider": "yflix",
-      "status": "NO PROOF",
-      "color": "🔵",
+      "status": "PROVIDER JS BROKEN",
+      "color": "🟠",
       "declaredLanes": [
         "movie",
         "tv"
@@ -524,15 +524,15 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_zero_result"
+        "movie=no_streams/provider_zero_before_provider_network",
+        "tv=no_streams/provider_zero_before_provider_network"
       ],
-      "dominantIssue": "provider_network_zero_result×2",
+      "dominantIssue": "provider_zero_before_provider_network×2",
       "searchProgress": [
         "movie: 8 this run / 27 retained misses",
         "tv: 8 this run / 27 retained misses"
       ],
-      "action": "continue corpus proof search; BRAIN checks",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -1118,8 +1118,8 @@
   ],
   "counts": {
     "FULL OK": 21,
-    "NO PROOF": 11,
-    "PROVIDER JS BROKEN": 2,
+    "NO PROOF": 8,
+    "PROVIDER JS BROKEN": 5,
     "PROVIDER JS FULLY BROKEN": 12
   },
   "brainQueue": [
