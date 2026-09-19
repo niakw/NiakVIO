@@ -44,9 +44,9 @@
       "manifest_status": "Actif",
       "category": "Francophone / Anime",
       "hub": null,
-      "direct": "https://ww.animesultra.org/",
+      "direct": "https://v2.animesultra.org/",
       "source": "curated_user_registry",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "Current AnimesUltra runtime terminal is v2.animesultra.org; ww.animesultra.org and animesultra.com are stale for the reconstructed DLE/full-story chain.",
       "aliases": [
         "animesultra"
       ],
@@ -54,10 +54,10 @@
         "www1.animesultra"
       ],
       "direct_candidates": [
-        "https://ww.animesultra.org/"
+        "https://v2.animesultra.org/"
       ],
       "allowed_terminal_hosts": [
-        "ww.animesultra.org"
+        "v2.animesultra.org"
       ],
       "sources": [
         {
@@ -67,7 +67,14 @@
           "purpose": "Fallback discovery when curated sources fail"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "direct_authority": "explicit_current",
+      "direct_authority_source": "current-indexed-provider-terminal-and-NiakVIO-official-site",
+      "direct_authority_observed_at": "2026-09-19",
+      "blocked_hosts": [
+        "ww.animesultra.org",
+        "animesultra.com"
+      ]
     },
     "animevostfr": {
       "id": "animevostfr",
@@ -1448,21 +1455,19 @@
       "manifest_status": "Actif",
       "category": "International",
       "hub": null,
-      "direct": "https://moviesmod.army/",
+      "direct": "https://moviesmod.ai.in/",
       "source": "curated_user_registry",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "moviesmod.zone currently redirects to moviesmod.ai.in and the resulting provider page announces the moved official domain; army is no longer runtime authority.",
       "aliases": [
         "moviesmod"
       ],
       "direct_candidates": [
-        "https://moviesmod.army/",
-        "https://moviesmod.zone/",
-        "https://moviesmod.cc/"
+        "https://moviesmod.ai.in/",
+        "https://moviesmod.zone/"
       ],
       "allowed_terminal_hosts": [
-        "moviesmod.army",
-        "moviesmod.zone",
-        "moviesmod.cc"
+        "moviesmod.ai.in",
+        "moviesmod.zone"
       ],
       "search_queries": [
         "\"MoviesMod\" official domain"
@@ -1477,9 +1482,14 @@
       ],
       "search_confirmation_runs": 2,
       "direct_authority": "explicit_current",
-      "direct_authority_source": "provider-upstream-domain-registry",
+      "direct_authority_source": "current-public-provider-redirect-and-site-announcement",
       "direct_authority_observed_at": "2026-09-19",
-      "last_verified": "2026-09-19"
+      "last_verified": "2026-09-19",
+      "blocked_hosts": [
+        "moviesmod.army",
+        "moviesmod.money",
+        "moviesmod.cc"
+      ]
     },
     "animetsu": {
       "id": "animetsu",
