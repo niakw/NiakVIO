@@ -27,6 +27,14 @@ def main() -> int:
         assert allmat.materialization_context() == "workspace"
         assert allmat.final_minimizer_enabled("workspace") is False
 
+    # apply_overrides is a compositor, not a hidden second minimization stage.
+    # The only permitted call sites are the explicit materializers behind
+    # NIAKVIO_PROVIDER_V3_FINAL_MINIMIZE.
+    apply_source = (ROOT / "scripts" / "apply_provider_overrides.py").read_text(encoding="utf-8")
+    assert "from provider_v3_minimizer import" not in apply_source
+    assert "minimize_text(text)" not in apply_source
+    assert "validate_transform(text" not in apply_source
+
         setenv(allmat.FINAL_MINIMIZER_ENV, "1")
         try:
             allmat.final_minimizer_enabled("workspace")
