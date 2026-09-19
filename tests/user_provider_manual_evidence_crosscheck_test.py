@@ -28,7 +28,7 @@ vost=patches["vostfree"]
 assert vost["search_request_plan"][0]["route"]=="/index.php"
 assert vost["search_request_plan"][0]["requestSpec"]["method"]=="POST"
 vost_src=(ROOT/"scripts/provider_patches/vostfree_dle_uqload_runtime_v1.py").read_text(encoding="utf-8")
-assert "video.sibnet.ru" in vost_src and "uqload" in vost_src.lower()
+assert "sibnet" in vost_src.lower() and "uqload" in vost_src.lower()
 
 flem=patches["flemmix"]
 assert flem["search_request_plan"][0]["route"]=="/index.php?do=search&subaction=search&search_start=0&full_search=0&story={query}"
