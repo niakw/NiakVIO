@@ -2178,3 +2178,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Commit **490d71d22025331b666b38d34538c0f5ee02977a** bound provider `allanime` to this provider-local Lego and reclassified its source runtime family as `catalogue-html`.
 - Commit **5ed3c1e15c30200f1c4650ee93c8763937cb8c9a** added the static contract test.
 - No AllAnime green is claimed until the new branch HEAD is rematerialized and the full census verifies terminal playback.
+
+
+## 2026-09-19 — R19 route-evidence repair continuation
+
+- R19 full census run 35421303974: **18/46 FULL**, **0 wrong-content**. VidLove and VidRock are green again. AnimeSalt was not a network zero: bundle load failed with `SyntaxError: Invalid regular expression flags`.
+- AnimeSalt root cause: provider-local Python raw-string wrapper double-escaped JavaScript regex literals. Patched on `tmp/provider-max-repair-proof-20260919` at **06ffc0a576bc1b7285fc40509ede0e631d7b4eb3**; contract test now compiles the generated wrapper with Node at **9204abd5a1b68a15447b7a864467ad22379f2ae9**. Status: **patched, live census revalidation pending**.
+- Flemmix R19 used stale/false provider DATA: `flemmix.me` + JSON-like `/search?q=`. User browser evidence from 2026-09-19 proves official hub advertised **flemmix.cloud** and DLE GET `/index.php?do=search&subaction=search&search_start=0&full_search=0&story={query}` returned 200; season page and Vidara/JWPlayer/LuluVDO player families were observed.
+- Flemmix corrections: overrides/current route authority **f06e409f0b5a3ac8ad6c6995d44609df8cf8ac2e**; provider runtime DLE parser **7a9b7bb630d966eb6bd389d2a956575769b9bf06**; default runtime base cloud **c112943a2ec43260ceb461be11164ac2d73c9937**; contract test updated + JS compilation **5e5bb9bb45e571c0c3d17f5a94922c49eafbc011**; hub authority aligned **aeae6251049052cbd288edd2708cc8736bd74149** and locked in test **48fc7835a3ad614f0cb79ecd4987c6ad9397d599**. Status: **patched, live census revalidation pending**.
+- Vostfree current runtime already reproduces the user-proven DLE POST + Sibnet/Uqload chain structurally, but GitHub CI currently receives HTTP 403 on the search POST while the user's browser capture returned 200. Do not classify as broken route until network/session variance is separated from parser behavior.
+- MovieBox remains quarantined/no-proven-route and is lower priority; user evidence explicitly said not to spend time if browser/API path is proprietary/invisible.
