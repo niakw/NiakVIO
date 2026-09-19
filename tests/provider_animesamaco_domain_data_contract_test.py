@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import json
+import subprocess
 
 ROOT=Path(__file__).resolve().parents[1]
 src=(ROOT/"scripts/provider_patches/animesamaco_site_runtime_v1.py").read_text(encoding="utf-8")
@@ -11,8 +12,12 @@ assert "function runtimeBase()" in src
 assert 'm&&(m.officialSite||m.knownSite)||c.base' in src
 assert 'runtimeBase()+"/template-php/defaut/fetch.php"' in src
 assert '"Referer":runtimeBase()+"/"' in src
+assert '"X-Requested-With":"XMLHttpRequest"' in src
+assert "asn-search-result-title" in src
+assert "function fallbackQueries" in src
 js=src.split("WRAPPER = r'''",1)[1].split("'''",1)[0]
 assert js.count("c.base")==2, "only runtimeBase fallback may reference legacy cfg base"
+subprocess.run(["node","-e","new Function(process.argv[1]);",js.replace("CONFIG_PLACEHOLDER","{}")],check=True)
 assert ov["official_site"]=="https://animesama.co"
 assert ov.get("domain_substitutions",{}).get("animesama.co") is None
 assert ov.get("runtime_domain_replacements",{}).get("animesama.co") is None
