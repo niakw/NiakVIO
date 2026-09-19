@@ -2407,3 +2407,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The six other currently declared provider Lego sources — **Coflix, French-Manga, Sekai, VoirAnime-Homes, AllAnime and Anime-Ultime** — were rechecked and contain none of the three forbidden HTML-filter patterns.
 - The security regression test on main now auto-discovers declared `provider_lego_scripts` from `provider-overrides.json`, so future provider additions are included automatically instead of relying on a fixed source list.
 - Publication is still not marked validated: next step is to trigger `CORE - Finalize Accepted Release`, verify atomic publication, then inspect CORE Verify & Publish, Provider Non-Regression and the unresolved provider census on the resulting published SHA.
+
+### 2026-09-19 — UHDMovies non-regression false semantic floor fixed
+
+- Provider Non-Regression run **35456432346** failed on two providers after the previous accepted release: MoviesHunt (`missing_verified_lanes`) and UHDMovies (`semantic_capability_regression`).
+- UHDMovies was a false semantic regression: current/published capability is movie-only, while the 5.21.0 fixture carried legacy `types=[movie,tv]`. That legacy fixture field described exercised/invocation coverage and is not a canonical semantic declaration.
+- `scripts/build_provider_history_matrix_v3.py` no longer promotes legacy fixture `types` into `semanticTypeFloor`. Only explicit fixture `semanticTypes` or historical `canonicalSupportedTypes` may create a semantic floor. The old `types` value remains diagnostic-only with source `5.21.0-fixture-types-unproven-transport-only`.
+- `tests/provider_non_regression_contract_test_impl.py` locks this rule by requiring the diagnostic-only source and forbidding `values = legacy`.
+- MoviesHunt remains separately unresolved: its current corpus returns HTTP 200 on provider search/detail requests but no verified stream; do not collapse this into the UHDMovies contract fix.
