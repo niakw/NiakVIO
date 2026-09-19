@@ -2070,3 +2070,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Commit **0ccccd75b2d179631b02ef0132275a0359579379** inserts domain projection + ProviderBase store + full Provider v3 materialization + CONFIG/Lego validation before the non-regression quick-yield census. Commit **defec7ddb13c7dddb3cb74b4a557252aad9d0ded** makes this rematerialized-candidate requirement part of workflow ownership.
 - R9 MoviesHunt/VoirAnime failures were measured on stale published bytes; their post-R8 candidate fixes remain **unvalidated**, not disproven. The next proof must run from one exact current main SHA after all prepared provider fixes are stable.
 - Prepared but still unvalidated current-base repairs now include Flemmix `flemmix.me`, AnimesUltra `v2.animesultra.org`, and MoviesMod `moviesmod.ai.in`. Do not promote any of them before the next rematerialized proof.
+
+
+## 2026-09-19 — R10 candidate authority preflight
+
+- Before launching the first trustworthy broad rematerialized census, provider DATA was checked for Domain Refresh contradictions that could silently reintroduce stale hosts.
+- **VoirAnime** current catalogue authority is now registry-owned `https://voir-anime.to/` with `direct_authority=explicit_current`; stale `.diy/.homes/.store/.com` hosts are blocked. Current live catalogue evidence on 2026-09-19 exposes active VF/VOSTFR rows and Jujutsu Kaisen on `voir-anime.to`. Commit **dd80893c64e9534da61b0be0d5c77c8d5b70f290** records that provider-local address authority.
+- **MoviesHunt** still carried the retired `/lookup.php?q={query}` inside proof-v5 `learned_routes`, so merely adding the new `/?s={query}` search plan did not remove the old executable path. Commit **07b76b8db630c389ae6b1f4dc93c0d6f5b836a13** removes the lookup route from executable DATA and marks the current WordPress search as HTML.
+- Commit **5b43b8e042071cfa3a0a296cd7da20173aa7ea54** locks both authorities in the domain reconciliation contract.
+- Domain reconciliation is expected to project explicit-current registry hosts into stale `official_site`/site-host mappings at rematerialization time. This is deliberate: registry/domain ownership remains separate from provider route ownership.
+- R10 must be run on one exact main SHA and no main mutation should occur while its targeted/full/non-regression jobs are executing. Its broad score is the first one in this repair sequence that may be called a rematerialized candidate score.
