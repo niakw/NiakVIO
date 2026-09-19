@@ -9438,7 +9438,8 @@
       "notes": [
         "2026-09-19 lane authority repair: generic directRoute remains removed so TV can never be forced through type=movie.",
         "2026-09-19 zero-before-network root cause: movieRoute/episodeRoute are direct typed resolver endpoints; ProviderBase requires recipeKind=typed-resolver-api when no searchRoute exists. Both current and candidate recipes now declare that contract.",
-        "2026-09-19 YFlix repair: the typed DB apiRecipe stopped at /db/flix/find and could never reach terminal media. Runtime ownership moved to a NiakVIO Lego implementing the current encrypted YFlix AJAX chain; upstream JS remains knowledge-only."
+        "2026-09-19 YFlix repair: the typed DB apiRecipe stopped at /db/flix/find and could never reach terminal media. Runtime ownership moved to a NiakVIO Lego implementing the current encrypted YFlix AJAX chain; upstream JS remains knowledge-only.",
+        "2026-09-19 evidence-backed alias retained: 1moviesz.to/ajax is probed after yflix.to before sibling fallbacks."
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/yflix_runtime_v1.py"
@@ -9449,6 +9450,7 @@
           "api": "https://enc-dec.app/api",
           "ajaxBases": [
             "https://yflix.to/ajax",
+            "https://1moviesz.to/ajax",
             "https://1movies.bz/ajax",
             "https://solarmovie.fi/ajax"
           ],
@@ -9481,7 +9483,8 @@
       "notes": [
         "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias.",
         "Current execution authority is provider-local AllAnime GraphQL at api.allanime.day/api; search/source resolution is distinct from historical HTML/AnWatch observations.",
-        "Encrypted tobeparsed payloads are decoded only through WebCrypto AES-CTR when available; otherwise the provider fails closed. Core retains final stream validation."
+        "Encrypted tobeparsed payloads are decoded only through WebCrypto AES-CTR when available; otherwise the provider fails closed. Core retains final stream validation.",
+        "2026-09-19 current authority: api.mkissa.net/api + mkissa.to dynamic key bootstrap + aaReq AES-GCM; api.allanime.day d405/AES-CTR remains bounded legacy fallback."
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -9677,8 +9680,24 @@
       "provider_lego_scripts": [
         "scripts/provider_patches/allanime_site_runtime_v1.py"
       ],
-      "source_runtime_family": "graphql-source-clock",
-      "reconstruction_state": "provider-local-current-api"
+      "source_runtime_family": "allanime-mkissa-aaReq-gcm-plus-legacy-ctr-v5",
+      "reconstruction_state": "provider-local-current-api-dual",
+      "provider_lego_options": {
+        "scripts/provider_patches/allanime_site_runtime_v1.py": {
+          "currentApi": "https://api.mkissa.net/api",
+          "currentOrigin": "https://mkissa.to",
+          "currentCdn": "https://cdn.mkissa.net/all/mk/_app/immutable",
+          "api": "https://api.allanime.day/api",
+          "base": "https://allanime.day",
+          "clockBase": "https://allanime.day",
+          "searchOrigin": "https://allmanga.to",
+          "sourceReferer": "https://youtu-chan.com",
+          "referer": "https://allanime.day/",
+          "siteBase": "https://ww2.aniwatch.fit",
+          "maxStreams": 6,
+          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0"
+        }
+      }
     },
     "allwish": {
       "capability": "mixed_embed_resolver",

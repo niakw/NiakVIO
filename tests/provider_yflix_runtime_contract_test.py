@@ -27,6 +27,7 @@ opts=ov["provider_lego_options"][lego]
 assert opts["db"]=="https://enc-dec.app/db/flix"
 assert opts["api"]=="https://enc-dec.app/api"
 assert opts["ajaxBases"][0]=="https://yflix.to/ajax"
+assert "https://1moviesz.to/ajax" in opts["ajaxBases"]
 assert "https://1movies.bz/ajax" in opts["ajaxBases"]
 assert ov["published_types"]==["movie","tv"]
 

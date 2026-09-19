@@ -56,7 +56,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     cfg = {
         "db": "https://enc-dec.app/db/flix",
         "api": "https://enc-dec.app/api",
-        "ajaxBases": ["https://yflix.to/ajax", "https://1movies.bz/ajax", "https://solarmovie.fi/ajax"],
+        "ajaxBases": ["https://yflix.to/ajax", "https://1moviesz.to/ajax", "https://1movies.bz/ajax", "https://solarmovie.fi/ajax"],
         "maxStreams": 8,
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145.0.0.0 Safari/537.36",
     }

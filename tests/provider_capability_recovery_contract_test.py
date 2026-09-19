@@ -24,9 +24,8 @@ for token in ("NIAKVIO_YFLIX_RUNTIME_V1", "/find?tmdb_id=", "/enc-movies-flix?te
     assert token in yflixlego, token
 
 allanime=(ROOT/"scripts/provider_patches/allanime_site_runtime_v1.py").read_text(encoding="utf-8")
-for token in ("d405d0edd690624b66baba3068e0edc3ac90f1597d898a1ec8db4e5c43c00fec", '"?variables="', "persistedQuery:{version:1,sha256Hash:SOURCE_HASH}", '"https://allmanga.to"', '"https://youtu-chan.com"'):
+for token in ("f4662f4b7510b26795dd53ef824a0bf1740fbbc5d1273fab18222ac831bca8d0", "d405d0edd690624b66baba3068e0edc3ac90f1597d898a1ec8db4e5c43c00fec", "aaReq", "AES-GCM", "AES-CTR", '"https://api.mkissa.net/api"', '"https://mkissa.to"', '"https://allmanga.to"', '"https://youtu-chan.com"'):
     assert token in allanime, token
-assert "SOURCE_GQL" not in allanime
 
 anikoto=(ROOT/"scripts/provider_patches/anikototv_runtime_v2.py").read_text(encoding="utf-8")
 for token in ("NIAKVIO_ANIKOTOTV_RUNTIME_V3", "https://arm.haglund.dev/api/v2/tmdb", "megaplay.buzz", "/stream/getSources?id=", "AES-CBC", "j&&j.enc", "await sourceFile(j)", '"semanticLanes": ["anime"]'):
