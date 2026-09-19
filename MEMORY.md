@@ -2608,3 +2608,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - **Mémoire des CHAIN REACHED corrigée** : un zero-stream ayant atteint une route contenu/detail/episode/player n'est plus enregistré comme `misses`. Il passe dans `chainHits`, est rejoué juste après les preuves positives et avant le corpus générique, et sort automatiquement de cette file dès qu'il devient playable ou retombe en vrai lookup-only miss. Cela évite que Mallumv/AllAnime et les futurs providers presque résolus soient oubliés par la rotation après avoir atteint leur meilleure fixture.
 
 - **Crawler média : navigation non-média filtrée** : la trace UHDMovies prouvait la chaîne UHDMovies → gateway → DriveSeed en HTTP 200, puis le crawler générique suivait encore des liens de navigation (`/about-us`, privacy/terms, puis `/cdn-cgi/l/email-protection`) et laissait le dernier 404 contaminer le verdict réseau. `CORE.MEDIA_ENRICHMENT.V1` rejette désormais explicitement ces routes non-média avant crawl (révision `scoped-playback-context-v10-nonmedia-nav-filter`). C'est un correctif générique pour tous les providers player/download, pas une exception UHDMovies. Validation candidate/non-régression requise avant publication.
+
+## 2026-09-20 — NO PROOF ne doit plus effacer une preuve candidate live
+
+- Audit des 4 derniers NO PROOF : 4khdhub, animetsu, animevostfr, showbox.
+- 4khdhub courant n’a pas de preuve playable retenue : les anciens flux Interstellar/Breaking Bad en 206/MKV appartiennent au provider distinct historique 4khdhubnew; ne pas réattribuer ces preuves.
+- animetsu et showbox n’ont pas de preuve positive retrouvée dans les snapshots/field evidence examinés.
+- animevostfr a une vraie preuve candidate : run87_reconstruction / run 34309729426, scope reconstruction-candidate, raw + playable + verified; matrice CANDIDATE_GREEN.
+- Le census expose désormais CANDIDATE OK séparément de NO PROOF et PARTIAL OK. PARTIAL/FULL restent réservés aux preuves courantes/publiées.
