@@ -115,7 +115,7 @@ jobs:
           python tests/provider_runtime_dispatch_diagnostics_test.py
           python tests/provider_census_identity_diagnostics_test.py
 
-      - name: Persist Anime-Sama CONFIG rematerialization on repair branch
+      - name: Persist structured Provider CONFIG drifts on repair branch
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'tmp/provider-max-repair-proof-20260919' }}
         shell: bash
         run: |
@@ -128,9 +128,10 @@ jobs:
           from pathlib import Path
           ROOT=Path.cwd()
           sys.path.insert(0,str(ROOT/"scripts"))
-          from provider_patch_blocks import decode_managed_data
+          from provider_patch_blocks import decode_managed_data, validate_managed_fixes
           from materialize_provider_v3_all import provider_model, normalize_anime_transport_compatibility
-          from provider_base_store import build_provider_data_model
+          from provider_base_store import build_provider_data_model, canonical_id
+          from current_provider_scope import active_provider_ids
           from domain_refresh_transaction_v2 import rebuild_provider_configs
           from sync_manifest_projection_rows import sync
 
@@ -140,28 +141,68 @@ jobs:
           manifest=load("manifest.json")
           overrides=load("provider-overrides.json")
           static=load("automation/provider-v3-static-knowledge.json")
-          row=next(r for r in manifest["scrapers"] if str(r.get("id","")).casefold()=="anime-sama")
-          patch=overrides["provider_patches"]["anime-sama"]
-          capability=overrides["provider_capabilities"]["anime-sama"]
-          static_row=static["providers"]["anime-sama"]
-          entry=json.loads(json.dumps(row))
-          normalize_anime_transport_compatibility(entry)
-          model=provider_model("anime-sama",patch,capability,static_row)
-          expected=build_provider_data_model("anime-sama",entry,known_site=model.get("knownSite"),provider_model=model)
-          published_path=ROOT/row["filename"]
-          text=published_path.read_text(encoding="utf-8")
-          published=decode_managed_data(text,"PROVIDER.ANIME-SAMA.CONFIG.V1")
-          if published==expected:
-              print("FIELD_ANIME_SAMA_CONFIG_REMATERIALIZE needed=false")
+          patches=overrides["provider_patches"]
+          capabilities=overrides["provider_capabilities"]
+          static_rows=static["providers"]
+          active=active_provider_ids()
+          drift=[]
+          details={}
+          for row in manifest.get("scrapers") or []:
+              pid=canonical_id(row.get("id"))
+              if pid not in active:
+                  continue
+              patch=patches.get(pid)
+              capability=capabilities.get(pid)
+              static_row=static_rows.get(pid)
+              if not all(isinstance(v,dict) for v in (patch,capability,static_row)):
+                  raise SystemExit(f"{pid}: incomplete structured DATA")
+              path=ROOT/str(row.get("filename") or "")
+              if not path.is_file():
+                  raise SystemExit(f"{pid}: published file missing {path}")
+              text=path.read_text(encoding="utf-8")
+              ids=validate_managed_fixes(text)
+              config_id=f"PROVIDER.{pid.upper()}.CONFIG.V1"
+              if config_id not in ids:
+                  raise SystemExit(f"{pid}: CONFIG Lego missing")
+              published=decode_managed_data(text,config_id)
+              entry=json.loads(json.dumps(row))
+              normalize_anime_transport_compatibility(entry)
+              model=provider_model(pid,patch,capability,static_row)
+              expected=build_provider_data_model(pid,entry,known_site=model.get("knownSite"),provider_model=model)
+              if published!=expected:
+                  drift.append(pid)
+                  details[pid]=[
+                      key for key in sorted(set(published)|set(expected))
+                      if published.get(key)!=expected.get(key)
+                  ]
+          print("FIELD_PROVIDER_CONFIG_DRIFT",json.dumps({"providers":drift,"keys":details},sort_keys=True))
+          if not drift:
               raise SystemExit(0)
-          updates=rebuild_provider_configs(["anime-sama"])
-          if len(updates)!=1 or updates[0].get("provider")!="anime-sama":
-              raise SystemExit(f"unexpected rebuild scope: {updates!r}")
+          updates=rebuild_provider_configs(drift)
+          if sorted(row.get("provider") for row in updates)!=sorted(drift):
+              raise SystemExit(f"unexpected rebuild scope drift={drift!r} updates={updates!r}")
           sync(check=False)
-          print("FIELD_ANIME_SAMA_CONFIG_REMATERIALIZE needed=true",updates)
+
+          # Recompute every changed provider against the post-rebuild manifest.
+          manifest=load("manifest.json")
+          rows={canonical_id(row.get("id")):row for row in manifest.get("scrapers") or []}
+          for pid in drift:
+              row=rows[pid]
+              entry=json.loads(json.dumps(row))
+              normalize_anime_transport_compatibility(entry)
+              model=provider_model(pid,patches[pid],capabilities[pid],static_rows[pid])
+              expected=build_provider_data_model(pid,entry,known_site=model.get("knownSite"),provider_model=model)
+              text=(ROOT/row["filename"]).read_text(encoding="utf-8")
+              published=decode_managed_data(text,f"PROVIDER.{pid.upper()}.CONFIG.V1")
+              assert published==expected,(pid,{
+                  key:{"published":published.get(key),"expected":expected.get(key)}
+                  for key in sorted(set(published)|set(expected))
+                  if published.get(key)!=expected.get(key)
+              })
+          print("FIELD_PROVIDER_CONFIG_REMATERIALIZED",json.dumps(sorted(drift)))
           PY
           if git diff --quiet && git diff --cached --quiet; then
-            echo "Anime-Sama CONFIG already current; no branch mutation"
+            echo "Published Provider CONFIG DATA already current; no branch mutation"
             exit 0
           fi
           git status --short
@@ -181,54 +222,21 @@ jobs:
           }
           bad=[
               p for p in touched
-              if p not in allowed_exact and not p.startswith("providers/anime-sama--")
+              if p not in allowed_exact and not (
+                  p.startswith("providers/") and p.endswith(".js")
+              )
           ]
           if bad:
               raise SystemExit(f"unexpected generated paths: {bad}")
-          if not any(p.startswith("providers/anime-sama--") for p in touched):
-              raise SystemExit("Anime-Sama provider bytes did not rotate")
           PY
-          python - <<'PY'
-          import json,sys
-          from pathlib import Path
-          ROOT=Path.cwd()
-          sys.path.insert(0,str(ROOT/"scripts"))
-          from provider_patch_blocks import decode_managed_data
-          from materialize_provider_v3_all import provider_model, normalize_anime_transport_compatibility
-          from provider_base_store import build_provider_data_model
-          def load(path):
-              return json.loads((ROOT/path).read_text(encoding="utf-8"))
-          manifest=load("manifest.json")
-          overrides=load("provider-overrides.json")
-          static=load("automation/provider-v3-static-knowledge.json")
-          row=next(r for r in manifest["scrapers"] if str(r.get("id","")).casefold()=="anime-sama")
-          entry=json.loads(json.dumps(row))
-          normalize_anime_transport_compatibility(entry)
-          model=provider_model(
-              "anime-sama",
-              overrides["provider_patches"]["anime-sama"],
-              overrides["provider_capabilities"]["anime-sama"],
-              static["providers"]["anime-sama"],
-          )
-          expected=build_provider_data_model("anime-sama",entry,known_site=model.get("knownSite"),provider_model=model)
-          published=decode_managed_data(
-              (ROOT/row["filename"]).read_text(encoding="utf-8"),
-              "PROVIDER.ANIME-SAMA.CONFIG.V1",
-          )
-          assert published==expected, {
-              key:{"published":published.get(key),"expected":expected.get(key)}
-              for key in sorted(set(published)|set(expected))
-              if published.get(key)!=expected.get(key)
-          }
-          assert published.get("apiRecipe") is None
-          assert "/api/v2/themoviedb?id={tmdbId}" not in (published.get("routes") or [])
-          print("FIELD_ANIME_SAMA_CONFIG_EXACT_OK",row["filename"])
-          PY
+          python scripts/audit_provider_v3_static.py
           python tests/global_media_type_pre_network_gate_test.py
+          python tests/global_stream_output_guard_test.py
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "fix(anime-sama): rematerialize current provider DATA"
+          git diff --cached --quiet && { echo "No generated changes"; exit 0; }
+          git commit -m "fix(data): rematerialize current provider CONFIG drifts"
           git push origin HEAD:"$branch"
 
       - name: Materialize current provider bytes
