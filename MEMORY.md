@@ -2280,3 +2280,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Exact `PROVIDER_CENSUS_STATUS.md` bytes from successful scoped census run **35447448840** were recovered from its GitHub Actions artifact and committed to PR **#188** at **8e3ee87a83bb2b13a871d02d5b51d7ceaa21c47d**.
 - The generated ledger now visibly reports **20 FULL OK / 16 NO PROOF / 10 PROVIDER JS FULLY BROKEN** across 46 providers, with colors, status semantics, retained proof labels, search progress, dominant issue, and next action.
 - This Markdown is on the PR branch, not yet on `main`, because #188 is still blocked by two unrelated gates. Once #188 merges, the exact generated Markdown will land on `main`; main must not be manually overwritten by the old renderer before the code migration.
+
+
+### 2026-09-19 — Non-regression now replays accepted baseline fixtures
+
+- Provider Non-Regression run **35447448809** falsely failed `movieshunt` and `voiranime-homes` with `missing_verified_lanes`: the rolling baseline required their previously accepted lanes, but the candidate census had not replayed the exact baseline winning works.
+- Main baseline `provider-v3-quick-yield.json` proves the retained positives explicitly: **MoviesHunt/movie = Interstellar** and **VoirAnime.homes/anime = Jujutsu Kaisen**, both `playable_verified`.
+- Commit **0465c2a3dd893baf328482db97879bafa409c513** moves baseline selection before the candidate census, seeds `automation/provider-census-proof-history.json` from the accepted baseline quick-yield report, and runs the global candidate census with that proof history so retained winners are replayed first.
+- Contract commit **cbe78b9635a712124e74685c2802c46f86f52540** enforces workflow ordering: baseline selection → baseline fixture memory seed → candidate census.
+- A missing lane is therefore no longer called a regression merely because the candidate sampled a different catalogue work. A true regression requires failure after replaying the retained winning fixture.
