@@ -1188,11 +1188,12 @@
     "movieshunt": {
       "capability": "direct_media",
       "official_hub": "https://movieshunt.cc",
-      "official_site": "https://movieshunt.ws",
+      "official_site": "https://movieshunt.run",
       "domain_substitutions": {
-        "movieshunt.work": "movieshunt.ws",
-        "movieshunt.casa": "movieshunt.ws",
-        "movieshunt.monster": "movieshunt.ws"
+        "movieshunt.work": "movieshunt.run",
+        "movieshunt.casa": "movieshunt.run",
+        "movieshunt.monster": "movieshunt.run",
+        "movieshunt.ws": "movieshunt.run"
       },
       "learned_routes": [
         "/?s={query}"
@@ -1365,8 +1366,10 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {
-        "movieshunt.casa": "movieshunt.ws",
-        "movieshunt.monster": "movieshunt.ws"
+        "movieshunt.work": "movieshunt.run",
+        "movieshunt.casa": "movieshunt.run",
+        "movieshunt.monster": "movieshunt.run",
+        "movieshunt.ws": "movieshunt.run"
       },
       "runtime_plan_lkg": {
         "version": 1,
@@ -1429,8 +1432,19 @@
       ],
       "notes": [
         "2026-09-19 current runtime reconstruction: use the provider-local upstream base movieshunt.run with the current WordPress /?s={query} catalogue route; redirects are followed at fetch time and are not promoted into static route authority.",
-        "2026-09-19 executable authority cleanup: retired /lookup.php removed from learned_routes; only the current WordPress /?s={query} catalogue search remains executable."
-      ]
+        "2026-09-19 executable authority cleanup: retired /lookup.php removed from learned_routes; only the current WordPress /?s={query} catalogue search remains executable.",
+        "2026-09-19 clean-room runtime: TMDB/Core title -> provider-local WordPress search -> exact detail page -> Abhilinks -> HubCloud/VCloud -> terminal media; upstream JavaScript is not executed.",
+        "2026-09-19 census authority: provider-owned corpus fixtures are tested before generic representatives; Sinners is the primary current MoviesHunt proof fixture."
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/movieshunt_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/movieshunt_runtime_v1.py": {
+          "base": "https://movieshunt.run",
+          "maxStreams": 6
+        }
+      }
     },
     "hindmoviez": {
       "capability": "direct_media",
