@@ -1225,14 +1225,18 @@ def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
         if boundary_count == 1:
             boundary_at = output.index(boundary_needle)
             boundary_end = boundary_at + len(boundary_needle)
-            # The boundary owns the newline that follows it. Consuming that
-            # newline restores the exact pre-Core composed Provider bytes, so
-            # reapplying Core cannot accumulate blank lines before the boundary.
+            # Every stripped CORE.* rectangle can leave its separator newline
+            # behind. Without canonicalizing this gap, each discovery reapply
+            # accumulates blank lines before the Core boundary and only appears
+            # idempotent when a later minimizer hides the drift. Restore exactly
+            # one newline between Provider bytes and END PROVIDER.
             if output.startswith("\r\n", boundary_end):
                 boundary_end += 2
             elif boundary_end < len(output) and output[boundary_end] in "\r\n":
                 boundary_end += 1
-            output = output[:boundary_at] + output[boundary_end:]
+            prefix = output[:boundary_at].rstrip()
+            suffix = output[boundary_end:].lstrip("\r\n")
+            output = prefix + ("\n" if suffix else "") + suffix
         return output, output != text
 
     original = text
