@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import json
+import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 src = (ROOT / "scripts/provider_patches/movieshunt_runtime_v1.py").read_text(encoding="utf-8")
@@ -16,6 +17,10 @@ for needle in (
     "fsl-buckets",
     "NIAKVIO_PROVIDER_RUNTIME_RESOLVER_V1",
     "/search.html?q=",
+    "/lookup.php?q=",
+    "dynamicLookup",
+    "post_title",
+    "permalink",
     ".html",
 ):
     assert needle.lower() in src.lower(), needle
@@ -30,5 +35,10 @@ assert int(opts["maxStreams"]) == 6
 assert ov["learned_routes"] == ["/search.html?q={query}", "/?s={query}"], ov["learned_routes"]
 assert ov["search_request_plan"][0]["base"] == "https://movieshunt.run"
 assert ov["search_request_plan"][0]["route"] == "/search.html?q={query}"
+# JSON lookup is only a dynamic fallback on the actual host reached by the
+# current /search.html response; it is not promoted as direct-domain authority.
+assert "movieshunt.monster" not in ov["learned_routes"]
+js=src.split("WRAPPER = r'''",1)[1].split("'''",1)[0].replace("CONFIG_PLACEHOLDER","{}")
+subprocess.run(["node","-e","new Function(process.argv[1]);",js],check=True)
 
 print("MoviesHunt provider runtime/domain contract passed")

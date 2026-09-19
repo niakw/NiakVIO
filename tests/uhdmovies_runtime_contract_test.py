@@ -13,6 +13,10 @@ for marker in [
     "function redirectedDirect",
     "function followDownload",
     'new URL(u).searchParams.get("url")',
+    "function terminalResponse",
+    'Number(r.status)===206',
+    "content-range",
+    "terminalMedia",
     "function driveSeed",
     'provider:"uhdmovies"',
 ]:

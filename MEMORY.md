@@ -2297,3 +2297,17 @@ This ledger is not complete merely because provider yield improves. Final comple
 - PR **#188** was merged into `main` at **cdf8b20edbd4be169866ffd657e1f8f5b7a89b1f**.
 - The temporary PR188 publication diagnostic workflow was removed immediately on `main` at **9299c6aaadde41ee694ca498dd12a1e1d8cf3c28**.
 - From this point, provider/census fixes in this workstream are applied directly to `main`, with exact-SHA validation and MEMORY.md updates after each material advance.
+
+
+### 2026-09-19 — Main-only ZERO repair superset imported
+
+- Remaining useful provider fixes from stale branches `fix/post-186-zero-batch-20260919` and its 5-commit superset `fix/post-187-zero-batch-2-20260919` were triaged and imported directly into `main` in one atomic commit; no new PR/repair branch was created.
+- Imported only unresolved/currently relevant cases:
+  - **AllAnime**: provider-local GraphQL search/source/clock chain at `api.allanime.day/api`, replacing stale HTML execution authority in Provider DATA.
+  - **MoviesMod**: current `moviesmod.ai.in` authority aligned in DATA/history plus parser/runtime updates.
+  - **UHDMovies**: verified HTTP `206` / Content-Range / media content-type can terminate as playable media instead of being discarded.
+  - **VoirAnime.rip**: robust AJAX result attribute parsing plus bounded fallback queries.
+  - **MoviesHunt** and **Sekai**: late-stage parser/runtime robustness from the superset branch, with their contract tests.
+- **AnimeSama.co was intentionally not re-imported** because the current scoped census already proves it **FULL OK**.
+- Functional promotion is still pending post-commit current-main census/probes; this entry records code/data integration, not a green verdict.
+- Cleanup intent: PR **#187** is superseded by this direct-main import. The four stale work refs are to be removed/neutralized after this exact main commit.
