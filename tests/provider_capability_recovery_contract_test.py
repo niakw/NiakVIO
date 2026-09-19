@@ -23,4 +23,9 @@ for recipe_key in ("api_recipe","candidate_api_recipe"):
     assert recipe["movieRoute"].endswith("type=movie"), recipe
     assert recipe["episodeRoute"].endswith("type=tv"), recipe
 
-print("AnimeVOST-FR, UHDMovies, VidFast and YFlix capability contracts passed")
+allanime=(ROOT/"scripts/provider_patches/allanime_site_runtime_v1.py").read_text(encoding="utf-8")
+for token in ("d405d0edd690624b66baba3068e0edc3ac90f1597d898a1ec8db4e5c43c00fec", '"?variables="', '"persistedQuery"', '"https://allmanga.to"', '"https://youtu-chan.com"'):
+    assert token in allanime, token
+assert "SOURCE_GQL" not in allanime
+
+print("AnimeVOST-FR, UHDMovies, VidFast, YFlix and AllAnime capability contracts passed")
