@@ -33,12 +33,23 @@ function install(o,k){
   var native=o[k];
   var wrap=async function(){
     var hook=null;
-    try{hook=g&&g.__niakvioProviderRuntimeResolverV1}catch(_e){}
+    try{
+      if(g)g.__niakvioProviderRuntimeDispatchErrorV1=null;
+      hook=g&&g.__niakvioProviderRuntimeResolverV1;
+    }catch(_e){}
     if(hook&&typeof hook.resolve==="function"){
       try{
         var value=await hook.resolve(arguments,{native:native,receiver:this});
         if(value!==null&&value!==undefined)return value;
-      }catch(_hookError){}
+      }catch(_hookError){
+        try{
+          if(g)g.__niakvioProviderRuntimeDispatchErrorV1={
+            provider:String(hook&&hook.provider||""),
+            name:String(_hookError&&_hookError.name||"Error"),
+            message:String(_hookError&&_hookError.message||_hookError||"").slice(0,400)
+          };
+        }catch(_diagError){}
+      }
     }
     return await native.apply(this,arguments);
   };
@@ -55,7 +66,7 @@ try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&
         text,
         MANAGED_FIX_ID,
         wrapper,
-        data={"revision": "provider-runtime-dispatch-v1", "fallback": "native-on-null-or-error", "hookContext": "native+receiver"},
+        data={"revision": "provider-runtime-dispatch-v2-observable-errors", "fallback": "native-on-null-or-error", "hookContext": "native+receiver", "errorEvidence": "globalThis.__niakvioProviderRuntimeDispatchErrorV1"},
     )
 
 
