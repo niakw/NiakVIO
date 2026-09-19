@@ -13,7 +13,12 @@ src=(ROOT/"scripts/provider_patches/animesalt_runtime_v1.py").read_text(encoding
 assert "NIAKVIO_ANIMESALT_RUNTIME_V1" in src
 assert 'function runtimeBase()' in src
 assert 'm&&(m.officialSite||m.knownSite)||c.base' in src
+assert 'action=action_tr_search_suggest' in src
+assert 'runtimeBase()+"/wp-admin/admin-ajax.php"' in src
+assert '"term="+encodeURIComponent(m.title)' in src
 assert 'runtimeBase()+"/?s="+encodeURIComponent(m.title)' in src
+assert '/player/index\\.php\\?data=' in src
+assert 'data.videoSource||data.securedLink||data.file||data.url' in src
 assert 'action=action_select_season&season=' in src
 assert '"&post="+encodeURIComponent(chosen.post)' in src
 assert '/player/index.php?data=' in src
