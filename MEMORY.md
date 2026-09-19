@@ -2641,3 +2641,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Nouveau statut **ROUTE PROVEN** : toutes les lanes déclarées disposent d'une route provider live qualifiée, mais aucun média terminal courant n'est encore playable+verified. Le statut ne compte pas comme FULL/PARTIAL et reste dans la file BRAIN.
 - Sur un zero propre, l'ordre devient : preuve playback candidate → CHAIN REACHED courant → ROUTE PROVEN retenu → NO PROOF. WAF/network/JS actuels restent des causes spécifiques et ne sont pas masqués par la route historique.
 - Le Markdown expose désormais une colonne `Route proof` (nombre de routes live + lanes). Revalidation census requise avant de considérer le compteur NO PROOF à zéro.
+
+## 2026-09-20 — diagnostic WAF par session navigateur ordinaire
+
+- Ajout de `scripts/probe_waf_browser_session.py` au Current Bytes Census. Il prend uniquement les lanes `provider_waf_challenge` et rejoue la dernière URL GET dans **Chrome headless standard**, avec profil temporaire isolé.
+- Le diagnostic n'emploie **aucun stealth plugin, solveur CAPTCHA/Turnstile, fabrication/export de cf_clearance ni persistance de cookies/corps HTML**. Il classe seulement : `browser_content_reached`, `browser_challenge_persisted`, `browser_inconclusive`, `browser_timeout/error/unavailable`; les POST restent `unsupported_method`.
+- Objectif : distinguer un challenge spécifique au fetch/empreinte GitHub d'un challenge qui persiste même dans un vrai navigateur. Le rapport est persisté sous `automation/provider-waf-browser-session-<run>.json` + `...-latest.json` et ne modifie pas à lui seul FULL/PARTIAL.
+- Références open source auditées pour l'architecture : curl_cffi (fingerprint TLS/HTTP2), Camoufox (navigateur Playwright anti-détection), FlareSolverr/cloudscraper/undetected-chromedriver (solveurs/évasion explicites). NiakVIO retient ici uniquement la voie navigateur/session ordinaire, sans intégrer les mécanismes de solveur.

@@ -14,6 +14,8 @@ on:
       - 'scripts/render_provider_census_status.py'
       - 'scripts/update_provider_census_proof_history.py'
       - 'scripts/audit_provider_quick_yield.py'
+      - 'scripts/probe_waf_browser_session.py'
+      - 'tests/provider_waf_browser_session_test.py'
       - 'scripts/rotating_corpus.py'
       - 'tests/allanime_site_runtime_contract_test.py'
       - 'tests/allanime_current_runtime_behavior_test.py'
@@ -33,6 +35,8 @@ on:
       - 'scripts/provider_base_store.py'
       - 'scripts/apply_provider_overrides.py'
       - 'scripts/materialize_provider_v3_all.py'
+      - 'scripts/probe_waf_browser_session.py'
+      - 'tests/provider_waf_browser_session_test.py'
       - 'tests/allanime_site_runtime_contract_test.py'
       - 'tests/allanime_current_runtime_behavior_test.py'
       - 'tests/provider_yflix_runtime_contract_test.py'
@@ -102,6 +106,7 @@ jobs:
           node tests/provider_hindmoviez_identity_contract_test.cjs
           python tests/provider_runtime_dispatch_diagnostics_test.py
           python tests/provider_census_identity_diagnostics_test.py
+          python tests/provider_waf_browser_session_test.py
           python tests/provider_census_status_markdown_test.py
           python tests/provider_census_scope_history_test.py
           python tests/provider_materialization_byte_validation_contract_test.py
@@ -166,6 +171,11 @@ jobs:
           python scripts/update_provider_census_proof_history.py provider-v3-quick-yield.json             --history automation/provider-census-proof-history.json             --run-id "$GITHUB_RUN_ID"             --sha "$GITHUB_SHA"
 
           python scripts/render_provider_census_status.py provider-v3-quick-yield.json             --output PROVIDER_CENSUS_STATUS.md             --json-output automation/provider-census-status.json             --history automation/provider-census-proof-history.json             --baseline-status automation/provider-census-status.json             --run-id "$GITHUB_RUN_ID"             --sha "$GITHUB_SHA"
+
+          # WAF diagnostic only: ordinary Chrome session, no stealth/CAPTCHA solver/token export.
+          python scripts/probe_waf_browser_session.py provider-v3-quick-yield.json \
+            --output automation/provider-waf-browser-session.json \
+            --timeout 20 --virtual-time-ms 7000 --workers 3 --max-targets 16
 
           cp provider-v3-quick-yield.json automation/current-bytes-full-provider-census.json
           python - <<'PY'
@@ -246,6 +256,7 @@ jobs:
           cp PROVIDER_CENSUS_STATUS.md "/tmp/provider-census-status-${run_id}.md"
           cp automation/provider-census-status.json "/tmp/provider-census-state-${run_id}.json"
           cp automation/provider-census-proof-history.json "/tmp/provider-census-proof-history-${run_id}.json"
+          cp automation/provider-waf-browser-session.json "/tmp/provider-waf-browser-session-${run_id}.json"
           verified="$(python - <<'PY'
           import json
           from pathlib import Path
@@ -266,10 +277,13 @@ jobs:
           cp "/tmp/provider-census-status-${run_id}.md" PROVIDER_CENSUS_STATUS.md
           cp "/tmp/provider-census-state-${run_id}.json" automation/provider-census-status.json
           cp "/tmp/provider-census-proof-history-${run_id}.json" automation/provider-census-proof-history.json
+          cp "/tmp/provider-waf-browser-session-${run_id}.json" "automation/provider-waf-browser-session-${run_id}.json"
+          cp "/tmp/provider-waf-browser-session-${run_id}.json" automation/provider-waf-browser-session-latest.json
           cp "/tmp/census-summary-${run_id}.json" automation/current-bytes-full-provider-census-latest-summary.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "automation/current-bytes-full-provider-census-${run_id}-summary.json" "automation/current-bytes-full-provider-census-${run_id}.json" automation/current-bytes-full-provider-census-latest-summary.json automation/provider-census-status.json automation/provider-census-proof-history.json PROVIDER_CENSUS_STATUS.md
+          git add "automation/provider-waf-browser-session-${run_id}.json" automation/provider-waf-browser-session-latest.json
           git commit -m "ci(census): persist current bytes ${verified} from ${GITHUB_SHA::12}"
           git push origin HEAD:main
 
