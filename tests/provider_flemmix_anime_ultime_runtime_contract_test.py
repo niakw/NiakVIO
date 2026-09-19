@@ -21,6 +21,8 @@ assert "data-serie" in anime and "data-focus" in anime
 assert "arm.haglund.dev" not in anime
 
 assert ov["flemmix"]["provider_lego_scripts"] == ["scripts/provider_patches/flemmix_runtime_v1.py"]
-assert ov["flemmix"]["provider_lego_options"]["scripts/provider_patches/flemmix_runtime_v1.py"]["base"] == "https://flemmix.me"\nassert '"base": "https://flemmix.me"' in flemmix\nassert ov["anime-ultime"]["provider_lego_scripts"] == ["scripts/provider_patches/anime_ultime_runtime_v1.py"]
+assert ov["flemmix"]["provider_lego_options"]["scripts/provider_patches/flemmix_runtime_v1.py"]["base"] == "https://flemmix.me"
+assert '"base": "https://flemmix.me"' in flemmix
+assert ov["anime-ultime"]["provider_lego_scripts"] == ["scripts/provider_patches/anime_ultime_runtime_v1.py"]
 
 print("Flemmix and Anime-Ultime provider runtime contracts passed")
