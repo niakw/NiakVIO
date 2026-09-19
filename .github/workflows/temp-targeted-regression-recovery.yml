@@ -188,7 +188,42 @@ jobs:
           if not any(p.startswith("providers/anime-sama--") for p in touched):
               raise SystemExit("Anime-Sama provider bytes did not rotate")
           PY
-          python scripts/audit_provider_v3_static.py
+          python - <<'PY'
+          import json,sys
+          from pathlib import Path
+          ROOT=Path.cwd()
+          sys.path.insert(0,str(ROOT/"scripts"))
+          from provider_patch_blocks import decode_managed_data
+          from materialize_provider_v3_all import provider_model, normalize_anime_transport_compatibility
+          from provider_base_store import build_provider_data_model
+          def load(path):
+              return json.loads((ROOT/path).read_text(encoding="utf-8"))
+          manifest=load("manifest.json")
+          overrides=load("provider-overrides.json")
+          static=load("automation/provider-v3-static-knowledge.json")
+          row=next(r for r in manifest["scrapers"] if str(r.get("id","")).casefold()=="anime-sama")
+          entry=json.loads(json.dumps(row))
+          normalize_anime_transport_compatibility(entry)
+          model=provider_model(
+              "anime-sama",
+              overrides["provider_patches"]["anime-sama"],
+              overrides["provider_capabilities"]["anime-sama"],
+              static["providers"]["anime-sama"],
+          )
+          expected=build_provider_data_model("anime-sama",entry,known_site=model.get("knownSite"),provider_model=model)
+          published=decode_managed_data(
+              (ROOT/row["filename"]).read_text(encoding="utf-8"),
+              "PROVIDER.ANIME-SAMA.CONFIG.V1",
+          )
+          assert published==expected, {
+              key:{"published":published.get(key),"expected":expected.get(key)}
+              for key in sorted(set(published)|set(expected))
+              if published.get(key)!=expected.get(key)
+          }
+          assert published.get("apiRecipe") is None
+          assert "/api/v2/themoviedb?id={tmdbId}" not in (published.get("routes") or [])
+          print("FIELD_ANIME_SAMA_CONFIG_EXACT_OK",row["filename"])
+          PY
           python tests/global_media_type_pre_network_gate_test.py
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
