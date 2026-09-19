@@ -13,8 +13,13 @@ vid=over["provider_patches"]["vidfast"]
 assert vid["published_types"]==["movie","tv"], vid.get("published_types")
 assert vid["provider_lego_scripts"]==["scripts/provider_patches/vidfast_runtime_v1.py"]
 vidlego=(ROOT/"scripts/provider_patches/vidfast_runtime_v1.py").read_text(encoding="utf-8")
-for token in ("NIAKVIO_VIDFAST_RUNTIME_V1", "/movie/"+'"+q.id+"/', "/tv/"+'"+q.id+"/"+q.season+"/"+q.episode+"/', "/enc-vidfast?text=", "/dec-vidfast", '"X-CSRF-Token"'):
+for token in ("NIAKVIO_VIDFAST_RUNTIME_V1", "c.bases", "/enc-vidfast?text=", "/dec-vidfast", '"X-CSRF-Token"', "genericCrawl"):
     assert token in vidlego, token
+vidopts=vid["provider_lego_options"]["scripts/provider_patches/vidfast_runtime_v1.py"]
+assert vidopts["bases"][0]["base"]=="https://vidfast.to", vidopts
+assert vidopts["bases"][0]["movie"]=="/embed/movie/{id}", vidopts
+assert vidopts["bases"][1]["base"]=="https://vidfast.vc", vidopts
+assert vid["official_site"]=="https://vidfast.to", vid
 
 yflix=over["provider_patches"]["yflix"]
 assert yflix["provider_lego_scripts"]==["scripts/provider_patches/yflix_runtime_v1.py"]

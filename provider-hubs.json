@@ -951,24 +951,42 @@
       "name": "VidFast",
       "manifest_status": "Actif",
       "category": "International",
-      "hub": "https://vidfast.vc/",
-      "direct": null,
+      "hub": "https://vidfast.to/",
+      "direct": "https://vidfast.to/",
       "source": "curated_user_registry",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "Current official docs are served on vidfast.to; vidfast.domains and current upstream still reference vidfast.vc. Keep both and validate the provider-local runtime.",
       "aliases": [
         "vidfast"
       ],
-      "direct_candidates": [],
-      "allowed_terminal_hosts": [],
+      "direct_candidates": [
+        "https://vidfast.to/",
+        "https://vidfast.vc/"
+      ],
+      "allowed_terminal_hosts": [
+        "vidfast.to",
+        "vidfast.vc"
+      ],
       "search_queries": [
         "\"VidFast\" official domain"
       ],
       "sources": [
         {
           "type": "hub",
+          "url": "https://vidfast.to/",
+          "priority": 120,
+          "purpose": "Current official API/embed documentation"
+        },
+        {
+          "type": "hub",
+          "url": "https://vidfast.domains/",
+          "priority": 115,
+          "purpose": "Official mirror/status registry"
+        },
+        {
+          "type": "hub",
           "url": "https://vidfast.vc/",
-          "priority": 100,
-          "purpose": "Authoritative address reference"
+          "priority": 105,
+          "purpose": "Current upstream provider authority / mirror"
         },
         {
           "type": "search",
@@ -977,7 +995,10 @@
           "purpose": "Fallback discovery when curated sources fail"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "last_verified": "2026-09-20",
+      "direct_authority": "explicit_current",
+      "direct_authority_source": "official-vidfast-docs-current"
     },
     "vidlink": {
       "id": "vidlink",
@@ -1971,22 +1992,32 @@
       "manifest_status": "Désactivé",
       "category": "Francophone",
       "hub": "https://t.me/s/Wookafr2",
-      "direct": "https://wookafr.tel/",
+      "direct": "https://wookafr.boston/",
       "source": "curated_user_registry",
       "resolver": "latest_telegram_domain",
       "aliases": [
         "wookafr",
         "wooka"
       ],
-      "last_verified": "2026-09-19",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "last_verified": "2026-09-20",
+      "schema_notes": "Official Telegram rotates domains frequently; current Gowaru source uses boston + center. Keep multiple same-brand terminals and live-validate rather than collapsing them to one stale host.",
       "direct_candidates": [
-        "https://wookafr.tel/",
-        "https://wookafr.blog/"
+        "https://wookafr.boston/",
+        "https://wookafr.center/",
+        "https://wookafr.blog/",
+        "https://wookafr.plus/",
+        "https://wookafr.app/",
+        "https://wookafr.mov/",
+        "https://wookafr.tel/"
       ],
       "allowed_terminal_hosts": [
-        "wookafr.tel",
-        "wookafr.blog"
+        "wookafr.boston",
+        "wookafr.center",
+        "wookafr.blog",
+        "wookafr.plus",
+        "wookafr.app",
+        "wookafr.mov",
+        "wookafr.tel"
       ],
       "search_queries": [
         "site:t.me/s/Wookafr2 \"URL du nouveau site\""
@@ -2011,7 +2042,7 @@
       ],
       "search_when_disabled": true,
       "direct_authority": "explicit_current",
-      "direct_authority_source": "official-telegram-current-address",
+      "direct_authority_source": "current-upstream-source-and-official-telegram",
       "direct_authority_observed_at": "2026-09-19"
     },
     "topcartoons": {

@@ -7544,12 +7544,13 @@
       "notes": [
         "Use VidFast documented movie/tv embed routes. Do not force direct-media validation on the iframe URL.",
         "2026-09-19 runtime reconstruction: current VidFast is API-first, not a root iframe query. TMDB identity selects /movie/{id}/ or /tv/{id}/{season}/{episode}/, then enc-dec.app/api enc-vidfast/dec-vidfast resolves CSRF-protected server endpoints.",
-        "Upstream JavaScript is not executed; NiakVIO reproduces only the observed page/token/enc-dec protocol in a provider-local Lego."
+        "Upstream JavaScript is not executed; NiakVIO reproduces only the observed page/token/enc-dec protocol in a provider-local Lego.",
+        "2026-09-20 multi-authority refresh: official vidfast.to docs expose /embed/movie and /embed/tv routes, while current All-in-One upstream still uses vidfast.vc + enc-dec. Probe .to first and preserve .vc as evidence-backed fallback."
       ],
       "capability": "mixed_embed_resolver",
       "preserve_embed_urls": true,
       "domain_substitutions": {
-        "vidfast.pro": "vidfast.vc"
+        "vidfast.pro": "vidfast.to"
       },
       "learned_routes": [
         "/movie/{tmdbId}/",
@@ -7587,7 +7588,9 @@
         "/?tmdbId={tmdbId}&type=movie",
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
         "/",
-        "/api"
+        "/api",
+        "/embed/movie/{tmdbId}",
+        "/embed/tv/{tmdbId}/{season}/{episode}"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -7757,11 +7760,32 @@
       ],
       "provider_lego_options": {
         "scripts/provider_patches/vidfast_runtime_v1.py": {
-          "base": "https://vidfast.vc",
+          "bases": [
+            {
+              "base": "https://vidfast.to",
+              "movie": "/embed/movie/{id}",
+              "tv": "/embed/tv/{id}/{season}/{episode}"
+            },
+            {
+              "base": "https://vidfast.vc",
+              "movie": "/movie/{id}/",
+              "tv": "/tv/{id}/{season}/{episode}/"
+            }
+          ],
           "decrypt": "https://enc-dec.app/api",
-          "maxStreams": 8
+          "maxStreams": 8,
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145.0.0.0 Safari/537.36"
         }
-      }
+      },
+      "official_site": "https://vidfast.to",
+      "proof_search_bases": [
+        "https://vidfast.to",
+        "https://vidfast.vc"
+      ],
+      "proof_detail_bases": [
+        "https://vidfast.to",
+        "https://vidfast.vc"
+      ]
     },
     "vidrock": {
       "capability": "html_scraper",
@@ -8978,10 +9002,11 @@
       "capability": "mixed_embed_resolver",
       "notes": [
         "Use the latest Wooka terminal domain announced by the official Telegram address channel.",
-        "Wooka player crawl preserves all discovered embeds but prioritizes lecteurvideo.com before the ProviderBase bounded seed budget; current lecteurvideo pages are structurally parsed and still pass shared terminal/identity guards."
+        "Wooka player crawl preserves all discovered embeds but prioritizes lecteurvideo.com before the ProviderBase bounded seed budget; current lecteurvideo pages are structurally parsed and still pass shared terminal/identity guards.",
+        "2026-09-20 authority refresh: current Gowaru source generated 2026-09-18 uses wookafr.boston with wookafr.center fallback; official Telegram also lists boston/blog plus rotating plus/app/mov addresses. Keep current candidates independent instead of rewriting them all to blog."
       ],
       "official_hub": "https://t.me/s/Wookafr2",
-      "official_site": "https://wookafr.blog",
+      "official_site": "https://wookafr.boston",
       "published_types": [
         "movie",
         "tv"
@@ -8995,12 +9020,11 @@
         }
       },
       "domain_substitutions": {
-        "wookafr.app": "wookafr.blog",
-        "wookafr.center": "wookafr.blog",
-        "wookafr.cymru": "wookafr.blog",
-        "wookafr.fyi": "wookafr.blog",
-        "wookafr.to": "wookafr.blog",
-        "wookafr.boston": "wookafr.blog"
+        "wookafr.cymru": "wookafr.boston",
+        "wookafr.fyi": "wookafr.boston",
+        "wookafr.to": "wookafr.boston",
+        "wookafr.bond": "wookafr.boston",
+        "wookafr.blue": "wookafr.boston"
       },
       "candidate_config_reconciliation": {
         "version": 3,
@@ -9210,9 +9234,11 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {
-        "wookafr.center": "wookafr.blog",
-        "wookafr.app": "wookafr.blog",
-        "wookafr.boston": "wookafr.blog"
+        "wookafr.cymru": "wookafr.boston",
+        "wookafr.fyi": "wookafr.boston",
+        "wookafr.to": "wookafr.boston",
+        "wookafr.bond": "wookafr.boston",
+        "wookafr.blue": "wookafr.boston"
       },
       "provider_lego_scripts": [
         "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py"
@@ -9221,7 +9247,21 @@
         "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py": {
           "priority_host": "lecteurvideo.com"
         }
-      }
+      },
+      "proof_search_bases": [
+        "https://wookafr.boston",
+        "https://wookafr.center",
+        "https://wookafr.blog",
+        "https://wookafr.plus",
+        "https://wookafr.app",
+        "https://wookafr.mov"
+      ],
+      "proof_detail_bases": [
+        "https://wookafr.boston",
+        "https://wookafr.center",
+        "https://wookafr.blog",
+        "https://wookafr.plus"
+      ]
     },
     "yflix": {
       "capability": "mixed_embed_resolver",

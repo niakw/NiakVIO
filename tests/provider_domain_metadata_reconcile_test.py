@@ -72,8 +72,13 @@ import json
 hubs = json.loads((ROOT / "provider-hubs.json").read_text(encoding="utf-8"))["providers"]
 assert hubs["4khdhub"]["direct"] == "https://4khdhub.one/"
 assert hubs["4khdhub"]["direct_authority"] == "explicit_current"
-assert hubs["wookafr"]["direct"] == "https://wookafr.tel/"
+assert hubs["wookafr"]["direct"] == "https://wookafr.boston/"
 assert hubs["wookafr"]["direct_authority"] == "explicit_current"
+assert hubs["wookafr"]["direct_candidates"][:3] == [
+    "https://wookafr.boston/",
+    "https://wookafr.center/",
+    "https://wookafr.blog/",
+]
 assert hubs["hindmoviez"]["direct"] == "https://hindmovie.icu/"
 assert hubs["hindmoviez"]["direct_authority"] == "explicit_current"
 assert hubs["movieshunt"]["direct"] == "https://movieshunt.run/"
@@ -98,6 +103,19 @@ assert "movieshunt.monster" not in hubs["movieshunt"]["blocked_hosts"]
 # Current MoviesHunt executable search must follow the provider's WordPress
 # catalogue contract instead of the retired lookup.php JSON endpoint.
 overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))["provider_patches"]
+
+wooka = overrides["wookafr"]
+assert wooka["official_site"] == "https://wookafr.boston", wooka
+assert wooka["proof_search_bases"][:2] == ["https://wookafr.boston", "https://wookafr.center"], wooka
+for current_host in ("wookafr.boston", "wookafr.center", "wookafr.blog", "wookafr.plus", "wookafr.app", "wookafr.mov"):
+    assert current_host not in wooka.get("domain_substitutions", {}), (current_host, wooka.get("domain_substitutions"))
+assert wooka["domain_substitutions"]["wookafr.fyi"] == "wookafr.boston"
+
+vidfast = overrides["vidfast"]
+assert vidfast["official_site"] == "https://vidfast.to", vidfast
+assert vidfast["proof_search_bases"] == ["https://vidfast.to", "https://vidfast.vc"], vidfast
+assert hubs["vidfast"]["direct"] == "https://vidfast.to/"
+assert hubs["vidfast"]["allowed_terminal_hosts"] == ["vidfast.to", "vidfast.vc"]
 
 asco = overrides["animesama-co"]
 assert asco["official_site"] == "https://animesama.co"
