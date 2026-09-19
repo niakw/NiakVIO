@@ -29,7 +29,10 @@ permissions:
 
 concurrency:
   group: niakvio-temp-current-bytes-full-provider-census
-  cancel-in-progress: true
+  # Preserve the exact-SHA census already running when the repair branch advances.
+  # Newer commits queue behind it; evidence must record the SHA actually tested
+  # rather than repeatedly cancelling long validation before it produces an artifact.
+  cancel-in-progress: false
 
 jobs:
   census:
