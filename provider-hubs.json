@@ -8,20 +8,18 @@
       "manifest_status": "Actif",
       "category": "Francophone / Anime",
       "hub": "https://anime-sama.wiki/",
-      "direct": "https://animes-sama.fr/",
+      "direct": "https://animesama.co/",
       "source": "curated_user_registry",
       "aliases": [
         "anime-sama",
         "animesama"
       ],
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "AnimeSama.co is the distinct Gowaru DLE provider. Keep it separate from Anime-Sama catalogue authority; current provider source declares https://animesama.co.",
       "direct_candidates": [
-        "https://animes-sama.fr/",
-        "https://anime-sama.store/"
+        "https://animesama.co/"
       ],
       "allowed_terminal_hosts": [
-        "animes-sama.fr",
-        "anime-sama.store"
+        "animesama.co"
       ],
       "search_queries": [],
       "sources": [
@@ -36,6 +34,13 @@
       "resolver": "official_outbound",
       "allowed_terminal_host_patterns": [
         "^animes?-sama[a-z0-9-]*\\.[a-z0-9-]{2,20}$"
+      ],
+      "direct_authority": "explicit_current",
+      "direct_authority_source": "current-upstream-provider-config",
+      "direct_authority_observed_at": "2026-09-19",
+      "blocked_hosts": [
+        "animes-sama.fr",
+        "anime-sama.store"
       ]
     },
     "animesultra": {
