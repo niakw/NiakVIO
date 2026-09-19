@@ -23,6 +23,9 @@ assert "data-serie" in anime and "data-focus" in anime
 assert "arm.haglund.dev" not in anime
 
 assert ov["flemmix"]["provider_lego_scripts"] == ["scripts/provider_patches/flemmix_runtime_v1.py"]
+assert "api_recipe" not in ov["flemmix"]
+assert ov["flemmix"]["learned_routes"]==["/search?q={query}"]
+assert ov["flemmix"]["search_request_plan"][0]["route"]=="/search?q={query}"
 assert ov["flemmix"]["provider_lego_options"]["scripts/provider_patches/flemmix_runtime_v1.py"]["base"] == "https://flemmix.me"
 assert '"base": "https://flemmix.me"' in flemmix
 flemmix_js=flemmix.split("WRAPPER = r'''",1)[1].split("'''",1)[0]
