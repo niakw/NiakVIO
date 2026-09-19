@@ -93,6 +93,7 @@ jobs:
           node tests/provider_hindmoviez_identity_contract_test.cjs
           python tests/uhdmovies_runtime_contract_test.py
           python tests/provider_runtime_dispatch_diagnostics_test.py
+          python tests/provider_census_status_markdown_test.py
 
       - name: Build exact four-version ledger
         shell: bash
@@ -123,6 +124,7 @@ jobs:
             exit 1
           }
           python scripts/audit_provider_quick_yield.py | tee provider-v3-quick-yield.log
+          python scripts/render_provider_census_status.py provider-v3-quick-yield.json --output PROVIDER_CENSUS_STATUS.md --run-id "$GITHUB_RUN_ID" --sha "$GITHUB_SHA"
 
       - name: Select rolling accepted baseline
         id: baseline
@@ -178,6 +180,7 @@ jobs:
           path: |
             provider-v3-quick-yield.json
             provider-v3-quick-yield.log
+            PROVIDER_CENSUS_STATUS.md
             automation/provider-history-matrix.json
             automation/provider-non-regression-gate.json
             automation/PROVIDER-HISTORY-MATRIX.md
