@@ -450,7 +450,7 @@ for provider_id, row in registry['providers'].items():
     assert isinstance(row, dict), provider_id
     assert row.get('sources') or row.get('direct_candidates') or row.get('search_queries'), provider_id
     for source in row.get('sources') or []:
-        assert source.get('type') in {'hub', 'telegram_public', 'redirect', 'search'}, (provider_id, source)
+        assert source.get('type') in {'hub', 'telegram_public', 'redirect', 'search', 'upstream_provider'}, (provider_id, source)
         assert source.get('url') or source.get('query'), (provider_id, source)
 
 sync = (ROOT / '.github' / 'workflows' / 'sync.yml').read_text()
