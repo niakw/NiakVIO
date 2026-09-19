@@ -2511,3 +2511,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Targeted recovery **35464508422** reaches AniList plus MegaPlay stream pages and `/stream/getSources` with HTTP 200, then returns no stream.
 - The active v2 only handled plaintext MegaPlay source fields, while the repository's existing migration notes document an additional encoded-source response form. The active v2 now handles both the ordinary source field and that documented fallback before Core terminal validation.
 - Capability contracts now assert the fallback exists on the active v2. Fresh targeted proof remains required before promotion.
+
+### 2026-09-19 — AniKotoTV anime lane re-proven playable
+
+- Targeted Regression Recovery run **35465213543** on trigger SHA **267aacc9433a17b090d77013e7347d0a215e4452** verified AniKotoTV's **anime** lane as `playable_verified` with zero contradictions.
+- Proven chain: TMDB metadata -> AniList fallback after the legacy mapping endpoint returned 404 -> `megaplay.buzz/stream/mal/40748/1/{sub,dub}` -> `/stream/getSources` -> `fetch.nexabloom.top/.../master.m3u8`. Both master HLS responses were reachable (206/200) and variant playlists returned HTTP 200.
+- The active `anikototv_runtime_v2.py` encoded-source fallback is therefore validated in the real runner. AniKotoTV may be promoted for its single required anime lane by the next census/status render; this is not inferred from a contract test.
+- Same targeted run still leaves AllAnime and UHDMovies unverified; their patches must not be promoted from this run.
