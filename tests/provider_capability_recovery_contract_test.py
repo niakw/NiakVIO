@@ -20,6 +20,7 @@ yflix=over["provider_patches"]["yflix"]
 for recipe_key in ("api_recipe","candidate_api_recipe"):
     recipe=yflix[recipe_key]
     assert "directRoute" not in recipe and "directRequest" not in recipe, recipe
+    assert recipe["recipeKind"]=="typed-resolver-api", recipe
     assert recipe["movieRoute"].endswith("type=movie"), recipe
     assert recipe["episodeRoute"].endswith("type=tv"), recipe
 
