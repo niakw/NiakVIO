@@ -2367,3 +2367,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Recovery was performed immediately as a forward commit **0fb45d4b389742be1b7ad5612fa430c8fe9cd469**, using the complete parent tree **a2835246eae6b7650ed9d6564b0e52ab20da9c43** plus the intended edits. The resulting tree **8e6d4843ef33d73b21e3ce83cbbb35b1e16ae3e0** was inspected recursively: **4,768 entries**, not truncated, with `manifest.json`, `providers/**`, workflows and the release trigger present.
 - The intended release-order changes remain: regenerate `manifest-hub46.json` before provider prune and lock that order in `tests/release_version_sync_test.py`. No provider publication is considered validated from the intermediate partial-tree commit.
 
+### 2026-09-19 — Release finalizer trigger robustness
+
+- After the full repository tree was restored, trigger commits **de742a45a18ed304da095f57af0f71815f8e50c2** and **93d7dd60462af6e5dfedcfca30f694302545afb9** both changed `.github/triggers/release-finalize.json` but produced no `finalize` check run, while Workflow Gate/Brain/CodeQL did register normally. Therefore accepted-release publication was still not executed.
+- The release workflow itself was present on main with its expected push path filter, but it did not include its own workflow path as a trigger. To make workflow restoration/edits self-validating, `release-finalize.yml` is being added to its own `push.paths`, with `tests/release_version_sync_test.py` locking that contract.
+- This is a trigger-robustness fix only; provider bytes remain unpublised until a real `finalize` job appears, completes the atomic release, and downstream gates validate the resulting SHA.
+
