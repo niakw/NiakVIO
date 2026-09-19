@@ -2032,3 +2032,12 @@ This ledger is not complete merely because provider yield improves. Final comple
   - **VoirAnime** episode hrefs are canonicalized by pathname back onto the clean-room `voir-anime.to` base before episode scoring. Alias-host hrefs (`.homes/.diy`) therefore no longer get discarded before the provider's own `?host=LECTEUR...` stage.
   - **AnimeSalt** provider registry is now `explicit_current=https://animesalt.link/`, matching its current upstream provider source. The stale `.cx` terminal is blocked from being projected back into Provider DATA. This is a domain-authority correction only; functional green still requires a live rematerialized probe.
 - Domains/routes remain provider-local. No status promotion is made from these code/domain changes until the next current-byte proof.
+
+
+## 2026-09-19 — AnimeSalt clean-room runtime reconstruction
+
+- Commit **1d0a1998c697375b2961722ca11465d2a9bc6303** goes beyond the provider-local domain correction and reconstructs AnimeSalt's current runtime chain as a NiakVIO-owned Lego.
+- Static decoding of the current upstream provider source was limited to configuration/protocol constants; no upstream network code was executed. The observable contract is:
+  **TMDB/Core title -> `animesalt.link/?s=...` -> series identity -> season `data-post` -> `wp-admin/admin-ajax.php?action=action_select_season&season=...&post=...` -> exact SxE episode -> `as-cdn*.top/video/<hash>` -> POST `/player/index.php?data=<hash>&do=getVideo` with `hash=<hash>&r=<provider-root>` -> `videoSource|securedLink` HLS**.
+- The new Lego is `scripts/provider_patches/animesalt_runtime_v1.py`, registered only for provider `animesalt` in `provider-overrides.json`; it uses Core/TMDB identity, exact season/episode selection, and keeps AnimeSalt's domain/route authority provider-local.
+- Contract test `tests/animesalt_runtime_contract_test.py` is wired into the targeted proof workflow. **No functional green is claimed yet**; next status requires current-byte rematerialization + live terminal validation.
