@@ -2518,3 +2518,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Proven chain: TMDB metadata -> AniList fallback after the legacy mapping endpoint returned 404 -> `megaplay.buzz/stream/mal/40748/1/{sub,dub}` -> `/stream/getSources` -> `fetch.nexabloom.top/.../master.m3u8`. Both master HLS responses were reachable (206/200) and variant playlists returned HTTP 200.
 - The active `anikototv_runtime_v2.py` encoded-source fallback is therefore validated in the real runner. AniKotoTV may be promoted for its single required anime lane by the next census/status render; this is not inferred from a contract test.
 - Same targeted run still leaves AllAnime and UHDMovies unverified; their patches must not be promoted from this run.
+
+### 2026-09-19 — Animetsu current Gojo API Lego reconstructed
+
+- The active upstream Animetsu bytes were decoded rather than guessed. Current constants are: API base `https://animetsu.live/v2/api`, proxy `https://swiftstream.top/proxy`, servers `kite` + `dio`, source types `sub` + `dub`, and source route `/anime/oppai/{id}/{episode}?server={server}&source_type={sourceType}`.
+- NiakVIO previously had no active Animetsu Provider Lego; its clean v3 base still followed stale generic route evidence (including the old `omg10.com` path), which explains the fresh `provider_network_zero_result`.
+- Added `scripts/provider_patches/animetsu_runtime_v1.py` and wired it as the sole provider Lego. The runtime uses Core TMDB metadata first, requires Animation + original language ja/zh/ko before the first Animetsu request, performs current JSON search/title-year matching, computes absolute episodes from Core season counts when available, calls the decoded `oppai` routes, and emits the upstream proxy URLs for Core HLS validation. Upstream JS remains unembedded/unexecuted.
+- Added `tests/animetsu_runtime_behavior_test.py`: it asserts the current search/source/proxy chain and proves a live-action TV fixture produces zero provider-network calls after the Core semantic gate.
+- Current state: **patch + contract pushed, real targeted playable validation pending**. Do not promote Animetsu until Actions reproduces a terminal playable stream.
