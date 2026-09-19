@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35466088958",
-  "triggerSha": "e40b5af19a1df6096b2de744c5fafa694867c13d",
+  "runId": "35466852707",
+  "triggerSha": "34dce887bb4edf5c91fd9010c457200b068f32cb",
   "providers": [
     {
       "provider": "4khdhub",
@@ -19,7 +19,7 @@
       ],
       "dominantIssue": "provider_network_zero_result×2",
       "searchProgress": [
-        "movie: 8 this run / 40 retained misses",
+        "movie: 8 this run / 44 retained misses",
         "tv: 2 this run / 43 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
@@ -40,7 +40,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 8 this run / 33 retained misses"
+        "anime: 8 this run / 37 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -183,7 +183,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 8 this run / 40 retained misses"
+        "anime: 8 this run / 44 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -286,12 +286,12 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
+        "movie=no_streams/provider_network_http_error",
         "tv=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_zero_result, provider_network_http_error",
+      "dominantIssue": "provider_network_http_error×2",
       "searchProgress": [
-        "movie: 8 this run / 16 retained misses",
+        "movie: 8 this run / 17 retained misses",
         "tv: 8 this run / 18 retained misses"
       ],
       "action": "BRAIN LEARNING slot",
@@ -346,8 +346,8 @@
     },
     {
       "provider": "uhdmovies",
-      "status": "PROVIDER JS BROKEN",
-      "color": "🟠",
+      "status": "PROVIDER JS FULLY BROKEN",
+      "color": "🔴",
       "declaredLanes": [
         "movie"
       ],
@@ -358,9 +358,9 @@
       ],
       "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "movie: 8 this run / 25 retained misses"
+        "movie: 8 this run / 26 retained misses"
       ],
-      "action": "repair + retest; BRAIN checks",
+      "action": "BRAIN LEARNING slot",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -389,22 +389,26 @@
     },
     {
       "provider": "voiranime-rip",
-      "status": "NO PROOF",
-      "color": "🔵",
+      "status": "FULL OK",
+      "color": "🟢",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [],
+      "currentVerifiedLanes": [
+        "anime"
+      ],
+      "historicalProof": [
+        "anime: Naruto"
+      ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_zero_result"
+        "anime=OK"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "none",
       "searchProgress": [
-        "anime: 8 this run / 18 retained misses"
+        "anime: 8 this run / 21 retained misses"
       ],
-      "action": "continue corpus proof search; BRAIN checks",
-      "brainCheckRequired": true,
+      "action": "protect + replay retained proof",
+      "brainCheckRequired": false,
       "testedThisRun": true
     },
     {
@@ -466,8 +470,8 @@
       ],
       "dominantIssue": "provider_network_zero_result×2",
       "searchProgress": [
-        "movie: 3 this run / 43 retained misses",
-        "tv: 2 this run / 42 retained misses"
+        "movie: 1 this run / 43 retained misses",
+        "tv: 1 this run / 42 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -1129,11 +1133,10 @@
     }
   ],
   "counts": {
-    "FULL OK": 23,
-    "NO PROOF": 8,
+    "FULL OK": 24,
+    "NO PROOF": 7,
     "PARTIAL OK": 1,
-    "PROVIDER JS BROKEN": 1,
-    "PROVIDER JS FULLY BROKEN": 13
+    "PROVIDER JS FULLY BROKEN": 14
   },
   "brainQueue": [
     "4khdhub",
@@ -1154,7 +1157,6 @@
     "showbox",
     "uhdmovies",
     "vidfast",
-    "voiranime-rip",
     "vostfree",
     "wookafr",
     "yflix"
