@@ -1,0 +1,114 @@
+name: TEMP - Current Bytes Full Provider Census
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/temp-current-bytes-full-provider-census.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-temp-current-bytes-full-provider-census
+  cancel-in-progress: true
+
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NIAKVIO_QUICK_YIELD_TIMEOUT: '60'
+      NIAKVIO_QUICK_YIELD_MAX_SAMPLES: '4'
+      NIAKVIO_QUICK_YIELD_WORKERS: '20'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate current provider contracts
+        run: |
+          set -euo pipefail
+          python tests/provider_terminal_chain_repairs_test.py
+          python tests/provider_js_lego_ownership_test.py
+          python tests/provider_domain_metadata_reconcile_test.py
+
+      - name: Project provider-local current domain metadata
+        run: |
+          set -euo pipefail
+          python scripts/reconcile_provider_domain_metadata.py --rebuild
+
+      - name: Materialize current candidate bytes
+        run: |
+          set -euo pipefail
+          python scripts/materialize_provider_base_v3_store.py
+          python scripts/materialize_provider_v3_all.py
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/validate_published_provider_config.py
+          python tests/provider_js_lego_ownership_test.py
+          python tests/manual_tv_live_regressions_v34_test.py
+          python tests/global_stream_output_guard_test.py
+          python tests/episodic_identity_runtime_test.py
+          python tests/episodic_year_identity_regression_test.py
+          python tests/global_media_type_pre_network_gate_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/native_dual_id_identity_test.py
+          python tests/global_stream_presentation_test.py
+          python tests/global_stream_presentation_pipeline_test.py
+
+      - name: Run full adaptive current-byte census
+        run: |
+          set -euo pipefail
+          python scripts/audit_provider_quick_yield.py
+          mkdir -p automation
+          cp provider-v3-quick-yield.json automation/current-bytes-full-provider-census.json
+          python - <<'PY'
+          import json, math, os
+          from pathlib import Path
+          d=json.loads(Path("automation/current-bytes-full-provider-census.json").read_text())
+          count=int(d.get("provider_count") or 0)
+          verified=set(d.get("verified_providers") or [])
+          playable=set(d.get("accepted_playable_providers") or d.get("playable_providers") or [])
+          target=math.ceil(count*0.75)
+          summary={
+              "schemaVersion":1,
+              "runId":int(os.environ["GITHUB_RUN_ID"]),
+              "triggerSha":os.environ["GITHUB_SHA"],
+              "providerCount":count,
+              "verifiedProviderCount":len(verified),
+              "verifiedProviders":sorted(verified),
+              "acceptedPlayableProviderCount":len(playable),
+              "acceptedPlayableProviders":sorted(playable),
+              "wrongContentProviderCount":int(d.get("wrong_content_provider_count") or 0),
+              "wrongContentProviders":d.get("wrong_content_providers") or [],
+              "acceptanceTarget":target,
+              "acceptanceReached":len(verified)>=target,
+              "debugStageCounts":d.get("debug_stage_counts") or {},
+              "debugStageProviders":d.get("debug_stage_providers") or {},
+          }
+          Path("automation/current-bytes-full-provider-census-summary.json").write_text(
+              json.dumps(summary,indent=2,sort_keys=True)+"\n"
+          )
+          print("FIELD_CURRENT_BYTES_FULL_CENSUS "+json.dumps(summary,sort_keys=True))
+          PY
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: current-bytes-full-provider-census
+          path: |
+            automation/current-bytes-full-provider-census.json
+            automation/current-bytes-full-provider-census-summary.json
+          retention-days: 8
+          if-no-files-found: warn
