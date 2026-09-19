@@ -2379,3 +2379,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The temporary workflow reuses the corrected accepted-release finalization body and the same `niakvio-core-release-mutation-main` concurrency group. It is push-triggered only by `.github/triggers/temp-release-finalize-recovery.json`, so registration and execution are separate commits and no duplicate run is intentionally started.
 - Cleanup rule: do not delete the temporary recovery workflow until its publication SHA and downstream CORE/non-regression/census results are inspected. Then remove the temporary workflow and sentinel while keeping the canonical finalizer fix.
 
+### 2026-09-19 — Canonical finalizer reactivation via active Repository Hygiene
+
+- A newly created temporary workflow also failed to register a run from its sentinel push. This confirms the recovery problem is GitHub Actions workflow activation/registration for newly restored/created workflow definitions, not the accepted-release command body.
+- `OPS - Repository Hygiene` is an already-active workflow and its `purge-stale-actions` job already owns `actions: write`. A one-shot recovery step is therefore being added there, gated strictly to a push commit message containing `recover canonical release finalizer`.
+- The recovery step will fail closed unless current `main` exactly equals its triggering `GITHUB_SHA`, then call the GitHub Actions API to enable `release-finalize.yml` and dispatch it manually with `expected_sha=<exact main SHA>`. Manual workflow runs are explicitly excluded from stale-run cancellation by Repository Hygiene.
+- This is only an activation bridge; publication authority remains the canonical `CORE - Finalize Accepted Release` workflow.
+
