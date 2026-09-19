@@ -3306,7 +3306,7 @@
     "animesama-co": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://anime-sama.wiki/",
-      "official_site": "https://animes-sama.fr",
+      "official_site": "https://animesama.co",
       "manifest_overrides": {
         "enabled": true
       },
@@ -3326,11 +3326,13 @@
         "https://animesama.co/"
       ],
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/template-php/defaut/fetch.php",
+        "/anime/{id}-{slug}.html",
+        "/anime/{id}-{slug}/saison-{season}.html",
+        "/anime/{id}-{slug}/saison-{season}/episode-{episode}.html"
       ],
       "domain_substitutions": {
-        "anime-sama.store": "animes-sama.fr",
-        "animesama.co": "animes-sama.fr"
+        "anime-sama.store": "animesama.co"
       },
       "candidate_learned_routes": [
         "/catalogue/?search={query}",
@@ -3463,19 +3465,6 @@
           }
         ]
       },
-      "candidate_api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
-      },
       "route_data_state": "repair",
       "repair_disposition": {
         "schemaVersion": 1,
@@ -3511,23 +3500,6 @@
         },
         "evidenceDestructive": false
       },
-      "runtime_domain_replacements": {
-        "animesama.co": "animes-sama.fr"
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        },
-        "referer": "https://animesama.co"
-      },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
         "effective_coverage_ratio": 1,
@@ -3559,7 +3531,9 @@
       ],
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
-      ]
+      ],
+      "source_runtime_family": "dle-search-series-season-episode",
+      "reconstruction_state": "provider-local-current-site"
     },
     "animesultra": {
       "capability": "mixed_embed_resolver",
