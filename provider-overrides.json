@@ -3779,14 +3779,15 @@
         "anime"
       ],
       "notes": [
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
+        "2026-09-19 runtime authority: align reconstructed DLE/full-story Lego with current NiakVIO official_site v2.animesultra.org; prior animesultra.com endpoint returned 525."
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/animesultra_runtime_v1.py"
       ],
       "provider_lego_options": {
         "scripts/provider_patches/animesultra_runtime_v1.py": {
-          "base": "https://animesultra.com"
+          "base": "https://v2.animesultra.org"
         }
       }
     },
@@ -5337,7 +5338,8 @@
     },
     "moviesmod": {
       "notes": [
-        "Automatically migrated moviesmod.money to moviesmod.army after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
+        "Automatically migrated moviesmod.money to moviesmod.army after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint.",
+        "2026-09-19 runtime authority: moviesmod.zone redirects to moviesmod.ai.in and the live provider page announces the moved official domain; army returned 403 in current probes."
       ],
       "capability": "html_scraper",
       "official_hub": null,
@@ -5621,7 +5623,7 @@
       ],
       "provider_lego_options": {
         "scripts/provider_patches/moviesmod_runtime_v1.py": {
-          "base": "https://moviesmod.army"
+          "base": "https://moviesmod.ai.in"
         }
       }
     },
