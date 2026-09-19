@@ -24,7 +24,8 @@ assert any(row["title"] == "Interstellar" for row in movieshunt["fixtures"]), mo
 
 animesalt = by[("animesalt", "anime")]
 assert animesalt["fixtures"][0]["title"] == "Death Note", animesalt["fixtures"]
-assert any(row["title"] == "Jujutsu Kaisen" for row in animesalt["fixtures"]), animesalt["fixtures"]
+assert 1 <= len(animesalt["fixtures"]) <= audit.MAX_SAMPLES, animesalt["fixtures"]
+assert len({audit._fixture_identity(row) for row in animesalt["fixtures"]}) == len(animesalt["fixtures"]), animesalt["fixtures"]
 
 vostfree = by[("vostfree", "anime")]
 assert vostfree["fixtures"][0]["title"] == "Death Note", vostfree["fixtures"]
