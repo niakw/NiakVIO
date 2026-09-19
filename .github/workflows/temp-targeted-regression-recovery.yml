@@ -115,6 +115,87 @@ jobs:
           python tests/provider_runtime_dispatch_diagnostics_test.py
           python tests/provider_census_identity_diagnostics_test.py
 
+      - name: Persist Anime-Sama CONFIG rematerialization on repair branch
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'tmp/provider-max-repair-proof-20260919' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="tmp/provider-max-repair-proof-20260919"
+          git fetch origin "$branch"
+          git checkout -B "$branch" "origin/$branch"
+          python - <<'PY'
+          import json,sys
+          from pathlib import Path
+          ROOT=Path.cwd()
+          sys.path.insert(0,str(ROOT/"scripts"))
+          from provider_patch_blocks import decode_managed_data
+          from materialize_provider_v3_all import provider_model, normalize_anime_transport_compatibility
+          from provider_base_store import build_provider_data_model
+          from domain_refresh_transaction_v2 import rebuild_provider_configs
+          from sync_manifest_projection_rows import sync
+
+          def load(path):
+              return json.loads((ROOT/path).read_text(encoding="utf-8"))
+
+          manifest=load("manifest.json")
+          overrides=load("provider-overrides.json")
+          static=load("automation/provider-v3-static-knowledge.json")
+          row=next(r for r in manifest["scrapers"] if str(r.get("id","")).casefold()=="anime-sama")
+          patch=overrides["provider_patches"]["anime-sama"]
+          capability=overrides["provider_capabilities"]["anime-sama"]
+          static_row=static["providers"]["anime-sama"]
+          entry=json.loads(json.dumps(row))
+          normalize_anime_transport_compatibility(entry)
+          model=provider_model("anime-sama",patch,capability,static_row)
+          expected=build_provider_data_model("anime-sama",entry,known_site=model.get("knownSite"),provider_model=model)
+          published_path=ROOT/row["filename"]
+          text=published_path.read_text(encoding="utf-8")
+          published=decode_managed_data(text,"PROVIDER.ANIME-SAMA.CONFIG.V1")
+          if published==expected:
+              print("FIELD_ANIME_SAMA_CONFIG_REMATERIALIZE needed=false")
+              raise SystemExit(0)
+          updates=rebuild_provider_configs(["anime-sama"])
+          if len(updates)!=1 or updates[0].get("provider")!="anime-sama":
+              raise SystemExit(f"unexpected rebuild scope: {updates!r}")
+          sync(check=False)
+          print("FIELD_ANIME_SAMA_CONFIG_REMATERIALIZE needed=true",updates)
+          PY
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "Anime-Sama CONFIG already current; no branch mutation"
+            exit 0
+          fi
+          git status --short
+          git diff --stat
+          python - <<'PY'
+          import subprocess
+          rows=subprocess.check_output(["git","status","--short"],text=True).splitlines()
+          touched=[row[3:] for row in rows if len(row)>=4]
+          allowed_exact={
+              "manifest.json",
+              "provider-v3-materialization.json",
+              "vf/manifest.json",
+              "no-anime/manifest.json",
+              "native-hub46/manifest.json",
+              "manifest-hub46.json",
+              "provider_catalog.json",
+          }
+          bad=[
+              p for p in touched
+              if p not in allowed_exact and not p.startswith("providers/anime-sama--")
+          ]
+          if bad:
+              raise SystemExit(f"unexpected generated paths: {bad}")
+          if not any(p.startswith("providers/anime-sama--") for p in touched):
+              raise SystemExit("Anime-Sama provider bytes did not rotate")
+          PY
+          python scripts/audit_provider_v3_static.py
+          python tests/global_media_type_pre_network_gate_test.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(anime-sama): rematerialize current provider DATA"
+          git push origin HEAD:"$branch"
+
       - name: Materialize current provider bytes
         run: |
           set -euo pipefail
