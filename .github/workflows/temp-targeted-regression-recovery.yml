@@ -21,6 +21,26 @@ on:
       - 'scripts/provider_patches/moviesmod_runtime_v1.py'
       - 'tests/provider_moviesmod_runtime_contract_test.py'
       - 'provider-overrides.json'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/temp-targeted-regression-recovery.yml'
+      - 'scripts/provider_patches/animesamaco_site_runtime_v1.py'
+      - 'scripts/provider_patches/neko_sama_runtime_v1.py'
+      - 'scripts/provider_patches/voiranime_anime_runtime_v2.py'
+      - 'scripts/provider_patches/voiranime_rip_runtime_v1.py'
+      - 'scripts/provider_patches/kurage_runtime_v1.py'
+      - 'scripts/provider_patches/flemmix_runtime_v1.py'
+      - 'scripts/provider_patches/anime_ultime_runtime_v1.py'
+      - 'tests/provider_flemmix_anime_ultime_runtime_contract_test.py'
+      - 'scripts/provider_patches/coflix_runtime_v1.py'
+      - 'scripts/provider_patches/animesultra_runtime_v1.py'
+      - 'tests/provider_coflix_animesultra_runtime_contract_test.py'
+      - 'scripts/provider_patches/sekai_runtime_v1.py'
+      - 'tests/provider_sekai_runtime_contract_test.py'
+      - 'scripts/provider_patches/moviesmod_runtime_v1.py'
+      - 'tests/provider_moviesmod_runtime_contract_test.py'
+      - 'provider-overrides.json'
 
 permissions:
   contents: write

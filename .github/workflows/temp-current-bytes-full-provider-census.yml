@@ -11,6 +11,16 @@ on:
       - 'scripts/provider_base_store.py'
       - 'scripts/materialize_provider_v3_all.py'
       - 'tests/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/temp-current-bytes-full-provider-census.yml'
+      - 'scripts/provider_patches/**'
+      - 'provider-overrides.json'
+      - 'provider-hubs.json'
+      - 'scripts/provider_base_store.py'
+      - 'scripts/materialize_provider_v3_all.py'
+      - 'tests/**'
 
 permissions:
   contents: write
