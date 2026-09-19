@@ -64,15 +64,15 @@ WRAPPER = r'''
     if(next)end=start+sm[0].length+next.index;return (text||"").slice(start,end);
   }
   function sibnetEmbed(text,episode){
-    var block=episodeBlock(text,episode),m=/(https?:\\/\\/video\\.sibnet\\.ru\\/(?:c|shell)\\.php\\?[^"'<>\\s]*videoid=\\d+[^"'<>\\s]*)/i.exec(ent(block));
+    var block=episodeBlock(text,episode),m=/(https?:\/\/video\.sibnet\.ru\/(?:c|shell)\.php\?[^"'<>\s]*videoid=\d+[^"'<>\s]*)/i.exec(ent(block));
     return m?m[1].replace(/&amp;/gi,"&"):"";
   }
   async function sibnetMedia(embed,detail){
     if(!embed)return "";
     var page=await fetchText(embed,{redirect:"follow",headers:hdr(detail,"text/html,*/*")});if(!page)return "";
     var source=ent(page.text),patterns=[
-      /https?:\\/\\/[^"'<>\\s]+\\.(?:m3u8|mp4)(?:[?#][^"'<>\\s]*)?/gi,
-      /["'](?:file|src)["']?\\s*[:=]\\s*["']([^"']+\\.(?:m3u8|mp4)(?:[?#][^"']*)?)/gi
+      /https?:\/\/[^"'<>\s]+\.(?:m3u8|mp4)(?:[?#][^"'<>\s]*)?/gi,
+      /["'](?:file|src)["']?\s*[:=]\s*["']([^"']+\.(?:m3u8|mp4)(?:[?#][^"']*)?)/gi
     ];
     for(var p=0;p<patterns.length;p++){var re=patterns[p],m;while((m=re.exec(source))!==null){var u=m[1]||m[0];if(u.indexOf("//")===0)u="https:"+u;try{u=new URL(u,page.url||embed).toString()}catch(_e){continue}if(/^https?:/i.test(u))return u}}
     return "";
