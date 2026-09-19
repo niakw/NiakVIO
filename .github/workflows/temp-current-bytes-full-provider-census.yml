@@ -9,6 +9,7 @@ on:
       - 'provider-overrides.json'
       - 'provider-hubs.json'
       - 'scripts/provider_base_store.py'
+      - 'scripts/apply_provider_overrides.py'
       - 'scripts/materialize_provider_v3_all.py'
       - 'scripts/render_provider_census_status.py'
       - 'scripts/update_provider_census_proof_history.py'
@@ -17,6 +18,10 @@ on:
       - 'tests/allanime_site_runtime_contract_test.py'
       - 'tests/allanime_current_runtime_behavior_test.py'
       - 'tests/provider_yflix_runtime_contract_test.py'
+      - 'tests/provider_census_status_markdown_test.py'
+      - 'tests/provider_census_identity_diagnostics_test.py'
+      - 'tests/provider_census_scope_history_test.py'
+      - 'tests/global_playback_integrity_policy_test.py'
       - 'PROVIDER_CENSUS_STATUS.md'
   pull_request:
     branches: [main]
@@ -26,10 +31,15 @@ on:
       - 'provider-overrides.json'
       - 'provider-hubs.json'
       - 'scripts/provider_base_store.py'
+      - 'scripts/apply_provider_overrides.py'
       - 'scripts/materialize_provider_v3_all.py'
       - 'tests/allanime_site_runtime_contract_test.py'
       - 'tests/allanime_current_runtime_behavior_test.py'
       - 'tests/provider_yflix_runtime_contract_test.py'
+      - 'tests/provider_census_status_markdown_test.py'
+      - 'tests/provider_census_identity_diagnostics_test.py'
+      - 'tests/provider_census_scope_history_test.py'
+      - 'tests/global_playback_integrity_policy_test.py'
 
 permissions:
   contents: write
