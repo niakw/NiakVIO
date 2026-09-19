@@ -9357,7 +9357,8 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "recipeKind": "typed-resolver-api"
       },
       "candidate_api_recipe": {
         "proofModelVersion": 5,
@@ -9378,7 +9379,8 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
           }
-        }
+        },
+        "recipeKind": "typed-resolver-api"
       },
       "route_data_state": "repair",
       "repair_disposition": {
@@ -9449,7 +9451,8 @@
         "sequential": true
       },
       "notes": [
-        "2026-09-19 lane authority repair: removed generic directRoute because ProviderBase executes it before typed routes and it forced type=movie for TV requests. YFlix now uses movieRoute for movie and episodeRoute for TV."
+        "2026-09-19 lane authority repair: generic directRoute remains removed so TV can never be forced through type=movie.",
+        "2026-09-19 zero-before-network root cause: movieRoute/episodeRoute are direct typed resolver endpoints; ProviderBase requires recipeKind=typed-resolver-api when no searchRoute exists. Both current and candidate recipes now declare that contract."
       ]
     },
     "allanime": {
