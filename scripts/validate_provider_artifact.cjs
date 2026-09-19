@@ -79,6 +79,25 @@ function stripCommentsPreservingStrings(input) {
 // repository-side CI metadata, but executable provider code must never need a
 // repository/raw-repository URL to discover a domain, API, route table or playback
 // dependency. Keep this static: provider artifacts are never executed here.
+function compactSyntaxDiagnostic(raw, maxLine = 1600) {
+  const lines = String(raw || '').split(/\r?\n/);
+  const compact = [];
+  for (const line of lines) {
+    if (line.length <= maxLine) {
+      compact.push(line);
+      continue;
+    }
+    const trimmed = line.trim();
+    if (/^\^+$/.test(trimmed)) {
+      const column = Math.max(1, line.indexOf('^') + 1);
+      compact.push(`<syntax-caret column=${column} width=${trimmed.length}>`);
+    } else {
+      compact.push(`<provider-source-omitted chars=${line.length}>`);
+    }
+  }
+  return compact.join('\n').trim();
+}
+
 const source = fs.readFileSync(file, 'utf8');
 const executableSource = stripCommentsPreservingStrings(source);
 const repositoryUrl = /https?:\/\/(?:raw\.githubusercontent\.com|github\.com|api\.github\.com|gist\.github\.com|gist\.githubusercontent\.com)(?:[/:?#]|$)/ig;
@@ -112,8 +131,12 @@ if (syntax.error && syntax.error.code === 'ETIMEDOUT') {
   process.exit(1);
 }
 if (syntax.status !== 0) {
-  process.stderr.write(syntax.stderr || syntax.stdout || 'syntax validation failed\n');
-  process.exit(1);
+  const diagnostic = compactSyntaxDiagnostic(
+    syntax.stderr || syntax.stdout || 'syntax validation failed'
+  );
+  process.stderr.write((diagnostic || 'syntax validation failed') + '\n');
+  process.exitCode = 1;
+  return;
 }
 
 console.log(
