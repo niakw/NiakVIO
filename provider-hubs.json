@@ -2914,18 +2914,18 @@
         "flemmix",
         "wiflix"
       ],
-      "direct": "https://flemmix.party/",
+      "direct": "https://flemmix.me/",
       "last_verified": "2026-08-30",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "Provider-local runtime source generated 2026-09-18 targets flemmix.me and its /search?q= contract; party/cloud remain address aliases but must not overwrite the runtime base.",
       "direct_candidates": [
+        "https://flemmix.me/",
         "https://flemmix.party/",
-        "https://flemmix.cloud/",
-        "https://flemmix.men/"
+        "https://flemmix.cloud/"
       ],
       "allowed_terminal_hosts": [
+        "flemmix.me",
         "flemmix.party",
-        "flemmix.cloud",
-        "flemmix.men"
+        "flemmix.cloud"
       ],
       "search_queries": [],
       "sources": [
@@ -2944,7 +2944,10 @@
         "film",
         "série"
       ],
-      "validation_scope": "catalogue_terminal"
+      "validation_scope": "catalogue_terminal",
+      "direct_authority": "explicit_current",
+      "direct_authority_source": "current-upstream-provider-source-and-live-terminal",
+      "direct_authority_observed_at": "2026-09-19"
     },
     "animezey": {
       "id": "animezey",
