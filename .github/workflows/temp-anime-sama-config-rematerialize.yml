@@ -6,6 +6,7 @@ on:
       - tmp/provider-max-repair-proof-20260919
     paths:
       - '.github/workflows/temp-anime-sama-config-rematerialize.yml'
+      - 'scripts/domain_refresh_transaction_v2.py'
 
 permissions:
   contents: write
@@ -74,6 +75,7 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/audit_provider_v3_static.py
+          python tests/provider_v3_minimizer_published_test.py
           python tests/provider_animesamaco_domain_data_contract_test.py
           python tests/global_media_type_pre_network_gate_test.py
           python tests/global_stream_output_guard_test.py
