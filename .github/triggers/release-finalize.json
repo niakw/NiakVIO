@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "requested_at": "2026-09-17T18:45:00Z",
-  "accepted_main_sha": "9954757de3eceaa3816870374b0fba36d3e46bd3",
+  "requested_at": "2026-09-19T16:15:00Z",
+  "accepted_main_sha": "85c8366efd6361c9f074d64660091d2073e91bf2",
   "target_release": "auto",
-  "reason": "Retry accepted Provider v3 finalization after PR #124 aligned release-integrity validation with the repository lifecycle contract: active artifacts stay under providers/, explicitly disabled visible artifacts stay under provider-disabled/, and Hub46 remains active-only. Reconfirm the 44-provider minimizer fixed point, rebuild derived projections and pinned transport, validate hashes/integrity, and publish atomically only if origin/main remains pinned to this trigger base."
+  "reason": "Finalize the accepted main state after the post-PR188 provider repair batch. Reapply durable Provider Lego/config patches to published bytes, eliminate the 15 source-vs-materialization drifts including MoviesMod, regenerate manifest-hub46/native Hub46 content-addressed references, validate release integrity, and publish atomically only if main remains pinned to this trigger event."
 }
