@@ -103,6 +103,44 @@ except AssertionError:
 else:
     raise AssertionError("registry/config divergence must fail closed")
 
+
+# Stable official_site with a changed execution-domain mapping is still a real
+# Domain Refresh mutation and must be accounted as changed. This is the exact
+# shape that previously made 4khdhub appear as declared-but-not-actual.
+mapping_before = copy.deepcopy(before_overrides)
+mapping_before["provider_patches"]["demo"]["domain_substitutions"] = {"demo-old.example": "demo-new.example"}
+mapping_after = copy.deepcopy(mapping_before)
+mapping_after["provider_patches"]["demo"]["domain_substitutions"]["demo-alias.example"] = "demo-new.example"
+result = validate(
+    mapping_before,
+    mapping_after,
+    before_hubs,
+    copy.deepcopy(before_hubs),
+    before_history,
+    report_synced,
+    {"changed": ["demo"], "registry_changed": []},
+)
+assert result["changed"] == ["demo"]
+
+# Domain Refresh is still fail-closed for any provider field outside its five
+# explicit domain-authority fields.
+forbidden_after = copy.deepcopy(before_overrides)
+forbidden_after["provider_patches"]["demo"]["capability"] = "should-not-change"
+try:
+    validate(
+        before_overrides,
+        forbidden_after,
+        before_hubs,
+        copy.deepcopy(before_hubs),
+        before_history,
+        report_synced,
+        {"changed": ["demo"], "registry_changed": []},
+    )
+except AssertionError as exc:
+    assert "non-domain fields" in str(exc)
+else:
+    raise AssertionError("non-domain provider mutation must fail closed")
+
 # Unresolved discovery may never mutate the published terminal.
 after_overrides = copy.deepcopy(before_overrides)
 after_overrides["provider_patches"]["demo"]["official_site"] = "https://other.example"

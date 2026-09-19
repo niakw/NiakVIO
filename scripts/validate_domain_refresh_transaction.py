@@ -16,6 +16,7 @@ from urllib.parse import urlparse
 
 AUTHORITY_TYPES = {"hub", "curated_direct", "source_redirect", "provider_config", "live_current"}
 REGISTRY_SCOPED_AUTHORITY_TYPES = {"telegram_public"}
+DOMAIN_PATCH_FIELDS = {"official_site", "official_hub", "domain_substitutions", "replacements", "runtime_domain_replacements"}
 PLACEHOLDER_TOKENS = ("${", "{{", "}}", "function(", "=>", "`", "<%", "%>")
 
 
@@ -173,21 +174,38 @@ def validate(
 
     changed_actual: set[str] = set()
     for provider_id in sorted(set(before_patches) | set(after_patches)):
-        before_site = str((before_patches.get(provider_id) or {}).get("official_site") or "").rstrip("/")
-        after_site = str((after_patches.get(provider_id) or {}).get("official_site") or "").rstrip("/")
-        if before_site == after_site:
+        before_patch = before_patches.get(provider_id) or {}
+        after_patch = after_patches.get(provider_id) or {}
+        changed_fields = {
+            key
+            for key in set(before_patch) | set(after_patch)
+            if before_patch.get(key) != after_patch.get(key)
+        }
+        forbidden_fields = changed_fields - DOMAIN_PATCH_FIELDS
+        if forbidden_fields:
+            raise AssertionError(
+                f"{provider_id}: domain refresh mutated non-domain fields: {sorted(forbidden_fields)}"
+            )
+        domain_fields = changed_fields & DOMAIN_PATCH_FIELDS
+        if not domain_fields:
             continue
         if scope is not None and provider_id not in scope:
             raise AssertionError(f"{provider_id}: historical/non-current provider mutation refused")
         changed_actual.add(provider_id)
-        if not concrete_http(after_site):
-            raise AssertionError(f"{provider_id}: non-concrete official_site proposed: {after_site!r}")
+
         item = report_rows.get(provider_id) or {}
         if item.get("status") != "site_authoritative":
-            raise AssertionError(f"{provider_id}: domain changed without site_authoritative proof")
+            raise AssertionError(
+                f"{provider_id}: domain authority changed without site_authoritative proof: {sorted(domain_fields)}"
+            )
         source_type = str(item.get("selected_source_type") or "").casefold()
         if not selected_source_is_authoritative(provider_id, item, before_registry):
             raise AssertionError(f"{provider_id}: non-authoritative source attempted domain publication: {source_type!r}")
+
+        before_site = str(before_patch.get("official_site") or "").rstrip("/")
+        after_site = str(after_patch.get("official_site") or "").rstrip("/")
+        if not concrete_http(after_site):
+            raise AssertionError(f"{provider_id}: non-concrete official_site proposed: {after_site!r}")
         reported_site = str(item.get("official_site") or "").rstrip("/")
         if reported_site != after_site:
             raise AssertionError(f"{provider_id}: report/config terminal mismatch: {reported_site!r} != {after_site!r}")
@@ -197,12 +215,13 @@ def validate(
         if registry_direct != after_site:
             raise AssertionError(f"{provider_id}: registry/config terminal divergence: {registry_direct!r} != {after_site!r}")
 
-        historical = historical_previous_urls(previous_history.get(provider_id) or {})
-        if after_site.casefold() in historical and after_site.casefold() != before_site.casefold():
-            if not has_fresh_rollback_evidence(item, after_site):
-                raise AssertionError(
-                    f"{provider_id}: attempted rollback to historical terminal without fresh hub evidence: {after_site}"
-                )
+        if before_site != after_site:
+            historical = historical_previous_urls(previous_history.get(provider_id) or {})
+            if after_site.casefold() in historical and after_site.casefold() != before_site.casefold():
+                if not has_fresh_rollback_evidence(item, after_site):
+                    raise AssertionError(
+                        f"{provider_id}: attempted rollback to historical terminal without fresh hub evidence: {after_site}"
+                    )
 
     for provider_id, item in report_rows.items():
         if scope is not None and provider_id not in scope:
