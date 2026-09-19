@@ -9670,7 +9670,7 @@
       "reconstruction_state": "provider-local-current-api"
     },
     "allwish": {
-      "capability": "html_scraper",
+      "capability": "mixed_embed_resolver",
       "official_hub": "https://t.me/s/allwishme",
       "official_site": "https://all-wish.me",
       "candidate_config_reconciliation": {
@@ -9686,9 +9686,8 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/player",
-        "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/filter?keyword={query}",
+        "/watch/{slug}/ep-{episode}"
       ],
       "live_route_gate": {
         "completion_state": "stream-capability-unproven",
@@ -9853,14 +9852,14 @@
           "tv"
         ],
         "completeCapabilityProof": false,
-        "recoveryStatus": "no-proven-route",
+        "recoveryStatus": "current-contract-staged",
         "provenRouteCount": 0,
         "terminalState": null,
         "quarantined": false,
         "reasonCodes": [
           "declared_lane_unproven",
-          "quick_provider-network-http-error",
-          "recovery_no-proven-route"
+          "current_contract_staged",
+          "user_manual_allwish_positive"
         ],
         "laneStatuses": {
           "movie": [
@@ -9877,21 +9876,19 @@
       "runtime_domain_replacements": {},
       "domain_substitutions": {},
       "notes": [
-        "Fresh 2026-09-13 adaptive corpus proof is zero on all declared lanes; previous playable_verified lane claims are invalidated.",
-        "Historical manual cross-fixture evidence returned the same very short media for unrelated works, so it is wrong-content/fixture-invariant evidence, not a valid stream proof.",
-        "Route knowledge is retained for diagnosis, but activation does not imply live capability proof; runtime must fail closed until fresh identity-safe media proof exists."
+        "Recovered user browser proof: AllWish Death Note search used /filter?keyword=death+note, resolved a /watch/.../ep-37 page and reached fetch.nexabloom.top HLS.",
+        "Current upstream still uses the /filter?keyword= provider search family; NiakVIO reconstructs only provider-local search/watch traversal and hands the exact watch page to the bounded terminal crawler.",
+        "Historical wrong-content generic-route evidence is not reused. Core owns final terminal validation, identity guard, timeout/cancellation and fail-closed output."
       ],
-      "current_stream_proof": {
-        "schemaVersion": 1,
-        "authority": "zero15-adaptive-2026-09-13",
-        "streamPositive": false,
-        "testedLanes": [
-          "movie",
-          "tv"
-        ],
-        "globalCorpusExhausted": true,
-        "historicalWrongContent": true,
-        "requiresFreshIdentitySafePositive": true
+      "provider_lego_scripts": [
+        "scripts/provider_patches/allwish_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/allwish_runtime_v1.py": {
+          "base": "https://all-wish.me",
+          "depth": 3,
+          "maxStreams": 6
+        }
       }
     },
     "anime-ultime": {
