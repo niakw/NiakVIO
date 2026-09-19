@@ -24,7 +24,7 @@ MIN_SUPPORTED_REVISION = 22
 
 
 def active_revision(text: str) -> str | None:
-    match = re.search(r'REVISION\\s*=\\s*"([^"]*-v(\\d+))"', text)
+    match = re.search(r'REVISION\s*=\s*"([^"]*-v(\d+))"', text)
     if not match:
         return None
     version = int(match.group(2))
@@ -32,7 +32,7 @@ def active_revision(text: str) -> str | None:
 
 
 def revision_number(revision: str | None) -> int:
-    match = re.search(r"-v(\\d+)$", str(revision or ""))
+    match = re.search(r"-v(\d+)$", str(revision or ""))
     return int(match.group(1)) if match else 0
 
 
