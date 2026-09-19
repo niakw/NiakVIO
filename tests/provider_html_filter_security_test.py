@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = len([row for row in json.loads((ROOT / "manifest.json").read_text(encoding="utf-8")).get("scrapers") or [] if isinstance(row, dict)])
-SOURCE_PATHS = (
+BASE_SOURCE_PATHS = (
     ROOT / "scripts/provider_base_store.py",
     ROOT / "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
     ROOT / "scripts/provider_patches/allmovieland_runtime_v1.py",
@@ -21,6 +21,26 @@ SOURCE_PATHS = (
     ROOT / "scripts/provider_patches/voiranime_anime_runtime_v2.py",
     ROOT / "scripts/provider_patches/dle_anime_runtime_v1.py",
     ROOT / "scripts/provider_patches/neko_sama_runtime_v1.py",
+)
+
+
+def declared_provider_lego_paths() -> tuple[Path, ...]:
+    config = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+    rows = config.get("provider_patches") or {}
+    found: set[Path] = set()
+    for provider_id, row in rows.items():
+        if not isinstance(row, dict):
+            continue
+        for relative in row.get("provider_lego_scripts") or []:
+            path = ROOT / str(relative)
+            if not path.is_file():
+                raise AssertionError(f"{provider_id}: missing provider Lego source {relative}")
+            found.add(path)
+    return tuple(sorted(found))
+
+
+SOURCE_PATHS = BASE_SOURCE_PATHS + tuple(
+    path for path in declared_provider_lego_paths() if path not in BASE_SOURCE_PATHS
 )
 
 BAD_PATTERNS = (
