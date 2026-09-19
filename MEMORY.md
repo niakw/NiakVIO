@@ -2478,3 +2478,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Root cause found in the generic compositor: `scripts/apply_provider_overrides.py` still unconditionally ran `provider_v3_minimizer.minimize_text()` on every complete v3 bundle, even though `materialize_provider_v3_all.py` and `materialize_provider_v3_one.py` already own an explicit final-stage-only minimizer gate. This created two minimization authorities and transformed provider Lego before canonical byte validation.
 - Fix: remove all minimization from `apply_provider_overrides.py`. It now only composes owned Provider/Core Lego; optional minification remains exclusively behind `NIAKVIO_PROVIDER_V3_FINAL_MINIMIZE` in the materializers. `tests/provider_v3_final_stage_minimizer_gate_test.py` now forbids hidden minimizer imports/calls in the compositor.
 - Validation pending on a fresh AllAnime rematerialization + global census/non-regression; do not promote the providers that were reclassified FULLY BROKEN solely because the previous all-provider materialization aborted at AllAnime index 37/44.
+
+### 2026-09-19 — Core discovery whitespace idempotence fixed
+
+- Removing the hidden compositor minimizer exposed a real Core discovery byte drift that the minimizer had been masking. `tests/global_playback_integrity_policy_test.py` showed the second application was exactly **9 bytes longer**.
+- The diff was nine accumulated blank lines immediately before `NUVIO_GLOBAL_CORE_START_BOUNDARY_V1`: each stripped managed Core rectangle could leave a separator newline behind, then Core reconstruction inserted the boundary again.
+- `_strip_generated_core_tail()` now canonicalizes the stripped v3 gap to exactly one newline between the retained Provider bytes and `END PROVIDER`. This makes Core composition idempotent without relying on minification as a cleanup step.
+- This fix must be validated together with the final-stage-only minimizer change by a fresh Workflow Gate, AllAnime materialization, full census and Provider Non-Regression run before the previously inflated FULLY BROKEN statuses are trusted.
