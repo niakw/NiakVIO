@@ -86,4 +86,14 @@ assert hubs["movieshunt"]["allowed_terminal_hosts"] == ["movieshunt.run"]
 assert "movieshunt.ws" in hubs["movieshunt"]["blocked_hosts"]
 assert "movieshunt.monster" in hubs["movieshunt"]["blocked_hosts"]
 
+# Current MoviesHunt executable search must follow the provider's WordPress
+# catalogue contract instead of the retired lookup.php JSON endpoint.
+overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))["provider_patches"]
+movieshunt_plan = overrides["movieshunt"]["search_request_plan"]
+assert len(movieshunt_plan) == 1, movieshunt_plan
+assert movieshunt_plan[0]["base"] == "https://movieshunt.run", movieshunt_plan
+assert movieshunt_plan[0]["route"] == "/?s={query}", movieshunt_plan
+assert movieshunt_plan[0]["requestSpec"]["headers"]["Referer"] == "https://movieshunt.run/", movieshunt_plan
+assert overrides["movieshunt"]["proof_protected_hosts"] == ["movieshunt.run"], overrides["movieshunt"]
+
 print("provider domain metadata reconciliation tests passed")
