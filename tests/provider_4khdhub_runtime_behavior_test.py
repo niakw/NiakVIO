@@ -8,6 +8,8 @@ import tempfile
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
+import sys
+sys.path.insert(0,str(ROOT/"scripts"))
 PATCH=ROOT/"scripts/provider_patches/4khdhub_runtime_v1.py"
 spec=importlib.util.spec_from_file_location("niakvio_4khdhub_runtime_test",PATCH)
 assert spec and spec.loader
