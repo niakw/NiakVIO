@@ -43,7 +43,7 @@ try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:"animesultra",resolve:re
 '''
 
 def apply(text:str,options:dict[str,Any]|None=None,**_kwargs:Any)->str:
-    cfg={"base":"https://animesultra.com","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145 Safari/537.36"}
+    cfg={"base":"https://v2.animesultra.org","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145 Safari/537.36"}
     cfg.update(dict(options or {}));cfg["base"]=str(cfg.get("base") or "").rstrip("/")
     js=WRAPPER.replace("CONFIG_PLACEHOLDER",json.dumps(cfg,ensure_ascii=False,separators=(",",":")))
     return replace_managed_fix(text,MANAGED_FIX_ID,js.lstrip(),data={
