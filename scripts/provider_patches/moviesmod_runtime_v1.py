@@ -38,7 +38,7 @@ try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:"moviesmod",resolve:reso
 '''
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
-    cfg={"base":"https://moviesmod.army","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"}
+    cfg={"base":"https://moviesmod.ai.in","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"}
     cfg.update(dict(options or {})); cfg["base"]=str(cfg.get("base") or "").rstrip("/")
     js=WRAPPER.replace("CONFIG_PLACEHOLDER",json.dumps(cfg,ensure_ascii=False,separators=(",",":")))
     return replace_managed_fix(text,MANAGED_FIX_ID,js.lstrip(),data={
