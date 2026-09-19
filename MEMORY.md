@@ -2156,3 +2156,15 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Vostfree and Flemmix still contained stale executable ARM recipes in DATA even though their Provider Legos use provider-local site chains. Commit **974a4bc23b365dab2f68fd024b938c0c92435263** removes those stale recipes and records provider-local search plans (Vostfree DLE POST; Flemmix `/search?q={query}`).
 - Flemmix runtime now follows its own `NIAKVIO_PROVIDER_MODEL.officialSite/knownSite` rather than a frozen script base (**4de5f2d80d06dd4d7a64aaa2805bcce319f29c20**), with contract coverage added.
 - A brand-new MovieBox direct playback Lego was not committed because the execution safety layer blocked creation of new code automating that external playback chain. MovieBox remains ZERO/quarantined; its historical route evidence is preserved in `automation/USER-PROVIDER-EVIDENCE-LEDGER.md`.
+
+
+## 2026-09-19 — recovered route evidence applied to AnimeSalt/Vostfree
+
+- Work remains on branch `tmp/provider-max-repair-proof-20260919` / PR #186; do not treat this section as merged to main until that branch is integrated.
+- Recovered user browser evidence confirmed AnimeSalt's current chain uses `wp-admin/admin-ajax.php` POST `action_tr_search_suggest` and direct `as-cdn*.top/player/index.php?data=<hash>&do=getVideo`.
+- Commit **399c93557518e4a9cb672ea2be1a91ce2013af12** extended AnimeSalt's provider-local runtime to try that observed AJAX search before HTML search fallback and to accept the observed direct player endpoint.
+- Commit **56847a75cc653826cfddab145e2ce0ac4e1503ae** locked the AnimeSalt observed-route contract.
+- Recovered user evidence also proved Vostfree can serve episode players through `video.sibnet.ru/c.php?videoid=<id>`, while the current provider-local runtime only handled Uqload.
+- Commit **6ec15a5b125290d73486473c803daf087f40e0cd** added a fail-closed Sibnet fallback: it only returns a stream when the Sibnet player page exposes real MP4/HLS media; Uqload remains the first path.
+- Commit **9f6748c985d32c2121dada08377ad172e30d728a** locked the Sibnet fallback contract.
+- Functional green is **not claimed yet** for either provider. Required next proof is rematerialized current bytes + live terminal validation in the full census; any old R19 run is tied to its older SHA and must not be confused with the new branch HEAD.
