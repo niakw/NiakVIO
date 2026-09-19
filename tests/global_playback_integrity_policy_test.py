@@ -136,6 +136,10 @@ assert '"implementationRevision":"field-safety-v8-media-only-p2p-vod-duration"' 
 assert '"implementationRevision":"field-safety-v7-stream-scoped-p2p-vod-duration"' not in reapplied_text
 assert '"implementationRevision":"field-safety-v6-core-repair-types"' not in reapplied_text
 assert '"implementationRevision":"scoped-playback-context-v4"' not in reapplied_text
+assert '"implementationRevision":"scoped-playback-context-v10-nonmedia-nav-filter"' in reapplied_text
+assert "NONMEDIA_NAV" in reapplied_text
+assert "/cdn-cgi\\/l\\/email-protection" in reapplied_text
+assert "privacy(?:-policy)?" in reapplied_text
 assert reapplied_text.count(begin_marker("CORE.HLS_RUNTIME_INTEGRITY.V1")) == 1
 assert reapplied_text.count(end_marker("CORE.HLS_RUNTIME_INTEGRITY.V1")) == 1
 assert reapplied_text.count("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") == 1
