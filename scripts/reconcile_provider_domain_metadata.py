@@ -113,12 +113,25 @@ def reconcile_patch(
     registry_row: dict[str, Any],
     history_row: dict[str, Any],
 ) -> list[str]:
-    current_site = str(patch.get("official_site") or registry_row.get("direct") or "").strip()
+    registry_direct = str(registry_row.get("direct") or "").strip()
+    explicit_current = (
+        str(registry_row.get("direct_authority") or "").strip().casefold() == "explicit_current"
+    )
+    current_site = (
+        registry_direct
+        if explicit_current and registry_direct
+        else str(patch.get("official_site") or registry_direct or "").strip()
+    )
     current_host = host(current_site)
     if not current_host:
         return []
-    known_hosts = known_site_hosts(provider_id, patch, registry_row, history_row)
     changed: list[str] = []
+    if explicit_current and registry_direct:
+        previous_site = str(patch.get("official_site") or "").strip()
+        if host(previous_site) != current_host or previous_site.rstrip("/") != registry_direct.rstrip("/"):
+            patch["official_site"] = registry_direct.rstrip("/")
+            changed.append("official_site")
+    known_hosts = known_site_hosts(provider_id, patch, registry_row, history_row)
 
     manifest = patch.get("manifest_overrides")
     if isinstance(manifest, dict):

@@ -1023,17 +1023,19 @@
       "manifest_status": "Actif",
       "category": "International",
       "hub": "https://t.me/s/hindmoviez/1975",
-      "direct": "https://hindmovie.icu/",
+      "direct": "https://hindmovie.fit/",
       "source": "curated_user_registry",
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "aliases": [
         "hindmoviez"
       ],
       "direct_candidates": [
-        "https://hindmovie.icu/"
+        "https://hindmovie.fit/",
+        "https://joshmovies.cc/"
       ],
       "allowed_terminal_hosts": [
-        "hindmovie.icu"
+        "hindmovie.fit",
+        "joshmovies.cc"
       ],
       "search_queries": [
         "\"HindMoviez\" official domain"
@@ -1056,7 +1058,11 @@
       "terminal_aliases": [
         "hindmoviez",
         "hindmovie"
-      ]
+      ],
+      "direct_authority": "explicit_current",
+      "direct_authority_source": "official-telegram-current-address",
+      "direct_authority_observed_at": "2026-09-19",
+      "last_verified": "2026-09-19"
     },
     "uhdmovies": {
       "id": "uhdmovies",
@@ -1924,22 +1930,22 @@
       "manifest_status": "Désactivé",
       "category": "Francophone",
       "hub": "https://t.me/s/Wookafr2",
-      "direct": "https://wookafr.blog/",
+      "direct": "https://wookafr.tel/",
       "source": "curated_user_registry",
       "resolver": "latest_telegram_domain",
       "aliases": [
         "wookafr",
         "wooka"
       ],
-      "last_verified": "2026-08-03",
+      "last_verified": "2026-09-19",
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "direct_candidates": [
-        "https://wookafr.blog/",
-        "https://wookafr.center/"
+        "https://wookafr.tel/",
+        "https://wookafr.blog/"
       ],
       "allowed_terminal_hosts": [
-        "wookafr.blog",
-        "wookafr.center"
+        "wookafr.tel",
+        "wookafr.blog"
       ],
       "search_queries": [
         "site:t.me/s/Wookafr2 \"URL du nouveau site\""
@@ -1962,7 +1968,10 @@
       "allowed_terminal_host_patterns": [
         "^(?:wooka|wookafr)[a-z0-9-]*\\.[a-z0-9-]{2,20}$"
       ],
-      "search_when_disabled": true
+      "search_when_disabled": true,
+      "direct_authority": "explicit_current",
+      "direct_authority_source": "official-telegram-current-address",
+      "direct_authority_observed_at": "2026-09-19"
     },
     "topcartoons": {
       "id": "topcartoons",
