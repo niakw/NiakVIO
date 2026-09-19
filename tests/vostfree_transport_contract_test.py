@@ -13,6 +13,10 @@ assert 'if(type!=="anime")return null;' in src
 assert 'c.site+"/index.php?do=search"' in src
 assert 'action_select_season' not in src
 assert 'provider:"vostfree",resolve:resolve' in src
+assert 'video\\.sibnet\\.ru' in src
+assert 'function sibnetEmbed' in src
+assert 'function sibnetMedia' in src
+assert 'Vostfree | Sibnet' in src
 assert "api_recipe" not in ov
 assert ov["search_request_plan"][0]["route"]=="/index.php"
 assert ov["search_request_plan"][0]["requestSpec"]["method"]=="POST"
