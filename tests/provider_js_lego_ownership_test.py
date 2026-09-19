@@ -8,14 +8,16 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count
+from current_provider_scope import visible_provider_count, visible_provider_ids
 
 MANIFEST = ROOT / "manifest.json"
-EXPECTED = active_provider_count()
+EXPECTED = visible_provider_count()
 
 manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
-assert len(rows) == EXPECTED, len(rows)
+ids = {str(row.get("id") or "").strip().casefold().replace("_", "-") for row in rows}
+assert len(rows) == EXPECTED, (len(rows), EXPECTED)
+assert ids == visible_provider_ids(), (sorted(visible_provider_ids() - ids), sorted(ids - visible_provider_ids()))
 
 forbidden_bundle_tokens = (
     "strictIdentityScore",
@@ -79,4 +81,4 @@ assert "__nuvioIdentityPolicyV1" in base
 assert "Math.abs(Number(year) - Number(expectedYear))" not in base
 assert 'if (year && expectedYear && year !== expectedYear) return -1;' not in base
 
-print("Provider JS Lego ownership tests passed: providers=96 identity_owner=CORE.STREAM_IDENTITY.V1 media_safety=v9")
+print(f"Provider JS Lego ownership tests passed: providers={EXPECTED} identity_owner=CORE.STREAM_IDENTITY.V1 media_safety=v9")

@@ -12,6 +12,8 @@ on:
       - 'tests/provider_terminal_chain_repairs_test.py'
       - 'tests/voiranime_rip_runtime_contract_test.py'
       - 'tests/voiranime_episode_selection_contract_test.py'
+      - 'tests/provider_js_lego_ownership_test.py'
+      - 'tests/dynamic_provider_scope_contract_test.py'
       - 'scripts/provider_patches/voiranime_anime_runtime_v2.py'
       - 'scripts/provider_patches/voiranime_rip_runtime_v1.py'
       - 'scripts/provider_patches/neko_sama_runtime_v1.py'
@@ -49,7 +51,7 @@ jobs:
                   continue
               disabled=(row.get("enabled") is False) or filename.startswith("provider-disabled/")
               include.append({"provider":pid,"disabled":disabled})
-          assert len(include)==46, len(include)
+          assert include, 'manifest has no visible providers'
           print("matrix="+json.dumps({"include":include},separators=(",",":")))
           PY
 
@@ -91,7 +93,7 @@ jobs:
           if [ "$DISABLED" = "true" ]; then extra+=(--include-disabled); fi
           python scripts/recover_provider_routes_from_upstreams.py             --provider "$PROVIDER"             --workers 1             --timeout 90             --attempts 4             "${extra[@]}"             --out "automation/individual-route-proofs/${PROVIDER}.json"
           python - <<'PY'
-          import json, os
+          import json, math, os
           from pathlib import Path
           p=Path("automation/individual-route-proofs")/(os.environ["PROVIDER"]+".json")
           d=json.loads(p.read_text())
@@ -148,10 +150,20 @@ jobs:
         run: |
           python tests/individual_provider_route_proof_merge_test.py
           python tests/route_recovery_rotating_corpus_test.py
+          python tests/dynamic_provider_scope_contract_test.py
           python tests/provider_terminal_chain_repairs_test.py
           python tests/voiranime_rip_runtime_contract_test.py
           python tests/voiranime_episode_selection_contract_test.py
-          test "$(find automation/individual-route-proofs -name '*.json' -type f | wc -l | tr -d ' ')" = "46"
+          expected="$(python - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path.cwd() / "scripts"))
+          from current_provider_scope import visible_provider_count
+          print(visible_provider_count())
+          PY
+          )"
+          actual="$(find automation/individual-route-proofs -name '*.json' -type f | wc -l | tr -d ' ')"
+          test "$actual" = "$expected"
           python scripts/merge_provider_route_recovery_reports.py             automation/individual-route-proofs             --scope all             --out automation/provider-route-recovery-individual-all.json
           python scripts/merge_provider_route_recovery_reports.py             automation/individual-route-proofs             --scope active             --out automation/provider-route-recovery-individual-active.json
       - name: Apply active individual proofs only
@@ -188,11 +200,13 @@ jobs:
           cand=json.loads(Path("automation/provider-individual-sweep-candidate.json").read_text())
           active=json.loads(Path("automation/provider-route-recovery-individual-active.json").read_text())
           allr=json.loads(Path("automation/provider-route-recovery-individual-all.json").read_text())
+          provider_count=int(cand.get("provider_count") or 0)
+          acceptance_target=max(1,math.ceil(provider_count*0.75))
           summary={
             "schemaVersion":1,
             "runId":int(os.environ["GITHUB_RUN_ID"]),
             "triggerSha":os.environ["GITHUB_SHA"],
-            "providerCount":cand.get("provider_count"),
+            "providerCount":provider_count,
             "verifiedProviderCount":cand.get("verified_provider_count"),
             "verifiedProviders":cand.get("verified_providers"),
             "playableProviderCount":cand.get("playable_provider_count"),
@@ -202,8 +216,9 @@ jobs:
             "activeProvenRouteCount":active.get("provenRouteCount"),
             "allProvidersWithProvenRoutes":allr.get("providersWithProvenRoutes"),
             "allProvenRouteCount":allr.get("provenRouteCount"),
-            "acceptanceTarget":35,
-            "acceptanceReached":int(cand.get("verified_provider_count") or 0)>=35,
+            "acceptanceTarget":acceptance_target,
+            "acceptanceRatio":0.75,
+            "acceptanceReached":int(cand.get("verified_provider_count") or 0)>=acceptance_target,
           }
           Path("automation/provider-individual-max-repair-latest.json").write_text(
               json.dumps(summary,indent=2,sort_keys=True)+"\n"
