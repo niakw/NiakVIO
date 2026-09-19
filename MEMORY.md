@@ -2168,3 +2168,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Commit **6ec15a5b125290d73486473c803daf087f40e0cd** added a fail-closed Sibnet fallback: it only returns a stream when the Sibnet player page exposes real MP4/HLS media; Uqload remains the first path.
 - Commit **9f6748c985d32c2121dada08377ad172e30d728a** locked the Sibnet fallback contract.
 - Functional green is **not claimed yet** for either provider. Required next proof is rematerialized current bytes + live terminal validation in the full census; any old R19 run is tied to its older SHA and must not be confused with the new branch HEAD.
+
+
+### AllAnime current-site reconstruction
+
+- Recovered browser evidence shows AllAnime's current terminal is `https://ww2.aniwatch.fit/`, with catalogue search `/?s=<title>`, series pages, episode pages and terminal HLS on `fetch.nexabloom.top` (browser HTTP 200).
+- Existing Provider DATA still described AllAnime as a stale `tmdb-direct-api` family. This was treated as a provider-model mismatch, not a Core failure.
+- Commit **1824e4c1c79a4e5f0551370210b3e4fa9fec9a25** added `scripts/provider_patches/allanime_site_runtime_v1.py`: Core TMDB identity -> HTML search -> title match -> exact/absolute episode -> episode page -> HLS extraction -> `#EXTM3U` verification.
+- Commit **490d71d22025331b666b38d34538c0f5ee02977a** bound provider `allanime` to this provider-local Lego and reclassified its source runtime family as `catalogue-html`.
+- Commit **5ed3c1e15c30200f1c4650ee93c8763937cb8c9a** added the static contract test.
+- No AllAnime green is claimed until the new branch HEAD is rematerialized and the full census verifies terminal playback.
