@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,11 +20,20 @@ FUSION_FEED = ROOT / "assets/stream-badges-fusion.json"
 REVISION_V22 = "all-providers-client-projection-strongest-evidence-v22"
 REVISION_V23 = "all-providers-client-projection-language-roles-v23"
 REVISION_V24 = "all-providers-client-projection-evidence-language-v24"
-SUPPORTED_REVISIONS = (REVISION_V24, REVISION_V23, REVISION_V22)
+MIN_SUPPORTED_REVISION = 22
 
 
 def active_revision(text: str) -> str | None:
-    return next((revision for revision in SUPPORTED_REVISIONS if revision in text), None)
+    match = re.search(r'REVISION\\s*=\\s*"([^"]*-v(\\d+))"', text)
+    if not match:
+        return None
+    version = int(match.group(2))
+    return match.group(1) if version >= MIN_SUPPORTED_REVISION else None
+
+
+def revision_number(revision: str | None) -> int:
+    match = re.search(r"-v(\\d+)$", str(revision or ""))
+    return int(match.group(1)) if match else 0
 
 
 def normalize(*, apply: bool) -> list[str]:
@@ -34,7 +44,7 @@ def normalize(*, apply: bool) -> list[str]:
     if not active_revision(text):
         raise ValueError(
             "supported stream presentation source is not materialized; "
-            "global_stream_presentation_v1.py must contain canonical V22, V23 or V24 source"
+            "global_stream_presentation_v1.py must contain canonical V22+ source"
         )
     return []
 
@@ -68,7 +78,7 @@ def assert_contract() -> None:
         if token not in text:
             raise ValueError(f"stream presentation contract missing for {revision}: {token}")
 
-    if revision in (REVISION_V24, REVISION_V23):
+    if revision_number(revision) >= 23:
         for token in (
             'function languageTracks(r,meta){',
             'function compactTrack(t){',
@@ -78,7 +88,7 @@ def assert_contract() -> None:
             'out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"");out.name=out.title',
         ):
             if token not in text:
-                raise ValueError(f"stream presentation V23 contract missing: {token}")
+                raise ValueError(f"stream presentation V23+ contract missing: {token}")
         if '+(languageDetailValue?" - "+languageDetailValue:"")' in text:
             raise ValueError("stream presentation V23 title must not append language detail")
     else:
