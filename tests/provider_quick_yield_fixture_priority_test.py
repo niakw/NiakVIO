@@ -23,8 +23,20 @@ assert movieshunt["fixtures"][0]["title"] == "Sinners", movieshunt["fixtures"]
 assert any(row["title"] == "Interstellar" for row in movieshunt["fixtures"]), movieshunt["fixtures"]
 
 animesalt = by[("animesalt", "anime")]
-assert animesalt["fixtures"][0]["title"] == "Mushoku Tensei: Jobless Reincarnation", animesalt["fixtures"]
+assert animesalt["fixtures"][0]["title"] == "Death Note", animesalt["fixtures"]
 assert any(row["title"] == "Jujutsu Kaisen" for row in animesalt["fixtures"]), animesalt["fixtures"]
+
+vostfree = by[("vostfree", "anime")]
+assert vostfree["fixtures"][0]["title"] == "Death Note", vostfree["fixtures"]
+
+allanime = by[("allanime", "anime")]
+assert allanime["fixtures"][0]["title"] == "One Piece", allanime["fixtures"]
+
+moviesmod = by[("moviesmod", "movie")]
+assert moviesmod["fixtures"][0]["title"] == "Interstellar", moviesmod["fixtures"]
+
+flemmix_tv = by[("flemmix", "tv")]
+assert flemmix_tv["fixtures"][0]["title"] == "House of the Dragon", flemmix_tv["fixtures"]
 
 # Providers without corpus-owned fixtures still start from the canonical lane representative.
 allwish = by[("allwish", "movie")]
