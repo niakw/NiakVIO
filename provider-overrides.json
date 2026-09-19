@@ -3546,7 +3546,8 @@
         "ww.animesultra.org": "v2.animesultra.org"
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/index.php?do=search&subaction=search&story={query}",
+        "/engine/ajax/full-story.php?newsId={id}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -3701,19 +3702,6 @@
           }
         ]
       },
-      "candidate_api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
-      },
       "route_data_state": "repair",
       "repair_disposition": {
         "schemaVersion": 1,
@@ -3749,20 +3737,6 @@
         },
         "evidenceDestructive": false
       },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        },
-        "referer": "https://v2.animesultra.org"
-      },
       "published_types": [
         "anime"
       ],
@@ -3777,7 +3751,9 @@
         "scripts/provider_patches/animesultra_runtime_v1.py": {
           "base": "https://v2.animesultra.org"
         }
-      }
+      },
+      "source_runtime_family": "dle-full-story-sibnet",
+      "reconstruction_state": "provider-local-current-site"
     },
     "animetsu": {
       "capability": "direct_media",
@@ -8513,7 +8489,8 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/template-php/defaut/fetch.php",
+        "/{slug}/saison-{season}/episode-{episode}/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -8657,19 +8634,6 @@
           }
         ]
       },
-      "candidate_api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
-      },
       "identity_input": {
         "mode": "catalog_search",
         "requires_tmdb_before_run": true,
@@ -8713,20 +8677,6 @@
         },
         "evidenceDestructive": false
       },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        },
-        "referer": "https://voiranime.rip"
-      },
       "published_types": [
         "anime"
       ],
@@ -8742,7 +8692,9 @@
           "base": "https://voiranime.rip",
           "maxStreams": 4
         }
-      }
+      },
+      "source_runtime_family": "search-episode-embed",
+      "reconstruction_state": "provider-local-current-site"
     },
     "vostfree": {
       "capability": "mixed_embed_resolver",
@@ -9941,7 +9893,8 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/MenuSearch.html",
+        "/VideoPlayer.html"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -10051,19 +10004,6 @@
           }
         ]
       },
-      "candidate_api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
-      },
       "manifest_overrides": {
         "enabled": true
       },
@@ -10101,20 +10041,6 @@
           ]
         },
         "evidenceDestructive": false
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        },
-        "referer": "https://v5.anime-ultime.net"
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -10156,7 +10082,9 @@
         "scripts/provider_patches/anime_ultime_runtime_v1.py": {
           "base": "https://v5.anime-ultime.net"
         }
-      }
+      },
+      "source_runtime_family": "menu-search-series-focus-player",
+      "reconstruction_state": "provider-local-current-site"
     },
     "animevost-fr": {
       "capability": "api_stream_resolver",
