@@ -9446,8 +9446,8 @@
       },
       "notes": [
         "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias.",
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
-        "Current browser-observed runtime is HTML catalogue -> exact episode page -> terminal HLS; provider-local runtime owns this chain while Core owns final validation."
+        "Current execution authority is provider-local AllAnime GraphQL at api.allanime.day/api; search/source resolution is distinct from historical HTML/AnWatch observations.",
+        "Encrypted tobeparsed payloads are decoded only through WebCrypto AES-CTR when available; otherwise the provider fails closed. Core retains final stream validation."
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -9463,8 +9463,7 @@
       },
       "learned_routes": [
         "/api",
-        "/api/v2/themoviedb?id={id}",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/apivtwo/clock.json"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -9494,8 +9493,7 @@
       },
       "candidate_learned_routes": [
         "/api",
-        "/api/v2/themoviedb?id={id}",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/apivtwo/clock.json"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -9645,7 +9643,8 @@
       "provider_lego_scripts": [
         "scripts/provider_patches/allanime_site_runtime_v1.py"
       ],
-      "source_runtime_family": "catalogue-html"
+      "source_runtime_family": "graphql-source-clock",
+      "reconstruction_state": "provider-local-current-api"
     },
     "allwish": {
       "capability": "html_scraper",
