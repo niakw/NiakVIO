@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "requested_at": "2026-09-19T16:36:00Z",
-  "accepted_main_sha": "00ba910816ef4ceee8f96c5b432072cce7700820",
+  "accepted_main_sha": "2dac3dae61c18b3b99dddccdc71db024c661fc79",
   "target_release": "auto",
-  "reason": "Finalize accepted Provider v3 publication after hardening all provider Lego HTML scanners and making the security source gate discover every declared provider Lego. Reapply provider patches, refresh Hub46 before prune, validate published security/integrity, and publish atomically only if main remains pinned."
+  "reason": "Retry accepted Provider v3 publication after completing source-level HTML scanner hardening for every affected declared provider Lego. Reapply durable provider patches, regenerate Hub46 before prune, validate published HTML/security/static contracts, rebuild pinned native Hub46 and hashes, and publish atomically only if main remains pinned to this trigger."
 }
