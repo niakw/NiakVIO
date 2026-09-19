@@ -12,6 +12,7 @@ for marker in [
     'h.Cookie=token+"="+values[i]',
     "function redirectedDirect",
     "function followDownload",
+    'if(terminalResponse(r)&&/^https?:\\/\\//i.test(final))',
     'new URL(u).searchParams.get("url")',
     "function terminalResponse",
     'Number(r.status)===206',
