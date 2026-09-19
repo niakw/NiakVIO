@@ -86,7 +86,7 @@ assert "Corpus progress" in md
 assert "Evidence depth" in md
 assert "Candidate proof" in md
 assert "CANDIDATE OK preserves verified playback from a reconstruction candidate" in md
-assert "PARTIAL OK still requires at least one verified playable lane" in md
+assert "PARTIAL OK still requires at least one current verified playable lane" in md
 assert "carried" in md
 assert "run 123" in md
 assert "SHA abcdef012345" in md

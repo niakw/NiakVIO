@@ -95,6 +95,22 @@ assert wanted == [
     module.GLOBAL_STREAM_PRESENTATION,
 ], wanted
 
+# An unknown/new provider must retain Core media enrichment before it has a
+# provider-specific capability classification.
+unknown_capture = []
+module._apply_patch_script = lambda text, provider_id, patch_script, options, profile_name: (
+    unknown_capture.append(patch_script) or text
+)
+try:
+    module.apply_overrides(
+        "future-provider-never-seen-before",
+        clean_v3_fixture(b"globalThis.getStreams=async function(){return []};\n"),
+        phase="discovery",
+    )
+finally:
+    module._apply_patch_script = original_apply_patch_script
+assert "scripts/provider_patches/global_media_enrichment_v1.py" in unknown_capture
+
 future = clean_v3_fixture(b'''\nasync function helper(t){let x=await fetch(t.url).then(r=>r.text());if(!/#EXT-X-STREAM-INF/i.test(x))return [{url:t.url,type:"hls"}];return []}\nglobalThis.getStreams=async function(){return [{url:"https://media.example/master.m3u8",type:"hls"}]};\n''')
 patched, records = module.apply_overrides("future-provider-never-seen-before", future, phase="discovery")
 text = patched.decode("utf-8")

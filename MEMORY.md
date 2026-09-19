@@ -2616,3 +2616,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - animetsu et showbox n’ont pas de preuve positive retrouvée dans les snapshots/field evidence examinés.
 - animevostfr a une vraie preuve candidate : run87_reconstruction / run 34309729426, scope reconstruction-candidate, raw + playable + verified; matrice CANDIDATE_GREEN.
 - Le census expose désormais CANDIDATE OK séparément de NO PROOF et PARTIAL OK. PARTIAL/FULL restent réservés aux preuves courantes/publiées.
+
+## 2026-09-20 — Core media enrichment bootstrap pour providers inconnus
+
+- Le non-régression a révélé un vrai trou générique après le filtre navigation non-media v10 : `apply_overrides()` n'appliquait `CORE.MEDIA_ENRICHMENT.V1` que si le provider avait déjà un capability classé.
+- Pour un provider nouveau/inconnu, `capability=""` supprimait donc le Core enrichment au premier passage, exactement avant que BRAIN puisse le classifier. Le test `future-provider-never-seen-before` matérialisait ainsi une version sans `scoped-playback-context-v10-nonmedia-nav-filter`.
+- Correction : un capability inconnu reçoit maintenant le media-enrichment Core conservateur par défaut; un capability explicitement connu mais hors allow-list reste opt-out. Aucun cas provider spécifique n'est ajouté.
+- Le test census `CANDIDATE OK` avait aussi une assertion de wording obsolète; elle est alignée sur la sémantique actuelle ("current verified playable lane").

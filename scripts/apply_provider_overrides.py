@@ -1622,7 +1622,15 @@ def apply_overrides(
             for value in media_policy.get("capabilities", [])
             if str(value).strip()
         }
-        if media_policy.get("enabled", False) and capability in media_capabilities:
+        # Unknown/new providers must receive the conservative Core enrichment
+        # layer too. Requiring an already-classified capability here creates a
+        # bootstrap paradox: a never-seen provider loses Core URL filtering and
+        # session/media recovery precisely before BRAIN has classified it.
+        # Explicitly classified capabilities outside the allow-list remain opted out.
+        media_enrichment_enabled = media_policy.get("enabled", False) and (
+            capability in media_capabilities or not capability
+        )
+        if media_enrichment_enabled:
             patch_script = str(media_policy.get("global_discovery_hook") or "").strip()
             if not patch_script:
                 raise ValueError("media_enrichment_policy.global_discovery_hook is required")
