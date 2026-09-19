@@ -175,6 +175,9 @@ source_language_evidence = run(
 )
 assert source_language_evidence["language"] == "Hindi", source_language_evidence
 assert "Hindi" in source_language_evidence["description"], source_language_evidence
+assert source_language_evidence["presentationFacts"]["language"] == "Hindi", source_language_evidence
+assert "Hindi" in source_language_evidence["displayBadges"], source_language_evidence
+assert "vo" not in source_language_evidence["badgeIds"], source_language_evidence
 
 # Series/anime identity is title/year/SxxExx; provider-owned layout never survives.
 tv = run("module.exports={getStreams:async()=>[{name:'Purstream',url:'https://x.example/a.m3u8',description:'PRIVATE PROVIDER LAYOUT',language:'VF'}]};\n", "purstream", "p.getStreams({mediaType:'tv',title:'Breaking Bad',year:2008,season:1,episode:1}).then(v=>console.log(JSON.stringify(v[0])))")
