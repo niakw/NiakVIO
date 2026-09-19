@@ -2256,3 +2256,20 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The current repair workflow bootstraps state from all retained census JSONs, runs unresolved only, updates proof history, persists the state/history files, and computes its global status summary from the merged ledger rather than the selected subset.
 - Global non-regression still calls the census explicitly with `--scope all`; the daily Brain Learning workflow remains the main full-catalogue deep observation path.
 - Branch: `fix/provider-census-state-machine-20260919`, based on main **377901c53c3a412bd2685c8a8e11380e01e52f16**. Functional validation is pending PR CI; do not mark the state machine validated until those checks pass.
+
+
+### 2026-09-19 — First validated unresolved-scope census
+
+- PR **#188** branch HEAD lineage reached census run **35447448840** (TEMP Current Bytes Full Provider Census #214), triggered from SHA **2120f44b9760e1e44b48ff6cf650f1dd6723178b** on the PR branch.
+- The bootstrap bug that previously selected a `*-summary.json` as if it were a full census was fixed by excluding `*-summary.json` from retained census discovery.
+- Fresh validation proves the repair-loop scope works: **27/46 providers tested**, **38 lane tasks**, **149 probes**, rather than rerunning all 46.
+- Global carried ledger after the scoped run: **20 FULL OK / 0 PARTIAL OK / 16 NO PROOF / 10 PROVIDER JS FULLY BROKEN**. Operational OK is therefore **20/46** on this exact census state; do not present the remaining 26 as repaired.
+- `animesama-co` produced the only new verified stream in this run and moved into FULL OK. Previously green providers were carried without network retest.
+- Current unresolved breakdown from the same run:
+  - clean catalogue misses / **NO PROOF** stage `provider_network_zero_result`: 16 providers;
+  - technical HTTP errors: 7 providers;
+  - technical network exceptions: 4 providers;
+  - one provider returned verified streams.
+- Brain queue emitted by the ledger contains 26 providers (the 16 NO PROOF plus 10 broken-class providers); FULL/PARTIAL providers are excluded from the repair census.
+- Anime-Sama publication fixed-point was independently repaired before this census: published bundle is now `providers/anime-sama--nuvio--9d49dc4a1ac63db2.js`, **0 physical line breaks**, and `provider_v3_minimizer_published_test.py` passed for all 44 active published bundles.
+- PR #188 is **not yet merge-ready** despite the successful scoped census: current remaining red checks are Verify & Publish (failure occurs after minimizer fixed-point passed) and Provider Non-Regression, whose candidate gate currently flags **movieshunt** and **voiranime-homes**. These must be diagnosed/corrected or explicitly requalified before merge.
