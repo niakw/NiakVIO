@@ -423,19 +423,17 @@
       "manifest_status": "Actif",
       "category": "Francophone / Anime",
       "hub": "https://voiranime.org.uk/",
-      "direct": "https://voiranime.diy/",
+      "direct": "https://voir-anime.to/",
       "source": "curated_user_registry",
       "aliases": [
         "voiranime"
       ],
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "Current provider-local catalogue authority is voir-anime.to; prior diy/homes/store/com terminals are stale and must not be projected back into runtime DATA.",
       "direct_candidates": [
-        "https://voiranime.diy/",
-        "https://voiranime.homes/"
+        "https://voir-anime.to/"
       ],
       "allowed_terminal_hosts": [
-        "voiranime.diy",
-        "voiranime.homes"
+        "voir-anime.to"
       ],
       "search_queries": [
         "\"VoirAnime\" official domain"
@@ -454,7 +452,16 @@
           "purpose": "Fallback discovery when curated sources fail"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "blocked_hosts": [
+        "voiranime.diy",
+        "voiranime.homes",
+        "voiranime.store",
+        "voiranime.com"
+      ],
+      "direct_authority": "explicit_current",
+      "direct_authority_source": "current-live-provider-catalogue",
+      "direct_authority_observed_at": "2026-09-19"
     },
     "movix": {
       "id": "movix",
