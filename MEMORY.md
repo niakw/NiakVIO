@@ -2360,3 +2360,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Root cause is pipeline ordering, not provider rematerialization: after `reapply_published_overrides.py` changes content-addressed filenames, `manifest-hub46.json` must be reprojected before prune treats it as a local retention authority.
 - Fix: `release-finalize.yml` now regenerates `manifest-hub46.json` immediately after language projections and before prune; the later post-version Hub46 regeneration remains in place. `tests/release_version_sync_test.py` locks the required ordering and requires both Hub46 projection passes.
 - Validation remains pending until the corrected finalizer publishes atomically and downstream CORE/non-regression/census inspect the published SHA.
+
+### 2026-09-19 — Git tree integrity restoration after release-order patch
+
+- A low-level multi-file Git Data commit attempt for the release-order fix accidentally used an incomplete base tree and produced intermediate commit **99d42b7f367b22046e3e981bf9626177471f1587** containing only the three edited paths. Branch rules correctly refused a force reset.
+- Recovery was performed immediately as a forward commit **0fb45d4b389742be1b7ad5612fa430c8fe9cd469**, using the complete parent tree **a2835246eae6b7650ed9d6564b0e52ab20da9c43** plus the intended edits. The resulting tree **8e6d4843ef33d73b21e3ce83cbbb35b1e16ae3e0** was inspected recursively: **4,768 entries**, not truncated, with `manifest.json`, `providers/**`, workflows and the release trigger present.
+- The intended release-order changes remain: regenerate `manifest-hub46.json` before provider prune and lock that order in `tests/release_version_sync_test.py`. No provider publication is considered validated from the intermediate partial-tree commit.
+
