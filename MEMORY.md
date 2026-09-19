@@ -2134,3 +2134,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - R16 targeted run **35418449543** completed contracts, materialization and all adaptive probes; its final persistence step failed only because materialization left unstaged generated changes before `git rebase origin/main`. The probe evidence itself is valid. Main commit **9d119e5131cdd3629f8c2359a61e6128df7a4689** fixes targeted persistence by copying the verdict to `/tmp`, hard-resetting to current `origin/main`, then restoring/committing only the JSON evidence.
 - R15 / PR #182 is obsolete: it stopped before live proof solely because the synthetic 4KHDHub behavior test omitted `scripts/` from Python `sys.path`. Harness was fixed at **78b74fdf8dbdaf422c54066b3ae0b65915ba1912**.
 - `PROVIDER_CENSUS_STATUS.md` generation is proven in the R16 Non-Regression artifact and correctly renders **19 FULL / 0 PARTIAL / 27 ZERO** with one row/provider. Full-census persistence to main is still pending run **35418449546** and must be verified before claiming the on-main auto-update path completed end-to-end.
+
+
+## 2026-09-19 — recovered three user provider evidence blocks
+
+- Recovered and preserved the user's three distinct provider evidence families in `automation/USER-PROVIDER-EVIDENCE-LEDGER.md` at commit **7203056340e8c392ef01a38ace4ac0a54b88a087**.
+- Block A: real TV/Desktop field behavior (Interstellar/HOTD/Ragna/Mushoku/Hell Mode, wrong content, dead rows, language/quality/badge issues, late-generation accumulation).
+- Block B: September browser route/hub captures (~3,100 lines) including AnimeSalt, Vostfree, NetMirror, Nakios, UHDMovies, ToFlix, Flemmix, HDHub4U, Mugiwara, Frenchstream, VoirAnime/Neko/VegaMovies/Movies4u/Moonflix/AnimePahe/AniKoto/AniZone.
+- Block C: older late-July/early-August VF/runtime diagnostics that had been omitted from recent repair passes: Purstream/Movix/StreamZo/Frenchstream/Coflix/Flemmix/Nakios/ToFlix. Important anchors include StreamZo's observed Videasy embed, Frenchstream's stale `/engine/ajax/film_api.php?id=<id>` failure despite reachable site/search, and Movix API-domain rotation evidence.
+- Historical routes are evidence/LKG only; they must not override current Domain Refresh authority. Provider-local route structure and current provider DATA domain are separate concerns.
+- R17 Non-Regression artifact **35418922286** completed a full live census at **19 FULL / 0 PARTIAL / 27 ZERO**; it still fails the floor only on MoviesHunt historical lane loss. Its generated `PROVIDER_CENSUS_STATUS.md` proves the Markdown renderer works in-artifact. Dedicated on-main full-census persistence remains to be revalidated after newer main commits.
