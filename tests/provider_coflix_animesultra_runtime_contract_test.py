@@ -15,4 +15,6 @@ for needle in ("/index.php?do=search&subaction=search&story=","/engine/ajax/full
 assert "arm.haglund.dev" not in au
 assert ov["coflix"]["provider_lego_scripts"] == ["scripts/provider_patches/coflix_runtime_v1.py"]
 assert ov["animesultra"]["provider_lego_scripts"] == ["scripts/provider_patches/animesultra_runtime_v1.py"]
-assert ov["animesultra"]["provider_lego_options"]["scripts/provider_patches/animesultra_runtime_v1.py"]["base"] == "https://v2.animesultra.org"\nassert '"base":"https://v2.animesultra.org"' in au\nprint("Coflix and AnimesUltra provider runtime contracts passed")
+assert ov["animesultra"]["provider_lego_options"]["scripts/provider_patches/animesultra_runtime_v1.py"]["base"] == "https://v2.animesultra.org"
+assert '"base":"https://v2.animesultra.org"' in au
+print("Coflix and AnimesUltra provider runtime contracts passed")
