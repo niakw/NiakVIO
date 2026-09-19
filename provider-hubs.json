@@ -798,42 +798,42 @@
       "manifest_status": "Actif",
       "category": "International / Anime",
       "hub": "https://animesalt.ac/",
-      "direct": "https://animesalt.link/",
+      "direct": "https://animesalt.cx/",
       "source": "curated_user_registry",
-      "schema_notes": "AnimeSalt provider-local upstream source currently executes animesalt.link. The prior .cx terminal is stale and must not be projected back into runtime DATA.",
+      "schema_notes": "Current hub and live HTTP authority resolve AnimeSalt to animesalt.cx. animesalt.link is retained only as historical evidence and must not overwrite current runtime DATA.",
       "aliases": [
         "animesalt"
       ],
       "direct_candidates": [
-        "https://animesalt.link/"
+        "https://animesalt.cx/"
       ],
       "allowed_terminal_hosts": [
-        "animesalt.link"
+        "animesalt.cx"
       ],
       "search_queries": [
-        "\"AnimeSalt\" \"animesalt.link\""
+        "\"AnimeSalt\" \"animesalt.cx\""
       ],
       "sources": [
         {
           "type": "hub",
           "url": "https://animesalt.ac/",
-          "priority": 100,
-          "purpose": "Address reference only; current runtime terminal is verified against the provider-local upstream source."
+          "priority": 110,
+          "purpose": "Current address authority; live redirect resolves to animesalt.cx."
         },
         {
           "type": "search",
-          "query": "\"AnimeSalt\" \"animesalt.link\"",
+          "query": "\"AnimeSalt\" \"animesalt.cx\"",
           "priority": 35,
           "purpose": "Fallback verification only."
         }
       ],
       "search_confirmation_runs": 2,
-      "last_verified": "2026-08-30",
+      "last_verified": "2026-09-19",
       "blocked_hosts": [
-        "animesalt.cx"
+        "animesalt.link"
       ],
       "direct_authority": "explicit_current",
-      "direct_authority_source": "current-upstream-provider-source",
+      "direct_authority_source": "current-hub-live-redirect-and-provider-browser-evidence",
       "direct_authority_observed_at": "2026-09-19"
     },
     "hdghartv": {
