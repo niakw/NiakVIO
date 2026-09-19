@@ -49,3 +49,14 @@ assert "semantic_capability_regression" in _gate_source
 assert "historical_hls_m3u8_regression" in _gate_source
 assert "provider-upstream-drift-v1" in _gate_source
 assert "upstreamDriftApplied" in _gate_source
+
+
+# The candidate gate must replay exact winning fixtures from the accepted baseline
+# before it decides that a previously verified lane regressed.
+_nonreg_workflow = (ROOT / ".github/workflows/provider-non-regression.yml").read_text(encoding="utf-8")
+_baseline_step = _nonreg_workflow.index("Select rolling accepted baseline")
+_seed_step = _nonreg_workflow.index("Seed candidate fixture memory from accepted baseline")
+_census_step = _nonreg_workflow.index("Run real rematerialized current-provider candidate census")
+assert _baseline_step < _seed_step < _census_step
+assert "git show \"$BASE_REF:provider-v3-quick-yield.json\"" in _nonreg_workflow
+assert "--history automation/provider-census-proof-history.json" in _nonreg_workflow

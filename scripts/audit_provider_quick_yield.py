@@ -2,6 +2,7 @@
 """Fast report-only Provider v3 yield census with execution-gate diagnostics."""
 from __future__ import annotations
 
+import argparse
 import concurrent.futures
 import json
 import os
@@ -13,13 +14,15 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
-from rotating_corpus import default_seed, rotated_candidates
+from rotating_corpus import default_seed, provider_census_candidates
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 CORPUS = ROOT / ".github" / "triggers" / "nuvio-client-lab.json"
 PROBE = ROOT / "scripts" / "nuvio_tv_probe_tmdb_ci.cjs"
 OUTPUT = ROOT / "provider-v3-quick-yield.json"
+STATUS_FILE = ROOT / "automation" / "provider-census-status.json"
+PROOF_HISTORY = ROOT / "automation" / "provider-census-proof-history.json"
 WORKERS = max(1, min(int(os.environ.get("NIAKVIO_QUICK_YIELD_WORKERS", "12")), 20))
 TIMEOUT = max(20, min(int(os.environ.get("NIAKVIO_QUICK_YIELD_TIMEOUT", "45")), 90))
 MAX_SAMPLES = max(1, min(int(os.environ.get("NIAKVIO_QUICK_YIELD_MAX_SAMPLES", "4")), 8))
@@ -92,12 +95,42 @@ def _provider_fixture_priority(record: dict[str, Any], provider_id: str) -> int:
     return 0
 
 
+def _history_lane(history: dict[str, Any], provider_id: str, media_type: str) -> dict[str, Any]:
+    providers = history.get("providers") if isinstance(history.get("providers"), dict) else {}
+    provider = providers.get(provider_id) if isinstance(providers.get(provider_id), dict) else {}
+    lanes = provider.get("lanes") if isinstance(provider.get("lanes"), dict) else {}
+    return lanes.get(media_type) if isinstance(lanes.get(media_type), dict) else {}
+
+
+def _history_proof_fixtures(history: dict[str, Any], provider_id: str, media_type: str) -> list[dict[str, Any]]:
+    lane = _history_lane(history, provider_id, media_type)
+    out: list[dict[str, Any]] = []
+    for row in lane.get("proofs") or []:
+        if isinstance(row, dict) and isinstance(row.get("fixture"), dict):
+            out.append(dict(row["fixture"]))
+    return out
+
+
+def _history_miss_slugs(history: dict[str, Any], provider_id: str, media_type: str) -> set[str]:
+    lane = _history_lane(history, provider_id, media_type)
+    out: set[str] = set()
+    for row in lane.get("misses") or []:
+        if not isinstance(row, dict):
+            continue
+        fixture = row.get("fixture") if isinstance(row.get("fixture"), dict) else {}
+        slug = str(fixture.get("slug") or "").strip()
+        if slug:
+            out.add(slug)
+    return out
+
+
 def _adaptive_fixtures(
     provider_id: str,
     media_type: str,
     initial: dict[str, Any],
     *,
     preferred: list[dict[str, Any]] | None = None,
+    history: dict[str, Any] | None = None,
     anime_movie_only: bool = False,
 ) -> list[dict[str, Any]]:
     """Build a bounded provider-aware fixture queue.
@@ -117,22 +150,41 @@ def _adaptive_fixtures(
         seen.add(identity)
         rows.append(dict(candidate))
 
+    history = history or {}
+
+    # Retained positive proof is always replayed first. It is the cheapest
+    # regression detector and avoids rediscovering a known catalogue match.
+    for candidate in _history_proof_fixtures(history, provider_id, media_type):
+        add(candidate)
     for candidate in preferred or []:
         add(candidate)
     add(initial)
 
     if anime_movie_only or MAX_SAMPLES <= len(rows):
         return rows
-    for candidate in rotated_candidates(media_type, seed=default_seed(), provider=provider_id):
+
+    # Clean catalogue misses are remembered across runs and skipped until the
+    # corpus has been exhausted, so repeated censuses advance instead of testing
+    # the same four works forever.
+    excluded = _history_miss_slugs(history, provider_id, media_type) | {
+        str(row.get("slug") or "").strip() for row in rows if str(row.get("slug") or "").strip()
+    }
+    for candidate in provider_census_candidates(
+        media_type,
+        seed=default_seed(),
+        provider=provider_id,
+        exclude=excluded,
+    ):
         add(candidate)
         if len(rows) >= MAX_SAMPLES:
             break
     return rows
 
 
-def build_tasks() -> tuple[list[dict[str, Any]], int]:
+def build_tasks(provider_filter: set[str] | None = None, *, history: dict[str, Any] | None = None) -> tuple[list[dict[str, Any]], int]:
     manifest = load(MANIFEST)
     corpus = load(CORPUS)
+    history = history or {}
     fixture_records = {
         str(row.get("slug") or ""): row
         for row in corpus.get("fixtures") or []
@@ -173,6 +225,8 @@ def build_tasks() -> tuple[list[dict[str, Any]], int]:
         filename = str(row.get("filename") or "").strip()
         if not provider_id or not filename or not (ROOT / filename).is_file():
             continue
+        if provider_filter is not None and provider_id not in provider_filter:
+            continue
         providers += 1
         for media_type in semantic_types(row):
             anime_movie_only = media_type == "movie" and provider_id in anime_movie_providers
@@ -212,6 +266,7 @@ def build_tasks() -> tuple[list[dict[str, Any]], int]:
                     media_type,
                     fixture,
                     preferred=preferred,
+                    history=history,
                     anime_movie_only=anime_movie_only,
                 ),
             })
@@ -337,11 +392,17 @@ def run_single(task: dict[str, Any]) -> dict[str, Any]:
         "node", str(PROBE), str(ROOT / task["filename"]),
         json.dumps(task["fixture"], ensure_ascii=False, separators=(",", ":")), "{}",
     ]
+    fixture = {
+        key: task["fixture"].get(key)
+        for key in ("slug", "tmdbId", "mediaType", "category", "title", "year", "season", "episode", "animeMovie")
+        if task["fixture"].get(key) is not None
+    }
     base = {
         "provider_id": task["provider_id"],
         "provider_name": task["provider_name"],
         "semantic_type": task["semantic_type"],
         "fixture_title": str(task["fixture"].get("title") or ""),
+        "fixture": fixture,
     }
     try:
         proc = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=TIMEOUT, check=False, env=os.environ.copy())
@@ -403,7 +464,7 @@ def _compact_sample(row: dict[str, Any]) -> dict[str, Any]:
     return {
         key: row.get(key)
         for key in (
-            "fixture_title", "status", "debug_stage",
+            "fixture_title", "fixture", "status", "debug_stage",
             "raw", "playable", "verified", "contradictions", "duration_ms",
         )
     }
@@ -444,11 +505,45 @@ def run(task: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
+def _scope_provider_filter(scope: str, status_file: Path, explicit: list[str]) -> tuple[set[str] | None, str]:
+    requested = {
+        str(value or "").strip().casefold()
+        for item in explicit
+        for value in str(item or "").split(",")
+        if str(value or "").strip()
+    }
+    if requested:
+        return requested, "explicit"
+    if scope == "all":
+        return None, "all"
+    if not status_file.is_file():
+        return None, "unresolved-bootstrap-all"
+    status = load(status_file)
+    unresolved = {
+        str(row.get("provider") or "").strip().casefold()
+        for row in status.get("providers") or []
+        if isinstance(row, dict)
+        and str(row.get("status") or "") not in {"FULL OK", "PARTIAL OK"}
+        and str(row.get("provider") or "").strip()
+    }
+    return unresolved, "unresolved"
+
+
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Adaptive provider playback census")
+    parser.add_argument("--scope", choices=("unresolved", "all"), default="all")
+    parser.add_argument("--status-file", type=Path, default=STATUS_FILE)
+    parser.add_argument("--history", type=Path, default=PROOF_HISTORY)
+    parser.add_argument("--provider", action="append", default=[], help="Exact provider id; repeat or comma-separate")
+    parser.add_argument("--output", type=Path, default=OUTPUT)
+    args = parser.parse_args()
+
     if not (str(os.environ.get("TMDB_API_KEY") or "").strip() or str(os.environ.get("TMDB_ACCESS_TOKEN") or "").strip()):
         raise SystemExit("TMDB_API_KEY or TMDB_ACCESS_TOKEN is required for quick yield census")
 
-    tasks, provider_count = build_tasks()
+    history = load(args.history) if args.history.is_file() else {}
+    provider_filter, resolved_scope = _scope_provider_filter(args.scope, args.status_file, args.provider)
+    tasks, provider_count = build_tasks(provider_filter, history=history)
     rows: list[dict[str, Any]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=WORKERS) as pool:
         futures = [pool.submit(run, task) for task in tasks]
@@ -492,9 +587,12 @@ def main() -> int:
     probe_count = sum(int(row.get("sample_count") or 1) for row in rows)
     rotated_task_count = sum(1 for row in rows if row.get("adaptive_rotated") is True)
     report = {
-        "schema_version": 5,
+        "schema_version": 6,
+        "requested_scope": args.scope,
+        "resolved_scope": resolved_scope,
+        "selected_providers": sorted(provider_filter) if provider_filter is not None else None,
         "environment": "node-adaptive-provider-targeted-first-real-stream-census-with-tmdb-runtime-context",
-        "fixture_selection_policy": "provider-targeted-first-then-representative-then-rotated",
+        "fixture_selection_policy": "retained-proof-first-then-provider-targeted-then-representative-then-three-corpus-rotated",
         "provider_count": provider_count,
         "task_count": len(tasks),
         "probe_count": probe_count,
@@ -516,10 +614,11 @@ def main() -> int:
         "debug_stage_providers": {key: sorted(value) for key, value in sorted(stage_providers.items())},
         "rows": sorted(rows, key=lambda row: (row["provider_id"], row["semantic_type"])),
     }
-    OUTPUT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         "FIELD_PROVIDER_QUICK_YIELD "
-        f"providers={provider_count} tasks={len(tasks)} probes={probe_count} rotated_tasks={rotated_task_count} raw={len(raw_providers)} "
+        f"scope={resolved_scope} providers={provider_count} tasks={len(tasks)} probes={probe_count} rotated_tasks={rotated_task_count} raw={len(raw_providers)} "
         f"playable={len(playable_providers)} accepted_playable={len(accepted_playable_providers)} "
         f"verified={len(verified_providers)} wrong_content={len(wrong_content)}"
     )

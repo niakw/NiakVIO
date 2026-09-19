@@ -2234,3 +2234,58 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Commit **ecfe92ab6ecf8b27fd5b9eca8d7b20fe06909a5e** removes `api_recipe` / `candidate_api_recipe` from all three, replaces stale ARM learned routes with their actual local route families, and marks their reconstruction authority as `provider-local-current-site`.
 - Regression locks: **f8f7fe9ff0ac4595a3893a73164786569926ca87** (Anime-Ultime), **cdd510eab40495b4b0a8899468f91e1c9d79a7c8** (AnimesUltra), **4506ef4a896691acde64de08cfa375be4d9fd641** (VoirAnime.rip).
 - Git integrity checked after the three distinct-file writes: branch HEAD **4506ef4a896691acde64de08cfa375be4d9fd641** contains all three test commits in one linear history. Functional green is still **not claimed** until rematerialized live probes/census run on a descendant SHA.
+
+
+## 2026-09-19 — Census state machine / unresolved-scope execution
+
+- Replaced the ambiguous FULL/PARTIAL/ZERO presentation model with a provider state machine intended to scale beyond 46 providers:
+  - 🟢 **FULL OK** = every declared semantic lane has a current verified playback proof.
+  - 🟡 **PARTIAL OK** = at least one declared lane has a current verified playback proof; non-blocking.
+  - 🔵 **NO PROOF** = clean provider execution/network success but no tested work matched yet; continue corpus search instead of calling the provider broken.
+  - 🟠 **PROVIDER JS BROKEN** = current technical/runtime/provider implementation failure; repair/retest.
+  - 🔴 **PROVIDER JS FULLY BROKEN** = repeated technical failure without retained positive proof; hand to BRAIN LEARNING.
+  - 🟣 **REGRESSION PROVIDER JS** = retained historical positive exists but current JS/runtime structure regressed.
+  - 🔴 **REGRESSION PROVIDER** = retained winning fixture/provider previously worked but now provider/upstream no longer produces the match.
+- `provider_network_zero_result` is now explicitly a catalogue miss / missing-proof condition, not a broken-provider verdict.
+- Added `scripts/update_provider_census_proof_history.py` with durable provider/lane winning fixtures, clean misses, and consecutive technical-run counters in `automation/provider-census-proof-history.json`.
+- Quick-yield now supports `--scope unresolved`, `--scope all`, and repeated/comma-separated `--provider`. The repair census uses `--scope unresolved`; known FULL/PARTIAL providers are not re-probed in that loop.
+- Historical winning fixtures are replayed first. If a retained winning fixture is replayed and cleanly stops matching, the renderer promotes the provider to **REGRESSION PROVIDER** rather than **NO PROOF**.
+- Clean misses are remembered across runs and excluded from subsequent rotation while other fixtures remain, so repeated runs advance through the corpus instead of testing the same four works forever.
+- Proof search now spans all three durable fixture sources: rotating popular corpus + regression corpus + health-config fixtures.
+- `render_provider_census_status.py` now emits a color-coded Markdown ledger plus machine-readable `automation/provider-census-status.json`; unresolved-scope runs carry forward untested FULL/PARTIAL rows from the previous ledger.
+- The current repair workflow bootstraps state from all retained census JSONs, runs unresolved only, updates proof history, persists the state/history files, and computes its global status summary from the merged ledger rather than the selected subset.
+- Global non-regression still calls the census explicitly with `--scope all`; the daily Brain Learning workflow remains the main full-catalogue deep observation path.
+- Branch: `fix/provider-census-state-machine-20260919`, based on main **377901c53c3a412bd2685c8a8e11380e01e52f16**. Functional validation is pending PR CI; do not mark the state machine validated until those checks pass.
+
+
+### 2026-09-19 — First validated unresolved-scope census
+
+- PR **#188** branch HEAD lineage reached census run **35447448840** (TEMP Current Bytes Full Provider Census #214), triggered from SHA **2120f44b9760e1e44b48ff6cf650f1dd6723178b** on the PR branch.
+- The bootstrap bug that previously selected a `*-summary.json` as if it were a full census was fixed by excluding `*-summary.json` from retained census discovery.
+- Fresh validation proves the repair-loop scope works: **27/46 providers tested**, **38 lane tasks**, **149 probes**, rather than rerunning all 46.
+- Global carried ledger after the scoped run: **20 FULL OK / 0 PARTIAL OK / 16 NO PROOF / 10 PROVIDER JS FULLY BROKEN**. Operational OK is therefore **20/46** on this exact census state; do not present the remaining 26 as repaired.
+- `animesama-co` produced the only new verified stream in this run and moved into FULL OK. Previously green providers were carried without network retest.
+- Current unresolved breakdown from the same run:
+  - clean catalogue misses / **NO PROOF** stage `provider_network_zero_result`: 16 providers;
+  - technical HTTP errors: 7 providers;
+  - technical network exceptions: 4 providers;
+  - one provider returned verified streams.
+- Brain queue emitted by the ledger contains 26 providers (the 16 NO PROOF plus 10 broken-class providers); FULL/PARTIAL providers are excluded from the repair census.
+- Anime-Sama publication fixed-point was independently repaired before this census: published bundle is now `providers/anime-sama--nuvio--9d49dc4a1ac63db2.js`, **0 physical line breaks**, and `provider_v3_minimizer_published_test.py` passed for all 44 active published bundles.
+- PR #188 is **not yet merge-ready** despite the successful scoped census: current remaining red checks are Verify & Publish (failure occurs after minimizer fixed-point passed) and Provider Non-Regression, whose candidate gate currently flags **movieshunt** and **voiranime-homes**. These must be diagnosed/corrected or explicitly requalified before merge.
+
+
+### 2026-09-19 — Census Markdown evidence persisted on PR #188
+
+- Exact `PROVIDER_CENSUS_STATUS.md` bytes from successful scoped census run **35447448840** were recovered from its GitHub Actions artifact and committed to PR **#188** at **8e3ee87a83bb2b13a871d02d5b51d7ceaa21c47d**.
+- The generated ledger now visibly reports **20 FULL OK / 16 NO PROOF / 10 PROVIDER JS FULLY BROKEN** across 46 providers, with colors, status semantics, retained proof labels, search progress, dominant issue, and next action.
+- This Markdown is on the PR branch, not yet on `main`, because #188 is still blocked by two unrelated gates. Once #188 merges, the exact generated Markdown will land on `main`; main must not be manually overwritten by the old renderer before the code migration.
+
+
+### 2026-09-19 — Non-regression now replays accepted baseline fixtures
+
+- Provider Non-Regression run **35447448809** falsely failed `movieshunt` and `voiranime-homes` with `missing_verified_lanes`: the rolling baseline required their previously accepted lanes, but the candidate census had not replayed the exact baseline winning works.
+- Main baseline `provider-v3-quick-yield.json` proves the retained positives explicitly: **MoviesHunt/movie = Interstellar** and **VoirAnime.homes/anime = Jujutsu Kaisen**, both `playable_verified`.
+- Commit **0465c2a3dd893baf328482db97879bafa409c513** moves baseline selection before the candidate census, seeds `automation/provider-census-proof-history.json` from the accepted baseline quick-yield report, and runs the global candidate census with that proof history so retained winners are replayed first.
+- Contract commit **cbe78b9635a712124e74685c2802c46f86f52540** enforces workflow ordering: baseline selection → baseline fixture memory seed → candidate census.
+- A missing lane is therefore no longer called a regression merely because the candidate sampled a different catalogue work. A true regression requires failure after replaying the retained winning fixture.

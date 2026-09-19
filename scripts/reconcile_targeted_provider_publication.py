@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from domain_refresh_transaction_v2 import _generation, source_qualified_provider_name
 from provider_patch_blocks import decode_managed_data, validate_managed_fixes
+from provider_v3_minimizer import minimize_text, validate_transform
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -84,12 +85,22 @@ def reconcile(
         if not current_rel or not current_path.is_file():
             raise RuntimeError(f"{provider_id}: manifest bundle missing: {current_rel!r}")
 
-        raw = current_path.read_bytes()
-        digest = hashlib.sha256(raw).hexdigest()
-        text = raw.decode("utf-8")
+        original = current_path.read_text(encoding="utf-8")
+        original_fix_ids = validate_managed_fixes(original)
         fix_id = config_fix_id(provider_id)
-        if fix_id not in validate_managed_fixes(text):
+        if fix_id not in original_fix_ids:
             raise RuntimeError(f"{provider_id}: CONFIG Lego missing: {fix_id}")
+
+        minimized = minimize_text(original)
+        validate_transform(original, minimized.text)
+        text = minimized.text
+        if validate_managed_fixes(text) != original_fix_ids:
+            raise RuntimeError(f"{provider_id}: fixed-point canonicalization changed Lego ownership")
+        if minimize_text(text).text != text:
+            raise RuntimeError(f"{provider_id}: targeted publication is not minimizer fixed-point")
+
+        raw = text.encode("utf-8")
+        digest = hashlib.sha256(raw).hexdigest()
         data = decode_managed_data(text, fix_id)
         if not isinstance(data, dict):
             raise RuntimeError(f"{provider_id}: CONFIG data is not an object")
@@ -101,6 +112,8 @@ def reconcile(
         new_path.parent.mkdir(parents=True, exist_ok=True)
         if new_path != current_path:
             new_path.write_bytes(raw)
+        else:
+            current_path.write_bytes(raw)
 
         manifest_row["filename"] = new_rel
         material_row["file"] = new_rel
@@ -148,11 +161,15 @@ def reconcile(
             })
             provenance_row["final_minimizer"] = proof
 
+        if current_path != new_path and current_path.exists():
+            current_path.unlink()
+
         updates.append({
             "provider": provider_id,
             "from": current_rel,
             "to": new_rel,
             "sha256": digest,
+            "savedBytes": str(minimized.saved_bytes),
         })
 
     materialization["generation"] = _generation(material_rows)

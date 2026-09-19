@@ -101,6 +101,8 @@ jobs:
           python tests/provider_runtime_dispatch_diagnostics_test.py
           python tests/provider_census_identity_diagnostics_test.py
           python tests/provider_census_status_markdown_test.py
+          python tests/provider_census_scope_history_test.py
+          python -m py_compile scripts/audit_provider_quick_yield.py scripts/render_provider_census_status.py scripts/update_provider_census_proof_history.py scripts/rotating_corpus.py
 
       - name: Build exact four-version ledger
         shell: bash
@@ -123,17 +125,6 @@ jobs:
           python scripts/validate_published_provider_config.py
           python tests/provider_js_lego_ownership_test.py
 
-      - name: Run real rematerialized current-provider candidate census
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}" || {
-            echo 'TMDB credential required for provider non-regression census' >&2
-            exit 1
-          }
-          python scripts/audit_provider_quick_yield.py | tee provider-v3-quick-yield.log
-          python scripts/render_provider_census_status.py provider-v3-quick-yield.json --output PROVIDER_CENSUS_STATUS.md --run-id "$GITHUB_RUN_ID" --sha "$GITHUB_SHA"
-
       - name: Select rolling accepted baseline
         id: baseline
         shell: bash
@@ -147,6 +138,40 @@ jobs:
           git cat-file -e "$BASE_REF^{commit}"
           echo "base_ref=$BASE_REF" >> "$GITHUB_OUTPUT"
           echo "PROVIDER_NON_REGRESSION_BASE ref=$BASE_REF"
+
+      - name: Seed candidate fixture memory from accepted baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_REF='${{ steps.baseline.outputs.base_ref }}'
+          mkdir -p automation
+          if git cat-file -e "$BASE_REF:provider-v3-quick-yield.json" 2>/dev/null; then
+            git show "$BASE_REF:provider-v3-quick-yield.json" > /tmp/provider-baseline-quick-yield.json
+            python scripts/update_provider_census_proof_history.py /tmp/provider-baseline-quick-yield.json \
+              --history automation/provider-census-proof-history.json \
+              --run-id "baseline-$BASE_REF" \
+              --sha "$BASE_REF"
+          else
+            echo "No retained provider-v3-quick-yield.json at baseline $BASE_REF"
+          fi
+
+      - name: Run real rematerialized current-provider candidate census
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}" || {
+            echo 'TMDB credential required for provider non-regression census' >&2
+            exit 1
+          }
+          python scripts/audit_provider_quick_yield.py \
+            --scope all \
+            --history automation/provider-census-proof-history.json \
+            | tee provider-v3-quick-yield.log
+          python scripts/render_provider_census_status.py provider-v3-quick-yield.json \
+            --output PROVIDER_CENSUS_STATUS.md \
+            --history automation/provider-census-proof-history.json \
+            --run-id "$GITHUB_RUN_ID" \
+            --sha "$GITHUB_SHA"
 
       - name: Enforce rolling non-regression floor
         shell: bash

@@ -12,6 +12,9 @@ on:
       - 'scripts/materialize_provider_v3_all.py'
       - 'tests/**'
       - 'scripts/render_provider_census_status.py'
+      - 'scripts/update_provider_census_proof_history.py'
+      - 'scripts/audit_provider_quick_yield.py'
+      - 'scripts/rotating_corpus.py'
       - 'PROVIDER_CENSUS_STATUS.md'
   pull_request:
     branches: [main]
@@ -84,6 +87,8 @@ jobs:
           python tests/provider_runtime_dispatch_diagnostics_test.py
           python tests/provider_census_identity_diagnostics_test.py
           python tests/provider_census_status_markdown_test.py
+          python tests/provider_census_scope_history_test.py
+          python -m py_compile scripts/audit_provider_quick_yield.py scripts/render_provider_census_status.py scripts/update_provider_census_proof_history.py scripts/rotating_corpus.py
 
       - name: Project provider-local current domain metadata
         run: |
@@ -108,41 +113,90 @@ jobs:
           python tests/global_stream_presentation_test.py
           python tests/global_stream_presentation_pipeline_test.py
 
-      - name: Run full adaptive current-byte census
+      - name: Bootstrap durable census state
         run: |
           set -euo pipefail
-          python scripts/audit_provider_quick_yield.py
-          python scripts/render_provider_census_status.py provider-v3-quick-yield.json --output PROVIDER_CENSUS_STATUS.md --run-id "$GITHUB_RUN_ID" --sha "$GITHUB_SHA"
           mkdir -p automation
+          mapfile -t historical_censuses < <(
+            find automation -maxdepth 1 -type f -name 'current-bytes-full-provider-census-[0-9]*.json' ! -name '*-summary.json' | sort -V
+          )
+          if [ "${#historical_censuses[@]}" -gt 0 ]; then
+            if [ ! -s automation/provider-census-proof-history.json ]; then
+              for census in "${historical_censuses[@]}"; do
+                run_id="$(basename "$census" | sed -E 's/[^0-9]*([0-9]+)\.json/\1/')"
+                python scripts/update_provider_census_proof_history.py "$census" \
+                  --history automation/provider-census-proof-history.json \
+                  --run-id "$run_id" \
+                  --sha bootstrap-history
+              done
+            fi
+            latest="${historical_censuses[-1]}"
+            if [ ! -s automation/provider-census-status.json ]; then
+              python scripts/render_provider_census_status.py "$latest" \
+                --output PROVIDER_CENSUS_STATUS.md \
+                --json-output automation/provider-census-status.json \
+                --history automation/provider-census-proof-history.json \
+                --run-id bootstrap \
+                --sha "$GITHUB_SHA"
+            fi
+          fi
+
+      - name: Run unresolved adaptive current-byte census
+        run: |
+          set -euo pipefail
+          python scripts/audit_provider_quick_yield.py             --scope unresolved             --status-file automation/provider-census-status.json             --history automation/provider-census-proof-history.json             --output provider-v3-quick-yield.json
+
+          python scripts/update_provider_census_proof_history.py provider-v3-quick-yield.json             --history automation/provider-census-proof-history.json             --run-id "$GITHUB_RUN_ID"             --sha "$GITHUB_SHA"
+
+          python scripts/render_provider_census_status.py provider-v3-quick-yield.json             --output PROVIDER_CENSUS_STATUS.md             --json-output automation/provider-census-status.json             --history automation/provider-census-proof-history.json             --baseline-status automation/provider-census-status.json             --run-id "$GITHUB_RUN_ID"             --sha "$GITHUB_SHA"
+
           cp provider-v3-quick-yield.json automation/current-bytes-full-provider-census.json
           python - <<'PY'
           import json, math, os
           from pathlib import Path
           d=json.loads(Path("automation/current-bytes-full-provider-census.json").read_text())
-          count=int(d.get("provider_count") or 0)
-          verified=set(d.get("verified_providers") or [])
-          playable=set(d.get("accepted_playable_providers") or d.get("playable_providers") or [])
+          state=json.loads(Path("automation/provider-census-status.json").read_text())
+          rows=[x for x in state.get("providers") or [] if isinstance(x,dict)]
+          count=len(rows)
+          operational=sorted(
+              str(x.get("provider") or "")
+              for x in rows
+              if str(x.get("status") or "") in {"FULL OK","PARTIAL OK"}
+          )
+          full=sorted(str(x.get("provider") or "") for x in rows if str(x.get("status") or "")=="FULL OK")
+          partial=sorted(str(x.get("provider") or "") for x in rows if str(x.get("status") or "")=="PARTIAL OK")
           target=math.ceil(count*0.75)
           summary={
-              "schemaVersion":1,
+              "schemaVersion":2,
               "runId":int(os.environ["GITHUB_RUN_ID"]),
               "triggerSha":os.environ["GITHUB_SHA"],
+              "scope":d.get("resolved_scope") or d.get("requested_scope") or "unknown",
               "providerCount":count,
-              "verifiedProviderCount":len(verified),
-              "verifiedProviders":sorted(verified),
-              "acceptedPlayableProviderCount":len(playable),
-              "acceptedPlayableProviders":sorted(playable),
+              "testedProviderCount":int(d.get("provider_count") or 0),
+              "operationalOkCount":len(operational),
+              "operationalOkProviders":operational,
+              "fullOkCount":len(full),
+              "fullOkProviders":full,
+              "partialOkCount":len(partial),
+              "partialOkProviders":partial,
+              "statusCounts":state.get("counts") or {},
+              "brainQueue":state.get("brainQueue") or [],
+              # Legacy compatibility: FULL/PARTIAL are both non-blocking provider states.
+              "verifiedProviderCount":len(operational),
+              "verifiedProviders":operational,
+              "acceptedPlayableProviderCount":len(operational),
+              "acceptedPlayableProviders":operational,
               "wrongContentProviderCount":int(d.get("wrong_content_provider_count") or 0),
               "wrongContentProviders":d.get("wrong_content_providers") or [],
               "acceptanceTarget":target,
-              "acceptanceReached":len(verified)>=target,
+              "acceptanceReached":len(operational)>=target,
               "debugStageCounts":d.get("debug_stage_counts") or {},
               "debugStageProviders":d.get("debug_stage_providers") or {},
           }
           Path("automation/current-bytes-full-provider-census-summary.json").write_text(
               json.dumps(summary,indent=2,sort_keys=True)+"\n"
           )
-          print("FIELD_CURRENT_BYTES_FULL_CENSUS "+json.dumps(summary,sort_keys=True))
+          print("FIELD_CURRENT_BYTES_PROVIDER_CENSUS "+json.dumps(summary,sort_keys=True))
           PY
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -152,6 +206,8 @@ jobs:
           path: |
             automation/current-bytes-full-provider-census.json
             automation/current-bytes-full-provider-census-summary.json
+            automation/provider-census-status.json
+            automation/provider-census-proof-history.json
             PROVIDER_CENSUS_STATUS.md
           retention-days: 8
           if-no-files-found: warn
@@ -171,6 +227,8 @@ jobs:
           cp automation/current-bytes-full-provider-census-summary.json "/tmp/census-summary-${run_id}.json"
           cp automation/current-bytes-full-provider-census.json "/tmp/census-full-${run_id}.json"
           cp PROVIDER_CENSUS_STATUS.md "/tmp/provider-census-status-${run_id}.md"
+          cp automation/provider-census-status.json "/tmp/provider-census-state-${run_id}.json"
+          cp automation/provider-census-proof-history.json "/tmp/provider-census-proof-history-${run_id}.json"
           verified="$(python - <<'PY'
           import json
           from pathlib import Path
@@ -189,10 +247,12 @@ jobs:
           cp "/tmp/census-summary-${run_id}.json" "automation/current-bytes-full-provider-census-${run_id}-summary.json"
           cp "/tmp/census-full-${run_id}.json" "automation/current-bytes-full-provider-census-${run_id}.json"
           cp "/tmp/provider-census-status-${run_id}.md" PROVIDER_CENSUS_STATUS.md
+          cp "/tmp/provider-census-state-${run_id}.json" automation/provider-census-status.json
+          cp "/tmp/provider-census-proof-history-${run_id}.json" automation/provider-census-proof-history.json
           cp "/tmp/census-summary-${run_id}.json" automation/current-bytes-full-provider-census-latest-summary.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "automation/current-bytes-full-provider-census-${run_id}-summary.json" "automation/current-bytes-full-provider-census-${run_id}.json" automation/current-bytes-full-provider-census-latest-summary.json PROVIDER_CENSUS_STATUS.md
+          git add "automation/current-bytes-full-provider-census-${run_id}-summary.json" "automation/current-bytes-full-provider-census-${run_id}.json" automation/current-bytes-full-provider-census-latest-summary.json automation/provider-census-status.json automation/provider-census-proof-history.json PROVIDER_CENSUS_STATUS.md
           git commit -m "ci(census): persist current bytes ${verified} from ${GITHUB_SHA::12}"
           git push origin HEAD:main
 
