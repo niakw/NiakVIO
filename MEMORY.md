@@ -2491,3 +2491,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Provider Non-Regression on commit **e91c4f71c8988dae56019735a8418ecbe0eb274f** passed static anti-regression contracts, the exact four-version ledger, and crucially **Materialize exact current provider candidate bytes** across the complete active provider set. The previous hard stop at AllAnime index 37/44 is gone.
 - This validates the combined generic fixes: no hidden minimization in `apply_provider_overrides.py`, and canonical one-newline restoration when stripping/rebuilding the Core boundary. The AllAnime provider Lego did not need to be weakened or disabled.
 - The same run is now executing the real rematerialized current-provider census. Until that network stage completes, historical FULLY BROKEN inflation caused by the former materialization abort must not be treated as current provider verdicts.
+
+### 2026-09-19 — AllAnime episode-page terminal extraction widened
+
+- Fresh targeted evidence on HEAD **852da98d...** shows AllAnime now reaches `api.allanime.day` and explicit `ww2.aniwatch.fit/<slug>-episode-1-english-{subbed,dubbed}` pages with HTTP 200, but no nested player/media request follows and the lane remains `provider_network_zero_result`.
+- Root cause narrowed to the provider-local fallback parser: the episode page is fetched explicitly, but `siteCandidates()` only extracted literal `src/href/data-src` and raw `http(s)` strings. That is narrower than ProviderBase's proven URL decoder and misses escaped/scripted player payloads (the retained manual positive resolved to `fetch.nexabloom.top/.../master.m3u8`).
+- Fix: AllAnime `siteCandidates()` now merges ProviderBase `_extractUrls()` and explicit encoded-player payload extraction before the bounded terminal crawler. This preserves the provider-owned episode identity while reusing Core/ProviderBase URL decoding instead of duplicating a weaker regex.
+- Validation pending: targeted AllAnime census must show either a nested player/media request and terminal stream, or a more specific remaining blocker. Do not promote before that proof.
