@@ -2392,3 +2392,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Source commits: `f76485b5` Flemmix, `88d7d5a2` UHDMovies, `c4447443` MoviesHunt, `2839233e` 4KHDHub, `44051e73` AnimeSalt, `bb1b1a87` AnimeSultra, `12bf60f0` AnimeVOSTFR, `cffbeb81` MoviesMod, `f086a7fe` VoirAnime.rip.
 - `tests/provider_html_filter_security_test.py` was upgraded in **17699b823403b32dafbd0b3f7b8eadf41c8962ca** to discover every `provider_lego_scripts` source declared by `provider-overrides.json` (currently 36 unique scripts) and scan them for forbidden HTML-filter regex patterns. This removes the previous hardcoded-11-source blind spot.
 - GitHub code-search results may lag raw branch contents, so status is not inferred from search indexing. Completion requires the accepted-release workflow to rematerialize/publish, then the published security gate and downstream provider gates to pass on the resulting SHA.
+
+### 2026-09-19 — Hardened provider release published atomically
+
+- Accepted-release finalizer run **35456153269** completed fully green from accepted base **bf5fef04fb3770cd54ba46840d457b65c6107d02**.
+- Provider generation commit: **ad9d423ab78dc5738a51efac6a11ed5b3af86914**. Final pinned release/publication SHA: **4583dd1072ea46f65f8aef6452b700cc917a658f**.
+- The finalizer replayed all **44 active providers**, reached provider override and minimizer fixed points, regenerated `manifest-hub46.json` before prune, and pruned **88 superseded provider bundles** while retaining 44 protected active bundles.
+- Published HTML security gate is green: `PROVIDER_HTML_FILTER_SECURITY_OK sources=41 published=46 bad_html_filter_regex=0`. Release integrity validation also passed, and Hub46/native Hub46 projections were regenerated successfully.
+- This validates the common publication-persistence repair and the provider-local HTML scanner hardening through actual published bytes. It does **not** yet promote unresolved census statuses: GitHub Actions-token pushes do not recursively trigger downstream workflows, so CORE Verify, Provider Non-Regression, targeted recovery and unresolved census must be explicitly retriggered against unchanged provider bytes before status promotion.
