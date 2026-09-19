@@ -27,7 +27,7 @@ normalizer.normalize(apply=False)
 normalizer.assert_contract()
 presentation = load_path(PATCHES / "global_stream_presentation_v1.py", "global_stream_presentation_v1")
 import re
-revision_match = re.search(r"-v(\\d+)$", presentation.REVISION)
+revision_match = re.search(r"-v(\d+)$", presentation.REVISION)
 assert revision_match and int(revision_match.group(1)) >= 25, presentation.REVISION
 presentation_source = (PATCHES / "global_stream_presentation_v1.py").read_text(encoding="utf-8")
 assert "\\nfunction" not in presentation_source, "raw presentation wrapper contains a literal \\n before function declaration"
@@ -228,4 +228,4 @@ assert native_cached["calls"] == 0, native_cached
 assert native_cached["row"]["duration"] == 169, native_cached
 assert "Interstellar • 2014" in native_cached["row"]["description"], native_cached
 
-print("global stream presentation V23+ language-role tests passed")
+print("global stream presentation V25+ language-role tests passed")
