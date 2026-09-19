@@ -11,13 +11,15 @@ from render_provider_census_status import build_status_rows, render
 from update_provider_census_proof_history import NETWORK_STAGES, TECHNICAL_STAGES
 
 report = {
-    "provider_count": 5,
+    "provider_count": 7,
     "rows": [
         {"provider_id": "full", "semantic_type": "movie", "status": "playable_verified", "verified": 1, "contradictions": 0, "debug_stage": "provider_returned_streams", "sample_count": 1},
         {"provider_id": "full", "semantic_type": "tv", "status": "playable_verified", "verified": 1, "contradictions": 0, "debug_stage": "provider_returned_streams", "sample_count": 1},
         {"provider_id": "partial", "semantic_type": "movie", "status": "playable_verified", "verified": 1, "contradictions": 0, "debug_stage": "provider_returned_streams", "sample_count": 1},
         {"provider_id": "partial", "semantic_type": "tv", "status": "no_streams", "verified": 0, "contradictions": 0, "debug_stage": "provider_network_http_error", "sample_count": 1},
-        {"provider_id": "no-proof", "semantic_type": "anime", "status": "no_streams", "verified": 0, "contradictions": 0, "debug_stage": "provider_network_zero_result", "sample_count": 4, "samples": []},
+        {"provider_id": "no-proof", "semantic_type": "anime", "status": "no_streams", "verified": 0, "contradictions": 0, "debug_stage": "provider_network_zero_result", "debug_progress_stage": "lookup_only", "sample_count": 4, "samples": []},
+        {"provider_id": "chain", "semantic_type": "movie", "status": "no_streams", "verified": 0, "contradictions": 0, "debug_stage": "provider_network_zero_result", "debug_progress_stage": "chain_reached", "sample_count": 1, "samples": []},
+        {"provider_id": "waf", "semantic_type": "movie", "status": "no_streams", "verified": 0, "contradictions": 0, "debug_stage": "provider_waf_challenge", "debug_progress_stage": "lookup_only", "sample_count": 1},
         {"provider_id": "network-blocked", "semantic_type": "movie", "status": "no_streams", "verified": 0, "contradictions": 0, "debug_stage": "provider_network_http_error", "sample_count": 2},
         {"provider_id": "broken", "semantic_type": "movie", "status": "no_streams", "verified": 0, "contradictions": 0, "debug_stage": "gate_runtime_plan_missing", "sample_count": 1},
     ],
@@ -52,6 +54,8 @@ rows = {row["provider"]: row for row in build_status_rows(report, history, basel
 assert rows["full"]["status"] == "FULL OK"
 assert rows["partial"]["status"] == "PARTIAL OK"
 assert rows["no-proof"]["status"] == "NO PROOF"
+assert rows["chain"]["status"] == "CHAIN REACHED"
+assert rows["waf"]["status"] == "PROVIDER WAF/ANTIBOT"
 assert rows["network-blocked"]["status"] == "PROVIDER NETWORK BLOCKED"
 assert rows["broken"]["status"] == "PROVIDER JS BROKEN"
 assert "provider_network_http_error" in NETWORK_STAGES
@@ -65,11 +69,15 @@ md = render(report, run_id="123", sha="abcdef0123456789", history=history, basel
 assert "🟢 **FULL OK**" in md
 assert "🟡 **PARTIAL OK**" in md
 assert "🔵 **NO PROOF**" in md
+assert "🟣 **CHAIN REACHED**" in md
+assert "🟫 **PROVIDER WAF/ANTIBOT**" in md
 assert "🟤 **PROVIDER NETWORK BLOCKED**" in md
 assert "🟠 **PROVIDER JS BROKEN**" in md
 assert "**no-proof**" in md
 assert "provider_network_zero_result" in md
-assert "catalogue miss / missing current proof" in md
+assert "Corpus progress" in md
+assert "Evidence depth" in md
+assert "PARTIAL OK still requires at least one verified playable lane" in md
 assert "carried" in md
 assert "run 123" in md
 assert "SHA abcdef012345" in md

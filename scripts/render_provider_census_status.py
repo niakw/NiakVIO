@@ -18,7 +18,9 @@ GOOD = "playable_verified"
 STATUS_META = {
     "FULL OK": ("🟢", "all declared semantic lanes have current verified playback"),
     "PARTIAL OK": ("🟡", "at least one declared lane has current verified playback"),
-    "NO PROOF": ("🔵", "no tested work matched yet; keep rotating the corpus"),
+    "NO PROOF": ("🔵", "search/lookup ran but no content-specific chain was reached; keep rotating the corpus"),
+    "CHAIN REACHED": ("🟣", "content/detail/episode/player chain was reached, but no terminal media is verified yet"),
+    "PROVIDER WAF/ANTIBOT": ("🟫", "a real browser/WAF challenge was detected; verify with allowed browser/session transport"),
     "PROVIDER NETWORK BLOCKED": ("🟤", "last meaningful provider/upstream request failed (HTTP/DNS/TLS/timeout); JS break is not established"),
     "PROVIDER JS BROKEN": ("🟠", "technical/provider implementation failure; repair and retest"),
     "PROVIDER JS FULLY BROKEN": ("🔴", "repeated technical failure without a retained positive proof; BRAIN LEARNING owns it"),
@@ -39,6 +41,9 @@ JS_BROKEN_STAGES = {
     "audit_error",
     "invalid_probe_output",
     "missing_tmdb_credential",
+}
+WAF_STAGES = {
+    "provider_waf_challenge",
 }
 NETWORK_BROKEN_STAGES = {
     "provider_network_http_error",
@@ -148,12 +153,19 @@ def provider_state(provider: str, rows: list[dict[str, Any]], history: dict[str,
     if stages and stages.issubset(NO_PROOF_STAGES):
         if has_history and any(_historical_proof_replayed(history, provider, row) for row in rows):
             return "REGRESSION PROVIDER"
+        if any(str(row.get("debug_progress_stage") or "") == "chain_reached" for row in rows):
+            return "CHAIN REACHED"
         return "NO PROOF"
 
     if stages & JS_BROKEN_STAGES:
         if has_history:
             return "REGRESSION PROVIDER JS"
         return "PROVIDER JS FULLY BROKEN" if repeated else "PROVIDER JS BROKEN"
+
+    if stages & WAF_STAGES:
+        if has_history:
+            return "REGRESSION PROVIDER"
+        return "PROVIDER WAF/ANTIBOT"
 
     if stages & NETWORK_BROKEN_STAGES:
         if has_history:
@@ -201,7 +213,7 @@ def _search_progress(history: dict[str, Any], provider: str, row: dict[str, Any]
     misses = state.get("misses") if isinstance(state.get("misses"), list) else []
     this_run = int(row.get("sample_count") or 1)
     total_misses = len(misses)
-    return f"{lane}: {this_run} this run / {total_misses} retained misses"
+    return f"{lane}: {this_run} works tested / {total_misses} retained misses"
 
 
 def _action(status: str) -> str:
@@ -209,6 +221,8 @@ def _action(status: str) -> str:
         "FULL OK": "protect + replay retained proof",
         "PARTIAL OK": "protect green lanes; BRAIN checks missing lanes",
         "NO PROOF": "continue corpus proof search; BRAIN checks",
+        "CHAIN REACHED": "finish terminal extractor/validation; do not promote before verified media",
+        "PROVIDER WAF/ANTIBOT": "verify in allowed browser/session context; do not fake or solve challenge tokens",
         "PROVIDER NETWORK BLOCKED": "verify domain/upstream transport; repair JS only with implementation evidence",
         "PROVIDER JS BROKEN": "repair + retest; BRAIN checks",
         "PROVIDER JS FULLY BROKEN": "BRAIN LEARNING slot",
@@ -245,6 +259,7 @@ def build_status_rows(
         verdicts = []
         proof_labels = []
         progress = []
+        evidence_depth = []
         for row in ordered:
             lane = str(row.get("semantic_type") or "")
             row_status = str(row.get("status") or "unknown")
@@ -257,6 +272,7 @@ def build_status_rows(
             if label != "—":
                 proof_labels.append(f"{lane}: {label}")
             progress.append(_search_progress(history, provider, row))
+            evidence_depth.append(f"{lane}={str(row.get('debug_progress_stage') or 'none')}")
         out.append({
             "provider": provider,
             "status": status,
@@ -267,6 +283,7 @@ def build_status_rows(
             "latestLaneVerdicts": verdicts,
             "dominantIssue": dominant_issue(ordered),
             "searchProgress": progress,
+            "evidenceDepth": evidence_depth,
             "action": _action(status),
             "brainCheckRequired": status not in {"FULL OK", "PARTIAL OK"},
             "testedThisRun": True,
@@ -305,6 +322,8 @@ def render(
         "FULL OK",
         "PARTIAL OK",
         "NO PROOF",
+        "CHAIN REACHED",
+        "PROVIDER WAF/ANTIBOT",
         "PROVIDER NETWORK BLOCKED",
         "PROVIDER JS BROKEN",
         "PROVIDER JS FULLY BROKEN",
@@ -333,11 +352,12 @@ def render(
         lines.append(f"- {emoji} **{state}** — {meaning}.")
     lines.extend([
         "",
-        "**Important:** provider_network_zero_result is a catalogue miss / missing current proof, not a broken-provider verdict. "
+        "**Important:** provider_network_zero_result is not a healthy-provider verdict. Search/lookup-only stays NO PROOF; "
+        "a content-specific detail/episode/player chain becomes CHAIN REACHED; PARTIAL OK still requires at least one verified playable lane. "
         "A retained historical proof is replayed first on future censuses, while clean misses advance through the corpus.",
         "",
-        "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Search progress | Latest lane verdicts | Dominant issue | Next action |",
-        "|---|---|---|---|---|---|---|---|---|---|",
+        "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Corpus progress | Evidence depth | Latest lane verdicts | Dominant issue | Next action |",
+        "|---|---|---|---|---|---|---|---|---|---|---|",
     ])
 
     state_order = {
@@ -345,9 +365,11 @@ def render(
         "REGRESSION PROVIDER": 1,
         "PROVIDER JS FULLY BROKEN": 2,
         "PROVIDER JS BROKEN": 3,
-        "NO PROOF": 4,
-        "PARTIAL OK": 5,
-        "FULL OK": 6,
+        "PROVIDER WAF/ANTIBOT": 4,
+        "CHAIN REACHED": 5,
+        "NO PROOF": 6,
+        "PARTIAL OK": 7,
+        "FULL OK": 8,
     }
     entries = []
     for row in rows:
@@ -359,6 +381,7 @@ def render(
             f"{', '.join(row['currentVerifiedLanes']) or '—'} | "
             f"{'; '.join(row['historicalProof']) or '—'} | "
             f"{'; '.join(row['searchProgress']) or '—'} | "
+            f"{'; '.join(row.get('evidenceDepth') or []) or '—'} | "
             f"{'; '.join(row['latestLaneVerdicts']) or '—'} | "
             f"{row['dominantIssue']} | {row['action']} |"
         )

@@ -2600,3 +2600,5 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Le test de causalité cassé sur `687ec38b` avait uniquement un `NameError` de fixture de test; l'ordre des variables est corrigé ici.
 - Aucun solveur CAPTCHA/Cloudflare ni fabrication de `cf_clearance` n'est ajouté. La compatibilité autorisée reste fingerprint navigateur, headers/referer/origin et cookies de session normalement obtenus.
 - Le renderer/ledger doit encore être mis à jour dans le commit suivant pour exposer CHAIN REACHED et WAF/ANTIBOT; ne considérer aucun nouveau compteur comme validé avant ce second lot + CI.
+
+- **Ledger exposé : CHAIN REACHED / WAF** : le renderer sépare maintenant NO PROOF (search/lookup-only), CHAIN REACHED (contenu/detail/episode/player spécifique atteint sans média terminal), PROVIDER WAF/ANTIBOT (challenge navigateur prouvé) et PARTIAL OK (au moins une lane réellement playable + vérifiée). La colonne ambiguë Search progress devient **Corpus progress** et **Evidence depth** rend la profondeur explicite.
