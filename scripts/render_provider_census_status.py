@@ -19,6 +19,7 @@ STATUS_META = {
     "FULL OK": ("🟢", "all declared semantic lanes have current verified playback"),
     "PARTIAL OK": ("🟡", "at least one declared lane has current verified playback"),
     "NO PROOF": ("🔵", "no tested work matched yet; keep rotating the corpus"),
+    "PROVIDER NETWORK BLOCKED": ("🟤", "provider/upstream transport failed (HTTP/DNS/timeout); JS break is not established"),
     "PROVIDER JS BROKEN": ("🟠", "technical/provider implementation failure; repair and retest"),
     "PROVIDER JS FULLY BROKEN": ("🔴", "repeated technical failure without a retained positive proof; BRAIN LEARNING owns it"),
     "REGRESSION PROVIDER JS": ("🟣", "provider/lane was historically positive but current JS/runtime structure regressed"),
@@ -157,7 +158,10 @@ def provider_state(provider: str, rows: list[dict[str, Any]], history: dict[str,
     if stages & NETWORK_BROKEN_STAGES:
         if has_history:
             return "REGRESSION PROVIDER"
-        return "PROVIDER JS FULLY BROKEN" if repeated else "PROVIDER JS BROKEN"
+        # HTTP/DNS/timeout proves only that the current transport path failed.
+        # Without a retained positive proof it does not establish a Provider JS
+        # defect, even after repeated censuses.
+        return "PROVIDER NETWORK BLOCKED"
 
     # Wrong content, unplayable output and other post-runtime failures are
     # implementation failures unless an older retained proof makes them a JS
@@ -205,6 +209,7 @@ def _action(status: str) -> str:
         "FULL OK": "protect + replay retained proof",
         "PARTIAL OK": "protect green lanes; BRAIN checks missing lanes",
         "NO PROOF": "continue corpus proof search; BRAIN checks",
+        "PROVIDER NETWORK BLOCKED": "verify domain/upstream transport; repair JS only with implementation evidence",
         "PROVIDER JS BROKEN": "repair + retest; BRAIN checks",
         "PROVIDER JS FULLY BROKEN": "BRAIN LEARNING slot",
         "REGRESSION PROVIDER JS": "A/B against retained proof; restore JS/runtime",

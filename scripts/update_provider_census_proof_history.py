@@ -16,13 +16,15 @@ TECHNICAL_STAGES = {
     "provider_zero_before_provider_network",
     "provider_runtime_hook_exception",
     "source_plan_core_metadata_leak",
-    "provider_network_http_error",
-    "provider_network_exception",
-    "timeout",
     "runtime_error",
     "audit_error",
     "invalid_probe_output",
     "missing_tmdb_credential",
+}
+NETWORK_STAGES = {
+    "provider_network_http_error",
+    "provider_network_exception",
+    "timeout",
 }
 
 
@@ -97,6 +99,7 @@ def main() -> int:
             "proofs": [],
             "misses": [],
             "consecutiveTechnicalRuns": 0,
+            "consecutiveNetworkRuns": 0,
         })
         proofs = lane_state.get("proofs") if isinstance(lane_state.get("proofs"), list) else []
         misses = lane_state.get("misses") if isinstance(lane_state.get("misses"), list) else []
@@ -133,10 +136,19 @@ def main() -> int:
         current_stage = str(row.get("debug_stage") or "")
         if str(row.get("status") or "") == GOOD and int(row.get("verified") or 0) > 0:
             lane_state["consecutiveTechnicalRuns"] = 0
+            lane_state["consecutiveNetworkRuns"] = 0
         elif current_stage in TECHNICAL_STAGES:
             lane_state["consecutiveTechnicalRuns"] = int(lane_state.get("consecutiveTechnicalRuns") or 0) + 1
+            lane_state["consecutiveNetworkRuns"] = 0
+        elif current_stage in NETWORK_STAGES:
+            # A blocked/failed transport is not evidence that provider-owned JS
+            # is structurally broken. Keep its streak separate so the renderer
+            # can never manufacture JS FULLY BROKEN from repeated 403/DNS/timeouts.
+            lane_state["consecutiveTechnicalRuns"] = 0
+            lane_state["consecutiveNetworkRuns"] = int(lane_state.get("consecutiveNetworkRuns") or 0) + 1
         elif current_stage == "provider_network_zero_result":
             lane_state["consecutiveTechnicalRuns"] = 0
+            lane_state["consecutiveNetworkRuns"] = 0
 
         lane_state["proofs"] = proofs
         lane_state["misses"] = misses
