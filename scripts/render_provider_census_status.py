@@ -19,6 +19,7 @@ STATUS_META = {
     "FULL OK": ("🟢", "all declared semantic lanes have current verified playback"),
     "PARTIAL OK": ("🟡", "at least one declared lane has current verified playback"),
     "CANDIDATE OK": ("🟦", "a reconstruction candidate was live/playback verified, but current published bytes have not reproduced it yet"),
+    "ROUTE PROVEN": ("🟪", "live provider routes are qualified for the declared lanes, but terminal media is not currently verified"),
     "NO PROOF": ("🔵", "search/lookup ran but no content-specific chain was reached; keep rotating the corpus"),
     "CHAIN REACHED": ("🟣", "content/detail/episode/player chain was reached, but no terminal media is verified yet"),
     "PROVIDER WAF/ANTIBOT": ("🟫", "a real browser/WAF challenge was detected; verify with allowed browser/session transport"),
@@ -101,6 +102,25 @@ def candidate_proofs(candidate_evidence: dict[str, Any], provider: str) -> list[
             out.append({"key": str(key), "runId": str(row.get("runId") or ""), "note": str(row.get("note") or "")})
     return out
 
+def route_proof(provider_overrides: dict[str, Any], provider: str) -> dict[str, Any] | None:
+    patches = provider_overrides.get("provider_patches") if isinstance(provider_overrides.get("provider_patches"), dict) else {}
+    patch = patches.get(provider) if isinstance(patches.get(provider), dict) else {}
+    gate = patch.get("live_route_gate") if isinstance(patch.get("live_route_gate"), dict) else {}
+    if str(gate.get("completion_state") or "") != "declared-types-qualified":
+        return None
+    required = [str(v or "").strip().casefold() for v in gate.get("required_types") or [] if str(v or "").strip()]
+    validated = [str(v or "").strip().casefold() for v in gate.get("validated_types") or [] if str(v or "").strip()]
+    missing = [str(v or "").strip().casefold() for v in gate.get("missing_types") or [] if str(v or "").strip()]
+    live_routes = int(gate.get("live_validated_route_count") or 0)
+    if not required or missing or not set(required).issubset(set(validated)) or live_routes <= 0:
+        return None
+    return {
+        "requiredTypes": required,
+        "validatedTypes": validated,
+        "liveValidatedRouteCount": live_routes,
+        "providerRequestCount": int(gate.get("provider_request_count") or 0),
+    }
+
 def _fixture_key(fixture: dict[str, Any]) -> tuple[str, str, str, int, int]:
     def integer(value: object) -> int:
         try:
@@ -142,7 +162,7 @@ def _technical_run_count(history: dict[str, Any], provider: str, rows: list[dict
     return max(values or [0])
 
 
-def provider_state(provider: str, rows: list[dict[str, Any]], history: dict[str, Any], candidate_evidence: dict[str, Any] | None = None) -> str:
+def provider_state(provider: str, rows: list[dict[str, Any]], history: dict[str, Any], candidate_evidence: dict[str, Any] | None = None, provider_overrides: dict[str, Any] | None = None) -> str:
     if not rows:
         return "PROVIDER JS BROKEN"
 
@@ -158,6 +178,7 @@ def provider_state(provider: str, rows: list[dict[str, Any]], history: dict[str,
     }
     has_history = historical_positive(history, provider)
     has_candidate = bool(candidate_proofs(candidate_evidence or {}, provider))
+    retained_route = route_proof(provider_overrides or {}, provider)
     repeated = _technical_run_count(history, provider, rows) >= 3
     if has_candidate:
         return "CANDIDATE OK"
@@ -171,6 +192,8 @@ def provider_state(provider: str, rows: list[dict[str, Any]], history: dict[str,
             return "REGRESSION PROVIDER"
         if any(str(row.get("debug_progress_stage") or "") == "chain_reached" for row in rows):
             return "CHAIN REACHED"
+        if retained_route:
+            return "ROUTE PROVEN"
         return "NO PROOF"
 
     if stages & JS_BROKEN_STAGES:
@@ -239,6 +262,7 @@ def _action(status: str) -> str:
         "FULL OK": "protect + replay retained proof",
         "PARTIAL OK": "protect green lanes; BRAIN checks missing lanes",
         "CANDIDATE OK": "replay candidate proof against current bytes; publish only after current verified media",
+        "ROUTE PROVEN": "replay qualified route fixtures and finish terminal extraction/validation",
         "NO PROOF": "continue corpus proof search; BRAIN checks",
         "CHAIN REACHED": "finish terminal extractor/validation; do not promote before verified media",
         "PROVIDER WAF/ANTIBOT": "verify in allowed browser/session context; do not fake or solve challenge tokens",
@@ -255,10 +279,12 @@ def build_status_rows(
     history: dict[str, Any] | None = None,
     baseline: dict[str, Any] | None = None,
     candidate_evidence: dict[str, Any] | None = None,
+    provider_overrides: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     history = history or {}
     baseline = baseline or {}
     candidate_evidence = candidate_evidence or {}
+    provider_overrides = provider_overrides or {}
     by: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in report.get("rows") or []:
         if not isinstance(row, dict):
@@ -274,7 +300,7 @@ def build_status_rows(
     out = []
     for provider, rows in by.items():
         ordered = sorted(rows, key=lambda row: str(row.get("semantic_type") or ""))
-        status = provider_state(provider, ordered, history, candidate_evidence)
+        status = provider_state(provider, ordered, history, candidate_evidence, provider_overrides)
         declared = [str(row.get("semantic_type") or "") for row in ordered]
         verified = [str(row.get("semantic_type") or "") for row in ordered if lane_ok(row)]
         verdicts = []
@@ -296,6 +322,8 @@ def build_status_rows(
             progress.append(_search_progress(history, provider, row))
             evidence_depth.append(f"{lane}={str(row.get('debug_progress_stage') or 'none')}")
         candidate_labels = [f"run {x['runId']}" if x.get("runId") else x.get("key", "candidate") for x in candidate_proofs(candidate_evidence, provider)]
+        route = route_proof(provider_overrides, provider)
+        route_labels = ([f"{route['liveValidatedRouteCount']} live routes / {', '.join(route['validatedTypes'])}"] if route else [])
         out.append({
             "provider": provider,
             "status": status,
@@ -304,6 +332,7 @@ def build_status_rows(
             "currentVerifiedLanes": verified,
             "historicalProof": proof_labels,
             "candidateProof": candidate_labels,
+            "routeProof": route_labels,
             "latestLaneVerdicts": verdicts,
             "dominantIssue": dominant_issue(ordered),
             "searchProgress": progress,
@@ -337,8 +366,9 @@ def render(
     history: dict[str, Any] | None = None,
     baseline: dict[str, Any] | None = None,
     candidate_evidence: dict[str, Any] | None = None,
+    provider_overrides: dict[str, Any] | None = None,
 ) -> str:
-    rows = build_status_rows(report, history, baseline, candidate_evidence)
+    rows = build_status_rows(report, history, baseline, candidate_evidence, provider_overrides)
     states = Counter(row["status"] for row in rows)
     short_sha = sha[:12] if sha else "unknown"
     scope = str(report.get("resolved_scope") or report.get("requested_scope") or "all")
@@ -347,6 +377,7 @@ def render(
         "FULL OK",
         "PARTIAL OK",
         "CANDIDATE OK",
+        "ROUTE PROVEN",
         "NO PROOF",
         "CHAIN REACHED",
         "PROVIDER WAF/ANTIBOT",
@@ -378,12 +409,12 @@ def render(
         lines.append(f"- {emoji} **{state}** — {meaning}.")
     lines.extend([
         "",
-        "**Important:** provider_network_zero_result is not a healthy-provider verdict. Search/lookup-only stays NO PROOF only when no retained positive/candidate proof exists; "
-        "a content-specific detail/episode/player chain becomes CHAIN REACHED; CANDIDATE OK preserves verified playback from a reconstruction candidate that current published bytes have not reproduced; "
-        "PARTIAL OK still requires at least one current verified playable lane.",
+        "**Important:** provider_network_zero_result is not a healthy-provider verdict. Search/lookup-only stays NO PROOF only when no retained positive/candidate/route proof exists; "
+        "a content-specific detail/episode/player chain becomes CHAIN REACHED; ROUTE PROVEN preserves qualified live provider routes without pretending terminal media worked; "
+        "CANDIDATE OK preserves verified playback from a reconstruction candidate that current published bytes have not reproduced; PARTIAL OK still requires at least one current verified playable lane.",
         "",
-        "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Candidate proof | Corpus progress | Evidence depth | Latest lane verdicts | Dominant issue | Next action |",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|",
+        "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Candidate proof | Route proof | Corpus progress | Evidence depth | Latest lane verdicts | Dominant issue | Next action |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ])
 
     state_order = {
@@ -393,10 +424,11 @@ def render(
         "PROVIDER JS BROKEN": 3,
         "PROVIDER WAF/ANTIBOT": 4,
         "CHAIN REACHED": 5,
-        "CANDIDATE OK": 6,
-        "NO PROOF": 7,
-        "PARTIAL OK": 8,
-        "FULL OK": 9,
+        "ROUTE PROVEN": 6,
+        "CANDIDATE OK": 7,
+        "NO PROOF": 8,
+        "PARTIAL OK": 9,
+        "FULL OK": 10,
     }
     entries = []
     for row in rows:
@@ -408,6 +440,7 @@ def render(
             f"{', '.join(row['currentVerifiedLanes']) or '—'} | "
             f"{'; '.join(row['historicalProof']) or '—'} | "
             f"{'; '.join(row.get('candidateProof') or []) or '—'} | "
+            f"{'; '.join(row.get('routeProof') or []) or '—'} | "
             f"{'; '.join(row['searchProgress']) or '—'} | "
             f"{'; '.join(row.get('evidenceDepth') or []) or '—'} | "
             f"{'; '.join(row['latestLaneVerdicts']) or '—'} | "
@@ -433,6 +466,7 @@ def main() -> int:
     parser.add_argument("--history", type=Path, default=Path("automation/provider-census-proof-history.json"))
     parser.add_argument("--baseline-status", type=Path, default=Path("automation/provider-census-status.json"))
     parser.add_argument("--candidate-evidence", type=Path, default=Path("automation/provider-history-evidence-v1.json"))
+    parser.add_argument("--provider-overrides", type=Path, default=Path("provider-overrides.json"))
     parser.add_argument("--run-id", default="")
     parser.add_argument("--sha", default="")
     args = parser.parse_args()
@@ -441,9 +475,10 @@ def main() -> int:
     history = load(args.history) if args.history.is_file() else {}
     baseline = load(args.baseline_status) if args.baseline_status.is_file() else {}
     candidate_evidence = load(args.candidate_evidence) if args.candidate_evidence.is_file() else {}
-    rows = build_status_rows(report, history, baseline, candidate_evidence)
+    provider_overrides = load(args.provider_overrides) if args.provider_overrides.is_file() else {}
+    rows = build_status_rows(report, history, baseline, candidate_evidence, provider_overrides)
     args.output.write_text(
-        render(report, run_id=str(args.run_id), sha=str(args.sha), history=history, baseline=baseline, candidate_evidence=candidate_evidence),
+        render(report, run_id=str(args.run_id), sha=str(args.sha), history=history, baseline=baseline, candidate_evidence=candidate_evidence, provider_overrides=provider_overrides),
         encoding="utf-8",
     )
     if args.json_output is not None:

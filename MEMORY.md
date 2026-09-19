@@ -2634,3 +2634,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Un test Node synthétique couvre search → détail film → server tab → media HLS. Le provider ne sera promu vert qu'après preuve live du census.
 
 - **Flemmix manual evidence contract corrected** : le ledger utilisateur conserve explicitement la chaîne DLE historique `/index.php?...story=<query>`, mais le test ne l'impose plus comme route exécutable éternelle. Il vérifie désormais à la fois la conservation de cette preuve historique et la route courante qualifiée `flemmix.me/search?q={query}`. Les échecs targeted/domain-refresh/census/non-regression du SHA `71b3236d` étaient tous bloqués en amont par cette assertion stale, avant tout verdict live Flemmix.
+
+## 2026-09-20 — ROUTE PROVEN : suppression des faux NO PROOF restants
+
+- Les 3 derniers providers `NO PROOF` du census 35474716826 avaient déjà une preuve structurée `live_route_gate=declared-types-qualified` dans DATA : **4khdhub** movie+tv (20 routes live), **animetsu** anime (6 routes live), **showbox** movie+tv (3 routes live).
+- Nouveau statut **ROUTE PROVEN** : toutes les lanes déclarées disposent d'une route provider live qualifiée, mais aucun média terminal courant n'est encore playable+verified. Le statut ne compte pas comme FULL/PARTIAL et reste dans la file BRAIN.
+- Sur un zero propre, l'ordre devient : preuve playback candidate → CHAIN REACHED courant → ROUTE PROVEN retenu → NO PROOF. WAF/network/JS actuels restent des causes spécifiques et ne sont pas masqués par la route historique.
+- Le Markdown expose désormais une colonne `Route proof` (nombre de routes live + lanes). Revalidation census requise avant de considérer le compteur NO PROOF à zéro.
