@@ -242,6 +242,10 @@ def classify_debug_stage(task: dict[str, Any], probe: dict[str, Any], debug: dic
     if not bool(model.get("has_api_recipe")) and int(model.get("route_count") or 0) <= 0:
         return "gate_runtime_plan_missing"
 
+    dispatch_error = debug.get("provider_runtime_dispatch_error_v1")
+    if isinstance(dispatch_error, dict) and str(dispatch_error.get("name") or "").strip():
+        return "provider_runtime_hook_exception"
+
     provider_fetches = _provider_fetches(debug)
     if not provider_fetches:
         family = str(model.get("source_runtime_family") or "unknown").casefold()
@@ -323,6 +327,11 @@ def run_single(task: dict[str, Any]) -> dict[str, Any]:
         "debug_fetches": debug.get("fetches") or [],
         "debug_provider_value_trace_v18": debug.get("provider_value_trace_v18"),
         "debug_provider_value_trace_history_v21": _provider_value_trace_history(debug),
+        "debug_provider_runtime_dispatch_error_v1": (
+            debug.get("provider_runtime_dispatch_error_v1")
+            if isinstance(debug.get("provider_runtime_dispatch_error_v1"), dict)
+            else None
+        ),
         "raw": raw,
         "playable": playable,
         "verified": verified,
