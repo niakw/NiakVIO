@@ -19,7 +19,6 @@ import sys
 from pathlib import Path
 from typing import Any, Iterable
 from override_text_utils import replace_literal
-from provider_v3_minimizer import minimize_text, validate_transform
 from provider_patch_blocks import (
     assert_single_managed_fix,
     decode_managed_data,
@@ -1844,21 +1843,12 @@ def apply_overrides(
             }
         ]
 
-    # Provider v3 publication bytes have one canonical representation. Apply the
-    # NiakVIO-aware minimizer at the complete-composition boundary, not inside
-    # individual Lego renderers. This makes a regenerated readable STARTFIX block
-    # converge to the same bytes as the published bundle while preserving the
-    # minimizer's whole-file template/comment safety decisions.
-    if (
-        phase == "discovery"
-        and include_global_core
-        and "NIAKVIO_PROVIDER_BASE_OWNED_V3" in text
-        and text.count(PROVIDER_BEGIN_MARKER) == 1
-        and text.count(PROVIDER_END_MARKER) == 1
-    ):
-        minimized = minimize_text(text)
-        validate_transform(text, minimized.text)
-        text = minimized.text
+    # Provider v3 composition stays readable and byte-stable here.
+    # Minification has exactly one authority: the explicit final-stage gate in
+    # materialize_provider_v3_{all,one}.py. Running the minimizer here used to
+    # transform PROVIDER.* Lego before the canonical byte validator and could
+    # produce invalid JavaScript (first exposed by the AllAnime site fallback).
+    # Never transform complete v3 bytes in apply_overrides().
 
     if text == original_text:
         return data, []
