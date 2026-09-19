@@ -9,6 +9,8 @@ flemmix=(ROOT/"scripts/provider_patches/flemmix_runtime_v1.py").read_text(encodi
 anime=(ROOT/"scripts/provider_patches/anime_ultime_runtime_v1.py").read_text(encoding="utf-8")
 
 assert "NIAKVIO_FLEMMIX_RUNTIME_V1" in flemmix
+assert "function runtimeBase()" in flemmix
+assert 'm&&(m.officialSite||m.knownSite)||c.base' in flemmix
 assert '"/search?q="' in flemmix
 assert "video-server-tab" in flemmix and "episode-server-tab" in flemmix
 assert "saison-" in flemmix and "_crawlDirectMedia" in flemmix
@@ -23,6 +25,8 @@ assert "arm.haglund.dev" not in anime
 assert ov["flemmix"]["provider_lego_scripts"] == ["scripts/provider_patches/flemmix_runtime_v1.py"]
 assert ov["flemmix"]["provider_lego_options"]["scripts/provider_patches/flemmix_runtime_v1.py"]["base"] == "https://flemmix.me"
 assert '"base": "https://flemmix.me"' in flemmix
+flemmix_js=flemmix.split("WRAPPER = r'''",1)[1].split("'''",1)[0]
+assert flemmix_js.count("c.base")==2, "only runtimeBase fallback may reference the legacy Flemmix config base"
 assert ov["anime-ultime"]["provider_lego_scripts"] == ["scripts/provider_patches/anime_ultime_runtime_v1.py"]
 
 print("Flemmix and Anime-Ultime provider runtime contracts passed")
