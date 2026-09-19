@@ -7520,16 +7520,18 @@
     },
     "vidfast": {
       "notes": [
-        "Use VidFast documented movie/tv embed routes. Do not force direct-media validation on the iframe URL."
+        "Use VidFast documented movie/tv embed routes. Do not force direct-media validation on the iframe URL.",
+        "2026-09-19 runtime reconstruction: current VidFast is API-first, not a root iframe query. TMDB identity selects /movie/{id}/ or /tv/{id}/{season}/{episode}/, then enc-dec.app/api enc-vidfast/dec-vidfast resolves CSRF-protected server endpoints.",
+        "Upstream JavaScript is not executed; NiakVIO reproduces only the observed page/token/enc-dec protocol in a provider-local Lego."
       ],
-      "capability": "iframe_player",
+      "capability": "mixed_embed_resolver",
       "preserve_embed_urls": true,
       "domain_substitutions": {
         "vidfast.pro": "vidfast.vc"
       },
       "learned_routes": [
-        "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/movie/{tmdbId}/",
+        "/tv/{tmdbId}/{season}/{episode}/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -7723,6 +7725,20 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "published_types": [
+        "movie",
+        "tv"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/vidfast_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/vidfast_runtime_v1.py": {
+          "base": "https://vidfast.vc",
+          "decrypt": "https://enc-dec.app/api",
+          "maxStreams": 8
+        }
       }
     },
     "vidrock": {
