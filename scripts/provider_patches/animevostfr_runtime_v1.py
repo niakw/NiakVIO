@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""NiakVIO-owned AnimeVOSTFR WordPress/ToroPlay runtime.
+"""NiakVIO-owned AnimeVOSTFR current-site runtime.
 
-Clean-room adapter from the observable current contract:
-TMDB/Core metadata -> WordPress search -> /animes/ result -> /episode/ page ->
-`trembed` resolver -> external player. Upstream JavaScript is never embedded or
-executed. Core retains timeout, identity and terminal stream ownership.
+Clean-room execution chain:
+TMDB/Core metadata -> site search -> /animes/ page -> exact episode page ->
+trembed/player tab -> external iframe -> bounded Core media crawler.
+No upstream JavaScript is embedded or executed.
 """
 from __future__ import annotations
 
@@ -20,29 +20,27 @@ WRAPPER = r'''
 /* NIAKVIO_ANIMEVOSTFR_RUNTIME_V1 */
 /* NIAKVIO_PROVIDER_RUNTIME_RESOLVER_V1 */
 ;(function(g,c){"use strict";
-function txt(v){return String(v==null?"":v).trim()}
-function uniq(v){return Array.from(new Set((v||[]).filter(Boolean)))}
-function req(args){var first=args[0],obj=first&&typeof first==="object"&&!Array.isArray(first)?first:null,ctx={};try{ctx=g&&g.__nuvioMediaContext||{}}catch(_e){}var raw=txt((obj&&(obj.canonicalMediaType||obj.semanticType||obj.mediaType||obj.type))||args[1]||ctx.canonicalMediaType||ctx.mediaType||"anime").toLowerCase();if(raw==="series")raw="tv";if(raw!=="movie"&&raw!=="tv"&&raw!=="anime")return null;var id=txt((obj&&(obj.tmdbId||obj.tmdb_id||obj.id))||(typeof first==="string"?first:"")||ctx.tmdbId);if(!/^\d+$/.test(id))return null;return{type:raw,transport:raw==="movie"?"movie":"tv",tmdbId:id,season:Number((obj&&obj.season)!=null?obj.season:args[2])||1,episode:Number((obj&&obj.episode)!=null?obj.episode:args[3])||1}}
-function norm(v){return txt(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[’']/g,"").replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim()}
-function slug(v){return norm(v).replace(/\s+/g,"-")}
-function abs(v,base){try{return new URL(v,base).toString()}catch(_e){return""}}
-function htmlDecode(v){return txt(v).replace(/&amp;/g,"&").replace(/&quot;|&#34;/g,'"').replace(/&#39;/g,"'")}
-async function fetchText(url,opt){try{var options=opt||{};options.headers=Object.assign({"User-Agent":c.userAgent,"Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8","Accept-Language":"fr-FR,fr;q=0.9,en;q=0.7"},options.headers||{});options.credentials="include";options.redirect="follow";var r=typeof _fetch==="function"?await _fetch(url,options):await g.fetch(url,options);if(!r||r.ok===false)return"";return await r.text()}catch(_e){return""}}
-async function metadata(q){var meta=null;try{var fn=g&&g.__nuvioCoreGetTmdbDataV1;if(typeof fn==="function"){var z=await fn({tmdbId:String(q.tmdbId),mediaType:q.transport,tmdbNamespace:q.transport});meta=z&&z.metadata||null}}catch(_e){}if(!meta){try{if(typeof _tmdb==="function")meta=await _tmdb(q.tmdbId,q.transport)}catch(_e){}}if(!meta){try{var ctx=g&&g.__nuvioMediaContext||{};meta=ctx.tmdbMetadata||ctx.fixtureMetadata||null}catch(_e){}}return meta}
-function titles(meta){var out=[];if(meta){out.push(meta.title,meta.name,meta.original_title,meta.original_name);if(Array.isArray(meta.aliases))out=out.concat(meta.aliases);if(meta.alternative_titles&&Array.isArray(meta.alternative_titles.titles))for(var i=0;i<meta.alternative_titles.titles.length;i++)out.push(meta.alternative_titles.titles[i]&&meta.alternative_titles.titles[i].title)}return uniq(out.map(txt).filter(Boolean)).slice(0,6)}
-function hrefs(body,base,needle){var out=[],re=/href\s*=\s*["']([^"']+)["']/gi,m;while((m=re.exec(body||""))!==null){var u=abs(htmlDecode(m[1]),base);if(u&&(!needle||u.indexOf(needle)>=0)&&!out.includes(u))out.push(u);if(out.length>=80)break}return out}
-function resultScore(url,title){var path="";try{path=decodeURIComponent(new URL(url).pathname)}catch(_e){path=url}var n=norm(path.replace(/\/animes\//i," ").replace(/\//g," ")),t=norm(title);if(!n||!t)return 0;if(n===t)return 300;if(n.indexOf(t)>=0)return 220-Math.min(80,Math.max(0,n.length-t.length));var words=t.split(" ").filter(function(w){return w.length>2}),hit=0;for(var i=0;i<words.length;i++)if(n.indexOf(words[i])>=0)hit++;return words.length?Math.round(120*hit/words.length):0}
-async function search(base,title){var body=await fetchText(base+"/?s="+encodeURIComponent(title),{headers:{Referer:base+"/"}});if(!body)return[];var urls=hrefs(body,base,"/animes/");urls.sort(function(a,b){return resultScore(b,title)-resultScore(a,title)});return urls.filter(function(u){return resultScore(u,title)>=35}).slice(0,6)}
-function episodeScore(url,q){var s=String(q.season),e=String(q.episode),p=String(q.episode).padStart(2,"0"),u=txt(url).toLowerCase();if(new RegExp("-(?:saison-)?"+s+"-episode-(?:"+e+"|"+p+")(?:-|/|$)","i").test(u))return 300;if(new RegExp("-episode-(?:"+e+"|"+p+")(?:-|/|$)","i").test(u))return 180;if(new RegExp("-ep-(?:"+e+"|"+p+")(?:-|/|$)","i").test(u))return 120;return 0}
-async function episodePage(series,q){var body=await fetchText(series,{headers:{Referer:c.base+"/"}});if(!body)return"";var eps=hrefs(body,series,"/episode/");if(q.type==="movie")return eps[0]||series;eps.sort(function(a,b){return episodeScore(b,q)-episodeScore(a,q)});return eps.length&&episodeScore(eps[0],q)>0?eps[0]:""}
-function trembeds(body,base){var out=[],patterns=[/(?:src|data-src)\s*=\s*["']([^"']*(?:trembed|trid=)[^"']*)["']/gi,/iframe[^>]+src\s*=\s*["']([^"']+)["']/gi],m;for(var p=0;p<patterns.length;p++){while((m=patterns[p].exec(body||""))!==null){var u=abs(htmlDecode(m[1]),base);if(u&&/^https?:/i.test(u)&&!out.includes(u))out.push(u);if(out.length>=12)break}}return out}
-function externalPlayer(body,base){var patterns=[/iframe[^>]+src\s*=\s*["']([^"']+)["']/i,/(?:data-src|src|href)\s*=\s*["'](https?:\/\/[^"']+)["']/i];for(var i=0;i<patterns.length;i++){var m=(body||"").match(patterns[i]);if(m){var u=abs(htmlDecode(m[1]),base);try{if(new URL(u).hostname!==new URL(c.base).hostname)return u}catch(_e){}}}return""}
-function playbackHeaders(referer){var h={Referer:referer,"User-Agent":c.userAgent};try{h.Origin=new URL(referer).origin}catch(_e){}return h}
-async function playerRows(player,referer,language){if(!/^https?:/i.test(player))return[];var rows=[];try{if(typeof _crawlDirectMedia==="function")rows=await _crawlDirectMedia([player],referer,2)}catch(_e){}if(!Array.isArray(rows)||!rows.length){try{if(typeof _directMedia==="function"&&_directMedia(player)&&typeof _streams==="function")rows=_streams([player],referer)}catch(_e){}}if(!Array.isArray(rows)||!rows.length)rows=[{name:"AnimeVOSTFR",title:"AnimeVOSTFR player",url:player,quality:"HD",language:language,headers:playbackHeaders(referer),provider:"animevostfr"}];for(var i=0;i<rows.length;i++){var r=rows[i];if(r&&typeof r==="object"){r.name=r.name||"AnimeVOSTFR";r.title=r.title||"AnimeVOSTFR";r.language=r.language||language;r.provider=r.provider||"animevostfr";r.headers=Object.assign(playbackHeaders(referer),r.headers||{})}}return rows.slice(0,3)}
-function langFrom(url){var u=txt(url).toLowerCase();if(/vostfr/.test(u))return"VOSTFR";if(/(?:^|[-_/])vf(?:[-_/]|$)/.test(u))return"VF";return"VOSTFR"}
-async function resolveSeries(series,q){var ep=await episodePage(series,q);if(!ep)return[];var body=await fetchText(ep,{headers:{Referer:series}});if(!body)return[];var entries=trembeds(body,ep),out=[];for(var i=0;i<entries.length&&out.length<c.targetStreams;i++){var embed=await fetchText(entries[i],{headers:{Referer:ep}});if(!embed)continue;var player=externalPlayer(embed,entries[i]);if(!player)continue;var rows=await playerRows(player,ep,langFrom(series+" "+ep));for(var j=0;j<rows.length;j++)if(rows[j]&&rows[j].url)out.push(rows[j])}return out.slice(0,c.targetStreams)}
-async function resolve(args,_ctx){var q=req(args);if(!q)return[];var meta=await metadata(q),tt=titles(meta);if(!tt.length)return[];for(var t=0;t<tt.length;t++){var found=await search(c.base,tt[t]);for(var i=0;i<found.length;i++){var rows=await resolveSeries(found[i],q);if(rows.length)return rows}}return[]}
-try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:"animevostfr",resolve:resolve}}catch(_e){}
+function s(v){return String(v==null?"":v).trim()}
+function uniq(a){return Array.from(new Set((a||[]).filter(Boolean)))}
+function norm(v){try{return s(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[’']/g,"").replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim()}catch(_e){return s(v).toLowerCase()}}
+function abs(v,b){try{return new URL(s(v),b||c.base).toString()}catch(_e){return""}}
+function visible(v){return s(v).replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," ").replace(/&(?:nbsp|amp|quot|#0*39);/gi," ").replace(/\s+/g," ").trim()}
+function req(a){var f=a[0],o=f&&typeof f==="object"&&!Array.isArray(f)?f:null,x={};try{x=g.__nuvioMediaContext||{}}catch(_e){}var semantic=s((o&&o.semanticType)||x.semanticType||"").toLowerCase(),raw=s((o&&(o.canonicalMediaType||o.mediaType||o.type))||a[1]||x.canonicalMediaType||x.mediaType||semantic||"anime").toLowerCase();if(raw==="series")raw="tv";if(semantic==="anime"||raw==="tv")raw="anime";if(raw!=="anime")return null;var id=s((o&&(o.tmdbId||o.tmdb_id||o.id))||(typeof f==="string"?f:"")||x.tmdbId).replace(/^tmdb:/i,"").split(":")[0];if(!/^\d+$/.test(id))return null;return{tmdbId:id,type:"anime",transport:"tv",season:Number((o&&o.season)!=null?o.season:(a[2]!=null?a[2]:x.season))||1,episode:Number((o&&o.episode)!=null?o.episode:(a[3]!=null?a[3]:x.episode))||1}}
+function hdr(ref,accept){var h={"User-Agent":c.ua,"Accept":accept||"text/html,application/xhtml+xml,*/*","Accept-Language":"fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7"};if(ref)h.Referer=ref;return h}
+async function text(url,opt){try{var o=Object.assign({redirect:"follow"},opt||{});o.headers=Object.assign(hdr(o.referer||""),o.headers||{});delete o.referer;var r=typeof _fetch==="function"?await _fetch(url,o):await g.fetch(url,o);if(!r||r.ok===false)return null;return{url:r.url||url,text:await r.text()}}catch(_e){return null}}
+async function metadata(q){try{var fn=g.__nuvioCoreGetTmdbDataV1;if(typeof fn==="function"){var z=await fn({tmdbId:q.tmdbId,mediaType:q.transport,tmdbNamespace:q.transport}),m=z&&z.metadata;if(m)return m}}catch(_e){}try{var x=g.__nuvioMediaContext||{};return x.tmdbMetadata||x.fixtureMetadata||null}catch(_e){return null}}
+function titles(m){var a=[];if(m){a.push(m.name,m.title,m.original_name,m.original_title);if(Array.isArray(m.aliases))a=a.concat(m.aliases);var alt=m.alternative_titles&&(m.alternative_titles.titles||m.alternative_titles.results);if(Array.isArray(alt))for(var i=0;i<alt.length;i++)a.push(alt[i]&&(alt[i].title||alt[i].name))}return uniq(a.map(s)).filter(Boolean).slice(0,6)}
+function score(label,wanted){var a=norm(label),b=norm(wanted);if(!a||!b)return 0;if(a===b)return 120;if(a.indexOf(b)===0||b.indexOf(a)===0)return 90;var aa=a.split(" ").filter(Boolean),bb=b.split(" ").filter(Boolean),hit=aa.filter(function(t){return bb.indexOf(t)>=0}).length;return Math.round(70*hit/Math.max(aa.length,bb.length,1))}
+function searchRows(html){var out=[],seen={},re=/<a[^>]+href=["']([^"']*\/animes\/[^"'#?]+)["'][^>]*>([\s\S]*?)<\/a>/gi,m;while((m=re.exec(html||""))!==null&&out.length<80){var u=abs(m[1],c.base),label=visible(m[2]);if(!u||seen[u])continue;seen[u]=1;out.push({url:u,label:label})}return out}
+async function findAnime(tt,q){for(var t=0;t<Math.min(tt.length,4);t++){var page=await text(c.base+"/?s="+encodeURIComponent(tt[t]),{referer:c.base+"/"});if(!page)continue;var rows=searchRows(page.text),best=null,bestScore=0;for(var i=0;i<rows.length;i++){var sc=score(rows[i].label||rows[i].url,tt[t]),low=(rows[i].label+" "+rows[i].url).toLowerCase();if(/\b(?:film|movie|ova|ona|special)\b/.test(low))sc-=35;var sm=low.match(/saison[- _]*(\d+)/);if(sm)sc+=Number(sm[1])===q.season?35:-45;if(sc>bestScore){bestScore=sc;best=rows[i]}}if(best&&bestScore>=45)return best}return null}
+function episodeRows(html,base){var out=[],seen={},re=/<a[^>]+href=["']([^"']*(?:\/episode\/|episode-)[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,m;while((m=re.exec(html||""))!==null&&out.length<500){var u=abs(m[1],base),label=visible(m[2]);if(!u||seen[u])continue;seen[u]=1;out.push({url:u,label:label})}return out}
+function episodeScore(row,q){var blob=(row.url+" "+row.label).toLowerCase(),score=0;var sm=blob.match(/(?:saison[- _]?|\/)(\d+)[-_ /]*episode[- _]?(\d+)/i);if(sm){if(Number(sm[1])===q.season&&Number(sm[2])===q.episode)score+=150;else if(Number(sm[2])===q.episode)score+=50;else return-100}var em=blob.match(/(?:episode|ep)[- _]?(\d+)/i);if(em)score+=Number(em[1])===q.episode?80:-50;if(new RegExp("(?:^|[^0-9])"+q.episode+"(?:[^0-9]|$)").test(row.label))score+=30;return score}
+async function findEpisode(anime,q){var page=await text(anime.url,{referer:c.base+"/"});if(!page)return null;var rows=episodeRows(page.text,page.url),best=null,bestScore=-999;for(var i=0;i<rows.length;i++){var sc=episodeScore(rows[i],q);if(sc>bestScore){bestScore=sc;best=rows[i]}}if(best&&bestScore>=60)return best.url;var slug="";try{slug=new URL(anime.url).pathname.replace(/^.*\/animes\//,"").replace(/\/$/,"")}catch(_e){}if(slug){var guesses=[c.base+"/episode/"+slug+"-"+q.season+"-episode-"+q.episode+"/",c.base+"/episode/"+slug+"-episode-"+q.episode+"/"];for(var j=0;j<guesses.length;j++){var z=await text(guesses[j],{referer:page.url});if(z&&z.text.length>500)return z.url}}return null}
+function playerRows(html,base){var out=[],seen={},re=/(?:src|data-src)=["']([^"']+)["']/gi,m;while((m=re.exec(html||""))!==null&&out.length<20){var u=abs(m[1],base);if(!u||seen[u])continue;if(u.indexOf("trembed")<0&&u.indexOf(c.base)<0)continue;seen[u]=1;out.push(u)}return out}
+async function externalPlayer(url,ref){var p=await text(url,{referer:ref});if(!p)return"";var re=/(?:src|data-src|href)=["'](https?:\/\/[^"']+)["']/gi,m;while((m=re.exec(p.text))!==null){var u=s(m[1]);if(!u||u.indexOf("animevostfr")>=0)continue;return u}return""}
+function langFrom(url){var x=s(url).toLowerCase();if(/(?:^|[-_/])vf(?:[-_/]|$)/.test(x))return"VF";if(/vostfr/.test(x))return"VOSTFR";if(/(?:^|[-_/])vo(?:[-_/]|$)/.test(x))return"VO";return"VOSTFR"}
+async function resolve(a,_ctx){var q=req(a);if(!q)return[];var m=await metadata(q),tt=titles(m);if(!tt.length)return[];var anime=await findAnime(tt,q);if(!anime)return[];var episode=await findEpisode(anime,q);if(!episode)return[];var ep=await text(episode,{referer:anime.url});if(!ep)return[];var players=playerRows(ep.text,ep.url),out=[],seen={};for(var i=0;i<players.length&&out.length<c.maxStreams;i++){var ext=await externalPlayer(players[i],ep.url);if(!ext||seen[ext])continue;seen[ext]=1;var lang=langFrom(anime.url+" "+anime.label),rows=[];try{if(typeof _crawlDirectMedia==="function")rows=await _crawlDirectMedia([ext],players[i],2)}catch(_e){rows=[]}if(!Array.isArray(rows)||!rows.length)continue;for(var j=0;j<rows.length&&out.length<c.maxStreams;j++){var st=Object.assign({},rows[j]);if(!st.url)continue;st.name="AnimeVOSTFR | "+lang;st.title=(st.title||"AnimeVOSTFR")+" | S"+q.season+"E"+q.episode+" | "+lang;st.language=lang;st.provider="animevostfr";st.headers=Object.assign({"Referer":c.base+"/"},st.headers||{});out.push(st)}}return out}
+try{g.__niakvioProviderRuntimeResolverV1={provider:"animevostfr",resolve:resolve}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''
 
@@ -50,27 +48,25 @@ try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:"animevostfr",resolve:re
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     cfg = {
         "base": "https://v2.animevostfr.org",
-        "targetStreams": 3,
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "maxStreams": 6,
+        "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145 Safari/537.36",
     }
     cfg.update(dict(options or {}))
     cfg["base"] = str(cfg.get("base") or "").rstrip("/")
-    cfg["targetStreams"] = max(1, min(6, int(cfg.get("targetStreams") or 3)))
-    if not cfg["base"].startswith(("http://", "https://")):
-        raise ValueError(f"{MANAGED_FIX_ID}: base must be http(s)")
+    cfg["maxStreams"] = max(1, min(int(cfg.get("maxStreams") or 6), 12))
     js = WRAPPER.replace("CONFIG_PLACEHOLDER", json.dumps(cfg, ensure_ascii=False, separators=(",", ":")))
     return replace_managed_fix(
         text,
         MANAGED_FIX_ID,
         js.lstrip(),
         data={
-            "runtimeFamily": "wordpress-toroplay-trembed-v1",
-            "identity": "core-tmdb-metadata-to-search-to-episode",
-            "legacyExecutableSeed": False,
-            "upstreamJsExecuted": False,
+            "runtimeFamily": "animevostfr-search-episode-trembed-v1",
+            "identity": "core-tmdb-anime-title-season-episode",
             "runtimeResolverRegistration": True,
             "coreFinalOutputOwnership": True,
             "semanticLanes": ["anime"],
+            "legacyExecutableSeed": False,
+            "upstreamJsExecuted": False,
         },
     )
 
