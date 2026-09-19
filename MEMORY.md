@@ -2060,3 +2060,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Current upstream `Gowaru/gowaru-nuvio-providers/providers/flemmix.js`, generated 2026-09-18, uses **`https://flemmix.me`** as `BASE_URL` with the same `/search?q=` contract, and the `.me` terminal is live. This is provider-local evidence, not a shared-domain heuristic.
 - Commits **23c93201d2eee1d68ad20bfa9fb87216e46de3dc**, **8b2a18964cc2cd0e1974cd09c5fb62c2cdaa09b6**, **f4797c13e35bce2659f2f44de86c78eec306c0b7** and **a99f123d11622830ab3e8290ddb976e986d8c63a** align Flemmix source authority, Lego option/default base and contract to `flemmix.me`. Domain aliases remain provider-local and Domain Refresh remains responsible for projection.
 - This Flemmix change is **not yet functionally promoted**. R9 does not test these later commits; they require the next exact-SHA rematerialized targeted/full proof.
+
+
+## 2026-09-19 — Broad provider score authority bug fixed
+
+- R9 artifact inspection exposed a **CI evidence bug**, not a new wave of provider regressions. `Provider Non-Regression Gate` labelled its quick-yield step a candidate census but never rematerialized Provider v3 first. It therefore executed the already-published manifest filenames, which still contain older native/ARM runtimes and omit recently added Provider Lego.
+- Concrete proof: current published Flemmix, Sekai, Anime-Ultime, VoirAnime-rip and AnimesUltra files have no `NIAKVIO_PROVIDER_RUNTIME_RESOLVER_V1` / Core runtime-dispatch brick, while their current source/overrides do. R9 rows for Flemmix/Sekai/Anime-Ultime/VoirAnime-rip/AnimesUltra consequently showed only TMDB + `arm.haglund.dev`, exactly matching stale published bytes.
+- Therefore R8/R9 broad scores **17/46** and **15/46** are published-byte measurements, not repaired-candidate measurements. They must not be used to invalidate successful rematerialized targeted proofs such as Coflix movie+TV, Kurage anime and Neko-Sama anime.
+- Commit **0ccccd75b2d179631b02ef0132275a0359579379** inserts domain projection + ProviderBase store + full Provider v3 materialization + CONFIG/Lego validation before the non-regression quick-yield census. Commit **defec7ddb13c7dddb3cb74b4a557252aad9d0ded** makes this rematerialized-candidate requirement part of workflow ownership.
+- R9 MoviesHunt/VoirAnime failures were measured on stale published bytes; their post-R8 candidate fixes remain **unvalidated**, not disproven. The next proof must run from one exact current main SHA after all prepared provider fixes are stable.
+- Prepared but still unvalidated current-base repairs now include Flemmix `flemmix.me`, AnimesUltra `v2.animesultra.org`, and MoviesMod `moviesmod.ai.in`. Do not promote any of them before the next rematerialized proof.
