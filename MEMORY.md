@@ -2323,3 +2323,10 @@ This ledger is not complete merely because provider yield improves. Final comple
   - `tmp/provider-max-repair-proof-20260919`
 - Physical branch deletion is not exposed by the installed GitHub connector; refs were therefore neutralized to main rather than left diverged. Do not use them for future repair work.
 - Workstream policy remains **main-only**. `brain-learning/proposals` is intentionally preserved because it is the dedicated Brain proposal branch, not a repair branch.
+
+
+### 2026-09-19 — MoviesHunt imported runtime syntax regression fixed
+
+- Post-import main checks exposed a concrete syntax regression in `scripts/provider_patches/movieshunt_runtime_v1.py`: `dynamicLookup()` missed the closing quote after `&page=1&per_page=30`.
+- This caused both the dedicated MoviesHunt Node parse contract and global override/minimizer composition to fail before live probes.
+- The source is corrected directly on `main`; functionality is still pending fresh rematerialized/current-main checks.
