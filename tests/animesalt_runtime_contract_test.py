@@ -17,7 +17,7 @@ assert 'action=action_tr_search_suggest' in src
 assert 'runtimeBase()+"/wp-admin/admin-ajax.php"' in src
 assert '"&term="+encodeURIComponent(m.title)' in src
 assert 'runtimeBase()+"/?s="+encodeURIComponent(m.title)' in src
-assert '/player/index\\.php\\?data=' in src
+assert r'player\/index\.php\?data=' in src
 assert 'data.videoSource||data.securedLink||data.file||data.url' in src
 assert 'action=action_select_season&season=' in src
 assert '"&post="+encodeURIComponent(chosen.post)' in src
