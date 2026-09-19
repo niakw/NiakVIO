@@ -1,0 +1,5575 @@
+{
+  "schemaVersion": 1,
+  "providerCount": 96,
+  "matchedUpstreamProviders": 91,
+  "testedProviders": 91,
+  "classificationCounts": {
+    "both_ok": 3,
+    "both_zero": 64,
+    "inconclusive_timeout": 4,
+    "niakvio_ok_upstream_ko": 1,
+    "upstream_ok_niakvio_ko": 19
+  },
+  "missingUpstreamProviders": [
+    "4khdhubnew",
+    "cinemm",
+    "goatapi",
+    "kehflix",
+    "toflix"
+  ],
+  "upstreamManifestErrors": [],
+  "providerDownloadErrors": [],
+  "fixtures": {
+    "movie": {
+      "tmdbId": "157336",
+      "mediaType": "movie",
+      "title": "Interstellar",
+      "year": 2014
+    },
+    "tv": {
+      "tmdbId": "1396",
+      "mediaType": "tv",
+      "title": "Breaking Bad",
+      "year": 2008,
+      "season": 1,
+      "episode": 1
+    },
+    "anime": {
+      "tmdbId": "95479",
+      "mediaType": "anime",
+      "title": "Jujutsu Kaisen",
+      "year": 2020,
+      "season": 1,
+      "episode": 1
+    }
+  },
+  "providers": [
+    {
+      "providerId": "1shows",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "4khdhub",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "allanime",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "allmovieland",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "allwish",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403,
+              500
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "anidb",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "anikototv",
+      "upstreamSource": "aio",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 2,
+            "raw_stream_count": 2,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "anime-sama",
+      "upstreamSource": "gowaru",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 6,
+            "raw_stream_count": 6,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              400,
+              502
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "anime-ultime",
+      "upstreamSource": "gowaru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "animekai",
+      "upstreamSource": "aio",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 12,
+            "raw_stream_count": 12,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "animepahe",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "animesalt",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "animesama-co",
+      "upstreamSource": "gowaru",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 1,
+            "raw_stream_count": 1,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              400
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "animesultra",
+      "upstreamSource": "gowaru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "animetsu",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "animevost-fr",
+      "upstreamSource": "gowaru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "animevostfr",
+      "upstreamSource": "gowaru",
+      "classification": "inconclusive_timeout",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "timeout": true,
+            "error_class": "timeout"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "inconclusive_timeout"
+        }
+      ]
+    },
+    {
+      "providerId": "animeworld",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "animezey",
+      "upstreamSource": "aio",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 1,
+            "raw_stream_count": 1,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              429
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              429
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 2,
+            "raw_stream_count": 2,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              429
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              429
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "animoflix",
+      "upstreamSource": "gowaru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "anizone",
+      "upstreamSource": "yoru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "castle",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "cineby",
+      "upstreamSource": "aio",
+      "classification": "both_ok",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 4,
+            "raw_stream_count": 4,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              206
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 4,
+            "raw_stream_count": 4,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_ok"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 4,
+            "raw_stream_count": 4,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              206
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 4,
+            "raw_stream_count": 4,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_ok"
+        }
+      ]
+    },
+    {
+      "providerId": "cinefreak",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "cinemacity",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "cinevibe",
+      "upstreamSource": "yoru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              401
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              401
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "coflix",
+      "upstreamSource": "gowaru",
+      "classification": "inconclusive_timeout",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "timeout": true,
+            "error_class": "timeout"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "inconclusive_timeout"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "timeout": true,
+            "error_class": "timeout"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "inconclusive_timeout"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "timeout": true,
+            "error_class": "timeout"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "inconclusive_timeout"
+        }
+      ]
+    },
+    {
+      "providerId": "ctgmovies",
+      "upstreamSource": "aio",
+      "classification": "inconclusive_timeout",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": false,
+            "stream_count": 0,
+            "timeout": true,
+            "error_class": "timeout"
+          },
+          "classification": "inconclusive_timeout"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": false,
+            "stream_count": 0,
+            "timeout": true,
+            "error_class": "timeout"
+          },
+          "classification": "inconclusive_timeout"
+        }
+      ]
+    },
+    {
+      "providerId": "desiflix",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "dooflix",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              429
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              429
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "dulourd",
+      "upstreamSource": "gowaru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "dvdplay",
+      "upstreamSource": "yoru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "einthusan",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "fibwatch",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "flemmix",
+      "upstreamSource": "gowaru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "french-manga",
+      "upstreamSource": "gowaru",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 4,
+            "raw_stream_count": 4,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "frenchstream",
+      "upstreamSource": "gowaru",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 2,
+            "raw_stream_count": 2,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 2,
+            "raw_stream_count": 2,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "fullanime",
+      "upstreamSource": "gowaru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "goated",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403,
+              522
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "gramcinema",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "hdghartv",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "hdhub4u",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "hianime",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              400,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "hindmoviez",
+      "upstreamSource": "aio",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 16,
+            "raw_stream_count": 16,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 15,
+            "raw_stream_count": 15,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "kisskh",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "kurage",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              400,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "mallumv",
+      "upstreamSource": "yoru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "moonflix",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "movieblast",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "moviebox",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              429
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              500
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              429
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              500
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "movies4u",
+      "upstreamSource": "aio",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 8,
+            "raw_stream_count": 8,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "moviesdrive",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "movieshunt",
+      "upstreamSource": "aio",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 6,
+            "raw_stream_count": 6,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "moviesmod",
+      "upstreamSource": "yoru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              401,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              401,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "movix",
+      "upstreamSource": "gowaru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "mugiwarastream",
+      "upstreamSource": "gowaru",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 6,
+            "raw_stream_count": 6,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              400
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "mycima",
+      "upstreamSource": "yoru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "nakios",
+      "upstreamSource": "gowaru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "neko-sama",
+      "upstreamSource": "gowaru",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 2,
+            "raw_stream_count": 2,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "netmirror",
+      "upstreamSource": "aio",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 4,
+            "raw_stream_count": 4,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "onlykdrama",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "papadustream",
+      "upstreamSource": "gowaru",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 4,
+            "raw_stream_count": 4,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 4,
+            "raw_stream_count": 4,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "peachify",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "persianstremio",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              503
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              503
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "playimdb",
+      "upstreamSource": "aio",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 3,
+            "raw_stream_count": 3,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 3,
+            "raw_stream_count": 3,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "purstream",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "sekai",
+      "upstreamSource": "gowaru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "showbox",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "streamflix",
+      "upstreamSource": "yoru",
+      "classification": "niakvio_ok_upstream_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 2,
+            "raw_stream_count": 2,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "niakvio_ok_upstream_ko"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              401
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "streamzo",
+      "upstreamSource": "gowaru",
+      "classification": "both_ok",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 1,
+            "raw_stream_count": 1,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 1,
+            "raw_stream_count": 1,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              206,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_ok"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "topcartoons",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "uhdmovies",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "vegamovies",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "MODULE_NOT_FOUND"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "videasy",
+      "upstreamSource": "aio",
+      "classification": "both_ok",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 6,
+            "raw_stream_count": 6,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404,
+              500
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 5,
+            "raw_stream_count": 5,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403,
+              404,
+              500
+            ],
+            "error_class": null
+          },
+          "classification": "both_ok"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 6,
+            "raw_stream_count": 6,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404,
+              500
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 5,
+            "raw_stream_count": 5,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403,
+              404,
+              500
+            ],
+            "error_class": null
+          },
+          "classification": "both_ok"
+        }
+      ]
+    },
+    {
+      "providerId": "vidfast",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "vidlink",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "vidlove",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "vidnest",
+      "upstreamSource": "yoru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              530
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              530
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              530
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              530
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "vidnest-anime",
+      "upstreamSource": "yoru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "vidrock",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "vidsrc",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "vixsrc",
+      "upstreamSource": "aio",
+      "classification": "inconclusive_timeout",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "Error"
+          },
+          "niakvio": {
+            "ok": false,
+            "stream_count": 0,
+            "timeout": true,
+            "error_class": "timeout"
+          },
+          "classification": "inconclusive_timeout"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": "Error"
+          },
+          "niakvio": {
+            "ok": false,
+            "stream_count": 0,
+            "timeout": true,
+            "error_class": "timeout"
+          },
+          "classification": "inconclusive_timeout"
+        }
+      ]
+    },
+    {
+      "providerId": "voiranime",
+      "upstreamSource": "gowaru",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": false,
+            "stream_count": 0,
+            "timeout": true,
+            "error_class": "timeout"
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "inconclusive_timeout"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 4,
+            "raw_stream_count": 4,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "voiranime-homes",
+      "upstreamSource": "gowaru",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 2,
+            "raw_stream_count": 2,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "voiranime-rip",
+      "upstreamSource": "gowaru",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 2,
+            "raw_stream_count": 2,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              400
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "vostfree",
+      "upstreamSource": "gowaru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "waveanime",
+      "upstreamSource": "gowaru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "anime",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "wookafr",
+      "upstreamSource": "gowaru",
+      "classification": "upstream_ok_niakvio_ko",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 1,
+            "raw_stream_count": 1,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              404
+            ],
+            "error_class": null
+          },
+          "classification": "upstream_ok_niakvio_ko"
+        }
+      ]
+    },
+    {
+      "providerId": "xpass",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              403
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200,
+              403
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "yflix",
+      "upstreamSource": "yoru",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": false,
+            "server_success": false,
+            "http_statuses": [],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    },
+    {
+      "providerId": "zinkmovies",
+      "upstreamSource": "aio",
+      "classification": "both_zero",
+      "fixtures": [
+        {
+          "fixture": "movie",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              451
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        },
+        {
+          "fixture": "tv",
+          "upstream": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": true,
+            "http_statuses": [
+              200
+            ],
+            "error_class": null
+          },
+          "niakvio": {
+            "ok": true,
+            "stream_count": 0,
+            "raw_stream_count": 0,
+            "timeout": false,
+            "server_accessible": true,
+            "server_success": false,
+            "http_statuses": [
+              451
+            ],
+            "error_class": null
+          },
+          "classification": "both_zero"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1833 @@
+{
+  "schemaVersion": 1,
+  "authority": "provider-repair-disposition-v1",
+  "catalogueProviderCount": 46,
+  "policy": {
+    "activeBrokenProviderAllowed": true,
+    "incompleteProviderEnabled": true,
+    "forceAllProvidersEnabled": false,
+    "activationFollowsRepairState": false,
+    "activationFollowsDeclaredHub": false,
+    "activationAuthority": "providers/ + provider-disabled/ physical current folders",
+    "activeProviderCount": 44,
+    "nonTargetProviderState": "disabled",
+    "registryOnlyTargetMayRemainEnabled": true,
+    "terminalOrQuarantinedState": "off",
+    "nonTerminalUnresolvedState": "repair",
+    "evidenceDestructionAllowed": false,
+    "semanticTypeShrinkAllowed": false,
+    "exactLiveLocksRequireExactBundlePath": true
+  },
+  "stateCounts": {
+    "off": 3,
+    "on": 13,
+    "repair": 30
+  },
+  "enabledProviderCount": 44,
+  "disabledProviderCount": 2,
+  "disabledProviders": [
+    "desiflix",
+    "fullanime"
+  ],
+  "incompleteProviderCount": 31,
+  "incompleteProviders": [
+    "4khdhub",
+    "allanime",
+    "allwish",
+    "anikototv",
+    "anime-ultime",
+    "animesalt",
+    "animesama-co",
+    "animesultra",
+    "animetsu",
+    "animevost-fr",
+    "animevostfr",
+    "coflix",
+    "flemmix",
+    "hindmoviez",
+    "kehflix",
+    "mallumv",
+    "moviebox",
+    "moviesmod",
+    "neko-sama",
+    "papadustream",
+    "persianstremio",
+    "sekai",
+    "showbox",
+    "streamzo",
+    "uhdmovies",
+    "vidfast",
+    "vidrock",
+    "voiranime-rip",
+    "vostfree",
+    "wookafr",
+    "yflix"
+  ],
+  "providers": [
+    {
+      "provider": "4khdhub",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://hdhub4u.bi",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "movie",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "no-proven-route",
+      "provenRouteCount": 0,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_no-proven-route"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "allanime",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://allanime.sa.com/",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "anime"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 4,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "allwish",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://t.me/s/allwishme",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "movie",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "no-proven-route",
+      "provenRouteCount": 0,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-http-error",
+        "recovery_no-proven-route"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "fresh_identity_safe_positive_required",
+          "no_streams"
+        ],
+        "tv": [
+          "fresh_identity_safe_positive_required",
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "anikototv",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://streamingsiteshub.com/",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "anime"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "no-proven-route",
+      "provenRouteCount": 0,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_timeout",
+        "recovery_no-proven-route"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "timeout"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "anime-sama",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://anime-sama.wiki/",
+      "forcedEnabled": true,
+      "routeDataState": "on",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [
+        "anime"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "anime"
+      ],
+      "missingLanes": [],
+      "completeCapabilityProof": true,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 9,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "all_declared_lanes_live_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "playable_verified"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "anime-ultime",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "anime"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 2,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "animekai",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "on",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [
+        "anime"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "anime"
+      ],
+      "missingLanes": [],
+      "completeCapabilityProof": true,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 8,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "all_declared_lanes_live_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "playable_verified"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "animesalt",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://animesalt.ac/",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "anime"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "no-proven-route",
+      "provenRouteCount": 0,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-http-error",
+        "recovery_no-proven-route"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "animesama-co",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://anime-sama.wiki/",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "anime"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 4,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-http-error",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "animesultra",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "anime"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 2,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "animetsu",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://everythingmoe.com/s/animetsu",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "anime"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 1,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "animevost-fr",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "anime"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 4,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "animevostfr",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "anime"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 11,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "castle",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "on",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "movie",
+        "tv"
+      ],
+      "missingLanes": [],
+      "completeCapabilityProof": true,
+      "recoveryStatus": "unknown",
+      "provenRouteCount": 0,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "all_declared_lanes_live_proven"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "playable_verified"
+        ],
+        "tv": [
+          "playable_verified"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "coflix",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://coflix.domains/",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 12,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "desiflix",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "disabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://desiflix.me",
+      "forcedEnabled": false,
+      "routeDataState": "off",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "movie",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 3,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "manual_off_compromised_or_inappropriate_redirect"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "flemmix",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://ww1.wiflix-adresses.fun/",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "movie",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 1,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "french-manga",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "on",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [
+        "anime"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "anime"
+      ],
+      "missingLanes": [],
+      "completeCapabilityProof": true,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 8,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "all_declared_lanes_live_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "playable_verified"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "fullanime",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "disabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": false,
+      "routeDataState": "off",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "anime"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "no-proven-route",
+      "provenRouteCount": 0,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "manual_off_no_current_hub_authority"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "hindmoviez",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://t.me/s/hindmoviez/1975",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "movie",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 31,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-exception",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "kehflix",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://kehflix.wiki/",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "movie",
+        "tv"
+      ],
+      "missingLanes": [
+        "anime"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 5,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-http-error",
+        "quick_provider-returned-streams",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "playable_verified"
+        ],
+        "tv": [
+          "playable_verified"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "kurage",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "on",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [
+        "anime"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "anime"
+      ],
+      "missingLanes": [],
+      "completeCapabilityProof": true,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 2,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "all_declared_lanes_live_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "playable_verified"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "mallumv",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "movie"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "movie"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 1,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "moviebox",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://moviiebox.lol/",
+      "forcedEnabled": true,
+      "routeDataState": "off",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "movie",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "no-proven-route",
+      "provenRouteCount": 0,
+      "terminalState": null,
+      "quarantined": true,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "explicit_quarantine",
+        "quick_provider-network-exception",
+        "recovery_no-proven-route"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "movieshunt",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://movieshunt.cc",
+      "forcedEnabled": true,
+      "routeDataState": "on",
+      "requiredLanes": [
+        "movie"
+      ],
+      "currentVerifiedLanes": [
+        "movie"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "movie"
+      ],
+      "missingLanes": [],
+      "completeCapabilityProof": true,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 7,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "all_declared_lanes_live_proven"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "playable_verified"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "moviesmod",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "movie",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "no-proven-route",
+      "provenRouteCount": 0,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-exception",
+        "recovery_no-proven-route"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "mugiwarastream",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
+      "forcedEnabled": true,
+      "routeDataState": "on",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [
+        "anime"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "anime"
+      ],
+      "missingLanes": [],
+      "completeCapabilityProof": true,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 18,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "all_declared_lanes_live_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "playable_verified"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "neko-sama",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "anime"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 2,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "papadustream",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://papadustream.info/acces/",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [
+        "movie"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "movie"
+      ],
+      "missingLanes": [
+        "anime",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 5,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "quick_provider-returned-streams",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "playable_verified"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "persianstremio",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "movie",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "unknown",
+      "provenRouteCount": 0,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-http-error"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "playimdb",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "on",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "movie",
+        "tv"
+      ],
+      "missingLanes": [],
+      "completeCapabilityProof": true,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 2,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "all_declared_lanes_live_proven"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "playable_verified"
+        ],
+        "tv": [
+          "playable_verified"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "purstream",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://purstream.wiki",
+      "forcedEnabled": true,
+      "routeDataState": "on",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "movie",
+        "tv"
+      ],
+      "missingLanes": [],
+      "completeCapabilityProof": true,
+      "recoveryStatus": "no-proven-route",
+      "provenRouteCount": 0,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "all_declared_lanes_live_proven"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "playable_verified"
+        ],
+        "tv": [
+          "playable_verified"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "sekai",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "anime"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 4,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "showbox",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "movie",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "no-proven-route",
+      "provenRouteCount": 0,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_no-proven-route"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "streamzo",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [
+        "movie"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "movie"
+      ],
+      "missingLanes": [
+        "anime",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 5,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "quick_provider-returned-streams",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "playable_verified"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "uhdmovies",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://mmodlist.org/",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "movie",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 24,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-http-error",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "videasy",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://www.videasy.to/docs",
+      "forcedEnabled": true,
+      "routeDataState": "on",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "movie",
+        "tv"
+      ],
+      "missingLanes": [],
+      "completeCapabilityProof": true,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 1,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "all_declared_lanes_live_proven"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "playable_verified"
+        ],
+        "tv": [
+          "playable_verified"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "vidfast",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "movie",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "no-proven-route",
+      "provenRouteCount": 0,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_no-proven-route"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "vidlove",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "on",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "movie",
+        "tv"
+      ],
+      "missingLanes": [],
+      "completeCapabilityProof": true,
+      "recoveryStatus": "no-proven-route",
+      "provenRouteCount": 0,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "all_declared_lanes_live_proven"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "fresh_stream_positive",
+          "no_streams",
+          "playable_verified"
+        ],
+        "tv": [
+          "fresh_stream_positive",
+          "no_streams",
+          "playable_verified"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "vidrock",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://vidrock.ru",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "movie",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "no-proven-route",
+      "provenRouteCount": 0,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-exception",
+        "recovery_no-proven-route"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "voiranime",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://voiranime.org.uk/",
+      "forcedEnabled": true,
+      "routeDataState": "on",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [
+        "anime"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "anime"
+      ],
+      "missingLanes": [],
+      "completeCapabilityProof": true,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 7,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "all_declared_lanes_live_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "playable_verified"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "voiranime-homes",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "on",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [
+        "anime"
+      ],
+      "exactLockedLanes": [],
+      "provenLanes": [
+        "anime"
+      ],
+      "missingLanes": [],
+      "completeCapabilityProof": true,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 8,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "all_declared_lanes_live_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "playable_verified"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "voiranime-rip",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "anime"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 4,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "vostfree",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "anime"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 2,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-zero-result",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "wookafr",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": "https://t.me/s/Wookafr2",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "movie",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 6,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-exception",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    },
+    {
+      "provider": "yflix",
+      "schemaVersion": 1,
+      "authority": "provider-repair-disposition-v1",
+      "activationState": "enabled",
+      "activationAuthority": "provider-folder-lifecycle",
+      "declaredHub": null,
+      "forcedEnabled": true,
+      "routeDataState": "repair",
+      "requiredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "exactLockedLanes": [],
+      "provenLanes": [],
+      "missingLanes": [
+        "movie",
+        "tv"
+      ],
+      "completeCapabilityProof": false,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 5,
+      "terminalState": null,
+      "quarantined": false,
+      "reasonCodes": [
+        "declared_lane_unproven",
+        "quick_provider-network-exception",
+        "recovery_proven"
+      ],
+      "laneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "evidenceDestructive": false
+    }
+  ]
+}

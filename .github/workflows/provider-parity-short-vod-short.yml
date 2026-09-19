@@ -1,0 +1,92 @@
+name: SHORT - Parity Short VOD Authority
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-parity-short-vod-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-parity-short-vod-authority
+  cancel-in-progress: true
+
+jobs:
+  validate-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Require exact trigger head
+        run: test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+      - name: Apply migration and run unit contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_provider_upstream_parity_short_vod_v1.py
+          python3 -m py_compile scripts/run_provider_upstream_parity_v3.py scripts/upgrade_provider_upstream_parity_short_vod_v1.py tests/provider_upstream_parity_short_vod_test.py
+          python3 tests/provider_upstream_parity_short_vod_test.py
+          python3 tests/provider_upstream_parity_v3_test.py
+      - name: Prove real StreamZo 18s is not upstream authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 - <<'PY'
+          import json, pathlib, sys, tempfile
+          root=pathlib.Path('.').resolve(); sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as parity
+          import run_provider_upstream_parity_v2 as v2
+          import run_provider_upstream_parity_v3 as v3
+          upstreams,_=v2.upstream_catalog()
+          upstream=upstreams.get('streamzo')
+          if not upstream: raise SystemExit('STREAMZO_UPSTREAM_MISSING')
+          data=parity.get_bytes(upstream['url'])
+          fixture={'tmdbId':'60059','mediaType':'tv','type':'tv','title':'Better Call Saul','year':2015,'season':1,'episode':1}
+          with tempfile.TemporaryDirectory() as td:
+            path=pathlib.Path(td)/'streamzo-upstream.js'; path.write_bytes(data)
+            result=v3._run_verified(path,fixture,25)
+          safe={k:result.get(k) for k in ('stream_count','candidate_stream_count','raw_stream_count','terminal_verified','terminal_kinds','terminal_statuses','terminal_reasons','terminal_short_vod_seconds','timeout','error_class')}
+          print('STREAMZO_PARITY_TERMINAL',json.dumps(safe,sort_keys=True))
+          if int(result.get('candidate_stream_count') or 0)<1: raise SystemExit('STREAMZO_UPSTREAM_NO_CANDIDATE')
+          if int(result.get('stream_count') or 0)!=0: raise SystemExit('STREAMZO_SHORT_VOD_STILL_VERIFIED')
+          if 'short_finite_vod' not in (result.get('terminal_reasons') or []): raise SystemExit('STREAMZO_SHORT_VOD_REASON_MISSING')
+          durations=[float(v) for v in result.get('terminal_short_vod_seconds') or []]
+          if not durations or abs(durations[0]-18.0)>0.1: raise SystemExit('STREAMZO_SHORT_VOD_DURATION_UNEXPECTED')
+          local={'stream_count':0,'candidate_stream_count':0,'timeout':False,'error_class':None,'http_statuses':[200]}
+          classification=v3.classify_pair(result,local)
+          print('STREAMZO_PARITY_CLASSIFICATION',classification)
+          if classification!='upstream_candidate_unverified': raise SystemExit('STREAMZO_FALSE_REGRESSION_NOT_REMOVED')
+          PY
+      - name: Idempotence and publish source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_provider_upstream_parity_short_vod_v1.py
+          git diff --check
+          changed="$(git diff --name-only)"
+          printf '%s\n' "$changed"
+          test "$changed" = "scripts/run_provider_upstream_parity_v3.py"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/run_provider_upstream_parity_v3.py
+          git diff --cached --quiet && { echo 'PARITY_SHORT_VOD_ALREADY_PUBLISHED'; exit 0; }
+          git commit -m 'fix(parity): reject short finite HLS previews'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${{ github.sha }}" || { echo 'main moved during parity publication' >&2; exit 1; }
+          git push origin HEAD:main
+          echo "PARITY_SHORT_VOD_PUBLISHED $(git rev-parse HEAD)"

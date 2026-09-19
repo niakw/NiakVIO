@@ -1,0 +1,272 @@
+name: SEC - Final Gate
+# Final main validation marker: exact-SHA hardening + CodeQL.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/security-final-gate.yml'
+      - '.github/workflows/codeql.yml'
+      - 'FILE-HASHES.json'
+      - 'PATCH-SHA256SUMS.txt'
+      - 'SHA256SUMS.json'
+      - 'manifest.json'
+      - 'provider-overrides.json'
+      - 'provider-security-revocations.json'
+      - 'provider-bases/**'
+      - 'providers/**'
+      - 'scripts/provider_security_hardening.py'
+      - 'scripts/provider_base_store.py'
+      - 'scripts/add_provider.py'
+      - 'scripts/probe_provider_runtime_parity.py'
+      - 'scripts/provider_patches/global_provider_security_hardening_v1.py'
+      - 'scripts/normalize_core_media_policy.py'
+      - 'scripts/normalize_published_security_finalization.py'
+      - 'scripts/reapply_published_overrides.py'
+      - 'scripts/apply_provider_overrides.py'
+      - 'scripts/harden_staged_provider_security.py'
+      - 'scripts/provider_byte_stability.py'
+      - 'scripts/provider_patches/runtime_capability_media_safety_v4.py'
+      - 'tests/provider_security_hardening_test.py'
+      - 'tests/provider_byte_stability_contract_test.py'
+      - 'tests/core_media_policy_test.py'
+      - 'tests/runtime_capability_media_safety_v4_test.py'
+      - 'tests/native_corpus_device_lab_test.py'
+      - 'tests/workflow_security_policy_test.py'
+      - 'tests/provider_tmdb_runtime_key_contract_test.py'
+      - 'tests/provider_html_filter_security_test.py'
+
+permissions:
+  contents: read
+  security-events: read
+  issues: write
+
+concurrency:
+  group: niakvio-final-provider-security-main
+  cancel-in-progress: true
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Announce issue 69 security gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening + exhaustive published-provider scan + exact-SHA CodeQL + all High/Critical alerts."
+
+      - name: Checkout exact tested SHA
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Validate global hardening implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/provider_security_hardening_test.py
+          python tests/provider_byte_stability_contract_test.py
+          python tests/core_media_policy_test.py
+          python tests/runtime_capability_media_safety_v4_test.py
+          python tests/native_corpus_device_lab_test.py
+          python tests/workflow_security_policy_test.py
+          python tests/provider_tmdb_runtime_key_contract_test.py
+          python tests/provider_html_filter_security_test.py --published
+          python scripts/normalize_published_security_finalization.py --check
+
+      - name: Scan all published providers for known unsafe shapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, sys
+          from pathlib import Path
+          root=Path('.')
+          sys.path.insert(0, str((root/'scripts').resolve()))
+          from provider_security_hardening import known_unsafe_findings
+          manifest=json.loads((root/'manifest.json').read_text())
+          failures=[]
+          manifest_rows=[row for row in (manifest.get('scrapers') or []) if isinstance(row,dict)]
+          rows=[row for row in manifest_rows if str(row.get('filename') or '').strip()]
+          if not rows:
+              failures.append(('catalogue', 'empty_provider_catalogue', 'manifest.json'))
+          if len(rows) != len(manifest_rows):
+              failures.append(('catalogue', f'missing_filename:{len(manifest_rows)-len(rows)}', 'manifest.json'))
+          ids=[str(row.get('id') or '').strip().casefold() for row in rows]
+          if any(not provider_id for provider_id in ids):
+              failures.append(('catalogue', 'missing_provider_id', 'manifest.json'))
+          if len(set(ids)) != len(ids):
+              failures.append(('catalogue', 'duplicate_provider_id', 'manifest.json'))
+          expected=len(rows)
+          checked=0
+          for row in rows:
+              rel=str(row.get('filename') or '')
+              path=root/rel
+              if not path.is_file():
+                  failures.append((str(row.get('id')), 'missing_bundle', rel))
+                  continue
+              findings=known_unsafe_findings(path.read_text(encoding='utf-8', errors='strict'))
+              checked+=1
+              if findings:
+                  failures.append((str(row.get('id')), ','.join(sorted(set(findings))), rel))
+          if checked != expected:
+              failures.append(('catalogue', f'incomplete_scan:{checked}/{expected}', 'manifest.json'))
+          if failures:
+              for item in failures:
+                  print('UNSAFE_PROVIDER=' + '|'.join(item))
+              raise SystemExit(f'known unsafe provider shapes or incomplete catalogue scan remain: {len(failures)}')
+          print(f'FIELD_PUBLISHED_PROVIDER_SECURITY_SCAN checked={checked} expected={expected} unsafe=0')
+          PY
+
+      - name: Wait for CodeQL analysis of exact tested main SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=''
+          for attempt in $(seq 1 90); do
+            found="$(gh api --paginate \
+              -H 'Accept: application/vnd.github+json' \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "repos/${GITHUB_REPOSITORY}/code-scanning/analyses?ref=refs/heads/main&per_page=100" \
+              --jq ".[] | select(.commit_sha == \"${GITHUB_SHA}\") | .id" | head -n1 || true)"
+            if [ -n "$found" ]; then
+              echo "FIELD_CODEQL_EXACT_SHA analysis=$found sha=${GITHUB_SHA}"
+              break
+            fi
+            sleep 20
+          done
+          if [ -z "$found" ]; then
+            echo "No CodeQL analysis found for exact tested main SHA ${GITHUB_SHA}" >&2
+            exit 1
+          fi
+
+      # Release scope: active manifest/provenance references only; historical immutable artifacts remain visible to CodeQL.
+      - name: Gate release-reachable high and critical CodeQL alerts on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&ref=refs/heads/main&per_page=100" \
+            --slurp > "$RUNNER_TEMP/codeql-open.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          pages=json.loads(Path(os.environ['RUNNER_TEMP']+'/codeql-open.json').read_text())
+          alerts=[row for page in pages for row in (page if isinstance(page,list) else []) if isinstance(row,dict)]
+
+          active_provider_paths=set()
+          for manifest_path in (Path('manifest.json'),Path('vf/manifest.json'),Path('vostfr/manifest.json')):
+              if not manifest_path.is_file():
+                  continue
+              payload=json.loads(manifest_path.read_text(encoding='utf-8'))
+              for entry in payload.get('scrapers') or []:
+                  if isinstance(entry,dict):
+                      filename=str(entry.get('filename') or '')
+                      if filename.startswith('providers/'):
+                          active_provider_paths.add(filename)
+
+          active_base_paths=set()
+          provenance_path=Path('PROVENANCE.json')
+          if provenance_path.is_file():
+              provenance=json.loads(provenance_path.read_text(encoding='utf-8'))
+              for provider_row in (provenance.get('providers') or {}).values():
+                  if not isinstance(provider_row,dict):
+                      continue
+                  base=str(provider_row.get('base_filename') or '')
+                  published=str(provider_row.get('published_filename') or '')
+                  if base.startswith('provider-bases/'):
+                      active_base_paths.add(base)
+                  if published.startswith('providers/'):
+                      active_provider_paths.add(published)
+
+          revocation_path=Path('provider-security-revocations.json')
+          revocations=json.loads(revocation_path.read_text()) if revocation_path.is_file() else {'entries':[]}
+          revoked={
+              str(item.get('path') or '')
+              for item in (revocations.get('entries') or [])
+              if isinstance(item,dict) and str(item.get('path') or '')
+          }
+          bad=[]
+          provider_bad=[]
+          stale_revoked=[]
+          for row in alerts:
+              rule=row.get('rule') or {}
+              severity=str(rule.get('security_severity_level') or rule.get('severity') or '').lower()
+              instance=row.get('most_recent_instance') or {}
+              location=instance.get('location') or {}
+              path=str(location.get('path') or '')
+              if severity not in {'high','critical'}:
+                  continue
+              item={
+                  'number': row.get('number'),
+                  'rule': rule.get('id') or rule.get('name'),
+                  'severity': severity,
+                  'path': path,
+              }
+              current_path=Path(path) if path else None
+              if path.startswith('providers/') and path not in active_provider_paths:
+                  continue
+              if path.startswith('provider-bases/') and path not in active_base_paths:
+                  continue
+              # Disabled/archive lifecycle artifacts stay visible to CodeQL for audit,
+              # but they are not release-reachable active provider/base references.
+              if path.startswith(('provider-disabled/','provider-old/')):
+                  continue
+              if current_path is not None and current_path.is_file():
+                  bad.append(item)
+                  if path.startswith(('providers/','provider-bases/')):
+                      provider_bad.append(item)
+                  continue
+              if path in revoked:
+                  stale_revoked.append(item)
+                  continue
+              bad.append({**item,'reason':'missing_from_current_tree_without_explicit_security_revocation'})
+          print(
+              f'FIELD_CODEQL_ALERTS open={len(alerts)} current_high_or_critical={len(bad)} '
+              f'current_provider_high_or_critical={len(provider_bad)} stale_revoked={len(stale_revoked)}'
+          )
+          for row in stale_revoked:
+              print('STALE_REVOKED_HIGH_ALERT=' + json.dumps(row, sort_keys=True))
+          for row in bad:
+              print('OPEN_CURRENT_HIGH_ALERT=' + json.dumps(row, sort_keys=True))
+          if bad:
+              raise SystemExit('release-reachable or unrevoked high/critical CodeQL alerts remain on tested main tree')
+          PY
+
+      - name: Report issue 69 security success
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate SUCCEEDED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening contract, exhaustive published-provider scan, exact-SHA CodeQL and release-reachable High/Critical gate is green."
+
+      - name: Report issue 69 security failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Inspect this run before any unrelated validation."

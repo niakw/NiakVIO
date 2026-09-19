@@ -1,0 +1,158 @@
+name: OPS - Provider README Sync
+
+on:
+  workflow_run:
+    workflows:
+      - NATIVE - Android Reader
+      - NATIVE - iOS Reader
+      - NATIVE - Desktop Reader
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/update_provider_device_results.py'
+      - 'automation/provider-device-results.json'
+      - 'manifest.json'
+      - 'assets/providers/index.json'
+      - 'assets/providers/emojis.json'
+      - '.github/workflows/provider-results-readme-sync.yml'
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Exact completed native reader run ID to import
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: niakvio-provider-results-readme-sync
+  cancel-in-progress: false
+
+jobs:
+  update-results:
+    permissions:
+      contents: write
+      actions: read
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.name == 'NATIVE - Android Reader' || github.event.workflow_run.name == 'NATIVE - iOS Reader' || github.event.workflow_run.name == 'NATIVE - Desktop Reader')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Resolve source run
+        id: source
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_RUN_ID: ${{ github.event.workflow_run.id }}
+          INPUT_RUN_ID: ${{ inputs.run_id }}
+          CURRENT_RUN_ID: ${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_run" ]; then
+            RUN_ID="$EVENT_RUN_ID"
+          elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            RUN_ID="$INPUT_RUN_ID"
+          else
+            RUN_ID="$CURRENT_RUN_ID"
+          fi
+          [[ "$RUN_ID" =~ ^[0-9]+$ ]] || { echo "invalid source run id: $RUN_ID" >&2; exit 2; }
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download exact positive-evidence diagnostics
+        if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && (github.event.workflow_run.name == 'NATIVE - Android Reader' || github.event.workflow_run.name == 'NATIVE - iOS Reader' || github.event.workflow_run.name == 'NATIVE - Desktop Reader')) }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ steps.source.outputs.run_id }}
+          EVENT_NAME: ${{ github.event_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p provider-results-input
+          for pattern in \
+            "native-tv-route-*-$RUN_ID" \
+            "native-mobile-android-*-$RUN_ID" \
+            "native-mobile-ios-*-$RUN_ID" \
+            "native-desktop-reader-*-$RUN_ID"; do
+            gh run download "$RUN_ID" --pattern "$pattern" --dir provider-results-input || true
+          done
+          mapfile -t DIAGNOSTICS < <(find provider-results-input -type f -name '*brain.json' -print | sort)
+          printf '%s\n' "${DIAGNOSTICS[@]}"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "${#DIAGNOSTICS[@]}" -eq 0 ]; then
+            echo "Exact native reader run $RUN_ID yielded no importable *brain.json evidence" >&2
+            exit 1
+          fi
+          echo "FIELD_PROVIDER_RESULT_DIAGNOSTICS run=$RUN_ID count=${#DIAGNOSTICS[@]}"
+
+      - name: Merge positive native results and render README
+        env:
+          RUN_ID: ${{ steps.source.outputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git reset --hard origin/main
+          mkdir -p provider-results-input
+          python scripts/update_provider_device_results.py \
+            --diagnostics-root provider-results-input \
+            --run-id "$RUN_ID" \
+            --results automation/provider-device-results.json \
+            --readme README.fr.md
+
+      - name: Validate trust-first README contract and manifest sync
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'Lectures natives confirmées' README.fr.md
+          grep -q 'Voir les .* providers actifs' README.fr.md
+          grep -q 'PREUVES LECTEUR' README.fr.md
+          grep -Fq 'fixtures de test' README.fr.md
+          grep -Fq 'TESTING_NOTICE.md' README.fr.md
+          grep -Fq 'DISCLAIMER.md' README.fr.md
+          grep -Fq 'https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v2.json' README.fr.md
+          if grep -q '| TV | Mobile | Desktop macOS | Desktop Windows |' README.fr.md; then
+            echo 'legacy sparse per-device matrix unexpectedly returned' >&2
+            exit 1
+          fi
+          python - <<'PY'
+          import json, re
+          manifest = json.load(open('manifest.json', encoding='utf-8'))
+          expected = sum(1 for row in manifest.get('scrapers', []) if isinstance(row, dict) and row.get('enabled') is True)
+          readme = open('README.fr.md', encoding='utf-8').read()
+          match = re.search(r'PROVIDERS_ACTIFS-(\d+)-16a34a', readme)
+          if not match:
+              raise SystemExit('README active-provider shield missing')
+          actual = int(match.group(1))
+          if actual != expected:
+              raise SystemExit(f'README active-provider drift: readme={actual} manifest={expected}')
+          disclosure = f'Voir les {expected} providers actifs'
+          if disclosure not in readme:
+              raise SystemExit(f'README disclosure drift: expected {disclosure!r}')
+          print(f'FIELD_README_MANIFEST_SYNC active={expected}')
+          PY
+
+      - name: Publish result showcase only when changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.fr.md automation/provider-device-results.json
+          if git diff --cached --quiet; then
+            echo 'Provider/device result showcase already current.'
+            exit 0
+          fi
+          git commit -m 'docs: refresh native provider proof showcase [skip ci]'
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main

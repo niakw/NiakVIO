@@ -1,0 +1,105 @@
+name: SHORT - Publish Kehflix Terminal DATA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/kehflix-terminal-data-publish-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-kehflix-terminal-data-publish
+  cancel-in-progress: true
+
+jobs:
+  prove-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Require exact head and build candidate DATA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+          python3 tests/kehflix_terminal_domain_v1_test.py
+          python3 scripts/upgrade_kehflix_terminal_domain_v1.py
+          cp provider-overrides.json /tmp/kehflix-provider-overrides.json
+          cp automation/provider-v3-static-knowledge.json /tmp/kehflix-static-knowledge.json
+      - name: Rematerialize ephemerally and reprove all lanes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 scripts/reapply_published_overrides.py --primary manifest.json
+          python3 - <<'PY'
+          import json,pathlib,sys
+          root=pathlib.Path('.').resolve();sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as p
+          import run_provider_upstream_parity_v3 as v3
+          from rotating_corpus import select_fixtures,default_seed
+          row=p.local_catalog()['kehflix']
+          fixed=[
+            ('movie',{'slug':'interstellar-2014','tmdbId':'157336','mediaType':'movie','category':'movie','title':'Interstellar','year':2014}),
+            ('tv',{'slug':'house-of-the-dragon-s03e01','tmdbId':'94997','mediaType':'tv','category':'tv','title':'House of the Dragon','year':2022,'season':3,'episode':1,'expectedDurationMinutes':65}),
+          ]
+          proof=[]
+          for lane,fx in fixed:
+              r=v3._run_verified(row['path'],v3.fixture_payload(fx,lane,upstream=False),25)
+              ok=int(r.get('stream_count') or 0)>0 and bool(r.get('terminal_verified'))
+              item={'lane':lane,'fixture':fx['slug'],'ok':ok,'streams':int(r.get('stream_count') or 0),'durations':r.get('terminal_media_duration_seconds') or []}
+              proof.append(item);print('KEHFLIX_PUBLISH_PROOF '+json.dumps(item,sort_keys=True))
+              if not ok: raise SystemExit('kehflix '+lane+' terminal proof failed')
+          anime=None
+          for fx in select_fixtures('anime',count=8,seed=default_seed(),provider='kehflix'):
+              r=v3._run_verified(row['path'],v3.fixture_payload(fx,'anime',upstream=False),25)
+              ok=int(r.get('stream_count') or 0)>0 and bool(r.get('terminal_verified'))
+              item={'lane':'anime','fixture':fx['slug'],'ok':ok,'streams':int(r.get('stream_count') or 0),'durations':r.get('terminal_media_duration_seconds') or []}
+              print('KEHFLIX_PUBLISH_PROOF '+json.dumps(item,sort_keys=True))
+              if ok: anime=item;break
+          if not anime: raise SystemExit('kehflix anime terminal proof failed across 8 fixtures')
+          print('KEHFLIX_PUBLISH_ALL_LANES_OK '+json.dumps(proof+[anime],sort_keys=True))
+          PY
+      - name: Publish only DATA delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          git reset --hard "${{ github.sha }}"
+          git clean -fd
+          cp /tmp/kehflix-provider-overrides.json provider-overrides.json
+          cp /tmp/kehflix-static-knowledge.json automation/provider-v3-static-knowledge.json
+          python3 scripts/upgrade_kehflix_terminal_domain_v1.py
+          python3 tests/kehflix_terminal_domain_v1_test.py
+          git diff --check
+          mapfile -t files < <(git diff --name-only | sort)
+          printf 'KEHFLIX_DATA_FILES %s\n' "${files[*]}"
+          test "${#files[@]}" -ge 1
+          printf '%s\n' "${files[@]}" | grep -qx 'provider-overrides.json'
+          for f in "${files[@]}"; do
+            case "$f" in
+              provider-overrides.json|automation/provider-v3-static-knowledge.json) ;;
+              *) echo "unexpected Kehflix DATA file: $f" >&2; exit 1;;
+            esac
+          done
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add provider-overrides.json automation/provider-v3-static-knowledge.json
+          git commit -m 'fix(kehflix): restore proven terminal domain'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${{ github.sha }}" || { echo 'main moved during Kehflix publication' >&2; exit 1; }
+          git push origin HEAD:main
+          echo "KEHFLIX_DATA_PUBLISHED $(git rev-parse HEAD)"

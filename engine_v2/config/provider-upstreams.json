@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "role": "knowledge-sources-not-final-bundles",
+    "deduplicate_after_observation": true,
+    "prefer_live_source": true,
+    "preserve_provenance": true,
+    "rebuild_adapters_cleanly": true
+  },
+  "upstreams": [
+    {
+      "id": "gowaru",
+      "repository": "Gowaru/gowaru-nuvio-providers",
+      "branch": "main",
+      "manifest": "manifest.json",
+      "license": "GPL-3.0"
+    },
+    {
+      "id": "aio",
+      "repository": "NuvioPlugin/All-in-One-Nuvio",
+      "fallback_repository": "D3adlyRocket/All-in-One-Nuvio",
+      "branch": "main",
+      "manifest": "manifest.json",
+      "license": "GPL-3.0"
+    },
+    {
+      "id": "yoru",
+      "repository": "yoruix/nuvio-providers",
+      "branch": "main",
+      "manifest": "manifest.json",
+      "license": "GPL-3.0"
+    }
+  ]
+}

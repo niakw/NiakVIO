@@ -1,0 +1,5415 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-08-08T20:28:27.573Z",
+  "release": "5.20.27",
+  "manifest": "manifest.json",
+  "runtime_contract": "QuickJS positional getStreams(tmdbId, mediaType, season, episode)",
+  "desktop_covers": [
+    "windows",
+    "macos",
+    "linux"
+  ],
+  "fixtures": [
+    "Interstellar",
+    "Tenet"
+  ],
+  "target_count": 44,
+  "providers": [
+    {
+      "id": "anime-sama",
+      "name": "Anime-Sama",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "anime",
+        "movie"
+      ],
+      "profiles": {
+        "android": {
+          "id": "anime-sama",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "anime-sama",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "anime-sama",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "purstream",
+      "name": "Purstream",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "profiles": {
+        "android": {
+          "id": "purstream",
+          "profile": "android",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "free.finepulfe.xyz"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "free.finepulfe.xyz"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "purstream",
+          "profile": "ios",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "free.finepulfe.xyz"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "free.finepulfe.xyz"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "purstream",
+          "profile": "desktop",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "free.finepulfe.xyz"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "free.finepulfe.xyz"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "goated",
+      "name": "🐐 Goated",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "goated",
+          "profile": "android",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "cdn.reallyfast.xyz"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "cdn.reallyfast.xyz"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "goated",
+          "profile": "ios",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "cdn.reallyfast.xyz"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "cdn.reallyfast.xyz"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "goated",
+          "profile": "desktop",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "cdn.reallyfast.xyz"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "cdn.reallyfast.xyz"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "flemmix",
+      "name": "Flemmix",
+      "manifest_enabled": true,
+      "supports_external_player": true,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "flemmix",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "flemmix",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "flemmix",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "uhdmovies",
+      "name": "UHDMovies",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "uhdmovies",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "uhdmovies",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 0,
+              "classification": "non_playable_payload",
+              "payload_kinds": [
+                "http_403"
+              ],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "uhdmovies",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 0,
+              "classification": "non_playable_payload",
+              "payload_kinds": [
+                "http_403"
+              ],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "zinkmovies",
+      "name": "ZinkMovies",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "zinkmovies",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "zinkmovies",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "zinkmovies",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "vegamovies",
+      "name": "VegaMovies",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "vegamovies",
+          "profile": "android",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 12,
+              "direct_playable_count": 4,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "matroska_webm"
+              ],
+              "media_hosts": [
+                "556138dca7367763ed46eecaa4284eca.r2.cloudflarestorage.com",
+                "black-cherry-3dcd.firoya24825315.workers.dev",
+                "spring-cake-9e6f.danij552647832.workers.dev"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 12,
+              "direct_playable_count": 4,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "matroska_webm"
+              ],
+              "media_hosts": [
+                "556138dca7367763ed46eecaa4284eca.r2.cloudflarestorage.com",
+                "pub-799a17e2babb4d3d8479a2bdbe656e30.r2.dev",
+                "pub-a8f4a4bb2761411fb9878c6e3897688c.r2.dev"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "vegamovies",
+          "profile": "ios",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 12,
+              "direct_playable_count": 4,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "matroska_webm"
+              ],
+              "media_hosts": [
+                "556138dca7367763ed46eecaa4284eca.r2.cloudflarestorage.com",
+                "black-cherry-3dcd.firoya24825315.workers.dev",
+                "spring-cake-9e6f.danij552647832.workers.dev"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 12,
+              "direct_playable_count": 4,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "matroska_webm"
+              ],
+              "media_hosts": [
+                "556138dca7367763ed46eecaa4284eca.r2.cloudflarestorage.com",
+                "pub-799a17e2babb4d3d8479a2bdbe656e30.r2.dev",
+                "pub-a8f4a4bb2761411fb9878c6e3897688c.r2.dev"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "vegamovies",
+          "profile": "desktop",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 12,
+              "direct_playable_count": 4,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "matroska_webm"
+              ],
+              "media_hosts": [
+                "556138dca7367763ed46eecaa4284eca.r2.cloudflarestorage.com",
+                "black-cherry-3dcd.firoya24825315.workers.dev",
+                "spring-cake-9e6f.danij552647832.workers.dev"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 12,
+              "direct_playable_count": 4,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "matroska_webm"
+              ],
+              "media_hosts": [
+                "556138dca7367763ed46eecaa4284eca.r2.cloudflarestorage.com",
+                "pub-799a17e2babb4d3d8479a2bdbe656e30.r2.dev",
+                "pub-a8f4a4bb2761411fb9878c6e3897688c.r2.dev"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "hindmoviez",
+      "name": "HindMoviez",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "hindmoviez",
+          "profile": "android",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 15,
+              "direct_playable_count": 4,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "matroska_webm"
+              ],
+              "media_hosts": [
+                "abc.ceuwabreprumma-3727.workers.dev",
+                "abc.piproiquegrappa-9975.workers.dev",
+                "abc.zollutroinoju-4636.workers.dev",
+                "md.nuxatrequoujoi-5721.workers.dev"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 8,
+              "direct_playable_count": 2,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "http_403",
+                "matroska_webm"
+              ],
+              "media_hosts": [
+                "cvb.cemmaujeyicre-9140.workers.dev",
+                "share.petroicemeili-6716.workers.dev"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "hindmoviez",
+          "profile": "ios",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 16,
+              "direct_playable_count": 3,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "AbortError",
+                "matroska_webm"
+              ],
+              "media_hosts": [
+                "abc.croiceloikace-6966.workers.dev",
+                "abc.feteujoyupro-7936.workers.dev",
+                "abc.teicrequaupara-2874.workers.dev"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 8,
+              "direct_playable_count": 2,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "http_403",
+                "matroska_webm"
+              ],
+              "media_hosts": [
+                "me.vetoilloinipau-9446.workers.dev",
+                "share.kujeucoixeti-6043.workers.dev"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "hindmoviez",
+          "profile": "desktop",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 16,
+              "direct_playable_count": 4,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "matroska_webm"
+              ],
+              "media_hosts": [
+                "abc.jounoiyeiboqui-8508.workers.dev",
+                "ger.nottaunnimmoffa-2043.workers.dev",
+                "late-bar-08ba.raunauneudoiceu-1679.workers.dev",
+                "share.licraupekoupo-1855.workers.dev"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 8,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "AbortError",
+                "http_403",
+                "matroska_webm"
+              ],
+              "media_hosts": [
+                "share.kujeucoixeti-6043.workers.dev"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "papadustream",
+      "name": "Papadustream",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "papadustream",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "papadustream",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "papadustream",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "animevostfr",
+      "name": "AnimeVOSTFR",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "anime",
+        "movie"
+      ],
+      "profiles": {
+        "android": {
+          "id": "animevostfr",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "animevostfr",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "animevostfr",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "vixsrc",
+      "name": "VixSrc",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "vixsrc",
+          "profile": "android",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "komiknostalgia.id"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "komiknostalgia.id"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "vixsrc",
+          "profile": "ios",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "komiknostalgia.id"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "komiknostalgia.id"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "vixsrc",
+          "profile": "desktop",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "komiknostalgia.id"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "komiknostalgia.id"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "mugiwarastream",
+      "name": "Mugiwara-no-Streaming",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "anime",
+        "movie"
+      ],
+      "profiles": {
+        "android": {
+          "id": "mugiwarastream",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "mugiwarastream",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "mugiwarastream",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "animesama-co",
+      "name": "AnimeSama.co (DLE Mirror)",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "anime",
+        "movie"
+      ],
+      "profiles": {
+        "android": {
+          "id": "animesama-co",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "animesama-co",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "animesama-co",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "voiranime-rip",
+      "name": "VoirAnime.rip",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "anime",
+        "movie"
+      ],
+      "profiles": {
+        "android": {
+          "id": "voiranime-rip",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "voiranime-rip",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "voiranime-rip",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "hdghartv",
+      "name": "HDGharTV",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "hdghartv",
+          "profile": "android",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 2,
+              "direct_playable_count": 2,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "cdn4.streamraiwind.stream"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "cdn6.streamraiwind.stream"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "hdghartv",
+          "profile": "ios",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 2,
+              "direct_playable_count": 2,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "cdn4.streamraiwind.stream"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "cdn6.streamraiwind.stream"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "hdghartv",
+          "profile": "desktop",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 2,
+              "direct_playable_count": 2,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "cdn4.streamraiwind.stream"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "cdn6.streamraiwind.stream"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "movieblast",
+      "name": "MovieBlast",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "movieblast",
+          "profile": "android",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "matroska_webm"
+              ],
+              "media_hosts": [
+                "mblinkmove.mycdn-mb.xyz"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "movieblast",
+          "profile": "ios",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "matroska_webm"
+              ],
+              "media_hosts": [
+                "mblinkmove.mycdn-mb.xyz"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "movieblast",
+          "profile": "desktop",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 1,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "matroska_webm"
+              ],
+              "media_hosts": [
+                "mblinkmove.mycdn-mb.xyz"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "castle",
+      "name": "🏰 Castle",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "castle",
+          "profile": "android",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 6,
+              "direct_playable_count": 4,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "img1.fvncw.com",
+                "img1.klcxm.com"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 4,
+              "direct_playable_count": 4,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "img1.hvncw.com"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "castle",
+          "profile": "ios",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 6,
+              "direct_playable_count": 4,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "img1.flocw.com",
+                "img1.wnowe.com"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 4,
+              "direct_playable_count": 4,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "img1.flocw.com",
+                "img1.kucwn.com"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "castle",
+          "profile": "desktop",
+          "classification": "compatible_direct",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 6,
+              "direct_playable_count": 4,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "img1.kucwn.com",
+                "img1.wnowe.com"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 4,
+              "direct_playable_count": 4,
+              "classification": "direct_playable",
+              "payload_kinds": [
+                "hls"
+              ],
+              "media_hosts": [
+                "img1.klcxm.com",
+                "img1.kucwn.com"
+              ],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "allmovieland",
+      "name": "AllMovieLand",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "allmovieland",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "allmovieland",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "allmovieland",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "animepahe",
+      "name": "AnimePahe",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "animepahe",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "animepahe",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "animepahe",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "animesalt",
+      "name": "🧂 AnimeSalt",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "animesalt",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "animesalt",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "animesalt",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "animesultra",
+      "name": "AnimesUltra",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "anime",
+        "movie"
+      ],
+      "profiles": {
+        "android": {
+          "id": "animesultra",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "animesultra",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "animesultra",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "cinemacity",
+      "name": "CinemaCity",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "cinemacity",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "cinemacity",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "cinemacity",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "cinemm",
+      "name": "CineMM",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "cinemm",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "cinemm",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "cinemm",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "coflix",
+      "name": "Coflix",
+      "manifest_enabled": true,
+      "supports_external_player": true,
+      "supported_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "profiles": {
+        "android": {
+          "id": "coflix",
+          "profile": "android",
+          "classification": "conclusive_non_playable",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 3,
+              "direct_playable_count": 0,
+              "classification": "non_playable_payload",
+              "payload_kinds": [
+                "http_400",
+                "non_media_document"
+              ],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 3,
+              "direct_playable_count": 0,
+              "classification": "non_playable_payload",
+              "payload_kinds": [
+                "http_400",
+                "non_media_document"
+              ],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "coflix",
+          "profile": "ios",
+          "classification": "conclusive_non_playable",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 3,
+              "direct_playable_count": 0,
+              "classification": "non_playable_payload",
+              "payload_kinds": [
+                "http_400",
+                "non_media_document"
+              ],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 3,
+              "direct_playable_count": 0,
+              "classification": "non_playable_payload",
+              "payload_kinds": [
+                "http_400",
+                "non_media_document"
+              ],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "coflix",
+          "profile": "desktop",
+          "classification": "conclusive_non_playable",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 3,
+              "direct_playable_count": 0,
+              "classification": "non_playable_payload",
+              "payload_kinds": [
+                "http_400",
+                "non_media_document"
+              ],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 3,
+              "direct_playable_count": 0,
+              "classification": "non_playable_payload",
+              "payload_kinds": [
+                "http_400",
+                "non_media_document"
+              ],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "dooflix",
+      "name": "DooFlix",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "dooflix",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "dooflix",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "dooflix",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "french-manga",
+      "name": "French-Manga",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "anime"
+      ],
+      "profiles": {
+        "android": {
+          "id": "french-manga",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "french-manga",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "french-manga",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "frenchstream",
+      "name": "Frenchstream",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "profiles": {
+        "android": {
+          "id": "frenchstream",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "frenchstream",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "frenchstream",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "hdhub4u",
+      "name": "HDHub4u",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "hdhub4u",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "hdhub4u",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "hdhub4u",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "moviebox",
+      "name": "MovieBox",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "moviebox",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "moviebox",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "moviebox",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "movies4u",
+      "name": "Movies4u",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "movies4u",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "movies4u",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "movies4u",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "moviesdrive",
+      "name": "MoviesDrive",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "moviesdrive",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "moviesdrive",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "moviesdrive",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "moviesmod",
+      "name": "MoviesMod",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "moviesmod",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "moviesmod",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "moviesmod",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "movix",
+      "name": "Movix",
+      "manifest_enabled": true,
+      "supports_external_player": true,
+      "supported_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "profiles": {
+        "android": {
+          "id": "movix",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "movix",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "movix",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "nakios",
+      "name": "Nakios",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "profiles": {
+        "android": {
+          "id": "nakios",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "nakios",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "nakios",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "netmirror",
+      "name": "NetMirror",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "netmirror",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 0,
+              "classification": "non_playable_payload",
+              "payload_kinds": [
+                "http_426"
+              ],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "netmirror",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 0,
+              "classification": "non_playable_payload",
+              "payload_kinds": [
+                "http_426"
+              ],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "netmirror",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 1,
+              "direct_playable_count": 0,
+              "classification": "non_playable_payload",
+              "payload_kinds": [
+                "http_426"
+              ],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "peachify",
+      "name": "🍑 Peachify",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "peachify",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "peachify",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "peachify",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "streamflix",
+      "name": "StreamFlix",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "streamflix",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "streamflix",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "streamflix",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "streamzo",
+      "name": "StreamZo",
+      "manifest_enabled": true,
+      "supports_external_player": true,
+      "supported_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "profiles": {
+        "android": {
+          "id": "streamzo",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "streamzo",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "streamzo",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "vidlink",
+      "name": "VidLink",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "vidlink",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "vidlink",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "vidlink",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "vidrock",
+      "name": "🪨 VidRock",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "vidrock",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "vidrock",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "vidrock",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "voiranime",
+      "name": "VoirAnime",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "anime",
+        "movie"
+      ],
+      "profiles": {
+        "android": {
+          "id": "voiranime",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "voiranime",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "voiranime",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "vostfree",
+      "name": "Vostfree",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "anime",
+        "movie"
+      ],
+      "profiles": {
+        "android": {
+          "id": "vostfree",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "vostfree",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "vostfree",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "wookafr",
+      "name": "Wookafr",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "wookafr",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "wookafr",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "wookafr",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "yflix",
+      "name": "YFlix",
+      "manifest_enabled": true,
+      "supports_external_player": false,
+      "supported_types": [
+        "movie",
+        "tv"
+      ],
+      "profiles": {
+        "android": {
+          "id": "yflix",
+          "profile": "android",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "ios": {
+          "id": "yflix",
+          "profile": "ios",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        },
+        "desktop": {
+          "id": "yflix",
+          "profile": "desktop",
+          "classification": "inconclusive",
+          "fixtures": [
+            {
+              "fixture": "Interstellar",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            },
+            {
+              "fixture": "Tenet",
+              "worker_ok": true,
+              "stream_count": 0,
+              "direct_playable_count": 0,
+              "classification": "inconclusive_empty",
+              "payload_kinds": [],
+              "media_hosts": [],
+              "invocation_names": [
+                "positional_with_settings"
+              ],
+              "runtime_error_codes": [],
+              "error": null
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

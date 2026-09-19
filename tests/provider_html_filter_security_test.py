@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+"""Block CodeQL 'Bad HTML filtering regexp' patterns at their NiakVIO sources."""
+from __future__ import annotations
+
+import argparse
+import json
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+EXPECTED = len([row for row in json.loads((ROOT / "manifest.json").read_text(encoding="utf-8")).get("scrapers") or [] if isinstance(row, dict)])
+SOURCE_PATHS = (
+    ROOT / "scripts/provider_base_store.py",
+    ROOT / "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+    ROOT / "scripts/provider_patches/allmovieland_runtime_v1.py",
+    ROOT / "scripts/provider_patches/anikototv_runtime_v1.py",
+    ROOT / "scripts/provider_patches/papadustream_site_runtime_v1.py",
+    ROOT / "scripts/provider_patches/voiranime_homes_runtime_v1.py",
+    ROOT / "scripts/provider_patches/vostfree_dle_uqload_runtime_v1.py",
+    ROOT / "scripts/provider_patches/animesamaco_site_runtime_v1.py",
+    ROOT / "scripts/provider_patches/voiranime_anime_runtime_v2.py",
+    ROOT / "scripts/provider_patches/dle_anime_runtime_v1.py",
+    ROOT / "scripts/provider_patches/neko_sama_runtime_v1.py",
+)
+
+BAD_PATTERNS = (
+    re.compile(r"""\.replace\(\s*/<\[\^>\][+*]>/[a-z]*"""),
+    re.compile(r"""\.replace\(\s*/<script\["""),
+    re.compile(r"""\.replace\(\s*/<style\["""),
+)
+
+
+def findings(path: Path) -> list[str]:
+    text = path.read_text(encoding="utf-8")
+    rows = []
+    for pattern in BAD_PATTERNS:
+        for match in pattern.finditer(text):
+            line = text.count("\n", 0, match.start()) + 1
+            rows.append(f"{path.relative_to(ROOT)}:{line}:{match.group(0)}")
+    return rows
+
+
+def published_paths() -> list[Path]:
+    manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+    rows = manifest.get("scrapers") or []
+    if len(rows) != EXPECTED:
+        raise AssertionError(f"expected {EXPECTED} manifest providers, got {len(rows)}")
+    paths = [ROOT / str(row.get("filename") or "") for row in rows]
+    if len({path.resolve() for path in paths}) != EXPECTED:
+        raise AssertionError("published provider paths must be unique")
+    for path in paths:
+        if not path.is_file():
+            raise AssertionError(f"missing published provider: {path}")
+    return paths
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--published", action="store_true")
+    args = parser.parse_args()
+
+    failures: list[str] = []
+    for path in SOURCE_PATHS:
+        failures.extend(findings(path))
+
+    base_source = SOURCE_PATHS[0].read_text(encoding="utf-8")
+    alias_source = SOURCE_PATHS[1].read_text(encoding="utf-8")
+    allmovieland_source = SOURCE_PATHS[2].read_text(encoding="utf-8")
+    anikoto_source = SOURCE_PATHS[3].read_text(encoding="utf-8")
+    animesamaco_source = SOURCE_PATHS[7].read_text(encoding="utf-8")
+    voiranime_source = SOURCE_PATHS[8].read_text(encoding="utf-8")
+    dle_source = SOURCE_PATHS[9].read_text(encoding="utf-8")
+    neko_source = SOURCE_PATHS[10].read_text(encoding="utf-8")
+    if "function _htmlVisibleText(value)" not in base_source:
+        failures.append("provider_base_store.py: missing deterministic HTML text scanner")
+    if "function plainHtml(v)" not in alias_source:
+        failures.append("global_catalogue_alias_recovery_v2.py: missing deterministic HTML text scanner")
+    if 'function visible(v){var src=String(v==null?"":v)' not in allmovieland_source:
+        failures.append("allmovieland_runtime_v1.py: missing deterministic HTML text scanner")
+    if 'function text(v){var src=String(v==null?"":v)' not in anikoto_source:
+        failures.append("anikototv_runtime_v1.py: missing deterministic HTML text scanner")
+    if 'function visible(v){var src=String(v==null?"":v)' not in animesamaco_source:
+        failures.append("animesamaco_site_runtime_v1.py: missing deterministic HTML text scanner")
+    if 'function stripTags(v){var src=String(v==null?"":v)' not in voiranime_source:
+        failures.append("voiranime_anime_runtime_v2.py: missing deterministic HTML text scanner")
+    if 'function stripTags(v){var src=String(v==null?"":v)' not in dle_source:
+        failures.append("dle_anime_runtime_v1.py: missing deterministic HTML text scanner")
+    if 'function nekoVisibleText(v){var src=String(v==null?"":v)' not in neko_source:
+        failures.append("neko_sama_runtime_v1.py: missing deterministic HTML text scanner")
+
+    checked = 0
+    if args.published:
+        for path in published_paths():
+            checked += 1
+            failures.extend(findings(path))
+
+    if failures:
+        raise AssertionError("\n".join(failures))
+
+    print(
+        "PROVIDER_HTML_FILTER_SECURITY_OK "
+        f"sources={len(SOURCE_PATHS)} published={checked} bad_html_filter_regex=0"
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,191 @@
+name: CORE - Workflow Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - ".github/triggers/**"
+      - "README.md"
+      - "README.fr.md"
+      - "automation/platform-runtime-contracts.json"
+      - "automation/nuvio-client-compatibility-matrix.json"
+      - "manifest.json"
+      - "health-config.json"
+      - "provider-overrides.json"
+      - "provider_catalog.json"
+      - "package.json"
+      - "scripts/**"
+      - "tests/**"
+      - "engine_v2/**"
+      - ".github/triggers/nuvio-client-lab.json"
+      - "manifest.json"
+      - "scripts/**/*.py"
+      - "tests/**/*.py"
+      - "scripts/prepare_native_corpus_validation.py"
+      - "scripts/restage_native_corpus_client.py"
+      - "scripts/augment_native_corpus_request_contract.py"
+      - "scripts/augment_native_provider_loading.py"
+      - "scripts/augment_native_provider_loading_compat.py"
+      - "tests/native_provider_loading_compat_test.py"
+      - "tests/native_app_provider_selection_gate_test.py"
+      - "tests/native_evidence_codegen_pipeline_test.py"
+      - "scripts/evidence_sanitization.py"
+      - "scripts/extract_targeted_route_contexts.py"
+      - "scripts/augment_native_desktop_runtime_diagnostics.py"
+      - "scripts/prebuild_native_android_reader_suite.sh"
+      - "engine_v2/scripts/diagnose-native-reader.mjs"
+      - "scripts/normalize_core_runtime_compat.py"
+      - "scripts/normalize_runtime_repository_dependencies.py"
+      - "tests/evidence_sanitization_test.py"
+      - "tests/native_reader_payload_schema_test.py"
+      - "tests/native_desktop_runtime_diagnostics_order_test.py"
+      - "tests/native_android_avd_cache_contract_test.py"
+      - "scripts/tv_hls_duration_identity.py"
+      - "scripts/rank_provider_portfolio.cjs"
+      - "scripts/watch_native_device_frontend.sh"
+      - "scripts/resolve_provider_hubs.py"
+      - "tests/provider_hub_registry_test.py"
+      - "tests/generic_recovery_hardening_test.py"
+      - "tests/repository_hygiene_contract_test.py"
+      - "tests/workflow_security_policy_test.py"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - ".github/triggers/**"
+      - "README.md"
+      - "README.fr.md"
+      - "automation/platform-runtime-contracts.json"
+      - "automation/nuvio-client-compatibility-matrix.json"
+      - "manifest.json"
+      - "health-config.json"
+      - "provider-overrides.json"
+      - "provider_catalog.json"
+      - "package.json"
+      - "scripts/**"
+      - "tests/**"
+      - "engine_v2/**"
+      - ".github/triggers/nuvio-client-lab.json"
+      - "manifest.json"
+      - "scripts/**/*.py"
+      - "tests/**/*.py"
+      - "scripts/prepare_native_corpus_validation.py"
+      - "scripts/restage_native_corpus_client.py"
+      - "scripts/augment_native_corpus_request_contract.py"
+      - "scripts/augment_native_provider_loading.py"
+      - "scripts/augment_native_provider_loading_compat.py"
+      - "tests/native_provider_loading_compat_test.py"
+      - "tests/native_app_provider_selection_gate_test.py"
+      - "tests/native_evidence_codegen_pipeline_test.py"
+      - "tests/workflow_security_policy_test.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-actions-gate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate pinned Actions and workflow contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository with candidate major
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python with candidate major
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js with candidate major
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Verify runtimes and pinned action migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git --version
+          node --version
+          npm --version
+          python --version
+          EXCLUDE=':(exclude).github/workflows/github-actions-gate.yml'
+          if git grep -E 'de0fac2e4500dabe0009e67214ff5f5447ce83dd|48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e|a309ff8b426b58ec0e2a45f0f869d46889d02405' -- .github/workflows "$EXCLUDE"; then
+            echo 'stale pinned GitHub Action SHA remains' >&2
+            exit 1
+          fi
+          if git grep -E '# v6\.0\.2|# v6\.4\.0|# v6\.2\.0' -- .github/workflows "$EXCLUDE"; then
+            echo 'stale GitHub Action version annotation remains' >&2
+            exit 1
+          fi
+          git grep -q 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' -- .github/workflows
+          git grep -q 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020' -- .github/workflows
+          git grep -q 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97' -- .github/workflows
+
+      - name: Validate Python syntax across scripts and tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          roots = (Path("scripts"), Path("tests"))
+          files = sorted(path for root in roots for path in root.rglob("*.py") if path.is_file())
+          for path in files:
+              source = path.read_text(encoding="utf-8")
+              compile(source, str(path), "exec")
+          print(f"Python syntax OK: {len(files)} files")
+          PY
+
+      - name: Enforce executable multi-device runtime contract
+        run: python3 scripts/runtime_contract_gate.py
+
+      - name: Validate workflow architecture contracts
+        run: |
+          python3 tests/workflow_security_policy_test.py
+          python3 tests/repository_hygiene_contract_test.py
+          python3 tests/release_version_sync_test.py
+          python3 tests/release_version_baseline_test.py
+          python3 tests/release_hash_scope_test.py
+          python3 tests/provider_hub_registry_test.py
+          python3 tests/domain_refresh_workflow_test.py
+          python3 tests/priority_tv_year_domain_refresh_test.py
+          python3 tests/global_identity_policy_ownership_test.py
+          python3 tests/generic_recovery_hardening_test.py
+          python3 tests/native_reader_payload_schema_test.py
+          python3 tests/evidence_sanitization_test.py
+          python3 tests/native_desktop_runtime_diagnostics_order_test.py
+          python3 tests/native_android_avd_cache_contract_test.py
+          python3 tests/native_client_test_bootstrap_test.py
+          python3 tests/native_lab_observational_purity_test.py
+          python3 tests/native_player_diagnostics_codegen_test.py
+          python3 tests/global_provider_branding_test.py
+          python3 tests/ci_preservation_policy_test.py
+          python3 tests/provider_stream_scope_architecture_test.py
+          python3 tests/provider_version_floor_test.py
+          python3 tests/stream_output_sanitizer_direct_normalization_test.py
+          python3 tests/stream_output_sanitizer_fail_closed_test.py
+          python3 tests/global_stream_output_guard_test.py
+          python3 tests/native_corpus_device_lab_test.py
+          python3 tests/native_corpus_suite_summary_test.py
+          node tests/nuvio_client_lab.test.cjs
+          node engine_v2/tests/contracts.test.mjs
+          node engine_v2/tests/purstream-adapter.test.mjs
+
+      - name: Validate native provider-loading compatibility
+        run: |
+          python3 tests/native_provider_loading_compat_test.py
+          python3 tests/native_app_provider_selection_gate_test.py
+          python3 tests/native_evidence_codegen_pipeline_test.py
+
+      - name: Prove compatibility checks are side-effect free
+        run: git diff --exit-code

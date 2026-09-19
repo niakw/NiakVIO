@@ -1,0 +1,170 @@
+name: OPS - Published Provider Availability
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Six low-cost diagnostic checks per day. GitHub schedules use UTC.
+    - cron: "23 */4 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nuvio-provider-availability
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Probe current published providers
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pinned direct runtime dependencies without lifecycle scripts
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Stage current published providers
+        run: python scripts/stage_published.py
+
+      - name: Lock staged provider code against modification
+        run: |
+          sudo chown -R root:root staging
+          sudo chmod -R a-w staging
+
+      - name: Run low-cost availability diagnostics
+        env:
+          NUVIO_HEALTH_OUTPUT: health-output
+        run: node scripts/health_check.mjs --availability
+
+      - name: Upload diagnostic result
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nuvio-availability-${{ github.run_id }}
+          path: health-output/health-results.json
+          retention-days: 2
+          if-no-files-found: error
+
+  report:
+    name: Update diagnostic reports only
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout current published repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Download availability result
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: nuvio-availability-${{ github.run_id }}
+          path: checked-artifact
+
+      - name: Update reports without applying manifest toggles
+        env:
+          NUVIO_HEALTH_RESULTS: checked-artifact/health-results.json
+        run: |
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          cp vf/manifest.json "$RUNNER_TEMP/vf.before.json"
+          python scripts/update_availability.py
+          rm -f manifest.next.json
+          cmp -s manifest.json "$RUNNER_TEMP/manifest.before.json"
+          cmp -s vf/manifest.json "$RUNNER_TEMP/vf.before.json"
+
+      - name: Publish diagnostic reports
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add availability-report.json availability-history.json
+          if git diff --cached --quiet; then
+            echo "Availability reports are unchanged."
+            exit 0
+          fi
+          git commit -m "chore: update provider availability diagnostics"
+          git reset --hard HEAD
+          git clean -fd
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then
+              exit 0
+            fi
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          exit 1
+
+
+  brain-learning-watchdog:
+    name: Ensure daily Brain Learning window
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    permissions:
+      actions: write
+      contents: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Dispatch a missing daily Learning run after 04:00 UTC
+        shell: bash
+        run: |
+          set -euo pipefail
+          HOUR="$(date -u +%H)"
+          if [ "$((10#$HOUR))" -lt 4 ]; then
+            echo "FIELD_BRAIN_WATCHDOG status=too_early utc_hour=$HOUR"
+            exit 0
+          fi
+
+          CUTOFF="$(( $(date -u +%s) - 20 * 60 * 60 ))"
+          LATEST_EPOCH=0
+          LATEST_EVENT=none
+          for EVENT in schedule workflow_dispatch; do
+            CREATED="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow brain-learning-lab.yml --event "$EVENT" --limit 10 --json createdAt --jq '.[0].createdAt // empty')"
+            if [ -z "$CREATED" ]; then
+              continue
+            fi
+            EPOCH="$(date -u -d "$CREATED" +%s)"
+            if [ "$EPOCH" -gt "$LATEST_EPOCH" ]; then
+              LATEST_EPOCH="$EPOCH"
+              LATEST_EVENT="$EVENT"
+            fi
+          done
+
+          if [ "$LATEST_EPOCH" -ge "$CUTOFF" ]; then
+            echo "FIELD_BRAIN_WATCHDOG status=present event=$LATEST_EVENT epoch=$LATEST_EPOCH"
+            exit 0
+          fi
+
+          gh workflow run brain-learning-lab.yml --repo "$GITHUB_REPOSITORY" --ref main -f publish_proposal=true
+          echo "FIELD_BRAIN_WATCHDOG status=dispatched publish_proposal=true"

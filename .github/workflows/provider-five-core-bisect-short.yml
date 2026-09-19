@@ -1,0 +1,86 @@
+name: DIAG - Five Regression Core Bisect
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-five-core-bisect-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-five-regression-core-bisect
+  cancel-in-progress: true
+
+jobs:
+  bisect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Bisect provider Core wrappers
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 - <<'PY'
+          import json,pathlib,re,sys,tempfile
+          root=pathlib.Path('.').resolve();sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as p
+          import run_provider_upstream_parity_v3 as v3
+
+          targets={
+            'animekai':('anime','62715'),
+            'french-manga':('anime','46298'),
+            'neko-sama':('anime','95479'),
+            'voiranime':('anime','65648'),
+            'voiranime-homes':('anime','240411'),
+          }
+          corpus=json.loads((root/'.github/triggers/rotating-popular-corpus.json').read_text(encoding='utf-8'))
+          fixtures={(str(l),str(r.get('tmdbId') or '')):r for l,rows in (corpus.get('lists') or {}).items() for r in rows or [] if isinstance(r,dict)}
+          local=p.local_catalog()
+          block_re=re.compile(r'/\* STARTFIX:([A-Za-z0-9_.-]+) \*/.*?/\* CLOSEFIX:\1 \*/',re.S)
+          interesting=re.compile(r'(?:HLS|MEDIA|OUTPUT|STREAM|PROJECTION|PRESENTATION|SAFETY|LANGUAGE)',re.I)
+
+          def run(path,fx,lane):
+            r=v3._worker_raw(path,v3.fixture_payload(fx,lane,upstream=False),25)
+            return {
+              'stream_count':int(r.get('stream_count') or 0),
+              'raw_stream_count':int(r.get('raw_stream_count') or 0),
+              'timeout':bool(r.get('timeout')),
+              'error_class':r.get('error_class') or ((r.get('error_details') or {}).get('code') if isinstance(r.get('error_details'),dict) else None),
+            }
+
+          for pid,(lane,tmdb) in targets.items():
+            row=local[pid]; path=pathlib.Path(row['path']); source=path.read_text(encoding='utf-8')
+            blocks=list(block_re.finditer(source))
+            ids=[m.group(1) for m in blocks]
+            print('CORE_BLOCKS '+pid+' '+json.dumps(ids))
+            fx=fixtures[(lane,tmdb)]
+            baseline=run(path,fx,lane)
+            print('CORE_BISECT '+json.dumps({'providerId':pid,'variant':'baseline',**baseline},sort_keys=True))
+            with tempfile.TemporaryDirectory(prefix='core-bisect-') as td:
+              td=pathlib.Path(td)
+              stripped=block_re.sub('',source)
+              all_path=td/(pid+'-no-core.js');all_path.write_text(stripped,encoding='utf-8')
+              print('CORE_BISECT '+json.dumps({'providerId':pid,'variant':'no_all_startfix',**run(all_path,fx,lane)},sort_keys=True))
+              if pid!='animekai':
+                continue
+              candidates=[m for m in blocks if interesting.search(m.group(1))]
+              for i,m in enumerate(candidates[:14]):
+                variant=source[:m.start()]+source[m.end():]
+                vp=td/(f'{pid}-{i}.js');vp.write_text(variant,encoding='utf-8')
+                result=run(vp,fx,lane)
+                print('CORE_BISECT '+json.dumps({'providerId':pid,'variant':'drop:'+m.group(1),**result},sort_keys=True))
+          PY

@@ -1,0 +1,75 @@
+name: SHORT - Publish Final Seven Audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-final-seven-audit-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-publish-final-seven-audit
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Require exact trigger head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+      - name: Import pinned seven-provider audit and durable memory
+        shell: bash
+        run: |
+          set -euo pipefail
+          AUDIT_SHA=0d96098e8cd8a170884da5df19d2a4c00153cbb2
+          git fetch origin "$AUDIT_SHA"
+          test "$(git rev-parse FETCH_HEAD)" = "$AUDIT_SHA"
+          git show "$AUDIT_SHA:automation/final-seven-technical-audit-20260915.json" > automation/final-seven-technical-audit-20260915.json
+          python3 - <<'PY'
+          import json,pathlib
+          p=pathlib.Path('automation/final-seven-technical-audit-20260915.json')
+          d=json.loads(p.read_text(encoding='utf-8'))
+          assert d['selectedProviderCount']==7,d
+          assert d['testedProviders']==7,d
+          assert d['allSelectedProvidersAccounted'] is True,d
+          assert d['statusCounts']=={'ZERO':7},d
+          assert d['certainRegressions']==[],d
+          assert d['resampleProviders']==[],d
+          assert d['missingUpstreamProviders']==[],d
+          ids=[str(x.get('providerId')) for x in d.get('providers',[])]
+          expected=['allwish','flemmix','fullanime','moviebox','moviesmod','vidfast','vidlove']
+          assert ids==expected,(ids,expected)
+          mem=pathlib.Path('MEMORY.md');text=mem.read_text(encoding='utf-8').rstrip()
+          marker='## 2026-09-15 — Final seven technical-unresolved audit'
+          block='''\n\n## 2026-09-15 — Final seven technical-unresolved audit\n\n- User requested the simplest/fastest providers first but also asked to finish the remaining providers so Hub46 is practically clean.\n- The seven unresolved providers were rerun with current V3, installed upstream dependencies, 8 rotating samples per declared lane and deep terminal HLS proof: `{"allwish":"ZERO","flemmix":"ZERO","fullanime":"ZERO","moviebox":"ZERO","moviesmod":"ZERO","vidfast":"ZERO","vidlove":"ZERO"}`.\n- Certain Niak regressions: `[]`. Resample providers: `[]`. Missing upstream comparators: `[]`.\n- Durable detailed evidence: `automation/final-seven-technical-audit-20260915.json`. A provider remains `repair` when its reference side is 403/429/timeout/otherwise technical and there is no terminal-positive authority; no speculative runtime patch is allowed.\n'''
+          if marker not in text:
+              text += block
+          mem.write_text(text.rstrip()+'\n',encoding='utf-8')
+          print('FINAL_SEVEN_AUDIT_IMPORT_OK ids='+','.join(ids))
+          PY
+      - name: Publish evidence only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add MEMORY.md automation/final-seven-technical-audit-20260915.json
+          git diff --cached --quiet && { echo FINAL_SEVEN_ALREADY_CURRENT; exit 0; }
+          git commit -m 'docs: record final seven provider audit'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${{ github.sha }}" || { echo 'main moved during audit publication' >&2; exit 1; }
+          git push origin HEAD:main
+          echo "FINAL_SEVEN_AUDIT_PUBLISHED $(git rev-parse HEAD)"

@@ -1,0 +1,59 @@
+name: One-shot dismiss CodeQL alerts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/dismiss-codeql-alerts.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  dismiss:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dismiss every open CodeQL alert
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t alerts < <(
+            gh api --paginate \
+              -H 'Accept: application/vnd.github+json' \
+              "/repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" \
+              --jq '.[] | select((.tool.name // "") == "CodeQL") | .number'
+          )
+
+          echo "Found ${#alerts[@]} open CodeQL alerts."
+
+          for number in "${alerts[@]}"; do
+            echo "Dismissing CodeQL alert #${number}"
+            gh api --method PATCH \
+              -H 'Accept: application/vnd.github+json' \
+              "/repos/${GITHUB_REPOSITORY}/code-scanning/alerts/${number}" \
+              -f state='dismissed' \
+              -f dismissed_reason="won't fix" \
+              -f dismissed_comment='Bulk dismissal requested by the repository owner; future CodeQL scanning remains enabled.' \
+              >/dev/null
+          done
+
+          mapfile -t remaining < <(
+            gh api --paginate \
+              -H 'Accept: application/vnd.github+json' \
+              "/repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" \
+              --jq '.[] | select((.tool.name // "") == "CodeQL") | .number'
+          )
+
+          if (( ${#remaining[@]} > 0 )); then
+            printf 'Still-open CodeQL alerts: %s\n' "${remaining[*]}" >&2
+            exit 1
+          fi
+
+          echo 'All open CodeQL alerts are dismissed.'
+
+# one-shot trigger: 2026-09-16

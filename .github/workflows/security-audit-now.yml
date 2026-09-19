@@ -1,0 +1,354 @@
+name: SEC - One-shot Full Audit
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/security-audit-now.yml"
+
+concurrency:
+  group: niakvio-security-audit-now
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+
+jobs:
+  repo-audit:
+    name: Repository security audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Setup Node 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: npm audit
+        id: npm_audit
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          npm audit --json > npm-audit.json || true
+          node - <<'NODE'
+          const fs=require('fs');
+          const j=JSON.parse(fs.readFileSync('npm-audit.json','utf8'));
+          const v=(j.metadata&&j.metadata.vulnerabilities)||{};
+          console.log('NPM_AUDIT', JSON.stringify(v));
+          const high=(v.high||0)+(v.critical||0);
+          if (high>0) process.exitCode=2;
+          NODE
+      - name: NiakVIO security regression gates
+        id: security_gates
+        continue-on-error: true
+        run: |
+          python3 tests/provider_html_filter_security_test.py
+          python3 tests/provider_security_hardening_test.py
+          python3 tests/repository_hygiene_contract_test.py
+          node tests/provider_worker_security.test.cjs
+      - name: Export open code-scanning alerts
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate --slurp "repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" > code-scanning-pages.json
+          python3 - <<'PY'
+          import json, collections
+          pages=json.load(open('code-scanning-pages.json',encoding='utf-8'))
+          data=[]
+          for page in pages:
+              if isinstance(page,list): data.extend(page)
+              elif isinstance(page,dict): data.append(page)
+          json.dump(data,open('code-scanning-alerts.json','w',encoding='utf-8'),indent=2)
+          sev=collections.Counter(); rules=collections.Counter(); files=collections.Counter()
+          for a in data:
+              rule=a.get('rule') or {}
+              sev[str(rule.get('security_severity_level') or 'unknown')]+=1
+              rules[str(rule.get('id') or rule.get('name') or 'unknown')]+=1
+              loc=((a.get('most_recent_instance') or {}).get('location') or {})
+              path=loc.get('path')
+              if path: files[path]+=1
+          print('CODE_SCANNING_OPEN', len(data))
+          print('CODE_SCANNING_SEVERITY', dict(sev))
+          print('CODE_SCANNING_TOP_RULES', rules.most_common(20))
+          print('CODE_SCANNING_TOP_FILES', files.most_common(20))
+          PY
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        with:
+          name: security-audit-evidence-${{ github.run_id }}
+          path: |
+            npm-audit.json
+            code-scanning-alerts.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Enforce audit gates
+        if: always()
+        shell: bash
+        run: |
+          test '${{ steps.npm_audit.outcome }}' = success
+          test '${{ steps.security_gates.outcome }}' = success
+
+  codeql:
+    # Mirror SEC - CodeQL: one pinned action pair and bounded exhaustive databases.
+    # The z-fallback shards include z* plus any atypical or nested future files.
+    name: "${{ matrix.check_name }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - check_name: "CodeQL · actions"
+            language: actions
+            config: ""
+            category: "/language:actions/one-shot"
+          - check_name: "CodeQL · python"
+            language: python
+            config: ""
+            category: "/language:python/one-shot"
+          - check_name: "CodeQL · javascript-typescript · source"
+            language: javascript-typescript
+            config: |
+              paths-ignore:
+                - providers/**
+                - provider-bases/**
+            category: "/language:javascript-typescript/one-shot/shard:source"
+
+          - check_name: "CodeQL · javascript-typescript · providers-0-f"
+            language: javascript-typescript
+            config: |
+              paths:
+                - "providers/0*.js"
+                - "providers/1*.js"
+                - "providers/2*.js"
+                - "providers/3*.js"
+                - "providers/4*.js"
+                - "providers/5*.js"
+                - "providers/6*.js"
+                - "providers/7*.js"
+                - "providers/8*.js"
+                - "providers/9*.js"
+                - "providers/a*.js"
+                - "providers/b*.js"
+                - "providers/c*.js"
+                - "providers/d*.js"
+                - "providers/e*.js"
+                - "providers/f*.js"
+            category: "/language:javascript-typescript/one-shot/shard:providers-0-f"
+          - check_name: "CodeQL · javascript-typescript · providers-g-l"
+            language: javascript-typescript
+            config: |
+              paths:
+                - "providers/g*.js"
+                - "providers/h*.js"
+                - "providers/i*.js"
+                - "providers/j*.js"
+                - "providers/k*.js"
+                - "providers/l*.js"
+            category: "/language:javascript-typescript/one-shot/shard:providers-g-l"
+          - check_name: "CodeQL · javascript-typescript · providers-m-r"
+            language: javascript-typescript
+            config: |
+              paths:
+                - "providers/m*.js"
+                - "providers/n*.js"
+                - "providers/o*.js"
+                - "providers/p*.js"
+                - "providers/q*.js"
+                - "providers/r*.js"
+            category: "/language:javascript-typescript/one-shot/shard:providers-m-r"
+          - check_name: "CodeQL · javascript-typescript · providers-s-y"
+            language: javascript-typescript
+            config: |
+              paths:
+                - "providers/s*.js"
+                - "providers/t*.js"
+                - "providers/u*.js"
+                - "providers/v*.js"
+                - "providers/w*.js"
+                - "providers/x*.js"
+                - "providers/y*.js"
+            category: "/language:javascript-typescript/one-shot/shard:providers-s-y"
+          - check_name: "CodeQL · javascript-typescript · providers-z-fallback"
+            language: javascript-typescript
+            config: |
+              paths:
+                - providers/**
+              paths-ignore:
+                - "providers/0*.js"
+                - "providers/1*.js"
+                - "providers/2*.js"
+                - "providers/3*.js"
+                - "providers/4*.js"
+                - "providers/5*.js"
+                - "providers/6*.js"
+                - "providers/7*.js"
+                - "providers/8*.js"
+                - "providers/9*.js"
+                - "providers/a*.js"
+                - "providers/b*.js"
+                - "providers/c*.js"
+                - "providers/d*.js"
+                - "providers/e*.js"
+                - "providers/f*.js"
+                - "providers/g*.js"
+                - "providers/h*.js"
+                - "providers/i*.js"
+                - "providers/j*.js"
+                - "providers/k*.js"
+                - "providers/l*.js"
+                - "providers/m*.js"
+                - "providers/n*.js"
+                - "providers/o*.js"
+                - "providers/p*.js"
+                - "providers/q*.js"
+                - "providers/r*.js"
+                - "providers/s*.js"
+                - "providers/t*.js"
+                - "providers/u*.js"
+                - "providers/v*.js"
+                - "providers/w*.js"
+                - "providers/x*.js"
+                - "providers/y*.js"
+            category: "/language:javascript-typescript/one-shot/shard:providers-z-fallback"
+
+          - check_name: "CodeQL · javascript-typescript · provider-bases-0-f"
+            language: javascript-typescript
+            config: |
+              paths:
+                - "provider-bases/0*.js"
+                - "provider-bases/1*.js"
+                - "provider-bases/2*.js"
+                - "provider-bases/3*.js"
+                - "provider-bases/4*.js"
+                - "provider-bases/5*.js"
+                - "provider-bases/6*.js"
+                - "provider-bases/7*.js"
+                - "provider-bases/8*.js"
+                - "provider-bases/9*.js"
+                - "provider-bases/a*.js"
+                - "provider-bases/b*.js"
+                - "provider-bases/c*.js"
+                - "provider-bases/d*.js"
+                - "provider-bases/e*.js"
+                - "provider-bases/f*.js"
+            category: "/language:javascript-typescript/one-shot/shard:provider-bases-0-f"
+          - check_name: "CodeQL · javascript-typescript · provider-bases-g-l"
+            language: javascript-typescript
+            config: |
+              paths:
+                - "provider-bases/g*.js"
+                - "provider-bases/h*.js"
+                - "provider-bases/i*.js"
+                - "provider-bases/j*.js"
+                - "provider-bases/k*.js"
+                - "provider-bases/l*.js"
+            category: "/language:javascript-typescript/one-shot/shard:provider-bases-g-l"
+          - check_name: "CodeQL · javascript-typescript · provider-bases-m-r"
+            language: javascript-typescript
+            config: |
+              paths:
+                - "provider-bases/m*.js"
+                - "provider-bases/n*.js"
+                - "provider-bases/o*.js"
+                - "provider-bases/p*.js"
+                - "provider-bases/q*.js"
+                - "provider-bases/r*.js"
+            category: "/language:javascript-typescript/one-shot/shard:provider-bases-m-r"
+          - check_name: "CodeQL · javascript-typescript · provider-bases-s-y"
+            language: javascript-typescript
+            config: |
+              paths:
+                - "provider-bases/s*.js"
+                - "provider-bases/t*.js"
+                - "provider-bases/u*.js"
+                - "provider-bases/v*.js"
+                - "provider-bases/w*.js"
+                - "provider-bases/x*.js"
+                - "provider-bases/y*.js"
+            category: "/language:javascript-typescript/one-shot/shard:provider-bases-s-y"
+          - check_name: "CodeQL · javascript-typescript · provider-bases-z-fallback"
+            language: javascript-typescript
+            config: |
+              paths:
+                - provider-bases/**
+              paths-ignore:
+                - "provider-bases/0*.js"
+                - "provider-bases/1*.js"
+                - "provider-bases/2*.js"
+                - "provider-bases/3*.js"
+                - "provider-bases/4*.js"
+                - "provider-bases/5*.js"
+                - "provider-bases/6*.js"
+                - "provider-bases/7*.js"
+                - "provider-bases/8*.js"
+                - "provider-bases/9*.js"
+                - "provider-bases/a*.js"
+                - "provider-bases/b*.js"
+                - "provider-bases/c*.js"
+                - "provider-bases/d*.js"
+                - "provider-bases/e*.js"
+                - "provider-bases/f*.js"
+                - "provider-bases/g*.js"
+                - "provider-bases/h*.js"
+                - "provider-bases/i*.js"
+                - "provider-bases/j*.js"
+                - "provider-bases/k*.js"
+                - "provider-bases/l*.js"
+                - "provider-bases/m*.js"
+                - "provider-bases/n*.js"
+                - "provider-bases/o*.js"
+                - "provider-bases/p*.js"
+                - "provider-bases/q*.js"
+                - "provider-bases/r*.js"
+                - "provider-bases/s*.js"
+                - "provider-bases/t*.js"
+                - "provider-bases/u*.js"
+                - "provider-bases/v*.js"
+                - "provider-bases/w*.js"
+                - "provider-bases/x*.js"
+                - "provider-bases/y*.js"
+            category: "/language:javascript-typescript/one-shot/shard:provider-bases-z-fallback"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          queries: security-extended
+          config: ${{ matrix.config }}
+      - name: Analyze
+        uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938
+        with:
+          category: ${{ matrix.category }}
+
+  codeql-result:
+    name: CodeQL · javascript-typescript
+    if: always()
+    needs: codeql
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Enforce complete CodeQL matrix
+        env:
+          MATRIX_RESULT: ${{ needs.codeql.result }}
+        run: test "$MATRIX_RESULT" = "success"

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "providerId": "neko-sama",
+  "finalState": "repair",
+  "activationState": "enabled",
+  "failClosed": true,
+  "classification": "runtime_constructs_player_row_but_export_contract_returns_empty",
+  "certainNiakRegression": false,
+  "repairAttemptExhaustedForCurrentSweep": true,
+  "evidenceBranch": "diag/neko-runtime-stage-20260915",
+  "evidenceCommit": "b1cd42ad2872125f0f9591797b9f8a08b4652530",
+  "fixtures": [
+    {
+      "fixture": "jujutsu-kaisen-2020-s01e01",
+      "runtimeOutCount": 1,
+      "iframeHosts": [
+        "vidmoly.biz"
+      ],
+      "raw": 0,
+      "streams": 0,
+      "statuses": [
+        200
+      ]
+    },
+    {
+      "fixture": "sakamoto-days-2025-s01e01",
+      "runtimeOutCount": 1,
+      "iframeHosts": [
+        "vidmoly.biz"
+      ],
+      "raw": 0,
+      "streams": 0,
+      "statuses": [
+        200
+      ]
+    }
+  ],
+  "testedAndRejectedFixDirections": [
+    "episode_parser_v3_alone",
+    "vidmoly_terminal_resolver",
+    "correlated_player_fallback_marker",
+    "referer_variation"
+  ],
+  "nextPolicy": "leave_repair_and_fail_closed_until_export_boundary_is_reworked_with_new_evidence"
+}

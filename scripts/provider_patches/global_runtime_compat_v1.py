@@ -1,0 +1,154 @@
+#!/usr/bin/env python3
+"""Append one Core-wide JS runtime portability bootstrap to every provider bundle.
+
+The bootstrap only fills semantic gaps observed between official Nuvio runtimes.
+It does not resolve provider domains, alter stream rows, or invent provider data.
+"""
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+from typing import Any
+
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+from provider_patch_blocks import has_managed_fix, replace_managed_fix, strip_legacy_iife
+
+MARKER = "NUVIO_GLOBAL_RUNTIME_COMPAT_V1"
+MANAGED_FIX_ID = "CORE.RUNTIME_COMPAT.V1"
+RESERVED_KEY = "__nuvioGlobalRuntimeCompatV1"
+REVISION = 2
+
+
+def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
+    del options
+    if not has_managed_fix(text, MANAGED_FIX_ID):
+        text = strip_legacy_iife(text, f"/* {MARKER} */")
+
+    wrapper = r'''
+/* NUVIO_GLOBAL_RUNTIME_COMPAT_V1 */
+;(function(g){
+  "use strict";
+  if(!g||g.__nuvioGlobalRuntimeCompatV1)return;
+  g.__nuvioGlobalRuntimeCompatV1={revision:2};
+
+  // NuvioDesktop's current URL polyfill stores href independently from hostname,
+  // host, pathname, search and hash. Replacing hostname therefore leaves
+  // URL#toString() stale. Keep the official parser, but return instances whose
+  // string form is reconstructed from their current public URL fields.
+  var NativeURL=g.URL;
+  if(typeof NativeURL==="function"){
+    function renderUrl(u){
+      try{
+        var protocol=String(u.protocol||"");
+        var host=String(u.host||"");
+        if(!host){
+          host=String(u.hostname||"");
+          var port=String(u.port||"");
+          if(port&&host.indexOf(":")<0)host+=":"+port;
+        }else if(u.hostname&&String(u.hostname)!==host.split(":")[0]){
+          host=String(u.hostname||"")+(u.port?":"+String(u.port):"");
+        }
+        var hierarchical=protocol&&host?protocol+"//"+host:"";
+        var pathname=String(u.pathname||"");
+        var search=String(u.search||"");
+        var hash=String(u.hash||"");
+        var rendered=hierarchical+pathname+search+hash;
+        if(rendered)return rendered;
+        // Some official QuickJS URL polyfills expose a correct href for
+        // new URL(relative, base) while leaving protocol/host/pathname empty.
+        // Fall back to href only when there is nothing mutable to reconstruct.
+        return String(u.href||"");
+      }catch(_error){
+        try{return String(u.href||"");}catch(_ignored){return "";}
+      }
+    }
+    var staleMutableUrl=false;
+    try{
+      var probe=new NativeURL("https://old.invalid/a?b=1#c");
+      probe.hostname="new.invalid";
+      staleMutableUrl=String(probe).indexOf("new.invalid")<0;
+    }catch(_error){}
+    if(staleMutableUrl){
+      var CompatURL=function(input,base){
+        var u=arguments.length>1?new NativeURL(input,base):new NativeURL(input);
+        try{
+          u.toString=function(){return renderUrl(u);};
+          u.toJSON=function(){return renderUrl(u);};
+        }catch(_error){}
+        return u;
+      };
+      try{CompatURL.prototype=NativeURL.prototype;}catch(_error){}
+      try{
+        Object.getOwnPropertyNames(NativeURL).forEach(function(name){
+          if(name==="length"||name==="name"||name==="prototype")return;
+          try{CompatURL[name]=NativeURL[name];}catch(_ignored){}
+        });
+      }catch(_error){}
+      g.URL=CompatURL;
+    }
+  }
+
+  // Normalize URL/Request-like inputs before the official Desktop fetch bridge.
+  // QuickJS host bindings stringify arbitrary objects differently across clients;
+  // the network bridge itself expects one concrete URL string.
+  if(typeof g.fetch==="function"&&!g.fetch.__nuvioGlobalRuntimeCompatV1){
+    var nativeFetch=g.fetch.bind(g);
+    function providerTimedOut(){
+      try{
+        var deadline=Number(g&&g.__nuvioProviderDeadlineMs)||0;
+        return deadline>0&&Date.now()>deadline;
+      }catch(_error){return false;}
+    }
+    function providerTimeoutError(){
+      var error=new Error("NiakVIO provider execution budget exceeded");
+      error.name="NuvioProviderTimeoutError";
+      error.code="NUVIO_PROVIDER_TIMEOUT";
+      error.__nuvioProviderTimeout=true;
+      return error;
+    }
+    var compatFetch=function(input,init){
+      if(providerTimedOut())return Promise.reject(providerTimeoutError());
+      var next=input;
+      try{
+        if(input&&typeof input==="object"){
+          if(typeof input.url==="string")next=input.url;
+          else if(typeof input.href==="string"||typeof input.toString==="function")next=String(input);
+        }
+      }catch(_error){next=input;}
+      var pending;
+      try{pending=nativeFetch(next,init);}catch(error){return Promise.reject(error);}
+      return Promise.resolve(pending).then(function(value){
+        if(providerTimedOut())throw providerTimeoutError();
+        return value;
+      });
+    };
+    compatFetch.__nuvioGlobalRuntimeCompatV1=true;
+    compatFetch.__nuvioOriginal=nativeFetch;
+    g.fetch=compatFetch;
+  }
+
+  // Some provider helpers install abort timeouts even though NuvioDesktop QuickJS
+  // currently exposes no timer API. A positive delay is intentionally a no-op:
+  // firing an abort immediately is worse than allowing the native request budget
+  // to govern the request. Zero-delay callbacks keep microtask semantics.
+  if(typeof g.setTimeout!=="function"){
+    g.setTimeout=function(callback,delay){
+      if((Number(delay)||0)<=0&&typeof callback==="function"&&typeof Promise!=="undefined"){
+        Promise.resolve().then(callback).catch(function(){});
+      }
+      return 0;
+    };
+  }
+  if(typeof g.clearTimeout!=="function")g.clearTimeout=function(){};
+  if(typeof g.setInterval!=="function")g.setInterval=function(){return 0;};
+  if(typeof g.clearInterval!=="function")g.clearInterval=function(){};
+})(typeof globalThis!=="undefined"?globalThis:this);
+'''
+    return replace_managed_fix(
+        text,
+        MANAGED_FIX_ID,
+        wrapper.lstrip(),
+        data={"revision": REVISION},
+    )

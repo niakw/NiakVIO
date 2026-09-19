@@ -1,0 +1,69 @@
+name: SHORT - Castle Language Roles
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/upgrade_castle_language_structure_v1.py'
+      - 'scripts/provider_patches/castle_runtime_v1.py'
+      - 'tests/castle_language_roles_short_test.py'
+      - '.github/workflows/castle-language-roles-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-short-castle-language-main
+  cancel-in-progress: false
+
+jobs:
+  migrate-test-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Require exact trigger head
+        run: test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+      - name: Apply Castle structured-language migration
+        run: python3 scripts/upgrade_castle_language_structure_v1.py
+      - name: Compile
+        run: python3 -m py_compile scripts/upgrade_castle_language_structure_v1.py scripts/provider_patches/castle_runtime_v1.py tests/castle_language_roles_short_test.py
+      - name: Castle language and V23 role contract
+        run: python3 tests/castle_language_roles_short_test.py
+      - name: Migration idempotence
+        run: python3 scripts/upgrade_castle_language_structure_v1.py
+      - name: Diff integrity
+        run: git diff --check
+      - name: Publish durable Castle runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only | tee "$RUNNER_TEMP/changed.txt"
+          if grep -Ev '^scripts/provider_patches/castle_runtime_v1\.py$' "$RUNNER_TEMP/changed.txt"; then
+            echo 'Unexpected Castle language migration path' >&2
+            exit 1
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/provider_patches/castle_runtime_v1.py
+          git diff --cached --quiet && { echo 'CASTLE_LANGUAGE_ALREADY_APPLIED'; exit 0; }
+          git commit -m 'fix(castle): expose structured audio languages'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${{ github.sha }}" || {
+            echo 'main moved during Castle language migration' >&2
+            exit 1
+          }
+          git push origin HEAD:main
+          echo "CASTLE_LANGUAGE_PUBLISHED $(git rev-parse HEAD)"

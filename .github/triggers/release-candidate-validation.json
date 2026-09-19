@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "reason": "Final 5.21.48 mono-SHA acceptance after corrected 46-current plus 50-historical finalizer and idempotent Domain Refresh",
+  "release_version": "5.21.48",
+  "provider_count": 46,
+  "historical_provider_count": 50,
+  "parent_release_sha": "5fe58e30f0f96ca1611bcb6e8458b8aca8e97b33",
+  "domain_noop_sha": "24ecf45e48d330a94f581925c6a77899137fd41c",
+  "domain_refresh_run_id": 34841743150,
+  "finalizer_run_id": 34841343267,
+  "required_gates": [
+    "verify-publish-quick",
+    "provider-non-regression",
+    "stream-metadata",
+    "canonical-media-types",
+    "provider-overrides",
+    "codeql",
+    "sonar",
+    "deepsource",
+    "codescene",
+    "tv-android",
+    "mobile-android",
+    "mobile-ios",
+    "desktop-macos",
+    "desktop-windows"
+  ]
+}

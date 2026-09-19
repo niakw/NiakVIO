@@ -1,0 +1,97 @@
+name: DIAG - Triple Provider Regression Trace
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-triple-regression-trace-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-triple-provider-regression-trace
+  cancel-in-progress: true
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Trace exact upstream and Niak routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 - <<'PY'
+          import json, pathlib, subprocess, sys, tempfile
+          root=pathlib.Path('.').resolve()
+          sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as parity
+          import run_provider_upstream_parity_v2 as parity_v2
+          import run_provider_upstream_parity_v3 as parity_v3
+
+          fixtures={
+            'playimdb': {'slug':'money-heist-2017-s01e01','tmdbId':'71446','mediaType':'tv','title':'Money Heist','year':2017,'season':1,'episode':1},
+            'streamzo': {'slug':'better-call-saul-2015-s01e01','tmdbId':'60059','mediaType':'tv','title':'Better Call Saul','year':2015,'season':1,'episode':1},
+            'mugiwarastream': {'slug':'tonikawa-over-the-moon-for-you-2020-s01e01','tmdbId':'100049','mediaType':'anime','category':'anime','title':'TONIKAWA: Over the Moon for You','year':2020,'season':1,'episode':1},
+          }
+          locals_=parity.local_catalog()
+          upstreams, errors=parity_v2.upstream_catalog()
+          if errors: print('UPSTREAM_CATALOG_ERRORS',json.dumps(errors,ensure_ascii=False))
+
+          def run_worker(label,path,fixture):
+            ctx=parity.context_for(fixture)
+            cmd=['node',str(root/'scripts/provider_worker.cjs'),str(path),json.dumps(fixture,separators=(',',':')),json.dumps(ctx,separators=(',',':'))]
+            try:
+              p=subprocess.run(cmd,cwd=root,text=True,capture_output=True,timeout=35,check=False)
+            except subprocess.TimeoutExpired:
+              print('TRACE',label,'TIMEOUT')
+              return
+            result=None
+            for line in p.stdout.splitlines():
+              if line.startswith('NUVIO_HEALTH_RESULT='):
+                try: result=json.loads(line.split('=',1)[1])
+                except Exception: pass
+            if not isinstance(result,dict):
+              print('TRACE',label,'NO_RESULT','exit='+str(p.returncode))
+              return
+            err=result.get('error_details') if isinstance(result.get('error_details'),dict) else {}
+            print('TRACE',label,'streams='+str(result.get('stream_count',0)),'raw='+str(result.get('raw_stream_count',0)),'error='+str(err.get('code') or err.get('name') or 'none'))
+            for obs in result.get('network_observations') or []:
+              if not isinstance(obs,dict) or obs.get('infrastructure'): continue
+              print('ROUTE',label,str(obs.get('stage')),str(obs.get('host')),str(obs.get('method')),str(obs.get('path_pattern')),str(obs.get('status')),str(obs.get('ok')),str(obs.get('error_code') or ''))
+
+          with tempfile.TemporaryDirectory(prefix='niakvio-triple-trace-') as td:
+            td=pathlib.Path(td)
+            for pid,base_fixture in fixtures.items():
+              print('=== PROVIDER',pid,'===')
+              up=upstreams.get(pid); loc=locals_.get(pid)
+              if not up or not loc:
+                print('MISSING',pid,'upstream='+str(bool(up)),'local='+str(bool(loc)))
+                continue
+              up_path=td/(pid+'-upstream.js')
+              up_path.write_bytes(parity.get_bytes(up['url']))
+              lane='anime' if base_fixture.get('mediaType')=='anime' else str(base_fixture.get('mediaType'))
+              up_fixture=parity_v3.fixture_payload(base_fixture,lane,upstream=True)
+              ni_fixture=parity_v3.fixture_payload(base_fixture,lane,upstream=False)
+              print('SOURCE',pid,up.get('source'),up.get('url'))
+              # Alternate first caller across providers to avoid recreating the old order bias.
+              if pid in {'streamzo'}:
+                run_worker(pid+':niak',loc['path'],ni_fixture)
+                run_worker(pid+':upstream',up_path,up_fixture)
+              else:
+                run_worker(pid+':upstream',up_path,up_fixture)
+                run_worker(pid+':niak',loc['path'],ni_fixture)
+          PY

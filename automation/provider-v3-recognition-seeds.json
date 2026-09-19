@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "role": "niakvio-owned-recognition-seeds",
+  "externalRepositoryRequired": false,
+  "providerJavaScriptExecuted": false,
+  "providers": {
+    "animekai": {
+      "identity": {
+        "mode": "catalog-search",
+        "requiresTmdbMetadata": true,
+        "requiredFields": ["tmdbId", "mediaType", "title"]
+      },
+      "knownSite": "https://www3.anikai.cc",
+      "origins": ["https://www3.anikai.cc"],
+      "routes": [
+        "/browser?keyword={query}",
+        "/watch/{slug}",
+        "/watch/{slug}/ep-{episode}"
+      ],
+      "requests": [
+        {
+          "route": "/browser?keyword={query}",
+          "role": "search",
+          "method": "GET",
+          "bodyFields": [],
+          "formEncoded": false,
+          "jsonEncoded": false,
+          "refererRequired": false,
+          "originRequired": false,
+          "response": "html-or-text",
+          "executedEvidence": true,
+          "evidence": "niakvio-static-contract",
+          "confidence": 1.0
+        },
+        {
+          "route": "/watch/{slug}/ep-{episode}",
+          "role": "detail",
+          "method": "GET",
+          "bodyFields": [],
+          "formEncoded": false,
+          "jsonEncoded": false,
+          "refererRequired": false,
+          "originRequired": false,
+          "response": "html-or-text",
+          "executedEvidence": true,
+          "evidence": "niakvio-static-contract",
+          "confidence": 1.0
+        }
+      ],
+      "notes": [
+        "Search is a bounded GET catalogue lookup; selected watch entries resolve to /ep-{episode} pages.",
+        "data-video is an HTML player attribute and must never be emitted as an HTTP route.",
+        "Embed/player URLs are discovered from the selected episode page and require the provider origin as playback context when the stream host requires it."
+      ]
+    },
+    "animezey": {
+      "identity": {
+        "mode": "catalog-search",
+        "requiresTmdbMetadata": true,
+        "requiredFields": ["tmdbId", "mediaType", "title"]
+      },
+      "origins": [
+        "https://1.animezey23112022.workers.dev",
+        "https://1.animezeydl.workers.dev",
+        "https://animezey16082023.animezey16082023.workers.dev"
+      ],
+      "routes": [
+        "/1:search",
+        "/download.aspx"
+      ],
+      "requests": [
+        {
+          "route": "/1:search",
+          "role": "search",
+          "method": "POST",
+          "bodyFields": ["q", "page_token", "page_index"],
+          "formEncoded": false,
+          "jsonEncoded": true,
+          "refererRequired": true,
+          "originRequired": false,
+          "response": "json",
+          "executedEvidence": true,
+          "evidence": "niakvio-static-contract",
+          "confidence": 1.0
+        },
+        {
+          "route": "/download.aspx",
+          "role": "source",
+          "method": "GET",
+          "bodyFields": [],
+          "formEncoded": false,
+          "jsonEncoded": false,
+          "refererRequired": true,
+          "originRequired": false,
+          "response": "direct-or-redirect",
+          "executedEvidence": true,
+          "evidence": "niakvio-static-contract",
+          "confidence": 1.0
+        }
+      ],
+      "notes": [
+        "Search rotates between NiakVIO-known worker origins and POSTs JSON to /1:search.",
+        "Episode searches use q, page_token and page_index; movie searches require q.",
+        "Player resolution may use a returned /download.aspx path or a returned worker path opened with a=view; the returned path itself remains DATA and is not guessed."
+      ]
+    },
+    "anime-ultime": {
+      "routes": [
+        "/VideoPlayer.html",
+        "/VideoPlayer"
+      ],
+      "requests": [
+        {
+          "route": "/VideoPlayer.html",
+          "role": "player",
+          "method": "GET",
+          "bodyFields": [],
+          "formEncoded": false,
+          "jsonEncoded": false,
+          "refererRequired": false,
+          "originRequired": false,
+          "response": "html-or-text",
+          "executedEvidence": true,
+          "evidence": "niakvio-durable-data",
+          "confidence": 0.95
+        }
+      ],
+      "notes": [
+        "Existing durable NiakVIO player DATA is sufficient to classify this provider as routeful; no external repository lookup is required."
+      ]
+    },
+    "uhdmovies": {
+      "identity": {
+        "mode": "catalog-search",
+        "requiresTmdbMetadata": true,
+        "requiredFields": ["tmdbId", "mediaType", "title", "year"]
+      },
+      "knownSite": "https://uhdmovies.autos",
+      "origins": [
+        "https://uhdmovies.autos",
+        "https://uhdmovies.pink"
+      ],
+      "routes": [
+        "/?s={query}"
+      ],
+      "requests": [
+        {
+          "route": "/?s={query}",
+          "role": "search",
+          "method": "GET",
+          "bodyFields": [],
+          "formEncoded": false,
+          "jsonEncoded": false,
+          "refererRequired": false,
+          "originRequired": false,
+          "response": "html-or-text",
+          "executedEvidence": true,
+          "evidence": "niakvio-static-contract",
+          "confidence": 1.0
+        }
+      ],
+      "notes": [
+        "Movie-only catalogue lookup is GET /?s={query}; candidates are selected from article links using title/year identity.",
+        "The old /movie/ fragment is not a search contract and must not be used as the executable entry route.",
+        "After the selected detail page, release/gateway URLs and form action targets are discovered dynamically from returned HTML; NiakVIO must not invent fixed paths for those steps.",
+        "Gateway resolution uses returned landing forms/redirects before DriveSeed/direct-media resolution; those dynamic targets remain stream traversal evidence rather than provider search-route DATA."
+      ]
+    },
+    "vegamovies": {
+      "identity": {
+        "mode": "catalog-search",
+        "requiresTmdbMetadata": true,
+        "requiredFields": ["tmdbId", "mediaType", "title", "year"]
+      },
+      "knownSite": "https://new2.vegamovies.futbol",
+      "officialSite": "https://new2.vegamovies.futbol",
+      "officialHub": "https://vglist.top/",
+      "origins": [
+        "https://new2.vegamovies.futbol",
+        "https://vglist.top"
+      ],
+      "routes": [
+        "/?s={query}"
+      ],
+      "requests": [
+        {
+          "route": "/?s={query}",
+          "role": "search",
+          "method": "GET",
+          "bodyFields": [],
+          "formEncoded": false,
+          "jsonEncoded": false,
+          "refererRequired": false,
+          "originRequired": false,
+          "response": "html-or-text",
+          "executedEvidence": false,
+          "evidence": "current-domain-candidate-unexecuted",
+          "confidence": 0.95
+        }
+      ],
+      "notes": [
+        "Reviewed current-site authority points to new2.vegamovies.futbol with vglist.top as the official directory/hub.",
+        "GET /?s={query} is a candidate search route inferred from the current catalogue search surface; it is intentionally not HTTP-proven here.",
+        "The strict sequential live probe must execute this candidate before it can become validated Provider DATA.",
+        "Historical /search.php and /api routes remain diagnostic candidates until live finalization prunes failed paths; no content-specific /download-* URL is persisted as Provider DATA."
+      ]
+    },
+    "4khdhub": {
+      "identity": {
+        "mode": "catalog-search",
+        "requiresTmdbMetadata": true,
+        "requiredFields": ["tmdbId", "mediaType", "title", "year"]
+      },
+      "knownSite": "https://4khdhub.one",
+      "officialSite": "https://4khdhub.one",
+      "officialHub": "https://4khdhub.one/",
+      "origins": [
+        "https://4khdhub.one"
+      ],
+      "routes": [
+        "/?s={query}"
+      ],
+      "requests": [
+        {
+          "route": "/?s={query}",
+          "role": "search",
+          "method": "GET",
+          "bodyFields": [],
+          "formEncoded": false,
+          "jsonEncoded": false,
+          "refererRequired": false,
+          "originRequired": false,
+          "response": "html-or-text",
+          "executedEvidence": false,
+          "evidence": "current-domain-candidate-unexecuted",
+          "confidence": 0.95
+        }
+      ],
+      "notes": [
+        "Reviewed current 4KHDHub authority is 4khdhub.one; HDHub4u is a separate catalogue and must not replace the 4KHDHub terminal.",
+        "GET /?s={query} remains a candidate until the strict N-to-N live probe executes it against 4khdhub.one.",
+        "The canonical 4khdhub.one host must never be substituted to hdhub4u.* by historical override data."
+      ]
+    }
+  }
+}

@@ -1,0 +1,285 @@
+import fs from "node:fs";
+import path from "node:path";
+
+export const PROVIDER_CATALOG_SCHEMA_VERSION = 2;
+
+export const PROVIDER_SCRAPER_ALLOWED_FIELDS = new Set([
+  "id", "name", "description", "version", "author", "supportedTypes",
+  "filename", "enabled", "logo", "contentLanguage", "formats", "limited",
+  "supportsExternalPlayer", "disabledPlatforms", "hasSettings", "notes",
+]);
+
+export function canonicalProviderId(value) {
+  const id = String(value ?? "").trim();
+  if (!id) throw new Error("provider id is required");
+  return id.toLowerCase();
+}
+
+export function buildCatalogFromPublished({ generalManifest, vfManifest }) {
+  const general = assertManifest(generalManifest, "general");
+  const vf = assertManifest(vfManifest, "vf");
+  const generalById = new Map();
+
+  for (const scraper of general.scrapers) {
+    const canonicalId = canonicalProviderId(scraper.id);
+    if (generalById.has(canonicalId)) {
+      throw new Error(`general manifest contains duplicate provider id: ${scraper.id}`);
+    }
+    generalById.set(canonicalId, canonicalizePublishedScraper(scraper));
+  }
+
+  const vfOrder = [];
+  for (const scraper of vf.scrapers) {
+    const canonicalId = canonicalProviderId(scraper.id);
+    if (vfOrder.includes(canonicalId)) {
+      throw new Error(`vf manifest contains duplicate provider id: ${scraper.id}`);
+    }
+    if (!generalById.has(canonicalId)) {
+      throw new Error(`vf provider is absent from general manifest: ${scraper.id}`);
+    }
+    const generalScraper = generalById.get(canonicalId);
+    const normalizedVf = normalizeProjectionScraper(scraper, "vf");
+    if (!deepEqual(generalScraper, normalizedVf)) {
+      throw new Error(`vf provider metadata diverges from general manifest beyond projection path: ${scraper.id}`);
+    }
+    vfOrder.push(canonicalId);
+  }
+
+  const generalOrder = general.scrapers.map((scraper) => canonicalProviderId(scraper.id));
+  const vfSet = new Set(vfOrder);
+  const providers = generalOrder.map((canonicalId) => {
+    const scraper = generalById.get(canonicalId);
+    return {
+      canonicalId,
+      scraper,
+      projections: {
+        general: true,
+        vf: vfSet.has(canonicalId),
+      },
+    };
+  });
+
+  const catalog = {
+    schemaVersion: PROVIDER_CATALOG_SCHEMA_VERSION,
+    sourceOfTruth: true,
+    policy: {
+      repairBeforeTriage: true,
+      retainLastKnownGoodOnInconclusive: true,
+      quickRefreshMayRepairAndPublish: true,
+      deepRefreshRebuildsKnowledge: true,
+    },
+    manifestMeta: {
+      general: withoutScrapers(generalManifest),
+      vf: withoutScrapers(vfManifest),
+    },
+    manifestOrder: {
+      general: generalOrder,
+      vf: vfOrder,
+    },
+    providers,
+  };
+
+  validateProviderCatalog(catalog);
+  return catalog;
+}
+
+/**
+ * Bind already-committed provider artwork into native Nuvio metadata.
+ *
+ * Logo discovery/conversion is intentionally NOT performed here. The one-shot
+ * importer produced immutable horizontal + square WebP assets plus assets/providers/index.json. This
+ * function only consumes that committed index so every future manifest rebuild
+ * keeps using repository-owned URLs instead of fragile third-party image hosts.
+ * Historical logo rows may remain in the immutable asset registry after their
+ * providers move to provider-old/, but every current catalog provider must still
+ * be covered by a committed 96x96 logo entry.
+ */
+export function applyCommittedProviderLogos(catalog, logoIndex) {
+  validateProviderCatalog(catalog);
+  if (!logoIndex || typeof logoIndex !== "object") return catalog;
+  if (logoIndex.futurePolicy !== "committed-assets-only-no-network-regeneration") {
+    throw new Error("provider logo index must declare committed-assets-only policy");
+  }
+  const indexed = logoIndex.providers;
+  if (!indexed || typeof indexed !== "object") return catalog;
+
+  const byId = new Map(catalog.providers.map((row) => [row.canonicalId, row]));
+  const indexedIds = new Set(Object.keys(indexed).map((value) => canonicalProviderId(value)));
+  const missing = [...byId.keys()].filter((id) => {
+    if (!indexedIds.has(id)) return true;
+    const url = String(indexed[id]?.urls?.["96x96"] ?? "").trim();
+    return !url;
+  });
+  if (missing.length) {
+    throw new Error(`provider logo coverage mismatch: missing=${missing.join(",") || "none"}`);
+  }
+
+  let applied = 0;
+  for (const [rawId, logo] of Object.entries(indexed)) {
+    const canonicalId = canonicalProviderId(rawId);
+    const row = byId.get(canonicalId);
+    // Asset history is intentionally wider than the current Hub46 catalog.
+    // Archived providers keep their committed files without re-entering release metadata.
+    if (!row) continue;
+    const url = String(logo?.urls?.["96x96"] ?? "").trim();
+    if (!url) continue;
+    if (!url.startsWith("https://raw.githubusercontent.com/niakw/NiakVIO/")) {
+      throw new Error(`${canonicalId}: committed provider logo must use NiakVIO raw asset URL`);
+    }
+    row.scraper.logo = url;
+    applied += 1;
+  }
+  catalog.policy.committedProviderLogos = true;
+  catalog.policy.committedProviderLogoCount = applied;
+  validateProviderCatalog(catalog);
+  return catalog;
+}
+
+export function validateProviderCatalog(catalog) {
+  if (!catalog || typeof catalog !== "object") throw new Error("provider catalog must be an object");
+  if (catalog.schemaVersion !== PROVIDER_CATALOG_SCHEMA_VERSION) {
+    throw new Error(`unsupported provider catalog schema: ${catalog.schemaVersion}`);
+  }
+  if (catalog.sourceOfTruth !== true) throw new Error("provider catalog must declare sourceOfTruth=true");
+  if (!Array.isArray(catalog.providers) || catalog.providers.length === 0) {
+    throw new Error("provider catalog must contain providers");
+  }
+
+  const byId = new Map();
+  for (const row of catalog.providers) {
+    if (!row || typeof row !== "object") throw new Error("provider catalog row must be an object");
+    const canonicalId = canonicalProviderId(row.canonicalId ?? row.scraper?.id);
+    if (row.canonicalId !== canonicalId) {
+      throw new Error(`provider canonicalId must be normalized: ${row.canonicalId}`);
+    }
+    if (byId.has(canonicalId)) throw new Error(`duplicate provider in catalog: ${canonicalId}`);
+    if (!row.scraper || typeof row.scraper !== "object") throw new Error(`${canonicalId}: scraper metadata is required`);
+    const unexpectedFields = Object.keys(row.scraper).filter((field) => !PROVIDER_SCRAPER_ALLOWED_FIELDS.has(field));
+    if (unexpectedFields.length) {
+      throw new Error(`${canonicalId}: scraper contains non-NiakVIO manifest fields: ${unexpectedFields.sort().join(",")}`);
+    }
+    if (canonicalProviderId(row.scraper.id) !== canonicalId) throw new Error(`${canonicalId}: scraper id does not match canonical id`);
+    if (!String(row.scraper.filename ?? "").trim()) throw new Error(`${canonicalId}: filename is required`);
+    if (!Array.isArray(row.scraper.disabledPlatforms) || row.scraper.disabledPlatforms.length !== 0) {
+      throw new Error(`${canonicalId}: disabledPlatforms must exist and stay empty in the NiakVIO provider contract`);
+    }
+    if (row.projections?.general !== true) throw new Error(`${canonicalId}: every catalog provider must project to general`);
+    byId.set(canonicalId, row);
+  }
+
+  for (const projection of ["general", "vf"]) {
+    const order = catalog.manifestOrder?.[projection];
+    if (!Array.isArray(order)) throw new Error(`${projection}: manifest order is required`);
+    const seen = new Set();
+    for (const rawId of order) {
+      const canonicalId = canonicalProviderId(rawId);
+      if (seen.has(canonicalId)) throw new Error(`${projection}: duplicate order id ${canonicalId}`);
+      const row = byId.get(canonicalId);
+      if (!row) throw new Error(`${projection}: order references unknown provider ${canonicalId}`);
+      if (row.projections?.[projection] !== true) {
+        throw new Error(`${projection}: order references provider outside projection ${canonicalId}`);
+      }
+      seen.add(canonicalId);
+    }
+
+    const expected = catalog.providers
+      .filter((row) => row.projections?.[projection] === true)
+      .map((row) => row.canonicalId);
+    if (seen.size !== expected.length || expected.some((id) => !seen.has(id))) {
+      throw new Error(`${projection}: projection membership and order differ`);
+    }
+  }
+
+  const policy = catalog.policy ?? {};
+  if (policy.repairBeforeTriage !== true) throw new Error("catalog policy must keep repair-before-triage");
+  if (policy.retainLastKnownGoodOnInconclusive !== true) throw new Error("catalog policy must retain LKG on inconclusive evidence");
+  if (policy.quickRefreshMayRepairAndPublish !== true) throw new Error("quick refresh must be allowed to repair and publish");
+
+  return catalog;
+}
+
+export function manifestsFromCatalog(catalog) {
+  validateProviderCatalog(catalog);
+  const byId = new Map(catalog.providers.map((row) => [row.canonicalId, row]));
+  return {
+    general: {
+      ...(structuredClone(catalog.manifestMeta?.general) ?? {}),
+      scrapers: catalog.manifestOrder.general.map((id) => projectScraper(byId.get(id).scraper, "general")),
+    },
+    vf: {
+      ...(structuredClone(catalog.manifestMeta?.vf) ?? {}),
+      scrapers: catalog.manifestOrder.vf.map((id) => projectScraper(byId.get(id).scraper, "vf")),
+    },
+  };
+}
+
+export function loadProviderCatalog(filePath = "provider_catalog.json") {
+  return validateProviderCatalog(JSON.parse(fs.readFileSync(filePath, "utf8")));
+}
+
+export function writeJson(filePath, value) {
+  fs.mkdirSync(path.dirname(path.resolve(filePath)), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+function assertManifest(manifest, label) {
+  if (!manifest || typeof manifest !== "object") throw new Error(`${label} manifest must be an object`);
+  if (!Array.isArray(manifest.scrapers)) throw new Error(`${label} manifest scrapers must be an array`);
+  return manifest;
+}
+
+function withoutScrapers(manifest) {
+  const copy = structuredClone(manifest);
+  delete copy.scrapers;
+  return copy;
+}
+
+function canonicalizePublishedScraper(scraper) {
+  const copy = structuredClone(scraper);
+  // Historical upstream imports may carry non-empty platform blocks. The
+  // canonical NiakVIO contract retains the property but owns its value.
+  copy.disabledPlatforms = [];
+  if (Array.isArray(copy.canonicalSupportedTypes) && copy.canonicalSupportedTypes.length) {
+    copy.supportedTypes = [...copy.canonicalSupportedTypes];
+  }
+  delete copy.canonicalSupportedTypes;
+  return copy;
+}
+
+function normalizeProjectionScraper(scraper, projection) {
+  const copy = canonicalizePublishedScraper(scraper);
+  if (projection === "vf" && typeof copy.filename === "string" && copy.filename.startsWith("../")) {
+    copy.filename = copy.filename.slice(3);
+  }
+  return copy;
+}
+
+function projectScraper(scraper, projection) {
+  const copy = structuredClone(scraper);
+  copy.disabledPlatforms = [];
+  const semantic = Array.isArray(copy.supportedTypes)
+    ? [...new Set(copy.supportedTypes.map((value) => String(value).trim().toLowerCase()).filter(Boolean))]
+    : [];
+  if (semantic.includes("anime")) {
+    const aliases = [];
+    // Nuvio may transport episodic anime as TV. Movie is never a
+    // generic anime alias: only canonical movie capability may select it.
+    if (!semantic.includes("tv")) aliases.push("tv");
+    if (aliases.length) {
+      copy.canonicalSupportedTypes = [...semantic];
+      copy.supportedTypes = [...semantic, ...aliases];
+    } else {
+      delete copy.canonicalSupportedTypes;
+    }
+  } else {
+    delete copy.canonicalSupportedTypes;
+  }
+  if (projection === "vf" && typeof copy.filename === "string" && !copy.filename.startsWith("../")) {
+    copy.filename = `../${copy.filename}`;
+  }
+  return copy;
+}
+
+function deepEqual(a, b) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}

@@ -1,0 +1,244 @@
+name: Provider Repair Parallel Batch Proof
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - automation/provider-fast-trigger.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NIAKVIO_ROUTE_PROOF_MAX_ATTEMPTS: "3"
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NIAKVIO_QUICK_YIELD_WORKERS: "4"
+  NIAKVIO_QUICK_YIELD_TIMEOUT: "55"
+
+jobs:
+  plan:
+    name: plan-next-24
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      selected: ${{ steps.plan.outputs.selected }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+      - name: Security policy preflight
+        run: python3 tests/workflow_security_policy_test.py
+      - name: Build deterministic six-batch matrix
+        id: plan
+        shell: bash
+        run: |
+          matrix="$(python scripts/provider_parallel_sweep_plan_v1.py --limit 24 --batch-size 4 --matrix-only)"
+          selected="$(python scripts/provider_parallel_sweep_plan_v1.py --limit 24 --batch-size 4 | python -c 'import json,sys; print(",".join(json.load(sys.stdin)["selectedProviders"]))')"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "selected=$selected" >> "$GITHUB_OUTPUT"
+          echo "FIELD_PROVIDER_PARALLEL_SWEEP_SELECTED providers=$selected"
+
+  prove-wave:
+    name: prove-${{ matrix.batch }}
+    needs: plan
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Run guarded provider batch acceptance
+        id: acceptance
+        continue-on-error: true
+        shell: bash
+        env:
+          BATCH_PROVIDERS: ${{ matrix.providers }}
+        run: |
+          args=()
+          for provider in $BATCH_PROVIDERS; do
+            args+=(--provider "$provider")
+          done
+          # Selection policy has already been applied by the planner. Use an empty
+          # runner skip set so deliberate regressionGuardProviders (known green)
+          # are actually re-executed live instead of being discarded a second time.
+          python scripts/run_provider_repair_fast_targeted_v20.py \
+            --skip-file automation/provider-repair-planner-authorized-skip.json \
+            --attempts 3 \
+            --workers 4 \
+            --timeout 55 \
+            "${args[@]}"
+
+      - name: Inspect exact materialized bundle plans
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          BATCH_PROVIDERS: ${{ matrix.providers }}
+        run: |
+          if [ ! -f automation/provider-repair-fast-yield.json ]; then
+            echo "FIELD_PROVIDER_FAST_BUNDLE_INSPECT skipped=1 reason=yield-not-reached"
+            exit 0
+          fi
+          args=()
+          for provider in $BATCH_PROVIDERS; do
+            args+=(--provider "$provider")
+          done
+          python scripts/inspect_provider_fast_bundle_plans.py "${args[@]}"
+
+      - name: Validate shared V16-V21.8 and adaptive route-plan contracts
+        if: always()
+        run: |
+          python -m py_compile \
+            scripts/provider_live_request_contract_bridge_v19.py \
+            scripts/provider_route_proof_lkg.py \
+            scripts/provider_repair_learn_handoff_v1.py \
+            scripts/merge_provider_repair_report_v6.py \
+            scripts/upgrade_provider_response_value_correlation_v20.py \
+            scripts/upgrade_provider_response_value_correlation_v20_1.py \
+            scripts/upgrade_provider_response_value_correlation_v20_2.py \
+            scripts/upgrade_provider_response_value_correlation_v20_3.py \
+            scripts/upgrade_provider_response_value_correlation_v20_4.py \
+            scripts/upgrade_provider_response_value_correlation_v20_5.py \
+            scripts/upgrade_provider_response_value_correlation_v20_5_1.py \
+            scripts/upgrade_provider_shared_player_trace_v21.py \
+            scripts/upgrade_provider_media_identity_guard_v21_1.py \
+            scripts/upgrade_provider_media_identity_guard_v21_2.py \
+            scripts/upgrade_provider_series_slug_role_v21_3.py \
+            scripts/upgrade_provider_episode_scoped_json_v21_4.py \
+            scripts/upgrade_provider_catalogue_identity_correlation_v21_5.py \
+            scripts/upgrade_provider_player_fallback_v21_6.py \
+            scripts/upgrade_provider_composite_request_template_v21_8.py \
+            scripts/audit_provider_repair_yield_v6.py
+          node --check scripts/nuvio_tv_probe_tmdb_ci.cjs
+          python tests/provider_route_proof_lkg_test.py
+          python tests/provider_repair_learn_handoff_v1_test.py
+          python tests/provider_execution_authority_v16_contract_test.py
+          python tests/provider_route_slug_identity_v16_test.py
+          python tests/provider_correlated_value_plan_v18_contract_test.py
+          python tests/provider_packed_player_v18_6_contract_test.py
+          python tests/provider_player_route_variant_v18_7_contract_test.py
+          python tests/provider_player_form_handoff_v18_8_contract_test.py
+          python tests/provider_live_request_contract_bridge_v19_test.py
+          python tests/provider_response_value_correlation_v20_test.py
+          python tests/provider_response_value_correlation_v20_3_test.py
+          python tests/provider_response_value_correlation_v20_4_test.py
+          python tests/provider_response_value_correlation_v20_5_test.py
+          python tests/provider_response_value_correlation_v20_5_1_test.py
+          python tests/provider_shared_player_trace_v21_test.py
+          python tests/provider_media_identity_guard_v21_1_test.py
+          python tests/provider_media_identity_guard_v21_2_test.py
+          python tests/provider_series_slug_role_v21_3_test.py
+          python tests/provider_episode_scoped_json_v21_4_test.py
+          python tests/provider_catalogue_identity_correlation_v21_5_test.py
+          python tests/provider_player_fallback_v21_6_test.py
+          python tests/provider_player_fallback_v21_7_test.py
+          python tests/stream_output_correlated_player_fallback_v7_test.py
+          python tests/provider_composite_request_template_v21_8_test.py
+          python tests/provider_yield_identity_diagnostics_v21_test.py
+          python tests/runtime_route_plan_cap_v1_test.py
+
+      - name: Show batch proof summary
+        if: always()
+        run: |
+          echo "FIELD_PROVIDER_PARALLEL_BATCH batch=${{ matrix.batch }} providers=${{ matrix.providers }}"
+          test -f automation/provider-repair-fast-summary.json && cat automation/provider-repair-fast-summary.json || true
+
+      - name: Enforce batch acceptance result
+        if: always()
+        run: |
+          test "${{ steps.acceptance.outcome }}" = "success"
+
+      - name: Upload batch proof
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: provider-repair-${{ matrix.batch }}-${{ github.run_id }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            automation/provider-repair-fast-targeted.json
+            automation/provider-repair-fast-merged.json
+            automation/provider-repair-fast-yield.json
+            automation/provider-repair-fast-summary.json
+            automation/provider-route-proof-lkg.json
+            provider-v3-quick-yield.json
+
+  persist-route-proof-lkg:
+    name: persist-route-proof-lkg
+    needs: prove-wave
+    if: always()
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+      - name: Download read-only proof artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: provider-repair-*-${{ github.run_id }}
+          path: route-proof-artifacts
+      - name: Merge exact-source live-positive evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob globstar
+          reports=(route-proof-artifacts/**/automation/provider-repair-fast-targeted.json)
+          if [ ${#reports[@]} -eq 0 ]; then
+            echo "FIELD_PROVIDER_ROUTE_PROOF_LKG_PERSIST skipped=1 reason=no-targeted-report"
+            exit 0
+          fi
+          for report in "${reports[@]}"; do
+            python scripts/provider_route_proof_lkg.py \
+              --report "$report" \
+              --registry automation/provider-route-proof-lkg.json
+          done
+          python tests/provider_route_proof_lkg_test.py
+      - name: Commit route-proof LKG only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add automation/provider-route-proof-lkg.json
+          if git diff --cached --quiet; then
+            echo "FIELD_PROVIDER_ROUTE_PROOF_LKG_PERSIST changed=false"
+            exit 0
+          fi
+          git commit -m 'data(repair): persist exact-source route proof LKG'
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "FIELD_PROVIDER_ROUTE_PROOF_LKG_PERSIST changed=true"
+
+  sweep-result:
+    name: sweep-result
+    needs: [plan, prove-wave, persist-route-proof-lkg]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report selected providers and matrix outcome
+        run: |
+          echo "FIELD_PROVIDER_PARALLEL_SWEEP providers=${{ needs.plan.outputs.selected }}"
+          echo "FIELD_PROVIDER_PARALLEL_SWEEP_RESULT result=${{ needs.prove-wave.result }} lkg=${{ needs.persist-route-proof-lkg.result }}"
+          test "${{ needs.prove-wave.result }}" = "success"
+          test "${{ needs.persist-route-proof-lkg.result }}" = "success"

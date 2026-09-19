@@ -1,0 +1,117 @@
+name: SHORT - Parity Deep HLS Terminal
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-parity-deep-hls-terminal-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-parity-deep-hls-terminal
+  cancel-in-progress: true
+
+jobs:
+  validate-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Require exact trigger head
+        run: test "$(git rev-parse HEAD)" = "${{ github.sha }}"
+      - name: Apply deep HLS authority and unit contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_provider_upstream_parity_hls_terminal_v2.py
+          python3 -m py_compile \
+            scripts/run_provider_upstream_parity_v3.py \
+            scripts/parity_hls_terminal_probe.py \
+            scripts/upgrade_provider_upstream_parity_hls_terminal_v2.py \
+            tests/parity_hls_terminal_probe_test.py
+          python3 tests/parity_hls_terminal_probe_test.py
+          python3 tests/provider_upstream_parity_short_vod_test.py
+          python3 tests/provider_upstream_parity_v3_test.py
+      - name: Prove AnimeKai positive and PlayIMDb non-media
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 - <<'PY'
+          import json, pathlib, sys, tempfile
+          root=pathlib.Path('.').resolve(); sys.path.insert(0,str(root/'scripts'))
+          import run_provider_upstream_parity as parity
+          import run_provider_upstream_parity_v2 as v2
+          import run_provider_upstream_parity_v3 as v3
+
+          targets={
+            'animekai':('anime','62715'),
+            'playimdb':('tv','71446'),
+          }
+          corpus=json.loads((root/'.github/triggers/rotating-popular-corpus.json').read_text(encoding='utf-8'))
+          fixtures={(str(l),str(r.get('tmdbId') or '')):r for l,rows in (corpus.get('lists') or {}).items() for r in rows or [] if isinstance(r,dict)}
+          upstreams,_=v2.upstream_catalog()
+          results={}
+          for pid,(lane,tmdb) in targets.items():
+            fx=fixtures[(lane,tmdb)]
+            with tempfile.TemporaryDirectory() as td:
+              up=pathlib.Path(td)/(pid+'-upstream.js')
+              up.write_bytes(parity.get_bytes(upstreams[pid]['url']))
+              result=v3._run_verified(up,v3.fixture_payload(fx,lane,upstream=True),25)
+            safe={k:result.get(k) for k in (
+              'stream_count','candidate_stream_count','raw_stream_count','terminal_verified',
+              'terminal_kinds','terminal_statuses','terminal_reasons','terminal_short_vod_seconds',
+              'terminal_media_duration_seconds','timeout','error_class'
+            )}
+            results[pid]=safe
+            print('DEEP_PARITY_REAL '+pid+' '+json.dumps(safe,sort_keys=True))
+
+          anime=results['animekai']
+          if int(anime.get('stream_count') or 0)<1 or not anime.get('terminal_verified'):
+            raise SystemExit('ANIMEKAI_DEEP_TERMINAL_NOT_POSITIVE')
+          if 'hls' not in (anime.get('terminal_kinds') or []):
+            raise SystemExit('ANIMEKAI_DEEP_HLS_KIND_MISSING')
+          durations=[float(v) for v in anime.get('terminal_media_duration_seconds') or []]
+          if not durations or max(durations)<1200:
+            raise SystemExit('ANIMEKAI_DEEP_DURATION_UNEXPECTED')
+
+          play=results['playimdb']
+          if int(play.get('candidate_stream_count') or 0)<1:
+            raise SystemExit('PLAYIMDB_UPSTREAM_CANDIDATES_MISSING')
+          if int(play.get('stream_count') or 0)!=0 or play.get('terminal_verified'):
+            raise SystemExit('PLAYIMDB_FALSE_HLS_STILL_VERIFIED')
+          if 'hls_segment_non_media' not in (play.get('terminal_reasons') or []):
+            raise SystemExit('PLAYIMDB_NON_MEDIA_REASON_MISSING')
+          PY
+      - name: Idempotence and publish authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_provider_upstream_parity_hls_terminal_v2.py
+          git diff --check
+          changed="$(git diff --name-only)"
+          printf '%s\n' "$changed"
+          test "$changed" = "scripts/run_provider_upstream_parity_v3.py"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/run_provider_upstream_parity_v3.py
+          git diff --cached --quiet && { echo 'PARITY_DEEP_HLS_ALREADY_PUBLISHED'; exit 0; }
+          git commit -m 'fix(parity): require playable HLS segment proof'
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "${{ github.sha }}" || { echo 'main moved during deep HLS parity publication' >&2; exit 1; }
+          git push origin HEAD:main
+          echo "PARITY_DEEP_HLS_PUBLISHED $(git rev-parse HEAD)"

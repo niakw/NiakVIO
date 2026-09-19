@@ -1,0 +1,86 @@
+name: DIAG - Current Five Provider Parity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-current-five-parity-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-current-five-parity
+  cancel-in-progress: true
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Validate targeted parity harness
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 -m py_compile scripts/run_provider_upstream_parity_v3.py scripts/run_provider_upstream_parity_v2.py scripts/run_provider_upstream_parity.py scripts/rotating_corpus.py
+          node scripts/provider_worker.cjs --self-test-response-wrapper
+      - name: Compare five current candidates with upstream
+        run: |
+          set -euo pipefail
+          python3 scripts/run_provider_upstream_parity_v3.py \
+            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
+            --provider kehflix \
+            --provider persianstremio \
+            --provider hindmoviez \
+            --provider desiflix \
+            --provider papadustream \
+            --samples-per-lane 8 \
+            --workers 5 \
+            --timeout 20 \
+            --out automation/current-five-provider-parity.json
+      - name: Print exact verdicts
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('automation/current-five-provider-parity.json')
+          if not p.exists():
+              print('CURRENT_FIVE_REPORT_MISSING')
+              raise SystemExit(0)
+          d=json.loads(p.read_text(encoding='utf-8'))
+          print('CURRENT_FIVE_COUNTS', json.dumps(d.get('statusCounts') or {}, sort_keys=True))
+          print('CURRENT_FIVE_REGRESSIONS', ','.join(d.get('certainRegressions') or []) or 'none')
+          for row in d.get('providers') or []:
+              lanes=[]
+              for lane in row.get('lanes') or []:
+                  classes=[s.get('classification') for s in lane.get('samples') or []]
+                  lanes.append(f"{lane.get('lane')}={lane.get('status')}[{','.join(filter(None,classes))}]")
+              print('CURRENT_FIVE_PROVIDER', row.get('providerId'), row.get('status'), ';'.join(lanes))
+          print('CURRENT_FIVE_MISSING_UPSTREAM', ','.join(d.get('missingUpstreamProviders') or []) or 'none')
+          print('CURRENT_FIVE_DOWNLOAD_ERRORS', json.dumps(d.get('providerDownloadErrors') or [], sort_keys=True))
+          PY
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: current-five-provider-parity-${{ github.run_id }}
+          path: automation/current-five-provider-parity.json
+          if-no-files-found: warn
+          retention-days: 7

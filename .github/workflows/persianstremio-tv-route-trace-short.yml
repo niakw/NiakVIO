@@ -1,0 +1,122 @@
+name: DIAG - PersianStremio TV Route Trace
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/persianstremio-tv-route-trace-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Inspect PersianStremio timeout layers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re,pathlib
+          root=pathlib.Path('.').resolve()
+          cfg=json.loads((root/'provider-overrides.json').read_text(encoding='utf-8'))
+          row=(cfg.get('provider_patches') or {}).get('persianstremio') or {}
+          print('PERSIAN_PATCH_SCRIPTS',json.dumps(row.get('provider_lego_scripts') or []))
+          print('PERSIAN_CORE_OPTIONS',json.dumps(row.get('core_options') or {},sort_keys=True))
+          print('PERSIAN_LEGO_OPTIONS',json.dumps(row.get('provider_lego_options') or {},sort_keys=True))
+          def walk(v,path=''):
+            if isinstance(v,dict):
+              for k,x in v.items():
+                p=f'{path}.{k}' if path else k
+                if any(t in str(k).lower() for t in ('timeout','retry')):
+                  print('PERSIAN_TIMEOUT_OPTION',p,repr(x))
+                walk(x,p)
+            elif isinstance(v,list):
+              for i,x in enumerate(v): walk(x,f'{path}[{i}]')
+          walk(row)
+          manifest=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
+          m=next(x for x in manifest.get('scrapers',[]) if str(x.get('id','')).lower()=='persianstremio')
+          text=(root/m['filename']).read_text(encoding='utf-8',errors='replace')
+          for rx in (
+            r'"[A-Za-z_]*[Tt]imeout[A-Za-z_]*"\s*:\s*\d+',
+            r'"[A-Za-z_]*[Rr]etry[A-Za-z_]*"\s*:\s*\d+',
+            r'\b(?:timeout_ms|timeoutMs|probe_timeout_ms|requestTimeoutMs)\s*[:=]\s*\d+',
+          ):
+            for hit in sorted(set(re.findall(rx,text))): print('PERSIAN_BUNDLE_TIMEOUT',hit)
+          for value in ('5000','6000','6500','8000','10000','12000','15000','20000','25000'):
+            c=text.count(value)
+            if c: print('PERSIAN_BUNDLE_LITERAL',value,c)
+          PY
+      - name: Compare exact request header profiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const url='https://persianstremio.vercel.app/stream/series/tt2788316:1:1.json';
+          const profiles={
+            upstream:{'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36','Accept':'application/json'},
+            niak:{'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 NiakVIO/3','Accept':'application/json,*/*','Referer':'https://persianstremio.vercel.app/'}
+          };
+          async function once(label){
+            const started=Date.now();
+            try{
+              const r=await fetch(url,{headers:profiles[label],signal:AbortSignal.timeout(12000)});
+              let count=-1;
+              try{const j=await r.json(); count=Array.isArray(j?.streams)?j.streams.length:Array.isArray(j)?j.length:0}catch{}
+              console.log('HEADER_PROBE',label,'status='+r.status,'streams='+count,'ms='+(Date.now()-started));
+            }catch(e){console.log('HEADER_PROBE',label,'error='+String(e?.name||e),'ms='+(Date.now()-started));}
+          }
+          (async()=>{
+            for(const label of ['niak','upstream','upstream','niak']){await once(label);await new Promise(r=>setTimeout(r,900));}
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - name: Trace exact upstream and Niak routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, pathlib, subprocess, urllib.request
+          root=pathlib.Path('.').resolve()
+          upstream=root/'.diag-persianstremio-upstream.js'
+          urllib.request.urlretrieve('https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/main/providers/persianstremio.js', upstream)
+          manifest=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
+          row=next(x for x in manifest.get('scrapers',[]) if str(x.get('id','')).lower()=='persianstremio')
+          published=root/row['filename']
+          fixture={'slug':'shgun-2024-s01e01','tmdbId':'126308','mediaType':'tv','title':'Shōgun','year':2024,'season':1,'episode':1}
+          context={
+            'fixtureMetadata':fixture,'tmdbApiKey':os.environ.get('TMDB_API_KEY',''),'tmdbAccessToken':os.environ.get('TMDB_ACCESS_TOKEN',''),
+            'locale':'en-US','languages':['en-US','en'],'platform':'android',
+            'userAgent':'Mozilla/5.0 (Linux; Android 14; Nuvio) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36',
+            'maxSettingsProfiles':1,
+            'networkLimits':{'maxFetches':30,'maxResponseBytes':5242880,'maxTotalResponseBytes':20971520,'maxDistinctHosts':20,'maxRedirects':5},
+          }
+          def run(label,path):
+            p=subprocess.run(['node',str(root/'scripts/provider_worker.cjs'),str(path),json.dumps(fixture,separators=(',',':')),json.dumps(context,separators=(',',':'))],text=True,capture_output=True,timeout=55)
+            result=None
+            for line in p.stdout.splitlines():
+              if line.startswith('NUVIO_HEALTH_RESULT='): result=json.loads(line.split('=',1)[1])
+            if not isinstance(result,dict): print('TRACE',label,'NO_RESULT','exit',p.returncode); return
+            err=result.get('error_details') if isinstance(result.get('error_details'),dict) else {}
+            print('TRACE',label,'streams='+str(result.get('stream_count',0)),'error='+str(err.get('code') or 'none'))
+            for obs in result.get('network_observations') or []:
+              if not isinstance(obs,dict) or obs.get('infrastructure'): continue
+              print('ROUTE',label,str(obs.get('stage')),str(obs.get('host')),str(obs.get('method')),str(obs.get('path_pattern')),str(obs.get('status')),str(obs.get('ok')),str(obs.get('error_code') or ''))
+          run('upstream',upstream)
+          run('niak',published)
+          PY

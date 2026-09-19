@@ -1,0 +1,367 @@
+#!/usr/bin/env python3
+"""Global security hardening for provider JavaScript artifacts.
+
+This layer is intentionally provider-agnostic. It turns recurring security
+findings into deterministic transformations that run for every candidate before
+runtime validation/publication.
+"""
+from __future__ import annotations
+
+import hashlib
+import re
+from typing import Any
+
+MARKER = "NUVIO_PROVIDER_SECURITY_HARDENING_V1"
+
+_DOMAIN = r"(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}"
+_HOST_INCLUDES = re.compile(
+    rf"(?P<expr>\b[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)"
+    rf"\.includes\(\s*(?P<q>[\"'])(?P<host>{_DOMAIN})(?P=q)\s*\)"
+)
+_UNSAFE_LITERAL_DECODE = re.compile(
+    r'''JSON\.parse\(\s*[\'"]"[\'"]\s*\+\s*(?P<expr>[^;\n]+?)\.replace\(/"/g,\s*[\'\"]\\\\"[\'\"]\)\s*\+\s*[\'\"]"[\'\"]\s*\)'''
+)
+# Common JavaScript-obfuscator string tables decode base64 bytes by first building
+# a complete %HH byte stream and then calling decodeURIComponent on that generated
+# string. CodeQL correctly treats the generic URI decoder as an incomplete encoding
+# boundary. We only rewrite calls whose *same local variable* is visibly accumulated
+# from percent bytes + charCodeAt/toString immediately beforehand.
+_PERCENT_DECODE_CALL = re.compile(
+    r"\bdecodeURIComponent\(\s*(?P<value>[A-Za-z_$][\w$]*)\s*\)"
+)
+
+# HTML entity chains such as "&amp;" -> "&" followed by "&lt;" -> "<" decode
+# an input like "&amp;lt;" twice. The provider only needs one HTML-decoding pass.
+# We preserve each exact replacement but move ampersand decoding to the end of a
+# contiguous known-entity chain, which makes double-unescaping impossible.
+_HTML_ENTITY_REPLACE = re.compile(
+    r'''\.replace\(\s*/&(?P<entity>amp|lt|gt|quot|#39|apos|raquo|nbsp);/g\s*,\s*(?P<value>'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*")\s*\)''',
+    re.IGNORECASE,
+)
+
+# Provider logs are not part of the public runtime contract. Sensitive values in
+# imported providers must not reach a CodeQL-recognized console sink. Rewrite the
+# standard sink property itself to a private no-op function, rather than merely
+# shadowing console while still passing tainted values to console.log/error/etc.
+_CONSOLE_METHOD = re.compile(
+    r"(?<![\w$])(?:(?:globalThis|window)\.)?console\s*\.\s*(?:log|warn|error|info|debug|trace|dir)\b"
+)
+_CONSOLE_BRACKET_METHOD = re.compile(
+    r'''(?<![\w$])(?:(?:globalThis|window)\.)?console\s*\[\s*(["'])(?:log|warn|error|info|debug|trace|dir)\1\s*\]'''
+)
+_CONSOLE_DECL = re.compile(r"\b(?:var|let|const|class|function)\s+console\b")
+_CONSOLE_USE = re.compile(r"(?<![\w$])(?:console|globalThis\.console|window\.console)\s*[\[.]")
+_GLOBAL_CONSOLE = re.compile(r"\b(?:globalThis|window)\.console(?=\s*[\[.])")
+_SILENT_LOG_DECL = re.compile(
+    r"\bvar\s+__nuvioProviderSilentLog\s*=\s*function\s*\(\s*\)\s*\{\s*\}\s*;?"
+)
+_SILENT_LOG_USE = re.compile(r"\b__nuvioProviderSilentLog\b")
+
+_HOST_HELPER = r'''function __nuvioHostMatches(value,expected){
+  try{
+    var raw=String(value==null?"":value).trim();
+    var wanted=String(expected==null?"":expected).toLowerCase().replace(/^\.+|\.+$/g,"");
+    if(!raw||!wanted)return false;
+    var parsed=new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)?raw:"https://"+raw);
+    var host=String(parsed.hostname||"").toLowerCase().replace(/\.$/,"");
+    return host===wanted||host.endsWith("."+wanted);
+  }catch(_error){return false}
+}'''
+
+_LITERAL_HELPER = r'''function __nuvioDecodeEscapedLiteral(value){
+  var input=String(value==null?"":value),out="";
+  for(var i=0;i<input.length;i++){
+    var ch=input.charAt(i);
+    if(ch!=="\\"||i+1>=input.length){out+=ch;continue}
+    var next=input.charAt(++i),hex;
+    if(next==="n"){out+="\n";continue}
+    if(next==="r"){out+="\r";continue}
+    if(next==="t"){out+="\t";continue}
+    if(next==="b"){out+="\b";continue}
+    if(next==="f"){out+="\f";continue}
+    if(next==="v"){out+="\v";continue}
+    if(next==="0"){out+="\0";continue}
+    if(next==="x"&&/^[0-9a-fA-F]{2}$/.test(hex=input.slice(i+1,i+3))){
+      out+=String.fromCharCode(parseInt(hex,16));i+=2;continue
+    }
+    if(next==="u"&&/^[0-9a-fA-F]{4}$/.test(hex=input.slice(i+1,i+5))){
+      out+=String.fromCharCode(parseInt(hex,16));i+=4;continue
+    }
+    if(next==="\\"||next==='"'||next==="'"||next==="/"){out+=next;continue}
+    out+="\\"+next;
+  }
+  return out;
+}'''
+
+_PERCENT_UTF8_HELPER = r'''function __nuvioDecodeUtf8PercentBytes(value){
+  var input=String(value==null?"":value),bytes=[],i=0,hex;
+  while(i<input.length){
+    if(input.charAt(i)!=="%"||i+2>=input.length||!/^[0-9a-fA-F]{2}$/.test(hex=input.slice(i+1,i+3)))throw new URIError("URI malformed");
+    bytes.push(parseInt(hex,16));i+=3;
+  }
+  var out="",p=0;
+  function cont(v){return v>=128&&v<=191}
+  while(p<bytes.length){
+    var b0=bytes[p++],b1,b2,b3,cp;
+    if(b0<=127){out+=String.fromCharCode(b0);continue}
+    if(b0>=194&&b0<=223){
+      if(p>=bytes.length||!cont(b1=bytes[p++]))throw new URIError("URI malformed");
+      cp=((b0&31)<<6)|(b1&63);out+=String.fromCharCode(cp);continue;
+    }
+    if(b0>=224&&b0<=239){
+      if(p+1>=bytes.length||!cont(b1=bytes[p++])||!cont(b2=bytes[p++]))throw new URIError("URI malformed");
+      if((b0===224&&b1<160)||(b0===237&&b1>159))throw new URIError("URI malformed");
+      cp=((b0&15)<<12)|((b1&63)<<6)|(b2&63);out+=String.fromCharCode(cp);continue;
+    }
+    if(b0>=240&&b0<=244){
+      if(p+2>=bytes.length||!cont(b1=bytes[p++])||!cont(b2=bytes[p++])||!cont(b3=bytes[p++]))throw new URIError("URI malformed");
+      if((b0===240&&b1<144)||(b0===244&&b1>143))throw new URIError("URI malformed");
+      cp=((b0&7)<<18)|((b1&63)<<12)|((b2&63)<<6)|(b3&63);cp-=65536;
+      out+=String.fromCharCode(55296+(cp>>10),56320+(cp&1023));continue;
+    }
+    throw new URIError("URI malformed");
+  }
+  return out;
+}'''
+
+_SILENT_LOG_HELPER = r'''var __nuvioProviderSilentLog=function(){};'''
+_CONSOLE_OBJECT = r'''var console={
+  log:__nuvioProviderSilentLog,warn:__nuvioProviderSilentLog,
+  error:__nuvioProviderSilentLog,info:__nuvioProviderSilentLog,
+  debug:__nuvioProviderSilentLog,trace:__nuvioProviderSilentLog,
+  dir:__nuvioProviderSilentLog
+};'''
+_CONSOLE_SHADOW = "/* NUVIO_PROVIDER_CONSOLE_SHADOW_V1 */\n" + _SILENT_LOG_HELPER + "\n" + _CONSOLE_OBJECT
+
+
+
+def _insert_prelude(source: str, snippets: list[str], digest: str) -> str:
+    if not snippets:
+        return source
+    cursor = 0
+    while True:
+        whitespace = re.match(r"\s*", source[cursor:])
+        if whitespace:
+            cursor += whitespace.end()
+        if source.startswith("/*", cursor):
+            end = source.find("*/", cursor + 2)
+            if end < 0:
+                break
+            cursor = end + 2
+            continue
+        if source.startswith("//", cursor):
+            end = source.find("\n", cursor + 2)
+            cursor = len(source) if end < 0 else end + 1
+            continue
+        break
+    directive = re.match(r'''(?:"use strict"|'use strict')\s*;''', source[cursor:])
+    if directive:
+        cursor += directive.end()
+    marker = "" if MARKER in source else f"\n/* {MARKER}:{digest} */\n"
+    payload = marker + "\n".join(snippets) + "\n"
+    return source[:cursor] + payload + source[cursor:]
+
+
+def _percent_byte_decoder_matches(source: str) -> list[re.Match[str]]:
+    matches: list[re.Match[str]] = []
+    for match in _PERCENT_DECODE_CALL.finditer(source):
+        value = match.group("value")
+        # Keep the structural window deliberately local. This targets generated
+        # string-table decoders, not legitimate URL decoding elsewhere in a provider.
+        window = source[max(0, match.start() - 3000) : match.start()]
+        accumulation = re.search(
+            rf"(?<![\w$]){re.escape(value)}\s*\+=\s*[\"']%[\"']\s*\+",
+            window,
+        )
+        if accumulation is None:
+            continue
+        tail = window[accumulation.start() :]
+        if "charCodeAt" not in tail or "toString" not in tail:
+            continue
+        matches.append(match)
+    return matches
+
+
+def _rewrite_percent_byte_decoders(source: str) -> tuple[str, int]:
+    matches = _percent_byte_decoder_matches(source)
+    if not matches:
+        return source, 0
+    parts: list[str] = []
+    cursor = 0
+    for match in matches:
+        parts.append(source[cursor : match.start()])
+        parts.append(f"__nuvioDecodeUtf8PercentBytes({match.group('value')})")
+        cursor = match.end()
+    parts.append(source[cursor:])
+    return "".join(parts), len(matches)
+
+
+def _html_entity_chains(source: str) -> list[list[re.Match[str]]]:
+    matches = list(_HTML_ENTITY_REPLACE.finditer(source))
+    chains: list[list[re.Match[str]]] = []
+    current: list[re.Match[str]] = []
+    for match in matches:
+        if current and source[current[-1].end() : match.start()].strip():
+            if len(current) > 1:
+                chains.append(current)
+            current = []
+        current.append(match)
+    if len(current) > 1:
+        chains.append(current)
+    return chains
+
+
+def _double_html_entity_chains(source: str) -> list[list[re.Match[str]]]:
+    unsafe: list[list[re.Match[str]]] = []
+    for chain in _html_entity_chains(source):
+        entities = [match.group("entity").casefold() for match in chain]
+        if "amp" in entities and entities.index("amp") < len(entities) - 1:
+            unsafe.append(chain)
+    return unsafe
+
+
+def _reorder_html_entity_decoders(source: str) -> tuple[str, int]:
+    chains = _double_html_entity_chains(source)
+    if not chains:
+        return source, 0
+    parts: list[str] = []
+    cursor = 0
+    for chain in chains:
+        start, end = chain[0].start(), chain[-1].end()
+        parts.append(source[cursor:start])
+        entities = [match.group("entity").casefold() for match in chain]
+        amp_index = entities.index("amp")
+        ordered = [match for index, match in enumerate(chain) if index != amp_index] + [chain[amp_index]]
+        separator = source[chain[0].end() : chain[1].start()]
+        if separator.strip():
+            separator = ""
+        parts.append(separator.join(match.group(0) for match in ordered))
+        cursor = end
+    parts.append(source[cursor:])
+    return "".join(parts), len(chains)
+
+
+def _rewrite_console_sinks(source: str) -> tuple[str, int]:
+    source, dot_changes = _CONSOLE_METHOD.subn("__nuvioProviderSilentLog", source)
+    source, bracket_changes = _CONSOLE_BRACKET_METHOD.subn("__nuvioProviderSilentLog", source)
+    return source, dot_changes + bracket_changes
+
+
+def harden_text(source: str) -> tuple[str, dict[str, Any]]:
+    had_marker = MARKER in source
+
+    source, literal_changes = _UNSAFE_LITERAL_DECODE.subn(
+        lambda match: f"__nuvioDecodeEscapedLiteral({match.group('expr')})",
+        source,
+    )
+    source, hostname_changes = _HOST_INCLUDES.subn(
+        lambda match: f'__nuvioHostMatches({match.group("expr")},"{match.group("host").lower()}")',
+        source,
+    )
+    source, percent_decode_changes = _rewrite_percent_byte_decoders(source)
+    source, html_entity_reorders = _reorder_html_entity_decoders(source)
+    source, console_sink_changes = _rewrite_console_sinks(source)
+
+    snippets: list[str] = []
+    if literal_changes and "function __nuvioDecodeEscapedLiteral(" not in source:
+        snippets.append(_LITERAL_HELPER)
+    if hostname_changes and "function __nuvioHostMatches(" not in source:
+        snippets.append(_HOST_HELPER)
+    if percent_decode_changes and "function __nuvioDecodeUtf8PercentBytes(" not in source:
+        snippets.append(_PERCENT_UTF8_HELPER)
+
+    # Terser is allowed to preserve/move comments. Marker presence therefore is
+    # never treated as proof that its owning declarations survived. Reconstruct
+    # concrete declarations from structure whenever a previous pass left only part
+    # of them behind. Standard console sinks are rewritten to the private no-op
+    # first; an object shadow remains only as a fallback for unusual console APIs.
+    console_shadow = False
+    console_shadow_repair = False
+    silent_log_declared = _SILENT_LOG_DECL.search(source) is not None
+    silent_log_used = _SILENT_LOG_USE.search(source) is not None
+    console_declared = _CONSOLE_DECL.search(source) is not None
+
+    if (console_sink_changes or silent_log_used) and not silent_log_declared:
+        snippets.append(_SILENT_LOG_HELPER)
+        console_shadow_repair = silent_log_used and not console_sink_changes
+        silent_log_declared = True
+
+    if _CONSOLE_USE.search(source) and not console_declared:
+        source = _GLOBAL_CONSOLE.sub("console", source)
+        if silent_log_declared:
+            snippets.append("/* NUVIO_PROVIDER_CONSOLE_SHADOW_V1 */\n" + _CONSOLE_OBJECT)
+        else:
+            snippets.append(_CONSOLE_SHADOW)
+        console_shadow = True
+
+    changed = bool(
+        literal_changes
+        or hostname_changes
+        or percent_decode_changes
+        or html_entity_reorders
+        or console_sink_changes
+        or console_shadow
+        or console_shadow_repair
+    )
+    report = {
+        "changed": changed,
+        "alreadyHardened": had_marker and not changed,
+        "structuredParseChanges": 0,
+        "literalDecodeChanges": literal_changes,
+        "hostnameChanges": hostname_changes,
+        "percentDecodeChanges": percent_decode_changes,
+        "htmlEntityDecodeReorders": html_entity_reorders,
+        "consoleSinkChanges": console_sink_changes,
+        "consoleShadow": console_shadow,
+        "consoleShadowRepair": console_shadow_repair,
+    }
+    if not changed:
+        return source, report
+
+    digest_input = "|".join(
+        str(report[key])
+        for key in (
+            "structuredParseChanges",
+            "literalDecodeChanges",
+            "hostnameChanges",
+            "percentDecodeChanges",
+            "htmlEntityDecodeReorders",
+            "consoleSinkChanges",
+            "consoleShadow",
+            "consoleShadowRepair",
+        )
+    )
+    digest = hashlib.sha256(digest_input.encode("utf-8")).hexdigest()[:12]
+    source = _insert_prelude(source, snippets, digest)
+    return source, report
+
+
+def harden_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
+    source = data.decode("utf-8", errors="strict")
+    hardened, report = harden_text(source)
+    return hardened.encode("utf-8"), report
+
+
+def known_unsafe_findings(source: str) -> list[str]:
+    findings: list[str] = []
+    if _HOST_INCLUDES.search(source):
+        findings.append("hostname_substring")
+    if _UNSAFE_LITERAL_DECODE.search(source):
+        findings.append("incomplete_literal_escape")
+    if _percent_byte_decoder_matches(source):
+        findings.append("incomplete_percent_byte_decode")
+    if _double_html_entity_chains(source):
+        findings.append("double_html_entity_unescape")
+    if _CONSOLE_METHOD.search(source) or _CONSOLE_BRACKET_METHOD.search(source):
+        findings.append("provider_console_sensitive_sink")
+    if _SILENT_LOG_USE.search(source) and not _SILENT_LOG_DECL.search(source):
+        findings.append("provider_console_shadow_orphan_helper")
+    if _CONSOLE_USE.search(source) and not _CONSOLE_DECL.search(source):
+        findings.append("provider_console_unsandboxed")
+    return findings
+
+
+def assert_hardened(source: str) -> None:
+    findings = known_unsafe_findings(source)
+    if findings:
+        raise ValueError("provider security hardening incomplete: " + ",".join(sorted(set(findings))))

@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import sys
+
+import importlib.util
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from provider_patch_blocks import begin_marker, end_marker  # noqa: E402
+PATCH = ROOT / "scripts" / "provider_patches" / "stream_output_sanitizer_v6.py"
+
+spec = importlib.util.spec_from_file_location("stream_output_sanitizer_v6_test", PATCH)
+assert spec is not None and spec.loader is not None
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+
+SANITIZER_FIX_ID = "CORE.STREAM_SANITIZER.V6"
+
+
+def sanitizer_region(text: str) -> str:
+    start = text.find(module.SANITIZER_PREFIX)
+    assert start >= 0
+    call = text.find(module.SANITIZER_CALL, start)
+    assert call >= 0
+    return text[start:call]
+
+
+def main() -> int:
+    source = "module.exports={getStreams:async function(){return [];}};\n"
+    options = {
+        "probe_direct_media": True,
+        "probe_all_urls": True,
+        "max_probes": 20,
+        "probe_timeout_ms": 6000,
+        "blocked_hosts": ["fstream.top"],
+        "blocked_path_patterns": [
+            "/wp-admin/",
+            "/wp-json/",
+            "/wp-content/plugins/ajax-search-lite/",
+        ],
+        "min_vod_duration_seconds": 60,
+    }
+    first = module.apply(source, options=options)
+    second = module.apply(first, options=options)
+    assert second == first, "fail-closed sanitizer must be byte-idempotent"
+    assert first.count(begin_marker(SANITIZER_FIX_ID)) == 1
+    assert first.count(end_marker(SANITIZER_FIX_ID)) == 1
+    assert module.MARKER not in first
+    assert '"probeAllUrls":true' in first
+    assert '"maxProbes":20' in first
+    assert module.NEW in first
+    assert module.OLD not in first
+    assert module.PROBE_ALIAS_RE.search(sanitizer_region(first))
+    for path in options["blocked_path_patterns"]:
+        assert f'"{path}"' in first
+
+    # Rebuild inputs can be compact/minifier-formatted rather than source-formatted.
+    # Compact only the signatures/spacing that V6 needs to locate structurally;
+    # the generic repair must still find the local region and remain idempotent.
+    compacted = first
+    compacted = compacted.replace(
+        "async function probeResolved(stream,url,depth,referer){",
+        "async function probeResolved(stream,url,depth,referer){",
+    )
+    compacted = compacted.replace(
+        '  async function probe(stream,url){return await probeResolved(stream,url,0,"")}\n',
+        'async function probe(stream,url){return await probeResolved(stream,url,0,"")} ',
+    )
+    compacted = compacted.replace("  function install(container,key){\n", "function install(container,key){")
+    compacted_repaired = module.apply(compacted, options=options)
+    assert module.PROBE_ALIAS_RE.search(sanitizer_region(compacted_repaired))
+    assert module.apply(compacted_repaired, options=options) == compacted_repaired
+
+    # A changed V5 configuration must not be hidden by the static V6 marker.
+    changed_options = dict(options)
+    changed_options["max_probes"] = 12
+    changed = module.apply(first, options=changed_options)
+    assert changed != first
+    assert '"maxProbes":12' in changed
+    assert '"maxProbes":20' not in changed
+    assert module.apply(changed, options=changed_options) == changed
+    assert changed.count(begin_marker(SANITIZER_FIX_ID)) == 1
+    assert changed.count(end_marker(SANITIZER_FIX_ID)) == 1
+    assert module.MARKER not in changed
+    assert module.NEW in changed
+    assert module.PROBE_ALIAS_RE.search(sanitizer_region(changed))
+
+    # Durable/LKG reapplication can append a freshly force-rewrapped target-media
+    # adapter after an already-materialized sanitizer. Reapplying V6 must move
+    # the sanitizer IIFE after that target-media layer so final media is probed.
+    stale_order = first.rstrip() + "\n/* NUVIO_TV_TARGET_MEDIA_V3:fixture */\n"
+    relocated = module.apply(stale_order, options=options)
+    sanitizer_pos = relocated.find(module.SANITIZER_PREFIX)
+    target_pos = relocated.rfind("/* NUVIO_TV_TARGET_MEDIA_V3:fixture */")
+    assert target_pos >= 0 and sanitizer_pos > target_pos, (target_pos, sanitizer_pos)
+    assert relocated.count(module.SANITIZER_PREFIX) == 1
+    assert relocated.count(begin_marker(SANITIZER_FIX_ID)) == 1
+    assert relocated.count(end_marker(SANITIZER_FIX_ID)) == 1
+    assert module.MARKER not in relocated
+    assert module.PROBE_ALIAS_RE.search(sanitizer_region(relocated))
+    assert module.apply(relocated, options=options) == relocated
+
+    # Stream presentation is inside the sanitizer, while final provider branding
+    # is outside it. Reapplying V6 must preserve branding after the sanitizer.
+    branding_stale = first.rstrip() + "\n/* NUVIO_GLOBAL_PROVIDER_BRANDING_V1:fixture */\n"
+    branding_relocated = module.apply(branding_stale, options=options)
+    sanitizer_pos = branding_relocated.find(module.SANITIZER_PREFIX)
+    branding_pos = branding_relocated.rfind("/* NUVIO_GLOBAL_PROVIDER_BRANDING_V1:fixture */")
+    assert branding_pos >= 0 and branding_pos > sanitizer_pos, (branding_pos, sanitizer_pos)
+    assert module.apply(branding_relocated, options=options) == branding_relocated
+
+    # Reproduce the Coflix collision: another provider wrapper may already define
+    # the exact V5 compatibility alias text. Whole-file detection must not make
+    # the terminal sanitizer omit its own lexical alias.
+    collision_source = module.PROBE_ALIAS + source
+    collision = module.apply(collision_source, options=options)
+    aliases = list(module.PROBE_ALIAS_RE.finditer(collision))
+    assert len(aliases) >= 2
+    assert module.PROBE_ALIAS_RE.search(sanitizer_region(collision))
+    assert module.apply(collision, options=options) == collision
+
+    print("fail-closed all-URL stream sanitizer tests passed")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,1444 @@
+{
+  "schemaVersion": 1,
+  "providerCount": 96,
+  "states": {
+    "deterministic": 20,
+    "heuristic": 12,
+    "incomplete": 59,
+    "quarantined": 5
+  },
+  "sourceRuntimeFamilies": {
+    "unknown": 96
+  },
+  "providers": [
+    {
+      "providerId": "anime-sama",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/anime_sama_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail",
+        "player"
+      ],
+      "routeCount": 6
+    },
+    {
+      "providerId": "purstream",
+      "enabled": true,
+      "strategy": "official_domain_hub",
+      "state": "deterministic",
+      "reason": "structured API recipe",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": true,
+      "routeKinds": [
+        "api",
+        "search"
+      ],
+      "routeCount": 6
+    },
+    {
+      "providerId": "flemmix",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "heuristic",
+      "reason": "generic crawler route chain only",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail",
+        "player",
+        "search"
+      ],
+      "routeCount": 10
+    },
+    {
+      "providerId": "uhdmovies",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 1
+    },
+    {
+      "providerId": "movieshunt",
+      "enabled": true,
+      "strategy": "direct_media",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "search"
+      ],
+      "routeCount": 1
+    },
+    {
+      "providerId": "zinkmovies",
+      "enabled": true,
+      "strategy": "direct_media",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "player"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "vegamovies",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "search"
+      ],
+      "routeCount": 4
+    },
+    {
+      "providerId": "hindmoviez",
+      "enabled": true,
+      "strategy": "direct_media",
+      "state": "heuristic",
+      "reason": "generic crawler route chain only",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail",
+        "search"
+      ],
+      "routeCount": 11
+    },
+    {
+      "providerId": "4khdhub",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "search"
+      ],
+      "routeCount": 1
+    },
+    {
+      "providerId": "persianstremio",
+      "enabled": true,
+      "strategy": "api_stream_resolver",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/persianstremio_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 4
+    },
+    {
+      "providerId": "desiflix",
+      "enabled": true,
+      "strategy": "api_stream_resolver",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/desiflix_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 4
+    },
+    {
+      "providerId": "kehflix",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail",
+        "player"
+      ],
+      "routeCount": 16
+    },
+    {
+      "providerId": "4khdhubnew",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "player"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "allmovieland",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "player"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "anidb",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 5
+    },
+    {
+      "providerId": "anikototv",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "heuristic",
+      "reason": "generic crawler route chain only",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail",
+        "search"
+      ],
+      "routeCount": 10
+    },
+    {
+      "providerId": "animekai",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 4
+    },
+    {
+      "providerId": "animepahe",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "player"
+      ],
+      "routeCount": 5
+    },
+    {
+      "providerId": "animesalt",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "player"
+      ],
+      "routeCount": 5
+    },
+    {
+      "providerId": "animesama-co",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "player"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "animesultra",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "player"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "animetsu",
+      "enabled": true,
+      "strategy": "direct_media",
+      "state": "heuristic",
+      "reason": "generic crawler route chain only",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail",
+        "search"
+      ],
+      "routeCount": 8
+    },
+    {
+      "providerId": "animevostfr",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "player"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "animezey",
+      "enabled": true,
+      "strategy": "direct_media",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "animoflix",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail",
+        "player"
+      ],
+      "routeCount": 4
+    },
+    {
+      "providerId": "anizone",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/anizone_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "castle",
+      "enabled": true,
+      "strategy": "api_stream_resolver",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/castle_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail",
+        "search"
+      ],
+      "routeCount": 7
+    },
+    {
+      "providerId": "cineby",
+      "enabled": true,
+      "strategy": "api_stream_resolver",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/cineby_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "cinemacity",
+      "enabled": true,
+      "strategy": "direct_media",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/cinemacity_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 4
+    },
+    {
+      "providerId": "cinemm",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "player"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "coflix",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "heuristic",
+      "reason": "generic crawler route chain only",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail",
+        "player",
+        "search"
+      ],
+      "routeCount": 4
+    },
+    {
+      "providerId": "dooflix",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 4
+    },
+    {
+      "providerId": "dulourd",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "player"
+      ],
+      "routeCount": 1
+    },
+    {
+      "providerId": "french-manga",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "heuristic",
+      "reason": "generic crawler route chain only",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail",
+        "player",
+        "search"
+      ],
+      "routeCount": 6
+    },
+    {
+      "providerId": "goated",
+      "enabled": true,
+      "strategy": "api_stream_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 5
+    },
+    {
+      "providerId": "hdghartv",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "hdhub4u",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "search"
+      ],
+      "routeCount": 4
+    },
+    {
+      "providerId": "hianime",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail"
+      ],
+      "routeCount": 7
+    },
+    {
+      "providerId": "kurage",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "movieblast",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "movies4u",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "search"
+      ],
+      "routeCount": 1
+    },
+    {
+      "providerId": "moviesdrive",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "search"
+      ],
+      "routeCount": 1
+    },
+    {
+      "providerId": "moviesmod",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "search"
+      ],
+      "routeCount": 1
+    },
+    {
+      "providerId": "movix",
+      "enabled": false,
+      "strategy": "mixed_embed_resolver",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/movix_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "player"
+      ],
+      "routeCount": 6
+    },
+    {
+      "providerId": "mugiwarastream",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "player"
+      ],
+      "routeCount": 1
+    },
+    {
+      "providerId": "nakios",
+      "enabled": true,
+      "strategy": "api_stream_resolver",
+      "state": "heuristic",
+      "reason": "generic direct API route only",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "neko-sama",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/neko_sama_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail",
+        "search"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "papadustream",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 1
+    },
+    {
+      "providerId": "peachify",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/peachify_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 5
+    },
+    {
+      "providerId": "playimdb",
+      "enabled": true,
+      "strategy": "direct_media",
+      "state": "heuristic",
+      "reason": "generic direct API route only",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 5
+    },
+    {
+      "providerId": "sekai",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 1
+    },
+    {
+      "providerId": "streamflix",
+      "enabled": true,
+      "strategy": "api_stream_resolver",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/streamflix_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [],
+      "routeCount": 2
+    },
+    {
+      "providerId": "streamzo",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail",
+        "player"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "toflix",
+      "enabled": true,
+      "strategy": "direct_media",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "player"
+      ],
+      "routeCount": 4
+    },
+    {
+      "providerId": "videasy",
+      "enabled": true,
+      "strategy": "api_stream_resolver",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/videasy_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 14
+    },
+    {
+      "providerId": "vidfast",
+      "enabled": true,
+      "strategy": "iframe_player",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "vidlink",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 5
+    },
+    {
+      "providerId": "vidrock",
+      "enabled": true,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "voiranime",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail",
+        "player"
+      ],
+      "routeCount": 4
+    },
+    {
+      "providerId": "voiranime-homes",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "player"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "voiranime-rip",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "player"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "vostfree",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "player"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "wookafr",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail",
+        "player"
+      ],
+      "routeCount": 5
+    },
+    {
+      "providerId": "yflix",
+      "enabled": true,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail"
+      ],
+      "routeCount": 4
+    },
+    {
+      "providerId": "1shows",
+      "enabled": false,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail"
+      ],
+      "routeCount": 4
+    },
+    {
+      "providerId": "allanime",
+      "enabled": false,
+      "strategy": "direct_media",
+      "state": "heuristic",
+      "reason": "generic direct API route only",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "allwish",
+      "enabled": false,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "anime-ultime",
+      "enabled": false,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "player"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "animevost-fr",
+      "enabled": false,
+      "strategy": "api_stream_resolver",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/animevost_fr_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "animeworld",
+      "enabled": false,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "player"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "cinefreak",
+      "enabled": false,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "search"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "cinevibe",
+      "enabled": false,
+      "strategy": "direct_media",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/cinevibe_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 1
+    },
+    {
+      "providerId": "ctgmovies",
+      "enabled": false,
+      "strategy": "direct_media",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "dvdplay",
+      "enabled": false,
+      "strategy": "quarantined",
+      "state": "quarantined",
+      "reason": "explicit quarantine",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "einthusan",
+      "enabled": false,
+      "strategy": "direct_media",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 6
+    },
+    {
+      "providerId": "fibwatch",
+      "enabled": false,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "search"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "frenchstream",
+      "enabled": false,
+      "strategy": "mixed_embed_resolver",
+      "state": "heuristic",
+      "reason": "generic crawler route chain only",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "player",
+        "search"
+      ],
+      "routeCount": 27
+    },
+    {
+      "providerId": "fullanime",
+      "enabled": false,
+      "strategy": "mixed_embed_resolver",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/fullanime_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail",
+        "search"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "goatapi",
+      "enabled": false,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "player"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "gramcinema",
+      "enabled": false,
+      "strategy": "html_scraper",
+      "state": "heuristic",
+      "reason": "generic crawler route chain only",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail",
+        "search"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "kisskh",
+      "enabled": false,
+      "strategy": "direct_media",
+      "state": "heuristic",
+      "reason": "generic crawler route chain only",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail",
+        "search"
+      ],
+      "routeCount": 9
+    },
+    {
+      "providerId": "mallumv",
+      "enabled": false,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "moonflix",
+      "enabled": false,
+      "strategy": "direct_media",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "moviebox",
+      "enabled": false,
+      "strategy": "quarantined",
+      "state": "quarantined",
+      "reason": "explicit quarantine",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "mycima",
+      "enabled": false,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "player"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "netmirror",
+      "enabled": false,
+      "strategy": "quarantined",
+      "state": "quarantined",
+      "reason": "explicit quarantine",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 6
+    },
+    {
+      "providerId": "onlykdrama",
+      "enabled": false,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail"
+      ],
+      "routeCount": 5
+    },
+    {
+      "providerId": "showbox",
+      "enabled": false,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail"
+      ],
+      "routeCount": 6
+    },
+    {
+      "providerId": "topcartoons",
+      "enabled": false,
+      "strategy": "quarantined",
+      "state": "quarantined",
+      "reason": "explicit quarantine",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [],
+      "routeCount": 0
+    },
+    {
+      "providerId": "vidlove",
+      "enabled": false,
+      "strategy": "html_scraper",
+      "state": "deterministic",
+      "reason": "structured API recipe",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": true,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 2
+    },
+    {
+      "providerId": "vidnest",
+      "enabled": false,
+      "strategy": "direct_media",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/vidnest_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 10
+    },
+    {
+      "providerId": "vidnest-anime",
+      "enabled": false,
+      "strategy": "api_stream_resolver",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/vidnest_anime_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 6
+    },
+    {
+      "providerId": "vidsrc",
+      "enabled": false,
+      "strategy": "mixed_embed_resolver",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "player"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "vixsrc",
+      "enabled": false,
+      "strategy": "quarantined",
+      "state": "quarantined",
+      "reason": "explicit quarantine",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api",
+        "detail"
+      ],
+      "routeCount": 6
+    },
+    {
+      "providerId": "waveanime",
+      "enabled": false,
+      "strategy": "api_stream_resolver",
+      "state": "deterministic",
+      "reason": "provider Lego",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [
+        "scripts/provider_patches/waveanime_runtime_v1.py"
+      ],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "api"
+      ],
+      "routeCount": 3
+    },
+    {
+      "providerId": "xpass",
+      "enabled": false,
+      "strategy": "html_scraper",
+      "state": "incomplete",
+      "reason": "no coherent terminal plan",
+      "sourceRuntimeFamily": "unknown",
+      "providerLegos": [],
+      "hasApiRecipe": false,
+      "routeKinds": [
+        "detail"
+      ],
+      "routeCount": 2
+    }
+  ]
+}

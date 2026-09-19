@@ -1,0 +1,86 @@
+name: DIAG - Current Anikoto Parity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/anikototv-current-parity-short.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-current-anikoto-parity
+  cancel-in-progress: true
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NIAKVIO_PROVIDER_SCOPE_MATRIX: automation/evidence/hub-lab-matrix-46.json
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Validate unbiased parity harness
+        run: |
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
+          python3 -m py_compile scripts/run_provider_upstream_parity_v3.py scripts/run_provider_upstream_parity_v2.py scripts/run_provider_upstream_parity.py scripts/rotating_corpus.py
+          python3 tests/provider_upstream_parity_v3_test.py
+          node scripts/provider_worker.cjs --self-test-response-wrapper
+      - name: Compare current Anikoto with AIO upstream
+        run: |
+          set -euo pipefail
+          python3 scripts/run_provider_upstream_parity_v3.py \
+            --scope-matrix automation/evidence/hub-lab-matrix-46.json \
+            --provider anikototv \
+            --samples-per-lane 8 \
+            --workers 1 \
+            --timeout 20 \
+            --out automation/anikototv-current-parity.json
+      - name: Print exact Anikoto verdict
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('automation/anikototv-current-parity.json')
+          if not p.exists():
+              print('ANIKOTO_REPORT_MISSING')
+              raise SystemExit(0)
+          d=json.loads(p.read_text(encoding='utf-8'))
+          print('ANIKOTO_COUNTS',json.dumps(d.get('statusCounts') or {},sort_keys=True))
+          print('ANIKOTO_REGRESSIONS',','.join(d.get('certainRegressions') or []) or 'none')
+          print('ANIKOTO_MISSING_UPSTREAM',','.join(d.get('missingUpstreamProviders') or []) or 'none')
+          for row in d.get('providers') or []:
+              print('ANIKOTO_PROVIDER',row.get('providerId'),row.get('status'))
+              for lane in row.get('lanes') or []:
+                  print('ANIKOTO_LANE',lane.get('lane'),lane.get('status'))
+                  for sample in lane.get('samples') or []:
+                      up=sample.get('upstream') or {}; ni=sample.get('niakvio') or {}
+                      print('ANIKOTO_SAMPLE',sample.get('fixture'),sample.get('tmdbId'),sample.get('executionOrder'),sample.get('classification'),
+                            'up_verified='+str(up.get('stream_count',0)), 'up_candidates='+str(up.get('candidate_stream_count',0)),
+                            'ni_verified='+str(ni.get('stream_count',0)), 'ni_candidates='+str(ni.get('candidate_stream_count',0)),
+                            'confirm='+str(sample.get('confirmationClassification') or 'none'))
+          PY
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: anikototv-current-parity-${{ github.run_id }}
+          path: automation/anikototv-current-parity.json
+          if-no-files-found: warn
+          retention-days: 7

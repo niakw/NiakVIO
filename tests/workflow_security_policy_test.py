@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+WORKFLOWS = ROOT / '.github' / 'workflows'
+SHA = re.compile(r'^[0-9a-f]{40}$', re.IGNORECASE)
+USES = re.compile(r'^\s*(?:-\s*)?uses:\s*([^\s#]+)', re.MULTILINE)
+errors: list[str] = []
+
+for path in sorted([*WORKFLOWS.glob('*.yml'), *WORKFLOWS.glob('*.yaml')]):
+    text = path.read_text(encoding='utf-8')
+    rel = path.relative_to(ROOT)
+    if re.search(r'^\s*pull_request_target\s*:', text, re.MULTILINE):
+        errors.append(f'{rel}: pull_request_target is forbidden')
+    if re.search(r'^\s*permissions\s*:\s*write-all\s*$', text, re.MULTILINE):
+        errors.append(f'{rel}: permissions write-all is forbidden')
+    if 'permissions:' not in text:
+        errors.append(f'{rel}: explicit permissions are required')
+    if 'npm install --ignore-scripts --no-audit --no-fund --package-lock=false' in text:
+        errors.append(f'{rel}: unpinned npm fallback is forbidden; use npm ci with package-lock.json')
+    if (
+        re.search(r'^\s*workflow_run\s*:', text, re.MULTILINE)
+        and re.search(r'^\s*contents\s*:\s*write\s*$', text, re.MULTILINE)
+        and 'github.event.workflow_run.head_repository.full_name == github.repository' not in text
+    ):
+        errors.append(f'{rel}: workflow_run writer must require the source run to belong to this repository')
+    for match in USES.finditer(text):
+        value = match.group(1).strip('"\'')
+        if value.startswith('./'):
+            continue
+        if value.startswith('docker://'):
+            if '@sha256:' not in value:
+                errors.append(f'{rel}: Docker action/image must be digest-pinned: {value}')
+            continue
+        if '@' not in value:
+            errors.append(f'{rel}: action/ref missing immutable pin: {value}')
+            continue
+        _action, ref = value.rsplit('@', 1)
+        if not SHA.fullmatch(ref):
+            errors.append(f'{rel}: external action must use full commit SHA: {value}')
+
+security_gate = (WORKFLOWS / 'security-final-gate.yml').read_text(encoding='utf-8')
+if 'exact 92-provider scan' in security_gate or 'expected=92' in security_gate or 'len(rows) != 92' in security_gate:
+    errors.append('security-final-gate.yml: published provider count must be derived from manifest.json, never hard-coded')
+if 'expected=len(rows)' not in security_gate:
+    errors.append('security-final-gate.yml: exhaustive scan must derive expected count from published rows')
+if "if checked != expected:" not in security_gate:
+    errors.append('security-final-gate.yml: exhaustive scan completion check is required')
+
+if "ref: ${{ github.sha }}" not in security_gate:
+    errors.append('security-final-gate.yml: security gate must checkout the exact triggering SHA')
+for required_path in (
+    "scripts/provider_base_store.py",
+    "scripts/add_provider.py",
+    "scripts/probe_provider_runtime_parity.py",
+):
+    if f"- '{required_path}'" not in security_gate:
+        errors.append(f"security-final-gate.yml: missing security trigger for {required_path}")
+
+if "path.startswith(('provider-disabled/','provider-old/'))" not in security_gate:
+    errors.append('security-final-gate.yml: disabled/archive provider artifacts must remain visible to CodeQL but outside release-reachable alert blocking scope')
+
+if errors:
+    raise SystemExit('workflow security policy failed:\n- ' + '\n- '.join(errors))
+print('workflow security policy tests passed')
