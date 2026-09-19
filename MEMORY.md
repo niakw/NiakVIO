@@ -2455,3 +2455,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The push/PR trigger now watches `scripts/provider_patches/**` plus generic provider runtime/transport contract patterns and the shared evidence/fixture/DATA files. A new or repaired provider Lego therefore automatically starts the targeted recovery engine without adding another workflow path entry.
 - This specifically fixes the missed-trigger class exposed by the new 4KHDHub, AllWish and MovieBox repair work and is required before the planned ~300-provider hub ingestion.
 - Current unresolved statuses remain evidence-driven; this workflow change does not promote any provider by itself.
+
+### 2026-09-19 — Release byte-validator blocker isolated; AnimeVOSTFR search parser hardened
+
+- Latest persisted census run **35460541384** remains **22 FULL OK / 1 PARTIAL OK / 7 NO PROOF / 6 PROVIDER JS BROKEN / 10 PROVIDER JS FULLY BROKEN**. MoviesHunt is FULL OK and DesiFlix is PARTIAL OK (movie proven); unresolved providers are not promoted without current terminal proof.
+- Accepted-release finalizer run **35461079899** failed before any push during `reapply_published_overrides.py`: `provider_byte_stability.verify_bytes` rejected one rematerialized JavaScript artifact. The validator remains fail-closed; publication did not occur.
+- `scripts/reapply_published_overrides.py` now preserves the validation failure while adding the exact `provider_id` to the exception, so a future failure is attributable instead of emitting an anonymous tail of `node --check`.
+- `tests/provider_allwish_runtime_contract_test.py` now applies the AllWish Lego to the actual current AllWish bundle and runs `node --check` on that generated artifact. This tests the same insertion shape that the finalizer validates, not merely the standalone wrapper source.
+- AnimeVOSTFR divergence was narrowed to search parsing: census requests to `v2.animevostfr.org/?s=...` redirect to `animevostfr.org` and return HTTP 200 but stop before detail pages, while the individual upstream proof can still reach detail/episode/trembed/Sibnet and return two streams. Current upstream derives card labels from image `alt` when anchor text is empty. The NiakVIO runtime now mirrors that safe parser behavior with visible-text -> image alt/title -> URL-slug fallback. Live census proof is still pending.

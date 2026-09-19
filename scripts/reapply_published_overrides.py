@@ -1176,7 +1176,12 @@ def main() -> int:
         assert_hardened(patched.decode("utf-8", errors="strict"))
         # No JS optimizer/minifier is allowed while runtime behavior is being
         # stabilized. Validate the exact post-Core bytes and preserve them verbatim.
-        verified_bytes, byte_stability = verify_bytes(patched)
+        try:
+            verified_bytes, byte_stability = verify_bytes(patched)
+        except Exception as exc:
+            raise RuntimeError(
+                f"{provider_id}: provider byte stability validation failed: {exc}"
+            ) from exc
         if verified_bytes != patched:
             raise AssertionError(f"{provider_id}: raw-byte verifier rewrote provider bytes")
         patched = verified_bytes

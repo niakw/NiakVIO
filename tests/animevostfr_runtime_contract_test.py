@@ -6,6 +6,10 @@ assert "NIAKVIO_ANIMEVOSTFR_RUNTIME_V1" in p
 assert 'c.base+"/?s="+encodeURIComponent' in p
 assert '/animes\\/' in p or '/animes/' in p
 assert "episodeScore" in p
+assert "searchLabel" in p
+assert "(?:alt|title)=" in p
+assert 'mark="/animes/"' in p
+assert "decodeURIComponent(slug)" in p
 assert "trembed" in p
 assert "await _crawlDirectMedia([ext],players[i],2)" in p
 assert 'provider:"animevostfr"' in p
