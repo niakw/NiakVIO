@@ -10840,7 +10840,8 @@
       "notes": [
         "Recovered user browser proof: MovieBox HOTD resolved through data.vidsrcme.ru / vidsrcme.ru using exact TMDB + season + episode and reached a terminal HLS playlist.",
         "Current NiakVIO-owned runtime reproduces only the vidsrcme TMDB resolver contract; upstream JavaScript is not executed.",
-        "Core owns terminal media probing, identity guard, timeout/cancellation and fail-closed HTTP handling."
+        "Core owns terminal media probing, identity guard, timeout/cancellation and fail-closed HTTP handling.",
+        "2026-09-20 current upstream authority: All-in-One MovieBox now resolves IMDb through pengu.uk Cinescrape JSON /stream/movie|series routes. NiakVIO uses that current path first and retains vidsrcme only as compatibility fallback."
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -10887,6 +10888,8 @@
         "sequential": true
       },
       "candidate_learned_routes": [
+        "/stream/movie/{imdbId}.json",
+        "/stream/series/{imdbId}:{season}:{episode}.json",
         "/stream/series/",
         "/stream/movie/",
         "/?tmdbId={tmdbId}&type=movie",
@@ -11051,8 +11054,12 @@
       ],
       "provider_lego_options": {
         "scripts/provider_patches/moviebox_vidsrcme_runtime_v1.py": {
-          "base": "https://vidsrcme.ru",
-          "referer": "https://vidsrcme.ru/"
+          "cinescrapeBase": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D",
+          "streamReferer": "https://stremio-moviebox-1.onrender.com/",
+          "legacyBase": "https://vidsrcme.ru",
+          "legacyReferer": "https://vidsrcme.ru/",
+          "maxStreams": 12,
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
         }
       }
     },

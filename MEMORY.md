@@ -2669,3 +2669,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - **Wooka** : current `status 0` traced to stale authority. NiakVIO was still executing `wookafr.tel` / collapsing current aliases to `wookafr.blog`. Current Gowaru source generated 2026-09-18 declares **`https://wookafr.boston`** with **`https://wookafr.center`** fallback and notes stale Referer domains can cause anti-hotlink 403. Current same-brand candidates are preserved independently; only older stale hosts rewrite to boston.
 - **VidFast** : official current docs expose **vidfast.to** `/embed/movie/{id}` and `/embed/tv/{id}/{season}/{episode}`, while current All-in-One upstream still uses **vidfast.vc** + enc-dec CSRF. Provider-local runtime now probes `.to/embed` first, then `.vc/movie|tv`, with shared media crawl fallback and the existing enc/dec terminal flow.
 - Added a synthetic runtime contract proving `vidfast.to` first, `vidfast.vc` fallback, enc/dec, server POST and terminal HLS. This is **not live proof** until CI/census confirms it.
+
+## 2026-09-20 — MovieBox current Cinescrape authority repair
+
+- Current All-in-One upstream MovieBox no longer uses the legacy vidsrcme/CloudOrchestra chain as its primary path. It resolves TMDB -> IMDb and calls a public Cinescrape JSON endpoint under `pengu.uk/.../stream/movie|series`.
+- NiakVIO's published model had already observed `pengu.uk` and `stremio-moviebox-1.onrender.com`, but the active provider Lego still forced `vidsrcme.ru`, which repeatedly reached `cloudorchestranova.com/embed/iframe_player/cache.php` with HTTP 400.
+- The MovieBox Lego now uses current Cinescrape/IMDb first and retains vidsrcme as compatibility fallback only. Core TMDB metadata/cache is the IMDb authority; no upstream JavaScript is executed.
+- Added synthetic behavior proof for both current success and legacy fallback. This is not a live stream promotion until current CI/census confirms it.
