@@ -3766,9 +3766,12 @@
       },
       "notes": [
         "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias.",
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
+        "Current decoded upstream contract (2026-09-19): /v2/api/anime/search -> /anime/oppai/{id}/{episode}?server=kite|dio&source_type=sub|dub -> https://swiftstream.top/proxy; upstream JS is not embedded or executed."
       ],
       "learned_routes": [
+        "/v2/api/anime/search/?query={query}",
+        "/v2/api/anime/oppai/{animeId}/{episode}?server={server}&source_type={sourceType}",
         "/v2/api",
         "/v4/search?query={query}",
         "/anime/search/?query={query}",
@@ -3972,7 +3975,26 @@
       },
       "published_types": [
         "anime"
-      ]
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/animetsu_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/animetsu_runtime_v1.py": {
+          "api": "https://animetsu.live/v2/api",
+          "site": "https://animetsu.live",
+          "proxy": "https://swiftstream.top/proxy",
+          "servers": [
+            "kite",
+            "dio"
+          ],
+          "sourceTypes": [
+            "sub",
+            "dub"
+          ],
+          "maxStreams": 8
+        }
+      }
     },
     "animevostfr": {
       "capability": "mixed_embed_resolver",
