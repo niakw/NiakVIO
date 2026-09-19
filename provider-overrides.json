@@ -1206,6 +1206,7 @@
         "movieshunt.ws": "movieshunt.run"
       },
       "learned_routes": [
+        "/search.html?q={query}",
         "/?s={query}"
       ],
       "candidate_learned_routes": [
@@ -1396,13 +1397,9 @@
       "search_request_plan": [
         {
           "base": "https://movieshunt.run",
-          "route": "/?s={query}",
+          "route": "/search.html?q={query}",
           "requestSpec": {
-            "method": "GET",
-            "headers": {
-              "Accept": "text/html,application/xhtml+xml,*/*",
-              "Referer": "https://movieshunt.run/"
-            }
+            "method": "GET"
           },
           "proofModelVersion": 5,
           "sourceRole": "catalog-search",
@@ -1444,6 +1441,7 @@
         "2026-09-19 current runtime reconstruction: use the provider-local upstream base movieshunt.run with the current WordPress /?s={query} catalogue route; redirects are followed at fetch time and are not promoted into static route authority.",
         "2026-09-19 executable authority cleanup: retired /lookup.php removed from learned_routes; only the current WordPress /?s={query} catalogue search remains executable.",
         "2026-09-19 clean-room runtime: TMDB/Core title -> provider-local WordPress search -> exact detail page -> Abhilinks -> HubCloud/VCloud -> terminal media; upstream JavaScript is not executed.",
+        "2026-09-19 current search redirect: movieshunt.run resolves catalogue queries onto a /search.html?q= layout; provider runtime parses same-host .html detail links and keeps /?s= as a compatibility fallback.",
         "2026-09-19 census authority: provider-owned corpus fixtures are tested before generic representatives; Sinners is the primary current MoviesHunt proof fixture."
       ],
       "provider_lego_scripts": [
