@@ -83,4 +83,13 @@ fixtures = audit._adaptive_fixtures(
 assert fixtures[0]["slug"] == "known-proof", fixtures
 assert "known-miss" not in [row.get("slug") for row in fixtures], fixtures
 
+# The targeted recovery workflow must preserve the same retained-proof / miss
+# memory as the full census. Otherwise a repair run silently falls back to
+# generic fixtures and re-discovers catalogue matches that are already known.
+targeted = (ROOT / ".github/workflows/temp-targeted-regression-recovery.yml").read_text(encoding="utf-8")
+assert 'tests/allanime_site_runtime_contract_test.py' in targeted
+assert 'tests/provider_census_scope_history_test.py' in targeted
+assert 'history_path=ROOT/"automation/provider-census-proof-history.json"' in targeted
+assert 'audit.build_tasks(history=history)' in targeted
+
 print("provider census scope/history contract passed")
