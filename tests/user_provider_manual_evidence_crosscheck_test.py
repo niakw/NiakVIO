@@ -16,6 +16,7 @@ for block in (
     "Evidence block A — live TV/Desktop behavior",
     "Evidence block B — browser route/hub captures",
     "Evidence block C — older VF/runtime diagnostics",
+    "Evidence block D — exact user route captures recovered from prior test files",
 ):
     assert block in ledger, block
 
@@ -63,4 +64,42 @@ assert "api_recipe" not in sekai
 for provider in ("vostfree","flemmix","animesama-co","sekai"):
     assert "api_recipe" not in patches[provider], provider
 
-print("user manual evidence A/B/C cross-check passed")
+
+# Block D: preserve exact manual positives that still guide current repair.
+for needle in (
+    "AllAnime manual positive",
+    "AniKotoTV historical positive",
+    "MoviesMod manual chain",
+    "HDHub4u manual chain",
+    "AllWish manual positive",
+    "MovieBox manual positive",
+):
+    assert needle in ledger, needle
+
+# 4KHDHub is not HDHub4u. Historical HDHub4u route evidence must never
+# overwrite 4KHDHub provider identity or current provider-local authority.
+k4=patches["4khdhub"]
+assert k4["official_site"]=="https://4khdhub.one"
+assert "HDHub4u are separate catalogues" in " ".join(k4.get("notes") or [])
+assert all("hdhub4u" not in str(v).lower() for v in (k4.get("domain_substitutions") or {}).values())
+assert all("hdhub4u" not in str(v).lower() for v in (k4.get("runtime_domain_replacements") or {}).values())
+
+# The user-observed AllAnime One Piece positive is retained as provider-targeted
+# evidence so a generic JJK catalogue miss does not dominate the census.
+corpus=json.loads((ROOT/".github/triggers/nuvio-client-lab.json").read_text(encoding="utf-8"))
+one_piece=[
+    row for row in corpus.get("fixtures") or []
+    if isinstance(row,dict)
+    and str((row.get("fixture") or {}).get("title") or "").casefold()=="one piece"
+    and "allanime" in {str(v or "").casefold() for v in (row.get("providers") or [])}
+]
+assert one_piece, "AllAnime One Piece provider-targeted fixture missing"
+
+# MovieBox has a clean NiakVIO-owned implementation of the exact manually
+# observed vidsrcme TMDB resolver chain; keep that source available even while
+# activation remains fail-closed until a fresh terminal proof is reproduced.
+moviebox_src=(ROOT/"scripts/provider_patches/moviebox_vidsrcme_runtime_v1.py").read_text(encoding="utf-8")
+assert "NIAKVIO_MOVIEBOX_VIDSRCME_RUNTIME_V1" in moviebox_src
+assert "/vs_src.php?type=" in moviebox_src
+
+print("user manual evidence A/B/C/D cross-check passed")
