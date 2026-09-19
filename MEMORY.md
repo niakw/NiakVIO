@@ -2549,3 +2549,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Publication then stopped in the optional one-line publication minimizer with the fail-closed guard `ASI-sensitive line break after restricted keyword cannot be flattened safely`. The previous exception omitted the provider/file identity, so no provider-specific repair can be justified yet.
 - `finalize_provider_v3_minimizer.py` now wraps minimizer/transform failures with the exact provider id and current content-addressed filename. This does not weaken the one-line or ASI safety contract; it makes the blocker diagnosable.
 - Next action: rerun accepted-release finalization on the new pinned HEAD, identify the exact reconstructed bundle, repair its source/transform semantically, then complete publication and post-publication census.
+
+### 2026-09-19 — Test-only pushes no longer launch provider census
+
+- Repeated release/minimizer diagnostic commits were launching `TEMP - Current Bytes Full Provider Census` solely because the workflow listened to broad `tests/**` paths. Those long census runs can later persist evidence to `main`, racing accepted-release finalization even though the provider bytes/data never changed.
+- `.github/workflows/temp-current-bytes-full-provider-census.yml` no longer triggers on generic `tests/**` changes for either push or pull_request. Provider-affecting sources/data/corpus/workflow paths remain explicit triggers; test-only correctness is handled by Workflow Gate / Provider Non-Regression.
+- The workflow-file edit itself intentionally triggers one final census under the existing self-path. After that run drains, test-only commits must not create new census writers.
