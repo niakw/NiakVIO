@@ -17,12 +17,11 @@ for token in ("NIAKVIO_VIDFAST_RUNTIME_V1", "/movie/"+'"+q.id+"/', "/tv/"+'"+q.i
     assert token in vidlego, token
 
 yflix=over["provider_patches"]["yflix"]
-for recipe_key in ("api_recipe","candidate_api_recipe"):
-    recipe=yflix[recipe_key]
-    assert "directRoute" not in recipe and "directRequest" not in recipe, recipe
-    assert recipe["recipeKind"]=="typed-resolver-api", recipe
-    assert recipe["movieRoute"].endswith("type=movie"), recipe
-    assert recipe["episodeRoute"].endswith("type=tv"), recipe
+assert yflix["provider_lego_scripts"]==["scripts/provider_patches/yflix_runtime_v1.py"]
+assert "api_recipe" not in yflix and "candidate_api_recipe" not in yflix
+yflixlego=(ROOT/"scripts/provider_patches/yflix_runtime_v1.py").read_text(encoding="utf-8")
+for token in ("NIAKVIO_YFLIX_RUNTIME_V1", "/find?tmdb_id=", "/enc-movies-flix?text=", "/links/list?eid=", "/links/view?id=", "/dec-movies-flix", "/dec-rapid"):
+    assert token in yflixlego, token
 
 allanime=(ROOT/"scripts/provider_patches/allanime_site_runtime_v1.py").read_text(encoding="utf-8")
 for token in ("d405d0edd690624b66baba3068e0edc3ac90f1597d898a1ec8db4e5c43c00fec", '"?variables="', "persistedQuery:{version:1,sha256Hash:SOURCE_HASH}", '"https://allmanga.to"', '"https://youtu-chan.com"'):

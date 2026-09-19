@@ -9248,7 +9248,14 @@
         "/api/enc-movies-flix?text=e4ez9g",
         "/db/flix/find?tmdb_id={tmdbId}&type=tv",
         "/api/enc-movies-flix?text=c4q58K8",
-        "/api/enc-movies-flix?text=cYW89aM"
+        "/api/enc-movies-flix?text=cYW89aM",
+        "/db/flix/find?tmdb_id={tmdbId}",
+        "/api/enc-movies-flix?text={id}",
+        "/ajax/episodes/list?id={id}&_={token}",
+        "/ajax/links/list?eid={id}&_={token}",
+        "/ajax/links/view?id={id}&_={token}",
+        "/api/dec-movies-flix",
+        "/api/dec-rapid"
       ],
       "learned_routes": [
         "/db/flix/find?tmdb_id={tmdbId}&type=movie",
@@ -9360,50 +9367,6 @@
           }
         ]
       },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "movieRoute": "https://enc-dec.app/db/flix/find?tmdb_id={tmdbId}&type=movie",
-        "movieRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
-          }
-        },
-        "base": "https://enc-dec.app",
-        "episodeRoute": "https://enc-dec.app/db/flix/find?tmdb_id={tmdbId}&type=tv",
-        "episodeRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
-          }
-        },
-        "recipeKind": "typed-resolver-api"
-      },
-      "candidate_api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "movieRoute": "https://enc-dec.app/db/flix/find?tmdb_id={tmdbId}&type=movie",
-        "movieRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
-          }
-        },
-        "base": "https://enc-dec.app",
-        "episodeRoute": "https://enc-dec.app/db/flix/find?tmdb_id={tmdbId}&type=tv",
-        "episodeRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
-          }
-        },
-        "recipeKind": "typed-resolver-api"
-      },
       "route_data_state": "repair",
       "repair_disposition": {
         "schemaVersion": 1,
@@ -9474,7 +9437,30 @@
       },
       "notes": [
         "2026-09-19 lane authority repair: generic directRoute remains removed so TV can never be forced through type=movie.",
-        "2026-09-19 zero-before-network root cause: movieRoute/episodeRoute are direct typed resolver endpoints; ProviderBase requires recipeKind=typed-resolver-api when no searchRoute exists. Both current and candidate recipes now declare that contract."
+        "2026-09-19 zero-before-network root cause: movieRoute/episodeRoute are direct typed resolver endpoints; ProviderBase requires recipeKind=typed-resolver-api when no searchRoute exists. Both current and candidate recipes now declare that contract.",
+        "2026-09-19 YFlix repair: the typed DB apiRecipe stopped at /db/flix/find and could never reach terminal media. Runtime ownership moved to a NiakVIO Lego implementing the current encrypted YFlix AJAX chain; upstream JS remains knowledge-only."
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/yflix_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/yflix_runtime_v1.py": {
+          "db": "https://enc-dec.app/db/flix",
+          "api": "https://enc-dec.app/api",
+          "ajaxBases": [
+            "https://yflix.to/ajax",
+            "https://1movies.bz/ajax",
+            "https://solarmovie.fi/ajax"
+          ],
+          "maxStreams": 8,
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145.0.0.0 Safari/537.36"
+        }
+      },
+      "source_runtime_family": "yflix-db-encrypted-ajax-v1",
+      "reconstruction_state": "provider-local-current-api",
+      "published_types": [
+        "movie",
+        "tv"
       ]
     },
     "allanime": {
