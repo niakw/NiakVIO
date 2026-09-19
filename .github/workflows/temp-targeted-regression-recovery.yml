@@ -21,6 +21,12 @@ on:
       - 'scripts/provider_patches/moviesmod_runtime_v1.py'
       - 'tests/provider_moviesmod_runtime_contract_test.py'
       - 'scripts/provider_patches/allanime_site_runtime_v1.py'
+      - 'scripts/provider_patches/allwish_runtime_v1.py'
+      - 'scripts/provider_patches/moviebox_vidsrcme_runtime_v1.py'
+      - 'scripts/provider_patches/vidfast_runtime_v1.py'
+      - 'scripts/provider_patches/anikototv_runtime_v2.py'
+      - 'tests/provider_allwish_runtime_contract_test.py'
+      - 'tests/user_provider_manual_evidence_crosscheck_test.py'
       - 'tests/allanime_site_runtime_contract_test.py'
       - 'scripts/provider_patches/vostfree_dle_uqload_runtime_v1.py'
       - 'tests/vostfree_transport_contract_test.py'
@@ -50,6 +56,12 @@ on:
       - 'scripts/provider_patches/moviesmod_runtime_v1.py'
       - 'tests/provider_moviesmod_runtime_contract_test.py'
       - 'scripts/provider_patches/allanime_site_runtime_v1.py'
+      - 'scripts/provider_patches/allwish_runtime_v1.py'
+      - 'scripts/provider_patches/moviebox_vidsrcme_runtime_v1.py'
+      - 'scripts/provider_patches/vidfast_runtime_v1.py'
+      - 'scripts/provider_patches/anikototv_runtime_v2.py'
+      - 'tests/provider_allwish_runtime_contract_test.py'
+      - 'tests/user_provider_manual_evidence_crosscheck_test.py'
       - 'tests/allanime_site_runtime_contract_test.py'
       - 'scripts/provider_patches/vostfree_dle_uqload_runtime_v1.py'
       - 'tests/vostfree_transport_contract_test.py'
@@ -72,7 +84,7 @@ jobs:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
       NIAKVIO_QUICK_YIELD_TIMEOUT: '60'
-      NIAKVIO_QUICK_YIELD_MAX_SAMPLES: '4'
+      NIAKVIO_QUICK_YIELD_MAX_SAMPLES: '8'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -94,6 +106,7 @@ jobs:
           python tests/user_provider_manual_evidence_crosscheck_test.py
           python tests/animesalt_runtime_contract_test.py
           python tests/allanime_site_runtime_contract_test.py
+          python tests/provider_allwish_runtime_contract_test.py
           python tests/vostfree_transport_contract_test.py
           python tests/provider_animesamaco_domain_data_contract_test.py
           python tests/presentation_revision_parser_test.py
@@ -269,7 +282,16 @@ jobs:
           sys.path.insert(0,str(ROOT/"scripts"))
           import audit_provider_quick_yield as audit
 
-          targets={"animesama-co","neko-sama","voiranime","voiranime-rip","kurage","flemmix","anime-ultime","coflix","animesultra","sekai","moviesmod","movieshunt","animesalt","allanime","vostfree","uhdmovies"}
+          status=json.loads((ROOT/"automation/provider-census-status.json").read_text(encoding="utf-8"))
+          targets={
+              str(row.get("provider") or "").strip().casefold()
+              for row in (status.get("providers") or [])
+              if isinstance(row,dict)
+              and str(row.get("status") or "") not in {"FULL OK","PARTIAL OK"}
+              and str(row.get("provider") or "").strip()
+          }
+          if not targets:
+              raise SystemExit("no unresolved providers in provider census status")
           tasks,_=audit.build_tasks()
           selected=[task for task in tasks if task["provider_id"] in targets]
           observed={task["provider_id"] for task in selected}
