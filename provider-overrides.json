@@ -9351,8 +9351,8 @@
           }
         },
         "base": "https://enc-dec.app",
-        "directRoute": "/db/flix/find?tmdb_id={tmdbId}&type=movie",
-        "directRequest": {
+        "episodeRoute": "https://enc-dec.app/db/flix/find?tmdb_id={tmdbId}&type=tv",
+        "episodeRequest": {
           "method": "GET",
           "headers": {
             "accept-language": "fr-FR,fr,en-US,en",
@@ -9372,8 +9372,8 @@
           }
         },
         "base": "https://enc-dec.app",
-        "directRoute": "/db/flix/find?tmdb_id={tmdbId}&type=movie",
-        "directRequest": {
+        "episodeRoute": "https://enc-dec.app/db/flix/find?tmdb_id={tmdbId}&type=tv",
+        "episodeRequest": {
           "method": "GET",
           "headers": {
             "accept-language": "fr-FR,fr,en-US,en",
@@ -9448,7 +9448,10 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      }
+      },
+      "notes": [
+        "2026-09-19 lane authority repair: removed generic directRoute because ProviderBase executes it before typed routes and it forced type=movie for TV requests. YFlix now uses movieRoute for movie and episodeRoute for TV."
+      ]
     },
     "allanime": {
       "capability": "direct_media",
