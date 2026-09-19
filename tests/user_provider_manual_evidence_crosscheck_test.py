@@ -55,7 +55,12 @@ recipe=streamzo.get("api_recipe") or {}
 assert "videasy" in json.dumps(recipe).lower(), recipe
 
 # Dedicated provider-local runtimes must not silently reacquire generic ARM.
-for provider in ("vostfree","flemmix","animesama-co"):
+sekai=patches["sekai"]
+assert sekai["official_site"]=="https://sekai.one"
+assert sekai["learned_routes"]==["/sitemap.xml","/{slug}"]
+assert "api_recipe" not in sekai
+
+for provider in ("vostfree","flemmix","animesama-co","sekai"):
     assert "api_recipe" not in patches[provider], provider
 
 print("user manual evidence A/B/C cross-check passed")
