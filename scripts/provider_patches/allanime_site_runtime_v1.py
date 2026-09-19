@@ -66,7 +66,7 @@ async function resolveRows(rows,mode,meta,q){var out=[],seen={},lang=mode==="dub
     }
   }return out
 }
-async function resolve(a){var q=req(a);if(q===null)return null;if(!q||!q.tmdbId)return[];var meta=await metadata(q);if(!meta||!meta.title)return[];var modes=["sub","dub"],episodes=[q.episode],abs=absoluteEpisode(q,meta);if(abs!==q.episode)episodes.push(abs),out=[];
+async function resolve(a){var q=req(a);if(q===null)return null;if(!q||!q.tmdbId)return[];var meta=await metadata(q);if(!meta||!meta.title)return[];var modes=["sub","dub"],episodes=[q.episode],abs=absoluteEpisode(q,meta),out=[];if(abs!==q.episode)episodes.push(abs);
   for(var mi=0;mi<modes.length&&out.length<c.maxStreams;mi++){var mode=modes[mi],show=await findShow(meta,q,mode);if(!show)continue;for(var ei=0;ei<episodes.length&&out.length<c.maxStreams;ei++){var rows=await sourceRows(show._id,mode,episodes[ei]);if(!rows.length)continue;var got=await resolveRows(rows,mode,meta,q);for(var gi=0;gi<got.length&&out.length<c.maxStreams;gi++)out.push(got[gi]);if(got.length)break}}
   return out
 }
