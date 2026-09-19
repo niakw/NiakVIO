@@ -58,6 +58,25 @@ WRAPPER = r'''
     var js=await fetchText(c.site+"/templates/Animix/js/anime.js",{redirect:"follow",headers:hdr(detail,"*/*")});if(!js)return "";
     var m=/(https:\/\/uqload\.[A-Za-z0-9.-]+\/embed-)/i.exec(js.text);return m?m[1]:"";
   }
+  function episodeBlock(text,episode){
+    var startRe=new RegExp("<div\\s+id=[\"']buttons_"+episode+"[\"'][^>]*>","i"),sm=startRe.exec(text||"");if(!sm)return "";
+    var start=sm.index,end=(text||"").length,nextRe=new RegExp("<div\\s+id=[\"']buttons_"+(episode+1)+"[\"'][^>]*>","i"),next=nextRe.exec((text||"").slice(start+sm[0].length));
+    if(next)end=start+sm[0].length+next.index;return (text||"").slice(start,end);
+  }
+  function sibnetEmbed(text,episode){
+    var block=episodeBlock(text,episode),m=/(https?:\\/\\/video\\.sibnet\\.ru\\/(?:c|shell)\\.php\\?[^"'<>\\s]*videoid=\\d+[^"'<>\\s]*)/i.exec(ent(block));
+    return m?m[1].replace(/&amp;/gi,"&"):"";
+  }
+  async function sibnetMedia(embed,detail){
+    if(!embed)return "";
+    var page=await fetchText(embed,{redirect:"follow",headers:hdr(detail,"text/html,*/*")});if(!page)return "";
+    var source=ent(page.text),patterns=[
+      /https?:\\/\\/[^"'<>\\s]+\\.(?:m3u8|mp4)(?:[?#][^"'<>\\s]*)?/gi,
+      /["'](?:file|src)["']?\\s*[:=]\\s*["']([^"']+\\.(?:m3u8|mp4)(?:[?#][^"']*)?)/gi
+    ];
+    for(var p=0;p<patterns.length;p++){var re=patterns[p],m;while((m=re.exec(source))!==null){var u=m[1]||m[0];if(u.indexOf("//")===0)u="https:"+u;try{u=new URL(u,page.url||embed).toString()}catch(_e){continue}if(/^https?:/i.test(u))return u}}
+    return "";
+  }
   function key(n,radix){var chars="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";if(n<radix)return chars.charAt(n);return key(Math.floor(n/radix),radix)+chars.charAt(n%radix)}
   function jsstr(src,pos){
     while(pos<src.length&&/\s/.test(src.charAt(pos)))pos++;
@@ -85,10 +104,11 @@ WRAPPER = r'''
     var q=argsOf(a);if(!q)return null;q=await meta(q);if(!q.title)return [];
     var detail=await search(q);if(!detail)return [];
     var page=await fetchText(detail,{redirect:"follow",headers:hdr(c.site+"/","text/html,*/*")});if(!page)return [];
-    var token=uqToken(page.text,q.episode);if(!token)return [];
-    var prefix=await uqPrefix(page.url);if(!prefix)return [];
-    var embed=prefix+token+".html",epage=await fetchText(embed,{redirect:"follow",headers:hdr(page.url,"text/html,*/*")});if(!epage)return [];
-    var xs=media(epage.text);for(var i=0;i<xs.length&&i<3;i++){try{var r=await g.fetch(xs[i],{redirect:"follow",headers:hdr(epage.url,"application/vnd.apple.mpegurl,application/x-mpegURL,*/*")});if(r&&r.ok){var body=await r.text();if(/^#EXTM3U/m.test(body)){var lang=/vostfr/i.test(page.text+page.url)?"VOSTFR":/\bvf\b/i.test(page.text+page.url)?"VF":"VO";return [{name:"Vostfree | Uqload",title:"Vostfree | Uqload",url:xs[i],quality:"HD",language:lang,headers:hdr(epage.url,"application/vnd.apple.mpegurl,application/x-mpegURL,*/*"),provider:"vostfree",isDirect:true}]}}}catch(_e){}}
+    var lang=/vostfr/i.test(page.text+page.url)?"VOSTFR":/\bvf\b/i.test(page.text+page.url)?"VF":"VO";
+    var token=uqToken(page.text,q.episode);
+    if(token){var prefix=await uqPrefix(page.url);if(prefix){var embed=prefix+token+".html",epage=await fetchText(embed,{redirect:"follow",headers:hdr(page.url,"text/html,*/*")});if(epage){var xs=media(epage.text);for(var i=0;i<xs.length&&i<3;i++){try{var r=await g.fetch(xs[i],{redirect:"follow",headers:hdr(epage.url,"application/vnd.apple.mpegurl,application/x-mpegURL,*/*")});if(r&&r.ok){var body=await r.text();if(/^#EXTM3U/m.test(body))return [{name:"Vostfree | Uqload",title:"Vostfree | Uqload",url:xs[i],quality:"HD",language:lang,headers:hdr(epage.url,"application/vnd.apple.mpegurl,application/x-mpegURL,*/*"),provider:"vostfree",isDirect:true}]}}catch(_e){}}}}}
+    var sib=sibnetEmbed(page.text,q.episode),mediaUrl=await sibnetMedia(sib,page.url);
+    if(mediaUrl){var isHls=/\.m3u8(?:[?#]|$)/i.test(mediaUrl),headers=hdr(sib||page.url,isHls?"application/vnd.apple.mpegurl,application/x-mpegURL,*/*":"video/*,*/*");return [{name:"Vostfree | Sibnet",title:"Vostfree | Sibnet",url:mediaUrl,quality:"HD",language:lang,headers:headers,provider:"vostfree",isDirect:true}]}
     return [];
   }
   try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:"vostfree",resolve:resolve}}catch(_e){}
