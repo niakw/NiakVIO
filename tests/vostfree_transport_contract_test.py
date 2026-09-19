@@ -13,7 +13,7 @@ assert 'if(type!=="anime")return null;' in src
 assert 'c.site+"/index.php?do=search"' in src
 assert 'action_select_season' not in src
 assert 'provider:"vostfree",resolve:resolve' in src
-assert 'video\\.sibnet\\.ru' in src
+assert r'video\.sibnet\.ru' in src
 assert 'function sibnetEmbed' in src
 assert 'function sibnetMedia' in src
 assert 'Vostfree | Sibnet' in src
