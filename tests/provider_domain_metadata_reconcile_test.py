@@ -140,4 +140,12 @@ assert hubs["voiranime"]["direct_authority"] == "explicit_current"
 assert hubs["voiranime"]["allowed_terminal_hosts"] == ["voir-anime.to"]
 assert "voiranime.diy" in hubs["voiranime"]["blocked_hosts"]
 
+# Reconciliation performed inside Domain Refresh must merge its provider IDs into
+# the same transaction journal consumed by the fail-closed guard.
+source=(ROOT/"scripts/reconcile_provider_domain_metadata.py").read_text(encoding="utf-8")
+assert 'parser.add_argument("--changes-output", default="")' in source
+assert 'transaction_changes["reconcile_changed"] = sorted(changed)' in source
+workflow=(ROOT/".github/workflows/domain-refresh.yml").read_text(encoding="utf-8")
+assert 'reconcile_provider_domain_metadata.py --rebuild --changes-output health-output/domain-site-changes.json' in workflow
+
 print("provider domain metadata reconciliation tests passed")

@@ -168,6 +168,7 @@ def reconcile_patch(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--rebuild", action="store_true")
+    parser.add_argument("--changes-output", default="")
     args = parser.parse_args()
 
     overrides = load(OVERRIDES)
@@ -193,6 +194,19 @@ def main() -> int:
         if args.rebuild:
             transaction.source_qualified_provider_name = preserve_publication_filename_stage
             transaction.rebuild_provider_configs(sorted(changed))
+
+    if args.changes_output:
+        changes_path = ROOT / args.changes_output
+        transaction_changes = load(changes_path) if changes_path.is_file() else {"schema_version": 3}
+        declared = {
+            canonical(value)
+            for value in transaction_changes.get("changed") or []
+            if canonical(value)
+        }
+        declared.update(changed)
+        transaction_changes["changed"] = sorted(declared)
+        transaction_changes["reconcile_changed"] = sorted(changed)
+        write(changes_path, transaction_changes)
 
     print(
         "FIELD_DOMAIN_METADATA_RECONCILE "

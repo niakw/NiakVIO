@@ -93,7 +93,7 @@ jobs:
           set -euo pipefail
           python tests/provider_domain_metadata_reconcile_test.py
           python tests/user_provider_manual_evidence_crosscheck_test.py
-          python scripts/reconcile_provider_domain_metadata.py --rebuild
+          python scripts/reconcile_provider_domain_metadata.py --rebuild --changes-output health-output/domain-site-changes.json
           python scripts/finalize_provider_v3_minimizer.py
           python scripts/finalize_provider_v3_minimizer.py --check
           python tests/provider_v3_minimizer_publication_pipeline_test.py
