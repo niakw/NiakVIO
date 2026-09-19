@@ -231,6 +231,59 @@ jobs:
               )
           PY
 
+      - name: Recover canonical release finalizer registration
+        if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, 'recover canonical release finalizer') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ["GH_TOKEN"]
+          trigger_sha = os.environ["GITHUB_SHA"]
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "Authorization": f"Bearer {token}",
+              "X-GitHub-Api-Version": "2022-11-28",
+              "User-Agent": "NiakVIO-release-finalizer-recovery",
+          }
+
+          def request(path: str, method: str = "GET", payload=None):
+              data = None if payload is None else json.dumps(payload).encode("utf-8")
+              h = dict(headers)
+              if data is not None:
+                  h["Content-Type"] = "application/json"
+              req = urllib.request.Request(
+                  "https://api.github.com" + path,
+                  data=data if data is not None else (b"" if method in {"POST", "PUT"} else None),
+                  headers=h,
+                  method=method,
+              )
+              with urllib.request.urlopen(req, timeout=30) as response:
+                  body = response.read()
+                  return json.loads(body) if body else {}
+
+          current = str(request(f"/repos/{repo}/branches/main")["commit"]["sha"])
+          if current != trigger_sha:
+              raise SystemExit(
+                  f"main advanced before finalizer recovery trigger={trigger_sha} current={current}"
+              )
+
+          workflow = "release-finalize.yml"
+          request(f"/repos/{repo}/actions/workflows/{workflow}/enable", "PUT")
+          request(
+              f"/repos/{repo}/actions/workflows/{workflow}/dispatches",
+              "POST",
+              {"ref": "main", "inputs": {"expected_sha": current}},
+          )
+          print(f"FIELD_RELEASE_FINALIZER_RECOVERY enabled=true dispatched=true sha={current}")
+          PY
+
   cleanup:
     needs: purge-stale-actions
     permissions:
