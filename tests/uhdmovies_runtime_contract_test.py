@@ -9,6 +9,9 @@ for marker in [
     'b+"/?s="+encodeURIComponent(m.title)',
     "function parseForm",
     'h.Cookie=token+"="+values[i]',
+    "function redirectedDirect",
+    "function followDownload",
+    'new URL(u).searchParams.get("url")',
     "function driveSeed",
     'provider:"uhdmovies"',
 ]:
