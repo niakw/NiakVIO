@@ -16,4 +16,11 @@ vidlego=(ROOT/"scripts/provider_patches/vidfast_runtime_v1.py").read_text(encodi
 for token in ("NIAKVIO_VIDFAST_RUNTIME_V1", "/movie/"+'"+q.id+"/', "/tv/"+'"+q.id+"/"+q.season+"/"+q.episode+"/', "/enc-vidfast?text=", "/dec-vidfast", '"X-CSRF-Token"'):
     assert token in vidlego, token
 
-print("AnimeVOST-FR, UHDMovies and VidFast capability contracts passed")
+yflix=over["provider_patches"]["yflix"]
+for recipe_key in ("api_recipe","candidate_api_recipe"):
+    recipe=yflix[recipe_key]
+    assert "directRoute" not in recipe and "directRequest" not in recipe, recipe
+    assert recipe["movieRoute"].endswith("type=movie"), recipe
+    assert recipe["episodeRoute"].endswith("type=tv"), recipe
+
+print("AnimeVOST-FR, UHDMovies, VidFast and YFlix capability contracts passed")
