@@ -5,6 +5,7 @@ import subprocess
 
 ROOT=Path(__file__).resolve().parents[1]
 ov=json.loads((ROOT/"provider-overrides.json").read_text(encoding="utf-8"))["provider_patches"]
+hubs=json.loads((ROOT/"provider-hubs.json").read_text(encoding="utf-8"))["providers"]
 
 flemmix=(ROOT/"scripts/provider_patches/flemmix_runtime_v1.py").read_text(encoding="utf-8")
 anime=(ROOT/"scripts/provider_patches/anime_ultime_runtime_v1.py").read_text(encoding="utf-8")
@@ -30,6 +31,8 @@ assert ov["flemmix"]["search_request_plan"][0]["route"]=="/index.php?do=search&s
 assert ov["flemmix"]["provider_lego_options"]["scripts/provider_patches/flemmix_runtime_v1.py"]["base"] == "https://flemmix.cloud"
 assert '"base": "https://flemmix.cloud"' in flemmix
 assert ov["flemmix"]["official_site"] == "https://flemmix.cloud"
+assert hubs["flemmix"]["direct"] == "https://flemmix.cloud/"
+assert hubs["flemmix"]["direct_authority"] == "explicit_current"
 flemmix_js=flemmix.split("WRAPPER = r'''",1)[1].split("'''",1)[0]
 assert flemmix_js.count("c.base")==2, "only runtimeBase fallback may reference the legacy Flemmix config base"
 compiled=flemmix_js.replace("CONFIG_PLACEHOLDER","{}")
