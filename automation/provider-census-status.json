@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35464508556",
-  "triggerSha": "cb2b7c321866382849ec1f56571b5d3eb1772aba",
+  "runId": "35464982081",
+  "triggerSha": "68a32cfd3f716c0736878736f6c4f455242318bf",
   "providers": [
     {
       "provider": "4khdhub",
@@ -311,7 +311,7 @@
       ],
       "dominantIssue": "provider_network_http_error×2",
       "searchProgress": [
-        "movie: 8 this run / 15 retained misses",
+        "movie: 8 this run / 17 retained misses",
         "tv: 8 this run / 18 retained misses"
       ],
       "action": "BRAIN LEARNING slot",
@@ -366,21 +366,21 @@
     },
     {
       "provider": "uhdmovies",
-      "status": "NO PROOF",
-      "color": "🔵",
+      "status": "PROVIDER JS FULLY BROKEN",
+      "color": "🔴",
       "declaredLanes": [
         "movie"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result"
+        "movie=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "movie: 8 this run / 24 retained misses"
+        "movie: 8 this run / 25 retained misses"
       ],
-      "action": "continue corpus proof search; BRAIN checks",
+      "action": "BRAIN LEARNING slot",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -409,21 +409,21 @@
     },
     {
       "provider": "voiranime-rip",
-      "status": "PROVIDER JS BROKEN",
-      "color": "🟠",
+      "status": "NO PROOF",
+      "color": "🔵",
       "declaredLanes": [
         "anime"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_http_error"
+        "anime=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 8 this run / 13 retained misses"
+        "anime: 8 this run / 15 retained misses"
       ],
-      "action": "repair + retest; BRAIN checks",
+      "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -1128,8 +1128,8 @@
     "FULL OK": 22,
     "NO PROOF": 8,
     "PARTIAL OK": 1,
-    "PROVIDER JS BROKEN": 3,
-    "PROVIDER JS FULLY BROKEN": 12
+    "PROVIDER JS BROKEN": 2,
+    "PROVIDER JS FULLY BROKEN": 13
   },
   "brainQueue": [
     "4khdhub",
