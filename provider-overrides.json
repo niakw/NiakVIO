@@ -3771,7 +3771,15 @@
       ],
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
-      ]
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/animesultra_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/animesultra_runtime_v1.py": {
+          "base": "https://animesultra.com"
+        }
+      }
     },
     "animetsu": {
       "capability": "direct_media",
@@ -4808,6 +4816,14 @@
             "accept-language": "fr-FR,fr,en-US,en",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
           }
+        }
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/coflix_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/coflix_runtime_v1.py": {
+          "base": "https://coflix.wiki"
         }
       }
     },
