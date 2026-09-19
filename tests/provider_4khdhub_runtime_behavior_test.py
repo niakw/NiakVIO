@@ -39,7 +39,7 @@ globalThis.fetch=async function(url){
   if(url.includes("/?s=Breaking%20Bad%20Season%201")) return response(url,
     '<a class="movie-card" href="/breaking-bad-series-1385/"><span class="movie-card-title">Breaking Bad Season 1</span><span class="movie-card-format">Series</span><span class="movie-card-meta">2008</span></a>');
   if(url.endsWith("/breaking-bad-series-1385/")) return response(url,
-    '<div class="episode-item"><span class="episode-title">S01</span><div class="episode-download-item"><span class="episode-file-title">Episode-01 Breaking Bad 1080p 2 GB</span><a href="https://hubcloud.test/f/bb">HubCloud</a></div></div>');
+    '<div id="episodes"><div class="episode-download-item"><span class="episode-file-title">Breaking Bad S01E01 1080p 2 GB</span><a href="https://hubcloud.test/f/bb">HubCloud</a></div></div>');
   if(url==="https://hubcloud.test/f/bb") return response(url,
     '<a id="download" href="https://hubcloud.test/v/bb">Download</a>');
   if(url==="https://hubcloud.test/v/bb") return response(url,
@@ -69,4 +69,9 @@ assert "The Colony" in movie[0]["title"],movie
 assert len(tv)==1,tv
 assert tv[0]["url"]=="https://media.workers.dev/bb-s01e01.mkv",tv
 assert "S01E01" in tv[0]["title"],tv
+src=PATCH.read_text(encoding="utf-8")
+assert 'classBlocks(html,"episode-download-item")' in src
+assert 'green(?:mount)?motors' in src
+assert '_crawlDirectMedia([url],url,3)' in src
+assert "hdhub4u" not in mod.WRAPPER.lower()
 print("4KHDHub runtime behavior contract passed")
