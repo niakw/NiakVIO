@@ -51,7 +51,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             "identity": "tmdb-direct",
             "legacyExecutableSeed": False,
             "upstreamJsExecuted": False,
-            "coreFinalOutputOwnership": True,\n            "terminalResolution": "vidsrcme-src-direct-or-bounded-crawl",
+            "coreFinalOutputOwnership": True,
+            "terminalResolution": "vidsrcme-src-direct-or-bounded-crawl",
             "semanticLanes": ["movie", "tv"],
         },
     )
