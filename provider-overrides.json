@@ -6759,7 +6759,7 @@
     "sekai": {
       "capability": "html_scraper",
       "official_hub": null,
-      "official_site": "https://sekai.one/?v=15",
+      "official_site": "https://sekai.one",
       "candidate_config_reconciliation": {
         "version": 3,
         "route_plan_source": "embedded-provider-js",
@@ -6785,7 +6785,7 @@
         "/meta/series/tt12343534.json"
       ],
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
+        "/sitemap.xml",
         "/{slug}"
       ],
       "route_proof_version": 5,
@@ -6893,19 +6893,6 @@
           }
         ]
       },
-      "candidate_api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
-      },
       "manifest_overrides": {
         "enabled": true
       },
@@ -6943,20 +6930,6 @@
           ]
         },
         "evidenceDestructive": false
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        },
-        "referer": "https://sekai.one/?v=15"
       },
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -6997,7 +6970,9 @@
         "scripts/provider_patches/sekai_runtime_v1.py": {
           "base": "https://sekai.one"
         }
-      }
+      },
+      "source_runtime_family": "sitemap-script-family",
+      "reconstruction_state": "provider-local-current-site"
     },
     "streamzo": {
       "notes": [
