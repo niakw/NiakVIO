@@ -1166,7 +1166,16 @@
       },
       "published_types": [
         "movie"
-      ]
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/uhdmovies_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/uhdmovies_runtime_v1.py": {
+          "maxReleases": 4,
+          "maxGatewayValues": 8
+        }
+      }
     },
     "movieshunt": {
       "capability": "direct_media",

@@ -8,6 +8,8 @@ on:
       - 'scripts/provider_patches/animevostfr_runtime_v1.py'
       - 'tests/animevostfr_runtime_contract_test.py'
       - 'provider-overrides.json'
+      - 'tests/uhdmovies_runtime_contract_test.py'
+      - 'scripts/provider_patches/uhdmovies_runtime_v1.py'
       - 'tests/provider_capability_recovery_contract_test.py'
       - 'scripts/provider_patches/anime_catalogue_runtime_common.py'
 
@@ -48,6 +50,7 @@ jobs:
           python tests/provider_terminal_chain_repairs_test.py
           python tests/animevostfr_runtime_contract_test.py
           python tests/provider_capability_recovery_contract_test.py
+          python tests/uhdmovies_runtime_contract_test.py
           python tests/provider_js_lego_ownership_test.py
           python tests/provider_domain_metadata_reconcile_test.py
 
