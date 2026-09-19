@@ -645,6 +645,17 @@ def assert_final_provider_config(data: bytes, provider_id: str) -> None:
         raise ValueError(f"{provider_id}: final Provider envelope cardinality invalid")
 
 
+def _compact_validation_detail(raw: str, *, max_line: int = 1600) -> str:
+    lines = str(raw or "").splitlines()
+    compact: list[str] = []
+    for line in lines:
+        if len(line) > max_line:
+            compact.append(f"<provider source omitted chars={len(line)}>")
+        else:
+            compact.append(line)
+    return "\n".join(compact).strip()
+
+
 def validate_artifact(data: bytes, provider_id: str) -> None:
     assert_final_provider_config(data, provider_id)
     with tempfile.NamedTemporaryFile(suffix=".js", delete=False, dir=ROOT) as handle:
@@ -658,7 +669,8 @@ def validate_artifact(data: bytes, provider_id: str) -> None:
             check=False,
         )
         if result.returncode:
-            detail = "\n".join(v.strip() for v in (result.stdout, result.stderr) if v.strip())
+            raw_detail = "\n".join(v.strip() for v in (result.stdout, result.stderr) if v.strip())
+            detail = _compact_validation_detail(raw_detail)
             raise ValueError(f"patched published provider rejected provider={provider_id}:\n{detail or 'no diagnostic'}")
     finally:
         temporary.unlink(missing_ok=True)
