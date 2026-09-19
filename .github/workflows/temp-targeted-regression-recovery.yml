@@ -76,6 +76,7 @@ jobs:
         run: |
           set -euo pipefail
           python tests/provider_domain_metadata_reconcile_test.py
+          python tests/animesalt_runtime_contract_test.py
           python tests/presentation_revision_parser_test.py
           python tests/provider_terminal_chain_repairs_test.py
           python tests/voiranime_rip_runtime_contract_test.py

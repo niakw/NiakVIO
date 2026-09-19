@@ -3278,7 +3278,16 @@
       ],
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
-      ]
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/animesalt_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/animesalt_runtime_v1.py": {
+          "base": "https://animesalt.link",
+          "maxStreams": 2
+        }
+      }
     },
     "animesama-co": {
       "capability": "mixed_embed_resolver",
