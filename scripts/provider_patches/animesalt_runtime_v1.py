@@ -49,7 +49,7 @@ try{if(g)g.__niakvioProviderRuntimeResolverV1={provider:"animesalt",resolve:reso
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     cfg = {
-        "base": "https://animesalt.link",
+        "base": "https://animesalt.cx",
         "maxStreams": 2,
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
     }
