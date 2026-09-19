@@ -116,6 +116,7 @@ jobs:
         run: |
           set -euo pipefail
           python tests/provider_domain_metadata_reconcile_test.py
+          python tests/user_provider_manual_evidence_crosscheck_test.py
           python scripts/reconcile_provider_domain_metadata.py --rebuild
           python scripts/materialize_provider_base_v3_store.py
           python scripts/materialize_provider_v3_all.py
