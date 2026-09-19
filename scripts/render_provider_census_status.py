@@ -284,7 +284,9 @@ def build_status_rows(
 
 
 def render(
-    report: dict[str, Any],\n    *,\n    run_id: str,
+    report: dict[str, Any],
+    *,
+    run_id: str,
     sha: str,
     history: dict[str, Any] | None = None,
     baseline: dict[str, Any] | None = None,
@@ -327,7 +329,8 @@ def render(
         "**Important:** provider_network_zero_result is a catalogue miss / missing current proof, not a broken-provider verdict. "
         "A retained historical proof is replayed first on future censuses, while clean misses advance through the corpus.",
         "",
-        "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Search progress | Latest lane verdicts | Dominant issue | Next action |",\n        "|---|---|---|---|---|---|---|---|---|---|",
+        "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Search progress | Latest lane verdicts | Dominant issue | Next action |",
+        "|---|---|---|---|---|---|---|---|---|---|",
     ])
 
     state_order = {
