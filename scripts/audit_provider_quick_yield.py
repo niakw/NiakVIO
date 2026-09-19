@@ -112,6 +112,15 @@ def _history_proof_fixtures(history: dict[str, Any], provider_id: str, media_typ
     return out
 
 
+def _history_chain_fixtures(history: dict[str, Any], provider_id: str, media_type: str) -> list[dict[str, Any]]:
+    lane = _history_lane(history, provider_id, media_type)
+    out: list[dict[str, Any]] = []
+    for row in lane.get("chainHits") or []:
+        if isinstance(row, dict) and isinstance(row.get("fixture"), dict):
+            out.append(dict(row["fixture"]))
+    return out
+
+
 def _history_miss_slugs(history: dict[str, Any], provider_id: str, media_type: str) -> set[str]:
     lane = _history_lane(history, provider_id, media_type)
     out: set[str] = set()
@@ -156,6 +165,8 @@ def _adaptive_fixtures(
     # Retained positive proof is always replayed first. It is the cheapest
     # regression detector and avoids rediscovering a known catalogue match.
     for candidate in _history_proof_fixtures(history, provider_id, media_type):
+        add(candidate)
+    for candidate in _history_chain_fixtures(history, provider_id, media_type):
         add(candidate)
     for candidate in preferred or []:
         add(candidate)

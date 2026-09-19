@@ -98,11 +98,13 @@ def main() -> int:
         lanes = provider_state.setdefault("lanes", {})
         lane_state = lanes.setdefault(lane, {
             "proofs": [],
+            "chainHits": [],
             "misses": [],
             "consecutiveTechnicalRuns": 0,
             "consecutiveNetworkRuns": 0,
         })
         proofs = lane_state.get("proofs") if isinstance(lane_state.get("proofs"), list) else []
+        chain_hits = lane_state.get("chainHits") if isinstance(lane_state.get("chainHits"), list) else []
         misses = lane_state.get("misses") if isinstance(lane_state.get("misses"), list) else []
 
         samples = row.get("samples") if isinstance(row.get("samples"), list) else []
@@ -119,15 +121,25 @@ def main() -> int:
             stage = str(sample.get("debug_stage") or "")
             verified = int(sample.get("verified") or 0)
             contradictions = int(sample.get("contradictions") or 0)
+            progress = str(sample.get("debug_progress_stage") or "")
+            key = fixture_key(fixture)
             if status == GOOD and verified > 0 and contradictions == 0:
                 proofs = upsert_front(proofs, {
                     "fixture": fixture,
                     "runId": str(args.run_id),
                     "sha": str(args.sha),
                 }, limit=4)
-                miss_key = fixture_key(fixture)
-                misses = [item for item in misses if fixture_key(item.get("fixture") or {}) != miss_key]
+                chain_hits = [item for item in chain_hits if fixture_key(item.get("fixture") or {}) != key]
+                misses = [item for item in misses if fixture_key(item.get("fixture") or {}) != key]
+            elif stage == "provider_network_zero_result" and progress == "chain_reached":
+                chain_hits = upsert_front(chain_hits, {
+                    "fixture": fixture,
+                    "runId": str(args.run_id),
+                    "sha": str(args.sha),
+                }, limit=16)
+                misses = [item for item in misses if fixture_key(item.get("fixture") or {}) != key]
             elif stage == "provider_network_zero_result":
+                chain_hits = [item for item in chain_hits if fixture_key(item.get("fixture") or {}) != key]
                 misses = upsert_front(misses, {
                     "fixture": fixture,
                     "runId": str(args.run_id),
@@ -152,6 +164,7 @@ def main() -> int:
             lane_state["consecutiveNetworkRuns"] = 0
 
         lane_state["proofs"] = proofs
+        lane_state["chainHits"] = chain_hits
         lane_state["misses"] = misses
         lane_state["lastStatus"] = str(row.get("status") or "")
         lane_state["lastStage"] = current_stage

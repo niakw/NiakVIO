@@ -211,9 +211,11 @@ def _search_progress(history: dict[str, Any], provider: str, row: dict[str, Any]
     lane = str(row.get("semantic_type") or "")
     state = _lane_history(history, provider, lane)
     misses = state.get("misses") if isinstance(state.get("misses"), list) else []
+    chain_hits = state.get("chainHits") if isinstance(state.get("chainHits"), list) else []
     this_run = int(row.get("sample_count") or 1)
     total_misses = len(misses)
-    return f"{lane}: {this_run} works tested / {total_misses} retained misses"
+    suffix = f" / {len(chain_hits)} retained chain hit" + ("s" if len(chain_hits) != 1 else "") if chain_hits else ""
+    return f"{lane}: {this_run} works tested / {total_misses} retained misses{suffix}"
 
 
 def _action(status: str) -> str:

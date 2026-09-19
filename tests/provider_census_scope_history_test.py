@@ -50,8 +50,8 @@ movie_keys = {str(row.get("slug") or "") for row in movie_candidates}
 assert any(key.startswith("health-movie-") for key in movie_keys), list(movie_keys)[:10]
 assert len(movie_candidates) >= len([row for row in global_fixtures() if row.get("lane") == "movie"])
 
-# Retained proof is first; remembered clean misses are not selected again while
-# other corpus works remain.
+# Retained proof is first; retained chain hits are replayed immediately after it;
+# remembered clean misses are not selected again while other corpus works remain.
 history = {
     "providers": {
         "movieshunt": {
@@ -62,6 +62,12 @@ history = {
                         "tmdbId": "1",
                         "mediaType": "movie",
                         "title": "Known Proof",
+                    }}],
+                    "chainHits": [{"fixture": {
+                        "slug": "known-chain",
+                        "tmdbId": "9",
+                        "mediaType": "movie",
+                        "title": "Known Chain",
                     }}],
                     "misses": [{"fixture": {
                         "slug": "known-miss",
@@ -81,6 +87,7 @@ fixtures = audit._adaptive_fixtures(
     history=history,
 )
 assert fixtures[0]["slug"] == "known-proof", fixtures
+assert fixtures[1]["slug"] == "known-chain", fixtures
 assert "known-miss" not in [row.get("slug") for row in fixtures], fixtures
 
 # The targeted recovery workflow must preserve the same retained-proof / miss
