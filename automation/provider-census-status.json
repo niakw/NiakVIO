@@ -1,12 +1,12 @@
 {
   "schemaVersion": 2,
-  "runId": "35474716826",
-  "triggerSha": "761b49811a66924da13946af7d8087f4df998c79",
+  "runId": "35475873830",
+  "triggerSha": "5c1312717f2bf11d69c6cf063c0a1efe2b625120",
   "providers": [
     {
       "provider": "4khdhub",
-      "status": "NO PROOF",
-      "color": "🔵",
+      "status": "ROUTE PROVEN",
+      "color": "🟪",
       "declaredLanes": [
         "movie",
         "tv"
@@ -14,6 +14,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "20 live routes / movie, tv"
+      ],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_zero_result",
         "tv=no_streams/provider_network_zero_result"
@@ -27,7 +30,7 @@
         "movie=lookup_only",
         "tv=lookup_only"
       ],
-      "action": "continue corpus proof search; BRAIN checks",
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -41,6 +44,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "4 live routes / anime"
+      ],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_network_zero_result"
       ],
@@ -66,6 +72,7 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_waf_challenge",
         "tv=no_streams/provider_waf_challenge"
@@ -93,6 +100,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "1 live routes / anime"
+      ],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_network_http_error"
       ],
@@ -117,6 +127,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "2 live routes / anime"
+      ],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_waf_challenge"
       ],
@@ -141,6 +154,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "1 live routes / anime"
+      ],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_network_exception"
       ],
@@ -157,14 +173,17 @@
     },
     {
       "provider": "animetsu",
-      "status": "NO PROOF",
-      "color": "🔵",
+      "status": "ROUTE PROVEN",
+      "color": "🟪",
       "declaredLanes": [
         "anime"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "6 live routes / anime"
+      ],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_network_zero_result"
       ],
@@ -175,7 +194,7 @@
       "evidenceDepth": [
         "anime=lookup_only"
       ],
-      "action": "continue corpus proof search; BRAIN checks",
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -189,6 +208,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "2 live routes / anime"
+      ],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_waf_challenge"
       ],
@@ -215,6 +237,9 @@
       "candidateProof": [
         "run 34309729426"
       ],
+      "routeProof": [
+        "32 live routes / anime"
+      ],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_network_zero_result"
       ],
@@ -240,6 +265,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "1 live routes / movie, tv"
+      ],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_waf_challenge",
         "tv=no_streams/provider_waf_challenge"
@@ -267,6 +295,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "2 live routes / anime"
+      ],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_waf_challenge"
       ],
@@ -291,6 +322,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "4 live routes / movie"
+      ],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_zero_result"
       ],
@@ -316,6 +350,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "3 live routes / movie, tv"
+      ],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_http_error",
         "tv=no_streams/provider_network_http_error"
@@ -344,13 +381,16 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "76 live routes / movie, tv"
+      ],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_waf_challenge",
         "tv=no_streams/provider_waf_challenge"
       ],
       "dominantIssue": "provider_waf_challenge×2",
       "searchProgress": [
-        "movie: 8 works tested / 19 retained misses",
+        "movie: 8 works tested / 20 retained misses",
         "tv: 8 works tested / 18 retained misses"
       ],
       "evidenceDepth": [
@@ -374,6 +414,9 @@
       "candidateProof": [
         "run 34323567439"
       ],
+      "routeProof": [
+        "2 live routes / movie, tv"
+      ],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_zero_result",
         "tv=no_streams/provider_network_zero_result"
@@ -393,8 +436,8 @@
     },
     {
       "provider": "showbox",
-      "status": "NO PROOF",
-      "color": "🔵",
+      "status": "ROUTE PROVEN",
+      "color": "🟪",
       "declaredLanes": [
         "movie",
         "tv"
@@ -402,6 +445,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "3 live routes / movie, tv"
+      ],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_zero_result",
         "tv=no_streams/provider_network_zero_result"
@@ -415,7 +461,7 @@
         "movie=lookup_only",
         "tv=lookup_only"
       ],
-      "action": "continue corpus proof search; BRAIN checks",
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -429,6 +475,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "69 live routes / movie, tv"
+      ],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_http_error"
       ],
@@ -454,6 +503,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "3 live routes / movie, tv"
+      ],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_http_error",
         "tv=no_streams/provider_network_http_error"
@@ -481,6 +533,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "1 live routes / anime"
+      ],
       "latestLaneVerdicts": [
         "anime=no_streams/provider_waf_challenge"
       ],
@@ -506,6 +561,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "22 live routes / movie, tv"
+      ],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_exception",
         "tv=no_streams/provider_network_exception"
@@ -534,6 +592,9 @@
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "candidateProof": [],
+      "routeProof": [
+        "1 live routes / movie, tv"
+      ],
       "latestLaneVerdicts": [
         "movie=no_streams/provider_network_exception",
         "tv=no_streams/provider_network_exception"
@@ -1234,10 +1295,10 @@
     "CANDIDATE OK": 2,
     "CHAIN REACHED": 2,
     "FULL OK": 24,
-    "NO PROOF": 3,
     "PARTIAL OK": 1,
     "PROVIDER NETWORK BLOCKED": 7,
-    "PROVIDER WAF/ANTIBOT": 7
+    "PROVIDER WAF/ANTIBOT": 7,
+    "ROUTE PROVEN": 3
   },
   "brainQueue": [
     "4khdhub",
