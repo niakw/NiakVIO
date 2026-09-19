@@ -2225,3 +2225,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Sekai still carried stale ARM DATA beside its provider-local sitemap/script runtime. Commit **b61af817428f8dce652ae1895c3fb5a10ade5625** removes that stale authority and records `/sitemap.xml` + `/{slug}`; test lock **49fb241cce88601b480f4c8d5ef5fa076aa15dff**.
 - First post-cross-check runs showed Core Media Type & Playback fully green and Provider Overrides Gate green. Targeted/census failed before live probes only because the new evidence test matched escaped Sibnet too literally and the old AnimeSama.co test still expected the wrong `.fr` terminal. Those harness regressions were corrected at **8e3b9e9a50c9cfd1be4b6406dff1e02f672f904a** and **7042e8a66d5ce60ab949bf2ea13c54e2dc6748da**.
 - AllAnime A/B comparison: the manually captured HTML route remains historical evidence, but current upstream/public implementations in September 2026 use `api.allanime.day/api` GraphQL. Do not force the old HTML route simply to satisfy Block B; current live evidence must supersede it.
+
+
+## 2026-09-19 — provider-local ARM contamination batch
+
+- Cross-provider audit of the exact R19 ZERO set found three additional providers with the same structural contradiction already seen on Flemmix/Vostfree/Sekai: a complete NiakVIO-owned provider-local runtime was present, while Provider DATA still advertised stale generic ARM execution.
+- **Anime-Ultime** runtime is provider-local `/MenuSearch.html -> series episode/focus -> /VideoPlayer.html -> direct MP4`. **AnimesUltra** is provider-local DLE search -> `/engine/ajax/full-story.php?newsId=...` -> Sibnet/embed crawler. **VoirAnime.rip** is provider-local POST `/template-php/defaut/fetch.php` -> exact season/episode -> embed crawler.
+- Commit **ecfe92ab6ecf8b27fd5b9eca8d7b20fe06909a5e** removes `api_recipe` / `candidate_api_recipe` from all three, replaces stale ARM learned routes with their actual local route families, and marks their reconstruction authority as `provider-local-current-site`.
+- Regression locks: **f8f7fe9ff0ac4595a3893a73164786569926ca87** (Anime-Ultime), **cdd510eab40495b4b0a8899468f91e1c9d79a7c8** (AnimesUltra), **4506ef4a896691acde64de08cfa375be4d9fd641** (VoirAnime.rip).
+- Git integrity checked after the three distinct-file writes: branch HEAD **4506ef4a896691acde64de08cfa375be4d9fd641** contains all three test commits in one linear history. Functional green is still **not claimed** until rematerialized live probes/census run on a descendant SHA.
