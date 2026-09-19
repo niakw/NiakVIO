@@ -2373,3 +2373,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The release workflow itself was present on main with its expected push path filter, but it did not include its own workflow path as a trigger. To make workflow restoration/edits self-validating, `release-finalize.yml` is being added to its own `push.paths`, with `tests/release_version_sync_test.py` locking that contract.
 - This is a trigger-robustness fix only; provider bytes remain unpublised until a real `finalize` job appears, completes the atomic release, and downstream gates validate the resulting SHA.
 
+### 2026-09-19 — Temporary recovery finalizer registered
+
+- The canonical `release-finalize.yml` remained present and passed repository syntax/security loading, but repeated push triggers did not create its `finalize` job after the transient delete/restore history. Treating the old workflow registration as unreliable, a fresh temporary recovery workflow was added at `.github/workflows/temp-release-finalize-recovery.yml` in commit **1345a935b292d0c207f33fda30dd92fc5b0049dc**.
+- The temporary workflow reuses the corrected accepted-release finalization body and the same `niakvio-core-release-mutation-main` concurrency group. It is push-triggered only by `.github/triggers/temp-release-finalize-recovery.json`, so registration and execution are separate commits and no duplicate run is intentionally started.
+- Cleanup rule: do not delete the temporary recovery workflow until its publication SHA and downstream CORE/non-regression/census results are inspected. Then remove the temporary workflow and sentinel while keeping the canonical finalizer fix.
+
