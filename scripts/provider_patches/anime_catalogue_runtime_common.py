@@ -86,7 +86,7 @@ WRAPPER = r'''
 
   async function animevost(meta){
     var found=null;
-    for(var i=0;i<meta.aliases.length&&i<4&&!found;i++){var data=await json(c.base+"/api/animes/search?q="+encodeURIComponent(meta.aliases[i])),rows=arr(data&&data.results);if(rows.length){rows.sort(function(a,b){return score(b.title||b.name||b.slug,meta.aliases[i])-score(a.title||a.name||a.slug,meta.aliases[i])});found=rows[0]}}
+    for(var i=0;i<meta.aliases.length&&i<4&&!found;i++){var data=await json(c.base+"/api/anime/search?q="+encodeURIComponent(meta.aliases[i]));if(!data)data=await json(c.base+"/api/animes/search?q="+encodeURIComponent(meta.aliases[i]));var rows=arr(data&&data.results);if(rows.length){rows.sort(function(a,b){return score(b.title||b.name||b.slug,meta.aliases[i])-score(a.title||a.name||a.slug,meta.aliases[i])});found=rows[0]}}
     if(!found||!found.slug)return [];var detail=await json(c.base+"/api/animes/"+encodeURIComponent(found.slug)),seasons=arr(detail&&detail.seasons),season=null;for(var a=0;a<seasons.length;a++)if(Number(seasons[a]&&seasons[a].season_number)===meta.season){season=seasons[a];break}if(!season)season=seasons[0]||null;if(!season)return [];
     var eps=arr(season.episodes),ep=null;for(var e=0;e<eps.length;e++)if(Number(eps[e]&&eps[e].episode_number)===meta.episode){ep=eps[e];break}if(!ep)ep=eps[0]||null;if(!ep)return [];
     var streams=arr(ep.streams),out=[];for(var z=0;z<streams.length&&out.length<8;z++){var r=streams[z]||{},u=s(r.video_url);if(!u)continue;out.push(stream(u,c.name+" ["+s(r.quality||"1080p")+"] ["+s(r.language||"VOSTFR")+"]","fr",s(r.quality||"1080p"),null))}return out

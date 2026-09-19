@@ -924,7 +924,8 @@
     "uhdmovies": {
       "notes": [
         "Automatically migrated uhdmovies.pink to uhdmovies.casa after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint.",
-        "UHDMovies runtime domain discovery is materialized from NiakVIO's persisted terminal; upstream repository registries are maintenance-only and never fetched during playback."
+        "UHDMovies runtime domain discovery is materialized from NiakVIO's persisted terminal; upstream repository registries are maintenance-only and never fetched during playback.",
+        "Current upstream getStreams is movie-only and returns before network for tv/series; publish only the observed movie capability until upstream proves an episodic lane."
       ],
       "capability": "html_scraper",
       "official_hub": "https://mmodlist.org/",
@@ -1162,7 +1163,10 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      }
+      },
+      "published_types": [
+        "movie"
+      ]
     },
     "movieshunt": {
       "capability": "direct_media",
