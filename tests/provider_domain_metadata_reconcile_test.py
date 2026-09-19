@@ -93,7 +93,14 @@ movieshunt_plan = overrides["movieshunt"]["search_request_plan"]
 assert len(movieshunt_plan) == 1, movieshunt_plan
 assert movieshunt_plan[0]["base"] == "https://movieshunt.run", movieshunt_plan
 assert movieshunt_plan[0]["route"] == "/?s={query}", movieshunt_plan
-assert overrides["movieshunt"]["learned_routes"] == ["/?s={query}"], overrides["movieshunt"]["learned_routes"]\nassert movieshunt_plan[0]["requestSpec"]["headers"]["Accept"].startswith("text/html"), movieshunt_plan\nassert movieshunt_plan[0]["requestSpec"]["headers"]["Referer"] == "https://movieshunt.run/", movieshunt_plan
+assert overrides["movieshunt"]["learned_routes"] == ["/?s={query}"], overrides["movieshunt"]["learned_routes"]
+assert movieshunt_plan[0]["requestSpec"]["headers"]["Accept"].startswith("text/html"), movieshunt_plan
+assert movieshunt_plan[0]["requestSpec"]["headers"]["Referer"] == "https://movieshunt.run/", movieshunt_plan
 assert overrides["movieshunt"]["proof_protected_hosts"] == ["movieshunt.run"], overrides["movieshunt"]
 
-assert hubs["voiranime"]["direct"] == "https://voir-anime.to/"\nassert hubs["voiranime"]["direct_authority"] == "explicit_current"\nassert hubs["voiranime"]["allowed_terminal_hosts"] == ["voir-anime.to"]\nassert "voiranime.diy" in hubs["voiranime"]["blocked_hosts"]\n\nprint("provider domain metadata reconciliation tests passed")
+assert hubs["voiranime"]["direct"] == "https://voir-anime.to/"
+assert hubs["voiranime"]["direct_authority"] == "explicit_current"
+assert hubs["voiranime"]["allowed_terminal_hosts"] == ["voir-anime.to"]
+assert "voiranime.diy" in hubs["voiranime"]["blocked_hosts"]
+
+print("provider domain metadata reconciliation tests passed")
