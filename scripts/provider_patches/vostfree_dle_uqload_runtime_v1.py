@@ -21,7 +21,9 @@ WRAPPER = r'''
   function hdr(ref,accept){return {"User-Agent":c.ua,"Accept":accept||"*/*","Referer":ref||c.site+"/"}}
   function argsOf(a){
     var first=a[0],obj=first&&typeof first==="object"&&!Array.isArray(first)?first:null,ctx={};try{ctx=g.__nuvioMediaContext||{}}catch(_e){}
-    var type=s((obj&&(obj.canonicalMediaType||obj.semanticType||obj.mediaType||obj.type))||a[1]||ctx.canonicalMediaType||ctx.mediaType||"").toLowerCase();
+    var semantic=s((obj&&obj.semanticType)||ctx.semanticType||"").toLowerCase();
+    var type=s((obj&&(obj.canonicalMediaType||obj.mediaType||obj.type))||ctx.canonicalMediaType||ctx.mediaType||a[1]||semantic||"").toLowerCase();
+    if(semantic==="anime"||(type==="tv"&&!semantic))type="anime";
     if(type!=="anime")return null;
     var meta=(obj&&obj.tmdbMetadata)||ctx.tmdbMetadata||ctx.fixtureMetadata||{};
     return {tmdbId:s((obj&&(obj.tmdbId||obj.id))||first),title:s((obj&&(obj.title||obj.name))||meta.title||meta.name||meta.original_name||ctx.title||""),season:Number((obj&&obj.season)||a[2]||ctx.season)||1,episode:Number((obj&&obj.episode)||a[3]||ctx.episode)||1};
