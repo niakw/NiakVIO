@@ -17,7 +17,7 @@ for token in (
     "/links/view?id=",
     "/dec-movies-flix",
     "/dec-rapid",
-    "rapidshare.cc",
+    "rapidshare",
     '__niakvioProviderRuntimeResolverV1={provider:"yflix",resolve:resolve}',
 ):
     assert token in src, token
