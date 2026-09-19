@@ -20,6 +20,7 @@ baseline_source = baseline_path.read_text(encoding="utf-8")
 # the native/provider validation pile has been accepted.
 assert "name: CORE - Finalize Accepted Release" in workflow
 assert "workflow_dispatch:" in workflow
+assert "- '.github/workflows/release-finalize.yml'" in workflow
 assert "expected_sha:" in workflow
 assert 'test "$ACTUAL" = "${{ inputs.expected_sha }}"' in workflow
 assert "python3 scripts/release_version_baseline.py" in workflow
