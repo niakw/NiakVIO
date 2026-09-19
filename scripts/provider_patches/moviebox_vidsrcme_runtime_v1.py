@@ -22,7 +22,8 @@ function s(v){return String(v==null?"":v).trim()}
 function req(args){var first=args[0],o=first&&typeof first==="object"&&!Array.isArray(first)?first:null,ctx={};try{ctx=g&&g.__nuvioMediaContext||{}}catch(_e){}var raw=s((o&&(o.canonicalMediaType||o.semanticType||o.mediaType||o.type))||args[1]||ctx.canonicalMediaType||ctx.mediaType||"movie").toLowerCase();if(raw==="series")raw="tv";if(raw!=="movie"&&raw!=="tv")return null;var id=s((o&&(o.tmdbId||o.tmdb_id||o.id))||(typeof first==="string"?first:"")||ctx.tmdbId);if(!/^\d+$/.test(id))return null;return{type:raw,id:id,season:Number((o&&o.season)!=null?o.season:args[2])||1,episode:Number((o&&o.episode)!=null?o.episode:args[3])||1}}
 async function jsonGet(url){try{var headers={"User-Agent":c.userAgent,"Accept":"application/json,text/plain,*/*","Referer":c.referer};var r=typeof _fetch==="function"?await _fetch(url,{headers:headers,redirect:"follow"}):await g.fetch(url,{headers:headers,redirect:"follow"});if(!r||r.ok===false)return null;return await r.json()}catch(_e){return null}}
 function mediaUrl(v){var u=s(v);return /^https?:\/\//i.test(u)?u:""}
-async function resolve(args){var q=req(args);if(!q)return[];var url=c.base+"/vs_src.php?type="+encodeURIComponent(q.type)+"&id="+encodeURIComponent(q.id);if(q.type==="tv")url+="&season="+encodeURIComponent(q.season)+"&episode="+encodeURIComponent(q.episode);var data=await jsonGet(url),src=mediaUrl(data&&data.src);if(!src)return[];return[{name:"MovieBox",title:"MovieBox",url:src,provider:"moviebox",headers:{"Referer":c.referer,"User-Agent":c.userAgent}}]}
+function directMedia(u){return /\.(?:m3u8|mpd|mp4|m4v|mkv|webm)(?:[?#]|$)/i.test(s(u))||/\/hls\//i.test(s(u))}
+async function resolve(args){var q=req(args);if(!q)return[];var url=c.base+"/vs_src.php?type="+encodeURIComponent(q.type)+"&id="+encodeURIComponent(q.id);if(q.type==="tv")url+="&season="+encodeURIComponent(q.season)+"&episode="+encodeURIComponent(q.episode);var data=await jsonGet(url),src=mediaUrl(data&&data.src);if(!src)return[];var title="MovieBox"+(q.type==="tv"?" | S"+q.season+"E"+q.episode:"");if(directMedia(src))return[{name:"MovieBox",title:title,url:src,provider:"moviebox",headers:{"Referer":c.referer,"User-Agent":c.userAgent}}];var direct=[];try{if(typeof _crawlDirectMedia==="function")direct=await _crawlDirectMedia([src],c.referer,3)}catch(_e){direct=[]}if(!Array.isArray(direct)||!direct.length)return[];var out=[],seen={};for(var i=0;i<direct.length&&out.length<6;i++){var row=direct[i]||{},u=mediaUrl(row.url);if(!u||seen[u])continue;seen[u]=1;var x=Object.assign({},row);x.url=u;x.provider="moviebox";x.name="MovieBox";x.title=title;if(!x.headers)x.headers={"Referer":src,"User-Agent":c.userAgent};out.push(x)}return out}
 function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__niakvioMovieboxVidsrcmeV1)return false;var fn=async function(){try{return await resolve(arguments)}catch(_e){return[]}};fn.__niakvioMovieboxVidsrcmeV1=true;o[k]=fn;return true}
 var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
@@ -46,11 +47,11 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         MANAGED_FIX_ID,
         js.lstrip(),
         data={
-            "runtimeFamily": "moviebox-vidsrcme-tmdb-direct-v1",
+            "runtimeFamily": "moviebox-vidsrcme-tmdb-embed-terminal-v2",
             "identity": "tmdb-direct",
             "legacyExecutableSeed": False,
             "upstreamJsExecuted": False,
-            "coreFinalOutputOwnership": True,
+            "coreFinalOutputOwnership": True,\n            "terminalResolution": "vidsrcme-src-direct-or-bounded-crawl",
             "semanticLanes": ["movie", "tv"],
         },
     )
