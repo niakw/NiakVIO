@@ -227,6 +227,39 @@ def _provider_value_trace_history(debug: dict[str, Any]) -> list[dict[str, Any]]
     return output
 
 
+def _identity_diagnostics(probe: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = probe.get("streams") if isinstance(probe.get("streams"), list) else []
+    output: list[dict[str, Any]] = []
+    for item in rows[:16]:
+        if not isinstance(item, dict):
+            continue
+        row = item.get("row") if isinstance(item.get("row"), dict) else {}
+        media = item.get("media") if isinstance(item.get("media"), dict) else {}
+        identity = item.get("identity") if isinstance(item.get("identity"), dict) else {}
+        metadata = item.get("metadata_identity") if isinstance(item.get("metadata_identity"), dict) else {}
+        duration = item.get("duration_identity") if isinstance(item.get("duration_identity"), dict) else {}
+        try:
+            host = str(urlsplit(str(row.get("url") or "")).hostname or "").casefold()
+        except ValueError:
+            host = ""
+        output.append({
+            "host": host[:160],
+            "title": str(row.get("title") or "")[:240],
+            "filename": str(row.get("filename") or "")[:240],
+            "identity_status": str(identity.get("status") or "")[:40],
+            "identity_reason": str(identity.get("reason") or "")[:120],
+            "metadata_status": str(metadata.get("status") or "")[:40],
+            "metadata_reason": str(metadata.get("reason") or "")[:120],
+            "duration_status": str(duration.get("status") or "")[:40],
+            "duration_reason": str(duration.get("reason") or "")[:120],
+            "duration_ratio": duration.get("ratio") if isinstance(duration.get("ratio"), (int, float)) else None,
+            "media_kind": str(media.get("kind") or "")[:40],
+            "media_status": media.get("status") if isinstance(media.get("status"), int) else None,
+            "media_error": str(media.get("error") or "")[:120],
+        })
+    return output
+
+
 def classify_debug_stage(task: dict[str, Any], probe: dict[str, Any], debug: dict[str, Any]) -> str:
     model = debug.get("model") if isinstance(debug.get("model"), dict) else {}
     raw = int(probe.get("raw_stream_count") or 0)
@@ -332,6 +365,7 @@ def run_single(task: dict[str, Any]) -> dict[str, Any]:
             if isinstance(debug.get("provider_runtime_dispatch_error_v1"), dict)
             else None
         ),
+        "debug_identity_reasons": _identity_diagnostics(probe),
         "raw": raw,
         "playable": playable,
         "verified": verified,
