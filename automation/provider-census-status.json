@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35464982081",
-  "triggerSha": "68a32cfd3f716c0736878736f6c4f455242318bf",
+  "runId": "35465233547",
+  "triggerSha": "5904a03eb1efa28a11c62388c5bf8c4c1090c59b",
   "providers": [
     {
       "provider": "4khdhub",
@@ -19,7 +19,7 @@
       ],
       "dominantIssue": "provider_network_zero_result×2",
       "searchProgress": [
-        "movie: 8 this run / 32 retained misses",
+        "movie: 8 this run / 36 retained misses",
         "tv: 2 this run / 43 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
@@ -40,7 +40,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 8 this run / 25 retained misses"
+        "anime: 8 this run / 29 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -71,22 +71,26 @@
     },
     {
       "provider": "anikototv",
-      "status": "PROVIDER JS FULLY BROKEN",
-      "color": "🔴",
+      "status": "FULL OK",
+      "color": "🟢",
       "declaredLanes": [
         "anime"
       ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [],
+      "currentVerifiedLanes": [
+        "anime"
+      ],
+      "historicalProof": [
+        "anime: Jujutsu Kaisen"
+      ],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_http_error"
+        "anime=OK"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "none",
       "searchProgress": [
-        "anime: 8 this run / 11 retained misses"
+        "anime: 1 this run / 10 retained misses"
       ],
-      "action": "BRAIN LEARNING slot",
-      "brainCheckRequired": true,
+      "action": "protect + replay retained proof",
+      "brainCheckRequired": false,
       "testedThisRun": true
     },
     {
@@ -203,7 +207,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 8 this run / 32 retained misses"
+        "anime: 8 this run / 36 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -311,7 +315,7 @@
       ],
       "dominantIssue": "provider_network_http_error×2",
       "searchProgress": [
-        "movie: 8 this run / 17 retained misses",
+        "movie: 8 this run / 15 retained misses",
         "tv: 8 this run / 18 retained misses"
       ],
       "action": "BRAIN LEARNING slot",
@@ -366,8 +370,8 @@
     },
     {
       "provider": "uhdmovies",
-      "status": "PROVIDER JS FULLY BROKEN",
-      "color": "🔴",
+      "status": "PROVIDER JS BROKEN",
+      "color": "🟠",
       "declaredLanes": [
         "movie"
       ],
@@ -380,7 +384,7 @@
       "searchProgress": [
         "movie: 8 this run / 25 retained misses"
       ],
-      "action": "BRAIN LEARNING slot",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -409,21 +413,21 @@
     },
     {
       "provider": "voiranime-rip",
-      "status": "NO PROOF",
-      "color": "🔵",
+      "status": "PROVIDER JS BROKEN",
+      "color": "🟠",
       "declaredLanes": [
         "anime"
       ],
       "currentVerifiedLanes": [],
       "historicalProof": [],
       "latestLaneVerdicts": [
-        "anime=no_streams/provider_network_zero_result"
+        "anime=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "provider_network_http_error",
       "searchProgress": [
-        "anime: 8 this run / 15 retained misses"
+        "anime: 8 this run / 14 retained misses"
       ],
-      "action": "continue corpus proof search; BRAIN checks",
+      "action": "repair + retest; BRAIN checks",
       "brainCheckRequired": true,
       "testedThisRun": true
     },
@@ -486,8 +490,8 @@
       ],
       "dominantIssue": "provider_network_zero_result×2",
       "searchProgress": [
-        "movie: 8 this run / 34 retained misses",
-        "tv: 8 this run / 34 retained misses"
+        "movie: 8 this run / 41 retained misses",
+        "tv: 8 this run / 41 retained misses"
       ],
       "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
@@ -1125,17 +1129,16 @@
     }
   ],
   "counts": {
-    "FULL OK": 22,
-    "NO PROOF": 8,
+    "FULL OK": 23,
+    "NO PROOF": 7,
     "PARTIAL OK": 1,
-    "PROVIDER JS BROKEN": 2,
-    "PROVIDER JS FULLY BROKEN": 13
+    "PROVIDER JS BROKEN": 4,
+    "PROVIDER JS FULLY BROKEN": 11
   },
   "brainQueue": [
     "4khdhub",
     "allanime",
     "allwish",
-    "anikototv",
     "anime-ultime",
     "animesalt",
     "animesultra",
