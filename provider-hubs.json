@@ -7,12 +7,12 @@
       "name": "AnimeSama.co (DLE Mirror)",
       "manifest_status": "Actif",
       "category": "Francophone / Anime",
-      "hub": "https://anime-sama.wiki/",
+      "hub": "https://animesama.co/",
       "direct": "https://animesama.co/",
-      "source": "curated_user_registry",
+      "source": "current_upstream_provider_config",
       "aliases": [
-        "anime-sama",
-        "animesama"
+        "animesama-co",
+        "animesama.co"
       ],
       "schema_notes": "AnimeSama.co is the distinct Gowaru DLE provider. Keep it separate from Anime-Sama catalogue authority; current provider source declares https://animesama.co.",
       "direct_candidates": [
@@ -21,20 +21,19 @@
       "allowed_terminal_hosts": [
         "animesama.co"
       ],
-      "search_queries": [],
+      "search_queries": [
+        "\"AnimeSama.co\" DLE"
+      ],
       "sources": [
         {
-          "type": "hub",
-          "url": "https://anime-sama.wiki/",
-          "priority": 110,
-          "purpose": "Official mirror access hub"
+          "type": "upstream_provider",
+          "url": "https://github.com/Gowaru/gowaru-nuvio-providers/blob/main/src/animesama-co/config.js",
+          "priority": 120,
+          "purpose": "Distinct provider-local DLE authority; must not inherit Anime-Sama catalogue hub."
         }
       ],
       "search_confirmation_runs": 2,
       "resolver": "official_outbound",
-      "allowed_terminal_host_patterns": [
-        "^animes?-sama[a-z0-9-]*\\.[a-z0-9-]{2,20}$"
-      ],
       "direct_authority": "explicit_current",
       "direct_authority_source": "current-upstream-provider-config",
       "direct_authority_observed_at": "2026-09-19",
