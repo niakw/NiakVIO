@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35539559193-post-repair",
-  "sourceTriggerSha": "a0e7b407e389f6ec13c691e4033368c8e7630421",
-  "unresolvedProviderCount": 20,
+  "sourceRunId": "35542228275-post-repair",
+  "sourceTriggerSha": "3610a5f429fb4f804fc0566f56eb99fa6ed11e06",
+  "unresolvedProviderCount": 19,
   "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
@@ -124,30 +124,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "mallumv-catalogue-confirm-internal-v1",
-        "uhdmovies-search-gateway-driveseed-v4-button-first-multiterminal"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "providerCount": 2,
-      "providers": [
-        "mallumv",
-        "uhdmovies"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "candidate-replay|mixed_embed_resolver",
       "repairScope": "candidate-replay",
       "runtimeFamilies": [
@@ -232,6 +208,28 @@
       "providerCount": 1,
       "providers": [
         "allanime"
+      ],
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "terminal-extraction|html_scraper",
+      "repairScope": "terminal-extraction",
+      "runtimeFamilies": [
+        "mallumv-catalogue-confirm-internal-v1"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "providerCount": 1,
+      "providers": [
+        "mallumv"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "executionPolicy": "batch-first",

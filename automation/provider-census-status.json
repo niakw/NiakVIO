@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35539559193-post-repair",
-  "triggerSha": "a0e7b407e389f6ec13c691e4033368c8e7630421",
+  "runId": "35542228275-post-repair",
+  "triggerSha": "3610a5f429fb4f804fc0566f56eb99fa6ed11e06",
   "providers": [
     {
       "provider": "4khdhub",
@@ -55,7 +55,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 4 works tested / 45 retained misses / 3 retained chain hits"
+        "anime: 4 works tested / 44 retained misses / 4 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -289,32 +289,36 @@
     },
     {
       "provider": "uhdmovies",
-      "status": "CHAIN REACHED",
-      "color": "🟣",
+      "status": "FULL OK",
+      "color": "🟢",
       "declaredLanes": [
         "movie"
       ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [],
+      "currentVerifiedLanes": [
+        "movie"
+      ],
+      "historicalProof": [
+        "movie: Avengers: Endgame"
+      ],
       "candidateProof": [],
       "routeProof": [
         "69 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result"
+        "movie=OK"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "none",
       "searchProgress": [
-        "movie: 4 works tested / 26 retained misses / 8 retained chain hits"
+        "movie: 6 works tested / 26 retained misses / 7 retained chain hits"
       ],
       "evidenceDepth": [
         "movie=chain_reached"
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
-      "action": "finish terminal extractor/validation; do not promote before verified media",
-      "brainCheckRequired": true,
-      "repairEligible": true,
+      "action": "protect + replay retained proof",
+      "brainCheckRequired": false,
+      "repairEligible": false,
       "testedThisRun": true
     },
     {
@@ -1403,8 +1407,8 @@
   ],
   "counts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 3,
-    "FULL OK": 24,
+    "CHAIN REACHED": 2,
+    "FULL OK": 25,
     "HARNESS MISMATCH": 6,
     "HARNESS/ENV BLOCKED": 2,
     "PARTIAL OK": 2,
@@ -1427,7 +1431,6 @@
     "moviebox",
     "moviesmod",
     "showbox",
-    "uhdmovies",
     "vidfast",
     "vostfree",
     "wookafr",
@@ -1449,7 +1452,6 @@
     "moviebox",
     "moviesmod",
     "showbox",
-    "uhdmovies",
     "vidfast",
     "vostfree",
     "wookafr",
@@ -1465,7 +1467,6 @@
     "mallumv",
     "moviebox",
     "showbox",
-    "uhdmovies",
     "vidfast",
     "yflix"
   ],
