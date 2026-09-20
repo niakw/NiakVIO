@@ -89,6 +89,7 @@ jobs:
           python tests/provider_non_regression_contract_test.py
 
       - name: Run canonical recognition and correction only for unresolved providers
+        id: canonical-repair
         shell: bash
         env:
           DISPATCH_MODE: ${{ inputs.mode || '' }}
@@ -138,7 +139,7 @@ jobs:
           python scripts/check_provider_non_regression_v1.py --candidate-gate --all --base-ref HEAD
 
       - name: Verify current green providers were not network re-probed
-        if: always()
+        if: ${{ always() && steps.canonical-repair.outcome == 'success' }}
         shell: bash
         run: |
           set -euo pipefail
