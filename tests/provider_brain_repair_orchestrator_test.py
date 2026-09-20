@@ -43,10 +43,18 @@ assert mod.experiment_rotation_decision(
 )=="materialize"
 
 with tempfile.TemporaryDirectory() as tmp:
-    old_status,old_plan=mod.STATUS,mod.BATCH_PLAN
+    old_status,old_plan,old_memory=mod.STATUS,mod.BATCH_PLAN,mod.REPAIR_MEMORY
     try:
         mod.STATUS=Path(tmp)/"status.json"
         mod.BATCH_PLAN=Path(tmp)/"plan.json"
+        mod.REPAIR_MEMORY=Path(tmp)/"memory.json"
+        mod.REPAIR_MEMORY.write_text(json.dumps({
+            "entries":[
+                {"providerId":"a","failures":5,"successes":0},
+                {"providerId":"c","failures":2,"successes":0},
+                {"providerId":"d","failures":3,"successes":0},
+            ]
+        }),encoding="utf-8")
         mod.STATUS.write_text(json.dumps({
             "runId":"r1",
             "providers":[
@@ -82,10 +90,12 @@ with tempfile.TemporaryDirectory() as tmp:
 
         mod.BATCH_PLAN.write_text(json.dumps({"sourceRunId":"old","groups":[]}),encoding="utf-8")
         stale=mod.repair_batches(["d","b","a","c"],2)
-        assert [row["providers"] for row in stale]==[["a","b"],["c","d"]],stale
+        assert [row["providers"] for row in stale]==[["b","c"],["d","a"]],stale
         assert all(row["groupId"]=="fallback" for row in stale)
+        pressure=mod.provider_attempt_pressure_map()
+        assert pressure["a"]==5 and pressure["c"]==2 and pressure["d"]==3,pressure
     finally:
-        mod.STATUS,mod.BATCH_PLAN=old_status,old_plan
+        mod.STATUS,mod.BATCH_PLAN,mod.REPAIR_MEMORY=old_status,old_plan,old_memory
 
 payload={
     "providers":[
@@ -257,6 +267,10 @@ for required in (
     "experimentExhausted",
     "learningDisposition",
     "repairQueue",
+    "time_budget_exhausted",
+    "resumeRecommended",
+    "unvisitedProviders",
+    "provider_attempt_pressure_map",
 ):
     assert required in source, required
 
