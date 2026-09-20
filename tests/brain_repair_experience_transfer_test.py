@@ -265,6 +265,59 @@ with tempfile.TemporaryDirectory() as tmp:
     assert candidate_options3["route_prior_counts"]["requestRecipes"] == 2
     assert "/api/stream/{id}" in candidate_options3["direct_paths"]
 
+    chain4 = dict(candidate)
+    chain4["brain_repair_plan"] = {
+        "failureClass": "chain_terminal_gap",
+        "experimentVariant": 4,
+        "negativeMemoryMatches": 4,
+    }
+    chain_options4 = runtime._adaptive_runtime_options(chain4, config)
+    assert chain_options4 is not None
+    assert chain_options4["experiment_strategy"] == "learned-family-new-strategy"
+    assert chain_options4["new_strategy_id"] == "chain_terminal_extractor_v1"
+    assert chain_options4["max_pages"] == 24
+    assert "/player/{id}" in chain_options4["direct_paths"]
+    assert "/api/stream/{id}" in chain_options4["direct_paths"]
+
+    route4 = dict(candidate)
+    route4["brain_repair_plan"] = {
+        "failureClass": "route_proven_gap",
+        "experimentVariant": 4,
+        "negativeMemoryMatches": 4,
+    }
+    route_options4 = runtime._adaptive_runtime_options(route4, config)
+    assert route_options4 is not None
+    assert route_options4["new_strategy_id"] == "proven_route_terminal_traversal_v1"
+    assert "/?s={query}" not in route_options4["search_paths"], route_options4["search_paths"]
+    assert "/player/{id}" in route_options4["direct_paths"]
+
+    transport4 = dict(candidate)
+    transport4["brain_repair_plan"] = {
+        "failureClass": "provider_transport_gap",
+        "experimentVariant": 4,
+        "negativeMemoryMatches": 4,
+    }
+    transport_options4 = runtime._adaptive_runtime_options(transport4, config)
+    assert transport_options4 is not None
+    assert transport_options4["new_strategy_id"] == "provider_origin_failover_v1"
+    assert transport_options4["base_url"] == "https://api.target.example", transport_options4
+    assert "https://target.example" in transport_options4["endpoint_origins"]
+    assert transport_options4["max_pages"] == 24
+
+    replay4 = dict(candidate)
+    replay4["brain_repair_plan"] = {
+        "failureClass": "candidate_replay_gap",
+        "experimentVariant": 4,
+        "negativeMemoryMatches": 4,
+    }
+    replay_options4 = runtime._adaptive_runtime_options(replay4, config)
+    assert replay_options4 is not None
+    assert replay_options4["new_strategy_id"] == "retained_candidate_replay_v1"
+    assert replay_options4["route_prior_counts"]["requestRecipes"] == 1
+    assert {row["source"] for row in replay_options4["request_recipes"]} == {"provider-experience"}
+    assert "/player/{id}" not in replay_options4["direct_paths"], replay_options4["direct_paths"]
+    assert "/api/stream/{id}" not in replay_options4["direct_paths"], replay_options4["direct_paths"]
+
 # Restored V5 must still generate the verified-media runtime and inherit the
 # new contextual route expansion from V4. This proves the executable Brain path
 # is no longer pointing at a deleted script.
@@ -279,6 +332,8 @@ patched = v5.apply(
         "user_agent": "NiakVIO-Brain-Test/1.0",
         "repair_focus": "terminal-chain",
         "census_status": "CHAIN REACHED",
+        "experiment_variant": 4,
+        "new_strategy_id": "chain_terminal_extractor_v1",
         "request_recipes": [
             {
                 "route": "/engine/ajax/search.php",
@@ -304,6 +359,8 @@ assert "TMDB_API_KEY" in patched
 assert '"userAgent":"NiakVIO-Brain-Test/1.0"' in patched
 assert '"repairFocus":"terminal-chain"' in patched
 assert '"censusStatus":"CHAIN REACHED"' in patched
+assert '"experimentVariant":4' in patched
+assert '"newStrategyId":"chain_terminal_extractor_v1"' in patched
 assert '"requestRecipes":[{"route":"/engine/ajax/search.php"' in patched
 assert "function requestRecipe(" in patched
 assert "function recipeBody(" in patched
