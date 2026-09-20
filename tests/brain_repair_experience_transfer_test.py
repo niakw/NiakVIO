@@ -46,10 +46,44 @@ with tempfile.TemporaryDirectory() as tmp:
     memory.write_text(
         json.dumps(
             {
-                "schemaVersion": 1,
+                "schemaVersion": 2,
+                "providers": {
+                    "target": {
+                        "requestRecipes": [
+                            {
+                                "route": "/engine/ajax/search.php",
+                                "origin": "https://target.example",
+                                "role": "search",
+                                "method": "POST",
+                                "bodyKind": "form",
+                                "body": {"query": "{query}", "page": "1"},
+                                "headerNames": ["accept", "content-type", "referer", "user-agent"],
+                                "response": "json",
+                                "semanticType": "movie",
+                                "streamProof": True,
+                                "executable": True
+                            }
+                        ]
+                    }
+                },
                 "strategyPatterns": {
                     "html_scraper": {
                         "greenProviderCount": 8,
+                        "commonRequestRecipes": [
+                            {
+                                "route": "/template-php/defaut/fetch.php",
+                                "role": "search",
+                                "method": "POST",
+                                "bodyKind": "form",
+                                "body": {"query": "{query}"},
+                                "headerNames": ["accept", "content-type"],
+                                "response": "html-or-text",
+                                "semanticType": "",
+                                "streamProof": True,
+                                "executable": True,
+                                "providerSupport": 3
+                            }
+                        ],
                         "commonRouteTemplates": [
                             {
                                 "route": "/?s={query}",
@@ -141,6 +175,14 @@ with tempfile.TemporaryDirectory() as tmp:
     assert not any("sid=" in route for route in options["direct_paths"] + options["search_paths"])
     assert options["route_prior_counts"]["provider"] == 3
     assert options["route_prior_counts"]["peer"] == 2
+    assert options["route_prior_counts"]["requestRecipes"] == 1
+    assert options["route_prior_counts"]["providerRequestRecipes"] == 1
+    assert options["route_prior_counts"]["peerRequestRecipes"] == 1
+    assert options["request_recipes"][0]["method"] == "POST"
+    assert options["request_recipes"][0]["body"] == {"query": "{query}", "page": "1"}
+    # Variant 0 consumes provider-local request evidence only. Peer request
+    # recipes are reserved for later exploratory variants.
+    assert len(options["request_recipes"]) == 1
     assert options["user_agent"] == "NiakVIO-Brain-Test/1.0"
     assert "https://api.target.example" in options["endpoint_origins"]
     assert "https://mirror.target.example" in options["endpoint_origins"]
@@ -168,6 +210,21 @@ patched = v5.apply(
         "user_agent": "NiakVIO-Brain-Test/1.0",
         "repair_focus": "terminal-chain",
         "census_status": "CHAIN REACHED",
+        "request_recipes": [
+            {
+                "route": "/engine/ajax/search.php",
+                "origin": "https://synthetic.example",
+                "role": "search",
+                "method": "POST",
+                "bodyKind": "form",
+                "body": {"query": "{query}"},
+                "headerNames": ["accept", "content-type", "referer"],
+                "response": "html-or-text",
+                "semanticType": "movie",
+                "streamProof": True,
+                "executable": True,
+            }
+        ],
     },
 )
 assert "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5" in patched
@@ -178,6 +235,10 @@ assert "TMDB_API_KEY" in patched
 assert '"userAgent":"NiakVIO-Brain-Test/1.0"' in patched
 assert '"repairFocus":"terminal-chain"' in patched
 assert '"censusStatus":"CHAIN REACHED"' in patched
+assert '"requestRecipes":[{"route":"/engine/ajax/search.php"' in patched
+assert "function requestRecipe(" in patched
+assert "function recipeBody(" in patched
+assert "function jsonUrls(" in patched
 assert 'h["User-Agent"]=c.userAgent' in patched
 assert "8265bd1679663a7ea12ac168da84d2e8" not in patched
 
