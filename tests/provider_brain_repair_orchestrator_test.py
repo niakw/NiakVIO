@@ -102,9 +102,47 @@ assert mod.census_queue(payload, include_environment=True)=={"a","b"}
 
 health={
     "results":[
-        {"key":"published:a","status":"healthy","evidence":{"streams_playable":2}},
-        {"key":"published:b","status":"healthy","evidence":{"streams_playable":1,"identity_contradiction_count":1}},
-        {"key":"published:c","status":"no_streams","evidence":{"streams_playable":0}},
+        {
+            "key":"published:a",
+            "status":"healthy",
+            "evidence":{
+                "streams_playable":2,
+                "identity_verified_streams":2,
+                "identity_unverified_streams":0,
+            },
+            "tests":[{
+                "fixture":{"label":"A"},
+                "streams_playable":2,
+                "identity_verified_streams":2,
+                "identity_unverified_streams":0,
+            }],
+        },
+        {
+            "key":"published:b",
+            "status":"healthy",
+            "evidence":{
+                "streams_playable":1,
+                "identity_verified_streams":1,
+                "identity_contradiction_count":1,
+            },
+            "tests":[{
+                "fixture":{"label":"B"},
+                "streams_playable":1,
+                "identity_verified_streams":1,
+                "identity_contradiction_count":1,
+            }],
+        },
+        {
+            "key":"published:c",
+            "status":"healthy",
+            "evidence":{"streams_playable":1,"identity_verified_streams":0},
+            "tests":[{
+                "fixture":{"label":"C"},
+                "streams_playable":1,
+                "identity_verified_streams":0,
+                "identity_unverified_streams":1,
+            }],
+        },
     ]
 }
 assert mod.fixed_providers(health)=={"a"}
