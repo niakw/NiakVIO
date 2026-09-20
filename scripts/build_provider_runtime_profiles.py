@@ -109,6 +109,8 @@ def collect_staged(stage: Path) -> tuple[dict[str, tuple[dict, Path]], dict | No
         if not isinstance(candidate, dict):
             continue
         provider_id = str(candidate.get("canonical_id") or "").strip().casefold()
+        if target_ids and provider_id not in target_ids:
+            continue
         local_path = candidate.get("local_path")
         if not provider_id or not isinstance(local_path, str):
             continue
@@ -152,7 +154,7 @@ def isolate_provider_bundles(data: dict, providers: dict[str, tuple[dict, Path]]
     return removed
 
 
-def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
+def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]], *, targeted: bool = False) -> int:
     patches = data.setdefault("provider_patches", {})
     caps = data.setdefault("provider_capabilities", {})
     profiles = data.setdefault("patch_profiles", {})
@@ -160,9 +162,17 @@ def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
         name for name in profiles
         if isinstance(name, str) and name.startswith("adaptive_domain_")
     }
-    for name in generated_names:
-        profiles.pop(name, None)
-    for patch in patches.values():
+    if not targeted:
+        for name in generated_names:
+            profiles.pop(name, None)
+        cleanup_patches = patches.values()
+    else:
+        cleanup_patches = [
+            patches.get(provider_id)
+            for provider_id in providers
+            if isinstance(patches.get(provider_id), dict)
+        ]
+    for patch in cleanup_patches:
         if not isinstance(patch, dict):
             continue
         selected = patch.get("profiles")
@@ -210,7 +220,7 @@ def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
     return len(providers)
 
 
-def reapply_stage(stage: Path, registry: dict) -> int:
+def reapply_stage(stage: Path, registry: dict, target_ids: set[str] | None = None) -> int:
     from apply_provider_overrides import apply_overrides
     from provider_base_store import CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS
     changed = 0
@@ -263,43 +273,71 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", default=None, help="Also profile candidates in this staging directory.")
     parser.add_argument("--apply-stage", action="store_true", help="Reapply generated profiles to staged candidates immediately.")
+    parser.add_argument("--provider", action="append", default=[], help="Limit stage/profile refresh to provider id (repeatable).")
     args = parser.parse_args()
+    target_ids = {str(value or "").strip().casefold() for value in args.provider if str(value or "").strip()}
 
     data, removed_hooks = load_data()
     providers = collect_published()
     stage_path: Path | None = None
     registry = None
     staged_count = 0
+    staged: dict[str, tuple[dict, Path]] = {}
     if args.stage:
         stage_path = (ROOT / args.stage).resolve() if not Path(args.stage).is_absolute() else Path(args.stage).resolve()
         staged, registry = collect_staged(stage_path)
-        staged_count = len(staged)
         providers.update(staged)
 
+    if target_ids:
+        providers = {provider_id: value for provider_id, value in providers.items() if provider_id in target_ids}
+        missing = sorted(target_ids - set(providers))
+        if missing:
+            raise SystemExit(f"target provider(s) missing from published/staged inputs: {','.join(missing)}")
+        staged_count = len(target_ids & set(staged))
+    else:
+        staged_count = len(staged)
+
     removed_wrappers = isolate_provider_bundles(data, providers)
-    count = build_profiles(data, providers)
+    count = build_profiles(data, providers, targeted=bool(target_ids))
     normalization = data.setdefault("provider_engine_normalization", {})
     normalization.update({
         "removed_cross_provider_hooks": len(removed_hooks),
         "removed_cross_provider_wrappers": len(removed_wrappers),
         "isolation_applied_before_profiles": True,
     })
-    data["provider_profile_generation"] = {
-        "schema_version": 4,
-        "provider_count": count,
-        "staged_provider_count": staged_count,
-        "source": "manifest_published_bundles_and_current_staging",
-        "same_deep_new_provider_support": True,
-        "automatic_bundle_rewrite": False,
-        "provider_backend_isolation": True,
-    }
+    if target_ids:
+        generation = data.setdefault("provider_profile_generation", {})
+        if not isinstance(generation, dict):
+            generation = {}
+            data["provider_profile_generation"] = generation
+        generation.update({
+            "schema_version": max(4, int(generation.get("schema_version") or 0)),
+            "last_targeted_provider_count": count,
+            "last_targeted_staged_provider_count": staged_count,
+            "last_targeted_providers": sorted(target_ids),
+            "last_refresh_scope": "targeted",
+            "same_deep_new_provider_support": True,
+            "automatic_bundle_rewrite": False,
+            "provider_backend_isolation": True,
+        })
+    else:
+        data["provider_profile_generation"] = {
+            "schema_version": 4,
+            "provider_count": count,
+            "staged_provider_count": staged_count,
+            "source": "manifest_published_bundles_and_current_staging",
+            "same_deep_new_provider_support": True,
+            "automatic_bundle_rewrite": False,
+            "provider_backend_isolation": True,
+            "last_refresh_scope": "full",
+        }
     OVR.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     repatched = 0
     if args.apply_stage:
         if stage_path is None or registry is None:
             raise SystemExit("--apply-stage requires --stage with candidates.json")
-        repatched = reapply_stage(stage_path, registry)
+        repatched = reapply_stage(stage_path, registry, target_ids or None)
 
     print(
         f"provider runtime profiles generated: {count} (staged={staged_count}, repatched={repatched}, "
