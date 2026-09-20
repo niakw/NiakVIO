@@ -3001,3 +3001,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - `health_check.mjs` now forwards opt-in `modeConfig.route_proof_trace`; `run_adaptive_deep_repair.py` enables it only for bounded Brain Deep repair. Normal health/parity runs remain unchanged.
 - The current-observation contract requires both ends of this wiring. This makes real repair rounds capable of seeing the same sanitized stage/method/path/body-shape/response-hint evidence used by the synthetic program-synthesis test.
 - Repair #86 was triggered before this wiring landed. It can validate executable recipes but cannot be treated as authoritative proof of current-run request synthesis. A new Repair SHA is required.
+
+### 2026-09-20 — Route-proof worker -> health -> Brain transport completed
+- A second evidence-loss boundary was found after enabling `routeProofTrace` in real Deep Repair: `health_check.mjs` remapped `worker.network_observations` into fixture results but dropped the already-sanitized route-proof fields (`proof_url`, safe body shape/values, response ID/slug hints, content type and route-proof marker). The Brain would therefore still have received only coarse observations.
+- `health_check.mjs` now preserves the bounded/redacted route-proof evidence when `route_proof_trace` is true. Header values are intentionally not propagated; only safe header names are retained. Raw route/body evidence remains bounded by `provider_worker.cjs` before entering the health report.
+- `tests/brain_current_observation_recipe_test.py` now requires this worker -> health transport in addition to Deep route-proof enablement and end-to-end response-bound recipe execution.
+- Commits: health transport `47b416ab1528...`, contract `38b40ac5b6c...`.
+- Repair #87 (`35527314099`, SHA `0bad088ea5f6...`) predates this health-transport fix, so it is not authoritative for current-observation program synthesis even if its earlier preflight/runtime phases pass. A fresh Repair on the later HEAD is required.
