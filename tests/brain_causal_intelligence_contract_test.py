@@ -23,6 +23,7 @@ expected={
     "route_proven_gap":"proven_route_terminal_traversal_v1",
     "chain_terminal_gap":"chain_terminal_extractor_v1",
     "candidate_replay_gap":"retained_candidate_replay_v1",
+    "media_extraction_gap":"player_media_extractor_v1",
 }
 for failure,strategy in expected.items():
     assert runtime._new_strategy_id(failure,4)==strategy,(failure,runtime._new_strategy_id(failure,4))
@@ -43,7 +44,8 @@ assert local and local.get("origin")=="https://provider-a.example",local
 assert peer and "origin" not in peer,peer
 runtime_src=(ROOT/"scripts/adaptive_runtime/runtime_repair.py").read_text(encoding="utf-8")
 assert 'int(raw.get("providerSupport") or 0) < 2' in runtime_src
-assert 'if experiment_variant == 4 and experiment_failure == "candidate_replay_gap"' in runtime_src
+assert 'experiment_failure in {"candidate_replay_gap", "media_extraction_gap"}' in runtime_src
+assert 'elif experiment_failure == "media_extraction_gap":' in runtime_src
 
 planner=(ROOT/"engine_v2/scripts/plan-repairs.mjs").read_text(encoding="utf-8")
 for status,failure in [
