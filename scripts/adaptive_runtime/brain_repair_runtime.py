@@ -13,6 +13,7 @@ be deferred without aborting the other provider plans or the full transaction.
 import importlib.util
 import json
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Any, Callable
 
@@ -61,14 +62,36 @@ def _run_planner_batch(base_payload: dict[str, Any], items: list[dict[str, Any]]
         # Verify the exact bytes locally before they cross the Python -> Node
         # boundary. Any later parse failure is therefore a transport concern.
         json.loads(planner_input.decode("ascii"))
-        completed = subprocess.run(
-            ["node", str(_BASE.PLAN_SCRIPT)],
-            cwd=_BASE.ROOT,
-            input=planner_input,
-            capture_output=True,
-            check=True,
-            timeout=30,
-        )
+        try:
+            completed = subprocess.run(
+                ["node", str(_BASE.PLAN_SCRIPT)],
+                cwd=_BASE.ROOT,
+                input=planner_input,
+                capture_output=True,
+                check=True,
+                timeout=30,
+            )
+        except subprocess.CalledProcessError as first_exc:
+            detail = _BASE._safe_planner_stderr(first_exc.stderr)
+            if first_exc.returncode != 2 or "brain_planner_input_invalid" not in detail:
+                raise
+            # Retry the exact locally-validated bytes through a regular file.
+            # This removes stdin/pipe transport from the equation without
+            # mutating, truncating or reserializing the planner payload.
+            with tempfile.NamedTemporaryFile(prefix="niakvio-brain-", suffix=".json", delete=True) as handle:
+                handle.write(planner_input)
+                handle.flush()
+                env = dict(__import__("os").environ)
+                env["NUVIO_BRAIN_PLANNER_INPUT_FILE"] = handle.name
+                completed = subprocess.run(
+                    ["node", str(_BASE.PLAN_SCRIPT)],
+                    cwd=_BASE.ROOT,
+                    input=b"",
+                    env=env,
+                    capture_output=True,
+                    check=True,
+                    timeout=30,
+                )
         parsed = json.loads((completed.stdout or b"{}").decode("utf-8"))
         return {
             str(key): row
@@ -92,6 +115,35 @@ def _run_planner_batch(base_payload: dict[str, Any], items: list[dict[str, Any]]
         else:
             error_class = type(exc).__name__
         return {key: _deferred_transport_plan(items[0], error_class)}
+
+
+
+def replan_observation(
+    candidate: dict[str, Any],
+    result: dict[str, Any],
+    *,
+    plan_key: str | None = None,
+    mode: str = "deep",
+) -> dict[str, Any]:
+    """Replan one exploration parent through the bounded adaptive transport."""
+    key = str(plan_key or candidate.get("key") or "")
+    if not key:
+        return {}
+    item = {
+        "key": key,
+        "candidate": _BASE._planner_candidate(candidate),
+        "result": _BASE._planner_result(result),
+        "state": _BASE._public_state(candidate, key),
+    }
+    base_payload = {
+        "mode": mode,
+        "policy": _BASE.policy(),
+        "learnedSkills": _BASE.planner_learned_skills(mode),
+        "negativeMemory": _BASE.planner_negative_memory(mode),
+    }
+    plans = _run_planner_batch(base_payload, [item])
+    _BASE.PLANS.update(plans)
+    return _BASE.PLANS.get(key) or {}
 
 
 def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict[str, dict[str, Any]]:
