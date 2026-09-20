@@ -83,6 +83,11 @@ def _brain_matching(candidate, result, source_text, config=None):
         candidate.pop("brain_exploration_parent", None)
     else:
         plan = brain.PLANS.get(plan_key) or {}
+    # The current run is the highest-authority provider-local evidence. Convert
+    # only successful, sanitized, reusable request shapes into sandbox recipes
+    # before consulting historical provider/peer/generic priors. Exploration
+    # round N+1 therefore learns directly from the requests observed in round N.
+    candidate["brain_observed_request_recipes"] = runtime_repair.observed_request_recipes(candidate, result)
     profiles = list(_base_matching(candidate, result, source_text, config))
     if str(plan.get("action") or "") != "probe-targeted-repair":
         return []
