@@ -1,0 +1,51 @@
+name: LEARN - Long Slot Launcher
+
+on:
+  workflow_dispatch:
+    inputs:
+      hours:
+        description: Total Learning slot hours to chain through persisted Brain memory
+        required: false
+        default: "12"
+        type: string
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/triggers/brain-learning-12h.json'
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: niakvio-brain-long-slot-launcher
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    name: Dispatch persisted Learning slot
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Start phase 1
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_HOURS: ${{ inputs.hours || '12' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          hours="${REQUESTED_HOURS:-12}"
+          [[ "$hours" =~ ^[0-9]+$ ]] || { echo "hours must be an integer" >&2; exit 2; }
+          if [ "$hours" -lt 1 ] || [ "$hours" -gt 24 ]; then
+            echo "hours must be between 1 and 24" >&2
+            exit 2
+          fi
+          total_minutes=$((hours * 60))
+          gh workflow run brain-learning-lab.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f publish_proposal=true \
+            -f slot_remaining_minutes="$total_minutes" \
+            -f slot_phase=1
+          echo "FIELD_BRAIN_LONG_SLOT_LAUNCHED hours=$hours total_minutes=$total_minutes"
