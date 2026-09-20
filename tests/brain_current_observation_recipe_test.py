@@ -179,7 +179,10 @@ assert "proof_body_values" not in serialized, serialized
 assert "cookie" not in serialized, serialized
 
 runner = (ROOT / "scripts" / "run_adaptive_deep_repair.py").read_text(encoding="utf-8")
+health = (ROOT / "scripts" / "health_check.mjs").read_text(encoding="utf-8")
 assert 'candidate["brain_observed_request_recipes"] = runtime_repair.observed_request_recipes(candidate, result)' in runner
+assert 'deep_config["route_proof_trace"] = True' in runner
+assert "routeProofTrace: modeConfig.route_proof_trace === true" in health
 
 
 
