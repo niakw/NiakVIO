@@ -4,11 +4,16 @@ from __future__ import annotations
 import importlib.util
 import json
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts" / "adaptive_runtime" / "runtime_repair.py"
+SCRIPTS = ROOT / "scripts"
+ADAPTIVE = SCRIPTS / "adaptive_runtime"
+sys.path.insert(0, str(ADAPTIVE))
+sys.path.insert(1, str(SCRIPTS))
+SCRIPT = ADAPTIVE / "runtime_repair.py"
 spec = importlib.util.spec_from_file_location("terminal_source_runtime", SCRIPT)
 assert spec and spec.loader
 runtime = importlib.util.module_from_spec(spec)
