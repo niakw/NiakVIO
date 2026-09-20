@@ -3155,3 +3155,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Repair #104 (`35544700122`, SHA `5c0a24ee85a9...`) remained preflight-only. The terminal source-route contract, including encoded wrapper unwrapping, passed.
 - Failure moved to `brain_historical_player_extractor_transfer_test.py` before Brain execution: its generated Node runner used a non-raw Python f-string, so the synthetic HLS `\n` escapes became literal newlines inside a JavaScript single-quoted string and Node raised `SyntaxError: Invalid or unexpected token`.
 - The runner is now a raw f-string. No provider/runtime logic changed for this failure; #104 is not provider evidence.
+
+### 2026-09-21 — Packed-player decode handoff fixed
+- Repair #105 (`35544781595`, SHA `2636895ac45e...`) remained preflight-only. The terminal source-route contract passed. The historical packed-player contract then executed the generated wrapper and proved a real transfer gap: the wrapper fetched the packed player but returned the original player URL instead of the decoded HLS.
+- The Brain packed decoder itself matches the mature ProviderBase V18.6 algorithm and decodes the fixture structurally without eval. The missing behavior was the decoded-payload -> media-URL handoff in the full adaptive resolver.
+- `runtime_recovery_generator.py::urls()` now performs a bounded scan (max 48 matches) of the structurally decoded packed payload for absolute direct-media URLs before the ordinary player extractors. It still rejects blocked/decoy URLs and requires media-path evidence; no remote code is executed.
+- Existing end-to-end historical-player contract remains the authority: the generated wrapper must return the real packed HLS, not the player page.
