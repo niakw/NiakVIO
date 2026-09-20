@@ -1585,12 +1585,17 @@ def main() -> int:
     history.setdefault("schema_version", 1)
     history_providers = history.setdefault("providers", {})
     history_providers_before = json.dumps(history_providers, sort_keys=True, ensure_ascii=False)
+    selected_ids = {canonical_provider_id(item) for item in args.provider}
+    sanitize_hubs = (
+        {provider_id: cfg for provider_id, cfg in hubs.items() if provider_id in selected_ids}
+        if selected_ids
+        else hubs
+    )
     security_route_sanitizations = (
-        sanitize_unsafe_published_routes(config, hubs, history_providers)
+        sanitize_unsafe_published_routes(config, sanitize_hubs, history_providers)
         if args.apply and not args.domain_only
         else []
     )
-    selected_ids = {canonical_provider_id(item) for item in args.provider}
 
     work: list[tuple[str, dict[str, Any], dict[str, Any]]] = []
     for provider_id, cfg in sorted(hubs.items()):
