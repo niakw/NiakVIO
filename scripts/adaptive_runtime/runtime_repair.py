@@ -736,6 +736,13 @@ def _experiment_role_preferences(
             ["episode", "detail", "player", "api", "other"],
             ["player", "api", "detail", "episode", "search", "other"],
         ],
+        "media_extraction_gap": [
+            ["player", "api", "other", "episode", "detail", "search"],
+            ["api", "player", "other", "episode", "detail", "search"],
+            ["player", "api", "episode", "other", "detail", "search"],
+            ["api", "player", "episode", "other", "detail", "search"],
+            ["player", "api", "other", "episode", "detail", "search"],
+        ],
     }
     if failure in by_failure:
         return list(by_failure[failure][variant])
@@ -752,7 +759,7 @@ def _experiment_role_preferences(
 
 def _peer_route_min_variant(failure_class: str) -> int:
     failure = str(failure_class or "").strip().casefold()
-    if failure == "candidate_replay_gap":
+    if failure in {"candidate_replay_gap", "media_extraction_gap"}:
         return 3
     if failure == "provider_transport_gap":
         return 2
@@ -761,7 +768,7 @@ def _peer_route_min_variant(failure_class: str) -> int:
 
 def _peer_recipe_min_variant(failure_class: str) -> int:
     failure = str(failure_class or "").strip().casefold()
-    if failure == "candidate_replay_gap":
+    if failure in {"candidate_replay_gap", "media_extraction_gap"}:
         return 3
     return 2
 
@@ -774,6 +781,7 @@ def _new_strategy_id(failure_class: str, variant: int) -> str:
         "route_proven_gap": "proven_route_terminal_traversal_v1",
         "chain_terminal_gap": "chain_terminal_extractor_v1",
         "candidate_replay_gap": "retained_candidate_replay_v1",
+        "media_extraction_gap": "player_media_extractor_v1",
     }.get(str(failure_class or "").strip().casefold(), "expanded_family_strategy_v1")
 
 
@@ -864,7 +872,10 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         limit=32,
     )
     new_strategy_id = _new_strategy_id(experiment_failure, experiment_variant)
-    if experiment_variant == 4 and experiment_failure == "candidate_replay_gap":
+    if experiment_variant == 4 and experiment_failure in {"candidate_replay_gap", "media_extraction_gap"}:
+        # Terminal/current-byte evidence outranks peer transfer here. Once the
+        # player is proven, another provider's request recipe is more likely to
+        # waste budget or invent the wrong internal-id contract.
         request_recipes = _unique_request_recipes(current_request_recipes, provider_request_recipes, limit=32)
     peer_search = [route for route in peer_routes if _route_role(route) == "search"]
     peer_direct = [route for route in peer_routes if _route_role(route) != "search"]
@@ -925,6 +936,23 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             templated_direct = [route for route in learned_direct if _ROUTE_PLACEHOLDER.search(route)]
             search_paths = _unique_routes(exact_search, templated_search, configured_search, limit=20)
             direct_paths = _unique_routes(exact_direct, templated_direct, configured_direct, limit=32)
+        elif experiment_failure == "media_extraction_gap":
+            # The current run already proved the player. Do not regress into
+            # catalogue discovery and do not synthesize provider-local IDs from
+            # TMDB placeholders. Replay owned recipes and only proven terminal
+            # route shapes.
+            search_paths = _unique_routes(configured_search, learned_search, limit=12)
+            direct_paths = _unique_routes(
+                [
+                    route for route in learned_direct
+                    if _route_role(route) in {"player", "api"}
+                ],
+                [
+                    route for route in configured_direct
+                    if _route_role(route) in {"player", "api"}
+                ],
+                limit=24,
+            )
         elif experiment_failure == "provider_transport_gap":
             search_paths = _unique_routes(
                 learned_search, configured_search, peer_search, generic_search, limit=24
@@ -1008,7 +1036,11 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             "providerRequestRecipes": len(provider_request_recipes),
             "peerRequestRecipes": len(peer_request_recipes),
         },
-        "repair_focus": census_focus.get("focus") or "generic",
+        "repair_focus": (
+            "media-extraction"
+            if experiment_failure == "media_extraction_gap"
+            else census_focus.get("focus") or "generic"
+        ),
         "census_status": census_focus.get("status") or "",
         "experiment_variant": experiment_variant,
         "experiment_failure_class": experiment_failure,
