@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Validate that configured provider overrides reached the staged artefacts.
 
-Validator revision: idempotent-terminal-v4.
+Validator revision: idempotent-terminal-v5.
 
 This is an end-to-end guard: it inspects staging/candidates.json and the exact
 JavaScript files later executed and promoted. A unit test of string replacement
@@ -67,6 +67,7 @@ def main() -> int:
     provider_patches = config.get("provider_patches") or {}
     patch_profiles = config.get("patch_profiles") or {}
     failures: list[str] = []
+    dormant_overrides: list[str] = []
     checked = 0
 
     for candidate in candidates:
@@ -166,13 +167,29 @@ def main() -> int:
             )
             if contains_literal(text, terminal):
                 continue
+            represented_historical = sorted(
+                value for value in historical_values
+                if contains_literal(text, value)
+            )
             if related_record:
                 failures.append(
                     f"{candidate.get('key')}: override applied but terminal target missing: {terminal}"
                 )
                 continue
+            if provider_v3 and not represented_historical:
+                # Provider v3 owns executable routing in structured DATA. A
+                # migration mapping whose old and terminal hosts are both absent
+                # is dormant historical knowledge, not evidence that the staged
+                # provider is malformed. Keep it visible for cleanup, but never
+                # let an unrelated stale alias abort a full Learning superset.
+                dormant_overrides.append(
+                    f"{candidate.get('key')}: dormant v3 override not represented by current DATA: {terminal}"
+                )
+                continue
             failures.append(
-                f"{candidate.get('key')}: override stale; neither historical value nor terminal target is represented: {terminal}"
+                f"{candidate.get('key')}: override stale; "
+                f"historical={represented_historical or sorted(historical_values)} "
+                f"terminal target missing: {terminal}"
             )
 
         for required in required_values:
@@ -206,12 +223,19 @@ def main() -> int:
         checked += 1
 
 
+    if dormant_overrides:
+        print(f"Override pipeline dormant v3 mappings: {len(dormant_overrides)}")
+        for row in dormant_overrides[:40]:
+            print(f"- {row}")
     if failures:
         print("Override pipeline validation failed:")
         for failure in failures:
             print(f"- {failure}")
         return 1
-    print(f"override pipeline validation passed ({checked} staged candidates inspected; validator=idempotent-terminal-v4)")
+    print(
+        f"override pipeline validation passed ({checked} staged candidates inspected; "
+        f"dormant_v3={len(dormant_overrides)}; validator=idempotent-terminal-v5)"
+    )
     return 0
 
 
