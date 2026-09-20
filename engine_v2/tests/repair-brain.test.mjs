@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { BRAIN_CONTROL_PLANE_VERSION, classifyFailure, planRepair, recipeIsCompatible } from "../src/repair-brain.mjs";
 
-assert.equal(BRAIN_CONTROL_PLANE_VERSION, 6);
+assert.equal(BRAIN_CONTROL_PLANE_VERSION, 7);
 assert.equal(classifyFailure({ invoked: false }), "not_invoked");
 assert.equal(classifyFailure({ invoked: true, dns: { ok: false } }), "dns_unreachable");
 assert.equal(classifyFailure({ invoked: true, dns: { ok: true }, stages: { homepage: { status: 403 } } }), "transport_blocked");
@@ -15,6 +15,10 @@ assert.equal(classifyFailure({ invoked: true, stages: { media: { attempted: true
 assert.equal(classifyFailure({ invoked: true, playableStreams: 1, stages: { validation: { attempted: true, playable: true, playableCount: 1, statuses: [206] } } }), "healthy");
 assert.equal(classifyFailure({ contractDrift: true }), "runtime_contract_drift");
 assert.equal(classifyFailure({ audioTrackGap: true }), "audio_track_gap");
+assert.equal(classifyFailure({ forcedFailureClass: "route_proven_gap", invoked: true }), "route_proven_gap");
+assert.equal(classifyFailure({ forcedFailureClass: "chain_terminal_gap", invoked: true }), "chain_terminal_gap");
+assert.equal(classifyFailure({ forcedFailureClass: "candidate_replay_gap", invoked: true }), "candidate_replay_gap");
+assert.equal(classifyFailure({ forcedFailureClass: "provider_transport_gap", invoked: true }), "provider_transport_gap");
 
 const blockedEvidence = { invoked: true, stages: { player: { attempted: true, found: true }, media: { attempted: true, found: true }, validation: { attempted: true, playable: false, playableCount: 0, statuses: [403] } } };
 const plan = planRepair(blockedEvidence, { maxHypotheses: 3 });
