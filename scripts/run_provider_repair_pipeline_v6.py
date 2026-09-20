@@ -33,7 +33,7 @@ CENSUS_STATUS = ROOT / "automation" / "provider-census-status.json"
 CENSUS_HISTORY = ROOT / "automation" / "provider-census-proof-history.json"
 CENSUS_MD = ROOT / "PROVIDER_CENSUS_STATUS.md"
 CENSUS_POST_REPAIR = ROOT / "automation" / "provider-census-post-repair.json"
-CENSUS_ENVIRONMENT_ONLY = {"PROVIDER WAF/ANTIBOT"}
+CENSUS_ENVIRONMENT_ONLY = {"HARNESS MISMATCH", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}
 
 
 def load(path: Path) -> dict[str, Any]:
