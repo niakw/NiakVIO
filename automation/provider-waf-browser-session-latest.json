@@ -3,10 +3,11 @@
   "mode": "ordinary-headless-browser-session-no-challenge-solver",
   "browserAvailable": true,
   "browserExecutable": "google-chrome",
-  "targetCount": 10,
+  "targetCount": 12,
   "attemptsPerTarget": 2,
   "counts": {
-    "browser_challenge_persisted": 10
+    "browser_challenge_persisted": 10,
+    "browser_content_reached": 2
   },
   "rows": [
     {
@@ -18,6 +19,7 @@
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
+      "seedKind": null,
       "outcome": "browser_challenge_persisted",
       "attemptCount": 2,
       "attempts": [
@@ -33,7 +35,7 @@
         }
       ],
       "ordinarySessionReused": true,
-      "durationMs": 6244
+      "durationMs": 14587
     },
     {
       "provider": "allwish",
@@ -44,6 +46,7 @@
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
+      "seedKind": null,
       "outcome": "browser_challenge_persisted",
       "attemptCount": 2,
       "attempts": [
@@ -59,7 +62,7 @@
         }
       ],
       "ordinarySessionReused": true,
-      "durationMs": 5559
+      "durationMs": 14480
     },
     {
       "provider": "animesalt",
@@ -70,6 +73,7 @@
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
+      "seedKind": null,
       "outcome": "browser_challenge_persisted",
       "attemptCount": 2,
       "attempts": [
@@ -85,7 +89,7 @@
         }
       ],
       "ordinarySessionReused": true,
-      "durationMs": 7057
+      "durationMs": 15484
     },
     {
       "provider": "animevost-fr",
@@ -96,6 +100,7 @@
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
+      "seedKind": null,
       "outcome": "browser_challenge_persisted",
       "attemptCount": 2,
       "attempts": [
@@ -111,7 +116,7 @@
         }
       ],
       "ordinarySessionReused": true,
-      "durationMs": 5321
+      "durationMs": 3950
     },
     {
       "provider": "flemmix",
@@ -122,6 +127,7 @@
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
+      "seedKind": null,
       "outcome": "browser_challenge_persisted",
       "attemptCount": 2,
       "attempts": [
@@ -137,7 +143,7 @@
         }
       ],
       "ordinarySessionReused": true,
-      "durationMs": 4602
+      "durationMs": 4288
     },
     {
       "provider": "flemmix",
@@ -148,6 +154,7 @@
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
+      "seedKind": null,
       "outcome": "browser_challenge_persisted",
       "attemptCount": 2,
       "attempts": [
@@ -163,7 +170,7 @@
         }
       ],
       "ordinarySessionReused": true,
-      "durationMs": 5449
+      "durationMs": 3979
     },
     {
       "provider": "fullanime",
@@ -174,6 +181,7 @@
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
+      "seedKind": null,
       "outcome": "browser_challenge_persisted",
       "attemptCount": 2,
       "attempts": [
@@ -189,7 +197,7 @@
         }
       ],
       "ordinarySessionReused": true,
-      "durationMs": 6861
+      "durationMs": 4332
     },
     {
       "provider": "moviesmod",
@@ -200,6 +208,7 @@
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
+      "seedKind": null,
       "outcome": "browser_challenge_persisted",
       "attemptCount": 2,
       "attempts": [
@@ -215,7 +224,7 @@
         }
       ],
       "ordinarySessionReused": true,
-      "durationMs": 7510
+      "durationMs": 4172
     },
     {
       "provider": "moviesmod",
@@ -226,6 +235,7 @@
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
+      "seedKind": null,
       "outcome": "browser_challenge_persisted",
       "attemptCount": 2,
       "attempts": [
@@ -241,7 +251,7 @@
         }
       ],
       "ordinarySessionReused": true,
-      "durationMs": 6752
+      "durationMs": 4649
     },
     {
       "provider": "vostfree",
@@ -252,6 +262,7 @@
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
+      "seedKind": null,
       "outcome": "browser_challenge_persisted",
       "attemptCount": 2,
       "attempts": [
@@ -267,7 +278,51 @@
         }
       ],
       "ordinarySessionReused": true,
-      "durationMs": 2728
+      "durationMs": 3366
+    },
+    {
+      "provider": "wookafr",
+      "lane": "movie",
+      "publicUrl": "https://wookafr.boston/",
+      "host": "wookafr.boston",
+      "path": "/",
+      "method": "GET",
+      "fetchStatus": 0,
+      "challenge": "metadata-homepage-seed",
+      "seedKind": "metadata-homepage",
+      "outcome": "browser_content_reached",
+      "attemptCount": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_content_reached",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "durationMs": 4899
+    },
+    {
+      "provider": "wookafr",
+      "lane": "tv",
+      "publicUrl": "https://wookafr.boston/",
+      "host": "wookafr.boston",
+      "path": "/",
+      "method": "GET",
+      "fetchStatus": 0,
+      "challenge": "metadata-homepage-seed",
+      "seedKind": "metadata-homepage",
+      "outcome": "browser_content_reached",
+      "attemptCount": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_content_reached",
+          "exitCode": 0
+        }
+      ],
+      "ordinarySessionReused": true,
+      "durationMs": 3989
     }
   ]
 }
