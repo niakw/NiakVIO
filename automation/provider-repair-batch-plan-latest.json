@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35483066561-post-repair",
-  "sourceTriggerSha": "9d5fa03cc1811b9da85a52479393c2dc7925004c",
+  "sourceRunId": "35501243853-post-repair",
+  "sourceTriggerSha": "9dd86807c119e03ee322b62feceef9a7f48c0db4",
   "unresolvedProviderCount": 20,
   "groupCount": 11,
   "executionModel": {
@@ -12,32 +12,28 @@
   },
   "groups": [
     {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
+      "groupId": "environment|mixed_embed_resolver",
+      "repairScope": "environment",
       "runtimeFamilies": [
-        "dle-full-story-sibnet",
-        "menu-search-series-focus-player",
-        "wookafr-current-multiplayer-v2",
-        "yflix-db-encrypted-ajax-v1"
+        "mixed_embed_resolver",
+        "wookafr-current-multiplayer-v2"
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "chain",
-        "lookup",
         "none"
       ],
       "dominantIssues": [
-        "network_exception",
-        "network_http_error"
+        "waf_challenge"
       ],
       "providerCount": 4,
       "providers": [
-        "anime-ultime",
-        "animesultra",
-        "wookafr",
-        "yflix"
+        "flemmix",
+        "fullanime",
+        "vostfree",
+        "wookafr"
       ],
-      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
+      "action": "browser/session or upstream-access investigation; never mutate provider code solely to hide a challenge",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -67,25 +63,29 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "environment|mixed_embed_resolver",
-      "repairScope": "environment",
+      "groupId": "transport|mixed_embed_resolver",
+      "repairScope": "transport",
       "runtimeFamilies": [
-        "mixed_embed_resolver"
+        "dle-full-story-sibnet",
+        "menu-search-series-focus-player",
+        "yflix-db-encrypted-ajax-v1"
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
+        "lookup",
         "none"
       ],
       "dominantIssues": [
-        "waf_challenge"
+        "network_exception",
+        "network_http_error"
       ],
       "providerCount": 3,
       "providers": [
-        "flemmix",
-        "fullanime",
-        "vostfree"
+        "anime-ultime",
+        "animesultra",
+        "yflix"
       ],
-      "action": "browser/session or upstream-access investigation; never mutate provider code solely to hide a challenge",
+      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },

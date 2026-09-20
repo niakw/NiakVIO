@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35483066561-post-repair",
-  "triggerSha": "9d5fa03cc1811b9da85a52479393c2dc7925004c",
+  "runId": "35501243853-post-repair",
+  "triggerSha": "9dd86807c119e03ee322b62feceef9a7f48c0db4",
   "providers": [
     {
       "provider": "4khdhub",
@@ -53,7 +53,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 4 works tested / 44 retained misses / 4 retained chain hits"
+        "anime: 4 works tested / 45 retained misses / 3 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -331,8 +331,8 @@
     },
     {
       "provider": "wookafr",
-      "status": "PROVIDER NETWORK BLOCKED",
-      "color": "🟤",
+      "status": "PROVIDER WAF/ANTIBOT",
+      "color": "🟫",
       "declaredLanes": [
         "movie",
         "tv"
@@ -344,10 +344,10 @@
         "22 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_exception",
-        "tv=no_streams/provider_network_exception"
+        "movie=no_streams/provider_waf_challenge",
+        "tv=timeout"
       ],
-      "dominantIssue": "provider_network_exception×2",
+      "dominantIssue": "provider_waf_challenge, timeout",
       "searchProgress": [
         "movie: 4 works tested / 0 retained misses",
         "tv: 4 works tested / 0 retained misses"
@@ -356,9 +356,9 @@
         "movie=lookup_only",
         "tv=chain_reached"
       ],
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
       "brainCheckRequired": true,
-      "repairEligible": true,
+      "repairEligible": false,
       "testedThisRun": true
     },
     {
@@ -1346,8 +1346,8 @@
     "CHAIN REACHED": 3,
     "FULL OK": 24,
     "PARTIAL OK": 2,
-    "PROVIDER NETWORK BLOCKED": 6,
-    "PROVIDER WAF/ANTIBOT": 7,
+    "PROVIDER NETWORK BLOCKED": 5,
+    "PROVIDER WAF/ANTIBOT": 8,
     "ROUTE PROVEN": 3
   },
   "symptomaticProviders": [
@@ -1406,7 +1406,6 @@
     "showbox",
     "uhdmovies",
     "vidfast",
-    "wookafr",
     "yflix"
   ],
   "environmentQueue": [
@@ -1416,6 +1415,7 @@
     "flemmix",
     "fullanime",
     "moviesmod",
-    "vostfree"
+    "vostfree",
+    "wookafr"
   ]
 }
