@@ -73,6 +73,24 @@ def main() -> int:
         if not isinstance(candidate, dict):
             continue
         provider_id = canonical(candidate.get("canonical_id") or candidate.get("upstream_id"))
+
+        local_path = (stage / str(candidate.get("local_path") or "")).resolve()
+        try:
+            local_path.relative_to((stage / "providers").resolve())
+        except ValueError:
+            failures.append(f"{candidate.get('key')}: unsafe staged path {local_path}")
+            continue
+        if not local_path.exists():
+            failures.append(f"{candidate.get('key')}: missing staged file {local_path}")
+            continue
+
+        data = local_path.read_bytes()
+        text = data.decode("utf-8", errors="strict")
+        provider_v3 = (
+            "NIAKVIO_PROVIDER_BASE_OWNED_V3" in text
+            and "NIAKVIO_PROVIDER_MODEL" in text
+        )
+
         # Provider v3 no longer executes historical text-replacement maps.
         # Its only executable domain migration DATA is runtime_domain_replacements,
         # materialized into the owned CONFIG/model as old-host -> terminal-host.
@@ -102,25 +120,9 @@ def main() -> int:
             profile = patch_profiles.get(profile_name, {})
             if isinstance(profile, dict):
                 required_values.extend(profile.get("required_values") or [])
-        if not replacements and not required_values:
+        if not replacements and not specific_replacements and not required_values:
             continue
 
-        local_path = (stage / str(candidate.get("local_path") or "")).resolve()
-        try:
-            local_path.relative_to((stage / "providers").resolve())
-        except ValueError:
-            failures.append(f"{candidate.get('key')}: unsafe staged path {local_path}")
-            continue
-        if not local_path.exists():
-            failures.append(f"{candidate.get('key')}: missing staged file {local_path}")
-            continue
-
-        data = local_path.read_bytes()
-        text = data.decode("utf-8", errors="strict")
-        provider_v3 = (
-            "NIAKVIO_PROVIDER_BASE_OWNED_V3" in text
-            and "NIAKVIO_PROVIDER_MODEL" in text
-        )
         actual_sha = hashlib.sha256(data).hexdigest()
         if actual_sha != candidate.get("sha256"):
             failures.append(f"{candidate.get('key')}: staged SHA differs from candidates.json")
