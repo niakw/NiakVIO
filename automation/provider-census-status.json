@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35501243853-post-repair",
-  "triggerSha": "9dd86807c119e03ee322b62feceef9a7f48c0db4",
+  "runId": "35503536213-post-repair",
+  "triggerSha": "64a667868177fac072fe236e3c30bcd067da7c79",
   "providers": [
     {
       "provider": "4khdhub",
@@ -53,7 +53,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 4 works tested / 45 retained misses / 3 retained chain hits"
+        "anime: 4 works tested / 44 retained misses / 4 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -330,38 +330,6 @@
       "testedThisRun": true
     },
     {
-      "provider": "wookafr",
-      "status": "PROVIDER WAF/ANTIBOT",
-      "color": "🟫",
-      "declaredLanes": [
-        "movie",
-        "tv"
-      ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [],
-      "candidateProof": [],
-      "routeProof": [
-        "22 live routes / movie, tv"
-      ],
-      "latestLaneVerdicts": [
-        "movie=no_streams/provider_waf_challenge",
-        "tv=timeout"
-      ],
-      "dominantIssue": "provider_waf_challenge, timeout",
-      "searchProgress": [
-        "movie: 4 works tested / 0 retained misses",
-        "tv: 4 works tested / 0 retained misses"
-      ],
-      "evidenceDepth": [
-        "movie=lookup_only",
-        "tv=chain_reached"
-      ],
-      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
-      "brainCheckRequired": true,
-      "repairEligible": false,
-      "testedThisRun": true
-    },
-    {
       "provider": "yflix",
       "status": "PROVIDER NETWORK BLOCKED",
       "color": "🟤",
@@ -392,6 +360,38 @@
       "brainCheckRequired": true,
       "repairEligible": true,
       "testedThisRun": true
+    },
+    {
+      "provider": "wookafr",
+      "status": "PROVIDER WAF/ANTIBOT",
+      "color": "🟫",
+      "declaredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [
+        "22 live routes / movie, tv"
+      ],
+      "latestLaneVerdicts": [
+        "movie=no_streams/provider_waf_challenge",
+        "tv=timeout"
+      ],
+      "dominantIssue": "provider_waf_challenge, timeout",
+      "searchProgress": [
+        "movie: 4 works tested / 0 retained misses",
+        "tv: 4 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "movie=lookup_only",
+        "tv=chain_reached"
+      ],
+      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
+      "brainCheckRequired": true,
+      "repairEligible": false,
+      "testedThisRun": false
     },
     {
       "provider": "allwish",
