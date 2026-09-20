@@ -73,4 +73,18 @@ jobs:
           git add automation/provider-waf-browser-session-latest.json
           git diff --cached --quiet && exit 0
           git commit -m "ci(waf): persist ordinary browser session diagnostics"
-          git push origin HEAD:main
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "WAF evidence push raced main; retrying attempt $attempt/3" >&2
+            git fetch origin main
+            git reset --hard origin/main
+            mkdir -p automation
+            cp /tmp/provider-waf-browser-session-latest.json automation/provider-waf-browser-session-latest.json
+            git add automation/provider-waf-browser-session-latest.json
+            git diff --cached --quiet && exit 0
+            git commit -m "ci(waf): persist ordinary browser session diagnostics"
+          done
+          echo "WAF evidence persistence failed after 3 main-rebase retries" >&2
+          exit 1
