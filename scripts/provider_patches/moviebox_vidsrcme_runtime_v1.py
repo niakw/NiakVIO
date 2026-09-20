@@ -23,8 +23,9 @@ function mediaUrl(v){var u=s(v);return /^https?:\/\//i.test(u)?u:""}
 function directMedia(u){return /\.(?:m3u8|mpd|mp4|m4v|mkv|webm)(?:[?#]|$)/i.test(s(u))||/\/hls\//i.test(s(u))}
 function quality(row){var x=(s(row&&row.title)+" "+s(row&&row.description)+" "+s(row&&row.url)).toLowerCase();if(/2160|\b4k\b/.test(x))return"2160p";if(/1080/.test(x))return"1080p";if(/720/.test(x))return"720p";if(/480/.test(x))return"480p";return"Auto"}
 function language(row){var x=(s(row&&row.title)+" "+s(row&&row.description)).toLowerCase();if(/hindi|\bhin\b/.test(x))return"hi";if(/multi|dual/.test(x))return"multi";if(/french|\bvf\b/.test(x))return"fr";return"en"}
-function currentRows(value,q){var list=value&&Array.isArray(value.streams)?value.streams:Array.isArray(value)?value:[],out=[],seen={};for(var i=0;i<list.length&&out.length<c.maxStreams;i++){var row=list[i]||{},u=mediaUrl(row.url||row.externalUrl||row.external_url);if(!u||seen[u]||/bcdnxw\.hakunaymatata\.com/i.test(u))continue;seen[u]=1;var ql=quality(row),title="MovieBox"+(q.type==="tv"?" | S"+q.season+"E"+q.episode:"")+(ql!=="Auto"?" | "+ql:"");out.push({name:"MovieBox",title:title,url:u,quality:ql,language:language(row),provider:"moviebox",headers:{"Referer":c.streamReferer,"User-Agent":c.userAgent},isDirect:directMedia(u)})}return out}
-async function current(q){var imdb=await hydrateImdb(q);if(!imdb)return[];var suffix=q.type==="tv"?"/stream/series/"+imdb+":"+q.season+":"+q.episode+".json":"/stream/movie/"+imdb+".json";var value=await jsonGet(c.cinescrapeBase.replace(/\/$/,"")+suffix,c.streamReferer);return currentRows(value,q)}
+function currentRows(value,q,ref){var list=value&&Array.isArray(value.streams)?value.streams:Array.isArray(value)?value:[],out=[],seen={};for(var i=0;i<list.length&&out.length<c.maxStreams;i++){var row=list[i]||{},u=mediaUrl(row.url||row.externalUrl||row.external_url);if(!u||seen[u]||/bcdnxw\.hakunaymatata\.com/i.test(u))continue;seen[u]=1;var ql=quality(row),title="MovieBox"+(q.type==="tv"?" | S"+q.season+"E"+q.episode:"")+(ql!=="Auto"?" | "+ql:"");out.push({name:"MovieBox",title:title,url:u,quality:ql,language:language(row),provider:"moviebox",headers:{"Referer":ref||c.streamReferer,"User-Agent":c.userAgent},isDirect:directMedia(u)})}return out}
+function currentSources(){var rows=Array.isArray(c.currentBases)?c.currentBases:[],out=[];for(var i=0;i<rows.length;i++){var r=rows[i],base="",ref="";if(typeof r==="string")base=s(r);else if(r&&typeof r==="object"){base=s(r.base);ref=s(r.referer)}if(/^https?:\/\//i.test(base))out.push({base:base.replace(/\/$/,""),referer:ref||c.streamReferer})}if(!out.length&&/^https?:\/\//i.test(s(c.cinescrapeBase)))out.push({base:s(c.cinescrapeBase).replace(/\/$/,""),referer:c.streamReferer});return out}
+async function current(q){var imdb=await hydrateImdb(q);if(!imdb)return[];var suffix=q.type==="tv"?"/stream/series/"+imdb+":"+q.season+":"+q.episode+".json":"/stream/movie/"+imdb+".json",sources=currentSources();for(var i=0;i<sources.length;i++){var src=sources[i],value=await jsonGet(src.base+suffix,src.referer),rows=currentRows(value,q,src.referer);if(rows.length)return rows}return[]}
 async function legacy(q){var url=c.legacyBase.replace(/\/$/,"")+"/vs_src.php?type="+encodeURIComponent(q.type)+"&id="+encodeURIComponent(q.id);if(q.type==="tv")url+="&season="+encodeURIComponent(q.season)+"&episode="+encodeURIComponent(q.episode);var data=await jsonGet(url,c.legacyReferer),src=mediaUrl(data&&data.src);if(!src)return[];var title="MovieBox"+(q.type==="tv"?" | S"+q.season+"E"+q.episode:"");if(directMedia(src))return[{name:"MovieBox",title:title,url:src,provider:"moviebox",headers:{"Referer":c.legacyReferer,"User-Agent":c.userAgent},isDirect:true}];var direct=[];try{if(typeof _crawlDirectMedia==="function")direct=await _crawlDirectMedia([src],c.legacyReferer,3)}catch(_e){direct=[]}if(!Array.isArray(direct)||!direct.length)return[];var out=[],seen={};for(var i=0;i<direct.length&&out.length<c.maxStreams;i++){var row=direct[i]||{},u=mediaUrl(row.url);if(!u||seen[u])continue;seen[u]=1;var x=Object.assign({},row);x.url=u;x.provider="moviebox";x.name="MovieBox";x.title=title;if(!x.headers)x.headers={"Referer":src,"User-Agent":c.userAgent};out.push(x)}return out}
 async function resolve(args){var q=req(args);if(!q)return[];var now=await current(q);if(now.length)return now;return await legacy(q)}
 function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__niakvioMovieboxVidsrcmeV1)return false;var fn=async function(){try{return await resolve(arguments)}catch(_e){return[]}};fn.__niakvioMovieboxVidsrcmeV1=true;o[k]=fn;return true}
@@ -38,6 +39,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     cfg = {
         "cinescrapeBase": "https://pengu.uk/",
         "streamReferer": "https://stremio-moviebox-1.onrender.com/",
+        "currentBases": [],
         "legacyBase": "https://vidsrcme.ru",
         "legacyReferer": "https://vidsrcme.ru/",
         "maxStreams": 12,
@@ -46,23 +48,39 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     cfg.update(dict(options or {}))
     cfg["cinescrapeBase"] = str(cfg.get("cinescrapeBase") or "").rstrip("/")
     cfg["streamReferer"] = str(cfg.get("streamReferer") or "")
+    current_bases = []
+    for item in cfg.get("currentBases") or []:
+        if isinstance(item, str):
+            base, referer = item.rstrip("/"), cfg["streamReferer"]
+        elif isinstance(item, dict):
+            base = str(item.get("base") or "").rstrip("/")
+            referer = str(item.get("referer") or cfg["streamReferer"])
+        else:
+            continue
+        if base.startswith(("http://", "https://")):
+            row = {"base": base, "referer": referer}
+            if row not in current_bases:
+                current_bases.append(row)
+    if not current_bases and cfg["cinescrapeBase"].startswith(("http://", "https://")):
+        current_bases.append({"base": cfg["cinescrapeBase"], "referer": cfg["streamReferer"]})
+    cfg["currentBases"] = current_bases[:6]
     cfg["legacyBase"] = str(cfg.get("legacyBase") or "").rstrip("/")
     cfg["legacyReferer"] = str(cfg.get("legacyReferer") or cfg["legacyBase"] + "/")
     cfg["maxStreams"] = max(1, min(int(cfg.get("maxStreams") or 12), 24))
-    if not cfg["cinescrapeBase"].startswith(("http://", "https://")):
-        raise ValueError(f"{MANAGED_FIX_ID}: cinescrapeBase must be http(s)")
+    if not cfg["currentBases"]:
+        raise ValueError(f"{MANAGED_FIX_ID}: at least one current Cinescrape/Stremio base must be http(s)")
     js = WRAPPER.replace("CONFIG_PLACEHOLDER", json.dumps(cfg, ensure_ascii=False, separators=(",", ":")))
     return replace_managed_fix(
         text,
         MANAGED_FIX_ID,
         js.lstrip(),
         data={
-            "runtimeFamily": "moviebox-cinescrape-imdb-v3-with-legacy-vidsrcme",
+            "runtimeFamily": "moviebox-multibase-cinescrape-imdb-v4-with-legacy-vidsrcme",
             "identity": "tmdb-direct-core-imdb",
             "legacyExecutableSeed": False,
             "upstreamJsExecuted": False,
             "coreFinalOutputOwnership": True,
-            "terminalResolution": "current-cinescrape-json-first-legacy-vidsrcme-fallback",
+            "terminalResolution": "current-multibase-stremio-json-first-legacy-vidsrcme-fallback",
             "semanticLanes": ["movie", "tv"],
         },
     )
