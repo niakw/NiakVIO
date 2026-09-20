@@ -92,8 +92,11 @@ try:
         "semantic_type": "movie", "fixture": {"slug": "a"},
         "fixtures": [{"slug": "a"}, {"slug": "b"}],
     })
-    assert calls == ["a"], calls
-    assert result["sample_count"] == 1
+    # One title-level HTTP/provider failure is not enough to classify an
+    # entire semantic lane. Keep sampling the bounded fixture queue so catalogue
+    # misses/transient title failures do not manufacture a provider-wide block.
+    assert calls == ["a", "b"], calls
+    assert result["sample_count"] == 2
     assert result["debug_stage"] == "provider_network_http_error", result
 finally:
     mod.run_single = original
