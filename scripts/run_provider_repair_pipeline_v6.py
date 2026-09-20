@@ -459,8 +459,6 @@ def main() -> int:
     # recovered during the pre-check are not repaired, but remain in the final
     # census so preservation/comparison never mistakes recovery for disappearance.
     candidate_portfolio = capture_portfolio_yield(PORTFOLIO_CANDIDATE, initial_targets)
-    shutil.copyfile(PORTFOLIO_CANDIDATE, CENSUS_POST_REPAIR)
-    post_repair_census = refresh_census(PORTFOLIO_CANDIDATE, phase="post-repair")
 
     # Activation finalization is deliberately after the real candidate census.
     # Broken/incomplete providers become enabled=false while their learned DATA is
@@ -516,6 +514,22 @@ def main() -> int:
     if not args.allow_upstream_positive_loss:
         yield_cmd.append("--require-upstream-positive-preserved")
     yield_proc = subprocess.run(yield_cmd, cwd=ROOT, env=os.environ.copy(), check=False)
+
+    # The final yield audit is another current-byte observation from this same run.
+    # Preserve any stronger identity-safe positive evidence before the authoritative
+    # post-repair census is rendered; otherwise a later verified fixture can be
+    # discarded by an earlier zero-result portfolio sample.
+    if YIELD_REPORT.exists():
+        run(
+            sys.executable,
+            "scripts/merge_provider_same_run_positive_evidence.py",
+            "--base", str(PORTFOLIO_CANDIDATE.relative_to(ROOT)),
+            "--supplement", str(YIELD_REPORT.relative_to(ROOT)),
+            "--output", str(PORTFOLIO_CANDIDATE.relative_to(ROOT)),
+        )
+        candidate_portfolio = load(PORTFOLIO_CANDIDATE)
+    shutil.copyfile(PORTFOLIO_CANDIDATE, CENSUS_POST_REPAIR)
+    post_repair_census = refresh_census(PORTFOLIO_CANDIDATE, phase="post-repair")
 
     targeted_report = load(TARGET_REPORT)
     merged_report = load(MERGED_REPORT)
