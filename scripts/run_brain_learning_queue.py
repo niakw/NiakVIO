@@ -224,6 +224,34 @@ def build_queue(
     }
     return order, by_id, state
 
+def exhausted_repair_providers(memory: dict[str, Any], policy: dict[str, Any]) -> list[str]:
+    """Providers whose current Repair experiment family needs a new strategy."""
+    production = policy.get("production") if isinstance(policy.get("production"), dict) else {}
+    negative = production.get("negativeExperimentMemory") if isinstance(production.get("negativeExperimentMemory"), dict) else {}
+    max_variants = max(1, int(negative.get("maxVariantsPerSignature") or 4))
+    rotate_every = max(1, int(negative.get("rotateExperimentAfterFailures") or 1))
+    groups: dict[tuple[str, str, str, str], set[int]] = {}
+    for row in memory.get("entries") or []:
+        if not isinstance(row, dict) or int(row.get("successes") or 0) > 0:
+            continue
+        provider = norm(row.get("providerId"))
+        if not provider or int(row.get("consecutiveFailures") or 0) < rotate_every:
+            continue
+        key = (
+            provider,
+            str(row.get("failureClass") or ""),
+            str(row.get("signature") or ""),
+            str(row.get("profile") or ""),
+        )
+        variant = max(0, min(max_variants - 1, int(row.get("experimentVariant") or 0)))
+        groups.setdefault(key, set()).add(variant)
+    return sorted({
+        key[0]
+        for key, variants in groups.items()
+        if len(variants) >= max_variants
+    })
+
+
 def candidate_map(registry: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {
         norm(row.get("canonical_id") or row.get("upstream_id")): row
@@ -513,6 +541,27 @@ def main() -> int:
     order, info_by_id, queue = build_queue(health, previous, args.provider)
 
     staged_candidates = candidate_map(full_registry)
+    repair_deferred = exhausted_repair_providers(
+        load_json(ROOT / "automation" / "brain-repair-memory.json", {}),
+        load_json(ROOT / "engine_v2" / "config" / "brain-policy.json", {}),
+    )
+    repair_deferred = [
+        provider_id for provider_id in repair_deferred
+        if provider_id in info_by_id and provider_id in staged_candidates
+    ]
+    repair_deferred_set = set(repair_deferred)
+    if not args.provider and repair_deferred:
+        # New Repair evidence reopens a provider even if an older Learning cycle
+        # had already marked it complete. This is new-strategy debt, not a retry
+        # of the same exhausted Core experiment.
+        queue["completedInCycle"] = [
+            provider_id for provider_id in queue.get("completedInCycle") or []
+            if provider_id not in repair_deferred_set
+        ]
+        order = [
+            *repair_deferred,
+            *[provider_id for provider_id in order if provider_id not in repair_deferred_set],
+        ]
     reconstruction_required = sorted(
         provider_id
         for provider_id, candidate in staged_candidates.items()
@@ -520,19 +569,17 @@ def main() -> int:
     )
     reconstruction_required_set = set(reconstruction_required)
     if not args.provider:
-        # Clean reconstruction debt outranks routine healthy re-observation.
-        # Preserve the existing anomaly/retry ordering *inside* each partition.
+        # Clean reconstruction debt remains first; exhausted Repair signatures
+        # are next and outrank routine anomaly/healthy cycling.
+        priority = unique([*reconstruction_required, *repair_deferred])
         order = [
-            *[provider_id for provider_id in order if provider_id in reconstruction_required_set],
-            *[provider_id for provider_id in order if provider_id not in reconstruction_required_set],
+            *[provider_id for provider_id in priority if provider_id in info_by_id and provider_id in staged_candidates],
+            *[provider_id for provider_id in order if provider_id not in set(priority)],
         ]
-        missing_required = [
-            provider_id
-            for provider_id in reconstruction_required
-            if provider_id not in order
-        ]
-        order = [*missing_required, *order]
 
+    queue["deferredRepairProviders"] = repair_deferred
+    queue["deferredRepairProviderCount"] = len(repair_deferred)
+    queue["deferredRepairReason"] = "repair_experiment_variants_exhausted_new_strategy_required"
     queue["cleanReconstructionRequiredProviders"] = reconstruction_required
     queue["cleanReconstructionRequiredCount"] = len(reconstruction_required)
     queue["cleanReconstructionAuthoringPolicy"] = "niakvio-owned-v2"
@@ -730,6 +777,8 @@ def main() -> int:
         "budgetMinutes": args.budget_minutes,
         "cleanReconstructionRequiredProviders": reconstruction_required,
         "cleanReconstructionRequiredCount": len(reconstruction_required),
+        "deferredRepairProviders": repair_deferred,
+        "deferredRepairProviderCount": len(repair_deferred),
         "legacyExecutableSeedAllowed": False,
         "processedProviders": processed,
         "processedProviderCount": len(processed),
