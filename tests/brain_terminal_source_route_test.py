@@ -29,6 +29,7 @@ config = {
                 "/?s={query}",
                 "/file/{binding:id}",
                 "/drive/{binding:slug}",
+                "/download/{slug}/",
                 "/download-{slug}-movie-2026/",
                 "/movie/{id}",
             ],
@@ -60,8 +61,9 @@ for variant in (0, 4):
     options = runtime._adaptive_runtime_options(candidate, config)
     assert options is not None
     direct = options["direct_paths"]
-    assert "/file/{binding:id}" in direct, (variant, direct)
-    assert "/drive/{binding:slug}" in direct, (variant, direct)
+    assert "/file/{binding:id}" not in direct, (variant, direct)
+    assert "/drive/{binding:slug}" not in direct, (variant, direct)
+    assert "/download/{slug}/" in direct, (variant, direct)
     assert "/download-{slug}-movie-2026/" not in direct, (variant, direct)
     assert "/movie/{id}" not in direct, (variant, direct)
     assert options["search_paths"] == ["/?s={query}"], (variant, options["search_paths"])
