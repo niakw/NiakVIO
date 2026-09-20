@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { BRAIN_CONTROL_PLANE_VERSION, classifyFailure, planRepair } from '../src/repair-brain.mjs';
 import { classifySystemicExtraction } from '../src/runtime-systemic.mjs';
 
-assert.equal(BRAIN_CONTROL_PLANE_VERSION, 6);
+assert.equal(BRAIN_CONTROL_PLANE_VERSION, 7);
 
 const cases = [
   [{ stages: { reader: { attempted: true, state: 'error', httpStatus: 403, failureStage: 'http_access' } } }, 'playback_http_access', 'replay-native-request-context'],
