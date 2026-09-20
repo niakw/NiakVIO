@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35509920815-post-repair",
-  "sourceTriggerSha": "25c4762a2e44a2ac1310e69298739c19a25f898e",
+  "sourceRunId": "35512170961-post-repair",
+  "sourceTriggerSha": "50c59eabe93f87ec400058e3f6f17c0d9622770d",
   "unresolvedProviderCount": 20,
   "groupCount": 11,
   "executionModel": {
@@ -12,8 +12,8 @@
   },
   "groups": [
     {
-      "groupId": "environment|mixed_embed_resolver",
-      "repairScope": "environment",
+      "groupId": "harness-compatibility|mixed_embed_resolver",
+      "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver",
         "wookafr-current-multiplayer-v2"
@@ -33,13 +33,13 @@
         "vostfree",
         "wookafr"
       ],
-      "action": "browser/session or upstream-access investigation; never mutate provider code solely to hide a challenge",
+      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "environment|html_scraper",
-      "repairScope": "environment",
+      "groupId": "harness-compatibility|html_scraper",
+      "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "html_scraper",
         "mixed_embed_resolver"
@@ -58,7 +58,7 @@
         "animesalt",
         "moviesmod"
       ],
-      "action": "browser/session or upstream-access investigation; never mutate provider code solely to hide a challenge",
+      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -156,8 +156,8 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "environment|api_stream_resolver",
-      "repairScope": "environment",
+      "groupId": "harness-compatibility|api_stream_resolver",
+      "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "api_stream_resolver"
       ],
@@ -172,7 +172,7 @@
       "providers": [
         "animevost-fr"
       ],
-      "action": "browser/session or upstream-access investigation; never mutate provider code solely to hide a challenge",
+      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },

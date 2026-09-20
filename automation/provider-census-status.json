@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35509920815-post-repair",
-  "triggerSha": "25c4762a2e44a2ac1310e69298739c19a25f898e",
+  "runId": "35512170961-post-repair",
+  "triggerSha": "50c59eabe93f87ec400058e3f6f17c0d9622770d",
   "providers": [
     {
       "provider": "4khdhub",
@@ -363,8 +363,8 @@
     },
     {
       "provider": "wookafr",
-      "status": "PROVIDER WAF/ANTIBOT",
-      "color": "🟫",
+      "status": "HARNESS MISMATCH",
+      "color": "🟧",
       "declaredLanes": [
         "movie",
         "tv"
@@ -388,14 +388,14 @@
         "movie=lookup_only",
         "tv=chain_reached"
       ],
-      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
+      "action": "replay with representative TV/mobile transport; align harness headers/session/fetch stack before provider repair",
       "brainCheckRequired": true,
       "repairEligible": false,
       "testedThisRun": false
     },
     {
       "provider": "allwish",
-      "status": "PROVIDER WAF/ANTIBOT",
+      "status": "HARNESS/ENV BLOCKED",
       "color": "🟫",
       "declaredLanes": [
         "movie",
@@ -418,15 +418,15 @@
         "movie=none",
         "tv=none"
       ],
-      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
+      "action": "compare GitHub Node/Chromium with native TV/mobile transport; provider JS mutation is not justified by CI challenge alone",
       "brainCheckRequired": true,
       "testedThisRun": false,
       "repairEligible": false
     },
     {
       "provider": "animesalt",
-      "status": "PROVIDER WAF/ANTIBOT",
-      "color": "🟫",
+      "status": "HARNESS MISMATCH",
+      "color": "🟧",
       "declaredLanes": [
         "anime"
       ],
@@ -446,15 +446,15 @@
       "evidenceDepth": [
         "anime=none"
       ],
-      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
+      "action": "replay with representative TV/mobile transport; align harness headers/session/fetch stack before provider repair",
       "brainCheckRequired": true,
       "testedThisRun": false,
       "repairEligible": false
     },
     {
       "provider": "animevost-fr",
-      "status": "PROVIDER WAF/ANTIBOT",
-      "color": "🟫",
+      "status": "HARNESS MISMATCH",
+      "color": "🟧",
       "declaredLanes": [
         "anime"
       ],
@@ -474,14 +474,14 @@
       "evidenceDepth": [
         "anime=lookup_only"
       ],
-      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
+      "action": "replay with representative TV/mobile transport; align harness headers/session/fetch stack before provider repair",
       "brainCheckRequired": true,
       "testedThisRun": false,
       "repairEligible": false
     },
     {
       "provider": "flemmix",
-      "status": "PROVIDER WAF/ANTIBOT",
+      "status": "HARNESS/ENV BLOCKED",
       "color": "🟫",
       "declaredLanes": [
         "movie",
@@ -506,14 +506,14 @@
         "movie=none",
         "tv=none"
       ],
-      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
+      "action": "compare GitHub Node/Chromium with native TV/mobile transport; provider JS mutation is not justified by CI challenge alone",
       "brainCheckRequired": true,
       "testedThisRun": false,
       "repairEligible": false
     },
     {
       "provider": "fullanime",
-      "status": "PROVIDER WAF/ANTIBOT",
+      "status": "HARNESS/ENV BLOCKED",
       "color": "🟫",
       "declaredLanes": [
         "anime"
@@ -534,15 +534,15 @@
       "evidenceDepth": [
         "anime=none"
       ],
-      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
+      "action": "compare GitHub Node/Chromium with native TV/mobile transport; provider JS mutation is not justified by CI challenge alone",
       "brainCheckRequired": true,
       "testedThisRun": false,
       "repairEligible": false
     },
     {
       "provider": "moviesmod",
-      "status": "PROVIDER WAF/ANTIBOT",
-      "color": "🟫",
+      "status": "HARNESS MISMATCH",
+      "color": "🟧",
       "declaredLanes": [
         "movie",
         "tv"
@@ -566,7 +566,7 @@
         "movie=lookup_only",
         "tv=lookup_only"
       ],
-      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
+      "action": "replay with representative TV/mobile transport; align harness headers/session/fetch stack before provider repair",
       "brainCheckRequired": true,
       "testedThisRun": false,
       "repairEligible": false
@@ -611,8 +611,8 @@
     },
     {
       "provider": "vostfree",
-      "status": "PROVIDER WAF/ANTIBOT",
-      "color": "🟫",
+      "status": "HARNESS MISMATCH",
+      "color": "🟧",
       "declaredLanes": [
         "anime"
       ],
@@ -632,7 +632,7 @@
       "evidenceDepth": [
         "anime=none"
       ],
-      "action": "verify in allowed browser/session context; do not fake or solve challenge tokens",
+      "action": "replay with representative TV/mobile transport; align harness headers/session/fetch stack before provider repair",
       "brainCheckRequired": true,
       "testedThisRun": false,
       "repairEligible": false
@@ -1345,9 +1345,10 @@
     "CANDIDATE OK": 1,
     "CHAIN REACHED": 3,
     "FULL OK": 24,
+    "HARNESS MISMATCH": 5,
+    "HARNESS/ENV BLOCKED": 3,
     "PARTIAL OK": 2,
     "PROVIDER NETWORK BLOCKED": 5,
-    "PROVIDER WAF/ANTIBOT": 8,
     "ROUTE PROVEN": 3
   },
   "symptomaticProviders": [
@@ -1409,6 +1410,16 @@
     "yflix"
   ],
   "environmentQueue": [
+    "allwish",
+    "animesalt",
+    "animevost-fr",
+    "flemmix",
+    "fullanime",
+    "moviesmod",
+    "vostfree",
+    "wookafr"
+  ],
+  "harnessQueue": [
     "allwish",
     "animesalt",
     "animevost-fr",
