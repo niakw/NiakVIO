@@ -123,6 +123,7 @@ jobs:
           python tests/provider_shared_player_fanout_contract_test.py
           python tests/provider_repair_batch_plan_test.py
           python tests/provider_repair_batch_runner_test.py
+          python tests/provider_repair_batch_refinement_test.py
           python -m py_compile scripts/audit_provider_quick_yield.py scripts/build_provider_repair_batch_plan.py scripts/render_provider_census_status.py scripts/update_provider_census_proof_history.py scripts/rotating_corpus.py
 
       - name: Project provider-local current domain metadata
