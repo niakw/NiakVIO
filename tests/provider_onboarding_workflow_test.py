@@ -48,6 +48,14 @@ assert ADD.index("Verify exact rebuilt provider on first declared type") < ADD.i
 assert "npm test" in ADD
 
 assert "persist_clean_provider_seed(" in ONBOARD
+assert "def materialize_onboarding_bundle(" in ONBOARD
+assert "build_provider_data_model(" in ONBOARD
+assert "compose_provider_bundle(" in ONBOARD
+assert "include_global_core=True" in ONBOARD
+assert "verify_bytes(bundle)" in ONBOARD
+assert "shutil.copy2" not in ONBOARD
+assert '"sha256": published_sha' in ONBOARD
+assert '"base_sha256": base_sha' in ONBOARD
 assert "CLEAN_RECONSTRUCTION_SOURCE" in ONBOARD
 assert '"type": "hub"' in ONBOARD
 assert '"type": "direct"' not in ONBOARD
