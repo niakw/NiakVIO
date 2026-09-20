@@ -176,7 +176,7 @@ with tempfile.TemporaryDirectory() as tmp:
     assert "/player/{id}" in options["direct_paths"]
     assert not any("sid=" in route for route in options["direct_paths"] + options["search_paths"])
     assert options["route_prior_counts"]["provider"] == 3
-    assert options["route_prior_counts"]["peer"] == 2
+    assert options["route_prior_counts"]["peer"] == 0
     assert options["route_prior_counts"]["requestRecipes"] == 1, options
     assert options["route_prior_counts"]["providerRequestRecipes"] == 1, options
     assert options["route_prior_counts"]["peerRequestRecipes"] == 1, options
@@ -194,9 +194,76 @@ with tempfile.TemporaryDirectory() as tmp:
     assert options["census_status"] == "CHAIN REACHED"
     assert options["max_depth"] == 4
     assert options["max_embeds"] == 20
-    # Player/API routes move ahead of generic detail/search rediscovery when
-    # the census has already proven a deeper chain.
-    assert options["direct_paths"][0] == "/player/{id}", options["direct_paths"]
+    # Variant 0 is deliberately provider-owned evidence only. Strategy-peer
+    # route shapes and request recipes are introduced by later variants.
+    assert options["experiment_strategy"] == "owned-evidence"
+    assert options["direct_paths"][0] == "/episode/{id}/{season}/{episode}", options["direct_paths"]
+    assert "/player/{id}" not in options["direct_paths"]
+
+    variant1 = dict(candidate)
+    variant1["brain_repair_plan"] = {
+        "failureClass": "chain_terminal_gap",
+        "experimentVariant": 1,
+        "negativeMemoryMatches": 1,
+    }
+    options1 = runtime._adaptive_runtime_options(variant1, config)
+    assert options1 is not None
+    assert options1["experiment_strategy"] == "route-shape-transfer"
+    assert options1["route_prior_counts"]["peer"] == 2
+    assert options1["route_prior_counts"]["requestRecipes"] == 1
+    assert options1["direct_paths"][0] == "/player/{id}", options1["direct_paths"]
+
+    variant2 = dict(candidate)
+    variant2["brain_repair_plan"] = {
+        "failureClass": "chain_terminal_gap",
+        "experimentVariant": 2,
+        "negativeMemoryMatches": 2,
+    }
+    options2 = runtime._adaptive_runtime_options(variant2, config)
+    assert options2 is not None
+    assert options2["experiment_strategy"] == "request-recipe-transfer"
+    assert options2["route_prior_counts"]["peer"] == 2
+    assert options2["route_prior_counts"]["requestRecipes"] == 2
+    assert {row["source"] for row in options2["request_recipes"]} == {
+        "provider-experience", "peer-experience"
+    }
+
+    transport1 = dict(candidate)
+    transport1["brain_repair_plan"] = {
+        "failureClass": "provider_transport_gap",
+        "experimentVariant": 1,
+        "negativeMemoryMatches": 1,
+    }
+    transport_options = runtime._adaptive_runtime_options(transport1, config)
+    assert transport_options is not None
+    assert transport_options["route_prior_counts"]["peer"] == 0
+    assert transport_options["direct_paths"][0] == "/film/{slug}", transport_options["direct_paths"]
+
+    candidate2 = dict(candidate)
+    candidate2["brain_repair_plan"] = {
+        "failureClass": "candidate_replay_gap",
+        "experimentVariant": 2,
+        "negativeMemoryMatches": 2,
+    }
+    candidate_options2 = runtime._adaptive_runtime_options(candidate2, config)
+    assert candidate_options2 is not None
+    assert candidate_options2["peer_route_min_variant"] == 3
+    assert candidate_options2["peer_recipe_min_variant"] == 3
+    assert candidate_options2["route_prior_counts"]["peer"] == 0
+    assert candidate_options2["route_prior_counts"]["requestRecipes"] == 1
+
+    candidate3 = dict(candidate)
+    candidate3["brain_repair_plan"] = {
+        "failureClass": "candidate_replay_gap",
+        "experimentVariant": 3,
+        "negativeMemoryMatches": 3,
+    }
+    candidate_options3 = runtime._adaptive_runtime_options(candidate3, config)
+    assert candidate_options3 is not None
+    assert candidate_options3["experiment_strategy"] == "expanded-discovery"
+    assert candidate_options3["route_prior_counts"]["peer"] == 2
+    assert candidate_options3["route_prior_counts"]["requestRecipes"] == 2
+    assert "/api/stream/{id}" in candidate_options3["direct_paths"]
 
 # Restored V5 must still generate the verified-media runtime and inherit the
 # new contextual route expansion from V4. This proves the executable Brain path
