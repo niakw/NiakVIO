@@ -2754,3 +2754,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The ordinary census also ignores `ci(census-sharded): ...` persistence commits, avoiding recursion. The resulting `automation/provider-repair-batch-plan-latest.json` is the trigger/input for batch-aware targeted recovery.
 - This establishes the high-volume lifecycle: bulk local stage (disabled) -> atomic publish -> 8-shard census -> coarse capability batch -> observed-signature refinement -> concurrent repair probes -> proof-driven activation. No per-provider workflow is required for initial integration.
 - Key commits: `2d8a5926de2a`, `aba259e84585`, `816a1757e476`, `31125c706c45`, `95d24592fb3f`, `b8474742dce6`, `fa6f1e973c71`, `d7605f791e09`, tests/gates through `15445f0ed7f0`.
+
+
+## 2026-09-20 — Targeted repair now shards with catalogue size
+
+- Large-catalogue scaling is symmetric: catalogues above 120 providers already use the 8-shard census, and targeted repair now uses the same horizontal model instead of becoming the next monolithic bottleneck.
+- Added reusable `scripts/run_provider_targeted_recovery.py` with deterministic provider sharding, batch-plan selection, environment/WAF exclusion, adaptive current-byte probes and group-level verdicts. The same engine is used for small catalogues (1 shard) and large catalogues (8 shards).
+- Added `scripts/merge_provider_targeted_recovery_shards.py` and `.github/workflows/provider-targeted-recovery-sharded.yml`; merged results are refined by observed runtime/network signatures before any provider-local fallback.
+- `TEMP - Targeted Regression Recovery Probes` now routes by catalogue size: <=120 providers stays single-job, >120 is handled by the sharded workflow. Tests pin deterministic partitioning, shard merge and mono-to-sharded routing.
+- Current live census remains 24 FULL + 2 PARTIAL = 26/46 from SHA `aeae9cd84c62`; newer Core/player, MalluMV, Wooka, MovieBox, UHDMovies and batch/sharding changes are not yet represented by that persisted census.
