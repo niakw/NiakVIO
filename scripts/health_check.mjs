@@ -1141,6 +1141,7 @@ function executionContextForCandidate(candidate) {
     },
     maxSettingsProfiles: Math.max(1, Math.min(12, Number(modeConfig.max_settings_profiles || 6))),
     singleProfileZeroStreamPreflight: modeConfig.zero_stream_preflight === true && !Boolean(metadata.hasSettings),
+    routeProofTrace: modeConfig.route_proof_trace === true,
     networkLimits: {
       maxFetches: Number(modeConfig.max_provider_fetches || 30),
       maxRedirects: Number(modeConfig.max_redirects || 5),
