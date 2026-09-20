@@ -551,6 +551,45 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         ])
     search_paths = _unique_routes(configured_search, learned_search, peer_search, generic_search, limit=24)
     direct_paths = _unique_routes(configured_direct, learned_direct, peer_direct, generic_direct, limit=32)
+    if experiment_variant == 4:
+        terminal_generic = [
+            "/player/{id}", "/embed/{id}", "/watch/{slug}",
+            "/api/sources/{id}", "/api/stream/{id}", "/api/servers/{id}",
+            "/episode/{id}/{season}/{episode}",
+        ]
+        terminal_peer = [
+            route for route in peer_direct
+            if _route_role(route) in {"player", "api", "episode"}
+        ]
+        if experiment_failure == "route_proven_gap":
+            search_paths = _unique_routes(configured_search, learned_search, limit=16)
+            direct_paths = _unique_routes(
+                learned_direct, configured_direct, terminal_peer, terminal_generic, limit=32
+            )
+        elif experiment_failure == "chain_terminal_gap":
+            search_paths = _unique_routes(configured_search, learned_search, limit=12)
+            direct_paths = _unique_routes(
+                [
+                    route for route in learned_direct
+                    if _route_role(route) in {"player", "api", "episode"}
+                ],
+                configured_direct, terminal_peer, terminal_generic, learned_direct,
+                limit=32,
+            )
+        elif experiment_failure == "candidate_replay_gap":
+            exact_search = [route for route in learned_search if not _ROUTE_PLACEHOLDER.search(route)]
+            templated_search = [route for route in learned_search if _ROUTE_PLACEHOLDER.search(route)]
+            exact_direct = [route for route in learned_direct if not _ROUTE_PLACEHOLDER.search(route)]
+            templated_direct = [route for route in learned_direct if _ROUTE_PLACEHOLDER.search(route)]
+            search_paths = _unique_routes(exact_search, templated_search, configured_search, limit=20)
+            direct_paths = _unique_routes(exact_direct, templated_direct, configured_direct, limit=32)
+        elif experiment_failure == "provider_transport_gap":
+            search_paths = _unique_routes(
+                learned_search, configured_search, peer_search, generic_search, limit=24
+            )
+            direct_paths = _unique_routes(
+                learned_direct, configured_direct, peer_direct, generic_direct, limit=32
+            )
     role_preferences = _experiment_role_preferences(
         census_focus,
         experiment_failure,
@@ -584,7 +623,17 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         for recipe in request_recipes
         if str(recipe.get("origin") or "").startswith(("http://", "https://"))
     ]
-    for raw in [*observed, *network_hints["bases"], *recipe_origins]:
+    fixed_endpoint = patch.get("fixed_endpoint") if isinstance(patch.get("fixed_endpoint"), dict) else {}
+    origin_inputs = [
+        base_url,
+        patch.get("official_site"),
+        patch.get("official_api"),
+        fixed_endpoint.get("api"),
+        *observed,
+        *network_hints["bases"],
+        *recipe_origins,
+    ]
+    for raw in origin_inputs:
         peer = _origin(raw)
         if not peer:
             continue
@@ -593,6 +642,11 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             continue
         if peer not in endpoint_origins:
             endpoint_origins.append(peer)
+
+    if experiment_variant == 4 and experiment_failure == "provider_transport_gap":
+        alternates = [origin for origin in endpoint_origins if origin != base_url]
+        if alternates:
+            base_url = alternates[0]
 
     return {
         "provider_name": str(metadata.get("name") or provider_id or "Provider"),
