@@ -1,14 +1,14 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-20T05:04:46.189207+00:00",
+  "generated_at": "2026-09-20T13:07:20.749747+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 44,
   "status_counts": {
-    "healthy": 1,
+    "healthy": 2,
     "reachable": 0,
     "blocked": 1,
     "degraded": 1,
-    "no_streams": 7,
+    "no_streams": 6,
     "provider_unreachable": 30,
     "runtime_error": 0,
     "unavailable": 4,
@@ -3029,17 +3029,21 @@
     },
     {
       "id": "vidlove",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "d.whysosigmabro.fun"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "ballerinacappuccinalovestungtungtungsahur.com": {
-          "last_checked_at": "2026-09-19T04:42:39.418485+00:00",
+          "last_checked_at": "2026-09-20T13:07:20.749747+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3050,7 +3054,7 @@
           "consecutive_blocked": 0
         },
         "a2.whysosigmabro.fun": {
-          "last_checked_at": "2026-09-19T04:42:39.418485+00:00",
+          "last_checked_at": "2026-09-20T13:07:20.749747+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3061,14 +3065,14 @@
           "consecutive_blocked": 0
         },
         "d.whysosigmabro.fun": {
-          "last_checked_at": "2026-09-19T04:42:39.418485+00:00",
+          "last_checked_at": "2026-09-20T13:07:20.749747+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 200,
-          "latency_ms": 170,
+          "latency_ms": 114,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 2,
           "consecutive_blocked": 0
         }
       },
