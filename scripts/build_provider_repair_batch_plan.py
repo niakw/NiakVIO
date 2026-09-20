@@ -75,30 +75,40 @@ def main()->int:
         depth=depth_class(list(row.get("evidenceDepth") or []))
         issue=issue_class(scalar(row.get("dominantIssue")))
         scope,action=action_for(scalar(row.get("status")),depth,issue)
-        # Batch identity is intentionally coarse. Exact provider runtime families
-        # are metadata, not part of the key, otherwise hundreds of providers
-        # collapse back into hundreds of one-provider queues.
-        key=(scope,strategy,depth,issue)
+        # First-pass batch identity is deliberately broad: repair scope +
+        # capability strategy only. Evidence depth, issue class and exact runtime
+        # families remain metadata. The post-probe refiner is responsible for
+        # splitting a broad hypothesis when observed network/runtime signatures
+        # actually diverge.
+        key=(scope,strategy)
         groups[key].append({
             "provider":pid,
             "status":scalar(row.get("status")),
             "runtimeFamily":family,
+            "evidenceDepth":depth,
+            "issueClass":issue,
             "declaredLanes":row.get("declaredLanes") or [],
             "currentVerifiedLanes":row.get("currentVerifiedLanes") or [],
         })
     out_groups=[]
     for key,members in groups.items():
-        scope,strategy,depth,issue=key
+        scope,strategy=key
         providers=sorted(m["provider"] for m in members)
         families=sorted({scalar(m.get("runtimeFamily")) for m in members})
-        _,action=action_for(members[0]["status"],depth,issue)
+        depths=sorted({scalar(m.get("evidenceDepth")) for m in members})
+        issues=sorted({scalar(m.get("issueClass")) for m in members})
+        _,action=action_for(
+            members[0]["status"],
+            depths[0] if len(depths)==1 else "mixed",
+            issues[0] if len(issues)==1 else "mixed",
+        )
         out_groups.append({
             "groupId":"|".join(key),
             "repairScope":scope,
             "runtimeFamilies":families,
             "capabilityStrategy":strategy,
-            "evidenceDepth":depth,
-            "dominantIssue":issue,
+            "evidenceDepths":depths,
+            "dominantIssues":issues,
             "providerCount":len(providers),
             "providers":providers,
             "action":action,
