@@ -29,6 +29,11 @@ PORTFOLIO_LOSSES = ROOT / "automation" / "provider-repair-portfolio-losses.json"
 DISPOSITION = ROOT / "automation" / "provider-repair-disposition.json"
 HUB_MATRIX = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 RUNTIME_PLAN_LKG = Path(os.environ.get("RUNNER_TEMP") or (ROOT / "automation")) / "provider-runtime-plan-lkg-v1.json"
+CENSUS_STATUS = ROOT / "automation" / "provider-census-status.json"
+CENSUS_HISTORY = ROOT / "automation" / "provider-census-proof-history.json"
+CENSUS_MD = ROOT / "PROVIDER_CENSUS_STATUS.md"
+CENSUS_POST_REPAIR = ROOT / "automation" / "provider-census-post-repair.json"
+CENSUS_ENVIRONMENT_ONLY = {"PROVIDER WAF/ANTIBOT"}
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -46,10 +51,45 @@ def unresolved_target_scope(
     active_catalogue: list[str],
     skipped: set[str],
     requested: set[str],
-    disposition: dict[str, Any],
+    disposition: dict[str, Any] | None = None,
     current_verified: set[str] | None = None,
+    census: dict[str, Any] | None = None,
 ) -> tuple[list[str], list[str]]:
-    """Return unresolved targets plus any current-green provider that regressed."""
+    """Return only providers currently marked symptomatic by the census.
+
+    The durable census ledger is the automatic Repair authority. Explicit
+    requests are also intersected with that queue, so a stable FULL/PARTIAL
+    provider is never re-probed merely because an old disposition says repair.
+    """
+    if isinstance(census, dict):
+        queue_values = census.get("repairQueue")
+        if not isinstance(queue_values, list):
+            rows = {
+                cid(row.get("provider")): row
+                for row in census.get("providers") or []
+                if isinstance(row, dict) and cid(row.get("provider"))
+            }
+            queue_values = [
+                value for value in census.get("brainQueue") or []
+                if str((rows.get(cid(value)) or {}).get("status") or "") not in CENSUS_ENVIRONMENT_ONLY
+            ]
+        queue = {cid(value) for value in queue_values or [] if cid(value)}
+        selected = (set(requested) & queue) if requested else queue
+        targets = [
+            provider
+            for provider in active_catalogue
+            if provider in selected and provider not in skipped
+        ]
+        excluded = [
+            provider
+            for provider in active_catalogue
+            if provider not in selected or provider in skipped
+        ]
+        return targets, excluded
+
+    # Compatibility fallback for callers/tests without a census. Production main
+    # always supplies census=... and therefore never uses disposition as authority.
+    disposition = disposition or {"providers": []}
     state_by_provider = {
         cid(row.get("provider")): str(row.get("routeDataState") or "").strip().casefold()
         for row in disposition.get("providers") or []
@@ -70,19 +110,12 @@ def unresolved_target_scope(
                 if state_by_provider.get(provider) == "on"
                 and provider not in current_verified
             )
-    targets = [
-        provider
-        for provider in active_catalogue
-        if provider in selected and provider not in skipped
+    targets = [provider for provider in active_catalogue if provider in selected and provider not in skipped]
+    excluded = [
+        provider for provider in active_catalogue
+        if not requested and provider not in selected
     ]
-    auto_excluded_green = [
-        provider
-        for provider in active_catalogue
-        if not requested
-        and state_by_provider.get(provider) == "on"
-        and (current_verified is None or provider in current_verified)
-    ]
-    return targets, auto_excluded_green
+    return targets, excluded
 
 
 def run(*args: str, timeout: int | None = None) -> None:
@@ -90,8 +123,11 @@ def run(*args: str, timeout: int | None = None) -> None:
     subprocess.run(list(args), cwd=ROOT, env=os.environ.copy(), check=True, timeout=timeout)
 
 
-def capture_portfolio_yield(destination: Path) -> dict[str, Any]:
-    run(sys.executable, "scripts/audit_provider_quick_yield.py")
+def capture_portfolio_yield(destination: Path, providers: list[str] | None = None) -> dict[str, Any]:
+    command = [sys.executable, "scripts/audit_provider_quick_yield.py"]
+    for provider in providers or []:
+        command.extend(["--provider", provider])
+    run(*command)
     if not QUICK_YIELD.exists():
         raise RuntimeError("quick-yield audit did not produce provider-v3-quick-yield.json")
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -106,6 +142,49 @@ def capture_portfolio_yield(destination: Path) -> dict[str, Any]:
         flush=True,
     )
     return report
+
+
+def refresh_census(report_path: Path, *, phase: str) -> dict[str, Any]:
+    """Merge a targeted current-byte report into the durable global census."""
+    run_id = str(os.environ.get("GITHUB_RUN_ID") or "local")
+    sha = str(os.environ.get("GITHUB_SHA") or "")
+    if CENSUS_HISTORY.exists():
+        run(
+            sys.executable,
+            "scripts/update_provider_census_proof_history.py",
+            str(report_path.relative_to(ROOT)),
+            "--history", str(CENSUS_HISTORY.relative_to(ROOT)),
+            "--run-id", f"{run_id}-{phase}",
+            "--sha", sha or phase,
+        )
+    run(
+        sys.executable,
+        "scripts/render_provider_census_status.py",
+        str(report_path.relative_to(ROOT)),
+        "--output", str(CENSUS_MD.relative_to(ROOT)),
+        "--json-output", str(CENSUS_STATUS.relative_to(ROOT)),
+        "--history", str(CENSUS_HISTORY.relative_to(ROOT)),
+        "--baseline-status", str(CENSUS_STATUS.relative_to(ROOT)),
+        "--run-id", f"{run_id}-{phase}",
+        "--sha", sha or phase,
+    )
+    if (ROOT / "scripts/build_provider_repair_batch_plan.py").exists():
+        run(
+            sys.executable,
+            "scripts/build_provider_repair_batch_plan.py",
+            "--status", str(CENSUS_STATUS.relative_to(ROOT)),
+            "--overrides", "provider-overrides.json",
+            "--output", "automation/provider-repair-batch-plan-latest.json",
+        )
+    state = load(CENSUS_STATUS)
+    print(
+        "FIELD_PROVIDER_REPAIR_CENSUS "
+        f"phase={phase} symptomatic={len(state.get('symptomaticProviders') or state.get('brainQueue') or [])} "
+        f"repair_queue={len(state.get('repairQueue') or [])} "
+        f"environment={len(state.get('environmentQueue') or [])}",
+        flush=True,
+    )
+    return state
 
 
 def main() -> int:
@@ -154,37 +233,63 @@ def main() -> int:
 
     disposition = load(DISPOSITION) if DISPOSITION.exists() else {"providers": []}
     attempts = max(1, min(int(args.attempts), 4))
+    if not CENSUS_STATUS.exists():
+        raise SystemExit("provider census status missing; run census before Repair")
+    census = load(CENSUS_STATUS)
 
-    # The fresh portfolio census is part of target selection. A provider that was
-    # previously marked ON but no longer verifies in this same run is a regression,
-    # not a protected green, and must automatically re-enter Repair.
-    baseline_portfolio = capture_portfolio_yield(PORTFOLIO_BASELINE)
-    baseline_verified = {
-        cid(value)
-        for value in (baseline_portfolio.get("verified_providers") or [])
-        if cid(value)
-    }
+    # Census is the only automatic target authority. First re-check only its
+    # current repairQueue, merge those fresh observations into the ledger, then
+    # repair only providers that remain symptomatic.
+    initial_targets, auto_excluded_green = unresolved_target_scope(
+        active_catalogue,
+        skipped,
+        requested,
+        disposition,
+        census=census,
+    )
+    if not initial_targets:
+        summary = {
+            "schemaVersion": 12,
+            "mode": args.mode,
+            "publicationAllowed": False,
+            "mainWritesAllowed": False,
+            "selectionAuthority": "provider-census-status.json:repairQueue",
+            "targetedProviderCount": 0,
+            "targetedProviders": [],
+            "censusStatusUpdated": False,
+            "preservationGatePassed": True,
+        }
+        SUMMARY.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print("FIELD_PROVIDER_REPAIR_EMPTY census_repair_queue=0", flush=True)
+        return 0
+
+    baseline_portfolio = capture_portfolio_yield(PORTFOLIO_BASELINE, initial_targets)
+    census = refresh_census(PORTFOLIO_BASELINE, phase="pre-repair")
     targets, auto_excluded_green = unresolved_target_scope(
         active_catalogue,
         skipped,
         requested,
         disposition,
-        current_verified=baseline_verified,
+        census=census,
     )
-    state_by_provider = {
-        cid(row.get("provider")): str(row.get("routeDataState") or "").strip().casefold()
-        for row in disposition.get("providers") or []
-        if isinstance(row, dict) and cid(row.get("provider"))
-    }
-    regression_reactivated = [
-        provider
-        for provider in targets
-        if not requested
-        and state_by_provider.get(provider) == "on"
-        and provider not in baseline_verified
-    ]
+    regression_reactivated: list[str] = []
     if not targets:
-        raise SystemExit("no unresolved or freshly regressed provider selected for repair")
+        summary = {
+            "schemaVersion": 12,
+            "mode": args.mode,
+            "publicationAllowed": False,
+            "mainWritesAllowed": False,
+            "selectionAuthority": "provider-census-status.json:repairQueue",
+            "targetedProviderCount": 0,
+            "targetedProviders": [],
+            "preRepairRetestedProviders": initial_targets,
+            "censusStatusUpdated": True,
+            "postRefreshRepairQueue": census.get("repairQueue") or [],
+            "preservationGatePassed": True,
+        }
+        SUMMARY.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print("FIELD_PROVIDER_REPAIR_EMPTY symptoms_recovered_during_precheck=true", flush=True)
+        return 0
 
     requested_workers = int(args.workers)
     if requested_workers > 0:
@@ -350,7 +455,9 @@ def main() -> int:
         if not BRAIN_REPAIR.exists():
             raise RuntimeError("Brain Repair did not produce its portfolio report")
 
-    candidate_portfolio = capture_portfolio_yield(PORTFOLIO_CANDIDATE)
+    candidate_portfolio = capture_portfolio_yield(PORTFOLIO_CANDIDATE, targets)
+    shutil.copyfile(PORTFOLIO_CANDIDATE, CENSUS_POST_REPAIR)
+    post_repair_census = refresh_census(PORTFOLIO_CANDIDATE, phase="post-repair")
 
     # Activation finalization is deliberately after the real candidate census.
     # Broken/incomplete providers become enabled=false while their learned DATA is
@@ -413,12 +520,19 @@ def main() -> int:
     retry_report = load(PORTFOLIO_RETRY) if PORTFOLIO_RETRY.exists() else {}
     disposition_report = load(DISPOSITION) if DISPOSITION.exists() else {}
     summary = {
-        "schemaVersion": 11,
+        "schemaVersion": 12,
         "mode": args.mode,
         "publicationAllowed": False,
         "mainWritesAllowed": False,
         "catalogueProviderCount": len(catalogue),
         "activeProviderCount": len(active_catalogue),
+        "selectionAuthority": "provider-census-status.json:repairQueue",
+        "preRepairRetestedProviders": initial_targets,
+        "censusStatusUpdated": True,
+        "postRepairCensusCounts": post_repair_census.get("counts") or {},
+        "postRepairSymptomaticProviders": post_repair_census.get("symptomaticProviders") or post_repair_census.get("brainQueue") or [],
+        "postRepairRepairQueue": post_repair_census.get("repairQueue") or [],
+        "postRepairEnvironmentQueue": post_repair_census.get("environmentQueue") or [],
         "skippedAlreadyGreenProviders": sorted(skipped),
         "autoExcludedCurrentGreenProviders": sorted(auto_excluded_green),
         "freshRegressionReactivatedProviders": sorted(regression_reactivated),
