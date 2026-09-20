@@ -425,13 +425,14 @@ def main() -> int:
                 env = os.environ.copy()
                 env["NUVIO_HEALTH_CONCURRENCY"] = str(concurrency)
                 env["NUVIO_BRAIN_REPAIR_WAVE"] = str(wave)
+                env["NUVIO_BRAIN_EXPLORATION_CHAIN"] = "1"
                 run(
                     sys.executable,
                     "scripts/run_adaptive_deep_repair.py",
                     "--stage", str(stage),
                     "--registry", str(stage / "candidates.json"),
                     "--output", str(output),
-                    "--max-rounds", "1",
+                    "--max-rounds", "3",
                     env=env,
                     timeout=max(1800, len(batch) * 120),
                 )
