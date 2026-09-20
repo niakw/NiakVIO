@@ -13,7 +13,7 @@ status={
   "providers":[
     {"provider":"a","status":"CHAIN REACHED","brainCheckRequired":True,"declaredLanes":["movie"],"currentVerifiedLanes":[],"dominantIssue":"provider_network_zero_result","evidenceDepth":["movie=chain_reached"]},
     {"provider":"b","status":"CHAIN REACHED","brainCheckRequired":True,"declaredLanes":["movie"],"currentVerifiedLanes":[],"dominantIssue":"provider_network_zero_result","evidenceDepth":["movie=chain_reached"]},
-    {"provider":"c","status":"HARNESS/ENV BLOCKED","brainCheckRequired":True,"declaredLanes":["anime"],"currentVerifiedLanes":[],"dominantIssue":"provider_waf_challenge","evidenceDepth":["anime=none"]},
+    {"provider":"c","status":"HARNESS/ENV BLOCKED","brainCheckRequired":True,"declaredLanes":["anime"],"currentVerifiedLanes":[],"dominantIssue":"provider_waf_challenge","evidenceDepth":["anime=none"],"harnessTransportClass":"github-all-transports-challenged"},
     {"provider":"e","status":"PROVIDER NETWORK BLOCKED","brainCheckRequired":True,"declaredLanes":["movie"],"currentVerifiedLanes":[],"dominantIssue":"provider_network_http_error","evidenceDepth":["movie=lookup_only"]},
     {"provider":"f","status":"PROVIDER NETWORK BLOCKED","brainCheckRequired":True,"declaredLanes":["movie"],"currentVerifiedLanes":[],"dominantIssue":"provider_network_exception","evidenceDepth":["movie=none"]},
     {"provider":"green","status":"FULL OK","brainCheckRequired":False,"declaredLanes":["movie"],"currentVerifiedLanes":["movie"],"dominantIssue":"","evidenceDepth":[]},
@@ -49,6 +49,7 @@ groups={row["repairScope"]:row for row in plan["groups"]}
 assert groups["terminal-extraction"]["providers"]==["a","b"]
 assert groups["terminal-extraction"]["providerLocalFallback"]=="only-after-shared-profile-failure"
 assert groups["harness-compatibility"]["providers"]==["c"]
+assert groups["harness-compatibility"]["harnessTransportClasses"]==["github-all-transports-challenged"]
 assert groups["transport"]["providers"]==["e","f"]
 assert groups["transport"]["evidenceDepths"]==["lookup","none"]
 assert groups["transport"]["dominantIssues"]==["network_exception","network_http_error"]
