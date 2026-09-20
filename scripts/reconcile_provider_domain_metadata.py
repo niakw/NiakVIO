@@ -168,6 +168,7 @@ def reconcile_patch(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--rebuild", action="store_true")
+    parser.add_argument("--provider", default="", help="reconcile/rebuild only this provider")
     parser.add_argument("--changes-output", default="")
     args = parser.parse_args()
 
@@ -178,8 +179,11 @@ def main() -> int:
     registry_rows = rows(registry, "providers")
     history_rows = rows(history, "providers")
 
+    selected_provider = str(args.provider or "").strip().casefold()
     changed: dict[str, list[str]] = {}
     for provider_id, patch in sorted(patches.items()):
+        if selected_provider and provider_id.casefold() != selected_provider:
+            continue
         fields = reconcile_patch(
             provider_id,
             patch,
