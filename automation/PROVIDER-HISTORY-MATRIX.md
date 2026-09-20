@@ -106,16 +106,17 @@ This section is generated from four exact states: **5.21.0 → 5.21.16 → 5.21.
 Historical evidence is never filled from a newer snapshot. A historical green that becomes unknown is explicit revalidation debt, not a silent pass.
 Historical `supportedTypes` are transport/invocation compatibility only; only normalized or explicit canonical semantic declarations can create a semantic regression floor.
 
-- Hard/contract regressions: **4** — `kehflix`, `movieshunt`, `purstream`, `uhdmovies`
+- Hard/contract regressions: **3** — `kehflix`, `movieshunt`, `purstream`
 - Partial regressions: **1** — `streamzo`
 - Revalidation debt: **6** — `allwish`, `anikototv`, `french-manga`, `playimdb`, `videasy`, `wookafr`
-- Semantic/HLS contract regressions: **1** — `uhdmovies`
+- Semantic/HLS contract regressions: **0** — none
 
 ### Guard semantics
 
 - A provider that was green in an exact historical snapshot cannot become `unknown` without being put on the revalidation list.
 - Every verified 5.21.36 lane becomes an explicit lane obligation until current/candidate proof supersedes it.
-- Semantic capability and historical HLS losses are contract regressions, independently of transient network health.
+- A semantic lane becomes a blocking contract obligation only after historical verified-lane proof; unproved declaration drift remains visible as reclassification debt.
+- Historical HLS loss remains a contract regression independently of transient network health.
 - Historical bare `supportedTypes` never create a semantic floor because old releases mixed semantic types and transport aliases.
 - The publication gate additionally unions the rolling accepted quick-yield baseline with these historical obligations, so future releases extend rather than reset the floor.
 <!-- NON_REGRESSION_V3_END -->
