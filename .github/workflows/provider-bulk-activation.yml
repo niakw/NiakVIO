@@ -1,0 +1,79 @@
+name: PROVIDER - Bulk Activation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'automation/provider-census-sharded-latest-summary.json'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-provider-bulk-activation-main
+  cancel-in-progress: false
+
+jobs:
+  activate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - id: activation
+        name: Select and activate current FULL OK bulk providers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/activate_bulk_proven_providers.py             --status automation/provider-census-status.json             --output automation/provider-bulk-activation-latest.json
+          count="$(python - <<'PY'
+          import json
+          d=json.load(open("automation/provider-bulk-activation-latest.json", encoding="utf-8"))
+          print(int(d.get("activationCount") or 0))
+          PY
+          )"
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+      - name: Rebuild publication once for all newly activated providers
+        if: ${{ steps.activation.outputs.count != '0' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/reapply_published_overrides.py
+          python scripts/generate_language_manifests.py
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs
+          node engine_v2/scripts/render-manifests-from-catalog.mjs
+          python scripts/provider_base_store.py repair-legacy
+          python scripts/validate_published_provider_config.py
+          python tests/provider_bulk_activation_test.py
+          python tests/provider_js_lego_ownership_test.py
+
+      - name: Publish one proof-driven activation transaction
+        if: ${{ steps.activation.outputs.count != '0' }}
+        shell: bash
+        env:
+          ACTIVATION_COUNT: ${{ steps.activation.outputs.count }}
+        run: |
+          set -euo pipefail
+          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json             provider-bases providers automation/provider-bulk-activation-latest.json
+          git diff --cached --quiet && exit 0
+          git config user.name "niakvio-provider-bulk-activation"
+          git config user.email "actions@users.noreply.github.com"
+          git commit -m "provider: bulk activate $ACTIVATION_COUNT full-ok"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
