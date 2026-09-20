@@ -78,7 +78,7 @@ function buildPlan(item) {
     return finiteNumber(row.successes, 0) === 0;
   });
   const rotateEvery = Math.max(1, finiteNumber(negativeMemoryPolicy.rotateExperimentAfterFailures, 1));
-  const maxVariants = Math.max(1, finiteNumber(negativeMemoryPolicy.maxVariantsPerSignature, 4));
+  const maxVariants = Math.max(1, finiteNumber(negativeMemoryPolicy.maxVariantsPerSignature, 5));
   const variantStats = new Map();
   for (const row of memoryMatches) {
     const variant = Math.max(0, Math.min(maxVariants - 1, finiteNumber(row.experimentVariant, 0)));
