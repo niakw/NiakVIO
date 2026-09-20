@@ -175,9 +175,9 @@ with tempfile.TemporaryDirectory() as tmp:
     assert not any("sid=" in route for route in options["direct_paths"] + options["search_paths"])
     assert options["route_prior_counts"]["provider"] == 3
     assert options["route_prior_counts"]["peer"] == 2
-    assert options["route_prior_counts"]["requestRecipes"] == 1
-    assert options["route_prior_counts"]["providerRequestRecipes"] == 1
-    assert options["route_prior_counts"]["peerRequestRecipes"] == 1
+    assert options["route_prior_counts"]["requestRecipes"] == 1, options
+    assert options["route_prior_counts"]["providerRequestRecipes"] == 1, options
+    assert options["route_prior_counts"]["peerRequestRecipes"] == 1, options
     assert options["request_recipes"][0]["method"] == "POST"
     assert options["request_recipes"][0]["body"] == {"query": "{query}", "page": "1"}
     # Variant 0 consumes provider-local request evidence only. Peer request
