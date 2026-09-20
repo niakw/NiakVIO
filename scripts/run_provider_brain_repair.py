@@ -23,9 +23,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from repair_identity_gate import automatic_repair_identity_gate
 
 ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS = ROOT / "scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+
+from repair_identity_gate import automatic_repair_identity_gate
 STATUS = ROOT / "automation" / "provider-census-status.json"
 DEFAULT_OUTPUT = ROOT / "automation" / "provider-brain-repair-latest.json"
 DEFAULT_WORK = ROOT / "automation" / ".provider-brain-repair-work"
