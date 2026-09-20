@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35521087496-pre-repair",
-  "triggerSha": "3617e0115e7b2190bc0e487f23c822ff5d107c46",
+  "runId": "35521510249-post-repair",
+  "triggerSha": "0a6ff016e4758c7b46578b827ed2a569b289778f",
   "providers": [
     {
       "provider": "4khdhub",
@@ -289,8 +289,8 @@
     },
     {
       "provider": "uhdmovies",
-      "status": "CHAIN REACHED",
-      "color": "🟣",
+      "status": "PROVIDER NETWORK BLOCKED",
+      "color": "🟤",
       "declaredLanes": [
         "movie"
       ],
@@ -301,9 +301,9 @@
         "69 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result"
+        "movie=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "provider_network_http_error",
       "searchProgress": [
         "movie: 4 works tested / 26 retained misses / 8 retained chain hits"
       ],
@@ -312,7 +312,7 @@
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
-      "action": "finish terminal extractor/validation; do not promote before verified media",
+      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
       "repairEligible": true,
       "testedThisRun": true
@@ -353,8 +353,8 @@
     },
     {
       "provider": "yflix",
-      "status": "ROUTE PROVEN",
-      "color": "🟪",
+      "status": "PROVIDER NETWORK BLOCKED",
+      "color": "🟤",
       "declaredLanes": [
         "movie",
         "tv"
@@ -366,10 +366,10 @@
         "1 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_zero_result"
+        "movie=no_streams/provider_network_exception",
+        "tv=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "provider_network_zero_result×2",
+      "dominantIssue": "provider_network_exception×2",
       "searchProgress": [
         "movie: 1 works tested / 43 retained misses",
         "tv: 1 works tested / 42 retained misses"
@@ -380,7 +380,7 @@
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
+      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
       "repairEligible": true,
       "testedThisRun": true
@@ -624,7 +624,7 @@
       "harnessTransportClass": "browser-profile-only",
       "harnessTransportEvidence": [
         "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted",
-        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted"
+        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
       ]
     },
     {
@@ -1403,13 +1403,13 @@
   ],
   "counts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 3,
+    "CHAIN REACHED": 2,
     "FULL OK": 24,
     "HARNESS MISMATCH": 6,
     "HARNESS/ENV BLOCKED": 2,
     "PARTIAL OK": 2,
-    "PROVIDER NETWORK BLOCKED": 4,
-    "ROUTE PROVEN": 4
+    "PROVIDER NETWORK BLOCKED": 6,
+    "ROUTE PROVEN": 3
   },
   "symptomaticProviders": [
     "4khdhub",
