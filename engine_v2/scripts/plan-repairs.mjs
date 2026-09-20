@@ -19,10 +19,12 @@ const globalSkillConfig = readJsonFile("engine_v2/config/global-repair-skills.js
 const coreRepairConfig = readJsonFile("engine_v2/config/core-repair-types.json", {});
 const providerOverrides = readJsonFile("provider-overrides.json", {});
 const learningMode = stringValue(input.mode, "quick") === "learning";
-const learnedSkills = learningMode
+const skillTransfer = asRecord(production.learnedSkillTransferPolicy);
+const learnedSkillInputAllowed = learningMode || production.learnedSkillInputAllowed === true;
+const learnedSkills = learnedSkillInputAllowed
   ? [
       ...normalizeLearnedSkills(input.learnedSkills),
-      ...normalizeLearnedSkills(asRecord(globalSkillConfig).skills),
+      ...(learningMode ? normalizeLearnedSkills(asRecord(globalSkillConfig).skills) : []),
     ]
   : [];
 const runtimeCompatibility = buildRuntimeCompatibility(
@@ -67,21 +69,51 @@ function buildPlan(item) {
   const capabilityStrategy = stringValue(asRecord(asRecord(providerOverrides.provider_capabilities)[providerId]).strategy, "unknown").toLowerCase();
   const reusable = learnedSkills
     .filter((skill) => !skill.failureClass || skill.failureClass === evidence.failureClass || skill.failure_class === evidence.failureClass)
-    .filter((skill) => {
-      const providers = stringArray(skill.providers ?? skill.provenOnProviders);
-      return skill.autoApply === true || providers.map((value) => value.toLowerCase()).includes(providerId);
+    .map((skill) => {
+      const providers = stringArray(skill.providers ?? skill.provenOnProviders).map((value) => value.toLowerCase());
+      const signatures = stringArray(skill.signatures ?? skill.evidenceSignatures);
+      const strategies = stringArray(skill.capabilityStrategies ?? skill.capabilityStrategy).map((value) => value.toLowerCase());
+      const stages = stringArray(skill.observedPipelineStages ?? skill.observedPipelineStage).map((value) => value.toLowerCase());
+      const confidence = finiteNumber(skill.confidence, 0);
+      const successCount = finiteNumber(skill.successCount, 0);
+      const failureCount = finiteNumber(skill.failureCount, 0);
+      const transferScore = learnedSkillTransferScore({
+        skill,
+        providerId,
+        signature,
+        capabilityStrategy,
+        observedPipelineStage: stringValue(evidence.observedPipelineStage, "unknown"),
+        providers,
+        signatures,
+        strategies,
+        stages,
+        confidence,
+        successCount,
+        failureCount,
+      });
+      return {
+        id: stringValue(skill.id),
+        failureClass: skill.failureClass ?? skill.failure_class ?? null,
+        capabilities: stringArray(skill.capabilities),
+        clientVersions: asRecord(skill.clientVersions ?? skill.runtimeVersions),
+        actions: stringArray(skill.actions).length ? stringArray(skill.actions) : [`apply learned profile ${stringValue(skill.profile)}`],
+        profile: stringValue(skill.profile) || null,
+        learned: true,
+        maturity: stringValue(skill.maturity, "experimental"),
+        confidence,
+        successCount,
+        failureCount,
+        providers,
+        signatures,
+        capabilityStrategies: strategies,
+        observedPipelineStages: stages,
+        transferScore,
+        validated: skill.validated === true,
+      };
     })
-    .map((skill) => ({
-      id: stringValue(skill.id),
-      failureClass: skill.failureClass ?? skill.failure_class ?? null,
-      capabilities: stringArray(skill.capabilities),
-      clientVersions: asRecord(skill.clientVersions ?? skill.runtimeVersions),
-      actions: stringArray(skill.actions).length ? stringArray(skill.actions) : [`apply learned profile ${stringValue(skill.profile)}`],
-      profile: stringValue(skill.profile) || null,
-      learned: true,
-      maturity: stringValue(skill.maturity, "experimental"),
-    }))
-    .filter((skill) => skill.id);
+    .filter((skill) => skill.id && skill.profile)
+    .filter((skill) => learningMode || learnedSkillTransferEligible(skill))
+    .sort((a, b) => b.transferScore - a.transferScore || b.confidence - a.confidence || b.successCount - a.successCount || a.id.localeCompare(b.id));
 
   const signatureCounts = asRecord(state.signatureCounts);
   const repeatedSignatureCount = finiteNumber(
@@ -128,8 +160,11 @@ function buildPlan(item) {
       capabilities: stringArray(row.capabilities),
       clientVersions: asRecord(row.clientVersions ?? row.runtimeVersions),
       actions: stringArray(row.actions),
+      profile: stringValue(row.profile) || null,
       learned: row.learned === true,
       maturity: row.maturity ?? null,
+      transferScore: finiteNumber(row.transferScore, 0),
+      confidence: finiteNumber(row.confidence, 0),
     })).filter((row) => row.id),
     allowedProfiles: profilesForRepairTarget({ ...plan, hypotheses }, repairTarget),
     budget: asRecord(plan.budget),
@@ -223,6 +258,31 @@ function normalizeLearnedSkills(value) {
   return [];
 }
 
+function learnedSkillTransferEligible(skill) {
+  if (skill.validated !== true) return false;
+  if (stringValue(skill.maturity, "experimental") !== stringValue(skillTransfer.maturity, "trusted")) return false;
+  const minimumConfidence = finiteNumber(skillTransfer.minimumConfidence, finiteNumber(maturity.minimumConfidence, 0.8));
+  const minimumProviders = Math.max(1, finiteNumber(skillTransfer.minimumDistinctProviders, finiteNumber(maturity.trustedProviders, 2)));
+  if (finiteNumber(skill.confidence, 0) < minimumConfidence) return false;
+  if (stringArray(skill.providers).length < minimumProviders) return false;
+  return true;
+}
+
+function learnedSkillTransferScore({
+  providerId, signature, capabilityStrategy, observedPipelineStage,
+  providers, signatures, strategies, stages, confidence, successCount, failureCount,
+}) {
+  let score = finiteNumber(skillTransfer.genericFailureClassBase, 15);
+  if (signature && signatures.includes(signature)) score += finiteNumber(skillTransfer.exactSignatureBonus, 100);
+  if (capabilityStrategy && strategies.includes(capabilityStrategy)) score += finiteNumber(skillTransfer.capabilityStrategyBonus, 40);
+  if (observedPipelineStage && stages.includes(String(observedPipelineStage).toLowerCase())) score += finiteNumber(skillTransfer.observedStageBonus, 20);
+  if (providerId && providers.includes(providerId)) score += finiteNumber(skillTransfer.providerPriorBonus, 10);
+  score += Math.round(Math.max(0, Math.min(1, confidence)) * 20);
+  score += Math.min(20, Math.max(0, successCount) * 2);
+  score -= Math.max(0, failureCount) * finiteNumber(skillTransfer.failedSkillPenalty, 12);
+  return score;
+}
+
 function resolveRepairTarget(failureClass, capabilityStrategy, observedPipelineStage, mode) {
   const table = asRecord(coreRepairConfig.failureClasses);
   const row = asRecord(table[stringValue(failureClass, "unknown_failure")]);
@@ -261,7 +321,12 @@ function resolveRepairTarget(failureClass, capabilityStrategy, observedPipelineS
 function profilesForRepairTarget(plan, repairTarget) {
   if (stringValue(plan.action) !== "probe-targeted-repair") return [];
   if (repairTarget.scope !== "capability") return [];
-  return [...new Set(stringArray(repairTarget.profiles))];
+  const transferred = asArray(plan.hypotheses)
+    .filter((row) => isRecord(row) && row.learned === true)
+    .sort((a, b) => finiteNumber(b.transferScore, 0) - finiteNumber(a.transferScore, 0))
+    .map((row) => stringValue(row.profile))
+    .filter(Boolean);
+  return [...new Set([...transferred, ...stringArray(repairTarget.profiles)])];
 }
 
 function deriveEvidence(candidate, result) {
