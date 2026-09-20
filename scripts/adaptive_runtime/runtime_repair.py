@@ -139,6 +139,37 @@ def _unique_routes(*groups: list[str], limit: int = 32) -> list[str]:
     return output
 
 
+def _runtime_network_hints(patch: dict[str, Any]) -> dict[str, Any]:
+    bases: list[str] = []
+    user_agent = ""
+    blocked_hosts: list[str] = []
+    blocked_paths: list[str] = []
+    for options in (patch.get("provider_lego_options") or {}).values():
+        if not isinstance(options, dict):
+            continue
+        for key in ("base", "base_url", "origin", "site_ref", "api", "api_base"):
+            value = options.get(key)
+            if isinstance(value, str) and value.startswith(("http://", "https://")) and value not in bases:
+                bases.append(value)
+        for value in options.get("fallbackBases") or []:
+            if isinstance(value, str) and value.startswith(("http://", "https://")) and value not in bases:
+                bases.append(value)
+        if not user_agent:
+            value = options.get("user_agent") or options.get("userAgent")
+            if isinstance(value, str) and value.strip():
+                user_agent = value.strip()[:320]
+    core_options = patch.get("core_options") if isinstance(patch.get("core_options"), dict) else {}
+    sanitizer = core_options.get("stream_sanitizer") if isinstance(core_options.get("stream_sanitizer"), dict) else {}
+    blocked_hosts.extend(str(value).casefold().lstrip(".") for value in sanitizer.get("blocked_hosts") or [] if str(value).strip())
+    blocked_paths.extend(str(value).casefold() for value in sanitizer.get("blocked_path_patterns") or [] if str(value).strip())
+    return {
+        "bases": bases[:16],
+        "user_agent": user_agent,
+        "blocked_hosts": blocked_hosts,
+        "blocked_paths": blocked_paths,
+    }
+
+
 def _mapping_entry(mapping: Any, provider_id: str) -> dict[str, Any]:
     if not isinstance(mapping, dict):
         return {}
@@ -187,15 +218,21 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         return None
 
     recovery_options: dict[str, Any] = {}
+    core_options = patch.get("core_options") if isinstance(patch.get("core_options"), dict) else {}
+    catalogue_core = core_options.get("catalogue_alias_recovery")
+    if isinstance(catalogue_core, dict):
+        recovery_options.update(catalogue_core)
     script_options = patch.get("patch_script_options")
     if isinstance(script_options, dict):
         for key, value in script_options.items():
             if str(key).endswith("vf_catalogue_recovery.py") and isinstance(value, dict):
-                recovery_options = value
+                recovery_options.update(value)
                 break
 
+    network_hints = _runtime_network_hints(patch)
     explicit = [
         recovery_options.get("base_url"), patch.get("official_site"),
+        *network_hints["bases"],
         metadata.get("baseUrl"), metadata.get("base_url"), metadata.get("url"),
         canonical.get("baseUrl"), canonical.get("base_url"), canonical.get("url"),
     ]
@@ -257,8 +294,10 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         "googlesyndication.com", "fstream.top",
     }
     blocked_hosts.update(str(v).casefold().lstrip(".") for v in recovery_options.get("blocked_hosts") or [] if str(v).strip())
+    blocked_hosts.update(network_hints["blocked_hosts"])
     blocked_paths = {"/gtag/js", "/cdn-cgi/rum", "/beacon.min.js", "/troll/"}
     blocked_paths.update(str(v).casefold() for v in recovery_options.get("blocked_path_patterns") or [] if str(v).strip())
+    blocked_paths.update(network_hints["blocked_paths"])
 
     endpoint_origins: list[str] = []
     for raw in observed:
@@ -287,7 +326,8 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         "max_pages": 10,
         "max_embeds": 10,
         "max_depth": 3,
-        "timeout_ms": 9000,
+        "timeout_ms": max(2000, min(int(recovery_options.get("timeout_ms") or 9000), 20000)),
+        "user_agent": network_hints["user_agent"],
         "blocked_hosts": sorted(blocked_hosts),
         "blocked_path_patterns": sorted(blocked_paths),
     }
