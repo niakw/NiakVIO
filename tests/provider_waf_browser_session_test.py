@@ -192,9 +192,10 @@ assert matrix["clientProfileMatrix"][0]["outcome"]=="browser_challenge_persisted
 assert matrix["clientProfileMatrix"][1]["outcome"]=="browser_content_reached",matrix
 assert matrix["nativeTvTransportStillUnproven"] is True
 assert any(
-    str(value).startswith("--user-agent="+mod.NUVIO_TV_WINDOWS_UA)
-    for value in matrix_calls[-1][0][0]
-),matrix_calls[-1]
+    any(str(value).startswith("--user-agent="+mod.NUVIO_TV_WINDOWS_UA) for value in call[0][0])
+    for call in matrix_calls
+    if call[0] and isinstance(call[0][0], list) and "--headless=new" in call[0][0]
+),matrix_calls
 
 
 direct_calls=[]
