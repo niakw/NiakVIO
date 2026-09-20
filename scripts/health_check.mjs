@@ -1557,6 +1557,25 @@ async function testCandidate(candidate) {
         error_code: item.error_code || null,
         error: item.error ? sanitizeError(item.error) : null,
         synthetic_fixture_fallback: Boolean(item.synthetic_fixture_fallback),
+        // Route-proof fields are already bounded/redacted by provider_worker.cjs.
+        // Preserve them only as safe causal evidence; header VALUES are not
+        // required by Brain synthesis, so retain names only.
+        route_proof_trace: Boolean(item.route_proof_trace),
+        proof_url: item.route_proof_trace ? (item.proof_url || null) : null,
+        proof_headers: item.route_proof_trace && item.proof_headers && typeof item.proof_headers === 'object'
+          ? Object.fromEntries(Object.keys(item.proof_headers).slice(0, 24).map((key) => [key, true]))
+          : {},
+        proof_body_kind: item.route_proof_trace ? (item.proof_body_kind || 'none') : 'none',
+        proof_body_fields: item.route_proof_trace && Array.isArray(item.proof_body_fields)
+          ? item.proof_body_fields.slice(0, 40)
+          : [],
+        proof_body_values: item.route_proof_trace && item.proof_body_values && typeof item.proof_body_values === 'object'
+          ? Object.fromEntries(Object.entries(item.proof_body_values).slice(0, 40))
+          : {},
+        response_value_hints: item.route_proof_trace && Array.isArray(item.response_value_hints)
+          ? item.response_value_hints.slice(0, 48)
+          : [],
+        content_type: item.route_proof_trace ? (item.content_type || null) : null,
       })) : [],
       settings_diagnostics: Array.isArray(worker.settings_diagnostics)
         ? worker.settings_diagnostics.map((item) => ({
