@@ -1,5 +1,13 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-20 14:03 Europe/Paris — Repair #11 converged; Learning queue import regression fixed
+- Repair #11 run `35508094814` tested SHA `9f904f6e8d75` and completed its bounded Brain exploration across all 12 current Repair targets. Final Brain evidence: `selected=12 accepted=0 fixed_lab=0 deferred_learning=12 remaining=0 waves=4`, with `noProgressReason=experiment_variants_exhausted`. Showbox and Yflix now rotate through v0-v3 and join the 10 already-exhausted providers in independent Learning/new-strategy debt. No repair candidate bytes were accepted.
+- #11 stayed red only because historical upstream-positive evidence `animevostfr:anime` did not reproduce in the final network audit (`upstream_gate=false`) even though portfolio baseline/candidate were both raw=0/playable=0/verified=0 and no Repair mutation was accepted. `43856c8608be` now separates this proof drift from orchestrator convergence: evidence remains visibly lost, `preservationGatePassed` remains false, but an all-target/no-mutation/deferred-to-Learning result reports `executionOutcome=converged_to_learning_debt` and can complete the Repair execution gate. `2de63e10d7bb` locks the contract.
+- Learning run `35508106660` on SHA `9452a83ba6fa` passed preflight, isolated-stage build, complete published-provider observation, daily coverage and clean reconstruction (`total=98 current=46 extra=52 required=54`). It failed at the first adaptive queue repair because `run_adaptive_quick_repair.py` still imported deleted legacy module `provider_purification`, causing `ModuleNotFoundError`; the later validator failure was only a consequence of the missing health-results file.
+- `3bdfad85a130` replaces the retired purification path with the canonical raw-byte stability verifier (`provider_byte_stability.verify_candidate`) used by Deep Repair; `4c5a9aba13f7` forbids reintroduction of `provider_purification`/minification in Quick/Learning.
+- Separate runtime-collapse guards added on newer HEAD (`829b18f7947d`, `c8afccb4a68e`, `a346fca41cde`, plus staged real-worker smoke commits) must be validated by the restarted Learning phase before the prior 98/98 ReferenceError observation can be treated as resolved.
+
+
 Last authoritative checkpoint: 2026-09-16 Europe/Paris.
 
 This file is the durable recovery source of truth for the active NiakVIO work. Prefer current repository state and exact GitHub Actions/native logs over older chat summaries. Update this file automatically at every important correction, failure, publication, native proof, security proof, or architecture decision before moving to the next risky step.
