@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -71,10 +72,18 @@ def _brain_run_health(*, stage, registry_path, output_dir, mode, health_check=lo
 
 
 def _brain_matching(candidate, result, source_text, config=None):
-    profiles = list(_base_matching(candidate, result, source_text, config))
     key = str(candidate.get("key") or "")
     parent_key = str((candidate.get("runtime_repair") or {}).get("parent_key") or "")
-    plan = brain.PLANS.get(parent_key or key) or {}
+    plan_key = parent_key or key
+    if isinstance(candidate.get("brain_exploration_parent"), dict):
+        # Deep already proved that these bytes made safe causal progress without
+        # becoming publishable. Replan from the new observation before choosing
+        # the next profile; never replay the stale parent hypothesis blindly.
+        plan = brain.replan_observation(candidate, result, plan_key=plan_key, mode="deep")
+        candidate.pop("brain_exploration_parent", None)
+    else:
+        plan = brain.PLANS.get(plan_key) or {}
+    profiles = list(_base_matching(candidate, result, source_text, config))
     if str(plan.get("action") or "") != "probe-targeted-repair":
         return []
     allowed = {str(value) for value in plan.get("allowedProfiles") or [] if str(value)}
@@ -126,12 +135,14 @@ def main() -> int:
         loop.run_health = _brain_run_health
         loop.matching_profiles = _brain_matching
         sys.argv[0] = str(SCRIPTS / "deep_repair_loop.py")
+        exploration_chain = str(os.environ.get("NUVIO_BRAIN_EXPLORATION_CHAIN") or "").strip() == "1"
+        bounded_rounds = "3" if exploration_chain else "1"
         if "--max-rounds" in sys.argv:
             index = sys.argv.index("--max-rounds")
             if index + 1 < len(sys.argv):
-                sys.argv[index + 1] = "1"
+                sys.argv[index + 1] = bounded_rounds
         else:
-            sys.argv.extend(["--max-rounds", "1"])
+            sys.argv.extend(["--max-rounds", bounded_rounds])
         rc = loop.main()
         brain.annotate_and_learn(output, "deep")
         return int(rc)
