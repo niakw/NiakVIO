@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35512170961-post-repair",
-  "sourceTriggerSha": "50c59eabe93f87ec400058e3f6f17c0d9622770d",
+  "sourceRunId": "35521087496-pre-repair",
+  "sourceTriggerSha": "3617e0115e7b2190bc0e487f23c822ff5d107c46",
   "unresolvedProviderCount": 20,
-  "groupCount": 11,
+  "groupCount": 12,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -73,34 +73,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "dle-full-story-sibnet",
-        "menu-search-series-focus-player",
-        "yflix-db-encrypted-ajax-v1"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception",
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "providerCount": 3,
-      "providers": [
-        "anime-ultime",
-        "animesultra",
-        "yflix"
-      ],
-      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "route-to-terminal|html_scraper",
       "repairScope": "route-to-terminal",
       "runtimeFamilies": [
@@ -144,6 +116,31 @@
         "uhdmovies"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|mixed_embed_resolver",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "dle-full-story-sibnet",
+        "menu-search-series-focus-player"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception",
+        "network_http_error"
+      ],
+      "harnessTransportClasses": [],
+      "providerCount": 2,
+      "providers": [
+        "anime-ultime",
+        "animesultra"
+      ],
+      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -210,6 +207,28 @@
       "providerCount": 1,
       "providers": [
         "animetsu"
+      ],
+      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "route-to-terminal|mixed_embed_resolver",
+      "repairScope": "route-to-terminal",
+      "runtimeFamilies": [
+        "yflix-db-encrypted-ajax-v1"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "providerCount": 1,
+      "providers": [
+        "yflix"
       ],
       "action": "replay proven routes in batch and apply shared detail/player traversal profile",
       "executionPolicy": "batch-first",

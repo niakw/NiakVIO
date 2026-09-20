@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35512170961-post-repair",
-  "triggerSha": "50c59eabe93f87ec400058e3f6f17c0d9622770d",
+  "runId": "35521087496-pre-repair",
+  "triggerSha": "3617e0115e7b2190bc0e487f23c822ff5d107c46",
   "providers": [
     {
       "provider": "4khdhub",
@@ -30,6 +30,8 @@
         "movie=lookup_only",
         "tv=lookup_only"
       ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
       "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
       "repairEligible": true,
@@ -58,6 +60,8 @@
       "evidenceDepth": [
         "anime=chain_reached"
       ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
       "action": "finish terminal extractor/validation; do not promote before verified media",
       "brainCheckRequired": true,
       "repairEligible": true,
@@ -86,6 +90,8 @@
       "evidenceDepth": [
         "anime=none"
       ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
       "repairEligible": true,
@@ -114,6 +120,8 @@
       "evidenceDepth": [
         "anime=none"
       ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
       "repairEligible": true,
@@ -142,6 +150,8 @@
       "evidenceDepth": [
         "anime=lookup_only"
       ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
       "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
       "repairEligible": true,
@@ -172,6 +182,8 @@
       "evidenceDepth": [
         "anime=lookup_only"
       ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
       "action": "replay candidate proof against current bytes; publish only after current verified media",
       "brainCheckRequired": true,
       "repairEligible": true,
@@ -200,6 +212,8 @@
       "evidenceDepth": [
         "movie=chain_reached"
       ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
       "action": "finish terminal extractor/validation; do not promote before verified media",
       "brainCheckRequired": true,
       "repairEligible": true,
@@ -232,6 +246,8 @@
         "movie=chain_reached",
         "tv=chain_reached"
       ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
       "repairEligible": true,
@@ -264,6 +280,8 @@
         "movie=lookup_only",
         "tv=lookup_only"
       ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
       "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
       "repairEligible": true,
@@ -292,6 +310,8 @@
       "evidenceDepth": [
         "movie=chain_reached"
       ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
       "action": "finish terminal extractor/validation; do not promote before verified media",
       "brainCheckRequired": true,
       "repairEligible": true,
@@ -324,6 +344,8 @@
         "movie=none",
         "tv=none"
       ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
       "repairEligible": true,
@@ -331,8 +353,8 @@
     },
     {
       "provider": "yflix",
-      "status": "PROVIDER NETWORK BLOCKED",
-      "color": "🟤",
+      "status": "ROUTE PROVEN",
+      "color": "🟪",
       "declaredLanes": [
         "movie",
         "tv"
@@ -344,10 +366,10 @@
         "1 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_exception",
-        "tv=no_streams/provider_network_exception"
+        "movie=no_streams/provider_network_zero_result",
+        "tv=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_network_exception×2",
+      "dominantIssue": "provider_network_zero_result×2",
       "searchProgress": [
         "movie: 1 works tested / 43 retained misses",
         "tv: 1 works tested / 42 retained misses"
@@ -356,7 +378,9 @@
         "movie=lookup_only",
         "tv=lookup_only"
       ],
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
       "repairEligible": true,
       "testedThisRun": true
@@ -600,7 +624,7 @@
       "harnessTransportClass": "browser-profile-only",
       "harnessTransportEvidence": [
         "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted",
-        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
+        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted"
       ]
     },
     {
@@ -1384,8 +1408,8 @@
     "HARNESS MISMATCH": 6,
     "HARNESS/ENV BLOCKED": 2,
     "PARTIAL OK": 2,
-    "PROVIDER NETWORK BLOCKED": 5,
-    "ROUTE PROVEN": 3
+    "PROVIDER NETWORK BLOCKED": 4,
+    "ROUTE PROVEN": 4
   },
   "symptomaticProviders": [
     "4khdhub",
@@ -1456,18 +1480,6 @@
     "wookafr"
   ],
   "harnessQueue": [
-    "allwish",
-    "animesalt",
-    "animevost-fr",
-    "flemmix",
-    "fullanime",
-    "moviesmod",
-    "vostfree",
-    "wookafr"
-  ],
-  "harnessEvidenceRunId": "35521051196-waf-transport",
-  "harnessEvidenceSha": "3617e0115e7b2190bc0e487f23c822ff5d107c46",
-  "harnessTransportUpdatedProviders": [
     "allwish",
     "animesalt",
     "animevost-fr",
