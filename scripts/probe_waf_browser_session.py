@@ -24,6 +24,8 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import quote, urljoin, urlsplit, urlunsplit
 
+NUVIO_TV_WINDOWS_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+
 CHALLENGE_MARKERS = (
     "just a moment",
     "checking your browser",
@@ -243,6 +245,7 @@ def probe_target(
     timeout: int,
     virtual_time_ms: int,
     attempts: int = 2,
+    client_profile_matrix: bool = False,
 ) -> dict[str, Any]:
     started = time.monotonic()
     base = {
@@ -254,75 +257,112 @@ def probe_target(
     if not browser:
         return {**base, "outcome": "browser_unavailable", "durationMs": 0}
     attempt_limit = max(1, min(int(attempts), 3))
-    attempt_rows: list[dict[str, Any]] = []
-    with tempfile.TemporaryDirectory(prefix="niakvio-waf-browser-") as profile:
-        for attempt in range(1, attempt_limit + 1):
-            cmd = [
-                browser,
-                "--headless=new",
-                "--disable-gpu",
-                "--no-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-background-networking",
-                "--disable-sync",
-                "--no-first-run",
-                "--no-default-browser-check",
-                f"--user-data-dir={profile}",
-                f"--virtual-time-budget={max(1000, virtual_time_ms)}",
-                "--dump-dom",
-                str(target.get("url") or ""),
-            ]
-            try:
-                proc = subprocess.run(
-                    cmd,
-                    capture_output=True,
-                    text=True,
-                    timeout=max(5, timeout),
-                    check=False,
-                )
-            except subprocess.TimeoutExpired:
-                attempt_rows.append({"attempt": attempt, "outcome": "browser_timeout"})
-                continue
-            except Exception as exc:
+    profiles: list[tuple[str, str | None]] = [("github-default-browser", None)]
+    if client_profile_matrix:
+        profiles.append(("nuvio-tv-ua-browser", NUVIO_TV_WINDOWS_UA))
+
+    profile_rows: list[dict[str, Any]] = []
+    for profile_name, user_agent in profiles:
+        attempt_rows: list[dict[str, Any]] = []
+        with tempfile.TemporaryDirectory(prefix="niakvio-waf-browser-") as profile:
+            for attempt in range(1, attempt_limit + 1):
+                cmd = [
+                    browser,
+                    "--headless=new",
+                    "--disable-gpu",
+                    "--no-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-background-networking",
+                    "--disable-sync",
+                    "--no-first-run",
+                    "--no-default-browser-check",
+                    f"--user-data-dir={profile}",
+                    f"--virtual-time-budget={max(1000, virtual_time_ms)}",
+                ]
+                if user_agent:
+                    cmd.append(f"--user-agent={user_agent}")
+                cmd.extend(["--dump-dom", str(target.get("url") or "")])
+                try:
+                    proc = subprocess.run(
+                        cmd,
+                        capture_output=True,
+                        text=True,
+                        timeout=max(5, timeout),
+                        check=False,
+                    )
+                except subprocess.TimeoutExpired:
+                    attempt_rows.append({"attempt": attempt, "outcome": "browser_timeout"})
+                    continue
+                except Exception as exc:
+                    attempt_rows.append({
+                        "attempt": attempt,
+                        "outcome": "browser_error",
+                        "error": type(exc).__name__,
+                    })
+                    continue
+                if proc.returncode != 0 and not proc.stdout.strip():
+                    attempt_rows.append({
+                        "attempt": attempt,
+                        "outcome": "browser_error",
+                        "exitCode": int(proc.returncode),
+                    })
+                    continue
+                outcome = classify_dom(proc.stdout)
                 attempt_rows.append({
                     "attempt": attempt,
-                    "outcome": "browser_error",
-                    "error": type(exc).__name__,
-                })
-                continue
-            if proc.returncode != 0 and not proc.stdout.strip():
-                attempt_rows.append({
-                    "attempt": attempt,
-                    "outcome": "browser_error",
+                    "outcome": outcome,
                     "exitCode": int(proc.returncode),
                 })
-                continue
-            outcome = classify_dom(proc.stdout)
-            attempt_rows.append({
-                "attempt": attempt,
-                "outcome": outcome,
-                "exitCode": int(proc.returncode),
-            })
-            if outcome == "browser_content_reached":
-                break
+                if outcome == "browser_content_reached":
+                    break
 
-    outcomes = [str(row.get("outcome") or "") for row in attempt_rows]
-    if "browser_content_reached" in outcomes:
+        outcomes = [str(row.get("outcome") or "") for row in attempt_rows]
+        if "browser_content_reached" in outcomes:
+            profile_outcome = "browser_content_reached"
+        elif "browser_challenge_persisted" in outcomes:
+            profile_outcome = "browser_challenge_persisted"
+        elif outcomes and all(value == "browser_timeout" for value in outcomes):
+            profile_outcome = "browser_timeout"
+        elif "browser_inconclusive" in outcomes:
+            profile_outcome = "browser_inconclusive"
+        else:
+            profile_outcome = outcomes[-1] if outcomes else "browser_error"
+        profile_rows.append({
+            "profile": profile_name,
+            "userAgent": user_agent,
+            "outcome": profile_outcome,
+            "attemptCount": len(attempt_rows),
+            "attempts": attempt_rows,
+            "ordinarySessionReused": attempt_limit > 1,
+        })
+
+    content_profiles = [
+        str(row.get("profile") or "")
+        for row in profile_rows
+        if str(row.get("outcome") or "") == "browser_content_reached"
+    ]
+    profile_outcomes = [str(row.get("outcome") or "") for row in profile_rows]
+    if content_profiles:
         final_outcome = "browser_content_reached"
-    elif "browser_challenge_persisted" in outcomes:
+    elif "browser_challenge_persisted" in profile_outcomes:
         final_outcome = "browser_challenge_persisted"
-    elif outcomes and all(value == "browser_timeout" for value in outcomes):
+    elif profile_outcomes and all(value == "browser_timeout" for value in profile_outcomes):
         final_outcome = "browser_timeout"
-    elif "browser_inconclusive" in outcomes:
+    elif "browser_inconclusive" in profile_outcomes:
         final_outcome = "browser_inconclusive"
     else:
-        final_outcome = outcomes[-1] if outcomes else "browser_error"
+        final_outcome = profile_outcomes[-1] if profile_outcomes else "browser_error"
+
+    default_profile = profile_rows[0] if profile_rows else {"attempts": [], "attemptCount": 0}
     return {
         **base,
         "outcome": final_outcome,
-        "attemptCount": len(attempt_rows),
-        "attempts": attempt_rows,
+        "attemptCount": int(default_profile.get("attemptCount") or 0),
+        "attempts": default_profile.get("attempts") or [],
         "ordinarySessionReused": attempt_limit > 1,
+        "clientProfileMatrix": profile_rows,
+        "contentProfiles": content_profiles,
+        "nativeTvTransportStillUnproven": True,
         "durationMs": round((time.monotonic()-started)*1000),
     }
 
@@ -335,6 +375,7 @@ def main() -> int:
     ap.add_argument("--virtual-time-ms", type=int, default=7000)
     ap.add_argument("--workers", type=int, default=3)
     ap.add_argument("--attempts", type=int, default=2)
+    ap.add_argument("--client-profile-matrix", action="store_true")
     ap.add_argument("--status", type=Path)
     ap.add_argument("--overrides", type=Path)
     ap.add_argument("--max-targets", type=int, default=16)
@@ -370,6 +411,7 @@ def main() -> int:
                     timeout=args.timeout,
                     virtual_time_ms=args.virtual_time_ms,
                     attempts=args.attempts,
+                    client_profile_matrix=args.client_profile_matrix,
                 )
                 for target in targets
             ]
@@ -387,6 +429,30 @@ def main() -> int:
         "browserExecutable": Path(browser).name if browser else None,
         "targetCount": len(targets),
         "attemptsPerTarget": max(1, min(int(args.attempts), 3)),
+        "clientProfileMatrixEnabled": bool(args.client_profile_matrix),
+        "clientProfiles": [
+            {
+                "id": "github-default-browser",
+                "transportApproximation": "GitHub-hosted Chromium",
+                "userAgent": "browser-default",
+            },
+            *([{
+                "id": "nuvio-tv-ua-browser",
+                "transportApproximation": "GitHub-hosted Chromium with audited NuvioTV default UA only",
+                "userAgent": NUVIO_TV_WINDOWS_UA,
+                "nativeContract": {
+                    "httpStack": "OkHttp",
+                    "proxyPolicy": "Proxy.NO_PROXY",
+                    "dnsPolicy": "IPv4FirstDns",
+                    "redirects": "HTTP+SSL enabled",
+                },
+            }] if args.client_profile_matrix else []),
+        ],
+        "limitations": [
+            "GitHub Chromium does not reproduce NuvioTV OkHttp TLS fingerprint",
+            "GitHub runner IP reputation differs from a real TV/mobile client",
+            "browser challenge persistence is harness/environment evidence, not provider-code failure",
+        ],
         "counts": dict(sorted(counts.items())),
         "rows": rows,
     }
