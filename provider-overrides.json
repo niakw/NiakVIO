@@ -9003,7 +9003,8 @@
       "notes": [
         "Use the latest Wooka terminal domain announced by the official Telegram address channel.",
         "Wooka player crawl preserves all discovered embeds but prioritizes lecteurvideo.com before the ProviderBase bounded seed budget; current lecteurvideo pages are structurally parsed and still pass shared terminal/identity guards.",
-        "2026-09-20 authority refresh: current Gowaru source generated 2026-09-18 uses wookafr.boston with wookafr.center fallback; official Telegram also lists boston/blog plus rotating plus/app/mov addresses. Keep current candidates independent instead of rewriting them all to blog."
+        "2026-09-20 authority refresh: current Gowaru source generated 2026-09-18 uses wookafr.boston with wookafr.center fallback; official Telegram also lists boston/blog plus rotating plus/app/mov addresses. Keep current candidates independent instead of rewriting them all to blog.",
+        "2026-09-20: current live evidence reaches exact Wooka detail but lecteurvideo.com currently returns HTTP 500. Added a provider-local runtime that extracts all current player seeds and crawls them sequentially so one failing host cannot starve later current embeds; no upstream JavaScript is executed."
       ],
       "official_hub": "https://t.me/s/Wookafr2",
       "official_site": "https://wookafr.boston",
@@ -9241,11 +9242,24 @@
         "wookafr.blue": "wookafr.boston"
       },
       "provider_lego_scripts": [
-        "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py"
+        "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py",
+        "scripts/provider_patches/wookafr_current_runtime_v2.py"
       ],
       "provider_lego_options": {
         "scripts/provider_patches/wookafr_lecteurvideo_priority_v1.py": {
           "priority_host": "lecteurvideo.com"
+        },
+        "scripts/provider_patches/wookafr_current_runtime_v2.py": {
+          "bases": [
+            "https://wookafr.boston",
+            "https://wookafr.center",
+            "https://wookafr.plus"
+          ],
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+          "minIdentityScore": 80,
+          "maxPlayers": 16,
+          "maxStreams": 12,
+          "crawlDepth": 4
         }
       },
       "proof_search_bases": [
@@ -9261,7 +9275,9 @@
         "https://wookafr.center",
         "https://wookafr.blog",
         "https://wookafr.plus"
-      ]
+      ],
+      "source_runtime_family": "wookafr-current-multiplayer-v2",
+      "reconstruction_state": "provider-local-current-multiplayer"
     },
     "yflix": {
       "capability": "mixed_embed_resolver",
