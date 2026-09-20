@@ -94,6 +94,9 @@ def main() -> int:
     assert "timeout-minutes: 355" in experiment_block, (
         "Brain job timeout must cover a five-hour queue phase plus setup/finalization without crossing the hosted-runner limit"
     )
+    assert "const missingCurrent=[...expected].filter(id=>!byId.has(id));" in workflow, "Learning clean reconstruction must require every current provider"
+    assert "byId.size!==expected.size" not in workflow, "Learning must allow clean discovery candidates beyond the current catalogue"
+    assert "' extra='+extraIds.length" in workflow, "Learning clean reconstruction must report discovery superset size"
     assert "--reserve-minutes 5" in workflow, "Learning finalization reserve disappeared"
     assert "--stream-safety-cap 2" in workflow, "bounded quick Learning stream cap disappeared"
     assert "TARGET_PROVIDER: ${{ inputs.target_provider || '' }}" in workflow, "manual provider override disappeared"
