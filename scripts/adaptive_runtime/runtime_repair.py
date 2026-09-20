@@ -417,6 +417,13 @@ def _peer_route_min_variant(failure_class: str) -> int:
     return 1
 
 
+def _peer_recipe_min_variant(failure_class: str) -> int:
+    failure = str(failure_class or "").strip().casefold()
+    if failure == "candidate_replay_gap":
+        return 3
+    return 2
+
+
 def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any]) -> dict[str, Any] | None:
     provider_id = str(candidate.get("canonical_id") or candidate.get("upstream_id") or "").casefold()
     if not provider_id:
@@ -489,12 +496,13 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     experiment_variant = max(0, min(int(brain_plan.get("experimentVariant") or 0), 3))
     experiment_failure = str(brain_plan.get("failureClass") or "").strip()
     peer_route_min_variant = _peer_route_min_variant(experiment_failure)
+    peer_recipe_min_variant = _peer_recipe_min_variant(experiment_failure)
     peer_routes = _peer_routes(strategy) if experiment_variant >= peer_route_min_variant else []
     provider_request_recipes = _provider_request_recipes(provider_id)
     peer_request_recipes = _peer_request_recipes(strategy)
     request_recipes = _unique_request_recipes(
         provider_request_recipes,
-        peer_request_recipes if experiment_variant >= 2 else [],
+        peer_request_recipes if experiment_variant >= peer_recipe_min_variant else [],
         limit=32,
     )
     peer_search = [route for route in peer_routes if _route_role(route) == "search"]
