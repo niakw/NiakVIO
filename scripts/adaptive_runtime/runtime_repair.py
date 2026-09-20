@@ -300,7 +300,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     blocked_paths.update(network_hints["blocked_paths"])
 
     endpoint_origins: list[str] = []
-    for raw in observed:
+    for raw in [*observed, *network_hints["bases"]]:
         peer = _origin(raw)
         if not peer:
             continue
