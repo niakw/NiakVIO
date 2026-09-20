@@ -2695,3 +2695,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Added NiakVIO-owned provider Lego `scripts/provider_patches/mallumv_runtime_v1.py` and bound it in `provider-overrides.json`. The runtime reconstructs only the observable chain TMDB title/year -> search -> exact movie -> confirm -> internal -> bounded terminal-media crawl; no upstream JavaScript is embedded or executed.
 - Added behavioral test `tests/provider_mallumv_current_runtime_behavior_test.py` and wired it into current-byte census, targeted recovery and provider non-regression gates. Candidate confirm/internal routes are recorded but are not promoted as live route proof until CI observes them.
 - Relevant commits: `aeae9cd84c62` runtime, `fbddb6b5bd69` binding, `1353604a2808` behavior test, `d38551cf1cae` / `34357e15c4d9` / `7c143114d6dd` gates. Live playback status remains unpromoted until a current census proves terminal media.
+
+
+## 2026-09-20 — WookaFR current multi-player recovery
+
+- Current live evidence on the refreshed `wookafr.boston` authority reaches exact catalogue/detail pages, but the first discovered `lecteurvideo.com` player currently returns HTTP 500. The older provider-local priority Lego could therefore make a historically useful host dominate the bounded seed order even when it is temporarily dead.
+- Added `scripts/provider_patches/wookafr_current_runtime_v2.py`, bound after the existing priority Lego. It uses Core TMDB title/year identity, current Wooka search/detail routes, TV episode selection, extracts all current player seeds, and invokes the shared terminal crawl one seed at a time so one failing host cannot starve later embeds. No upstream JavaScript is embedded or executed.
+- Added `tests/provider_wookafr_current_runtime_behavior_test.py` proving movie fallback past a failed lecteurvideo seed and a TV season/episode player chain. Wired into current-byte census, targeted recovery, and non-regression gates.
+- Relevant commits: `d1a4f6f3dbe8` runtime, `c846c981d5c2` binding, `3787cfac0e6c` behavior test, `d5c37e6091ca` / `33385adc62d0` / `c245250f6a20` gates. Live playable status remains unchanged until current census evidence proves terminal media.
