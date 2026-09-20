@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35482233543-pre-repair",
-  "triggerSha": "434b9702323f855cec745116b346fa216e04f4f1",
+  "runId": "35483066561-post-repair",
+  "triggerSha": "9d5fa03cc1811b9da85a52479393c2dc7925004c",
   "providers": [
     {
       "provider": "4khdhub",
@@ -271,8 +271,8 @@
     },
     {
       "provider": "uhdmovies",
-      "status": "PROVIDER NETWORK BLOCKED",
-      "color": "🟤",
+      "status": "CHAIN REACHED",
+      "color": "🟣",
       "declaredLanes": [
         "movie"
       ],
@@ -283,16 +283,16 @@
         "69 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_http_error"
+        "movie=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
         "movie: 4 works tested / 26 retained misses / 8 retained chain hits"
       ],
       "evidenceDepth": [
         "movie=chain_reached"
       ],
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "action": "finish terminal extractor/validation; do not promote before verified media",
       "brainCheckRequired": true,
       "repairEligible": true,
       "testedThisRun": true
@@ -353,8 +353,8 @@
         "tv: 4 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "movie=none",
-        "tv=none"
+        "movie=lookup_only",
+        "tv=chain_reached"
       ],
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
@@ -363,8 +363,8 @@
     },
     {
       "provider": "yflix",
-      "status": "ROUTE PROVEN",
-      "color": "🟪",
+      "status": "PROVIDER NETWORK BLOCKED",
+      "color": "🟤",
       "declaredLanes": [
         "movie",
         "tv"
@@ -376,10 +376,10 @@
         "1 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_zero_result"
+        "movie=no_streams/provider_network_exception",
+        "tv=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "provider_network_zero_result×2",
+      "dominantIssue": "provider_network_exception×2",
       "searchProgress": [
         "movie: 1 works tested / 43 retained misses",
         "tv: 1 works tested / 42 retained misses"
@@ -388,7 +388,7 @@
         "movie=lookup_only",
         "tv=lookup_only"
       ],
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
+      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
       "repairEligible": true,
       "testedThisRun": true
@@ -1343,12 +1343,12 @@
   ],
   "counts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 2,
+    "CHAIN REACHED": 3,
     "FULL OK": 24,
     "PARTIAL OK": 2,
     "PROVIDER NETWORK BLOCKED": 6,
     "PROVIDER WAF/ANTIBOT": 7,
-    "ROUTE PROVEN": 4
+    "ROUTE PROVEN": 3
   },
   "symptomaticProviders": [
     "4khdhub",
