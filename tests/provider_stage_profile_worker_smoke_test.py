@@ -91,7 +91,7 @@ try:
             encoding="utf-8",
         )
 
-        subprocess.run(
+        profile_build = subprocess.run(
             [
                 sys.executable,
                 str(ROOT / "scripts" / "build_provider_runtime_profiles.py"),
@@ -100,10 +100,16 @@ try:
                 "--apply-stage",
             ],
             cwd=ROOT,
-            check=True,
+            check=False,
             capture_output=True,
             text=True,
             timeout=30,
+        )
+        assert profile_build.returncode == 0, (
+            "build_provider_runtime_profiles failed: "
+            f"exit={profile_build.returncode} "
+            f"stdout={profile_build.stdout[-3000:]} "
+            f"stderr={profile_build.stderr[-5000:]}"
         )
 
         completed = subprocess.run(
