@@ -23,10 +23,13 @@ ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
 STATUS = ROOT / "automation/provider-census-status.json"
 DEFAULT_OUTPUT = ROOT / "automation/brain-repair-experience.json"
+ROUTE_RECOVERY = ROOT / "automation/provider-route-recovery-v6.json"
 GREEN = {"FULL OK", "PARTIAL OK"}
 ROUTE_KEYS = ("candidate_learned_routes", "learned_routes", "candidate_routes", "routes")
 PLACEHOLDER = re.compile(r"\{(?:query|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type)\}", re.I)
 OPAQUE = re.compile(r"(?:[A-Za-z0-9+/]{72,}={0,2}|%[0-9A-Fa-f]{2}.{100,}|[A-Fa-f0-9]{96,})")
+BODY_PLACEHOLDER = re.compile(r"\{(?:query|queryDots|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type)\}", re.I)
+SAFE_HEADER_NAMES = {"accept", "accept-language", "content-type", "origin", "referer", "user-agent"}
 
 
 def load(path: Path) -> dict:
@@ -89,6 +92,79 @@ def routes_for_patch(patch: dict, *, peer: bool) -> list[str]:
     return out[:64]
 
 
+def _safe_body_value(raw: object) -> str | None:
+    value = str(raw or "")
+    if len(value) > 160 or OPAQUE.search(value):
+        return None
+    if BODY_PLACEHOLDER.search(value):
+        # Every placeholder must be from the allowlist above.
+        leftovers = re.sub(BODY_PLACEHOLDER, "", value)
+        if "{" in leftovers or "}" in leftovers:
+            return None
+        return value
+    # Small constants such as action=search/page=1 are safe to reuse.
+    if re.fullmatch(r"[A-Za-z0-9_.:+/-]{1,48}", value):
+        return value
+    return None
+
+
+def sanitize_request_recipe(row: dict, *, peer: bool) -> dict | None:
+    if row.get("requestSpecReusable") is not True:
+        return None
+    status = int(row.get("status") or 0)
+    if status < 200 or status >= 400:
+        return None
+    route = reusable_route(row.get("route"), peer=peer)
+    if not route:
+        return None
+    spec = row.get("requestSpec") if isinstance(row.get("requestSpec"), dict) else {}
+    method = str(spec.get("method") or row.get("method") or "GET").upper()
+    if method not in {"GET", "POST"}:
+        return None
+    body_kind = str(spec.get("bodyKind") or row.get("proofBodyKind") or "none").casefold()
+    if body_kind not in {"none", "form", "json"}:
+        return None
+    body: dict[str, str] = {}
+    executable = True
+    raw_body = spec.get("body") if isinstance(spec.get("body"), dict) else {}
+    if method == "POST":
+        if body_kind == "none":
+            executable = False
+        for key, raw_value in raw_body.items():
+            safe_key = str(key or "").strip()
+            safe_value = _safe_body_value(raw_value)
+            if not re.fullmatch(r"[A-Za-z0-9_.:-]{1,64}", safe_key) or safe_value is None:
+                executable = False
+                continue
+            body[safe_key] = safe_value
+        if not body:
+            executable = False
+    header_names = sorted({
+        str(name).casefold()
+        for name in (spec.get("headers") or {})
+        if str(name).casefold() in SAFE_HEADER_NAMES
+    })
+    content_type = str(row.get("contentType") or "").casefold()
+    response = "json" if "json" in content_type else "html-or-text"
+    recipe = {
+        "route": route,
+        "role": str(row.get("role") or classify_route(route)).casefold(),
+        "method": method,
+        "bodyKind": body_kind,
+        "body": body,
+        "headerNames": header_names,
+        "response": response,
+        "semanticType": str(row.get("semanticType") or "").casefold(),
+        "streamProof": int(row.get("taskStreamCount") or 0) > 0,
+        "executable": executable,
+    }
+    if not peer:
+        origin = str(row.get("origin") or "").strip()
+        if origin.startswith(("http://", "https://")) and not OPAQUE.search(origin):
+            recipe["origin"] = origin.rstrip("/")
+    return recipe
+
+
 def host_of(raw: object) -> str | None:
     value = str(raw or "").strip()
     if not value:
@@ -106,10 +182,17 @@ def main() -> int:
     parser.add_argument("--overrides", type=Path, default=OVERRIDES)
     parser.add_argument("--status", type=Path, default=STATUS)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--route-recovery", type=Path, default=ROUTE_RECOVERY)
     args = parser.parse_args()
 
     overrides = load(args.overrides)
     status = load(args.status)
+    route_recovery = load(args.route_recovery) if args.route_recovery.exists() else {"providers": []}
+    recovery_by_provider = {
+        canonical(row.get("providerId")): row
+        for row in route_recovery.get("providers") or []
+        if isinstance(row, dict) and canonical(row.get("providerId"))
+    }
     status_rows = {
         canonical(row.get("provider")): row
         for row in status.get("providers") or []
@@ -121,6 +204,8 @@ def main() -> int:
     providers: dict[str, dict] = {}
     route_support: dict[str, Counter[str]] = defaultdict(Counter)
     family_support: dict[str, Counter[str]] = defaultdict(Counter)
+    request_support: dict[str, Counter[str]] = defaultdict(Counter)
+    request_examples: dict[str, dict[str, dict]] = defaultdict(dict)
     green_by_strategy: dict[str, set[str]] = defaultdict(set)
 
     for raw_id, raw_patch in patches.items():
@@ -137,6 +222,26 @@ def main() -> int:
         local_routes = routes_for_patch(raw_patch, peer=False)
         peer_routes = routes_for_patch(raw_patch, peer=True)
         route_families = sorted({classify_route(route) for route in local_routes})
+        recovery_row = recovery_by_provider.get(provider_id) or {}
+        local_request_recipes: list[dict] = []
+        peer_request_recipes: list[dict] = []
+        seen_local_requests: set[str] = set()
+        seen_peer_requests: set[str] = set()
+        for request_row in recovery_row.get("routeData") or []:
+            if not isinstance(request_row, dict):
+                continue
+            local_recipe = sanitize_request_recipe(request_row, peer=False)
+            if local_recipe:
+                key = json.dumps(local_recipe, sort_keys=True, separators=(",", ":"))
+                if key not in seen_local_requests:
+                    seen_local_requests.add(key)
+                    local_request_recipes.append(local_recipe)
+            peer_recipe = sanitize_request_recipe(request_row, peer=True)
+            if peer_recipe and peer_recipe.get("executable") is True:
+                peer_key = json.dumps(peer_recipe, sort_keys=True, separators=(",", ":"))
+                if peer_key not in seen_peer_requests:
+                    seen_peer_requests.add(peer_key)
+                    peer_request_recipes.append(peer_recipe)
         lego = [
             Path(str(value)).name
             for value in raw_patch.get("provider_lego_scripts") or []
@@ -155,6 +260,7 @@ def main() -> int:
             "strategy": strategy,
             "routeTemplates": local_routes,
             "routeFamilies": route_families,
+            "requestRecipes": local_request_recipes[:32],
             "providerLegoScripts": lego,
             "domainMemory": domain_memory,
             "officialHost": official_host,
@@ -168,6 +274,10 @@ def main() -> int:
                 route_support[strategy][route] += 1
             for family in set(route_families):
                 family_support[strategy][family] += 1
+            for recipe in peer_request_recipes:
+                recipe_key = json.dumps(recipe, sort_keys=True, separators=(",", ":"))
+                request_support[strategy][recipe_key] += 1
+                request_examples[strategy][recipe_key] = recipe
 
     patterns: dict[str, dict] = {}
     for strategy in sorted(set(green_by_strategy) | set(route_support) | set(family_support)):
@@ -190,15 +300,25 @@ def main() -> int:
             }
             for role, count in family_support[strategy].most_common()
         ]
+        common_requests = [
+            {
+                **request_examples[strategy][recipe_key],
+                "providerSupport": count,
+                "supportRatio": round(count / max(1, len(green)), 4),
+            }
+            for recipe_key, count in request_support[strategy].most_common()
+            if count >= 2
+        ][:32]
         patterns[strategy] = {
             "greenProviders": green,
             "greenProviderCount": len(green),
             "routeFamilies": families,
             "commonRouteTemplates": common_routes,
+            "commonRequestRecipes": common_requests,
         }
 
     payload = {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "role": "repair-prior-only",
         "sourceRunId": status.get("runId"),
         "sourceSha": status.get("triggerSha"),
@@ -208,7 +328,10 @@ def main() -> int:
         "strategyPatterns": patterns,
         "safety": {
             "peerRouteMinimumProviders": 2,
+            "peerRequestMinimumProviders": 2,
             "opaqueRouteTransfer": False,
+            "opaqueBodyTransfer": False,
+            "nonReconstructiblePostExecution": False,
             "fixtureLiteralPeerTransfer": False,
             "directMutationAuthority": False,
             "requiresDeepValidation": True,
