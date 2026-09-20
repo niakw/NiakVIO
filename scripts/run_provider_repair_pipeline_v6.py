@@ -442,7 +442,7 @@ def main() -> int:
         brain_cmd = [
             sys.executable,
             "scripts/run_provider_brain_repair.py",
-            "--waves", "3",
+            "--waves", "4",
             "--batch-size", "48",
             "--output", str(BRAIN_REPAIR.relative_to(ROOT)),
         ]
