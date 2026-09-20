@@ -6,6 +6,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import importlib.util
+import json
 import re
 from pathlib import Path
 from typing import Any
@@ -39,6 +40,103 @@ SAFE_STRUCTURED_PARSE_PROFILE = "safe_structured_parse"
 # repair input; the repair loop remains bounded and still requires strict
 # before/after playable evidence before accepting a generated candidate.
 NON_REPAIRABLE_POLICY_STATUSES = {"excluded"}
+EXPERIENCE_PATH = ROOT / "automation" / "brain-repair-experience.json"
+ROUTE_KEYS = ("candidate_learned_routes", "learned_routes", "candidate_routes", "routes")
+_ROUTE_PLACEHOLDER = re.compile(r"\\{(?:query|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type)\\}", re.I)
+_ROUTE_OPAQUE = re.compile(r"(?:[A-Za-z0-9+/]{72,}={0,2}|[A-Fa-f0-9]{96,})")
+
+
+def _load_experience() -> dict[str, Any]:
+    try:
+        value = json.loads(EXPERIENCE_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def _route_role(route: str) -> str:
+    value = route.casefold()
+    if "{query}" in value or re.search(r"(?:^|[/?&_=.-])search(?:[/?&_=.-]|$)", value) or re.search(r"[?&]s=", value):
+        return "search"
+    if "{episode}" in value or "{season}" in value or re.search(r"(?:episode|episodes|season|saison)", value):
+        return "episode"
+    if re.search(r"(?:player|embed|watch|lecteur|iframe|/e/|/v/)", value):
+        return "player"
+    if re.search(r"(?:^|/)(?:api|ajax|stream|streams|sources|servers|links|load)(?:/|[?&]|$)", value):
+        return "api"
+    if "{slug}" in value or re.search(r"(?:^|/)(?:movie|film|films|serie|series|anime|title|download-)", value):
+        return "detail"
+    return "other"
+
+
+def _safe_route(raw: Any) -> str | None:
+    route = str(raw or "").strip()
+    if not route or len(route) > 360 or not route.startswith("/") or route.startswith("//"):
+        return None
+    lower = route.casefold()
+    if _ROUTE_OPAQUE.search(route):
+        return None
+    if any(token in lower for token in ("cdn-cgi/email-protection", "/gtag/", "/track", "/report", "/beacon")):
+        return None
+    if re.search(r"[?&](?:sid|token|auth|signature|hash)=", lower) and not _ROUTE_PLACEHOLDER.search(route):
+        return None
+    return route
+
+
+def _patch_routes(patch: dict[str, Any]) -> list[str]:
+    output: list[str] = []
+    seen: set[str] = set()
+    for key in ROUTE_KEYS:
+        values = patch.get(key)
+        if not isinstance(values, list):
+            continue
+        for raw in values:
+            route = _safe_route(raw)
+            if route and route not in seen:
+                seen.add(route)
+                output.append(route)
+    # Templates are more reusable than fixture literals. Generic API/player
+    # endpoints come next; exact historical fixture routes remain last and are
+    # still useful for the same provider when the catalogue is stable.
+    return sorted(
+        output,
+        key=lambda route: (
+            0 if _ROUTE_PLACEHOLDER.search(route) else 1,
+            0 if _route_role(route) in {"search", "api", "player", "episode", "detail"} else 1,
+            len(route),
+            route,
+        ),
+    )[:64]
+
+
+def _peer_routes(strategy: str) -> list[str]:
+    experience = _load_experience()
+    patterns = experience.get("strategyPatterns")
+    if not isinstance(patterns, dict):
+        return []
+    row = patterns.get(strategy)
+    if not isinstance(row, dict):
+        return []
+    output: list[str] = []
+    for item in row.get("commonRouteTemplates") or []:
+        if not isinstance(item, dict) or int(item.get("providerSupport") or 0) < 2:
+            continue
+        route = _safe_route(item.get("route"))
+        if route and route not in output:
+            output.append(route)
+    return output[:48]
+
+
+def _unique_routes(*groups: list[str], limit: int = 32) -> list[str]:
+    output: list[str] = []
+    for group in groups:
+        for raw in group:
+            route = _safe_route(raw)
+            if route and route not in output:
+                output.append(route)
+                if len(output) >= limit:
+                    return output
+    return output
 
 
 def _mapping_entry(mapping: Any, provider_id: str) -> dict[str, Any]:
@@ -134,14 +232,25 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     if not types:
         types = ["movie", "tv", "anime"]
 
-    search_paths = [str(v) for v in recovery_options.get("search_paths") or [] if str(v).strip()] or [
+    learned_routes = _patch_routes(patch)
+    learned_search = [route for route in learned_routes if _route_role(route) == "search"]
+    learned_direct = [route for route in learned_routes if _route_role(route) != "search"]
+    strategy = str(capability.get("strategy") or patch.get("capability") or "unknown").strip().casefold()
+    peer_routes = _peer_routes(strategy)
+    peer_search = [route for route in peer_routes if _route_role(route) == "search"]
+    peer_direct = [route for route in peer_routes if _route_role(route) != "search"]
+    configured_search = [str(v) for v in recovery_options.get("search_paths") or [] if str(v).strip()]
+    configured_direct = [str(v) for v in recovery_options.get("direct_paths") or [] if str(v).strip()]
+    generic_search = [
         "/?s={query}", "/search?q={query}",
         "/index.php?do=search&subaction=search&story={query}",
     ]
-    direct_paths = [str(v) for v in recovery_options.get("direct_paths") or [] if str(v).strip()] or [
+    generic_direct = [
         "/{slug}", "/film/{slug}", "/films/{slug}",
         "/anime/{slug}", "/serie/{slug}", "/series/{slug}",
     ]
+    search_paths = _unique_routes(configured_search, learned_search, peer_search, generic_search, limit=24)
+    direct_paths = _unique_routes(configured_direct, learned_direct, peer_direct, generic_direct, limit=32)
     blocked_hosts = {
         "googletagmanager.com", "google-analytics.com", "static.cloudflareinsights.com",
         "cloudflareinsights.com", "connect.facebook.net", "doubleclick.net",
@@ -169,6 +278,12 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         "types": types,
         "search_paths": search_paths,
         "direct_paths": direct_paths,
+        "route_prior_counts": {
+            "provider": len(learned_routes),
+            "peer": len(peer_routes),
+            "search": len(search_paths),
+            "direct": len(direct_paths),
+        },
         "max_pages": 10,
         "max_embeds": 10,
         "max_depth": 3,
