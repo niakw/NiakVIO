@@ -87,16 +87,26 @@ function buildPlan(item) {
     current.consecutiveFailures = Math.max(current.consecutiveFailures, Math.max(0, finiteNumber(row.consecutiveFailures, 0)));
     variantStats.set(variant, current);
   }
+  const experimentExhausted = Array.from({ length: maxVariants }, (_unused, variant) => variant)
+    .every((variant) => {
+      const stats = variantStats.get(variant);
+      return stats && stats.consecutiveFailures >= rotateEvery;
+    });
   let experimentVariant = 0;
-  for (let variant = 0; variant < maxVariants; variant += 1) {
-    if (!variantStats.has(variant)) {
-      experimentVariant = variant;
-      break;
+  if (!experimentExhausted) {
+    for (let variant = 0; variant < maxVariants; variant += 1) {
+      const stats = variantStats.get(variant);
+      if (!stats || stats.consecutiveFailures < rotateEvery) {
+        experimentVariant = variant;
+        break;
+      }
     }
-    if (variant === maxVariants - 1) {
-      experimentVariant = [...variantStats.entries()]
-        .sort((a, b) => a[1].failures - b[1].failures || a[1].consecutiveFailures - b[1].consecutiveFailures || a[0] - b[0])[0][0];
-    }
+  } else {
+    // Retain the least-failed variant for diagnostics only. Exhausted
+    // signatures are never executed again in Core Repair; they are escalated
+    // to the independent Learning/new-strategy lane below.
+    experimentVariant = [...variantStats.entries()]
+      .sort((a, b) => a[1].failures - b[1].failures || a[1].consecutiveFailures - b[1].consecutiveFailures || a[0] - b[0])[0][0];
   }
   const negativeMemoryMatches = memoryMatches.reduce((sum, row) => sum + Math.max(1, finiteNumber(row.failures, 0)), 0);
   const reusable = learnedSkills
@@ -172,7 +182,25 @@ function buildPlan(item) {
     coreMutationRequested: state.coreMutationRequested === true,
   });
   const hypotheses = asArray(plan.hypotheses).filter(isRecord);
-  const repairTarget = resolveRepairTarget(plan.failureClass, capabilityStrategy, evidence.observedPipelineStage, stringValue(input.mode, "quick"));
+  const baseRepairTarget = resolveRepairTarget(plan.failureClass, capabilityStrategy, evidence.observedPipelineStage, stringValue(input.mode, "quick"));
+  const repairTarget = experimentExhausted && !learningMode
+    ? {
+        ...baseRepairTarget,
+        scope: "deferred",
+        repairType: "experiment_strategy_exhausted",
+        engine: "independent_learning_queue",
+        pipelineStage: "deferred_learning",
+        profiles: [],
+        learningDisposition: "queue_new_strategy_after_variant_exhaustion",
+      }
+    : baseRepairTarget;
+  const effectiveAction = experimentExhausted && !learningMode
+    ? "deferred_retry"
+    : stringValue(plan.action, "deferred_retry");
+  const effectiveExitReason = experimentExhausted && !learningMode
+    ? "experiment_variants_exhausted"
+    : plan.exitReason ?? null;
+  const effectiveHypotheses = experimentExhausted && !learningMode ? [] : hypotheses;
   return {
     brainVersion: finiteNumber(plan.brainVersion, BRAIN_CONTROL_PLANE_VERSION),
     providerId,
@@ -187,14 +215,15 @@ function buildPlan(item) {
     censusPriorReason: stringValue(evidence.censusPriorReason),
     negativeMemoryMatches,
     experimentVariant,
+    experimentExhausted,
     experimentRotationEvery: rotateEvery,
     experimentVariantCount: maxVariants,
     learningDisposition: repairTarget.learningDisposition,
     capabilityStrategy,
     signature,
-    action: stringValue(plan.action, "deferred_retry"),
-    exitReason: plan.exitReason ?? null,
-    hypotheses: hypotheses.map((row) => ({
+    action: effectiveAction,
+    exitReason: effectiveExitReason,
+    hypotheses: effectiveHypotheses.map((row) => ({
       id: stringValue(row.id),
       capabilities: stringArray(row.capabilities),
       clientVersions: asRecord(row.clientVersions ?? row.runtimeVersions),
@@ -205,7 +234,7 @@ function buildPlan(item) {
       transferScore: finiteNumber(row.transferScore, 0),
       confidence: finiteNumber(row.confidence, 0),
     })).filter((row) => row.id),
-    allowedProfiles: profilesForRepairTarget({ ...plan, hypotheses }, repairTarget),
+    allowedProfiles: profilesForRepairTarget({ ...plan, action: effectiveAction, hypotheses: effectiveHypotheses }, repairTarget),
     budget: asRecord(plan.budget),
     fallbackPolicy: stringValue(plan.fallbackPolicy, "lkg_only_after_repair_budget"),
     coreMutationPolicy: stringValue(plan.coreMutationPolicy, "proposal_only"),
