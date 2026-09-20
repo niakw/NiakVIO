@@ -45,6 +45,15 @@ def _replace_once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
+def _replace_one_of(text: str, olds: tuple[str, ...], new: str, label: str) -> str:
+    matches = [(old, text.count(old)) for old in olds]
+    present = [(old, count) for old, count in matches if count]
+    if len(present) != 1 or present[0][1] != 1:
+        detail = ",".join(f"{old}:{count}" for old, count in matches)
+        raise ValueError(f"adaptive_runtime_recovery_v5:{label}: expected one unique legacy/current match; {detail}")
+    return text.replace(present[0][0], new, 1)
+
+
 def _strip_previous_v5(text: str) -> str:
     cursor = 0
     parts: list[str] = []
@@ -72,9 +81,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         f"{MARKER_V5}:",
         "marker",
     )
-    patched = _replace_once(
+    patched = _replace_one_of(
         patched,
-        '"runtimeRevision":"generic-core-v2"',
+        (
+            '"runtimeRevision":"generic-core-v3-census-focus"',
+            '"runtimeRevision":"generic-core-v2"',
+        ),
         '"runtimeRevision":"generic-core-v3"',
         "runtime_revision",
     )
