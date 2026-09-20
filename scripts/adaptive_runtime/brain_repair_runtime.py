@@ -137,6 +137,7 @@ def replan_observation(
     }
     base_payload = {
         "mode": mode,
+        "explorationChain": _BASE._exploration_chain_enabled(),
         "policy": _BASE.policy(),
         "learnedSkills": _BASE.planner_learned_skills(mode),
         "negativeMemory": _BASE.planner_negative_memory(mode),
