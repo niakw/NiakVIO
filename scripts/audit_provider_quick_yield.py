@@ -597,13 +597,29 @@ def _scope_provider_filter(scope: str, status_file: Path, explicit: list[str]) -
     if not status_file.is_file():
         return None, "unresolved-bootstrap-all"
     status = load(status_file)
+    status_rows = [row for row in status.get("providers") or [] if isinstance(row, dict)]
+    known = {
+        str(row.get("provider") or "").strip().casefold()
+        for row in status_rows
+        if str(row.get("provider") or "").strip()
+    }
     unresolved = {
         str(row.get("provider") or "").strip().casefold()
-        for row in status.get("providers") or []
-        if isinstance(row, dict)
-        and str(row.get("status") or "") not in {"FULL OK", "PARTIAL OK"}
+        for row in status_rows
+        if str(row.get("status") or "") not in {"FULL OK", "PARTIAL OK"}
         and str(row.get("provider") or "").strip()
     }
+    # A newly onboarded provider is unresolved by definition until it gets its
+    # first census verdict. This matters when hundreds of providers are added
+    # between status snapshots: never let a stale status file hide new manifest
+    # entries from the next unresolved pass.
+    manifest = load(MANIFEST)
+    current = {
+        str(row.get("id") or "").strip().casefold()
+        for row in manifest.get("scrapers") or []
+        if isinstance(row, dict) and str(row.get("id") or "").strip()
+    }
+    unresolved.update(current - known)
     return unresolved, "unresolved"
 
 
