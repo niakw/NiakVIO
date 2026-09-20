@@ -171,7 +171,7 @@ def main() -> int:
     assert 'str(SCRIPTS / "resolve_provider_hubs.py")' in queue_source
     assert 'str(SCRIPTS / "resolve_provider_hub_search_fallback.py")' in queue_source
     assert "needs_route_search" in queue_source, "route discovery must remain conditional per provider"
-    assert "refresh_stage_routes(stage, work_deadline)" in queue_source, "newly discovered routes must be reprojected into the Lab stage"
+    assert "refresh_stage_routes(stage, work_deadline, provider_id)" in queue_source, "newly discovered routes must be reprojected into the Lab stage"
 
     policy_source = (ROOT / "engine_v2" / "config" / "brain-policy.json").read_text(encoding="utf-8")
     assert '"targetProvidersPerRun": "time_budgeted_queue"' in policy_source
