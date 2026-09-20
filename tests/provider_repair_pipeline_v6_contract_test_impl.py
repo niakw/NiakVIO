@@ -151,6 +151,11 @@ assert 'publicationAllowed": False' in pipeline
 assert 'mainWritesAllowed": False' in pipeline
 assert 'activeBrokenProviderAllowed": False' in pipeline
 assert 'disabledProviderCount' in pipeline
+assert '"brainRepairConvergedToLearningDebt": converged_to_learning_debt' in pipeline
+assert '"executionGatePassed": (' in pipeline
+assert '"executionOutcome": (' in pipeline
+assert 'set(targets).issubset(brain_deferred)' in pipeline
+assert 'return 0 if summary["executionGatePassed"] else 1' in pipeline
 
 # Finalizer policy: preserve evidence, disable incomplete providers, and split
 # terminal/quarantine OFF from non-terminal REPAIR debt.
