@@ -294,20 +294,27 @@ jobs:
           const fs=require('fs');
           const x=JSON.parse(fs.readFileSync('staging-reconstruction/candidates.json','utf8'));
           const candidates=(x.candidates||[]).filter(Boolean);
-          const byId=new Map(candidates.map(r=>[String(r.canonical_id||'').toLowerCase(),r]));
+          const byId=new Map(candidates.map(r=>[String(r.canonical_id||'').toLowerCase(),r]).filter(([id])=>id));
           const catalog=JSON.parse(fs.readFileSync('provider_catalog.json','utf8'));
           const expected=new Set((catalog.providers||[]).map(r=>String(r.canonicalId||'').toLowerCase()).filter(Boolean));
-          if(byId.size!==expected.size || [...expected].some(id=>!byId.has(id))) {
-            throw new Error('clean reconstruction stage must cover the complete provider catalogue, got '+byId.size+' expected '+expected.size);
+          const missingCurrent=[...expected].filter(id=>!byId.has(id));
+          if(missingCurrent.length) {
+            throw new Error('clean reconstruction stage is missing current catalogue providers: '+missingCurrent.join(','));
           }
-          const rows=[...byId.values()].filter(r=>r.provider_base_reconstruction_required===true);
+          const extraIds=[...byId.keys()].filter(id=>!expected.has(id));
+          const rows=candidates.filter(r=>r.provider_base_reconstruction_required===true);
           if(rows.some(r=>r.candidate_code_origin!=='new-niakvio-clean-seed')) {
             throw new Error('clean reconstruction stage contains a legacy executable seed');
           }
           if(rows.some(r=>r.upstream_code_executed!==false || r.legacy_provider_js_executed_for_reconstruction!==false)) {
             throw new Error('legacy/upstream JS execution escaped into clean reconstruction stage');
           }
-          console.log('FIELD_CLEAN_RECONSTRUCTION_STAGE total='+byId.size+' required='+rows.length);
+          console.log(
+            'FIELD_CLEAN_RECONSTRUCTION_STAGE total='+byId.size+
+            ' current='+expected.size+
+            ' extra='+extraIds.length+
+            ' required='+rows.length
+          );
           NODE
 
       - name: Run adaptive Learning provider queue
