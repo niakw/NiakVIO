@@ -82,6 +82,12 @@ assert rows["route"]["routeProof"] == ["3 live routes / movie"]
 assert rows["waf"]["status"] == "PROVIDER WAF/ANTIBOT"
 assert rows["network-blocked"]["status"] == "PROVIDER NETWORK BLOCKED"
 assert rows["broken"]["status"] == "PROVIDER JS BROKEN"
+assert rows["full"]["brainCheckRequired"] is False
+assert rows["partial"]["brainCheckRequired"] is False
+assert rows["waf"]["brainCheckRequired"] is True
+assert rows["waf"]["repairEligible"] is False
+assert rows["broken"]["repairEligible"] is True
+assert rows["route"]["repairEligible"] is True
 assert "provider_waf_challenge" in NETWORK_STAGES
 assert "provider_network_http_error" in NETWORK_STAGES
 assert "provider_network_exception" in NETWORK_STAGES
@@ -112,6 +118,9 @@ assert "PARTIAL OK still requires at least one current verified playable lane" i
 assert "carried" in md
 assert "run 123" in md
 assert "SHA abcdef012345" in md
+assert "Symptomatic providers: **7**" in md
+assert "automated repair queue: **6**" in md
+assert "environment-only/WAF: **1**" in md
 
 # A previously proven fixture that is explicitly replayed and now returns a
 # clean zero is a provider regression, not NO PROOF.
