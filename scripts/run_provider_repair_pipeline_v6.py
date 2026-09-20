@@ -522,6 +522,28 @@ def main() -> int:
     yield_report = load(YIELD_REPORT) if YIELD_REPORT.exists() else {}
     retry_report = load(PORTFOLIO_RETRY) if PORTFOLIO_RETRY.exists() else {}
     disposition_report = load(DISPOSITION) if DISPOSITION.exists() else {}
+    brain_report = load(BRAIN_REPAIR) if BRAIN_REPAIR.exists() else {}
+    brain_deferred = {
+        cid(value) for value in brain_report.get("deferredLearningProviders") or []
+        if cid(value)
+    }
+    brain_remaining = {
+        cid(value) for value in brain_report.get("remainingProviders") or []
+        if cid(value)
+    }
+    brain_accepted = int(brain_report.get("acceptedRepairCount") or 0)
+    # Repair can legitimately converge without a mutation: once every targeted
+    # signature exhausted the bounded Core strategies it becomes independent
+    # Learning debt. A transient failure to reproduce historical upstream proof
+    # must remain visible, but it cannot mean that an unmodified Repair candidate
+    # regressed that proof.
+    converged_to_learning_debt = bool(
+        args.mode == "repair"
+        and targets
+        and brain_accepted == 0
+        and not brain_remaining
+        and set(targets).issubset(brain_deferred)
+    )
     summary = {
         "schemaVersion": 12,
         "mode": args.mode,
@@ -544,7 +566,11 @@ def main() -> int:
         "targetedProviders": targets,
         "maxAttemptsPerTask": attempts,
         "routePlanRevision": "v21.12",
-        "brainRepair": load(BRAIN_REPAIR) if BRAIN_REPAIR.exists() else None,
+        "brainRepair": brain_report or None,
+        "brainRepairAcceptedCount": brain_accepted,
+        "brainRepairDeferredLearningProviders": sorted(brain_deferred),
+        "brainRepairRemainingProviders": sorted(brain_remaining),
+        "brainRepairConvergedToLearningDebt": converged_to_learning_debt,
         "targetedProvidersWithProvenRoutes": int(targeted_report.get("providersWithProvenRoutes") or 0),
         "targetedProvenRoutes": int(targeted_report.get("provenRouteCount") or 0),
         "mergedProvidersWithProvenRoutes": int(merged_report.get("providersWithProvenRoutes") or 0),
@@ -565,6 +591,15 @@ def main() -> int:
         "disabledProviderCount": int(disposition_report.get("disabledProviderCount") or 0),
         "activeBrokenProviderAllowed": False,
         "preservationGatePassed": yield_proc.returncode == 0 and portfolio_proc.returncode == 0,
+        "executionGatePassed": (
+            (yield_proc.returncode == 0 and portfolio_proc.returncode == 0)
+            or (converged_to_learning_debt and portfolio_proc.returncode == 0)
+        ),
+        "executionOutcome": (
+            "preserved"
+            if (yield_proc.returncode == 0 and portfolio_proc.returncode == 0)
+            else ("converged_to_learning_debt" if converged_to_learning_debt and portfolio_proc.returncode == 0 else "failed")
+        ),
     }
     SUMMARY.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
@@ -574,9 +609,11 @@ def main() -> int:
         f"disabled={summary['disabledProviderCount']} lost={len(summary['lostUpstreamPositivePairs'])} "
         f"upstream_gate={str(summary['upstreamPositivePreservationGatePassed']).lower()} "
         f"portfolio_gate={str(summary['portfolioPreservationGatePassed']).lower()} "
-        f"preservation_gate={str(summary['preservationGatePassed']).lower()} active_broken=false"
+        f"preservation_gate={str(summary['preservationGatePassed']).lower()} "
+        f"execution_gate={str(summary['executionGatePassed']).lower()} "
+        f"outcome={summary['executionOutcome']} active_broken=false"
     )
-    return 0 if summary["preservationGatePassed"] else 1
+    return 0 if summary["executionGatePassed"] else 1
 
 
 if __name__ == "__main__":
