@@ -84,6 +84,7 @@ jobs:
       NIAKVIO_QUICK_YIELD_TIMEOUT: '60'
       NIAKVIO_QUICK_YIELD_MAX_SAMPLES: '8'
       CENSUS_SCOPE: ${{ github.event_name == 'workflow_dispatch' && inputs.scope || 'unresolved' }}
+      HEAD_MESSAGE: ${{ github.event.head_commit.message || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -116,13 +117,27 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p automation
-          python scripts/audit_provider_quick_yield.py \
-            --scope "$CENSUS_SCOPE" \
-            --status-file automation/provider-census-status.json \
-            --history automation/provider-census-proof-history.json \
-            --shard-count 8 \
-            --shard-index "${{ matrix.shard }}" \
+          args=(
+            --scope "$CENSUS_SCOPE"
+            --status-file automation/provider-census-status.json
+            --history automation/provider-census-proof-history.json
+            --shard-count 8
+            --shard-index "${{ matrix.shard }}"
             --output "automation/provider-census-shard-${{ matrix.shard }}.json"
+          )
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && [[ "$HEAD_MESSAGE" == provider:\ bulk\ activate\ * ]]; then
+            providers="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("automation/provider-bulk-activation-latest.json")
+          d=json.loads(p.read_text(encoding="utf-8"))
+          print(",".join(str(x) for x in d.get("activatedProviders") or [] if str(x)))
+          PY
+            )"
+            test -n "$providers"
+            args+=(--provider "$providers")
+          fi
+          python scripts/audit_provider_quick_yield.py "${args[@]}"
 
       - name: Upload shard
         if: always()
@@ -230,7 +245,7 @@ jobs:
           if-no-files-found: error
 
       - name: Persist canonical evidence after bulk onboarding
-        if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' }}
+        if: ${{ github.event_name != 'workflow_dispatch' }}
         shell: bash
         env:
           SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
