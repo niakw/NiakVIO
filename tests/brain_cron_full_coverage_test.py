@@ -81,6 +81,8 @@ def main() -> int:
     # disabled providers which still need repair/re-evaluation evidence.
     assert "schedule:" in workflow and "cron:" in workflow, "Brain learning cron disappeared"
     assert "python scripts/run_brain_learning_queue.py" in workflow, "canonical adaptive Learning queue disappeared"
+    assert "python scripts/materialize_provider_base_v3_store.py" in workflow, "Learning sandbox must rematerialize the canonical common ProviderBase before reconstruction contracts"
+    assert "python scripts/provider_base_store.py validate" in workflow, "Learning sandbox ProviderBase validation disappeared"
     assert "python scripts/select_brain_learning_target.py" not in workflow, "obsolete single-target selector is executing again"
     assert '--budget-minutes "${{ steps.learning-slot.outputs.budget_minutes }}"' in workflow, "Learning queue no longer consumes the bounded slot budget"
     assert 'default: "0"' in workflow and "slot_remaining_minutes:" in workflow, "normal one-hour/manual long-slot split disappeared"
