@@ -244,6 +244,87 @@ assert any(row["url"] == "https://form.example/submit" and row["method"] == "POS
 assert any(row["url"] == "https://variant.example/v/xyz" for row in handoff_execution["calls"]), handoff_execution
 assert any(row["url"] == "https://query.example/?video=xyz" for row in handoff_execution["calls"]), handoff_execution
 
+
+# V20-style HTML catalogue identity correlation: multiple ids are present, but
+# only the anchor whose visible title matches the fixture may bind the player id.
+html_binding_options = dict(OPTIONS)
+html_binding_options["request_recipes"] = [
+    {
+        "route": "/search?q={query}",
+        "origin": "https://catalog.example",
+        "role": "search",
+        "method": "GET",
+        "bodyKind": "none",
+        "body": {},
+        "headerNames": ["accept"],
+        "response": "html-or-text",
+        "semanticType": "movie",
+        "streamProof": False,
+        "requiredBindings": [],
+        "executable": True,
+        "source": "current-observation",
+    },
+    {
+        "route": "/player/{binding:id}",
+        "origin": "https://catalog.example",
+        "role": "player",
+        "method": "GET",
+        "bodyKind": "none",
+        "body": {},
+        "headerNames": ["accept"],
+        "response": "html-or-text",
+        "semanticType": "movie",
+        "streamProof": False,
+        "requiredBindings": ["id"],
+        "executable": True,
+        "source": "current-observation",
+    },
+]
+html_binding_source = generator.apply(
+    "module.exports={getStreams:async function(){return []}};\n",
+    options=html_binding_options,
+)
+html_binding_runner = r"""
+const vm=require('vm');
+const src=process.argv[2],calls=[];
+function H(type){return {get:(key)=>{key=String(key).toLowerCase();if(key==='content-type')return type;if(key==='content-disposition'||key==='content-range'||key==='set-cookie')return null;return null},getSetCookie:()=>[]}}
+function R(url,type,body,status=200){return {ok:status>=200&&status<400,status,url,headers:H(type),text:async()=>String(body||''),json:async()=>JSON.parse(String(body||'{}'))}}
+const sandbox={
+  module:{exports:{}},exports:{},URL,AbortController,setTimeout,clearTimeout,Uint8Array,
+  atob:(value)=>Buffer.from(String(value),'base64').toString('binary'),
+  fetch:async(input,init={})=>{
+    const url=String(input);calls.push(url);
+    if(url==='https://catalog.example/search?q=Fixture%20Movie')return R(url,'text/html',
+      '<a data-id="555" href="/movie/555-wrong-movie">Wrong Movie (2020)</a>'+
+      '<a data-id="987" href="/movie/987-fixture-movie">Fixture Movie (2020)</a>');
+    if(url==='https://catalog.example/player/987')return R(url,'text/html','<script>var file="https://cdn.example/html-binding.m3u8";</script>');
+    if(url==='https://catalog.example/player/555')throw new Error('wrong catalogue identity selected');
+    throw new Error('unexpected '+url);
+  }
+};
+sandbox.globalThis=sandbox;
+vm.runInNewContext(src,sandbox,{timeout:7000});
+sandbox.module.exports.getStreams({tmdbId:'101',mediaType:'movie',title:'Fixture Movie',year:2020})
+  .then(rows=>console.log(JSON.stringify({rows,calls})))
+  .catch(err=>{console.error(err);process.exit(1)});
+"""
+with tempfile.TemporaryDirectory() as directory:
+    path = Path(directory) / "html-binding-runner.cjs"
+    path.write_text(html_binding_runner, encoding="utf-8")
+    completed = subprocess.run(
+        ["node", str(path), html_binding_source],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=25,
+    )
+assert completed.returncode == 0, completed.stderr
+html_binding_execution = json.loads(completed.stdout.strip())
+assert html_binding_execution["rows"], html_binding_execution
+assert html_binding_execution["rows"][0]["url"] == "https://cdn.example/html-binding.m3u8", html_binding_execution
+assert "https://catalog.example/player/987" in html_binding_execution["calls"], html_binding_execution
+assert "https://catalog.example/player/555" not in html_binding_execution["calls"], html_binding_execution
+
 generated = generator.apply(
     "module.exports={getStreams:async function(){return []}};\n",
     options=OPTIONS,
@@ -255,6 +336,7 @@ for marker in (
     "function followable(u,parent)",
     "function playerForm(html,pageUrl)",
     "function playerRouteVariants(raw)",
+    "function correlatedBindings(body,m)",
 ):
     assert marker in generated, marker
 
