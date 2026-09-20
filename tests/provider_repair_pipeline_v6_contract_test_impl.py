@@ -142,7 +142,7 @@ for marker in (
     assert marker in quick_yield, marker
 assert '--require-upstream-positive-preserved' in pipeline
 assert 'capture_portfolio_yield(PORTFOLIO_BASELINE, initial_targets)' in pipeline
-assert 'capture_portfolio_yield(PORTFOLIO_CANDIDATE, targets)' in pipeline
+assert 'capture_portfolio_yield(PORTFOLIO_CANDIDATE, initial_targets)' in pipeline
 assert 'scripts/compare_quick_yield_preservation.py' in pipeline
 assert 'scripts/audit_provider_quick_yield_targeted.py' in pipeline
 assert 'portfolioPreservationGatePassed' in pipeline
