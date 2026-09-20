@@ -22,7 +22,7 @@ assert.equal(classifyFailure({ forcedFailureClass: "provider_transport_gap", inv
 
 const blockedEvidence = { invoked: true, stages: { player: { attempted: true, found: true }, media: { attempted: true, found: true }, validation: { attempted: true, playable: false, playableCount: 0, statuses: [403] } } };
 const plan = planRepair(blockedEvidence, { maxHypotheses: 3 });
-assert.equal(plan.brainVersion, 6);
+assert.equal(plan.brainVersion, 7);
 assert.equal(plan.failureClass, "playback_context_gap");
 assert.equal(plan.action, "probe-targeted-repair");
 assert.equal(plan.hypotheses[0].id, "preserve-playback-context");
@@ -100,7 +100,7 @@ const dirtyPayload = {
 const plannerRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(dirtyPayload), encoding: "utf8" });
 assert.equal(plannerRun.status, 0, plannerRun.stderr);
 const plannerOutput = JSON.parse(plannerRun.stdout);
-assert.equal(plannerOutput.brainVersion, 6);
+assert.equal(plannerOutput.brainVersion, 7);
 assert.equal(plannerOutput.plannerErrors, 0);
 assert.ok(plannerOutput.plans["published:dirty-provider"]);
 assert.equal(
@@ -109,6 +109,67 @@ assert.equal(
   "Quick/Core planner must ignore learned skills entirely",
 );
 assert.equal(plannerOutput.plans["published:healthy-provider"].action, "none");
+
+// Census is a monotonic diagnostic floor. It cannot manufacture success, but
+// it must stop the planner regressing below already-proven provider depth.
+const censusPayload = {
+  mode: "deep",
+  policy: dirtyPayload.policy,
+  learnedSkills: {},
+  items: [
+    {
+      key: "published:route-prior",
+      candidate: {
+        canonical_id: "route-prior",
+        metadata: { supportedTypes: ["movie"] },
+        censusPrior: { status: "ROUTE PROVEN", knowledgeRole: "monotonic-diagnostic-prior-only" },
+      },
+      result: {
+        status: "no_streams", evidence: { streams_returned: 0 },
+        tests: [{ fixture: { category: "movie" }, failure_class: "content_lookup_completed_no_streams", network_observations: [{ stage: "search", status: 200, infrastructure: false }] }],
+      },
+      state: {},
+    },
+    {
+      key: "published:chain-prior",
+      candidate: {
+        canonical_id: "chain-prior",
+        metadata: { supportedTypes: ["movie"] },
+        censusPrior: { status: "CHAIN REACHED", knowledgeRole: "monotonic-diagnostic-prior-only" },
+      },
+      result: {
+        status: "no_streams", evidence: { streams_returned: 0 },
+        tests: [{ fixture: { category: "movie" }, failure_class: "content_lookup_completed_no_streams", network_observations: [{ stage: "search", status: 200, infrastructure: false }] }],
+      },
+      state: {},
+    },
+    {
+      key: "published:network-prior",
+      candidate: {
+        canonical_id: "network-prior",
+        metadata: { supportedTypes: ["movie"] },
+        censusPrior: { status: "PROVIDER NETWORK BLOCKED", knowledgeRole: "monotonic-diagnostic-prior-only" },
+      },
+      result: {
+        status: "no_streams", evidence: { streams_returned: 0 },
+        tests: [{ fixture: { category: "movie" }, failure_class: "content_lookup_completed_no_streams", network_observations: [] }],
+      },
+      state: {},
+    },
+  ],
+};
+const censusRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(censusPayload), encoding: "utf8" });
+assert.equal(censusRun.status, 0, censusRun.stderr);
+const censusPlans = JSON.parse(censusRun.stdout).plans;
+assert.equal(censusPlans["published:route-prior"].failureClass, "route_proven_gap");
+assert.equal(censusPlans["published:route-prior"].observedPipelineStage, "detail");
+assert.equal(censusPlans["published:route-prior"].censusPriorApplied, true);
+assert.ok(censusPlans["published:route-prior"].allowedProfiles.includes("adaptive_runtime_recovery"));
+assert.equal(censusPlans["published:chain-prior"].failureClass, "chain_terminal_gap");
+assert.equal(censusPlans["published:chain-prior"].observedPipelineStage, "player");
+assert.ok(censusPlans["published:chain-prior"].allowedProfiles.includes("adaptive_runtime_recovery"));
+assert.equal(censusPlans["published:network-prior"].failureClass, "provider_transport_gap");
+assert.ok(censusPlans["published:network-prior"].allowedProfiles.includes("adaptive_runtime_recovery"));
 
 // Production Repair may transfer only trusted, validated skills. They are
 // hypotheses, never direct mutations: the selected profile still enters the
