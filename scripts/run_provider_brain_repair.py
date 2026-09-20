@@ -199,7 +199,7 @@ def exhausted_from_negative_memory(brain_summary: dict[str, Any]) -> set[str]:
     policy = load(BRAIN_POLICY, {})
     production = policy.get("production") if isinstance(policy.get("production"), dict) else {}
     negative = production.get("negativeExperimentMemory") if isinstance(production.get("negativeExperimentMemory"), dict) else {}
-    default_variants = max(1, int(negative.get("maxVariantsPerSignature") or 4))
+    default_variants = max(1, int(negative.get("maxVariantsPerSignature") or 5))
     rotate_every = max(1, int(negative.get("rotateExperimentAfterFailures") or 1))
     memory = load(REPAIR_MEMORY, {})
     entries = [row for row in memory.get("entries") or [] if isinstance(row, dict)]
