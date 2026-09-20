@@ -24,6 +24,18 @@
       }
     },
     {
+      "id": "nuvio-tv-okhttp-jvm",
+      "transportApproximation": "GitHub JVM OkHttp 4.12.0 with audited NuvioTV PluginRuntime policy",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "nativeContractApproximation": {
+        "httpStack": "OkHttp 4.12.0",
+        "proxyPolicy": "Proxy.NO_PROXY",
+        "dnsPolicy": "IPv4FirstDns",
+        "redirects": "HTTP+SSL enabled",
+        "tlsRuntime": "GitHub JVM, not Android device"
+      }
+    },
+    {
       "id": "nuvio-tv-direct-http-approx",
       "transportApproximation": "GitHub libcurl with IPv4, NO_PROXY, redirects and audited NuvioTV UA",
       "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -36,7 +48,8 @@
     }
   ],
   "limitations": [
-    "Neither GitHub Chromium nor libcurl reproduces NuvioTV OkHttp TLS fingerprint",
+    "GitHub JVM OkHttp reproduces NuvioTV HTTP policy but not Android device TLS/IP reputation",
+    "GitHub Chromium/libcurl remain secondary harness comparisons",
     "GitHub runner IP reputation differs from a real TV/mobile client",
     "browser challenge persistence is harness/environment evidence, not provider-code failure"
   ],
@@ -139,9 +152,36 @@
         ],
         "ordinarySessionReused": true
       },
+      "okHttpJvmProfile": {
+        "profile": "nuvio-tv-okhttp-jvm",
+        "transportApproximation": "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime network policy",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "nativeContractApproximation": {
+          "httpStack": "OkHttp 4.12.0",
+          "proxyPolicy": "Proxy.NO_PROXY",
+          "dnsPolicy": "IPv4FirstDns",
+          "redirects": "HTTP+SSL enabled",
+          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
+        },
+        "outcome": "okhttp_jvm_challenge_persisted",
+        "attemptCount": 2,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          }
+        ],
+        "exitCode": 0
+      },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 20534
+      "durationMs": 19373
     },
     {
       "provider": "allwish",
@@ -237,9 +277,36 @@
         ],
         "ordinarySessionReused": true
       },
+      "okHttpJvmProfile": {
+        "profile": "nuvio-tv-okhttp-jvm",
+        "transportApproximation": "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime network policy",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "nativeContractApproximation": {
+          "httpStack": "OkHttp 4.12.0",
+          "proxyPolicy": "Proxy.NO_PROXY",
+          "dnsPolicy": "IPv4FirstDns",
+          "redirects": "HTTP+SSL enabled",
+          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
+        },
+        "outcome": "okhttp_jvm_challenge_persisted",
+        "attemptCount": 2,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          }
+        ],
+        "exitCode": 0
+      },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 20165
+      "durationMs": 19654
     },
     {
       "provider": "animesalt",
@@ -335,11 +402,38 @@
         ],
         "ordinarySessionReused": true
       },
+      "okHttpJvmProfile": {
+        "profile": "nuvio-tv-okhttp-jvm",
+        "transportApproximation": "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime network policy",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "nativeContractApproximation": {
+          "httpStack": "OkHttp 4.12.0",
+          "proxyPolicy": "Proxy.NO_PROXY",
+          "dnsPolicy": "IPv4FirstDns",
+          "redirects": "HTTP+SSL enabled",
+          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
+        },
+        "outcome": "okhttp_jvm_challenge_persisted",
+        "attemptCount": 2,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          }
+        ],
+        "exitCode": 0
+      },
       "contentProfiles": [
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 20866
+      "durationMs": 21222
     },
     {
       "provider": "animevost-fr",
@@ -435,11 +529,38 @@
         ],
         "ordinarySessionReused": true
       },
+      "okHttpJvmProfile": {
+        "profile": "nuvio-tv-okhttp-jvm",
+        "transportApproximation": "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime network policy",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "nativeContractApproximation": {
+          "httpStack": "OkHttp 4.12.0",
+          "proxyPolicy": "Proxy.NO_PROXY",
+          "dnsPolicy": "IPv4FirstDns",
+          "redirects": "HTTP+SSL enabled",
+          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
+        },
+        "outcome": "okhttp_jvm_challenge_persisted",
+        "attemptCount": 2,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          }
+        ],
+        "exitCode": 0
+      },
       "contentProfiles": [
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 18659
+      "durationMs": 20944
     },
     {
       "provider": "flemmix",
@@ -535,9 +656,36 @@
         ],
         "ordinarySessionReused": true
       },
+      "okHttpJvmProfile": {
+        "profile": "nuvio-tv-okhttp-jvm",
+        "transportApproximation": "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime network policy",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "nativeContractApproximation": {
+          "httpStack": "OkHttp 4.12.0",
+          "proxyPolicy": "Proxy.NO_PROXY",
+          "dnsPolicy": "IPv4FirstDns",
+          "redirects": "HTTP+SSL enabled",
+          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
+        },
+        "outcome": "okhttp_jvm_inconclusive",
+        "attemptCount": 2,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "okhttp_jvm_inconclusive",
+            "status": 200
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_inconclusive",
+            "status": 200
+          }
+        ],
+        "exitCode": 0
+      },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 7065
+      "durationMs": 11637
     },
     {
       "provider": "flemmix",
@@ -633,9 +781,36 @@
         ],
         "ordinarySessionReused": true
       },
+      "okHttpJvmProfile": {
+        "profile": "nuvio-tv-okhttp-jvm",
+        "transportApproximation": "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime network policy",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "nativeContractApproximation": {
+          "httpStack": "OkHttp 4.12.0",
+          "proxyPolicy": "Proxy.NO_PROXY",
+          "dnsPolicy": "IPv4FirstDns",
+          "redirects": "HTTP+SSL enabled",
+          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
+        },
+        "outcome": "okhttp_jvm_inconclusive",
+        "attemptCount": 2,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "okhttp_jvm_inconclusive",
+            "status": 200
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_inconclusive",
+            "status": 200
+          }
+        ],
+        "exitCode": 0
+      },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 7535
+      "durationMs": 11299
     },
     {
       "provider": "fullanime",
@@ -731,9 +906,36 @@
         ],
         "ordinarySessionReused": true
       },
+      "okHttpJvmProfile": {
+        "profile": "nuvio-tv-okhttp-jvm",
+        "transportApproximation": "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime network policy",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "nativeContractApproximation": {
+          "httpStack": "OkHttp 4.12.0",
+          "proxyPolicy": "Proxy.NO_PROXY",
+          "dnsPolicy": "IPv4FirstDns",
+          "redirects": "HTTP+SSL enabled",
+          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
+        },
+        "outcome": "okhttp_jvm_challenge_persisted",
+        "attemptCount": 2,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          }
+        ],
+        "exitCode": 0
+      },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 9475
+      "durationMs": 12970
     },
     {
       "provider": "moviesmod",
@@ -829,11 +1031,38 @@
         ],
         "ordinarySessionReused": true
       },
+      "okHttpJvmProfile": {
+        "profile": "nuvio-tv-okhttp-jvm",
+        "transportApproximation": "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime network policy",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "nativeContractApproximation": {
+          "httpStack": "OkHttp 4.12.0",
+          "proxyPolicy": "Proxy.NO_PROXY",
+          "dnsPolicy": "IPv4FirstDns",
+          "redirects": "HTTP+SSL enabled",
+          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
+        },
+        "outcome": "okhttp_jvm_challenge_persisted",
+        "attemptCount": 2,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          }
+        ],
+        "exitCode": 0
+      },
       "contentProfiles": [
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 10403
+      "durationMs": 13688
     },
     {
       "provider": "moviesmod",
@@ -929,11 +1158,38 @@
         ],
         "ordinarySessionReused": true
       },
+      "okHttpJvmProfile": {
+        "profile": "nuvio-tv-okhttp-jvm",
+        "transportApproximation": "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime network policy",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "nativeContractApproximation": {
+          "httpStack": "OkHttp 4.12.0",
+          "proxyPolicy": "Proxy.NO_PROXY",
+          "dnsPolicy": "IPv4FirstDns",
+          "redirects": "HTTP+SSL enabled",
+          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
+        },
+        "outcome": "okhttp_jvm_inconclusive",
+        "attemptCount": 2,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_inconclusive",
+            "status": 429
+          }
+        ],
+        "exitCode": 0
+      },
       "contentProfiles": [
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 8607
+      "durationMs": 10211
     },
     {
       "provider": "vostfree",
@@ -1029,11 +1285,38 @@
         ],
         "ordinarySessionReused": true
       },
+      "okHttpJvmProfile": {
+        "profile": "nuvio-tv-okhttp-jvm",
+        "transportApproximation": "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime network policy",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "nativeContractApproximation": {
+          "httpStack": "OkHttp 4.12.0",
+          "proxyPolicy": "Proxy.NO_PROXY",
+          "dnsPolicy": "IPv4FirstDns",
+          "redirects": "HTTP+SSL enabled",
+          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
+        },
+        "outcome": "okhttp_jvm_challenge_persisted",
+        "attemptCount": 2,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          }
+        ],
+        "exitCode": 0
+      },
       "contentProfiles": [
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 9358
+      "durationMs": 12386
     },
     {
       "provider": "wookafr",
@@ -1111,12 +1394,35 @@
         ],
         "ordinarySessionReused": true
       },
+      "okHttpJvmProfile": {
+        "profile": "nuvio-tv-okhttp-jvm",
+        "transportApproximation": "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime network policy",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "nativeContractApproximation": {
+          "httpStack": "OkHttp 4.12.0",
+          "proxyPolicy": "Proxy.NO_PROXY",
+          "dnsPolicy": "IPv4FirstDns",
+          "redirects": "HTTP+SSL enabled",
+          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
+        },
+        "outcome": "okhttp_jvm_content_reached",
+        "attemptCount": 1,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "okhttp_jvm_content_reached",
+            "status": 200
+          }
+        ],
+        "exitCode": 0
+      },
       "contentProfiles": [
         "github-default-browser",
-        "nuvio-tv-direct-http-approx"
+        "nuvio-tv-direct-http-approx",
+        "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 55921
+      "durationMs": 57400
     },
     {
       "provider": "wookafr",
@@ -1194,12 +1500,35 @@
         ],
         "ordinarySessionReused": true
       },
+      "okHttpJvmProfile": {
+        "profile": "nuvio-tv-okhttp-jvm",
+        "transportApproximation": "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime network policy",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "nativeContractApproximation": {
+          "httpStack": "OkHttp 4.12.0",
+          "proxyPolicy": "Proxy.NO_PROXY",
+          "dnsPolicy": "IPv4FirstDns",
+          "redirects": "HTTP+SSL enabled",
+          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
+        },
+        "outcome": "okhttp_jvm_content_reached",
+        "attemptCount": 1,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "okhttp_jvm_content_reached",
+            "status": 200
+          }
+        ],
+        "exitCode": 0
+      },
       "contentProfiles": [
         "github-default-browser",
-        "nuvio-tv-direct-http-approx"
+        "nuvio-tv-direct-http-approx",
+        "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 53641
+      "durationMs": 56542
     }
   ]
 }
