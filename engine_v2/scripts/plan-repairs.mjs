@@ -176,6 +176,9 @@ function buildPlan(item) {
     signatureCounts[signature],
     finiteNumber(state.repeatedSignatureCount, 0),
   );
+  const explorationBudget = input.explorationChain === true
+    ? asRecord(production.explorationChainBudget)
+    : {};
   const plan = planRepair(evidence, {
     signature,
     learnedSkills: reusable,
@@ -183,10 +186,10 @@ function buildPlan(item) {
     maxHypotheses: finiteNumber(production.maxHypotheses, 3),
     budget: {
       maxHypotheses: finiteNumber(production.maxHypotheses, 3),
-      maxMutations: finiteNumber(production.maxMutationsPerProvider, 2),
-      maxRepeatedSignature: finiteNumber(production.maxRepeatedSignature, 2),
-      maxGeneratedBytes: finiteNumber(production.maxGeneratedBytesPerProvider, 180000),
-      maxElapsedMs: finiteNumber(production.maxElapsedMsPerProvider, 45000),
+      maxMutations: finiteNumber(explorationBudget.maxMutationsPerProvider, finiteNumber(production.maxMutationsPerProvider, 2)),
+      maxRepeatedSignature: finiteNumber(explorationBudget.maxRepeatedSignature, finiteNumber(production.maxRepeatedSignature, 2)),
+      maxGeneratedBytes: finiteNumber(explorationBudget.maxGeneratedBytesPerProvider, finiteNumber(production.maxGeneratedBytesPerProvider, 180000)),
+      maxElapsedMs: finiteNumber(explorationBudget.maxElapsedMsPerProvider, finiteNumber(production.maxElapsedMsPerProvider, 45000)),
       mutationCount: finiteNumber(state.mutationCount, 0),
       repeatedSignatureCount,
       generatedBytes: finiteNumber(state.generatedBytes, 0),
