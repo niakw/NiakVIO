@@ -3092,3 +3092,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Additional safety guard added after artifact review: `{binding:<key>}` routes are causal request-program inputs only and are filtered out of standalone `direct_paths`. They become executable only after an earlier response binds the value. This prevents malformed `/file/` or stale provider-ID replay.
 - Current provider overrides were audited for persisted source routes. Existing source-like routes are generic/templates (for example `/api/file/`, `/download/{slug}...`) rather than literal historical file IDs; exact provider-local IDs observed in artifacts remain non-authoritative.
 - #95 is harness/preflight evidence only. A later Repair SHA is required to test the terminal source-chain changes against the real repairQueue.
+
+### 2026-09-20 — Repair #96 preflight import-only failure
+- Repair run `35542148892` (#96, trigger SHA `819bd355f4fc...`) did not probe providers. The existing current-observation HLS synthesis contract passed on this SHA.
+- Failure occurred only when the newly added `brain_terminal_source_route_test.py` imported the adaptive runtime without adding `scripts/` and `scripts/adaptive_runtime/` to `sys.path`; `apply_provider_overrides` could not be resolved.
+- The test now loads the same module search paths as the production adaptive entrypoint. No runtime/provider logic was changed for this failure.
+- #96 is harness-only evidence and must not be counted as a Brain/provider attempt.
