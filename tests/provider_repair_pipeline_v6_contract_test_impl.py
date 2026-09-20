@@ -27,7 +27,10 @@ for mode in ('learn', 'force', 'repair'):
     assert mode in workflow
 assert 'schedule:' in workflow
 assert 'allow_upstream_positive_loss' in workflow
-assert 'Verify current green providers were not network re-probed' in workflow
+assert 'Verify only census symptoms were network re-probed' in workflow
+assert 'Persist Repair census state' in workflow
+assert 'PROVIDER_CENSUS_STATUS.md' in workflow
+assert 'automation/provider-census-status.json' in workflow
 assert 'targetProviders' in workflow
 assert 'CANONICAL_REPAIR_ARGS' in workflow
 assert 'provider-repair-portfolio-baseline.json' in workflow
