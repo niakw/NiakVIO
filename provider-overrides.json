@@ -10878,7 +10878,8 @@
         "Recovered user browser proof: MovieBox HOTD resolved through data.vidsrcme.ru / vidsrcme.ru using exact TMDB + season + episode and reached a terminal HLS playlist.",
         "Current NiakVIO-owned runtime reproduces only the vidsrcme TMDB resolver contract; upstream JavaScript is not executed.",
         "Core owns terminal media probing, identity guard, timeout/cancellation and fail-closed HTTP handling.",
-        "2026-09-20 current upstream authority: All-in-One MovieBox now resolves IMDb through pengu.uk Cinescrape JSON /stream/movie|series routes. NiakVIO uses that current path first and retains vidsrcme only as compatibility fallback."
+        "2026-09-20 current upstream authority: All-in-One MovieBox now resolves IMDb through pengu.uk Cinescrape JSON /stream/movie|series routes. NiakVIO uses that current path first and retains vidsrcme only as compatibility fallback.",
+        "2026-09-20: public current MovieBox Stremio implementations independently use moviebox-cfa7.onrender.com/<config>/stream/movie|series/{IMDb}.json with the same streams JSON shape. NiakVIO now retries that current endpoint when Pengu is rate-limited before falling back to legacy vidsrcme."
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -11096,7 +11097,17 @@
           "legacyBase": "https://vidsrcme.ru",
           "legacyReferer": "https://vidsrcme.ru/",
           "maxStreams": 12,
-          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+          "currentBases": [
+            {
+              "base": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D",
+              "referer": "https://stremio-moviebox-1.onrender.com/"
+            },
+            {
+              "base": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ",
+              "referer": "https://moviebox-cfa7.onrender.com/"
+            }
+          ]
         }
       }
     },
