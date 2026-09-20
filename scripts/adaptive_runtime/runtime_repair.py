@@ -10,7 +10,7 @@ import json
 import re
 from pathlib import Path
 from typing import Any
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qsl, unquote, urlparse
 
 ROOT = Path(__file__).resolve().parents[2]
 BASE_PATH = ROOT / "scripts" / "runtime_repair.py"
@@ -329,7 +329,7 @@ def _observed_route(raw: dict[str, Any], fixture: dict[str, str]) -> tuple[str |
             route += "/"
         query_parts: list[str] = []
         try:
-            pairs = list(__import__("urllib.parse", fromlist=["parse_qsl"]).parse_qsl(parsed.query, keep_blank_values=True))
+            pairs = list(parse_qsl(parsed.query, keep_blank_values=True))
         except Exception:
             pairs = []
         for key, value in pairs[:20]:
