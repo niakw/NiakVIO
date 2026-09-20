@@ -7,7 +7,7 @@
     "principle": "Core/native results are fallible hypotheses; Learning independently reproduces, challenges, experiments, records failed methods, discovers hidden playback failures, and only proposes changes after independent evidence"
   },
   "production": {
-    "learningOnValidatedRepair": false,
+    "learningOnValidatedRepair": true,
     "maxHypotheses": 3,
     "maxMutationsPerProvider": 2,
     "maxRepeatedSignature": 2,
@@ -33,6 +33,15 @@
       "genericFailureClassBase": 15,
       "failedSkillPenalty": 12,
       "rule": "learned skills may influence hypothesis ordering only; every transfer must pass the ordinary sandbox/retest/non-regression gates"
+    },
+    "validatedRepairLearning": {
+      "enabled": true,
+      "writeScope": "sanitized_skill_memory_only",
+      "providerCodeWrite": false,
+      "publicationAllowed": false,
+      "requireStrictImprovement": true,
+      "requireIdentityGate": true,
+      "requireCurrentByteRetest": true
     }
   },
   "skillMaturity": {
