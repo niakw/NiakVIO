@@ -87,6 +87,7 @@ def main()->int:
             "runtimeFamily":family,
             "evidenceDepth":depth,
             "issueClass":issue,
+            "harnessTransportClass":scalar(row.get("harnessTransportClass"), "not-applicable"),
             "declaredLanes":row.get("declaredLanes") or [],
             "currentVerifiedLanes":row.get("currentVerifiedLanes") or [],
         })
@@ -97,6 +98,11 @@ def main()->int:
         families=sorted({scalar(m.get("runtimeFamily")) for m in members})
         depths=sorted({scalar(m.get("evidenceDepth")) for m in members})
         issues=sorted({scalar(m.get("issueClass")) for m in members})
+        harness_classes=sorted({
+            scalar(m.get("harnessTransportClass"))
+            for m in members
+            if scalar(m.get("harnessTransportClass")) != "not-applicable"
+        })
         _,action=action_for(
             members[0]["status"],
             depths[0] if len(depths)==1 else "mixed",
@@ -109,6 +115,7 @@ def main()->int:
             "capabilityStrategy":strategy,
             "evidenceDepths":depths,
             "dominantIssues":issues,
+            "harnessTransportClasses":harness_classes,
             "providerCount":len(providers),
             "providers":providers,
             "action":action,
