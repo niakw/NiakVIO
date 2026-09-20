@@ -11,17 +11,38 @@ on:
         options:
           - unresolved
           - all
+  workflow_run:
+    workflows:
+      - PROVIDER - Bulk Onboarding
+    types:
+      - completed
 
 permissions:
   contents: read
 
 concurrency:
-  group: provider-census-sharded-${{ github.ref }}
-  cancel-in-progress: true
+  group: provider-census-sharded-main
+  # Keep an exact bulk-import proof running even if another repair lands.
+  cancel-in-progress: false
 
 jobs:
+  prepare:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      source_sha: ${{ steps.pin.outputs.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - id: pin
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
   shard:
-    name: Census shard ${{ matrix.shard + 1 }}/8
+    needs: prepare
+    name: Census shard ${{ matrix.shard }} of 8
     runs-on: ubuntu-latest
     timeout-minutes: 35
     strategy:
@@ -34,10 +55,11 @@ jobs:
       NIAKVIO_QUICK_YIELD_WORKERS: '20'
       NIAKVIO_QUICK_YIELD_TIMEOUT: '60'
       NIAKVIO_QUICK_YIELD_MAX_SAMPLES: '8'
+      CENSUS_SCOPE: ${{ github.event_name == 'workflow_dispatch' && inputs.scope || 'unresolved' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ needs.prepare.outputs.source_sha }}
           fetch-depth: 0
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
@@ -67,7 +89,7 @@ jobs:
           set -euo pipefail
           mkdir -p automation
           python scripts/audit_provider_quick_yield.py \
-            --scope "${{ inputs.scope }}" \
+            --scope "$CENSUS_SCOPE" \
             --status-file automation/provider-census-status.json \
             --history automation/provider-census-proof-history.json \
             --shard-count 8 \
@@ -85,14 +107,18 @@ jobs:
 
   merge:
     name: Merge provider shards
-    needs: shard
-    if: always()
+    needs:
+      - prepare
+      - shard
+    if: ${{ always() && needs.prepare.result == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ needs.prepare.outputs.source_sha }}
           fetch-depth: 0
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
@@ -106,8 +132,10 @@ jobs:
           path: shards
           merge-multiple: true
 
-      - name: Merge and classify
+      - name: Merge, classify and build repair batches
         shell: bash
+        env:
+          SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
         run: |
           set -euo pipefail
           mapfile -t files < <(find shards -maxdepth 1 -type f -name 'provider-census-shard-*.json' | sort -V)
@@ -117,17 +145,46 @@ jobs:
           fi
           python scripts/merge_provider_census_shards.py "${files[@]}" \
             --output automation/provider-census-sharded-merged.json
+          python scripts/update_provider_census_proof_history.py automation/provider-census-sharded-merged.json \
+            --history automation/provider-census-proof-history.json \
+            --run-id "${GITHUB_RUN_ID}" \
+            --sha "$SOURCE_SHA"
           python scripts/render_provider_census_status.py automation/provider-census-sharded-merged.json \
             --output automation/PROVIDER-CENSUS-SHARDED.md \
             --json-output automation/provider-census-sharded-status.json \
             --history automation/provider-census-proof-history.json \
             --baseline-status automation/provider-census-status.json \
             --run-id "${GITHUB_RUN_ID}" \
-            --sha "${GITHUB_SHA}"
+            --sha "$SOURCE_SHA"
           python scripts/build_provider_repair_batch_plan.py \
             --status automation/provider-census-sharded-status.json \
             --overrides provider-overrides.json \
             --output automation/provider-repair-batch-plan-sharded.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          s=json.loads(Path("automation/provider-census-sharded-status.json").read_text())
+          rows=[x for x in s.get("providers") or [] if isinstance(x,dict)]
+          full=sorted(str(x.get("provider") or "") for x in rows if x.get("status")=="FULL OK")
+          partial=sorted(str(x.get("provider") or "") for x in rows if x.get("status")=="PARTIAL OK")
+          payload={
+              "schemaVersion":1,
+              "runId":s.get("runId"),
+              "triggerSha":s.get("triggerSha"),
+              "providerCount":len(rows),
+              "fullOkCount":len(full),
+              "partialOkCount":len(partial),
+              "operationalOkCount":len(full)+len(partial),
+              "fullOkProviders":full,
+              "partialOkProviders":partial,
+              "brainQueue":s.get("brainQueue") or [],
+              "statusCounts":s.get("counts") or {},
+              "executionModel":"8-shard-horizontal-census",
+          }
+          Path("automation/provider-census-sharded-summary.json").write_text(
+              json.dumps(payload,ensure_ascii=False,indent=2)+"\n",encoding="utf-8"
+          )
+          PY
 
       - name: Upload merged census
         if: always()
@@ -137,7 +194,46 @@ jobs:
           path: |
             automation/provider-census-sharded-merged.json
             automation/provider-census-sharded-status.json
+            automation/provider-census-sharded-summary.json
             automation/provider-repair-batch-plan-sharded.json
+            automation/provider-census-proof-history.json
             automation/PROVIDER-CENSUS-SHARDED.md
           retention-days: 8
           if-no-files-found: error
+
+      - name: Persist canonical evidence after bulk onboarding
+        if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' }}
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+        run: |
+          set -euo pipefail
+          run_id="$GITHUB_RUN_ID"
+          cp automation/provider-census-sharded-merged.json /tmp/provider-census-sharded.json
+          cp automation/provider-census-sharded-status.json /tmp/provider-census-status.json
+          cp automation/provider-census-sharded-summary.json /tmp/provider-census-sharded-summary.json
+          cp automation/provider-repair-batch-plan-sharded.json /tmp/provider-repair-batch-plan.json
+          cp automation/provider-census-proof-history.json /tmp/provider-census-proof-history.json
+          cp automation/PROVIDER-CENSUS-SHARDED.md /tmp/PROVIDER_CENSUS_STATUS.md
+          git fetch origin main
+          git reset --hard origin/main
+          mkdir -p automation
+          cp /tmp/provider-census-sharded.json "automation/provider-census-sharded-${run_id}.json"
+          cp /tmp/provider-census-sharded.json automation/provider-census-sharded-latest.json
+          cp /tmp/provider-census-sharded-summary.json automation/provider-census-sharded-latest-summary.json
+          cp /tmp/provider-census-status.json automation/provider-census-status.json
+          cp /tmp/provider-repair-batch-plan.json automation/provider-repair-batch-plan-latest.json
+          cp /tmp/provider-census-proof-history.json automation/provider-census-proof-history.json
+          cp /tmp/PROVIDER_CENSUS_STATUS.md PROVIDER_CENSUS_STATUS.md
+          verified="$(python - <<'PY'
+          import json
+          d=json.load(open("automation/provider-census-sharded-latest-summary.json"))
+          print(f"{d.get('operationalOkCount',0)}/{d.get('providerCount',0)}")
+          PY
+          )"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add             "automation/provider-census-sharded-${run_id}.json"             automation/provider-census-sharded-latest.json             automation/provider-census-sharded-latest-summary.json             automation/provider-census-status.json             automation/provider-repair-batch-plan-latest.json             automation/provider-census-proof-history.json             PROVIDER_CENSUS_STATUS.md
+          git diff --cached --quiet && exit 0
+          git commit -m "ci(census-sharded): persist ${verified} from ${SOURCE_SHA:0:12}"
+          git push origin HEAD:main
