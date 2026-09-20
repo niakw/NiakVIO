@@ -126,6 +126,56 @@ def chunks(values: list[str], size: int) -> list[list[str]]:
     return [values[index:index + size] for index in range(0, len(values), size)]
 
 
+def repair_batches(values: list[str], size: int) -> list[dict[str, Any]]:
+    """Group current repair targets by census-derived family/signature plan.
+
+    The batch plan is only a scheduling/transfer prior. A stale plan is ignored,
+    and every candidate still passes the ordinary deep/identity/playback gates.
+    """
+    selected = {cid(value) for value in values if cid(value)}
+    if not selected:
+        return []
+    status = status_payload()
+    plan = load(BATCH_PLAN, {})
+    if not isinstance(plan, dict) or str(plan.get("sourceRunId") or "") != str(status.get("runId") or ""):
+        return [
+            {"groupId": "fallback", "repairScope": "unknown", "providers": batch}
+            for batch in chunks(sorted(selected), size)
+        ]
+
+    out: list[dict[str, Any]] = []
+    assigned: set[str] = set()
+    for group in plan.get("groups") or []:
+        if not isinstance(group, dict):
+            continue
+        members = [
+            cid(value) for value in group.get("providers") or []
+            if cid(value) in selected and cid(value) not in assigned
+        ]
+        if not members:
+            continue
+        for batch in chunks(members, size):
+            out.append({
+                "groupId": str(group.get("groupId") or "unknown"),
+                "repairScope": str(group.get("repairScope") or "unknown"),
+                "capabilityStrategy": str(group.get("capabilityStrategy") or "unknown"),
+                "providers": batch,
+            })
+            assigned.update(batch)
+
+    leftovers = sorted(selected - assigned)
+    for batch in chunks(leftovers, size):
+        out.append({"groupId": "unplanned", "repairScope": "unknown", "providers": batch})
+    return out
+
+
+def repair_memory_fingerprint() -> str:
+    try:
+        return hashlib.sha256(REPAIR_MEMORY.read_bytes()).hexdigest()
+    except OSError:
+        return ""
+
+
 def playable_count(result: dict[str, Any]) -> int:
     evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
     values = [int(evidence.get("streams_playable") or 0)]
@@ -213,7 +263,7 @@ def materialize() -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--provider", action="append", default=[], help="Optional provider id; repeatable. Empty = current census repairQueue only.")
-    parser.add_argument("--waves", type=int, default=3)
+    parser.add_argument("--waves", type=int, default=4)
     parser.add_argument("--batch-size", type=int, default=48)
     parser.add_argument("--health-concurrency", type=int, default=0, help="0 = auto (6/8 depending on target count)")
     parser.add_argument("--include-environment", action="store_true", help="Include pure WAF/environment cases in code-repair staging.")
@@ -289,8 +339,10 @@ def main() -> int:
             accepted_this_wave: list[dict[str, Any]] = []
             fixed_this_wave: set[str] = set()
             batch_reports: list[dict[str, Any]] = []
+            memory_before = repair_memory_fingerprint()
 
-            for batch_index, batch in enumerate(chunks(remaining, batch_size), start=1):
+            for batch_index, batch_plan in enumerate(repair_batches(remaining, batch_size), start=1):
+                batch = list(batch_plan["providers"])
                 batch_root = work / f"wave-{wave}" / f"batch-{batch_index}"
                 stage = batch_root / "stage"
                 output = batch_root / "output"
@@ -332,6 +384,8 @@ def main() -> int:
             all_accepted.extend(accepted_this_wave)
             all_fixed.update(fixed_this_wave)
             remaining = [provider for provider in remaining if provider not in fixed_this_wave]
+            memory_after = repair_memory_fingerprint()
+            experiment_memory_advanced = memory_after != memory_before
             wave_reports.append({
                 "wave": wave,
                 "inputProviderCount": sum(row["providerCount"] for row in batch_reports),
@@ -343,7 +397,17 @@ def main() -> int:
             })
 
             if not accepted_this_wave:
-                no_progress_reason = "no_strictly_improving_repair_candidate"
+                # A rejected experiment is still useful evidence. If negative
+                # memory advanced, immediately rotate to the next bounded variant
+                # instead of aborting the whole Repair after one failed idea.
+                if remaining and experiment_memory_advanced and wave < waves:
+                    no_progress_reason = "rotating_rejected_experiment"
+                    continue
+                no_progress_reason = (
+                    "experiment_variants_exhausted"
+                    if experiment_memory_advanced
+                    else "no_new_repair_experiment"
+                )
                 break
 
             # Accepted profile assignments and trusted skill memory are now in
