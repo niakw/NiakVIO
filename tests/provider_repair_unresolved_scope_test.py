@@ -14,7 +14,7 @@ census = {
     "providers": [
         {"provider": "green-a", "status": "FULL OK"},
         {"provider": "repair-b", "status": "PROVIDER JS BROKEN"},
-        {"provider": "waf-c", "status": "PROVIDER WAF/ANTIBOT"},
+        {"provider": "waf-c", "status": "HARNESS/ENV BLOCKED"},
         {"provider": "route-d", "status": "ROUTE PROVEN"},
         {"provider": "partial-e", "status": "PARTIAL OK"},
     ],
