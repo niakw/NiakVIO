@@ -10,7 +10,7 @@ import json
 import re
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 ROOT = Path(__file__).resolve().parents[2]
 BASE_PATH = ROOT / "scripts" / "runtime_repair.py"
@@ -221,6 +221,244 @@ def _safe_request_recipe(raw: Any, *, peer: bool = False) -> dict[str, Any] | No
             recipe["origin"] = origin
     return recipe
 
+
+
+_SENSITIVE_REQUEST_KEY = re.compile(r"(?:api[_-]?key|token|auth|authorization|signature|sig|secret|password|cookie|session|nonce|hash)", re.I)
+_QUERY_KEYS = {"q", "query", "search", "keyword", "term", "story", "title", "name"}
+_SAFE_CONSTANT_KEYS = {"page", "limit", "offset", "action", "do", "subaction", "sort", "order", "lang", "language", "locale", "quality"}
+
+
+def _fixture_context(raw_test: dict[str, Any]) -> dict[str, str]:
+    fixture = raw_test.get("fixture") if isinstance(raw_test.get("fixture"), dict) else {}
+    title = str(fixture.get("title") or fixture.get("label") or "").strip()
+    media_type = str(fixture.get("mediaType") or fixture.get("type") or "").strip().casefold()
+    category = str(fixture.get("category") or "").strip().casefold()
+    if category == "anime":
+        media_type = "anime"
+    slug = re.sub(r"[^a-z0-9]+", "-", title.casefold()).strip("-")
+    return {
+        "title": title,
+        "title_cf": title.casefold(),
+        "slug": slug,
+        "tmdbId": str(fixture.get("tmdbId") or fixture.get("id") or "").strip(),
+        "imdbId": str(fixture.get("imdbId") or fixture.get("imdb_id") or "").strip(),
+        "year": str(fixture.get("year") or "").strip(),
+        "season": str(fixture.get("season") or "").strip(),
+        "episode": str(fixture.get("episode") or "").strip(),
+        "mediaType": media_type,
+    }
+
+
+def _abstract_observed_value(key: str, raw: Any, fixture: dict[str, str], *, allow_constant: bool) -> str | None:
+    name = str(key or "").strip()
+    value = str(raw if raw is not None else "").strip()
+    if not name or not value or value == "<redacted>" or _SENSITIVE_REQUEST_KEY.search(name):
+        return None
+    if len(value) > 160 or _ROUTE_OPAQUE.search(value):
+        return None
+    folded = value.casefold()
+    if fixture.get("title_cf") and folded == fixture["title_cf"]:
+        return "{query}"
+    if fixture.get("slug") and folded.strip("/") == fixture["slug"]:
+        return "{slug}"
+    for field, placeholder in (
+        ("tmdbId", "{tmdbId}"),
+        ("imdbId", "{imdbId}"),
+        ("year", "{year}"),
+        ("season", "{season}"),
+        ("episode", "{episode}"),
+        ("mediaType", "{mediaType}"),
+    ):
+        known = fixture.get(field) or ""
+        if known and folded == known.casefold():
+            return placeholder
+
+    lowered = name.casefold()
+    if lowered in _QUERY_KEYS:
+        return "{query}"
+    if lowered in {"tmdb", "tmdbid", "tmdb_id"}:
+        return "{tmdbId}" if fixture.get("tmdbId") else None
+    if lowered in {"imdb", "imdbid", "imdb_id"}:
+        return "{imdbId}" if fixture.get("imdbId") else None
+    if lowered in {"season", "saison"}:
+        return "{season}" if fixture.get("season") else None
+    if lowered in {"episode", "ep"}:
+        return "{episode}" if fixture.get("episode") else None
+    if lowered == "year":
+        return "{year}" if fixture.get("year") else None
+    if lowered in {"mediatype", "media_type", "type"} and fixture.get("mediaType") and folded == fixture["mediaType"]:
+        return "{mediaType}"
+    # Generic "id" is deliberately NOT mapped to TMDB. It is frequently a
+    # provider-local identifier that must first be correlated from an earlier
+    # response before it can become executable.
+    if lowered in {"id", "_id", "media_id", "post_id", "content_id", "movie_id", "series_id", "show_id"}:
+        return None
+    if allow_constant and lowered in _SAFE_CONSTANT_KEYS and re.fullmatch(r"[A-Za-z0-9_.:+/-]{1,48}", value):
+        return value
+    return None
+
+
+def _observed_route(raw: dict[str, Any], fixture: dict[str, str]) -> tuple[str | None, str | None]:
+    proof_url = str(raw.get("proof_url") or "").strip()
+    if proof_url:
+        try:
+            parsed = urlparse(proof_url)
+        except ValueError:
+            return None, None
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            return None, None
+        observed_host = str(raw.get("host") or "").strip().casefold()
+        if observed_host and parsed.hostname.casefold() != observed_host:
+            return None, None
+        segments: list[str] = []
+        for segment_raw in parsed.path.split("/"):
+            if not segment_raw:
+                continue
+            segment = unquote(segment_raw)
+            abstracted = _abstract_observed_value("path", segment, fixture, allow_constant=False)
+            if abstracted:
+                segments.append(abstracted)
+                continue
+            if re.fullmatch(r"\d+", segment) or _ROUTE_OPAQUE.search(segment) or len(segment) > 64:
+                return None, None
+            if not re.fullmatch(r"[A-Za-z0-9._~+%-]{1,64}", segment):
+                return None, None
+            segments.append(segment)
+        route = "/" + "/".join(segments)
+        if parsed.path.endswith("/") and route != "/":
+            route += "/"
+        query_parts: list[str] = []
+        try:
+            pairs = list(__import__("urllib.parse", fromlist=["parse_qsl"]).parse_qsl(parsed.query, keep_blank_values=True))
+        except Exception:
+            pairs = []
+        for key, value in pairs[:20]:
+            if _SENSITIVE_REQUEST_KEY.search(str(key)):
+                return None, None
+            abstracted = _abstract_observed_value(key, value, fixture, allow_constant=True)
+            if abstracted is None:
+                return None, None
+            if not re.fullmatch(r"[A-Za-z0-9_.:-]{1,64}", str(key)):
+                return None, None
+            query_parts.append(f"{key}={abstracted}")
+        if query_parts:
+            route += "?" + "&".join(query_parts)
+        return _safe_route(route), f"{parsed.scheme}://{parsed.netloc}"
+
+    # Fallback for workers that recorded a normalized path but no safe URL.
+    pattern = str(raw.get("path_pattern") or "").strip()
+    if not pattern or "{token}" in pattern or re.search(r"/\{(?:id|value)\}(?:/|$)", pattern):
+        return None, None
+    if "?" in pattern:
+        path, query = pattern.split("?", 1)
+        converted: list[str] = []
+        for part in query.split("&"):
+            if "=" not in part:
+                return None, None
+            key, value = part.split("=", 1)
+            if _SENSITIVE_REQUEST_KEY.search(key):
+                return None, None
+            if value == "{value}":
+                placeholder = _abstract_observed_value(key, "observed", fixture, allow_constant=False)
+                if not placeholder:
+                    return None, None
+                value = placeholder
+            converted.append(f"{key}={value}")
+        pattern = path + "?" + "&".join(converted)
+    return _safe_route(pattern), None
+
+
+def observed_request_recipes(candidate: dict[str, Any], result: dict[str, Any]) -> list[dict[str, Any]]:
+    """Synthesize provider-local sandbox recipes from current successful requests.
+
+    This never transfers hosts or opaque identifiers between providers. Unknown
+    provider-local IDs remain non-executable until a later response->request
+    correlation step can bind them safely.
+    """
+    output: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for raw_test in result.get("tests") or []:
+        if not isinstance(raw_test, dict):
+            continue
+        fixture = _fixture_context(raw_test)
+        semantic_type = fixture.get("mediaType") or ""
+        for raw in raw_test.get("network_observations") or []:
+            if not isinstance(raw, dict) or raw.get("infrastructure") is True:
+                continue
+            status = raw.get("status")
+            if not isinstance(status, int) or not (200 <= status < 400):
+                continue
+            if raw.get("synthetic_fixture_fallback") is True:
+                continue
+            method = str(raw.get("method") or "GET").upper()
+            if method not in {"GET", "POST"}:
+                continue
+            route, origin = _observed_route(raw, fixture)
+            if not route:
+                continue
+            stage = str(raw.get("stage") or "").strip().casefold()
+            role = {
+                "search": "search",
+                "player": "player",
+                "episode": "episode",
+                "content_lookup": "detail",
+                "origin_probe": "other",
+            }.get(stage, _route_role(route))
+            body_kind = str(raw.get("proof_body_kind") or "none").casefold()
+            body: dict[str, str] = {}
+            if method == "POST":
+                if body_kind not in {"form", "json"}:
+                    continue
+                values = raw.get("proof_body_values") if isinstance(raw.get("proof_body_values"), dict) else {}
+                fields = [str(value) for value in raw.get("proof_body_fields") or []][:40]
+                if not fields:
+                    fields = list(values)[:40]
+                valid = True
+                for key in fields:
+                    if key == "$text":
+                        valid = False
+                        break
+                    abstracted = _abstract_observed_value(key, values.get(key), fixture, allow_constant=True)
+                    if abstracted is None:
+                        valid = False
+                        break
+                    body[key] = abstracted
+                if not valid or not body:
+                    continue
+            else:
+                body_kind = "none"
+
+            header_names = sorted({
+                str(name).casefold()
+                for name in (raw.get("proof_headers") or {}).keys()
+                if str(name).casefold() in _SAFE_REQUEST_HEADERS
+            })
+            content_type = str(raw.get("content_type") or "").casefold()
+            recipe_raw = {
+                "route": route,
+                "origin": origin or "",
+                "role": role,
+                "method": method,
+                "bodyKind": body_kind,
+                "body": body,
+                "headerNames": header_names,
+                "response": "json" if "json" in content_type else "html-or-text",
+                "semanticType": semantic_type,
+                "streamProof": bool(stage == "player" and any(token in content_type for token in ("mpegurl", "dash", "video/"))),
+                "executable": True,
+            }
+            recipe = _safe_request_recipe(recipe_raw, peer=False)
+            if not recipe:
+                continue
+            recipe["source"] = "current-observation"
+            fingerprint = json.dumps(recipe, sort_keys=True, separators=(",", ":"))
+            if fingerprint in seen:
+                continue
+            seen.add(fingerprint)
+            output.append(recipe)
+            if len(output) >= 32:
+                return output
+    return output
 
 def _provider_request_recipes(provider_id: str) -> list[dict[str, Any]]:
     experience = _load_experience()
@@ -514,16 +752,21 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     peer_route_min_variant = _peer_route_min_variant(experiment_failure)
     peer_recipe_min_variant = _peer_recipe_min_variant(experiment_failure)
     peer_routes = _peer_routes(strategy) if experiment_variant >= peer_route_min_variant else []
+    current_request_recipes = [
+        recipe for recipe in candidate.get("brain_observed_request_recipes") or []
+        if isinstance(recipe, dict) and recipe.get("source") == "current-observation"
+    ]
     provider_request_recipes = _provider_request_recipes(provider_id)
     peer_request_recipes = _peer_request_recipes(strategy)
     request_recipes = _unique_request_recipes(
+        current_request_recipes,
         provider_request_recipes,
         peer_request_recipes if experiment_variant >= peer_recipe_min_variant else [],
         limit=32,
     )
     new_strategy_id = _new_strategy_id(experiment_failure, experiment_variant)
     if experiment_variant == 4 and experiment_failure == "candidate_replay_gap":
-        request_recipes = _unique_request_recipes(provider_request_recipes, limit=32)
+        request_recipes = _unique_request_recipes(current_request_recipes, provider_request_recipes, limit=32)
     peer_search = [route for route in peer_routes if _route_role(route) == "search"]
     peer_direct = [route for route in peer_routes if _route_role(route) != "search"]
     configured_search = [str(v) for v in recovery_options.get("search_paths") or [] if str(v).strip()]
@@ -662,6 +905,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             "search": len(search_paths),
             "direct": len(direct_paths),
             "requestRecipes": len(request_recipes),
+            "currentObservationRequestRecipes": len(current_request_recipes),
             "providerRequestRecipes": len(provider_request_recipes),
             "peerRequestRecipes": len(peer_request_recipes),
         },
