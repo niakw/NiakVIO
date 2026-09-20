@@ -1,11 +1,11 @@
 {
   "schemaVersion": 4,
-  "requestedAt": "2026-09-20T04:18:00+02:00",
-  "retry": 38,
+  "requestedAt": "2026-09-20T04:28:00+02:00",
+  "retry": 39,
   "mode": "repair",
-  "scope": "census-symptomatic-repair-queue-retry-v11-idempotent",
+  "scope": "census-repair-queue-brain-v7-monotonic",
   "targetProviders": [],
-  "goal": "Retry the same census-owned Repair cycle after making V11.1 migration idempotent. Scope must remain automation/provider-census-status.json repairQueue only; exclude WAF environmentQueue; persist updated PROVIDER_CENSUS_STATUS.md even if a later Repair stage fails.",
+  "goal": "Run the current census repairQueue only with Brain V7. Use census status as a monotonic diagnostic floor, preserve proven route/chain depth, tune adaptive runtime by symptom depth, reuse learned provider and same-strategy route/transport experience, exclude environment-only WAF, and persist the resulting PROVIDER_CENSUS_STATUS.md.",
   "branch": "main",
   "publication": false
 }
