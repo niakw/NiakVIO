@@ -18,6 +18,14 @@ on:
       - 'scripts/build_provider_repair_batch_plan.py'
       - 'scripts/run_provider_repair_batch.py'
       - 'scripts/refine_provider_repair_batches.py'
+      - 'tests/provider_targeted_recovery_sharding_test.py'
+      - 'tests/provider_targeted_recovery_sharding_test.py'
+      - '.github/workflows/provider-targeted-recovery-sharded.yml'
+      - '.github/workflows/provider-targeted-recovery-sharded.yml'
+      - 'scripts/merge_provider_targeted_recovery_shards.py'
+      - 'scripts/merge_provider_targeted_recovery_shards.py'
+      - 'scripts/run_provider_targeted_recovery.py'
+      - 'scripts/run_provider_targeted_recovery.py'
       - 'automation/provider-repair-batch-plan-latest.json'
       - 'provider-overrides.json'
   pull_request:
@@ -47,10 +55,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  size:
+    runs-on: ubuntu-latest
+    outputs:
+      source_sha: ${{ steps.route.outputs.source_sha }}
+      provider_count: ${{ steps.route.outputs.provider_count }}
+      should_run: ${{ steps.route.outputs.should_run }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - id: route
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json,subprocess
+          d=json.load(open("manifest.json",encoding="utf-8"))
+          count=len([x for x in d.get("scrapers") or [] if isinstance(x,dict)])
+          print(f"source_sha={subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()}")
+          print(f"provider_count={count}")
+          print(f"should_run={'true' if count<=120 else 'false'}")
+          PY
+
   probe:
-    # Bulk-stage commits are intentionally all pending; wait for the sharded
-    # census to publish a fresh batch plan before repair probing.
-    if: ${{ github.event_name != 'push' || (!startsWith(github.event.head_commit.message, 'provider: bulk stage ') && !startsWith(github.event.head_commit.message, 'provider: bulk activate ')) }}
+    needs: size
+    # Small catalogues use this single job. Large catalogues are routed to
+    # provider-targeted-recovery-sharded.yml after the sharded census publishes
+    # a current repair batch plan.
+    if: ${{ needs.size.outputs.should_run == 'true' && (github.event_name != 'push' || (!startsWith(github.event.head_commit.message, 'provider: bulk stage ') && !startsWith(github.event.head_commit.message, 'provider: bulk activate '))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -61,7 +95,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ needs.size.outputs.source_sha }}
           fetch-depth: 0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
