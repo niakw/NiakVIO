@@ -50,7 +50,7 @@ def run(memory):
         "policy":policy,
         "learnedSkills":{},
         "negativeMemory":memory,
-        "items":[{"candidate":candidate,"result":result,"state":{}}],
+        "items":[{"key":"published:synthetic-exhaustion","candidate":candidate,"result":result,"state":{}}],
     }
     completed=subprocess.run(
         ["node",str(PLANNER)],
