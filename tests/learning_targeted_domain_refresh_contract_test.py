@@ -16,5 +16,9 @@ reconcile=queue.index('reconcile_provider_domain_metadata.py',refresh)
 profiles=queue.index('build_provider_runtime_profiles.py',refresh)
 validate=queue.index('validate_override_pipeline.py',refresh)
 assert refresh < reconcile < profiles < validate
+assert '"--rebuild", "--provider", provider_id' in queue
+reconciler=(ROOT/"scripts/reconcile_provider_domain_metadata.py").read_text(encoding="utf-8")
+assert 'parser.add_argument("--provider"' in reconciler
+assert 'if selected_provider and provider_id.casefold() != selected_provider' in reconciler
 
 print("Learning targeted domain-refresh scope contract passed")
