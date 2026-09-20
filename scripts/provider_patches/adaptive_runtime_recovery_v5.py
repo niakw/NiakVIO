@@ -54,6 +54,22 @@ def _replace_one_of(text: str, olds: tuple[str, ...], new: str, label: str) -> s
     return text.replace(present[0][0], new, 1)
 
 
+def _replace_variant(
+    text: str,
+    variants: tuple[tuple[str, str], ...],
+    label: str,
+) -> str:
+    matches = [(old, new, text.count(old)) for old, new in variants]
+    present = [(old, new, count) for old, new, count in matches if count]
+    if len(present) != 1 or present[0][2] != 1:
+        detail = ",".join(f"{index}:{count}" for index, (_old, _new, count) in enumerate(matches))
+        raise ValueError(
+            f"adaptive_runtime_recovery_v5:{label}: expected one unique source-shape match; {detail}"
+        )
+    old, new, _count = present[0]
+    return text.replace(old, new, 1)
+
+
 def _strip_previous_v5(text: str) -> str:
     cursor = 0
     parts: list[str] = []
@@ -98,10 +114,18 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "opaque_positive_proof",
     )
 
-    patched = _replace_once(
+    patched = _replace_variant(
         patched,
-        'var finalUrl=s(r.url||u),type=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-type")):"",disposition=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-disposition")):"",body=null;if(json){body=await r.json()}else if(media(finalUrl,type,"",disposition)){body=""}else{body=await r.text()}var result={body:body,url:finalUrl,type:type,disposition:disposition,status:r.status};',
-        'var finalUrl=s(r.url||u),type=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-type")):"",disposition=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-disposition")):"",body=null,directProof=mediaProof(finalUrl,type,"",disposition);if(json){body=await r.json()}else if((directProof&&directProof!=="extension")||mediaType(type)||mediaDisposition(disposition)){body=""}else{body=await r.text()}var result={body:body,url:finalUrl,type:type,disposition:disposition,status:r.status};',
+        (
+            (
+                'var finalUrl=s(r.url||u),type=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-type")):"",disposition=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-disposition")):"",body=null;if(json){body=await r.json()}else if(media(finalUrl,type,"",disposition)){body=""}else{body=await r.text()}var result={body:body,url:finalUrl,type:type,disposition:disposition,status:r.status};',
+                'var finalUrl=s(r.url||u),type=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-type")):"",disposition=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-disposition")):"",body=null,directProof=mediaProof(finalUrl,type,"",disposition);if(json){body=await r.json()}else if((directProof&&directProof!=="extension")||mediaType(type)||mediaDisposition(disposition)){body=""}else{body=await r.text()}var result={body:body,url:finalUrl,type:type,disposition:disposition,status:r.status};',
+            ),
+            (
+                'var finalUrl=s(r.url||u),type=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-type")):"",disposition=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-disposition")):"",contentRange=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-range")):"",body=null,proof=mediaProof(finalUrl,type,"",disposition);if(json){body=await r.json()}else if(proof){body=""}else if((Number(r.status)===206||contentRange)&&!/(?:text\\/|application\\/(?:json|javascript|xml))/i.test(type)){proof="range";body=""}else if(/application\\/(?:octet-stream|binary)/i.test(type)){var bytes=await prefixBytes(r,a),binary=binaryProof(bytes);if(binary){proof=binary;body=""}else{U[u]=true;U[finalUrl]=true;body=""}}else{body=await r.text()}var result={body:body,url:finalUrl,type:type,disposition:disposition,contentRange:contentRange,status:r.status,proof:proof};',
+                'var finalUrl=s(r.url||u),type=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-type")):"",disposition=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-disposition")):"",contentRange=r.headers&&typeof r.headers.get==="function"?s(r.headers.get("content-range")):"",body=null,proof=mediaProof(finalUrl,type,"",disposition);if(proof==="extension"){if(mediaType(type))proof="mime";else if(mediaDisposition(disposition))proof="disposition";else proof=""}if(json){body=await r.json()}else if(proof){body=""}else if((Number(r.status)===206||contentRange)&&!/(?:text\\/|application\\/(?:json|javascript|xml))/i.test(type)){proof="range";body=""}else if(/application\\/(?:octet-stream|binary)/i.test(type)){var bytes=await prefixBytes(r,a),binary=binaryProof(bytes);if(binary){proof=binary;body=""}else{U[u]=true;U[finalUrl]=true;body=""}}else{body=await r.text()}var result={body:body,url:finalUrl,type:type,disposition:disposition,contentRange:contentRange,status:r.status,proof:proof};',
+            ),
+        ),
         "request_extension_hint",
     )
 
@@ -112,11 +136,29 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "resolver_entry_probe",
     )
 
-    patched = _replace_once(
+    patched = _replace_variant(
         patched,
-        'var proof=mediaProof(page,doc.type,doc.body,doc.disposition);if(proof)return[{url:page,referer:ref||requested,direct:true,proof:proof}];var body=s(doc.body),xs=urls(body,page).concat(normalizedPlayers(body,page));',
-        'var proof=mediaProof(page,doc.type,doc.body,doc.disposition);if(proof==="extension"){if(mediaType(doc.type))proof="mime";else if(mediaDisposition(doc.disposition))proof="disposition";else if(mediaBody(doc.body))proof="body";else proof=""}if(proof)return[{url:page,referer:ref||requested,direct:true,proof:proof}];var body=s(doc.body),xs=urls(body,page).concat(normalizedPlayers(body,page));',
+        (
+            (
+                'var proof=mediaProof(page,doc.type,doc.body,doc.disposition);if(proof)return[{url:page,referer:ref||requested,direct:true,proof:proof}];var body=s(doc.body),xs=urls(body,page).concat(normalizedPlayers(body,page));',
+                'var proof=mediaProof(page,doc.type,doc.body,doc.disposition);if(proof==="extension"){if(mediaType(doc.type))proof="mime";else if(mediaDisposition(doc.disposition))proof="disposition";else if(mediaBody(doc.body))proof="body";else proof=""}if(proof)return[{url:page,referer:ref||requested,direct:true,proof:proof}];var body=s(doc.body),xs=urls(body,page).concat(normalizedPlayers(body,page));',
+            ),
+            (
+                'var proof=s(doc.proof)||mediaProof(page,doc.type,doc.body,doc.disposition);if(proof)return[{url:page,referer:ref||requested,direct:true,proof:proof}];var body=s(doc.body),out=[],form=playerForm(body,page);',
+                'var proof=s(doc.proof)||mediaProof(page,doc.type,doc.body,doc.disposition);if(proof==="extension"){if(mediaType(doc.type))proof="mime";else if(mediaDisposition(doc.disposition))proof="disposition";else if(mediaBody(doc.body))proof="body";else proof=""}if(proof)return[{url:page,referer:ref||requested,direct:true,proof:proof}];var body=s(doc.body),out=[],form=playerForm(body,page);',
+            ),
+        ),
         "resolved_page_positive_proof",
+    )
+
+    patched = _replace_one_of(
+        patched,
+        (
+            'var handPage=handed.url||form.url,handProof=s(handed.proof)||mediaProof(handPage,handed.type,handed.body,handed.disposition);if(handProof)return[{url:handPage,referer:page,direct:true,proof:handProof}];',
+            'var handPage=handed.url||form.url,handProof=s(handed.proof)||mediaProof(handPage,handed.type,handed.body,handed.disposition);if(handProof==="extension"){if(mediaType(handed.type))handProof="mime";else if(mediaDisposition(handed.disposition))handProof="disposition";else if(mediaBody(handed.body))handProof="body";else handProof=""}if(handProof)return[{url:handPage,referer:page,direct:true,proof:handProof}];',
+        ),
+        'var handPage=handed.url||form.url,handProof=s(handed.proof)||mediaProof(handPage,handed.type,handed.body,handed.disposition);if(handProof==="extension"){if(mediaType(handed.type))handProof="mime";else if(mediaDisposition(handed.disposition))handProof="disposition";else if(mediaBody(handed.body))handProof="body";else handProof=""}if(handProof)return[{url:handPage,referer:page,direct:true,proof:handProof}];',
+        "handoff_page_positive_proof",
     )
 
     patched = _replace_once(
@@ -125,17 +167,52 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         'var directProof=mediaProof(xs[d],"","","");if(directProof&&directProof!=="extension")out.push({url:xs[d],referer:page,direct:true,proof:directProof})',
         "nested_direct_proof",
     )
-    patched = _replace_once(
+    patched = _replace_variant(
         patched,
-        'if(media(xs[i],"",""))continue;var ps=playerScore(xs[i],page);',
-        'var inlineProof=mediaProof(xs[i],"","","");if(inlineProof&&inlineProof!=="extension")continue;var ps=playerScore(xs[i],page);',
+        (
+            (
+                'if(media(xs[i],"","",""))continue;var ps=playerScore(xs[i],page);',
+                'var inlineProof=mediaProof(xs[i],"","","");if(inlineProof&&inlineProof!=="extension")continue;var ps=playerScore(xs[i],page);',
+            ),
+            (
+                'if(media(xs[i],"","",""))continue;var nestedEpisode=episodeMarker(xs[i],q),ps=playerScore(xs[i],page);',
+                'var inlineProof=mediaProof(xs[i],"","","");if(inlineProof&&inlineProof!=="extension")continue;var nestedEpisode=episodeMarker(xs[i],q),ps=playerScore(xs[i],page);',
+            ),
+        ),
         "nested_extension_recurse",
     )
 
-    patched = _replace_once(
+    patched = _replace_one_of(
         patched,
-        'if(directProof){var directRow=Object.assign({},row,{isDirect:true});resolved.push(directRow);continue}var mediaRows=await resolve(url,ref,0,{});',
-        'if(directProof&&directProof!=="extension"){var directRow=Object.assign({},row,{isDirect:true});resolved.push(directRow);continue}var mediaRows=await resolve(url,ref,0,{});',
+        (
+            'for(var hd=0;hd<handXs.length;hd++){var hp=mediaProof(handXs[hd],"","","");if(hp)out.push({url:handXs[hd],referer:handPage,direct:true,proof:hp})}',
+            'for(var hd=0;hd<handXs.length;hd++){var hp=mediaProof(handXs[hd],"","","");if(hp&&hp!=="extension")out.push({url:handXs[hd],referer:handPage,direct:true,proof:hp})}',
+        ),
+        'for(var hd=0;hd<handXs.length;hd++){var hp=mediaProof(handXs[hd],"","","");if(hp&&hp!=="extension")out.push({url:handXs[hd],referer:handPage,direct:true,proof:hp})}',
+        "handoff_nested_direct_proof",
+    )
+    patched = _replace_one_of(
+        patched,
+        (
+            'if(media(handXs[hi],"","",""))continue;var handEpisode=episodeMarker(handXs[hi],q);',
+            'var handInlineProof=mediaProof(handXs[hi],"","","");if(handInlineProof&&handInlineProof!=="extension")continue;var handEpisode=episodeMarker(handXs[hi],q);',
+        ),
+        'var handInlineProof=mediaProof(handXs[hi],"","","");if(handInlineProof&&handInlineProof!=="extension")continue;var handEpisode=episodeMarker(handXs[hi],q);',
+        "handoff_nested_extension_recurse",
+    )
+
+    patched = _replace_variant(
+        patched,
+        (
+            (
+                'if(directProof){var directRow=Object.assign({},row,{isDirect:true});resolved.push(directRow);continue}var mediaRows=await resolve(url,ref,0,{});',
+                'if(directProof&&directProof!=="extension"){var directRow=Object.assign({},row,{isDirect:true});resolved.push(directRow);continue}var mediaRows=await resolve(url,ref,0,{});',
+            ),
+            (
+                'if(directProof){var directRow=Object.assign({},row,{isDirect:true});resolved.push(directRow);continue}var mediaRows=await resolve(url,ref,0,{},q);',
+                'if(directProof&&directProof!=="extension"){var directRow=Object.assign({},row,{isDirect:true});resolved.push(directRow);continue}var mediaRows=await resolve(url,ref,0,{},q);',
+            ),
+        ),
         "native_extension_probe",
     )
 
