@@ -2703,3 +2703,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Added `scripts/provider_patches/wookafr_current_runtime_v2.py`, bound after the existing priority Lego. It uses Core TMDB title/year identity, current Wooka search/detail routes, TV episode selection, extracts all current player seeds, and invokes the shared terminal crawl one seed at a time so one failing host cannot starve later embeds. No upstream JavaScript is embedded or executed.
 - Added `tests/provider_wookafr_current_runtime_behavior_test.py` proving movie fallback past a failed lecteurvideo seed and a TV season/episode player chain. Wired into current-byte census, targeted recovery, and non-regression gates.
 - Relevant commits: `d1a4f6f3dbe8` runtime, `c846c981d5c2` binding, `3787cfac0e6c` behavior test, `d5c37e6091ca` / `33385adc62d0` / `c245250f6a20` gates. Live playable status remains unchanged until current census evidence proves terminal media.
+
+
+## 2026-09-20 — MovieBox multibase current Stremio fallback
+
+- Current CI evidence reaches the modern Pengu MovieBox Stremio route but GitHub egress receives HTTP 429; legacy vidsrcme then reaches CloudOrchestra and fails at cache.php HTTP 400. This is transport/backend failure, not a reason to discard the modern IMDb route.
+- Independent current public implementations were cross-checked before changing DATA: `D3adlyRocket/Test/providers/moviesmod.js` and `hfip/Box/api/index.py` both use `moviebox-cfa7.onrender.com/<config>/stream/movie|series/{IMDb}.json` and consume the same `streams` JSON shape; a separate public verification report records its manifest as reachable.
+- `moviebox_vidsrcme_runtime_v1.py` now supports ordered current bases. Canonical DATA keeps Pengu first, retries the proven `moviebox-cfa7.onrender.com` Stremio endpoint second, and only then falls back to legacy vidsrcme. Per-base Referer is preserved.
+- Behavioral coverage now requires primary-current success, Pengu failure -> alternate-current success without legacy, and all-current failure -> legacy. Contract coverage pins the alternate current base in canonical DATA. Commits: `c7da73325d4a`, `2d37045add2e`, `b7b2b10ac5e4`, `48a3f830c8d0`. Live provider status remains unchanged until current census proves terminal media.
