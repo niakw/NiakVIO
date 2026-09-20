@@ -197,6 +197,9 @@ def main() -> int:
     assert '"legacy_provider_js_executed_for_reconstruction": False' in discovery
     assert '"new-niakvio-clean-seed"' in discovery
     assert "build_clean_provider_seed(" in discovery
+    assert "build_provider_data_model(" in discovery
+    assert "compose_provider_bundle(" in discovery
+    assert "compose_executable_seed(" in discovery
     assert "clean_provider_model(" in discovery
     assert "GLOBAL_STREAM_PRESENTATION" in apply_source
     assert '"scope": "global_stream_presentation"' in apply_source
