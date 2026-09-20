@@ -258,8 +258,14 @@ def sanitized_brain(report: dict[str, Any]) -> dict[str, Any]:
                 "failureClass": row.get("failureClass"),
                 "signature": row.get("signature"),
                 "action": row.get("action"),
+                "exitReason": row.get("exitReason"),
+                "repairScope": row.get("repairScope"),
+                "repairType": row.get("repairType"),
+                "learningDisposition": row.get("learningDisposition"),
                 "allowedProfiles": row.get("allowedProfiles") or [],
                 "experimentVariant": row.get("experimentVariant"),
+                "experimentVariantCount": row.get("experimentVariantCount"),
+                "experimentExhausted": row.get("experimentExhausted") is True,
                 "negativeMemoryMatches": row.get("negativeMemoryMatches"),
                 "hypotheses": row.get("hypotheses") or [],
             }
@@ -344,6 +350,7 @@ def main() -> int:
     wave_reports: list[dict[str, Any]] = []
     all_accepted: list[dict[str, Any]] = []
     all_fixed: set[str] = set()
+    all_deferred: set[str] = set()
     no_progress_reason: str | None = None
 
     concurrency = int(args.health_concurrency)
@@ -357,6 +364,7 @@ def main() -> int:
                 break
             accepted_this_wave: list[dict[str, Any]] = []
             fixed_this_wave: set[str] = set()
+            deferred_this_wave: set[str] = set()
             batch_reports: list[dict[str, Any]] = []
             memory_before = repair_memory_fingerprint()
 
@@ -388,8 +396,17 @@ def main() -> int:
                 health = load(output / "health-results.json", {})
                 accepted = accepted_rows(repair_report)
                 fixed = fixed_providers(health)
+                brain_summary = sanitized_brain(repair_report)
+                deferred = {
+                    cid(row.get("providerId"))
+                    for row in (brain_summary.get("plans") or {}).values()
+                    if isinstance(row, dict)
+                    and row.get("experimentExhausted") is True
+                    and cid(row.get("providerId"))
+                }
                 accepted_this_wave.extend(accepted)
                 fixed_this_wave.update(fixed)
+                deferred_this_wave.update(deferred)
                 batch_reports.append({
                     "batch": batch_index,
                     "groupId": batch_plan.get("groupId"),
@@ -400,12 +417,17 @@ def main() -> int:
                     "acceptedCount": len(accepted),
                     "accepted": accepted,
                     "fixedInLab": sorted(fixed),
-                    "brain": sanitized_brain(repair_report),
+                    "deferredToLearning": sorted(deferred),
+                    "brain": brain_summary,
                 })
 
             all_accepted.extend(accepted_this_wave)
             all_fixed.update(fixed_this_wave)
-            remaining = [provider for provider in remaining if provider not in fixed_this_wave]
+            all_deferred.update(deferred_this_wave)
+            remaining = [
+                provider for provider in remaining
+                if provider not in fixed_this_wave and provider not in deferred_this_wave
+            ]
             memory_after = repair_memory_fingerprint()
             experiment_memory_advanced = memory_after != memory_before
             wave_reports.append({
@@ -414,6 +436,8 @@ def main() -> int:
                 "acceptedCount": len(accepted_this_wave),
                 "fixedInLabCount": len(fixed_this_wave),
                 "fixedInLab": sorted(fixed_this_wave),
+                "deferredToLearningCount": len(deferred_this_wave),
+                "deferredToLearning": sorted(deferred_this_wave),
                 "remainingProviderCount": len(remaining),
                 "experimentMemoryAdvanced": experiment_memory_advanced,
                 "batches": batch_reports,
@@ -474,6 +498,7 @@ def main() -> int:
             "acceptedRepairCount": len(all_accepted),
             "acceptedRepairs": all_accepted,
             "fixedInLabProviders": sorted(all_fixed),
+            "deferredLearningProviders": sorted(all_deferred),
             "remainingProviders": remaining,
             "noProgressReason": no_progress_reason,
             "waves": wave_reports,
@@ -492,7 +517,8 @@ def main() -> int:
         print(
             "FIELD_PROVIDER_BRAIN_REPAIR "
             f"selected={len(selected)} accepted={len(all_accepted)} "
-            f"fixed_lab={len(all_fixed)} remaining={len(remaining)} waves={len(wave_reports)}"
+            f"fixed_lab={len(all_fixed)} deferred_learning={len(all_deferred)} "
+            f"remaining={len(remaining)} waves={len(wave_reports)}"
         )
         return 0
     finally:
