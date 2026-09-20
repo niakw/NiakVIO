@@ -43,8 +43,8 @@ NON_REPAIRABLE_POLICY_STATUSES = {"excluded"}
 EXPERIENCE_PATH = ROOT / "automation" / "brain-repair-experience.json"
 CENSUS_STATUS_PATH = ROOT / "automation" / "provider-census-status.json"
 ROUTE_KEYS = ("candidate_learned_routes", "learned_routes", "candidate_routes", "routes")
-_ROUTE_PLACEHOLDER = re.compile(r"\{(?:query|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type)\}", re.I)
-_REQUEST_PLACEHOLDER = re.compile(r"\{(?:query|queryDots|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type)\}", re.I)
+_ROUTE_PLACEHOLDER = re.compile(r"\{(?:query|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type|binding:[A-Za-z0-9_.-]+)\}", re.I)
+_REQUEST_PLACEHOLDER = re.compile(r"\{(?:query|queryDots|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type|binding:[A-Za-z0-9_.-]+)\}", re.I)
 _ROUTE_OPAQUE = re.compile(r"(?:[A-Za-z0-9+/]{72,}={0,2}|[A-Fa-f0-9]{96,})")
 _SAFE_REQUEST_HEADERS = {"accept", "accept-language", "content-type", "origin", "referer", "user-agent"}
 
@@ -203,6 +203,19 @@ def _safe_request_recipe(raw: Any, *, peer: bool = False) -> dict[str, Any] | No
         for name in raw.get("headerNames") or []
         if str(name).casefold() in _SAFE_REQUEST_HEADERS
     })
+    template_values = [route, *body.values()]
+    referenced_bindings = sorted({
+        match.group(1).casefold()
+        for value in template_values
+        for match in _BINDING_PLACEHOLDER.finditer(str(value))
+    })
+    declared_bindings = sorted({
+        str(value).strip().casefold()
+        for value in raw.get("requiredBindings") or []
+        if re.fullmatch(r"[A-Za-z0-9_.-]{1,64}", str(value).strip())
+    })
+    if referenced_bindings != declared_bindings and (referenced_bindings or declared_bindings):
+        return None
     recipe = {
         "route": route,
         "role": str(raw.get("role") or _route_role(route)).casefold(),
@@ -213,6 +226,7 @@ def _safe_request_recipe(raw: Any, *, peer: bool = False) -> dict[str, Any] | No
         "response": str(raw.get("response") or "html-or-text").casefold(),
         "semanticType": str(raw.get("semanticType") or "").casefold(),
         "streamProof": raw.get("streamProof") is True,
+        "requiredBindings": referenced_bindings,
         "source": "peer-experience" if peer else "provider-experience",
     }
     if not peer:
@@ -226,6 +240,11 @@ def _safe_request_recipe(raw: Any, *, peer: bool = False) -> dict[str, Any] | No
 _SENSITIVE_REQUEST_KEY = re.compile(r"(?:api[_-]?key|token|auth|authorization|signature|sig|secret|password|cookie|session|nonce|hash)", re.I)
 _QUERY_KEYS = {"q", "query", "search", "keyword", "term", "story", "title", "name"}
 _SAFE_CONSTANT_KEYS = {"page", "limit", "offset", "action", "do", "subaction", "sort", "order", "lang", "language", "locale", "quality"}
+_BINDABLE_RESPONSE_KEYS = {
+    "id", "_id", "media_id", "mediaid", "post_id", "postid", "content_id", "contentid",
+    "movie_id", "movieid", "series_id", "seriesid", "show_id", "showid", "slug",
+}
+_BINDING_PLACEHOLDER = re.compile(r"\{binding:([A-Za-z0-9_.-]+)\}", re.I)
 
 
 def _fixture_context(raw_test: dict[str, Any]) -> dict[str, str]:
@@ -249,7 +268,50 @@ def _fixture_context(raw_test: dict[str, Any]) -> dict[str, str]:
     }
 
 
-def _abstract_observed_value(key: str, raw: Any, fixture: dict[str, str], *, allow_constant: bool) -> str | None:
+def _binding_name(raw: Any) -> str | None:
+    key = str(raw or "").strip().casefold().replace("-", "_")
+    if key not in _BINDABLE_RESPONSE_KEYS:
+        return None
+    key = re.sub(r"[^a-z0-9_.-]+", "_", key).strip("_")
+    return key or None
+
+
+def _unique_response_bindings(raw: dict[str, Any]) -> dict[str, str]:
+    """Return value->binding only when a response key has one unique safe value.
+
+    A search response containing many IDs is intentionally not bound: without
+    object/title association choosing the first ID would be guessing. Detail/API
+    responses with one observed ID/slug can be causally replayed.
+    """
+    grouped: dict[str, set[str]] = {}
+    for hint in raw.get("response_value_hints") or []:
+        if not isinstance(hint, dict):
+            continue
+        name = _binding_name(hint.get("key"))
+        value = str(hint.get("value") or "").strip()
+        if not name or not value or len(value) > 160 or value == "<redacted>":
+            continue
+        if _ROUTE_OPAQUE.search(value) or _SENSITIVE_REQUEST_KEY.search(name):
+            continue
+        grouped.setdefault(name, set()).add(value)
+    output: dict[str, str] = {}
+    for name, values in grouped.items():
+        if len(values) != 1:
+            continue
+        value = next(iter(values))
+        if value not in output:
+            output[value] = name
+    return output
+
+
+def _abstract_observed_value(
+    key: str,
+    raw: Any,
+    fixture: dict[str, str],
+    *,
+    allow_constant: bool,
+    bindings: dict[str, str] | None = None,
+) -> str | None:
     name = str(key or "").strip()
     value = str(raw if raw is not None else "").strip()
     if not name or not value or value == "<redacted>" or _SENSITIVE_REQUEST_KEY.search(name):
@@ -273,6 +335,11 @@ def _abstract_observed_value(key: str, raw: Any, fixture: dict[str, str], *, all
         if known and folded == known.casefold():
             return placeholder
 
+    if bindings and value in bindings:
+        bind_name = _binding_name(bindings[value])
+        if bind_name:
+            return "{binding:" + bind_name + "}"
+
     lowered = name.casefold()
     if lowered in _QUERY_KEYS:
         return "{query}"
@@ -288,9 +355,8 @@ def _abstract_observed_value(key: str, raw: Any, fixture: dict[str, str], *, all
         return "{year}" if fixture.get("year") else None
     if lowered in {"mediatype", "media_type", "type"} and fixture.get("mediaType") and folded == fixture["mediaType"]:
         return "{mediaType}"
-    # Generic "id" is deliberately NOT mapped to TMDB. It is frequently a
-    # provider-local identifier that must first be correlated from an earlier
-    # response before it can become executable.
+    # Generic provider IDs are NEVER mapped to TMDB. They become executable only
+    # after an earlier response exposed the exact same unique value.
     if lowered in {"id", "_id", "media_id", "post_id", "content_id", "movie_id", "series_id", "show_id"}:
         return None
     if allow_constant and lowered in _SAFE_CONSTANT_KEYS and re.fullmatch(r"[A-Za-z0-9_.:+/-]{1,48}", value):
@@ -298,7 +364,11 @@ def _abstract_observed_value(key: str, raw: Any, fixture: dict[str, str], *, all
     return None
 
 
-def _observed_route(raw: dict[str, Any], fixture: dict[str, str]) -> tuple[str | None, str | None]:
+def _observed_route(
+    raw: dict[str, Any],
+    fixture: dict[str, str],
+    bindings: dict[str, str] | None = None,
+) -> tuple[str | None, str | None]:
     proof_url = str(raw.get("proof_url") or "").strip()
     if proof_url:
         try:
@@ -315,7 +385,9 @@ def _observed_route(raw: dict[str, Any], fixture: dict[str, str]) -> tuple[str |
             if not segment_raw:
                 continue
             segment = unquote(segment_raw)
-            abstracted = _abstract_observed_value("path", segment, fixture, allow_constant=False)
+            abstracted = _abstract_observed_value(
+                "path", segment, fixture, allow_constant=False, bindings=bindings
+            )
             if abstracted:
                 segments.append(abstracted)
                 continue
@@ -335,7 +407,9 @@ def _observed_route(raw: dict[str, Any], fixture: dict[str, str]) -> tuple[str |
         for key, value in pairs[:20]:
             if _SENSITIVE_REQUEST_KEY.search(str(key)):
                 return None, None
-            abstracted = _abstract_observed_value(key, value, fixture, allow_constant=True)
+            abstracted = _abstract_observed_value(
+                key, value, fixture, allow_constant=True, bindings=bindings
+            )
             if abstracted is None:
                 return None, None
             if not re.fullmatch(r"[A-Za-z0-9_.:-]{1,64}", str(key)):
@@ -345,7 +419,8 @@ def _observed_route(raw: dict[str, Any], fixture: dict[str, str]) -> tuple[str |
             route += "?" + "&".join(query_parts)
         return _safe_route(route), f"{parsed.scheme}://{parsed.netloc}"
 
-    # Fallback for workers that recorded a normalized path but no safe URL.
+    # Without the raw safe URL, only already-reusable normalized patterns are
+    # executable. Ambiguous worker placeholders remain evidence-only.
     pattern = str(raw.get("path_pattern") or "").strip()
     if not pattern or "{token}" in pattern or re.search(r"/\{(?:id|value)\}(?:/|$)", pattern):
         return None, None
@@ -359,7 +434,9 @@ def _observed_route(raw: dict[str, Any], fixture: dict[str, str]) -> tuple[str |
             if _SENSITIVE_REQUEST_KEY.search(key):
                 return None, None
             if value == "{value}":
-                placeholder = _abstract_observed_value(key, "observed", fixture, allow_constant=False)
+                placeholder = _abstract_observed_value(
+                    key, "observed", fixture, allow_constant=False, bindings=bindings
+                )
                 if not placeholder:
                     return None, None
                 value = placeholder
@@ -369,11 +446,11 @@ def _observed_route(raw: dict[str, Any], fixture: dict[str, str]) -> tuple[str |
 
 
 def observed_request_recipes(candidate: dict[str, Any], result: dict[str, Any]) -> list[dict[str, Any]]:
-    """Synthesize provider-local sandbox recipes from current successful requests.
+    """Synthesize current provider request programs from current-run evidence.
 
-    This never transfers hosts or opaque identifiers between providers. Unknown
-    provider-local IDs remain non-executable until a later response->request
-    correlation step can bind them safely.
+    Provider-local response values may flow into a later request only when the
+    preceding response exposed one unique safe value for that key and the later
+    request consumed that exact value. This is causal binding, not ID guessing.
     """
     output: list[dict[str, Any]] = []
     seen: set[str] = set()
@@ -382,6 +459,7 @@ def observed_request_recipes(candidate: dict[str, Any], result: dict[str, Any]) 
             continue
         fixture = _fixture_context(raw_test)
         semantic_type = fixture.get("mediaType") or ""
+        available_bindings: dict[str, str] = {}
         for raw in raw_test.get("network_observations") or []:
             if not isinstance(raw, dict) or raw.get("infrastructure") is True:
                 continue
@@ -393,72 +471,92 @@ def observed_request_recipes(candidate: dict[str, Any], result: dict[str, Any]) 
             method = str(raw.get("method") or "GET").upper()
             if method not in {"GET", "POST"}:
                 continue
-            route, origin = _observed_route(raw, fixture)
-            if not route:
-                continue
-            stage = str(raw.get("stage") or "").strip().casefold()
-            role = {
-                "search": "search",
-                "player": "player",
-                "episode": "episode",
-                "content_lookup": "detail",
-                "origin_probe": "other",
-            }.get(stage, _route_role(route))
-            body_kind = str(raw.get("proof_body_kind") or "none").casefold()
-            body: dict[str, str] = {}
-            if method == "POST":
-                if body_kind not in {"form", "json"}:
-                    continue
-                values = raw.get("proof_body_values") if isinstance(raw.get("proof_body_values"), dict) else {}
-                fields = [str(value) for value in raw.get("proof_body_fields") or []][:40]
-                if not fields:
-                    fields = list(values)[:40]
-                valid = True
-                for key in fields:
-                    if key == "$text":
-                        valid = False
-                        break
-                    abstracted = _abstract_observed_value(key, values.get(key), fixture, allow_constant=True)
-                    if abstracted is None:
-                        valid = False
-                        break
-                    body[key] = abstracted
-                if not valid or not body:
-                    continue
-            else:
-                body_kind = "none"
+            route, origin = _observed_route(raw, fixture, available_bindings)
+            recipe: dict[str, Any] | None = None
+            if route:
+                stage = str(raw.get("stage") or "").strip().casefold()
+                role = {
+                    "search": "search",
+                    "player": "player",
+                    "episode": "episode",
+                    "content_lookup": "detail",
+                    "origin_probe": "other",
+                }.get(stage, _route_role(route))
+                body_kind = str(raw.get("proof_body_kind") or "none").casefold()
+                body: dict[str, str] = {}
+                if method == "POST":
+                    if body_kind not in {"form", "json"}:
+                        route = None
+                    else:
+                        values = raw.get("proof_body_values") if isinstance(raw.get("proof_body_values"), dict) else {}
+                        fields = [str(value) for value in raw.get("proof_body_fields") or []][:40]
+                        if not fields:
+                            fields = list(values)[:40]
+                        valid = True
+                        for key in fields:
+                            if key == "$text":
+                                valid = False
+                                break
+                            abstracted = _abstract_observed_value(
+                                key,
+                                values.get(key),
+                                fixture,
+                                allow_constant=True,
+                                bindings=available_bindings,
+                            )
+                            if abstracted is None:
+                                valid = False
+                                break
+                            body[key] = abstracted
+                        if not valid or not body:
+                            route = None
+                else:
+                    body_kind = "none"
 
-            header_names = sorted({
-                str(name).casefold()
-                for name in (raw.get("proof_headers") or {}).keys()
-                if str(name).casefold() in _SAFE_REQUEST_HEADERS
-            })
-            content_type = str(raw.get("content_type") or "").casefold()
-            recipe_raw = {
-                "route": route,
-                "origin": origin or "",
-                "role": role,
-                "method": method,
-                "bodyKind": body_kind,
-                "body": body,
-                "headerNames": header_names,
-                "response": "json" if "json" in content_type else "html-or-text",
-                "semanticType": semantic_type,
-                "streamProof": bool(stage == "player" and any(token in content_type for token in ("mpegurl", "dash", "video/"))),
-                "executable": True,
-            }
-            recipe = _safe_request_recipe(recipe_raw, peer=False)
-            if not recipe:
-                continue
-            recipe["source"] = "current-observation"
-            fingerprint = json.dumps(recipe, sort_keys=True, separators=(",", ":"))
-            if fingerprint in seen:
-                continue
-            seen.add(fingerprint)
-            output.append(recipe)
-            if len(output) >= 32:
-                return output
+                if route:
+                    header_names = sorted({
+                        str(name).casefold()
+                        for name in (raw.get("proof_headers") or {}).keys()
+                        if str(name).casefold() in _SAFE_REQUEST_HEADERS
+                    })
+                    content_type = str(raw.get("content_type") or "").casefold()
+                    template_values = [route, *body.values()]
+                    required_bindings = sorted({
+                        match.group(1).casefold()
+                        for value in template_values
+                        for match in _BINDING_PLACEHOLDER.finditer(str(value))
+                    })
+                    recipe_raw = {
+                        "route": route,
+                        "origin": origin or "",
+                        "role": role,
+                        "method": method,
+                        "bodyKind": body_kind,
+                        "body": body,
+                        "headerNames": header_names,
+                        "response": "json" if "json" in content_type else "html-or-text",
+                        "semanticType": semantic_type,
+                        "streamProof": bool(stage == "player" and any(token in content_type for token in ("mpegurl", "dash", "video/"))),
+                        "requiredBindings": required_bindings,
+                        "executable": True,
+                    }
+                    recipe = _safe_request_recipe(recipe_raw, peer=False)
+
+            # Bindings are learned only from a response we can replay. This
+            # prevents a dependent player recipe from relying on an unreachable
+            # native-only search/detail request.
+            if recipe:
+                recipe["source"] = "current-observation"
+                fingerprint = json.dumps(recipe, sort_keys=True, separators=(",", ":"))
+                if fingerprint not in seen:
+                    seen.add(fingerprint)
+                    output.append(recipe)
+                    if len(output) >= 32:
+                        return output
+                for value, name in _unique_response_bindings(raw).items():
+                    available_bindings.setdefault(value, name)
     return output
+
 
 def _provider_request_recipes(provider_id: str) -> list[dict[str, Any]]:
     experience = _load_experience()
