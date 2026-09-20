@@ -277,6 +277,73 @@ assert partial_rows, partial_rows
 assert partial_rows[0]["url"] == "https://demo.example/api/file/abc123", partial_rows
 assert partial_rows[0]["isDirect"] is True, partial_rows
 
+
+# Reusable terminal adapters learned from multiple historical providers:
+# encoded destination wrappers and Pixeldrain share URLs.
+adapter_wrapped = generator.apply(
+    """
+module.exports={getStreams:async function(){
+  return [
+    {url:"https://wrapper.example/dl.php?link=https%253A%252F%252Fcdn.example%252Fwrapped.m3u8"},
+    {url:"https://pixeldrain.net/u/pd123"}
+  ];
+}};
+""",
+    options={
+        "provider_name": "Demo",
+        "base_url": "https://demo.example",
+        "types": ["movie"],
+        "search_paths": [],
+        "direct_paths": [],
+        "request_recipes": [],
+        "max_pages": 4,
+        "max_embeds": 4,
+        "max_depth": 2,
+    },
+)
+
+adapter_runner = r"""
+const vm=require('vm');
+const src=process.argv[2],calls=[];
+function H(values){return {get:(key)=>values[String(key).toLowerCase()]||null,getSetCookie:()=>[]}}
+const sandbox={
+  module:{exports:{}},exports:{},URL,AbortController,setTimeout,clearTimeout,Uint8Array,decodeURIComponent,
+  fetch:async(input,init={})=>{
+    const url=String(input); calls.push(url);
+    if(url==='https://pixeldrain.net/api/file/pd123') return {
+      ok:true,status:206,url,
+      headers:H({'content-type':'application/octet-stream','content-range':'bytes 0-99/1000'}),
+      text:async()=>{throw new Error('binary pixeldrain API must not be text-read')},
+      json:async()=>{throw new Error('not json')}
+    };
+    throw new Error('unexpected fetch '+url);
+  }
+};
+sandbox.globalThis=sandbox;
+vm.runInNewContext(src,sandbox,{timeout:5000});
+sandbox.module.exports.getStreams({tmdbId:'101',mediaType:'movie',title:'Fixture Movie',year:2020})
+ .then(rows=>console.log(JSON.stringify({rows,calls})))
+ .catch(err=>{console.error(err);process.exit(1)});
+"""
+with tempfile.TemporaryDirectory() as directory:
+    path = Path(directory) / "terminal-adapters.cjs"
+    path.write_text(adapter_runner, encoding="utf-8")
+    completed = subprocess.run(
+        ["node", str(path), adapter_wrapped],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=25,
+    )
+    assert completed.returncode == 0, completed.stderr
+    adapter_execution = json.loads(completed.stdout.strip())
+
+adapter_urls = {row["url"] for row in adapter_execution["rows"]}
+assert "https://cdn.example/wrapped.m3u8" in adapter_urls, adapter_execution
+assert "https://pixeldrain.net/api/file/pd123" in adapter_urls, adapter_execution
+assert "https://wrapper.example/dl.php?link=https%253A%252F%252Fcdn.example%252Fwrapped.m3u8" not in adapter_execution["calls"], adapter_execution
+assert "https://pixeldrain.net/api/file/pd123" in adapter_execution["calls"], adapter_execution
+
 generator_source = GENERATOR.read_text(encoding="utf-8")
 assert 'order={player:0,source:1,api:2,episode:3,detail:4,search:5}' in generator_source
 assert '(?:file|drive|download)' in generator_source
