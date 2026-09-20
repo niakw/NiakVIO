@@ -110,7 +110,7 @@ def build_strategy_blueprints(
             "causalTrigger": "retained chain hit reaches player/resolver territory but media extraction/validation is incomplete",
             "method": "replay retained chain hit first; classify terminal host/player family; apply bounded extractor/resolver capability and follow only scored player/media transitions",
             "requiredEvidence": ["retained chain hit", "terminal host/player family", "response/body route proof"],
-            "acceptanceProof": ["final media endpoint playback verified", "terminal identity preserved", "no green-lane regression"],
+            "acceptanceProof": ["playback-verified media", "terminal identity preserved", "no green-lane regression"],
         },
         "transport": {
             "strategyId": "native_transport_differential_v1",
