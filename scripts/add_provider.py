@@ -328,7 +328,7 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
     }
     overrides["provider_capabilities"][provider_id] = {
         "strategy": strategy,
-        "validation": "onboarding_pending",
+        "validation": "bulk_onboarding_pending" if bulk else "onboarding_pending",
         "allow_html_url": strategy in {"html_scraper", "mixed_embed_resolver", "iframe"},
         "requires_direct_media": strategy in {"api_stream_resolver", "direct_media"},
         "observed_origins": origins,
@@ -369,7 +369,7 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
     hubs["providers"][provider_id] = {
         "id": provider_id,
         "name": name,
-        "manifest_status": "Onboarding",
+        "manifest_status": "Bulk Onboarding" if bulk else "Onboarding",
         "category": category,
         "hub": hub or None,
         "direct": direct or None,
@@ -467,14 +467,14 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
         "upstream_id": provider_id,
         "upstream_filename": None,
         "checked_at": iso_now(),
-        "check_mode": "onboarding_quick",
+        "check_mode": "bulk_onboarding_pending" if bulk else "onboarding_quick",
         "check_status": "pending",
         "health_score": 0,
         "activation_eligible": False,
         "strict_activation_eligible": False,
         "runtime_evidence_eligible": False,
-        "activation_mode": "onboarding_pending",
-        "activation_blockers": ["onboarding_quick_lab_pending"],
+        "activation_mode": "bulk_onboarding_pending" if bulk else "onboarding_pending",
+        "activation_blockers": ["bulk_census_full_ok_required"] if bulk else ["onboarding_quick_lab_pending"],
         "onboarding_rebuild": bool(replace_existing),
     }
     write_json(PROVENANCE, provenance)
