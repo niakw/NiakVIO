@@ -59,7 +59,6 @@ VERSION_FLOORS = ROOT / "provider-version-floors.json"
 ADAPTIVE_MARKER = "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V"
 ADAPTIVE_MARKER_V5 = "/* NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5"
 ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
-ADAPTIVE_SCRIPT = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v4.py"
 ADAPTIVE_SCRIPT_V5 = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v5.py"
 ADAPTIVE_DOMAIN_BEGIN = "/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */"
 ADAPTIVE_DOMAIN_END = "/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:END */"
@@ -352,10 +351,11 @@ def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any
     if ADAPTIVE_MARKER_V5.encode("utf-8") in data:
         return data, []
 
+    # V4 is historical input only. Any legacy adaptive provenance now migrates
+    # straight to the sole current V5 implementation.
     marker_present = (
         ADAPTIVE_MARKER_V5.encode("utf-8") in data
-        if revision >= 5
-        else ADAPTIVE_MARKER.encode("utf-8") in data
+        or ADAPTIVE_MARKER.encode("utf-8") in data
     )
     preserved_ci_uncertain = (
         str(provenance_row.get("activation_mode") or "") == "preserved_current_ci_uncertain"
@@ -366,8 +366,8 @@ def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any
         return data, []
 
     options = dict(current["options"])
-    script = ADAPTIVE_SCRIPT_V5 if revision >= 5 else ADAPTIVE_SCRIPT
-    module_name = "nuvio_reapply_adaptive_runtime_v5" if revision >= 5 else "nuvio_reapply_adaptive_runtime"
+    script = ADAPTIVE_SCRIPT_V5
+    module_name = "nuvio_reapply_adaptive_runtime_v5"
     spec = importlib.util.spec_from_file_location(module_name, script)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"cannot load adaptive runtime patcher: {script}")
@@ -381,7 +381,8 @@ def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any
         "name": "adaptive_runtime_implementation_revision",
         "phase": "runtime",
         "profile": "adaptive_runtime_recovery",
-        "runtime_revision": "generic-core-v3" if revision >= 5 else "generic-core-v2",
+        "runtime_revision": "generic-core-v3",
+        "migrated_from_revision": revision,
     }]
 
 
