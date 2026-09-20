@@ -488,7 +488,7 @@ def probe_target(
     profile_rows: list[dict[str, Any]] = []
     for profile_name, user_agent in profiles:
         attempt_rows: list[dict[str, Any]] = []
-        with tempfile.TemporaryDirectory(prefix="niakvio-waf-browser-") as profile:
+        with tempfile.TemporaryDirectory(prefix="niakvio-waf-browser-", ignore_cleanup_errors=True) as profile:
             for attempt in range(1, attempt_limit + 1):
                 cmd = [
                     browser,
