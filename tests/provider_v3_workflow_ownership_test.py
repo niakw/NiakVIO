@@ -65,7 +65,9 @@ for required in (
     "python scripts/build_provider_history_matrix_v3.py",
     "python scripts/check_provider_non_regression_v1.py --candidate-gate --all --base-ref HEAD",
     "scripts/run_provider_brain_repair.py",
+    "scripts/build_brain_repair_experience.py",
     "automation/provider-brain-repair-latest.json",
+    "automation/brain-repair-experience.json",
 ):
     assert required in repair, f"canonical provider repair workflow missing: {required}"
 pipeline=(ROOT/"scripts/run_provider_repair_pipeline_v6.py").read_text(encoding="utf-8")
@@ -82,6 +84,9 @@ for required in (
     assert required in pipeline, f"canonical provider repair pipeline missing: {required}"
 assert '"publicationAllowed": False' in pipeline
 assert '"mainWritesAllowed": False' in pipeline
+brain_runner=(ROOT/"scripts/run_provider_brain_repair.py").read_text(encoding="utf-8")
+assert "build_brain_repair_experience.py" in brain_runner
+assert "brain-repair-experience.json" in brain_runner
 
 # Manual reconstruction is scoped to the exact current provider publication.
 # Historical provider-old/ identities remain archival inputs, never current output.
