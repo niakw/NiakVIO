@@ -218,6 +218,65 @@ drive_calls = [row for row in captured_execution["calls"] if row["url"] == "http
 assert len(drive_calls) >= 2, captured_execution
 assert all(row["ref"] == "https://demo.example/detail/fixture-movie" for row in drive_calls), captured_execution
 
+
+# Extensionless API/file terminals that prove binary partial content must remain
+# sandbox media candidates. Final playable/identity validation still happens
+# outside this resolver.
+partial_wrapped = generator.apply(
+    "module.exports={getStreams:async function(){return []}};\n",
+    options={
+        "provider_name": "Demo",
+        "base_url": "https://demo.example",
+        "types": ["movie"],
+        "search_paths": [],
+        "direct_paths": ["/api/file/abc123"],
+        "request_recipes": [],
+        "max_pages": 4,
+        "max_embeds": 4,
+        "max_depth": 2,
+    },
+)
+
+partial_runner = r"""
+const vm=require('vm');
+const src=process.argv[2];
+function H(values){return {get:(key)=>values[String(key).toLowerCase()]||null,getSetCookie:()=>[]}}
+const sandbox={
+  module:{exports:{}},exports:{},URL,AbortController,setTimeout,clearTimeout,Uint8Array,
+  fetch:async(input,init={})=>{
+    const url=String(input);
+    if(url==='https://demo.example/api/file/abc123') return {
+      ok:true,status:206,url,
+      headers:H({'content-type':'application/octet-stream','content-range':'bytes 0-16383/999999'}),
+      text:async()=>{throw new Error('binary endpoint must not be read as text')},
+      json:async()=>{throw new Error('not json')}
+    };
+    throw new Error('unexpected '+url);
+  }
+};
+sandbox.globalThis=sandbox;
+vm.runInNewContext(src,sandbox,{timeout:5000});
+sandbox.module.exports.getStreams({tmdbId:'101',mediaType:'movie',title:'Fixture Movie',year:2020})
+ .then(rows=>console.log(JSON.stringify(rows)))
+ .catch(err=>{console.error(err);process.exit(1)});
+"""
+with tempfile.TemporaryDirectory() as directory:
+    path = Path(directory) / "partial-content.cjs"
+    path.write_text(partial_runner, encoding="utf-8")
+    completed = subprocess.run(
+        ["node", str(path), partial_wrapped],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=25,
+    )
+    assert completed.returncode == 0, completed.stderr
+    partial_rows = json.loads(completed.stdout.strip())
+
+assert partial_rows, partial_rows
+assert partial_rows[0]["url"] == "https://demo.example/api/file/abc123", partial_rows
+assert partial_rows[0]["isDirect"] is True, partial_rows
+
 generator_source = GENERATOR.read_text(encoding="utf-8")
 assert 'order={player:0,source:1,api:2,episode:3,detail:4,search:5}' in generator_source
 assert '(?:file|drive|download)' in generator_source
