@@ -225,7 +225,7 @@ assert "--location" in direct_calls[0]
 assert mod.NUVIO_TV_WINDOWS_UA in direct_calls[0]
 
 source = path.read_text(encoding="utf-8")
-for forbidden in ("cf_clearance", "turnstile token", "captcha solver", "undetected_chromedriver", "cloudscraper", "flaresolverr"):
+assert "ignore_cleanup_errors=True" in source, "Chromium profile cleanup must tolerate late child-process files"\nfor forbidden in ("cf_clearance", "turnstile token", "captcha solver", "undetected_chromedriver", "cloudscraper", "flaresolverr"):
     assert forbidden not in source.casefold(), forbidden
 
 print("provider WAF ordinary-browser-session diagnostic contract passed")
