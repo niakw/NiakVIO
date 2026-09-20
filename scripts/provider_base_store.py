@@ -1163,12 +1163,19 @@ function _spv241ExplicitPlayerPayloadUrls(text, base) {
   }
   return _uniq(out).slice(0, 48);
 }
+/* NIAKVIO_PROVIDER_ADAPTIVE_PLAYER_FANOUT_V25 */
 async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
-  const queue = _spv187PrioritizedPlayerRoutes(seedUrls).filter(_crawlEligible).sort((a,b)=>_spv187QueueScore(b)-_spv187QueueScore(a)).slice(0, 8).map(url => ({ url, depth: 0, referer }));
+  const rankedSeeds = _spv187PrioritizedPlayerRoutes(seedUrls).filter(_crawlEligible).sort((a,b)=>_spv187QueueScore(b)-_spv187QueueScore(a));
+  // Small pages keep the historical budget. Dense multi-player pages get a
+  // wider initial window so a working host cannot be truncated behind several
+  // dead/blocked embeds. The cap remains bounded for runtime predictability.
+  const seedCap = Math.min(16, Math.max(8, rankedSeeds.length));
+  const queue = rankedSeeds.slice(0, seedCap).map(url => ({ url, depth: 0, referer }));
   const seen = new Set();
   const streams = [];
   let requests = 0;
-  while (queue.length && requests < 10 && streams.length < 12) {
+  const requestBudget = Math.min(18, Math.max(10, queue.length + 4));
+  while (queue.length && requests < requestBudget && streams.length < 12) {
     queue.sort((a,b)=>_spv187QueueScore(b.url)-_spv187QueueScore(a.url));
     const row = queue.shift();
     if (!row || seen.has(row.url)) continue;
