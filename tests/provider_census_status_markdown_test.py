@@ -51,6 +51,12 @@ provider_overrides = {
     }
 }
 
+waf_browser_evidence = {
+    "rows": [
+        {"provider": "waf", "outcome": "browser_content_reached"},
+    ]
+}
+
 baseline = {
     "providers": [
         {
@@ -70,7 +76,7 @@ baseline = {
     ]
 }
 
-rows = {row["provider"]: row for row in build_status_rows(report, history, baseline, candidate_evidence, provider_overrides)}
+rows = {row["provider"]: row for row in build_status_rows(report, history, baseline, candidate_evidence, provider_overrides, waf_browser_evidence)}
 assert rows["full"]["status"] == "FULL OK"
 assert rows["partial"]["status"] == "PARTIAL OK"
 assert rows["no-proof"]["status"] == "NO PROOF"
@@ -79,7 +85,7 @@ assert rows["candidate"]["status"] == "CANDIDATE OK"
 assert rows["candidate"]["candidateProof"] == ["run 34309729426"]
 assert rows["route"]["status"] == "ROUTE PROVEN"
 assert rows["route"]["routeProof"] == ["3 live routes / movie"]
-assert rows["waf"]["status"] == "PROVIDER WAF/ANTIBOT"
+assert rows["waf"]["status"] == "HARNESS MISMATCH"
 assert rows["network-blocked"]["status"] == "PROVIDER NETWORK BLOCKED"
 assert rows["broken"]["status"] == "PROVIDER JS BROKEN"
 assert rows["full"]["brainCheckRequired"] is False
@@ -96,7 +102,7 @@ assert not (NETWORK_STAGES & TECHNICAL_STAGES)
 assert rows["carried-green"]["status"] == "FULL OK"
 assert rows["carried-green"]["testedThisRun"] is False
 
-md = render(report, run_id="123", sha="abcdef0123456789", history=history, baseline=baseline, candidate_evidence=candidate_evidence, provider_overrides=provider_overrides)
+md = render(report, run_id="123", sha="abcdef0123456789", history=history, baseline=baseline, candidate_evidence=candidate_evidence, provider_overrides=provider_overrides, waf_browser_evidence=waf_browser_evidence)
 assert "🟢 **FULL OK**" in md
 assert "🟡 **PARTIAL OK**" in md
 assert "🟦 **CANDIDATE OK**" in md
@@ -104,7 +110,7 @@ assert "🟪 **ROUTE PROVEN**" in md
 assert "3 live routes / movie" in md
 assert "🔵 **NO PROOF**" in md
 assert "🟣 **CHAIN REACHED**" in md
-assert "🟫 **PROVIDER WAF/ANTIBOT**" in md
+assert "🟧 **HARNESS MISMATCH**" in md
 assert "🟤 **PROVIDER NETWORK BLOCKED**" in md
 assert "🟠 **PROVIDER JS BROKEN**" in md
 assert "**no-proof**" in md
@@ -120,7 +126,32 @@ assert "run 123" in md
 assert "SHA abcdef012345" in md
 assert "Symptomatic providers: **7**" in md
 assert "automated repair queue: **6**" in md
-assert "environment-only/WAF: **1**" in md
+assert "harness/environment queue: **1**" in md
+
+# A GitHub-hosted browser challenge that remains unresolved is still an
+# environment/harness state, not proof that provider JS is broken.
+blocked_report = {
+    "provider_count": 1,
+    "rows": [{
+        "provider_id": "blocked-waf",
+        "semantic_type": "movie",
+        "status": "no_streams",
+        "verified": 0,
+        "contradictions": 0,
+        "debug_stage": "provider_waf_challenge",
+        "sample_count": 1,
+    }],
+}
+blocked = build_status_rows(
+    blocked_report,
+    {},
+    waf_browser_evidence={"rows": [{
+        "provider": "blocked-waf",
+        "outcome": "browser_challenge_persisted",
+    }]},
+)[0]
+assert blocked["status"] == "HARNESS/ENV BLOCKED", blocked
+assert blocked["repairEligible"] is False, blocked
 
 # A previously proven fixture that is explicitly replayed and now returns a
 # clean zero is a provider regression, not NO PROOF.
