@@ -62,7 +62,7 @@ function buildPlan(item) {
   const candidate = asRecord(item.candidate);
   const result = asRecord(item.result);
   const state = asRecord(item.state);
-  const evidence = deriveEvidence(candidate, result);
+  const evidence = applyCensusPrior(deriveEvidence(candidate, result), candidate);
   evidence.failureClass = classifyFailure(evidence);
   const signature = evidenceSignature(evidence);
   const providerId = stringValue(candidate.canonical_id ?? candidate.upstream_id).toLowerCase();
@@ -150,6 +150,9 @@ function buildPlan(item) {
     repairEngine: repairTarget.engine,
     pipelineStage: repairTarget.pipelineStage,
     observedPipelineStage: stringValue(evidence.observedPipelineStage, "unknown"),
+    censusStatus: stringValue(asRecord(candidate.censusPrior).status),
+    censusPriorApplied: evidence.censusPriorApplied === true,
+    censusPriorReason: stringValue(evidence.censusPriorReason),
     learningDisposition: repairTarget.learningDisposition,
     capabilityStrategy,
     signature,
@@ -328,6 +331,67 @@ function profilesForRepairTarget(plan, repairTarget) {
     .filter(Boolean);
   return [...new Set([...transferred, ...stringArray(repairTarget.profiles)])];
 }
+
+function applyCensusPrior(rawEvidence, candidate) {
+  const evidence = { ...asRecord(rawEvidence) };
+  const prior = asRecord(candidate.censusPrior);
+  const status = stringValue(prior.status).toUpperCase();
+  if (!status) return evidence;
+
+  const currentFailure = classifyFailure(evidence);
+  const currentStage = stringValue(evidence.observedPipelineStage, "unknown").toLowerCase();
+  const safetyOrSuccess = new Set([
+    "healthy", "identity_mismatch", "structured_parse_gap", "runtime_contract_drift",
+    "media_validation_gap", "playback_context_gap", "playback_http_access",
+    "playback_http_gone", "playback_rate_limited", "playback_http_upstream",
+    "playback_http_response", "playback_timeout", "playback_dns", "playback_tls",
+    "playback_parser", "playback_decoder", "playback_io", "playback_live_window",
+    "playback_runtime_setup", "playback_player_error", "playback_duration_unknown",
+    "short_media", "audio_track_gap",
+  ]);
+  if (safetyOrSuccess.has(currentFailure)) return evidence;
+
+  const withPrior = (failureClass, stage, reason) => ({
+    ...evidence,
+    forcedFailureClass: failureClass,
+    observedPipelineStage: pipelineStageRank(stage) > pipelineStageRank(currentStage) ? stage : currentStage,
+    censusPriorApplied: true,
+    censusPriorReason: reason,
+  });
+
+  if (status === "CHAIN REACHED") {
+    return withPrior(
+      "chain_terminal_gap",
+      "player",
+      "census_chain_reached_forbids_regression_to_search_or_detail",
+    );
+  }
+  if (status === "ROUTE PROVEN") {
+    return withPrior(
+      "route_proven_gap",
+      "detail",
+      "census_route_proof_forbids_rediscovering_search",
+    );
+  }
+  if (status === "CANDIDATE OK") {
+    if (currentFailure === "transport_blocked" || currentFailure === "dns_unreachable") return evidence;
+    return withPrior(
+      "candidate_replay_gap",
+      "player",
+      "census_candidate_playback_requires_current_byte_reproduction",
+    );
+  }
+  if (status === "PROVIDER NETWORK BLOCKED") {
+    if (pipelineStageRank(currentStage) >= pipelineStageRank("player")) return evidence;
+    return withPrior(
+      "provider_transport_gap",
+      currentStage === "unknown" ? "source" : currentStage,
+      "census_network_block_requires_transport_before_parser_mutation",
+    );
+  }
+  return evidence;
+}
+
 
 function deriveEvidence(candidate, result) {
   const status = stringValue(result.status, "runtime_error");
