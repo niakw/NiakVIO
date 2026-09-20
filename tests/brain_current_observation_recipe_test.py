@@ -127,6 +127,7 @@ assert [row["route"] for row in recipes] == [
 ], recipes
 post = recipes[0]
 assert post["source"] == "current-observation", post
+assert post["executable"] is True, post
 assert post["method"] == "POST", post
 assert post["body"] == {"query": "{query}", "page": "1"}, post
 assert post["headerNames"] == ["accept", "content-type"], post
