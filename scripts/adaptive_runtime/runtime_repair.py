@@ -1000,6 +1000,13 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         experiment_variant,
     )
     role_order = {role: index for index, role in enumerate(role_preferences)}
+    # Binding placeholders are causal request-program inputs, not standalone
+    # direct paths. They become executable only after an earlier response has
+    # produced the binding value.
+    direct_paths = [
+        route for route in direct_paths
+        if not _BINDING_PLACEHOLDER.search(route)
+    ]
     if role_order:
         direct_paths = sorted(
             direct_paths,
