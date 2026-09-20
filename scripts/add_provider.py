@@ -5,7 +5,6 @@ import argparse
 import hashlib
 import json
 import re
-import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -23,6 +22,8 @@ WORK = ROOT / ".provider-onboarding"
 import sys
 sys.path.insert(0, str(ROOT / "scripts"))
 import provider_base_store as base_store  # noqa: E402
+from apply_provider_overrides import apply_overrides  # noqa: E402
+from provider_byte_stability import verify_bytes  # noqa: E402
 
 
 def load_json(path: Path, default: Any) -> Any:
@@ -108,6 +109,43 @@ def bool_value(value: Any, default: bool = False) -> bool:
     if not text:
         return default
     return text in {"1", "true", "yes", "on", "oui"}
+
+
+def materialize_onboarding_bundle(
+    provider_id: str,
+    entry: dict[str, Any],
+    provider_model: dict[str, Any],
+    base_relative: str,
+) -> tuple[str, str, list[dict[str, Any]]]:
+    """Compile one executable Provider v3 bundle from durable Base + structured DATA.
+
+    The ProviderBase remains provider-neutral durable state. Publication must
+    never be a byte-for-byte copy of that Base because the Base references
+    NIAKVIO_PROVIDER_MODEL, which exists only after DATA composition.
+    """
+    base_path = ROOT / base_relative
+    base = base_path.read_bytes()
+    data = base_store.build_provider_data_model(
+        provider_id,
+        entry,
+        known_site=provider_model.get("knownSite"),
+        provider_model=provider_model,
+    )
+    bundle = base_store.compose_provider_bundle(provider_id, base, data)
+    bundle, applied = apply_overrides(
+        provider_id,
+        bundle,
+        phase="discovery",
+        include_global_core=True,
+        config_path=OVERRIDES,
+    )
+    bundle, _stability = verify_bytes(bundle)
+    digest = hashlib.sha256(bundle).hexdigest()
+    published_relative = f"providers/{provider_id}--nuvio--{digest[:16]}.js"
+    published_path = ROOT / published_relative
+    published_path.parent.mkdir(parents=True, exist_ok=True)
+    published_path.write_bytes(bundle)
+    return published_relative, digest, applied
 
 
 def first_fixture(media_type: str) -> dict[str, Any]:
@@ -422,11 +460,12 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
         provider_model=provider_model,
         overrides_path=OVERRIDES,
     )
-    base_path = ROOT / base_relative
-    published_relative = f"providers/{provider_id}--nuvio--{base_sha[:16]}.js"
-    published_path = ROOT / published_relative
-    published_path.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(base_path, published_path)
+    published_relative, published_sha, published_patches = materialize_onboarding_bundle(
+        provider_id,
+        entry,
+        provider_model,
+        base_relative,
+    )
     entry["filename"] = published_relative
     scrapers = manifest.setdefault("scrapers", [])
     if replace_existing:
@@ -449,8 +488,8 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
         **previous_provenance,
         "id": provider_id,
         "published_filename": published_relative,
-        "sha256": base_sha,
-        "patched_sha256": base_sha,
+        "sha256": published_sha,
+        "patched_sha256": published_sha,
         "base_filename": base_relative,
         "base_sha256": base_sha,
         "base_source": base_store.CLEAN_RECONSTRUCTION_SOURCE,
@@ -458,7 +497,7 @@ def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
         "clean_reconstruction_verified": True,
         "clean_reconstruction_authoring_version": base_store.CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
         "clean_reconstruction_verified_at": iso_now(),
-        "local_patches": [],
+        "local_patches": published_patches,
         "source": "niakvio-onboarding",
         "source_name": "NiakVIO structured provider onboarding",
         "source_repository": "NiakVIO",
@@ -612,11 +651,12 @@ def refresh(provider_id: str) -> dict[str, Any]:
         provider_model=model,
         overrides_path=OVERRIDES,
     )
-    base_path = ROOT / base_relative
-    published_relative = f"providers/{provider_id}--nuvio--{base_sha[:16]}.js"
-    published_path = ROOT / published_relative
-    published_path.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(base_path, published_path)
+    published_relative, published_sha, published_patches = materialize_onboarding_bundle(
+        provider_id,
+        entry,
+        model,
+        base_relative,
+    )
     entry["filename"] = published_relative
     write_json(MANIFEST, manifest)
 
@@ -625,8 +665,8 @@ def refresh(provider_id: str) -> dict[str, Any]:
     if not isinstance(row, dict):
         raise ValueError(f"{provider_id}: missing provenance during route refresh")
     row["published_filename"] = published_relative
-    row["sha256"] = base_sha
-    row["patched_sha256"] = base_sha
+    row["sha256"] = published_sha
+    row["patched_sha256"] = published_sha
     row["base_filename"] = base_relative
     row["base_sha256"] = base_sha
     row["base_source"] = base_store.CLEAN_RECONSTRUCTION_SOURCE
@@ -634,6 +674,7 @@ def refresh(provider_id: str) -> dict[str, Any]:
     row["clean_reconstruction_verified"] = True
     row["clean_reconstruction_authoring_version"] = base_store.CLEAN_RECONSTRUCTION_AUTHORING_VERSION
     row["clean_reconstruction_verified_at"] = iso_now()
+    row["local_patches"] = published_patches
     row["onboarding_route_refresh"] = {
         "direct": direct or None,
         "hub": hub or None,
