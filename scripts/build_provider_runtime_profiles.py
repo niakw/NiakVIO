@@ -109,8 +109,6 @@ def collect_staged(stage: Path) -> tuple[dict[str, tuple[dict, Path]], dict | No
         if not isinstance(candidate, dict):
             continue
         provider_id = str(candidate.get("canonical_id") or "").strip().casefold()
-        if target_ids and provider_id not in target_ids:
-            continue
         local_path = candidate.get("local_path")
         if not provider_id or not isinstance(local_path, str):
             continue
@@ -228,6 +226,8 @@ def reapply_stage(stage: Path, registry: dict, target_ids: set[str] | None = Non
         if not isinstance(candidate, dict):
             continue
         provider_id = str(candidate.get("canonical_id") or "").strip().casefold()
+        if target_ids and provider_id not in target_ids:
+            continue
         local_path = candidate.get("local_path")
         if not provider_id or not isinstance(local_path, str):
             continue
