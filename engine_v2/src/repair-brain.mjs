@@ -1,6 +1,6 @@
 const HTTP_BLOCKED = new Set([401, 403, 407, 429, 451]);
 const HTTP_GONE = new Set([404, 410]);
-export const BRAIN_CONTROL_PLANE_VERSION = 6;
+export const BRAIN_CONTROL_PLANE_VERSION = 7;
 
 export const FAILURE_CLASSES = Object.freeze([
   "healthy", "not_invoked", "dns_unreachable", "transport_blocked", "search_gap",
@@ -11,6 +11,7 @@ export const FAILURE_CLASSES = Object.freeze([
   "playback_dns", "playback_tls", "playback_parser", "playback_decoder",
   "playback_io", "playback_live_window", "playback_runtime_setup",
   "playback_player_error", "playback_duration_unknown", "short_media", "audio_track_gap",
+  "route_proven_gap", "chain_terminal_gap", "candidate_replay_gap", "provider_transport_gap",
   "structured_parse_gap", "runtime_contract_drift", "unknown_failure",
 ]);
 
@@ -69,6 +70,21 @@ export const REPAIR_RECIPES = Object.freeze({
   short_media: [recipe("reject-short-or-preview-media", ["duration", "identity", "ranking"], ["compare reader duration with fixture expectation", "reject previews/trailers/20-second placeholders", "advance to the next same-provider candidate and validate again"])],
   audio_track_gap: [recipe("preserve-audio-track-integrity", ["audio", "hls", "media"], ["treat missing audio as a Core media-integrity failure", "preserve master-playlist audio groups", "reject or rerank media proven to have no usable audio track"])],
   media_validation_gap: [recipe("validate-final-media", ["media", "identity"], ["probe final media response", "verify media identity and duration", "verify HLS/DASH/direct signatures", "reject HTML/error bodies and fake media"])],
+  route_proven_gap: [
+    recipe("complete-proven-route-chain", ["routes", "detail", "player"], ["replay qualified provider routes first", "preserve the proven catalogue identity", "advance from detail to player/embed without rediscovering search", "validate a terminal media candidate"]),
+    recipe("expand-proven-route-neighborhood", ["routes", "api", "player"], ["reuse same-provider route families", "probe adjacent API/player endpoints supported by current evidence", "reject opaque fixture-only transfer"]),
+  ],
+  chain_terminal_gap: [
+    recipe("finish-reached-terminal-chain", ["player", "embed", "media", "xhr"], ["start from the deepest reached provider page/player", "inspect player XHR and nested embeds", "follow same-provider terminal candidates", "require playable media proof"]),
+    recipe("resolve-terminal-wrapper", ["media", "html", "parser"], ["treat deceptive media-looking HTML as a wrapper", "continue bounded traversal", "preserve referer/origin/session context"]),
+  ],
+  candidate_replay_gap: [
+    recipe("replay-verified-candidate-path", ["routes", "player", "media"], ["prioritize current candidate proof routes", "reconstruct only the missing current-byte runtime behavior", "retest exact semantic lanes", "promote only after current playback proof"]),
+  ],
+  provider_transport_gap: [
+    recipe("repair-provider-transport-path", ["dns", "routes", "headers", "redirects"], ["retry current official/provider origins", "probe validated same-provider fallback origins", "preserve redirects and minimal required request context", "do not mutate parsers until transport succeeds"]),
+    recipe("refresh-provider-origin-authority", ["dns", "hub", "routes"], ["consult current domain authority and same-provider observations", "validate reachable origin before changing runtime routing", "keep provider identity separate from domain state"]),
+  ],
   structured_parse_gap: [recipe("repair-structured-parser", ["parser", "json", "javascript"], ["locate destructive pre-parse decoding", "preserve JSON escapes", "retry strict structured parsing", "retain raw fallback when parsing remains ambiguous"])],
   runtime_contract_drift: [recipe("reaudit-device-adapter", ["runtime-version", "contract"], ["diff changed Nuvio contract paths", "identify affected capabilities", "revalidate only impacted skills/providers"])],
   unknown_failure: [recipe("collect-missing-evidence", ["evidence"], ["find first unobserved pipeline stage", "probe that stage only", "reclassify before mutating provider code"])],
@@ -84,6 +100,8 @@ const READER_STAGE_TO_FAILURE = Object.freeze({
 });
 
 export function classifyFailure(evidence = {}) {
+  const forced = String(evidence.forcedFailureClass ?? "");
+  if (forced && FAILURE_CLASSES.includes(forced) && forced !== "healthy") return forced;
   if (evidence.audioTrackGap === true) return "audio_track_gap";
   if (evidence.structuredParseFailure === true) return "structured_parse_gap";
   if (evidence.contractDrift === true) return "runtime_contract_drift";
