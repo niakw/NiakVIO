@@ -3098,3 +3098,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Failure occurred only when the newly added `brain_terminal_source_route_test.py` imported the adaptive runtime without adding `scripts/` and `scripts/adaptive_runtime/` to `sys.path`; `apply_provider_overrides` could not be resolved.
 - The test now loads the same module search paths as the production adaptive entrypoint. No runtime/provider logic was changed for this failure.
 - #96 is harness-only evidence and must not be counted as a Brain/provider attempt.
+
+### 2026-09-20 — Native terminal capture now preserves observed Referer
+- While Repair #97 (run `35542228275`, tested SHA `3610a5f429fb...`) was running, an independent audit found a generic hotlink defect in the adaptive wrapper's native-fetch fallback. It captured only the terminal URL requested by the native provider and later replayed it with the provider root as Referer, discarding the Referer that the native provider had actually used.
+- `runtime_recovery_generator.py` now captures `{url, referer}` for terminal fetches. Header lookup supports Headers-like objects, tuple arrays and plain objects. Re-resolution uses the observed Referer and preserves it through recursive `drive/file/player -> media` traversal.
+- Extended `brain_terminal_source_route_test.py` with a native-provider capture case where the terminal host returns 403 unless the original detail-page Referer is replayed, and the nested file page requires the drive URL as its Referer. The expected HLS must still be recovered.
+- This change is generic anti-hotlink compatibility; no provider/host special case was introduced.
+- Repair #97 does **not** contain this Referer fix. Its field evidence remains useful for the prior terminal-source implementation, but authoritative validation of Referer-preserving capture requires a later HEAD/run.
