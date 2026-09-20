@@ -11,6 +11,7 @@ assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 normalize_historical_semantic_types = module.normalize_historical_semantic_types
+semantic_loss_partition = module.semantic_loss_partition
 
 
 def norm(values: set[str], current: set[str], transport: set[str], verified: set[str]) -> tuple[set[str], bool]:
@@ -63,5 +64,28 @@ values, reclassified = norm(
 )
 assert values == {"anime", "movie"}
 assert reclassified is True
+
+
+# A canonical semantic declaration that was never a verified lane remains audit
+# debt but must not block publication like a proven capability regression.
+lost, blocking, unproved = semantic_loss_partition(
+    {"movie", "tv"},
+    {"movie"},
+    set(),
+)
+assert lost == ["tv"]
+assert blocking == []
+assert unproved == ["tv"]
+
+# The exact same declaration loss becomes a hard functional obligation once TV
+# has historical verified-lane evidence.
+lost, blocking, unproved = semantic_loss_partition(
+    {"movie", "tv"},
+    {"movie"},
+    {"tv"},
+)
+assert lost == ["tv"]
+assert blocking == ["tv"]
+assert unproved == []
 
 print("provider history semantic alias floor tests passed: anime tv transport alias normalized, proven TV preserved")
