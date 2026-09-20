@@ -21,6 +21,11 @@ for token in (
 
 opts=ov["provider_lego_options"][lego]
 assert opts["cinescrapeBase"].startswith("https://pengu.uk/%7B"), opts
+current=opts.get("currentBases") or []
+assert len(current)>=2, current
+assert current[0]["base"].startswith("https://pengu.uk/%7B"), current
+assert current[1]["base"].startswith("https://moviebox-cfa7.onrender.com/"), current
+assert current[1]["referer"]=="https://moviebox-cfa7.onrender.com/", current
 assert opts["legacyBase"]=="https://vidsrcme.ru", opts
 assert ov["provider_lego_scripts"]==[lego]
 assert ov["route_data_state"]=="repair"
