@@ -2995,3 +2995,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Root cause is generic and historical: `_safe_request_recipe()` accepted only input rows with `executable=true`, sanitized them, then returned a recipe **without** the `executable` field. `runtime_recovery_generator.requestRecipe()` refuses any recipe unless `recipe.executable===true`. Therefore sanitized provider-experience/peer/current-observation recipes could be learned and counted yet remain dormant at execution time.
 - Fixed `_safe_request_recipe()` to preserve `executable: True`; the current-observation contract now explicitly asserts this. This is a plausible common cause for the long-standing gap between learned request recipes and zero autonomous accepted repairs.
 - #85 is preflight evidence, not a real provider repair attempt. A fresh Repair on the fixed SHA is required.
+
+### 2026-09-20 — Real Repair now exposes route-proof evidence to Brain
+- Audit after #85 found that normal `health_check.mjs` did not forward `routeProofTrace` into provider worker context. Rich safe request/response proof therefore existed in the worker implementation but was not requested by the real Deep Brain repair lane.
+- `health_check.mjs` now forwards opt-in `modeConfig.route_proof_trace`; `run_adaptive_deep_repair.py` enables it only for bounded Brain Deep repair. Normal health/parity runs remain unchanged.
+- The current-observation contract requires both ends of this wiring. This makes real repair rounds capable of seeing the same sanitized stage/method/path/body-shape/response-hint evidence used by the synthetic program-synthesis test.
+- Repair #86 was triggered before this wiring landed. It can validate executable recipes but cannot be treated as authoritative proof of current-run request synthesis. A new Repair SHA is required.
