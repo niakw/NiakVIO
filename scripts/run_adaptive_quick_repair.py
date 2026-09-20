@@ -32,7 +32,7 @@ import runtime_repair  # noqa: E402
 import deep_repair_loop as loop  # noqa: E402
 import brain_repair_runtime as brain  # noqa: E402
 from guard_nuvio_client_brain_compat import guard as guard_nuvio_client_brain_compat  # noqa: E402
-from provider_purification import purify_candidate  # noqa: E402
+from provider_byte_stability import verify_candidate  # noqa: E402
 from repair_identity_gate import automatic_repair_safety_gate  # noqa: E402
 
 _loaded = Path(runtime_repair.__file__).resolve()
@@ -43,12 +43,15 @@ if _loaded != _expected:
 _base_run_health = loop.run_health
 _base_matching_profiles = loop.matching_profiles
 _base_create_repair_candidate = loop.create_repair_candidate
-def _purified_create_repair_candidate(stage, candidate, profile_name, round_number):
+def _validated_create_repair_candidate(stage, candidate, profile_name, round_number):
     repaired, error = _base_create_repair_candidate(stage, candidate, profile_name, round_number)
     if not isinstance(repaired, dict):
         return repaired, error
+    # Quick/Learning must validate the exact candidate bytes without reviving
+    # the retired provider-purification/minification layer. This is the same
+    # raw-byte boundary used by Deep Repair.
     try:
-        repaired, _purification = purify_candidate(Path(stage), repaired)
+        repaired, _byte_stability = verify_candidate(Path(stage), repaired)
     except Exception as exc:
         try:
             target = (Path(stage).resolve() / str(repaired.get("local_path") or "")).resolve()
@@ -56,7 +59,7 @@ def _purified_create_repair_candidate(stage, candidate, profile_name, round_numb
             target.unlink(missing_ok=True)
         except (ValueError, OSError):
             pass
-        return None, f"purification_failed:{type(exc).__name__}:{exc}"
+        return None, f"byte_stability_failed:{type(exc).__name__}:{exc}"
     return repaired, error
 
 
@@ -322,7 +325,7 @@ def main() -> int:
         loop.compare_results = _quick_compare_results
         loop.run_health = _quick_run_health
         loop.matching_profiles = _brain_matching_profiles
-        loop.create_repair_candidate = brain.wrap_create_repair_candidate(_purified_create_repair_candidate)
+        loop.create_repair_candidate = brain.wrap_create_repair_candidate(_validated_create_repair_candidate)
         loop.persist_runtime_profiles = lambda _config, _assignments: []
         sys.argv = [
             str(SCRIPTS / "deep_repair_loop.py"), "--stage", str(stage), "--output", str(output),
