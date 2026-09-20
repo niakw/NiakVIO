@@ -53,6 +53,13 @@
       "publicationAllowed": false,
       "role": "rotate bounded repair hypotheses; variants 0-3 retain historical negative memory, while the final learned causal strategy is generation-versioned so materially new sandbox/replanning semantics can be re-evaluated without erasing prior evidence; never grant success",
       "finalVariantGeneration": 2
+    },
+    "explorationChainBudget": {
+      "maxMutationsPerProvider": 3,
+      "maxGeneratedBytesPerProvider": 360000,
+      "maxElapsedMsPerProvider": 300000,
+      "maxRepeatedSignature": 2,
+      "role": "Brain Repair only: permit up to three bounded causal sandbox mutations/retests; normal Deep production budgets remain unchanged"
     }
   },
   "skillMaturity": {
