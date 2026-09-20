@@ -471,6 +471,24 @@ def _discard_generated_candidate(stage: Path, repaired: dict[str, Any] | None) -
     path.unlink(missing_ok=True)
 
 
+def _plan_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
+    """Freeze the causal planner decision attached to one concrete experiment."""
+    return {
+        "providerId": str(plan.get("providerId") or ""),
+        "failureClass": str(plan.get("failureClass") or ""),
+        "signature": str(plan.get("signature") or ""),
+        "experimentVariant": max(0, int(plan.get("experimentVariant") or 0)),
+        "experimentGeneration": max(1, int(plan.get("experimentGeneration") or 1)),
+        "negativeMemoryMatches": max(0, int(plan.get("negativeMemoryMatches") or 0)),
+        "observedPipelineStage": str(plan.get("observedPipelineStage") or ""),
+        "censusStatus": str(plan.get("censusStatus") or ""),
+        "capabilityStrategy": str(plan.get("capabilityStrategy") or ""),
+        "action": str(plan.get("action") or ""),
+        "allowedProfiles": [str(value) for value in plan.get("allowedProfiles") or [] if str(value)],
+        "hypotheses": copy.deepcopy([row for row in plan.get("hypotheses") or [] if isinstance(row, dict)]),
+    }
+
+
 def wrap_create_repair_candidate(base_create: Callable[..., tuple[dict[str, Any] | None, str | None]]) -> Callable[..., tuple[dict[str, Any] | None, str | None]]:
     """Enforce strict production budgets while keeping Learning time-budgeted.
 
@@ -495,19 +513,18 @@ def wrap_create_repair_candidate(base_create: Callable[..., tuple[dict[str, Any]
         signature_counts = state.setdefault("signatureCounts", {})
         signature_counts[signature] = int(signature_counts.get(signature) or 0) + 1
 
+        plan_snapshot = _plan_snapshot(plan)
+        # Mutate only metadata on the in-memory sandbox parent so a failed
+        # candidate generation still carries the exact causal plan that caused
+        # the attempt. A later exploration replan must not rewrite this round's
+        # historical attribution.
+        candidate["brain_repair_plan"] = copy.deepcopy(plan_snapshot)
         candidate_for_create = copy.deepcopy(candidate)
-        candidate_for_create["brain_repair_plan"] = {
-            "failureClass": str(plan.get("failureClass") or ""),
-            "signature": str(plan.get("signature") or ""),
-            "experimentVariant": max(0, int(plan.get("experimentVariant") or 0)),
-            "experimentGeneration": max(1, int(plan.get("experimentGeneration") or 1)),
-            "negativeMemoryMatches": max(0, int(plan.get("negativeMemoryMatches") or 0)),
-            "observedPipelineStage": str(plan.get("observedPipelineStage") or ""),
-            "censusStatus": str(plan.get("censusStatus") or ""),
-        }
+        candidate_for_create["brain_repair_plan"] = copy.deepcopy(plan_snapshot)
         repaired, create_error = base_create(stage, candidate_for_create, profile_name, round_number)
         if not isinstance(repaired, dict):
             return repaired, create_error
+        repaired["brain_repair_plan"] = copy.deepcopy(plan_snapshot)
 
         parent_bytes = max(0, int(candidate.get("bytes") or 0))
         repaired_bytes = max(0, int(repaired.get("bytes") or 0))
@@ -580,6 +597,15 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
         memory_entries.append(row)
         return row
 
+    def event_plan(event: dict[str, Any], parent_key: str) -> dict[str, Any]:
+        """Prefer immutable per-attempt causal metadata over mutable PLANS."""
+        snapshot = event.get("brain_plan") if isinstance(event.get("brain_plan"), dict) else {}
+        plan = copy.deepcopy(snapshot) if snapshot else copy.deepcopy(PLANS.get(parent_key) or {})
+        if not plan.get("providerId"):
+            fallback = PLANS.get(parent_key) or {}
+            plan["providerId"] = str(fallback.get("providerId") or parent_key.split(":")[-1]).casefold()
+        return plan
+
     accepted_count = 0
     negative_experiment_events = 0
     if record_skill_memory:
@@ -592,7 +618,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                 if not isinstance(accepted, dict):
                     continue
                 parent_key = str(accepted.get("parent_key") or "")
-                plan = PLANS.get(parent_key) or {}
+                plan = event_plan(accepted, parent_key)
                 provider_id = str(plan.get("providerId") or parent_key.split(":")[-1]).casefold()
                 profile = str(accepted.get("profile") or "")
                 if not profile:
@@ -709,7 +735,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                 if not isinstance(attempt, dict) or str(attempt.get("status") or "") != "not_generated":
                     continue
                 parent_key = str(attempt.get("parent_key") or "")
-                plan = PLANS.get(parent_key) or {}
+                plan = event_plan(attempt, parent_key)
                 profile = str(attempt.get("profile") or "")
                 if memory_policy.get("enabled") is not True or not profile:
                     continue
@@ -725,7 +751,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                 if not isinstance(rejected, dict):
                     continue
                 parent_key = str(rejected.get("parent_key") or "")
-                plan = PLANS.get(parent_key) or {}
+                plan = event_plan(rejected, parent_key)
                 profile = str(rejected.get("profile") or "")
                 if not profile:
                     repair_key = str(rejected.get("repair_key") or "")
