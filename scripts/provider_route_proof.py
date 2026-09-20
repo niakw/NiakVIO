@@ -466,29 +466,55 @@ def _urlencoded_search_query_template(
     return None
 
 
+def _bounded_token_replace(value: str, token: str, replacement: str) -> str | None:
+    """Replace one path token only when it is delimited from alphanumerics."""
+    if not token:
+        return None
+    pattern = re.compile(r"(?<![A-Za-z0-9])" + re.escape(token) + r"(?![A-Za-z0-9])", re.I)
+    if not pattern.search(value):
+        return None
+    return pattern.sub(replacement, value)
+
+
 def _composite_provider_path_segment_template(
     decoded: object,
     fixture: dict[str, Any],
     provider_values: set[str],
     provider_slugs: set[str],
 ) -> str | None:
-    """Abstract only bounded episode-shaped path segments backed by current DATA.
+    """Abstract bounded composite provider paths only with causal value proof.
 
-    The runtime already owns ``{slug}``, ``{season}``, and ``{episode}``.
-    This helper deliberately does not generalize arbitrary mixed path strings.
+    Generic catalogue paths often combine a fixture slug with a provider-local
+    identity such as sinners-movie-7978. The local identity is never reusable
+    merely because the request succeeded; it becomes {id} only when an earlier
+    provider response exposed that exact value.
     """
     value = str(decoded or "").strip()
-    season = str(fixture.get("season") or "").strip()
-    episode = str(fixture.get("episode") or "").strip()
-    if not value or not season or not episode or not season.isdigit() or not episode.isdigit():
+    if not value:
         return None
-
     lower = value.casefold()
-    trusted_slugs = []
+
+    trusted_slugs: list[str] = []
     for slug in [*sorted(provider_slugs, key=len, reverse=True), *_slug_candidates(fixture)]:
         slug_text = str(slug or "").strip().casefold()
         if slug_text and slug_text not in trusted_slugs:
             trusted_slugs.append(slug_text)
+
+    for slug in trusted_slugs:
+        slugged = _bounded_token_replace(lower, slug, "{slug}")
+        if not slugged:
+            continue
+        for provider_id in sorted((str(v).strip().casefold() for v in provider_values if str(v).strip()), key=len, reverse=True):
+            if provider_id == slug:
+                continue
+            templated = _bounded_token_replace(slugged, provider_id, "{id}")
+            if templated and templated != slugged:
+                return templated
+
+    season = str(fixture.get("season") or "").strip()
+    episode = str(fixture.get("episode") or "").strip()
+    if not season or not episode or not season.isdigit() or not episode.isdigit():
+        return None
 
     templates = (
         ("-{season}-episode-{episode}", "-{season}-episode-{episode}"),
@@ -508,7 +534,6 @@ def _composite_provider_path_segment_template(
             if lower == observed:
                 return "{id}" + template_suffix
     return None
-
 
 def _urlencoded_text_body_spec(
     raw: object,
@@ -812,15 +837,31 @@ def derive_observed_route(
 
     # Literal provider-internal numeric/opaque path values are not generalized
     # unless the prior response trace proved their origin.
-    unresolved_segments = [
+    route_segments = [
         segment for segment in urllib.parse.urlsplit(route).path.split("/")
-        if segment and "{" not in segment and re.fullmatch(r"[A-Za-z0-9._~-]{2,}", segment)
+        if segment
     ]
-    # Fixed route words are fine; only values that look like opaque IDs need proof.
-    opaque = [segment for segment in unresolved_segments if re.fullmatch(r"\d{2,}|tt\d{7,10}|[A-Fa-f0-9]{12,}|[A-Za-z0-9_-]{18,}", segment, re.I)]
+    unresolved_segments = [
+        segment for segment in route_segments
+        if "{" not in segment and re.fullmatch(r"[A-Za-z0-9._~-]{2,}", segment)
+    ]
+    # Fixed route words are fine; only values that look like opaque IDs need
+    # proof. Also inspect literal residue inside composite template segments:
+    # {slug}-movie-7978 must not hide an unproven provider-local id.
+    opaque = [
+        segment for segment in unresolved_segments
+        if re.fullmatch(r"\d{2,}|tt\d{7,10}|[A-Fa-f0-9]{12,}|[A-Za-z0-9_-]{18,}", segment, re.I)
+    ]
+    for segment in route_segments:
+        if "{" not in segment:
+            continue
+        literal = re.sub(r"\{[A-Za-z0-9_.:-]+\}", "-", segment)
+        for token in re.findall(r"(?:^|[._~-])([A-Za-z0-9]+)(?=$|[._~-])", literal):
+            if re.fullmatch(r"\d{2,}|tt\d{7,10}|[A-Fa-f0-9]{12,}|[A-Za-z0-9_-]{18,}", token, re.I):
+                opaque.append(token)
+    opaque = unique(opaque, 12)
     if opaque:
         reusable = False
-
     request_spec, request_meta = derive_request_spec(fetch, task, prior_value_hints)
     meta = {
         "origin": f"{parsed.scheme}://{parsed.netloc}",
