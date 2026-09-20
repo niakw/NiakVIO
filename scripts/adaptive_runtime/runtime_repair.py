@@ -286,14 +286,16 @@ def _binding_name(raw: Any) -> str | None:
     return key or None
 
 
-def _unique_response_bindings(raw: dict[str, Any]) -> dict[str, str]:
-    """Return value->binding only when a response key has one unique safe value.
+def _response_binding_candidates(raw: dict[str, Any]) -> dict[str, str]:
+    """Return every safe response value that has an unambiguous binding key.
 
-    A search response containing many IDs is intentionally not bound: without
-    object/title association choosing the first ID would be guessing. Detail/API
-    responses with one observed ID/slug can be causally replayed.
+    A multi-result search may expose many different id values. We do not choose
+    one here. A later observed request may prove that one exact value was
+    consumed; runtime replay must then independently recover the correct value
+    from the new fixture by identity correlation before the dependent request
+    can execute.
     """
-    grouped: dict[str, set[str]] = {}
+    by_value: dict[str, set[str]] = {}
     for hint in raw.get("response_value_hints") or []:
         if not isinstance(hint, dict):
             continue
@@ -303,15 +305,25 @@ def _unique_response_bindings(raw: dict[str, Any]) -> dict[str, str]:
             continue
         if _ROUTE_OPAQUE.search(value) or _SENSITIVE_REQUEST_KEY.search(name):
             continue
-        grouped.setdefault(name, set()).add(value)
+        by_value.setdefault(value, set()).add(name)
     output: dict[str, str] = {}
-    for name, values in grouped.items():
-        if len(values) != 1:
-            continue
-        value = next(iter(values))
-        if value not in output:
-            output[value] = name
+    for value, names in by_value.items():
+        if len(names) == 1:
+            output[value] = next(iter(names))
     return output
+
+
+def _unique_response_bindings(raw: dict[str, Any]) -> dict[str, str]:
+    """Backward-compatible conservative subset used by older contracts."""
+    candidates = _response_binding_candidates(raw)
+    grouped: dict[str, set[str]] = {}
+    for value, name in candidates.items():
+        grouped.setdefault(name, set()).add(value)
+    return {
+        value: name
+        for value, name in candidates.items()
+        if len(grouped.get(name) or ()) == 1
+    }
 
 
 def _abstract_observed_value(
@@ -563,7 +575,7 @@ def observed_request_recipes(candidate: dict[str, Any], result: dict[str, Any]) 
                     output.append(recipe)
                     if len(output) >= 32:
                         return output
-                for value, name in _unique_response_bindings(raw).items():
+                for value, name in _response_binding_candidates(raw).items():
                     available_bindings.setdefault(value, name)
     return output
 
