@@ -444,13 +444,15 @@ def main() -> int:
             "scripts/run_provider_brain_repair.py",
             "--waves", "5",
             "--batch-size", "48",
+            "--time-budget-seconds", "2100",
+            "--min-start-batch-seconds", "360",
             "--output", str(BRAIN_REPAIR.relative_to(ROOT)),
         ]
         for provider in targets:
             brain_cmd.extend(["--provider", provider])
         run(
             *brain_cmd,
-            timeout=max(2400, len(targets) * max(90, args.timeout) * 2),
+            timeout=max(3000, len(targets) * max(90, args.timeout) * 2),
         )
         if not BRAIN_REPAIR.exists():
             raise RuntimeError("Brain Repair did not produce its portfolio report")
