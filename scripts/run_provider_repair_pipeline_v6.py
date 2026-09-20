@@ -112,7 +112,7 @@ def main() -> int:
     parser.add_argument("--mode", choices=("repair", "learn", "force"), default="repair")
     parser.add_argument("--skip-file", type=Path, default=DEFAULT_SKIP.relative_to(ROOT))
     parser.add_argument("--provider", action="append", default=[])
-    parser.add_argument("--workers", type=int, default=12)
+    parser.add_argument("--workers", type=int, default=0, help="0=auto-scale from unresolved provider count")
     parser.add_argument("--timeout", type=int, default=55)
     parser.add_argument("--attempts", type=int, default=3)
     parser.add_argument("--allow-upstream-positive-loss", action="store_true")
@@ -185,12 +185,24 @@ def main() -> int:
     if not targets:
         raise SystemExit("no unresolved or freshly regressed provider selected for repair")
 
+    requested_workers = int(args.workers)
+    if requested_workers > 0:
+        repair_workers = max(1, min(requested_workers, 32))
+    elif len(targets) >= 240:
+        repair_workers = 32
+    elif len(targets) >= 120:
+        repair_workers = 24
+    elif len(targets) >= 48:
+        repair_workers = 16
+    else:
+        repair_workers = 12
+
     print(
         "FIELD_PROVIDER_REPAIR_SCOPE "
         f"mode={args.mode} catalogue={len(catalogue)} active={len(active_catalogue)} targeted={len(targets)} "
         f"skip_file={len(skipped)} disposition_green_excluded={len(auto_excluded_green)} "
         f"regression_reactivated={len(regression_reactivated)} "
-        f"attempts={attempts} providers={','.join(targets)}",
+        f"attempts={attempts} workers={repair_workers} providers={','.join(targets)}",
         flush=True,
     )
     if regression_reactivated:
@@ -279,7 +291,7 @@ def main() -> int:
 
     cmd = [
         sys.executable, "scripts/recover_provider_routes_from_upstreams.py",
-        "--workers", str(max(1, min(args.workers, 12))),
+        "--workers", str(repair_workers),
         "--timeout", str(max(15, min(args.timeout, 120))),
         "--attempts", str(attempts),
         "--out", str(TARGET_REPORT.relative_to(ROOT)),
