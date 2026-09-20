@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35482101082-pre-repair",
-  "triggerSha": "ed730f06a8b2c96430dbca54ecdb1631d484a4a3",
+  "runId": "35482233543-pre-repair",
+  "triggerSha": "434b9702323f855cec745116b346fa216e04f4f1",
   "providers": [
     {
       "provider": "4khdhub",
@@ -271,8 +271,8 @@
     },
     {
       "provider": "uhdmovies",
-      "status": "CHAIN REACHED",
-      "color": "🟣",
+      "status": "PROVIDER NETWORK BLOCKED",
+      "color": "🟤",
       "declaredLanes": [
         "movie"
       ],
@@ -283,16 +283,16 @@
         "69 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result"
+        "movie=no_streams/provider_network_http_error"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "provider_network_http_error",
       "searchProgress": [
         "movie: 4 works tested / 26 retained misses / 8 retained chain hits"
       ],
       "evidenceDepth": [
         "movie=chain_reached"
       ],
-      "action": "finish terminal extractor/validation; do not promote before verified media",
+      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
       "repairEligible": true,
       "testedThisRun": true
@@ -1343,10 +1343,10 @@
   ],
   "counts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 3,
+    "CHAIN REACHED": 2,
     "FULL OK": 24,
     "PARTIAL OK": 2,
-    "PROVIDER NETWORK BLOCKED": 5,
+    "PROVIDER NETWORK BLOCKED": 6,
     "PROVIDER WAF/ANTIBOT": 7,
     "ROUTE PROVEN": 4
   },
