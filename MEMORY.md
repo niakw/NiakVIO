@@ -2947,3 +2947,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Generic guard added: Repair preflight now runs the Wookafr behavior contract and materializes the full current catalogue to temporary artifacts before network repair work. A non-target provider can no longer reach the expensive Brain phase while its generated bundle is invalid.
 - Run `35521087496` is not evidence against causal Brain v4 because Brain v4 was not reached. Rerun the same census repair queue on the corrected SHA.
 
+### 2026-09-20 — Same-run positive evidence loss confirmed and fixed
+- Repair run `35521510249` on SHA `0a6ff016e475...` completed successfully as a pipeline and reached causal Brain variant 4 for all 12 repairQueue providers. Brain generated real `adaptive_runtime_recovery` candidates, accepted 0, fixed 0 and deferred all 12 to Learning after the final bounded variant.
+- Artifact cross-check exposed a control-plane false negative: `automation/provider-repair-yield-v6.json` proved UHDMovies current bytes with 2 raw / 2 playable / 2 verified streams (`playable_verified`), while the earlier `provider-repair-portfolio-candidate.json` sample for the same run had zero and the post-repair census therefore kept UHDMovies symptomatic.
+- Root cause: `run_provider_repair_pipeline_v6.py` rendered `provider-census-post-repair.json` / census before the final repair-yield audit. Stronger positive evidence found later in the same run was never merged back.
+- Added `scripts/merge_provider_same_run_positive_evidence.py`: only identity-safe positive evidence is monotonic per provider/type, ranked verified > playable > raw; weaker/contradictory evidence cannot replace stronger evidence, and prior sample history is retained.
+- Added `tests/provider_same_run_positive_evidence_merge_test.py` and wired it plus py_compile into Repair preflight. The pipeline now merges the final current-byte yield into the candidate portfolio and renders the authoritative post-repair census only afterward.
+- Expected next validation: rerun Repair on current main; if UHDMovies re-proves in the final yield, it must leave the symptomatic repair queue instead of being reset to zero. Any additional same-run positive providers must receive the same treatment automatically.
+
