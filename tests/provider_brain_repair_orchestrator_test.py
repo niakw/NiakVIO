@@ -57,6 +57,8 @@ assert accepted[0]["playableAfter"]==2
 source=SCRIPT.read_text(encoding="utf-8")
 for required in (
     "run_adaptive_deep_repair.py",
+    "build_brain_repair_experience.py",
+    "brain-repair-experience.json",
     "stage_published.py",
     "materialize_provider_base_v3_store.py",
     "materialize_provider_v3_all.py",
