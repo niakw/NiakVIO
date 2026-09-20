@@ -73,14 +73,15 @@ def fixture_identity(sample: dict[str, Any]) -> str:
 def merge_samples(primary: dict[str, Any], prior: dict[str, Any]) -> None:
     combined: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for source in (primary.get("samples") or [], prior.get("samples") or []):
-        if not isinstance(source, dict):
-            continue
-        marker = fixture_identity(source) or json.dumps(source, sort_keys=True, separators=(",", ":"))
-        if marker in seen:
-            continue
-        seen.add(marker)
-        combined.append(deepcopy(source))
+    for group in (primary.get("samples") or [], prior.get("samples") or []):
+        for source in group:
+            if not isinstance(source, dict):
+                continue
+            marker = fixture_identity(source) or json.dumps(source, sort_keys=True, separators=(",", ":"))
+            if marker in seen:
+                continue
+            seen.add(marker)
+            combined.append(deepcopy(source))
     if combined:
         primary["samples"] = combined
         primary["sample_count"] = len(combined)
