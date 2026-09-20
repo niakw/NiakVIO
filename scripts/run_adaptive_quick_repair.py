@@ -166,7 +166,7 @@ def _install_control_plane_fallback_plan(candidate: dict[str, Any], result: dict
             allowed_profiles = ["adaptive_runtime_recovery"]
     unknown = failure_class == "unknown_failure"
     brain.PLANS[plan_key] = {
-        "brainVersion": 6,
+        "brainVersion": 7,
         "providerId": provider_id,
         "failureClass": failure_class,
         "repairScope": "deferred" if unknown else ("global" if failure_class == "identity_mismatch" else "capability"),
