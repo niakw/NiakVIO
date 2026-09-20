@@ -63,4 +63,7 @@ for old, new in compat_replacements.items():
         raise AssertionError(f"repair contract activation assertion anchor changed: {old}")
     source = source.replace(old, new, 1)
 
+pipeline_current = (ROOT / "scripts" / "run_provider_repair_pipeline_v6.py").read_text(encoding="utf-8")
+assert '"--waves", "4",' in pipeline_current, "canonical Repair must execute all four Brain experiment variants"
+
 exec(compile(source, str(impl_path), "exec"), globals(), globals())
