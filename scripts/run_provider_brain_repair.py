@@ -23,6 +23,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from repair_identity_gate import automatic_repair_identity_gate
+
 ROOT = Path(__file__).resolve().parents[1]
 STATUS = ROOT / "automation" / "provider-census-status.json"
 DEFAULT_OUTPUT = ROOT / "automation" / "provider-brain-repair-latest.json"
@@ -263,6 +265,12 @@ def contradiction_count(result: dict[str, Any]) -> int:
 
 
 def fixed_providers(health: dict[str, Any]) -> set[str]:
+    """Return only providers with strict positive playable identity proof.
+
+    Brain sandbox progression may legitimately reach playable bytes before
+    content identity is fully established. That is useful exploration evidence,
+    but it must never remove a provider from the repair queue or count as fixed.
+    """
     out: set[str] = set()
     for result in health.get("results") or []:
         if not isinstance(result, dict):
@@ -271,7 +279,8 @@ def fixed_providers(health: dict[str, Any]) -> set[str]:
         provider = cid(key.split(":", 1)[-1].split("::", 1)[0])
         if not provider:
             continue
-        if playable_count(result) > 0 and contradiction_count(result) == 0:
+        identity_ok, _identity_reason = automatic_repair_identity_gate(result)
+        if playable_count(result) > 0 and identity_ok:
             out.add(provider)
     return out
 
