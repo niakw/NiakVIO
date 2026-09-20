@@ -238,6 +238,111 @@ def classify_dom(dom: str) -> str:
     return "browser_content_reached"
 
 
+def probe_tv_okhttp_jvm(
+    target: dict[str, Any],
+    *,
+    timeout: int,
+    attempts: int,
+    classpath: str | None,
+) -> dict[str, Any]:
+    """Exercise NuvioTV's audited PluginRuntime transport policy via JVM OkHttp.
+
+    This reproduces the HTTP stack/policy much more closely than Chromium or
+    libcurl, but GitHub JVM TLS and runner IP reputation still differ from an
+    Android TV device. It remains harness evidence, never playback authority.
+    """
+    java = shutil.which("java")
+    cp = str(classpath or "").strip()
+    base = {
+        "profile": "nuvio-tv-okhttp-jvm",
+        "transportApproximation": (
+            "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime policy; "
+            "not Android device TLS/IP"
+        ),
+        "userAgent": NUVIO_TV_WINDOWS_UA,
+        "nativeContractApproximation": {
+            "httpStack": "OkHttp 4.12.0",
+            "proxyPolicy": "Proxy.NO_PROXY",
+            "dnsPolicy": "IPv4FirstDns",
+            "redirects": "HTTP+SSL enabled",
+            "timeouts": "bounded by WAF diagnostic",
+            "tlsRuntime": "GitHub JVM, not Android device",
+        },
+    }
+    if not java or not cp:
+        return {
+            **base,
+            "outcome": "okhttp_jvm_unavailable",
+            "attemptCount": 0,
+            "attempts": [],
+        }
+    cmd = [
+        java,
+        "-cp", cp,
+        "WafOkHttpProbe",
+        str(target.get("url") or ""),
+        str(max(1, min(int(attempts), 3))),
+        str(max(2, min(int(timeout), 60))),
+        NUVIO_TV_WINDOWS_UA,
+    ]
+    try:
+        proc = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=max(8, int(timeout) * max(1, min(int(attempts), 3)) + 8),
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return {
+            **base,
+            "outcome": "okhttp_jvm_timeout",
+            "attemptCount": 0,
+            "attempts": [],
+        }
+    except Exception as exc:
+        return {
+            **base,
+            "outcome": "okhttp_jvm_error",
+            "attemptCount": 0,
+            "attempts": [],
+            "error": type(exc).__name__,
+        }
+    marker = "NIAKVIO_WAF_OKHTTP="
+    rows = [
+        line[len(marker):]
+        for line in str(proc.stdout or "").splitlines()
+        if line.startswith(marker)
+    ]
+    if not rows:
+        return {
+            **base,
+            "outcome": "okhttp_jvm_error",
+            "attemptCount": 0,
+            "attempts": [],
+            "exitCode": int(proc.returncode),
+            "error": "missing_protocol_result",
+        }
+    try:
+        payload = json.loads(rows[-1])
+    except json.JSONDecodeError:
+        return {
+            **base,
+            "outcome": "okhttp_jvm_error",
+            "attemptCount": 0,
+            "attempts": [],
+            "exitCode": int(proc.returncode),
+            "error": "invalid_protocol_result",
+        }
+    if not isinstance(payload, dict):
+        payload = {}
+    return {
+        **base,
+        **payload,
+        "exitCode": int(proc.returncode),
+    }
+
+
 def probe_tv_direct_http(
     target: dict[str, Any],
     *,
@@ -364,6 +469,7 @@ def probe_target(
     virtual_time_ms: int,
     attempts: int = 2,
     client_profile_matrix: bool = False,
+    okhttp_classpath: str | None = None,
 ) -> dict[str, Any]:
     started = time.monotonic()
     base = {
@@ -455,11 +561,18 @@ def probe_target(
         })
 
     direct_profile: dict[str, Any] | None = None
+    okhttp_profile: dict[str, Any] | None = None
     if client_profile_matrix:
         direct_profile = probe_tv_direct_http(
             target,
             timeout=timeout,
             attempts=attempt_limit,
+        )
+        okhttp_profile = probe_tv_okhttp_jvm(
+            target,
+            timeout=timeout,
+            attempts=attempt_limit,
+            classpath=okhttp_classpath,
         )
 
     content_profiles = [
@@ -473,6 +586,12 @@ def probe_target(
     )
     if direct_content_reached:
         content_profiles.append("nuvio-tv-direct-http-approx")
+    okhttp_content_reached = (
+        isinstance(okhttp_profile, dict)
+        and str(okhttp_profile.get("outcome") or "") == "okhttp_jvm_content_reached"
+    )
+    if okhttp_content_reached:
+        content_profiles.append("nuvio-tv-okhttp-jvm")
     profile_outcomes = [str(row.get("outcome") or "") for row in profile_rows]
     if content_profiles:
         final_outcome = "browser_content_reached"
@@ -494,6 +613,7 @@ def probe_target(
         "ordinarySessionReused": attempt_limit > 1,
         "clientProfileMatrix": profile_rows,
         "directHttpProfile": direct_profile,
+        "okHttpJvmProfile": okhttp_profile,
         "contentProfiles": content_profiles,
         "nativeTvTransportStillUnproven": True,
         "durationMs": round((time.monotonic()-started)*1000),
@@ -509,6 +629,7 @@ def main() -> int:
     ap.add_argument("--workers", type=int, default=3)
     ap.add_argument("--attempts", type=int, default=2)
     ap.add_argument("--client-profile-matrix", action="store_true")
+    ap.add_argument("--okhttp-classpath")
     ap.add_argument("--status", type=Path)
     ap.add_argument("--overrides", type=Path)
     ap.add_argument("--max-targets", type=int, default=16)
@@ -545,6 +666,7 @@ def main() -> int:
                     virtual_time_ms=args.virtual_time_ms,
                     attempts=args.attempts,
                     client_profile_matrix=args.client_profile_matrix,
+                    okhttp_classpath=args.okhttp_classpath,
                 )
                 for target in targets
             ]
@@ -580,6 +702,17 @@ def main() -> int:
                     "redirects": "HTTP+SSL enabled",
                 },
             }, {
+                "id": "nuvio-tv-okhttp-jvm",
+                "transportApproximation": "GitHub JVM OkHttp 4.12.0 with audited NuvioTV PluginRuntime policy",
+                "userAgent": NUVIO_TV_WINDOWS_UA,
+                "nativeContractApproximation": {
+                    "httpStack": "OkHttp 4.12.0",
+                    "proxyPolicy": "Proxy.NO_PROXY",
+                    "dnsPolicy": "IPv4FirstDns",
+                    "redirects": "HTTP+SSL enabled",
+                    "tlsRuntime": "GitHub JVM, not Android device",
+                },
+            }, {
                 "id": "nuvio-tv-direct-http-approx",
                 "transportApproximation": "GitHub libcurl with IPv4, NO_PROXY, redirects and audited NuvioTV UA",
                 "userAgent": NUVIO_TV_WINDOWS_UA,
@@ -592,7 +725,8 @@ def main() -> int:
             }] if args.client_profile_matrix else []),
         ],
         "limitations": [
-            "Neither GitHub Chromium nor libcurl reproduces NuvioTV OkHttp TLS fingerprint",
+            "GitHub JVM OkHttp reproduces NuvioTV HTTP policy but not Android device TLS/IP reputation",
+            "GitHub Chromium/libcurl remain secondary harness comparisons",
             "GitHub runner IP reputation differs from a real TV/mobile client",
             "browser challenge persistence is harness/environment evidence, not provider-code failure",
         ],
