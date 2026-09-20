@@ -42,7 +42,10 @@ assert "activationAttempted" in stage
 assert "add_provider.stage(request,bulk=True)" in stage.replace(" ", "")
 assert "if not bulk:" in single
 assert '"enabled": False' in single
-assert '"validation": "onboarding_pending"' in single
+assert '"validation": "bulk_onboarding_pending" if bulk else "onboarding_pending"' in single
+assert "materialize_onboarding_bundle(" in single
+assert "compose_provider_bundle(" in single
+assert "shutil.copy2" not in single
 
 # Bulk publication hands off to sharded evidence before any repair loop.
 assert "workflow_run:" in sharded
