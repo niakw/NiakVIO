@@ -355,6 +355,61 @@ def quality_vector(result: dict[str, Any]) -> tuple[int, ...]:
     )
 
 
+def identity_contradiction_count(result: dict[str, Any]) -> int:
+    evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
+    return max(0, int(evidence.get("identity_contradiction_count") or 0)) + max(
+        0, int(evidence.get("duration_identity_mismatch_count") or 0)
+    )
+
+
+def compare_exploration_progress(parent: dict[str, Any], repaired: dict[str, Any]) -> tuple[bool, str]:
+    """Accept diagnostic progress for Brain sandbox chaining only.
+
+    This never grants production acceptance. A candidate may become the parent
+    of the next bounded Brain round only when it moves real provider/runtime
+    evidence forward without regressing streams, runtime validity, request
+    shape, or content identity.
+    """
+    status = str(repaired.get("status") or "runtime_error")
+    if status in HARD_FAILURES:
+        return False, f"exploration_hard_failure:{status}"
+    if runtime_error_count(repaired) > runtime_error_count(parent):
+        return False, "exploration_introduced_runtime_error"
+    if malformed_request_count(repaired) > malformed_request_count(parent):
+        return False, "exploration_introduced_malformed_request"
+    if identity_contradiction_count(repaired) > identity_contradiction_count(parent):
+        return False, "exploration_introduced_identity_contradiction"
+    if playable_stream_count(repaired) < playable_stream_count(parent):
+        return False, "exploration_playable_regression"
+    if stream_count(repaired) < stream_count(parent):
+        return False, "exploration_stream_regression"
+
+    parent_accessible, parent_successful = _provider_flags(parent)
+    repaired_accessible, repaired_successful = _provider_flags(repaired)
+    parent_requests = _successful_provider_requests(parent)
+    repaired_requests = _successful_provider_requests(repaired)
+    reasons: list[str] = []
+    if playable_stream_count(repaired) > playable_stream_count(parent):
+        reasons.append("playable")
+    if stream_count(repaired) > stream_count(parent):
+        reasons.append("returned")
+    if repaired_successful and not parent_successful:
+        reasons.append("provider-success")
+    if repaired_accessible and not parent_accessible:
+        reasons.append("provider-access")
+    if repaired_requests > parent_requests:
+        reasons.append("provider-requests")
+
+    # Score/status-only movement is too weak for chaining. Require concrete
+    # provider/network/media evidence so a cosmetic classifier change cannot
+    # become the parent of another mutation.
+    if not reasons:
+        return False, "exploration_no_causal_evidence_gain"
+    if quality_vector(repaired) <= quality_vector(parent):
+        return False, "exploration_no_quality_gain"
+    return True, "sandbox_diagnostic_progress:" + ",".join(reasons)
+
+
 def _fixture_categories(result: dict[str, Any], key: str) -> set[str]:
     evidence = result.get("evidence") or {}
     return {
