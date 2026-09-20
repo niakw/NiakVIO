@@ -273,3 +273,8 @@ for forbidden in (
     assert forbidden not in source.casefold(), forbidden
 
 print("Provider Brain repair orchestrator contract passed")
+
+source=(ROOT/"scripts/run_provider_brain_repair.py").read_text(encoding="utf-8")
+assert 'def materialize(provider_ids:' in source
+assert '"--provider",\n            provider_id' in source
+assert '(sys.executable, "scripts/reconcile_provider_domain_metadata.py", "--rebuild")' not in source
