@@ -187,6 +187,8 @@ jobs:
           python3 tests/native_provider_loading_compat_test.py
           python3 tests/native_app_provider_selection_gate_test.py
           python3 tests/native_evidence_codegen_pipeline_test.py
+          python3 tests/provider_clean_worker_smoke_test.py
+          python3 tests/provider_stage_profile_worker_smoke_test.py
 
       - name: Prove compatibility checks are side-effect free
         run: git diff --exit-code
