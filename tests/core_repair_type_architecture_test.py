@@ -93,7 +93,7 @@ assert repair_types["learning"]["providerLocalMutation"] == "lab_only_proof"
 assert repair_types["learning"]["independentFromCoreRepair"] is True
 assert repair_types["learning"]["coreRepairMayInvokeLearning"] is False
 assert repair_types["executionLanes"]["coreRepair"]["learningAllowed"] is False
-assert repair_types["executionLanes"]["coreRepair"]["learnedSkillInputAllowed"] is False
+assert repair_types["executionLanes"]["coreRepair"]["learnedSkillInputAllowed"] is True
 assert repair_types["executionLanes"]["coreRepair"]["unknownFailureAction"] == "queue_for_independent_learning"
 assert repair_types["executionLanes"]["dailyLearning"]["partOfCoreRepair"] is False
 assert repair_types["executionLanes"]["dailyLearning"]["requiredPublishedProviderObservationCoverage"] == 1.0
@@ -137,10 +137,10 @@ for failure in ("search_gap", "episode_gap", "player_gap", "media_extraction_gap
 assert classes["unknown_failure"]["scope"] == "learning"
 assert classes["unknown_failure"]["repairType"] == "architecture_gap"
 
-assert brain_policy["controlPlaneVersion"] == 5
+assert brain_policy["controlPlaneVersion"] == 6
 assert brain_policy["production"]["durableProviderSkillApplication"] is False
 assert brain_policy["production"]["learningDuringCoreRepair"] is False
-assert brain_policy["production"]["learnedSkillInputAllowed"] is False
+assert brain_policy["production"]["learnedSkillInputAllowed"] is True
 assert brain_policy["production"]["unknownFailureAction"] == "queue_for_independent_learning"
 assert brain_policy["learningLab"]["directSkillPublication"] is False
 assert brain_policy["learningLab"]["independentFromCoreRepair"] is True
@@ -151,8 +151,8 @@ assert brain_policy["executionLanes"]["dailyLearning"]["timeBudgetMinutes"] == 6
 assert "persistent anomaly-first queue" in brain_policy["executionLanes"]["dailyLearning"]["providerScheduling"]
 assert brain_policy["executionLanes"]["dailyLearning"]["productionWritesAllowed"] is False
 assert brain_policy["executionLanes"]["dailyLearning"]["publicationAllowed"] is False
-assert 'learnedSkills": learned_skills() if str(mode).casefold() == "learning" else {}' in brain_runtime_source
-assert 'learnedSkills": _BASE.learned_skills() if str(mode).casefold() == "learning" else {}' in brain_overlay_source
+assert 'learnedSkills": planner_learned_skills(mode)' in brain_runtime_source
+assert 'learnedSkills": _BASE.planner_learned_skills(mode)' in brain_overlay_source
 assert '"profile_persistence"] = "learning_memory" if planner_mode == "learning" else "none_core_repair_only"' in quick_source
 assert '"learning_executed"] = planner_mode == "learning"' in quick_source
 assert 'skill["autoApply"] = trusted' not in brain_runtime_source
