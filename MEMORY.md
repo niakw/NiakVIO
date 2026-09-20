@@ -4,6 +4,16 @@ Last authoritative checkpoint: 2026-09-16 Europe/Paris.
 
 This file is the durable recovery source of truth for the active NiakVIO work. Prefer current repository state and exact GitHub Actions/native logs over older chat summaries. Update this file automatically at every important correction, failure, publication, native proof, security proof, or architecture decision before moving to the next risky step.
 
+## 2026-09-20 — 12h persisted Brain Learning slot
+
+- User-requested overnight Learning slot is now implemented as a **persisted 12-hour budget**, not a fake single 12h GitHub-hosted job. GitHub-hosted jobs are capped below that duration, so `brain-learning-lab.yml` now chains bounded phases through the existing sanitized `brain-learning/proposals` memory.
+- Long-slot phase budget is capped at **300 minutes**; the requested 720-minute slot is therefore **5h + 5h + 2h** of adaptive queue budget, with normal setup/finalization around each phase. Each phase resumes the persisted provider queue, retry state, fixture cursors, negative experiment memory and learned skills.
+- Review-only semantics are preserved: Learning still has `productionWritesAllowed=false` / `publicationAllowed=false`; each chained phase runs with `publish_proposal=true`, so validated provider repair proposals and Brain self-architecture proposals are opened/refreshed as PRs and still require human merge.
+- Implementation commits: `10dc8f426926` (long-slot chaining in Brain Lab), `20553c369170` (contract test), `706225af10b3` (reusable long-slot launcher), `e268c223956e` (12h trigger).
+- Launcher run **35484069814** completed **success** and dispatched Brain Learning run **35484074146** from `main`; phase 1 was in progress at this checkpoint.
+- Earlier run **35483066561** is **not** the requested 12h Learn slot: it is `LEARN/FORCE - Provider Recognition Repair V6`, push-triggered at `9d5fa03cc181`, therefore `MODE=repair`, with a 240-minute job timeout. Keep its repair/census evidence separate from the chained Learning slot.
+- `PROVIDER_CENSUS_STATUS.md` remains the census authority for symptoms; the long Learning queue remains independent, anomaly-first, cross-day resumable and PR-only.
+
 ## 2026-09-16 — authoritative current checkpoint
 
 - Current public release is **5.21.48**. `manifest.json`, VF/no-anime projections, package metadata and release hashes are on 5.21.48.
