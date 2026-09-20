@@ -1,11 +1,11 @@
 {
   "schemaVersion": 4,
-  "requestedAt": "2026-09-20T04:10:00+02:00",
-  "retry": 37,
+  "requestedAt": "2026-09-20T04:18:00+02:00",
+  "retry": 38,
   "mode": "repair",
-  "scope": "census-symptomatic-repair-queue",
+  "scope": "census-symptomatic-repair-queue-retry-v11-idempotent",
   "targetProviders": [],
-  "goal": "Use PROVIDER_CENSUS_STATUS.md / automation/provider-census-status.json as the sole automatic scope authority. Precheck only census repairQueue, exclude environment-only WAF from code repair, repair only providers still symptomatic, revalidate the full symptom set that entered the cycle, regenerate and persist PROVIDER_CENSUS_STATUS.md plus census JSON/history. Reuse accumulated Brain route/transport experience.",
+  "goal": "Retry the same census-owned Repair cycle after making V11.1 migration idempotent. Scope must remain automation/provider-census-status.json repairQueue only; exclude WAF environmentQueue; persist updated PROVIDER_CENSUS_STATUS.md even if a later Repair stage fails.",
   "branch": "main",
   "publication": false
 }
