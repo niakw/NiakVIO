@@ -143,6 +143,81 @@ assert "https://demo.example/file/12345" in execution["calls"], execution
 assert execution["rows"], execution
 assert execution["rows"][0]["url"] == "https://cdn.example/master.m3u8", execution
 
+
+# Native-provider fetch capture must retain the provider's observed Referer.
+# Some terminal hosts allow navigation but reject replay from the catalogue root.
+captured_wrapped = generator.apply(
+    """
+module.exports={getStreams:async function(){
+  await globalThis.fetch("https://files.example/drive/native-token",{
+    headers:{Referer:"https://demo.example/detail/fixture-movie"}
+  });
+  return [];
+}};
+""",
+    options={
+        "provider_name": "Demo",
+        "base_url": "https://demo.example",
+        "types": ["movie"],
+        "search_paths": [],
+        "direct_paths": [],
+        "request_recipes": [],
+        "max_pages": 8,
+        "max_embeds": 8,
+        "max_depth": 4,
+    },
+)
+
+capture_runner = r"""
+const vm=require('vm');
+const src=process.argv[2],calls=[];
+function header(init,name){
+  const h=(init||{}).headers||{},wanted=String(name).toLowerCase();
+  for(const k of Object.keys(h)) if(String(k).toLowerCase()===wanted) return String(h[k]||'');
+  return '';
+}
+function H(type){return {get:(key)=>String(key).toLowerCase()==='content-type'?type:null,getSetCookie:()=>[]}}
+function R(url,type,body,status=200){return {ok:status>=200&&status<300,status,url,headers:H(type),text:async()=>String(body||''),json:async()=>JSON.parse(String(body||'{}'))}}
+const sandbox={
+  module:{exports:{}},exports:{},URL,AbortController,setTimeout,clearTimeout,Uint8Array,
+  fetch:async(input,init={})=>{
+    const url=String(input),ref=header(init,'referer'); calls.push({url,ref});
+    if(url==='https://files.example/drive/native-token'){
+      if(ref!=='https://demo.example/detail/fixture-movie') return R(url,'text/plain','hotlink blocked',403);
+      return R(url,'text/html','<a href="/file/native-id">file</a>');
+    }
+    if(url==='https://files.example/file/native-id'){
+      if(ref!=='https://files.example/drive/native-token') return R(url,'text/plain','bad referer',403);
+      return R(url,'text/html','<script>const media="https://cdn.example/native.m3u8";</script>');
+    }
+    throw new Error('unexpected '+url);
+  }
+};
+sandbox.globalThis=sandbox;
+vm.runInNewContext(src,sandbox,{timeout:5000});
+sandbox.module.exports.getStreams({tmdbId:'101',mediaType:'movie',title:'Fixture Movie',year:2020})
+ .then(rows=>console.log(JSON.stringify({rows,calls})))
+ .catch(err=>{console.error(err);process.exit(1)});
+"""
+with tempfile.TemporaryDirectory() as directory:
+    path = Path(directory) / "capture-referer.cjs"
+    path.write_text(capture_runner, encoding="utf-8")
+    completed = subprocess.run(
+        ["node", str(path), captured_wrapped],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=25,
+    )
+    assert completed.returncode == 0, completed.stderr
+    captured_execution = json.loads(completed.stdout.strip())
+
+assert captured_execution["rows"], captured_execution
+assert captured_execution["rows"][0]["url"] == "https://cdn.example/native.m3u8", captured_execution
+drive_calls = [row for row in captured_execution["calls"] if row["url"] == "https://files.example/drive/native-token"]
+assert len(drive_calls) >= 2, captured_execution
+assert all(row["ref"] == "https://demo.example/detail/fixture-movie" for row in drive_calls), captured_execution
+
 generator_source = GENERATOR.read_text(encoding="utf-8")
 assert 'order={player:0,source:1,api:2,episode:3,detail:4,search:5}' in generator_source
 assert '(?:file|drive|download)' in generator_source
