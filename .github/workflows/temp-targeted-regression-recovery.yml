@@ -14,15 +14,10 @@ on:
       - 'tests/provider_yflix_runtime_contract_test.py'
       - 'tests/provider_quick_yield_fixture_priority_test.py'
       - 'tests/provider_census_scope_history_test.py'
-      - 'scripts/build_provider_repair_batch_plan.py'
+      - 'tests/provider_repair_batch_*_test.py'
       - 'scripts/build_provider_repair_batch_plan.py'
       - 'scripts/run_provider_repair_batch.py'
-      - 'tests/provider_repair_batch_refinement_test.py'
-      - 'tests/provider_repair_batch_refinement_test.py'
       - 'scripts/refine_provider_repair_batches.py'
-      - 'scripts/refine_provider_repair_batches.py'
-      - 'scripts/run_provider_repair_batch.py'
-      - 'automation/provider-repair-batch-plan-latest.json'
       - 'automation/provider-repair-batch-plan-latest.json'
       - 'provider-overrides.json'
   pull_request:
@@ -38,6 +33,10 @@ on:
       - 'tests/provider_yflix_runtime_contract_test.py'
       - 'tests/provider_quick_yield_fixture_priority_test.py'
       - 'tests/provider_census_scope_history_test.py'
+      - 'tests/provider_repair_batch_*_test.py'
+      - 'scripts/build_provider_repair_batch_plan.py'
+      - 'scripts/run_provider_repair_batch.py'
+      - 'scripts/refine_provider_repair_batches.py'
       - 'provider-overrides.json'
 
 permissions:
