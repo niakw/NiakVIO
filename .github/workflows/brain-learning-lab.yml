@@ -13,6 +13,16 @@ on:
         required: false
         default: ""
         type: string
+      slot_remaining_minutes:
+        description: Optional total Learning slot minutes including this phase; 0 keeps the normal one-hour run
+        required: false
+        default: "0"
+        type: string
+      slot_phase:
+        description: Internal phase index for a chained long Learning slot
+        required: false
+        default: "1"
+        type: string
   push:
     branches:
       - main
@@ -30,13 +40,19 @@ concurrency:
 jobs:
   experiment:
     name: LEARNING - Sandbox repair and evidence
+    outputs:
+      slot_continue: ${{ steps.learning-slot.outputs.continue }}
+      slot_next_remaining_minutes: ${{ steps.learning-slot.outputs.next_remaining_minutes }}
+      slot_next_phase: ${{ steps.learning-slot.outputs.next_phase }}
+      slot_budget_minutes: ${{ steps.learning-slot.outputs.budget_minutes }}
+      slot_phase: ${{ steps.learning-slot.outputs.phase }}
     runs-on: ubuntu-latest
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
-    # Full-catalogue observation runs before the independent 60-minute adaptive queue.
-    # Keep enough job headroom for setup, observation, queue reserve and sanitized finalization.
-    timeout-minutes: 120
+    # GitHub-hosted jobs are capped at 6h. A long Learning slot is therefore
+    # resumed through persisted Brain memory in <=5h queue phases.
+    timeout-minutes: 355
     permissions:
       contents: read
       actions: read
@@ -57,6 +73,44 @@ jobs:
         with:
           node-version: "24"
           package-manager-cache: false
+
+      - name: Configure bounded Learning slot phase
+        id: learning-slot
+        shell: bash
+        env:
+          REQUESTED_REMAINING: ${{ inputs.slot_remaining_minutes || '0' }}
+          REQUESTED_PHASE: ${{ inputs.slot_phase || '1' }}
+        run: |
+          set -euo pipefail
+          remaining="${REQUESTED_REMAINING:-0}"
+          phase="${REQUESTED_PHASE:-1}"
+          [[ "$remaining" =~ ^[0-9]+$ ]] || remaining=0
+          [[ "$phase" =~ ^[0-9]+$ ]] || phase=1
+          if [ "$phase" -lt 1 ]; then phase=1; fi
+
+          if [ "$remaining" -gt 0 ]; then
+            budget="$remaining"
+            if [ "$budget" -gt 300 ]; then budget=300; fi
+            next_remaining=$((remaining - budget))
+          else
+            budget=60
+            next_remaining=0
+          fi
+          next_phase=$((phase + 1))
+          if [ "$next_remaining" -gt 0 ]; then
+            continue_slot=true
+          else
+            continue_slot=false
+          fi
+
+          {
+            echo "budget_minutes=$budget"
+            echo "next_remaining_minutes=$next_remaining"
+            echo "phase=$phase"
+            echo "next_phase=$next_phase"
+            echo "continue=$continue_slot"
+          } >> "$GITHUB_OUTPUT"
+          echo "FIELD_BRAIN_LONG_SLOT phase=$phase budget_minutes=$budget next_remaining_minutes=$next_remaining continue=$continue_slot"
 
       - name: Install pinned runtime dependencies
         shell: bash
@@ -259,7 +313,7 @@ jobs:
             --health brain-sandbox/full-health/health-results.json
             --previous-state brain-learning-input/previous.json
             --output-dir brain-sandbox/health-output
-            --budget-minutes 60
+            --budget-minutes "${{ steps.learning-slot.outputs.budget_minutes }}"
             --reserve-minutes 5
             --stream-safety-cap 2)
           if [ -n "$TARGET_PROVIDER" ]; then args+=(--provider "$TARGET_PROVIDER"); fi
@@ -684,3 +738,36 @@ jobs:
             URL="$(gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$BRANCH" --title "brain: Learning architecture evolution proposal" --body "$BODY")"
             echo "FIELD_BRAIN_ARCH_PR action=created url=$URL branch=$BRANCH"
           fi
+
+  continue-learning-slot:
+    name: LEARNING - Continue chained long slot
+    if: ${{ always() && needs.experiment.result == 'success' && needs.publish-learning.result == 'success' && needs.experiment.outputs.slot_continue == 'true' }}
+    needs:
+      - experiment
+      - publish-learning
+      - publish-repair-proposal
+      - publish-architecture-proposal
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Dispatch next persisted Learning phase
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEXT_REMAINING: ${{ needs.experiment.outputs.slot_next_remaining_minutes }}
+          NEXT_PHASE: ${{ needs.experiment.outputs.slot_next_phase }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$NEXT_REMAINING"
+          test -n "$NEXT_PHASE"
+          gh workflow run brain-learning-lab.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f publish_proposal=true \
+            -f slot_remaining_minutes="$NEXT_REMAINING" \
+            -f slot_phase="$NEXT_PHASE"
+          echo "FIELD_BRAIN_LONG_SLOT_DISPATCH next_phase=$NEXT_PHASE remaining_minutes=$NEXT_REMAINING"
+
