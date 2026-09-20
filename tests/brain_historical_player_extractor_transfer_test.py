@@ -117,6 +117,7 @@ transformed = bytes(
     for index, ch in enumerate(xor_url)
 )
 encoded_xor = base64.b64encode(transformed[::-1]).decode()
+assert len(encoded_xor) >= 50, len(encoded_xor)
 obfuscated = (
     '<script>var decoy="https://player.example/troll/master.m3u8";'
     'function marker(){return "reverse().join";})("'
