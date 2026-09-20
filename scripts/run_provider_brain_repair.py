@@ -65,13 +65,32 @@ def shard_for(provider: str, count: int) -> int:
     return int.from_bytes(digest[:8], "big") % count
 
 
-def status_rows() -> dict[str, dict[str, Any]]:
-    payload = load(STATUS, {})
+def status_payload() -> dict[str, Any]:
+    value = load(STATUS, {})
+    return value if isinstance(value, dict) else {}
+
+
+def status_rows(payload: dict[str, Any] | None = None) -> dict[str, dict[str, Any]]:
+    payload = payload or status_payload()
     return {
         cid(row.get("provider")): row
         for row in payload.get("providers") or []
         if isinstance(row, dict) and cid(row.get("provider"))
     }
+
+
+def census_queue(payload: dict[str, Any], *, include_environment: bool) -> set[str]:
+    key = "symptomaticProviders" if include_environment else "repairQueue"
+    values = payload.get(key)
+    if not isinstance(values, list):
+        values = payload.get("brainQueue") or []
+        if not include_environment:
+            rows = status_rows(payload)
+            values = [
+                value for value in values
+                if str((rows.get(cid(value)) or {}).get("status") or "") not in ENVIRONMENT
+            ]
+    return {cid(value) for value in values if cid(value)}
 
 
 def select_targets(
@@ -81,16 +100,14 @@ def select_targets(
     shard_count: int,
     shard_index: int,
 ) -> tuple[list[str], list[str], dict[str, dict[str, Any]]]:
-    rows = status_rows()
+    payload = status_payload()
+    rows = status_rows(payload)
+    allowed = census_queue(payload, include_environment=include_environment)
     requested = {cid(value) for value in explicit if cid(value)}
     if requested:
-        candidates = sorted(requested)
+        candidates = sorted(requested & allowed)
     else:
-        candidates = sorted(
-            provider
-            for provider, row in rows.items()
-            if str(row.get("status") or "") not in GREEN
-        )
+        candidates = sorted(allowed)
     skipped_environment: list[str] = []
     selected: list[str] = []
     for provider in candidates:
@@ -195,7 +212,7 @@ def materialize() -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--provider", action="append", default=[], help="Optional provider id; repeatable. Empty = all current non-green providers.")
+    parser.add_argument("--provider", action="append", default=[], help="Optional provider id; repeatable. Empty = current census repairQueue only.")
     parser.add_argument("--waves", type=int, default=3)
     parser.add_argument("--batch-size", type=int, default=48)
     parser.add_argument("--health-concurrency", type=int, default=0, help="0 = auto (6/8 depending on target count)")
@@ -238,7 +255,8 @@ def main() -> int:
             "skippedEnvironmentProviders": skipped_environment,
             "waves": [],
             "remainingProviders": [],
-            "message": "no repairable providers selected",
+            "message": "no repairable providers selected from current census queue",
+            "selectionSource": "automation/provider-census-status.json:repairQueue",
             "experienceMemory": {
                 "providerCount": int(experience.get("providerCount") or 0),
                 "operationalProviderCount": int(experience.get("operationalProviderCount") or 0),
@@ -338,7 +356,8 @@ def main() -> int:
             "schemaVersion": 1,
             "executionModel": "multi-wave-brain-repair",
             "providerSpecificRules": False,
-            "sourceCensusRunId": load(STATUS, {}).get("runId"),
+            "sourceCensusRunId": status_payload().get("runId"),
+            "selectionSource": "automation/provider-census-status.json:repairQueue",
             "experienceMemory": {
                 "schemaVersion": experience.get("schemaVersion"),
                 "sourceRunId": experience.get("sourceRunId"),
