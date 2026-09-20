@@ -154,7 +154,7 @@ def extract_status_targets(
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
     out: list[dict[str, Any]] = []
     for row in status.get("providers") or []:
-        if not isinstance(row, dict) or str(row.get("status") or "") != "PROVIDER WAF/ANTIBOT":
+        if not isinstance(row, dict) or str(row.get("status") or "") not in {"HARNESS MISMATCH", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}:
             continue
         provider = str(row.get("provider") or "").strip().casefold()
         if not provider:
