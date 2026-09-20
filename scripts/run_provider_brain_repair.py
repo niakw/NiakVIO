@@ -30,6 +30,7 @@ DEFAULT_WORK = ROOT / "automation" / ".provider-brain-repair-work"
 EXPERIENCE = ROOT / "automation" / "brain-repair-experience.json"
 BATCH_PLAN = ROOT / "automation" / "provider-repair-batch-plan-latest.json"
 REPAIR_MEMORY = ROOT / "automation" / "brain-repair-memory.json"
+BRAIN_POLICY = ROOT / "engine_v2" / "config" / "brain-policy.json"
 
 GREEN = {"FULL OK", "PARTIAL OK"}
 ENVIRONMENT = {"PROVIDER WAF/ANTIBOT"}
@@ -191,6 +192,49 @@ def experiment_rotation_decision(
     if remaining_count > 0 and memory_advanced and wave < max_waves:
         return "rotate"
     return "exhausted" if memory_advanced else "stalled"
+
+
+def exhausted_from_negative_memory(brain_summary: dict[str, Any]) -> set[str]:
+    """Reclassify signatures that became exhausted during the just-finished wave."""
+    policy = load(BRAIN_POLICY, {})
+    production = policy.get("production") if isinstance(policy.get("production"), dict) else {}
+    negative = production.get("negativeExperimentMemory") if isinstance(production.get("negativeExperimentMemory"), dict) else {}
+    default_variants = max(1, int(negative.get("maxVariantsPerSignature") or 4))
+    rotate_every = max(1, int(negative.get("rotateExperimentAfterFailures") or 1))
+    memory = load(REPAIR_MEMORY, {})
+    entries = [row for row in memory.get("entries") or [] if isinstance(row, dict)]
+    out: set[str] = set()
+    for plan in (brain_summary.get("plans") or {}).values():
+        if not isinstance(plan, dict):
+            continue
+        provider = cid(plan.get("providerId"))
+        signature = str(plan.get("signature") or "")
+        failure_class = str(plan.get("failureClass") or "")
+        if not provider or not signature:
+            continue
+        variant_count = max(1, int(plan.get("experimentVariantCount") or default_variants))
+        allowed_profiles = {
+            str(value) for value in plan.get("allowedProfiles") or []
+            if str(value)
+        }
+        variants: set[int] = set()
+        for row in entries:
+            if cid(row.get("providerId")) != provider:
+                continue
+            if str(row.get("signature") or "") != signature:
+                continue
+            if failure_class and str(row.get("failureClass") or "") != failure_class:
+                continue
+            if allowed_profiles and str(row.get("profile") or "") not in allowed_profiles:
+                continue
+            if int(row.get("successes") or 0) > 0:
+                continue
+            if int(row.get("consecutiveFailures") or 0) < rotate_every:
+                continue
+            variants.add(max(0, min(variant_count - 1, int(row.get("experimentVariant") or 0))))
+        if len(variants) >= variant_count:
+            out.add(provider)
+    return out
 
 
 def playable_count(result: dict[str, Any]) -> int:
@@ -404,6 +448,7 @@ def main() -> int:
                     and row.get("experimentExhausted") is True
                     and cid(row.get("providerId"))
                 }
+                deferred.update(exhausted_from_negative_memory(brain_summary))
                 accepted_this_wave.extend(accepted)
                 fixed_this_wave.update(fixed)
                 deferred_this_wave.update(deferred)
