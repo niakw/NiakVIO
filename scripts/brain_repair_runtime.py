@@ -246,6 +246,7 @@ def planner_negative_memory(_mode: str) -> list[dict[str, Any]]:
             "failureClass": _clip_text(raw.get("failureClass"), 96),
             "signature": _clip_text(raw.get("signature"), 96),
             "profile": _clip_text(raw.get("profile"), 96),
+            "experimentVariant": max(0, int(raw.get("experimentVariant") or 0)),
             "capabilityStrategy": _clip_text(raw.get("capabilityStrategy"), 96).casefold(),
             "observedPipelineStage": _clip_text(raw.get("observedPipelineStage"), 64).casefold(),
             "failures": max(0, int(raw.get("failures") or 0)),
@@ -528,6 +529,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                 str(row.get("providerId") or "").casefold() == provider_id
                 and str(row.get("signature") or "") == signature
                 and str(row.get("profile") or "") == profile
+                and int(row.get("experimentVariant") or 0) == max(0, int(plan.get("experimentVariant") or 0))
             ):
                 return row
         row = {
@@ -536,6 +538,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             "failureClass": failure_class,
             "signature": signature,
             "profile": profile,
+            "experimentVariant": max(0, int(plan.get("experimentVariant") or 0)),
             "capabilityStrategy": str(plan.get("capabilityStrategy") or "").casefold(),
             "observedPipelineStage": str(plan.get("observedPipelineStage") or "").casefold(),
             "failures": 0,
@@ -696,6 +699,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     str(row.get("providerId") or ""),
                     str(row.get("signature") or ""),
                     str(row.get("profile") or ""),
+                    int(row.get("experimentVariant") or 0),
                 ),
             )[:max_memory_entries]
             REPAIR_MEMORY_PATH.parent.mkdir(parents=True, exist_ok=True)
