@@ -19,6 +19,7 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
     targeted = root / "targeted.json"
     queue_summary = root / "queue-summary.json"
     queue_state = root / "queue-state.json"
+    batch_plan = root / "batch-plan.json"
     out_policy = root / "policy.proposed.json"
     summary = root / "summary.json"
     markdown = root / "summary.md"
@@ -89,6 +90,34 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
         "deferredRepairProviders": ["alpha", "beta"],
     }), encoding="utf-8")
 
+    batch_plan.write_text(json.dumps({
+        "sourceRunId": "synthetic",
+        "groups": [
+            {
+                "groupId": "terminal-extraction|html_scraper",
+                "repairScope": "terminal-extraction",
+                "capabilityStrategy": "html_scraper",
+                "runtimeFamilies": ["family-a"],
+                "dominantIssues": ["network_zero_result"],
+                "providers": ["alpha"],
+            },
+            {
+                "groupId": "transport|mixed_embed_resolver",
+                "repairScope": "transport",
+                "capabilityStrategy": "mixed_embed_resolver",
+                "runtimeFamilies": ["family-b"],
+                "dominantIssues": ["network_http_error"],
+                "providers": ["beta"],
+            },
+            {
+                "groupId": "harness-compatibility|html_scraper",
+                "repairScope": "harness-compatibility",
+                "capabilityStrategy": "html_scraper",
+                "providers": ["not-deferred"],
+            },
+        ],
+    }), encoding="utf-8")
+
     completed = subprocess.run(
         [
             sys.executable,
@@ -100,6 +129,7 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
             "--targeted-lab", str(targeted),
             "--queue-summary", str(queue_summary),
             "--queue-state", str(queue_state),
+            "--batch-plan", str(batch_plan),
             "--output-policy", str(out_policy),
             "--summary", str(summary),
             "--markdown", str(markdown),
@@ -128,5 +158,21 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
     assert result["deferredRepairProviders"] == ["alpha", "beta"], result
     assert "do not recycle v0-v3" in row["recommendation"].casefold(), row
     assert "requiresHumanMerge" in row and row["requiresHumanMerge"] is True, row
+    blueprints = result["strategyBlueprints"]
+    assert result["strategyBlueprintCount"] == 2, result
+    assert {item["strategyId"] for item in blueprints} == {
+        "chain_terminal_extractor_v1",
+        "native_transport_differential_v1",
+    }, blueprints
+    terminal = next(item for item in blueprints if item["strategyId"] == "chain_terminal_extractor_v1")
+    assert terminal["providers"] == ["alpha"], terminal
+    assert "playback-verified media" in terminal["acceptanceProof"], terminal
+    transport = next(item for item in blueprints if item["strategyId"] == "native_transport_differential_v1")
+    assert transport["providers"] == ["beta"], transport
+    assert "representative native TV/mobile" in transport["method"], transport
+    assert "provider mutation only after harness mismatch excluded" in transport["acceptanceProof"], transport
+    assert all(item["productionWritesAllowed"] is False for item in blueprints)
+    assert all(item["requiresHumanMerge"] is True for item in blueprints)
+    assert row["evidence"]["strategyBlueprints"] == blueprints, row
 
 print("Brain architecture deferred repair cohort contract passed")
