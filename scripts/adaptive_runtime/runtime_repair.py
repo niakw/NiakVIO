@@ -41,9 +41,49 @@ SAFE_STRUCTURED_PARSE_PROFILE = "safe_structured_parse"
 # before/after playable evidence before accepting a generated candidate.
 NON_REPAIRABLE_POLICY_STATUSES = {"excluded"}
 EXPERIENCE_PATH = ROOT / "automation" / "brain-repair-experience.json"
+CENSUS_STATUS_PATH = ROOT / "automation" / "provider-census-status.json"
 ROUTE_KEYS = ("candidate_learned_routes", "learned_routes", "candidate_routes", "routes")
 _ROUTE_PLACEHOLDER = re.compile(r"\\{(?:query|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type)\\}", re.I)
 _ROUTE_OPAQUE = re.compile(r"(?:[A-Za-z0-9+/]{72,}={0,2}|[A-Fa-f0-9]{96,})")
+
+
+def _census_runtime_focus(provider_id: str) -> dict[str, Any]:
+    try:
+        status = json.loads(CENSUS_STATUS_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    wanted = str(provider_id or "").strip().casefold()
+    for row in status.get("providers") or []:
+        if not isinstance(row, dict) or str(row.get("provider") or "").strip().casefold() != wanted:
+            continue
+        state = str(row.get("status") or "")
+        profiles = {
+            "CHAIN REACHED": {
+                "focus": "terminal-chain",
+                "direct_role_order": ["player", "api", "episode", "detail", "other"],
+                "max_pages": 16, "max_embeds": 20, "max_depth": 4,
+            },
+            "ROUTE PROVEN": {
+                "focus": "proven-route-chain",
+                "direct_role_order": ["detail", "episode", "player", "api", "other"],
+                "max_pages": 16, "max_embeds": 16, "max_depth": 4,
+            },
+            "CANDIDATE OK": {
+                "focus": "candidate-replay",
+                "direct_role_order": ["player", "api", "detail", "episode", "other"],
+                "max_pages": 18, "max_embeds": 20, "max_depth": 4,
+            },
+            "PROVIDER NETWORK BLOCKED": {
+                "focus": "transport-first",
+                "direct_role_order": ["api", "detail", "player", "episode", "other"],
+                "max_pages": 8, "max_embeds": 8, "max_depth": 2,
+            },
+        }
+        result = dict(profiles.get(state) or {})
+        result["status"] = state
+        result["dominant_issue"] = str(row.get("dominantIssue") or "")[:240]
+        return result
+    return {}
 
 
 def _load_experience() -> dict[str, Any]:
@@ -273,6 +313,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     learned_search = [route for route in learned_routes if _route_role(route) == "search"]
     learned_direct = [route for route in learned_routes if _route_role(route) != "search"]
     strategy = str(capability.get("strategy") or patch.get("capability") or "unknown").strip().casefold()
+    census_focus = _census_runtime_focus(provider_id)
     peer_routes = _peer_routes(strategy)
     peer_search = [route for route in peer_routes if _route_role(route) == "search"]
     peer_direct = [route for route in peer_routes if _route_role(route) != "search"]
@@ -288,6 +329,20 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     ]
     search_paths = _unique_routes(configured_search, learned_search, peer_search, generic_search, limit=24)
     direct_paths = _unique_routes(configured_direct, learned_direct, peer_direct, generic_direct, limit=32)
+    role_order = {
+        role: index
+        for index, role in enumerate(census_focus.get("direct_role_order") or [])
+    }
+    if role_order:
+        direct_paths = sorted(
+            direct_paths,
+            key=lambda route: (
+                role_order.get(_route_role(route), len(role_order)),
+                0 if _ROUTE_PLACEHOLDER.search(route) else 1,
+                len(route),
+                route,
+            ),
+        )
     blocked_hosts = {
         "googletagmanager.com", "google-analytics.com", "static.cloudflareinsights.com",
         "cloudflareinsights.com", "connect.facebook.net", "doubleclick.net",
@@ -323,9 +378,11 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             "search": len(search_paths),
             "direct": len(direct_paths),
         },
-        "max_pages": 10,
-        "max_embeds": 10,
-        "max_depth": 3,
+        "repair_focus": census_focus.get("focus") or "generic",
+        "census_status": census_focus.get("status") or "",
+        "max_pages": int(census_focus.get("max_pages") or 10),
+        "max_embeds": int(census_focus.get("max_embeds") or 10),
+        "max_depth": int(census_focus.get("max_depth") or 3),
         "timeout_ms": max(2000, min(int(recovery_options.get("timeout_ms") or 9000), 20000)),
         "user_agent": network_hints["user_agent"],
         "blocked_hosts": sorted(blocked_hosts),
