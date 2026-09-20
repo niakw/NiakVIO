@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 """Harden adaptive runtime recovery so file extensions are hints, not proof.
 
-V4 already performs bounded recursive page/player recovery. Its remaining false
-positive was treating a URL ending in .mp4/.m3u8/etc. as direct media before a
-network probe. Some hosts deliberately expose HTML/player pages on media-looking
+The internal Core generator performs bounded recursive page/player recovery.
+V5 hardens its output so a URL ending in .mp4/.m3u8/etc. is never accepted as
+direct media before a network probe. Some hosts deliberately expose HTML/player pages on media-looking
 paths, which caused quick repair to return a candidate that the health probe then
 correctly rejected.
 
-V5 reuses the audited V4 resolver and applies narrow, guarded source rewrites:
+V5 reuses the audited internal Core resolver and applies narrow, guarded source rewrites:
 - MIME/body/disposition/binary signatures remain positive media proof;
 - an extension-only candidate is probed before it can be returned;
 - HTML reached through a media-looking URL is parsed recursively as a player;
 - nested media-looking links are recursively verified rather than trusted;
 - unverified native rows are never re-emitted as a last-resort "success".
 
-Its marker is intentionally outside the legacy V4 migration prefix. Older
-``reapply_published_overrides`` logic can therefore maintain historical V4
-bundles without ever downgrading a V5 bundle back to extension-trusting code.
-V5 removes/replaces its own prior wrapper before delegating to the V4 generator.
+Its marker remains outside the legacy V4 migration prefix. Historical V4
+bundles are accepted only as migration input and are upgraded directly to V5.
+V5 removes/replaces its own prior wrapper before delegating to the internal
+Core generator.
 """
 from __future__ import annotations
 
@@ -26,12 +26,12 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
-V4_PATH = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v4.py"
-_spec = importlib.util.spec_from_file_location("nuvio_adaptive_runtime_recovery_v4", V4_PATH)
+GENERATOR_PATH = ROOT / "scripts" / "adaptive_runtime" / "runtime_recovery_generator.py"
+_spec = importlib.util.spec_from_file_location("nuvio_adaptive_runtime_generator", GENERATOR_PATH)
 if _spec is None or _spec.loader is None:
-    raise RuntimeError(f"cannot load {V4_PATH}")
-_v4 = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(_v4)
+    raise RuntimeError(f"cannot load {GENERATOR_PATH}")
+_generator = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_generator)
 
 MARKER_V5 = "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5"
 MARKER_COMMENT = f"/* {MARKER_V5}:"
@@ -73,11 +73,11 @@ def _strip_previous_v5(text: str) -> str:
 
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
     native = _strip_previous_v5(text)
-    patched = _v4.apply(native, options=options, **kwargs)
+    patched = _generator.apply(native, options=options, **kwargs)
 
     patched = _replace_once(
         patched,
-        "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4:",
+        "NUVIO_ADAPTIVE_RUNTIME_CORE_V7:",
         f"{MARKER_V5}:",
         "marker",
     )
