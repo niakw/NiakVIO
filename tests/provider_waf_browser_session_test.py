@@ -56,6 +56,41 @@ assert len(prior_targets) == 1, prior_targets
 assert prior_targets[0]["provider"] == "persisted"
 assert prior_targets[0]["publicUrl"] == "https://persisted.example/challenge"
 
+status_targets = mod.extract_status_targets(
+    {
+        "providers": [
+            {
+                "provider": "new-waf",
+                "status": "PROVIDER WAF/ANTIBOT",
+                "declaredLanes": ["movie", "tv"],
+            },
+            {
+                "provider": "healthy",
+                "status": "FULL OK",
+                "declaredLanes": ["movie"],
+            },
+        ]
+    },
+    {
+        "provider_patches": {
+            "new-waf": {"official_site": "https://new-waf.example/?tracking=drop"},
+            "healthy": {"official_site": "https://healthy.example/"},
+        }
+    },
+    [
+        {
+            "provider": "new-waf",
+            "lane": "movie",
+            "publicUrl": "https://new-waf.example/",
+        }
+    ],
+)
+assert len(status_targets) == 1, status_targets
+assert status_targets[0]["provider"] == "new-waf"
+assert status_targets[0]["lane"] == "tv"
+assert status_targets[0]["publicUrl"] == "https://new-waf.example/"
+assert status_targets[0]["seedKind"] == "metadata-homepage"
+
 targets = mod.extract_targets(report)
 assert len(targets) == 2, targets
 allwish = next(row for row in targets if row["provider"] == "allwish")
