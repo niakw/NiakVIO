@@ -96,6 +96,9 @@ def _load_experience() -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
+TERMINAL_MEDIA_ROLES = {"player", "source", "api"}
+
+
 def _route_role(route: str) -> str:
     value = route.casefold()
     if "{query}" in value or re.search(r"(?:^|[/?&_=.-])search(?:[/?&_=.-]|$)", value) or re.search(r"[?&]s=", value):
@@ -104,6 +107,12 @@ def _route_role(route: str) -> str:
         return "episode"
     if re.search(r"(?:player|embed|watch|lecteur|iframe|/e/|/v/)", value):
         return "player"
+    # Terminal download hosts commonly expose a provider-owned intermediate
+    # source page (for example /file/<id> or /drive/<token>) before the actual
+    # media URL. Keep this distinct from catalogue/detail pages such as
+    # /download-<title>-..., which remain detail routes.
+    if re.search(r"(?:^|/)(?:file|drive|source|download)(?:/|[?&]|$)", value):
+        return "source"
     if re.search(r"(?:^|/)(?:api|ajax|stream|streams|sources|servers|links|load)(?:/|[?&]|$)", value):
         return "api"
     if "{slug}" in value or re.search(r"(?:^|/)(?:movie|film|films|serie|series|anime|title|download-)", value):
@@ -144,7 +153,7 @@ def _patch_routes(patch: dict[str, Any]) -> list[str]:
         output,
         key=lambda route: (
             0 if _ROUTE_PLACEHOLDER.search(route) else 1,
-            0 if _route_role(route) in {"search", "api", "player", "episode", "detail"} else 1,
+            0 if _route_role(route) in {"search", "api", "player", "source", "episode", "detail"} else 1,
             len(route),
             route,
         ),
@@ -716,32 +725,32 @@ def _experiment_role_preferences(
             ["search", "api", "detail", "player", "episode", "other"],
         ],
         "route_proven_gap": [
-            ["detail", "episode", "player", "api", "other"],
-            ["player", "detail", "episode", "api", "other"],
-            ["api", "player", "detail", "episode", "other"],
-            ["episode", "detail", "player", "api", "other"],
-            ["player", "api", "episode", "detail", "other"],
+            ["detail", "episode", "player", "source", "api", "other"],
+            ["player", "source", "detail", "episode", "api", "other"],
+            ["api", "source", "player", "detail", "episode", "other"],
+            ["episode", "detail", "player", "source", "api", "other"],
+            ["player", "source", "api", "episode", "detail", "other"],
         ],
         "chain_terminal_gap": [
-            ["player", "api", "episode", "detail", "other"],
-            ["api", "player", "episode", "detail", "other"],
-            ["player", "episode", "api", "detail", "other"],
-            ["detail", "player", "api", "episode", "other"],
-            ["player", "api", "other", "episode", "detail"],
+            ["player", "source", "api", "episode", "detail", "other"],
+            ["api", "source", "player", "episode", "detail", "other"],
+            ["player", "source", "episode", "api", "detail", "other"],
+            ["detail", "player", "source", "api", "episode", "other"],
+            ["player", "source", "api", "other", "episode", "detail"],
         ],
         "candidate_replay_gap": [
-            ["player", "api", "detail", "episode", "other"],
-            ["api", "player", "detail", "episode", "other"],
-            ["detail", "player", "api", "episode", "other"],
-            ["episode", "detail", "player", "api", "other"],
-            ["player", "api", "detail", "episode", "search", "other"],
+            ["player", "source", "api", "detail", "episode", "other"],
+            ["api", "source", "player", "detail", "episode", "other"],
+            ["detail", "player", "source", "api", "episode", "other"],
+            ["episode", "detail", "player", "source", "api", "other"],
+            ["player", "source", "api", "detail", "episode", "search", "other"],
         ],
         "media_extraction_gap": [
-            ["player", "api", "other", "episode", "detail", "search"],
-            ["api", "player", "other", "episode", "detail", "search"],
-            ["player", "api", "episode", "other", "detail", "search"],
-            ["api", "player", "episode", "other", "detail", "search"],
-            ["player", "api", "other", "episode", "detail", "search"],
+            ["player", "source", "api", "other", "episode", "detail", "search"],
+            ["source", "api", "player", "other", "episode", "detail", "search"],
+            ["player", "source", "api", "episode", "other", "detail", "search"],
+            ["api", "source", "player", "episode", "other", "detail", "search"],
+            ["player", "source", "api", "other", "episode", "detail", "search"],
         ],
     }
     if failure in by_failure:
@@ -749,10 +758,10 @@ def _experiment_role_preferences(
     default = list(census_focus.get("direct_role_order") or [])
     fallbacks = [
         default,
-        ["player", "api", "episode", "detail", "other"],
-        ["api", "player", "detail", "episode", "other"],
-        ["detail", "episode", "player", "api", "other"],
-        ["player", "api", "detail", "episode", "search", "other"],
+        ["player", "source", "api", "episode", "detail", "other"],
+        ["api", "source", "player", "detail", "episode", "other"],
+        ["detail", "episode", "player", "source", "api", "other"],
+        ["player", "source", "api", "detail", "episode", "search", "other"],
     ]
     return list(fallbacks[variant] or fallbacks[1])
 
@@ -911,7 +920,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         # guesses and TMDB-as-provider-id terminal routes are no longer useful.
         terminal_owned = [
             route for route in learned_direct
-            if _route_role(route) in {"player", "api"}
+            if _route_role(route) in TERMINAL_MEDIA_ROLES
         ]
         terminal_configured = [
             route for route in configured_direct
@@ -920,7 +929,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         terminal_peer = [
             route for route in peer_direct
             if experiment_variant >= peer_route_min_variant
-            and _route_role(route) in {"player", "api"}
+            and _route_role(route) in TERMINAL_MEDIA_ROLES
         ]
         search_paths = _unique_routes(configured_search, learned_search, limit=12)
         direct_paths = _unique_routes(
@@ -937,7 +946,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         ]
         terminal_peer = [
             route for route in peer_direct
-            if _route_role(route) in {"player", "api", "episode"}
+            if _route_role(route) in {"player", "source", "api", "episode"}
         ]
         if experiment_failure == "route_proven_gap":
             search_paths = _unique_routes(configured_search, learned_search, limit=16)
@@ -949,7 +958,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             direct_paths = _unique_routes(
                 [
                     route for route in learned_direct
-                    if _route_role(route) in {"player", "api", "episode"}
+                    if _route_role(route) in {"player", "source", "api", "episode"}
                 ],
                 configured_direct, terminal_peer, terminal_generic, learned_direct,
                 limit=32,
@@ -970,7 +979,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             direct_paths = _unique_routes(
                 [
                     route for route in learned_direct
-                    if _route_role(route) in {"player", "api"}
+                    if _route_role(route) in TERMINAL_MEDIA_ROLES
                 ],
                 [
                     route for route in configured_direct
