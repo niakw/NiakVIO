@@ -1,5 +1,13 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-20 15:43 Europe/Paris — WAF harness cleanup bug isolated; native-proximity rerun active
+
+- WAF diagnostics run `35513827185` did **not** fail on provider reachability, Cloudflare classification, Chromium contract, or the NuvioTV-policy OkHttp helper. All setup/contracts passed and the client-profile matrix produced useful evidence before teardown.
+- Exact failure was harness lifecycle only: Python `TemporaryDirectory` cleanup raced late Chromium profile files (`OSError: [Errno 39] Directory not empty: .../Default`) after the probes. This must not be interpreted as provider/WAF failure.
+- Fix `f574a356d9cb`: Chromium profiles remain ephemeral but cleanup is best-effort with `ignore_cleanup_errors=True`, appropriate for disposable GitHub runners and late browser child files. Contract `d8b8640effa9` prevents regression.
+- New WAF diagnostics are active: run `35514290577` on the cleanup fix and run `35514301955` on the contract commit. Their transport outcomes, not the earlier cleanup exception, are the next WAF authority.
+- User architecture invariant remains: CI WAF/challenge is primarily harness/client mismatch until representative native-client transport reproduces it. Current evidence already shows client sensitivity (e.g. MoviesMod movie/tv reaches content with audited NuvioTV-UA Chromium while GitHub default Chromium/direct HTTP/OkHttp-JVM can remain challenged). This is transport evidence only, never playback proof.
+
 ## 2026-09-20 15:15 Europe/Paris — Repair #14 converged to Learning debt; WAF aligned to real NuvioTV transport
 
 - Repair #14 run `35512170961` completed **SUCCESS** on tested SHA `50c59eabe93f`. Full preflight, real Repair, four-version floor, symptom-scope gate, artifact upload and census persistence all passed.
