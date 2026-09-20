@@ -24,8 +24,7 @@ def scalar(value:Any, default:str="unknown")->str:
 
 def action_for(status:str, depth:str, issue:str)->tuple[str,str]:
     s=status.upper(); d=depth.lower(); i=issue.lower()
-    if "WAF/ANTIBOT" in s or "waf_challenge" in i:
-        return "environment", "browser/session or upstream-access investigation; never mutate provider code solely to hide a challenge"
+    if "HARNESS" in s or "WAF/ANTIBOT" in s or "waf_challenge" in i:\n        return "harness-compatibility", "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge"
     if "NETWORK BLOCKED" in s or "network_http_error" in i or "network_exception" in i:
         return "transport", "domain/upstream transport refresh across the whole capability family before provider-local code changes"
     if "CANDIDATE OK" in s:
