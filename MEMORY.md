@@ -5,6 +5,8 @@ Last authoritative checkpoint: 2026-09-16 Europe/Paris.
 This file is the durable recovery source of truth for the active NiakVIO work. Prefer current repository state and exact GitHub Actions/native logs over older chat summaries. Update this file automatically at every important correction, failure, publication, native proof, security proof, or architecture decision before moving to the next risky step.
 
 ## 2026-09-20 10:50 Europe/Paris — virtuous Repair → improve → Repair loop resumed
+- Loop iteration Repair #2: run `35501120857` passed the new v3 override contract, then failed in `brain_repair_experience_transfer_test.py`. Diagnostic output proved both provider and peer request recipe counts were zero even though the synthetic experience contained valid POST recipes.
+- Root cause: `scripts/adaptive_runtime/runtime_repair.py` had route/request placeholder regexes double-escaped (`\\{...\\}`), so `{query}` / `{slug}` templates were not recognized. This silently suppressed request-recipe transfer and distorted template ordering. Generic fix `b32d2f935f6e`; direct regex contract added in `866edbeb60c5`.
 
 - The overnight 12h Learning attempt did **not** reach the adaptive Learning queue. Run `35484289278` failed at `Build isolated current provider stage`; scheduled run `35497810028` reproduced the same failure.
 - Root cause: `validate_override_pipeline.py` treated `runtime_domain_replacements` like legacy source-text replacement. For generated Provider v3, the historical host intentionally remains as the key of owned runtime migration DATA (`old -> terminal`), so Anime-Sama, HindMoviez, VidRock and VoirAnime were falsely rejected.
