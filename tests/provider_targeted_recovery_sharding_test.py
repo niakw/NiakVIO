@@ -3,9 +3,11 @@ from pathlib import Path
 import importlib.util
 import json
 import subprocess
+import sys
 import tempfile
 
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/"scripts"))
 
 spec=importlib.util.spec_from_file_location("targeted",ROOT/"scripts/run_provider_targeted_recovery.py")
 mod=importlib.util.module_from_spec(spec)
