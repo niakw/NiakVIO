@@ -22,7 +22,7 @@ required=[
     "merge-multiple: true",
     "automation/provider-repair-batch-plan-latest.json",
     "automation/provider-bulk-activation-latest.json",
-    "provider: bulk activate ",
+    "provider:\\ bulk\\ activate\\ *",
     'args+=(--provider "$providers")',
     "ci(census-sharded): persist",
     "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
