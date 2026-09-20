@@ -26,6 +26,7 @@ report = {
             "semantic_type": "anime",
             "debug_stage": "provider_waf_challenge",
             "debug_fetches": [
+                {"url": "https://ipv4.vostfree.ws/", "method": "GET", "status": 403, "challenge": "cloudflare"},
                 {"url": "https://ipv4.vostfree.ws/index.php?do=search", "method": "POST", "status": 403, "challenge": "cloudflare"},
             ],
         },
@@ -47,8 +48,10 @@ assert mod.classify_dom("<html><title>Just a moment...</title><div>challenge-pla
 assert mod.classify_dom("<html><body>" + ("normal catalogue content " * 10) + "</body></html>") == "browser_content_reached"
 assert mod.classify_dom("<html></html>") == "browser_inconclusive"
 assert mod.probe_target(allwish, "", timeout=5, virtual_time_ms=1000)["outcome"] == "browser_unavailable"
-post = next(row for row in targets if row["provider"] == "vostfree")
-assert mod.probe_target(post, "/unused/browser", timeout=5, virtual_time_ms=1000)["outcome"] == "unsupported_method"
+vostfree = next(row for row in targets if row["provider"] == "vostfree")
+assert vostfree["method"] == "GET", vostfree
+assert vostfree["publicUrl"] == "https://ipv4.vostfree.ws/"
+assert mod.probe_target(vostfree, "", timeout=5, virtual_time_ms=1000)["outcome"] == "browser_unavailable"
 
 source = path.read_text(encoding="utf-8")
 for forbidden in ("cf_clearance", "turnstile token", "captcha solver", "undetected_chromedriver", "cloudscraper", "flaresolverr"):
