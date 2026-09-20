@@ -100,7 +100,7 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     single = tmp / "single-client.json"
     single.write_text(json.dumps({
         "schemaVersion": 5,
-        "brainVersion": 4,
+        "brainVersion": 6,
         "readerFailures": 1,
         "plans": [{
             "provider": "moviesdrive",
