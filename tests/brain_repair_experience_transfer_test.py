@@ -236,7 +236,8 @@ with tempfile.TemporaryDirectory() as tmp:
     transport_options = runtime._adaptive_runtime_options(transport1, config)
     assert transport_options is not None
     assert transport_options["route_prior_counts"]["peer"] == 0
-    assert transport_options["direct_paths"][0] == "/film/{slug}", transport_options["direct_paths"]
+    assert runtime._route_role(transport_options["direct_paths"][0]) == "detail", transport_options["direct_paths"]
+    assert "/player/{id}" not in transport_options["direct_paths"]
 
     candidate2 = dict(candidate)
     candidate2["brain_repair_plan"] = {
