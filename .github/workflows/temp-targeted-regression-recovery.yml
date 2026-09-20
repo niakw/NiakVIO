@@ -17,6 +17,10 @@ on:
       - 'scripts/build_provider_repair_batch_plan.py'
       - 'scripts/build_provider_repair_batch_plan.py'
       - 'scripts/run_provider_repair_batch.py'
+      - 'tests/provider_repair_batch_refinement_test.py'
+      - 'tests/provider_repair_batch_refinement_test.py'
+      - 'scripts/refine_provider_repair_batches.py'
+      - 'scripts/refine_provider_repair_batches.py'
       - 'scripts/run_provider_repair_batch.py'
       - 'automation/provider-repair-batch-plan-latest.json'
       - 'automation/provider-repair-batch-plan-latest.json'
@@ -108,6 +112,7 @@ jobs:
           python tests/provider_shared_player_fanout_contract_test.py
           python tests/provider_repair_batch_plan_test.py
           python tests/provider_repair_batch_runner_test.py
+          python tests/provider_repair_batch_refinement_test.py
 
       - name: Persist structured Provider CONFIG drifts on repair branch
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'tmp/provider-max-repair-proof-20260919' }}
@@ -379,6 +384,11 @@ jobs:
           print("FIELD_TARGETED_REGRESSION_RECOVERY "+json.dumps(payload,sort_keys=True))
           PY
 
+          python scripts/refine_provider_repair_batches.py \
+            --plan automation/provider-repair-batch-plan-latest.json \
+            --verdict automation/provider-targeted-regression-recovery-latest.json \
+            --output automation/provider-repair-batch-refined-latest.json
+
       - name: Persist targeted verdict
         if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         shell: bash
@@ -386,14 +396,17 @@ jobs:
           set -euo pipefail
           test -f automation/provider-targeted-regression-recovery-latest.json || exit 0
           verdict_tmp="/tmp/provider-targeted-regression-recovery-${GITHUB_RUN_ID}.json"
+          refined_tmp="/tmp/provider-repair-batch-refined-${GITHUB_RUN_ID}.json"
           cp automation/provider-targeted-regression-recovery-latest.json "$verdict_tmp"
+          cp automation/provider-repair-batch-refined-latest.json "$refined_tmp"
           git fetch origin main
           git reset --hard origin/main
           mkdir -p automation
           cp "$verdict_tmp" automation/provider-targeted-regression-recovery-latest.json
+          cp "$refined_tmp" automation/provider-repair-batch-refined-latest.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add automation/provider-targeted-regression-recovery-latest.json
+          git add automation/provider-targeted-regression-recovery-latest.json automation/provider-repair-batch-refined-latest.json
           git diff --cached --quiet && exit 0
           git commit -m "ci(repair): persist targeted regression verdict"
           git push origin HEAD:main
