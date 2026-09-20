@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[1]
 path = ROOT / "scripts" / "probe_waf_browser_session.py"
@@ -52,6 +53,34 @@ vostfree = next(row for row in targets if row["provider"] == "vostfree")
 assert vostfree["method"] == "GET", vostfree
 assert vostfree["publicUrl"] == "https://ipv4.vostfree.ws/"
 assert mod.probe_target(vostfree, "", timeout=5, virtual_time_ms=1000)["outcome"] == "browser_unavailable"
+
+
+calls=[]
+responses=[
+    SimpleNamespace(returncode=0,stdout="<html><title>Just a moment...</title><div>challenge-platform</div></html>"),
+    SimpleNamespace(returncode=0,stdout="<html><body>"+("normal catalogue content "*10)+"</body></html>"),
+]
+original_run=mod.subprocess.run
+try:
+    def fake_run(*args,**kwargs):
+        calls.append((args,kwargs))
+        return responses.pop(0)
+    mod.subprocess.run=fake_run
+    warmed=mod.probe_target(allwish,"chromium",timeout=5,virtual_time_ms=1000,attempts=2)
+finally:
+    mod.subprocess.run=original_run
+assert warmed["outcome"]=="browser_content_reached",warmed
+assert warmed["attemptCount"]==2,warmed
+assert [row["outcome"] for row in warmed["attempts"]]==[
+    "browser_challenge_persisted","browser_content_reached"
+]
+assert warmed["ordinarySessionReused"] is True
+assert len(calls)==2
+profiles=[
+    next(value for value in call[0][0] if str(value).startswith("--user-data-dir="))
+    for call in calls
+]
+assert profiles[0]==profiles[1],profiles
 
 source = path.read_text(encoding="utf-8")
 for forbidden in ("cf_clearance", "turnstile token", "captcha solver", "undetected_chromedriver", "cloudscraper", "flaresolverr"):
