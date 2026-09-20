@@ -69,19 +69,27 @@ function buildPlan(item) {
   const signature = evidenceSignature(evidence);
   const providerId = stringValue(candidate.canonical_id ?? candidate.upstream_id).toLowerCase();
   const capabilityStrategy = stringValue(asRecord(asRecord(providerOverrides.provider_capabilities)[providerId]).strategy, "unknown").toLowerCase();
+  const rotateEvery = Math.max(1, finiteNumber(negativeMemoryPolicy.rotateExperimentAfterFailures, 1));
+  const maxVariants = Math.max(1, finiteNumber(negativeMemoryPolicy.maxVariantsPerSignature, 5));
+  const finalVariant = maxVariants - 1;
+  const finalVariantGeneration = Math.max(1, finiteNumber(negativeMemoryPolicy.finalVariantGeneration, 1));
   const memoryMatches = negativeMemory.filter((row) => {
     if (stringValue(row.providerId).toLowerCase() !== providerId) return false;
     const failure = stringValue(row.failureClass);
     if (failure && failure !== evidence.failureClass) return false;
     const rowSignature = stringValue(row.signature);
     if (rowSignature && rowSignature !== signature) return false;
-    return finiteNumber(row.successes, 0) === 0;
+    if (finiteNumber(row.successes, 0) !== 0) return false;
+    const variant = Math.max(0, Math.min(finalVariant, finiteNumber(row.experimentVariant, 0)));
+    if (variant === finalVariant) {
+      const generation = Math.max(1, finiteNumber(row.experimentGeneration, 1));
+      if (generation !== finalVariantGeneration) return false;
+    }
+    return true;
   });
-  const rotateEvery = Math.max(1, finiteNumber(negativeMemoryPolicy.rotateExperimentAfterFailures, 1));
-  const maxVariants = Math.max(1, finiteNumber(negativeMemoryPolicy.maxVariantsPerSignature, 5));
   const variantStats = new Map();
   for (const row of memoryMatches) {
-    const variant = Math.max(0, Math.min(maxVariants - 1, finiteNumber(row.experimentVariant, 0)));
+    const variant = Math.max(0, Math.min(finalVariant, finiteNumber(row.experimentVariant, 0)));
     const current = variantStats.get(variant) ?? { failures: 0, consecutiveFailures: 0 };
     current.failures += Math.max(0, finiteNumber(row.failures, 0));
     current.consecutiveFailures = Math.max(current.consecutiveFailures, Math.max(0, finiteNumber(row.consecutiveFailures, 0)));
@@ -108,6 +116,7 @@ function buildPlan(item) {
     experimentVariant = [...variantStats.entries()]
       .sort((a, b) => a[1].failures - b[1].failures || a[1].consecutiveFailures - b[1].consecutiveFailures || a[0] - b[0])[0][0];
   }
+  const experimentGeneration = experimentVariant === finalVariant ? finalVariantGeneration : 1;
   const negativeMemoryMatches = memoryMatches.reduce((sum, row) => sum + Math.max(1, finiteNumber(row.failures, 0)), 0);
   const reusable = learnedSkills
     .filter((skill) => !skill.failureClass || skill.failureClass === evidence.failureClass || skill.failure_class === evidence.failureClass)
@@ -215,6 +224,7 @@ function buildPlan(item) {
     censusPriorReason: stringValue(evidence.censusPriorReason),
     negativeMemoryMatches,
     experimentVariant,
+    experimentGeneration,
     experimentExhausted,
     experimentRotationEvery: rotateEvery,
     experimentVariantCount: maxVariants,
