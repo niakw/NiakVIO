@@ -82,10 +82,15 @@ def main() -> int:
     assert "schedule:" in workflow and "cron:" in workflow, "Brain learning cron disappeared"
     assert "python scripts/run_brain_learning_queue.py" in workflow, "canonical adaptive Learning queue disappeared"
     assert "python scripts/select_brain_learning_target.py" not in workflow, "obsolete single-target selector is executing again"
-    assert "--budget-minutes 60" in workflow, "global one-hour Learning budget disappeared"
+    assert '--budget-minutes "${{ steps.learning-slot.outputs.budget_minutes }}"' in workflow, "Learning queue no longer consumes the bounded slot budget"
+    assert 'default: "0"' in workflow and "slot_remaining_minutes:" in workflow, "normal one-hour/manual long-slot split disappeared"
+    assert 'if [ "$budget" -gt 300 ]; then budget=300; fi' in workflow, "long Learning phases must stay below the GitHub-hosted 6h job cap"
+    assert "continue-learning-slot:" in workflow, "persisted long Learning continuation job disappeared"
+    assert "gh workflow run brain-learning-lab.yml" in workflow, "long Learning slot no longer self-dispatches its next persisted phase"
+    assert "-f publish_proposal=true" in workflow, "long Learning phases must refresh review-only proposals"
     experiment_block = workflow[workflow.index("  experiment:"):workflow.index("\n  publish-learning:")]
-    assert "timeout-minutes: 120" in experiment_block, (
-        "Brain job timeout must cover full-catalogue observation plus the independent one-hour Learning queue"
+    assert "timeout-minutes: 355" in experiment_block, (
+        "Brain job timeout must cover a five-hour queue phase plus setup/finalization without crossing the hosted-runner limit"
     )
     assert "--reserve-minutes 5" in workflow, "Learning finalization reserve disappeared"
     assert "--stream-safety-cap 2" in workflow, "bounded quick Learning stream cap disappeared"
