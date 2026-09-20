@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import hashlib
 import json
 import os
 import re
@@ -560,6 +561,28 @@ def run(task: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
+def _provider_shard(provider_id: str, shard_count: int) -> int:
+    if shard_count <= 1:
+        return 0
+    digest = hashlib.sha256(str(provider_id).casefold().encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "big") % shard_count
+
+
+def _shard_filter(provider_filter: set[str] | None, shard_count: int, shard_index: int) -> set[str] | None:
+    if shard_count <= 1:
+        return provider_filter
+    if shard_index < 0 or shard_index >= shard_count:
+        raise ValueError(f"shard index {shard_index} outside [0,{shard_count})")
+    if provider_filter is None:
+        manifest = load(MANIFEST)
+        provider_filter = {
+            str(row.get("id") or "").strip().casefold()
+            for row in manifest.get("scrapers") or []
+            if isinstance(row, dict) and str(row.get("id") or "").strip()
+        }
+    return {provider for provider in provider_filter if _provider_shard(provider, shard_count) == shard_index}
+
+
 def _scope_provider_filter(scope: str, status_file: Path, explicit: list[str]) -> tuple[set[str] | None, str]:
     requested = {
         str(value or "").strip().casefold()
@@ -590,6 +613,8 @@ def main() -> int:
     parser.add_argument("--status-file", type=Path, default=STATUS_FILE)
     parser.add_argument("--history", type=Path, default=PROOF_HISTORY)
     parser.add_argument("--provider", action="append", default=[], help="Exact provider id; repeat or comma-separate")
+    parser.add_argument("--shard-count", type=int, default=1, help="Deterministic provider shard count")
+    parser.add_argument("--shard-index", type=int, default=0, help="Zero-based deterministic provider shard index")
     parser.add_argument("--output", type=Path, default=OUTPUT)
     args = parser.parse_args()
 
@@ -598,6 +623,13 @@ def main() -> int:
 
     history = load(args.history) if args.history.is_file() else {}
     provider_filter, resolved_scope = _scope_provider_filter(args.scope, args.status_file, args.provider)
+    if args.shard_count < 1:
+        raise SystemExit("--shard-count must be >= 1")
+    if args.shard_index < 0 or args.shard_index >= args.shard_count:
+        raise SystemExit("--shard-index must satisfy 0 <= index < shard-count")
+    provider_filter = _shard_filter(provider_filter, args.shard_count, args.shard_index)
+    if args.shard_count > 1:
+        resolved_scope = f"{resolved_scope}-shard-{args.shard_index + 1}-of-{args.shard_count}"
     tasks, provider_count = build_tasks(provider_filter, history=history)
     rows: list[dict[str, Any]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=WORKERS) as pool:
@@ -646,6 +678,8 @@ def main() -> int:
         "requested_scope": args.scope,
         "resolved_scope": resolved_scope,
         "selected_providers": sorted(provider_filter) if provider_filter is not None else None,
+        "shard_count": args.shard_count,
+        "shard_index": args.shard_index,
         "environment": "node-adaptive-provider-targeted-first-real-stream-census-with-tmdb-runtime-context",
         "fixture_selection_policy": "retained-proof-first-then-provider-targeted-then-representative-then-three-corpus-rotated",
         "provider_count": provider_count,
