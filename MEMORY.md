@@ -2687,3 +2687,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - `probe_waf_browser_session.py` previously selected the last challenged request per provider/lane. Vostfree exposes a challenged GET on `https://ipv4.vostfree.ws/` followed by a challenged POST search request, so the diagnostic selected the POST and returned `unsupported_method` without ever testing the browser-reachable GET.
 - The selector now prefers the latest challenged GET when one exists, and only falls back to a non-GET challenge when no navigable challenge is available. This does not add stealth, CAPTCHA/Turnstile solving, cookie fabrication, or challenge bypass logic.
 - Regression fixture updated to preserve the real Vostfree GET→POST sequence and require GET selection. Commits: `333f85b9aad7` + `67fe01d904ab`. The census workflow is path-triggered by both files and should now produce a real Chrome verdict for Vostfree instead of `unsupported_method`.
+
+
+## 2026-09-20 — MalluMV terminal-chain reconstruction
+
+- Latest live targeted evidence still reached MalluMV search + exact detail only: `/search.php?q=Interstellar` -> `/movie/1755/Interstellar_2014_English.xhtml`, both HTTP 200, then returned zero streams.
+- Added NiakVIO-owned provider Lego `scripts/provider_patches/mallumv_runtime_v1.py` and bound it in `provider-overrides.json`. The runtime reconstructs only the observable chain TMDB title/year -> search -> exact movie -> confirm -> internal -> bounded terminal-media crawl; no upstream JavaScript is embedded or executed.
+- Added behavioral test `tests/provider_mallumv_current_runtime_behavior_test.py` and wired it into current-byte census, targeted recovery and provider non-regression gates. Candidate confirm/internal routes are recorded but are not promoted as live route proof until CI observes them.
+- Relevant commits: `aeae9cd84c62` runtime, `fbddb6b5bd69` binding, `1353604a2808` behavior test, `d38551cf1cae` / `34357e15c4d9` / `7c143114d6dd` gates. Live playback status remains unpromoted until a current census proves terminal media.
