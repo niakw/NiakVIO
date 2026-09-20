@@ -171,6 +171,70 @@ assert.ok(censusPlans["published:chain-prior"].allowedProfiles.includes("adaptiv
 assert.equal(censusPlans["published:network-prior"].failureClass, "provider_transport_gap");
 assert.ok(censusPlans["published:network-prior"].allowedProfiles.includes("adaptive_runtime_recovery"));
 
+// Fresh current-run depth must supersede the census floor. Historical positive
+// depth prevents regression; it must never freeze the provider below a newly
+// observed causal stage.
+const forwardPayload = {
+  mode: "deep",
+  policy: dirtyPayload.policy,
+  learnedSkills: {},
+  items: [
+    ...["ROUTE PROVEN", "CHAIN REACHED", "CANDIDATE OK"].map((status, index) => ({
+      key: `published:forward-${index}`,
+      candidate: {
+        canonical_id: `forward-${index}`,
+        metadata: { supportedTypes: ["movie"] },
+        censusPrior: { status, knowledgeRole: "monotonic-diagnostic-prior-only" },
+      },
+      result: {
+        status: "no_streams",
+        evidence: { streams_returned: 0, streams_playable: 0 },
+        tests: [{
+          fixture: { category: "movie" },
+          failure_class: "content_lookup_completed_no_streams",
+          network_observations: [
+            { stage: "search", status: 200, infrastructure: false },
+            { stage: "content_lookup", status: 200, infrastructure: false },
+            { stage: "player", status: 200, infrastructure: false },
+          ],
+        }],
+      },
+      state: {},
+    })),
+    {
+      key: "published:network-forward",
+      candidate: {
+        canonical_id: "network-forward",
+        metadata: { supportedTypes: ["movie"] },
+        censusPrior: { status: "PROVIDER NETWORK BLOCKED", knowledgeRole: "monotonic-diagnostic-prior-only" },
+      },
+      result: {
+        status: "no_streams",
+        evidence: { streams_returned: 0, streams_playable: 0 },
+        tests: [{
+          fixture: { category: "movie" },
+          failure_class: "content_lookup_completed_no_streams",
+          network_observations: [
+            { stage: "search", status: 200, infrastructure: false },
+            { stage: "content_lookup", status: 200, infrastructure: false },
+            { stage: "player", status: 200, infrastructure: false },
+          ],
+        }],
+      },
+      state: {},
+    },
+  ],
+};
+const forwardRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(forwardPayload), encoding: "utf8" });
+assert.equal(forwardRun.status, 0, forwardRun.stderr);
+const forwardPlans = JSON.parse(forwardRun.stdout).plans;
+for (const key of ["published:forward-0", "published:forward-1", "published:forward-2", "published:network-forward"]) {
+  assert.equal(forwardPlans[key].observedPipelineStage, "player", [key, forwardPlans[key]]);
+  assert.equal(forwardPlans[key].failureClass, "media_extraction_gap", [key, forwardPlans[key]]);
+  assert.equal(forwardPlans[key].repairType, "terminal_media_resolution", [key, forwardPlans[key]]);
+  assert.notEqual(forwardPlans[key].censusPriorApplied, true, [key, forwardPlans[key]]);
+}
+
 // Production Repair may transfer only trusted, validated skills. They are
 // hypotheses, never direct mutations: the selected profile still enters the
 // ordinary sandbox/retest path.
