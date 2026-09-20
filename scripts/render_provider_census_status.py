@@ -53,6 +53,18 @@ NETWORK_BROKEN_STAGES = {
     "timeout",
 }
 
+HEALTHY_STATES = {"FULL OK", "PARTIAL OK"}
+ENVIRONMENT_ONLY_STATES = {"PROVIDER WAF/ANTIBOT"}
+
+
+def is_symptomatic_status(status: str) -> bool:
+    return str(status or "") not in HEALTHY_STATES
+
+
+def is_repair_eligible_status(status: str) -> bool:
+    value = str(status or "")
+    return is_symptomatic_status(value) and value not in ENVIRONMENT_ONLY_STATES
+
 
 def load(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
@@ -338,7 +350,8 @@ def build_status_rows(
             "searchProgress": progress,
             "evidenceDepth": evidence_depth,
             "action": _action(status),
-            "brainCheckRequired": status not in {"FULL OK", "PARTIAL OK"},
+            "brainCheckRequired": is_symptomatic_status(status),
+            "repairEligible": is_repair_eligible_status(status),
             "testedThisRun": True,
         })
 
@@ -353,6 +366,8 @@ def build_status_rows(
         if not provider or provider in current:
             continue
         carried = dict(previous)
+        carried["brainCheckRequired"] = is_symptomatic_status(str(carried.get("status") or ""))
+        carried["repairEligible"] = is_repair_eligible_status(str(carried.get("status") or ""))
         carried["testedThisRun"] = False
         out.append(carried)
     return out
@@ -370,6 +385,12 @@ def render(
 ) -> str:
     rows = build_status_rows(report, history, baseline, candidate_evidence, provider_overrides)
     states = Counter(row["status"] for row in rows)
+    symptomatic = sorted(row["provider"] for row in rows if row.get("brainCheckRequired") is True)
+    repair_queue = sorted(row["provider"] for row in rows if row.get("repairEligible") is True)
+    environment_queue = sorted(
+        row["provider"] for row in rows
+        if str(row.get("status") or "") in ENVIRONMENT_ONLY_STATES
+    )
     short_sha = sha[:12] if sha else "unknown"
     scope = str(report.get("resolved_scope") or report.get("requested_scope") or "all")
 
@@ -400,6 +421,7 @@ def render(
         "",
         f"Latest provider census state: **{summary}** across **{len(rows)} providers**.",
         f"Evidence: run {run_id or 'local'} · SHA {short_sha} · scope **{scope}**.",
+        f"Symptomatic providers: **{len(symptomatic)}** · automated repair queue: **{len(repair_queue)}** · environment-only/WAF: **{len(environment_queue)}**.",
         "",
         "## Status semantics",
         "",
@@ -489,8 +511,18 @@ def main() -> int:
             "triggerSha": str(args.sha),
             "providers": rows,
             "counts": dict(sorted(Counter(row["status"] for row in rows).items())),
+            "symptomaticProviders": sorted(
+                row["provider"] for row in rows if row.get("brainCheckRequired") is True
+            ),
             "brainQueue": sorted(
                 row["provider"] for row in rows if row.get("brainCheckRequired") is True
+            ),
+            "repairQueue": sorted(
+                row["provider"] for row in rows if row.get("repairEligible") is True
+            ),
+            "environmentQueue": sorted(
+                row["provider"] for row in rows
+                if str(row.get("status") or "") in ENVIRONMENT_ONLY_STATES
             ),
         }
         args.json_output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
