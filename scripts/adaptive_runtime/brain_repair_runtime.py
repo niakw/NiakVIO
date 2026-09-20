@@ -126,6 +126,7 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
         "mode": mode,
         "policy": _BASE.policy(),
         "learnedSkills": _BASE.planner_learned_skills(mode),
+        "negativeMemory": _BASE.planner_negative_memory(mode),
     }
     # 24 keeps normal stdin payloads well below the failing ~500 KiB batch seen
     # in production while retaining efficient multi-provider planning.
