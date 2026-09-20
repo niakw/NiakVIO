@@ -1,0 +1,212 @@
+name: Provider Targeted Recovery - Sharded
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'automation/provider-repair-batch-plan-latest.json'
+      - '.github/workflows/provider-targeted-recovery-sharded.yml'
+      - 'scripts/run_provider_targeted_recovery.py'
+      - 'scripts/merge_provider_targeted_recovery_shards.py'
+      - 'scripts/refine_provider_repair_batches.py'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-targeted-recovery-sharded.yml'
+      - 'scripts/provider_patches/**'
+      - 'provider-overrides.json'
+      - 'scripts/provider_base_store.py'
+      - 'scripts/run_provider_targeted_recovery.py'
+      - 'scripts/merge_provider_targeted_recovery_shards.py'
+      - 'scripts/refine_provider_repair_batches.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-targeted-recovery-sharded-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      source_sha: ${{ steps.scope.outputs.source_sha }}
+      provider_count: ${{ steps.scope.outputs.provider_count }}
+      unresolved_count: ${{ steps.scope.outputs.unresolved_count }}
+      should_run: ${{ steps.scope.outputs.should_run }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/provider_targeted_recovery_sharding_test.py
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+          manifest=json.loads(Path("manifest.json").read_text(encoding="utf-8"))
+          status_path=Path("automation/provider-census-status.json")
+          status=json.loads(status_path.read_text(encoding="utf-8")) if status_path.is_file() else {}
+          provider_count=len([x for x in manifest.get("scrapers") or [] if isinstance(x,dict)])
+          unresolved=[
+              x for x in status.get("providers") or []
+              if isinstance(x,dict) and str(x.get("status") or "") not in {"FULL OK","PARTIAL OK"}
+          ]
+          print(f"source_sha={__import__('subprocess').check_output(['git','rev-parse','HEAD'],text=True).strip()}")
+          print(f"provider_count={provider_count}")
+          print(f"unresolved_count={len(unresolved)}")
+          print(f"should_run={'true' if provider_count>120 and unresolved else 'false'}")
+          PY
+
+  shard:
+    needs: prepare
+    if: ${{ needs.prepare.outputs.should_run == 'true' }}
+    name: Repair shard ${{ matrix.shard }} of 8
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NIAKVIO_QUICK_YIELD_TIMEOUT: '60'
+      NIAKVIO_QUICK_YIELD_MAX_SAMPLES: '8'
+      SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.prepare.outputs.source_sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Materialize exact current provider bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/reconcile_provider_domain_metadata.py --rebuild
+          python scripts/materialize_provider_base_v3_store.py
+          python scripts/materialize_provider_v3_all.py
+          python scripts/validate_published_provider_config.py
+
+      - name: Run repair shard
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p automation
+          python scripts/run_provider_targeted_recovery.py \
+            --status automation/provider-census-status.json \
+            --plan automation/provider-repair-batch-plan-latest.json \
+            --history automation/provider-census-proof-history.json \
+            --output "automation/provider-targeted-recovery-shard-${{ matrix.shard }}.json" \
+            --shard-count 8 \
+            --shard-index "${{ matrix.shard }}" \
+            --max-workers 20 \
+            --run-id "$GITHUB_RUN_ID" \
+            --sha "$SOURCE_SHA"
+
+      - name: Upload repair shard
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: provider-targeted-recovery-shard-${{ matrix.shard }}
+          path: automation/provider-targeted-recovery-shard-${{ matrix.shard }}.json
+          retention-days: 8
+          if-no-files-found: error
+
+  merge:
+    needs:
+      - prepare
+      - shard
+    if: ${{ always() && needs.prepare.result == 'success' && needs.prepare.outputs.should_run == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.prepare.outputs.source_sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Download all repair shards
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: provider-targeted-recovery-shard-*
+          path: shards
+          merge-multiple: true
+
+      - name: Merge and refine repair groups
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(find shards -maxdepth 1 -type f -name 'provider-targeted-recovery-shard-*.json' | sort -V)
+          if [ "${#files[@]}" -ne 8 ]; then
+            echo "Expected 8 repair shard reports, found ${#files[@]}" >&2
+            exit 1
+          fi
+          python scripts/merge_provider_targeted_recovery_shards.py "${files[@]}" \
+            --output automation/provider-targeted-regression-recovery-latest.json \
+            --run-id "$GITHUB_RUN_ID" \
+            --sha "$SOURCE_SHA"
+          python scripts/refine_provider_repair_batches.py \
+            --plan automation/provider-repair-batch-plan-latest.json \
+            --verdict automation/provider-targeted-regression-recovery-latest.json \
+            --output automation/provider-repair-batch-refined-latest.json
+
+      - name: Upload merged repair evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: provider-targeted-recovery-sharded-merged
+          path: |
+            automation/provider-targeted-regression-recovery-latest.json
+            automation/provider-repair-batch-refined-latest.json
+          retention-days: 8
+          if-no-files-found: error
+
+      - name: Persist merged targeted verdict
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp automation/provider-targeted-regression-recovery-latest.json /tmp/provider-targeted-regression-recovery-latest.json
+          cp automation/provider-repair-batch-refined-latest.json /tmp/provider-repair-batch-refined-latest.json
+          git fetch origin main
+          git reset --hard origin/main
+          mkdir -p automation
+          cp /tmp/provider-targeted-regression-recovery-latest.json automation/provider-targeted-regression-recovery-latest.json
+          cp /tmp/provider-repair-batch-refined-latest.json automation/provider-repair-batch-refined-latest.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add automation/provider-targeted-regression-recovery-latest.json automation/provider-repair-batch-refined-latest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "ci(repair-sharded): persist targeted recovery from ${SOURCE_SHA:0:12}"
+          git push origin HEAD:main
