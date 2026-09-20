@@ -40,6 +40,22 @@ report = {
     ]
 }
 
+
+prior_targets = mod.extract_targets({
+    "rows": [{
+        "provider": "persisted",
+        "lane": "movie",
+        "publicUrl": "https://persisted.example/challenge?secret=drop",
+        "method": "GET",
+        "fetchStatus": 403,
+        "challenge": "cloudflare",
+        "outcome": "browser_challenge_persisted",
+    }]
+})
+assert len(prior_targets) == 1, prior_targets
+assert prior_targets[0]["provider"] == "persisted"
+assert prior_targets[0]["publicUrl"] == "https://persisted.example/challenge"
+
 targets = mod.extract_targets(report)
 assert len(targets) == 2, targets
 allwish = next(row for row in targets if row["provider"] == "allwish")
