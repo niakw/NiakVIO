@@ -162,6 +162,15 @@ assert all(route not in {"/player/{id}", "/embed/{id}", "/api/sources/{id}", "/a
 assert options["peer_route_min_variant"] == 3, options
 assert options["peer_recipe_min_variant"] == 3, options
 
+candidate["brain_repair_plan"]["experimentVariant"] = 0
+early_options = runtime._adaptive_runtime_options(candidate, config)
+assert early_options is not None
+assert early_options["repair_focus"] == "media-extraction", early_options
+assert early_options["request_recipes"][:3] == recipes, early_options["request_recipes"]
+assert all(route not in {"/player/{id}", "/embed/{id}", "/api/sources/{id}", "/api/stream/{id}"} for route in early_options["direct_paths"]), early_options["direct_paths"]
+assert all(runtime._route_role(route) in {"player", "api"} for route in early_options["direct_paths"]), early_options["direct_paths"]
+candidate["brain_repair_plan"]["experimentVariant"] = 4
+
 # Planner transport must keep causal shape but not raw URL/body/header values.
 spec2 = importlib.util.spec_from_file_location(
     "brain_runtime_observed",
