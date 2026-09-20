@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35531977017-pre-repair",
-  "sourceTriggerSha": "1baba01f847313bb45f845ff425e475499a4a6a8",
+  "sourceRunId": "35539559193-post-repair",
+  "sourceTriggerSha": "a0e7b407e389f6ec13c691e4033368c8e7630421",
   "unresolvedProviderCount": 20,
-  "groupCount": 12,
+  "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -73,6 +73,34 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
+      "groupId": "transport|mixed_embed_resolver",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "dle-full-story-sibnet",
+        "menu-search-series-focus-player",
+        "yflix-db-encrypted-ajax-v1"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception",
+        "network_http_error"
+      ],
+      "harnessTransportClasses": [],
+      "providerCount": 3,
+      "providers": [
+        "anime-ultime",
+        "animesultra",
+        "yflix"
+      ],
+      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
       "groupId": "route-to-terminal|html_scraper",
       "repairScope": "route-to-terminal",
       "runtimeFamilies": [
@@ -96,10 +124,10 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|html_scraper",
-      "repairScope": "transport",
+      "groupId": "terminal-extraction|html_scraper",
+      "repairScope": "terminal-extraction",
       "runtimeFamilies": [
-        "api_stream_resolver",
+        "mallumv-catalogue-confirm-internal-v1",
         "uhdmovies-search-gateway-driveseed-v4-button-first-multiterminal"
       ],
       "capabilityStrategy": "html_scraper",
@@ -107,40 +135,15 @@
         "chain"
       ],
       "dominantIssues": [
-        "network_http_error"
+        "network_zero_result"
       ],
       "harnessTransportClasses": [],
       "providerCount": 2,
       "providers": [
-        "moviebox",
+        "mallumv",
         "uhdmovies"
       ],
-      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "dle-full-story-sibnet",
-        "menu-search-series-focus-player"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception",
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "providerCount": 2,
-      "providers": [
-        "anime-ultime",
-        "animesultra"
-      ],
-      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -213,28 +216,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "route-to-terminal|mixed_embed_resolver",
-      "repairScope": "route-to-terminal",
-      "runtimeFamilies": [
-        "yflix-db-encrypted-ajax-v1"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "providerCount": 1,
-      "providers": [
-        "yflix"
-      ],
-      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "terminal-extraction|direct_media",
       "repairScope": "terminal-extraction",
       "runtimeFamilies": [
@@ -257,24 +238,24 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
+      "groupId": "transport|html_scraper",
+      "repairScope": "transport",
       "runtimeFamilies": [
-        "mallumv-catalogue-confirm-internal-v1"
+        "api_stream_resolver"
       ],
       "capabilityStrategy": "html_scraper",
       "evidenceDepths": [
         "chain"
       ],
       "dominantIssues": [
-        "network_zero_result"
+        "network_http_error"
       ],
       "harnessTransportClasses": [],
       "providerCount": 1,
       "providers": [
-        "mallumv"
+        "moviebox"
       ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },

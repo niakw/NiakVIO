@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35531977017-pre-repair",
-  "triggerSha": "1baba01f847313bb45f845ff425e475499a4a6a8",
+  "runId": "35539559193-post-repair",
+  "triggerSha": "a0e7b407e389f6ec13c691e4033368c8e7630421",
   "providers": [
     {
       "provider": "4khdhub",
@@ -55,7 +55,7 @@
       ],
       "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "anime: 4 works tested / 44 retained misses / 4 retained chain hits"
+        "anime: 4 works tested / 45 retained misses / 3 retained chain hits"
       ],
       "evidenceDepth": [
         "anime=chain_reached"
@@ -289,8 +289,8 @@
     },
     {
       "provider": "uhdmovies",
-      "status": "PROVIDER NETWORK BLOCKED",
-      "color": "🟤",
+      "status": "CHAIN REACHED",
+      "color": "🟣",
       "declaredLanes": [
         "movie"
       ],
@@ -301,9 +301,9 @@
         "69 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_http_error"
+        "movie=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_network_http_error",
+      "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
         "movie: 4 works tested / 26 retained misses / 8 retained chain hits"
       ],
@@ -312,7 +312,7 @@
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "action": "finish terminal extractor/validation; do not promote before verified media",
       "brainCheckRequired": true,
       "repairEligible": true,
       "testedThisRun": true
@@ -353,8 +353,8 @@
     },
     {
       "provider": "yflix",
-      "status": "ROUTE PROVEN",
-      "color": "🟪",
+      "status": "PROVIDER NETWORK BLOCKED",
+      "color": "🟤",
       "declaredLanes": [
         "movie",
         "tv"
@@ -366,10 +366,10 @@
         "1 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_zero_result"
+        "movie=no_streams/provider_network_exception",
+        "tv=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "provider_network_zero_result×2",
+      "dominantIssue": "provider_network_exception×2",
       "searchProgress": [
         "movie: 1 works tested / 43 retained misses",
         "tv: 1 works tested / 42 retained misses"
@@ -380,7 +380,7 @@
       ],
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
+      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
       "repairEligible": true,
       "testedThisRun": true
@@ -1403,13 +1403,13 @@
   ],
   "counts": {
     "CANDIDATE OK": 1,
-    "CHAIN REACHED": 2,
+    "CHAIN REACHED": 3,
     "FULL OK": 24,
     "HARNESS MISMATCH": 6,
     "HARNESS/ENV BLOCKED": 2,
     "PARTIAL OK": 2,
     "PROVIDER NETWORK BLOCKED": 5,
-    "ROUTE PROVEN": 4
+    "ROUTE PROVEN": 3
   },
   "symptomaticProviders": [
     "4khdhub",
