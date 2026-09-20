@@ -78,14 +78,24 @@ v3 = (
 result = run_case(v3, {"old.example": "new.example"})
 assert result.returncode == 0, result.stdout + result.stderr
 
-missing_terminal = (
+dormant = (
     '"use strict";\n'
     "/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n"
     'const NIAKVIO_PROVIDER_MODEL=Object.freeze({"officialSite":"https://other.example"});\n'
 )
-result = run_case(missing_terminal, {"old.example": "new.example"})
+result = run_case(dormant, {"old.example": "new.example"})
+assert result.returncode == 0, result.stdout + result.stderr
+assert "dormant v3 override" in result.stdout, result.stdout + result.stderr
+
+active_old_without_terminal = (
+    '"use strict";\n'
+    "/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n"
+    'const NIAKVIO_PROVIDER_MODEL=Object.freeze({"officialSite":"https://old.example"});\n'
+)
+result = run_case(active_old_without_terminal, {"old.example": "new.example"})
 assert result.returncode != 0, result.stdout + result.stderr
-assert "terminal target" in result.stdout or "terminal target" in result.stderr, result.stdout + result.stderr
+assert "terminal target missing" in result.stdout, result.stdout + result.stderr
+assert "old.example" in result.stdout, result.stdout + result.stderr
 
 legacy = '"use strict"; const endpoint="https://old.example";\n'
 result = run_case(legacy, {"old.example": "new.example"})
