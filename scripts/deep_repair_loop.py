@@ -199,10 +199,16 @@ def main() -> int:
             profiles = matching_profiles(candidate, result, source_text, config)
             for profile_name in profiles:
                 repaired, error = create_repair_candidate(stage, candidate, profile_name, round_number)
+                plan_snapshot = copy.deepcopy(
+                    (repaired.get("brain_repair_plan") if isinstance(repaired, dict) else None)
+                    or candidate.get("brain_repair_plan")
+                    or {}
+                )
                 row = {
                     "parent_key": parent_key,
                     "parent_sha256": candidate.get("sha256"),
                     "profile": profile_name,
+                    "brain_plan": plan_snapshot,
                     "baseline_status": result.get("status"),
                     "baseline_score": result.get("score"),
                     "baseline_streams_returned": stream_count(result),
@@ -284,6 +290,7 @@ def main() -> int:
                     {
                         "repair_key": repaired.get("key"),
                         "parent_key": parent_key,
+                        "brain_plan": copy.deepcopy(repaired.get("brain_repair_plan") or {}),
                         "reason": "missing_retest_result",
                     }
                 )
@@ -348,6 +355,7 @@ def main() -> int:
                         {
                             "parent_key": parent_key,
                             "profile": repair_event.get("profile"),
+                            "brain_plan": copy.deepcopy(candidate_variant.get("brain_repair_plan") or {}),
                             "sha256": updated_candidate.get("sha256"),
                             "status_before": parent_result.get("status"),
                             "status_after": selected_result.get("status"),
@@ -402,6 +410,7 @@ def main() -> int:
                         {
                             "parent_key": parent_key,
                             "profile": exploration_event.get("profile"),
+                            "brain_plan": copy.deepcopy(candidate_variant.get("brain_repair_plan") or {}),
                             "sha256": updated_candidate.get("sha256"),
                             "status_before": parent_result.get("status"),
                             "status_after": selected_result.get("status"),
@@ -423,6 +432,7 @@ def main() -> int:
                             "parent_key": parent_key,
                             "repair_key": candidate_variant.get("key"),
                             "profile": (candidate_variant.get("runtime_repair") or {}).get("profile"),
+                            "brain_plan": copy.deepcopy(candidate_variant.get("brain_repair_plan") or {}),
                             "status": result_variant.get("status"),
                             "score": result_variant.get("score"),
                             "reason": rejection_reason,
