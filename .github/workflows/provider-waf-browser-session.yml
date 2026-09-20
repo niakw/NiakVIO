@@ -42,6 +42,8 @@ jobs:
             automation/provider-waf-browser-session-latest.json \
             --output automation/provider-waf-browser-session-latest.json \
             --attempts 2 \
+            --status automation/provider-census-status.json \
+            --overrides provider-overrides.json \
             --workers 3 \
             --max-targets 24 \
             --timeout 25 \
