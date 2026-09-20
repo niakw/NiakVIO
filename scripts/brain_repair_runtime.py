@@ -149,9 +149,32 @@ def _planner_result(result: dict[str, Any]) -> dict[str, Any]:
         for raw_observation in raw_test.get("network_observations") or []:
             if not isinstance(raw_observation, dict):
                 continue
+            hint_keys = []
+            for hint in raw_observation.get("response_value_hints") or []:
+                if not isinstance(hint, dict):
+                    continue
+                key = _clip_text(hint.get("key"), 64).casefold()
+                if key and key not in hint_keys:
+                    hint_keys.append(key)
+                if len(hint_keys) >= 24:
+                    break
+            body_fields = [
+                _clip_text(value, 64)
+                for value in (raw_observation.get("proof_body_fields") or [])[:24]
+                if _clip_text(value, 64)
+            ]
             observations.append({
                 "status": raw_observation.get("status"),
+                "ok": raw_observation.get("ok") is True,
                 "infrastructure": raw_observation.get("infrastructure") is True,
+                "stage": _clip_text(raw_observation.get("stage"), 64).casefold(),
+                "method": _clip_text(raw_observation.get("method"), 16).upper(),
+                "path_pattern": _clip_text(raw_observation.get("path_pattern"), 360),
+                "content_type": _clip_text(raw_observation.get("content_type"), 120).casefold(),
+                "proof_body_kind": _clip_text(raw_observation.get("proof_body_kind"), 24).casefold(),
+                "proof_body_fields": body_fields,
+                "response_hint_keys": hint_keys,
+                "route_proof_trace": raw_observation.get("route_proof_trace") is True,
             })
             if len(observations) >= 96:
                 break
