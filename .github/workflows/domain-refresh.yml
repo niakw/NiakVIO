@@ -50,7 +50,7 @@ jobs:
   refresh:
     # A bulk onboarding commit may add hundreds of pending providers. Do not
     # race a global domain mutation against their exact sharded baseline.
-    if: ${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'provider: bulk stage ') }}
+    if: ${{ github.event_name != 'push' || (!startsWith(github.event.head_commit.message, 'provider: bulk stage ') && !startsWith(github.event.head_commit.message, 'provider: bulk activate ')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 70
     steps:
