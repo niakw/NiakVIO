@@ -27,16 +27,31 @@ def action_for(status:str, depth:str, issue:str)->tuple[str,str]:
     if "WAF/ANTIBOT" in s or "waf_challenge" in i:
         return "environment", "browser/session or upstream-access investigation; never mutate provider code solely to hide a challenge"
     if "NETWORK BLOCKED" in s or "network_http_error" in i or "network_exception" in i:
-        return "transport", "domain/upstream transport refresh across the whole family before provider-local code changes"
-    if "CHAIN REACHED" in s or "chain_reached" in d:
-        return "terminal-extraction", "apply/test shared terminal-player extraction profile to the whole family"
-    if "ROUTE PROVEN" in s or "lookup_only" in d:
-        return "route-to-terminal", "replay proven routes in batch and apply shared detail/player traversal profile"
+        return "transport", "domain/upstream transport refresh across the whole capability family before provider-local code changes"
     if "CANDIDATE OK" in s:
         return "candidate-replay", "replay retained candidate proofs against current bytes in batch"
     if "PARTIAL OK" in s:
         return "missing-lanes", "protect green lanes and batch-test only missing semantic lanes"
+    if "CHAIN REACHED" in s or "chain_reached" in d:
+        return "terminal-extraction", "apply/test shared terminal-player extraction profile to the whole capability family"
+    if "ROUTE PROVEN" in s or "lookup_only" in d:
+        return "route-to-terminal", "replay proven routes in batch and apply shared detail/player traversal profile"
     return "learning", "queue by signature for Brain learning; provider-local repair only after shared profiles fail"
+
+def depth_class(values:list[str])->str:
+    lowered={str(v).split("=",1)[-1].strip().lower() for v in values if str(v).strip()}
+    if "chain_reached" in lowered: return "chain"
+    if "lookup_only" in lowered: return "lookup"
+    if lowered-{ "none" }: return "other"
+    return "none"
+
+def issue_class(value:str)->str:
+    text=value.lower().split("×",1)[0].strip()
+    if "waf_challenge" in text: return "waf_challenge"
+    if "network_http_error" in text: return "network_http_error"
+    if "network_exception" in text: return "network_exception"
+    if "network_zero_result" in text: return "network_zero_result"
+    return text or "unknown"
 
 def main()->int:
     ap=argparse.ArgumentParser()
@@ -57,26 +72,30 @@ def main()->int:
         cap=caps.get(pid) if isinstance(caps.get(pid),dict) else {}
         family=scalar(patch.get("source_runtime_family") or patch.get("runtime_family") or patch.get("capability") or cap.get("strategy"))
         strategy=scalar(cap.get("strategy") or patch.get("capability"))
-        depths=sorted({scalar(x).split("=",1)[-1] for x in (row.get("evidenceDepth") or [])})
-        depth="+".join(depths) if depths else "none"
-        issue=scalar(row.get("dominantIssue"))
+        depth=depth_class(list(row.get("evidenceDepth") or []))
+        issue=issue_class(scalar(row.get("dominantIssue")))
         scope,action=action_for(scalar(row.get("status")),depth,issue)
-        key=(scope,family,strategy,depth,issue)
+        # Batch identity is intentionally coarse. Exact provider runtime families
+        # are metadata, not part of the key, otherwise hundreds of providers
+        # collapse back into hundreds of one-provider queues.
+        key=(scope,strategy,depth,issue)
         groups[key].append({
             "provider":pid,
             "status":scalar(row.get("status")),
+            "runtimeFamily":family,
             "declaredLanes":row.get("declaredLanes") or [],
             "currentVerifiedLanes":row.get("currentVerifiedLanes") or [],
         })
     out_groups=[]
     for key,members in groups.items():
-        scope,family,strategy,depth,issue=key
+        scope,strategy,depth,issue=key
         providers=sorted(m["provider"] for m in members)
+        families=sorted({scalar(m.get("runtimeFamily")) for m in members})
         _,action=action_for(members[0]["status"],depth,issue)
         out_groups.append({
             "groupId":"|".join(key),
             "repairScope":scope,
-            "runtimeFamily":family,
+            "runtimeFamilies":families,
             "capabilityStrategy":strategy,
             "evidenceDepth":depth,
             "dominantIssue":issue,
@@ -86,7 +105,7 @@ def main()->int:
             "executionPolicy":"batch-first",
             "providerLocalFallback":"only-after-shared-profile-failure",
         })
-    out_groups.sort(key=lambda x:(-x["providerCount"],x["repairScope"],x["runtimeFamily"],x["groupId"]))
+    out_groups.sort(key=lambda x:(-x["providerCount"],x["repairScope"],x["capabilityStrategy"],x["groupId"]))
     payload={
         "schemaVersion":1,
         "sourceRunId":status.get("runId"),
