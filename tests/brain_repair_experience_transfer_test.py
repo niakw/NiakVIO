@@ -40,6 +40,8 @@ assert experience.classify_route("/api/streams/{id}") == "api"
 assert experience.reusable_route("/?sid=" + ("A" * 120), peer=True) is None
 assert experience.reusable_route("/literal-interstellar-2014/", peer=True) is None
 assert experience.reusable_route("/film/{slug}", peer=True) == "/film/{slug}"
+assert runtime._ROUTE_PLACEHOLDER.search("/film/{slug}") is not None
+assert runtime._REQUEST_PLACEHOLDER.search("{query}") is not None
 
 with tempfile.TemporaryDirectory() as tmp:
     memory = Path(tmp) / "experience.json"
