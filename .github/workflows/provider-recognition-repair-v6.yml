@@ -79,9 +79,11 @@ jobs:
             scripts/compare_quick_yield_preservation.py \
             scripts/upgrade_provider_worker_route_proof_v1.py \
             scripts/build_provider_history_matrix_v3.py \
-            scripts/check_provider_non_regression_v1.py
+            scripts/check_provider_non_regression_v1.py \
+            scripts/merge_provider_same_run_positive_evidence.py
           python scripts/upgrade_provider_runtime_reconstruction_v21_12.py
           python tests/provider_repair_pipeline_v6_contract_test.py
+          python tests/provider_same_run_positive_evidence_merge_test.py
           python tests/provider_brain_repair_orchestrator_test.py
           python tests/brain_causal_intelligence_contract_test.py
           python tests/provider_repair_learning_escalation_workflow_test.py
