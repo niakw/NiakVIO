@@ -3173,3 +3173,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The next failure was the hostname-XOR obfuscated-HLS synthetic fixture. Its generated base64 payload was only 44 characters while the mature ProviderBase V21 detector intentionally requires at least 50 characters to reduce false positives.
 - Kept the mature safety threshold unchanged. The synthetic HLS URL is now long enough to produce a >=50-character payload and the test explicitly asserts that invariant before exercising the generated wrapper.
 - #107 is harness/capability evidence only; no provider was probed.
+
+### 2026-09-21 — Historical player suite green; verified-media V5 aligned with current generator
+- Repair #108 (`35545162626`, SHA `0a544c4e9869...`) remained preflight-only, but it materially advanced validation: packed/base64/hostname-XOR historical player extraction, terminal source/wrapper traversal, episode-scoped behavior, real-worker smoke tests, and full **44-provider** materialization all passed.
+- The failure moved to `brain_repair_experience_transfer_test.py`: `adaptive_runtime_recovery_v5.py` still performed exact source rewrites against an older adaptive generator shape and failed at `request_extension_hint` after the generator gained Content-Range/binary proof, player-form handoffs, episode context and pathname-only media extension classification.
+- Updated V5 as a guarded multi-generation migration rather than weakening it. It now recognizes legacy and current request/result/native shapes while preserving the same invariant: extension-only URLs are hints and must be network-proven before acceptance.
+- Current generator branches covered by V5 now include request Content-Range proof, resolved-page proof, player-form handoff proof, handoff nested links, episode-aware nested recursion, and `normalizeNative(..., q)`. The unverified-native fallback remains fail-closed.
+- #108 did not probe a provider and is not provider/Brain repair evidence. Next Repair must first prove `brain_repair_experience_transfer_test.py` against the current generator, then return to the 11-provider repairQueue.
