@@ -50,13 +50,14 @@ def terminal_replacement(value: str, replacements: dict[str, object]) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", type=Path, default=ROOT / "staging")
+    parser.add_argument("--config", type=Path, default=CONFIG)
     args = parser.parse_args()
     stage = args.stage.resolve()
     registry_path = stage / "candidates.json"
     if not registry_path.exists():
         raise SystemExit(f"missing staged candidate registry: {registry_path}")
 
-    config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    config = json.loads(args.config.resolve().read_text(encoding="utf-8"))
     registry = json.loads(registry_path.read_text(encoding="utf-8"))
     candidates = registry.get("candidates", [])
     if not isinstance(candidates, list):
@@ -72,15 +73,24 @@ def main() -> int:
         if not isinstance(candidate, dict):
             continue
         provider_id = canonical(candidate.get("canonical_id") or candidate.get("upstream_id"))
-        replacements = dict(global_replacements)
+        # Provider v3 no longer executes historical text-replacement maps.
+        # Its only executable domain migration DATA is runtime_domain_replacements,
+        # materialized into the owned CONFIG/model as old-host -> terminal-host.
+        # Therefore an old host is EXPECTED to remain as a mapping key in v3 and
+        # must not be rejected as an unpatched source literal. Legacy bundles still
+        # use literal replacement semantics and keep the strict absence check.
+        replacements = {} if provider_v3 else dict(global_replacements)
         specific = provider_patches.get(provider_id, {})
         required_values = []
         specific_replacements: dict[str, object] = {}
         if isinstance(specific, dict):
-            specific_replacements.update(specific.get("replacements") or {})
-            specific_replacements.update(specific.get("route_replacements") or {})
-            specific_replacements.update(specific.get("runtime_domain_replacements") or {})
-            replacements.update(specific_replacements)
+            if provider_v3:
+                specific_replacements.update(specific.get("runtime_domain_replacements") or {})
+            else:
+                specific_replacements.update(specific.get("replacements") or {})
+                specific_replacements.update(specific.get("route_replacements") or {})
+                specific_replacements.update(specific.get("runtime_domain_replacements") or {})
+                replacements.update(specific_replacements)
             required_values = list(specific.get("required_values") or [])
             required_values.extend(specific.get("required_route_values") or [])
         records = candidate.get("local_patches") or []
@@ -107,6 +117,10 @@ def main() -> int:
 
         data = local_path.read_bytes()
         text = data.decode("utf-8", errors="strict")
+        provider_v3 = (
+            "NIAKVIO_PROVIDER_BASE_OWNED_V3" in text
+            and "NIAKVIO_PROVIDER_MODEL" in text
+        )
         actual_sha = hashlib.sha256(data).hexdigest()
         if actual_sha != candidate.get("sha256"):
             failures.append(f"{candidate.get('key')}: staged SHA differs from candidates.json")
