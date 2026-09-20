@@ -164,6 +164,11 @@ assert 'learnedSkills": planner_learned_skills(mode)' in brain_runtime_source
 assert 'learnedSkills": _BASE.planner_learned_skills(mode)' in brain_overlay_source
 assert '"profile_persistence"] = "learning_memory" if planner_mode == "learning" else "none_core_repair_only"' in quick_source
 assert '"learning_executed"] = planner_mode == "learning"' in quick_source
+assert "provider_purification" not in quick_source
+assert "purify_candidate" not in quick_source
+assert "from provider_byte_stability import verify_candidate" in quick_source
+assert "verify_candidate(Path(stage), repaired)" in quick_source
+assert "byte_stability_failed:" in quick_source
 assert 'skill["autoApply"] = trusted' not in brain_runtime_source
 assert 'skill["autoApply"] = False' in brain_runtime_source
 assert 'skill["proposalEligible"] = trusted' in brain_runtime_source
