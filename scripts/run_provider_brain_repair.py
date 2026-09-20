@@ -231,7 +231,16 @@ def exhausted_from_negative_memory(brain_summary: dict[str, Any]) -> set[str]:
                 continue
             if int(row.get("consecutiveFailures") or 0) < rotate_every:
                 continue
-            variants.add(max(0, min(variant_count - 1, int(row.get("experimentVariant") or 0))))
+            variant = max(0, min(variant_count - 1, int(row.get("experimentVariant") or 0)))
+            if variant == variant_count - 1:
+                required_generation = max(
+                    1,
+                    int(plan.get("experimentGeneration") or negative.get("finalVariantGeneration") or 1),
+                )
+                row_generation = max(1, int(row.get("experimentGeneration") or 1))
+                if row_generation != required_generation:
+                    continue
+            variants.add(variant)
         if len(variants) >= variant_count:
             out.add(provider)
     return out
@@ -308,6 +317,7 @@ def sanitized_brain(report: dict[str, Any]) -> dict[str, Any]:
                 "learningDisposition": row.get("learningDisposition"),
                 "allowedProfiles": row.get("allowedProfiles") or [],
                 "experimentVariant": row.get("experimentVariant"),
+                "experimentGeneration": row.get("experimentGeneration"),
                 "experimentVariantCount": row.get("experimentVariantCount"),
                 "experimentExhausted": row.get("experimentExhausted") is True,
                 "negativeMemoryMatches": row.get("negativeMemoryMatches"),
