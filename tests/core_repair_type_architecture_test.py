@@ -141,11 +141,16 @@ for failure in ("search_gap", "episode_gap", "player_gap", "media_extraction_gap
 assert classes["unknown_failure"]["scope"] == "learning"
 assert classes["unknown_failure"]["repairType"] == "architecture_gap"
 
-assert brain_policy["controlPlaneVersion"] == 6
+assert brain_policy["controlPlaneVersion"] == 7
 assert brain_policy["production"]["durableProviderSkillApplication"] is False
 assert brain_policy["production"]["learningDuringCoreRepair"] is False
 assert brain_policy["production"]["learnedSkillInputAllowed"] is True
 assert brain_policy["production"]["unknownFailureAction"] == "queue_for_independent_learning"
+negative_policy = brain_policy["production"]["negativeExperimentMemory"]
+assert negative_policy["enabled"] is True
+assert negative_policy["path"] == "automation/brain-repair-memory.json"
+assert negative_policy["providerCodeWrite"] is False
+assert negative_policy["publicationAllowed"] is False
 assert brain_policy["learningLab"]["directSkillPublication"] is False
 assert brain_policy["learningLab"]["independentFromCoreRepair"] is True
 assert brain_policy["learningLab"]["dailyPublishedProviderCoverageTarget"] == 1.0
