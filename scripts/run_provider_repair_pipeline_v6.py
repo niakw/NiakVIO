@@ -455,7 +455,10 @@ def main() -> int:
         if not BRAIN_REPAIR.exists():
             raise RuntimeError("Brain Repair did not produce its portfolio report")
 
-    candidate_portfolio = capture_portfolio_yield(PORTFOLIO_CANDIDATE, targets)
+    # Revalidate the whole symptom set that entered this cycle. Providers that
+    # recovered during the pre-check are not repaired, but remain in the final
+    # census so preservation/comparison never mistakes recovery for disappearance.
+    candidate_portfolio = capture_portfolio_yield(PORTFOLIO_CANDIDATE, initial_targets)
     shutil.copyfile(PORTFOLIO_CANDIDATE, CENSUS_POST_REPAIR)
     post_repair_census = refresh_census(PORTFOLIO_CANDIDATE, phase="post-repair")
 
