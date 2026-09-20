@@ -59,7 +59,6 @@ for required in (
     "MODE=learn",
     "MODE=repair",
     "DISPATCH_MODE:-force",
-    "provider-repair-skip.json",
     "Verify only census symptoms were network re-probed",
     "Persist Repair census state",
     "PROVIDER_CENSUS_STATUS.md",
@@ -81,6 +80,7 @@ for required in (
     "materialize_provider_base_v3_store.py",
     "materialize_provider_v3_all.py",
     "run_provider_brain_repair.py",
+    "provider-repair-skip.json",
     "audit_provider_repair_yield_v6.py",
     "--require-upstream-positive-preserved",
 ):
