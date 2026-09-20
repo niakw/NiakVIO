@@ -65,7 +65,10 @@ result = {
                     "cookie": "must-not-be-used",
                 },
                 "content_type": "application/json",
-                "response_value_hints": [{"key": "id", "value": "987"}],
+                "response_value_hints": [
+                    {"key": "id", "value": "555"},
+                    {"key": "id", "value": "987"},
+                ],
                 "status": 200,
                 "ok": True,
                 "infrastructure": False,
@@ -135,6 +138,7 @@ assert post["origin"] == "https://demo.example", post
 assert recipes[1]["response"] == "json", recipes[1]
 bound = recipes[2]
 assert bound["requiredBindings"] == ["id"], bound
+assert bound["route"] == "/player/{binding:id}", bound
 assert "987" not in bound["route"], bound
 assert all("token" not in row["route"].casefold() for row in recipes)
 
@@ -226,7 +230,10 @@ const sandbox={
     calls.push({url,method,body});
     if(url==='https://demo.example/engine/ajax/search.php'){
       if(method!=='POST'||body!=='query=Fixture%20Movie&page=1') throw new Error('bad observed search replay');
-      return R(url,'application/json',JSON.stringify({id:'987',title:'Fixture Movie'}));
+      return R(url,'application/json',JSON.stringify({results:[
+        {id:'555',title:'Wrong Movie',year:2020},
+        {id:'987',title:'Fixture Movie',year:2020}
+      ]}));
     }
     if(url==='https://demo.example/api/search?q=Fixture%20Movie'){
       return R(url,'application/json',JSON.stringify({message:'secondary search'}));
