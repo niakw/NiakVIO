@@ -4,6 +4,14 @@ Last authoritative checkpoint: 2026-09-16 Europe/Paris.
 
 This file is the durable recovery source of truth for the active NiakVIO work. Prefer current repository state and exact GitHub Actions/native logs over older chat summaries. Update this file automatically at every important correction, failure, publication, native proof, security proof, or architecture decision before moving to the next risky step.
 
+## 2026-09-20 10:50 Europe/Paris — virtuous Repair → improve → Repair loop resumed
+
+- The overnight 12h Learning attempt did **not** reach the adaptive Learning queue. Run `35484289278` failed at `Build isolated current provider stage`; scheduled run `35497810028` reproduced the same failure.
+- Root cause: `validate_override_pipeline.py` treated `runtime_domain_replacements` like legacy source-text replacement. For generated Provider v3, the historical host intentionally remains as the key of owned runtime migration DATA (`old -> terminal`), so Anime-Sama, HindMoviez, VidRock and VoirAnime were falsely rejected.
+- Generic fix committed on `main`: `a1137046fecb` makes v3 validation semantic (runtime migration DATA) while retaining strict literal replacement checks for legacy bundles. Executable regression `tests/provider_v3_override_pipeline_contract_test.py` added at `e107d54bf096` and gated in Repair (`f471748b9ed`) and Learning (`d89fdbe52e8`).
+- Latest scheduled Repair run `35500564569` failed earlier in its preflight at `tests/brain_repair_experience_transfer_test.py` (`route_prior_counts.requestRecipes`). Diagnostic assertions now expose the full adaptive option state (`4c527e238fef`) so the next Repair run can distinguish a transfer regression from a stale test assumption.
+- User explicitly restored the operating model: **Repair run -> inspect real evidence/artifacts -> improve Brain/systemic code -> rerun Repair -> repeat**. No global wall-clock duration is an objective or stopping condition. Individual Actions remain bounded only as execution safety; convergence/evidence governs the outer loop.
+
 ## 2026-09-20 — 12h persisted Brain Learning slot
 - Second attempted phase **35484148178** also received the correct long-slot budget (`300` min, `420` remaining) but stopped before Learning work because `provider_base_store.py validate` still treated disabled-retained manifest rows as executable ProviderBase obligations. Materialization correctly produced **44 active bases**; stale validation then failed on retained-disabled `desiflix`.
 - Root cause fixed generically: `provider_base_store.validate_all()` now follows `providers/` execution authority and validates only active ProviderBases, while disabled-visible rows remain governed by the separate lifecycle/audit contract (`provider-disabled/`). `tests/provider_clean_reconstruction_contract_test.py` now proves active clean-store coverage plus the disabled-visible count instead of hard-coding 96 executable bases. Commits: `a652a61f79fd` and `ed477256f4a`.
