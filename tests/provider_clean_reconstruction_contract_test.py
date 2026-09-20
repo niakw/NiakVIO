@@ -16,6 +16,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from current_provider_scope import active_provider_count
 from current_provider_scope import active_provider_ids
+from current_provider_scope import disabled_provider_count
 
 SCRIPTS=ROOT/"scripts"
 sys.path.insert(0,str(SCRIPTS))
@@ -41,8 +42,8 @@ assert len(set(provider_ids))==len(provider_ids)
 assert base_store.INITIAL_RECONSTRUCTION_SCOPE==96
 assert base_store.CLEAN_RECONSTRUCTION_AUTHORING_VERSION>=3
 assert base_store.CLEAN_RECONSTRUCTION_SOURCE=="niakvio-clean-reconstruction-v3"
-assert store.get("provider_count")==96
-assert store.get("clean_reconstructed")==96
+assert store.get("provider_count")==active_provider_count()
+assert store.get("clean_reconstructed")==active_provider_count()
 assert store.get("reconstruction_required")==0
 assert store.get("published_legacy_code_may_seed_new_base") is False
 assert store.get("upstream_code_may_seed_new_base") is False
@@ -76,6 +77,12 @@ for pid in provider_ids:
 
 assert len(seen_paths) == active_provider_count()
 assert all(hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==expected_sha for path in seen_paths)
+
+coverage=base_store.validate_all()
+assert coverage["checked"]==active_provider_count(), coverage
+assert coverage["clean_reconstructed"]==active_provider_count(), coverage
+assert coverage["reconstruction_required"]==0, coverage
+assert coverage["disabled_visible"]==disabled_provider_count(), coverage
 
 materializer=(SCRIPTS/"materialize_provider_v3_all.py").read_text(encoding="utf-8")
 store_materializer=(SCRIPTS/"materialize_provider_base_v3_store.py").read_text(encoding="utf-8")
