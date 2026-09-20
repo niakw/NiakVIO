@@ -421,6 +421,7 @@ assert.deepEqual(unknownPlan.allowedProfiles, []);
 const deepRepairPath = fileURLToPath(new URL("../../scripts/run_adaptive_deep_repair.py", import.meta.url));
 const deepRepairSource = readFileSync(deepRepairPath, "utf8");
 assert.match(deepRepairSource, /parent_key = str\(\(candidate\.get\("runtime_repair"\) or \{\}\)\.get\("parent_key"\) or ""\)/);
-assert.match(deepRepairSource, /brain\.PLANS\.get\(parent_key or key\)/);
+assert.match(deepRepairSource, /plan_key = parent_key or key/);
+assert.match(deepRepairSource, /brain\.PLANS\.get\(plan_key\)/);
 
 console.log("engine v2 repair brain tests passed");
