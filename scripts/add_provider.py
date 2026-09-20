@@ -253,7 +253,7 @@ def site_structure_knowledge() -> tuple[list[str], list[str]]:
     return routes, observed
 
 
-def stage(request_path: Path) -> dict[str, Any]:
+def stage(request_path: Path, *, bulk: bool = False) -> dict[str, Any]:
     request = load_json(request_path, {})
     provider_id = norm_id(request.get("id") or request.get("provider"))
     name = str(request.get("name") or provider_id).strip() or provider_id
@@ -478,7 +478,8 @@ def stage(request_path: Path) -> dict[str, Any]:
         "onboarding_rebuild": bool(replace_existing),
     }
     write_json(PROVENANCE, provenance)
-    base_store.repair_legacy_bases()
+    if not bulk:
+        base_store.repair_legacy_bases()
 
     fixture = first_fixture(types[0])
     lab_config = {
@@ -528,13 +529,14 @@ def stage(request_path: Path) -> dict[str, Any]:
         "fixture": lab_config["fixture"],
         "replace_existing": bool(replace_existing),
     }
-    WORK.mkdir(parents=True, exist_ok=True)
-    write_json(WORK / "current.json", normalized)
-    write_json(WORK / "lab-config.json", lab_config)
+    if not bulk:
+        WORK.mkdir(parents=True, exist_ok=True)
+        write_json(WORK / "current.json", normalized)
+        write_json(WORK / "lab-config.json", lab_config)
     print(
         "FIELD_PROVIDER_ONBOARDING_STAGE "
         f"id={provider_id} types={','.join(types)} vf={str(vf).lower()} "
-        f"replace_existing={str(replace_existing).lower()} "
+        f"replace_existing={str(replace_existing).lower()} bulk={str(bulk).lower()} "
         f"base={base_relative} published={published_relative}"
     )
     return normalized
