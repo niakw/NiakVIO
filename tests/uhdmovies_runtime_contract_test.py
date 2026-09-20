@@ -18,6 +18,11 @@ for marker in [
     'Number(r.status)===206',
     "content-range",
     "terminalMedia",
+    "function downloadButtons",
+    "function pushUrls",
+    "direct links",
+    "maxDownloadButtons",
+    "maxTerminals",
     "function driveSeed",
     'provider:"uhdmovies"',
 ]:
