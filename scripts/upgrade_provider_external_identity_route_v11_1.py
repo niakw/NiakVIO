@@ -28,18 +28,25 @@ def patch_execution_boundary() -> bool:
         return False
     if "NIAKVIO_PROVIDER_SOURCE_PLAN_V10" not in text:
         raise AssertionError("V11.1 helper boundary requires Source Plan V10 recovery")
-    old = '''    execution_routes = unique([row.get("route") for row in deduped if generic_execution_route(row)], 192)
-'''
-    new = '''    # ROUTE_RECOVERY_HELPER_EVIDENCE_ONLY_V11_1
-    # TMDB/Cinemeta helper calls may carry critical identity evidence (IMDb, title,
-    # aliases), but they are not provider execution routes. Keep them in routeData
-    # and proven routes for causality while excluding them from the runtime plan.
-    execution_routes = unique([
+    current = '''    execution_routes = unique([
         row.get("route") for row in deduped
         if _repair_recipe_origin_allowed(row) and generic_execution_route(row)
     ], 192)
 '''
-    text = v11.once(text, old, new, "helper-evidence-execution-boundary")
+    marker = '''    # ROUTE_RECOVERY_HELPER_EVIDENCE_ONLY_V11_1
+    # TMDB/Cinemeta helper calls may carry critical identity evidence (IMDb, title,
+    # aliases), but they are not provider execution routes. Keep them in routeData
+    # and proven routes for causality while excluding them from the runtime plan.
+'''
+    if current in text:
+        # Later migrations may already have the stricter semantic boundary while
+        # dropping this historical marker. Treat that as current and restore only
+        # the durable marker/comment; never try to replay the obsolete one-line form.
+        text = v11.once(text, current, marker + current, "helper-evidence-current-boundary")
+    else:
+        old = '''    execution_routes = unique([row.get("route") for row in deduped if generic_execution_route(row)], 192)
+'''
+        text = v11.once(text, old, marker + current, "helper-evidence-execution-boundary")
     v11.RECOVERY.write_text(text, encoding="utf-8")
     validate_execution_boundary(text)
     return True
