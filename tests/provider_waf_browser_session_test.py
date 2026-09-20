@@ -196,6 +196,33 @@ assert any(
     for value in matrix_calls[-1][0][0]
 ),matrix_calls[-1]
 
+
+direct_calls=[]
+original_which=mod.shutil.which
+original_run=mod.subprocess.run
+try:
+    mod.shutil.which=lambda name: "/usr/bin/curl" if name=="curl" else original_which(name)
+    def direct_run(cmd,*args,**kwargs):
+        direct_calls.append(cmd)
+        output_path=cmd[cmd.index("--output")+1]
+        Path(output_path).write_text("<html><body>"+("direct tv catalogue content "*10)+"</body></html>",encoding="utf-8")
+        return SimpleNamespace(returncode=0,stdout="200",stderr="")
+    mod.subprocess.run=direct_run
+    direct=mod.probe_tv_direct_http(allwish,timeout=5,attempts=2)
+finally:
+    mod.subprocess.run=original_run
+    mod.shutil.which=original_which
+assert direct["outcome"]=="direct_http_content_reached",direct
+assert direct["attemptCount"]==1,direct
+assert direct["nativeContractApproximation"]["ipv4First"] is True
+assert direct["nativeContractApproximation"]["proxyPolicy"]=="NO_PROXY"
+assert direct["nativeContractApproximation"]["httpStack"]=="libcurl-not-OkHttp"
+assert "--ipv4" in direct_calls[0]
+assert "--noproxy" in direct_calls[0]
+assert "*" in direct_calls[0]
+assert "--location" in direct_calls[0]
+assert mod.NUVIO_TV_WINDOWS_UA in direct_calls[0]
+
 source = path.read_text(encoding="utf-8")
 for forbidden in ("cf_clearance", "turnstile token", "captcha solver", "undetected_chromedriver", "cloudscraper", "flaresolverr"):
     assert forbidden not in source.casefold(), forbidden
