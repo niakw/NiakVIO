@@ -57,10 +57,43 @@ def extract_targets(report: dict[str, Any]) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
     for row in report.get("rows") or []:
-        if not isinstance(row, dict) or str(row.get("debug_stage") or "") != "provider_waf_challenge":
+        if not isinstance(row, dict):
             continue
-        provider = str(row.get("provider_id") or "").strip().casefold()
-        lane = str(row.get("semantic_type") or "").strip().casefold()
+
+        # Fresh quick-yield rows are the primary authority. Persisted ordinary
+        # browser diagnostics are also accepted as bounded re-probe seeds so a
+        # WAF-only lane can evolve independently from the full provider census.
+        prior_browser_row = (
+            str(row.get("outcome") or "").startswith("browser_")
+            and bool(str(row.get("publicUrl") or "").strip())
+        )
+        if str(row.get("debug_stage") or "") != "provider_waf_challenge" and not prior_browser_row:
+            continue
+        provider = str(row.get("provider_id") or row.get("provider") or "").strip().casefold()
+        lane = str(row.get("semantic_type") or row.get("lane") or "").strip().casefold()
+        if prior_browser_row:
+            raw_url = str(row.get("publicUrl") or "").strip()
+            public_url = sanitized_url(raw_url)
+            method = str(row.get("method") or "GET").upper()
+            if not provider or not lane or not public_url:
+                continue
+            key = (provider, lane, public_url)
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append({
+                "provider": provider,
+                "lane": lane,
+                "url": raw_url,
+                "publicUrl": public_url,
+                "host": str(urlsplit(public_url).hostname or ""),
+                "path": str(urlsplit(public_url).path or "/"),
+                "method": method,
+                "fetchStatus": int(row.get("fetchStatus") or 0),
+                "challenge": str(row.get("challenge") or "unknown")[:32],
+            })
+            continue
+
         fetches = row.get("debug_fetches") if isinstance(row.get("debug_fetches"), list) else []
         challenged = [
             item for item in fetches
