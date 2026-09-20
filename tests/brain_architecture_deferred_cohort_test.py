@@ -113,6 +113,7 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
                 "groupId": "harness-compatibility|html_scraper",
                 "repairScope": "harness-compatibility",
                 "capabilityStrategy": "html_scraper",
+                "harnessTransportClasses": ["native-policy-reachable"],
                 "providers": ["not-deferred"],
             },
         ],
@@ -159,10 +160,11 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
     assert "do not recycle v0-v3" in row["recommendation"].casefold(), row
     assert "requiresHumanMerge" in row and row["requiresHumanMerge"] is True, row
     blueprints = result["strategyBlueprints"]
-    assert result["strategyBlueprintCount"] == 2, result
+    assert result["strategyBlueprintCount"] == 3, result
     assert {item["strategyId"] for item in blueprints} == {
         "chain_terminal_extractor_v1",
         "native_transport_differential_v1",
+        "representative_native_transport_alignment_v1",
     }, blueprints
     terminal = next(item for item in blueprints if item["strategyId"] == "chain_terminal_extractor_v1")
     assert terminal["providers"] == ["alpha"], terminal
@@ -171,6 +173,12 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
     assert transport["providers"] == ["beta"], transport
     assert "representative native TV/mobile" in transport["method"], transport
     assert "provider mutation only after harness mismatch excluded" in transport["acceptanceProof"], transport
+    harness = next(item for item in blueprints if item["strategyId"] == "representative_native_transport_alignment_v1")
+    assert harness["providers"] == ["not-deferred"], harness
+    assert harness["harnessTransportClasses"] == ["native-policy-reachable"], harness
+    assert "harnessTransportClass" in harness["method"], harness
+    assert "not promoted to playback" in harness["acceptanceProof"][1], harness
+    assert "native differential proof" in harness["reentryPolicy"], harness
     assert all(item["productionWritesAllowed"] is False for item in blueprints)
     assert all(item["requiresHumanMerge"] is True for item in blueprints)
     assert row["evidence"]["strategyBlueprints"] == blueprints, row
