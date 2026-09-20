@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "principle": "NiakVIO validates the source, recognizes the provider and its capability, applies global invariants, applies the capability engine, applies capability-global invariants, then publishes. Learning exists only to evolve this architecture when a case is not covered.",
   "pipeline": [
     {
@@ -337,7 +337,7 @@
     "coreRepair": {
       "independent": true,
       "learningAllowed": false,
-      "learnedSkillInputAllowed": false,
+      "learnedSkillInputAllowed": true,
       "stages": [
         "source_validation",
         "provider_recognition",
@@ -347,7 +347,9 @@
         "capability_global_invariants",
         "public_bundle"
       ],
-      "unknownFailureAction": "queue_for_independent_learning"
+      "unknownFailureAction": "queue_for_independent_learning",
+      "learnedSkillUse": "trusted_validated_hypothesis_transfer_only",
+      "validationRule": "transferred skills never bypass sandbox, current-byte retest, identity, playback or non-regression gates"
     },
     "dailyLearning": {
       "independent": true,
