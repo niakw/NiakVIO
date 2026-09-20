@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import tempfile
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -25,6 +27,65 @@ for count in (1,2,4,8,16):
     assert sum(len(x) for x in buckets)==len(providers)
 
 assert mod.chunks(["a","b","c","d","e"],2)==[["a","b"],["c","d"],["e"]]
+
+
+assert mod.experiment_rotation_decision(
+    accepted_count=0, remaining_count=3, wave=1, max_waves=4, memory_advanced=True
+)=="rotate"
+assert mod.experiment_rotation_decision(
+    accepted_count=0, remaining_count=3, wave=4, max_waves=4, memory_advanced=True
+)=="exhausted"
+assert mod.experiment_rotation_decision(
+    accepted_count=0, remaining_count=3, wave=1, max_waves=4, memory_advanced=False
+)=="stalled"
+assert mod.experiment_rotation_decision(
+    accepted_count=1, remaining_count=3, wave=1, max_waves=4, memory_advanced=True
+)=="materialize"
+
+with tempfile.TemporaryDirectory() as tmp:
+    old_status,old_plan=mod.STATUS,mod.BATCH_PLAN
+    try:
+        mod.STATUS=Path(tmp)/"status.json"
+        mod.BATCH_PLAN=Path(tmp)/"plan.json"
+        mod.STATUS.write_text(json.dumps({
+            "runId":"r1",
+            "providers":[
+                {"provider":"a","status":"ROUTE PROVEN"},
+                {"provider":"b","status":"ROUTE PROVEN"},
+                {"provider":"c","status":"CHAIN REACHED"},
+                {"provider":"d","status":"PROVIDER NETWORK BLOCKED"},
+            ],
+            "repairQueue":["a","b","c","d"],
+        }),encoding="utf-8")
+        mod.BATCH_PLAN.write_text(json.dumps({
+            "sourceRunId":"r1",
+            "groups":[
+                {
+                    "groupId":"route-to-terminal|html_scraper",
+                    "repairScope":"route-to-terminal",
+                    "capabilityStrategy":"html_scraper",
+                    "providers":["b","a"],
+                },
+                {
+                    "groupId":"terminal-extraction|direct_media",
+                    "repairScope":"terminal-extraction",
+                    "capabilityStrategy":"direct_media",
+                    "providers":["c"],
+                },
+            ],
+        }),encoding="utf-8")
+        batches=mod.repair_batches(["a","b","c","d"],48)
+        assert [row["providers"] for row in batches]==[["b","a"],["c"],["d"]],batches
+        assert batches[0]["groupId"]=="route-to-terminal|html_scraper"
+        assert batches[1]["repairScope"]=="terminal-extraction"
+        assert batches[2]["groupId"]=="unplanned"
+
+        mod.BATCH_PLAN.write_text(json.dumps({"sourceRunId":"old","groups":[]}),encoding="utf-8")
+        stale=mod.repair_batches(["d","b","a","c"],2)
+        assert [row["providers"] for row in stale]==[["a","b"],["c","d"]],stale
+        assert all(row["groupId"]=="fallback" for row in stale)
+    finally:
+        mod.STATUS,mod.BATCH_PLAN=old_status,old_plan
 
 payload={
     "providers":[
@@ -76,7 +137,9 @@ for required in (
     "materialize_provider_base_v3_store.py",
     "materialize_provider_v3_all.py",
     "validatedRepairLearningExecuted",
-    "multi-wave-brain-repair",
+    "family-batched-multi-wave-brain-repair",
+    "rotating_rejected_experiment",
+    "experimentMemoryAdvanced",
     "providerSpecificRules",
     "wafEnvironmentExcludedByDefault",
     "selectionSource",
