@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 7,
-  "controlPlaneVersion": 5,
+  "schemaVersion": 8,
+  "controlPlaneVersion": 6,
   "identity": {
     "name": "NiakVIO Brain",
     "role": "architecture learning and adaptive provider repair orchestrator",
@@ -17,9 +17,23 @@
     "fallbackPolicy": "lkg_only_after_repair_budget",
     "durableProviderSkillApplication": false,
     "repairOwnership": "core_global_or_capability_type",
-    "learnedSkillInputAllowed": false,
+    "learnedSkillInputAllowed": true,
     "learningDuringCoreRepair": false,
-    "unknownFailureAction": "queue_for_independent_learning"
+    "unknownFailureAction": "queue_for_independent_learning",
+    "trustedLearnedSkillTransfer": true,
+    "learnedSkillTransferPolicy": {
+      "maturity": "trusted",
+      "requireValidated": true,
+      "minimumConfidence": 0.8,
+      "minimumDistinctProviders": 2,
+      "exactSignatureBonus": 100,
+      "capabilityStrategyBonus": 40,
+      "observedStageBonus": 20,
+      "providerPriorBonus": 10,
+      "genericFailureClassBase": 15,
+      "failedSkillPenalty": 12,
+      "rule": "learned skills may influence hypothesis ordering only; every transfer must pass the ordinary sandbox/retest/non-regression gates"
+    }
   },
   "skillMaturity": {
     "candidateSuccesses": 2,
@@ -90,9 +104,10 @@
     "coreRepair": {
       "independent": true,
       "learningAllowed": false,
-      "learnedSkillInputAllowed": false,
+      "learnedSkillInputAllowed": true,
       "unknownFailureAction": "queue_for_independent_learning",
-      "purpose": "fast deterministic repair using only Core global invariants and known capability types"
+      "purpose": "fast deterministic repair using only Core global invariants and known capability types",
+      "learnedSkillUse": "trusted_hypothesis_transfer_only"
     },
     "dailyLearning": {
       "independent": true,
