@@ -163,6 +163,39 @@ def learned_skills() -> dict[str, Any]:
     return skills if isinstance(skills, dict) else {}
 
 
+def planner_learned_skills(mode: str) -> dict[str, Any]:
+    """Expose all skills to Learning, trusted transferable skills to Repair."""
+    skills = learned_skills()
+    if str(mode).casefold() == "learning":
+        return skills
+    cfg = policy()
+    production = cfg.get("production") if isinstance(cfg.get("production"), dict) else {}
+    if production.get("learnedSkillInputAllowed") is not True:
+        return {}
+    maturity = cfg.get("skillMaturity") if isinstance(cfg.get("skillMaturity"), dict) else {}
+    transfer = production.get("learnedSkillTransferPolicy") if isinstance(production.get("learnedSkillTransferPolicy"), dict) else {}
+    required_maturity = str(transfer.get("maturity") or "trusted")
+    min_confidence = float(transfer.get("minimumConfidence") or maturity.get("minimumConfidence") or 0.8)
+    min_providers = max(1, int(transfer.get("minimumDistinctProviders") or maturity.get("trustedProviders") or 2))
+    out: dict[str, Any] = {}
+    for key, raw in skills.items():
+        if not isinstance(raw, dict) or raw.get("validated") is not True:
+            continue
+        if str(raw.get("maturity") or "experimental") != required_maturity:
+            continue
+        if float(raw.get("confidence") or 0.0) < min_confidence:
+            continue
+        providers = {
+            str(value or "").strip().casefold()
+            for value in raw.get("providers") or []
+            if str(value or "").strip()
+        }
+        if len(providers) < min_providers:
+            continue
+        out[str(key)] = raw
+    return out
+
+
 def reset_runtime_state() -> None:
     PLANS.clear()
     RUNTIME_STATE.clear()
@@ -259,7 +292,7 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
     payload = {
         "mode": mode,
         "policy": policy(),
-        "learnedSkills": learned_skills() if str(mode).casefold() == "learning" else {},
+        "learnedSkills": planner_learned_skills(mode),
         "items": items,
     }
     planner_input = _strict_json_dumps(payload).encode("ascii")
@@ -300,8 +333,11 @@ def wrap_matching_profiles(base_matching: Callable[..., list[str]]) -> Callable[
         action = str(plan.get("action") or "")
         if action in {"none", "deferred_retry", "collect-more-evidence", "hold-or-quarantine-pending-proof"}:
             return []
-        allowed = {str(value) for value in plan.get("allowedProfiles") or [] if str(value)}
-        return [profile for profile in profiles if profile in allowed]
+        allowed_order = [str(value) for value in plan.get("allowedProfiles") or [] if str(value)]
+        allowed = set(allowed_order)
+        order = {profile: index for index, profile in enumerate(allowed_order)}
+        selected = [profile for profile in profiles if profile in allowed]
+        return sorted(selected, key=lambda profile: (order.get(profile, len(order)), profiles.index(profile)))
     return _matching
 
 
