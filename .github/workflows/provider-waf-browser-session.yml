@@ -1,0 +1,74 @@
+name: Provider WAF Browser Session Diagnostics
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-waf-browser-session.yml'
+      - '.github/triggers/provider-waf-browser-session.json'
+      - 'scripts/probe_waf_browser_session.py'
+      - 'tests/provider_waf_browser_session_test.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: provider-waf-browser-session-main
+  cancel-in-progress: true
+
+jobs:
+  browser-session:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Validate ordinary-browser diagnostic contract
+        run: python tests/provider_waf_browser_session_test.py
+
+      - name: Reprobe persisted WAF lanes with one ordinary ephemeral session
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s automation/provider-waf-browser-session-latest.json
+          python scripts/probe_waf_browser_session.py \
+            automation/provider-waf-browser-session-latest.json \
+            --output automation/provider-waf-browser-session-latest.json \
+            --attempts 2 \
+            --workers 3 \
+            --max-targets 24 \
+            --timeout 25 \
+            --virtual-time-ms 8000
+
+      - name: Upload WAF browser-session evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: provider-waf-browser-session-${{ github.run_id }}
+          path: automation/provider-waf-browser-session-latest.json
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Persist WAF browser-session evidence
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp automation/provider-waf-browser-session-latest.json /tmp/provider-waf-browser-session-latest.json
+          git fetch origin main
+          git reset --hard origin/main
+          mkdir -p automation
+          cp /tmp/provider-waf-browser-session-latest.json automation/provider-waf-browser-session-latest.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add automation/provider-waf-browser-session-latest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "ci(waf): persist ordinary browser session diagnostics"
+          git push origin HEAD:main
