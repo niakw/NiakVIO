@@ -36,6 +36,9 @@ assert experience.classify_route("/search?q={query}") == "search"
 assert experience.classify_route("/film/{slug}") == "detail"
 assert experience.classify_route("/episode/{id}/{season}/{episode}") == "episode"
 assert experience.classify_route("/player/{id}") == "player"
+assert experience.classify_route("/file/{binding:id}") == "source"
+assert experience.classify_route("/drive/{binding:slug}") == "source"
+assert experience.reusable_route("/file/{binding:id}", peer=True) == "/file/{binding:id}"
 assert experience.classify_route("/api/streams/{id}") == "api"
 assert experience.reusable_route("/?sid=" + ("A" * 120), peer=True) is None
 assert experience.reusable_route("/literal-interstellar-2014/", peer=True) is None
