@@ -66,7 +66,13 @@ def extract_targets(report: dict[str, Any]) -> list[dict[str, Any]]:
             item for item in fetches
             if isinstance(item, dict) and str(item.get("challenge") or "").strip()
         ]
-        terminal = challenged[-1] if challenged else (fetches[-1] if fetches else {})
+        browser_navigable = [
+            item for item in challenged
+            if str(item.get("method") or "GET").upper() == "GET"
+        ]
+        terminal = browser_navigable[-1] if browser_navigable else (
+            challenged[-1] if challenged else (fetches[-1] if fetches else {})
+        )
         raw_url = str(terminal.get("url") or "").strip()
         public_url = sanitized_url(raw_url)
         method = str(terminal.get("method") or "GET").upper()
