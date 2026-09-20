@@ -19,26 +19,39 @@ spec.loader.exec_module(audit)
 from rotating_corpus import health_fixtures, provider_census_candidates, regression_fixtures, global_fixtures
 
 with tempfile.TemporaryDirectory() as tmp:
-    status_path = Path(tmp) / "status.json"
-    status_path.write_text(json.dumps({
-        "providers": [
-            {"provider": "green", "status": "FULL OK"},
-            {"provider": "partial", "status": "PARTIAL OK"},
-            {"provider": "miss", "status": "NO PROOF"},
-            {"provider": "broken", "status": "PROVIDER JS BROKEN"},
-            {"provider": "reg", "status": "REGRESSION PROVIDER"},
-        ]
+    root = Path(tmp)
+    status_path = root / "status.json"
+    manifest_path = root / "manifest.json"
+    rows = [
+        {"provider": "green", "status": "FULL OK"},
+        {"provider": "partial", "status": "PARTIAL OK"},
+        {"provider": "miss", "status": "NO PROOF"},
+        {"provider": "broken", "status": "PROVIDER JS BROKEN"},
+        {"provider": "reg", "status": "REGRESSION PROVIDER"},
+    ]
+    status_path.write_text(json.dumps({"providers": rows}), encoding="utf-8")
+    manifest_path.write_text(json.dumps({
+        "scrapers": [{"id": row["provider"]} for row in rows]
     }), encoding="utf-8")
 
-    selected, scope = audit._scope_provider_filter("unresolved", status_path, [])
-    assert scope == "unresolved"
-    assert selected == {"miss", "broken", "reg"}, selected
+    # Isolate the fixture from the live repository manifest. The production
+    # helper intentionally adds newly-onboarded manifest rows that are missing
+    # from a stale status snapshot; this test is about status semantics, not the
+    # current repository onboarding delta.
+    previous_manifest = audit.MANIFEST
+    audit.MANIFEST = manifest_path
+    try:
+        selected, scope = audit._scope_provider_filter("unresolved", status_path, [])
+        assert scope == "unresolved"
+        assert selected == {"miss", "broken", "reg"}, selected
 
-    selected, scope = audit._scope_provider_filter("all", status_path, [])
-    assert selected is None and scope == "all"
+        selected, scope = audit._scope_provider_filter("all", status_path, [])
+        assert selected is None and scope == "all"
 
-    selected, scope = audit._scope_provider_filter("unresolved", status_path, ["green,miss"])
-    assert selected == {"green", "miss"} and scope == "explicit"
+        selected, scope = audit._scope_provider_filter("unresolved", status_path, ["green,miss"])
+        assert selected == {"green", "miss"} and scope == "explicit"
+    finally:
+        audit.MANIFEST = previous_manifest
 
 # The proof search really spans the three durable sources, rather than only the
 # 32-row rotating lane used by the old quick census.
