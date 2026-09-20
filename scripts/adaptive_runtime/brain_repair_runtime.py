@@ -125,7 +125,7 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
     base_payload = {
         "mode": mode,
         "policy": _BASE.policy(),
-        "learnedSkills": _BASE.learned_skills() if str(mode).casefold() == "learning" else {},
+        "learnedSkills": _BASE.planner_learned_skills(mode),
     }
     # 24 keeps normal stdin payloads well below the failing ~500 KiB batch seen
     # in production while retaining efficient multi-provider planning.
