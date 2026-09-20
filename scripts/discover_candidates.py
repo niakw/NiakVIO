@@ -30,6 +30,8 @@ from apply_provider_overrides import apply_overrides
 from provider_base_store import (
     CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS,
     build_clean_provider_seed,
+    build_provider_data_model,
+    compose_provider_bundle,
     is_clean_reconstruction_candidate,
     requires_clean_reconstruction,
     resolve_base,
@@ -750,6 +752,34 @@ def reconstruction_manifest_entry(
     return output
 
 
+def compose_executable_seed(
+    provider_id: str,
+    entry: dict[str, Any],
+    seed: bytes,
+    known_site: str | None,
+    provider_model: dict[str, Any],
+    overrides: dict[str, Any],
+) -> bytes:
+    """Compose Provider v3 DATA before any derived Core/provider Lego.
+
+    ProviderBase v3 is deliberately provider-neutral and references
+    NIAKVIO_PROVIDER_MODEL. Discovery previously staged that bare Base directly,
+    which is syntactically valid but raises ReferenceError for every runtime.
+    Legacy compatibility bases remain untouched; clean v3 bases always receive
+    one deterministic Provider envelope + CONFIG DATA block first.
+    """
+    if b"NIAKVIO_PROVIDER_BASE_OWNED_V3" not in seed:
+        return seed
+    reconstruction_entry = reconstruction_manifest_entry(provider_id, entry, overrides)
+    data = build_provider_data_model(
+        provider_id,
+        reconstruction_entry,
+        known_site=known_site,
+        provider_model=provider_model,
+    )
+    return compose_provider_bundle(provider_id, seed, data)
+
+
 def executable_seed(
     provider_id: str,
     entry: dict[str, Any],
@@ -1026,9 +1056,17 @@ def main() -> int:
                     "new-niakvio-clean-seed",
                     "pending-niakvio-clean-reconstruction-v2",
                 }
+                executable = compose_executable_seed(
+                    provider_id,
+                    entry,
+                    seed,
+                    observed_site,
+                    provider_model,
+                    overrides,
+                )
                 candidate_data, applied_patches = apply_overrides(
                     provider_id,
-                    seed,
+                    executable,
                     excluded_patch_scripts=(
                         CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS
                         if clean_seed_origin
@@ -1163,9 +1201,17 @@ def main() -> int:
             "new-niakvio-clean-seed",
             "pending-niakvio-clean-reconstruction-v2",
         }
+        executable = compose_executable_seed(
+            provider_id,
+            dict(entry),
+            seed,
+            observed_site,
+            provider_model,
+            overrides,
+        )
         candidate_data, applied_patches = apply_overrides(
             provider_id,
-            seed,
+            executable,
             excluded_patch_scripts=(
                 CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS
                 if clean_seed_origin
