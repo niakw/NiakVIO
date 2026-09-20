@@ -60,10 +60,38 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  scale:
+    runs-on: ubuntu-latest
+    outputs:
+      provider_count: ${{ steps.decide.outputs.provider_count }}
+      use_sharded: ${{ steps.decide.outputs.use_sharded }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - id: decide
+        shell: bash
+        run: |
+          set -euo pipefail
+          count="$(python - <<'PY'
+          import json
+          d=json.load(open("manifest.json", encoding="utf-8"))
+          print(len([x for x in d.get("scrapers") or [] if isinstance(x,dict)]))
+          PY
+          )"
+          echo "provider_count=$count" >> "$GITHUB_OUTPUT"
+          if [ "$count" -gt 120 ]; then
+            echo "use_sharded=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "use_sharded=false" >> "$GITHUB_OUTPUT"
+          fi
+
   census:
-    # Large bulk onboarding is validated by the dedicated 8-shard workflow.
-    # Sharded evidence commits also must not recursively launch this mono-job.
-    if: ${{ github.event_name != 'push' || (!startsWith(github.event.head_commit.message, 'provider: bulk stage ') && !startsWith(github.event.head_commit.message, 'ci(census-sharded):')) }}
+    needs: scale
+    # Large catalogues are owned by the 8-shard workflow. Bulk-stage and
+    # sharded evidence commits also must not recursively launch this mono-job.
+    if: ${{ needs.scale.outputs.use_sharded != 'true' && (github.event_name != 'push' || (!startsWith(github.event.head_commit.message, 'provider: bulk stage ') && !startsWith(github.event.head_commit.message, 'ci(census-sharded):'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 55
     env:
