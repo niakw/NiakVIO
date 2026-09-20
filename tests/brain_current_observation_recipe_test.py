@@ -2,9 +2,14 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS = ROOT / "scripts"
+ADAPTIVE = SCRIPTS / "adaptive_runtime"
+sys.path.insert(0, str(ADAPTIVE))
+sys.path.insert(1, str(SCRIPTS))
 
 spec = importlib.util.spec_from_file_location(
     "adaptive_runtime_repair_observed",
