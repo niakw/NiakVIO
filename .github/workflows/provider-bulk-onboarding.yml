@@ -1,0 +1,190 @@
+name: PROVIDER - Bulk Onboarding
+
+on:
+  workflow_dispatch:
+    inputs:
+      request_path:
+        description: Repository JSON file containing a provider list or {providers:[...]}
+        required: false
+        default: .github/provider-onboarding/batch.json
+        type: string
+      allow_replace_existing:
+        description: Permit explicit replace_existing rows
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches: [main]
+    paths:
+      - '.github/provider-onboarding/batch.json'
+      - '.github/workflows/provider-bulk-onboarding.yml'
+      - 'scripts/stage_provider_batch.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-provider-bulk-onboarding-main
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    outputs:
+      provider_count: ${{ steps.summary.outputs.provider_count }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Resolve bulk request
+        shell: bash
+        env:
+          INPUT_REQUEST_PATH: ${{ inputs.request_path || '.github/provider-onboarding/batch.json' }}
+        run: |
+          set -euo pipefail
+          REQUEST="$INPUT_REQUEST_PATH"
+          test -s "$REQUEST" || {
+            echo "Bulk onboarding request not found: $REQUEST" >&2
+            exit 2
+          }
+          echo "REQUEST=$REQUEST" >> "$GITHUB_ENV"
+
+      - name: Preflight bulk request
+        shell: bash
+        env:
+          ALLOW_REPLACE: ${{ inputs.allow_replace_existing || false }}
+        run: |
+          set -euo pipefail
+          args=(--request "$REQUEST" --output automation/provider-bulk-onboarding-preflight.json --dry-run)
+          if [ "$ALLOW_REPLACE" = "true" ]; then args+=(--allow-replace-existing); fi
+          python scripts/stage_provider_batch.py "${args[@]}"
+
+      - name: Stage all providers disabled and pending
+        shell: bash
+        env:
+          ALLOW_REPLACE: ${{ inputs.allow_replace_existing || false }}
+        run: |
+          set -euo pipefail
+          args=(--request "$REQUEST" --output automation/provider-bulk-onboarding-stage.json)
+          if [ "$ALLOW_REPLACE" = "true" ]; then args+=(--allow-replace-existing); fi
+          python scripts/stage_provider_batch.py "${args[@]}"
+
+      - name: Rebuild one publication after the whole batch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/reapply_published_overrides.py
+          python scripts/generate_language_manifests.py
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs
+          node engine_v2/scripts/render-manifests-from-catalog.mjs
+          python scripts/provider_base_store.py repair-legacy
+          python scripts/validate_published_provider_config.py
+
+      - name: Validate bulk onboarding contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/add_provider.py scripts/stage_provider_batch.py scripts/audit_provider_quick_yield.py scripts/merge_provider_census_shards.py
+          python tests/provider_bulk_onboarding_test.py
+          python tests/provider_clean_reconstruction_contract_test.py
+          python tests/provider_js_lego_ownership_test.py
+          python tests/provider_census_new_provider_scope_test.py
+          node engine_v2/tests/provider-catalog.test.mjs
+
+      - id: summary
+        name: Export batch size
+        shell: bash
+        run: |
+          set -euo pipefail
+          count="$(python - <<'PY'
+          import json
+          print(json.load(open("automation/provider-bulk-onboarding-stage.json", encoding="utf-8"))["providerCount"])
+          PY
+          )"
+          test "$count" -gt 0
+          echo "provider_count=$count" >> "$GITHUB_OUTPUT"
+
+      - name: Package one atomic bulk transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json provider-type-policy.json             provider-bases providers automation/provider-bulk-onboarding-stage.json
+          mkdir -p .provider-onboarding
+          git rev-parse HEAD > .provider-onboarding/bulk-base-sha.txt
+          git diff --cached --binary --full-index > .provider-onboarding/bulk-provider-transaction.patch
+          cp automation/provider-bulk-onboarding-stage.json .provider-onboarding/bulk-summary.json
+
+      - name: Upload bulk transaction
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: provider-bulk-onboarding-transaction-${{ github.run_id }}
+          path: |
+            .provider-onboarding/bulk-base-sha.txt
+            .provider-onboarding/bulk-provider-transaction.patch
+            .provider-onboarding/bulk-summary.json
+          retention-days: 2
+          if-no-files-found: error
+
+  publish:
+    needs: stage
+    if: ${{ needs.stage.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    outputs:
+      published_sha: ${{ steps.publish.outputs.published_sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: provider-bulk-onboarding-transaction-${{ github.run_id }}
+          path: checked-transaction
+
+      - id: publish
+        name: Publish disabled/pending provider batch
+        shell: bash
+        env:
+          PROVIDER_COUNT: ${{ needs.stage.outputs.provider_count }}
+        run: |
+          set -euo pipefail
+          BASE_SHA="$(tr -d '\r\n' < checked-transaction/bulk-base-sha.txt)"
+          test -n "$BASE_SHA"
+          git merge-base --is-ancestor "$BASE_SHA" HEAD || {
+            echo "Validated bulk base $BASE_SHA is not an ancestor of current main." >&2
+            exit 3
+          }
+          if [ ! -s checked-transaction/bulk-provider-transaction.patch ]; then
+            echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git apply --3way --index checked-transaction/bulk-provider-transaction.patch
+          if git diff --cached --quiet; then
+            echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name "niakvio-provider-bulk-onboarding"
+          git config user.email "actions@users.noreply.github.com"
+          git commit -m "provider: bulk stage $PROVIDER_COUNT pending"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+          echo "published_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
