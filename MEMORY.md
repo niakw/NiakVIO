@@ -3008,3 +3008,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - `tests/brain_current_observation_recipe_test.py` now requires this worker -> health transport in addition to Deep route-proof enablement and end-to-end response-bound recipe execution.
 - Commits: health transport `47b416ab1528...`, contract `38b40ac5b6c...`.
 - Repair #87 (`35527314099`, SHA `0bad088ea5f6...`) predates this health-transport fix, so it is not authoritative for current-observation program synthesis even if its earlier preflight/runtime phases pass. A fresh Repair on the later HEAD is required.
+
+### 2026-09-20 — Repair #88 reached real Brain round; causal replan transport fixed
+- Repair run `35527480898` (#88, SHA `ad7a87a4abc...`) is the first run in this sequence that passed all preflight contracts and entered the real 12-provider repairQueue with end-to-end route-proof synthesis enabled.
+- 4KHDHub completed an actual Brain round-1 candidate and changed runtime diagnosis to `content_lookup_completed_no_streams` with no runtime errors. During exploration replan for round 2, the canonical base planner transport aborted with `brain_planner_input_invalid` on a ~106 KiB payload, causing the whole Repair wave to fail before the other 11 providers could run.
+- Root cause in control flow: `scripts/adaptive_runtime/brain_repair_runtime.py` already isolated/bisected initial planner batches, but did not override `replan_observation()`; exploration replans therefore bypassed the adaptive transport and called the base runtime's direct stdin planner path.
+- Planner input now supports an optional `NUVIO_BRAIN_PLANNER_INPUT_FILE` source. Adaptive transport locally JSON-validates the exact ASCII bytes, tries stdin first, and only for planner input-parse exit 2 retries the exact same bytes via a temporary file. No payload is reserialized between attempts.
+- Adaptive `replan_observation()` now uses the same bounded transport as initial planning. If a single-provider replan still fails after retry, that provider receives a transport-deferred plan instead of aborting the other providers/wave.
+- Added `tests/brain_replan_transport_retry_test.py` and Repair preflight coverage. The test reproduces stdin parse failure, proves byte-identical file retry succeeds, and proves exploration replan uses the adaptive path.
+- Census persisted from #88 remains 24 FULL OK + 2 PARTIAL OK + 12 repairQueue; #88 cannot be used as final repair efficacy evidence because the wave terminated during 4KHDHub round-2 replanning.
