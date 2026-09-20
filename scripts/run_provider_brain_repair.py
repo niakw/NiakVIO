@@ -20,6 +20,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -149,7 +150,7 @@ def repair_batches(values: list[str], size: int) -> list[dict[str, Any]]:
     if not isinstance(plan, dict) or str(plan.get("sourceRunId") or "") != str(status.get("runId") or ""):
         return [
             {"groupId": "fallback", "repairScope": "unknown", "providers": batch}
-            for batch in chunks(sorted(selected), size)
+            for batch in chunks(sorted(selected, key=scheduling_rank), size)
         ]
 
     out: list[dict[str, Any]] = []
@@ -157,10 +158,13 @@ def repair_batches(values: list[str], size: int) -> list[dict[str, Any]]:
     for group in plan.get("groups") or []:
         if not isinstance(group, dict):
             continue
-        members = [
-            cid(value) for value in group.get("providers") or []
-            if cid(value) in selected and cid(value) not in assigned
-        ]
+        members = sorted(
+            [
+                cid(value) for value in group.get("providers") or []
+                if cid(value) in selected and cid(value) not in assigned
+            ],
+            key=scheduling_rank,
+        )
         if not members:
             continue
         for batch in chunks(members, size):
@@ -172,9 +176,15 @@ def repair_batches(values: list[str], size: int) -> list[dict[str, Any]]:
             })
             assigned.update(batch)
 
-    leftovers = sorted(selected - assigned)
+    leftovers = sorted(selected - assigned, key=scheduling_rank)
     for batch in chunks(leftovers, size):
         out.append({"groupId": "unplanned", "repairScope": "unknown", "providers": batch})
+    out.sort(
+        key=lambda row: (
+            min((provider_attempt_pressure(provider) for provider in row.get("providers") or []), default=0),
+            str(row.get("groupId") or ""),
+        )
+    )
     return out
 
 
@@ -184,6 +194,29 @@ def repair_memory_fingerprint() -> str:
     except OSError:
         return ""
 
+
+
+def provider_attempt_pressure(provider_id: str) -> int:
+    """Bounded scheduling pressure from durable experiment memory.
+
+    This is scheduling authority only. It never upgrades evidence or grants
+    repair acceptance. Providers with fewer historical experiments are tried
+    first on resumable runs so a large catalogue cannot starve behind the same
+    slow/exhausted providers.
+    """
+    wanted = cid(provider_id)
+    memory = load(REPAIR_MEMORY, {})
+    total = 0
+    for row in memory.get("entries") or []:
+        if not isinstance(row, dict) or cid(row.get("providerId")) != wanted:
+            continue
+        total += max(0, int(row.get("failures") or 0))
+        total += max(0, int(row.get("successes") or 0))
+    return total
+
+
+def scheduling_rank(provider_id: str) -> tuple[int, str]:
+    return (provider_attempt_pressure(provider_id), cid(provider_id))
 
 def experiment_rotation_decision(
     *,
@@ -373,6 +406,8 @@ def main() -> int:
     parser.add_argument("--work-dir", type=Path, default=DEFAULT_WORK)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--keep-work", action="store_true")
+    parser.add_argument("--time-budget-seconds", type=int, default=2100, help="Graceful portfolio work budget; writes a resumable report before outer workflow timeout.")
+    parser.add_argument("--min-start-batch-seconds", type=int, default=360, help="Do not start another expensive batch below this remaining budget.")
     args = parser.parse_args()
 
     shard_count = max(1, min(int(args.shard_count), 64))
@@ -381,6 +416,8 @@ def main() -> int:
         raise SystemExit("invalid shard index")
     waves = max(1, min(int(args.waves), 6))
     batch_size = max(4, min(int(args.batch_size), 96))
+    time_budget_seconds = max(300, min(int(args.time_budget_seconds), 14400))
+    min_start_batch_seconds = max(120, min(int(args.min_start_batch_seconds), time_budget_seconds))
 
     # Rebuild structural prior memory from the exact current repo/census before
     # selecting experiments. This memory never grants acceptance authority; it
@@ -428,6 +465,10 @@ def main() -> int:
     all_fixed: set[str] = set()
     all_deferred: set[str] = set()
     no_progress_reason: str | None = None
+    time_budget_exhausted = False
+    processed_providers: set[str] = set()
+    started_monotonic = time.monotonic()
+    deadline_monotonic = started_monotonic + time_budget_seconds
 
     concurrency = int(args.health_concurrency)
     if concurrency <= 0:
@@ -445,6 +486,11 @@ def main() -> int:
             memory_before = repair_memory_fingerprint()
 
             for batch_index, batch_plan in enumerate(repair_batches(remaining, batch_size), start=1):
+                budget_remaining = deadline_monotonic - time.monotonic()
+                if budget_remaining < min_start_batch_seconds:
+                    time_budget_exhausted = True
+                    no_progress_reason = "time_budget_exhausted"
+                    break
                 batch = list(batch_plan["providers"])
                 batch_root = work / f"wave-{wave}" / f"batch-{batch_index}"
                 stage = batch_root / "stage"
@@ -458,17 +504,30 @@ def main() -> int:
                 env["NUVIO_HEALTH_CONCURRENCY"] = str(concurrency)
                 env["NUVIO_BRAIN_REPAIR_WAVE"] = str(wave)
                 env["NUVIO_BRAIN_EXPLORATION_CHAIN"] = "1"
-                run(
-                    sys.executable,
-                    "scripts/run_adaptive_deep_repair.py",
-                    "--stage", str(stage),
-                    "--registry", str(stage / "candidates.json"),
-                    "--output", str(output),
-                    "--max-rounds", "3",
-                    env=env,
-                    timeout=max(1800, len(batch) * 120),
+                batch_timeout = max(
+                    120,
+                    min(
+                        max(1800, len(batch) * 120),
+                        int(max(120, deadline_monotonic - time.monotonic() - 45)),
+                    ),
                 )
+                try:
+                    run(
+                        sys.executable,
+                        "scripts/run_adaptive_deep_repair.py",
+                        "--stage", str(stage),
+                        "--registry", str(stage / "candidates.json"),
+                        "--output", str(output),
+                        "--max-rounds", "3",
+                        env=env,
+                        timeout=batch_timeout,
+                    )
+                except subprocess.TimeoutExpired:
+                    time_budget_exhausted = True
+                    no_progress_reason = "time_budget_exhausted_during_batch"
+                    break
 
+                processed_providers.update(batch)
                 repair_report = load(output / "repair-report.json", {})
                 health = load(output / "health-results.json", {})
                 accepted = accepted_rows(repair_report)
@@ -512,6 +571,7 @@ def main() -> int:
                 "wave": wave,
                 "inputProviderCount": sum(row["providerCount"] for row in batch_reports),
                 "acceptedCount": len(accepted_this_wave),
+                "timeBudgetExhausted": time_budget_exhausted,
                 "fixedInLabCount": len(fixed_this_wave),
                 "fixedInLab": sorted(fixed_this_wave),
                 "deferredToLearningCount": len(deferred_this_wave),
@@ -520,6 +580,20 @@ def main() -> int:
                 "experimentMemoryAdvanced": experiment_memory_advanced,
                 "batches": batch_reports,
             })
+
+            if time_budget_exhausted:
+                if fixed_this_wave or accepted_this_wave:
+                    materialize(
+                        {
+                            *fixed_this_wave,
+                            *{
+                                cid(row.get("provider"))
+                                for row in accepted_this_wave
+                                if cid(row.get("provider"))
+                            },
+                        }
+                    )
+                break
 
             decision = experiment_rotation_decision(
                 accepted_count=len(accepted_this_wave),
@@ -575,6 +649,12 @@ def main() -> int:
             "healthConcurrency": concurrency,
             "batchSize": batch_size,
             "maxWaves": waves,
+            "timeBudgetSeconds": time_budget_seconds,
+            "elapsedSeconds": round(time.monotonic() - started_monotonic, 3),
+            "timeBudgetExhausted": time_budget_exhausted,
+            "resumeRecommended": bool(time_budget_exhausted and remaining),
+            "processedProviders": sorted(processed_providers),
+            "processedProviderCount": len(processed_providers),
             "selectedProviderCount": len(selected),
             "selectedProviders": selected,
             "initialStatuses": {
@@ -605,7 +685,9 @@ def main() -> int:
             "FIELD_PROVIDER_BRAIN_REPAIR "
             f"selected={len(selected)} accepted={len(all_accepted)} "
             f"fixed_lab={len(all_fixed)} deferred_learning={len(all_deferred)} "
-            f"remaining={len(remaining)} waves={len(wave_reports)}"
+            f"remaining={len(remaining)} waves={len(wave_reports)} "
+            f"time_budget_exhausted={str(time_budget_exhausted).lower()} "
+            f"processed={len(processed_providers)}"
         )
         return 0
     finally:
