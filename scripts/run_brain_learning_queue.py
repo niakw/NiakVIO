@@ -228,7 +228,7 @@ def exhausted_repair_providers(memory: dict[str, Any], policy: dict[str, Any]) -
     """Providers whose current Repair experiment family needs a new strategy."""
     production = policy.get("production") if isinstance(policy.get("production"), dict) else {}
     negative = production.get("negativeExperimentMemory") if isinstance(production.get("negativeExperimentMemory"), dict) else {}
-    max_variants = max(1, int(negative.get("maxVariantsPerSignature") or 4))
+    max_variants = max(1, int(negative.get("maxVariantsPerSignature") or 5))
     rotate_every = max(1, int(negative.get("rotateExperimentAfterFailures") or 1))
     groups: dict[tuple[str, str, str, str], set[int]] = {}
     for row in memory.get("entries") or []:
