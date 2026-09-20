@@ -5,10 +5,14 @@ import { BRAIN_CONTROL_PLANE_VERSION, classifyFailure, planRepair } from "../src
 import { evidenceSignature } from "../src/recipe-memory.mjs";
 
 let input;
+let rawInput = "";
 try {
-  input = JSON.parse(fs.readFileSync(0, "utf8") || "{}");
-} catch (_error) {
-  process.stderr.write("brain_planner_input_invalid\n");
+  const inputFile = String(process.env.NUVIO_BRAIN_PLANNER_INPUT_FILE || "").trim();
+  rawInput = inputFile ? fs.readFileSync(inputFile, "utf8") : fs.readFileSync(0, "utf8");
+  input = JSON.parse(rawInput || "{}");
+} catch (error) {
+  const reason = String(error?.name || "Error").replace(/[^A-Za-z0-9_.-]/g, "").slice(0, 48);
+  process.stderr.write(`brain_planner_input_invalid bytes=${Buffer.byteLength(rawInput || "", "utf8")} reason=${reason}\n`);
   process.exit(2);
 }
 
