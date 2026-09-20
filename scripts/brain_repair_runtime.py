@@ -247,6 +247,7 @@ def planner_negative_memory(_mode: str) -> list[dict[str, Any]]:
             "signature": _clip_text(raw.get("signature"), 96),
             "profile": _clip_text(raw.get("profile"), 96),
             "experimentVariant": max(0, int(raw.get("experimentVariant") or 0)),
+            "experimentGeneration": max(1, int(raw.get("experimentGeneration") or 1)),
             "capabilityStrategy": _clip_text(raw.get("capabilityStrategy"), 96).casefold(),
             "observedPipelineStage": _clip_text(raw.get("observedPipelineStage"), 64).casefold(),
             "failures": max(0, int(raw.get("failures") or 0)),
@@ -499,6 +500,7 @@ def wrap_create_repair_candidate(base_create: Callable[..., tuple[dict[str, Any]
             "failureClass": str(plan.get("failureClass") or ""),
             "signature": str(plan.get("signature") or ""),
             "experimentVariant": max(0, int(plan.get("experimentVariant") or 0)),
+            "experimentGeneration": max(1, int(plan.get("experimentGeneration") or 1)),
             "negativeMemoryMatches": max(0, int(plan.get("negativeMemoryMatches") or 0)),
             "observedPipelineStage": str(plan.get("observedPipelineStage") or ""),
             "censusStatus": str(plan.get("censusStatus") or ""),
@@ -558,6 +560,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                 and str(row.get("signature") or "") == signature
                 and str(row.get("profile") or "") == profile
                 and int(row.get("experimentVariant") or 0) == max(0, int(plan.get("experimentVariant") or 0))
+                and max(1, int(row.get("experimentGeneration") or 1)) == max(1, int(plan.get("experimentGeneration") or 1))
             ):
                 return row
         row = {
@@ -567,6 +570,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             "signature": signature,
             "profile": profile,
             "experimentVariant": max(0, int(plan.get("experimentVariant") or 0)),
+            "experimentGeneration": max(1, int(plan.get("experimentGeneration") or 1)),
             "capabilityStrategy": str(plan.get("capabilityStrategy") or "").casefold(),
             "observedPipelineStage": str(plan.get("observedPipelineStage") or "").casefold(),
             "failures": 0,
@@ -784,6 +788,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     str(row.get("signature") or ""),
                     str(row.get("profile") or ""),
                     int(row.get("experimentVariant") or 0),
+                    max(1, int(row.get("experimentGeneration") or 1)),
                 ),
             )[:max_memory_entries]
             REPAIR_MEMORY_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -799,6 +804,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             "repairType": row.get("repairType"),
             "learningDisposition": row.get("learningDisposition"),
             "experimentVariant": row.get("experimentVariant"),
+            "experimentGeneration": row.get("experimentGeneration"),
             "experimentVariantCount": row.get("experimentVariantCount"),
             "experimentExhausted": row.get("experimentExhausted") is True,
             "negativeMemoryMatches": row.get("negativeMemoryMatches"),
