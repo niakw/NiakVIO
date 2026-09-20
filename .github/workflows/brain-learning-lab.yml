@@ -137,6 +137,7 @@ jobs:
           python tests/native_reader_ownership_policy_test.py
           python tests/provider_clean_reconstruction_contract_test.py
           python tests/provider_clean_worker_smoke_test.py
+          python tests/learning_health_baseline_test.py
           python -m py_compile \
             scripts/run_brain_learning_sandbox.py \
             scripts/run_brain_learning_queue.py \
@@ -263,6 +264,16 @@ jobs:
           node scripts/health_check.mjs --deep
           test -s brain-sandbox/full-health/health-results.json
           cp brain-sandbox/full-health/health-results.json brain-sandbox/health-output/health-results.json
+
+      - name: Reject common runtime collapse before provider Learning
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_learning_health_baseline.py \
+            --catalog provider_catalog.json \
+            --stage staging/candidates.json \
+            --health brain-sandbox/full-health/health-results.json \
+            --output brain-sandbox/learning-runtime-baseline.json
 
       - name: Prove daily published-provider observation coverage
         shell: bash
