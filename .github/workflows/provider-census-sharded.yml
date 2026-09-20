@@ -1,0 +1,143 @@
+name: Provider Census - Sharded
+
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: Provider scope
+        required: true
+        default: unresolved
+        type: choice
+        options:
+          - unresolved
+          - all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-census-sharded-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shard:
+    name: Census shard ${{ matrix.shard + 1 }}/8
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NIAKVIO_QUICK_YIELD_WORKERS: '20'
+      NIAKVIO_QUICK_YIELD_TIMEOUT: '60'
+      NIAKVIO_QUICK_YIELD_MAX_SAMPLES: '8'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Materialize exact current provider bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/reconcile_provider_domain_metadata.py --rebuild
+          python scripts/materialize_provider_base_v3_store.py
+          python scripts/materialize_provider_v3_all.py
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/validate_published_provider_config.py
+
+      - name: Run deterministic provider shard
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p automation
+          python scripts/audit_provider_quick_yield.py \
+            --scope "${{ inputs.scope }}" \
+            --status-file automation/provider-census-status.json \
+            --history automation/provider-census-proof-history.json \
+            --shard-count 8 \
+            --shard-index "${{ matrix.shard }}" \
+            --output "automation/provider-census-shard-${{ matrix.shard }}.json"
+
+      - name: Upload shard
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: provider-census-shard-${{ matrix.shard }}
+          path: automation/provider-census-shard-${{ matrix.shard }}.json
+          retention-days: 8
+          if-no-files-found: error
+
+  merge:
+    name: Merge provider shards
+    needs: shard
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Download all shards
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: provider-census-shard-*
+          path: shards
+          merge-multiple: true
+
+      - name: Merge and classify
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(find shards -maxdepth 1 -type f -name 'provider-census-shard-*.json' | sort -V)
+          if [ "${#files[@]}" -ne 8 ]; then
+            echo "Expected 8 shard reports, found ${#files[@]}" >&2
+            exit 1
+          fi
+          python scripts/merge_provider_census_shards.py "${files[@]}" \
+            --output automation/provider-census-sharded-merged.json
+          python scripts/render_provider_census_status.py automation/provider-census-sharded-merged.json \
+            --output automation/PROVIDER-CENSUS-SHARDED.md \
+            --json-output automation/provider-census-sharded-status.json \
+            --history automation/provider-census-proof-history.json \
+            --baseline-status automation/provider-census-status.json \
+            --run-id "${GITHUB_RUN_ID}" \
+            --sha "${GITHUB_SHA}"
+          python scripts/build_provider_repair_batch_plan.py \
+            --status automation/provider-census-sharded-status.json \
+            --overrides provider-overrides.json \
+            --output automation/provider-repair-batch-plan-sharded.json
+
+      - name: Upload merged census
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: provider-census-sharded-merged
+          path: |
+            automation/provider-census-sharded-merged.json
+            automation/provider-census-sharded-status.json
+            automation/provider-repair-batch-plan-sharded.json
+            automation/PROVIDER-CENSUS-SHARDED.md
+          retention-days: 8
+          if-no-files-found: error
