@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 5,
+  "schemaVersion": 6,
   "principle": "NiakVIO validates the source, recognizes the provider and its capability, applies global invariants, applies the capability engine, applies capability-global invariants, then publishes. Learning exists only to evolve this architecture when a case is not covered.",
   "pipeline": [
     {
@@ -34,7 +34,14 @@
   "evidencePolicy": {
     "monotonic": true,
     "rule": "A proven later stage can never be diagnosed as an earlier missing stage. If a player was observed, repair search/player discovery is forbidden; diagnosis must continue at terminal media, playback context, reader, identity, audio, duration or later evidence.",
-    "unknownAfterKnownStage": "learning_must_evolve_current_or_later_core_stage"
+    "unknownAfterKnownStage": "learning_must_evolve_current_or_later_core_stage",
+    "censusPriorRole": "monotonic diagnostic floor only; never success authority",
+    "censusPriorRules": [
+      "ROUTE PROVEN cannot regress to search_gap while route proof remains current",
+      "CHAIN REACHED cannot regress below terminal media extraction",
+      "CANDIDATE OK prioritizes current-byte reproduction of the verified candidate path",
+      "PROVIDER NETWORK BLOCKED prioritizes transport/origin resolution before parser mutation"
+    ]
   },
   "learning": {
     "role": "discover_new_solution_or_evolve_existing_core_type",
@@ -297,6 +304,42 @@
       "engine": "none",
       "pipelineStage": "public_bundle",
       "profiles": []
+    },
+    "route_proven_gap": {
+      "scope": "capability",
+      "repairType": "route_chain_completion",
+      "engine": "catalogue_resolution_policy",
+      "pipelineStage": "capability_engine",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "chain_terminal_gap": {
+      "scope": "capability",
+      "repairType": "terminal_media_resolution",
+      "engine": "media_enrichment_policy",
+      "pipelineStage": "capability_engine",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "candidate_replay_gap": {
+      "scope": "capability",
+      "repairType": "candidate_runtime_replay",
+      "engine": "provider_capability_adapter",
+      "pipelineStage": "capability_engine",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "provider_transport_gap": {
+      "scope": "capability",
+      "repairType": "provider_transport_resolution",
+      "engine": "provider_transport_context",
+      "pipelineStage": "capability_engine",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
     }
   },
   "capabilityStrategies": {
