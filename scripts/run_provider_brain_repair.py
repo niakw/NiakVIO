@@ -332,7 +332,7 @@ def materialize() -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--provider", action="append", default=[], help="Optional provider id; repeatable. Empty = current census repairQueue only.")
-    parser.add_argument("--waves", type=int, default=4)
+    parser.add_argument("--waves", type=int, default=5)
     parser.add_argument("--batch-size", type=int, default=48)
     parser.add_argument("--health-concurrency", type=int, default=0, help="0 = auto (6/8 depending on target count)")
     parser.add_argument("--include-environment", action="store_true", help="Include harness/environment-blocked cases in diagnostic staging; provider-code mutation still requires implementation evidence.")
