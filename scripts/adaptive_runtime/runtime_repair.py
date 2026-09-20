@@ -227,6 +227,7 @@ def _safe_request_recipe(raw: Any, *, peer: bool = False) -> dict[str, Any] | No
         "semanticType": str(raw.get("semanticType") or "").casefold(),
         "streamProof": raw.get("streamProof") is True,
         "requiredBindings": referenced_bindings,
+        "executable": True,
         "source": "peer-experience" if peer else "provider-experience",
     }
     if not peer:
