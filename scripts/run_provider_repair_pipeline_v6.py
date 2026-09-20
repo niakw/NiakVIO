@@ -20,6 +20,7 @@ TARGET_REPORT = ROOT / "automation" / "provider-route-recovery-v6-targeted.json"
 MERGED_REPORT = ROOT / "automation" / "provider-route-recovery-v6.json"
 YIELD_REPORT = ROOT / "automation" / "provider-repair-yield-v6.json"
 SUMMARY = ROOT / "automation" / "provider-repair-v6-summary.json"
+BRAIN_REPAIR = ROOT / "automation" / "provider-brain-repair-latest.json"
 QUICK_YIELD = ROOT / "provider-v3-quick-yield.json"
 PORTFOLIO_BASELINE = ROOT / "automation" / "provider-repair-portfolio-baseline.json"
 PORTFOLIO_CANDIDATE = ROOT / "automation" / "provider-repair-portfolio-candidate.json"
@@ -327,6 +328,28 @@ def main() -> int:
     ):
         run(sys.executable, test)
 
+    # Intelligent repair is one portfolio operation, not provider-by-provider
+    # maintenance. The Brain stages all unresolved targets, tests reusable
+    # hypotheses in bounded batches, learns from strict wins, rematerializes, and
+    # lets later waves transfer trusted skills to compatible remaining providers.
+    BRAIN_REPAIR.unlink(missing_ok=True)
+    if args.mode in {"repair", "force"}:
+        brain_cmd = [
+            sys.executable,
+            "scripts/run_provider_brain_repair.py",
+            "--waves", "3",
+            "--batch-size", "48",
+            "--output", str(BRAIN_REPAIR.relative_to(ROOT)),
+        ]
+        for provider in targets:
+            brain_cmd.extend(["--provider", provider])
+        run(
+            *brain_cmd,
+            timeout=max(2400, len(targets) * max(90, args.timeout) * 2),
+        )
+        if not BRAIN_REPAIR.exists():
+            raise RuntimeError("Brain Repair did not produce its portfolio report")
+
     candidate_portfolio = capture_portfolio_yield(PORTFOLIO_CANDIDATE)
 
     # Activation finalization is deliberately after the real candidate census.
@@ -404,6 +427,7 @@ def main() -> int:
         "targetedProviders": targets,
         "maxAttemptsPerTask": attempts,
         "routePlanRevision": "v21.12",
+        "brainRepair": load(BRAIN_REPAIR) if BRAIN_REPAIR.exists() else None,
         "targetedProvidersWithProvenRoutes": int(targeted_report.get("providersWithProvenRoutes") or 0),
         "targetedProvenRoutes": int(targeted_report.get("provenRouteCount") or 0),
         "mergedProvidersWithProvenRoutes": int(merged_report.get("providersWithProvenRoutes") or 0),
