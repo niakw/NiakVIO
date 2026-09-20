@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PLAN_SCRIPT = ROOT / "engine_v2" / "scripts" / "plan-repairs.mjs"
 POLICY_PATH = ROOT / "engine_v2" / "config" / "brain-policy.json"
 OVERRIDES_PATH = ROOT / "provider-overrides.json"
+CENSUS_STATUS_PATH = ROOT / "automation" / "provider-census-status.json"
 
 PLANS: dict[str, dict[str, Any]] = {}
 RUNTIME_STATE: dict[str, dict[str, Any]] = {}
@@ -62,6 +63,30 @@ def _clip_text(value: Any, limit: int = 600) -> str:
     return text[:limit]
 
 
+def _census_prior(provider_id: str) -> dict[str, Any]:
+    status = _load_json(CENSUS_STATUS_PATH, {})
+    wanted = str(provider_id or "").strip().casefold()
+    if not wanted or not isinstance(status, dict):
+        return {}
+    for row in status.get("providers") or []:
+        if not isinstance(row, dict):
+            continue
+        if str(row.get("provider") or "").strip().casefold() != wanted:
+            continue
+        return {
+            "status": _clip_text(row.get("status"), 80),
+            "dominantIssue": _clip_text(row.get("dominantIssue"), 240),
+            "evidenceDepth": [_clip_text(value, 120) for value in (row.get("evidenceDepth") or [])[:8]],
+            "latestLaneVerdicts": [_clip_text(value, 180) for value in (row.get("latestLaneVerdicts") or [])[:8]],
+            "routeProof": [_clip_text(value, 180) for value in (row.get("routeProof") or [])[:8]],
+            "candidateProof": [_clip_text(value, 180) for value in (row.get("candidateProof") or [])[:8]],
+            "currentVerifiedLanes": [_clip_text(value, 48) for value in (row.get("currentVerifiedLanes") or [])[:8]],
+            "repairEligible": row.get("repairEligible") is True,
+            "knowledgeRole": "monotonic-diagnostic-prior-only",
+        }
+    return {}
+
+
 def _planner_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
     metadata = candidate.get("metadata") if isinstance(candidate.get("metadata"), dict) else {}
     supported = metadata.get("supportedTypes")
@@ -94,6 +119,7 @@ def _planner_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
         "clean_reconstruction_mode": candidate.get("clean_reconstruction_mode") is True,
         "candidate_code_origin": _clip_text(candidate.get("candidate_code_origin"), 120),
         "clean_provider_model": model,
+        "censusPrior": _census_prior(str(candidate.get("canonical_id") or candidate.get("upstream_id") or "")),
         "upstream_code_role": "knowledge-only",
         "upstream_code_executed": False,
     }
