@@ -98,6 +98,7 @@ jobs:
           set -euo pipefail
           python -m py_compile scripts/add_provider.py scripts/stage_provider_batch.py scripts/audit_provider_quick_yield.py scripts/merge_provider_census_shards.py
           python tests/provider_bulk_onboarding_test.py
+          python tests/provider_bulk_onboarding_workflow_test.py
           python tests/provider_clean_reconstruction_contract_test.py
           python tests/provider_js_lego_ownership_test.py
           python tests/provider_census_new_provider_scope_test.py
