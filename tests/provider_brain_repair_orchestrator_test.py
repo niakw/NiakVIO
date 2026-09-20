@@ -155,6 +155,50 @@ assert plan["experimentExhausted"] is True,plan
 assert plan["repairScope"]=="deferred",plan
 assert plan["exitReason"]=="experiment_variants_exhausted",plan
 
+with tempfile.TemporaryDirectory() as tmp:
+    old_memory,old_policy=mod.REPAIR_MEMORY,mod.BRAIN_POLICY
+    try:
+        mod.REPAIR_MEMORY=Path(tmp)/"memory.json"
+        mod.BRAIN_POLICY=Path(tmp)/"policy.json"
+        mod.BRAIN_POLICY.write_text(json.dumps({
+            "production":{
+                "negativeExperimentMemory":{
+                    "rotateExperimentAfterFailures":1,
+                    "maxVariantsPerSignature":4,
+                }
+            }
+        }),encoding="utf-8")
+        mod.REPAIR_MEMORY.write_text(json.dumps({
+            "entries":[
+                {
+                    "providerId":"a",
+                    "failureClass":"route_proven_gap",
+                    "signature":"sig",
+                    "profile":"adaptive_runtime_recovery",
+                    "experimentVariant":variant,
+                    "failures":1,
+                    "consecutiveFailures":1,
+                    "successes":0,
+                }
+                for variant in range(4)
+            ]
+        }),encoding="utf-8")
+        just_exhausted={
+            "plans":{
+                "published:a":{
+                    "providerId":"a",
+                    "failureClass":"route_proven_gap",
+                    "signature":"sig",
+                    "experimentVariantCount":4,
+                    "experimentExhausted":False,
+                    "allowedProfiles":["adaptive_runtime_recovery"],
+                }
+            }
+        }
+        assert mod.exhausted_from_negative_memory(just_exhausted)=={"a"}
+    finally:
+        mod.REPAIR_MEMORY,mod.BRAIN_POLICY=old_memory,old_policy
+
 source=SCRIPT.read_text(encoding="utf-8")
 for required in (
     "run_adaptive_deep_repair.py",
