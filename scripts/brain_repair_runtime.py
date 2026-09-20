@@ -634,6 +634,40 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     mem["lastOutcome"] = "accepted"
                 accepted_count += 1
 
+        # A planner-selected profile can also be structurally unavailable on
+        # the current bytes: matching_profiles() then yields no attempt at all.
+        # That is still a bounded failed experiment, not "no evidence". Record
+        # the missing planned profile so the next wave rotates instead of
+        # pinning Showbox/Yflix-style cases to variant 0 forever.
+        if memory_policy.get("enabled") is True:
+            attempted_profiles_by_parent: dict[str, set[str]] = {}
+            for round_row in report.get("rounds") or []:
+                for attempt in round_row.get("attempts") or []:
+                    if not isinstance(attempt, dict):
+                        continue
+                    parent_key = str(attempt.get("parent_key") or "")
+                    profile = str(attempt.get("profile") or "")
+                    if parent_key and profile:
+                        attempted_profiles_by_parent.setdefault(parent_key, set()).add(profile)
+            for parent_key, plan in PLANS.items():
+                if not isinstance(plan, dict):
+                    continue
+                if str(plan.get("action") or "") != "probe-targeted-repair":
+                    continue
+                attempted = attempted_profiles_by_parent.get(str(parent_key), set())
+                for profile in {
+                    str(value) for value in plan.get("allowedProfiles") or []
+                    if str(value).strip()
+                }:
+                    if profile in attempted:
+                        continue
+                    mem = memory_entry(plan, profile)
+                    mem["failures"] = int(mem.get("failures") or 0) + 1
+                    mem["consecutiveFailures"] = int(mem.get("consecutiveFailures") or 0) + 1
+                    mem["lastOutcome"] = "profile_unavailable"
+                    mem["lastReason"] = "planned_profile_not_applicable_to_current_bytes"
+                    negative_experiment_events += 1
+
         # Candidate-generation failures are real negative experiments too.
         # If matching selected a repair profile but create_repair_candidate()
         # could not produce executable bytes, record that bounded hypothesis as
