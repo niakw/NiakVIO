@@ -362,6 +362,61 @@ def _provider_metadata(candidate: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 
+def _experiment_role_preferences(
+    census_focus: dict[str, Any],
+    failure_class: str,
+    variant: int,
+) -> list[str]:
+    """Choose a materially different exploration order for each failure family."""
+    failure = str(failure_class or "").strip().casefold()
+    variant = max(0, min(int(variant), 3))
+    by_failure = {
+        "provider_transport_gap": [
+            ["api", "detail", "search", "player", "episode", "other"],
+            ["api", "search", "detail", "player", "episode", "other"],
+            ["detail", "api", "player", "search", "episode", "other"],
+            ["search", "detail", "api", "player", "episode", "other"],
+        ],
+        "route_proven_gap": [
+            ["detail", "episode", "player", "api", "other"],
+            ["player", "detail", "episode", "api", "other"],
+            ["api", "player", "detail", "episode", "other"],
+            ["episode", "detail", "player", "api", "other"],
+        ],
+        "chain_terminal_gap": [
+            ["player", "api", "episode", "detail", "other"],
+            ["api", "player", "episode", "detail", "other"],
+            ["player", "episode", "api", "detail", "other"],
+            ["detail", "player", "api", "episode", "other"],
+        ],
+        "candidate_replay_gap": [
+            ["player", "api", "detail", "episode", "other"],
+            ["api", "player", "detail", "episode", "other"],
+            ["detail", "player", "api", "episode", "other"],
+            ["episode", "detail", "player", "api", "other"],
+        ],
+    }
+    if failure in by_failure:
+        return list(by_failure[failure][variant])
+    default = list(census_focus.get("direct_role_order") or [])
+    fallbacks = [
+        default,
+        ["player", "api", "episode", "detail", "other"],
+        ["api", "player", "detail", "episode", "other"],
+        ["detail", "episode", "player", "api", "other"],
+    ]
+    return list(fallbacks[variant] or fallbacks[1])
+
+
+def _peer_route_min_variant(failure_class: str) -> int:
+    failure = str(failure_class or "").strip().casefold()
+    if failure == "candidate_replay_gap":
+        return 3
+    if failure == "provider_transport_gap":
+        return 2
+    return 1
+
+
 def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any]) -> dict[str, Any] | None:
     provider_id = str(candidate.get("canonical_id") or candidate.get("upstream_id") or "").casefold()
     if not provider_id:
@@ -433,7 +488,8 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     brain_plan = candidate.get("brain_repair_plan") if isinstance(candidate.get("brain_repair_plan"), dict) else {}
     experiment_variant = max(0, min(int(brain_plan.get("experimentVariant") or 0), 3))
     experiment_failure = str(brain_plan.get("failureClass") or "").strip()
-    peer_routes = _peer_routes(strategy)
+    peer_route_min_variant = _peer_route_min_variant(experiment_failure)
+    peer_routes = _peer_routes(strategy) if experiment_variant >= peer_route_min_variant else []
     provider_request_recipes = _provider_request_recipes(provider_id)
     peer_request_recipes = _peer_request_recipes(strategy)
     request_recipes = _unique_request_recipes(
@@ -468,13 +524,11 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         ])
     search_paths = _unique_routes(configured_search, learned_search, peer_search, generic_search, limit=24)
     direct_paths = _unique_routes(configured_direct, learned_direct, peer_direct, generic_direct, limit=32)
-    role_preferences = list(census_focus.get("direct_role_order") or [])
-    if experiment_variant == 1:
-        role_preferences = ["player", "api", "episode", "detail", "other"]
-    elif experiment_variant == 2:
-        role_preferences = ["api", "player", "detail", "episode", "other"]
-    elif experiment_variant == 3:
-        role_preferences = ["detail", "episode", "player", "api", "other"]
+    role_preferences = _experiment_role_preferences(
+        census_focus,
+        experiment_failure,
+        experiment_variant,
+    )
     role_order = {role: index for index, role in enumerate(role_preferences)}
     if role_order:
         direct_paths = sorted(
@@ -534,6 +588,16 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         "census_status": census_focus.get("status") or "",
         "experiment_variant": experiment_variant,
         "experiment_failure_class": experiment_failure,
+        "experiment_strategy": (
+            "owned-evidence"
+            if experiment_variant == 0
+            else "route-shape-transfer"
+            if experiment_variant == 1
+            else "request-recipe-transfer"
+            if experiment_variant == 2
+            else "expanded-discovery"
+        ),
+        "peer_route_min_variant": peer_route_min_variant,
         "negative_memory_matches": max(0, int(brain_plan.get("negativeMemoryMatches") or 0)),
         "max_pages": max(
             int(census_focus.get("max_pages") or 10),
