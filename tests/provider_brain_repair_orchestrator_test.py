@@ -30,16 +30,16 @@ assert mod.chunks(["a","b","c","d","e"],2)==[["a","b"],["c","d"],["e"]]
 
 
 assert mod.experiment_rotation_decision(
-    accepted_count=0, remaining_count=3, wave=1, max_waves=4, memory_advanced=True
+    accepted_count=0, remaining_count=3, wave=1, max_waves=5, memory_advanced=True
 )=="rotate"
 assert mod.experiment_rotation_decision(
-    accepted_count=0, remaining_count=3, wave=4, max_waves=4, memory_advanced=True
+    accepted_count=0, remaining_count=3, wave=5, max_waves=5, memory_advanced=True
 )=="exhausted"
 assert mod.experiment_rotation_decision(
-    accepted_count=0, remaining_count=3, wave=1, max_waves=4, memory_advanced=False
+    accepted_count=0, remaining_count=3, wave=1, max_waves=5, memory_advanced=False
 )=="stalled"
 assert mod.experiment_rotation_decision(
-    accepted_count=1, remaining_count=3, wave=1, max_waves=4, memory_advanced=True
+    accepted_count=1, remaining_count=3, wave=1, max_waves=5, memory_advanced=True
 )=="materialize"
 
 with tempfile.TemporaryDirectory() as tmp:
@@ -140,8 +140,8 @@ brain_summary=mod.sanitized_brain({
                 "repairScope":"deferred",
                 "repairType":"experiment_strategy_exhausted",
                 "learningDisposition":"queue_new_strategy_after_variant_exhaustion",
-                "experimentVariant":3,
-                "experimentVariantCount":4,
+                "experimentVariant":4,
+                "experimentVariantCount":5,
                 "experimentExhausted":True,
                 "negativeMemoryMatches":4,
                 "allowedProfiles":[],
@@ -164,7 +164,7 @@ with tempfile.TemporaryDirectory() as tmp:
             "production":{
                 "negativeExperimentMemory":{
                     "rotateExperimentAfterFailures":1,
-                    "maxVariantsPerSignature":4,
+                    "maxVariantsPerSignature":5,
                 }
             }
         }),encoding="utf-8")
@@ -180,7 +180,7 @@ with tempfile.TemporaryDirectory() as tmp:
                     "consecutiveFailures":1,
                     "successes":0,
                 }
-                for variant in range(4)
+                for variant in range(5)
             ]
         }),encoding="utf-8")
         just_exhausted={
@@ -189,7 +189,7 @@ with tempfile.TemporaryDirectory() as tmp:
                     "providerId":"a",
                     "failureClass":"route_proven_gap",
                     "signature":"sig",
-                    "experimentVariantCount":4,
+                    "experimentVariantCount":5,
                     "experimentExhausted":False,
                     "allowedProfiles":["adaptive_runtime_recovery"],
                 }
