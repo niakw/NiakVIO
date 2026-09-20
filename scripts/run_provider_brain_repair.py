@@ -27,6 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 STATUS = ROOT / "automation" / "provider-census-status.json"
 DEFAULT_OUTPUT = ROOT / "automation" / "provider-brain-repair-latest.json"
 DEFAULT_WORK = ROOT / "automation" / ".provider-brain-repair-work"
+EXPERIENCE = ROOT / "automation" / "brain-repair-experience.json"
 
 GREEN = {"FULL OK", "PARTIAL OK"}
 ENVIRONMENT = {"PROVIDER WAF/ANTIBOT"}
@@ -213,6 +214,16 @@ def main() -> int:
     waves = max(1, min(int(args.waves), 6))
     batch_size = max(4, min(int(args.batch_size), 96))
 
+    # Rebuild structural prior memory from the exact current repo/census before
+    # selecting experiments. This memory never grants acceptance authority; it
+    # only supplies route/strategy priors to the adaptive sandbox.
+    run(
+        sys.executable,
+        "scripts/build_brain_repair_experience.py",
+        "--output", str(EXPERIENCE),
+    )
+    experience = load(EXPERIENCE, {})
+
     selected, skipped_environment, rows = select_targets(
         args.provider,
         include_environment=args.include_environment,
@@ -228,6 +239,11 @@ def main() -> int:
             "waves": [],
             "remainingProviders": [],
             "message": "no repairable providers selected",
+            "experienceMemory": {
+                "providerCount": int(experience.get("providerCount") or 0),
+                "operationalProviderCount": int(experience.get("operationalProviderCount") or 0),
+                "strategyCount": len(experience.get("strategyPatterns") or {}),
+            },
         }
         write(args.output if args.output.is_absolute() else ROOT / args.output, payload)
         print("FIELD_PROVIDER_BRAIN_REPAIR_EMPTY")
@@ -323,6 +339,14 @@ def main() -> int:
             "executionModel": "multi-wave-brain-repair",
             "providerSpecificRules": False,
             "sourceCensusRunId": load(STATUS, {}).get("runId"),
+            "experienceMemory": {
+                "schemaVersion": experience.get("schemaVersion"),
+                "sourceRunId": experience.get("sourceRunId"),
+                "sourceSha": experience.get("sourceSha"),
+                "providerCount": int(experience.get("providerCount") or 0),
+                "operationalProviderCount": int(experience.get("operationalProviderCount") or 0),
+                "strategyCount": len(experience.get("strategyPatterns") or {}),
+            },
             "shardCount": shard_count,
             "shardIndex": shard_index,
             "healthConcurrency": concurrency,
@@ -348,6 +372,7 @@ def main() -> int:
                 "identityGateRequired": True,
                 "currentByteRetestRequired": True,
                 "wafEnvironmentExcludedByDefault": True,
+                "experienceMemoryRole": "prior-only-no-acceptance-authority",
             },
         }
         output_path = args.output if args.output.is_absolute() else ROOT / args.output
