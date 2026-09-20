@@ -606,6 +606,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             else "expanded-discovery"
         ),
         "peer_route_min_variant": peer_route_min_variant,
+        "peer_recipe_min_variant": peer_recipe_min_variant,
         "negative_memory_matches": max(0, int(brain_plan.get("negativeMemoryMatches") or 0)),
         "max_pages": max(
             int(census_focus.get("max_pages") or 10),
