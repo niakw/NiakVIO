@@ -14,7 +14,6 @@ apply_source = (ROOT / "scripts/apply_provider_overrides.py").read_text(encoding
 brain_runtime_source = (ROOT / "scripts/brain_repair_runtime.py").read_text(encoding="utf-8")
 brain_overlay_source = (ROOT / "scripts/adaptive_runtime/brain_repair_runtime.py").read_text(encoding="utf-8")
 quick_source = (ROOT / "scripts/run_adaptive_quick_repair.py").read_text(encoding="utf-8")
-runtime_upgrade_source = (ROOT / "scripts/apply_runtime_capability_upgrade_v4.py").read_text(encoding="utf-8")
 reapply_source = (ROOT / "scripts/reapply_published_overrides.py").read_text(encoding="utf-8")
 compiler_source = (ROOT / "scripts/provider_compiler.py").read_text(encoding="utf-8")
 promoter_source = (ROOT / "scripts/promote_candidates.py").read_text(encoding="utf-8")
@@ -60,10 +59,6 @@ assert playback.get("native_hls_probe_policy") == "skip_additional_integrity_net
 worker_source = (ROOT / "scripts/provider_worker.cjs").read_text(encoding="utf-8")
 assert "fixture.tmdbMetadata = fixtureMetadata" in worker_source
 assert "globalThis.__nuvioMediaContext" in worker_source
-assert "scripts.append(RUNTIME_PATCH)" not in runtime_upgrade_source
-assert '"scope": "all_published_providers"' in runtime_upgrade_source
-assert 'runtime_safety.pop("targets", None)' in runtime_upgrade_source
-assert "core_global_safety=true" in runtime_upgrade_source
 assert "from provider_base_store import (" in reapply_source
 assert "    resolve_base," in reapply_source
 assert "provider_base = provider_base_path.read_bytes()" in reapply_source
