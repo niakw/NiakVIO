@@ -362,7 +362,13 @@ def route_search(provider_id: str, run_dir: Path, deadline: float) -> dict[str, 
     }
 
 def refresh_stage_routes(stage: Path, deadline: float) -> None:
+    # Route discovery can rotate a provider terminal. Reconcile provider-owned
+    # metadata/config bytes before reapplying runtime profiles, exactly as the
+    # canonical Domain Refresh lane does. This keeps old-host -> terminal mappings
+    # and generated provider CONFIG in one transaction instead of validating an
+    # intermediate split-brain state.
     for cmd in (
+        [sys.executable, str(SCRIPTS / "reconcile_provider_domain_metadata.py"), "--rebuild"],
         [sys.executable, str(SCRIPTS / "build_provider_runtime_profiles.py"), "--stage", str(stage), "--apply-stage"],
         [sys.executable, str(SCRIPTS / "normalize_terminal_quarantine_stage.py"), "--stage", str(stage)],
         [sys.executable, str(SCRIPTS / "validate_override_pipeline.py"), "--stage", str(stage)],
