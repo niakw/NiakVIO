@@ -3161,3 +3161,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The Brain packed decoder itself matches the mature ProviderBase V18.6 algorithm and decodes the fixture structurally without eval. The missing behavior was the decoded-payload -> media-URL handoff in the full adaptive resolver.
 - `runtime_recovery_generator.py::urls()` now performs a bounded scan (max 48 matches) of the structurally decoded packed payload for absolute direct-media URLs before the ordinary player extractors. It still rejects blocked/decoy URLs and requires media-path evidence; no remote code is executed.
 - Existing end-to-end historical-player contract remains the authority: the generated wrapper must return the real packed HLS, not the player page.
+
+### 2026-09-21 — Packed-player regex escaping corrected
+- Repair #106 (`35544951242`, SHA `b1459729cb9a...`) remained preflight-only. The wrapper/terminal-source contract passed, but the packed-player execution still returned the original player URL.
+- Comparing the transferred Brain extractor with mature ProviderBase V18.6 exposed a source-generation divergence: the adaptive wrapper is itself stored in a Python raw string, yet parts of the transferred regex were escaped as if another string layer still existed. The generated JavaScript therefore contained a literal `\\s` in the packed `.split('|')` guard and URL whitespace classes instead of the intended regex whitespace token `\s`.
+- Corrected the packed `.split('|')` guard and both remaining URL character classes at the generator source. This is a transfer/escaping bug, not a provider-specific parser change.
+- The existing end-to-end historical player contract remains authoritative; next Repair must prove packed/base64/XOR extraction before provider probing.
