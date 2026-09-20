@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import copy
 import json
 import math
 import re
@@ -14,6 +15,7 @@ PLAN_SCRIPT = ROOT / "engine_v2" / "scripts" / "plan-repairs.mjs"
 POLICY_PATH = ROOT / "engine_v2" / "config" / "brain-policy.json"
 OVERRIDES_PATH = ROOT / "provider-overrides.json"
 CENSUS_STATUS_PATH = ROOT / "automation" / "provider-census-status.json"
+REPAIR_MEMORY_PATH = ROOT / "automation" / "brain-repair-memory.json"
 
 PLANS: dict[str, dict[str, Any]] = {}
 RUNTIME_STATE: dict[str, dict[str, Any]] = {}
@@ -222,6 +224,37 @@ def planner_learned_skills(mode: str) -> dict[str, Any]:
     return out
 
 
+def repair_memory() -> dict[str, Any]:
+    value = _load_json(REPAIR_MEMORY_PATH, {})
+    if not isinstance(value, dict):
+        value = {}
+    entries = value.get("entries")
+    if not isinstance(entries, list):
+        entries = []
+    return {
+        "schemaVersion": max(1, int(value.get("schemaVersion") or 1)),
+        "entries": [row for row in entries if isinstance(row, dict)][:1000],
+    }
+
+
+def planner_negative_memory(_mode: str) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for raw in repair_memory().get("entries") or []:
+        rows.append({
+            "providerId": _clip_text(raw.get("providerId"), 160).casefold(),
+            "providerVersion": _clip_text(raw.get("providerVersion") or "*", 64),
+            "failureClass": _clip_text(raw.get("failureClass"), 96),
+            "signature": _clip_text(raw.get("signature"), 96),
+            "profile": _clip_text(raw.get("profile"), 96),
+            "capabilityStrategy": _clip_text(raw.get("capabilityStrategy"), 96).casefold(),
+            "observedPipelineStage": _clip_text(raw.get("observedPipelineStage"), 64).casefold(),
+            "failures": max(0, int(raw.get("failures") or 0)),
+            "consecutiveFailures": max(0, int(raw.get("consecutiveFailures") or 0)),
+            "successes": max(0, int(raw.get("successes") or 0)),
+        })
+    return rows
+
+
 def reset_runtime_state() -> None:
     PLANS.clear()
     RUNTIME_STATE.clear()
@@ -319,6 +352,7 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
         "mode": mode,
         "policy": policy(),
         "learnedSkills": planner_learned_skills(mode),
+        "negativeMemory": planner_negative_memory(mode),
         "items": items,
     }
     planner_input = _strict_json_dumps(payload).encode("ascii")
@@ -431,7 +465,16 @@ def wrap_create_repair_candidate(base_create: Callable[..., tuple[dict[str, Any]
         signature_counts = state.setdefault("signatureCounts", {})
         signature_counts[signature] = int(signature_counts.get(signature) or 0) + 1
 
-        repaired, create_error = base_create(stage, candidate, profile_name, round_number)
+        candidate_for_create = copy.deepcopy(candidate)
+        candidate_for_create["brain_repair_plan"] = {
+            "failureClass": str(plan.get("failureClass") or ""),
+            "signature": str(plan.get("signature") or ""),
+            "experimentVariant": max(0, int(plan.get("experimentVariant") or 0)),
+            "negativeMemoryMatches": max(0, int(plan.get("negativeMemoryMatches") or 0)),
+            "observedPipelineStage": str(plan.get("observedPipelineStage") or ""),
+            "censusStatus": str(plan.get("censusStatus") or ""),
+        }
+        repaired, create_error = base_create(stage, candidate_for_create, profile_name, round_number)
         if not isinstance(repaired, dict):
             return repaired, create_error
 
@@ -469,6 +512,38 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
         skills = {}
         runtime["learned_skills"] = skills
     maturity = current_policy.get("skillMaturity") or {}
+    memory_policy = production.get("negativeExperimentMemory") if isinstance(production.get("negativeExperimentMemory"), dict) else {}
+    memory = repair_memory()
+    memory_entries = memory.setdefault("entries", [])
+    max_memory_entries = max(1, int(memory_policy.get("maxEntries") or 1000))
+
+    def memory_entry(plan: dict[str, Any], profile: str) -> dict[str, Any]:
+        provider_id = str(plan.get("providerId") or "").strip().casefold()
+        signature = str(plan.get("signature") or "").strip()
+        failure_class = str(plan.get("failureClass") or "").strip()
+        for row in memory_entries:
+            if not isinstance(row, dict):
+                continue
+            if (
+                str(row.get("providerId") or "").casefold() == provider_id
+                and str(row.get("signature") or "") == signature
+                and str(row.get("profile") or "") == profile
+            ):
+                return row
+        row = {
+            "providerId": provider_id,
+            "providerVersion": "*",
+            "failureClass": failure_class,
+            "signature": signature,
+            "profile": profile,
+            "capabilityStrategy": str(plan.get("capabilityStrategy") or "").casefold(),
+            "observedPipelineStage": str(plan.get("observedPipelineStage") or "").casefold(),
+            "failures": 0,
+            "consecutiveFailures": 0,
+            "successes": 0,
+        }
+        memory_entries.append(row)
+        return row
 
     accepted_count = 0
     if record_skill_memory:
@@ -548,6 +623,11 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                 skill["maturity"] = "trusted" if trusted else ("candidate" if successes >= int(maturity.get("candidateSuccesses") or 2) else "experimental")
                 skill["autoApply"] = False
                 skill["proposalEligible"] = trusted
+                if memory_policy.get("enabled") is True and profile:
+                    mem = memory_entry(plan, profile)
+                    mem["successes"] = int(mem.get("successes") or 0) + 1
+                    mem["consecutiveFailures"] = 0
+                    mem["lastOutcome"] = "accepted"
                 accepted_count += 1
 
         for round_row in report.get("rounds") or []:
@@ -557,7 +637,24 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                 parent_key = str(rejected.get("parent_key") or "")
                 plan = PLANS.get(parent_key) or {}
                 profile = str(rejected.get("profile") or "")
+                if not profile:
+                    repair_key = str(rejected.get("repair_key") or "")
+                    candidates = [
+                        row for row in round_row.get("attempts") or []
+                        if isinstance(row, dict)
+                        and str(row.get("parent_key") or "") == parent_key
+                        and str(row.get("profile") or "")
+                        and (not repair_key or str(row.get("repair_key") or "") == repair_key)
+                    ]
+                    if candidates:
+                        profile = str(candidates[0].get("profile") or "")
                 failure_class = str(plan.get("failureClass") or "")
+                if memory_policy.get("enabled") is True and profile:
+                    mem = memory_entry(plan, profile)
+                    mem["failures"] = int(mem.get("failures") or 0) + 1
+                    mem["consecutiveFailures"] = int(mem.get("consecutiveFailures") or 0) + 1
+                    mem["lastOutcome"] = "rejected"
+                    mem["lastReason"] = _clip_text(rejected.get("reason"), 160)
                 skill_id = f"{failure_class}:{profile}"
                 skill = skills.get(skill_id)
                 if not isinstance(skill, dict) or not profile:
@@ -589,6 +686,20 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             "coreMutationPolicy": "proposal_only",
         }
         _write_json(OVERRIDES_PATH, config)
+        if memory_policy.get("enabled") is True:
+            memory["schemaVersion"] = 1
+            memory["entries"] = sorted(
+                [row for row in memory_entries if isinstance(row, dict)],
+                key=lambda row: (
+                    -int(row.get("consecutiveFailures") or 0),
+                    -int(row.get("failures") or 0),
+                    str(row.get("providerId") or ""),
+                    str(row.get("signature") or ""),
+                    str(row.get("profile") or ""),
+                ),
+            )[:max_memory_entries]
+            REPAIR_MEMORY_PATH.parent.mkdir(parents=True, exist_ok=True)
+            _write_json(REPAIR_MEMORY_PATH, memory)
 
     sanitized_plans = {
         key: {
@@ -596,6 +707,10 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             "brainVersion": row.get("brainVersion"),
             "signature": row.get("signature"), "action": row.get("action"),
             "exitReason": row.get("exitReason"),
+            "experimentVariant": row.get("experimentVariant"),
+            "negativeMemoryMatches": row.get("negativeMemoryMatches"),
+            "censusStatus": row.get("censusStatus"),
+            "censusPriorApplied": row.get("censusPriorApplied"),
             "hypotheses": [
                 {
                     "id": hyp.get("id"),
