@@ -434,7 +434,8 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
     current_policy = policy()
     production = current_policy.get("production") if isinstance(current_policy.get("production"), dict) else {}
     learn_from_validated_repair = production.get("learningOnValidatedRepair") is True
-    record_skill_memory = learning_mode or learn_from_validated_repair
+    validated_repair_mode = str(mode).casefold() == "deep"
+    record_skill_memory = learning_mode or (learn_from_validated_repair and validated_repair_mode)
     config = _load_json(OVERRIDES_PATH, {}) if record_skill_memory else {}
     runtime = config.setdefault("runtime_repair", {}) if record_skill_memory else {}
     skills = runtime.setdefault("learned_skills", {}) if record_skill_memory else {}
