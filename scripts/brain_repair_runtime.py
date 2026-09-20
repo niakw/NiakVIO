@@ -349,6 +349,7 @@ def _execute_planner(items: list[dict[str, Any]], mode: str) -> dict[str, dict[s
         return PLANS
     payload = {
         "mode": mode,
+        "explorationChain": _exploration_chain_enabled(),
         "policy": policy(),
         "learnedSkills": planner_learned_skills(mode),
         "negativeMemory": planner_negative_memory(mode),
@@ -454,6 +455,29 @@ def wrap_matching_profiles(base_matching: Callable[..., list[str]]) -> Callable[
     return _matching
 
 
+def _exploration_chain_enabled() -> bool:
+    return (
+        str(__import__("os").environ.get("NUVIO_BRAIN_EXPLORATION_CHAIN") or "").strip() == "1"
+        and str(__import__("os").environ.get("NUVIO_BRAIN_PLANNER_MODE") or "").strip().casefold() != "learning"
+    )
+
+
+def _production_budget() -> dict[str, int]:
+    current_policy = policy()
+    production = current_policy.get("production") if isinstance(current_policy.get("production"), dict) else {}
+    selected = production
+    if _exploration_chain_enabled():
+        raw = production.get("explorationChainBudget")
+        if isinstance(raw, dict):
+            selected = {**production, **raw}
+    return {
+        "maxMutationsPerProvider": int(selected.get("maxMutationsPerProvider") or 2),
+        "maxRepeatedSignature": int(selected.get("maxRepeatedSignature") or 2),
+        "maxGeneratedBytesPerProvider": int(selected.get("maxGeneratedBytesPerProvider") or 180000),
+        "maxElapsedMsPerProvider": int(selected.get("maxElapsedMsPerProvider") or 45000),
+    }
+
+
 def _budget_error(candidate: dict[str, Any], plan_key: str, plan: dict[str, Any]) -> str | None:
     state = _public_state(candidate, plan_key)
     current_policy = policy()
@@ -468,16 +492,16 @@ def _budget_error(candidate: dict[str, Any], plan_key: str, plan: dict[str, Any]
                 pass
         return None
 
-    production = current_policy.get("production") if isinstance(current_policy.get("production"), dict) else {}
-    if state["mutationCount"] >= int(production.get("maxMutationsPerProvider") or 2):
+    budget = _production_budget()
+    if state["mutationCount"] >= budget["maxMutationsPerProvider"]:
         return "brain_mutation_budget_exhausted"
     signature = str(plan.get("signature") or "")
     repeats = int((state.get("signatureCounts") or {}).get(signature) or 0) if signature else 0
-    if repeats >= int(production.get("maxRepeatedSignature") or 2):
+    if repeats >= budget["maxRepeatedSignature"]:
         return "brain_repair_loop_detected"
-    if state["generatedBytes"] >= int(production.get("maxGeneratedBytesPerProvider") or 180000):
+    if state["generatedBytes"] >= budget["maxGeneratedBytesPerProvider"]:
         return "brain_generated_code_budget_exhausted"
-    if state["elapsedMs"] >= int(production.get("maxElapsedMsPerProvider") or 45000):
+    if state["elapsedMs"] >= budget["maxElapsedMsPerProvider"]:
         return "brain_time_budget_exhausted"
     return None
 
@@ -556,11 +580,11 @@ def wrap_create_repair_candidate(base_create: Callable[..., tuple[dict[str, Any]
 
         learning_mode = str(__import__("os").environ.get("NUVIO_BRAIN_PLANNER_MODE") or "").strip().casefold() == "learning"
         if not learning_mode:
-            production = policy().get("production") if isinstance(policy().get("production"), dict) else {}
-            if int(state["generatedBytes"]) > int(production.get("maxGeneratedBytesPerProvider") or 180000):
+            budget = _production_budget()
+            if int(state["generatedBytes"]) > budget["maxGeneratedBytesPerProvider"]:
                 _discard_generated_candidate(stage, repaired)
                 return None, "brain_generated_code_budget_exhausted"
-            if _public_state(candidate, plan_key)["elapsedMs"] > int(production.get("maxElapsedMsPerProvider") or 45000):
+            if _public_state(candidate, plan_key)["elapsedMs"] > budget["maxElapsedMsPerProvider"]:
                 _discard_generated_candidate(stage, repaired)
                 return None, "brain_time_budget_exhausted"
         return repaired, create_error
