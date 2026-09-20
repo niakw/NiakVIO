@@ -904,6 +904,31 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         ])
     search_paths = _unique_routes(configured_search, learned_search, peer_search, generic_search, limit=24)
     direct_paths = _unique_routes(configured_direct, learned_direct, peer_direct, generic_direct, limit=32)
+    if experiment_failure == "media_extraction_gap":
+        # Current bytes have already reached a player. From variant 0 onward,
+        # keep exploration at/after that causal frontier: owned search recipes
+        # may still be needed to reacquire a fresh player, but generic catalogue
+        # guesses and TMDB-as-provider-id terminal routes are no longer useful.
+        terminal_owned = [
+            route for route in learned_direct
+            if _route_role(route) in {"player", "api"}
+        ]
+        terminal_configured = [
+            route for route in configured_direct
+            if _route_role(route) in {"player", "api"}
+        ]
+        terminal_peer = [
+            route for route in peer_direct
+            if experiment_variant >= peer_route_min_variant
+            and _route_role(route) in {"player", "api"}
+        ]
+        search_paths = _unique_routes(configured_search, learned_search, limit=12)
+        direct_paths = _unique_routes(
+            terminal_owned,
+            terminal_configured,
+            terminal_peer,
+            limit=24,
+        )
     if experiment_variant == 4:
         terminal_generic = [
             "/player/{id}", "/embed/{id}", "/watch/{slug}",
