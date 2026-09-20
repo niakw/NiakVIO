@@ -33,7 +33,7 @@ policy={
     "production":{
         "negativeExperimentMemory":{
             "rotateExperimentAfterFailures":1,
-            "maxVariantsPerSignature":4,
+            "maxVariantsPerSignature":5,
         },
         "maxHypotheses":3,
         "maxMutationsPerProvider":2,
@@ -85,15 +85,23 @@ assert "adaptive_runtime_recovery" in three["allowedProfiles"],three
 
 four=run([base(0),base(1),base(2),base(3)])
 assert four["failureClass"]=="chain_terminal_gap",four
-assert four["experimentExhausted"] is True,four
-assert four["repairScope"]=="deferred",four
-assert four["repairType"]=="experiment_strategy_exhausted",four
-assert four["repairEngine"]=="independent_learning_queue",four
-assert four["pipelineStage"]=="deferred_learning",four
-assert four["learningDisposition"]=="queue_new_strategy_after_variant_exhaustion",four
-assert four["action"]=="deferred_retry",four
-assert four["exitReason"]=="experiment_variants_exhausted",four
-assert four["hypotheses"]==[],four
-assert four["allowedProfiles"]==[],four
+assert four["experimentVariant"]==4,four
+assert four["experimentExhausted"] is False,four
+assert four["repairScope"]=="capability",four
+assert four["action"]=="probe-targeted-repair",four
+assert "adaptive_runtime_recovery" in four["allowedProfiles"],four
+
+five=run([base(0),base(1),base(2),base(3),base(4)])
+assert five["failureClass"]=="chain_terminal_gap",five
+assert five["experimentExhausted"] is True,five
+assert five["repairScope"]=="deferred",five
+assert five["repairType"]=="experiment_strategy_exhausted",five
+assert five["repairEngine"]=="independent_learning_queue",five
+assert five["pipelineStage"]=="deferred_learning",five
+assert five["learningDisposition"]=="queue_new_strategy_after_variant_exhaustion",five
+assert five["action"]=="deferred_retry",five
+assert five["exitReason"]=="experiment_variants_exhausted",five
+assert five["hypotheses"]==[],five
+assert five["allowedProfiles"]==[],five
 
 print("Brain negative experiment exhaustion contract passed")
