@@ -43,6 +43,9 @@ jobs:
       - name: Validate ordinary-browser diagnostic contract
         run: python tests/provider_waf_browser_session_test.py
 
+      - name: Validate NuvioTV-policy OkHttp diagnostic contract
+        run: python tests/provider_waf_okhttp_profile_test.py
+
       - name: Reprobe persisted WAF lanes with one ordinary ephemeral session
         shell: bash
         run: |
