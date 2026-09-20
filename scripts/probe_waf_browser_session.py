@@ -115,7 +115,14 @@ def classify_dom(dom: str) -> str:
     return "browser_content_reached"
 
 
-def probe_target(target: dict[str, Any], browser: str, *, timeout: int, virtual_time_ms: int) -> dict[str, Any]:
+def probe_target(
+    target: dict[str, Any],
+    browser: str,
+    *,
+    timeout: int,
+    virtual_time_ms: int,
+    attempts: int = 2,
+) -> dict[str, Any]:
     started = time.monotonic()
     base = {
         key: target.get(key)
@@ -125,39 +132,76 @@ def probe_target(target: dict[str, Any], browser: str, *, timeout: int, virtual_
         return {**base, "outcome": "unsupported_method", "durationMs": 0}
     if not browser:
         return {**base, "outcome": "browser_unavailable", "durationMs": 0}
+    attempt_limit = max(1, min(int(attempts), 3))
+    attempt_rows: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix="niakvio-waf-browser-") as profile:
-        cmd = [
-            browser,
-            "--headless=new",
-            "--disable-gpu",
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-background-networking",
-            "--disable-sync",
-            "--no-first-run",
-            "--no-default-browser-check",
-            f"--user-data-dir={profile}",
-            f"--virtual-time-budget={max(1000, virtual_time_ms)}",
-            "--dump-dom",
-            str(target.get("url") or ""),
-        ]
-        try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=max(5, timeout), check=False)
-        except subprocess.TimeoutExpired:
-            return {**base, "outcome": "browser_timeout", "durationMs": round((time.monotonic()-started)*1000)}
-        except Exception as exc:
-            return {**base, "outcome": "browser_error", "error": type(exc).__name__, "durationMs": round((time.monotonic()-started)*1000)}
-    if proc.returncode != 0 and not proc.stdout.strip():
-        return {
-            **base,
-            "outcome": "browser_error",
-            "exitCode": int(proc.returncode),
-            "durationMs": round((time.monotonic()-started)*1000),
-        }
+        for attempt in range(1, attempt_limit + 1):
+            cmd = [
+                browser,
+                "--headless=new",
+                "--disable-gpu",
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-background-networking",
+                "--disable-sync",
+                "--no-first-run",
+                "--no-default-browser-check",
+                f"--user-data-dir={profile}",
+                f"--virtual-time-budget={max(1000, virtual_time_ms)}",
+                "--dump-dom",
+                str(target.get("url") or ""),
+            ]
+            try:
+                proc = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=max(5, timeout),
+                    check=False,
+                )
+            except subprocess.TimeoutExpired:
+                attempt_rows.append({"attempt": attempt, "outcome": "browser_timeout"})
+                continue
+            except Exception as exc:
+                attempt_rows.append({
+                    "attempt": attempt,
+                    "outcome": "browser_error",
+                    "error": type(exc).__name__,
+                })
+                continue
+            if proc.returncode != 0 and not proc.stdout.strip():
+                attempt_rows.append({
+                    "attempt": attempt,
+                    "outcome": "browser_error",
+                    "exitCode": int(proc.returncode),
+                })
+                continue
+            outcome = classify_dom(proc.stdout)
+            attempt_rows.append({
+                "attempt": attempt,
+                "outcome": outcome,
+                "exitCode": int(proc.returncode),
+            })
+            if outcome == "browser_content_reached":
+                break
+
+    outcomes = [str(row.get("outcome") or "") for row in attempt_rows]
+    if "browser_content_reached" in outcomes:
+        final_outcome = "browser_content_reached"
+    elif "browser_challenge_persisted" in outcomes:
+        final_outcome = "browser_challenge_persisted"
+    elif outcomes and all(value == "browser_timeout" for value in outcomes):
+        final_outcome = "browser_timeout"
+    elif "browser_inconclusive" in outcomes:
+        final_outcome = "browser_inconclusive"
+    else:
+        final_outcome = outcomes[-1] if outcomes else "browser_error"
     return {
         **base,
-        "outcome": classify_dom(proc.stdout),
-        "exitCode": int(proc.returncode),
+        "outcome": final_outcome,
+        "attemptCount": len(attempt_rows),
+        "attempts": attempt_rows,
+        "ordinarySessionReused": attempt_limit > 1,
         "durationMs": round((time.monotonic()-started)*1000),
     }
 
@@ -169,6 +213,7 @@ def main() -> int:
     ap.add_argument("--timeout", type=int, default=20)
     ap.add_argument("--virtual-time-ms", type=int, default=7000)
     ap.add_argument("--workers", type=int, default=3)
+    ap.add_argument("--attempts", type=int, default=2)
     ap.add_argument("--max-targets", type=int, default=16)
     args = ap.parse_args()
 
@@ -185,6 +230,7 @@ def main() -> int:
                     browser,
                     timeout=args.timeout,
                     virtual_time_ms=args.virtual_time_ms,
+                    attempts=args.attempts,
                 )
                 for target in targets
             ]
@@ -201,6 +247,7 @@ def main() -> int:
         "browserAvailable": bool(browser),
         "browserExecutable": Path(browser).name if browser else None,
         "targetCount": len(targets),
+        "attemptsPerTarget": max(1, min(int(args.attempts), 3)),
         "counts": dict(sorted(counts.items())),
         "rows": rows,
     }
