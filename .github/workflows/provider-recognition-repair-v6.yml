@@ -187,6 +187,7 @@ jobs:
             automation/provider-repair-v6-summary.json
             automation/provider-brain-repair-latest.json
             automation/brain-repair-experience.json
+            automation/brain-repair-memory.json
             automation/provider-census-status.json
             automation/provider-census-proof-history.json
             automation/provider-census-post-repair.json
@@ -230,6 +231,7 @@ jobs:
           cp PROVIDER_CENSUS_STATUS.md "$tmp/PROVIDER_CENSUS_STATUS.md"
           cp automation/provider-census-status.json "$tmp/provider-census-status.json"
           [ ! -s automation/provider-census-proof-history.json ] || cp automation/provider-census-proof-history.json "$tmp/provider-census-proof-history.json"
+          [ ! -s automation/brain-repair-memory.json ] || cp automation/brain-repair-memory.json "$tmp/brain-repair-memory.json"
           [ ! -s automation/provider-census-post-repair.json ] || cp automation/provider-census-post-repair.json "$tmp/provider-census-post-repair.json"
           [ ! -s automation/provider-repair-batch-plan-latest.json ] || cp automation/provider-repair-batch-plan-latest.json "$tmp/provider-repair-batch-plan-latest.json"
 
@@ -251,6 +253,7 @@ jobs:
           cp "$tmp/PROVIDER_CENSUS_STATUS.md" PROVIDER_CENSUS_STATUS.md
           cp "$tmp/provider-census-status.json" automation/provider-census-status.json
           [ ! -f "$tmp/provider-census-proof-history.json" ] || cp "$tmp/provider-census-proof-history.json" automation/provider-census-proof-history.json
+          [ ! -f "$tmp/brain-repair-memory.json" ] || cp "$tmp/brain-repair-memory.json" automation/brain-repair-memory.json
           [ ! -f "$tmp/provider-census-post-repair.json" ] || cp "$tmp/provider-census-post-repair.json" automation/provider-census-post-repair.json
           [ ! -f "$tmp/provider-repair-batch-plan-latest.json" ] || cp "$tmp/provider-repair-batch-plan-latest.json" automation/provider-repair-batch-plan-latest.json
 
@@ -258,6 +261,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add PROVIDER_CENSUS_STATUS.md automation/provider-census-status.json
           [ ! -f automation/provider-census-proof-history.json ] || git add automation/provider-census-proof-history.json
+          [ ! -f automation/brain-repair-memory.json ] || git add automation/brain-repair-memory.json
           [ ! -f automation/provider-census-post-repair.json ] || git add automation/provider-census-post-repair.json
           [ ! -f automation/provider-repair-batch-plan-latest.json ] || git add automation/provider-repair-batch-plan-latest.json
 
