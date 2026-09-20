@@ -102,11 +102,12 @@ run_case(
 
 explicit_url = "https://explicit.example/master.m3u8"
 explicit = base64.b64encode(explicit_url.encode()).decode()
-run_case(
+explicit_result = run_case(
     "https://player.example/explicit",
-    f'<script>showVideo("{explicit}")</script>',
+    f'<a href="https://wrong.example/incidental.mp4">raw download</a><script>showVideo("{explicit}", 10)</script>',
     explicit_url,
 )
+assert all(row["url"] != "https://wrong.example/incidental.mp4" for row in explicit_result["rows"]), explicit_result
 
 xor_url = "https://xor.example/master.m3u8"
 hostname = "player.example"
@@ -178,6 +179,71 @@ assert guard_execution["rows"], guard_execution
 assert guard_execution["rows"][0]["url"] == "https://cdn.example/guard.m3u8", guard_execution
 assert "https://noise.example/" not in guard_execution["calls"], guard_execution
 
+
+# Mature handoff/canonical-player families: same-origin hidden POST form,
+# opaque /embed/<id> -> /v/<id> representation, and player identifiers carried
+# only in a query parameter. These are traversal candidates, not media proof.
+handoff_native = (
+    "module.exports={getStreams:async function(){return "
+    + json.dumps([
+        {"url": "https://form.example/e/abc", "headers": {"Referer": "https://origin.example/detail"}},
+        {"url": "https://variant.example/embed/xyz", "headers": {"Referer": "https://origin.example/detail"}},
+        {"url": "https://query.example/seed", "headers": {"Referer": "https://origin.example/detail"}},
+    ])
+    + "}};\n"
+)
+handoff_source = generator.apply(handoff_native, options=OPTIONS)
+handoff_runner = r"""
+const vm=require('vm');
+const src=process.argv[2],calls=[];
+function H(type){return {get:(key)=>{key=String(key).toLowerCase();if(key==='content-type')return type;if(key==='content-disposition'||key==='content-range'||key==='set-cookie')return null;return null},getSetCookie:()=>[]}}
+function R(url,type,body,status=200){return {ok:status>=200&&status<400,status,url,headers:H(type),text:async()=>String(body||''),json:async()=>JSON.parse(String(body||'{}'))}}
+const sandbox={
+  module:{exports:{}},exports:{},URL,AbortController,setTimeout,clearTimeout,Uint8Array,
+  atob:(value)=>Buffer.from(String(value),'base64').toString('binary'),
+  fetch:async(input,init={})=>{
+    const url=String(input),method=String(init.method||'GET').toUpperCase(),body=String(init.body||'');
+    calls.push({url,method,body,referer:(init.headers&&init.headers.Referer)||''});
+    if(url==='https://form.example/e/abc'&&method==='GET')return R(url,'text/html','<form id="F1" method="post" action="/submit"><input type="hidden" name="token" value="x"></form>');
+    if(url==='https://form.example/submit'&&method==='POST'){
+      if(body!=='token=x&file_code=abc')throw new Error('bad form body '+body);
+      return R(url,'text/html','<script>var file="https://cdn.example/form.m3u8";</script>');
+    }
+    if(url==='https://variant.example/embed/xyz')return R(url,'text/html','<html>landing</html>');
+    if(url==='https://variant.example/v/xyz')return R(url,'text/html','<script>var file="https://cdn.example/variant.m3u8";</script>');
+    if(url==='https://query.example/seed')return R(url,'text/html','<a href="/?video=xyz">watch</a>');
+    if(url==='https://query.example/?video=xyz')return R(url,'text/html','<script>var file="https://cdn.example/query.m3u8";</script>');
+    throw new Error('unexpected '+method+' '+url);
+  }
+};
+sandbox.globalThis=sandbox;
+vm.runInNewContext(src,sandbox,{timeout:7000});
+sandbox.module.exports.getStreams({tmdbId:'101',mediaType:'movie',title:'Fixture Movie',year:2020})
+  .then(rows=>console.log(JSON.stringify({rows,calls})))
+  .catch(err=>{console.error(err);process.exit(1)});
+"""
+with tempfile.TemporaryDirectory() as directory:
+    path = Path(directory) / "handoff-runner.cjs"
+    path.write_text(handoff_runner, encoding="utf-8")
+    completed = subprocess.run(
+        ["node", str(path), handoff_source],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=25,
+    )
+assert completed.returncode == 0, completed.stderr
+handoff_execution = json.loads(completed.stdout.strip())
+handoff_urls = {row["url"] for row in handoff_execution["rows"]}
+assert {
+    "https://cdn.example/form.m3u8",
+    "https://cdn.example/variant.m3u8",
+    "https://cdn.example/query.m3u8",
+}.issubset(handoff_urls), handoff_execution
+assert any(row["url"] == "https://form.example/submit" and row["method"] == "POST" for row in handoff_execution["calls"]), handoff_execution
+assert any(row["url"] == "https://variant.example/v/xyz" for row in handoff_execution["calls"]), handoff_execution
+assert any(row["url"] == "https://query.example/?video=xyz" for row in handoff_execution["calls"]), handoff_execution
+
 generated = generator.apply(
     "module.exports={getStreams:async function(){return []}};\n",
     options=OPTIONS,
@@ -187,6 +253,8 @@ for marker in (
     "function explicitPlayerPayloadUrls(text,base)",
     "function decodedObfuscatedHls(html,pageUrl)",
     "function followable(u,parent)",
+    "function playerForm(html,pageUrl)",
+    "function playerRouteVariants(raw)",
 ):
     assert marker in generated, marker
 
