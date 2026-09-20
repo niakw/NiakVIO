@@ -10632,7 +10632,8 @@
     "mallumv": {
       "notes": [
         "Automatically migrated mallumv.gay to mallumv.cyou after French ISP DNS/HTTP preflight redirect validation.",
-        "Automatically migrated mallumv.cyou to mallumv.wiki after French ISP DNS/HTTP preflight redirect validation."
+        "Automatically migrated mallumv.cyou to mallumv.wiki after French ISP DNS/HTTP preflight redirect validation.",
+        "2026-09-20: current live census reaches MalluMV search + exact movie detail. Provider-local runtime restores the bounded confirm -> internal -> terminal-host chain without executing upstream JavaScript; promotion still requires current terminal playback proof."
       ],
       "capability": "html_scraper",
       "official_hub": null,
@@ -10686,7 +10687,9 @@
         "/?tmdbId={tmdbId}&type=movie",
         "/api/file/",
         "/search.php?q={query}",
-        "/movie/1755/{slug}_2014_English.xhtml"
+        "/movie/1755/{slug}_2014_English.xhtml",
+        "/confirm/{id}/{fileId}/{slug}.xhtml",
+        "/internal/{id}/{fileId}/{slug}.xhtml"
       ],
       "route_proof_version": 5,
       "route_proof": {
@@ -10828,7 +10831,25 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/mallumv_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/mallumv_runtime_v1.py": {
+          "base": "https://mallumv.space",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+          "minIdentityScore": 55,
+          "maxConfirm": 8,
+          "maxStreams": 12,
+          "crawlDepth": 4
+        }
+      },
+      "published_types": [
+        "movie"
+      ],
+      "source_runtime_family": "mallumv-catalogue-confirm-internal-v1",
+      "reconstruction_state": "provider-local-terminal-chain"
     },
     "moviebox": {
       "capability": "api_stream_resolver",
