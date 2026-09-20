@@ -140,7 +140,7 @@ assert all("token" not in row["route"].casefold() for row in recipes)
 
 candidate["brain_observed_request_recipes"] = recipes
 candidate["brain_repair_plan"] = {
-    "failureClass": "route_proven_gap",
+    "failureClass": "media_extraction_gap",
     "experimentVariant": 4,
     "experimentGeneration": 2,
 }
@@ -156,6 +156,11 @@ options = runtime._adaptive_runtime_options(candidate, config)
 assert options is not None
 assert options["request_recipes"][:3] == recipes, options["request_recipes"]
 assert options["route_prior_counts"]["currentObservationRequestRecipes"] == 3
+assert options["new_strategy_id"] == "player_media_extractor_v1", options
+assert options["repair_focus"] == "media-extraction", options
+assert all(route not in {"/player/{id}", "/embed/{id}", "/api/sources/{id}", "/api/stream/{id}"} for route in options["direct_paths"]), options["direct_paths"]
+assert options["peer_route_min_variant"] == 3, options
+assert options["peer_recipe_min_variant"] == 3, options
 
 # Planner transport must keep causal shape but not raw URL/body/header values.
 spec2 = importlib.util.spec_from_file_location(
