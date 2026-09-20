@@ -129,6 +129,55 @@ result = run_case(
 )
 assert all("/troll/master.m3u8" not in row["url"] for row in result["rows"]), result
 
+
+# Mature ProviderBase v10 behavior: a bare unrelated external origin is not a
+# resolver and must not consume the crawl budget, while a meaningful external
+# /file route remains traversable.
+guard_native = (
+    "module.exports={getStreams:async function(){return "
+    + json.dumps([{"url": "https://player.example/rootguard", "headers": {"Referer": "https://origin.example/detail"}}])
+    + "}};\n"
+)
+guard_source = generator.apply(guard_native, options=OPTIONS)
+guard_runner = r"""
+const vm=require('vm');
+const src=process.argv[2],calls=[];
+function H(type){return {get:(key)=>{key=String(key).toLowerCase();if(key==='content-type')return type;if(key==='content-disposition'||key==='content-range'||key==='set-cookie')return null;return null},getSetCookie:()=>[]}}
+function R(url,type,body,status=200){return {ok:status>=200&&status<400,status,url,headers:H(type),text:async()=>String(body||''),json:async()=>JSON.parse(String(body||'{}'))}}
+const sandbox={
+  module:{exports:{}},exports:{},URL,AbortController,setTimeout,clearTimeout,Uint8Array,
+  atob:(value)=>Buffer.from(String(value),'base64').toString('binary'),
+  fetch:async(input,init={})=>{
+    const url=String(input);calls.push(url);
+    if(url==='https://player.example/rootguard')return R(url,'text/html','<a href="https://noise.example/">ad</a><a href="https://media.example/file/abc">server</a>');
+    if(url==='https://media.example/file/abc')return R(url,'text/html','<script>var file="https://cdn.example/guard.m3u8";</script>');
+    if(url==='https://cdn.example/guard.m3u8')return R(url,'application/vnd.apple.mpegurl','#EXTM3U\n');
+    if(url==='https://noise.example/')throw new Error('bare external root must not be fetched');
+    throw new Error('unexpected '+url);
+  }
+};
+sandbox.globalThis=sandbox;
+vm.runInNewContext(src,sandbox,{timeout:7000});
+sandbox.module.exports.getStreams({tmdbId:'101',mediaType:'movie',title:'Fixture Movie',year:2020})
+  .then(rows=>console.log(JSON.stringify({rows,calls})))
+  .catch(err=>{console.error(err);process.exit(1)});
+"""
+with tempfile.TemporaryDirectory() as directory:
+    path = Path(directory) / "guard-runner.cjs"
+    path.write_text(guard_runner, encoding="utf-8")
+    completed = subprocess.run(
+        ["node", str(path), guard_source],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=25,
+    )
+assert completed.returncode == 0, completed.stderr
+guard_execution = json.loads(completed.stdout.strip())
+assert guard_execution["rows"], guard_execution
+assert guard_execution["rows"][0]["url"] == "https://cdn.example/guard.m3u8", guard_execution
+assert "https://noise.example/" not in guard_execution["calls"], guard_execution
+
 generated = generator.apply(
     "module.exports={getStreams:async function(){return []}};\n",
     options=OPTIONS,
@@ -137,6 +186,7 @@ for marker in (
     "function unpackPackedPlayer(code)",
     "function explicitPlayerPayloadUrls(text,base)",
     "function decodedObfuscatedHls(html,pageUrl)",
+    "function followable(u,parent)",
 ):
     assert marker in generated, marker
 
