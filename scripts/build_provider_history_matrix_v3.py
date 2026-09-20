@@ -127,6 +127,18 @@ def normalize_historical_semantic_types(
     return normalized, alias_only_tv or alias_only_movie
 
 
+def semantic_loss_partition(
+    type_floor: set[str],
+    current_types: set[str],
+    historical_verified_lanes: set[str],
+) -> tuple[list[str], list[str], list[str]]:
+    """Split declaration drift from proven functional semantic loss."""
+    lost = set(type_floor) - set(current_types)
+    blocking = lost & set(historical_verified_lanes)
+    unproved = lost - blocking
+    return sorted(lost), sorted(blocking), sorted(unproved)
+
+
 def current_semantic_types(row: dict[str, Any] | None) -> tuple[set[str], str]:
     canonical = canonical_semantic_types(row)
     if canonical:
@@ -291,13 +303,11 @@ def main() -> int:
         # canonical declarations only. Bare historical supportedTypes are kept
         # for diagnostics but can never create a blocking regression.
         type_floor = set().union(*(set(values) for values in historical_types.values()))
-        lost_types = sorted(type_floor - current_types)
-        # Preserve declaration drift for audit, but only a semantic lane that
-        # was actually verified can become a blocking functional obligation.
-        # This prevents stale/optimistic historical manifest declarations from
-        # fossilizing an unproved capability forever.
-        blocking_lost_types = sorted((type_floor - current_types) & historical_lanes)
-        reclassified_unproved_types = sorted(set(lost_types) - set(blocking_lost_types))
+        lost_types, blocking_lost_types, reclassified_unproved_types = semantic_loss_partition(
+            type_floor,
+            current_types,
+            historical_lanes,
+        )
 
         historical_formats = set().union(
             *(formats(manifests[version].get(pid)) for version in HISTORY)
