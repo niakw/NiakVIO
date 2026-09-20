@@ -176,6 +176,21 @@ def repair_memory_fingerprint() -> str:
         return ""
 
 
+def experiment_rotation_decision(
+    *,
+    accepted_count: int,
+    remaining_count: int,
+    wave: int,
+    max_waves: int,
+    memory_advanced: bool,
+) -> str:
+    if accepted_count > 0:
+        return "materialize"
+    if remaining_count > 0 and memory_advanced and wave < max_waves:
+        return "rotate"
+    return "exhausted" if memory_advanced else "stalled"
+
+
 def playable_count(result: dict[str, Any]) -> int:
     evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
     values = [int(evidence.get("streams_playable") or 0)]
@@ -396,16 +411,22 @@ def main() -> int:
                 "batches": batch_reports,
             })
 
-            if not accepted_this_wave:
-                # A rejected experiment is still useful evidence. If negative
-                # memory advanced, immediately rotate to the next bounded variant
-                # instead of aborting the whole Repair after one failed idea.
-                if remaining and experiment_memory_advanced and wave < waves:
-                    no_progress_reason = "rotating_rejected_experiment"
-                    continue
+            decision = experiment_rotation_decision(
+                accepted_count=len(accepted_this_wave),
+                remaining_count=len(remaining),
+                wave=wave,
+                max_waves=waves,
+                memory_advanced=experiment_memory_advanced,
+            )
+            if decision == "rotate":
+                # A rejected experiment is still useful evidence. Rotate to the
+                # next bounded hypothesis immediately instead of aborting Repair.
+                no_progress_reason = "rotating_rejected_experiment"
+                continue
+            if decision in {"exhausted", "stalled"}:
                 no_progress_reason = (
                     "experiment_variants_exhausted"
-                    if experiment_memory_advanced
+                    if decision == "exhausted"
                     else "no_new_repair_experiment"
                 )
                 break
