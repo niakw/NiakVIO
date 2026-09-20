@@ -241,6 +241,70 @@ def main() -> int:
         and int(row.get("consecutiveFailures") or 0) >= int(thresholds.get("repeatedProfileFailures") or 2)
         and str(row.get("profile") or "")
     }
+    deferred_repair_providers = sorted({
+        str(value or "").strip().casefold()
+        for value in [
+            *(selection.get("deferredRepairProviders") or []),
+            *(queue_state.get("deferredRepairProviders") or []),
+        ]
+        if str(value or "").strip()
+    })
+    if deferred_repair_providers:
+        deferred_set = set(deferred_repair_providers)
+        cohort_rows = [
+            row for row in entries
+            if str(row.get("providerId") or "").strip().casefold() in deferred_set
+            and int(row.get("successes") or 0) == 0
+            and int(row.get("consecutiveFailures") or 0) > 0
+        ]
+        by_failure: dict[str, set[str]] = {}
+        by_profile: dict[str, set[str]] = {}
+        by_signature: dict[str, set[str]] = {}
+        for row in cohort_rows:
+            provider_id = str(row.get("providerId") or "").strip().casefold()
+            failure = str(row.get("failureClass") or "unknown_failure").strip() or "unknown_failure"
+            profile = str(row.get("profile") or "unknown_profile").strip() or "unknown_profile"
+            signature = str(row.get("signature") or "").strip()
+            by_failure.setdefault(failure, set()).add(provider_id)
+            by_profile.setdefault(profile, set()).add(provider_id)
+            if signature:
+                by_signature.setdefault(signature, set()).add(provider_id)
+        add(
+            "repair_strategy_exhaustion_cohort",
+            (
+                f"{len(deferred_repair_providers)} provider(s) exhausted every bounded Core Repair "
+                "experiment variant and were explicitly deferred for a new strategy."
+            ),
+            [
+                "engine_v2/src/repair-brain.mjs",
+                "scripts/brain_repair_runtime.py",
+                "scripts/run_brain_learning_queue.py",
+                "scripts/run_brain_learning_sandbox.py",
+                "tests/brain_*",
+            ],
+            (
+                "Synthesize one or more new bounded repair/evidence strategies from the common "
+                "failure cohorts and independent Lab observations. Do not recycle v0-v3 or "
+                "increase retry counts. Each new strategy must have an explicit causal trigger, "
+                "negative-memory signature, playback/identity acceptance proof and regression test "
+                "before it may re-enter Core Repair."
+            ),
+            priority="critical",
+            evidence={
+                "deferredProviderCount": len(deferred_repair_providers),
+                "providers": deferred_repair_providers[:48],
+                "failureCohorts": {
+                    key: sorted(value)[:48]
+                    for key, value in sorted(by_failure.items())
+                },
+                "failedProfileCohorts": {
+                    key: sorted(value)[:48]
+                    for key, value in sorted(by_profile.items())
+                },
+                "repeatedSignatureCount": len(by_signature),
+            },
+        )
+
     if repeated_profiles:
         add(
             "method_exhaustion",
@@ -308,6 +372,8 @@ def main() -> int:
         "allowedTargets": allowed,
         "architectureChecks": architecture_checks,
         "targetProvider": target_provider or None,
+        "deferredRepairProviders": deferred_repair_providers,
+        "deferredRepairProviderCount": len(deferred_repair_providers),
         "providersObserved": int(selection.get("processedProviderCount") or 0),
         "pendingProviders": int(queue_state.get("remainingProviderCount") or 0),
         "policy": {
