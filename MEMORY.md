@@ -2941,3 +2941,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Found and fixed a control-plane divergence after WAF overlay: `automation/provider-census-status.json` could be updated without regenerating `PROVIDER_CENSUS_STATUS.md`, producing different HARNESS MISMATCH / HARNESS/ENV BLOCKED counts. Workflow `provider-waf-browser-session.yml` now renders Markdown from the authoritative JSON state after transport merge and stages both together; `tests/provider_waf_census_markdown_sync_test.py` enforces the contract.
 - Next execution: rerun canonical Repair from current main against `repairQueue` only. Evaluate v4 by causal cohort, preserve FULL/PARTIAL lanes, then regenerate census. Do not treat variant exhaustion as provider failure; escalate exhausted cohorts into new-strategy Learning blueprints instead of repeating retry counts.
 
+### 2026-09-20 — Repair iteration 15 materialization blocker
+- Repair run `35521087496` tested SHA `3617e0115e7b...`. Preflight passed, but canonical repair stopped before Brain execution during global provider materialization.
+- Wookafr current-runtime contained a malformed HTML double-quote decoder. The decoder is now aligned with the valid Mallumv form.
+- Generic guard added: Repair preflight now runs the Wookafr behavior contract and materializes the full current catalogue to temporary artifacts before network repair work. A non-target provider can no longer reach the expensive Brain phase while its generated bundle is invalid.
+- Run `35521087496` is not evidence against causal Brain v4 because Brain v4 was not reached. Rerun the same census repair queue on the corrected SHA.
+
