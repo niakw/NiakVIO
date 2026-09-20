@@ -74,6 +74,22 @@ with tempfile.TemporaryDirectory() as tmp:
         encoding="utf-8",
     )
     runtime.EXPERIENCE_PATH = memory
+    census = Path(tmp) / "census.json"
+    census.write_text(
+        json.dumps(
+            {
+                "providers": [
+                    {
+                        "provider": "target",
+                        "status": "CHAIN REACHED",
+                        "dominantIssue": "provider_network_zero_result",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    runtime.CENSUS_STATUS_PATH = census
 
     config = {
         "provider_patches": {
@@ -130,6 +146,13 @@ with tempfile.TemporaryDirectory() as tmp:
     assert "https://mirror.target.example" in options["endpoint_origins"]
     assert "bad-player.example" in options["blocked_hosts"]
     assert "/ads/" in options["blocked_path_patterns"]
+    assert options["repair_focus"] == "terminal-chain"
+    assert options["census_status"] == "CHAIN REACHED"
+    assert options["max_depth"] == 4
+    assert options["max_embeds"] == 20
+    # Player/API routes move ahead of generic detail/search rediscovery when
+    # the census has already proven a deeper chain.
+    assert options["direct_paths"][0] == "/player/{id}", options["direct_paths"]
 
 # Restored V5 must still generate the verified-media runtime and inherit the
 # new contextual route expansion from V4. This proves the executable Brain path
@@ -143,6 +166,8 @@ patched = v5.apply(
         "search_paths": ["/search?q={query}"],
         "direct_paths": ["/episode/{id}/{season}/{episode}"],
         "user_agent": "NiakVIO-Brain-Test/1.0",
+        "repair_focus": "terminal-chain",
+        "census_status": "CHAIN REACHED",
     },
 )
 assert "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5" in patched
@@ -151,6 +176,8 @@ assert "{season}" not in patched.split("CONFIG_PLACEHOLDER")[0] or "expandRoute"
 assert 'p!=="extension"' in patched
 assert "TMDB_API_KEY" in patched
 assert '"userAgent":"NiakVIO-Brain-Test/1.0"' in patched
+assert '"repairFocus":"terminal-chain"' in patched
+assert '"censusStatus":"CHAIN REACHED"' in patched
 assert 'h["User-Agent"]=c.userAgent' in patched
 assert "8265bd1679663a7ea12ac168da84d2e8" not in patched
 
