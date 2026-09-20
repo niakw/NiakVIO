@@ -77,6 +77,19 @@ with tempfile.TemporaryDirectory() as tmp:
         "provider_patches": {
             "target": {
                 "official_site": "https://target.example",
+                "provider_lego_options": {
+                    "scripts/provider_patches/synthetic_runtime.py": {
+                        "base": "https://api.target.example",
+                        "fallbackBases": ["https://mirror.target.example"],
+                        "user_agent": "NiakVIO-Brain-Test/1.0",
+                    }
+                },
+                "core_options": {
+                    "stream_sanitizer": {
+                        "blocked_hosts": ["bad-player.example"],
+                        "blocked_path_patterns": ["/ads/"],
+                    }
+                },
                 "candidate_learned_routes": [
                     "/search?q={query}",
                     "/film/{slug}",
@@ -110,6 +123,11 @@ with tempfile.TemporaryDirectory() as tmp:
     assert not any("sid=" in route for route in options["direct_paths"] + options["search_paths"])
     assert options["route_prior_counts"]["provider"] == 3
     assert options["route_prior_counts"]["peer"] == 2
+    assert options["user_agent"] == "NiakVIO-Brain-Test/1.0"
+    assert "https://api.target.example" in options["endpoint_origins"]
+    assert "https://mirror.target.example" in options["endpoint_origins"]
+    assert "bad-player.example" in options["blocked_hosts"]
+    assert "/ads/" in options["blocked_path_patterns"]
 
 # Restored V5 must still generate the verified-media runtime and inherit the
 # new contextual route expansion from V4. This proves the executable Brain path
@@ -122,6 +140,7 @@ patched = v5.apply(
         "types": ["movie", "tv"],
         "search_paths": ["/search?q={query}"],
         "direct_paths": ["/episode/{id}/{season}/{episode}"],
+        "user_agent": "NiakVIO-Brain-Test/1.0",
     },
 )
 assert "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5" in patched
@@ -129,6 +148,8 @@ assert "function expandRoute(" in patched
 assert "{season}" not in patched.split("CONFIG_PLACEHOLDER")[0] or "expandRoute" in patched
 assert 'p!=="extension"' in patched
 assert "TMDB_API_KEY" in patched
+assert '"userAgent":"NiakVIO-Brain-Test/1.0"' in patched
+assert 'h["User-Agent"]=c.userAgent' in patched
 assert "8265bd1679663a7ea12ac168da84d2e8" not in patched
 
 print("Brain repair experience transfer test passed")
