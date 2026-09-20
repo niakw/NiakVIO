@@ -48,6 +48,9 @@ concurrency:
 
 jobs:
   probe:
+    # Bulk-stage commits are intentionally all pending; wait for the sharded
+    # census to publish a fresh batch plan before repair probing.
+    if: ${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'provider: bulk stage ') }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
