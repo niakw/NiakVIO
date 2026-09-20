@@ -42,6 +42,7 @@ jobs:
             automation/provider-waf-browser-session-latest.json \
             --output automation/provider-waf-browser-session-latest.json \
             --attempts 2 \
+            --client-profile-matrix \
             --status automation/provider-census-status.json \
             --overrides provider-overrides.json \
             --workers 3 \
