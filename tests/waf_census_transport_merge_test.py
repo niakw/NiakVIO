@@ -3,9 +3,11 @@ from __future__ import annotations
 
 import copy
 import importlib.util
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 SCRIPT = ROOT / "scripts" / "merge_waf_census_transport.py"
 spec = importlib.util.spec_from_file_location("merge_waf_census_transport", SCRIPT)
 assert spec and spec.loader
