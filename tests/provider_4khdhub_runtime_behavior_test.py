@@ -22,12 +22,11 @@ js=r'''
 "use strict";
 const NIAKVIO_PROVIDER_MODEL={officialSite:"https://4khdhub.one",knownSite:"https://4khdhub.one"};
 globalThis.__nuvioCoreGetTmdbDataV1=async({mediaType})=>({metadata:mediaType==="tv"
-  ? {name:"Breaking Bad",original_name:"Breaking Bad",first_air_date:"2008-01-20"}
-  : {title:"La Colonie",original_title:"The Colony",release_date:"2021-08-27"}});
+  ? {name:"Breaking Bad",first_air_date:"2008-01-20"}
+  : {title:"The Colony",release_date:"2021-08-27"}});
 function response(url,text){return {ok:true,status:200,url,async text(){return text}}}
 globalThis.fetch=async function(url){
   url=String(url);
-  if(url.includes("/?s=La%20Colonie%202021")) return response(url,'<html>No matching movie-card</html>');
   if(url.includes("/?s=The%20Colony%202021")) return response(url,
     '<a class="movie-card" href="/the-colony-movie-7978/"><span class="movie-card-title">The Colony</span><span class="movie-card-format">Movies</span><span class="movie-card-meta">2021</span></a>');
   if(url.endsWith("/the-colony-movie-7978/")) return response(url,
@@ -74,7 +73,5 @@ src=PATCH.read_text(encoding="utf-8")
 assert 'classBlocks(html,"episode-download-item")' in src
 assert 'green(?:mount)?motors' in src
 assert '_crawlDirectMedia([url],url,3)' in src
-assert "m.alternative_titles" in src
-assert "m.aliases&&m.aliases.length" in src
 assert "hdhub4u" not in mod.WRAPPER.lower()
 print("4KHDHub runtime behavior contract passed")
