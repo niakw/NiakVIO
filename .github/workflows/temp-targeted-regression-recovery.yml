@@ -14,6 +14,12 @@ on:
       - 'tests/provider_yflix_runtime_contract_test.py'
       - 'tests/provider_quick_yield_fixture_priority_test.py'
       - 'tests/provider_census_scope_history_test.py'
+      - 'scripts/build_provider_repair_batch_plan.py'
+      - 'scripts/build_provider_repair_batch_plan.py'
+      - 'scripts/run_provider_repair_batch.py'
+      - 'scripts/run_provider_repair_batch.py'
+      - 'automation/provider-repair-batch-plan-latest.json'
+      - 'automation/provider-repair-batch-plan-latest.json'
       - 'provider-overrides.json'
   pull_request:
     branches: [main]
@@ -253,23 +259,35 @@ jobs:
           import audit_provider_quick_yield as audit
 
           status=json.loads((ROOT/"automation/provider-census-status.json").read_text(encoding="utf-8"))
-          targets={
+          unresolved={
               str(row.get("provider") or "").strip().casefold()
               for row in (status.get("providers") or [])
               if isinstance(row,dict)
               and str(row.get("status") or "") not in {"FULL OK","PARTIAL OK"}
               and str(row.get("provider") or "").strip()
           }
+          plan_path=ROOT/"automation/provider-repair-batch-plan-latest.json"
+          plan=json.loads(plan_path.read_text(encoding="utf-8")) if plan_path.is_file() else {}
+          groups=[
+              row for row in (plan.get("groups") or [])
+              if isinstance(row,dict) and str(row.get("repairScope") or "")!="environment"
+          ] if str(plan.get("sourceRunId") or "")==str(status.get("runId") or "") else []
+          targets={
+              str(pid).strip().casefold()
+              for group in groups for pid in (group.get("providers") or [])
+              if str(pid).strip()
+          } if groups else unresolved
+          targets &= unresolved
+          skipped_environment=sorted(unresolved-targets)
           if not targets:
-              raise SystemExit("no unresolved providers in provider census status")
+              raise SystemExit("no code-repair providers selected from current census/batch plan")
           history_path=ROOT/"automation/provider-census-proof-history.json"
           history=json.loads(history_path.read_text(encoding="utf-8")) if history_path.is_file() else {}
-          tasks,_=audit.build_tasks(history=history)
-          selected=[task for task in tasks if task["provider_id"] in targets]
+          selected,_=audit.build_tasks(targets,history=history)
           observed={task["provider_id"] for task in selected}
           assert observed==targets,(sorted(targets-observed),sorted(observed-targets))
           rows=[]
-          with concurrent.futures.ThreadPoolExecutor(max_workers=min(14,len(selected))) as pool:
+          with concurrent.futures.ThreadPoolExecutor(max_workers=min(20,len(selected))) as pool:
               futures=[pool.submit(audit.run,task) for task in selected]
               for future in concurrent.futures.as_completed(futures):
                   rows.append(future.result())
@@ -325,10 +343,28 @@ jobs:
                   "network":network,
                   "contradictions":sum(int(row.get("contradictions") or 0) for row in lanes),
               }
+          group_results=[]
+          for group in groups:
+              members=sorted(set(str(x).strip().casefold() for x in (group.get("providers") or []) if str(x).strip()) & targets)
+              if not members: continue
+              group_results.append({
+                  "groupId":group.get("groupId"),
+                  "repairScope":group.get("repairScope"),
+                  "providerCount":len(members),
+                  "providers":members,
+                  "verifiedProviders":[p for p in members if summary.get(p,{}).get("verifiedLanes")],
+                  "playableProviders":[p for p in members if summary.get(p,{}).get("playableLanes")],
+                  "contradictionProviders":[p for p in members if int(summary.get(p,{}).get("contradictions") or 0)>0],
+              })
           payload={
-              "schemaVersion":1,
+              "schemaVersion":2,
               "runId":int(os.environ["GITHUB_RUN_ID"]),
               "triggerSha":os.environ["GITHUB_SHA"],
+              "sourceCensusRunId":status.get("runId"),
+              "executionModel":"batch-plan concurrent provider probes",
+              "maxWorkers":20,
+              "skippedEnvironmentProviders":skipped_environment,
+              "groupResults":group_results,
               "providers":summary,
               "verifiedProviderCount":sum(1 for v in summary.values() if v["verifiedLanes"]),
               "verifiedProviders":[k for k,v in summary.items() if v["verifiedLanes"]],
