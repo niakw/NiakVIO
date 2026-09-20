@@ -2742,3 +2742,15 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Fixed unresolved-scope onboarding semantics: providers present in the current manifest but absent from the last census status are now automatically included as unresolved. A stale status snapshot can no longer hide newly onboarded providers during a large import.
 - Added structural tests for shard partitioning, shard merge, sharded workflow wiring and new-provider unresolved inclusion. Provider-local testing is not the scale unit; shard -> concurrent probe -> coarse repair batch -> observed-signature refinement is now the scale path.
 - Commits: `730dc79ec64d`, `73db5edfaf91`, `07056a0cfb41`, `9ce398490cbe`, `7ed55375661c`, `45b7bb442ef4`, `1aea55913302`, `0f683cd5db53`, plus CI gates through `2834381a3699`.
+
+
+## 2026-09-20 — Bulk onboarding path for hundreds of providers
+
+- The existing `add-provider.yml` remains the high-assurance path for one manual provider (deep hub resolution, branding, bounded Lab, atomic publish). It is intentionally no longer the scale path for a catalogue expansion.
+- Added `scripts/stage_provider_batch.py` plus `add_provider.stage(..., bulk=True)`. A bulk request (list or `{providers:[...]}`, max 2000) is fully preflighted first, then all rows are staged locally as `enabled=false`, `validation=onboarding_pending`, with no network discovery, branding, native Lab or activation attempt. ProviderBase legacy repair is deferred and executed once after the whole batch instead of once per provider.
+- Added `.github/workflows/provider-bulk-onboarding.yml`: one batch request -> one validated binary git transaction -> one publish commit `provider: bulk stage N pending`. The workflow auto-triggers only from `.github/provider-onboarding/batch.json`, not from its own implementation changes.
+- Bulk publication does not launch the ordinary mono census, targeted repair, or Domain Refresh. Those workflows explicitly defer `provider: bulk stage ...` commits so they cannot race the exact large-import baseline.
+- `provider-census-sharded.yml` now listens for successful `PROVIDER - Bulk Onboarding` completion, pins one exact current-main SHA, runs 8 deterministic shards with up to 20 workers each, merges evidence, updates proof history, renders status, builds the coarse repair plan, and (for the automatic bulk path) persists canonical census/status/history/batch-plan evidence back to main.
+- The ordinary census also ignores `ci(census-sharded): ...` persistence commits, avoiding recursion. The resulting `automation/provider-repair-batch-plan-latest.json` is the trigger/input for batch-aware targeted recovery.
+- This establishes the high-volume lifecycle: bulk local stage (disabled) -> atomic publish -> 8-shard census -> coarse capability batch -> observed-signature refinement -> concurrent repair probes -> proof-driven activation. No per-provider workflow is required for initial integration.
+- Key commits: `2d8a5926de2a`, `aba259e84585`, `816a1757e476`, `31125c706c45`, `95d24592fb3f`, `b8474742dce6`, `fa6f1e973c71`, `d7605f791e09`, tests/gates through `15445f0ed7f0`.
