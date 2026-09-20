@@ -570,7 +570,18 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             "brainVersion": row.get("brainVersion"),
             "signature": row.get("signature"), "action": row.get("action"),
             "exitReason": row.get("exitReason"),
-            "hypotheses": [hyp.get("id") for hyp in row.get("hypotheses") or []],
+            "hypotheses": [
+                {
+                    "id": hyp.get("id"),
+                    "profile": hyp.get("profile"),
+                    "learned": hyp.get("learned") is True,
+                    "maturity": hyp.get("maturity"),
+                    "transferScore": hyp.get("transferScore"),
+                    "confidence": hyp.get("confidence"),
+                }
+                for hyp in row.get("hypotheses") or []
+                if isinstance(hyp, dict)
+            ],
             "allowedProfiles": row.get("allowedProfiles") or [],
             "plannerErrorClass": row.get("plannerErrorClass"),
         }
