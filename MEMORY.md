@@ -3150,3 +3150,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Repair #103 (`35544422967`, SHA `5d1e6c67...`) did not probe providers. Preflight failed in the generic terminal-adapter contract: `https://wrapper.example/dl.php?link=https%253A%252F%252Fcdn.example%252Fwrapped.m3u8` was incorrectly classified as direct media because `mediaExt()` searched the whole URL and saw `.m3u8` inside the query value.
 - Fixed `runtime_recovery_generator.py::mediaExt()` to classify extensions/manifest only from the URL pathname (or the query/hash-stripped fallback string). Encoded destination wrappers must now pass through `unwrapTerminalUrl()` before media proof.
 - This is generic terminal-resolution behavior and directly benefits redirect-wrapper families used by multiple providers. No provider-specific host or route was added.
+
+### 2026-09-21 — Repair #104 historical-player test harness escape fix
+- Repair #104 (`35544700122`, SHA `5c0a24ee85a9...`) remained preflight-only. The terminal source-route contract, including encoded wrapper unwrapping, passed.
+- Failure moved to `brain_historical_player_extractor_transfer_test.py` before Brain execution: its generated Node runner used a non-raw Python f-string, so the synthetic HLS `\n` escapes became literal newlines inside a JavaScript single-quoted string and Node raised `SyntaxError: Invalid or unexpected token`.
+- The runner is now a raw f-string. No provider/runtime logic changed for this failure; #104 is not provider evidence.
