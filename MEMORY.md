@@ -3167,3 +3167,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Comparing the transferred Brain extractor with mature ProviderBase V18.6 exposed a source-generation divergence: the adaptive wrapper is itself stored in a Python raw string, yet parts of the transferred regex were escaped as if another string layer still existed. The generated JavaScript therefore contained a literal `\\s` in the packed `.split('|')` guard and URL whitespace classes instead of the intended regex whitespace token `\s`.
 - Corrected the packed `.split('|')` guard and both remaining URL character classes at the generator source. This is a transfer/escaping bug, not a provider-specific parser change.
 - The existing end-to-end historical player contract remains authoritative; next Repair must prove packed/base64/XOR extraction before provider probing.
+
+### 2026-09-21 — Obfuscated-HLS fixture aligned with mature V21 safety floor
+- Repair #107 (`35545068392`, SHA `cf0487d439ac...`) remained preflight-only. Packed extraction now passes, proving the transferred regex-escaping fix.
+- The next failure was the hostname-XOR obfuscated-HLS synthetic fixture. Its generated base64 payload was only 44 characters while the mature ProviderBase V21 detector intentionally requires at least 50 characters to reduce false positives.
+- Kept the mature safety threshold unchanged. The synthetic HLS URL is now long enough to produce a >=50-character payload and the test explicitly asserts that invariant before exercising the generated wrapper.
+- #107 is harness/capability evidence only; no provider was probed.
