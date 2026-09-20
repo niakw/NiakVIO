@@ -2786,3 +2786,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Census evidence-only commits no longer recursively trigger TEMP full census merely because PROVIDER_CENSUS_STATUS.md changed.
 - Current pre-change census had 20 symptomatic providers, including 7 PROVIDER WAF/ANTIBOT; therefore the automatic code-repair queue is expected to begin at 13 until a fresh census changes those classifications.
 
+## 2026-09-20 — Census-owned Repair run 35482101082
+
+- First census-owned Repair cycle correctly pre-tested only the 13 automated repairQueue providers: 19 semantic tasks / 56 probes, with zero FULL/PARTIAL/WAF providers included.
+- Pre-census persisted successfully to main as commit 5dc2b43d7e36: 24 FULL OK, 2 PARTIAL OK, 1 CANDIDATE OK, 4 ROUTE PROVEN, 3 CHAIN REACHED, 5 PROVIDER NETWORK BLOCKED, 7 PROVIDER WAF/ANTIBOT; 20 symptomatic total / 13 automated Repair / 7 environment-only.
+- Notable census refinement from the targeted current-byte replay: yflix moved from NETWORK BLOCKED to ROUTE PROVEN; UHDMovies remained CHAIN REACHED; no provider became currently playable in the 13-provider precheck.
+- Repair then failed before route recovery/Brain at upgrade_provider_external_identity_route_v11_1.py because the current recovery source already contained the strict _repair_recipe_origin_allowed(row) execution boundary but the historical marker had been dropped; V11.1 still required the obsolete one-line anchor.
+- Fixed V11.1 to recognize the already-correct current semantic boundary and restore only its durable marker/comment, falling back to the legacy transformation only when the old form truly exists. This is a migration-idempotence fix, not a provider-specific repair.
+
