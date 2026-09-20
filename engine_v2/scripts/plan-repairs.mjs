@@ -443,6 +443,11 @@ function applyCensusPrior(rawEvidence, candidate) {
   });
 
   if (status === "CHAIN REACHED") {
+    // Census is a floor, never a ceiling. Once the current bytes reproduce the
+    // historical player depth, let fresher causal evidence (for example
+    // media_extraction_gap) drive the next repair instead of pinning the
+    // provider forever to chain_terminal_gap.
+    if (pipelineStageRank(currentStage) >= pipelineStageRank("player")) return evidence;
     return withPrior(
       "chain_terminal_gap",
       "player",
@@ -450,6 +455,7 @@ function applyCensusPrior(rawEvidence, candidate) {
     );
   }
   if (status === "ROUTE PROVEN") {
+    if (pipelineStageRank(currentStage) >= pipelineStageRank("detail")) return evidence;
     return withPrior(
       "route_proven_gap",
       "detail",
@@ -458,6 +464,7 @@ function applyCensusPrior(rawEvidence, candidate) {
   }
   if (status === "CANDIDATE OK") {
     if (currentFailure === "transport_blocked" || currentFailure === "dns_unreachable") return evidence;
+    if (pipelineStageRank(currentStage) >= pipelineStageRank("player")) return evidence;
     return withPrior(
       "candidate_replay_gap",
       "player",
@@ -465,7 +472,10 @@ function applyCensusPrior(rawEvidence, candidate) {
     );
   }
   if (status === "PROVIDER NETWORK BLOCKED") {
-    if (pipelineStageRank(currentStage) >= pipelineStageRank("player")) return evidence;
+    // A fresh successful provider-stage request supersedes yesterday's negative
+    // transport diagnosis. Keep the historical status as census context, but
+    // do not drag a now-reachable provider back to the transport layer.
+    if (pipelineStageRank(currentStage) >= pipelineStageRank("search")) return evidence;
     return withPrior(
       "provider_transport_gap",
       currentStage === "unknown" ? "source" : currentStage,
