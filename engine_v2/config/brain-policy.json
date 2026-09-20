@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 8,
-  "controlPlaneVersion": 6,
+  "schemaVersion": 9,
+  "controlPlaneVersion": 7,
   "identity": {
     "name": "NiakVIO Brain",
     "role": "architecture learning and adaptive provider repair orchestrator",
@@ -42,6 +42,16 @@
       "requireStrictImprovement": true,
       "requireIdentityGate": true,
       "requireCurrentByteRetest": true
+    },
+    "negativeExperimentMemory": {
+      "enabled": true,
+      "path": "automation/brain-repair-memory.json",
+      "maxEntries": 1000,
+      "rotateExperimentAfterFailures": 1,
+      "maxVariantsPerSignature": 4,
+      "providerCodeWrite": false,
+      "publicationAllowed": false,
+      "role": "change experiment ordering after rejected current-byte repair; never grant success"
     }
   },
   "skillMaturity": {
