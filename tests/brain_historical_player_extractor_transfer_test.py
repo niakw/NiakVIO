@@ -43,7 +43,7 @@ def run_case(player_url: str, body: str, expected: str) -> dict:
         + "}};\n"
     )
     source = generator.apply(native, options=OPTIONS)
-    runner = f"""
+    runner = rf"""
 const vm=require('vm');
 const src=process.argv[2];
 const player={json.dumps(player_url)};
