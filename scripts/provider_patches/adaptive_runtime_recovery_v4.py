@@ -14,7 +14,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     payload = {
         "providerName": str(cfg.get("provider_name") or "Provider"),
         "baseUrl": str(cfg.get("base_url") or "").rstrip("/"),
-        "runtimeRevision": "generic-core-v2",
+        "runtimeRevision": "generic-core-v3-census-focus",
+        "repairFocus": str(cfg.get("repair_focus") or "generic"),
+        "censusStatus": str(cfg.get("census_status") or ""),
         "endpointOrigins": [str(value).rstrip("/") for value in cfg.get("endpoint_origins", []) if str(value).startswith(("http://", "https://"))][:32],
         "types": [
             value
