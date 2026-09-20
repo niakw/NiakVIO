@@ -43,8 +43,9 @@ assert "audit_provider_v3_static.py" in routine
 assert "build_published_provider_stage.py" in routine
 assert "build_observational_health_report.py" in routine
 
-# Brain owns broad evidence/memory/proposal learning. It is no longer the
-# executable authority for provider route recognition/correction.
+# Brain owns evidence/memory/hypothesis intelligence. Canonical Repair remains
+# the only execution authority and invokes the Brain only inside its strict
+# candidate/retest/non-regression transaction.
 for required in ("run_brain_learning_queue.py","build_brain_repair_proposal.py","brain-repair/proposal"):
     assert required in brain, f"Brain lost evidence/proposal ownership: {required}"
 assert "--include-disabled" in brain or "including disabled providers" in brain
@@ -63,6 +64,8 @@ for required in (
     "Enforce four-version floor on repair candidate",
     "python scripts/build_provider_history_matrix_v3.py",
     "python scripts/check_provider_non_regression_v1.py --candidate-gate --all --base-ref HEAD",
+    "scripts/run_provider_brain_repair.py",
+    "automation/provider-brain-repair-latest.json",
 ):
     assert required in repair, f"canonical provider repair workflow missing: {required}"
 pipeline=(ROOT/"scripts/run_provider_repair_pipeline_v6.py").read_text(encoding="utf-8")
@@ -72,6 +75,7 @@ for required in (
     "apply_provider_route_recovery_report.py",
     "materialize_provider_base_v3_store.py",
     "materialize_provider_v3_all.py",
+    "run_provider_brain_repair.py",
     "audit_provider_repair_yield_v6.py",
     "--require-upstream-positive-preserved",
 ):
