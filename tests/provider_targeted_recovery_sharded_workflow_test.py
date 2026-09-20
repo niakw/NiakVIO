@@ -20,7 +20,7 @@ for needle in [
     "matrix:",
     "shard: [0, 1, 2, 3, 4, 5, 6, 7]",
     "--shard-count 8",
-    '--shard-index "\${{ matrix.shard }}"',
+    '--shard-index "${{ matrix.shard }}"',
     "scripts/merge_provider_targeted_recovery_shards.py",
     "scripts/refine_provider_repair_batches.py",
     "provider-targeted-recovery-shard-*",
