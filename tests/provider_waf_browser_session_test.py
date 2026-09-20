@@ -91,6 +91,35 @@ assert status_targets[0]["lane"] == "tv"
 assert status_targets[0]["publicUrl"] == "https://new-waf.example/"
 assert status_targets[0]["seedKind"] == "metadata-homepage"
 
+search_targets = mod.extract_status_targets(
+    {
+        "providers": [{
+            "provider": "search-waf",
+            "status": "PROVIDER WAF/ANTIBOT",
+            "declaredLanes": ["movie"],
+        }]
+    },
+    {
+        "provider_patches": {
+            "search-waf": {
+                "official_site": "https://search-waf.example/",
+                "learned_routes": ["/?s={query}", "/streaming/{slug}/"],
+            }
+        }
+    },
+    [{
+        "provider": "search-waf",
+        "lane": "movie",
+        "publicUrl": "https://search-waf.example/",
+        "seedKind": "metadata-homepage",
+    }],
+)
+assert len(search_targets) == 1, search_targets
+assert search_targets[0]["seedKind"] == "metadata-search"
+assert search_targets[0]["seedRoute"] == "/?s={query}"
+assert search_targets[0]["url"] == "https://search-waf.example/?s=niakvio"
+assert search_targets[0]["publicUrl"] == "https://search-waf.example/"
+
 targets = mod.extract_targets(report)
 assert len(targets) == 2, targets
 allwish = next(row for row in targets if row["provider"] == "allwish")
