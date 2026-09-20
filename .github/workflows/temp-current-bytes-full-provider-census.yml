@@ -61,6 +61,9 @@ concurrency:
 
 jobs:
   census:
+    # Large bulk onboarding is validated by the dedicated 8-shard workflow.
+    # Sharded evidence commits also must not recursively launch this mono-job.
+    if: ${{ github.event_name != 'push' || (!startsWith(github.event.head_commit.message, 'provider: bulk stage ') && !startsWith(github.event.head_commit.message, 'ci(census-sharded):')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 55
     env:
