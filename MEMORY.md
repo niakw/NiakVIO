@@ -2732,3 +2732,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Added `scripts/refine_provider_repair_batches.py`: coarse groups automatically split only when observed runtime/network signatures diverge. This supports hypothesis-first batching (e.g. two html_scraper providers start together, then split if one is HTML search and another is API mapping) without manual provider-name routing.
 - Current census advanced from 25/46 to 26/46 with PersianStremio now PARTIAL OK (movie lane). The 26/46 run tested SHA `aeae9cd84c62`; therefore MalluMV binding, Wooka multi-player runtime, MovieBox alternate current authority, UHDMovies terminal changes, and ProviderBase V25 fan-out still require later current-byte census verdicts before promotion claims.
 - New durable artifacts/gates: `automation/provider-repair-batch-plan-latest.json`, future `automation/provider-repair-batch-refined-latest.json`, plus tests for adaptive player fan-out, batch grouping, batch runner selection, and signature-driven batch refinement.
+
+
+## 2026-09-20 — Horizontal census sharding for 300+ providers
+
+- Added deterministic provider sharding to `scripts/audit_provider_quick_yield.py`: `--shard-count` + `--shard-index` assign a provider by SHA-256 so shards are stable, disjoint and exhaustive for a fixed shard count.
+- Added `scripts/merge_provider_census_shards.py` to merge independent shard reports back into the canonical quick-yield schema, reject duplicate provider/lane ownership and recompute all aggregate counts.
+- Added manual `.github/workflows/provider-census-sharded.yml`: 8 GitHub runners × up to 20 quick-yield workers, exact current-byte materialization per runner, artifact merge, census rendering and batch-repair-plan generation. It is manual while the catalogue is only 46 providers; it is the horizontal path for hundreds of providers without changing provider logic.
+- Fixed unresolved-scope onboarding semantics: providers present in the current manifest but absent from the last census status are now automatically included as unresolved. A stale status snapshot can no longer hide newly onboarded providers during a large import.
+- Added structural tests for shard partitioning, shard merge, sharded workflow wiring and new-provider unresolved inclusion. Provider-local testing is not the scale unit; shard -> concurrent probe -> coarse repair batch -> observed-signature refinement is now the scale path.
+- Commits: `730dc79ec64d`, `73db5edfaf91`, `07056a0cfb41`, `9ce398490cbe`, `7ed55375661c`, `45b7bb442ef4`, `1aea55913302`, `0f683cd5db53`, plus CI gates through `2834381a3699`.
