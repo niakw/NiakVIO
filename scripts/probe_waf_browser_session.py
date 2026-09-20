@@ -129,6 +129,64 @@ def extract_targets(report: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
+def extract_status_targets(
+    status: dict[str, Any],
+    overrides: dict[str, Any],
+    existing: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Seed newly-classified WAF providers from current provider metadata.
+
+    This fallback proves only ordinary browser reachability of the provider
+    homepage. It is never equivalent to an observed challenged request and
+    therefore cannot promote census/playback state by itself.
+    """
+    existing_pairs = {
+        (str(row.get("provider") or "").casefold(), str(row.get("lane") or "").casefold())
+        for row in existing
+        if isinstance(row, dict)
+    }
+    patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
+    out: list[dict[str, Any]] = []
+    for row in status.get("providers") or []:
+        if not isinstance(row, dict) or str(row.get("status") or "") != "PROVIDER WAF/ANTIBOT":
+            continue
+        provider = str(row.get("provider") or "").strip().casefold()
+        if not provider:
+            continue
+        patch = patches.get(provider) if isinstance(patches.get(provider), dict) else {}
+        raw_url = str(
+            patch.get("official_site")
+            or patch.get("known_site")
+            or patch.get("officialSite")
+            or patch.get("knownSite")
+            or ""
+        ).strip()
+        public_url = sanitized_url(raw_url)
+        if not public_url:
+            continue
+        lanes = [
+            str(value).strip().casefold()
+            for value in row.get("declaredLanes") or []
+            if str(value).strip()
+        ] or ["unknown"]
+        for lane in lanes:
+            if (provider, lane) in existing_pairs:
+                continue
+            out.append({
+                "provider": provider,
+                "lane": lane,
+                "url": raw_url,
+                "publicUrl": public_url,
+                "host": str(urlsplit(public_url).hostname or ""),
+                "path": str(urlsplit(public_url).path or "/"),
+                "method": "GET",
+                "fetchStatus": 0,
+                "challenge": "metadata-homepage-seed",
+                "seedKind": "metadata-homepage",
+            })
+    return out
+
+
 def browser_binary() -> str:
     for name in ("google-chrome", "google-chrome-stable", "chromium", "chromium-browser"):
         found = shutil.which(name)
@@ -159,7 +217,7 @@ def probe_target(
     started = time.monotonic()
     base = {
         key: target.get(key)
-        for key in ("provider", "lane", "publicUrl", "host", "path", "method", "fetchStatus", "challenge")
+        for key in ("provider", "lane", "publicUrl", "host", "path", "method", "fetchStatus", "challenge", "seedKind")
     }
     if str(target.get("method") or "GET").upper() != "GET":
         return {**base, "outcome": "unsupported_method", "durationMs": 0}
@@ -247,11 +305,16 @@ def main() -> int:
     ap.add_argument("--virtual-time-ms", type=int, default=7000)
     ap.add_argument("--workers", type=int, default=3)
     ap.add_argument("--attempts", type=int, default=2)
+    ap.add_argument("--status", type=Path)
+    ap.add_argument("--overrides", type=Path)
     ap.add_argument("--max-targets", type=int, default=16)
     args = ap.parse_args()
 
     report = load(args.report)
-    targets = extract_targets(report)[: max(1, args.max_targets)]
+    targets = extract_targets(report)
+    if args.status and args.overrides and args.status.is_file() and args.overrides.is_file():
+        targets.extend(extract_status_targets(load(args.status), load(args.overrides), targets))
+    targets = targets[: max(1, args.max_targets)]
     browser = browser_binary()
     rows: list[dict[str, Any]] = []
     if targets:
