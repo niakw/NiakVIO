@@ -83,4 +83,68 @@ with tempfile.TemporaryDirectory() as tmp:
     assert row["lastReason"] == "no_executable_runtime_options", row
     assert brain["negativeExperimentEvents"] == 1, brain
 
+
+# A planned profile that never becomes an attempt is also a real failed
+# experiment: structural matching rejected the profile before generation.
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    output = root / "out"
+    output.mkdir()
+    (output / "repair-report.json").write_text(json.dumps({
+        "rounds": [{
+            "round": 1,
+            "attempts": [],
+            "accepted": [],
+            "rejected": [],
+        }]
+    }), encoding="utf-8")
+
+    mod.OVERRIDES_PATH = root / "provider-overrides.json"
+    mod.REPAIR_MEMORY_PATH = root / "brain-repair-memory.json"
+    mod.OVERRIDES_PATH.write_text(json.dumps({
+        "runtime_repair": {"learned_skills": {}}
+    }), encoding="utf-8")
+    mod.REPAIR_MEMORY_PATH.write_text(json.dumps({
+        "schemaVersion": 1,
+        "entries": [],
+    }), encoding="utf-8")
+    mod.PLANS.clear()
+    mod.PLANS["published:yflix"] = {
+        "providerId": "yflix",
+        "brainVersion": 7,
+        "failureClass": "provider_transport_gap",
+        "signature": "transport-signature",
+        "experimentVariant": 0,
+        "capabilityStrategy": "mixed_embed_resolver",
+        "observedPipelineStage": "provider",
+        "repairScope": "capability",
+        "action": "probe-targeted-repair",
+        "hypotheses": [],
+        "allowedProfiles": ["adaptive_runtime_recovery"],
+    }
+    mod.policy = lambda: {
+        "identity": {"name": "NiakVIO Brain"},
+        "production": {
+            "learningOnValidatedRepair": True,
+            "negativeExperimentMemory": {
+                "enabled": True,
+                "maxEntries": 1000,
+            },
+        },
+        "skillMaturity": {},
+    }
+
+    brain = mod.annotate_and_learn(output, "deep")
+    memory = json.loads(mod.REPAIR_MEMORY_PATH.read_text(encoding="utf-8"))
+    entries = memory.get("entries") or []
+    assert len(entries) == 1, entries
+    row = entries[0]
+    assert row["providerId"] == "yflix", row
+    assert row["experimentVariant"] == 0, row
+    assert row["failures"] == 1, row
+    assert row["consecutiveFailures"] == 1, row
+    assert row["lastOutcome"] == "profile_unavailable", row
+    assert row["lastReason"] == "planned_profile_not_applicable_to_current_bytes", row
+    assert brain["negativeExperimentEvents"] == 1, brain
+
 print("Brain candidate-generation negative-memory contract passed")
