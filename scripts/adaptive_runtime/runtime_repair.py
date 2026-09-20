@@ -369,31 +369,35 @@ def _experiment_role_preferences(
 ) -> list[str]:
     """Choose a materially different exploration order for each failure family."""
     failure = str(failure_class or "").strip().casefold()
-    variant = max(0, min(int(variant), 3))
+    variant = max(0, min(int(variant), 4))
     by_failure = {
         "provider_transport_gap": [
             ["api", "detail", "search", "player", "episode", "other"],
             ["api", "search", "detail", "player", "episode", "other"],
             ["detail", "api", "player", "search", "episode", "other"],
             ["search", "detail", "api", "player", "episode", "other"],
+            ["search", "api", "detail", "player", "episode", "other"],
         ],
         "route_proven_gap": [
             ["detail", "episode", "player", "api", "other"],
             ["player", "detail", "episode", "api", "other"],
             ["api", "player", "detail", "episode", "other"],
             ["episode", "detail", "player", "api", "other"],
+            ["player", "api", "episode", "detail", "other"],
         ],
         "chain_terminal_gap": [
             ["player", "api", "episode", "detail", "other"],
             ["api", "player", "episode", "detail", "other"],
             ["player", "episode", "api", "detail", "other"],
             ["detail", "player", "api", "episode", "other"],
+            ["player", "api", "other", "episode", "detail"],
         ],
         "candidate_replay_gap": [
             ["player", "api", "detail", "episode", "other"],
             ["api", "player", "detail", "episode", "other"],
             ["detail", "player", "api", "episode", "other"],
             ["episode", "detail", "player", "api", "other"],
+            ["player", "api", "detail", "episode", "search", "other"],
         ],
     }
     if failure in by_failure:
@@ -404,6 +408,7 @@ def _experiment_role_preferences(
         ["player", "api", "episode", "detail", "other"],
         ["api", "player", "detail", "episode", "other"],
         ["detail", "episode", "player", "api", "other"],
+        ["player", "api", "detail", "episode", "search", "other"],
     ]
     return list(fallbacks[variant] or fallbacks[1])
 
@@ -422,6 +427,17 @@ def _peer_recipe_min_variant(failure_class: str) -> int:
     if failure == "candidate_replay_gap":
         return 3
     return 2
+
+
+def _new_strategy_id(failure_class: str, variant: int) -> str:
+    if int(variant) != 4:
+        return ""
+    return {
+        "provider_transport_gap": "provider_origin_failover_v1",
+        "route_proven_gap": "proven_route_terminal_traversal_v1",
+        "chain_terminal_gap": "chain_terminal_extractor_v1",
+        "candidate_replay_gap": "retained_candidate_replay_v1",
+    }.get(str(failure_class or "").strip().casefold(), "expanded_family_strategy_v1")
 
 
 def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any]) -> dict[str, Any] | None:
@@ -493,7 +509,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     strategy = str(capability.get("strategy") or patch.get("capability") or "unknown").strip().casefold()
     census_focus = _census_runtime_focus(provider_id)
     brain_plan = candidate.get("brain_repair_plan") if isinstance(candidate.get("brain_repair_plan"), dict) else {}
-    experiment_variant = max(0, min(int(brain_plan.get("experimentVariant") or 0), 3))
+    experiment_variant = max(0, min(int(brain_plan.get("experimentVariant") or 0), 4))
     experiment_failure = str(brain_plan.get("failureClass") or "").strip()
     peer_route_min_variant = _peer_route_min_variant(experiment_failure)
     peer_recipe_min_variant = _peer_recipe_min_variant(experiment_failure)
@@ -505,6 +521,9 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         peer_request_recipes if experiment_variant >= peer_recipe_min_variant else [],
         limit=32,
     )
+    new_strategy_id = _new_strategy_id(experiment_failure, experiment_variant)
+    if experiment_variant == 4 and experiment_failure == "candidate_replay_gap":
+        request_recipes = _unique_request_recipes(provider_request_recipes, limit=32)
     peer_search = [route for route in peer_routes if _route_role(route) == "search"]
     peer_direct = [route for route in peer_routes if _route_role(route) != "search"]
     configured_search = [str(v) for v in recovery_options.get("search_paths") or [] if str(v).strip()]
@@ -604,21 +623,24 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             else "request-recipe-transfer"
             if experiment_variant == 2
             else "expanded-discovery"
+            if experiment_variant == 3
+            else "learned-family-new-strategy"
         ),
+        "new_strategy_id": new_strategy_id,
         "peer_route_min_variant": peer_route_min_variant,
         "peer_recipe_min_variant": peer_recipe_min_variant,
         "negative_memory_matches": max(0, int(brain_plan.get("negativeMemoryMatches") or 0)),
         "max_pages": max(
             int(census_focus.get("max_pages") or 10),
-            14 if experiment_variant == 1 else 12 if experiment_variant == 2 else 20 if experiment_variant == 3 else 10,
+            14 if experiment_variant == 1 else 12 if experiment_variant == 2 else 20 if experiment_variant == 3 else 24 if experiment_variant == 4 else 10,
         ),
         "max_embeds": max(
             int(census_focus.get("max_embeds") or 10),
-            24 if experiment_variant in {1, 2, 3} else 10,
+            24 if experiment_variant in {1, 2, 3, 4} else 10,
         ),
         "max_depth": max(
             int(census_focus.get("max_depth") or 3),
-            4 if experiment_variant in {1, 2, 3} else 3,
+            4 if experiment_variant in {1, 2, 3, 4} else 3,
         ),
         "timeout_ms": max(2000, min(int(recovery_options.get("timeout_ms") or 9000), 20000)),
         "user_agent": network_hints["user_agent"],
