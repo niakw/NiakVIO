@@ -14,6 +14,8 @@ status={
     {"provider":"a","status":"CHAIN REACHED","brainCheckRequired":True,"declaredLanes":["movie"],"currentVerifiedLanes":[],"dominantIssue":"provider_network_zero_result","evidenceDepth":["movie=chain_reached"]},
     {"provider":"b","status":"CHAIN REACHED","brainCheckRequired":True,"declaredLanes":["movie"],"currentVerifiedLanes":[],"dominantIssue":"provider_network_zero_result","evidenceDepth":["movie=chain_reached"]},
     {"provider":"c","status":"PROVIDER WAF/ANTIBOT","brainCheckRequired":True,"declaredLanes":["anime"],"currentVerifiedLanes":[],"dominantIssue":"provider_waf_challenge","evidenceDepth":["anime=none"]},
+    {"provider":"e","status":"PROVIDER NETWORK BLOCKED","brainCheckRequired":True,"declaredLanes":["movie"],"currentVerifiedLanes":[],"dominantIssue":"provider_network_http_error","evidenceDepth":["movie=lookup_only"]},
+    {"provider":"f","status":"PROVIDER NETWORK BLOCKED","brainCheckRequired":True,"declaredLanes":["movie"],"currentVerifiedLanes":[],"dominantIssue":"provider_network_exception","evidenceDepth":["movie=none"]},
     {"provider":"green","status":"FULL OK","brainCheckRequired":False,"declaredLanes":["movie"],"currentVerifiedLanes":["movie"],"dominantIssue":"","evidenceDepth":[]},
   ]
 }
@@ -22,11 +24,15 @@ overrides={
     "a":{"source_runtime_family":"catalogue-html-embed"},
     "b":{"source_runtime_family":"catalogue-html-embed"},
     "c":{"source_runtime_family":"dle-html"},
+    "e":{"source_runtime_family":"site-html"},
+    "f":{"source_runtime_family":"alternate-html"},
   },
   "provider_capabilities":{
     "a":{"strategy":"html_scraper"},
     "b":{"strategy":"html_scraper"},
     "c":{"strategy":"html_scraper"},
+    "e":{"strategy":"html_scraper"},
+    "f":{"strategy":"html_scraper"},
   }
 }
 with tempfile.TemporaryDirectory() as td:
@@ -37,10 +43,13 @@ with tempfile.TemporaryDirectory() as td:
     subprocess.run(["python",str(script),"--status",str(sp),"--overrides",str(op),"--output",str(out)],check=True)
     plan=json.loads(out.read_text(encoding="utf-8"))
 
-assert plan["unresolvedProviderCount"]==3
-assert plan["groupCount"]==2
+assert plan["unresolvedProviderCount"]==5
+assert plan["groupCount"]==3
 groups={row["repairScope"]:row for row in plan["groups"]}
 assert groups["terminal-extraction"]["providers"]==["a","b"]
 assert groups["terminal-extraction"]["providerLocalFallback"]=="only-after-shared-profile-failure"
 assert groups["environment"]["providers"]==["c"]
+assert groups["transport"]["providers"]==["e","f"]
+assert groups["transport"]["evidenceDepths"]==["lookup","none"]
+assert groups["transport"]["dominantIssues"]==["network_exception","network_http_error"]
 print("Provider repair batch plan grouping passed")
