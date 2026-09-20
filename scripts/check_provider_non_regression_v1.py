@@ -401,7 +401,18 @@ def candidate_gate(
 
         contract = row.get("contractDrift") or {}
         current_semantic = {canon(x) for x in contract.get("currentSemanticTypes") or [] if canon(x)}
-        lost_types = sorted({canon(x) for x in contract.get("lostSemanticTypes") or [] if canon(x)})
+        lost_types_all = sorted({canon(x) for x in contract.get("lostSemanticTypes") or [] if canon(x)})
+        if "blockingLostSemanticTypes" in contract:
+            lost_types = sorted({
+                canon(x) for x in contract.get("blockingLostSemanticTypes") or []
+                if canon(x)
+            })
+        else:
+            # Backward-compatible safety for an older matrix: only a historically
+            # verified semantic lane can block publication. Bare declaration drift
+            # remains visible but is not equivalent to lost functional proof.
+            lost_types = sorted(set(lost_types_all) & historical_specific_raw)
+        semantic_reclassification = sorted(set(lost_types_all) - set(lost_types))
         hls_lost = bool(contract.get("hlsM3u8Lost"))
 
         partial_failed = set()
@@ -479,7 +490,9 @@ def candidate_gate(
             "partialRegressionFailedLanes": sorted(partial_failed),
             "unrecoveredPartialRegressionLanes": unrecovered_partial,
             "unrecoveredPartialRegressionLanesExternalDrift": unrecovered_partial_external_drift,
-            "lostSemanticTypes": lost_types,
+            "lostSemanticTypes": lost_types_all,
+            "blockingLostSemanticTypes": lost_types,
+            "unprovedSemanticReclassificationTypes": semantic_reclassification,
             "hlsM3u8Lost": hls_lost,
             "upstreamDriftApplied": bool(drift_reasons),
             "upstreamDriftAuthority": "provider-upstream-drift-v1" if drift_reasons else None,
@@ -509,11 +522,11 @@ def candidate_gate(
         "proofInvalidationSource": str(DEFAULT_INVALIDATIONS.relative_to(ROOT)),
         "proofInvalidationPolicy": "only active, evidence-backed contradiction records may remove invalidated historical/rolling lanes from the candidate floor; all other floors remain unchanged",
         "upstreamDriftSource": str(DEFAULT_UPSTREAM_DRIFT.relative_to(ROOT)),
-        "upstreamDriftPolicy": "same-run repeated A/B proof that exact accepted baseline bytes and candidate bytes fail at the same bounded network stage may waive only live lane reproduction for that exact baseRef; semantic/HLS contract deletion remains forbidden",
+        "upstreamDriftPolicy": "same-run repeated A/B proof that exact accepted baseline bytes and candidate bytes fail at the same bounded network stage may waive only live lane reproduction for that exact baseRef; proven semantic/HLS contract deletion remains forbidden",
         "upstreamDriftProviderCount": len(sorted(set(upstream_drift_debt))),
         "upstreamDriftProviders": sorted(set(upstream_drift_debt)),
         "candidateSource": str(DEFAULT_CANDIDATE.relative_to(ROOT)),
-        "disabledHistoricalDebtPolicy": "audited route debt is allowed for current provider-folder identities when provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden",
+        "disabledHistoricalDebtPolicy": "audited route debt is allowed for current provider-folder identities when provider-repair-disposition-v1 state is repair/off; proven semantic/HLS contract deletion remains forbidden",
         "disabledDebtProviderCount": len(sorted(set(disabled_debt))),
         "disabledDebtProviders": sorted(set(disabled_debt)),
         "obligations": obligations,
