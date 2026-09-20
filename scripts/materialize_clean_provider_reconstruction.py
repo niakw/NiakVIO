@@ -70,6 +70,61 @@ def lab_is_strictly_playable(row: dict[str, Any]) -> bool:
     )
 
 
+
+def ensure_proposal_provenance_row(
+    rows: dict[str, Any],
+    provider_id: str,
+    candidate: dict[str, Any],
+    origin: str,
+    now: str,
+) -> dict[str, Any]:
+    """Return existing provenance or create a fail-closed row for a new clean seed.
+
+    Published/pending-reconstruction providers must already have provenance.
+    Only a genuinely new NiakVIO-owned clean seed may enter Learning proposal
+    provenance without a historical row, and that synthesized row is explicitly
+    non-publishable/non-activatable until the canonical pipeline proves it.
+    """
+    current = rows.get(provider_id)
+    if isinstance(current, dict):
+        return current
+    if origin != "new-niakvio-clean-seed":
+        raise ValueError(f"{provider_id}: missing provenance row")
+
+    upstream_id = canonical_id(str(candidate.get("upstream_id") or provider_id)) or provider_id
+    row: dict[str, Any] = {
+        "id": provider_id,
+        "published_filename": None,
+        "sha256": None,
+        "patched_sha256": None,
+        "local_patches": [],
+        "source": "niakvio-learning-clean-proposal",
+        "source_name": "NiakVIO clean reconstruction Learning proposal",
+        "source_repository": "NiakVIO",
+        "source_license": "GPL-3.0-only",
+        "source_license_evidence": "LICENSE",
+        "upstream_id": upstream_id,
+        "upstream_filename": str(candidate.get("upstream_filename") or "") or None,
+        "checked_at": now,
+        "check_mode": "brain_learning_clean_proposal",
+        "check_status": "pending",
+        "health_score": 0,
+        "activation_eligible": False,
+        "strict_activation_eligible": False,
+        "runtime_evidence_eligible": False,
+        "activation_mode": "learning_proposal_pending",
+        "activation_blockers": ["canonical_pipeline_proof_required"],
+        "proposal_only": True,
+        "publication_allowed": False,
+        "production_writes_allowed": False,
+        "candidate_code_origin": origin,
+        "upstream_code_role": "knowledge-only",
+        "upstream_code_executed": False,
+        "legacy_provider_js_executed_for_reconstruction": False,
+    }
+    rows[provider_id] = row
+    return row
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", type=Path, required=True)
@@ -148,9 +203,13 @@ def main() -> int:
         target = output_dir / Path(relative).name
         target.write_bytes(base_data)
 
-        current = proposed_rows.get(provider_id)
-        if not isinstance(current, dict):
-            raise ValueError(f"{provider_id}: missing provenance row")
+        current = ensure_proposal_provenance_row(
+            proposed_rows,
+            provider_id,
+            candidate,
+            origin,
+            now,
+        )
         if str(current.get("base_source") or "") != CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE:
             current.setdefault("legacy_base_filename_before_clean_candidate", current.get("base_filename"))
             current.setdefault("legacy_base_sha256_before_clean_candidate", current.get("base_sha256"))
