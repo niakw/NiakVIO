@@ -26,6 +26,19 @@ for count in (1,2,4,8,16):
 
 assert mod.chunks(["a","b","c","d","e"],2)==[["a","b"],["c","d"],["e"]]
 
+payload={
+    "providers":[
+        {"provider":"a","status":"PROVIDER JS BROKEN"},
+        {"provider":"b","status":"PROVIDER WAF/ANTIBOT"},
+        {"provider":"c","status":"FULL OK"},
+    ],
+    "brainQueue":["a","b"],
+    "repairQueue":["a"],
+    "symptomaticProviders":["a","b"],
+}
+assert mod.census_queue(payload, include_environment=False)=={"a"}
+assert mod.census_queue(payload, include_environment=True)=={"a","b"}
+
 health={
     "results":[
         {"key":"published:a","status":"healthy","evidence":{"streams_playable":2}},
@@ -66,6 +79,8 @@ for required in (
     "multi-wave-brain-repair",
     "providerSpecificRules",
     "wafEnvironmentExcludedByDefault",
+    "selectionSource",
+    "repairQueue",
 ):
     assert required in source, required
 
