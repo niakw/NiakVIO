@@ -223,7 +223,7 @@ const sandbox={
       return R(url,'application/json',JSON.stringify({message:'secondary search'}));
     }
     if(url==='https://demo.example/player/987'){
-      return R(url,'text/html','<script>var p={file:"https://cdn.example/master.m3u8"};</script>');
+      return R(url,'text/html','<script>const host="https://cdn.example";const path="/master.m3u8";var p={file:host+path};</script>');
     }
     if(url==='https://cdn.example/master.m3u8'){
       return R(url,'application/vnd.apple.mpegurl','#EXTM3U\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n#EXT-X-ENDLIST\n');
@@ -254,6 +254,7 @@ with tempfile.TemporaryDirectory() as directory:
     execution = json.loads(completed.stdout.strip())
 
 assert any(row["url"] == "https://demo.example/player/987" for row in execution["calls"]), execution
+assert any(row["url"] == "https://cdn.example/master.m3u8" for row in execution["calls"]), execution
 assert execution["rows"], execution
 assert execution["rows"][0]["url"] == "https://cdn.example/master.m3u8", execution
 
