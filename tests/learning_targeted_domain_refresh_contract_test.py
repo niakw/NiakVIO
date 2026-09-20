@@ -20,5 +20,10 @@ assert '"--rebuild", "--provider", provider_id' in queue
 reconciler=(ROOT/"scripts/reconcile_provider_domain_metadata.py").read_text(encoding="utf-8")
 assert 'parser.add_argument("--provider"' in reconciler
 assert 'if selected_provider and provider_id.casefold() != selected_provider' in reconciler
+profiles_script=(ROOT/"scripts/build_provider_runtime_profiles.py").read_text(encoding="utf-8")
+assert 'parser.add_argument("--provider", action="append"' in profiles_script
+assert 'if target_ids and provider_id not in target_ids' in profiles_script
+assert '"last_refresh_scope": "targeted"' in profiles_script
+assert 'build_provider_runtime_profiles.py"), "--stage", str(stage), "--apply-stage", "--provider", provider_id' in queue
 
 print("Learning targeted domain-refresh scope contract passed")
