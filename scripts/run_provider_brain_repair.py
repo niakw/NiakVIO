@@ -1,0 +1,367 @@
+#!/usr/bin/env python3
+"""One-command intelligent repair over the unresolved NiakVIO provider portfolio.
+
+This is the operator entrypoint for large catalogues. It never contains
+provider-specific rules. It selects unresolved providers, keeps pure WAF/
+environment cases out of code mutation by default, stages providers in bounded
+batches, runs the ARCHI2 Brain deep sandbox, learns from strictly validated
+improvements, materializes accepted reusable profiles, and lets later waves
+reuse newly trusted skills.
+
+Provider-local knowledge is evidence. Durable behavior remains Core/capability
+profiles and validated learned skills.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+STATUS = ROOT / "automation" / "provider-census-status.json"
+DEFAULT_OUTPUT = ROOT / "automation" / "provider-brain-repair-latest.json"
+DEFAULT_WORK = ROOT / "automation" / ".provider-brain-repair-work"
+
+GREEN = {"FULL OK", "PARTIAL OK"}
+ENVIRONMENT = {"PROVIDER WAF/ANTIBOT"}
+
+
+def load(path: Path, default: Any) -> Any:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return default
+
+
+def write(path: Path, value: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def cid(value: object) -> str:
+    return str(value or "").strip().casefold().replace("_", "-")
+
+
+def run(*args: str, env: dict[str, str] | None = None, timeout: int | None = None) -> None:
+    print("FIELD_PROVIDER_BRAIN_REPAIR_CMD " + " ".join(args), flush=True)
+    subprocess.run(
+        list(args),
+        cwd=ROOT,
+        env=env or os.environ.copy(),
+        check=True,
+        timeout=timeout,
+    )
+
+
+def shard_for(provider: str, count: int) -> int:
+    digest = hashlib.sha256(provider.encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "big") % count
+
+
+def status_rows() -> dict[str, dict[str, Any]]:
+    payload = load(STATUS, {})
+    return {
+        cid(row.get("provider")): row
+        for row in payload.get("providers") or []
+        if isinstance(row, dict) and cid(row.get("provider"))
+    }
+
+
+def select_targets(
+    explicit: list[str],
+    *,
+    include_environment: bool,
+    shard_count: int,
+    shard_index: int,
+) -> tuple[list[str], list[str], dict[str, dict[str, Any]]]:
+    rows = status_rows()
+    requested = {cid(value) for value in explicit if cid(value)}
+    if requested:
+        candidates = sorted(requested)
+    else:
+        candidates = sorted(
+            provider
+            for provider, row in rows.items()
+            if str(row.get("status") or "") not in GREEN
+        )
+    skipped_environment: list[str] = []
+    selected: list[str] = []
+    for provider in candidates:
+        row = rows.get(provider) or {}
+        state = str(row.get("status") or "")
+        if not include_environment and state in ENVIRONMENT:
+            skipped_environment.append(provider)
+            continue
+        if shard_for(provider, shard_count) != shard_index:
+            continue
+        selected.append(provider)
+    return selected, sorted(skipped_environment), rows
+
+
+def chunks(values: list[str], size: int) -> list[list[str]]:
+    return [values[index:index + size] for index in range(0, len(values), size)]
+
+
+def playable_count(result: dict[str, Any]) -> int:
+    evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
+    values = [int(evidence.get("streams_playable") or 0)]
+    for test in result.get("tests") or []:
+        if isinstance(test, dict):
+            values.append(int(test.get("streams_playable") or 0))
+    return max(values or [0])
+
+
+def contradiction_count(result: dict[str, Any]) -> int:
+    evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
+    return int(evidence.get("identity_contradiction_count") or 0) + int(
+        evidence.get("duration_identity_mismatch_count") or 0
+    )
+
+
+def fixed_providers(health: dict[str, Any]) -> set[str]:
+    out: set[str] = set()
+    for result in health.get("results") or []:
+        if not isinstance(result, dict):
+            continue
+        key = str(result.get("key") or "")
+        provider = cid(key.split(":", 1)[-1].split("::", 1)[0])
+        if not provider:
+            continue
+        if playable_count(result) > 0 and contradiction_count(result) == 0:
+            out.add(provider)
+    return out
+
+
+def accepted_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for round_row in report.get("rounds") or []:
+        if not isinstance(round_row, dict):
+            continue
+        for accepted in round_row.get("accepted") or []:
+            if not isinstance(accepted, dict):
+                continue
+            parent = str(accepted.get("parent_key") or "")
+            provider = cid(parent.split(":", 1)[-1].split("::", 1)[0])
+            out.append({
+                "provider": provider,
+                "profile": str(accepted.get("profile") or ""),
+                "reason": str(accepted.get("reason") or ""),
+                "statusBefore": accepted.get("status_before"),
+                "statusAfter": accepted.get("status_after"),
+                "playableBefore": int(accepted.get("streams_playable_before") or 0),
+                "playableAfter": int(accepted.get("streams_playable_after") or 0),
+            })
+    return out
+
+
+def sanitized_brain(report: dict[str, Any]) -> dict[str, Any]:
+    brain = report.get("brain") if isinstance(report.get("brain"), dict) else {}
+    plans = brain.get("plans") if isinstance(brain.get("plans"), dict) else {}
+    return {
+        "learnedEvents": int(brain.get("learnedEvents") or 0),
+        "validatedRepairLearningExecuted": bool(brain.get("validatedRepairLearningExecuted")),
+        "queuedForLearning": sorted({cid(x) for x in brain.get("queuedForLearning") or [] if cid(x)}),
+        "plans": {
+            str(key): {
+                "providerId": row.get("providerId"),
+                "failureClass": row.get("failureClass"),
+                "signature": row.get("signature"),
+                "action": row.get("action"),
+                "allowedProfiles": row.get("allowedProfiles") or [],
+                "hypotheses": row.get("hypotheses") or [],
+            }
+            for key, row in plans.items()
+            if isinstance(row, dict)
+        },
+    }
+
+
+def materialize() -> None:
+    for command in (
+        (sys.executable, "scripts/reconcile_provider_domain_metadata.py", "--rebuild"),
+        (sys.executable, "scripts/materialize_provider_base_v3_store.py"),
+        (sys.executable, "scripts/materialize_provider_v3_all.py"),
+        (sys.executable, "scripts/validate_published_provider_config.py"),
+    ):
+        run(*command)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--provider", action="append", default=[], help="Optional provider id; repeatable. Empty = all current non-green providers.")
+    parser.add_argument("--waves", type=int, default=3)
+    parser.add_argument("--batch-size", type=int, default=48)
+    parser.add_argument("--health-concurrency", type=int, default=0, help="0 = auto (6/8 depending on target count)")
+    parser.add_argument("--include-environment", action="store_true", help="Include pure WAF/environment cases in code-repair staging.")
+    parser.add_argument("--shard-count", type=int, default=1)
+    parser.add_argument("--shard-index", type=int, default=0)
+    parser.add_argument("--work-dir", type=Path, default=DEFAULT_WORK)
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--keep-work", action="store_true")
+    args = parser.parse_args()
+
+    shard_count = max(1, min(int(args.shard_count), 64))
+    shard_index = int(args.shard_index)
+    if not 0 <= shard_index < shard_count:
+        raise SystemExit("invalid shard index")
+    waves = max(1, min(int(args.waves), 6))
+    batch_size = max(4, min(int(args.batch_size), 96))
+
+    selected, skipped_environment, rows = select_targets(
+        args.provider,
+        include_environment=args.include_environment,
+        shard_count=shard_count,
+        shard_index=shard_index,
+    )
+    if not selected:
+        payload = {
+            "schemaVersion": 1,
+            "selectedProviderCount": 0,
+            "selectedProviders": [],
+            "skippedEnvironmentProviders": skipped_environment,
+            "waves": [],
+            "remainingProviders": [],
+            "message": "no repairable providers selected",
+        }
+        write(args.output if args.output.is_absolute() else ROOT / args.output, payload)
+        print("FIELD_PROVIDER_BRAIN_REPAIR_EMPTY")
+        return 0
+
+    work = args.work_dir if args.work_dir.is_absolute() else ROOT / args.work_dir
+    if work.exists():
+        shutil.rmtree(work)
+    work.mkdir(parents=True)
+    remaining = list(selected)
+    wave_reports: list[dict[str, Any]] = []
+    all_accepted: list[dict[str, Any]] = []
+    all_fixed: set[str] = set()
+    no_progress_reason: str | None = None
+
+    concurrency = int(args.health_concurrency)
+    if concurrency <= 0:
+        concurrency = 8 if len(selected) >= 48 else 6
+    concurrency = max(1, min(concurrency, 8))
+
+    try:
+        for wave in range(1, waves + 1):
+            if not remaining:
+                break
+            accepted_this_wave: list[dict[str, Any]] = []
+            fixed_this_wave: set[str] = set()
+            batch_reports: list[dict[str, Any]] = []
+
+            for batch_index, batch in enumerate(chunks(remaining, batch_size), start=1):
+                batch_root = work / f"wave-{wave}" / f"batch-{batch_index}"
+                stage = batch_root / "stage"
+                output = batch_root / "output"
+                targets_file = batch_root / "targets.json"
+                batch_root.mkdir(parents=True, exist_ok=True)
+                write(targets_file, {"targets": [{"id": provider} for provider in batch]})
+
+                run(sys.executable, "scripts/stage_published.py", "--stage", str(stage), "--include-file", str(targets_file))
+                env = os.environ.copy()
+                env["NUVIO_HEALTH_CONCURRENCY"] = str(concurrency)
+                env["NUVIO_BRAIN_REPAIR_WAVE"] = str(wave)
+                run(
+                    sys.executable,
+                    "scripts/run_adaptive_deep_repair.py",
+                    "--stage", str(stage),
+                    "--registry", str(stage / "candidates.json"),
+                    "--output", str(output),
+                    "--max-rounds", "1",
+                    env=env,
+                    timeout=max(1800, len(batch) * 120),
+                )
+
+                repair_report = load(output / "repair-report.json", {})
+                health = load(output / "health-results.json", {})
+                accepted = accepted_rows(repair_report)
+                fixed = fixed_providers(health)
+                accepted_this_wave.extend(accepted)
+                fixed_this_wave.update(fixed)
+                batch_reports.append({
+                    "batch": batch_index,
+                    "providerCount": len(batch),
+                    "providers": batch,
+                    "acceptedCount": len(accepted),
+                    "accepted": accepted,
+                    "fixedInLab": sorted(fixed),
+                    "brain": sanitized_brain(repair_report),
+                })
+
+            all_accepted.extend(accepted_this_wave)
+            all_fixed.update(fixed_this_wave)
+            remaining = [provider for provider in remaining if provider not in fixed_this_wave]
+            wave_reports.append({
+                "wave": wave,
+                "inputProviderCount": sum(row["providerCount"] for row in batch_reports),
+                "acceptedCount": len(accepted_this_wave),
+                "fixedInLabCount": len(fixed_this_wave),
+                "fixedInLab": sorted(fixed_this_wave),
+                "remainingProviderCount": len(remaining),
+                "batches": batch_reports,
+            })
+
+            if not accepted_this_wave:
+                no_progress_reason = "no_strictly_improving_repair_candidate"
+                break
+
+            # Accepted profile assignments and trusted skill memory are now in
+            # provider-overrides.json. Materialize once per wave so the next wave
+            # starts from the improved current bytes instead of replaying the same
+            # parent candidate.
+            materialize()
+
+        payload = {
+            "schemaVersion": 1,
+            "executionModel": "multi-wave-brain-repair",
+            "providerSpecificRules": False,
+            "sourceCensusRunId": load(STATUS, {}).get("runId"),
+            "shardCount": shard_count,
+            "shardIndex": shard_index,
+            "healthConcurrency": concurrency,
+            "batchSize": batch_size,
+            "maxWaves": waves,
+            "selectedProviderCount": len(selected),
+            "selectedProviders": selected,
+            "initialStatuses": {
+                provider: str((rows.get(provider) or {}).get("status") or "unknown")
+                for provider in selected
+            },
+            "skippedEnvironmentProviders": skipped_environment,
+            "acceptedRepairCount": len(all_accepted),
+            "acceptedRepairs": all_accepted,
+            "fixedInLabProviders": sorted(all_fixed),
+            "remainingProviders": remaining,
+            "noProgressReason": no_progress_reason,
+            "waves": wave_reports,
+            "safety": {
+                "learnedSkillRole": "hypothesis-ordering-only",
+                "directSkillApplication": False,
+                "acceptedMutationRequiresStrictImprovement": True,
+                "identityGateRequired": True,
+                "currentByteRetestRequired": True,
+                "wafEnvironmentExcludedByDefault": True,
+            },
+        }
+        output_path = args.output if args.output.is_absolute() else ROOT / args.output
+        write(output_path, payload)
+        print(
+            "FIELD_PROVIDER_BRAIN_REPAIR "
+            f"selected={len(selected)} accepted={len(all_accepted)} "
+            f"fixed_lab={len(all_fixed)} remaining={len(remaining)} waves={len(wave_reports)}"
+        )
+        return 0
+    finally:
+        if not args.keep_work:
+            shutil.rmtree(work, ignore_errors=True)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
