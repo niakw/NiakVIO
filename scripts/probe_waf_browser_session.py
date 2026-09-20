@@ -22,7 +22,7 @@ import tempfile
 import time
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import quote, urljoin, urlsplit, urlunsplit
 
 CHALLENGE_MARKERS = (
     "just a moment",
@@ -72,8 +72,12 @@ def extract_targets(report: dict[str, Any]) -> list[dict[str, Any]]:
         provider = str(row.get("provider_id") or row.get("provider") or "").strip().casefold()
         lane = str(row.get("semantic_type") or row.get("lane") or "").strip().casefold()
         if prior_browser_row:
-            raw_url = str(row.get("publicUrl") or "").strip()
-            public_url = sanitized_url(raw_url)
+            public_url = sanitized_url(row.get("publicUrl"))
+            seed_kind = str(row.get("seedKind") or "").strip()
+            seed_route = str(row.get("seedRoute") or "").strip()
+            raw_url = public_url
+            if seed_kind == "metadata-search" and seed_route:
+                raw_url = urljoin(public_url, seed_route.replace("{query}", quote("niakvio")))
             method = str(row.get("method") or "GET").upper()
             if not provider or not lane or not public_url:
                 continue
@@ -91,6 +95,8 @@ def extract_targets(report: dict[str, Any]) -> list[dict[str, Any]]:
                 "method": method,
                 "fetchStatus": int(row.get("fetchStatus") or 0),
                 "challenge": str(row.get("challenge") or "unknown")[:32],
+                "seedKind": seed_kind or None,
+                "seedRoute": seed_route or None,
             })
             continue
 
@@ -136,12 +142,12 @@ def extract_status_targets(
 ) -> list[dict[str, Any]]:
     """Seed newly-classified WAF providers from current provider metadata.
 
-    This fallback proves only ordinary browser reachability of the provider
-    homepage. It is never equivalent to an observed challenged request and
-    therefore cannot promote census/playback state by itself.
+    Prefer a provider-owned GET search route when metadata exposes one; otherwise
+    fall back to the homepage. Metadata seeds are diagnostic only and never
+    equivalent to observed challenged requests or playback proof.
     """
-    existing_pairs = {
-        (str(row.get("provider") or "").casefold(), str(row.get("lane") or "").casefold())
+    existing_by_pair = {
+        (str(row.get("provider") or "").casefold(), str(row.get("lane") or "").casefold()): row
         for row in existing
         if isinstance(row, dict)
     }
@@ -154,24 +160,47 @@ def extract_status_targets(
         if not provider:
             continue
         patch = patches.get(provider) if isinstance(patches.get(provider), dict) else {}
-        raw_url = str(
+        base_url = str(
             patch.get("official_site")
             or patch.get("known_site")
             or patch.get("officialSite")
             or patch.get("knownSite")
             or ""
         ).strip()
-        public_url = sanitized_url(raw_url)
-        if not public_url:
+        public_base = sanitized_url(base_url)
+        if not public_base:
             continue
+        learned_routes = [
+            str(value).strip()
+            for value in [
+                *(patch.get("learned_routes") or []),
+                *(patch.get("candidate_learned_routes") or []),
+            ]
+            if isinstance(value, str) and str(value).strip()
+        ]
+        search_route = next(
+            (
+                route for route in learned_routes
+                if "{query}" in route and route.startswith("/") and "{" not in route.replace("{query}", "")
+            ),
+            "",
+        )
         lanes = [
             str(value).strip().casefold()
             for value in row.get("declaredLanes") or []
             if str(value).strip()
         ] or ["unknown"]
         for lane in lanes:
-            if (provider, lane) in existing_pairs:
+            existing_row = existing_by_pair.get((provider, lane))
+            existing_seed = str((existing_row or {}).get("seedKind") or "")
+            if existing_row and not (existing_seed == "metadata-homepage" and search_route):
                 continue
+            seed_kind = "metadata-search" if search_route else "metadata-homepage"
+            raw_url = (
+                urljoin(public_base, search_route.replace("{query}", quote("niakvio")))
+                if search_route else base_url
+            )
+            public_url = sanitized_url(raw_url)
             out.append({
                 "provider": provider,
                 "lane": lane,
@@ -181,8 +210,9 @@ def extract_status_targets(
                 "path": str(urlsplit(public_url).path or "/"),
                 "method": "GET",
                 "fetchStatus": 0,
-                "challenge": "metadata-homepage-seed",
-                "seedKind": "metadata-homepage",
+                "challenge": f"{seed_kind}-seed",
+                "seedKind": seed_kind,
+                "seedRoute": search_route or None,
             })
     return out
 
@@ -217,7 +247,7 @@ def probe_target(
     started = time.monotonic()
     base = {
         key: target.get(key)
-        for key in ("provider", "lane", "publicUrl", "host", "path", "method", "fetchStatus", "challenge", "seedKind")
+        for key in ("provider", "lane", "publicUrl", "host", "path", "method", "fetchStatus", "challenge", "seedKind", "seedRoute")
     }
     if str(target.get("method") or "GET").upper() != "GET":
         return {**base, "outcome": "unsupported_method", "durationMs": 0}
@@ -313,7 +343,20 @@ def main() -> int:
     report = load(args.report)
     targets = extract_targets(report)
     if args.status and args.overrides and args.status.is_file() and args.overrides.is_file():
-        targets.extend(extract_status_targets(load(args.status), load(args.overrides), targets))
+        supplemental = extract_status_targets(load(args.status), load(args.overrides), targets)
+        upgraded_pairs = {
+            (str(row.get("provider") or ""), str(row.get("lane") or ""))
+            for row in supplemental
+            if str(row.get("seedKind") or "") == "metadata-search"
+        }
+        targets = [
+            row for row in targets
+            if not (
+                str(row.get("seedKind") or "") == "metadata-homepage"
+                and (str(row.get("provider") or ""), str(row.get("lane") or "")) in upgraded_pairs
+            )
+        ]
+        targets.extend(supplemental)
     targets = targets[: max(1, args.max_targets)]
     browser = browser_binary()
     rows: list[dict[str, Any]] = []
