@@ -924,7 +924,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         ]
         terminal_configured = [
             route for route in configured_direct
-            if _route_role(route) in {"player", "api"}
+            if _route_role(route) in TERMINAL_MEDIA_ROLES
         ]
         terminal_peer = [
             route for route in peer_direct
@@ -983,7 +983,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
                 ],
                 [
                     route for route in configured_direct
-                    if _route_role(route) in {"player", "api"}
+                    if _route_role(route) in TERMINAL_MEDIA_ROLES
                 ],
                 limit=24,
             )
