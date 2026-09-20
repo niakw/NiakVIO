@@ -34,18 +34,22 @@ assert 'provider-repair-portfolio-baseline.json' in workflow
 assert 'provider-repair-portfolio-candidate.json' in workflow
 assert 'provider-repair-portfolio-retry.json' in workflow
 
-# Provider-wide skip remains an exact-proof optimization, while automatic
-# Repair scope is derived from current disposition for catalogue-scale work.
+# Provider-wide skip remains an exact-proof optimization. Automatic Repair
+# scope is owned by the durable census repairQueue; disposition is compatibility
+# evidence only and may never drag a stable FULL/PARTIAL provider back into Repair.
 assert skip.get('schemaVersion') == 2
 assert set((skip.get('providers') or {}).keys()) == {'castle', 'persianstremio'}
 assert 'entire declared capability surface' in str(skip.get('policy') or '')
 assert 'Partial green lanes are protected' in str(skip.get('policy') or '')
 for marker in (
     'def unresolved_target_scope(',
-    'state_by_provider.get(provider) != "on"',
-    'auto_excluded_green',
-    '"dispositionScopedUnresolvedOnly": not bool(requested)',
-    '"autoExcludedCurrentGreenProviders": sorted(auto_excluded_green)',
+    'provider-census-status.json:repairQueue',
+    'census=census',
+    'CENSUS_STATUS',
+    'refresh_census(PORTFOLIO_BASELINE, phase="pre-repair")',
+    'refresh_census(PORTFOLIO_CANDIDATE, phase="post-repair")',
+    '"selectionAuthority": "provider-census-status.json:repairQueue"',
+    '"censusStatusUpdated": True',
 ):
     assert marker in pipeline, marker
 assert 'for provider in targets:' in pipeline
@@ -134,8 +138,8 @@ for marker in (
 ):
     assert marker in quick_yield, marker
 assert '--require-upstream-positive-preserved' in pipeline
-assert 'capture_portfolio_yield(PORTFOLIO_BASELINE)' in pipeline
-assert 'capture_portfolio_yield(PORTFOLIO_CANDIDATE)' in pipeline
+assert 'capture_portfolio_yield(PORTFOLIO_BASELINE, initial_targets)' in pipeline
+assert 'capture_portfolio_yield(PORTFOLIO_CANDIDATE, targets)' in pipeline
 assert 'scripts/compare_quick_yield_preservation.py' in pipeline
 assert 'scripts/audit_provider_quick_yield_targeted.py' in pipeline
 assert 'portfolioPreservationGatePassed' in pipeline
