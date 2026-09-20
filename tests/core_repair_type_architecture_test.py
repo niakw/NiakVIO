@@ -190,7 +190,7 @@ assert not [value for value in streamzo_scripts if "/streamzo_" in value], strea
 # dedicated provider/recovery contracts.
 
 policy = overrides.get("runtime_capability_media_safety") or {}
-assert policy.get("scope") == "all_published_providers", policy
+assert policy.get("scope") == "all_published_providers_media_playability_only", policy
 assert policy.get("provider_specific_core_script_entries_forbidden") is True, policy
 assert policy.get("request_identity_source") == "original_nuvio_request", policy
 assert (policy.get("options") or {}).get("duration_identity") is True, policy
