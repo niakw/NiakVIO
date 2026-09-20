@@ -178,6 +178,19 @@ def _sanitized_learned_skill(raw: Any) -> dict[str, Any] | None:
     success_count = max(0, int(raw.get("successCount") or 0))
     failure_count = max(0, int(raw.get("failureCount") or 0))
     confidence = max(0.0, min(1.0, float(raw.get("confidence") or 0.0)))
+    signatures = sorted({_safe_text(value, 160) for value in raw.get("signatures") or [] if _safe_text(value, 160)})[:96]
+    strategies = sorted({_safe_text(value, 64).casefold() for value in raw.get("capabilityStrategies") or [] if _safe_text(value, 64)})[:32]
+    stages = sorted({_safe_text(value, 64).casefold() for value in raw.get("observedPipelineStages") or [] if _safe_text(value, 64)})[:32]
+    success_by_signature = {
+        key: max(0, int(value or 0))
+        for key, value in (raw.get("successBySignature") or {}).items()
+        if isinstance(raw.get("successBySignature"), dict) and key in signatures
+    }
+    failure_by_signature = {
+        key: max(0, int(value or 0))
+        for key, value in (raw.get("failureBySignature") or {}).items()
+        if isinstance(raw.get("failureBySignature"), dict) and key in signatures
+    }
     return {
         "id": skill_id,
         "failureClass": failure_class,
@@ -185,12 +198,18 @@ def _sanitized_learned_skill(raw: Any) -> dict[str, Any] | None:
         "actions": [_safe_text(value, 240) for value in raw.get("actions") or [] if _safe_text(value, 240)][:12],
         "capabilities": sorted({_safe_text(value, 64) for value in raw.get("capabilities") or [] if _safe_text(value, 64)})[:24],
         "providers": sorted({str(value or "").strip().casefold()[:128] for value in raw.get("providers") or [] if str(value or "").strip()})[:96],
+        "signatures": signatures,
+        "capabilityStrategies": strategies,
+        "observedPipelineStages": stages,
+        "successBySignature": success_by_signature,
+        "failureBySignature": failure_by_signature,
         "successCount": success_count,
         "failureCount": failure_count,
         "validated": True,
         "confidence": confidence,
         "maturity": maturity,
-        "autoApply": maturity == "trusted" and raw.get("autoApply") is True,
+        "autoApply": False,
+        "proposalEligible": maturity == "trusted",
         "lastValidatedMode": _safe_text(raw.get("lastValidatedMode"), 32),
     }
 
