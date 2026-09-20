@@ -21,6 +21,9 @@ This file is the durable recovery source of truth for the active NiakVIO work. P
 - Loop iteration Repair #6: run `35503376036` on SHA `0d11b3e6e65c` stopped in Brain preflight before provider probes. Orchestrator and v3 contracts passed; the only failure was an over-specific test expecting `/film/{slug}` to outrank equivalent generic detail route `/{slug}` for transport variant 1.
 - Fix `94b0bd538be4`: test now asserts the real invariant (first route is detail-shaped and peer `/player/{id}` is still withheld), not one spelling/order artifact. Repair #6 produced no provider evidence.
 
+- Loop iteration Repair #7: run `35503441029` on SHA `8de8ee7c5a84` stopped in Brain preflight before provider probes. Orchestrator, census, v3 and prior escalation assertions passed. Failure: `candidate_replay_gap` test expected `peer_recipe_min_variant`, which the runtime used internally but did not expose in returned diagnostic options.
+- Fix `9e99aee07148`: expose `peer_recipe_min_variant` alongside `peer_route_min_variant`; behavior was already staged correctly (candidate replay withholds both peer route and peer request transfer until variant 3). Repair #7 produced no provider evidence.
+
 ## 2026-09-20 10:50 Europe/Paris — virtuous Repair → improve → Repair loop resumed
 - Loop iteration Repair #2: run `35501120857` passed the new v3 override contract, then failed in `brain_repair_experience_transfer_test.py`. Diagnostic output proved both provider and peer request recipe counts were zero even though the synthetic experience contained valid POST recipes.
 - Root cause: `scripts/adaptive_runtime/runtime_repair.py` had route/request placeholder regexes double-escaped (`\\{...\\}`), so `{query}` / `{slug}` templates were not recognized. This silently suppressed request-recipe transfer and distorted template ordering. Generic fix `b32d2f935f6e`; direct regex contract added in `866edbeb60c5`.
