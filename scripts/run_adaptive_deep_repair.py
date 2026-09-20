@@ -113,6 +113,10 @@ def main() -> int:
         deep_config = health_config.setdefault("modes", {}).setdefault("deep", {})
         deep_config["max_streams_to_probe"] = max(10, int(deep_config.get("max_streams_to_probe") or 1))
         deep_config["probe_streams_adaptively"] = True
+        # Brain program synthesis needs the worker's already-sanitized request
+        # shape and response-value hints. Keep this opt-in to the bounded Deep
+        # repair lane so normal health/parity reports remain unchanged.
+        deep_config["route_proof_trace"] = True
         HEALTH_CONFIG.write_text(json.dumps(health_config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
         stage = _argument_path("--stage", ROOT / "staging")
