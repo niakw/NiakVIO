@@ -292,6 +292,12 @@ def main() -> int:
         # for diagnostics but can never create a blocking regression.
         type_floor = set().union(*(set(values) for values in historical_types.values()))
         lost_types = sorted(type_floor - current_types)
+        # Preserve declaration drift for audit, but only a semantic lane that
+        # was actually verified can become a blocking functional obligation.
+        # This prevents stale/optimistic historical manifest declarations from
+        # fossilizing an unproved capability forever.
+        blocking_lost_types = sorted((type_floor - current_types) & historical_lanes)
+        reclassified_unproved_types = sorted(set(lost_types) - set(blocking_lost_types))
 
         historical_formats = set().union(
             *(formats(manifests[version].get(pid)) for version in HISTORY)
@@ -321,6 +327,8 @@ def main() -> int:
             "currentSemanticTypes": sorted(current_types),
             "currentSemanticTypeSource": current_type_source,
             "lostSemanticTypes": lost_types,
+            "blockingLostSemanticTypes": blocking_lost_types,
+            "unprovedSemanticReclassificationTypes": reclassified_unproved_types,
             "historicalFormats": sorted(historical_formats),
             "currentFormats": sorted(current_formats),
             "hlsM3u8Lost": hls_lost,
@@ -329,7 +337,7 @@ def main() -> int:
             "lostLanguages": lost_languages,
             "disabledAfterHistoricalEnabled": disabled_after_enabled,
         }
-        contract_blocking = bool(lost_types or hls_lost)
+        contract_blocking = bool(blocking_lost_types or hls_lost)
 
         current_icon = str((states.get(current_key) or {}).get("icon") or UNKNOWN)
         status = status_for(
@@ -371,6 +379,7 @@ def main() -> int:
         "historicalGreenMayBecomeUnknownSilently": False,
         "knownVerifiedLaneMayDisappearWithoutCandidateProof": False,
         "semanticCapabilityLossAllowedSilently": False,
+        "unprovedHistoricalSemanticDeclarationMayBlockPublication": False,
         "historicalHlsLossAllowedSilently": False,
         "publicationRule": "changed historical-positive providers must reproduce their historical/current accepted proof floor; shared Core changes imply portfolio-wide proof",
     }
@@ -403,7 +412,8 @@ def main() -> int:
         "",
         "- A provider that was green in an exact historical snapshot cannot become `unknown` without being put on the revalidation list.",
         "- Every verified 5.21.36 lane becomes an explicit lane obligation until current/candidate proof supersedes it.",
-        "- Semantic capability and historical HLS losses are contract regressions, independently of transient network health.",
+        "- A semantic lane becomes a blocking contract obligation only after historical verified-lane proof; unproved declaration drift remains visible as reclassification debt.",
+        "- Historical HLS loss remains a contract regression independently of transient network health.",
         "- Historical bare `supportedTypes` never create a semantic floor because old releases mixed semantic types and transport aliases.",
         "- The publication gate additionally unions the rolling accepted quick-yield baseline with these historical obligations, so future releases extend rather than reset the floor.",
         END,
