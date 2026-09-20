@@ -145,12 +145,14 @@ def repair_batches(values: list[str], size: int) -> list[dict[str, Any]]:
     selected = {cid(value) for value in values if cid(value)}
     if not selected:
         return []
+    pressure = provider_attempt_pressure_map()
+    rank = lambda provider: (pressure.get(cid(provider), 0), cid(provider))
     status = status_payload()
     plan = load(BATCH_PLAN, {})
     if not isinstance(plan, dict) or str(plan.get("sourceRunId") or "") != str(status.get("runId") or ""):
         return [
             {"groupId": "fallback", "repairScope": "unknown", "providers": batch}
-            for batch in chunks(sorted(selected, key=scheduling_rank), size)
+            for batch in chunks(sorted(selected, key=rank), size)
         ]
 
     out: list[dict[str, Any]] = []
@@ -163,7 +165,7 @@ def repair_batches(values: list[str], size: int) -> list[dict[str, Any]]:
                 cid(value) for value in group.get("providers") or []
                 if cid(value) in selected and cid(value) not in assigned
             ],
-            key=scheduling_rank,
+            key=rank,
         )
         if not members:
             continue
@@ -176,12 +178,12 @@ def repair_batches(values: list[str], size: int) -> list[dict[str, Any]]:
             })
             assigned.update(batch)
 
-    leftovers = sorted(selected - assigned, key=scheduling_rank)
+    leftovers = sorted(selected - assigned, key=rank)
     for batch in chunks(leftovers, size):
         out.append({"groupId": "unplanned", "repairScope": "unknown", "providers": batch})
     out.sort(
         key=lambda row: (
-            min((provider_attempt_pressure(provider) for provider in row.get("providers") or []), default=0),
+            min((pressure.get(cid(provider), 0) for provider in row.get("providers") or []), default=0),
             str(row.get("groupId") or ""),
         )
     )
@@ -196,27 +198,19 @@ def repair_memory_fingerprint() -> str:
 
 
 
-def provider_attempt_pressure(provider_id: str) -> int:
-    """Bounded scheduling pressure from durable experiment memory.
-
-    This is scheduling authority only. It never upgrades evidence or grants
-    repair acceptance. Providers with fewer historical experiments are tried
-    first on resumable runs so a large catalogue cannot starve behind the same
-    slow/exhausted providers.
-    """
-    wanted = cid(provider_id)
+def provider_attempt_pressure_map() -> dict[str, int]:
+    """Return one O(memory) scheduling snapshot for the whole portfolio."""
     memory = load(REPAIR_MEMORY, {})
-    total = 0
+    output: dict[str, int] = {}
     for row in memory.get("entries") or []:
-        if not isinstance(row, dict) or cid(row.get("providerId")) != wanted:
+        if not isinstance(row, dict):
             continue
-        total += max(0, int(row.get("failures") or 0))
-        total += max(0, int(row.get("successes") or 0))
-    return total
-
-
-def scheduling_rank(provider_id: str) -> tuple[int, str]:
-    return (provider_attempt_pressure(provider_id), cid(provider_id))
+        provider = cid(row.get("providerId"))
+        if not provider:
+            continue
+        output[provider] = output.get(provider, 0) + max(0, int(row.get("failures") or 0))
+        output[provider] += max(0, int(row.get("successes") or 0))
+    return output
 
 def experiment_rotation_decision(
     *,
@@ -652,7 +646,15 @@ def main() -> int:
             "timeBudgetSeconds": time_budget_seconds,
             "elapsedSeconds": round(time.monotonic() - started_monotonic, 3),
             "timeBudgetExhausted": time_budget_exhausted,
-            "resumeRecommended": bool(time_budget_exhausted and remaining),
+            "unvisitedProviders": sorted(set(selected) - processed_providers),
+            "resumeRecommended": bool(
+                time_budget_exhausted
+                and remaining
+                and (
+                    bool(set(selected) - processed_providers)
+                    or any(bool(row.get("experimentMemoryAdvanced")) for row in wave_reports)
+                )
+            ),
             "processedProviders": sorted(processed_providers),
             "processedProviderCount": len(processed_providers),
             "selectedProviderCount": len(selected),
