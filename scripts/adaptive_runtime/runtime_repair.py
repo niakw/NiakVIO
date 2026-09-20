@@ -44,7 +44,9 @@ EXPERIENCE_PATH = ROOT / "automation" / "brain-repair-experience.json"
 CENSUS_STATUS_PATH = ROOT / "automation" / "provider-census-status.json"
 ROUTE_KEYS = ("candidate_learned_routes", "learned_routes", "candidate_routes", "routes")
 _ROUTE_PLACEHOLDER = re.compile(r"\\{(?:query|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type)\\}", re.I)
+_REQUEST_PLACEHOLDER = re.compile(r"\\{(?:query|queryDots|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type)\\}", re.I)
 _ROUTE_OPAQUE = re.compile(r"(?:[A-Za-z0-9+/]{72,}={0,2}|[A-Fa-f0-9]{96,})")
+_SAFE_REQUEST_HEADERS = {"accept", "accept-language", "content-type", "origin", "referer", "user-agent"}
 
 
 def _census_runtime_focus(provider_id: str) -> dict[str, Any]:
@@ -165,6 +167,120 @@ def _peer_routes(strategy: str) -> list[str]:
         if route and route not in output:
             output.append(route)
     return output[:48]
+
+
+def _safe_request_recipe(raw: Any, *, peer: bool = False) -> dict[str, Any] | None:
+    if not isinstance(raw, dict) or raw.get("executable") is not True:
+        return None
+    route = _safe_route(raw.get("route"))
+    if not route:
+        return None
+    method = str(raw.get("method") or "GET").upper()
+    if method not in {"GET", "POST"}:
+        return None
+    body_kind = str(raw.get("bodyKind") or "none").casefold()
+    if body_kind not in {"none", "form", "json"}:
+        return None
+    body: dict[str, str] = {}
+    for key, value in (raw.get("body") or {}).items():
+        safe_key = str(key or "").strip()
+        safe_value = str(value or "")
+        if not re.fullmatch(r"[A-Za-z0-9_.:-]{1,64}", safe_key):
+            return None
+        if len(safe_value) > 160 or _ROUTE_OPAQUE.search(safe_value):
+            return None
+        if "{" in safe_value or "}" in safe_value:
+            leftovers = re.sub(_REQUEST_PLACEHOLDER, "", safe_value)
+            if "{" in leftovers or "}" in leftovers:
+                return None
+        elif not re.fullmatch(r"[A-Za-z0-9_.:+/-]{1,48}", safe_value):
+            return None
+        body[safe_key] = safe_value
+    if method == "POST" and (body_kind == "none" or not body):
+        return None
+    header_names = sorted({
+        str(name).casefold()
+        for name in raw.get("headerNames") or []
+        if str(name).casefold() in _SAFE_REQUEST_HEADERS
+    })
+    recipe = {
+        "route": route,
+        "role": str(raw.get("role") or _route_role(route)).casefold(),
+        "method": method,
+        "bodyKind": body_kind,
+        "body": body,
+        "headerNames": header_names,
+        "response": str(raw.get("response") or "html-or-text").casefold(),
+        "semanticType": str(raw.get("semanticType") or "").casefold(),
+        "streamProof": raw.get("streamProof") is True,
+        "source": "peer-experience" if peer else "provider-experience",
+    }
+    if not peer:
+        origin = str(raw.get("origin") or "").strip().rstrip("/")
+        if origin.startswith(("http://", "https://")):
+            recipe["origin"] = origin
+    return recipe
+
+
+def _provider_request_recipes(provider_id: str) -> list[dict[str, Any]]:
+    experience = _load_experience()
+    providers = experience.get("providers")
+    if not isinstance(providers, dict):
+        return []
+    row = providers.get(provider_id)
+    if not isinstance(row, dict):
+        return []
+    output: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for raw in row.get("requestRecipes") or []:
+        recipe = _safe_request_recipe(raw, peer=False)
+        if not recipe:
+            continue
+        key = json.dumps(recipe, sort_keys=True, separators=(",", ":"))
+        if key in seen:
+            continue
+        seen.add(key)
+        output.append(recipe)
+    return output[:32]
+
+
+def _peer_request_recipes(strategy: str) -> list[dict[str, Any]]:
+    experience = _load_experience()
+    patterns = experience.get("strategyPatterns")
+    if not isinstance(patterns, dict):
+        return []
+    row = patterns.get(strategy)
+    if not isinstance(row, dict):
+        return []
+    output: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for raw in row.get("commonRequestRecipes") or []:
+        if not isinstance(raw, dict) or int(raw.get("providerSupport") or 0) < 2:
+            continue
+        recipe = _safe_request_recipe(raw, peer=True)
+        if not recipe:
+            continue
+        key = json.dumps(recipe, sort_keys=True, separators=(",", ":"))
+        if key in seen:
+            continue
+        seen.add(key)
+        output.append(recipe)
+    return output[:24]
+
+
+def _unique_request_recipes(*groups: list[dict[str, Any]], limit: int = 32) -> list[dict[str, Any]]:
+    output: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for group in groups:
+        for recipe in group:
+            key = json.dumps(recipe, sort_keys=True, separators=(",", ":"))
+            if key in seen:
+                continue
+            seen.add(key)
+            output.append(recipe)
+            if len(output) >= limit:
+                return output
+    return output
 
 
 def _unique_routes(*groups: list[str], limit: int = 32) -> list[str]:
@@ -318,6 +434,13 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     experiment_variant = max(0, min(int(brain_plan.get("experimentVariant") or 0), 3))
     experiment_failure = str(brain_plan.get("failureClass") or "").strip()
     peer_routes = _peer_routes(strategy)
+    provider_request_recipes = _provider_request_recipes(provider_id)
+    peer_request_recipes = _peer_request_recipes(strategy)
+    request_recipes = _unique_request_recipes(
+        provider_request_recipes,
+        peer_request_recipes if experiment_variant >= 2 else [],
+        limit=32,
+    )
     peer_search = [route for route in peer_routes if _route_role(route) == "search"]
     peer_direct = [route for route in peer_routes if _route_role(route) != "search"]
     configured_search = [str(v) for v in recovery_options.get("search_paths") or [] if str(v).strip()]
@@ -375,7 +498,12 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     blocked_paths.update(network_hints["blocked_paths"])
 
     endpoint_origins: list[str] = []
-    for raw in [*observed, *network_hints["bases"]]:
+    recipe_origins = [
+        str(recipe.get("origin") or "")
+        for recipe in request_recipes
+        if str(recipe.get("origin") or "").startswith(("http://", "https://"))
+    ]
+    for raw in [*observed, *network_hints["bases"], *recipe_origins]:
         peer = _origin(raw)
         if not peer:
             continue
@@ -392,11 +520,15 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         "types": types,
         "search_paths": search_paths,
         "direct_paths": direct_paths,
+        "request_recipes": request_recipes,
         "route_prior_counts": {
             "provider": len(learned_routes),
             "peer": len(peer_routes),
             "search": len(search_paths),
             "direct": len(direct_paths),
+            "requestRecipes": len(request_recipes),
+            "providerRequestRecipes": len(provider_request_recipes),
+            "peerRequestRecipes": len(peer_request_recipes),
         },
         "repair_focus": census_focus.get("focus") or "generic",
         "census_status": census_focus.get("status") or "",
