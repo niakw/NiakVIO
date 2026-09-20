@@ -126,6 +126,13 @@ def build_strategy_blueprints(
             "requiredEvidence": ["retained candidate fixture", "historical proof metadata", "current replay trace"],
             "acceptanceProof": ["current playback re-proven", "historical identity preserved", "no unrelated provider mutation"],
         },
+        "harness-compatibility": {
+            "strategyId": "representative_native_transport_alignment_v1",
+            "causalTrigger": "GitHub Node/browser transport is challenged or diverges before provider-code breakage is established",
+            "method": "use census harnessTransportClass to replay provider-owned safe routes under the closest audited native TV/mobile HTTP policy; classify native-policy-reachable, browser-profile-only, native-policy-inconclusive or all-transports-challenged before any provider mutation",
+            "requiredEvidence": ["sanitized provider-owned route", "GitHub browser/profile matrix", "audited native transport policy result"],
+            "acceptanceProof": ["harness/client divergence classified", "browser or native transport reachability is not promoted to playback", "provider JS mutation remains forbidden without implementation evidence"],
+        },
     }
     blueprints: list[dict[str, Any]] = []
     for group in batch_plan.get("groups") or []:
@@ -135,11 +142,16 @@ def build_strategy_blueprints(
         template = templates.get(scope)
         if not template:
             continue
-        providers = sorted({
+        group_providers = {
             str(value or "").strip().casefold()
             for value in group.get("providers") or []
-            if str(value or "").strip().casefold() in deferred_providers
-        })
+            if str(value or "").strip()
+        }
+        providers = sorted(
+            group_providers
+            if scope == "harness-compatibility"
+            else group_providers & deferred_providers
+        )
         if not providers:
             continue
         row = dict(template)
@@ -159,11 +171,20 @@ def build_strategy_blueprints(
                 for value in group.get("dominantIssues") or []
                 if str(value or "").strip()
             }),
+            "harnessTransportClasses": sorted({
+                str(value or "").strip()
+                for value in group.get("harnessTransportClasses") or []
+                if str(value or "").strip()
+            }),
             "negativeMemorySignature": (
                 f"strategy:{template['strategyId']}|scope:{scope}|"
                 f"capability:{str(group.get('capabilityStrategy') or 'unknown')}"
             ),
-            "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
+            "reentryPolicy": (
+                "proposal -> executable harness contract -> native differential proof -> census refresh"
+                if scope == "harness-compatibility"
+                else "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility"
+            ),
             "productionWritesAllowed": False,
             "requiresHumanMerge": True,
         })
