@@ -320,33 +320,7 @@ def _safe_planner_stderr(value: Any) -> str:
     return " ".join(text.split())[:600]
 
 
-def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict[str, dict[str, Any]]:
-    registry = _load_json(registry_path, {})
-    candidates = {
-        str(row.get("key")): row
-        for row in registry.get("candidates") or []
-        if isinstance(row, dict) and row.get("key")
-    }
-    items = []
-    for result in report.get("results") or []:
-        if not isinstance(result, dict) or not result.get("key"):
-            continue
-        raw_key = str(result["key"])
-        candidate = candidates.get(raw_key)
-        if not candidate:
-            continue
-        parent_key = str((candidate.get("runtime_repair") or {}).get("parent_key") or "")
-        plan_key = parent_key or raw_key
-        # A child retest is outcome evidence for the original causal plan. Do not
-        # overwrite that diagnosis with "healthy" after the repair succeeds.
-        if parent_key and plan_key in PLANS:
-            continue
-        items.append({
-            "key": plan_key,
-            "candidate": _planner_candidate(candidate),
-            "result": _planner_result(result),
-            "state": _public_state(candidate, plan_key),
-        })
+def _execute_planner(items: list[dict[str, Any]], mode: str) -> dict[str, dict[str, Any]]:
     if not items:
         return PLANS
     payload = {
@@ -376,6 +350,60 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
         if isinstance(row, dict):
             PLANS[str(key)] = row
     return PLANS
+
+
+def replan_observation(
+    candidate: dict[str, Any],
+    result: dict[str, Any],
+    *,
+    plan_key: str | None = None,
+    mode: str = "deep",
+) -> dict[str, Any]:
+    """Replan one exploration-only parent from its newly observed runtime state."""
+    key = str(plan_key or candidate.get("key") or "")
+    if not key:
+        return {}
+    _execute_planner(
+        [{
+            "key": key,
+            "candidate": _planner_candidate(candidate),
+            "result": _planner_result(result),
+            "state": _public_state(candidate, key),
+        }],
+        mode,
+    )
+    return PLANS.get(key) or {}
+
+
+def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict[str, dict[str, Any]]:
+    registry = _load_json(registry_path, {})
+    candidates = {
+        str(row.get("key")): row
+        for row in registry.get("candidates") or []
+        if isinstance(row, dict) and row.get("key")
+    }
+    items = []
+    for result in report.get("results") or []:
+        if not isinstance(result, dict) or not result.get("key"):
+            continue
+        raw_key = str(result["key"])
+        candidate = candidates.get(raw_key)
+        if not candidate:
+            continue
+        parent_key = str((candidate.get("runtime_repair") or {}).get("parent_key") or "")
+        plan_key = parent_key or raw_key
+        # Child retests remain outcome evidence for their original causal plan.
+        # Exploration-only parents are replanned explicitly by _brain_matching
+        # after Deep has proven that the child made safe diagnostic progress.
+        if parent_key and plan_key in PLANS:
+            continue
+        items.append({
+            "key": plan_key,
+            "candidate": _planner_candidate(candidate),
+            "result": _planner_result(result),
+            "state": _public_state(candidate, plan_key),
+        })
+    return _execute_planner(items, mode)
 
 
 def wrap_run_health(base_run_health: Callable[..., dict[str, Any]], mode: str) -> Callable[..., dict[str, Any]]:
