@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { BRAIN_CONTROL_PLANE_VERSION, classifyFailure, planRepair, recipeIsCompatible } from "../src/repair-brain.mjs";
 
-assert.equal(BRAIN_CONTROL_PLANE_VERSION, 4);
+assert.equal(BRAIN_CONTROL_PLANE_VERSION, 6);
 assert.equal(classifyFailure({ invoked: false }), "not_invoked");
 assert.equal(classifyFailure({ invoked: true, dns: { ok: false } }), "dns_unreachable");
 assert.equal(classifyFailure({ invoked: true, dns: { ok: true }, stages: { homepage: { status: 403 } } }), "transport_blocked");
@@ -18,7 +18,7 @@ assert.equal(classifyFailure({ audioTrackGap: true }), "audio_track_gap");
 
 const blockedEvidence = { invoked: true, stages: { player: { attempted: true, found: true }, media: { attempted: true, found: true }, validation: { attempted: true, playable: false, playableCount: 0, statuses: [403] } } };
 const plan = planRepair(blockedEvidence, { maxHypotheses: 3 });
-assert.equal(plan.brainVersion, 4);
+assert.equal(plan.brainVersion, 6);
 assert.equal(plan.failureClass, "playback_context_gap");
 assert.equal(plan.action, "probe-targeted-repair");
 assert.equal(plan.hypotheses[0].id, "preserve-playback-context");
@@ -96,7 +96,7 @@ const dirtyPayload = {
 const plannerRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(dirtyPayload), encoding: "utf8" });
 assert.equal(plannerRun.status, 0, plannerRun.stderr);
 const plannerOutput = JSON.parse(plannerRun.stdout);
-assert.equal(plannerOutput.brainVersion, 4);
+assert.equal(plannerOutput.brainVersion, 6);
 assert.equal(plannerOutput.plannerErrors, 0);
 assert.ok(plannerOutput.plans["published:dirty-provider"]);
 assert.equal(
@@ -105,6 +105,56 @@ assert.equal(
   "Quick/Core planner must ignore learned skills entirely",
 );
 assert.equal(plannerOutput.plans["published:healthy-provider"].action, "none");
+
+// Production Repair may transfer only trusted, validated skills. They are
+// hypotheses, never direct mutations: the selected profile still enters the
+// ordinary sandbox/retest path.
+const trustedPayload = {
+  mode: "deep",
+  policy: {
+    production: {
+      maxHypotheses: 3, maxMutationsPerProvider: 2, maxRepeatedSignature: 2,
+      maxGeneratedBytesPerProvider: 180000, maxElapsedMsPerProvider: 45000,
+      learnedSkillInputAllowed: true,
+      learnedSkillTransferPolicy: {
+        maturity: "trusted", minimumConfidence: 0.8, minimumDistinctProviders: 2,
+        exactSignatureBonus: 100, capabilityStrategyBonus: 40, observedStageBonus: 20,
+        providerPriorBonus: 10, genericFailureClassBase: 15, failedSkillPenalty: 12,
+      },
+    },
+    skillMaturity: { trustedSuccesses: 3, trustedProviders: 2, minimumConfidence: 0.8 },
+  },
+  learnedSkills: {
+    trusted: {
+      id: "search-gap:adaptive", failureClass: "search_gap", profile: "adaptive_runtime_recovery",
+      validated: true, maturity: "trusted", confidence: 0.9, successCount: 5, failureCount: 1,
+      providers: ["a", "b"], capabilityStrategies: ["html_scraper"], observedPipelineStages: ["search"],
+      capabilities: ["search", "routes"], actions: ["reuse validated search repair"],
+    },
+    candidate: {
+      id: "candidate-only", failureClass: "search_gap", profile: "safe_structured_parse",
+      validated: true, maturity: "candidate", confidence: 1, successCount: 9, failureCount: 0,
+      providers: ["a", "b", "c"], capabilityStrategies: ["html_scraper"],
+    },
+  },
+  items: [{
+    key: "published:transfer-target",
+    candidate: { canonical_id: "transfer-target", metadata: { supportedTypes: ["movie"] } },
+    result: {
+      status: "no_streams", evidence: { streams_returned: 0 },
+      tests: [{ fixture: { category: "movie" }, failure_class: "content_lookup_completed_no_streams", network_observations: [{ stage: "search", status: 200, infrastructure: false }] }],
+    },
+    state: {},
+  }],
+};
+const trustedRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(trustedPayload), encoding: "utf8" });
+assert.equal(trustedRun.status, 0, trustedRun.stderr);
+const trustedPlan = JSON.parse(trustedRun.stdout).plans["published:transfer-target"];
+assert.equal(trustedPlan.failureClass, "search_gap");
+assert.equal(trustedPlan.hypotheses[0].learned, true);
+assert.equal(trustedPlan.hypotheses[0].profile, "adaptive_runtime_recovery");
+assert.ok(trustedPlan.allowedProfiles.includes("adaptive_runtime_recovery"));
+assert.equal(trustedPlan.hypotheses.some((row) => row.id === "candidate-only"), false);
 
 // A provider can return media successfully while the final media request is
 // blocked or gone. That is a playback-context failure, not a provider transport
