@@ -28,6 +28,8 @@ STATUS = ROOT / "automation" / "provider-census-status.json"
 DEFAULT_OUTPUT = ROOT / "automation" / "provider-brain-repair-latest.json"
 DEFAULT_WORK = ROOT / "automation" / ".provider-brain-repair-work"
 EXPERIENCE = ROOT / "automation" / "brain-repair-experience.json"
+BATCH_PLAN = ROOT / "automation" / "provider-repair-batch-plan-latest.json"
+REPAIR_MEMORY = ROOT / "automation" / "brain-repair-memory.json"
 
 GREEN = {"FULL OK", "PARTIAL OK"}
 ENVIRONMENT = {"PROVIDER WAF/ANTIBOT"}
@@ -257,6 +259,8 @@ def sanitized_brain(report: dict[str, Any]) -> dict[str, Any]:
                 "signature": row.get("signature"),
                 "action": row.get("action"),
                 "allowedProfiles": row.get("allowedProfiles") or [],
+                "experimentVariant": row.get("experimentVariant"),
+                "negativeMemoryMatches": row.get("negativeMemoryMatches"),
                 "hypotheses": row.get("hypotheses") or [],
             }
             for key, row in plans.items()
@@ -388,6 +392,9 @@ def main() -> int:
                 fixed_this_wave.update(fixed)
                 batch_reports.append({
                     "batch": batch_index,
+                    "groupId": batch_plan.get("groupId"),
+                    "repairScope": batch_plan.get("repairScope"),
+                    "capabilityStrategy": batch_plan.get("capabilityStrategy"),
                     "providerCount": len(batch),
                     "providers": batch,
                     "acceptedCount": len(accepted),
@@ -408,6 +415,7 @@ def main() -> int:
                 "fixedInLabCount": len(fixed_this_wave),
                 "fixedInLab": sorted(fixed_this_wave),
                 "remainingProviderCount": len(remaining),
+                "experimentMemoryAdvanced": experiment_memory_advanced,
                 "batches": batch_reports,
             })
 
@@ -439,7 +447,7 @@ def main() -> int:
 
         payload = {
             "schemaVersion": 1,
-            "executionModel": "multi-wave-brain-repair",
+            "executionModel": "family-batched-multi-wave-brain-repair",
             "providerSpecificRules": False,
             "sourceCensusRunId": status_payload().get("runId"),
             "selectionSource": "automation/provider-census-status.json:repairQueue",
