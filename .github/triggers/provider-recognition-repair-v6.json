@@ -1,11 +1,11 @@
 {
   "schemaVersion": 4,
-  "requestedAt": "2026-09-20T04:32:00+02:00",
-  "retry": 40,
+  "requestedAt": "2026-09-20T04:36:00+02:00",
+  "retry": 41,
   "mode": "repair",
-  "scope": "census-repair-queue-brain-v7-monotonic-retry-1",
+  "scope": "census-repair-queue-brain-v7-memory-loop",
   "targetProviders": [],
-  "goal": "Retry current census repairQueue only after aligning the experience-transfer test with Brain V7 census-focused route ordering. Keep monotonic diagnosis, symptom-depth crawl priorities, learned route/transport experience, WAF exclusion, and census persistence.",
+  "goal": "Run only the current census repairQueue with Brain V7. Preserve monotonic census depth, use bounded experiment variants selected from persistent negative repair memory, reuse validated route/transport experience, exclude WAF environment cases, revalidate the symptom cohort, and persist both PROVIDER_CENSUS_STATUS.md and brain-repair-memory.json.",
   "branch": "main",
   "publication": false
 }
