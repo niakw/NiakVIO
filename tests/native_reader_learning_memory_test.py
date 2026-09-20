@@ -69,7 +69,7 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     # guard by presenting the same declared-route failure from TV and Mobile.
     diagnosis = tmp / "diagnosis.json"
     diagnosis.write_text(json.dumps({
-        "brainVersion": 4,
+        "brainVersion": 6,
         "readerFailures": 2,
         "plans": [
             {
