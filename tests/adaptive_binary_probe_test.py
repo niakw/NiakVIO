@@ -7,8 +7,8 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-script = ROOT / "scripts/provider_patches/adaptive_runtime_recovery_v4.py"
-spec = importlib.util.spec_from_file_location("v4", script)
+script = ROOT / "scripts/provider_patches/adaptive_runtime_recovery_v5.py"
+spec = importlib.util.spec_from_file_location("v5", script)
 mod = importlib.util.module_from_spec(spec)
 assert spec.loader is not None
 spec.loader.exec_module(mod)
