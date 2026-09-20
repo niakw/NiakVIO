@@ -181,15 +181,17 @@ def _sanitized_learned_skill(raw: Any) -> dict[str, Any] | None:
     signatures = sorted({_safe_text(value, 160) for value in raw.get("signatures") or [] if _safe_text(value, 160)})[:96]
     strategies = sorted({_safe_text(value, 64).casefold() for value in raw.get("capabilityStrategies") or [] if _safe_text(value, 64)})[:32]
     stages = sorted({_safe_text(value, 64).casefold() for value in raw.get("observedPipelineStages") or [] if _safe_text(value, 64)})[:32]
+    success_raw = raw.get("successBySignature") if isinstance(raw.get("successBySignature"), dict) else {}
+    failure_raw = raw.get("failureBySignature") if isinstance(raw.get("failureBySignature"), dict) else {}
     success_by_signature = {
         key: max(0, int(value or 0))
-        for key, value in (raw.get("successBySignature") or {}).items()
-        if isinstance(raw.get("successBySignature"), dict) and key in signatures
+        for key, value in success_raw.items()
+        if key in signatures
     }
     failure_by_signature = {
         key: max(0, int(value or 0))
-        for key, value in (raw.get("failureBySignature") or {}).items()
-        if isinstance(raw.get("failureBySignature"), dict) and key in signatures
+        for key, value in failure_raw.items()
+        if key in signatures
     }
     return {
         "id": skill_id,
