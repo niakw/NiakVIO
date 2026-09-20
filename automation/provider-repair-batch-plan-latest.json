@@ -3,7 +3,7 @@
   "sourceRunId": "35477876075",
   "sourceTriggerSha": "aeae9cd84c62d1a063a88be97fd375ecb3c7597b",
   "unresolvedProviderCount": 20,
-  "groupCount": 15,
+  "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -12,14 +12,73 @@
   },
   "groups": [
     {
-      "groupId": "environment|mixed_embed_resolver|none|waf_challenge",
+      "groupId": "transport|mixed_embed_resolver",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "dle-full-story-sibnet",
+        "menu-search-series-focus-player",
+        "wookafr-current-multiplayer-v2",
+        "yflix-db-encrypted-ajax-v1"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "chain",
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception",
+        "network_http_error"
+      ],
+      "providerCount": 4,
+      "providers": [
+        "anime-ultime",
+        "animesultra",
+        "wookafr",
+        "yflix"
+      ],
+      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "environment|html_scraper",
+      "repairScope": "environment",
+      "runtimeFamilies": [
+        "html_scraper",
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "providerCount": 3,
+      "providers": [
+        "allwish",
+        "animesalt",
+        "moviesmod"
+      ],
+      "action": "browser/session or upstream-access investigation; never mutate provider code solely to hide a challenge",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "environment|mixed_embed_resolver",
       "repairScope": "environment",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
       "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepth": "none",
-      "dominantIssue": "waf_challenge",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
       "providerCount": 3,
       "providers": [
         "flemmix",
@@ -31,33 +90,18 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "environment|html_scraper|none|waf_challenge",
-      "repairScope": "environment",
-      "runtimeFamilies": [
-        "html_scraper",
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepth": "none",
-      "dominantIssue": "waf_challenge",
-      "providerCount": 2,
-      "providers": [
-        "allwish",
-        "animesalt"
-      ],
-      "action": "browser/session or upstream-access investigation; never mutate provider code solely to hide a challenge",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "route-to-terminal|html_scraper|lookup|network_zero_result",
+      "groupId": "route-to-terminal|html_scraper",
       "repairScope": "route-to-terminal",
       "runtimeFamilies": [
         "html_scraper"
       ],
       "capabilityStrategy": "html_scraper",
-      "evidenceDepth": "lookup",
-      "dominantIssue": "network_zero_result",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
       "providerCount": 2,
       "providers": [
         "4khdhub",
@@ -68,15 +112,19 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|html_scraper|chain|network_http_error",
+      "groupId": "transport|html_scraper",
       "repairScope": "transport",
       "runtimeFamilies": [
         "api_stream_resolver",
-        "html_scraper"
+        "uhdmovies-search-gateway-driveseed-v4-button-first-multiterminal"
       ],
       "capabilityStrategy": "html_scraper",
-      "evidenceDepth": "chain",
-      "dominantIssue": "network_http_error",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_http_error"
+      ],
       "providerCount": 2,
       "providers": [
         "moviebox",
@@ -87,14 +135,18 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "candidate-replay|mixed_embed_resolver|lookup|network_zero_result",
+      "groupId": "candidate-replay|mixed_embed_resolver",
       "repairScope": "candidate-replay",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
       "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepth": "lookup",
-      "dominantIssue": "network_zero_result",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
       "providerCount": 1,
       "providers": [
         "animevostfr"
@@ -104,14 +156,18 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "environment|api_stream_resolver|lookup|waf_challenge",
+      "groupId": "environment|api_stream_resolver",
       "repairScope": "environment",
       "runtimeFamilies": [
         "api_stream_resolver"
       ],
       "capabilityStrategy": "api_stream_resolver",
-      "evidenceDepth": "lookup",
-      "dominantIssue": "waf_challenge",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
       "providerCount": 1,
       "providers": [
         "animevost-fr"
@@ -121,31 +177,18 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "environment|html_scraper|lookup|waf_challenge",
-      "repairScope": "environment",
-      "runtimeFamilies": [
-        "html_scraper"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepth": "lookup",
-      "dominantIssue": "waf_challenge",
-      "providerCount": 1,
-      "providers": [
-        "moviesmod"
-      ],
-      "action": "browser/session or upstream-access investigation; never mutate provider code solely to hide a challenge",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "route-to-terminal|direct_media|lookup|network_zero_result",
+      "groupId": "route-to-terminal|direct_media",
       "repairScope": "route-to-terminal",
       "runtimeFamilies": [
         "direct_media"
       ],
       "capabilityStrategy": "direct_media",
-      "evidenceDepth": "lookup",
-      "dominantIssue": "network_zero_result",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
       "providerCount": 1,
       "providers": [
         "animetsu"
@@ -155,14 +198,18 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "terminal-extraction|direct_media|chain|network_zero_result",
+      "groupId": "terminal-extraction|direct_media",
       "repairScope": "terminal-extraction",
       "runtimeFamilies": [
         "allanime-mkissa-aaReq-gcm-plus-legacy-ctr-v5"
       ],
       "capabilityStrategy": "direct_media",
-      "evidenceDepth": "chain",
-      "dominantIssue": "network_zero_result",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
       "providerCount": 1,
       "providers": [
         "allanime"
@@ -172,14 +219,18 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "terminal-extraction|html_scraper|chain|network_zero_result",
+      "groupId": "terminal-extraction|html_scraper",
       "repairScope": "terminal-extraction",
       "runtimeFamilies": [
         "mallumv-catalogue-confirm-internal-v1"
       ],
       "capabilityStrategy": "html_scraper",
-      "evidenceDepth": "chain",
-      "dominantIssue": "network_zero_result",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
       "providerCount": 1,
       "providers": [
         "mallumv"
@@ -189,85 +240,21 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|iframe_player|none|network_http_error",
+      "groupId": "transport|iframe_player",
       "repairScope": "transport",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
       "capabilityStrategy": "iframe_player",
-      "evidenceDepth": "none",
-      "dominantIssue": "network_http_error",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "network_http_error"
+      ],
       "providerCount": 1,
       "providers": [
         "vidfast"
-      ],
-      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|mixed_embed_resolver|chain|network_http_error",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "wookafr-current-multiplayer-v2"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepth": "chain",
-      "dominantIssue": "network_http_error",
-      "providerCount": 1,
-      "providers": [
-        "wookafr"
-      ],
-      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|mixed_embed_resolver|lookup|network_exception",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "yflix-db-encrypted-ajax-v1"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepth": "lookup",
-      "dominantIssue": "network_exception",
-      "providerCount": 1,
-      "providers": [
-        "yflix"
-      ],
-      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|mixed_embed_resolver|none|network_exception",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "dle-full-story-sibnet"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepth": "none",
-      "dominantIssue": "network_exception",
-      "providerCount": 1,
-      "providers": [
-        "animesultra"
-      ],
-      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|mixed_embed_resolver|none|network_http_error",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "menu-search-series-focus-player"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepth": "none",
-      "dominantIssue": "network_http_error",
-      "providerCount": 1,
-      "providers": [
-        "anime-ultime"
       ],
       "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
       "executionPolicy": "batch-first",
