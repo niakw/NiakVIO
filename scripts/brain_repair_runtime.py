@@ -549,6 +549,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
         return row
 
     accepted_count = 0
+    negative_experiment_events = 0
     if record_skill_memory:
         for round_row in report.get("rounds") or []:
             attempts_by_parent: dict[str, list[dict[str, Any]]] = {}
@@ -633,6 +634,26 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     mem["lastOutcome"] = "accepted"
                 accepted_count += 1
 
+        # Candidate-generation failures are real negative experiments too.
+        # If matching selected a repair profile but create_repair_candidate()
+        # could not produce executable bytes, record that bounded hypothesis as
+        # failed so the next wave rotates instead of retrying variant 0 forever.
+        for round_row in report.get("rounds") or []:
+            for attempt in round_row.get("attempts") or []:
+                if not isinstance(attempt, dict) or str(attempt.get("status") or "") != "not_generated":
+                    continue
+                parent_key = str(attempt.get("parent_key") or "")
+                plan = PLANS.get(parent_key) or {}
+                profile = str(attempt.get("profile") or "")
+                if memory_policy.get("enabled") is not True or not profile:
+                    continue
+                mem = memory_entry(plan, profile)
+                mem["failures"] = int(mem.get("failures") or 0) + 1
+                mem["consecutiveFailures"] = int(mem.get("consecutiveFailures") or 0) + 1
+                mem["lastOutcome"] = "not_generated"
+                mem["lastReason"] = _clip_text(attempt.get("reason"), 160)
+                negative_experiment_events += 1
+
         for round_row in report.get("rounds") or []:
             for rejected in round_row.get("rejected") or []:
                 if not isinstance(rejected, dict):
@@ -658,6 +679,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     mem["consecutiveFailures"] = int(mem.get("consecutiveFailures") or 0) + 1
                     mem["lastOutcome"] = "rejected"
                     mem["lastReason"] = _clip_text(rejected.get("reason"), 160)
+                    negative_experiment_events += 1
                 skill_id = f"{failure_class}:{profile}"
                 skill = skills.get(skill_id)
                 if not isinstance(skill, dict) or not profile:
@@ -743,6 +765,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
         "plans": sanitized_plans,
         "budgetState": runtime_state_snapshot(),
         "learnedEvents": accepted_count if record_skill_memory else 0,
+        "negativeExperimentEvents": negative_experiment_events if record_skill_memory else 0,
         "learningExecuted": learning_mode,
         "validatedRepairLearningExecuted": bool(record_skill_memory and not learning_mode),
         "learningLane": "independent_daily_lab" if learning_mode else ("validated_repair_skill_memory" if record_skill_memory else "none"),
