@@ -49,7 +49,7 @@ try {
   const run = spawnSync(process.execPath, [script, '--output', output, log], { cwd: root, encoding: 'utf8' });
   assert.equal(run.status, 0, run.stderr + run.stdout);
   const data = JSON.parse(fs.readFileSync(output, 'utf8'));
-  assert.equal(data.brainVersion, 4);
+  assert.equal(data.brainVersion, 6);
   assert.equal(data.schemaVersion, 5);
   assert.equal(data.evidenceComplete, true);
   assert.equal(data.policy.evidenceUsable, true);
