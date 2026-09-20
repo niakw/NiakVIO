@@ -12,7 +12,7 @@ for token in (
     "function hydrateImdb",
     "/stream/series/",
     "/stream/movie/",
-    "current-cinescrape-json-first-legacy-vidsrcme-fallback",
+    "current-multibase-stremio-json-first-legacy-vidsrcme-fallback",
     '"/vs_src.php?type="+encodeURIComponent(q.type)',
     'typeof _crawlDirectMedia==="function"',
     'g.__niakvioProviderRuntimeResolverV1={provider:"moviebox",resolve:resolve}',
