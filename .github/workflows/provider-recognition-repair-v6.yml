@@ -35,7 +35,9 @@ permissions:
 
 concurrency:
   group: provider-recognition-repair-v6-${{ github.ref }}
-  cancel-in-progress: true
+  # Repair is now resumable. A successor run must queue behind the run that
+  # persisted its causal memory instead of cancelling that persistence step.
+  cancel-in-progress: false
 
 jobs:
   recognition-repair:
@@ -313,5 +315,25 @@ jobs:
                 --repo "$GITHUB_REPOSITORY" \
                 --ref main \
                 -f publish_proposal=true
+            fi
+
+            read -r resume remaining processed unvisited < <(python - "$tmp/provider-brain-repair-latest.json" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1],encoding='utf-8'))
+          resume='1' if data.get('resumeRecommended') is True else '0'
+          remaining=len(data.get('remainingProviders') or [])
+          processed=int(data.get('processedProviderCount') or 0)
+          unvisited=len(data.get('unvisitedProviders') or [])
+          print(resume,remaining,processed,unvisited)
+          PY
+            )
+            if [ "$resume" = "1" ] && [ "$remaining" -gt 0 ]; then
+              echo "FIELD_PROVIDER_BRAIN_RESUME remaining=$remaining processed=$processed unvisited=$unvisited target=provider-recognition-repair-v6"
+              # This is deliberately the final action of the persistence step.
+              # The successor starts from main after the just-persisted memory/census.
+              gh workflow run provider-recognition-repair-v6.yml \
+                --repo "$GITHUB_REPOSITORY" \
+                --ref main \
+                -f mode=repair
             fi
           fi
