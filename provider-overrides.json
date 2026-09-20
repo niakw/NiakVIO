@@ -921,7 +921,8 @@
       "notes": [
         "Automatically migrated uhdmovies.pink to uhdmovies.casa after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint.",
         "UHDMovies runtime domain discovery is materialized from NiakVIO's persisted terminal; upstream repository registries are maintenance-only and never fetched during playback.",
-        "Current upstream getStreams is movie-only and returns before network for tv/series; publish only the observed movie capability until upstream proves an episodic lane."
+        "Current upstream getStreams is movie-only and returns before network for tv/series; publish only the observed movie capability until upstream proves an episodic lane.",
+        "2026-09-20: live targeted evidence reaches DriveSeed file pages but generic cdn.video-gen.xyz candidates currently return HTTP 500. Runtime now resolves explicit DriveSeed server buttons first (Instant/Resume/Direct/Cloud families), retains multiple terminal candidates, and only then appends generic direct links so dead CDN candidates cannot starve viable mirrors."
       ],
       "capability": "html_scraper",
       "official_hub": "https://mmodlist.org/",
@@ -1169,9 +1170,13 @@
       "provider_lego_options": {
         "scripts/provider_patches/uhdmovies_runtime_v1.py": {
           "maxReleases": 4,
-          "maxGatewayValues": 8
+          "maxGatewayValues": 8,
+          "maxDownloadButtons": 8,
+          "maxTerminals": 12
         }
-      }
+      },
+      "source_runtime_family": "uhdmovies-search-gateway-driveseed-v4-button-first-multiterminal",
+      "reconstruction_state": "provider-local-terminal-multiserver"
     },
     "movieshunt": {
       "capability": "direct_media",
