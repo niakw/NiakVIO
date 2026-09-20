@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-19T22:22:45.833085+00:00",
+  "generated_at": "2026-09-20T05:04:46.189207+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 44,
   "status_counts": {
-    "healthy": 2,
+    "healthy": 1,
     "reachable": 0,
     "blocked": 1,
-    "degraded": 0,
-    "no_streams": 8,
+    "degraded": 1,
+    "no_streams": 7,
     "provider_unreachable": 30,
     "runtime_error": 0,
-    "unavailable": 3,
+    "unavailable": 4,
     "excluded": 0
   },
   "policy": {
@@ -537,7 +537,7 @@
     },
     {
       "id": "hindmoviez",
-      "status": "no_streams",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2183,14 +2183,16 @@
     },
     {
       "id": "playimdb",
-      "status": "no_streams",
+      "status": "degraded",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
-      "response_categories": [],
+      "response_categories": [
+        "endpoint_reachable"
+      ],
       "host_health": {
         "quietmidnightgardeningideas.site": {
           "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
@@ -2259,11 +2261,11 @@
           "consecutive_blocked": 0
         },
         "nextlevelbrandstudio.site": {
-          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
-          "last_category": "not_returned",
+          "last_checked_at": "2026-09-20T05:04:46.189207+00:00",
+          "last_category": "endpoint_reachable",
           "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
+          "http_status": 200,
+          "latency_ms": 333,
           "kind": "hls",
           "consecutive_hard_failures": 0,
           "consecutive_successes": 0,
@@ -3027,18 +3029,14 @@
     },
     {
       "id": "vidlove",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "d.whysosigmabro.fun"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "ballerinacappuccinalovestungtungtungsahur.com": {
           "last_checked_at": "2026-09-19T04:42:39.418485+00:00",
