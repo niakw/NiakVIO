@@ -9,6 +9,9 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from provider_base_store import build_clean_provider_seed, build_provider_data_model, compose_provider_bundle  # noqa: E402
+
 OVERRIDES = ROOT / "provider-overrides.json"
 
 fixture = {
@@ -40,9 +43,28 @@ try:
         providers = stage / "providers" / "synthetic"
         providers.mkdir(parents=True)
         provider = providers / "brandnew.js"
-        # Keep a provider-owned URL literal so profile generation has real
-        # structured evidence, but do not perform network I/O in getStreams.
-        payload = b'''const BRANDNEW_ORIGIN="https://brandnew.example";\nmodule.exports={getStreams:async function(){return [];}};\n'''
+        entry = {
+            "id": "brandnew",
+            "name": "BrandNew",
+            "supportedTypes": ["movie"],
+            "canonicalSupportedTypes": ["movie"],
+        }
+        model = build_provider_data_model(
+            "brandnew",
+            entry,
+            known_site="https://brandnew.example",
+            provider_model={
+                "strategy": "html_scraper",
+                "officialSite": "https://brandnew.example",
+                "origins": ["https://brandnew.example"],
+                "routes": [],
+            },
+        )
+        payload = compose_provider_bundle(
+            "brandnew",
+            build_clean_provider_seed("brandnew"),
+            model,
+        )
         provider.write_bytes(payload)
         registry = {
             "schema_version": 63,
@@ -54,6 +76,9 @@ try:
                 "local_path": str(provider.relative_to(stage)),
                 "sha256": hashlib.sha256(payload).hexdigest(),
                 "local_patches": [],
+                "candidate_code_origin": "new-niakvio-clean-seed",
+                "upstream_code_executed": False,
+                "legacy_provider_js_executed_for_reconstruction": False,
                 "metadata": {
                     "id": "brandnew",
                     "name": "BrandNew",
