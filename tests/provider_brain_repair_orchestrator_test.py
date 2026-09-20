@@ -128,6 +128,33 @@ accepted=mod.accepted_rows(repair)
 assert accepted[0]["provider"]=="a"
 assert accepted[0]["playableAfter"]==2
 
+brain_summary=mod.sanitized_brain({
+    "brain":{
+        "plans":{
+            "published:a":{
+                "providerId":"a",
+                "failureClass":"route_proven_gap",
+                "signature":"sig",
+                "action":"deferred_retry",
+                "exitReason":"experiment_variants_exhausted",
+                "repairScope":"deferred",
+                "repairType":"experiment_strategy_exhausted",
+                "learningDisposition":"queue_new_strategy_after_variant_exhaustion",
+                "experimentVariant":3,
+                "experimentVariantCount":4,
+                "experimentExhausted":True,
+                "negativeMemoryMatches":4,
+                "allowedProfiles":[],
+                "hypotheses":[],
+            }
+        }
+    }
+})
+plan=brain_summary["plans"]["published:a"]
+assert plan["experimentExhausted"] is True,plan
+assert plan["repairScope"]=="deferred",plan
+assert plan["exitReason"]=="experiment_variants_exhausted",plan
+
 source=SCRIPT.read_text(encoding="utf-8")
 for required in (
     "run_adaptive_deep_repair.py",
@@ -143,6 +170,10 @@ for required in (
     "providerSpecificRules",
     "wafEnvironmentExcludedByDefault",
     "selectionSource",
+    "deferredLearningProviders",
+    "deferredToLearning",
+    "experimentExhausted",
+    "learningDisposition",
     "repairQueue",
 ):
     assert required in source, required
