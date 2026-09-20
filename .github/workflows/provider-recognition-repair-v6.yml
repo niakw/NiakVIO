@@ -31,7 +31,7 @@ on:
 
 permissions:
   contents: write
-  actions: read
+  actions: write
 
 concurrency:
   group: provider-recognition-repair-v6-${{ github.ref }}
@@ -247,6 +247,7 @@ jobs:
           [ ! -s automation/brain-repair-memory.json ] || cp automation/brain-repair-memory.json "$tmp/brain-repair-memory.json"
           [ ! -s automation/provider-census-post-repair.json ] || cp automation/provider-census-post-repair.json "$tmp/provider-census-post-repair.json"
           [ ! -s automation/provider-repair-batch-plan-latest.json ] || cp automation/provider-repair-batch-plan-latest.json "$tmp/provider-repair-batch-plan-latest.json"
+          [ ! -s automation/provider-brain-repair-latest.json ] || cp automation/provider-brain-repair-latest.json "$tmp/provider-brain-repair-latest.json"
 
           counts="$(python - <<'PY'
           import json
@@ -280,7 +281,26 @@ jobs:
 
           if git diff --cached --quiet; then
             echo "Repair census already current"
-            exit 0
+          else
+            git commit -m "ci(census): persist Repair symptoms ${counts} from ${GITHUB_SHA::12}"
+            git push origin HEAD:main
           fi
-          git commit -m "ci(census): persist Repair symptoms ${counts} from ${GITHUB_SHA::12}"
-          git push origin HEAD:main
+
+          if [ -s "$tmp/provider-brain-repair-latest.json" ]; then
+            deferred="$(python - "$tmp/provider-brain-repair-latest.json" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1],encoding='utf-8'))
+          rows=sorted({str(x or '').strip().lower() for x in data.get('deferredLearningProviders') or [] if str(x or '').strip()})
+          print(len(rows))
+          if rows:
+              print(','.join(rows), file=sys.stderr)
+          PY
+            )"
+            if [ "$deferred" -gt 0 ]; then
+              echo "FIELD_PROVIDER_BRAIN_ESCALATE deferred=$deferred target=brain-learning-lab"
+              gh workflow run brain-learning-lab.yml \
+                --repo "$GITHUB_REPOSITORY" \
+                --ref main \
+                -f publish_proposal=true
+            fi
+          fi
