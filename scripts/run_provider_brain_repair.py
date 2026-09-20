@@ -342,9 +342,18 @@ def sanitized_brain(report: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def materialize() -> None:
+def materialize(provider_ids: set[str] | list[str]) -> None:
+    """Materialize accepted Brain state without reconciling unrelated providers."""
+    targets = sorted({cid(value) for value in provider_ids if cid(value)})
+    for provider_id in targets:
+        run(
+            sys.executable,
+            "scripts/reconcile_provider_domain_metadata.py",
+            "--rebuild",
+            "--provider",
+            provider_id,
+        )
     for command in (
-        (sys.executable, "scripts/reconcile_provider_domain_metadata.py", "--rebuild"),
         (sys.executable, "scripts/materialize_provider_base_v3_store.py"),
         (sys.executable, "scripts/materialize_provider_v3_all.py"),
         (sys.executable, "scripts/validate_published_provider_config.py"),
@@ -536,7 +545,16 @@ def main() -> int:
             # provider-overrides.json. Materialize once per wave so the next wave
             # starts from the improved current bytes instead of replaying the same
             # parent candidate.
-            materialize()
+            materialize(
+                {
+                    *fixed_this_wave,
+                    *{
+                        cid(row.get("provider"))
+                        for row in accepted_this_wave
+                        if cid(row.get("provider"))
+                    },
+                }
+            )
 
         payload = {
             "schemaVersion": 1,
