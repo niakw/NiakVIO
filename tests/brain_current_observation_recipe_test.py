@@ -183,6 +183,8 @@ health = (ROOT / "scripts" / "health_check.mjs").read_text(encoding="utf-8")
 assert 'candidate["brain_observed_request_recipes"] = runtime_repair.observed_request_recipes(candidate, result)' in runner
 assert 'deep_config["route_proof_trace"] = True' in runner
 assert "routeProofTrace: modeConfig.route_proof_trace === true" in health
+for required in ("proof_url:", "proof_body_values:", "response_value_hints:", "route_proof_trace:"):
+    assert required in health, required
 
 
 
