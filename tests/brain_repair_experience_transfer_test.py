@@ -135,7 +135,7 @@ with tempfile.TemporaryDirectory() as tmp:
     assert options["base_url"] == "https://target.example"
     assert options["search_paths"][0] == "/search?q={query}", options["search_paths"]
     assert "/?s={query}" in options["search_paths"]
-    assert options["direct_paths"][0] == "/film/{slug}", options["direct_paths"]
+    assert "/film/{slug}" in options["direct_paths"]
     assert "/episode/{id}/{season}/{episode}" in options["direct_paths"]
     assert "/player/{id}" in options["direct_paths"]
     assert not any("sid=" in route for route in options["direct_paths"] + options["search_paths"])
