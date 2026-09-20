@@ -122,6 +122,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # main may retain an older provider-base artifact while current source
+          # invariants already require the common clean ProviderBase v3. Learning
+          # is read-only for production, so rematerialize that canonical base only
+          # inside this sandbox before enforcing the reconstruction contract.
+          python scripts/materialize_provider_base_v3_store.py
+          python scripts/provider_base_store.py validate
           python tests/brain_cron_full_coverage_test.py
           python tests/daily_learning_coverage_test.py
           python tests/brain_self_architecture_test.py
