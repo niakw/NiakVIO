@@ -109,7 +109,9 @@ assert "known-miss" not in [row.get("slug") for row in fixtures], fixtures
 targeted = (ROOT / ".github/workflows/temp-targeted-regression-recovery.yml").read_text(encoding="utf-8")
 assert 'tests/allanime_site_runtime_contract_test.py' in targeted
 assert 'tests/provider_census_scope_history_test.py' in targeted
-assert 'history_path=ROOT/"automation/provider-census-proof-history.json"' in targeted
-assert 'audit.build_tasks(history=history)' in targeted
+assert '--history automation/provider-census-proof-history.json' in targeted
+targeted_runner = (ROOT / "scripts/run_provider_targeted_recovery.py").read_text(encoding="utf-8")
+assert 'history=load(args.history,{})' in targeted_runner
+assert 'audit.build_tasks(selected_targets,history=history)' in targeted_runner
 
 print("provider census scope/history contract passed")
