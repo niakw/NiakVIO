@@ -238,6 +238,124 @@ def classify_dom(dom: str) -> str:
     return "browser_content_reached"
 
 
+def probe_tv_direct_http(
+    target: dict[str, Any],
+    *,
+    timeout: int,
+    attempts: int,
+) -> dict[str, Any]:
+    """Approximate audited NuvioTV transport properties without claiming OkHttp.
+
+    Uses GitHub-hosted libcurl with IPv4, no proxy, redirects and the audited
+    NuvioTV UA. Cookie state exists only inside one ephemeral temp directory.
+    TLS/client fingerprint and runner IP still differ from a real TV client.
+    """
+    curl = shutil.which("curl")
+    if not curl:
+        return {
+            "profile": "nuvio-tv-direct-http-approx",
+            "transportApproximation": "GitHub libcurl; native OkHttp not reproduced",
+            "userAgent": NUVIO_TV_WINDOWS_UA,
+            "outcome": "direct_http_unavailable",
+            "attemptCount": 0,
+            "attempts": [],
+            "ordinarySessionReused": False,
+        }
+    attempt_rows: list[dict[str, Any]] = []
+    attempt_limit = max(1, min(int(attempts), 3))
+    with tempfile.TemporaryDirectory(prefix="niakvio-waf-direct-") as tmp:
+        root = Path(tmp)
+        cookie_jar = root / "cookies.txt"
+        for attempt in range(1, attempt_limit + 1):
+            body_path = root / f"body-{attempt}.txt"
+            cmd = [
+                curl,
+                "--ipv4",
+                "--noproxy", "*",
+                "--location",
+                "--max-redirs", "5",
+                "--connect-timeout", str(max(2, min(int(timeout), 15))),
+                "--max-time", str(max(5, int(timeout))),
+                "--user-agent", NUVIO_TV_WINDOWS_UA,
+                "--cookie", str(cookie_jar),
+                "--cookie-jar", str(cookie_jar),
+                "--compressed",
+                "--silent",
+                "--show-error",
+                "--output", str(body_path),
+                "--write-out", "%{http_code}",
+                str(target.get("url") or ""),
+            ]
+            try:
+                proc = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=max(6, int(timeout) + 3),
+                    check=False,
+                )
+            except subprocess.TimeoutExpired:
+                attempt_rows.append({"attempt": attempt, "outcome": "direct_http_timeout"})
+                continue
+            except Exception as exc:
+                attempt_rows.append({
+                    "attempt": attempt,
+                    "outcome": "direct_http_error",
+                    "error": type(exc).__name__,
+                })
+                continue
+            try:
+                body = body_path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                body = ""
+            status_text = str(proc.stdout or "").strip()
+            status = int(status_text) if status_text.isdigit() else 0
+            classified = classify_dom(body)
+            if classified == "browser_content_reached":
+                outcome = "direct_http_content_reached"
+            elif classified == "browser_challenge_persisted":
+                outcome = "direct_http_challenge_persisted"
+            elif proc.returncode != 0:
+                outcome = "direct_http_error"
+            else:
+                outcome = "direct_http_inconclusive"
+            attempt_rows.append({
+                "attempt": attempt,
+                "outcome": outcome,
+                "status": status,
+                "exitCode": int(proc.returncode),
+            })
+            if outcome == "direct_http_content_reached":
+                break
+
+    outcomes = [str(row.get("outcome") or "") for row in attempt_rows]
+    if "direct_http_content_reached" in outcomes:
+        final = "direct_http_content_reached"
+    elif "direct_http_challenge_persisted" in outcomes:
+        final = "direct_http_challenge_persisted"
+    elif outcomes and all(value == "direct_http_timeout" for value in outcomes):
+        final = "direct_http_timeout"
+    elif "direct_http_inconclusive" in outcomes:
+        final = "direct_http_inconclusive"
+    else:
+        final = outcomes[-1] if outcomes else "direct_http_error"
+    return {
+        "profile": "nuvio-tv-direct-http-approx",
+        "transportApproximation": "GitHub libcurl IPv4+NO_PROXY+redirects with audited NuvioTV UA",
+        "userAgent": NUVIO_TV_WINDOWS_UA,
+        "nativeContractApproximation": {
+            "ipv4First": True,
+            "proxyPolicy": "NO_PROXY",
+            "redirects": "enabled",
+            "httpStack": "libcurl-not-OkHttp",
+        },
+        "outcome": final,
+        "attemptCount": len(attempt_rows),
+        "attempts": attempt_rows,
+        "ordinarySessionReused": attempt_limit > 1,
+    }
+
+
 def probe_target(
     target: dict[str, Any],
     browser: str,
@@ -336,11 +454,25 @@ def probe_target(
             "ordinarySessionReused": attempt_limit > 1,
         })
 
+    direct_profile: dict[str, Any] | None = None
+    if client_profile_matrix:
+        direct_profile = probe_tv_direct_http(
+            target,
+            timeout=timeout,
+            attempts=attempt_limit,
+        )
+
     content_profiles = [
         str(row.get("profile") or "")
         for row in profile_rows
         if str(row.get("outcome") or "") == "browser_content_reached"
     ]
+    direct_content_reached = (
+        isinstance(direct_profile, dict)
+        and str(direct_profile.get("outcome") or "") == "direct_http_content_reached"
+    )
+    if direct_content_reached:
+        content_profiles.append("nuvio-tv-direct-http-approx")
     profile_outcomes = [str(row.get("outcome") or "") for row in profile_rows]
     if content_profiles:
         final_outcome = "browser_content_reached"
@@ -361,6 +493,7 @@ def probe_target(
         "attempts": default_profile.get("attempts") or [],
         "ordinarySessionReused": attempt_limit > 1,
         "clientProfileMatrix": profile_rows,
+        "directHttpProfile": direct_profile,
         "contentProfiles": content_profiles,
         "nativeTvTransportStillUnproven": True,
         "durationMs": round((time.monotonic()-started)*1000),
@@ -446,10 +579,20 @@ def main() -> int:
                     "dnsPolicy": "IPv4FirstDns",
                     "redirects": "HTTP+SSL enabled",
                 },
+            }, {
+                "id": "nuvio-tv-direct-http-approx",
+                "transportApproximation": "GitHub libcurl with IPv4, NO_PROXY, redirects and audited NuvioTV UA",
+                "userAgent": NUVIO_TV_WINDOWS_UA,
+                "nativeContractApproximation": {
+                    "httpStack": "libcurl-not-OkHttp",
+                    "proxyPolicy": "NO_PROXY",
+                    "dnsPolicy": "IPv4 only",
+                    "redirects": "enabled",
+                },
             }] if args.client_profile_matrix else []),
         ],
         "limitations": [
-            "GitHub Chromium does not reproduce NuvioTV OkHttp TLS fingerprint",
+            "Neither GitHub Chromium nor libcurl reproduces NuvioTV OkHttp TLS fingerprint",
             "GitHub runner IP reputation differs from a real TV/mobile client",
             "browser challenge persistence is harness/environment evidence, not provider-code failure",
         ],
