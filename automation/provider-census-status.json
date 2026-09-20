@@ -388,10 +388,15 @@
         "movie=lookup_only",
         "tv=chain_reached"
       ],
-      "action": "replay with representative TV/mobile transport; align harness headers/session/fetch stack before provider repair",
+      "action": "replay provider-owned route with NuvioTV-like/native transport; do not mutate provider JS unless route/playback still fails causally",
       "brainCheckRequired": true,
       "repairEligible": false,
-      "testedThisRun": false
+      "testedThisRun": false,
+      "harnessTransportClass": "native-policy-reachable",
+      "harnessTransportEvidence": [
+        "movie: browser=browser_content_reached, tv-browser=browser_timeout, okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached",
+        "tv: browser=browser_content_reached, tv-browser=browser_timeout, okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached"
+      ]
     },
     {
       "provider": "allwish",
@@ -418,10 +423,15 @@
         "movie=none",
         "tv=none"
       ],
-      "action": "compare GitHub Node/Chromium with native TV/mobile transport; provider JS mutation is not justified by CI challenge alone",
+      "action": "require real native-device/IP transport evidence before blaming provider code",
       "brainCheckRequired": true,
       "testedThisRun": false,
-      "repairEligible": false
+      "repairEligible": false,
+      "harnessTransportClass": "github-all-transports-challenged",
+      "harnessTransportEvidence": [
+        "movie: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted",
+        "tv: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
+      ]
     },
     {
       "provider": "animesalt",
@@ -446,10 +456,14 @@
       "evidenceDepth": [
         "anime=none"
       ],
-      "action": "replay with representative TV/mobile transport; align harness headers/session/fetch stack before provider repair",
+      "action": "compare browser/JS challenge resolution with native fetch/TLS/IP; provider JS mutation is not justified by CI challenge",
       "brainCheckRequired": true,
       "testedThisRun": false,
-      "repairEligible": false
+      "repairEligible": false,
+      "harnessTransportClass": "browser-profile-only",
+      "harnessTransportEvidence": [
+        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
+      ]
     },
     {
       "provider": "animevost-fr",
@@ -474,15 +488,19 @@
       "evidenceDepth": [
         "anime=lookup_only"
       ],
-      "action": "replay with representative TV/mobile transport; align harness headers/session/fetch stack before provider repair",
+      "action": "compare browser/JS challenge resolution with native fetch/TLS/IP; provider JS mutation is not justified by CI challenge",
       "brainCheckRequired": true,
       "testedThisRun": false,
-      "repairEligible": false
+      "repairEligible": false,
+      "harnessTransportClass": "browser-profile-only",
+      "harnessTransportEvidence": [
+        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
+      ]
     },
     {
       "provider": "flemmix",
-      "status": "HARNESS/ENV BLOCKED",
-      "color": "🟫",
+      "status": "HARNESS MISMATCH",
+      "color": "🟧",
       "declaredLanes": [
         "movie",
         "tv"
@@ -506,10 +524,15 @@
         "movie=none",
         "tv=none"
       ],
-      "action": "compare GitHub Node/Chromium with native TV/mobile transport; provider JS mutation is not justified by CI challenge alone",
+      "action": "probe provider-owned search/detail route with representative native transport; current HTTP 200 is not playback proof",
       "brainCheckRequired": true,
       "testedThisRun": false,
-      "repairEligible": false
+      "repairEligible": false,
+      "harnessTransportClass": "native-policy-inconclusive",
+      "harnessTransportEvidence": [
+        "movie: browser=browser_challenge_persisted, tv-browser=browser_inconclusive, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted",
+        "tv: browser=browser_challenge_persisted, tv-browser=browser_inconclusive, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted"
+      ]
     },
     {
       "provider": "fullanime",
@@ -534,10 +557,14 @@
       "evidenceDepth": [
         "anime=none"
       ],
-      "action": "compare GitHub Node/Chromium with native TV/mobile transport; provider JS mutation is not justified by CI challenge alone",
+      "action": "require real native-device/IP transport evidence before blaming provider code",
       "brainCheckRequired": true,
       "testedThisRun": false,
-      "repairEligible": false
+      "repairEligible": false,
+      "harnessTransportClass": "github-all-transports-challenged",
+      "harnessTransportEvidence": [
+        "anime: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
+      ]
     },
     {
       "provider": "moviesmod",
@@ -566,10 +593,15 @@
         "movie=lookup_only",
         "tv=lookup_only"
       ],
-      "action": "replay with representative TV/mobile transport; align harness headers/session/fetch stack before provider repair",
+      "action": "compare browser/JS challenge resolution with native fetch/TLS/IP; provider JS mutation is not justified by CI challenge",
       "brainCheckRequired": true,
       "testedThisRun": false,
-      "repairEligible": false
+      "repairEligible": false,
+      "harnessTransportClass": "browser-profile-only",
+      "harnessTransportEvidence": [
+        "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted",
+        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted"
+      ]
     },
     {
       "provider": "persianstremio",
@@ -632,10 +664,14 @@
       "evidenceDepth": [
         "anime=none"
       ],
-      "action": "replay with representative TV/mobile transport; align harness headers/session/fetch stack before provider repair",
+      "action": "compare browser/JS challenge resolution with native fetch/TLS/IP; provider JS mutation is not justified by CI challenge",
       "brainCheckRequired": true,
       "testedThisRun": false,
-      "repairEligible": false
+      "repairEligible": false,
+      "harnessTransportClass": "browser-profile-only",
+      "harnessTransportEvidence": [
+        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
+      ]
     },
     {
       "provider": "voiranime-rip",
@@ -1345,8 +1381,8 @@
     "CANDIDATE OK": 1,
     "CHAIN REACHED": 3,
     "FULL OK": 24,
-    "HARNESS MISMATCH": 5,
-    "HARNESS/ENV BLOCKED": 3,
+    "HARNESS MISMATCH": 6,
+    "HARNESS/ENV BLOCKED": 2,
     "PARTIAL OK": 2,
     "PROVIDER NETWORK BLOCKED": 5,
     "ROUTE PROVEN": 3
@@ -1420,6 +1456,18 @@
     "wookafr"
   ],
   "harnessQueue": [
+    "allwish",
+    "animesalt",
+    "animevost-fr",
+    "flemmix",
+    "fullanime",
+    "moviesmod",
+    "vostfree",
+    "wookafr"
+  ],
+  "harnessEvidenceRunId": "35515229765-waf-transport",
+  "harnessEvidenceSha": "bf7b92aafbaf410e09839b43094d91fd29fdc482",
+  "harnessTransportUpdatedProviders": [
     "allwish",
     "animesalt",
     "animevost-fr",
