@@ -21,6 +21,8 @@ const providerOverrides = readJsonFile("provider-overrides.json", {});
 const learningMode = stringValue(input.mode, "quick") === "learning";
 const skillTransfer = asRecord(production.learnedSkillTransferPolicy);
 const learnedSkillInputAllowed = learningMode || production.learnedSkillInputAllowed === true;
+const negativeMemoryPolicy = asRecord(production.negativeExperimentMemory);
+const negativeMemory = asArray(input.negativeMemory).filter(isRecord);
 const learnedSkills = learnedSkillInputAllowed
   ? [
       ...normalizeLearnedSkills(input.learnedSkills),
@@ -67,6 +69,36 @@ function buildPlan(item) {
   const signature = evidenceSignature(evidence);
   const providerId = stringValue(candidate.canonical_id ?? candidate.upstream_id).toLowerCase();
   const capabilityStrategy = stringValue(asRecord(asRecord(providerOverrides.provider_capabilities)[providerId]).strategy, "unknown").toLowerCase();
+  const memoryMatches = negativeMemory.filter((row) => {
+    if (stringValue(row.providerId).toLowerCase() !== providerId) return false;
+    const failure = stringValue(row.failureClass);
+    if (failure && failure !== evidence.failureClass) return false;
+    const rowSignature = stringValue(row.signature);
+    if (rowSignature && rowSignature !== signature) return false;
+    return finiteNumber(row.successes, 0) === 0;
+  });
+  const rotateEvery = Math.max(1, finiteNumber(negativeMemoryPolicy.rotateExperimentAfterFailures, 1));
+  const maxVariants = Math.max(1, finiteNumber(negativeMemoryPolicy.maxVariantsPerSignature, 4));
+  const variantStats = new Map();
+  for (const row of memoryMatches) {
+    const variant = Math.max(0, Math.min(maxVariants - 1, finiteNumber(row.experimentVariant, 0)));
+    const current = variantStats.get(variant) ?? { failures: 0, consecutiveFailures: 0 };
+    current.failures += Math.max(0, finiteNumber(row.failures, 0));
+    current.consecutiveFailures = Math.max(current.consecutiveFailures, Math.max(0, finiteNumber(row.consecutiveFailures, 0)));
+    variantStats.set(variant, current);
+  }
+  let experimentVariant = 0;
+  for (let variant = 0; variant < maxVariants; variant += 1) {
+    if (!variantStats.has(variant)) {
+      experimentVariant = variant;
+      break;
+    }
+    if (variant === maxVariants - 1) {
+      experimentVariant = [...variantStats.entries()]
+        .sort((a, b) => a[1].failures - b[1].failures || a[1].consecutiveFailures - b[1].consecutiveFailures || a[0] - b[0])[0][0];
+    }
+  }
+  const negativeMemoryMatches = memoryMatches.reduce((sum, row) => sum + Math.max(1, finiteNumber(row.failures, 0)), 0);
   const reusable = learnedSkills
     .filter((skill) => !skill.failureClass || skill.failureClass === evidence.failureClass || skill.failure_class === evidence.failureClass)
     .map((skill) => {
@@ -153,6 +185,10 @@ function buildPlan(item) {
     censusStatus: stringValue(asRecord(candidate.censusPrior).status),
     censusPriorApplied: evidence.censusPriorApplied === true,
     censusPriorReason: stringValue(evidence.censusPriorReason),
+    negativeMemoryMatches,
+    experimentVariant,
+    experimentRotationEvery: rotateEvery,
+    experimentVariantCount: maxVariants,
     learningDisposition: repairTarget.learningDisposition,
     capabilityStrategy,
     signature,
