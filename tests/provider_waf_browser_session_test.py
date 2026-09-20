@@ -162,6 +162,40 @@ profiles=[
 ]
 assert profiles[0]==profiles[1],profiles
 
+
+matrix_calls=[]
+matrix_responses=[
+    SimpleNamespace(returncode=0,stdout="<html><title>Just a moment...</title><div>challenge-platform</div></html>"),
+    SimpleNamespace(returncode=0,stdout="<html><title>Just a moment...</title><div>challenge-platform</div></html>"),
+    SimpleNamespace(returncode=0,stdout="<html><body>"+("normal catalogue content "*10)+"</body></html>"),
+]
+original_run=mod.subprocess.run
+try:
+    def matrix_run(*args,**kwargs):
+        matrix_calls.append((args,kwargs))
+        return matrix_responses.pop(0)
+    mod.subprocess.run=matrix_run
+    matrix=mod.probe_target(
+        allwish,
+        "chromium",
+        timeout=5,
+        virtual_time_ms=1000,
+        attempts=2,
+        client_profile_matrix=True,
+    )
+finally:
+    mod.subprocess.run=original_run
+assert matrix["outcome"]=="browser_content_reached",matrix
+assert matrix["contentProfiles"]==["nuvio-tv-ua-browser"],matrix
+assert len(matrix["clientProfileMatrix"])==2,matrix
+assert matrix["clientProfileMatrix"][0]["outcome"]=="browser_challenge_persisted",matrix
+assert matrix["clientProfileMatrix"][1]["outcome"]=="browser_content_reached",matrix
+assert matrix["nativeTvTransportStillUnproven"] is True
+assert any(
+    str(value).startswith("--user-agent="+mod.NUVIO_TV_WINDOWS_UA)
+    for value in matrix_calls[-1][0][0]
+),matrix_calls[-1]
+
 source = path.read_text(encoding="utf-8")
 for forbidden in ("cf_clearance", "turnstile token", "captcha solver", "undetected_chromedriver", "cloudscraper", "flaresolverr"):
     assert forbidden not in source.casefold(), forbidden
