@@ -30,6 +30,11 @@ PLACEHOLDER = re.compile(r"\{(?:query|slug|id|tmdbId|imdbId|year|season|episode|
 OPAQUE = re.compile(r"(?:[A-Za-z0-9+/]{72,}={0,2}|%[0-9A-Fa-f]{2}.{100,}|[A-Fa-f0-9]{96,})")
 BODY_PLACEHOLDER = re.compile(r"\{(?:query|queryDots|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type)\}", re.I)
 SAFE_HEADER_NAMES = {"accept", "accept-language", "content-type", "origin", "referer", "user-agent"}
+IDENTITY_INFRA_HOSTS = {
+    "api.themoviedb.org",
+    "v3-cinemeta.strem.io",
+    "arm.haglund.dev",
+}
 
 
 def load(path: Path) -> dict:
@@ -117,6 +122,10 @@ def sanitize_request_recipe(row: dict, *, peer: bool) -> dict | None:
     route = reusable_route(row.get("route"), peer=peer)
     if not route:
         return None
+    origin = str(row.get("origin") or "").strip()
+    origin_host = host_of(origin)
+    if origin_host in IDENTITY_INFRA_HOSTS:
+        return None
     spec = row.get("requestSpec") if isinstance(row.get("requestSpec"), dict) else {}
     method = str(spec.get("method") or row.get("method") or "GET").upper()
     if method not in {"GET", "POST"}:
@@ -159,7 +168,6 @@ def sanitize_request_recipe(row: dict, *, peer: bool) -> dict | None:
         "executable": executable,
     }
     if not peer:
-        origin = str(row.get("origin") or "").strip()
         if origin.startswith(("http://", "https://")) and not OPAQUE.search(origin):
             recipe["origin"] = origin.rstrip("/")
     return recipe
