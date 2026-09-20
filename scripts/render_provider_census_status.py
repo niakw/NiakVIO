@@ -22,7 +22,8 @@ STATUS_META = {
     "ROUTE PROVEN": ("🟪", "live provider routes are qualified for the declared lanes, but terminal media is not currently verified"),
     "NO PROOF": ("🔵", "search/lookup ran but no content-specific chain was reached; keep rotating the corpus"),
     "CHAIN REACHED": ("🟣", "content/detail/episode/player chain was reached, but no terminal media is verified yet"),
-    "PROVIDER WAF/ANTIBOT": ("🟫", "a real browser/WAF challenge was detected; verify with allowed browser/session transport"),
+    "HARNESS MISMATCH": ("🟧", "CI/Node was challenged but an ordinary browser session reached content; adapt the harness/client transport before touching provider code"),
+    "HARNESS/ENV BLOCKED": ("🟫", "the GitHub CI/browser environment is challenged; native TV/mobile compatibility is unresolved and provider breakage is not established"),
     "PROVIDER NETWORK BLOCKED": ("🟤", "last meaningful provider/upstream request failed (HTTP/DNS/TLS/timeout); JS break is not established"),
     "PROVIDER JS BROKEN": ("🟠", "technical/provider implementation failure; repair and retest"),
     "PROVIDER JS FULLY BROKEN": ("🔴", "repeated technical failure without a retained positive proof; BRAIN LEARNING owns it"),
@@ -54,7 +55,7 @@ NETWORK_BROKEN_STAGES = {
 }
 
 HEALTHY_STATES = {"FULL OK", "PARTIAL OK"}
-ENVIRONMENT_ONLY_STATES = {"PROVIDER WAF/ANTIBOT"}
+ENVIRONMENT_ONLY_STATES = {"HARNESS MISMATCH", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}
 
 
 def is_symptomatic_status(status: str) -> bool:
@@ -113,6 +114,25 @@ def candidate_proofs(candidate_evidence: dict[str, Any], provider: str) -> list[
         if wanted in verified:
             out.append({"key": str(key), "runId": str(row.get("runId") or ""), "note": str(row.get("note") or "")})
     return out
+
+def browser_harness_status(waf_browser_evidence: dict[str, Any], provider: str) -> str:
+    """Classify CI/browser evidence without blaming provider code.
+
+    A challenge on GitHub/Node (or even GitHub-hosted Chromium) proves only an
+    environment/client mismatch until a representative native client reproduces
+    it. Ordinary browser content reachability is stronger evidence that the
+    harness itself is the limiting factor.
+    """
+    wanted = str(provider or "").strip().casefold()
+    rows = [
+        row for row in waf_browser_evidence.get("rows") or []
+        if isinstance(row, dict)
+        and str(row.get("provider") or "").strip().casefold() == wanted
+    ]
+    if any(str(row.get("outcome") or "") == "browser_content_reached" for row in rows):
+        return "HARNESS MISMATCH"
+    return "HARNESS/ENV BLOCKED"
+
 
 def route_proof(provider_overrides: dict[str, Any], provider: str) -> dict[str, Any] | None:
     patches = provider_overrides.get("provider_patches") if isinstance(provider_overrides.get("provider_patches"), dict) else {}
@@ -174,7 +194,14 @@ def _technical_run_count(history: dict[str, Any], provider: str, rows: list[dict
     return max(values or [0])
 
 
-def provider_state(provider: str, rows: list[dict[str, Any]], history: dict[str, Any], candidate_evidence: dict[str, Any] | None = None, provider_overrides: dict[str, Any] | None = None) -> str:
+def provider_state(
+    provider: str,
+    rows: list[dict[str, Any]],
+    history: dict[str, Any],
+    candidate_evidence: dict[str, Any] | None = None,
+    provider_overrides: dict[str, Any] | None = None,
+    waf_browser_evidence: dict[str, Any] | None = None,
+) -> str:
     if not rows:
         return "PROVIDER JS BROKEN"
 
@@ -214,9 +241,10 @@ def provider_state(provider: str, rows: list[dict[str, Any]], history: dict[str,
         return "PROVIDER JS FULLY BROKEN" if repeated else "PROVIDER JS BROKEN"
 
     if stages & WAF_STAGES:
-        if has_history:
-            return "REGRESSION PROVIDER"
-        return "PROVIDER WAF/ANTIBOT"
+        # GitHub/Node/browser challenge evidence is an environment signal, not a
+        # provider-code verdict. Historical positives strengthen that conclusion
+        # rather than turning it into a provider regression.
+        return browser_harness_status(waf_browser_evidence or {}, provider)
 
     if stages & NETWORK_BROKEN_STAGES:
         if has_history:
@@ -277,7 +305,9 @@ def _action(status: str) -> str:
         "ROUTE PROVEN": "replay qualified route fixtures and finish terminal extraction/validation",
         "NO PROOF": "continue corpus proof search; BRAIN checks",
         "CHAIN REACHED": "finish terminal extractor/validation; do not promote before verified media",
-        "PROVIDER WAF/ANTIBOT": "verify in allowed browser/session context; do not fake or solve challenge tokens",
+        "HARNESS MISMATCH": "replay with representative TV/mobile transport; align harness headers/session/fetch stack before provider repair",
+        "HARNESS/ENV BLOCKED": "compare GitHub Node/Chromium with native TV/mobile transport; provider JS mutation is not justified by CI challenge alone",
+        "PROVIDER WAF/ANTIBOT": "legacy status: migrate to harness/environment classification",
         "PROVIDER NETWORK BLOCKED": "verify domain/upstream transport; repair JS only with implementation evidence",
         "PROVIDER JS BROKEN": "repair + retest; BRAIN checks",
         "PROVIDER JS FULLY BROKEN": "BRAIN LEARNING slot",
@@ -292,11 +322,13 @@ def build_status_rows(
     baseline: dict[str, Any] | None = None,
     candidate_evidence: dict[str, Any] | None = None,
     provider_overrides: dict[str, Any] | None = None,
+    waf_browser_evidence: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     history = history or {}
     baseline = baseline or {}
     candidate_evidence = candidate_evidence or {}
     provider_overrides = provider_overrides or {}
+    waf_browser_evidence = waf_browser_evidence or {}
     by: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in report.get("rows") or []:
         if not isinstance(row, dict):
@@ -312,7 +344,14 @@ def build_status_rows(
     out = []
     for provider, rows in by.items():
         ordered = sorted(rows, key=lambda row: str(row.get("semantic_type") or ""))
-        status = provider_state(provider, ordered, history, candidate_evidence, provider_overrides)
+        status = provider_state(
+            provider,
+            ordered,
+            history,
+            candidate_evidence,
+            provider_overrides,
+            waf_browser_evidence,
+        )
         declared = [str(row.get("semantic_type") or "") for row in ordered]
         verified = [str(row.get("semantic_type") or "") for row in ordered if lane_ok(row)]
         verdicts = []
@@ -366,6 +405,11 @@ def build_status_rows(
         if not provider or provider in current:
             continue
         carried = dict(previous)
+        if str(carried.get("status") or "") == "PROVIDER WAF/ANTIBOT":
+            migrated = browser_harness_status(waf_browser_evidence, provider)
+            carried["status"] = migrated
+            carried["color"] = STATUS_META[migrated][0]
+            carried["action"] = _action(migrated)
         carried["brainCheckRequired"] = is_symptomatic_status(str(carried.get("status") or ""))
         carried["repairEligible"] = is_repair_eligible_status(str(carried.get("status") or ""))
         carried["testedThisRun"] = False
@@ -382,8 +426,16 @@ def render(
     baseline: dict[str, Any] | None = None,
     candidate_evidence: dict[str, Any] | None = None,
     provider_overrides: dict[str, Any] | None = None,
+    waf_browser_evidence: dict[str, Any] | None = None,
 ) -> str:
-    rows = build_status_rows(report, history, baseline, candidate_evidence, provider_overrides)
+    rows = build_status_rows(
+        report,
+        history,
+        baseline,
+        candidate_evidence,
+        provider_overrides,
+        waf_browser_evidence,
+    )
     states = Counter(row["status"] for row in rows)
     symptomatic = sorted(row["provider"] for row in rows if row.get("brainCheckRequired") is True)
     repair_queue = sorted(row["provider"] for row in rows if row.get("repairEligible") is True)
@@ -401,7 +453,8 @@ def render(
         "ROUTE PROVEN",
         "NO PROOF",
         "CHAIN REACHED",
-        "PROVIDER WAF/ANTIBOT",
+        "HARNESS MISMATCH",
+        "HARNESS/ENV BLOCKED",
         "PROVIDER NETWORK BLOCKED",
         "PROVIDER JS BROKEN",
         "PROVIDER JS FULLY BROKEN",
@@ -421,7 +474,7 @@ def render(
         "",
         f"Latest provider census state: **{summary}** across **{len(rows)} providers**.",
         f"Evidence: run {run_id or 'local'} · SHA {short_sha} · scope **{scope}**.",
-        f"Symptomatic providers: **{len(symptomatic)}** · automated repair queue: **{len(repair_queue)}** · environment-only/WAF: **{len(environment_queue)}**.",
+        f"Symptomatic providers: **{len(symptomatic)}** · automated repair queue: **{len(repair_queue)}** · harness/environment queue: **{len(environment_queue)}**.",
         "",
         "## Status semantics",
         "",
@@ -444,13 +497,14 @@ def render(
         "REGRESSION PROVIDER": 1,
         "PROVIDER JS FULLY BROKEN": 2,
         "PROVIDER JS BROKEN": 3,
-        "PROVIDER WAF/ANTIBOT": 4,
-        "CHAIN REACHED": 5,
-        "ROUTE PROVEN": 6,
-        "CANDIDATE OK": 7,
-        "NO PROOF": 8,
-        "PARTIAL OK": 9,
-        "FULL OK": 10,
+        "HARNESS MISMATCH": 4,
+        "HARNESS/ENV BLOCKED": 5,
+        "CHAIN REACHED": 6,
+        "ROUTE PROVEN": 7,
+        "CANDIDATE OK": 8,
+        "NO PROOF": 9,
+        "PARTIAL OK": 10,
+        "FULL OK": 11,
     }
     entries = []
     for row in rows:
@@ -489,6 +543,7 @@ def main() -> int:
     parser.add_argument("--baseline-status", type=Path, default=Path("automation/provider-census-status.json"))
     parser.add_argument("--candidate-evidence", type=Path, default=Path("automation/provider-history-evidence-v1.json"))
     parser.add_argument("--provider-overrides", type=Path, default=Path("provider-overrides.json"))
+    parser.add_argument("--waf-browser-evidence", type=Path, default=Path("automation/provider-waf-browser-session-latest.json"))
     parser.add_argument("--run-id", default="")
     parser.add_argument("--sha", default="")
     args = parser.parse_args()
@@ -498,9 +553,26 @@ def main() -> int:
     baseline = load(args.baseline_status) if args.baseline_status.is_file() else {}
     candidate_evidence = load(args.candidate_evidence) if args.candidate_evidence.is_file() else {}
     provider_overrides = load(args.provider_overrides) if args.provider_overrides.is_file() else {}
-    rows = build_status_rows(report, history, baseline, candidate_evidence, provider_overrides)
+    waf_browser_evidence = load(args.waf_browser_evidence) if args.waf_browser_evidence.is_file() else {}
+    rows = build_status_rows(
+        report,
+        history,
+        baseline,
+        candidate_evidence,
+        provider_overrides,
+        waf_browser_evidence,
+    )
     args.output.write_text(
-        render(report, run_id=str(args.run_id), sha=str(args.sha), history=history, baseline=baseline, candidate_evidence=candidate_evidence, provider_overrides=provider_overrides),
+        render(
+            report,
+            run_id=str(args.run_id),
+            sha=str(args.sha),
+            history=history,
+            baseline=baseline,
+            candidate_evidence=candidate_evidence,
+            provider_overrides=provider_overrides,
+            waf_browser_evidence=waf_browser_evidence,
+        ),
         encoding="utf-8",
     )
     if args.json_output is not None:
@@ -521,6 +593,10 @@ def main() -> int:
                 row["provider"] for row in rows if row.get("repairEligible") is True
             ),
             "environmentQueue": sorted(
+                row["provider"] for row in rows
+                if str(row.get("status") or "") in ENVIRONMENT_ONLY_STATES
+            ),
+            "harnessQueue": sorted(
                 row["provider"] for row in rows
                 if str(row.get("status") or "") in ENVIRONMENT_ONLY_STATES
             ),
