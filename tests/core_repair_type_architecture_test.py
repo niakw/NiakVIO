@@ -43,14 +43,21 @@ assert "function providerBudgetMs()" in media_resolution_source
 assert "c.tvProviderTimeoutMs" in media_resolution_source
 assert "c.providerTimeoutMs" in media_resolution_source
 deadline_anchor = "requestDeadline=Date.now()+providerBudgetMs()"
-provisional_anchor = "var a=preflight?await resolve(originalArgs):provisional(originalArgs)"
-verify_anchor = "var verified=await resolve(originalArgs)"
+provisional_anchor = "var a=provisional(originalArgs)"
+preflight_anchor = "preResolved=await resolve(originalArgs)"
+verify_anchor = "verified=preResolved||await resolve(originalArgs)"
 assert deadline_anchor in media_resolution_source
 assert "g.__nuvioProviderDeadlineMs=requestDeadline" in media_resolution_source
 assert "g.__nuvioProviderRequestToken=requestToken" in media_resolution_source
 assert provisional_anchor in media_resolution_source
+assert preflight_anchor in media_resolution_source
 assert verify_anchor in media_resolution_source
-assert media_resolution_source.index(deadline_anchor) < media_resolution_source.index(provisional_anchor) < media_resolution_source.index(verify_anchor)
+assert (
+    media_resolution_source.index(deadline_anchor)
+    < media_resolution_source.index(provisional_anchor)
+    < media_resolution_source.index(preflight_anchor)
+    < media_resolution_source.index(verify_anchor)
+)
 playback = overrides.get("playback_integrity_policy") or {}
 assert playback.get("pre_media_discovery_hooks") == [], playback
 assert playback.get("post_media_discovery_hooks") == ["scripts/provider_patches/hls_runtime_integrity_v1.py"], playback
