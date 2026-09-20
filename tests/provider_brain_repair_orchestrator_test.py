@@ -90,7 +90,7 @@ with tempfile.TemporaryDirectory() as tmp:
 payload={
     "providers":[
         {"provider":"a","status":"PROVIDER JS BROKEN"},
-        {"provider":"b","status":"PROVIDER WAF/ANTIBOT"},
+        {"provider":"b","status":"HARNESS MISMATCH"},
         {"provider":"c","status":"FULL OK"},
     ],
     "brainQueue":["a","b"],
