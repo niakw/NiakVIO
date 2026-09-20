@@ -110,11 +110,12 @@ function buildPlan(item) {
       }
     }
   } else {
-    // Retain the least-failed variant for diagnostics only. Exhausted
-    // signatures are never executed again in Core Repair; they are escalated
-    // to the independent Learning/new-strategy lane below.
-    experimentVariant = [...variantStats.entries()]
-      .sort((a, b) => a[1].failures - b[1].failures || a[1].consecutiveFailures - b[1].consecutiveFailures || a[0] - b[0])[0][0];
+    // Exhaustion is itself evidence about the CURRENT terminal experiment
+    // generation. Keep diagnostics pinned to the final variant/generation
+    // rather than reporting an arbitrary older least-failed variant: downstream
+    // orchestration must never confuse generation-1 history with the materially
+    // new final-variant generation that was actually exhausted.
+    experimentVariant = finalVariant;
   }
   const experimentGeneration = experimentVariant === finalVariant ? finalVariantGeneration : 1;
   const negativeMemoryMatches = memoryMatches.reduce((sum, row) => sum + Math.max(1, finiteNumber(row.failures, 0)), 0);
