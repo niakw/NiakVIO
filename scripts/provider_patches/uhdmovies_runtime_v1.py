@@ -49,10 +49,15 @@ function redirectTarget(html,b){var m=String(html||"").match(/http-equiv=["']ref
 async function gateway(url){var first=await request(url,{referer:base()+"/"});if(!first)return"";var f1=parseForm(first.text,first.url);if(!f1)return"";var r1=await request(f1.action,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:formBody(f1.fields),referer:first.url});if(!r1)return"";var f2=parseForm(r1.text,r1.url);if(!f2)return"";var r2=await request(f2.action,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:formBody(f2.fields),referer:r1.url});if(!r2)return"";var gm=String(r2.text||"").match(/\?go=([^"'&<\s]+)/i);if(!gm)return redirectTarget(r2.text,r2.url);var token=gm[1],o=origin(url),values=Object.values(f2.fields||{}).map(s).filter(Boolean).slice(0,c.maxGatewayValues);if(!values.length)values=[""];for(var i=0;i<values.length;i++){var h=headers(r2.url);h.Cookie=token+"="+values[i];var z=await request(o+"/?go="+encodeURIComponent(token),{headers:h,referer:r2.url});if(!z)continue;var target=redirectTarget(z.text,z.url);if(target)return target}return""}
 function directCandidate(v){var u=s(v);if(!/^https?:\/\//i.test(u))return false;try{var p=new URL(u),h=p.hostname.toLowerCase(),path=p.pathname.toLowerCase();return /\.(?:mkv|mp4|m3u8)(?:$|[?#])/i.test(u)||h.endsWith(".workers.dev")||h.endsWith(".r2.dev")||h.endsWith(".r2.cloudflarestorage.com")||h==="video-downloads.googleusercontent.com"||h.endsWith(".googlevideo.com")||h==="cdn.video-gen.xyz"||path.indexOf("download")>=0}catch(_e){return false}}
 function directLinks(html,b){var out=[],seen={},aa=anchors(html,b);for(var i=0;i<aa.length;i++){if(directCandidate(aa[i].url)&&!seen[aa[i].url]){seen[aa[i].url]=1;out.push(aa[i].url)}}var re=/https?:\\?\/\\?\/[^\s"'<>\\]+/gi,m;while((m=re.exec(String(html||"")))!==null&&out.length<50){var u=m[0].replace(/\\\//g,"/");if(directCandidate(u)&&!seen[u]){seen[u]=1;out.push(u)}}return out}
-function downloadButtons(html,b){return anchors(html,b).filter(function(a){return /resume cloud|cloud download|instant download|direct download|download now/i.test(a.text)})}
+function downloadButtons(html,b){return anchors(html,b).filter(function(a){return /resume cloud|cloud resume|resume worker|worker bot|cloud download|instant download|direct links|direct download|download now/i.test(a.text)})}
+function pushUrls(out,seen,values){for(var i=0;i<(values||[]).length&&out.length<c.maxTerminals;i++){var u=s(values[i]);if(u&&!seen[u]){seen[u]=1;out.push(u)}}}
 function redirectedDirect(v){var u=s(v),q="";try{q=new URL(u).searchParams.get("url")||""}catch(_e){}if(q){try{q=decodeURIComponent(q)}catch(_e2){}if(directCandidate(q))return q}return directCandidate(u)?u:""}
 async function followDownload(url,referer){try{var o={headers:headers(referer),redirect:"follow"},r=typeof _fetch==="function"?await _fetch(url,o):await g.fetch(url,o);if(!r)return null;var final=r.url||url;if(terminalResponse(r)&&/^https?:\/\//i.test(final))return{url:final,direct:final,text:"",terminalMedia:true};var direct=redirectedDirect(final);if(direct)return{url:final,direct:direct,text:""};var text="";try{text=await r.text()}catch(_bodyError){}return{url:final,direct:"",text:text}}catch(_e){return null}}
-async function driveSeed(url){var cur=url;if(/\/r\?key=/i.test(cur)){var rr=await request(cur,{referer:base()+"/"});if(!rr)return[];var t=redirectTarget(rr.text,rr.url);if(t)cur=t}var page=await request(cur,{referer:base()+"/"});if(!page)return[];if(page.terminalMedia&&/^https?:\/\//i.test(page.url))return[page.url];var direct=directLinks(page.text,page.url);if(direct.length)return direct.slice(0,4);var buttons=downloadButtons(page.text,page.url);for(var i=0;i<buttons.length&&i<5;i++){var u=buttons[i].url;if(directCandidate(u))return[u];var rr=await followDownload(u,page.url);if(!rr)continue;if(rr.direct)return[rr.direct];var more=directLinks(rr.text,rr.url);if(more.length)return more.slice(0,4)}try{if(typeof _crawlDirectMedia==="function"){var crawled=await _crawlDirectMedia([cur],cur,2);if(Array.isArray(crawled)&&crawled.length)return crawled.map(function(x){var u=x&&x.url;return redirectedDirect(u)||u}).filter(Boolean).slice(0,4)}}catch(_e){}return[]}
+async function driveSeed(url){var cur=url;if(/\/r\?key=/i.test(cur)){var rr=await request(cur,{referer:base()+"/"});if(!rr)return[];var t=redirectTarget(rr.text,rr.url);if(t)cur=t}var page=await request(cur,{referer:base()+"/"});if(!page)return[];if(page.terminalMedia&&/^https?:\/\//i.test(page.url))return[page.url];var out=[],seen={},buttons=downloadButtons(page.text,page.url);
+for(var i=0;i<buttons.length&&i<c.maxDownloadButtons&&out.length<c.maxTerminals;i++){var btn=buttons[i],u=btn.url,label=s(btn.text).toLowerCase();if(/direct links/i.test(label)){var typed=u+(u.indexOf("?")>=0?"&":"?")+"type=1",typedPage=await request(typed,{referer:page.url});if(typedPage)pushUrls(out,seen,directLinks(typedPage.text,typedPage.url));continue}if(directCandidate(u)){pushUrls(out,seen,[redirectedDirect(u)||u]);continue}var followed=await followDownload(u,page.url);if(!followed)continue;if(followed.direct)pushUrls(out,seen,[followed.direct]);pushUrls(out,seen,directLinks(followed.text,followed.url))}
+pushUrls(out,seen,directLinks(page.text,page.url));
+if(out.length)return out;
+try{if(typeof _crawlDirectMedia==="function"){var crawled=await _crawlDirectMedia([cur],cur,2);if(Array.isArray(crawled)&&crawled.length){pushUrls(out,seen,crawled.map(function(x){var u=x&&x.url;return redirectedDirect(u)||u}).filter(Boolean));if(out.length)return out}}}catch(_e){}return[]}
 async function resolveRelease(rel,meta){var ds=await gateway(rel.url);if(!ds)return[];var urls=await driveSeed(ds),out=[];for(var i=0;i<urls.length;i++){if(!urls[i])continue;out.push({name:"UHDMovies"+(rel.quality?" | "+rel.quality:""),title:(meta.title||"UHDMovies")+(meta.year?" ("+meta.year+")":"")+(rel.size?" | "+rel.size:""),url:urls[i],quality:rel.quality||"",language:rel.language||"multi",provider:"uhdmovies",headers:{"Referer":ds}})}return out}
 async function resolve(a,_ctx){var q=req(a);if(!q)return[];var m=titleMeta(await meta(q),q);if(!m.title)return[];var posts=await findPosts(m),out=[],seen={};for(var p=0;p<posts.length&&out.length<8;p++){var page=await request(posts[p].url,{referer:base()+"/"});if(!page)continue;var rels=releases(page.text,page.url);for(var r=0;r<rels.length&&out.length<8;r++){var rows=await resolveRelease(rels[r],m);for(var j=0;j<rows.length&&out.length<8;j++){var st=rows[j];if(st.url&&!seen[st.url]){seen[st.url]=1;out.push(st)}}}}return out}
 try{g.__niakvioProviderRuntimeResolverV1={provider:"uhdmovies",resolve:resolve}}catch(_e){}
@@ -65,18 +70,22 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "base": "",
         "maxReleases": 4,
         "maxGatewayValues": 8,
+        "maxDownloadButtons": 8,
+        "maxTerminals": 12,
         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/149 Safari/537.36",
     }
     cfg.update(dict(options or {}))
     cfg["maxReleases"] = max(1, min(int(cfg.get("maxReleases") or 4), 8))
     cfg["maxGatewayValues"] = max(1, min(int(cfg.get("maxGatewayValues") or 8), 16))
+    cfg["maxDownloadButtons"] = max(1, min(int(cfg.get("maxDownloadButtons") or 8), 16))
+    cfg["maxTerminals"] = max(1, min(int(cfg.get("maxTerminals") or 12), 24))
     js = WRAPPER.replace("CONFIG_PLACEHOLDER", json.dumps(cfg, ensure_ascii=False, separators=(",", ":")))
     return replace_managed_fix(
         text,
         MANAGED_FIX_ID,
         js.lstrip(),
         data={
-            "runtimeFamily": "uhdmovies-search-gateway-driveseed-v3-terminal-response-aware",
+            "runtimeFamily": "uhdmovies-search-gateway-driveseed-v4-button-first-multiterminal",
             "identity": "core-tmdb-movie-title-year",
             "runtimeResolverRegistration": True,
             "coreFinalOutputOwnership": True,
