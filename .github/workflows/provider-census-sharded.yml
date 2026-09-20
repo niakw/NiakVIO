@@ -16,6 +16,17 @@ on:
       - PROVIDER - Bulk Onboarding
     types:
       - completed
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/provider_patches/**'
+      - 'provider-overrides.json'
+      - 'provider-hubs.json'
+      - 'scripts/provider_base_store.py'
+      - 'scripts/apply_provider_overrides.py'
+      - 'scripts/materialize_provider_v3_all.py'
+      - 'scripts/audit_provider_quick_yield.py'
+      - 'automation/provider-bulk-activation-latest.json'
 
 permissions:
   contents: read
@@ -31,6 +42,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       source_sha: ${{ steps.pin.outputs.sha }}
+      provider_count: ${{ steps.pin.outputs.provider_count }}
+      should_run: ${{ steps.pin.outputs.should_run }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -38,10 +51,25 @@ jobs:
           fetch-depth: 0
       - id: pin
         shell: bash
-        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        run: |
+          set -euo pipefail
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          count="$(python - <<'PY'
+          import json
+          d=json.load(open("manifest.json", encoding="utf-8"))
+          print(len([x for x in d.get("scrapers") or [] if isinstance(x,dict)]))
+          PY
+          )"
+          echo "provider_count=$count" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_EVENT_NAME" != "push" ] || [ "$count" -gt 120 ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+          fi
 
   shard:
     needs: prepare
+    if: ${{ needs.prepare.outputs.should_run == 'true' }}
     name: Census shard ${{ matrix.shard }} of 8
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -110,7 +138,7 @@ jobs:
     needs:
       - prepare
       - shard
-    if: ${{ always() && needs.prepare.result == 'success' }}
+    if: ${{ always() && needs.prepare.result == 'success' && needs.prepare.outputs.should_run == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
