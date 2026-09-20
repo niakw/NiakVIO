@@ -2776,3 +2776,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Repair CI now compiles/tests the restored executor and experience transfer, deletes stale baseline/current-run evidence before execution, and retains automation/brain-repair-experience.json with the Brain report.
 - Previous global Repair runs 35480639251 and 35480831922 did not reach repair waves; both stopped in stale architecture tests. The current resolver contract test has been updated to the actual provisional -> pre-resolved TMDB -> verified flow. **No new live provider success may be claimed until the next current-byte portfolio run reaches and completes a Brain wave.**
 
+## 2026-09-20 — Census-owned symptom Repair checkpoint
+
+- User requires PROVIDER_CENSUS_STATUS.md / automation/provider-census-status.json to remain the operational source of truth. Repair must not independently rescan/reselect the whole catalogue.
+- Census renderer now exposes symptomaticProviders/brainQueue, repairQueue, and environmentQueue. FULL OK/PARTIAL OK are protected; PROVIDER WAF/ANTIBOT remains symptomatic/visible but is environment-only and excluded from unattended JS/provider Repair by default.
+- run_provider_brain_repair.py consumes the census repairQueue (or the compatible brainQueue fallback) as its automatic input. Explicit provider arguments are intersected with that queue, so stale/manual requests cannot drag stable providers back into repair.
+- run_provider_repair_pipeline_v6.py is census-first: pre-check only the current repairQueue, merge those observations back into the global census while carrying stable rows, drop providers that recovered, repair only the still-symptomatic subset, then revalidate the full symptom set that entered the cycle and regenerate PROVIDER_CENSUS_STATUS.md + provider-census-status.json + proof history/batch plan.
+- Repair CI proves that network-tested providers are a subset of the cycle census symptom set. It persists only census evidence to main after resetting candidate provider/Core workspace bytes; Repair candidate code remains non-published.
+- Census evidence-only commits no longer recursively trigger TEMP full census merely because PROVIDER_CENSUS_STATUS.md changed.
+- Current pre-change census had 20 symptomatic providers, including 7 PROVIDER WAF/ANTIBOT; therefore the automatic code-repair queue is expected to begin at 13 until a fresh census changes those classifications.
+
