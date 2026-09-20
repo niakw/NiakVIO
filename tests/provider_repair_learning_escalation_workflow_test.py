@@ -11,6 +11,10 @@ required=[
     "FIELD_PROVIDER_BRAIN_ESCALATE",
     "gh workflow run brain-learning-lab.yml",
     "-f publish_proposal=true",
+    "FIELD_PROVIDER_BRAIN_RESUME",
+    "resumeRecommended",
+    "gh workflow run provider-recognition-repair-v6.yml",
+    "cancel-in-progress: false",
 ]
 for needle in required:
     assert needle in workflow, f"missing causal Learning escalation contract: {needle}"
@@ -19,7 +23,9 @@ persist=workflow.index("- name: Persist Repair census state")
 copy=workflow.index("provider-brain-repair-latest.json",persist)
 push=workflow.index("git push origin HEAD:main",persist)
 dispatch=workflow.index("gh workflow run brain-learning-lab.yml",persist)
-assert persist < copy < push < dispatch
+resume_dispatch=workflow.index("gh workflow run provider-recognition-repair-v6.yml",persist)
+assert persist < copy < push < dispatch < resume_dispatch
 assert "exit 0\n          fi\n          git commit" not in workflow[persist:dispatch]
+assert 'if [ "$resume" = "1" ] && [ "$remaining" -gt 0 ]' in workflow[persist:resume_dispatch]
 
 print("provider Repair-to-Learning causal escalation workflow contract passed")
