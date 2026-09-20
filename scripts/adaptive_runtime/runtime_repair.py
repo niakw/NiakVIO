@@ -314,6 +314,9 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     learned_direct = [route for route in learned_routes if _route_role(route) != "search"]
     strategy = str(capability.get("strategy") or patch.get("capability") or "unknown").strip().casefold()
     census_focus = _census_runtime_focus(provider_id)
+    brain_plan = candidate.get("brain_repair_plan") if isinstance(candidate.get("brain_repair_plan"), dict) else {}
+    experiment_variant = max(0, min(int(brain_plan.get("experimentVariant") or 0), 3))
+    experiment_failure = str(brain_plan.get("failureClass") or "").strip()
     peer_routes = _peer_routes(strategy)
     peer_search = [route for route in peer_routes if _route_role(route) == "search"]
     peer_direct = [route for route in peer_routes if _route_role(route) != "search"]
@@ -327,12 +330,29 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         "/{slug}", "/film/{slug}", "/films/{slug}",
         "/anime/{slug}", "/serie/{slug}", "/series/{slug}",
     ]
+    if experiment_variant >= 3:
+        generic_search.extend([
+            "/search/{query}", "/search/{slug}",
+            "/recherche?q={query}", "/recherche/{slug}",
+            "/api/search?q={query}", "/api/search/{query}",
+            "/ajax/search?query={query}",
+        ])
+        generic_direct.extend([
+            "/watch/{slug}", "/movie/{id}", "/film/{id}", "/title/{id}",
+            "/player/{id}", "/embed/{id}", "/api/sources/{id}",
+            "/api/stream/{id}", "/api/servers/{id}",
+            "/episode/{id}/{season}/{episode}",
+        ])
     search_paths = _unique_routes(configured_search, learned_search, peer_search, generic_search, limit=24)
     direct_paths = _unique_routes(configured_direct, learned_direct, peer_direct, generic_direct, limit=32)
-    role_order = {
-        role: index
-        for index, role in enumerate(census_focus.get("direct_role_order") or [])
-    }
+    role_preferences = list(census_focus.get("direct_role_order") or [])
+    if experiment_variant == 1:
+        role_preferences = ["player", "api", "episode", "detail", "other"]
+    elif experiment_variant == 2:
+        role_preferences = ["api", "player", "detail", "episode", "other"]
+    elif experiment_variant == 3:
+        role_preferences = ["detail", "episode", "player", "api", "other"]
+    role_order = {role: index for index, role in enumerate(role_preferences)}
     if role_order:
         direct_paths = sorted(
             direct_paths,
@@ -380,9 +400,21 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         },
         "repair_focus": census_focus.get("focus") or "generic",
         "census_status": census_focus.get("status") or "",
-        "max_pages": int(census_focus.get("max_pages") or 10),
-        "max_embeds": int(census_focus.get("max_embeds") or 10),
-        "max_depth": int(census_focus.get("max_depth") or 3),
+        "experiment_variant": experiment_variant,
+        "experiment_failure_class": experiment_failure,
+        "negative_memory_matches": max(0, int(brain_plan.get("negativeMemoryMatches") or 0)),
+        "max_pages": max(
+            int(census_focus.get("max_pages") or 10),
+            14 if experiment_variant == 1 else 12 if experiment_variant == 2 else 20 if experiment_variant == 3 else 10,
+        ),
+        "max_embeds": max(
+            int(census_focus.get("max_embeds") or 10),
+            24 if experiment_variant in {1, 2, 3} else 10,
+        ),
+        "max_depth": max(
+            int(census_focus.get("max_depth") or 3),
+            4 if experiment_variant in {1, 2, 3} else 3,
+        ),
         "timeout_ms": max(2000, min(int(recovery_options.get("timeout_ms") or 9000), 20000)),
         "user_agent": network_hints["user_agent"],
         "blocked_hosts": sorted(blocked_hosts),
