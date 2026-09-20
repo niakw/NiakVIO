@@ -115,23 +115,131 @@ def candidate_proofs(candidate_evidence: dict[str, Any], provider: str) -> list[
             out.append({"key": str(key), "runId": str(row.get("runId") or ""), "note": str(row.get("note") or "")})
     return out
 
-def browser_harness_status(waf_browser_evidence: dict[str, Any], provider: str) -> str:
-    """Classify CI/browser evidence without blaming provider code.
-
-    A challenge on GitHub/Node (or even GitHub-hosted Chromium) proves only an
-    environment/client mismatch until a representative native client reproduces
-    it. Ordinary browser content reachability is stronger evidence that the
-    harness itself is the limiting factor.
-    """
+def _waf_rows(waf_browser_evidence: dict[str, Any], provider: str) -> list[dict[str, Any]]:
     wanted = str(provider or "").strip().casefold()
-    rows = [
+    return [
         row for row in waf_browser_evidence.get("rows") or []
         if isinstance(row, dict)
         and str(row.get("provider") or "").strip().casefold() == wanted
     ]
-    if any(str(row.get("outcome") or "") == "browser_content_reached" for row in rows):
+
+
+def harness_transport_diagnostic(
+    waf_browser_evidence: dict[str, Any],
+    provider: str,
+) -> dict[str, Any]:
+    """Summarize transport evidence without promoting it to playback proof."""
+    rows = _waf_rows(waf_browser_evidence, provider)
+    if not rows:
+        return {
+            "classification": "no-transport-evidence",
+            "lanes": [],
+            "evidence": [],
+        }
+
+    evidence: list[str] = []
+    native_reached = False
+    browser_only = False
+    native_inconclusive = False
+    all_challenged = True
+
+    for row in rows:
+        lane = str(row.get("lane") or "unknown").strip().casefold() or "unknown"
+        okhttp = row.get("okHttpJvmProfile") if isinstance(row.get("okHttpJvmProfile"), dict) else {}
+        okhttp_outcome = str(okhttp.get("outcome") or "")
+        matrix = row.get("clientProfileMatrix") if isinstance(row.get("clientProfileMatrix"), list) else []
+        tv_browser = next(
+            (
+                item for item in matrix
+                if isinstance(item, dict)
+                and str(item.get("profile") or "") == "nuvio-tv-ua-browser"
+            ),
+            {},
+        )
+        tv_browser_outcome = str(tv_browser.get("outcome") or "")
+        default_outcome = str(row.get("outcome") or "")
+        direct = row.get("directHttpProfile") if isinstance(row.get("directHttpProfile"), dict) else {}
+        direct_outcome = str(direct.get("outcome") or "")
+
+        if okhttp_outcome == "okhttp_jvm_content_reached":
+            native_reached = True
+            all_challenged = False
+        elif okhttp_outcome == "okhttp_jvm_inconclusive":
+            native_inconclusive = True
+            all_challenged = False
+
+        if tv_browser_outcome == "browser_content_reached" and okhttp_outcome != "okhttp_jvm_content_reached":
+            browser_only = True
+            all_challenged = False
+
+        if default_outcome == "browser_content_reached" or direct_outcome == "direct_http_content_reached":
+            all_challenged = False
+
+        evidence.append(
+            f"{lane}: browser={default_outcome or 'unknown'}, "
+            f"tv-browser={tv_browser_outcome or 'unknown'}, "
+            f"okhttp={okhttp_outcome or 'unknown'}, "
+            f"direct={direct_outcome or 'unknown'}"
+        )
+
+    if native_reached:
+        classification = "native-policy-reachable"
+    elif browser_only:
+        classification = "browser-profile-only"
+    elif native_inconclusive:
+        classification = "native-policy-inconclusive"
+    elif all_challenged:
+        classification = "github-all-transports-challenged"
+    else:
+        classification = "transport-mixed-unresolved"
+
+    return {
+        "classification": classification,
+        "lanes": sorted({
+            str(row.get("lane") or "").strip().casefold()
+            for row in rows
+            if str(row.get("lane") or "").strip()
+        }),
+        "evidence": evidence,
+    }
+
+
+def browser_harness_status(waf_browser_evidence: dict[str, Any], provider: str) -> str:
+    """Classify CI/browser evidence without blaming provider code."""
+    diagnostic = harness_transport_diagnostic(waf_browser_evidence, provider)
+    if diagnostic["classification"] in {
+        "native-policy-reachable",
+        "browser-profile-only",
+        "native-policy-inconclusive",
+        "transport-mixed-unresolved",
+    }:
         return "HARNESS MISMATCH"
     return "HARNESS/ENV BLOCKED"
+
+
+def _harness_action(status: str, transport_class: str) -> str:
+    if status not in ENVIRONMENT_ONLY_STATES:
+        return _action(status)
+    return {
+        "native-policy-reachable": (
+            "replay provider-owned route with NuvioTV-like/native transport; "
+            "do not mutate provider JS unless route/playback still fails causally"
+        ),
+        "browser-profile-only": (
+            "compare browser/JS challenge resolution with native fetch/TLS/IP; "
+            "provider JS mutation is not justified by CI challenge"
+        ),
+        "native-policy-inconclusive": (
+            "probe provider-owned search/detail route with representative native transport; "
+            "current HTTP 200 is not playback proof"
+        ),
+        "github-all-transports-challenged": (
+            "require real native-device/IP transport evidence before blaming provider code"
+        ),
+        "transport-mixed-unresolved": (
+            "resolve harness/client transport differential before provider repair"
+        ),
+    }.get(transport_class, _action(status))
 
 
 def route_proof(provider_overrides: dict[str, Any], provider: str) -> dict[str, Any] | None:
@@ -375,6 +483,11 @@ def build_status_rows(
         candidate_labels = [f"run {x['runId']}" if x.get("runId") else x.get("key", "candidate") for x in candidate_proofs(candidate_evidence, provider)]
         route = route_proof(provider_overrides, provider)
         route_labels = ([f"{route['liveValidatedRouteCount']} live routes / {', '.join(route['validatedTypes'])}"] if route else [])
+        harness_diag = (
+            harness_transport_diagnostic(waf_browser_evidence, provider)
+            if status in ENVIRONMENT_ONLY_STATES
+            else {"classification": "not-applicable", "evidence": [], "lanes": []}
+        )
         out.append({
             "provider": provider,
             "status": status,
@@ -388,7 +501,9 @@ def build_status_rows(
             "dominantIssue": dominant_issue(ordered),
             "searchProgress": progress,
             "evidenceDepth": evidence_depth,
-            "action": _action(status),
+            "harnessTransportClass": harness_diag["classification"],
+            "harnessTransportEvidence": harness_diag["evidence"],
+            "action": _harness_action(status, harness_diag["classification"]),
             "brainCheckRequired": is_symptomatic_status(status),
             "repairEligible": is_repair_eligible_status(status),
             "testedThisRun": True,
@@ -405,11 +520,15 @@ def build_status_rows(
         if not provider or provider in current:
             continue
         carried = dict(previous)
-        if str(carried.get("status") or "") == "PROVIDER WAF/ANTIBOT":
+        carried_status = str(carried.get("status") or "")
+        if carried_status == "PROVIDER WAF/ANTIBOT" or carried_status in ENVIRONMENT_ONLY_STATES:
             migrated = browser_harness_status(waf_browser_evidence, provider)
+            diag = harness_transport_diagnostic(waf_browser_evidence, provider)
             carried["status"] = migrated
             carried["color"] = STATUS_META[migrated][0]
-            carried["action"] = _action(migrated)
+            carried["harnessTransportClass"] = diag["classification"]
+            carried["harnessTransportEvidence"] = diag["evidence"]
+            carried["action"] = _harness_action(migrated, diag["classification"])
         carried["brainCheckRequired"] = is_symptomatic_status(str(carried.get("status") or ""))
         carried["repairEligible"] = is_repair_eligible_status(str(carried.get("status") or ""))
         carried["testedThisRun"] = False
@@ -488,8 +607,8 @@ def render(
         "a content-specific detail/episode/player chain becomes CHAIN REACHED; ROUTE PROVEN preserves qualified live provider routes without pretending terminal media worked; "
         "CANDIDATE OK preserves verified playback from a reconstruction candidate that current published bytes have not reproduced; PARTIAL OK still requires at least one current verified playable lane.",
         "",
-        "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Candidate proof | Route proof | Corpus progress | Evidence depth | Latest lane verdicts | Dominant issue | Next action |",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+        "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Candidate proof | Route proof | Corpus progress | Evidence depth | Harness transport | Latest lane verdicts | Dominant issue | Next action |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ])
 
     state_order = {
@@ -519,6 +638,7 @@ def render(
             f"{'; '.join(row.get('routeProof') or []) or '—'} | "
             f"{'; '.join(row['searchProgress']) or '—'} | "
             f"{'; '.join(row.get('evidenceDepth') or []) or '—'} | "
+            f"{row.get('harnessTransportClass') if row.get('harnessTransportClass') != 'not-applicable' else '—'} | "
             f"{'; '.join(row['latestLaneVerdicts']) or '—'} | "
             f"{row['dominantIssue']} | {row['action']} |"
         )
