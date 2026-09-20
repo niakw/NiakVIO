@@ -87,6 +87,90 @@ def route_evidence_count(value: Any) -> int:
     return count
 
 
+def build_strategy_blueprints(
+    batch_plan: dict[str, Any],
+    deferred_providers: set[str],
+) -> list[dict[str, Any]]:
+    """Turn census repair families into bounded, reviewable new-strategy designs.
+
+    These are architecture blueprints only: no profile becomes executable until
+    its causal trigger, negative signature, playback/identity proof and
+    non-regression contract are implemented and reviewed.
+    """
+    templates: dict[str, dict[str, Any]] = {
+        "route-to-terminal": {
+            "strategyId": "proven_route_terminal_traversal_v1",
+            "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
+            "method": "start from retained route proof; traverse only identity-correlated detail/player/server transitions; learn reusable route shapes without copying provider domains",
+            "requiredEvidence": ["retained route proof", "same-work identity correlation", "terminal/player response trace"],
+            "acceptanceProof": ["playback-verified media", "content identity not contradicted", "no green-lane regression"],
+        },
+        "terminal-extraction": {
+            "strategyId": "chain_terminal_extractor_v1",
+            "causalTrigger": "retained chain hit reaches player/resolver territory but media extraction/validation is incomplete",
+            "method": "replay retained chain hit first; classify terminal host/player family; apply bounded extractor/resolver capability and follow only scored player/media transitions",
+            "requiredEvidence": ["retained chain hit", "terminal host/player family", "response/body route proof"],
+            "acceptanceProof": ["final media endpoint playback verified", "terminal identity preserved", "no green-lane regression"],
+        },
+        "transport": {
+            "strategyId": "native_transport_differential_v1",
+            "causalTrigger": "provider request fails with HTTP/network exception before a code-level causal defect is proven",
+            "method": "compare GitHub Node transport with representative native TV/mobile HTTP policy first; if native-like transport succeeds, classify harness mismatch; mutate provider code only when the same request fails under representative transport with implementation evidence",
+            "requiredEvidence": ["sanitized request shape", "GitHub transport verdict", "representative native-transport verdict"],
+            "acceptanceProof": ["causal transport classification", "provider mutation only after harness mismatch excluded", "no credential/challenge-token fabrication"],
+        },
+        "candidate-replay": {
+            "strategyId": "retained_candidate_replay_v1",
+            "causalTrigger": "historical candidate/playback proof exists but current bytes no longer reproduce it",
+            "method": "replay the exact retained fixture and proof path against current bytes before discovery; diff route/data/runtime changes and repair only the first proven divergence",
+            "requiredEvidence": ["retained candidate fixture", "historical proof metadata", "current replay trace"],
+            "acceptanceProof": ["current playback re-proven", "historical identity preserved", "no unrelated provider mutation"],
+        },
+    }
+    blueprints: list[dict[str, Any]] = []
+    for group in batch_plan.get("groups") or []:
+        if not isinstance(group, dict):
+            continue
+        scope = str(group.get("repairScope") or "").strip().casefold()
+        template = templates.get(scope)
+        if not template:
+            continue
+        providers = sorted({
+            str(value or "").strip().casefold()
+            for value in group.get("providers") or []
+            if str(value or "").strip().casefold() in deferred_providers
+        })
+        if not providers:
+            continue
+        row = dict(template)
+        row.update({
+            "groupId": str(group.get("groupId") or ""),
+            "repairScope": scope,
+            "capabilityStrategy": str(group.get("capabilityStrategy") or "unknown"),
+            "providers": providers,
+            "providerCount": len(providers),
+            "runtimeFamilies": sorted({
+                str(value or "").strip()
+                for value in group.get("runtimeFamilies") or []
+                if str(value or "").strip()
+            }),
+            "dominantIssues": sorted({
+                str(value or "").strip()
+                for value in group.get("dominantIssues") or []
+                if str(value or "").strip()
+            }),
+            "negativeMemorySignature": (
+                f"strategy:{template['strategyId']}|scope:{scope}|"
+                f"capability:{str(group.get('capabilityStrategy') or 'unknown')}"
+            ),
+            "reentryPolicy": "proposal -> executable contract -> Learning/Lab proof -> Core Repair eligibility",
+            "productionWritesAllowed": False,
+            "requiresHumanMerge": True,
+        })
+        blueprints.append(row)
+    return blueprints
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--learning-state", type=Path, required=True)
@@ -99,6 +183,7 @@ def main() -> int:
     p.add_argument("--route-fallback", type=Path)
     p.add_argument("--queue-summary", type=Path)
     p.add_argument("--queue-state", type=Path)
+    p.add_argument("--batch-plan", type=Path)
     p.add_argument("--output-policy", type=Path, required=True)
     p.add_argument("--summary", type=Path, required=True)
     p.add_argument("--markdown", type=Path, required=True)
@@ -115,6 +200,7 @@ def main() -> int:
     )
     queue_summary = load_optional(a.queue_summary)
     queue_state = load_optional(a.queue_state)
+    batch_plan = load_optional(a.batch_plan)
     selection = queue_summary or load_optional(a.target_selection)
     route_report = load_optional(a.route_report)
     route_fallback = load_optional(a.route_fallback)
@@ -249,6 +335,10 @@ def main() -> int:
         ]
         if str(value or "").strip()
     })
+    strategy_blueprints = build_strategy_blueprints(
+        batch_plan,
+        set(deferred_repair_providers),
+    )
     if deferred_repair_providers:
         deferred_set = set(deferred_repair_providers)
         cohort_rows = [
@@ -302,6 +392,7 @@ def main() -> int:
                     for key, value in sorted(by_profile.items())
                 },
                 "repeatedSignatureCount": len(by_signature),
+                "strategyBlueprints": strategy_blueprints,
             },
         )
 
@@ -374,6 +465,8 @@ def main() -> int:
         "targetProvider": target_provider or None,
         "deferredRepairProviders": deferred_repair_providers,
         "deferredRepairProviderCount": len(deferred_repair_providers),
+        "strategyBlueprintCount": len(strategy_blueprints),
+        "strategyBlueprints": strategy_blueprints,
         "providersObserved": int(selection.get("processedProviderCount") or 0),
         "pendingProviders": int(queue_state.get("remainingProviderCount") or 0),
         "policy": {
@@ -410,6 +503,21 @@ def main() -> int:
             "Targets: " + ", ".join(row.get("targets") or []),
             "",
         ])
+    if strategy_blueprints:
+        lines.extend(["## New strategy blueprints", ""])
+        for blueprint in strategy_blueprints:
+            lines.extend([
+                f"### {blueprint.get('strategyId')} — {blueprint.get('groupId')}",
+                "",
+                "Providers: " + ", ".join(blueprint.get("providers") or []),
+                "",
+                "Trigger: " + str(blueprint.get("causalTrigger") or ""),
+                "",
+                "Method: " + str(blueprint.get("method") or ""),
+                "",
+                "Acceptance: " + "; ".join(blueprint.get("acceptanceProof") or []),
+                "",
+            ])
     a.markdown.parent.mkdir(parents=True, exist_ok=True)
     a.markdown.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
 
