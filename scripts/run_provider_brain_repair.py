@@ -33,7 +33,7 @@ REPAIR_MEMORY = ROOT / "automation" / "brain-repair-memory.json"
 BRAIN_POLICY = ROOT / "engine_v2" / "config" / "brain-policy.json"
 
 GREEN = {"FULL OK", "PARTIAL OK"}
-ENVIRONMENT = {"PROVIDER WAF/ANTIBOT"}
+ENVIRONMENT = {"HARNESS MISMATCH", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}
 
 
 def load(path: Path, default: Any) -> Any:
@@ -335,7 +335,7 @@ def main() -> int:
     parser.add_argument("--waves", type=int, default=4)
     parser.add_argument("--batch-size", type=int, default=48)
     parser.add_argument("--health-concurrency", type=int, default=0, help="0 = auto (6/8 depending on target count)")
-    parser.add_argument("--include-environment", action="store_true", help="Include pure WAF/environment cases in code-repair staging.")
+    parser.add_argument("--include-environment", action="store_true", help="Include harness/environment-blocked cases in diagnostic staging; provider-code mutation still requires implementation evidence.")
     parser.add_argument("--shard-count", type=int, default=1)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--work-dir", type=Path, default=DEFAULT_WORK)
