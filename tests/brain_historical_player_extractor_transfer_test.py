@@ -109,7 +109,7 @@ explicit_result = run_case(
 )
 assert all(row["url"] != "https://wrong.example/incidental.mp4" for row in explicit_result["rows"]), explicit_result
 
-xor_url = "https://xor.example/master.m3u8"
+xor_url = "https://xor.example/media/secure/master.m3u8?token=fixture123"
 hostname = "player.example"
 host_hash = sum(ord(ch) for ch in hostname) & 255
 transformed = bytes(
