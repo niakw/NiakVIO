@@ -23,6 +23,7 @@ def result(status, score, observations=None, contradictions=0, malformed=0):
             "streams_playable":0,
             "identity_contradiction_count":contradictions,
             "duration_identity_mismatch_count":0,
+            "malformed_request_count":malformed,
         },
         "tests":[{
             "stream_count":0,
