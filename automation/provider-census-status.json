@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35477729979",
-  "triggerSha": "333f85b9aad7d9c4657dbd76c28ba74c27ee3209",
+  "runId": "35477876075",
+  "triggerSha": "aeae9cd84c62d1a063a88be97fd375ecb3c7597b",
   "providers": [
     {
       "provider": "4khdhub",
@@ -403,14 +403,18 @@
     },
     {
       "provider": "persianstremio",
-      "status": "CANDIDATE OK",
-      "color": "🟦",
+      "status": "PARTIAL OK",
+      "color": "🟡",
       "declaredLanes": [
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [],
+      "currentVerifiedLanes": [
+        "movie"
+      ],
+      "historicalProof": [
+        "movie: Inception"
+      ],
       "candidateProof": [
         "run 34323567439"
       ],
@@ -418,20 +422,20 @@
         "2 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
+        "movie=OK",
         "tv=no_streams/provider_network_zero_result"
       ],
-      "dominantIssue": "provider_network_zero_result×2",
+      "dominantIssue": "provider_network_zero_result",
       "searchProgress": [
-        "movie: 8 works tested / 0 retained misses / 8 retained chain hits",
+        "movie: 2 works tested / 0 retained misses / 7 retained chain hits",
         "tv: 8 works tested / 1 retained misses / 8 retained chain hits"
       ],
       "evidenceDepth": [
         "movie=chain_reached",
         "tv=chain_reached"
       ],
-      "action": "replay candidate proof against current bytes; publish only after current verified media",
-      "brainCheckRequired": true,
+      "action": "protect green lanes; BRAIN checks missing lanes",
+      "brainCheckRequired": false,
       "testedThisRun": true
     },
     {
@@ -1292,10 +1296,10 @@
     }
   ],
   "counts": {
-    "CANDIDATE OK": 2,
+    "CANDIDATE OK": 1,
     "CHAIN REACHED": 2,
     "FULL OK": 24,
-    "PARTIAL OK": 1,
+    "PARTIAL OK": 2,
     "PROVIDER NETWORK BLOCKED": 7,
     "PROVIDER WAF/ANTIBOT": 7,
     "ROUTE PROVEN": 3
@@ -1315,7 +1319,6 @@
     "mallumv",
     "moviebox",
     "moviesmod",
-    "persianstremio",
     "showbox",
     "uhdmovies",
     "vidfast",
