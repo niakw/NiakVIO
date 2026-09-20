@@ -431,16 +431,20 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
     report_path = output_dir / "repair-report.json"
     report = _load_json(report_path, {})
     learning_mode = str(mode).casefold() == "learning"
-    config = _load_json(OVERRIDES_PATH, {}) if learning_mode else {}
-    runtime = config.setdefault("runtime_repair", {}) if learning_mode else {}
-    skills = runtime.setdefault("learned_skills", {}) if learning_mode else {}
-    if learning_mode and not isinstance(skills, dict):
+    current_policy = policy()
+    production = current_policy.get("production") if isinstance(current_policy.get("production"), dict) else {}
+    learn_from_validated_repair = production.get("learningOnValidatedRepair") is True
+    record_skill_memory = learning_mode or learn_from_validated_repair
+    config = _load_json(OVERRIDES_PATH, {}) if record_skill_memory else {}
+    runtime = config.setdefault("runtime_repair", {}) if record_skill_memory else {}
+    skills = runtime.setdefault("learned_skills", {}) if record_skill_memory else {}
+    if record_skill_memory and not isinstance(skills, dict):
         skills = {}
         runtime["learned_skills"] = skills
-    maturity = policy().get("skillMaturity") or {}
+    maturity = current_policy.get("skillMaturity") or {}
 
     accepted_count = 0
-    if learning_mode:
+    if record_skill_memory:
         for round_row in report.get("rounds") or []:
             attempts_by_parent: dict[str, list[dict[str, Any]]] = {}
             for attempt in round_row.get("attempts") or []:
@@ -467,14 +471,44 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     "profile": profile,
                     "actions": [f"reproduce and evaluate validated {profile} strategy for {failure_class}"],
                     "capabilities": sorted({cap for hyp in plan.get("hypotheses") or [] for cap in hyp.get("capabilities") or []}),
-                    "providers": [], "successCount": 0, "failureCount": 0, "validated": True,
+                    "providers": [],
+                    "signatures": [],
+                    "capabilityStrategies": [],
+                    "observedPipelineStages": [],
+                    "successBySignature": {},
+                    "failureBySignature": {},
+                    "successCount": 0,
+                    "failureCount": 0,
+                    "validated": True,
                 })
                 providers = {str(value).casefold() for value in skill.get("providers") or [] if str(value)}
                 if provider_id:
                     providers.add(provider_id)
+                signature = str(plan.get("signature") or "").strip()
+                strategy = str(plan.get("capabilityStrategy") or "").strip().casefold()
+                observed_stage = str(plan.get("observedPipelineStage") or "").strip().casefold()
+                signatures = {str(value) for value in skill.get("signatures") or [] if str(value)}
+                strategies = {str(value).casefold() for value in skill.get("capabilityStrategies") or [] if str(value)}
+                stages = {str(value).casefold() for value in skill.get("observedPipelineStages") or [] if str(value)}
+                if signature:
+                    signatures.add(signature)
+                if strategy:
+                    strategies.add(strategy)
+                if observed_stage:
+                    stages.add(observed_stage)
                 skill["providers"] = sorted(providers)
+                skill["signatures"] = sorted(signatures)
+                skill["capabilityStrategies"] = sorted(strategies)
+                skill["observedPipelineStages"] = sorted(stages)
+                if signature:
+                    per_signature = skill.setdefault("successBySignature", {})
+                    if not isinstance(per_signature, dict):
+                        per_signature = {}
+                        skill["successBySignature"] = per_signature
+                    per_signature[signature] = int(per_signature.get(signature) or 0) + 1
                 skill["successCount"] = int(skill.get("successCount") or 0) + 1
                 skill["lastValidatedMode"] = mode
+                skill["lastValidatedProvider"] = provider_id or None
                 successes = int(skill["successCount"])
                 failures = int(skill.get("failureCount") or 0)
                 confidence = successes / max(1, successes + failures)
@@ -502,6 +536,13 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                 if not isinstance(skill, dict) or not profile:
                     continue
                 skill["failureCount"] = int(skill.get("failureCount") or 0) + 1
+                signature = str(plan.get("signature") or "").strip()
+                if signature:
+                    per_signature = skill.setdefault("failureBySignature", {})
+                    if not isinstance(per_signature, dict):
+                        per_signature = {}
+                        skill["failureBySignature"] = per_signature
+                    per_signature[signature] = int(per_signature.get(signature) or 0) + 1
                 successes = int(skill.get("successCount") or 0)
                 failures = int(skill["failureCount"])
                 skill["confidence"] = round(successes / max(1, successes + failures), 4)
@@ -511,11 +552,11 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                         skill["maturity"] = "candidate"
 
     brain_versions = [int(row.get("brainVersion") or 0) for row in PLANS.values() if isinstance(row, dict)]
-    if learning_mode:
+    if record_skill_memory:
         runtime["brain"] = {
             "name": str((policy().get("identity") or {}).get("name") or "NiakVIO Brain"),
             "controlPlaneVersion": max(brain_versions, default=0),
-            "learningOnValidatedRepair": True,
+            "learningOnValidatedRepair": learn_from_validated_repair,
             "lastMode": mode,
             "fallbackPolicy": "lkg_only_after_repair_budget",
             "coreMutationPolicy": "proposal_only",
@@ -539,9 +580,10 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
         "mode": mode,
         "plans": sanitized_plans,
         "budgetState": runtime_state_snapshot(),
-        "learnedEvents": accepted_count if learning_mode else 0,
+        "learnedEvents": accepted_count if record_skill_memory else 0,
         "learningExecuted": learning_mode,
-        "learningLane": "independent_daily_lab" if learning_mode else "none_core_repair_only",
+        "validatedRepairLearningExecuted": bool(record_skill_memory and not learning_mode),
+        "learningLane": "independent_daily_lab" if learning_mode else ("validated_repair_skill_memory" if record_skill_memory else "none"),
         "queuedForLearning": sorted({
             str(row.get("providerId") or key)
             for key, row in PLANS.items()
