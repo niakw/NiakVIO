@@ -27,6 +27,7 @@ from typing import Any
 
 from apply_provider_overrides import load_overrides
 from runtime_repair import (
+    compare_exploration_progress,
     compare_results,
     create_repair_candidate,
     health_counts,
@@ -176,6 +177,8 @@ def main() -> int:
     }
 
     accepted_total = 0
+    exploration_total = 0
+    exploration_chain_enabled = str(os.environ.get("NUVIO_BRAIN_EXPLORATION_CHAIN") or "").strip() == "1"
     accepted_profile_assignments: dict[str, set[str]] = {}
     attempted_fingerprints: set[tuple[str, str, str]] = set()
     for round_number in range(1, max_rounds + 1):
@@ -242,6 +245,7 @@ def main() -> int:
             "generated_candidates": len(repair_candidates),
             "attempts": attempts,
             "accepted": [],
+            "exploration_progress": [],
             "rejected": [],
         }
         audit["rounds"].append(round_audit)
@@ -288,11 +292,17 @@ def main() -> int:
             variants_by_parent.setdefault(parent_key, []).append((repaired, result))
 
         accepted_this_round = 0
+        exploration_this_round = 0
         for parent_key, variants in variants_by_parent.items():
             parent_result = current_results[parent_key]
             ranked = sorted(variants, key=lambda pair: quality_vector(pair[1]), reverse=True)
             selected_candidate, selected_result = ranked[0]
             accepted, reason = compare_results(parent_result, selected_result)
+            exploration_ok, exploration_reason = (
+                compare_exploration_progress(parent_result, selected_result)
+                if exploration_chain_enabled and not accepted
+                else (False, "exploration_disabled_or_already_accepted")
+            )
 
             for candidate_variant, result_variant in variants:
                 is_selected = candidate_variant["key"] == selected_candidate["key"]
@@ -352,6 +362,60 @@ def main() -> int:
                             "runtime_errors_after": runtime_error_count(selected_result),
                         }
                     )
+                elif exploration_ok and is_selected:
+                    updated_candidate = copy.deepcopy(candidate_variant)
+                    exploration_event = copy.deepcopy(updated_candidate.pop("runtime_repair", {}))
+                    exploration_history = list(current_candidates[parent_key].get("brain_exploration_history") or [])
+                    exploration_event.update(
+                        {
+                            "accepted": False,
+                            "explorationOnly": True,
+                            "result_status": selected_result.get("status"),
+                            "result_score": selected_result.get("score"),
+                            "reason": exploration_reason,
+                            "streams_returned_before": stream_count(parent_result),
+                            "streams_returned_after": stream_count(selected_result),
+                            "streams_playable_before": playable_stream_count(parent_result),
+                            "streams_playable_after": playable_stream_count(selected_result),
+                            "runtime_errors_before": runtime_error_count(parent_result),
+                            "runtime_errors_after": runtime_error_count(selected_result),
+                        }
+                    )
+                    exploration_history.append(exploration_event)
+                    updated_candidate["brain_exploration_history"] = exploration_history
+                    updated_candidate["brain_exploration_parent"] = {
+                        "round": round_number,
+                        "reason": exploration_reason,
+                        "productionAccepted": False,
+                    }
+                    updated_candidate.pop("provider_base_change_authorized", None)
+                    updated_candidate["key"] = parent_key
+                    current_candidates[parent_key] = updated_candidate
+                    current_results[parent_key] = result_with_parent_key(
+                        selected_result,
+                        parent_key,
+                        updated_candidate.get("sha256"),
+                    )
+                    exploration_this_round += 1
+                    exploration_total += 1
+                    round_audit["exploration_progress"].append(
+                        {
+                            "parent_key": parent_key,
+                            "profile": exploration_event.get("profile"),
+                            "sha256": updated_candidate.get("sha256"),
+                            "status_before": parent_result.get("status"),
+                            "status_after": selected_result.get("status"),
+                            "score_before": parent_result.get("score"),
+                            "score_after": selected_result.get("score"),
+                            "reason": exploration_reason,
+                            "streams_returned_before": stream_count(parent_result),
+                            "streams_returned_after": stream_count(selected_result),
+                            "streams_playable_before": playable_stream_count(parent_result),
+                            "streams_playable_after": playable_stream_count(selected_result),
+                            "runtime_errors_before": runtime_error_count(parent_result),
+                            "runtime_errors_after": runtime_error_count(selected_result),
+                        }
+                    )
                 else:
                     rejection_reason = reason if is_selected else "inferior_to_selected_variant"
                     round_audit["rejected"].append(
@@ -372,7 +436,7 @@ def main() -> int:
                     )
                     (stage / candidate_variant["local_path"]).unlink(missing_ok=True)
 
-        if accepted_this_round == 0:
+        if accepted_this_round == 0 and exploration_this_round == 0:
             break
 
     final_candidates = [current_candidates[key] for key in candidate_order]
@@ -386,6 +450,9 @@ def main() -> int:
         "provider_specific_rules": False,
         "rounds_executed": len(audit["rounds"]),
         "accepted_repairs": accepted_total,
+        "exploration_progress_count": exploration_total,
+        "exploration_chain_enabled": exploration_chain_enabled,
+        "exploration_is_non_publishable": True,
         "requires_playable_stream_proof": True,
         "duplicate_retests_blocked": True,
     }
@@ -420,8 +487,8 @@ def main() -> int:
         path.unlink(missing_ok=True)
 
     print(
-        f"Deep repair loop complete: {accepted_total} validated repair(s) accepted "
-        f"across {len(audit['rounds'])} round(s)."
+        f"Deep repair loop complete: {accepted_total} validated repair(s) accepted, "
+        f"{exploration_total} sandbox exploration progression(s) across {len(audit['rounds'])} round(s)."
     )
     return 0
 
