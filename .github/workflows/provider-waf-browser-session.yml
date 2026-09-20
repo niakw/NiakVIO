@@ -8,6 +8,8 @@ on:
       - '.github/workflows/provider-waf-browser-session.yml'
       - '.github/triggers/provider-waf-browser-session.json'
       - 'scripts/probe_waf_browser_session.py'
+      - 'scripts/render_provider_census_status.py'
+      - 'tests/provider_census_status_markdown_test.py'
       - 'tests/provider_waf_browser_session_test.py'
       - 'tests/provider_waf_okhttp_profile_test.py'
       - 'tools/waf-okhttp-probe/**'
@@ -73,33 +75,54 @@ jobs:
           retention-days: 14
           if-no-files-found: error
 
-      - name: Persist WAF browser-session evidence
+      - name: Persist WAF evidence and refresh census transport state
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         shell: bash
         run: |
           set -euo pipefail
           cp automation/provider-waf-browser-session-latest.json /tmp/provider-waf-browser-session-latest.json
-          git fetch origin main
-          git reset --hard origin/main
-          mkdir -p automation
-          cp /tmp/provider-waf-browser-session-latest.json automation/provider-waf-browser-session-latest.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add automation/provider-waf-browser-session-latest.json
-          git diff --cached --quiet && exit 0
-          git commit -m "ci(waf): persist ordinary browser session diagnostics"
-          for attempt in 1 2 3; do
-            if git push origin HEAD:main; then
-              exit 0
-            fi
-            echo "WAF evidence push raced main; retrying attempt $attempt/3" >&2
+
+          rebuild_on_latest_main() {
             git fetch origin main
             git reset --hard origin/main
             mkdir -p automation
             cp /tmp/provider-waf-browser-session-latest.json automation/provider-waf-browser-session-latest.json
-            git add automation/provider-waf-browser-session-latest.json
+            test -s provider-v3-quick-yield.json
+            python scripts/render_provider_census_status.py provider-v3-quick-yield.json \
+              --output PROVIDER_CENSUS_STATUS.md \
+              --json-output automation/provider-census-status.json \
+              --history automation/provider-census-proof-history.json \
+              --baseline-status automation/provider-census-status.json \
+              --candidate-evidence automation/provider-history-evidence-v1.json \
+              --provider-overrides provider-overrides.json \
+              --waf-browser-evidence automation/provider-waf-browser-session-latest.json \
+              --run-id "${GITHUB_RUN_ID}-waf-refresh" \
+              --sha "$(git rev-parse HEAD)"
+            python scripts/build_provider_repair_batch_plan.py \
+              --status automation/provider-census-status.json \
+              --overrides provider-overrides.json \
+              --output automation/provider-repair-batch-plan-latest.json
+            git add \
+              automation/provider-waf-browser-session-latest.json \
+              automation/provider-census-status.json \
+              automation/provider-repair-batch-plan-latest.json \
+              PROVIDER_CENSUS_STATUS.md
+          }
+
+          rebuild_on_latest_main
+          git diff --cached --quiet && exit 0
+          git commit -m "ci(waf): persist transport evidence and refresh census"
+
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "WAF/census persistence raced main; rebuilding on latest main attempt $attempt/3" >&2
+            rebuild_on_latest_main
             git diff --cached --quiet && exit 0
-            git commit -m "ci(waf): persist ordinary browser session diagnostics"
+            git commit -m "ci(waf): persist transport evidence and refresh census"
           done
-          echo "WAF evidence persistence failed after 3 main-rebase retries" >&2
+          echo "WAF/census persistence failed after 3 main-rebase retries" >&2
           exit 1
