@@ -1548,7 +1548,7 @@ def main() -> int:
             )
     lkg = lkg_rows()
     current_upstream = current_upstream_catalog(source_config())
-    workers = max(1, min(12, int(args.workers)))
+    workers = max(1, min(32, int(args.workers)))
     timeout = max(15, min(120, int(args.timeout)))
     attempts = max(1, min(4, int(args.attempts)))
     rows: list[dict[str, Any]] = []
