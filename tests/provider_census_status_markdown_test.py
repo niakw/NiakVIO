@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from render_provider_census_status import build_status_rows, render
+from render_provider_census_status import build_status_rows, harness_transport_diagnostic, render
 from update_provider_census_proof_history import NETWORK_STAGES, TECHNICAL_STAGES
 
 report = {
@@ -117,6 +117,7 @@ assert "**no-proof**" in md
 assert "provider_network_zero_result" in md
 assert "Corpus progress" in md
 assert "Evidence depth" in md
+assert "Harness transport" in md
 assert "Candidate proof" in md
 assert "Route proof" in md
 assert "CANDIDATE OK preserves verified playback from a reconstruction candidate" in md
@@ -152,6 +153,79 @@ blocked = build_status_rows(
 )[0]
 assert blocked["status"] == "HARNESS/ENV BLOCKED", blocked
 assert blocked["repairEligible"] is False, blocked
+
+# Harness transport classification preserves the broad census status while
+# telling Brain which representative-client experiment should happen next.
+transport_evidence = {
+    "rows": [
+        {
+            "provider": "native-ok",
+            "lane": "movie",
+            "outcome": "browser_content_reached",
+            "clientProfileMatrix": [
+                {"profile": "nuvio-tv-ua-browser", "outcome": "browser_timeout"},
+            ],
+            "okHttpJvmProfile": {"outcome": "okhttp_jvm_content_reached"},
+            "directHttpProfile": {"outcome": "direct_http_content_reached"},
+        },
+        {
+            "provider": "browser-only",
+            "lane": "anime",
+            "outcome": "browser_content_reached",
+            "clientProfileMatrix": [
+                {"profile": "nuvio-tv-ua-browser", "outcome": "browser_content_reached"},
+            ],
+            "okHttpJvmProfile": {"outcome": "okhttp_jvm_challenge_persisted"},
+            "directHttpProfile": {"outcome": "direct_http_challenge_persisted"},
+        },
+        {
+            "provider": "native-maybe",
+            "lane": "tv",
+            "outcome": "browser_challenge_persisted",
+            "clientProfileMatrix": [
+                {"profile": "nuvio-tv-ua-browser", "outcome": "browser_inconclusive"},
+            ],
+            "okHttpJvmProfile": {"outcome": "okhttp_jvm_inconclusive"},
+            "directHttpProfile": {"outcome": "direct_http_challenge_persisted"},
+        },
+        {
+            "provider": "all-blocked",
+            "lane": "movie",
+            "outcome": "browser_challenge_persisted",
+            "clientProfileMatrix": [
+                {"profile": "nuvio-tv-ua-browser", "outcome": "browser_challenge_persisted"},
+            ],
+            "okHttpJvmProfile": {"outcome": "okhttp_jvm_challenge_persisted"},
+            "directHttpProfile": {"outcome": "direct_http_challenge_persisted"},
+        },
+    ]
+}
+assert harness_transport_diagnostic(transport_evidence, "native-ok")["classification"] == "native-policy-reachable"
+assert harness_transport_diagnostic(transport_evidence, "browser-only")["classification"] == "browser-profile-only"
+assert harness_transport_diagnostic(transport_evidence, "native-maybe")["classification"] == "native-policy-inconclusive"
+assert harness_transport_diagnostic(transport_evidence, "all-blocked")["classification"] == "github-all-transports-challenged"
+
+native_report = {
+    "provider_count": 1,
+    "rows": [{
+        "provider_id": "native-ok",
+        "semantic_type": "movie",
+        "status": "no_streams",
+        "verified": 0,
+        "contradictions": 0,
+        "debug_stage": "provider_waf_challenge",
+        "sample_count": 1,
+    }],
+}
+native_row = build_status_rows(
+    native_report,
+    {},
+    waf_browser_evidence=transport_evidence,
+)[0]
+assert native_row["status"] == "HARNESS MISMATCH", native_row
+assert native_row["harnessTransportClass"] == "native-policy-reachable", native_row
+assert "NuvioTV-like/native transport" in native_row["action"], native_row
+assert native_row["repairEligible"] is False, native_row
 
 # A previously proven fixture that is explicitly replayed and now returns a
 # clean zero is a provider regression, not NO PROOF.
