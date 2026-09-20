@@ -168,7 +168,7 @@ assert early_options is not None
 assert early_options["repair_focus"] == "media-extraction", early_options
 assert early_options["request_recipes"][:3] == recipes, early_options["request_recipes"]
 assert all(route not in {"/player/{id}", "/embed/{id}", "/api/sources/{id}", "/api/stream/{id}"} for route in early_options["direct_paths"]), early_options["direct_paths"]
-assert all(runtime._route_role(route) in {"player", "api"} for route in early_options["direct_paths"]), early_options["direct_paths"]
+assert all(runtime._route_role(route) in runtime.TERMINAL_MEDIA_ROLES for route in early_options["direct_paths"]), early_options["direct_paths"]
 candidate["brain_repair_plan"]["experimentVariant"] = 4
 
 # Planner transport must keep causal shape but not raw URL/body/header values.
@@ -263,8 +263,8 @@ with tempfile.TemporaryDirectory() as directory:
     execution = json.loads(completed.stdout.strip())
 
 assert any(row["url"] == "https://demo.example/player/987" for row in execution["calls"]), execution
-assert any(row["url"] == "https://cdn.example/master.m3u8" for row in execution["calls"]), execution
 assert execution["rows"], execution
 assert execution["rows"][0]["url"] == "https://cdn.example/master.m3u8", execution
+assert execution["rows"][0]["isDirect"] is True, execution
 
 print("Brain current-observation request recipe contract passed")
