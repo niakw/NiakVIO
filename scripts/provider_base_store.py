@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
+from current_provider_scope import active_provider_rows, disabled_provider_rows
+
 from apply_provider_overrides import apply_overrides, _strip_generated_core_tail
 from provider_byte_stability import split_owned_prefix_bootstraps
 from provider_patch_blocks import (
@@ -4945,15 +4947,20 @@ def migrate_existing() -> dict[str, Any]:
     )
 
 def validate_all(*, validate_artifacts: bool = False) -> dict[str, Any]:
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    """Validate the executable ProviderBase store, not retained disabled artifacts.
+
+    providers/ is the execution authority. provider-disabled/ remains visible for
+    lifecycle/audit purposes but is deliberately outside the release-reachable
+    ProviderBase store and may retain historical bases under its own directory.
+    """
     provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
     rows = provenance.get("providers") or {}
+    active_entries = active_provider_rows()
+    disabled_entries = disabled_provider_rows()
     checked = 0
     bases: set[str] = set()
-    for entry in manifest.get("scrapers") or []:
-        if not isinstance(entry, dict):
-            continue
-        provider_id = str(entry.get("id") or "").strip().casefold()
+    for entry in active_entries:
+        provider_id = canonical_id(str(entry.get("id") or ""))
         if not provider_id:
             continue
         row = rows.get(provider_id)
@@ -4967,13 +4974,14 @@ def validate_all(*, validate_artifacts: bool = False) -> dict[str, Any]:
             validate_base(data, provider_id)
         bases.add(path.relative_to(ROOT).as_posix())
         checked += 1
-    if checked != len(manifest.get("scrapers") or []):
-        raise ValueError(f"ProviderBase coverage mismatch checked={checked} manifest={len(manifest.get('scrapers') or [])}")
+    if checked != len(active_entries):
+        raise ValueError(
+            f"ProviderBase active coverage mismatch checked={checked} active={len(active_entries)}"
+        )
     clean_reconstructed = sum(
         1
-        for entry in manifest.get("scrapers") or []
-        if isinstance(entry, dict)
-        and is_clean_reconstructed(rows.get(canonical_id(str(entry.get("id") or ""))))
+        for entry in active_entries
+        if is_clean_reconstructed(rows.get(canonical_id(str(entry.get("id") or ""))))
     )
     return {
         "checked": checked,
@@ -4981,6 +4989,7 @@ def validate_all(*, validate_artifacts: bool = False) -> dict[str, Any]:
         "artifact_validation": bool(validate_artifacts),
         "clean_reconstructed": clean_reconstructed,
         "reconstruction_required": checked - clean_reconstructed,
+        "disabled_visible": len(disabled_entries),
     }
 
 
@@ -5022,6 +5031,7 @@ def main() -> int:
             f"FIELD_PROVIDER_BASE_COVERAGE checked={result['checked']} "
             f"unique_bases={result['unique_bases']} "
             f"clean={result['clean_reconstructed']} required={result['reconstruction_required']} "
+            f"disabled_visible={result['disabled_visible']} "
             f"artifact_validation={str(result['artifact_validation']).lower()}"
         )
     return 0
