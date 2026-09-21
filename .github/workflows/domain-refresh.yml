@@ -199,7 +199,7 @@ jobs:
             --previous "$RUNNER_TEMP/published-manifest-baseline.json"
           python tests/release_auto_bump_test.py
           python scripts/finalize_provider_v3_minimizer.py --check
-          python scripts/audit_provider_v3_static.py
+          python scripts/audit_provider_v3_static.py --domain-only
           python scripts/generate_hub46_manifest.py \
             --source manifest.json \
             --matrix automation/evidence/hub-lab-matrix-46.json \
