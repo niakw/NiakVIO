@@ -1,5 +1,15 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-21 23:40 Europe/Paris — Residential census proof now real; stale-authority WAF overlay fixed but pending validation
+
+- Standalone WAF #107 (`35657232795`) completed green with Tailscale residential exit available. The persisted census transport overlay now reports **27 FULL OK**, including residentially verified AnimeSalt/VostFree from the earlier successful replay lineage, with exact transport queues **HARNESS MISMATCH: animevost-fr, moviesmod** and **environment blocked: allwish, flemmix**. Tailscale is therefore operational; these classifications are evidence-backed, not inferred from GitHub-only probes.
+- The markdown now renders split causal queues instead of one misleading bucket: automated Repair, lifecycle disabled, authority rediscovery, harness mismatch, environment blocked.
+- A remaining freshness defect was found: WAF #107 was transport-only but projected onto the last canonical census, whose per-row authority fields predated the ShowBox manual-off transition. Thus ShowBox could still render under authority rediscovery even though current `provider-authority-status.json` already says `DISABLE_MANUAL_POLICY` and the manifest has ShowBox in `provider-disabled/`.
+- `213d48cc8187` changes `merge_waf_census_transport.py` so a WAF overlay first projects **current arbiter metadata** onto carried census rows, recomputes `statusRepairEligible`/combined `repairEligible`, recomputes Repair from final rows, and then builds lifecycle/rediscovery queues. WAF still does not invent authority; it only stops carrying stale authority from an older census.
+- `f68f18a5cfda` adds the exact stale-ShowBox regression: old row `REDISCOVER_SEARCH` + current arbiter `DISABLE_MANUAL_POLICY` must yield lifecycle disabled, not rediscovery. `87616656e863` passes `provider-authority-status.json` explicitly from the WAF workflow. Validation is pending in WAF #111; do not mark this acquired until that run is green.
+- Repair #135 (`35657748177`, SHA `b40f8447efaa`) has now passed the **entire canonical preflight** green after the lifecycle-first ordering fix and is executing integrated WAF/network qualification. This is the first current run in this sequence to cross all preflight contracts after the recent lifecycle/census/Tailscale changes.
+- Legacy TEMP census #1324 is still running on old SHA `a3ea5663c76b` and predates the freshness guard. If it publishes, treat that publication as stale transit evidence only. WAF #111 is serialized behind the census/WAF lane and Repair runs have separate freshness-safe persistence.
+
 ## 2026-09-21 23:34 Europe/Paris — Census/authority/Tailscale state corrected; Repair #134 blocked only by fail-fast ordering contract
 
 - Current provider authority/lifecycle now matches the manual evidence supplied for the ambiguous catalogue cases:
