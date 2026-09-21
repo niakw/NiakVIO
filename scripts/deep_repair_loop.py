@@ -67,6 +67,45 @@ def learning_deadline_reached() -> bool:
         return False
 
 
+def accepted_runtime_program(candidate: dict[str, Any]) -> dict[str, Any] | None:
+    """Return the bounded, sanitized runtime program that produced an accepted repair.
+
+    The program is DATA, not published JavaScript. It deliberately excludes raw
+    responses, cookies, tokens and stage-local paths so downstream v3 persistence
+    can compile the winning behavior without reverse-engineering ProviderBase.
+    """
+    allowed_option_keys = {
+        "base_url", "endpoint_origins", "types", "search_paths", "direct_paths",
+        "request_recipes", "repair_focus", "census_status", "experiment_variant",
+        "experiment_failure_class", "experiment_strategy", "new_strategy_id",
+        "peer_route_min_variant", "peer_recipe_min_variant", "negative_memory_matches",
+        "max_pages", "max_embeds", "max_depth", "timeout_ms", "user_agent",
+        "blocked_hosts", "blocked_path_patterns", "route_prior_counts",
+    }
+    for record in reversed(candidate.get("local_patches") or []):
+        if not isinstance(record, dict):
+            continue
+        if (
+            record.get("type") != "patch_profile"
+            or record.get("profile") != "adaptive_runtime_recovery"
+            or record.get("phase") != "runtime"
+            or not isinstance(record.get("options"), dict)
+        ):
+            continue
+        options = {
+            str(key): copy.deepcopy(value)
+            for key, value in record["options"].items()
+            if str(key) in allowed_option_keys
+        }
+        return {
+            "schemaVersion": 1,
+            "profile": "adaptive_runtime_recovery",
+            "revision": int(record.get("revision") or 0),
+            "options": options,
+        }
+    return None
+
+
 def persist_runtime_profiles(config: dict[str, Any], assignments: dict[str, set[str]]) -> list[dict[str, Any]]:
     """Persist only profiles already accepted by a strict real deep retest."""
     provider_patches = config.setdefault("provider_patches", {})
@@ -338,6 +377,9 @@ def main() -> int:
                         "parent_sha256": str(repair_event.get("parent_sha256") or ""),
                         "profile": str(repair_event.get("profile") or ""),
                     }
+                    accepted_program = accepted_runtime_program(updated_candidate)
+                    if accepted_program:
+                        updated_candidate["accepted_runtime_program"] = accepted_program
                     updated_candidate["key"] = parent_key
                     current_candidates[parent_key] = updated_candidate
                     current_results[parent_key] = result_with_parent_key(
@@ -356,6 +398,7 @@ def main() -> int:
                             "parent_key": parent_key,
                             "profile": repair_event.get("profile"),
                             "brain_plan": copy.deepcopy(candidate_variant.get("brain_repair_plan") or {}),
+                            "accepted_program": copy.deepcopy(updated_candidate.get("accepted_runtime_program") or {}),
                             "sha256": updated_candidate.get("sha256"),
                             "status_before": parent_result.get("status"),
                             "status_after": selected_result.get("status"),
