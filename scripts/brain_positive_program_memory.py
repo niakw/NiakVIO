@@ -150,6 +150,8 @@ def _recipe(
     role: str,
     semantic_types: object,
     required_bindings: list[str] | None = None,
+    response_kind: object = "html-or-text",
+    stream_proof: bool = False,
 ) -> list[dict[str, Any]]:
     base = str(base or "").strip().rstrip("/")
     route = str(route or "").strip()
@@ -176,9 +178,11 @@ def _recipe(
             "bodyKind": body_kind,
             "body": body,
             "headerNames": header_names,
-            "response": "html-or-text",
+            "response": str(response_kind or "html-or-text").casefold()
+            if str(response_kind or "html-or-text").casefold() in {"json", "html-or-text"}
+            else "html-or-text",
             "semanticType": media_type,
-            "streamProof": False,
+            "streamProof": stream_proof is True,
             "requiredBindings": list(required_bindings or []),
             "executable": True,
             "source": "positive-program-memory",
@@ -200,6 +204,8 @@ def provider_request_recipes(provider_id: str, *, path: Path = MEMORY_PATH) -> l
                 spec=row.get("requestSpec"),
                 role="search",
                 semantic_types=row.get("semanticTypes"),
+                response_kind=row.get("responseKind"),
+                stream_proof=row.get("streamProof") is True,
             ):
                 key = json.dumps(recipe, sort_keys=True, separators=(",", ":"))
                 if key not in seen:
@@ -227,6 +233,8 @@ def provider_request_recipes(provider_id: str, *, path: Path = MEMORY_PATH) -> l
                     role=str(step.get("role") or "detail").casefold(),
                     semantic_types=plan.get("semanticTypes"),
                     required_bindings=bindings,
+                    response_kind=step.get("responseKind"),
+                    stream_proof=step.get("streamProof") is True,
                 ):
                     key = json.dumps(recipe, sort_keys=True, separators=(",", ":"))
                     if key not in seen:
