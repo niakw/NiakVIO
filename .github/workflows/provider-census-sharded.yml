@@ -52,6 +52,9 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+      - name: Validate sharded census persistence contract
+        run: python tests/provider_census_sharded_persistence_contract_test.py
+
       - id: pin
         shell: bash
         run: |
