@@ -68,9 +68,19 @@ assert r["action"]=="REDISCOVER_DIRECT",r
 r=module.classify("demo",row(),direct,patch(),{"authority_failures":{"consecutive":3}})
 assert r["action"]=="DISABLE_AUTHORITY_EXHAUSTED",r
 
-# Curated directs remain Repair-eligible until persisted failures contradict them.
+# A non-explicit curated direct needs provider-owned route proof. The URL alone
+# is a rediscovery candidate, not authority.
 r=module.classify("demo",row(),reg(direct="https://demo.example/"),patch(),{})
+assert r["action"]=="REDISCOVER_DIRECT",r
+proven_direct_patch=patch(
+    route_proof={
+        "provenRouteCount": 1,
+        "lastRepairProbe": {"positiveExecutionEvidence": True},
+    }
+)
+r=module.classify("demo",row(),reg(direct="https://demo.example/"),proven_direct_patch,{})
 assert r["action"]=="KEEP_DIRECT",r
+assert r["repairEligible"] is True,r
 
 # A mixed embed resolver may be driven by an explicit delegated DB/API backend.
 r=module.classify(
