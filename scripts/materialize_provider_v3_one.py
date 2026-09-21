@@ -17,6 +17,7 @@ from pathlib import Path
 import materialize_provider_v3_all as allmat
 
 ROOT = Path(__file__).resolve().parents[1]
+REGISTRY = ROOT / "provider-hubs.json"
 
 
 def _host(value: object) -> str:
@@ -43,6 +44,22 @@ def _current_model(static_knowledge: dict[str, object], provider_id: str) -> dic
     return model if isinstance(model, dict) else {}
 
 
+def _registry_explicit_current_site(
+    registry: dict[str, object],
+    provider_id: str,
+) -> str:
+    providers = registry.get("providers")
+    if not isinstance(providers, dict):
+        return ""
+    row = providers.get(provider_id)
+    if not isinstance(row, dict):
+        return ""
+    if str(row.get("direct_authority") or "").strip().casefold() != "explicit_current":
+        return ""
+    direct = str(row.get("direct") or "").strip().rstrip("/")
+    return direct if direct.startswith(("http://", "https://")) else ""
+
+
 def _current_authority_hosts(model: dict[str, object]) -> set[str]:
     values: list[object] = [
         model.get("knownSite"),
@@ -64,6 +81,7 @@ def reconcile_provider_authority(
     overrides: dict[str, object],
     static_knowledge: dict[str, object],
     provider_id: str,
+    registry: dict[str, object] | None = None,
 ) -> list[str]:
     """Project current canonical Provider DATA over stale historical overrides.
 
@@ -84,9 +102,18 @@ def reconcile_provider_authority(
     patch = patches.get(canonical_id)
     if not isinstance(patch, dict):
         return []
-    model = _current_model(static_knowledge, canonical_id)
+    model = copy.deepcopy(_current_model(static_knowledge, canonical_id))
     if not model:
         return []
+
+    # PROVIDER_DOMAIN_EXPLICIT_CURRENT_PRECEDENCE_V1
+    # Domain Refresh's curated explicit-current registry is newer authority than
+    # static Provider memory. Incremental materialization must never resurrect a
+    # stale static host after Domain Refresh has selected a newer terminal.
+    explicit_current_site = _registry_explicit_current_site(registry or {}, canonical_id)
+    if explicit_current_site:
+        model["knownSite"] = explicit_current_site
+        model["officialSite"] = explicit_current_site
 
     changed = False
 
@@ -304,11 +331,13 @@ def materialize_one(provider_id: str) -> dict[str, object]:
     manifest = allmat.load(allmat.DEFAULT_SOURCE_MANIFEST)
     overrides = allmat.load(allmat.DEFAULT_OVERRIDES)
     static_knowledge = allmat.load(allmat.DEFAULT_STATIC_KNOWLEDGE)
+    registry = allmat.load(REGISTRY)
 
     authority_changed = reconcile_provider_authority(
         overrides,
         static_knowledge,
         provider_id,
+        registry,
     )
     changed_domains = reconcile_domain_substitutions(
         overrides,
