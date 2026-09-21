@@ -12,6 +12,8 @@ on:
       - 'scripts/render_provider_census_status_from_state.py'
       - 'scripts/merge_waf_census_transport.py'
       - 'scripts/merge_waf_network_profiles.py'
+      - 'scripts/merge_residential_provider_replay.py'
+      - 'scripts/select_residential_provider_replay.py'
       - 'tests/provider_census_status_markdown_test.py'
       - 'tests/waf_census_transport_merge_test.py'
       - 'tests/provider_waf_census_markdown_sync_test.py'
@@ -19,6 +21,8 @@ on:
       - 'tests/provider_waf_okhttp_profile_test.py'
       - 'tests/provider_waf_tailscale_exit_contract_test.py'
       - 'tests/waf_residential_profile_merge_test.py'
+      - 'tests/residential_provider_replay_summary_test.py'
+      - 'tests/residential_provider_replay_selection_test.py'
       - 'tools/waf-okhttp-probe/**'
 
 permissions:
@@ -71,6 +75,8 @@ jobs:
         run: |
           python tests/provider_waf_tailscale_exit_contract_test.py
           python tests/waf_residential_profile_merge_test.py
+          python tests/residential_provider_replay_selection_test.py
+          python tests/residential_provider_replay_summary_test.py
 
       - name: Normalize private Tailscale CI tag
         if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
@@ -195,6 +201,40 @@ jobs:
               --unavailable-reason "$reason" \
               --output automation/provider-waf-browser-session-latest.json
           fi
+
+      - name: Select full providers for residential replay
+        if: ${{ env.NIAKVIO_RESIDENTIAL_EXIT_ACTIVE == '1' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/select_residential_provider_replay.py \
+            --waf automation/provider-waf-browser-session-latest.json \
+            --output /tmp/residential-provider-replay-targets.json
+          count="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('/tmp/residential-provider-replay-targets.json').read_text())
+          print(int(data.get('providerCount') or 0))
+          PY
+          )"
+          if [ "$count" -gt 0 ]; then
+            echo "NIAKVIO_RESIDENTIAL_PROVIDER_REPLAY=1" >> "$GITHUB_ENV"
+          fi
+
+      - name: Replay full providers through private residential exit
+        if: ${{ env.NIAKVIO_RESIDENTIAL_PROVIDER_REPLAY == '1' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/audit_provider_quick_yield_targeted.py \
+            --providers-json /tmp/residential-provider-replay-targets.json \
+            --output /tmp/provider-residential-network-replay.json \
+            --attempts 1
+          python scripts/merge_residential_provider_replay.py \
+            --waf automation/provider-waf-browser-session-latest.json \
+            --replay /tmp/provider-residential-network-replay.json \
+            --output /tmp/provider-waf-with-residential-replay.json
+          mv /tmp/provider-waf-with-residential-replay.json automation/provider-waf-browser-session-latest.json
 
       - name: Clear private exit-node routing
         if: ${{ always() && env.NIAKVIO_RESIDENTIAL_EXIT_ACTIVE == '1' }}
