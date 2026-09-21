@@ -1,0 +1,486 @@
+{
+  "schemaVersion": 1,
+  "role": "historical-repair-prior-only",
+  "sourceScope": "NiakVIO project chats + repository history, August-September 2026",
+  "safety": {
+    "directMutationAuthority": false,
+    "publicationAuthority": false,
+    "requiresCurrentByteValidation": true,
+    "requiresIdentityPlaybackProof": true,
+    "staleDomainAuthority": false,
+    "providerSpecificOpaqueSecretTransfer": false
+  },
+  "cases": [
+    {
+      "id": "hist-series-alias-pre-network-gate",
+      "firstObserved": "2026-08-30",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "zero_streams_many_providers",
+        "series_tv_alias_mismatch"
+      ],
+      "failureClass": "media_type_pre_network_gate",
+      "solutionClass": "normalize_client_media_type_before_provider_capability_gate",
+      "transferableSignals": [
+        "client sends series",
+        "manifest/provider capabilities use tv",
+        "provider never invoked"
+      ],
+      "avoid": [
+        "adding fake movie support",
+        "provider-local workaround"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "A catalogue-wide zero can be a Core media-type gate failure before network; normalize series->tv while preserving anime semantics."
+    },
+    {
+      "id": "hist-purstream-movix-cross-provider-contamination",
+      "firstObserved": "2026-08-13",
+      "providers": [
+        "purstream",
+        "movix"
+      ],
+      "symptomFamilies": [
+        "wrong_backend",
+        "unexpected_success",
+        "cross_provider_contamination"
+      ],
+      "failureClass": "provider_backend_isolation",
+      "solutionClass": "provider_owned_backend_only",
+      "transferableSignals": [
+        "provider A succeeds through provider B API",
+        "unexpected foreign host in recipe"
+      ],
+      "avoid": [
+        "shared provider backend fallback"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Providers may share neutral identity services only; provider-owned backends must stay isolated or false positives contaminate repair evidence."
+    },
+    {
+      "id": "hist-movix-api-discovery",
+      "firstObserved": "2026-08-03",
+      "providers": [
+        "movix"
+      ],
+      "symptomFamilies": [
+        "403",
+        "obsolete_route",
+        "no_streams"
+      ],
+      "failureClass": "api_discovery_gap",
+      "solutionClass": "discover_api_from_current_page_and_bundles",
+      "transferableSignals": [
+        "fixed endpoint 403",
+        "site page still reachable",
+        "JS bundle exposes current API"
+      ],
+      "avoid": [
+        "/api/fstream/ stale fallback",
+        "hardcoded old endpoint"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "When a provider frontend is alive but a fixed API is dead, inspect current provider-owned page/bundle metadata and rebuild route DATA instead of retrying stale endpoints."
+    },
+    {
+      "id": "hist-short-fake-media-duration",
+      "firstObserved": "2026-08-12",
+      "providers": [
+        "vidlove",
+        "frenchstream",
+        "french-manga"
+      ],
+      "symptomFamilies": [
+        "false_playable",
+        "short_hls",
+        "wrong_content"
+      ],
+      "failureClass": "playback_identity_gap",
+      "solutionClass": "duration_and_media_signature_guard",
+      "transferableSignals": [
+        "HTTP 200",
+        "HLS parses",
+        "duration implausibly short",
+        "HTML/document masquerades as media"
+      ],
+      "avoid": [
+        "stream_count as success",
+        "status-code-only validation"
+      ],
+      "evidence": [
+        "project-chat",
+        "user-tv-tests",
+        "repo-history"
+      ],
+      "lesson": "A URL is not a valid stream until media type, duration/segment structure and identity are plausible; short HLS/player documents must be rejected."
+    },
+    {
+      "id": "hist-android-quickjs-url-hostname",
+      "firstObserved": "2026-08-08",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "android_only_failure",
+        "node_native_divergence"
+      ],
+      "failureClass": "runtime_compatibility_gap",
+      "solutionClass": "avoid_mutating_url_hostname_in_quickjs",
+      "transferableSignals": [
+        "Node passes",
+        "Android/QuickJS fails",
+        "URL hostname mutation used"
+      ],
+      "avoid": [
+        "assuming web URL API parity"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Provider/Core logic must target the least-capable supported JS runtime; URL API mutations that work in Node may not work in QuickJS/native hosts."
+    },
+    {
+      "id": "hist-player-capability-projection",
+      "firstObserved": "2026-08-08",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "android_player_failure",
+        "capability_lost"
+      ],
+      "failureClass": "client_capability_projection_gap",
+      "solutionClass": "preserve_supports_external_player_and_stream_contract",
+      "transferableSignals": [
+        "provider returns usable URL",
+        "client rejects or cannot launch player",
+        "capability omitted by projection"
+      ],
+      "avoid": [
+        "provider rewrite for client projection bug"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Separate provider extraction from client capability projection; preserve player capability fields through Core/adapters."
+    },
+    {
+      "id": "hist-runtime-github-dependency",
+      "firstObserved": "2026-08-26",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "desktop_blocked",
+        "raw_github_dependency",
+        "runtime_network_dependency"
+      ],
+      "failureClass": "runtime_dependency_gap",
+      "solutionClass": "embed_validated_terminal_lkg",
+      "transferableSignals": [
+        "provider needs raw.githubusercontent.com at runtime",
+        "Desktop/native blocks dependency"
+      ],
+      "avoid": [
+        "runtime dependency on GitHub/raw upstream"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Discovery may use hubs/upstream metadata, but released providers should execute against validated terminal/LKG DATA without GitHub runtime dependencies."
+    },
+    {
+      "id": "hist-domain-lkg-monotonicity",
+      "firstObserved": "2026-09-09",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "domain_rotation",
+        "hub_uncertainty"
+      ],
+      "failureClass": "domain_authority_gap",
+      "solutionClass": "retain_non_null_lkg_until_stronger_proof",
+      "transferableSignals": [
+        "new hub candidate uncertain",
+        "existing terminal previously proved"
+      ],
+      "avoid": [
+        "overwriting reliable hub with weaker discovery"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Domain refresh must be monotonic: retain proven non-null LKG authority unless a stronger current proof replaces it."
+    },
+    {
+      "id": "hist-fixed-point-newline-normalizer",
+      "firstObserved": "2026-08-26",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "non_idempotent_materialization",
+        "fixed_point_failure"
+      ],
+      "failureClass": "materializer_non_idempotence",
+      "solutionClass": "deterministic_normalization_fixed_point",
+      "transferableSignals": [
+        "each pass changes bytes",
+        "semantic behavior unchanged",
+        "whitespace/newline grows"
+      ],
+      "avoid": [
+        "learning from changing generated bytes",
+        "publishing before second-pass equality"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Generated Provider/Core bytes must converge to a fixed point; otherwise every repair fingerprint and cache key becomes noisy."
+    },
+    {
+      "id": "hist-provider-prefix-collision",
+      "firstObserved": "2026-08-03",
+      "providers": [
+        "4khdhub",
+        "4khdhubnew"
+      ],
+      "symptomFamilies": [
+        "publication_collision",
+        "wrong_provider_selected"
+      ],
+      "failureClass": "provider_identity_collision",
+      "solutionClass": "canonical_exact_provider_identity",
+      "transferableSignals": [
+        "one provider id is prefix of another",
+        "cleanup/removal touches sibling"
+      ],
+      "avoid": [
+        "prefix matching provider ids"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Provider identity operations must use canonical exact IDs, never prefix matching."
+    },
+    {
+      "id": "hist-native-playback-over-health",
+      "firstObserved": "2026-08-17",
+      "providers": [
+        "streamzo",
+        "purstream",
+        "papadustream",
+        "movieshunt",
+        "animesama-co",
+        "vostfree",
+        "flemmix",
+        "wookafr",
+        "movix",
+        "uhdmovies",
+        "coflix"
+      ],
+      "symptomFamilies": [
+        "historical_healthy_but_native_zero",
+        "platform_gap"
+      ],
+      "failureClass": "native_playback_proof_gap",
+      "solutionClass": "platform_specific_playback_validation",
+      "transferableSignals": [
+        "synthetic health green",
+        "TV/Desktop/Mobile zero or divergent"
+      ],
+      "avoid": [
+        "treating route/stream count as native proof"
+      ],
+      "evidence": [
+        "project-chat",
+        "native-labs"
+      ],
+      "lesson": "Health/route evidence is weaker than native playback; classify per platform and lane before promotion."
+    },
+    {
+      "id": "hist-waf-harness-differential",
+      "firstObserved": "2026-09-20",
+      "providers": [
+        "allwish",
+        "animevost-fr",
+        "flemmix",
+        "fullanime",
+        "moviesmod"
+      ],
+      "symptomFamilies": [
+        "waf_challenge",
+        "harness_mismatch",
+        "environment_blocked"
+      ],
+      "failureClass": "transport_environment_gap",
+      "solutionClass": "compare_browser_native_residential_profiles_without_provider_mutation",
+      "transferableSignals": [
+        "browser works native fails",
+        "GitHub IP challenged",
+        "residential also challenged"
+      ],
+      "avoid": [
+        "mutating provider code solely to bypass CI challenge"
+      ],
+      "evidence": [
+        "project-chat",
+        "tailscale-residential-runs",
+        "repo-history"
+      ],
+      "lesson": "WAF/environment failures are transport evidence, not automatically provider defects; compare profiles and keep them outside Repair mutation scope until provider-owned route behavior is implicated."
+    },
+    {
+      "id": "hist-anime-tv-capability",
+      "firstObserved": "2026-08-07",
+      "providers": [
+        "anime-sama",
+        "global"
+      ],
+      "symptomFamilies": [
+        "wrong_fixture_type",
+        "anime_zero_on_movie"
+      ],
+      "failureClass": "capability_fixture_mismatch",
+      "solutionClass": "lane_specific_fixture_selection",
+      "transferableSignals": [
+        "anime provider tested with movie fixture",
+        "global provider health misleading"
+      ],
+      "avoid": [
+        "cross-lane success inference"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Repair and census evidence must be lane-specific (movie/tv/anime); do not infer provider health across unsupported media types."
+    },
+    {
+      "id": "hist-api-recipe-proof",
+      "firstObserved": "2026-09-02",
+      "providers": [
+        "purstream",
+        "vidlove",
+        "playimdb"
+      ],
+      "symptomFamilies": [
+        "api_resolver",
+        "typed_route"
+      ],
+      "failureClass": "typed_api_execution",
+      "solutionClass": "proof_owned_api_recipe_with_headers_and_identity",
+      "transferableSignals": [
+        "direct JSON API",
+        "typed movie/tv endpoint",
+        "referer/origin required"
+      ],
+      "avoid": [
+        "generic HTML scraping when proven API exists"
+      ],
+      "evidence": [
+        "project-chat",
+        "provider-overrides",
+        "repo-history"
+      ],
+      "lesson": "A proof-owned typed API recipe should outrank generic scraping and be preserved as execution authority when route+recipe proof is strong."
+    },
+    {
+      "id": "hist-preserve-empty-clean",
+      "firstObserved": "2026-08-14",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "no_match",
+        "no_streams"
+      ],
+      "failureClass": "clean_zero_result",
+      "solutionClass": "return_empty_and_preserve_provider",
+      "transferableSignals": [
+        "no catalog match",
+        "no trustworthy route",
+        "no contradiction"
+      ],
+      "avoid": [
+        "inventing fallback streams",
+        "disabling provider solely from one zero"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "A clean zero is not a broken provider; retain NO PROOF/candidate debt unless stronger regression evidence exists."
+    },
+    {
+      "id": "hist-user-manual-fixtures-authority",
+      "firstObserved": "2026-09-19",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "season_episode_regression",
+        "route_regression",
+        "domain_regression"
+      ],
+      "failureClass": "manual_fixture_regression",
+      "solutionClass": "retain_user_cross-tests_as_regression_corpus",
+      "transferableSignals": [
+        "known title/season/episode/provider route previously worked",
+        "automation contradicts manual proof"
+      ],
+      "avoid": [
+        "discarding manual A/B/C tests as anecdotal"
+      ],
+      "evidence": [
+        "project-chat",
+        "user-manual-tests"
+      ],
+      "lesson": "Known-good manual cross-tests are durable regression fixtures and should seed provider/lane-specific LKG evidence."
+    },
+    {
+      "id": "hist-providerbase-owned-reconstruction",
+      "firstObserved": "2026-08-29",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "upstream_drift",
+        "foreign_metadata",
+        "unsafe_provider_js"
+      ],
+      "failureClass": "provider_reconstruction_integrity",
+      "solutionClass": "rebuild_owned_providerbase_from_structured_data",
+      "transferableSignals": [
+        "upstream JS/metadata injects disabledPlatforms or foreign behavior",
+        "security drift"
+      ],
+      "avoid": [
+        "copying external provider JS"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Use external sources only for routes/types/contracts; rebuild owned NiakVIO ProviderBase/JS from structured DATA."
+    }
+  ]
+}
