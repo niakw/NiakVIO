@@ -3225,8 +3225,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Census Markdown now exposes a `Network differential` column. Contracts verify a synthetic case where GitHub native-like transports timeout but the same exact failed route is reachable through the residential exit: the row remains `PROVIDER NETWORK BLOCKED` and in repairQueue while carrying `residential-native-route-reachable`.
 - This specifically enables safe diagnosis of current network-blocked families such as MovieBox/YFlix when their exact failing provider GET is available, without treating homepage reachability as sufficient evidence.
 
-### 2026-09-21 — Tailscale WIF unblocked + V5 preflight validated
-- User updated the Tailscale trust-credential subject to `repo:niakw/NiakVIO:ref:refs/heads/main`.
-- WAF run #55 (`35550837403`, SHA `47c485657b2a...`) passed `Connect ephemeral Tailscale diagnostic node`. This is the first confirmed successful GitHub OIDC/WIF join after the prior 403 trust-claim failures. At this checkpoint, GitHub-hosted baseline reprobe is still running; exit-node selection and residential replay are **not yet validated** and must not be claimed.
-- Privacy invariants remain unchanged: no exit-node identity, Tailscale address, residential public IP, cookies, response bodies or tokens may be persisted.
-- Repair run `35550425371` passed `Prove one canonical Learn Force repair implementation` with the restored/current V5 and is now executing canonical recognition/repair on the unresolved provider set. V5 compatibility is therefore validated for this tested SHA; provider repair outcomes are still pending.
+### 2026-09-21 — WAF #55 correction: WIF still rejected; V5 preflight validated
+- Correction of the earlier checkpoint: WAF run #55 (`35550837403`, SHA `47c485657b2a...`) did **not** successfully join the tailnet. The Tailscale action had `continue-on-error`, so the GitHub step was displayed as successful while its internal outcome was failure.
+- Raw logs show five `tailscale up` attempts all failed at GitHub JWT -> Tailscale access-token exchange with HTTP 403 Unauthorized. Exit-node selection and residential reprobe were skipped. Therefore #55 provides no residential transport evidence.
+- The user then replaced the trust-credential subject with the exact subject reported by the issuer (including repository numeric identifiers). A fresh WAF run is required; do not claim WIF success until raw logs show token exchange/join success **and** exit-node selection runs.
+- Privacy invariants remain unchanged: do not persist or print exit-node identity, Tailscale addresses, residential public IP, cookies, response bodies or tokens.
+- Repair run `35550425371` passed `Prove one canonical Learn Force repair implementation` with the restored/current V5 and is executing canonical recognition/repair on the unresolved provider set. V5 compatibility is validated for that tested SHA; provider repair outcomes remain pending.
