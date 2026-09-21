@@ -145,7 +145,7 @@ def render(state: dict[str, Any]) -> str:
         "",
         "Latest provider census state: **" + " · ".join(count_parts) + f"** across **{len(providers)} providers**.",
         evidence_line + ".",
-        f"Symptomatic providers: **{len(state.get('symptomaticProviders') or [])}** · automated repair queue: **{len(state.get('repairQueue') or [])}** · authority-blocked symptoms: **{len(state.get('authorityBlockedQueue') or [])}** · harness mismatch: **{len(harness_mismatch_queue)}** · environment blocked: **{len(environment_blocked_queue)}**.",
+        f"Symptomatic providers: **{len(state.get('symptomaticProviders') or [])}** · automated repair queue: **{len(state.get('repairQueue') or [])}** · lifecycle disabled: **{len(state.get('lifecycleDisabledQueue') or [])}** · authority rediscovery: **{len(state.get('authorityRediscoveryQueue') or [])}** · harness mismatch: **{len(harness_mismatch_queue)}** · environment blocked: **{len(environment_blocked_queue)}**.",
         *([residential_notice] if residential_notice else []),
         "",
         "## Status semantics",
