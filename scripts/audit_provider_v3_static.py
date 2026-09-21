@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Read-only audit of exact current active Provider v3 bytes; never reconstructs."""
 from __future__ import annotations
-import hashlib, json, re
+import hashlib, json, re, sys
 from pathlib import Path
 from provider_patch_blocks import decode_managed_data, owned_span, validate_managed_fixes
 from provider_base_store import build_provider_data_model
@@ -10,6 +10,23 @@ from provider_v3_filename_policy import matches_provider_v3_filename
 from current_provider_scope import active_provider_ids, visible_provider_count
 
 ROOT=Path(__file__).resolve().parents[1]
+DOMAIN_ONLY="--domain-only" in sys.argv
+DOMAIN_DATA_KEYS=("officialSite","knownSite","officialHub","domainSubstitutions")
+
+def _domain_projection(value):
+    def norm_url(raw): return str(raw or "").strip().rstrip("/")
+    mapping=value.get("domainSubstitutions") if isinstance(value,dict) else {}
+    if not isinstance(mapping,dict): mapping={}
+    return {
+        "officialSite": norm_url(value.get("officialSite")),
+        "knownSite": norm_url(value.get("knownSite")),
+        "officialHub": norm_url(value.get("officialHub")),
+        "domainSubstitutions": {
+            str(k or "").strip().casefold(): str(v or "").strip().casefold()
+            for k,v in mapping.items() if str(k or "").strip() and str(v or "").strip()
+        },
+    }
+
 def load(p): return json.loads(Path(p).read_text(encoding="utf-8"))
 def canon(v): return str(v or "").strip().casefold()
 
@@ -80,7 +97,16 @@ for row in rows:
     normalize_anime_transport_compatibility(entry)
     current_model=provider_model(pid,patch,capability,static_row)
     expected_data=build_provider_data_model(pid,entry,known_site=current_model.get("knownSite"),provider_model=current_model)
-    if data != expected_data:
+    if DOMAIN_ONLY:
+        published_domain=_domain_projection(data)
+        expected_domain=_domain_projection(expected_data)
+        if published_domain != expected_domain:
+            raise AssertionError((pid,"provider-domain-data-drift",{
+                key: {"published": published_domain.get(key), "expected": expected_domain.get(key)}
+                for key in DOMAIN_DATA_KEYS
+                if published_domain.get(key) != expected_domain.get(key)
+            }))
+    elif data != expected_data:
         keys=sorted(set(data)|set(expected_data))
         diff={
             key: {"published": data.get(key), "expected": expected_data.get(key)}
@@ -97,5 +123,5 @@ if "expectedProviderCount" in material:
 print(
     f"PROVIDER_V3_STATIC_AUDIT_OK active={len(active)} visible={visible} reconstruction=false "
     f"filename_stage=per-row workspace={stage_counts['workspace']} publication={stage_counts['publication']} "
-    "structured_data=current"
+    f"structured_data={'domain-current' if DOMAIN_ONLY else 'current'}"
 )
