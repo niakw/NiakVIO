@@ -11,15 +11,19 @@ on:
       - 'scripts/render_provider_census_status.py'
       - 'scripts/render_provider_census_status_from_state.py'
       - 'scripts/merge_waf_census_transport.py'
+      - 'scripts/merge_waf_network_profiles.py'
       - 'tests/provider_census_status_markdown_test.py'
       - 'tests/waf_census_transport_merge_test.py'
       - 'tests/provider_waf_census_markdown_sync_test.py'
       - 'tests/provider_waf_browser_session_test.py'
       - 'tests/provider_waf_okhttp_profile_test.py'
+      - 'tests/provider_waf_tailscale_exit_contract_test.py'
+      - 'tests/waf_residential_profile_merge_test.py'
       - 'tools/waf-okhttp-probe/**'
 
 permissions:
   contents: write
+  id-token: write
 
 concurrency:
   group: provider-waf-browser-session-main
@@ -28,7 +32,12 @@ concurrency:
 jobs:
   browser-session:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
+    env:
+      TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+      TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}
+      TS_EXIT_NODE: ${{ secrets.TS_EXIT_NODE }}
+      TS_TAG_NAME: ${{ secrets.TS_TAG_NAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -58,14 +67,20 @@ jobs:
       - name: Validate WAF census Markdown synchronization contract
         run: python tests/provider_waf_census_markdown_sync_test.py
 
-      - name: Reprobe persisted WAF lanes with one ordinary ephemeral session
+      - name: Validate Tailscale residential-exit diagnostic contract
+        run: |
+          python tests/provider_waf_tailscale_exit_contract_test.py
+          python tests/waf_residential_profile_merge_test.py
+
+
+      - name: Reprobe persisted WAF lanes on GitHub-hosted network
         shell: bash
         run: |
           set -euo pipefail
           test -s automation/provider-waf-browser-session-latest.json
           python scripts/probe_waf_browser_session.py \
             automation/provider-waf-browser-session-latest.json \
-            --output automation/provider-waf-browser-session-latest.json \
+            --output /tmp/provider-waf-github.json \
             --attempts 2 \
             --client-profile-matrix \
             --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*' \
@@ -75,6 +90,61 @@ jobs:
             --max-targets 24 \
             --timeout 25 \
             --virtual-time-ms 8000
+
+      - name: Connect ephemeral Tailscale diagnostic node
+        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
+        uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8
+        with:
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ env.TS_AUDIENCE }}
+          tags: ${{ env.TS_TAG_NAME || 'tag:niakvio-ci' }}
+          version: '1.94.2'
+          log-mode: quiet
+
+      - name: Select private residential exit node
+        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tailscale ping --timeout=10s "$TS_EXIT_NODE" >/dev/null
+          sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false
+          echo "NIAKVIO_RESIDENTIAL_EXIT_ACTIVE=1" >> "$GITHUB_ENV"
+
+      - name: Reprobe WAF lanes through private residential exit
+        if: ${{ env.NIAKVIO_RESIDENTIAL_EXIT_ACTIVE == '1' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/probe_waf_browser_session.py \
+            /tmp/provider-waf-github.json \
+            --output /tmp/provider-waf-residential.json \
+            --attempts 2 \
+            --client-profile-matrix \
+            --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*' \
+            --status automation/provider-census-status.json \
+            --overrides provider-overrides.json \
+            --workers 3 \
+            --max-targets 24 \
+            --timeout 25 \
+            --virtual-time-ms 8000
+
+      - name: Merge residential exit evidence without node identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -s /tmp/provider-waf-residential.json ]; then
+            python scripts/merge_waf_network_profiles.py \
+              --baseline /tmp/provider-waf-github.json \
+              --residential /tmp/provider-waf-residential.json \
+              --output automation/provider-waf-browser-session-latest.json
+          else
+            cp /tmp/provider-waf-github.json automation/provider-waf-browser-session-latest.json
+          fi
+
+      - name: Clear private exit-node routing
+        if: ${{ always() && env.NIAKVIO_RESIDENTIAL_EXIT_ACTIVE == '1' }}
+        shell: bash
+        run: sudo tailscale set --exit-node= || true
 
       - name: Upload WAF browser-session evidence
         if: always()
