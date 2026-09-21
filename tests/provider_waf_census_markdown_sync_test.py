@@ -32,3 +32,7 @@ assert "Residential replay" in state_renderer
 assert "residentialProviderReplayClass" in state_renderer
 assert "Network differential" in state_renderer
 assert "networkDifferentialClass" in state_renderer
+
+assert "Authority" in state_renderer
+assert "authorityBlockedQueue" in state_renderer
+assert "authorityRepairEligible" in state_renderer
