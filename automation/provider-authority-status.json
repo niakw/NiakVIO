@@ -7,7 +7,8 @@
     "repairRequiresAddressAuthorityForSiteDependentProviders": true,
     "disableAfterConsecutiveDomainFailures": 2,
     "staleDirectDisableAfterConsecutiveDomainFailures": 3,
-    "apiBackendMayOperateWithoutHomepage": true
+    "apiBackendMayOperateWithoutHomepage": true,
+    "manualOffEntersDisabledRetentionImmediately": true
   },
   "providerCount": 46,
   "repairEligible": [
@@ -60,7 +61,9 @@
     "fullanime",
     "showbox"
   ],
-  "disabledNow": [],
+  "disabledNow": [
+    "showbox"
+  ],
   "providers": [
     {
       "provider": "anime-sama",
@@ -586,15 +589,15 @@
     },
     {
       "provider": "showbox",
-      "action": "REDISCOVER_SEARCH",
+      "action": "DISABLE_MANUAL_POLICY",
       "repairEligible": false,
-      "confidence": "low",
-      "authorityClass": "unproven-direct-candidate",
+      "confidence": "terminal",
+      "authorityClass": "manual-off",
       "failureCount": 0,
       "reasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
-      ]
+        "manual_off_no_current_authority_search_only"
+      ],
+      "appliedDisableReason": "manual_off_no_current_authority_search_only"
     },
     {
       "provider": "vidlove",
