@@ -85,6 +85,16 @@ jobs:
           printf 'TS_ACTION_TAG=%s\n' "$normalized" >> "$GITHUB_ENV"
 
 
+      - name: Connect ephemeral Tailscale diagnostic node
+        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
+        uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8
+        with:
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ env.TS_AUDIENCE }}
+          tags: ${{ env.TS_ACTION_TAG }}
+          version: '1.94.2'
+          args: --accept-dns=false
+
       - name: Reprobe persisted WAF lanes on GitHub-hosted network
         shell: bash
         run: |
@@ -102,15 +112,6 @@ jobs:
             --max-targets 24 \
             --timeout 25 \
             --virtual-time-ms 8000
-
-      - name: Connect ephemeral Tailscale diagnostic node
-        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
-        uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8
-        with:
-          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
-          audience: ${{ env.TS_AUDIENCE }}
-          tags: ${{ env.TS_ACTION_TAG }}
-          version: '1.94.2'
 
       - name: Select private residential exit node
         if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
