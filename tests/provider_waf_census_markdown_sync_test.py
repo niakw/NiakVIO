@@ -34,7 +34,8 @@ assert "Network differential" in state_renderer
 assert "networkDifferentialClass" in state_renderer
 
 assert "Authority" in state_renderer
-assert "authorityBlockedQueue" in state_renderer
+assert "lifecycleDisabledQueue" in state_renderer
+assert "authorityRediscoveryQueue" in state_renderer
 assert "authorityRepairEligible" in state_renderer
 
 # Canonical census interpretation owns status generation. Changing that renderer
