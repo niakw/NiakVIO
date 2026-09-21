@@ -54,6 +54,9 @@ DOMAIN_PATCH_FIELDS = {
     "domain_substitutions",
     "replacements",
     "runtime_domain_replacements",
+    # Domain-owned subset only: validator permits host-only changes for known
+    # top-level site-root keys inside each provider Lego options object.
+    "provider_lego_options",
 }
 
 
