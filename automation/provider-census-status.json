@@ -608,7 +608,7 @@
       "harnessTransportClass": "browser-profile-only",
       "harnessTransportEvidence": [
         "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_inconclusive, residential-direct=direct_http_challenge_persisted",
-        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_inconclusive, residential-direct=direct_http_challenge_persisted"
+        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_inconclusive, residential-direct=direct_http_challenge_persisted"
       ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_ROUTE_AUTHORITY",
@@ -626,7 +626,7 @@
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "movie: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true"
+        "tv: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
       ]
     },
     {
@@ -659,15 +659,14 @@
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
       "authorityRepairEligible": false,
-      "authorityAction": "REDISCOVER_SEARCH",
-      "authorityClass": "unproven-direct-candidate",
-      "authorityConfidence": "low",
+      "authorityAction": "DISABLE_MANUAL_POLICY",
+      "authorityClass": "manual-off",
+      "authorityConfidence": "terminal",
       "authorityReasons": [
-        "direct_candidate_unproven",
-        "search_supplement_only"
+        "manual_off_no_current_authority_search_only"
       ],
       "authorityKnown": true,
-      "action": "Domain/authority rediscovery required before Repair; search remains supplementary evidence only and cannot authorize provider mutation",
+      "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": false,
@@ -2082,8 +2081,8 @@
     "flemmix",
     "moviesmod"
   ],
-  "harnessEvidenceRunId": "35657232795-waf-transport",
-  "harnessEvidenceSha": "4de75f6f9d7801d28e61fc8049f239f3dfccc79f",
+  "harnessEvidenceRunId": "35658642066-waf-transport",
+  "harnessEvidenceSha": "b4fa2eac55e1d67de7c6003b4b05c0301bc1a60e",
   "harnessTransportUpdatedProviders": [
     "allwish",
     "animevost-fr",
@@ -2246,7 +2245,7 @@
         "provider": "moviesmod",
         "lane": "tv",
         "status": "no_streams",
-        "debugStage": "provider_network_exception",
+        "debugStage": "provider_network_zero_result",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2316,9 +2315,11 @@
   ],
   "lifecycleDisabledQueue": [
     "animetsu",
-    "fullanime"
+    "fullanime",
+    "showbox"
   ],
-  "authorityRediscoveryQueue": [
+  "authorityRediscoveryQueue": [],
+  "authorityRefreshedProviders": [
     "showbox"
   ]
 }
