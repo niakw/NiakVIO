@@ -285,6 +285,7 @@ def current_repair_priority(
 
 def authoritative_learning_order(
     base_order: list[str],
+    handoff_priority: list[str],
     census_repair: list[str],
     repair_deferred: list[str],
     reconstruction_required: list[str],
@@ -299,8 +300,9 @@ def authoritative_learning_order(
     remain next, then clean-reconstruction debt, then ordinary queue cycling.
     """
     priority = unique([
-        *census_repair,
+        *handoff_priority,
         *repair_deferred,
+        *census_repair,
         *reconstruction_required,
     ])
     eligible_priority = [
@@ -670,6 +672,19 @@ def main() -> int:
         info_by_id,
         staged_candidates,
     )
+    handoff_state = load_json(ROOT / "automation" / "provider-repair-learn-handoff-v1.json", {})
+    handoff_rows = handoff_state.get("providers") if isinstance(handoff_state.get("providers"), dict) else {}
+    current_repair_set = set(census_repair)
+    handoff_priority = [
+        provider_id
+        for provider_id in unique(list(handoff_rows.keys()))
+        if provider_id in current_repair_set
+        and provider_id in info_by_id
+        and provider_id in staged_candidates
+        and isinstance(handoff_rows.get(provider_id), dict)
+        and str(handoff_rows[provider_id].get("owner") or "") == "LEARN"
+        and str(handoff_rows[provider_id].get("status") or "") == "pending"
+    ]
     # Current census evidence outranks historical experiment debt. A provider
     # that recovered to FULL/PARTIAL must not be reopened solely because an old
     # signature exhausted its variants. Conversely every current Repair target
@@ -699,6 +714,7 @@ def main() -> int:
         # broken providers inside a finite Learning slot.
         order = authoritative_learning_order(
             order,
+            handoff_priority,
             census_repair,
             repair_deferred,
             reconstruction_required,
@@ -706,6 +722,9 @@ def main() -> int:
             staged_candidates,
         )
 
+    queue["fastRepairHandoffProviders"] = handoff_priority
+    queue["fastRepairHandoffProviderCount"] = len(handoff_priority)
+    queue["fastRepairHandoffAuthority"] = "provider-repair-learn-handoff-v1.json"
     queue["deferredRepairProviders"] = repair_deferred
     queue["deferredRepairProviderCount"] = len(repair_deferred)
     queue["deferredRepairReason"] = "repair_experiment_variants_exhausted_new_strategy_required"
@@ -927,6 +946,8 @@ def main() -> int:
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "coreEvidenceAuthority": "hypothesis_only",
         "budgetMinutes": args.budget_minutes,
+        "fastRepairHandoffProviders": handoff_priority,
+        "fastRepairHandoffProviderCount": len(handoff_priority),
         "cleanReconstructionRequiredProviders": reconstruction_required,
         "cleanReconstructionRequiredCount": len(reconstruction_required),
         "deferredRepairProviders": repair_deferred,
