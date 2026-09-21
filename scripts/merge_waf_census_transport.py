@@ -479,18 +479,15 @@ def merge_transport(
         and row.get("authorityRepairEligible") is False
         and str(row.get("provider") or "").strip()
     }
-    out["environmentQueue"] = normalized([
-        value
-        for value in without_promoted(list(baseline.get("environmentQueue") or []))
-        if str(value or "").strip().casefold() not in replay_reclassified
-        and str(value or "").strip().casefold() not in authority_blocked
-    ])
-    out["harnessQueue"] = normalized([
-        value
-        for value in without_promoted(list(baseline.get("harnessQueue") or baseline.get("environmentQueue") or []))
-        if str(value or "").strip().casefold() not in replay_reclassified
-        and str(value or "").strip().casefold() not in authority_blocked
-    ])
+    out["environmentQueue"] = sorted(
+        str(row.get("provider") or "").strip().casefold()
+        for row in providers
+        if isinstance(row, dict)
+        and str(row.get("status") or "") in census.ENVIRONMENT_ONLY_STATES
+        and row.get("authorityRepairEligible") is not False
+        and str(row.get("provider") or "").strip()
+    )
+    out["harnessQueue"] = list(out["environmentQueue"])
     # Exact transport queues are recomputed from final row status after the
     # overlay. Keep environmentQueue/harnessQueue above for compatibility only.
     out["harnessMismatchQueue"] = sorted(
@@ -509,11 +506,14 @@ def merge_transport(
         and row.get("authorityRepairEligible") is not False
         and str(row.get("provider") or "").strip()
     )
-    out["symptomaticProviders"] = normalized(without_promoted(list(baseline.get("symptomaticProviders") or [])))
-    out["brainQueue"] = normalized([
-        *without_promoted(list(baseline.get("brainQueue") or baseline.get("symptomaticProviders") or [])),
-        *replay_reclassified,
-    ])
+    out["symptomaticProviders"] = sorted(
+        str(row.get("provider") or "").strip().casefold()
+        for row in providers
+        if isinstance(row, dict)
+        and row.get("brainCheckRequired") is True
+        and str(row.get("provider") or "").strip()
+    )
+    out["brainQueue"] = list(out["symptomaticProviders"])
     lifecycle_disabled_actions = {
         "KEEP_DISABLED",
         "DISABLE_MANUAL_POLICY",
@@ -524,7 +524,6 @@ def merge_transport(
         str(row.get("provider") or "").strip().casefold()
         for row in providers
         if isinstance(row, dict)
-        and row.get("brainCheckRequired") is True
         and (
             str(row.get("authorityAction") or "") in lifecycle_disabled_actions
             or str(row.get("authorityClass") or "") in {
