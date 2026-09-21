@@ -1099,8 +1099,7 @@ def main() -> int:
             ),
             "lifecycleDisabledQueue": sorted(
                 row["provider"] for row in rows
-                if row.get("brainCheckRequired") is True
-                and _lifecycle_disabled(row)
+                if _lifecycle_disabled(row)
             ),
             "authorityRediscoveryQueue": sorted(
                 row["provider"] for row in rows
