@@ -59,6 +59,8 @@ for forbidden in (
 for required in (
     "audit_provider_quick_yield.py",
     "render_provider_census_status.py",
+    "merge_waf_census_transport.py",
+    "render_provider_census_status_from_state.py",
     "build_provider_repair_batch_plan.py",
 ):
     assert required in source, required
