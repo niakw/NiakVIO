@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-21T03:14:30+02:00",
-  "goal": "Reprobe current harness/network-blocked lanes after Tailscale trust subject was set to repo:niakw/NiakVIO:ref:refs/heads/main. Require successful WIF join before residential comparison, then compare the same provider-owned routes on GitHub-hosted network vs the private residential exit. Persist only bounded transport outcomes and availability; never persist exit-node identity, Tailscale addresses, residential public IP, cookies, bodies or tokens.",
-  "source": "tailscale-trust-subject-main-ref-updated"
+  "requestedAt": "2026-09-21T03:32:00+02:00",
+  "goal": "Fresh WAF/network differential retest after the Tailscale trust credential was updated to the exact issuer subject. Require raw WIF token exchange success, actual private exit-node selection, and residential replay of current HARNESS MISMATCH / HARNESS-ENV BLOCKED lanes plus exact failed GET routes from PROVIDER NETWORK BLOCKED providers. Persist only bounded transport outcomes and availability; never persist exit-node identity, Tailscale addresses, residential public IP, cookies, bodies or tokens.",
+  "source": "tailscale-exact-issuer-subject-retest"
 }
