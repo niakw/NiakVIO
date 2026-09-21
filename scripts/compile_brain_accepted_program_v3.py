@@ -13,7 +13,10 @@ def safe_origin(v):
     try:p=urlsplit(t)
     except ValueError:return ''
     if p.scheme not in {'http','https'} or not p.hostname or p.username or p.password or p.query or p.fragment:return ''
-    return f'{p.scheme}://{p.netloc}'
+    host=p.hostname.casefold().rstrip('.')
+    if host in NON_PROVIDER_HOSTS or any(host.endswith('.'+blocked) for blocked in NON_PROVIDER_HOSTS):return ''
+    port=f':{p.port}' if p.port else ''
+    return f'{p.scheme}://{host}{port}'
 def safe_route(v):
     r=str(v or '').strip()
     if not r or len(r)>800 or '${' in r or r.count('{')!=r.count('}') or not r.startswith(('/','http://','https://')):return ''
@@ -51,16 +54,29 @@ def compile_program(program:dict[str,Any],provider:str)->dict[str,Any]:
     if not types:raise ValueError('missing types')
     recipes=[copy.deepcopy(x) for x in o.get('request_recipes') or [] if isinstance(x,dict) and x.get('executable') is True]
     if not recipes:raise ValueError('no executable recipes')
+    base_origin=safe_origin(o.get('base_url'))
+    learned_routes=[]
+    for raw in [*(o.get('search_paths') or []),*(o.get('direct_paths') or [])]:
+        route=safe_route(raw)
+        if route.startswith('/') and route!='/' and route not in learned_routes:
+            learned_routes.append(route)
     norm=[]
     for i,r in enumerate(recipes):
         origin=safe_origin(r.get('origin') or o.get('base_url'));route=safe_route(r.get('route'))
-        if not origin or not route:raise ValueError(f'bad recipe {i}')
+        if not origin or not route:
+            # Runtime observation can include identity/search-engine/analytics
+            # navigation unrelated to the provider. Ignore that noise rather
+            # than turning it into durable provider execution DATA.
+            continue
+        if route.startswith('/') and route!='/' and route not in learned_routes:
+            learned_routes.append(route)
         semantic=str(r.get('semanticType') or '').strip().casefold();lanes=[semantic] if semantic in SAFE_TYPES else types
         bindings=[str(x).strip().casefold() for x in r.get('requiredBindings') or [] if str(x).strip()]
         if any(x not in SUPPORTED_BINDINGS for x in bindings):raise ValueError('unsupported binding')
         rb=[m.group(1).casefold() for m in BINDING.finditer(route)]
         if sorted(set(rb))!=sorted(set(bindings)) and (rb or bindings):raise ValueError('binding not route representable')
         norm.append({'origin':origin,'route':route,'role':str(r.get('role') or 'other').casefold(),'semanticTypes':lanes,'bindings':bindings,'requestSpec':request_spec(r,ua,origin)})
+    if not norm:raise ValueError('no provider-owned executable recipes')
     indep=[x for x in norm if not x['bindings']];dep=[x for x in norm if x['bindings']];search=[]
     for x in indep:
         ser=json.dumps({'route':x['route'],'requestSpec':x['requestSpec']})
@@ -78,7 +94,20 @@ def compile_program(program:dict[str,Any],provider:str)->dict[str,Any]:
             steps.append({'base':x['origin'],'route':route,'requestSpec':x['requestSpec'],'role':x['role'] if x['role'] in {'detail','episode','player','api','source'} else 'detail'})
         if steps:pvp.append({'searchBase':s['origin'],'searchRoute':s['route'],'searchRequestSpec':s['requestSpec'],'steps':steps[:8],'semanticTypes':s['semanticTypes'],'proofModelVersion':6,'sourceRole':'brain-accepted-provider-value-correlation'})
     if dep and not pvp:raise ValueError('lost dependent dataflow')
-    return {'schemaVersion':1,'provider':cid(provider),'source':'strict-brain-accepted-runtime-program','acceptedProgramRevision':int(program.get('revision') or 0),'types':types,'origins':list(dict.fromkeys(x['origin'] for x in norm))[:24],'searchRequestPlan':srp,'providerValuePlan':pvp[:12]}
+    return {
+        'schemaVersion':1,
+        'provider':cid(provider),
+        'source':'strict-brain-accepted-runtime-program',
+        'acceptedProgramRevision':int(program.get('revision') or 0),
+        'types':types,
+        'origins':list(dict.fromkeys(x['origin'] for x in norm))[:24],
+        'learnedRoutes':learned_routes[:32],
+        'searchRequestPlan':srp,
+        'providerValuePlan':pvp[:12],
+        'experimentVariant':max(0,int(o.get('experiment_variant') or 0)),
+        'experimentGeneration':max(1,int(o.get('experiment_generation') or 1)),
+        'experimentFailureClass':str(o.get('experiment_failure_class') or ''),
+    }
 
 def find_accepted_program(report:dict[str,Any],provider:str)->dict[str,Any]:
     wanted=cid(provider);hits={}
@@ -111,6 +140,9 @@ def apply_compiled(overrides:dict[str,Any],compiled:dict[str,Any])->dict[str,Any
     if not isinstance(patches,dict):raise ValueError('provider_patches must be object')
     patch=patches.setdefault(provider,{})
     if not isinstance(patch,dict):raise ValueError(f'provider_patches.{provider} must be object')
+    learned=[str(x) for x in compiled.get('learnedRoutes') or [] if str(x).startswith('/') and str(x)!='/' ]
+    existing_learned=[str(x) for x in patch.get('learned_routes') or [] if str(x).strip()]
+    patch['learned_routes']=list(dict.fromkeys([*learned,*existing_learned]))[:64]
     patch['search_request_plan']=_merge_rows(
         compiled.get('searchRequestPlan') or [],
         patch.get('search_request_plan') or [],
@@ -122,7 +154,13 @@ def apply_compiled(overrides:dict[str,Any],compiled:dict[str,Any])->dict[str,Any
         patch['provider_value_plan']=_merge_rows(compiled_values,existing_values,12)
     else:
         patch.pop('provider_value_plan',None)
-    patch['brain_accepted_program']={'schema_version':1,'profile_revision':int(compiled.get('acceptedProgramRevision') or 0),'source':'strict-brain-accepted-runtime-program'}
+    patch['brain_accepted_program']={
+        'schema_version':1,
+        'profile_revision':int(compiled.get('acceptedProgramRevision') or 0),
+        'source':'strict-brain-accepted-runtime-program',
+        'experiment_variant':max(0,int(compiled.get('experimentVariant') or 0)),
+        'experiment_generation':max(1,int(compiled.get('experimentGeneration') or 1)),
+    }
     return out
 
 def main()->int:
