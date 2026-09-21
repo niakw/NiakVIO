@@ -1234,9 +1234,20 @@ def preserve_published_api_path(patch: dict[str, Any], api_url: str | None) -> s
     return str(api_url).rstrip("/")
 
 
-def update_provider_patch(config: dict[str, Any], provider_id: str, hub_cfg: dict[str, Any], site_url: str, api_url: str | None, history_row: dict[str, Any] | None = None) -> list[dict[str, str]]:
+def update_provider_patch(config: dict[str, Any], provider_id: str, hub_cfg: dict[str, Any], site_url: str, api_url: str | None, history_row: dict[str, Any] | None = None, documented_routes: list[str] | None = None) -> list[dict[str, str]]:
     patch = config.setdefault("provider_patches", {}).setdefault(provider_id, {})
     api_url = preserve_published_api_path(patch, api_url)
+    if documented_routes:
+        existing_documented = [str(value) for value in patch.get("documented_routes") or [] if str(value).startswith("/")]
+        merged_documented = list(dict.fromkeys([*existing_documented, *[str(value) for value in documented_routes if str(value).startswith("/")]]))[:32]
+        if merged_documented != existing_documented:
+            patch["documented_routes"] = merged_documented
+            patch["architecture_evidence"] = {
+                "authority": "official-provider-documentation",
+                "site": site_url.rstrip("/"),
+                "routeCount": len(merged_documented),
+                "proofScope": "architecture-prior-not-playback-proof",
+            }
     replacements = patch.setdefault("replacements", {})
     runtime = patch.setdefault("runtime_domain_replacements", {})
     changes: list[dict[str, str]] = []
@@ -1384,6 +1395,34 @@ def _apply_confirmation(history_row: dict[str, Any], terminal: str, source_type:
 
 
 
+
+def discover_documented_routes(site_url: str, site_document: str) -> list[str]:
+    """Extract only literal placeholder routes from provider-owned documentation."""
+    # PROVIDER_DOCUMENTED_ROUTE_DISCOVERY_V1
+    decoded = html.unescape(str(site_document or "")).replace("\\/", "/")
+    decoded = decoded.replace("%7B", "{").replace("%7D", "}").replace("%7b", "{").replace("%7d", "}")
+    placeholders = ("{id}", "{tmdbId}", "{imdbId}", "{season}", "{episode}", "{query}", "{slug}")
+    found: list[str] = []
+    seen: set[str] = set()
+    for match in re.finditer(r"https?://[^\\s<>\"'`]+", decoded, re.I):
+        value = str(match.group(0) or "").strip().rstrip(".,;:)")
+        if not any(token in value for token in placeholders):
+            continue
+        try:
+            parsed = urllib.parse.urlparse(value)
+        except ValueError:
+            continue
+        if parsed.hostname and host(site_url) and parsed.hostname.casefold() != host(site_url):
+            continue
+        route = parsed.path or "/"
+        if parsed.query:
+            route += "?" + parsed.query
+        if route.startswith("/") and len(route) <= 320 and route not in seen:
+            seen.add(route)
+            found.append(route)
+        if len(found) >= 16:
+            break
+    return found
 
 def _discover_api_probe_routes(site_url: str, site_document: str, api_origin: str, cfg: dict[str, Any], timeout: float) -> list[str]:
     """Discover concrete API probe paths from the official page and its JS bundles.
@@ -1556,6 +1595,7 @@ def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, An
         return item
     item["site_status"] = site_status
     item["site_final_url"] = final_site
+    item["documented_routes"] = discover_documented_routes(final_site, site_document)
     if bool(cfg.get("_domain_only")):
         item["api_candidates"] = []
         item["api_probes"] = []
@@ -1804,7 +1844,10 @@ def main() -> int:
                     item["applied_changes"] = changes
                     report["applied"] += len(changes)
                 else:
-                    changes = update_provider_patch(config, provider_id, cfg, str(item["official_site"]), item.get("validated_api"), history_row)
+                    changes = update_provider_patch(
+                        config, provider_id, cfg, str(item["official_site"]),
+                        item.get("validated_api"), history_row, item.get("documented_routes") or [],
+                    )
                     item["applied_changes"] = changes
                     report["applied"] += len(changes)
             report["providers"][provider_id] = item
