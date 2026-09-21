@@ -371,7 +371,7 @@ def refresh_stage_routes(stage: Path, deadline: float, provider_id: str) -> None
         [sys.executable, str(SCRIPTS / "reconcile_provider_domain_metadata.py"), "--rebuild", "--provider", provider_id],
         [sys.executable, str(SCRIPTS / "build_provider_runtime_profiles.py"), "--stage", str(stage), "--apply-stage", "--provider", provider_id],
         [sys.executable, str(SCRIPTS / "normalize_terminal_quarantine_stage.py"), "--stage", str(stage)],
-        [sys.executable, str(SCRIPTS / "validate_override_pipeline.py"), "--stage", str(stage)],
+        [sys.executable, str(SCRIPTS / "validate_override_pipeline.py"), "--stage", str(stage), "--provider", provider_id],
     ):
         run(cmd, env=os.environ.copy(), deadline=deadline)
 
