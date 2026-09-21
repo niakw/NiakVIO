@@ -83,10 +83,18 @@ with tempfile.TemporaryDirectory() as tmp:
             ],
         }),encoding="utf-8")
         batches=mod.repair_batches(["a","b","c","d"],48)
-        assert [row["providers"] for row in batches]==[["b","a"],["c"],["d"]],batches
-        assert batches[0]["groupId"]=="route-to-terminal|html_scraper"
-        assert batches[1]["repairScope"]=="terminal-extraction"
-        assert batches[2]["groupId"]=="unplanned"
+        assert [row["providers"] for row in batches]==[["b","a","c","d"]],batches
+        assert batches[0]["groupId"]=="packed"
+        assert batches[0]["repairScope"]=="mixed"
+        assert [row["groupId"] for row in batches[0]["familyGroups"]]==[
+            "route-to-terminal|html_scraper",
+            "terminal-extraction|direct_media",
+            "unplanned",
+        ],batches
+        bounded=mod.repair_batches(["a","b","c","d"],2)
+        assert [row["providers"] for row in bounded]==[["b","a"],["c","d"]],bounded
+        assert bounded[0]["groupId"]=="route-to-terminal|html_scraper"
+        assert bounded[1]["groupId"]=="packed"
 
         mod.BATCH_PLAN.write_text(json.dumps({"sourceRunId":"old","groups":[]}),encoding="utf-8")
         stale=mod.repair_batches(["d","b","a","c"],2)
@@ -272,6 +280,7 @@ for required in (
     "resumeRecommended",
     "unvisitedProviders",
     "provider_attempt_pressure_map",
+    "PROVIDER_BRAIN_PACKED_FAMILY_BATCHES_V1",
 ):
     assert required in source, required
 
