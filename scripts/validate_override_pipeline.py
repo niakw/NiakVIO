@@ -51,6 +51,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", type=Path, default=ROOT / "staging")
     parser.add_argument("--config", type=Path, default=CONFIG)
+    parser.add_argument("--provider", default="", help="validate only this provider in staged candidates")
     args = parser.parse_args()
     stage = args.stage.resolve()
     registry_path = stage / "candidates.json"
@@ -70,10 +71,13 @@ def main() -> int:
     dormant_overrides: list[str] = []
     checked = 0
 
+    selected_provider = canonical(args.provider)
     for candidate in candidates:
         if not isinstance(candidate, dict):
             continue
         provider_id = canonical(candidate.get("canonical_id") or candidate.get("upstream_id"))
+        if selected_provider and provider_id != selected_provider:
+            continue
 
         local_path = (stage / str(candidate.get("local_path") or "")).resolve()
         try:
