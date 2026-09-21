@@ -1,6 +1,18 @@
 # NiakVIO — Recovery Memory
 
 
+## 2026-09-21 15:36 Europe/Paris — Positive-memory replay runtime-proven; observation noise removed before exploration
+
+- Completed Repair `35601540093` on tested SHA `ee4a2238ab49` passed the full positive-memory preflight and executed the real 11-provider census Repair queue. Brain summary: `selected=11 accepted=1 fixed_lab=2 deferred_learning=8 remaining=1 processed=11`.
+- **MalluMV replay is now runtime-proven**: accepted repair remained `media_extraction_gap` / signature `c92d106e5a46a2b33459e485` / variant 2, `playable 0 -> 1`. The accepted program contains provider-local recipes with `source=positive-program-memory` in addition to fresh current observations; Brain memory now records 4 successes / 0 failures for that accepted signature. Positive memory therefore participates in execution rather than existing only as metadata.
+- The global Repair still failed publication for the same unrelated retained proof drift: post-repair current bytes had **WookaFR raw=1 / playable=1 / accepted=1 / verified=1 / wrong=0**, candidate portfolio gate passed, but upstream accounting remained `animevostfr:anime lost=1`; final gates: `upstream=false portfolio=true preservation=false execution=false`. No candidate provider/Core bytes were published.
+- Crucially, `automation/brain-positive-program-memory.json` survived that failed global gate unchanged/valid: one MalluMV validated entry, provider-owned origins only, learned routes `/search.php?q={query}` + `/api/file/`, `publicationAuthority=false`. This validates the new “discard unsafe candidate bytes, keep sanitized validated learning” behavior.
+- The accepted sandbox program itself exposed runtime exploration waste: current observations still contained Google/search/support/privacy/TOS/favicon recipes even though the durable compiler correctly removed them. `9135fb602942` expands adaptive-runtime infrastructure filtering and rejects known search-engine/analytics origins plus trivial static routes such as `/favicon.ico` **before exploration**. Contract `e5bf2b66be55` locks this behavior.
+- Planner/runtime applicability fix `5fe8dffa659f` remains required for Yflix-like providers: provider-scoped current/positive/historical recipe origins can establish the adaptive runtime base when no branded official site is known; peer/generic origins cannot. Contract `b180189e4393` covers `enc-dec.app`.
+- Current queued authoritative successor must include both the provider-scoped runtime-origin fix and pre-exploration noise filter. Older Repair results remain evidence only until that successor executes.
+
+
+
 ## 2026-09-21 15:31 Europe/Paris — Planner/runtime applicability gap fixed; positive evidence now establishes runtime origin
 
 - Artifact `35600977459` was inspected despite the run later being cancelled. It targeted the correct **11-provider Repair queue** and retained 107 negative-memory entries. Several providers have already exhausted v0-v4 / g1-g2 for one stable signature (AllAnime, AnimeSultra, Animetsu, AnimeVostFR, MovieBox, etc.), confirming that Learning g3-g5 is the appropriate next strategy family rather than another blind routine retry.
