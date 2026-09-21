@@ -1,0 +1,153 @@
+name: PROVIDERS - Retest Current Bytes
+
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: Current-byte scope
+        required: true
+        default: non-full
+        type: choice
+        options: [non-full, repair, all]
+      target_provider:
+        description: Optional exact provider id; bypasses default lifecycle/authority filtering
+        required: false
+        default: ""
+        type: string
+      auto_repair:
+        description: Launch Fast Repair after persisting the refreshed census when repairQueue is non-empty
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/provider-retest.json'
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: provider-retest-main
+  cancel-in-progress: true
+
+jobs:
+  retest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked Node tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Validate Retest separation
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/run_provider_retest.py scripts/render_provider_census_status.py scripts/merge_waf_census_transport.py
+          python tests/provider_retest_scope_test.py
+          python tests/provider_census_status_markdown_test.py
+          python tests/waf_census_transport_merge_test.py
+      - name: Retest current provider bytes
+        id: retest
+        shell: bash
+        env:
+          DISPATCH_SCOPE: ${{ inputs.scope || '' }}
+          DISPATCH_PROVIDER: ${{ inputs.target_provider || '' }}
+          DISPATCH_AUTO_REPAIR: ${{ inputs.auto_repair || 'false' }}
+        run: |
+          set -euo pipefail
+          scope="${DISPATCH_SCOPE:-non-full}"
+          provider="${DISPATCH_PROVIDER:-}"
+          auto_repair="${DISPATCH_AUTO_REPAIR:-false}"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            readarray -t vals < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('.github/triggers/provider-retest.json').read_text())
+          print(str(d.get('scope') or 'non-full'))
+          print('true' if d.get('autoRepair') is True else 'false')
+          for p in d.get('targetProviders') or []:
+              p=str(p or '').strip().lower()
+              if p:
+                  print(p)
+          PY
+            )
+            scope="${vals[0]:-non-full}"
+            auto_repair="${vals[1]:-false}"
+            providers=("${vals[@]:2}")
+          else
+            providers=()
+            [ -z "$provider" ] || providers+=("$provider")
+          fi
+          args=(python scripts/run_provider_retest.py --scope "$scope")
+          for p in "${providers[@]}"; do args+=(--provider "$p"); done
+          printf 'PROVIDER_RETEST_ARGS %q ' "${args[@]}"; echo
+          "${args[@]}"
+          echo "auto_repair=$auto_repair" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: provider-retest-${{ github.run_id }}
+          path: |
+            automation/provider-retest-latest.json
+            automation/provider-retest-targets-latest.json
+            automation/provider-census-status.json
+            automation/provider-census-proof-history.json
+            automation/provider-repair-batch-plan-latest.json
+            PROVIDER_CENSUS_STATUS.md
+            provider-v3-quick-yield.json
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Persist observational census
+        if: ${{ github.ref == 'refs/heads/main' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --quiet origin main
+          remote_main="$(git rev-parse origin/main)"
+          if [ "$remote_main" != "$GITHUB_SHA" ]; then
+            echo "FIELD_PROVIDER_RETEST_STALE source=$GITHUB_SHA remote=$remote_main"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add PROVIDER_CENSUS_STATUS.md             automation/provider-census-status.json             automation/provider-census-proof-history.json             automation/provider-repair-batch-plan-latest.json             automation/provider-retest-latest.json             automation/provider-retest-targets-latest.json
+          if git diff --cached --quiet; then
+            echo "Retest evidence already current"
+          else
+            git commit -m "ci(retest): refresh current provider census"
+            git push origin HEAD:main
+          fi
+      - name: Launch Fast Repair when requested
+        if: ${{ steps.retest.outputs.auto_repair == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          count="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('automation/provider-census-status.json').read_text())
+          print(len(d.get('repairQueue') or []))
+          PY
+          )"
+          if [ "$count" -gt 0 ]; then
+            echo "FIELD_PROVIDER_RETEST_CHAIN_FAST_REPAIR repair_queue=$count"
+            gh workflow run provider-fast-repair.yml --repo "$GITHUB_REPOSITORY" --ref main
+          else
+            echo "FIELD_PROVIDER_RETEST_CHAIN_SKIP repair_queue=0"
+          fi
