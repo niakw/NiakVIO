@@ -26,6 +26,9 @@ on:
       - 'scripts/apply_provider_overrides.py'
       - 'scripts/materialize_provider_v3_all.py'
       - 'scripts/audit_provider_quick_yield.py'
+      - 'scripts/render_provider_census_status.py'
+      - 'scripts/classify_provider_authority.py'
+      - 'scripts/probe_waf_browser_session.py'
       - 'automation/provider-bulk-activation-latest.json'
 
 permissions:
@@ -192,13 +195,37 @@ jobs:
             --history automation/provider-census-proof-history.json \
             --run-id "${GITHUB_RUN_ID}" \
             --sha "$SOURCE_SHA"
+
+          python scripts/classify_provider_authority.py
+
+          # Provisional status supplies current lane/runtime classifications to
+          # the bounded WAF diagnostic. Final status is rendered afterwards.
           python scripts/render_provider_census_status.py automation/provider-census-sharded-merged.json \
             --output automation/PROVIDER-CENSUS-SHARDED.md \
             --json-output automation/provider-census-sharded-status.json \
             --history automation/provider-census-proof-history.json \
             --baseline-status automation/provider-census-status.json \
+            --authority-status automation/provider-authority-status.json \
             --run-id "${GITHUB_RUN_ID}" \
             --sha "$SOURCE_SHA"
+
+          python scripts/probe_waf_browser_session.py automation/provider-census-sharded-merged.json \
+            --output automation/provider-waf-browser-session-sharded.json \
+            --status automation/provider-census-sharded-status.json \
+            --overrides provider-overrides.json \
+            --network-report automation/provider-census-sharded-merged.json \
+            --timeout 20 --virtual-time-ms 7000 --workers 3 --max-targets 16
+
+          python scripts/render_provider_census_status.py automation/provider-census-sharded-merged.json \
+            --output automation/PROVIDER-CENSUS-SHARDED.md \
+            --json-output automation/provider-census-sharded-status.json \
+            --history automation/provider-census-proof-history.json \
+            --baseline-status automation/provider-census-status.json \
+            --waf-browser-evidence automation/provider-waf-browser-session-sharded.json \
+            --authority-status automation/provider-authority-status.json \
+            --run-id "${GITHUB_RUN_ID}" \
+            --sha "$SOURCE_SHA"
+
           python scripts/build_provider_repair_batch_plan.py \
             --status automation/provider-census-sharded-status.json \
             --overrides provider-overrides.json \
@@ -240,6 +267,8 @@ jobs:
             automation/provider-census-sharded-summary.json
             automation/provider-repair-batch-plan-sharded.json
             automation/provider-census-proof-history.json
+            automation/provider-authority-status.json
+            automation/provider-waf-browser-session-sharded.json
             automation/PROVIDER-CENSUS-SHARDED.md
           retention-days: 8
           if-no-files-found: error
@@ -257,6 +286,8 @@ jobs:
           cp automation/provider-census-sharded-summary.json /tmp/provider-census-sharded-summary.json
           cp automation/provider-repair-batch-plan-sharded.json /tmp/provider-repair-batch-plan.json
           cp automation/provider-census-proof-history.json /tmp/provider-census-proof-history.json
+          cp automation/provider-authority-status.json /tmp/provider-authority-status.json
+          cp automation/provider-waf-browser-session-sharded.json /tmp/provider-waf-browser-session-sharded.json
           cp automation/PROVIDER-CENSUS-SHARDED.md /tmp/PROVIDER_CENSUS_STATUS.md
           git fetch origin main
           git reset --hard origin/main
@@ -267,6 +298,9 @@ jobs:
           cp /tmp/provider-census-status.json automation/provider-census-status.json
           cp /tmp/provider-repair-batch-plan.json automation/provider-repair-batch-plan-latest.json
           cp /tmp/provider-census-proof-history.json automation/provider-census-proof-history.json
+          cp /tmp/provider-authority-status.json automation/provider-authority-status.json
+          cp /tmp/provider-waf-browser-session-sharded.json "automation/provider-waf-browser-session-${run_id}.json"
+          cp /tmp/provider-waf-browser-session-sharded.json automation/provider-waf-browser-session-latest.json
           cp /tmp/PROVIDER_CENSUS_STATUS.md PROVIDER_CENSUS_STATUS.md
           verified="$(python - <<'PY'
           import json
@@ -276,7 +310,7 @@ jobs:
           )"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add             "automation/provider-census-sharded-${run_id}.json"             automation/provider-census-sharded-latest.json             automation/provider-census-sharded-latest-summary.json             automation/provider-census-status.json             automation/provider-repair-batch-plan-latest.json             automation/provider-census-proof-history.json             PROVIDER_CENSUS_STATUS.md
+          git add             "automation/provider-census-sharded-${run_id}.json"             automation/provider-census-sharded-latest.json             automation/provider-census-sharded-latest-summary.json             automation/provider-census-status.json             automation/provider-repair-batch-plan-latest.json             automation/provider-census-proof-history.json             automation/provider-authority-status.json             "automation/provider-waf-browser-session-${run_id}.json"             automation/provider-waf-browser-session-latest.json             PROVIDER_CENSUS_STATUS.md
           git diff --cached --quiet && exit 0
           git commit -m "ci(census-sharded): persist ${verified} from ${SOURCE_SHA:0:12}"
           git push origin HEAD:main
