@@ -37,6 +37,9 @@ assert mod.health_concurrency_for_batch(0,48)==8
 assert mod.health_concurrency_for_batch(5,48)==5
 assert mod.health_concurrency_for_batch(99,48)==8
 
+# Reporting must preserve the configured concurrency mode without referring to
+# the pre-batch global variable that was removed by packed-batch scaling.
+
 
 assert mod.experiment_rotation_decision(
     accepted_count=0, remaining_count=3, wave=1, max_waves=5, memory_advanced=True
@@ -266,6 +269,10 @@ with tempfile.TemporaryDirectory() as tmp:
         mod.REPAIR_MEMORY,mod.BRAIN_POLICY=old_memory,old_policy
 
 source=SCRIPT.read_text(encoding="utf-8")
+assert '"healthConcurrency": health_concurrency_setting' in source
+assert '"healthConcurrencyMode": "fixed" if health_concurrency_setting else "auto-per-batch"' in source
+assert '"healthConcurrency": batch_concurrency' in source
+assert '"healthConcurrency": concurrency' not in source
 for required in (
     "run_adaptive_deep_repair.py",
     "build_brain_repair_experience.py",
