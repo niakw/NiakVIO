@@ -7,7 +7,7 @@ State contract:
 * provider-disabled/  : disabled providers still visible in manifest.json
 * provider-old/       : terminal archive, absent from current manifests
 
-A disabled provider is retained for 28 days. If it is still disabled at the end
+A disabled provider is retained for 7 days. If it is still disabled at the end
 of that window, its published/provider-base bytes are moved under provider-old/
 and it is removed from current manifests. Re-enabling it during the retention
 window restores its bytes to providers/ and clears the disabled lifecycle state.
@@ -30,7 +30,7 @@ ARCHIVE_DIR = ROOT / "provider-old"
 ARCHIVE_PROVIDER_DIR = ARCHIVE_DIR / "providers"
 ARCHIVE_BASE_DIR = ARCHIVE_DIR / "provider-bases"
 STATE_PATH = ROOT / "automation/provider-disabled-lifecycle.json"
-RETENTION_DAYS = 28
+RETENTION_DAYS = 7
 
 ROOT_MANIFEST = ROOT / "manifest.json"
 PROJECTION_MANIFESTS = (
