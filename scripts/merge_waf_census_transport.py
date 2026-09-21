@@ -385,10 +385,37 @@ def merge_transport(
         *without_promoted(list(baseline.get("brainQueue") or baseline.get("symptomaticProviders") or [])),
         *replay_reclassified,
     ])
-    if "authorityBlockedQueue" in baseline:
-        out["authorityBlockedQueue"] = normalized(
-            without_promoted(list(baseline.get("authorityBlockedQueue") or []))
+    lifecycle_disabled_actions = {
+        "KEEP_DISABLED",
+        "DISABLE_MANUAL_POLICY",
+        "DISABLE_SOURCE_REMOVED",
+        "DISABLE_AUTHORITY_EXHAUSTED",
+    }
+    lifecycle_disabled = {
+        str(row.get("provider") or "").strip().casefold()
+        for row in providers
+        if isinstance(row, dict)
+        and row.get("brainCheckRequired") is True
+        and (
+            str(row.get("authorityAction") or "") in lifecycle_disabled_actions
+            or str(row.get("authorityClass") or "") in {
+                "disabled", "manual-off", "source-removed", "stale-direct"
+            }
         )
+        and str(row.get("provider") or "").strip()
+    }
+    authority_rediscovery = {
+        str(row.get("provider") or "").strip().casefold()
+        for row in providers
+        if isinstance(row, dict)
+        and row.get("brainCheckRequired") is True
+        and row.get("authorityRepairEligible") is False
+        and str(row.get("provider") or "").strip().casefold() not in lifecycle_disabled
+        and str(row.get("provider") or "").strip()
+    }
+    out["lifecycleDisabledQueue"] = sorted(lifecycle_disabled)
+    out["authorityRediscoveryQueue"] = sorted(authority_rediscovery)
+    out["authorityBlockedQueue"] = sorted(lifecycle_disabled | authority_rediscovery)
 
     out["counts"] = dict(sorted(Counter(
         str(row.get("status") or "")
