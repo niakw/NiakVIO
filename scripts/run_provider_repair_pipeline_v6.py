@@ -33,6 +33,8 @@ CENSUS_STATUS = ROOT / "automation" / "provider-census-status.json"
 CENSUS_HISTORY = ROOT / "automation" / "provider-census-proof-history.json"
 CENSUS_MD = ROOT / "PROVIDER_CENSUS_STATUS.md"
 CENSUS_POST_REPAIR = ROOT / "automation" / "provider-census-post-repair.json"
+REPAIR_CANDIDATE_EVIDENCE = ROOT / "automation" / "provider-repair-candidate-evidence.json"
+CURRENT_OVERRIDES_SNAPSHOT = RUNTIME_PLAN_LKG.parent / "provider-overrides-pre-repair.json"
 CENSUS_ENVIRONMENT_ONLY = {"HARNESS MISMATCH", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}
 
 
@@ -187,6 +189,105 @@ def refresh_census(report_path: Path, *, phase: str) -> dict[str, Any]:
     return state
 
 
+def persist_repair_candidate_evidence(report: dict[str, Any], *, run_id: str, sha: str) -> dict[str, Any]:
+    """Keep verified sandbox Repair outcomes without calling them current bytes."""
+    verified_lanes: dict[str, set[str]] = {}
+    for row in report.get("rows") or []:
+        if not isinstance(row, dict):
+            continue
+        if (
+            str(row.get("status") or "") != "playable_verified"
+            or int(row.get("verified") or 0) <= 0
+            or int(row.get("contradictions") or 0) != 0
+        ):
+            continue
+        provider = cid(row.get("provider_id"))
+        lane = str(row.get("semantic_type") or "").strip().casefold()
+        if provider and lane:
+            verified_lanes.setdefault(provider, set()).add(lane)
+
+    existing = load(REPAIR_CANDIDATE_EVIDENCE) if REPAIR_CANDIDATE_EVIDENCE.exists() else {
+        "schemaVersion": 1,
+        "ciEvidence": {},
+    }
+    existing["schemaVersion"] = 1
+    entries = existing.setdefault("ciEvidence", {})
+    if not isinstance(entries, dict):
+        entries = {}
+        existing["ciEvidence"] = entries
+
+    if verified_lanes:
+        key = f"repair:{run_id}"
+        entries[key] = {
+            "scope": "repair-candidate",
+            "runId": run_id,
+            "sha": sha,
+            "verifiedProviders": sorted(verified_lanes),
+            "verifiedLanes": {
+                provider: sorted(lanes)
+                for provider, lanes in sorted(verified_lanes.items())
+            },
+            "note": (
+                "identity-safe playable Repair candidate; provider/Core bytes were "
+                "ephemeral and must be replayed against persisted main before current promotion"
+            ),
+        }
+        repair_keys = [
+            value for value, row in entries.items()
+            if isinstance(row, dict) and str(row.get("scope") or "") == "repair-candidate"
+        ]
+        for stale in repair_keys[:-32]:
+            entries.pop(stale, None)
+
+    REPAIR_CANDIDATE_EVIDENCE.parent.mkdir(parents=True, exist_ok=True)
+    REPAIR_CANDIDATE_EVIDENCE.write_text(
+        json.dumps(existing, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return existing
+
+
+def render_persisted_byte_census(
+    current_report: Path,
+    *,
+    phase: str,
+    provider_overrides: Path,
+) -> dict[str, Any]:
+    """Render current status from persisted-byte evidence plus candidate hints."""
+    run_id = str(os.environ.get("GITHUB_RUN_ID") or "local")
+    sha = str(os.environ.get("GITHUB_SHA") or "")
+    run(
+        sys.executable,
+        "scripts/render_provider_census_status.py",
+        str(current_report.relative_to(ROOT)),
+        "--output", str(CENSUS_MD.relative_to(ROOT)),
+        "--json-output", str(CENSUS_STATUS.relative_to(ROOT)),
+        "--history", str(CENSUS_HISTORY.relative_to(ROOT)),
+        "--baseline-status", str(CENSUS_STATUS.relative_to(ROOT)),
+        "--repair-candidate-evidence", str(REPAIR_CANDIDATE_EVIDENCE.relative_to(ROOT)),
+        "--provider-overrides", str(provider_overrides),
+        "--run-id", f"{run_id}-{phase}",
+        "--sha", sha or phase,
+    )
+    if (ROOT / "scripts/build_provider_repair_batch_plan.py").exists():
+        run(
+            sys.executable,
+            "scripts/build_provider_repair_batch_plan.py",
+            "--status", str(CENSUS_STATUS.relative_to(ROOT)),
+            "--overrides", "provider-overrides.json",
+            "--output", "automation/provider-repair-batch-plan-latest.json",
+        )
+    state = load(CENSUS_STATUS)
+    print(
+        "FIELD_PROVIDER_REPAIR_CENSUS "
+        f"phase={phase} symptomatic={len(state.get('symptomaticProviders') or state.get('brainQueue') or [])} "
+        f"repair_queue={len(state.get('repairQueue') or [])} "
+        f"environment={len(state.get('environmentQueue') or [])}",
+        flush=True,
+    )
+    return state
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=("repair", "learn", "force"), default="repair")
@@ -265,6 +366,7 @@ def main() -> int:
 
     baseline_portfolio = capture_portfolio_yield(PORTFOLIO_BASELINE, initial_targets)
     census = refresh_census(PORTFOLIO_BASELINE, phase="pre-repair")
+    shutil.copyfile(ROOT / "provider-overrides.json", CURRENT_OVERRIDES_SNAPSHOT)
     targets, auto_excluded_green = unresolved_target_scope(
         active_catalogue,
         skipped,
@@ -531,7 +633,21 @@ def main() -> int:
         )
         candidate_portfolio = load(PORTFOLIO_CANDIDATE)
     shutil.copyfile(PORTFOLIO_CANDIDATE, CENSUS_POST_REPAIR)
-    post_repair_census = refresh_census(PORTFOLIO_CANDIDATE, phase="post-repair")
+    run_id = str(os.environ.get("GITHUB_RUN_ID") or "local")
+    trigger_sha = str(os.environ.get("GITHUB_SHA") or "")
+    persist_repair_candidate_evidence(
+        candidate_portfolio,
+        run_id=f"{run_id}-post-repair",
+        sha=trigger_sha or "post-repair",
+    )
+    # Repair candidate bytes are ephemeral in this workflow. Render durable
+    # current state from the pre-repair/current-byte audit; retain verified
+    # candidate playback separately as CANDIDATE OK until main reproduces it.
+    post_repair_census = render_persisted_byte_census(
+        PORTFOLIO_BASELINE,
+        phase="post-repair-candidate",
+        provider_overrides=CURRENT_OVERRIDES_SNAPSHOT,
+    )
 
     targeted_report = load(TARGET_REPORT)
     merged_report = load(MERGED_REPORT)
