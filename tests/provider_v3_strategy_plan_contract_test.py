@@ -171,10 +171,12 @@ def main() -> int:
     visible_ids = visible_provider_ids()
     active_ids = active_provider_ids()
     disabled_ids = disabled_provider_ids()
-    assert targets == active_ids, (
-        f"hub46/current active catalogue mismatch matrix_only={sorted(targets-active_ids)} "
-        f"active_only={sorted(active_ids-targets)}"
-    )
+    # Hub46 is historical campaign evidence, not catalogue cardinality authority.
+    # New providers and lifecycle-visible disabled providers need not belong to it.
+    # The only invariant is that a historical matrix member still resolves to a
+    # visible provider record; activation remains provider-folder authority.
+    matrix_only = sorted(targets - visible_ids)
+    assert not matrix_only, f"hub46 matrix references non-visible providers: {matrix_only}"
     assert visible_ids == active_ids | disabled_ids, (
         f"visible catalogue must equal active+disabled active_missing={sorted(active_ids-visible_ids)} "
         f"disabled_missing={sorted(disabled_ids-visible_ids)} "
