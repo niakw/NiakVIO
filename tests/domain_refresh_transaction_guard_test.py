@@ -9,6 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import domain_refresh_transaction_v2 as module
 from validate_domain_refresh_transaction import validate
 
 
