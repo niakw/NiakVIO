@@ -59,6 +59,18 @@ jobs:
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
+      - name: Reject superseded Repair SHA before expensive work
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --quiet origin main
+          remote_sha="$(git rev-parse origin/main)"
+          if [ "$remote_sha" != "$GITHUB_SHA" ]; then
+            echo "FIELD_REPAIR_SUPERSEDED_EARLY run_sha=$GITHUB_SHA main_sha=$remote_sha" >&2
+            exit 1
+          fi
+          echo "FIELD_REPAIR_HEAD_FRESH sha=$GITHUB_SHA"
+
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.12'
