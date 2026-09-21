@@ -137,6 +137,107 @@ def extract_targets(report: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
+
+NETWORK_FAILURE_STAGES = {
+    "provider_network_exception",
+    "provider_network_http_error",
+    "provider_network_timeout",
+}
+NETWORK_INFRA_HOSTS = {
+    "api.themoviedb.org",
+    "arm.haglund.dev",
+}
+SENSITIVE_QUERY_KEY = re.compile(
+    r"(?:api[_-]?key|token|auth|authorization|signature|sig|secret|password|cookie|session|nonce|hash)",
+    re.I,
+)
+
+
+def extract_network_failure_targets(
+    report: dict[str, Any],
+    status: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Replay only exact provider GET requests that failed on the CI network.
+
+    The raw URL is used only for the in-process request. Persisted probe rows
+    contain publicUrl/host/path without query values. This is diagnostic
+    transport evidence, never provider playback proof.
+    """
+    blocked = {
+        str(row.get("provider") or "").strip().casefold()
+        for row in status.get("providers") or []
+        if isinstance(row, dict)
+        and str(row.get("status") or "") == "PROVIDER NETWORK BLOCKED"
+        and str(row.get("provider") or "").strip()
+    }
+    out: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for row in report.get("rows") or []:
+        if not isinstance(row, dict):
+            continue
+        provider = str(row.get("provider_id") or row.get("provider") or "").strip().casefold()
+        lane = str(row.get("semantic_type") or row.get("lane") or "").strip().casefold()
+        stage = str(row.get("debug_stage") or "").strip()
+        if provider not in blocked or not lane or stage not in NETWORK_FAILURE_STAGES:
+            continue
+        fetches = row.get("debug_fetches") if isinstance(row.get("debug_fetches"), list) else []
+        for item in reversed(fetches):
+            if not isinstance(item, dict) or str(item.get("method") or "GET").upper() != "GET":
+                continue
+            try:
+                status_code = int(item.get("status") or 0)
+            except (TypeError, ValueError):
+                status_code = 0
+            if status_code and status_code < 400:
+                continue
+            raw_url = str(item.get("url") or "").strip()
+            if not raw_url or "<redacted>" in raw_url:
+                continue
+            try:
+                parsed = urlsplit(raw_url)
+            except ValueError:
+                continue
+            if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+                continue
+            if parsed.hostname.casefold() in NETWORK_INFRA_HOSTS:
+                continue
+            query_parts = []
+            unsafe = False
+            for part in parsed.query.split("&") if parsed.query else []:
+                key = part.split("=", 1)[0]
+                if SENSITIVE_QUERY_KEY.search(key):
+                    unsafe = True
+                    break
+                query_parts.append(part)
+            if unsafe:
+                continue
+            public_url = sanitized_url(raw_url)
+            key = (provider, lane, public_url)
+            if key in seen:
+                continue
+            seen.add(key)
+            error = str(item.get("error") or "").strip()
+            challenge = (
+                f"network-http-{status_code}"
+                if status_code
+                else f"network-{error or 'exception'}"
+            )[:48]
+            out.append({
+                "provider": provider,
+                "lane": lane,
+                "url": raw_url,
+                "publicUrl": public_url,
+                "host": str(parsed.hostname or ""),
+                "path": str(parsed.path or "/"),
+                "method": "GET",
+                "fetchStatus": status_code,
+                "challenge": challenge,
+                "seedKind": "network-failure-replay",
+                "seedRoute": None,
+            })
+            break
+    return out
+
 def extract_status_targets(
     status: dict[str, Any],
     overrides: dict[str, Any],
@@ -632,6 +733,7 @@ def main() -> int:
     ap.add_argument("--okhttp-classpath")
     ap.add_argument("--status", type=Path)
     ap.add_argument("--overrides", type=Path)
+    ap.add_argument("--network-report", type=Path)
     ap.add_argument("--max-targets", type=int, default=16)
     args = ap.parse_args()
 
@@ -652,6 +754,20 @@ def main() -> int:
             )
         ]
         targets.extend(supplemental)
+    if args.network_report and args.status and args.network_report.is_file() and args.status.is_file():
+        network_targets = extract_network_failure_targets(load(args.network_report), load(args.status))
+        network_pairs = {
+            (str(row.get("provider") or ""), str(row.get("lane") or ""))
+            for row in network_targets
+        }
+        targets = [
+            row for row in targets
+            if not (
+                str(row.get("seedKind") or "") == "network-failure-replay"
+                and (str(row.get("provider") or ""), str(row.get("lane") or "")) in network_pairs
+            )
+        ]
+        targets.extend(network_targets)
     targets = targets[: max(1, args.max_targets)]
     browser = browser_binary()
     rows: list[dict[str, Any]] = []
@@ -729,6 +845,7 @@ def main() -> int:
             "GitHub Chromium/libcurl remain secondary harness comparisons",
             "GitHub runner IP reputation differs from a real TV/mobile client",
             "browser challenge persistence is harness/environment evidence, not provider-code failure",
+            "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof",
         ],
         "counts": dict(sorted(counts.items())),
         "rows": rows,
