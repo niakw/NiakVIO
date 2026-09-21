@@ -64,16 +64,13 @@
   "providers": [
     {
       "provider": "anime-sama",
-      "action": "KEEP_BACKEND",
+      "action": "KEEP_ROUTE_AUTHORITY",
       "repairEligible": true,
       "confidence": "high",
-      "authorityClass": "api-or-backend",
+      "authorityClass": "hub-or-redirect",
       "failureCount": 0,
-      "backendUrls": [
-        "https://anime-sama.store"
-      ],
       "reasons": [
-        "structured_backend_authority"
+        "authoritative_route_source"
       ]
     },
     {
@@ -278,30 +275,24 @@
     },
     {
       "provider": "coflix",
-      "action": "KEEP_BACKEND",
+      "action": "KEEP_ROUTE_AUTHORITY",
       "repairEligible": true,
       "confidence": "high",
-      "authorityClass": "api-or-backend",
+      "authorityClass": "hub-or-redirect",
       "failureCount": 0,
-      "backendUrls": [
-        "https://arm.haglund.dev"
-      ],
       "reasons": [
-        "structured_backend_authority"
+        "authoritative_route_source"
       ]
     },
     {
       "provider": "french-manga",
-      "action": "KEEP_BACKEND",
+      "action": "KEEP_DIRECT",
       "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "api-or-backend",
+      "confidence": "medium",
+      "authorityClass": "direct",
       "failureCount": 0,
-      "backendUrls": [
-        "https://arm.haglund.dev"
-      ],
       "reasons": [
-        "structured_backend_authority"
+        "curated_direct"
       ]
     },
     {
@@ -351,16 +342,13 @@
     },
     {
       "provider": "papadustream",
-      "action": "KEEP_BACKEND",
+      "action": "KEEP_ROUTE_AUTHORITY",
       "repairEligible": true,
       "confidence": "high",
-      "authorityClass": "api-or-backend",
+      "authorityClass": "hub-or-redirect",
       "failureCount": 0,
-      "backendUrls": [
-        "https://arm.haglund.dev"
-      ],
       "reasons": [
-        "structured_backend_authority"
+        "authoritative_route_source"
       ]
     },
     {
@@ -448,16 +436,14 @@
     },
     {
       "provider": "voiranime-homes",
-      "action": "KEEP_BACKEND",
+      "action": "KEEP_PROVEN_SITE",
       "repairEligible": true,
-      "confidence": "high",
-      "authorityClass": "api-or-backend",
+      "confidence": "medium",
+      "authorityClass": "structured-site-plus-route-proof",
       "failureCount": 0,
-      "backendUrls": [
-        "https://arm.haglund.dev"
-      ],
       "reasons": [
-        "structured_backend_authority"
+        "structured_official_site",
+        "existing_positive_route_prior"
       ]
     },
     {
