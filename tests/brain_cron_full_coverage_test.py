@@ -138,6 +138,14 @@ def main() -> int:
     assert "- name: Assert exact Learning SHA" in workflow
     assert 'test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"' in workflow
     assert "FIELD_BRAIN_LEARNING_SHA" in workflow
+    assert "group: niakvio-brain-learning-memory-publish" in workflow
+    assert "group: niakvio-brain-repair-proposal-publish" in workflow
+    assert "group: niakvio-brain-architecture-proposal-publish" in workflow
+    assert "- name: Assert proposal source SHA" in workflow
+    assert "FIELD_BRAIN_PROPOSAL_SHA" in workflow
+    assert "- name: Assert architecture proposal source SHA" in workflow
+    assert "FIELD_BRAIN_ARCH_PROPOSAL_SHA" in workflow
+    assert 'git switch -C "$BRANCH" "$GITHUB_SHA"' in workflow
     assert "20 * 60 * 60" in availability_workflow
     assert 'if [ "$((10#$HOUR))" -lt 4 ]' in availability_workflow
 
