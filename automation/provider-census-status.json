@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "runId": "35542228275-post-repair",
-  "triggerSha": "3610a5f429fb4f804fc0566f56eb99fa6ed11e06",
+  "runId": "35548630027-post-repair",
+  "triggerSha": "cab9beefcac6c4f696ac84871e3ef618390b4478",
   "providers": [
     {
       "provider": "4khdhub",
@@ -288,40 +288,6 @@
       "testedThisRun": true
     },
     {
-      "provider": "uhdmovies",
-      "status": "FULL OK",
-      "color": "🟢",
-      "declaredLanes": [
-        "movie"
-      ],
-      "currentVerifiedLanes": [
-        "movie"
-      ],
-      "historicalProof": [
-        "movie: Avengers: Endgame"
-      ],
-      "candidateProof": [],
-      "routeProof": [
-        "69 live routes / movie, tv"
-      ],
-      "latestLaneVerdicts": [
-        "movie=OK"
-      ],
-      "dominantIssue": "none",
-      "searchProgress": [
-        "movie: 6 works tested / 26 retained misses / 7 retained chain hits"
-      ],
-      "evidenceDepth": [
-        "movie=chain_reached"
-      ],
-      "harnessTransportClass": "not-applicable",
-      "harnessTransportEvidence": [],
-      "action": "protect + replay retained proof",
-      "brainCheckRequired": false,
-      "repairEligible": false,
-      "testedThisRun": true
-    },
-    {
       "provider": "vidfast",
       "status": "PROVIDER NETWORK BLOCKED",
       "color": "🟤",
@@ -388,6 +354,40 @@
       "brainCheckRequired": true,
       "repairEligible": true,
       "testedThisRun": true
+    },
+    {
+      "provider": "uhdmovies",
+      "status": "FULL OK",
+      "color": "🟢",
+      "declaredLanes": [
+        "movie"
+      ],
+      "currentVerifiedLanes": [
+        "movie"
+      ],
+      "historicalProof": [
+        "movie: Avengers: Endgame"
+      ],
+      "candidateProof": [],
+      "routeProof": [
+        "69 live routes / movie, tv"
+      ],
+      "latestLaneVerdicts": [
+        "movie=OK"
+      ],
+      "dominantIssue": "none",
+      "searchProgress": [
+        "movie: 6 works tested / 26 retained misses / 7 retained chain hits"
+      ],
+      "evidenceDepth": [
+        "movie=chain_reached"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "action": "protect + replay retained proof",
+      "brainCheckRequired": false,
+      "repairEligible": false,
+      "testedThisRun": false
     },
     {
       "provider": "wookafr",
@@ -628,7 +628,7 @@
       "harnessTransportClass": "browser-profile-only",
       "harnessTransportEvidence": [
         "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted",
-        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted"
+        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
       ]
     },
     {
@@ -1489,31 +1489,5 @@
     "moviesmod",
     "vostfree",
     "wookafr"
-  ],
-  "harnessEvidenceRunId": "35549274925-waf-transport",
-  "harnessEvidenceSha": "c9cced4c5c7ae2293390e71fe72bbd37bc2857f1",
-  "harnessTransportUpdatedProviders": [
-    "allwish",
-    "animesalt",
-    "animevost-fr",
-    "flemmix",
-    "fullanime",
-    "moviesmod",
-    "vostfree",
-    "wookafr"
-  ],
-  "residentialExitNodeEvidence": {
-    "enabled": true,
-    "available": false,
-    "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 0,
-    "reason": "tailscale-connect-failed",
-    "privacy": {
-      "exitNodeNamePersisted": false,
-      "tailscaleAddressPersisted": false,
-      "residentialPublicIpPersisted": false,
-      "responseBodiesPersisted": false,
-      "cookiesPersisted": false
-    }
-  }
+  ]
 }
