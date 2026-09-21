@@ -151,7 +151,7 @@ report={
 assert mod.find_accepted_program(report,"demo")==program
 
 bad=json.loads(json.dumps(program))
-bad["options"]["request_recipes"][1]["requiredBindings"]=["token"]
+bad["options"]["request_recipes"][2]["requiredBindings"]=["token"]
 try:
     mod.compile_program(bad,"demo")
 except ValueError:
@@ -160,10 +160,10 @@ else:
     raise AssertionError("unsupported provider-local token binding was persisted")
 
 body_bound=json.loads(json.dumps(program))
-body_bound["options"]["request_recipes"][1]["route"]="/player"
-body_bound["options"]["request_recipes"][1]["bodyKind"]="form"
-body_bound["options"]["request_recipes"][1]["method"]="POST"
-body_bound["options"]["request_recipes"][1]["body"]={"id":"{binding:id}"}
+body_bound["options"]["request_recipes"][2]["route"]="/player"
+body_bound["options"]["request_recipes"][2]["bodyKind"]="form"
+body_bound["options"]["request_recipes"][2]["method"]="POST"
+body_bound["options"]["request_recipes"][2]["body"]={"id":"{binding:id}"}
 try:
     mod.compile_program(body_bound,"demo")
 except ValueError:
