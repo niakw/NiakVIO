@@ -288,6 +288,18 @@ console.log('French ISP DNS preflight tests passed');
   const workerEnd = source.indexOf('await Promise.all(', workerStart);
   assert.ok(workerStart >= 0 && workerEnd > workerStart, 'DNS CLI worker source must be locatable');
   const workerSource = source.slice(workerStart, workerEnd);
+  assert.ok(
+    source.includes("if (entry.enabled === false)"),
+    'DNS manifest registry must explicitly separate disabled providers',
+  );
+  assert.ok(
+    source.includes("disabled provider artifact outside provider-disabled/"),
+    'disabled manifest bytes must remain under provider-disabled/',
+  );
+  assert.ok(
+    source.includes("active provider artifact outside providers/"),
+    'active manifest bytes must remain under providers/',
+  );
   assert.equal(
     workerSource.includes('Number(error?.status) === 429 || /(?:^|\\D)429'),
     false,
