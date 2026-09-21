@@ -28,16 +28,16 @@ assert ov["flemmix"]["provider_lego_scripts"] == ["scripts/provider_patches/flem
 assert "api_recipe" not in ov["flemmix"]
 assert ov["flemmix"]["learned_routes"]==["/search?q={query}"]
 assert ov["flemmix"]["search_request_plan"][0]["route"]=="/search?q={query}"
-assert ov["flemmix"]["provider_lego_options"]["scripts/provider_patches/flemmix_runtime_v1.py"]["base"] == "https://flemmix.me"
-assert '"base": "https://flemmix.me"' in flemmix
-assert ov["flemmix"]["official_site"] == "https://flemmix.me"
-assert hubs["flemmix"]["direct"] == "https://flemmix.me/"
+assert ov["flemmix"]["provider_lego_options"]["scripts/provider_patches/flemmix_runtime_v1.py"]["base"] == "https://flemmix.party"
+assert '"base": "https://flemmix.party"' in flemmix
+assert ov["flemmix"]["official_site"] == "https://flemmix.party"
+assert hubs["flemmix"]["direct"] == "https://flemmix.party/"
 assert hubs["flemmix"]["direct_authority"] == "explicit_current"
 flemmix_js=flemmix.split("WRAPPER = r'''",1)[1].split("'''",1)[0]
 assert flemmix_js.count("c.base")==2, "only runtimeBase fallback may reference the configured Flemmix base"
-assert ov["flemmix"]["domain_substitutions"]["flemmix.cloud"] == "flemmix.me"
+assert ov["flemmix"]["domain_substitutions"]["flemmix.cloud"] == "flemmix.party"
 assert "flemmix.me" not in ov["flemmix"]["domain_substitutions"]
-compiled=flemmix_js.replace("CONFIG_PLACEHOLDER",json.dumps({"base":"https://flemmix.me","userAgent":"Mozilla/5.0"}))
+compiled=flemmix_js.replace("CONFIG_PLACEHOLDER",json.dumps({"base":"https://flemmix.party","userAgent":"Mozilla/5.0"}))
 subprocess.run(["node","-e","new Function(process.argv[1]);",compiled],check=True)
 behavior=r'''
 global.fetch=async function(url){
