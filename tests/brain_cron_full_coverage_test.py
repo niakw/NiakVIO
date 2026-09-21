@@ -134,6 +134,10 @@ def main() -> int:
     assert "brain-learning-watchdog:" in availability_workflow
     assert "brain-learning-lab.yml" in availability_workflow
     assert "publish_proposal=true" in availability_workflow
+    assert 'ref: ${{ github.sha }}' in workflow, "Learning evidence checkout is not pinned to the event SHA"
+    assert "- name: Assert exact Learning SHA" in workflow
+    assert 'test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"' in workflow
+    assert "FIELD_BRAIN_LEARNING_SHA" in workflow
     assert "20 * 60 * 60" in availability_workflow
     assert 'if [ "$((10#$HOUR))" -lt 4 ]' in availability_workflow
 
