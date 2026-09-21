@@ -64,6 +64,7 @@ jobs:
     outputs:
       provider_count: ${{ steps.decide.outputs.provider_count }}
       use_sharded: ${{ steps.decide.outputs.use_sharded }}
+      should_run: ${{ steps.decide.outputs.should_run }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -80,17 +81,29 @@ jobs:
           PY
           )"
           echo "provider_count=$count" >> "$GITHUB_OUTPUT"
+          message="$(git log -1 --pretty=%B)"
+          use_sharded=false
+          should_run=true
           if [ "$count" -gt 120 ]; then
-            echo "use_sharded=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "use_sharded=false" >> "$GITHUB_OUTPUT"
+            use_sharded=true
+            should_run=false
           fi
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            case "$message" in
+              "provider: bulk stage "*|"ci(census-sharded):"*)
+                should_run=false
+                ;;
+            esac
+          fi
+          echo "use_sharded=$use_sharded" >> "$GITHUB_OUTPUT"
+          echo "should_run=$should_run" >> "$GITHUB_OUTPUT"
+          echo "FIELD_CENSUS_SCALE providers=$count use_sharded=$use_sharded should_run=$should_run"
 
   census:
     needs: scale
     # Large catalogues are owned by the 8-shard workflow. Bulk-stage and
     # sharded evidence commits also must not recursively launch this mono-job.
-    if: ${{ needs.scale.outputs.use_sharded != 'true' && (github.event_name != 'push' || (startsWith(github.event.head_commit.message, 'provider: bulk stage ') == false && startsWith(github.event.head_commit.message, 'ci(census-sharded):') == false)) }}
+    if: ${{ needs.scale.outputs.should_run == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 55
     env:
