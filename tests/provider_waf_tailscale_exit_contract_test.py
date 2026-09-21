@@ -10,10 +10,13 @@ required=[
     "TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}",
     "TS_EXIT_NODE: ${{ secrets.TS_EXIT_NODE }}",
     "TS_TAG_NAME: ${{ secrets.TS_TAG_NAME }}",
+    "Normalize private Tailscale CI tag",
+    'raw="${TS_TAG_NAME:-niakvio-ci}"',
+    '*) normalized="tag:$raw" ;;',
+    "TS_ACTION_TAG=%s",
     "tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8",
     "oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}",
     "audience: ${{ env.TS_AUDIENCE }}",
-    "log-mode: quiet",
     'tailscale ping --timeout=10s "$TS_EXIT_NODE" >/dev/null',
     'sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false',
     "scripts/merge_waf_network_profiles.py",
@@ -28,6 +31,7 @@ for forbidden in (
     "icanhazip",
     "curl -s https://ip",
     "tailscale status --json",
+    "log-mode:",
     'echo "$TS_EXIT_NODE"',
 ):
     assert forbidden not in wf, f"privacy/security regression: {forbidden}"
