@@ -104,13 +104,14 @@ jobs:
           python tests/provider_clean_worker_smoke_test.py
           python tests/provider_stage_profile_worker_smoke_test.py
           python tests/provider_wookafr_current_runtime_behavior_test.py
+          python tests/brain_repair_experience_transfer_test.py
+          python tests/brain_preflight_fail_fast_order_test.py
           cp manifest.json "$RUNNER_TEMP/provider-preflight-manifest.json"
           python scripts/materialize_provider_v3_all.py \
             --source-manifest "$RUNNER_TEMP/provider-preflight-manifest.json" \
             --output-dir "$RUNNER_TEMP/provider-preflight-artifacts" \
             --report "$RUNNER_TEMP/provider-preflight-materialization.json"
           python tests/provider_discovery_v3_composition_test.py
-          python tests/brain_repair_experience_transfer_test.py
           python tests/brain_generation_failure_memory_test.py
           python tests/brain_negative_experiment_exhaustion_test.py
           python tests/brain_final_experiment_generation_test.py
