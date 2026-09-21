@@ -82,3 +82,7 @@ assert "Prepare integrated Repair WAF/network qualification" in repair
 assert "if: ${{ github.ref == 'refs/heads/main' }}" in wf
 
 assert "FIELD_REPAIR_SUPERSEDED_EARLY" in repair
+
+# Standalone WAF is manual diagnostics only; canonical transport qualification belongs to Repair.
+assert "workflow_dispatch:" in wf
+assert "\n  push:" not in wf.split("permissions:",1)[0]
