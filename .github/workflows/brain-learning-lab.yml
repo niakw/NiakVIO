@@ -147,6 +147,7 @@ jobs:
           python tests/brain_learning_same_run_hypothesis_rotation_test.py
           python tests/brain_final_experiment_generation_test.py
           python tests/brain_learning_generation_runtime_test.py
+          python tests/brain_positive_program_memory_test.py
           python tests/learning_targeted_runtime_profile_behavior_test.py
           python tests/learning_new_provider_provenance_test.py
           python tests/brain_self_architecture_test.py
@@ -160,6 +161,10 @@ jobs:
           python -m py_compile \
             scripts/run_brain_learning_sandbox.py \
             scripts/run_brain_learning_queue.py \
+            scripts/brain_positive_program_memory.py \
+            scripts/compile_brain_accepted_program_v3.py \
+            scripts/brain_repair_runtime.py \
+            scripts/adaptive_runtime/runtime_repair.py \
             scripts/build_brain_repair_proposal.py \
             scripts/materialize_clean_provider_reconstruction.py \
             scripts/build_brain_architecture_proposal.py \
