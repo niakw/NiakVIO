@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35664170647",
-  "sourceTriggerSha": "1a36322ecfeacdade07bc875a7ce3bfb652695ec",
-  "unresolvedProviderCount": 15,
-  "groupCount": 10,
+  "sourceRunId": "35667571681-retest",
+  "sourceTriggerSha": "6d51673e3560a7ac189b20325730da1fd23b682e",
+  "unresolvedProviderCount": 16,
+  "groupCount": 12,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -40,34 +40,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "dle-full-story-sibnet",
-        "menu-search-series-focus-player",
-        "yflix-db-encrypted-ajax-v1"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception",
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "providerCount": 3,
-      "providers": [
-        "anime-ultime",
-        "animesultra",
-        "yflix"
-      ],
-      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "harness-compatibility|mixed_embed_resolver",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
@@ -89,6 +61,53 @@
         "vostfree"
       ],
       "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|mixed_embed_resolver",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "dle-full-story-sibnet",
+        "menu-search-series-focus-player"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception",
+        "network_http_error"
+      ],
+      "harnessTransportClasses": [],
+      "providerCount": 2,
+      "providers": [
+        "anime-ultime",
+        "animesultra"
+      ],
+      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "candidate-replay|direct_media",
+      "repairScope": "candidate-replay",
+      "runtimeFamilies": [
+        "api_stream_resolver"
+      ],
+      "capabilityStrategy": "direct_media",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "providerCount": 1,
+      "providers": [
+        "persianstremio"
+      ],
+      "action": "replay retained candidate proofs against current bytes in batch",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -155,6 +174,28 @@
       "providerCount": 1,
       "providers": [
         "4khdhub"
+      ],
+      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "route-to-terminal|mixed_embed_resolver",
+      "repairScope": "route-to-terminal",
+      "runtimeFamilies": [
+        "yflix-db-encrypted-ajax-v1"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "providerCount": 1,
+      "providers": [
+        "yflix"
       ],
       "action": "replay proven routes in batch and apply shared detail/player traversal profile",
       "executionPolicy": "batch-first",
