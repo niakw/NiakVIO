@@ -50,7 +50,10 @@ for marker in (
     'census=census',
     'CENSUS_STATUS',
     'refresh_census(PORTFOLIO_BASELINE, phase="pre-repair")',
-    'refresh_census(PORTFOLIO_CANDIDATE, phase="post-repair")',
+    'persist_repair_candidate_evidence(',
+    'render_persisted_byte_census(',
+    'CURRENT_OVERRIDES_SNAPSHOT',
+    'REPAIR_CANDIDATE_EVIDENCE',
     '"selectionAuthority": "provider-census-status.json:repairQueue"',
     '"censusStatusUpdated": True',
 ):
