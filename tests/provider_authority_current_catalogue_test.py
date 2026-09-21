@@ -47,7 +47,7 @@ expected = {
     "neko-sama": "KEEP_PROVEN_SITE",
     "anime-ultime": "KEEP_PROVEN_SITE",
     "mallumv": "KEEP_PROVEN_SITE",
-    "showbox": "REDISCOVER_SEARCH",
+    "showbox": "DISABLE_MANUAL_POLICY" if rows["showbox"].get("enabled") is not False else "KEEP_DISABLED",
     "animetsu": "KEEP_DISABLED",
     "fullanime": "KEEP_DISABLED",
     "desiflix": "KEEP_DISABLED",
@@ -57,7 +57,7 @@ for provider, action in expected.items():
     assert result["action"] == action, (provider, result)
     if action.startswith("KEEP_") and action != "KEEP_DISABLED":
         assert result["repairEligible"] is True, (provider, result)
-    if action in {"KEEP_DISABLED", "REDISCOVER_SEARCH"}:
+    if action in {"KEEP_DISABLED", "REDISCOVER_SEARCH", "DISABLE_MANUAL_POLICY"}:
         assert result["repairEligible"] is False, (provider, result)
 
 # An explicit-current site is allowed while Domain has no persisted contradiction.
@@ -67,11 +67,17 @@ assert animesultra["action"] == "KEEP_DIRECT", animesultra
 assert animesultra["failureCount"] == 0, animesultra
 
 # Search is still available for the historical catalogue, but never as current
-# authority by itself. New registry autofill rows opt out by default.
+# authority by itself. ShowBox has now been explicitly marked non-activable after
+# manual source review found no public authority beyond search/private Telegram.
+# Before lifecycle apply it must request DISABLE_MANUAL_POLICY; after apply it is
+# terminal KEEP_DISABLED. New registry autofill rows still opt out by default.
 showbox_registry = registries["showbox"]
-assert classify("showbox")["reasons"] == ["direct_candidate_unproven", "search_supplement_only"], classify("showbox")
+showbox = classify("showbox")
+assert showbox["reasons"] == ["manual_off_no_current_authority_search_only"], showbox
 assert showbox_registry.get("legacy_search_refresh") is True, showbox_registry
-assert classify("showbox")["confidence"] == "low"
+assert showbox_registry.get("activation_eligible") is False, showbox_registry
+assert showbox_registry.get("direct") is None, showbox_registry
+assert showbox["confidence"] == "terminal", showbox
 for provider, row in registries.items():
     if isinstance(row, dict) and row.get("registry_state") == "unresolved":
         assert row.get("legacy_search_refresh") is not True, (provider, row)
