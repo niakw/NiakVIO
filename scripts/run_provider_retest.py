@@ -189,6 +189,32 @@ def main() -> int:
     if candidate.is_file():
         render_cmd.extend(["--repair-candidate-evidence", str(candidate.relative_to(ROOT))])
     run(*render_cmd)
+
+    # Re-apply the latest transport/residential differential after current-byte
+    # interpretation. This is essential for cases where the provider runtime
+    # reports a network exception even though the exact route is already proven
+    # native-like reachable on GitHub/Tailscale: those must return to normal
+    # CHAIN/ROUTE/Brain states instead of regressing to NETWORK BLOCKED.
+    if waf.is_file():
+        merged = ROOT / "automation" / ".provider-retest-census-transport.json"
+        run(
+            sys.executable,
+            "scripts/merge_waf_census_transport.py",
+            "--status", str(STATUS.relative_to(ROOT)),
+            "--waf", str(waf.relative_to(ROOT)),
+            "--authority-status", str(AUTHORITY.relative_to(ROOT)),
+            "--output", str(merged.relative_to(ROOT)),
+            "--run-id", f"{run_id}-retest-transport",
+            "--sha", sha,
+        )
+        merged.replace(STATUS)
+        run(
+            sys.executable,
+            "scripts/render_provider_census_status_from_state.py",
+            "--status", str(STATUS.relative_to(ROOT)),
+            "--output", str(CENSUS_MD.relative_to(ROOT)),
+        )
+
     run(
         sys.executable,
         "scripts/build_provider_repair_batch_plan.py",
