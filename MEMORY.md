@@ -1,5 +1,15 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-21 23:15 Europe/Paris — Canonical Repair now owns WAF end-to-end
+
+- User clarified the intended architecture: WAF/network qualification is an integral Repair phase, not a second autonomous pipeline; Tailscale is only an optional transport when the private exit node is online.
+- Follow-up audit found one remaining half-integration bug: after the new pre-Brain WAF merge, `run_provider_repair_pipeline_v6.py` refreshed the targeted pre-Repair/post-candidate census without passing either fresh WAF evidence or fresh authority. That could erase a just-earned residential/native reclassification before Brain target selection.
+- `74ae3eaa4800` adds `WAF_STATUS=automation/provider-waf-browser-session-latest.json` and passes both `--waf-browser-evidence` and `--authority-status` through every internal Repair census refresh. `0c83684fe203` locks both refresh paths in the integrated WAF contract test.
+- Census no longer dispatches a standalone WAF run. `5a3d0cdb3744` (mono) and `6e18a82230f8` (sharded) remove those post-census dispatches; `3d0ae0498a90` updates the contract so the standalone WAF workflow is diagnostic/manual only. Canonical flow is now **census -> Repair [fresh authority -> WAF/network qualification -> optional Tailscale -> WAF/census merge -> Brain -> post-Repair census]**.
+- Repair/census/manual-WAF still share the `provider-census-waf-main` concurrency lane so evidence writers cannot race. This is serialization only; it does not make standalone WAF part of the normal production chain.
+- Trigger #130 (`35655411853`, SHA `665a4e0f`) was still pending when the internal census-refresh leak was found. A newer trigger was intentionally pushed; GitHub cancelled #130 before job execution rather than wasting a full Repair on stale workflow bytes.
+- Current canonical validation is Repair #131 / run `35655859428`, trigger SHA `caf6d3dfe157`, presently pending behind the already-running legacy standalone WAF #100 (`35655341458`). #131 is the first run expected to validate the full integrated architecture above.
+
 ## 2026-09-21 23:06 Europe/Paris — WAF moved inside Repair; Tailscale is optional transport, AnimeVOSTFR runtime authority reconciled
 
 - User correction accepted: WAF/network qualification is not a separate post-Repair concern. It is now an integral pre-Brain Repair phase. Tailscale is an optional extra transport only; Repair must continue when the private exit node is offline/unconfigured.
