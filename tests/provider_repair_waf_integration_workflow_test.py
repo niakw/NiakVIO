@@ -6,7 +6,7 @@ wf=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(encod
 
 required=[
     "id-token: write",
-    "group: provider-census-waf-main",
+    "group: provider-repair-main",
     "Prepare integrated Repair WAF/network qualification",
     "scripts/classify_provider_authority.py",
     'row.get("repairEligible") is True',
@@ -48,6 +48,9 @@ persist_block=wf[persist:]
 assert 'cp automation/provider-waf-browser-session-latest.json "$tmp/provider-waf-browser-session-latest.json"' in persist_block
 assert 'cp "$tmp/provider-waf-browser-session-latest.json" automation/provider-waf-browser-session-latest.json' in persist_block
 assert "git add automation/provider-waf-browser-session-latest.json" in persist_block
+assert "FIELD_REPAIR_CANONICAL_LEDGER_STALE" in persist_block
+assert "FIELD_REPAIR_CANONICAL_LEDGER_SKIPPED" in persist_block
+assert "FIELD_REPAIR_FRESH_CENSUS_DISPATCH" in persist_block
 
 print("Repair-integrated WAF/Tailscale qualification workflow contract passed")
 
