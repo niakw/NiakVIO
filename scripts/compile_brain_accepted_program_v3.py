@@ -96,14 +96,32 @@ def find_accepted_program(report:dict[str,Any],provider:str)->dict[str,Any]:
     if len(hits)!=1:raise ValueError(f'{wanted}: expected exactly one unique acceptedProgram, found {len(hits)}')
     return next(iter(hits.values()))
 
+def _merge_rows(primary:list[Any],existing:list[Any],limit:int)->list[Any]:
+    out=[];seen=set()
+    for row in [*primary,*existing]:
+        if not isinstance(row,dict):continue
+        key=json.dumps(row,sort_keys=True,separators=(',',':'))
+        if key in seen:continue
+        seen.add(key);out.append(copy.deepcopy(row))
+        if len(out)>=limit:break
+    return out
+
 def apply_compiled(overrides:dict[str,Any],compiled:dict[str,Any])->dict[str,Any]:
     out=copy.deepcopy(overrides);provider=cid(compiled.get('provider'));patches=out.setdefault('provider_patches',{})
     if not isinstance(patches,dict):raise ValueError('provider_patches must be object')
     patch=patches.setdefault(provider,{})
     if not isinstance(patch,dict):raise ValueError(f'provider_patches.{provider} must be object')
-    patch['search_request_plan']=copy.deepcopy(compiled.get('searchRequestPlan') or [])
-    if compiled.get('providerValuePlan'):patch['provider_value_plan']=copy.deepcopy(compiled['providerValuePlan'])
-    else:patch.pop('provider_value_plan',None)
+    patch['search_request_plan']=_merge_rows(
+        compiled.get('searchRequestPlan') or [],
+        patch.get('search_request_plan') or [],
+        6,
+    )
+    compiled_values=compiled.get('providerValuePlan') or []
+    existing_values=patch.get('provider_value_plan') or []
+    if compiled_values or existing_values:
+        patch['provider_value_plan']=_merge_rows(compiled_values,existing_values,12)
+    else:
+        patch.pop('provider_value_plan',None)
     patch['brain_accepted_program']={'schema_version':1,'profile_revision':int(compiled.get('acceptedProgramRevision') or 0),'source':'strict-brain-accepted-runtime-program'}
     return out
 
