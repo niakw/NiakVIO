@@ -3,7 +3,7 @@
 
 Catalogue membership and activation are separate concerns:
 - only the 46 hub Provider Objects remain in the executable catalogue;
-- the hub matrix defines current catalogue membership, while providers/ versus provider-disabled/ is activation authority;
+- the hub matrix defines the current active execution set, while manifest.json remains the visible catalogue during disabled retention;
 - non-hub providers survive only as historical ProviderBase bytes and Repair must not resurrect them;
 - a provider with executable LIVE DATA/recipe/Lego is directly executable;
 - a provider without a currently executable plan is accepted only when Repair V6
@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts" / "provider_patches"))
 
-from current_provider_scope import active_provider_ids, visible_provider_ids
+from current_provider_scope import active_provider_ids, disabled_provider_ids, visible_provider_ids
 HUB46 = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 ALLOWED = {
     "mixed_embed_resolver",
@@ -170,10 +170,17 @@ def main() -> int:
     targets = hub46_targets()
     visible_ids = visible_provider_ids()
     active_ids = active_provider_ids()
-    assert targets == visible_ids, (
-        f"hub46/current visible catalogue mismatch matrix_only={sorted(targets-visible_ids)} "
-        f"visible_only={sorted(visible_ids-targets)}"
+    disabled_ids = disabled_provider_ids()
+    assert targets == active_ids, (
+        f"hub46/current active catalogue mismatch matrix_only={sorted(targets-active_ids)} "
+        f"active_only={sorted(active_ids-targets)}"
     )
+    assert visible_ids == active_ids | disabled_ids, (
+        f"visible catalogue must equal active+disabled active_missing={sorted(active_ids-visible_ids)} "
+        f"disabled_missing={sorted(disabled_ids-visible_ids)} "
+        f"unexpected_visible={sorted(visible_ids-(active_ids|disabled_ids))}"
+    )
+    assert not (active_ids & disabled_ids), sorted(active_ids & disabled_ids)
 
     rows = manifest.get("scrapers") or []
     assert len({cid(row.get("id")) for row in rows}) == len(rows), "provider ids must be unique"
