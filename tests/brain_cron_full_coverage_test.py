@@ -151,7 +151,7 @@ def main() -> int:
 
     assert 'str(SCRIPTS / "run_brain_learning_sandbox.py")' in queue_source
     assert '"--max-rounds", "0"' in queue_source, "queue must let the sandbox explore until its global deadline"
-    assert "while time.time() < work_deadline:" in queue_source, "provider repair loop is no longer deadline-driven"
+    assert "while time.time() < work_deadline and not (" in queue_source, "provider repair loop is no longer deadline-driven"\n    assert "route_refresh.get(\"ok\") is False" in queue_source, "provider-local refresh blocker no longer bounds the repair loop"
     assert "seen_method_sets" in queue_source, "Learning must stop repeating an exhausted method set"
     assert "retryProviders" in queue_source and "pendingProviders" in queue_source, "cross-day queue persistence disappeared"
     assert "interleave(" in queue_source, "retry work must not starve unseen providers"
