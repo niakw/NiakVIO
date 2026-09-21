@@ -48,7 +48,7 @@ try{g.__niakvioProviderRuntimeResolverV1={provider:"animevostfr",resolve:resolve
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     cfg = {
-        "base": "https://v2.animevostfr.org",
+        "base": "https://animevostfr.org",
         "maxStreams": 6,
         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145 Safari/537.36",
     }
