@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "runId": "35591042153-post-repair",
+  "runId": "35591042153-post-repair-candidate-reconciled",
   "triggerSha": "f176c2d62ca8f981d9dd3e2097fd85451ed0461d",
   "providers": [
     {
@@ -323,41 +323,45 @@
     },
     {
       "provider": "wookafr",
-      "status": "PARTIAL OK",
-      "color": "🟡",
+      "status": "CANDIDATE OK",
+      "color": "🟦",
       "declaredLanes": [
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [
-        "tv"
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [
+        "run 35591042153-post-repair"
       ],
-      "historicalProof": [
-        "tv: Breaking Bad"
-      ],
-      "candidateProof": [],
       "routeProof": [
         "22 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
-        "tv=OK"
+        "movie=no_streams/provider_waf_challenge",
+        "tv=timeout"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "provider_waf_challenge, timeout",
       "searchProgress": [
-        "movie: 4 works tested / 1 retained misses / 1 retained chain hit",
-        "tv: 1 works tested / 0 retained misses"
+        "movie: 4 works tested / 0 retained misses",
+        "tv: 4 works tested / 0 retained misses"
       ],
       "evidenceDepth": [
-        "movie=chain_reached",
+        "movie=lookup_only",
         "tv=chain_reached"
       ],
+      "action": "replay candidate proof against current bytes; publish only after current verified media",
+      "brainCheckRequired": true,
+      "repairEligible": true,
+      "testedThisRun": true,
       "harnessTransportClass": "not-applicable",
       "harnessTransportEvidence": [],
-      "action": "protect green lanes; BRAIN checks missing lanes",
-      "brainCheckRequired": false,
-      "repairEligible": false,
-      "testedThisRun": true
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "yflix",
@@ -1444,12 +1448,12 @@
     }
   ],
   "counts": {
-    "CANDIDATE OK": 1,
+    "CANDIDATE OK": 2,
     "CHAIN REACHED": 2,
     "FULL OK": 27,
     "HARNESS MISMATCH": 3,
     "HARNESS/ENV BLOCKED": 2,
-    "PARTIAL OK": 3,
+    "PARTIAL OK": 2,
     "PROVIDER NETWORK BLOCKED": 5,
     "ROUTE PROVEN": 3
   },
@@ -1469,6 +1473,7 @@
     "moviesmod",
     "showbox",
     "vidfast",
+    "wookafr",
     "yflix"
   ],
   "brainQueue": [
@@ -1487,6 +1492,7 @@
     "moviesmod",
     "showbox",
     "vidfast",
+    "wookafr",
     "yflix"
   ],
   "repairQueue": [
@@ -1500,6 +1506,7 @@
     "moviebox",
     "showbox",
     "vidfast",
+    "wookafr",
     "yflix"
   ],
   "environmentQueue": [
