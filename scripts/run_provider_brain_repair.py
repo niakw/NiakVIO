@@ -32,6 +32,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 from repair_identity_gate import automatic_repair_identity_gate
+from compile_brain_accepted_program_v3 import apply_compiled, compile_program
 STATUS = ROOT / "automation" / "provider-census-status.json"
 DEFAULT_OUTPUT = ROOT / "automation" / "provider-brain-repair-latest.json"
 DEFAULT_WORK = ROOT / "automation" / ".provider-brain-repair-work"
@@ -39,6 +40,7 @@ EXPERIENCE = ROOT / "automation" / "brain-repair-experience.json"
 BATCH_PLAN = ROOT / "automation" / "provider-repair-batch-plan-latest.json"
 REPAIR_MEMORY = ROOT / "automation" / "brain-repair-memory.json"
 BRAIN_POLICY = ROOT / "engine_v2" / "config" / "brain-policy.json"
+OVERRIDES = ROOT / "provider-overrides.json"
 
 GREEN = {"FULL OK", "PARTIAL OK"}
 ENVIRONMENT = {"HARNESS MISMATCH", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}
@@ -375,9 +377,55 @@ def sanitized_brain(report: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def persist_accepted_programs(
+    accepted: list[dict[str, Any]],
+) -> tuple[set[str], dict[str, str]]:
+    """Compile strict accepted adaptive programs into existing Provider v3 DATA.
+
+    This writes only structured override DATA inside the current Repair workspace.
+    It never persists generated JS. Final current-byte yield remains publication
+    authority; a compile rejection therefore leaves the provider unresolved.
+    """
+    current = load(OVERRIDES, {})
+    if not isinstance(current, dict):
+        current = {}
+    compiled: set[str] = set()
+    rejected: dict[str, str] = {}
+    for row in accepted:
+        if not isinstance(row, dict):
+            continue
+        provider = cid(row.get("provider"))
+        program = row.get("acceptedProgram") if isinstance(row.get("acceptedProgram"), dict) else {}
+        if not provider or not program:
+            continue
+        try:
+            compiled_data = compile_program(program, provider)
+            current = apply_compiled(current, compiled_data)
+        except (TypeError, ValueError) as exc:
+            reason = str(exc)[:240] or type(exc).__name__
+            rejected[provider] = reason
+            row["v3ProgramPersistence"] = {
+                "status": "rejected",
+                "reason": reason,
+            }
+            continue
+        compiled.add(provider)
+        row["v3ProgramPersistence"] = {
+            "status": "compiled",
+            "searchPlanCount": len(compiled_data.get("searchRequestPlan") or []),
+            "providerValuePlanCount": len(compiled_data.get("providerValuePlan") or []),
+            "source": str(compiled_data.get("source") or ""),
+        }
+    if compiled:
+        write(OVERRIDES, current)
+    return compiled, rejected
+
+
 def materialize(provider_ids: set[str] | list[str]) -> None:
     """Materialize accepted Brain state without reconciling unrelated providers."""
     targets = sorted({cid(value) for value in provider_ids if cid(value)})
+    if not targets:
+        return
     for provider_id in targets:
         run(
             sys.executable,
@@ -464,6 +512,8 @@ def main() -> int:
     all_accepted: list[dict[str, Any]] = []
     all_fixed: set[str] = set()
     all_deferred: set[str] = set()
+    all_compiled_programs: set[str] = set()
+    all_program_compile_failures: dict[str, str] = {}
     no_progress_reason: str | None = None
     time_budget_exhausted = False
     processed_providers: set[str] = set()
@@ -558,12 +608,29 @@ def main() -> int:
                     "brain": brain_summary,
                 })
 
+            compiled_this_wave, compile_failures_this_wave = persist_accepted_programs(accepted_this_wave)
+            all_compiled_programs.update(compiled_this_wave)
+            all_program_compile_failures.update(compile_failures_this_wave)
+            accepted_program_providers = {
+                cid(row.get("provider"))
+                for row in accepted_this_wave
+                if cid(row.get("provider"))
+                and isinstance(row.get("acceptedProgram"), dict)
+                and row.get("acceptedProgram")
+            }
+            blocked_fixed = accepted_program_providers - compiled_this_wave
+            effective_fixed_this_wave = fixed_this_wave - blocked_fixed
+            materialize_targets_this_wave = (
+                (fixed_this_wave - accepted_program_providers)
+                | compiled_this_wave
+            )
+
             all_accepted.extend(accepted_this_wave)
             all_fixed.update(fixed_this_wave)
             all_deferred.update(deferred_this_wave)
             remaining = [
                 provider for provider in remaining
-                if provider not in fixed_this_wave and provider not in deferred_this_wave
+                if provider not in effective_fixed_this_wave and provider not in deferred_this_wave
             ]
             memory_after = repair_memory_fingerprint()
             experiment_memory_advanced = memory_after != memory_before
@@ -574,6 +641,9 @@ def main() -> int:
                 "timeBudgetExhausted": time_budget_exhausted,
                 "fixedInLabCount": len(fixed_this_wave),
                 "fixedInLab": sorted(fixed_this_wave),
+                "acceptedProgramCompiledProviders": sorted(compiled_this_wave),
+                "acceptedProgramCompileFailures": dict(sorted(compile_failures_this_wave.items())),
+                "durableMaterializeTargets": sorted(materialize_targets_this_wave),
                 "deferredToLearningCount": len(deferred_this_wave),
                 "deferredToLearning": sorted(deferred_this_wave),
                 "remainingProviderCount": len(remaining),
@@ -582,17 +652,8 @@ def main() -> int:
             })
 
             if time_budget_exhausted:
-                if fixed_this_wave or accepted_this_wave:
-                    materialize(
-                        {
-                            *fixed_this_wave,
-                            *{
-                                cid(row.get("provider"))
-                                for row in accepted_this_wave
-                                if cid(row.get("provider"))
-                            },
-                        }
-                    )
+                if materialize_targets_this_wave:
+                    materialize(materialize_targets_this_wave)
                 break
 
             decision = experiment_rotation_decision(
@@ -619,16 +680,7 @@ def main() -> int:
             # provider-overrides.json. Materialize once per wave so the next wave
             # starts from the improved current bytes instead of replaying the same
             # parent candidate.
-            materialize(
-                {
-                    *fixed_this_wave,
-                    *{
-                        cid(row.get("provider"))
-                        for row in accepted_this_wave
-                        if cid(row.get("provider"))
-                    },
-                }
-            )
+            materialize(materialize_targets_this_wave)
 
         payload = {
             "schemaVersion": 1,
@@ -672,6 +724,8 @@ def main() -> int:
             "skippedEnvironmentProviders": skipped_environment,
             "acceptedRepairCount": len(all_accepted),
             "acceptedRepairs": all_accepted,
+            "acceptedProgramCompiledProviders": sorted(all_compiled_programs),
+            "acceptedProgramCompileFailures": dict(sorted(all_program_compile_failures.items())),
             "fixedInLabProviders": sorted(all_fixed),
             "deferredLearningProviders": sorted(all_deferred),
             "remainingProviders": remaining,
