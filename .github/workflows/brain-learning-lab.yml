@@ -148,6 +148,7 @@ jobs:
           python tests/brain_final_experiment_generation_test.py
           python tests/brain_learning_generation_runtime_test.py
           python tests/brain_positive_program_memory_test.py
+          python tests/brain_reconstruction_proposal_self_contained_test.py
           python tests/learning_targeted_runtime_profile_behavior_test.py
           python tests/learning_new_provider_provenance_test.py
           python tests/brain_self_architecture_test.py
@@ -535,7 +536,7 @@ jobs:
         run: |
           set -euo pipefail
           BRANCH="brain-learning/proposals"
-          git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
+          git fetch origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH" || true
 
           candidate_ms="$(node -e "const x=require('./brain-learning-output/latest.json');const t=Date.parse(x.generatedAt||'');if(!Number.isFinite(t))process.exit(2);process.stdout.write(String(t))")"
           existing_ms=""
@@ -664,7 +665,7 @@ jobs:
           SUMMARY=brain-learning-output/repair-proposal.json
           git config user.name "niakvio-brain"
           git config user.email "actions@users.noreply.github.com"
-          git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
+          git fetch origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH" || true
           if git rev-parse --verify "refs/remotes/origin/$BRANCH" >/dev/null 2>&1 \
              && git merge-base --is-ancestor "$GITHUB_SHA" "refs/remotes/origin/$BRANCH"; then
             echo "FIELD_BRAIN_PR skipped=stale-source source=$GITHUB_SHA branch=$BRANCH"
@@ -794,7 +795,7 @@ jobs:
           SUMMARY=brain-learning-output/brain-architecture-proposal.json
           git config user.name "niakvio-brain"
           git config user.email "actions@users.noreply.github.com"
-          git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
+          git fetch origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH" || true
           if git rev-parse --verify "refs/remotes/origin/$BRANCH" >/dev/null 2>&1 \
              && git merge-base --is-ancestor "$GITHUB_SHA" "refs/remotes/origin/$BRANCH"; then
             echo "FIELD_BRAIN_ARCH_PR skipped=stale-source source=$GITHUB_SHA branch=$BRANCH"
