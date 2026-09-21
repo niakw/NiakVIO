@@ -551,7 +551,9 @@ def repair_method_fingerprints(report: dict[str, Any], attempted_profiles: list[
             generation = max(1, int(plan.get("experimentGeneration") or 1))
             variant = max(0, int(plan.get("experimentVariant") or 0))
             profiles = sorted({str(value) for value in plan.get("allowedProfiles") or [] if str(value)})
-            if provider_id or signature or profiles:
+            if str(plan.get("action") or "") != "probe-targeted-repair" or not profiles:
+                continue
+            if provider_id or signature:
                 output.append(
                     f"{provider_id}|{signature}|g{generation}|v{variant}|{','.join(profiles)}"
                 )
