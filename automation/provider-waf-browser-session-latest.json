@@ -182,7 +182,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 12022,
+      "durationMs": 22648,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -335,7 +335,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 11897,
+      "durationMs": 22750,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -490,7 +490,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 12605,
+      "durationMs": 23445,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -636,7 +636,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 6355,
+      "durationMs": 4798,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -794,7 +794,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 21099,
+      "durationMs": 18837,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -949,7 +949,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 9361,
+      "durationMs": 8242,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1102,7 +1102,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 10437,
+      "durationMs": 8076,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1255,7 +1255,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 10610,
+      "durationMs": 9255,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1387,7 +1387,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 9299,
+      "durationMs": 19106,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -1524,7 +1524,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 11175,
+      "durationMs": 18159,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -1532,7 +1532,7 @@
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
-            "outcome": "browser_content_reached",
+            "outcome": "browser_timeout",
             "attemptCount": 2
           },
           {
@@ -1552,7 +1552,6 @@
           "attemptCount": 1
         },
         "contentProfiles": [
-          "github-default-browser",
           "nuvio-tv-ua-browser",
           "nuvio-tv-direct-http-approx",
           "nuvio-tv-okhttp-jvm"
@@ -1684,7 +1683,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 10636,
+      "durationMs": 12368,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -1822,7 +1821,7 @@
           "redirects": "HTTP+SSL enabled",
           "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
         },
-        "outcome": "okhttp_jvm_inconclusive",
+        "outcome": "okhttp_jvm_challenge_persisted",
         "attemptCount": 2,
         "attempts": [
           {
@@ -1832,8 +1831,8 @@
           },
           {
             "attempt": 2,
-            "outcome": "okhttp_jvm_inconclusive",
-            "status": 429
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
           }
         ],
         "exitCode": 0
@@ -1842,7 +1841,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 10005,
+      "durationMs": 7264,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -1986,7 +1985,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 16637,
+      "durationMs": 15532,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -2133,7 +2132,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 54126,
+      "durationMs": 53891,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -2146,7 +2145,7 @@
           },
           {
             "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_timeout",
+            "outcome": "browser_content_reached",
             "attemptCount": 2
           }
         ],
@@ -2161,6 +2160,7 @@
           "attemptCount": 1
         },
         "contentProfiles": [
+          "nuvio-tv-ua-browser",
           "nuvio-tv-direct-http-approx",
           "nuvio-tv-okhttp-jvm"
         ]
@@ -2291,7 +2291,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 11208,
+      "durationMs": 11065,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -2426,7 +2426,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2518,
+      "durationMs": 3355,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -2563,7 +2563,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2608,
+      "durationMs": 3030,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -2636,7 +2636,7 @@
         "provider": "allwish",
         "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2647,7 +2647,7 @@
         "provider": "allwish",
         "lane": "tv",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2669,7 +2669,7 @@
         "provider": "animesultra",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_network_exception",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2680,7 +2680,7 @@
         "provider": "animevost-fr",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_waf_challenge",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2691,7 +2691,7 @@
         "provider": "flemmix",
         "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2702,7 +2702,7 @@
         "provider": "flemmix",
         "lane": "tv",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2735,7 +2735,7 @@
         "provider": "moviesmod",
         "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_network_exception",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2746,7 +2746,7 @@
         "provider": "moviesmod",
         "lane": "tv",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,

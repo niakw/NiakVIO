@@ -130,8 +130,8 @@
       "testedThisRun": false,
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
       ]
     },
     {
@@ -261,7 +261,7 @@
       "testedThisRun": true,
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true"
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
       ],
       "networkDifferentialClass": "network-route-inconclusive",
       "networkDifferentialEvidence": [
@@ -349,7 +349,7 @@
       "testedThisRun": false,
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_waf_challenge, raw=0, playable=0, verified=0, identitySafe=true"
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
       ]
     },
     {
@@ -440,8 +440,8 @@
       "testedThisRun": false,
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
       ]
     },
     {
@@ -608,7 +608,7 @@
       "harnessTransportClass": "browser-profile-only",
       "harnessTransportEvidence": [
         "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_inconclusive, residential-direct=direct_http_challenge_persisted",
-        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_inconclusive, residential-direct=direct_http_challenge_persisted"
+        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_inconclusive, residential-direct=direct_http_challenge_persisted"
       ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_ROUTE_AUTHORITY",
@@ -625,8 +625,8 @@
       "testedThisRun": false,
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
-        "movie: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true",
-        "tv: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
       ]
     },
     {
@@ -2081,8 +2081,8 @@
     "flemmix",
     "moviesmod"
   ],
-  "harnessEvidenceRunId": "35658642066-waf-transport",
-  "harnessEvidenceSha": "b4fa2eac55e1d67de7c6003b4b05c0301bc1a60e",
+  "harnessEvidenceRunId": "35659171802-waf-transport",
+  "harnessEvidenceSha": "539afc52e3c9fafcf64b0878078cf74323daf008",
   "harnessTransportUpdatedProviders": [
     "allwish",
     "animevost-fr",
@@ -2135,7 +2135,7 @@
         "provider": "allwish",
         "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2146,7 +2146,7 @@
         "provider": "allwish",
         "lane": "tv",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2168,7 +2168,7 @@
         "provider": "animesultra",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_network_exception",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2179,7 +2179,7 @@
         "provider": "animevost-fr",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_waf_challenge",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2190,7 +2190,7 @@
         "provider": "flemmix",
         "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2201,7 +2201,7 @@
         "provider": "flemmix",
         "lane": "tv",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2234,7 +2234,7 @@
         "provider": "moviesmod",
         "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_network_exception",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2245,7 +2245,7 @@
         "provider": "moviesmod",
         "lane": "tv",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2319,7 +2319,5 @@
     "showbox"
   ],
   "authorityRediscoveryQueue": [],
-  "authorityRefreshedProviders": [
-    "showbox"
-  ]
+  "authorityRefreshedProviders": []
 }
