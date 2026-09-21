@@ -31,13 +31,16 @@ ALLOWED_SOURCE_TYPES = {"hub", "telegram_public", "redirect", "source_redirect"}
 def has_domain_refresh_source(cfg: dict[str, Any], mode: str) -> bool:
     """Return whether this provider has enough bounded address evidence to inspect."""
     # DOMAIN_REFRESH_DIRECT_AND_SEARCH_REDIRECT_SOURCE_V1
+    # Search stays a legacy/supplementary path: future hub imports do not opt in
+    # unless they explicitly carry legacy_search_refresh=true.
     if hubresolver.has_authoritative_hub_source(cfg):
         return True
     if hubresolver.has_authoritative_direct_source(cfg):
         return True
+    has_search = any(str(value or "").strip() for value in cfg.get("search_queries") or [])
     if str(mode or "").casefold() == "deep":
-        return any(str(value or "").strip() for value in cfg.get("search_queries") or [])
-    return False
+        return has_search
+    return bool(cfg.get("legacy_search_refresh", False)) and has_search
 
 
 def _candidate_url(row: dict[str, Any]) -> str:
