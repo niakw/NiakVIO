@@ -377,13 +377,35 @@ jobs:
           cp "/tmp/provider-authority-status-${run_id}.json" automation/provider-authority-status.json
           cp "/tmp/provider-repair-batch-plan-${run_id}.json" "automation/provider-repair-batch-plan-${run_id}.json"
           cp "/tmp/provider-repair-batch-plan-${run_id}.json" automation/provider-repair-batch-plan-latest.json
+          # Full census owns only its run-specific browser evidence. The canonical
+          # WAF latest is owned by the dedicated WAF/Tailscale workflow and may
+          # contain stronger residential evidence that a GitHub-only census must
+          # never erase.
           cp "/tmp/provider-waf-browser-session-${run_id}.json" "automation/provider-waf-browser-session-${run_id}.json"
-          cp "/tmp/provider-waf-browser-session-${run_id}.json" automation/provider-waf-browser-session-latest.json
+
+          if [ -s automation/provider-waf-browser-session-latest.json ]; then
+            python scripts/merge_waf_census_transport.py \
+              --status automation/provider-census-status.json \
+              --waf automation/provider-waf-browser-session-latest.json \
+              --authority-status automation/provider-authority-status.json \
+              --output /tmp/provider-census-status-canonical-waf.json \
+              --run-id "${run_id}-canonical-waf" \
+              --sha "${GITHUB_SHA}"
+            mv /tmp/provider-census-status-canonical-waf.json automation/provider-census-status.json
+            python scripts/build_provider_repair_batch_plan.py \
+              --status automation/provider-census-status.json \
+              --overrides provider-overrides.json \
+              --output automation/provider-repair-batch-plan-latest.json
+            python scripts/render_provider_census_status_from_state.py \
+              --status automation/provider-census-status.json \
+              --output PROVIDER_CENSUS_STATUS.md
+          fi
+
           cp "/tmp/census-summary-${run_id}.json" automation/current-bytes-full-provider-census-latest-summary.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "automation/current-bytes-full-provider-census-${run_id}-summary.json" "automation/current-bytes-full-provider-census-${run_id}.json" automation/current-bytes-full-provider-census-latest-summary.json automation/provider-census-status.json automation/provider-census-proof-history.json automation/provider-authority-status.json PROVIDER_CENSUS_STATUS.md
-          git add "automation/provider-waf-browser-session-${run_id}.json" automation/provider-waf-browser-session-latest.json
+          git add "automation/provider-waf-browser-session-${run_id}.json"
           git add "automation/provider-repair-batch-plan-${run_id}.json" automation/provider-repair-batch-plan-latest.json
           git commit -m "ci(census): persist current bytes ${verified} from ${GITHUB_SHA::12}"
           git push origin HEAD:main
