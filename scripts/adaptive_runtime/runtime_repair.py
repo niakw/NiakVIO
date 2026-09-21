@@ -57,7 +57,7 @@ SAFE_STRUCTURED_PARSE_PROFILE = "safe_structured_parse"
 NON_REPAIRABLE_POLICY_STATUSES = {"excluded"}
 EXPERIENCE_PATH = ROOT / "automation" / "brain-repair-experience.json"
 CENSUS_STATUS_PATH = ROOT / "automation" / "provider-census-status.json"
-ROUTE_KEYS = ("candidate_learned_routes", "learned_routes", "candidate_routes", "routes")
+ROUTE_KEYS = ("documented_routes", "candidate_learned_routes", "learned_routes", "candidate_routes", "routes")
 _ROUTE_PLACEHOLDER = re.compile(r"\{(?:query|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type|binding:[A-Za-z0-9_.-]+)\}", re.I)
 _REQUEST_PLACEHOLDER = re.compile(r"\{(?:query|queryDots|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type|binding:[A-Za-z0-9_.-]+)\}", re.I)
 _ROUTE_OPAQUE = re.compile(r"(?:[A-Za-z0-9+/]{72,}={0,2}|[A-Fa-f0-9]{96,})")
