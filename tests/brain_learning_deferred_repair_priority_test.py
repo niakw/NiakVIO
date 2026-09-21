@@ -88,4 +88,28 @@ assert fallback_current == ["wookafr"], fallback_current
 assert fallback_deferred == ["wookafr"], fallback_deferred
 assert fallback_authority == "learning-current-observation-fallback"
 
+ordered = mod.authoritative_learning_order(
+    ["1shows", "animepahe", "wookafr", "other"],
+    ["wookafr", "other"],
+    ["other"],
+    ["1shows", "animepahe"],
+    {
+        "1shows": {"status": "provider_unreachable"},
+        "animepahe": {"status": "provider_unreachable"},
+        "wookafr": {"status": "no_streams"},
+        "other": {"status": "runtime_error"},
+    },
+    {
+        "1shows": {"canonical_id": "1shows"},
+        "animepahe": {"canonical_id": "animepahe"},
+        "wookafr": {"canonical_id": "wookafr"},
+        "other": {"canonical_id": "other"},
+    },
+)
+assert ordered == ["wookafr", "other", "1shows", "animepahe"], ordered
+
+source = (ROOT / "scripts" / "run_brain_learning_queue.py").read_text(encoding="utf-8")
+assert "authoritative_learning_order(" in source
+assert "current census is the first Learning authority" in source
+
 print("Brain Learning exhausted-Repair priority contract passed")
