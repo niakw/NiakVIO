@@ -1,5 +1,15 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-21 13:07 Europe/Paris — Repair preflight green; Learning same-run causal rotation test-validated
+
+- Canonical Repair run `35591042153` is still executing real Repair on tested SHA `f176c2d62ca8`; do not attribute newer Learning code to it. Its complete step-6 preflight is **SUCCESS**, including accepted-program capture/compiler-v3/persistence, causal planning, exploration-chain, round attribution, worker/stage smoke, Wooka current-runtime behavior, materialization/discovery composition and non-regression contracts. This proves the earlier compiler-test blocker is closed; provider recovery still depends on the in-progress canonical Repair evidence.
+- Learning root cause found from prior run `35575738318`: although `exploration_share=1.00`, the queue compared methods only by profile name and immediately broke on `accepted=0`. Adaptive hypotheses deliberately reuse `adaptive_runtime_recovery`, so planner variant/generation rotation was indistinguishable from a repeated method and same-run negative memory could not drive the next hypothesis.
+- Generic fix `5fbf541086bb` gives each Learning method a causal fingerprint `provider|signature|generation|variant|allowedProfiles`; a new failed fingerprint now continues to the next planner pass, while an exact repeated fingerprint (or no method) stops. Global Learning deadline remains the safety budget. Contract `4994e093e21c` proves v0/v1 and generation changes are distinct while exact repeats stay identical; workflow gate `0b723887b413` includes the contract in Learning preflight.
+- Two first validation runs (`35591517159` on `05392c66526b`, then `35591720951` on `0923867143fc`) stopped before any provider work because an older cron contract first expected the literal old loop header, then the initial test edit contained a literal `\\n`. These runs consumed no provider evidence and must not affect census interpretation. Test fixes are `c2ed8c0d359b` and `69afa58f6262`.
+- Fresh Learning run `35591831057` on exact SHA `16a41a502274` has now passed **Validate Brain cron skills and full provider coverage**, including same-run causal-rotation and provider-refresh-isolation contracts. It is importing/restoring Learning evidence before the real adaptive queue. The rotation is therefore test-validated but **not yet runtime-proven** until the queue shows distinct variant/generation attempts and continues past a provider-local refresh failure.
+- Current durable census before these runs remains **27 FULL · 2 PARTIAL · 1 CANDIDATE · 3 ROUTE · 3 CHAIN · 5 NETWORK · 3 HARNESS MISMATCH · 2 HARNESS/ENV BLOCKED**, with 12 Repair targets and 5 environment/harness targets. No status promotion is inferred from preflight success.
+
+
 
 ## 2026-09-21 12:55 Europe/Paris — current Brain blockers revalidated; Repair preflight + Learning queue resilience fixed
 
