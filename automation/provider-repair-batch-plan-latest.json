@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35606270612-post-repair-candidate",
-  "sourceTriggerSha": "e3d788f2cf1ca1b66c173eefc24ce29bda2f17e2",
-  "unresolvedProviderCount": 16,
+  "sourceRunId": "35641490356-pre-repair",
+  "sourceTriggerSha": "753897003ad82b9262ab0185b74cc0b6f94ec92d",
+  "unresolvedProviderCount": 15,
   "groupCount": 12,
   "executionModel": {
     "default": "family/signature batch",
@@ -85,30 +85,6 @@
         "showbox"
       ],
       "action": "replay proven routes in batch and apply shared detail/player traversal profile",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
-      "runtimeFamilies": [
-        "dle-full-story-sibnet",
-        "wookafr-current-multiplayer-v2"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception"
-      ],
-      "harnessTransportClasses": [],
-      "providerCount": 2,
-      "providers": [
-        "animesultra",
-        "wookafr"
-      ],
-      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -285,6 +261,28 @@
       "providerCount": 1,
       "providers": [
         "vidfast"
+      ],
+      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|mixed_embed_resolver",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "dle-full-story-sibnet"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception"
+      ],
+      "harnessTransportClasses": [],
+      "providerCount": 1,
+      "providers": [
+        "animesultra"
       ],
       "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
       "executionPolicy": "batch-first",
