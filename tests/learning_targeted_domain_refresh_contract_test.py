@@ -30,6 +30,10 @@ assert collect_stage < reapply_stage < target_guard < main_stage
 assert "target_ids" not in profiles_script[collect_stage:reapply_stage]
 assert '"last_refresh_scope": "targeted"' in profiles_script
 assert 'build_provider_runtime_profiles.py"), "--stage", str(stage), "--apply-stage", "--provider", provider_id' in queue
+assert queue.count("refresh_stage_routes(stage, work_deadline, provider_id)") == 2
+assert "FIELD_BRAIN_PROVIDER_REFRESH_ISOLATED" in queue
+assert '"isolatedProviderRefreshFailures"' in queue
+assert 'route_refresh.get("ok") is False' in queue
 
 print("Learning targeted domain-refresh scope contract passed")
 assert '"--stage", str(stage), "--provider", provider_id' in queue
