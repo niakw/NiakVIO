@@ -36,7 +36,10 @@ assert hubs["flemmix"]["direct_authority"] == "explicit_current"
 flemmix_js=flemmix.split("WRAPPER = r'''",1)[1].split("'''",1)[0]
 assert flemmix_js.count("c.base")==2, "only runtimeBase fallback may reference the configured Flemmix base"
 assert ov["flemmix"]["domain_substitutions"]["flemmix.cloud"] == "flemmix.party"
-assert "flemmix.me" not in ov["flemmix"]["domain_substitutions"]
+# flemmix.me is now a historical/redirect entry point and must normalize to the
+# explicit-current terminal instead of surviving as a competing runtime host.
+assert ov["flemmix"]["domain_substitutions"]["flemmix.me"] == "flemmix.party"
+assert ov["flemmix"]["runtime_domain_replacements"]["flemmix.me"] == "flemmix.party"
 compiled=flemmix_js.replace("CONFIG_PLACEHOLDER",json.dumps({"base":"https://flemmix.party","userAgent":"Mozilla/5.0"}))
 subprocess.run(["node","-e","new Function(process.argv[1]);",compiled],check=True)
 behavior=r'''
