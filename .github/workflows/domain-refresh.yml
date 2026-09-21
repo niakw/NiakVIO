@@ -274,8 +274,11 @@ jobs:
           AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
           echo "FIELD_DOMAIN_PUBLICATION_OK base=$BASE_SHA provider=$(cat "$RUNNER_TEMP/domain-provider-sha") final=$FINAL_SHA"
-          gh workflow run sync.yml --ref main -f mode=quick
-          gh workflow run provider-disabled-lifecycle.yml --ref main
+          # Publication is already durable at this point. Auxiliary workflow
+          # dispatches must not retroactively turn an atomic successful publish red
+          # when the GitHub API is temporarily rate-limited.
+          gh workflow run sync.yml --ref main -f mode=quick || echo "FIELD_DOMAIN_POST_PUBLISH_DISPATCH_WARN workflow=sync"
+          gh workflow run provider-disabled-lifecycle.yml --ref main || echo "FIELD_DOMAIN_POST_PUBLISH_DISPATCH_WARN workflow=provider-disabled-lifecycle"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
