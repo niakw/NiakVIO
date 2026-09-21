@@ -30,7 +30,8 @@ status={
     "providers":[
         {"provider":"yflix","status":"PROVIDER NETWORK BLOCKED"},
         {"provider":"waf-only","status":"HARNESS MISMATCH"},
-        {"provider":"all-blocked","status":"HARNESS/ENV BLOCKED"},
+        {"provider":"all-blocked","status":"HARNESS/ENV BLOCKED","authorityRepairEligible":True},
+        {"provider":"authority-blocked","status":"HARNESS/ENV BLOCKED","authorityRepairEligible":False},
         {"provider":"green","status":"FULL OK"},
         {"provider":"route","status":"ROUTE PROVEN"},
     ],
@@ -40,6 +41,7 @@ status={
 selected=mod.select(report,status)
 assert selected==["all-blocked","waf-only","yflix"],selected
 assert "green" not in selected and "route" not in selected
+assert "authority-blocked" not in selected
 
 unavailable={"residentialExitNodeEvidence":{"available":False}}
 assert mod.select(unavailable,status)==[]
