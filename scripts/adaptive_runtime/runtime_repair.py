@@ -846,6 +846,21 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
 
     network_hints = _runtime_network_hints(patch)
     validated_positive_user_agent = positive_program_user_agent(provider_id)
+    current_request_recipes = [
+        recipe for recipe in candidate.get("brain_observed_request_recipes") or []
+        if isinstance(recipe, dict) and recipe.get("source") == "current-observation"
+    ]
+    positive_request_recipes = positive_program_request_recipes(provider_id)
+    historical_provider_request_recipes = _provider_request_recipes(provider_id)
+    provider_recipe_origins = [
+        str(recipe.get("origin") or "").strip()
+        for recipe in [
+            *current_request_recipes,
+            *positive_request_recipes,
+            *historical_provider_request_recipes,
+        ]
+        if str(recipe.get("origin") or "").strip()
+    ]
     explicit = [
         recovery_options.get("base_url"), patch.get("official_site"),
         *network_hints["bases"],
@@ -857,7 +872,12 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
 
     provider_token = re.sub(r"[^a-z0-9]+", "", provider_id)
     base_url = None
-    for raw in explicit + list(observed):
+    trusted_recipe_origins = {
+        _origin(raw)
+        for raw in provider_recipe_origins
+        if _origin(raw)
+    }
+    for raw in [*explicit, *list(observed), *provider_recipe_origins]:
         peer = _origin(raw)
         if not peer:
             continue
@@ -865,7 +885,11 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         if host in INFRASTRUCTURE_HOSTS or any(host.endswith("." + item) for item in INFRASTRUCTURE_HOSTS):
             continue
         compact_host = re.sub(r"[^a-z0-9]+", "", host)
-        if raw in {patch.get("official_site"), recovery_options.get("base_url")} or (provider_token and provider_token in compact_host):
+        if (
+            raw in {patch.get("official_site"), recovery_options.get("base_url")}
+            or peer in trusted_recipe_origins
+            or (provider_token and provider_token in compact_host)
+        ):
             base_url = peer
             break
     if not base_url:
@@ -901,13 +925,9 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     peer_route_min_variant = _peer_route_min_variant(experiment_failure)
     peer_recipe_min_variant = _peer_recipe_min_variant(experiment_failure)
     peer_routes = _peer_routes(strategy) if experiment_variant >= peer_route_min_variant else []
-    current_request_recipes = [
-        recipe for recipe in candidate.get("brain_observed_request_recipes") or []
-        if isinstance(recipe, dict) and recipe.get("source") == "current-observation"
-    ]
     provider_request_recipes = _unique_request_recipes(
-        positive_program_request_recipes(provider_id),
-        _provider_request_recipes(provider_id),
+        positive_request_recipes,
+        historical_provider_request_recipes,
         limit=32,
     )
     peer_request_recipes = _peer_request_recipes(strategy)
