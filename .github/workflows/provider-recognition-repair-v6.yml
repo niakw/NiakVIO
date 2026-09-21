@@ -278,11 +278,25 @@ jobs:
             echo "No Repair census state produced"
             exit 0
           fi
+          if ! python - <<'PY'
+          import json
+          from pathlib import Path
+          state=json.loads(Path("automation/provider-census-status.json").read_text())
+          rows=[row for row in state.get("providers") or [] if isinstance(row,dict)]
+          assert int(state.get("schemaVersion") or 0) >= 3
+          assert rows
+          assert all("authorityRepairEligible" in row and "authorityAction" in row for row in rows)
+          PY
+          then
+            echo "FIELD_REPAIR_CENSUS_NOT_PERSISTED authority_schema_v3_required"
+            exit 0
+          fi
 
           tmp="${RUNNER_TEMP}/repair-census-${GITHUB_RUN_ID}"
           mkdir -p "$tmp"
           cp PROVIDER_CENSUS_STATUS.md "$tmp/PROVIDER_CENSUS_STATUS.md"
           cp automation/provider-census-status.json "$tmp/provider-census-status.json"
+          [ ! -s automation/provider-authority-status.json ] || cp automation/provider-authority-status.json "$tmp/provider-authority-status.json"
           [ ! -s automation/provider-census-proof-history.json ] || cp automation/provider-census-proof-history.json "$tmp/provider-census-proof-history.json"
           [ ! -s automation/brain-repair-memory.json ] || cp automation/brain-repair-memory.json "$tmp/brain-repair-memory.json"
           [ ! -s automation/brain-positive-program-memory.json ] || cp automation/brain-positive-program-memory.json "$tmp/brain-positive-program-memory.json"
@@ -308,6 +322,7 @@ jobs:
           mkdir -p automation
           cp "$tmp/PROVIDER_CENSUS_STATUS.md" PROVIDER_CENSUS_STATUS.md
           cp "$tmp/provider-census-status.json" automation/provider-census-status.json
+          [ ! -f "$tmp/provider-authority-status.json" ] || cp "$tmp/provider-authority-status.json" automation/provider-authority-status.json
           [ ! -f "$tmp/provider-census-proof-history.json" ] || cp "$tmp/provider-census-proof-history.json" automation/provider-census-proof-history.json
           [ ! -f "$tmp/brain-repair-memory.json" ] || cp "$tmp/brain-repair-memory.json" automation/brain-repair-memory.json
           [ ! -f "$tmp/brain-positive-program-memory.json" ] || cp "$tmp/brain-positive-program-memory.json" automation/brain-positive-program-memory.json
@@ -318,6 +333,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add PROVIDER_CENSUS_STATUS.md automation/provider-census-status.json
+          [ ! -f automation/provider-authority-status.json ] || git add automation/provider-authority-status.json
           [ ! -f automation/provider-census-proof-history.json ] || git add automation/provider-census-proof-history.json
           [ ! -f automation/brain-repair-memory.json ] || git add automation/brain-repair-memory.json
           [ ! -f automation/brain-positive-program-memory.json ] || git add automation/brain-positive-program-memory.json
