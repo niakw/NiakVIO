@@ -78,7 +78,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "maxAliases": max(2, min(int(cfg.get("max_aliases", 8)), 12)),
         "maxCandidates": max(2, min(int(cfg.get("max_candidates", 8)), 16)),
         "maxPlayers": max(1, min(int(cfg.get("max_players", 8)), 16)),
-        "timeoutMs": max(2500, min(int(cfg.get("timeout_ms", 7000)), 15000)),
+        "timeoutMs": max(2500, min(int(cfg.get("timeout_ms", 12000)), 15000)),
         "budgetMs": max(5000, min(int(cfg.get("budget_ms", 45000)), 60000)),
         "languageHint": str(cfg.get("language_hint") or "").strip().lower(),
         "searchPaths": [str(v) for v in cfg.get("search_paths", []) if str(v).strip()],
