@@ -86,6 +86,8 @@ jobs:
 
 
       - name: Connect ephemeral Tailscale diagnostic node
+        id: tailscale_connect
+        continue-on-error: true
         if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
         uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8
         with:
@@ -114,7 +116,9 @@ jobs:
             --virtual-time-ms 8000
 
       - name: Select private residential exit node
-        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
+        id: select_residential_exit
+        continue-on-error: true
+        if: ${{ steps.tailscale_connect.outcome == 'success' && env.TS_EXIT_NODE != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -133,7 +137,9 @@ jobs:
           echo "NIAKVIO_RESIDENTIAL_EXIT_ACTIVE=1" >> "$GITHUB_ENV"
 
       - name: Reprobe WAF lanes through private residential exit
-        if: ${{ env.NIAKVIO_RESIDENTIAL_EXIT_ACTIVE == '1' }}
+        id: residential_probe
+        continue-on-error: true
+        if: ${{ steps.select_residential_exit.outcome == 'success' && env.NIAKVIO_RESIDENTIAL_EXIT_ACTIVE == '1' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -160,7 +166,18 @@ jobs:
               --residential /tmp/provider-waf-residential.json \
               --output automation/provider-waf-browser-session-latest.json
           else
-            cp /tmp/provider-waf-github.json automation/provider-waf-browser-session-latest.json
+            reason="tailscale-unavailable"
+            if [ "${{ steps.tailscale_connect.outcome }}" = "failure" ]; then
+              reason="tailscale-connect-failed"
+            elif [ "${{ steps.select_residential_exit.outcome }}" = "failure" ]; then
+              reason="exit-node-unavailable"
+            elif [ "${{ steps.residential_probe.outcome }}" = "failure" ]; then
+              reason="residential-probe-failed"
+            fi
+            python scripts/merge_waf_network_profiles.py \
+              --baseline /tmp/provider-waf-github.json \
+              --unavailable-reason "$reason" \
+              --output automation/provider-waf-browser-session-latest.json
           fi
 
       - name: Clear private exit-node routing
