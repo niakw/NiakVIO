@@ -59,15 +59,22 @@ print("Tailscale residential WAF workflow contract passed")
 
 assert wf.count("--network-report provider-v3-quick-yield.json") == 2
 
-# Census, standalone WAF diagnostics and Repair persistence share one
-# serialization lane, but census must not dispatch a second WAF pipeline. The
-# canonical Repair owns transport qualification; standalone WAF is diagnostic.
+# Census + standalone WAF share an observational serialization lane. Repair
+# owns integrated transport qualification and uses a separate lane so GitHub's
+# one-pending-run concurrency slot cannot starve a Repair behind census pushes.
 temp=(ROOT/".github/workflows/temp-current-bytes-full-provider-census.yml").read_text(encoding="utf-8")
 sharded=(ROOT/".github/workflows/provider-census-sharded.yml").read_text(encoding="utf-8")
 repair=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(encoding="utf-8")
-for source in (wf,temp,sharded,repair):
+for source in (wf,temp,sharded):
     assert "group: provider-census-waf-main" in source, source[:400]
     assert "cancel-in-progress: false" in source, source[:400]
+assert "group: provider-repair-main" in repair, repair[:600]
+assert "cancel-in-progress: false" in repair, repair[:600]
+assert "workflow_dispatch:" in temp
+assert "FIELD_REPAIR_CANONICAL_LEDGER_STALE" in repair
+assert "FIELD_REPAIR_CANONICAL_LEDGER_SKIPPED" in repair
+assert "FIELD_REPAIR_FRESH_CENSUS_DISPATCH" in repair
+assert "gh workflow run temp-current-bytes-full-provider-census.yml" in repair
 assert "gh workflow run provider-waf-browser-session.yml --ref main" not in temp
 assert "gh workflow run provider-waf-browser-session.yml --ref main" not in sharded
 assert "Prepare integrated Repair WAF/network qualification" in repair
