@@ -50,7 +50,7 @@
       "hub": null,
       "direct": "https://v2.animesultra.org/",
       "source": "curated_user_registry",
-      "schema_notes": "Current AnimesUltra runtime terminal is v2.animesultra.org; ww.animesultra.org and animesultra.com are stale for the reconstructed DLE/full-story chain.",
+      "schema_notes": "Historical explicit-current candidate; repeated Domain failures must trigger rediscovery instead of keeping this URL indefinitely.",
       "aliases": [
         "animesultra"
       ],
@@ -71,14 +71,16 @@
           "purpose": "Fallback discovery when curated sources fail"
         }
       ],
-      "search_confirmation_runs": 2,
+      "search_confirmation_runs": 3,
       "direct_authority": "explicit_current",
       "direct_authority_source": "current-indexed-provider-terminal-and-NiakVIO-official-site",
       "direct_authority_observed_at": "2026-09-19",
       "blocked_hosts": [
         "ww.animesultra.org",
         "animesultra.com"
-      ]
+      ],
+      "legacy_search_refresh": true,
+      "search_role": "historical-supplementary"
     },
     "animevostfr": {
       "id": "animevostfr",
@@ -933,14 +935,18 @@
       "manifest_status": "Actif",
       "category": "International",
       "hub": null,
-      "direct": null,
+      "direct": "https://persianstremio.vercel.app/",
       "source": "curated_user_registry",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "Structured Stremio API runtime is the primary authority; web search is only supplementary address discovery.",
       "aliases": [
         "persianstremio"
       ],
-      "direct_candidates": [],
-      "allowed_terminal_hosts": [],
+      "direct_candidates": [
+        "https://persianstremio.vercel.app/"
+      ],
+      "allowed_terminal_hosts": [
+        "persianstremio.vercel.app"
+      ],
       "search_queries": [
         "\"PersianStremio\" official domain"
       ],
@@ -952,7 +958,11 @@
           "purpose": "Fallback discovery when curated sources fail"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 3,
+      "legacy_search_refresh": true,
+      "search_role": "historical-supplementary",
+      "direct_authority": "structured_runtime_seed",
+      "direct_authority_source": "provider-overrides official_site+official_api"
     },
     "vidfast": {
       "id": "vidfast",
@@ -1066,7 +1076,9 @@
           "purpose": "Fallback discovery when curated sources fail"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 3,
+      "legacy_search_refresh": true,
+      "search_role": "historical-supplementary"
     },
     "hindmoviez": {
       "id": "hindmoviez",
@@ -1542,12 +1554,12 @@
     "animetsu": {
       "id": "animetsu",
       "name": "Animetsu",
-      "manifest_status": "Actif",
+      "manifest_status": "Désactivé",
       "category": "International / Anime",
       "hub": "https://everythingmoe.com/s/animetsu",
       "direct": "https://animetsu.live/",
       "source": "curated_user_registry",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "EverythingMoe moved Animetsu to its graveyard in July 2026. Keep historical direct values only for forensic rediscovery; do not treat them as current authority.",
       "aliases": [
         "animetsu"
       ],
@@ -1567,7 +1579,9 @@
           "type": "hub",
           "url": "https://everythingmoe.com/s/animetsu",
           "priority": 100,
-          "purpose": "Authoritative address reference"
+          "purpose": "Authoritative directory now marks provider removed/broken",
+          "source_status": "removed",
+          "source_status_observed_at": "2026-07-08"
         },
         {
           "type": "search",
@@ -1576,7 +1590,11 @@
           "purpose": "Fallback discovery when curated sources fail"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 3,
+      "hub_status": "removed",
+      "activation_eligible": false,
+      "legacy_search_refresh": true,
+      "search_role": "historical-supplementary"
     },
     "dooflix": {
       "id": "dooflix",
@@ -2170,17 +2188,22 @@
     "showbox": {
       "id": "showbox",
       "name": "ShowBox",
-      "manifest_status": "Désactivé",
+      "manifest_status": "Actif",
       "category": "International",
       "hub": null,
       "direct": null,
       "source": "curated_user_registry",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "Historical provider: showbox.media is a current runtime candidate verified independently; search remains supplementary and must not publish by ranking alone.",
       "aliases": [
         "showbox"
       ],
-      "direct_candidates": [],
-      "allowed_terminal_hosts": [],
+      "direct_candidates": [
+        "https://www.showbox.media/"
+      ],
+      "allowed_terminal_hosts": [
+        "showbox.media",
+        "www.showbox.media"
+      ],
       "search_queries": [
         "\"ShowBox\" official streaming site"
       ],
@@ -2192,7 +2215,9 @@
           "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 3,
+      "legacy_search_refresh": true,
+      "search_role": "historical-supplementary"
     },
     "castle": {
       "id": "castle",
@@ -2546,7 +2571,9 @@
           "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 3,
+      "legacy_search_refresh": true,
+      "search_role": "historical-supplementary"
     },
     "vidnest": {
       "id": "vidnest",
@@ -3182,6 +3209,37 @@
         }
       ],
       "search_confirmation_runs": 2
+    },
+    "fullanime": {
+      "id": "fullanime",
+      "name": "FullAnime",
+      "manifest_status": "Désactivé",
+      "category": "Francophone / Anime",
+      "hub": null,
+      "direct": null,
+      "source": "historical_provider_registry",
+      "schema_notes": "Historical provider retained for bounded rediscovery only; generic name makes search low-confidence and never sufficient by itself.",
+      "aliases": [
+        "fullanime",
+        "full anime"
+      ],
+      "direct_candidates": [],
+      "allowed_terminal_hosts": [],
+      "search_queries": [
+        "\"FullAnime\" anime streaming official site"
+      ],
+      "sources": [
+        {
+          "type": "search",
+          "query": "\"FullAnime\" anime streaming official site",
+          "priority": 15,
+          "purpose": "Historical supplementary discovery only; requires independent provider/runtime identity proof"
+        }
+      ],
+      "search_confirmation_runs": 3,
+      "legacy_search_refresh": true,
+      "search_role": "historical-supplementary",
+      "activation_eligible": false
     }
   },
   "resolution_policy": {
