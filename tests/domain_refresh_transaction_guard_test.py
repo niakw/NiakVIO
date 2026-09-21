@@ -143,6 +143,10 @@ lego_before = {
 lego_after = copy.deepcopy(lego_before)
 lego_after["provider_patches"]["demo"]["official_site"] = "https://new.example"
 lego_after["provider_patches"]["demo"]["provider_lego_options"]["scripts/provider_patches/demo.py"]["base"] = "https://new.example/path?q=1"
+lego_hubs = copy.deepcopy(before_hubs)
+lego_hubs["providers"]["demo"]["direct"] = "https://new.example/"
+lego_hubs["providers"]["demo"]["direct_candidates"] = ["https://new.example/", "https://old.example/"]
+lego_hubs["providers"]["demo"]["allowed_terminal_hosts"] = ["new.example", "old.example"]
 lego_report = {
     "providers": {
         "demo": {
@@ -160,8 +164,8 @@ lego_report = {
 lego_result = validate(
     lego_before,
     lego_after,
-    before_hubs,
-    copy.deepcopy(before_hubs),
+    lego_hubs,
+    copy.deepcopy(lego_hubs),
     before_history,
     lego_report,
     {"changed": ["demo"], "registry_changed": []},
@@ -174,8 +178,8 @@ try:
     validate(
         lego_before,
         lego_bad,
-        before_hubs,
-        copy.deepcopy(before_hubs),
+        lego_hubs,
+        copy.deepcopy(lego_hubs),
         before_history,
         lego_report,
         {"changed": ["demo"], "registry_changed": []},
