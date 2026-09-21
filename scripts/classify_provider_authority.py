@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from datetime import datetime, timezone
 from typing import Any
 from urllib.parse import urlsplit
 
@@ -119,6 +120,27 @@ def backend_urls(patch: dict[str, Any]) -> list[str]:
             if http_url(value):
                 values.append(str(value).rstrip("/"))
     return list(dict.fromkeys(values))
+
+
+def fresh_history_authority(history: dict[str, Any], max_age_days: int = 3) -> bool:
+    current = history.get("current") if isinstance(history.get("current"), dict) else {}
+    stamp = str(current.get("last_seen") or "").strip()
+    if not stamp:
+        return False
+    try:
+        seen = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    if seen.tzinfo is None:
+        seen = seen.replace(tzinfo=timezone.utc)
+    age = datetime.now(timezone.utc) - seen.astimezone(timezone.utc)
+    return age.total_seconds() >= 0 and age.total_seconds() <= max_age_days * 86400
+
+
+def has_positive_route_prior(patch: dict[str, Any]) -> bool:
+    proof = patch.get("route_proof") if isinstance(patch.get("route_proof"), dict) else {}
+    last = proof.get("lastRepairProbe") if isinstance(proof.get("lastRepairProbe"), dict) else {}
+    return bool(last.get("positiveExecutionEvidence")) or int(proof.get("provenRouteCount") or 0) > 0
 
 
 def authority_failures(history: dict[str, Any]) -> int:
@@ -247,6 +269,32 @@ def classify(
         }
 
     if capability in SITE_DEPENDENT_CAPABILITIES or not capability:
+        current = history.get("current") if isinstance(history.get("current"), dict) else {}
+        current_url = str(current.get("url") or "").rstrip("/")
+        direct_candidates = {str(value or "").rstrip("/") for value in registry.get("direct_candidates") or [] if http_url(value)}
+        if failures == 0 and fresh_history_authority(history):
+            if current_url and current_url in direct_candidates:
+                reasons.append("fresh_curated_candidate_runtime_observation")
+                return {
+                    "provider": provider,
+                    "action": "KEEP_LIVE_CANDIDATE",
+                    "repairEligible": True,
+                    "confidence": "medium",
+                    "authorityClass": "fresh-curated-candidate",
+                    "failureCount": failures,
+                    "reasons": reasons,
+                }
+            if registry.get("legacy_search_refresh") is True and has_positive_route_prior(patch):
+                reasons.extend(["fresh_lkg_observation", "existing_positive_route_prior"])
+                return {
+                    "provider": provider,
+                    "action": "KEEP_LKG_COMBO",
+                    "repairEligible": True,
+                    "confidence": "medium",
+                    "authorityClass": "historical-combined-evidence",
+                    "failureCount": failures,
+                    "reasons": reasons,
+                }
         if failures >= 2:
             reasons.extend(["no_authoritative_route_source", "repeated_domain_failure"])
             return {
