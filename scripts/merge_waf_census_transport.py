@@ -73,6 +73,12 @@ def _refresh_authority_rows(
         ))
         row.update(fields)
         status = str(row.get("status") or "")
+        if census._lifecycle_disabled(fields):
+            row["underlyingStatus"] = status
+            status = "DISABLED"
+            row["status"] = status
+            row["color"] = census.STATUS_META[status][0]
+            row["brainCheckRequired"] = False
         row["statusRepairEligible"] = census.is_repair_eligible_status(status)
         row["repairEligible"] = bool(
             row["statusRepairEligible"] and fields["authorityRepairEligible"]
@@ -183,6 +189,8 @@ def _post_harness_repair_state(
     if str(diagnostic.get("classification") or "") not in {
         "native-policy-reachable",
         "residential-exit-native-reachable",
+        "github-native-route-reachable",
+        "residential-native-route-reachable",
     }:
         return None
     if not replay_rows:
@@ -211,7 +219,19 @@ def _post_harness_repair_state(
         "provider_network_timeout",
     }
     if stages & explicit_network:
-        return "PROVIDER NETWORK BLOCKED"
+        # Native-like transport already reached the provider route. At this
+        # point "network blocked" is no longer causal; fall back to the deepest
+        # provider proof so the case returns to normal Brain repair.
+        depths = {
+            str(value or "").split("=", 1)[-1].strip().casefold()
+            for value in row.get("evidenceDepth") or []
+            if str(value or "").strip()
+        }
+        if "chain_reached" in depths:
+            return "CHAIN REACHED"
+        if "lookup_only" in depths or row.get("routeProof"):
+            return "ROUTE PROVEN"
+        return "NO PROOF"
 
     normal_zero = {
         "provider_network_zero_result",
@@ -294,6 +314,18 @@ def merge_transport(
         for field in census.TRANSPORT_OVERLAY_ROW_FIELDS:
             row.pop(field, None)
         provider_replay_rows = replay_by_provider.get(provider) or []
+        if row.get("authorityRepairEligible") is False and census._lifecycle_disabled(row):
+            row["status"] = "DISABLED"
+            row["color"] = census.STATUS_META["DISABLED"][0]
+            row["brainCheckRequired"] = False
+            row["statusRepairEligible"] = False
+            row["repairEligible"] = False
+            row["action"] = census._authority_action(
+                "DISABLED",
+                str(row.get("harnessTransportClass") or "not-applicable"),
+                row,
+            )
+            continue
         if provider_replay_rows:
             verified_lanes = sorted({
                 str(value.get("lane") or "").strip().casefold()
@@ -354,6 +386,31 @@ def merge_transport(
                 row["networkDifferentialClass"] = differential["classification"]
                 row["networkDifferentialEvidence"] = list(differential["evidence"])
                 network_changed.append(provider)
+            if provider not in replay_promoted:
+                repair_state = _post_harness_repair_state(row, differential, provider_replay_rows)
+                if repair_state:
+                    row["status"] = repair_state
+                    row["color"] = census.STATUS_META[repair_state][0]
+                    row["brainCheckRequired"] = True
+                    authority_allowed = row.get("authorityRepairEligible") is not False
+                    row["statusRepairEligible"] = census.is_repair_eligible_status(repair_state)
+                    row["repairEligible"] = bool(row["statusRepairEligible"] and authority_allowed)
+                    row["action"] = (
+                        census._action(repair_state)
+                        if authority_allowed
+                        else census._authority_action(
+                            repair_state,
+                            str(differential.get("classification") or "not-applicable"),
+                            row,
+                        )
+                    )
+                    row["testedThisRun"] = True
+                    row["residentialProviderReplayReclassified"] = True
+                    replay_reclassified.add(provider)
+                    if row["repairEligible"]:
+                        replay_repairable.add(provider)
+                    changed.append(provider)
+                    continue
         if provider not in allowed:
             continue
         diagnostic = census.harness_transport_diagnostic(waf, provider)
