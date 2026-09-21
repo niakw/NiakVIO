@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35552164417-post-repair",
-  "sourceTriggerSha": "deedc31b2b54b35559b12ea437dbdbcb608ddeb0",
-  "unresolvedProviderCount": 17,
+  "sourceRunId": "35591042153-post-repair",
+  "sourceTriggerSha": "f176c2d62ca8f981d9dd3e2097fd85451ed0461d",
+  "unresolvedProviderCount": 16,
   "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
@@ -11,36 +11,6 @@
     "providerLocalRepair": "exception path only"
   },
   "groups": [
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver",
-        "wookafr-current-multiplayer-v2"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain",
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "native-policy-inconclusive",
-        "native-policy-reachable",
-        "residential-exit-all-challenged"
-      ],
-      "providerCount": 3,
-      "providers": [
-        "flemmix",
-        "fullanime",
-        "wookafr"
-      ],
-      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
     {
       "groupId": "transport|mixed_embed_resolver",
       "repairScope": "transport",
@@ -92,6 +62,32 @@
       "providers": [
         "allwish",
         "moviesmod"
+      ],
+      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "native-policy-inconclusive",
+        "residential-exit-all-challenged"
+      ],
+      "providerCount": 2,
+      "providers": [
+        "flemmix",
+        "fullanime"
       ],
       "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
       "executionPolicy": "batch-first",
