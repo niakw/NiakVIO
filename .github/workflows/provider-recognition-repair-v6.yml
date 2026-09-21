@@ -35,7 +35,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: provider-repair-main
+  group: provider-repair-main-v2
   # Repair owns its integrated GitHub/Tailscale transport qualification. Keep
   # Repair runs serialized with each other, but do not let observational
   # census/WAF pushes replace a pending Repair in GitHub's one-pending-run slot.
