@@ -333,31 +333,59 @@ def project_domain_owned_provider_legos(
     config_fix_id: str,
     patch: dict[str, Any],
 ) -> tuple[str, list[str]]:
-    """Project explicit domain migrations into provider-owned runtime blocks only.
+    """Project explicit domain migrations into the provider-owned pre-Core region.
 
-    This is deliberately not a provider-code rebuild. Existing runtime algorithms
-    stay byte-identical except for concrete host tokens already authorized by
-    runtime_domain_replacements/domain_substitutions. Core Lego is never touched.
+    Older published bundles can contain provider runtime code that predates managed
+    PROVIDER.* Lego ownership. Domain Refresh may still migrate an explicitly
+    authorized old host there, but it may not alter CONFIG (rebuilt separately)
+    or any byte at/after the global Core boundary.
     """
     rewrites = _domain_runtime_rewrites(patch)
     if not rewrites:
         return text, []
-    current = text
-    changed: list[str] = []
+
+    boundary = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
+    if text.count(boundary) != 1:
+        raise RuntimeError(
+            f"{provider_id}: domain runtime projection requires one Core boundary"
+        )
+    boundary_at = text.index(boundary)
+    config_span = owned_span(text, config_fix_id)
+    if config_span is None or config_span[1] > boundary_at:
+        raise RuntimeError(f"{provider_id}: CONFIG is not inside provider-owned pre-Core region")
+
+    region = text[:boundary_at]
+    core_suffix = text[boundary_at:]
     prefix = f"PROVIDER.{provider_id.upper()}."
-    for fix_id in validate_managed_fixes(current):
+    changed: list[str] = []
+    provider_fix_ids: list[str] = []
+    for fix_id in validate_managed_fixes(text):
         if fix_id == config_fix_id or not fix_id.startswith(prefix):
             continue
-        span = owned_span(current, fix_id)
-        if span is None:
+        span = owned_span(text, fix_id)
+        if span is None or span[1] > boundary_at:
             continue
-        before_block = current[span[0]:span[1]]
-        after_block = _replace_domain_host_tokens(before_block, rewrites)
-        if after_block == before_block:
-            continue
-        current = current[:span[0]] + after_block + current[span[1]:]
-        changed.append(fix_id)
-    return current, changed
+        provider_fix_ids.append(fix_id)
+        before_block = text[span[0]:span[1]]
+        if _replace_domain_host_tokens(before_block, rewrites) != before_block:
+            changed.append(fix_id)
+
+    # Detect historical raw runtime bytes separately so evidence can show when a
+    # pre-managed provider runtime needed a host-only projection.
+    raw_region = region
+    for fix_id in [config_fix_id, *provider_fix_ids]:
+        raw_region = strip_managed_fix(raw_region, fix_id)
+    if _replace_domain_host_tokens(raw_region, rewrites) != raw_region:
+        changed.append(f"PROVIDER.{provider_id.upper()}.RAW.DOMAIN")
+
+    # CONFIG contains the old host as a substitution key by design. Never rewrite
+    # that key. Project only the bytes before/after its managed span.
+    projected_region = (
+        _replace_domain_host_tokens(region[:config_span[0]], rewrites)
+        + region[config_span[0]:config_span[1]]
+        + _replace_domain_host_tokens(region[config_span[1]:], rewrites)
+    )
+    return projected_region + core_suffix, changed
 
 
 def _strip_domain_owned_blocks(text: str, fix_ids: list[str]) -> str:
@@ -633,10 +661,13 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
         after_span = owned_span(after, fix_id)
         if after_span is None:
             raise RuntimeError(f"{provider_id}: CONFIG span lost")
-        allowed_fix_ids = [fix_id, *runtime_fix_ids]
-        if _strip_domain_owned_blocks(before, allowed_fix_ids) != _strip_domain_owned_blocks(after, allowed_fix_ids):
+        expected_runtime_projection, _ = project_domain_owned_provider_legos(
+            before, provider_id, fix_id, patch
+        )
+        expected_runtime_projection = allmat.minimize_text(expected_runtime_projection).text
+        if strip_managed_fix(expected_runtime_projection, fix_id) != strip_managed_fix(after, fix_id):
             raise RuntimeError(
-                f"{provider_id}: domain refresh changed bytes outside domain-owned Provider Lego"
+                f"{provider_id}: domain refresh changed bytes beyond CONFIG + authorized provider host projection"
             )
 
         raw = after.encode("utf-8")
