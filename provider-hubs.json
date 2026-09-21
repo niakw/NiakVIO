@@ -2189,12 +2189,12 @@
     "showbox": {
       "id": "showbox",
       "name": "ShowBox",
-      "manifest_status": "Actif",
+      "manifest_status": "Désactivé",
       "category": "International",
       "hub": null,
-      "direct": "https://www.showbox.media/",
-      "source": "curated_user_registry",
-      "schema_notes": "Historical provider: showbox.media is a current runtime candidate verified independently; search remains supplementary and must not publish by ranking alone.",
+      "direct": null,
+      "source": "historical_provider_registry",
+      "schema_notes": "Historical provider retained for bounded rediscovery only. No public authoritative hub/source is currently qualified; showbox.media is retained as a forensic candidate and search alone must not reactivate it.",
       "aliases": [
         "showbox"
       ],
@@ -2213,12 +2213,14 @@
           "type": "search",
           "query": "\"ShowBox\" official streaming site",
           "priority": 25,
-          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+          "purpose": "Historical supplementary discovery only; private Telegram/search results do not establish activation authority"
         }
       ],
       "search_confirmation_runs": 3,
       "legacy_search_refresh": true,
-      "search_role": "historical-supplementary"
+      "search_role": "historical-supplementary",
+      "activation_eligible": false,
+      "manual_off_reason": "manual_off_no_current_authority_search_only"
     },
     "castle": {
       "id": "castle",
