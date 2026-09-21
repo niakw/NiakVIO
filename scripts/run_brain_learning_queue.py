@@ -599,10 +599,37 @@ def main() -> int:
         load_json(ROOT / "automation" / "brain-repair-memory.json", {}),
         load_json(ROOT / "engine_v2" / "config" / "brain-policy.json", {}),
     )
-    repair_deferred = [
-        provider_id for provider_id in repair_deferred
+    census = load_json(ROOT / "automation" / "provider-census-status.json", {})
+    raw_census_repair = census.get("repairQueue") if isinstance(census, dict) else None
+    census_repair_authoritative = isinstance(raw_census_repair, list)
+    census_repair = [
+        provider_id
+        for provider_id in unique(raw_census_repair or [])
         if provider_id in info_by_id and provider_id in staged_candidates
     ]
+    census_repair_set = set(census_repair)
+    if census_repair_authoritative:
+        # Current census evidence outranks historical experiment debt. A provider
+        # that recovered to FULL/PARTIAL must not be reopened solely because an
+        # old signature exhausted its variants. Conversely every current Repair
+        # target deserves early Learning attention even before that signature
+        # accumulates all historical variants.
+        repair_deferred = [
+            provider_id for provider_id in repair_deferred
+            if provider_id in census_repair_set
+        ]
+    else:
+        # Fail safe when no census authority is available: old negative memory may
+        # prioritize only providers that are still anomalous in this Learning
+        # observation, never a currently healthy provider.
+        repair_deferred = [
+            provider_id for provider_id in repair_deferred
+            if provider_id in info_by_id
+            and provider_id in staged_candidates
+            and str(info_by_id[provider_id].get("status") or "") != "healthy"
+        ]
+        census_repair = list(repair_deferred)
+        census_repair_set = set(census_repair)
     repair_deferred_set = set(repair_deferred)
     if not args.provider and repair_deferred:
         # New Repair evidence reopens a provider even if an older Learning cycle
@@ -625,7 +652,7 @@ def main() -> int:
     if not args.provider:
         # Clean reconstruction debt remains first; exhausted Repair signatures
         # are next and outrank routine anomaly/healthy cycling.
-        priority = unique([*reconstruction_required, *repair_deferred])
+        priority = unique([*reconstruction_required, *census_repair, *repair_deferred])
         order = [
             *[provider_id for provider_id in priority if provider_id in info_by_id and provider_id in staged_candidates],
             *[provider_id for provider_id in order if provider_id not in set(priority)],
@@ -634,6 +661,9 @@ def main() -> int:
     queue["deferredRepairProviders"] = repair_deferred
     queue["deferredRepairProviderCount"] = len(repair_deferred)
     queue["deferredRepairReason"] = "repair_experiment_variants_exhausted_new_strategy_required"
+    queue["censusRepairProviders"] = census_repair
+    queue["censusRepairProviderCount"] = len(census_repair)
+    queue["censusRepairAuthority"] = "provider-census-status.json" if census_repair_authoritative else "learning-current-observation-fallback"
     queue["cleanReconstructionRequiredProviders"] = reconstruction_required
     queue["cleanReconstructionRequiredCount"] = len(reconstruction_required)
     queue["cleanReconstructionAuthoringPolicy"] = "niakvio-owned-v2"
