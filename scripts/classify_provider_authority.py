@@ -1,0 +1,382 @@
+#!/usr/bin/env python3
+"""Classify whether a provider has enough current network authority for Repair.
+
+This gate separates address/identity discovery from runtime extraction repair.
+Search remains useful supplementary evidence for the historical catalogue, but a
+search result by itself never grants Repair/publication authority.
+
+Safe-disable decisions are deliberately narrow:
+* an already-manual-off provider stays off;
+* an authoritative registry source explicitly marked removed/dead may disable a
+  site-dependent provider when no independent API/backend authority exists;
+* a site-dependent provider with no authoritative route source is rediscovery-
+  blocked first, and is disabled only after repeated persisted Domain failures.
+
+API/embed/backend-driven providers may remain repairable without a homepage when
+their structured backend authority is explicit.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+from typing import Any
+from urllib.parse import urlsplit
+
+ROOT = Path(__file__).resolve().parents[1]
+HUBS = ROOT / "provider-hubs.json"
+OVERRIDES = ROOT / "provider-overrides.json"
+MANIFEST = ROOT / "manifest.json"
+HISTORY = ROOT / "provider-domain-history.json"
+OUTPUT = ROOT / "automation/provider-authority-status.json"
+
+REMOVED_SOURCE_STATES = {"removed", "dead", "retired", "graveyard", "compromised"}
+SITE_DEPENDENT_CAPABILITIES = {"html_scraper", "mixed_embed_resolver", "official_domain_hub"}
+API_CAPABILITIES = {"api_stream_resolver", "api_resolver", "stremio_api"}
+AUTHORITY_SOURCE_TYPES = {"hub", "redirect", "telegram_public"}
+DISABLED_STATUS = {"désactivé", "desactive", "disabled", "inactif", "inactive"}
+
+
+def load(path: Path, default: Any) -> Any:
+    if not path.exists():
+        return default
+    value = json.loads(path.read_text(encoding="utf-8"))
+    return value
+
+
+def write(path: Path, value: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def cid(value: object) -> str:
+    return str(value or "").strip().casefold().replace("_", "-")
+
+
+def http_url(value: object) -> bool:
+    raw = str(value or "").strip()
+    if not raw.startswith(("http://", "https://")):
+        return False
+    try:
+        parsed = urlsplit(raw)
+    except ValueError:
+        return False
+    return bool(parsed.hostname)
+
+
+def source_state(row: dict[str, Any]) -> str:
+    return str(row.get("source_status") or row.get("status") or "").strip().casefold()
+
+
+def active_authority_sources(registry: dict[str, Any]) -> list[dict[str, Any]]:
+    out = []
+    for row in registry.get("sources") or []:
+        if not isinstance(row, dict):
+            continue
+        if str(row.get("type") or "").casefold() not in AUTHORITY_SOURCE_TYPES:
+            continue
+        if not http_url(row.get("url")):
+            continue
+        if source_state(row) in REMOVED_SOURCE_STATES:
+            continue
+        out.append(row)
+    return out
+
+
+def removed_authority_sources(registry: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        row for row in registry.get("sources") or []
+        if isinstance(row, dict)
+        and str(row.get("type") or "").casefold() in AUTHORITY_SOURCE_TYPES
+        and source_state(row) in REMOVED_SOURCE_STATES
+    ]
+
+
+def backend_urls(patch: dict[str, Any]) -> list[str]:
+    values: list[str] = []
+    for key in ("official_api",):
+        value = patch.get(key)
+        if http_url(value):
+            values.append(str(value).rstrip("/"))
+    fixed = patch.get("fixed_endpoint") if isinstance(patch.get("fixed_endpoint"), dict) else {}
+    for key in ("api", "base", "url"):
+        value = fixed.get(key)
+        if http_url(value):
+            values.append(str(value).rstrip("/"))
+    recipe = patch.get("api_recipe") if isinstance(patch.get("api_recipe"), dict) else {}
+    for key in ("api", "base", "url"):
+        value = recipe.get(key)
+        if http_url(value):
+            values.append(str(value).rstrip("/"))
+    for options in (patch.get("provider_lego_options") or {}).values():
+        if not isinstance(options, dict):
+            continue
+        for key in ("api", "db", "api_base", "apiBase", "backend", "endpoint"):
+            value = options.get(key)
+            if http_url(value):
+                values.append(str(value).rstrip("/"))
+        for value in options.get("fallbackBases") or []:
+            if http_url(value):
+                values.append(str(value).rstrip("/"))
+    return list(dict.fromkeys(values))
+
+
+def authority_failures(history: dict[str, Any]) -> int:
+    row = history.get("authority_failures") if isinstance(history.get("authority_failures"), dict) else {}
+    return max(0, int(row.get("consecutive") or 0))
+
+
+def has_search(registry: dict[str, Any]) -> bool:
+    if any(str(value or "").strip() for value in registry.get("search_queries") or []):
+        return True
+    return any(
+        isinstance(row, dict) and str(row.get("type") or "").casefold() == "search"
+        for row in registry.get("sources") or []
+    )
+
+
+def classify(
+    provider: str,
+    manifest_row: dict[str, Any],
+    registry: dict[str, Any],
+    patch: dict[str, Any],
+    history: dict[str, Any],
+) -> dict[str, Any]:
+    enabled = manifest_row.get("enabled") is not False
+    manual_off = str(patch.get("manual_off_reason") or registry.get("manual_off_reason") or "").strip()
+    capability = str(patch.get("capability") or "").strip().casefold()
+    backends = backend_urls(patch)
+    strong_sources = active_authority_sources(registry)
+    removed_sources = removed_authority_sources(registry)
+    direct = str(registry.get("direct") or "").strip()
+    explicit_current = str(registry.get("direct_authority") or "").strip().casefold() == "explicit_current"
+    failures = authority_failures(history)
+    search = has_search(registry)
+    legacy_search = registry.get("legacy_search_refresh") is True
+    official_site = str(patch.get("official_site") or "").strip()
+
+    reasons: list[str] = []
+    if manual_off or not enabled:
+        reasons.append(manual_off or "already_disabled")
+        return {
+            "provider": provider,
+            "action": "KEEP_DISABLED",
+            "repairEligible": False,
+            "confidence": "terminal",
+            "authorityClass": "disabled",
+            "failureCount": failures,
+            "reasons": reasons,
+        }
+
+    backend_authority = bool(backends) and (
+        capability in API_CAPABILITIES
+        or bool(patch.get("api_recipe"))
+        or bool(patch.get("fixed_endpoint"))
+        or any("/stream/" in str(route) for route in patch.get("learned_routes") or [])
+        or any("/embed/" in str(route) for route in patch.get("documented_routes") or [])
+    )
+    if backend_authority:
+        reasons.append("structured_backend_authority")
+        return {
+            "provider": provider,
+            "action": "KEEP_BACKEND",
+            "repairEligible": True,
+            "confidence": "high",
+            "authorityClass": "api-or-backend",
+            "failureCount": failures,
+            "backendUrls": backends,
+            "reasons": reasons,
+        }
+
+    if removed_sources and not strong_sources:
+        reasons.append("authoritative_source_removed")
+        return {
+            "provider": provider,
+            "action": "DISABLE_SOURCE_REMOVED",
+            "repairEligible": False,
+            "confidence": "high",
+            "authorityClass": "source-removed",
+            "failureCount": failures,
+            "reasons": reasons,
+        }
+
+    if strong_sources:
+        reasons.append("authoritative_route_source")
+        return {
+            "provider": provider,
+            "action": "KEEP_ROUTE_AUTHORITY",
+            "repairEligible": True,
+            "confidence": "high",
+            "authorityClass": "hub-or-redirect",
+            "failureCount": failures,
+            "reasons": reasons,
+        }
+
+    if http_url(direct):
+        if explicit_current and failures < 2:
+            reasons.append("explicit_current_direct")
+            return {
+                "provider": provider,
+                "action": "KEEP_DIRECT",
+                "repairEligible": True,
+                "confidence": "medium",
+                "authorityClass": "direct",
+                "failureCount": failures,
+                "reasons": reasons,
+            }
+        if failures >= 3 and capability in SITE_DEPENDENT_CAPABILITIES:
+            reasons.extend(["direct_repeatedly_unresolved", "site_dependent"])
+            return {
+                "provider": provider,
+                "action": "DISABLE_AUTHORITY_EXHAUSTED",
+                "repairEligible": False,
+                "confidence": "high",
+                "authorityClass": "stale-direct",
+                "failureCount": failures,
+                "reasons": reasons,
+            }
+        reasons.append("direct_requires_rediscovery")
+        return {
+            "provider": provider,
+            "action": "REDISCOVER_DIRECT",
+            "repairEligible": False,
+            "confidence": "low",
+            "authorityClass": "stale-direct",
+            "failureCount": failures,
+            "reasons": reasons,
+        }
+
+    if capability in SITE_DEPENDENT_CAPABILITIES or not capability:
+        if failures >= 2:
+            reasons.extend(["no_authoritative_route_source", "repeated_domain_failure"])
+            return {
+                "provider": provider,
+                "action": "DISABLE_AUTHORITY_EXHAUSTED",
+                "repairEligible": False,
+                "confidence": "high",
+                "authorityClass": "search-only-or-missing",
+                "failureCount": failures,
+                "reasons": reasons,
+            }
+        reasons.append("no_authoritative_route_source")
+        if search:
+            reasons.append("search_supplement_only")
+        if legacy_search:
+            reasons.append("historical_search_refresh_enabled")
+        if official_site:
+            reasons.append("published_site_is_lkg_only")
+        return {
+            "provider": provider,
+            "action": "REDISCOVER_SEARCH" if search else "REDISCOVER_MISSING_REGISTRY",
+            "repairEligible": False,
+            "confidence": "low",
+            "authorityClass": "search-only-or-missing",
+            "failureCount": failures,
+            "reasons": reasons,
+        }
+
+    reasons.append("no_specific_authority_rule")
+    return {
+        "provider": provider,
+        "action": "KEEP_DIAGNOSTIC",
+        "repairEligible": True,
+        "confidence": "low",
+        "authorityClass": "unknown",
+        "failureCount": failures,
+        "reasons": reasons,
+    }
+
+
+def apply_disable(
+    row: dict[str, Any],
+    registry: dict[str, Any],
+    patch: dict[str, Any],
+    action: str,
+) -> str:
+    reason = (
+        "auto_off_authoritative_source_removed"
+        if action == "DISABLE_SOURCE_REMOVED"
+        else "auto_off_domain_authority_exhausted"
+    )
+    row["enabled"] = False
+    row["disabledReason"] = reason
+    manifest_overrides = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
+    manifest_overrides["enabled"] = False
+    patch["manifest_overrides"] = manifest_overrides
+    patch["route_data_state"] = "off"
+    patch["activation_eligible"] = False
+    patch["manual_off_reason"] = reason
+    registry["manifest_status"] = "Désactivé"
+    registry["activation_eligible"] = False
+    registry["manual_off_reason"] = reason
+    return reason
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output", type=Path, default=OUTPUT)
+    parser.add_argument("--apply-safe-disables", action="store_true")
+    args = parser.parse_args()
+
+    hubs = load(HUBS, {"providers": {}})
+    overrides = load(OVERRIDES, {"provider_patches": {}})
+    manifest = load(MANIFEST, {"scrapers": []})
+    history = load(HISTORY, {"providers": {}})
+    registries = hubs.setdefault("providers", {})
+    patches = overrides.setdefault("provider_patches", {})
+    histories = history.get("providers") if isinstance(history.get("providers"), dict) else {}
+
+    rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
+    results: list[dict[str, Any]] = []
+    disabled_now: list[str] = []
+    for manifest_row in rows:
+        provider = cid(manifest_row.get("id"))
+        if not provider:
+            continue
+        registry = registries.get(provider) if isinstance(registries.get(provider), dict) else {}
+        patch = patches.get(provider) if isinstance(patches.get(provider), dict) else {}
+        hist = histories.get(provider) if isinstance(histories.get(provider), dict) else {}
+        result = classify(provider, manifest_row, registry, patch, hist)
+        if args.apply_safe_disables and result["action"] in {
+            "DISABLE_SOURCE_REMOVED", "DISABLE_AUTHORITY_EXHAUSTED"
+        } and manifest_row.get("enabled") is not False:
+            reason = apply_disable(manifest_row, registry, patch, result["action"])
+            registries[provider] = registry
+            patches[provider] = patch
+            disabled_now.append(provider)
+            result["appliedDisableReason"] = reason
+        results.append(result)
+
+    report = {
+        "schemaVersion": 1,
+        "authority": "provider-authority-arbiter-v1",
+        "policy": {
+            "searchRole": "historical-supplement-only",
+            "futureHubSearchDefault": False,
+            "repairRequiresAddressAuthorityForSiteDependentProviders": True,
+            "disableAfterConsecutiveDomainFailures": 2,
+            "staleDirectDisableAfterConsecutiveDomainFailures": 3,
+            "apiBackendMayOperateWithoutHomepage": True,
+        },
+        "providerCount": len(results),
+        "repairEligible": sorted(row["provider"] for row in results if row.get("repairEligible") is True),
+        "repairBlocked": sorted(row["provider"] for row in results if row.get("repairEligible") is not True),
+        "disabledNow": sorted(disabled_now),
+        "providers": results,
+    }
+    output = args.output if args.output.is_absolute() else ROOT / args.output
+    write(output, report)
+    if args.apply_safe_disables:
+        write(MANIFEST, manifest)
+        write(HUBS, hubs)
+        write(OVERRIDES, overrides)
+    print(
+        "FIELD_PROVIDER_AUTHORITY "
+        f"providers={len(results)} repair_eligible={len(report['repairEligible'])} "
+        f"blocked={len(report['repairBlocked'])} disabled_now={len(disabled_now)}"
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
