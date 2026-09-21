@@ -106,6 +106,85 @@ else:
     raise AssertionError("registry/config divergence must fail closed")
 
 
+# Provider-owned Lego site roots are executable domain DATA. A terminal rotation
+# may move only known site-root keys to the new host while preserving path/query.
+lego_patch = {
+    "official_site": "https://v2.animevostfr.example",
+    "provider_lego_options": {
+        "scripts/provider_patches/animevostfr_runtime_v1.py": {
+            "base": "https://v2.animevostfr.example/catalog?q=1",
+            "maxStreams": 6,
+        }
+    },
+}
+lego_fields = module.sync_patch_domain_authority(
+    lego_patch,
+    {"hub": ""},
+    "https://animevostfr.example",
+)
+assert "official_site" in lego_fields, lego_fields
+assert "provider_lego_options" in lego_fields, lego_fields
+assert lego_patch["provider_lego_options"]["scripts/provider_patches/animevostfr_runtime_v1.py"]["base"] == "https://animevostfr.example/catalog?q=1", lego_patch
+assert lego_patch["provider_lego_options"]["scripts/provider_patches/animevostfr_runtime_v1.py"]["maxStreams"] == 6, lego_patch
+
+lego_before = {
+    "provider_patches": {
+        "demo": {
+            "official_site": "https://old.example",
+            "provider_lego_options": {
+                "scripts/provider_patches/demo.py": {
+                    "base": "https://old.example/path?q=1",
+                    "maxStreams": 6,
+                }
+            },
+        }
+    }
+}
+lego_after = copy.deepcopy(lego_before)
+lego_after["provider_patches"]["demo"]["official_site"] = "https://new.example"
+lego_after["provider_patches"]["demo"]["provider_lego_options"]["scripts/provider_patches/demo.py"]["base"] = "https://new.example/path?q=1"
+lego_report = {
+    "providers": {
+        "demo": {
+            "status": "site_authoritative",
+            "official_site": "https://new.example",
+            "selected_source_type": "hub",
+            "site_candidates": [{
+                "url": "https://new.example",
+                "label": "Demo homepage",
+                "source_type": "hub",
+            }],
+        }
+    }
+}
+lego_result = validate(
+    lego_before,
+    lego_after,
+    before_hubs,
+    copy.deepcopy(before_hubs),
+    before_history,
+    lego_report,
+    {"changed": ["demo"], "registry_changed": []},
+)
+assert lego_result["changed"] == ["demo"], lego_result
+
+lego_bad = copy.deepcopy(lego_after)
+lego_bad["provider_patches"]["demo"]["provider_lego_options"]["scripts/provider_patches/demo.py"]["maxStreams"] = 8
+try:
+    validate(
+        lego_before,
+        lego_bad,
+        before_hubs,
+        copy.deepcopy(before_hubs),
+        before_history,
+        lego_report,
+        {"changed": ["demo"], "registry_changed": []},
+    )
+except AssertionError as exc:
+    assert "not Domain-owned site-root DATA" in str(exc), exc
+else:
+    raise AssertionError("Domain Refresh must reject non-domain Lego option mutation")
+
 # Stable official_site with a changed execution-domain mapping is still a real
 # Domain Refresh mutation and must be accounted as changed. This is the exact
 # shape that previously made 4khdhub appear as declared-but-not-actual.
