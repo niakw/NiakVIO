@@ -50,9 +50,10 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
-  group: niakvio-temp-current-bytes-full-provider-census
+  group: provider-census-waf-main
   # Preserve the exact-SHA census already running when the repair branch advances.
   # Newer commits queue behind it; evidence must record the SHA actually tested
   # rather than repeatedly cancelling long validation before it produces an artifact.
@@ -377,6 +378,15 @@ jobs:
           git add "automation/provider-repair-batch-plan-${run_id}.json" automation/provider-repair-batch-plan-latest.json
           git commit -m "ci(census): persist current bytes ${verified} from ${GITHUB_SHA::12}"
           git push origin HEAD:main
+
+          # Transport evidence is a serialized overlay on the freshly persisted
+          # census. Re-run the residential/Tailscale diagnostic after the ledger
+          # commit so a long census can never erase newer private-exit evidence.
+          if ! gh workflow run provider-waf-browser-session.yml --ref main; then
+            echo "FIELD_CENSUS_WAF_DISPATCH_FAILED nonfatal=true" >&2
+          else
+            echo "FIELD_CENSUS_WAF_DISPATCHED source_run=${GITHUB_RUN_ID}"
+          fi
 
 # PR_OBSERVABILITY_TRIGGER_20260919_R19_STATIC_FIXED
 
