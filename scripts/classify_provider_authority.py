@@ -32,6 +32,11 @@ HISTORY = ROOT / "provider-domain-history.json"
 OUTPUT = ROOT / "automation/provider-authority-status.json"
 
 REMOVED_SOURCE_STATES = {"removed", "dead", "retired", "graveyard", "compromised"}
+NON_PROVIDER_AUTHORITY_HOSTS = {
+    "api.themoviedb.org",
+    "v3-cinemeta.strem.io",
+    "arm.haglund.dev",
+}
 SITE_DEPENDENT_CAPABILITIES = {"html_scraper", "mixed_embed_resolver", "official_domain_hub"}
 API_CAPABILITIES = {"api_stream_resolver", "api_resolver", "stremio_api"}
 AUTHORITY_SOURCE_TYPES = {"hub", "redirect", "telegram_public"}
@@ -94,31 +99,31 @@ def removed_authority_sources(registry: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def backend_urls(patch: dict[str, Any]) -> list[str]:
+    """Return only explicit provider execution backends, never generic site fallbacks."""
+    # PROVIDER_AUTHORITY_BACKEND_SCOPE_V1
     values: list[str] = []
-    for key in ("official_api",):
-        value = patch.get(key)
-        if http_url(value):
-            values.append(str(value).rstrip("/"))
+
+    def add(value: object) -> None:
+        if not http_url(value):
+            return
+        url = str(value).rstrip("/")
+        hostname = (urlsplit(url).hostname or "").casefold()
+        if not hostname or hostname in NON_PROVIDER_AUTHORITY_HOSTS:
+            return
+        values.append(url)
+
+    add(patch.get("official_api"))
     fixed = patch.get("fixed_endpoint") if isinstance(patch.get("fixed_endpoint"), dict) else {}
     for key in ("api", "base", "url"):
-        value = fixed.get(key)
-        if http_url(value):
-            values.append(str(value).rstrip("/"))
+        add(fixed.get(key))
     recipe = patch.get("api_recipe") if isinstance(patch.get("api_recipe"), dict) else {}
     for key in ("api", "base", "url"):
-        value = recipe.get(key)
-        if http_url(value):
-            values.append(str(value).rstrip("/"))
+        add(recipe.get(key))
     for options in (patch.get("provider_lego_options") or {}).values():
         if not isinstance(options, dict):
             continue
         for key in ("api", "db", "api_base", "apiBase", "backend", "endpoint"):
-            value = options.get(key)
-            if http_url(value):
-                values.append(str(value).rstrip("/"))
-        for value in options.get("fallbackBases") or []:
-            if http_url(value):
-                values.append(str(value).rstrip("/"))
+            add(options.get(key))
     return list(dict.fromkeys(values))
 
 
@@ -190,8 +195,9 @@ def classify(
             "reasons": reasons,
         }
 
-    # backend_urls() only collects explicitly backend-shaped fields (api/db/
-    # fixed endpoint), never a generic site base. Their presence is therefore
+    # backend_urls() only collects explicit provider execution backends and
+    # excludes shared identity infrastructure / generic fallback site bases.
+    # Their presence is therefore
     # enough to establish backend authority even for mixed_embed_resolver.
     backend_authority = bool(backends)
     if backend_authority:
