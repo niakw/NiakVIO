@@ -183,6 +183,20 @@ def classify(
     official_site = str(patch.get("official_site") or "").strip()
 
     reasons: list[str] = []
+    # A curated/manual non-activation decision must be executable policy, not a
+    # label that leaves the provider enabled forever. Enabled providers with an
+    # explicit manual_off_reason enter the normal disabled-retention lifecycle.
+    if manual_off and enabled:
+        reasons.append(manual_off)
+        return {
+            "provider": provider,
+            "action": "DISABLE_MANUAL_POLICY",
+            "repairEligible": False,
+            "confidence": "terminal",
+            "authorityClass": "manual-off",
+            "failureCount": failures,
+            "reasons": reasons,
+        }
     if manual_off or not enabled:
         reasons.append(manual_off or "already_disabled")
         return {
@@ -393,11 +407,18 @@ def apply_disable(
     patch: dict[str, Any],
     action: str,
 ) -> str:
-    reason = (
-        "auto_off_authoritative_source_removed"
-        if action == "DISABLE_SOURCE_REMOVED"
-        else "auto_off_domain_authority_exhausted"
-    )
+    if action == "DISABLE_SOURCE_REMOVED":
+        reason = "auto_off_authoritative_source_removed"
+    elif action == "DISABLE_AUTHORITY_EXHAUSTED":
+        reason = "auto_off_domain_authority_exhausted"
+    elif action == "DISABLE_MANUAL_POLICY":
+        reason = str(
+            patch.get("manual_off_reason")
+            or registry.get("manual_off_reason")
+            or "manual_off_registry_nonactivable"
+        ).strip()
+    else:
+        raise ValueError(f"unsupported disable action: {action}")
     row["enabled"] = False
     row["disabledReason"] = reason
     manifest_overrides = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
@@ -438,7 +459,7 @@ def main() -> int:
         hist = histories.get(provider) if isinstance(histories.get(provider), dict) else {}
         result = classify(provider, manifest_row, registry, patch, hist)
         if args.apply_safe_disables and result["action"] in {
-            "DISABLE_SOURCE_REMOVED", "DISABLE_AUTHORITY_EXHAUSTED"
+            "DISABLE_SOURCE_REMOVED", "DISABLE_AUTHORITY_EXHAUSTED", "DISABLE_MANUAL_POLICY"
         } and manifest_row.get("enabled") is not False:
             reason = apply_disable(manifest_row, registry, patch, result["action"])
             registries[provider] = registry
@@ -457,6 +478,7 @@ def main() -> int:
             "disableAfterConsecutiveDomainFailures": 2,
             "staleDirectDisableAfterConsecutiveDomainFailures": 3,
             "apiBackendMayOperateWithoutHomepage": True,
+            "manualOffEntersDisabledRetentionImmediately": True,
         },
         "providerCount": len(results),
         "repairEligible": sorted(row["provider"] for row in results if row.get("repairEligible") is True),
