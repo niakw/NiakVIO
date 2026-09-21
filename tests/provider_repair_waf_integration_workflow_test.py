@@ -38,6 +38,7 @@ assert prepare < authority < pre_render < connect < merge < canonical
 # Tailscale is enhancement, never a prerequisite for Repair.
 connect_block=wf[connect:merge]
 assert "continue-on-error: true" in connect_block
+assert "timeout-minutes: 4" in connect_block
 assert "--unavailable-reason" in connect_block
 assert "tailscale-not-configured" in connect_block
 assert "tailscale-offline-or-unavailable" in connect_block
