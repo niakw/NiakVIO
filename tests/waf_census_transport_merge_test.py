@@ -475,4 +475,61 @@ canonical = canonical_rows[0]
 for field in mod.census.TRANSPORT_OVERLAY_ROW_FIELDS:
     assert field not in canonical, (field, canonical)
 
+# Transport overlay must project the *current* arbiter fields onto a carried
+# census row before rebuilding queues. This is the real ShowBox failure mode:
+# the old census still said REDISCOVER_SEARCH after lifecycle had already
+# disabled the provider on main.
+stale_authority_baseline = {
+    "repairQueue": [],
+    "authorityBlockedQueue": ["showbox-like"],
+    "authorityRediscoveryQueue": ["showbox-like"],
+    "lifecycleDisabledQueue": [],
+    "environmentQueue": [],
+    "harnessQueue": [],
+    "symptomaticProviders": ["showbox-like"],
+    "brainQueue": ["showbox-like"],
+    "providers": [{
+        "provider": "showbox-like",
+        "status": "ROUTE PROVEN",
+        "color": "🟪",
+        "brainCheckRequired": True,
+        "statusRepairEligible": True,
+        "repairEligible": False,
+        "authorityRepairEligible": False,
+        "authorityAction": "REDISCOVER_SEARCH",
+        "authorityClass": "unproven-direct-candidate",
+        "authorityConfidence": "low",
+        "authorityReasons": ["search_supplement_only"],
+        "harnessTransportClass": "not-applicable",
+        "action": "Domain/authority rediscovery required before Repair",
+    }],
+}
+current_authority = {
+    "providers": [{
+        "provider": "showbox-like",
+        "action": "DISABLE_MANUAL_POLICY",
+        "repairEligible": False,
+        "confidence": "terminal",
+        "authorityClass": "manual-off",
+        "reasons": ["manual_off_no_current_authority_search_only"],
+    }]
+}
+refreshed = mod.merge_transport(
+    stale_authority_baseline,
+    {"rows": []},
+    authority_status=current_authority,
+)
+refreshed_row = refreshed["providers"][0]
+assert refreshed_row["authorityAction"] == "DISABLE_MANUAL_POLICY", refreshed_row
+assert refreshed_row["authorityClass"] == "manual-off", refreshed_row
+assert refreshed_row["authorityConfidence"] == "terminal", refreshed_row
+assert refreshed_row["authorityRepairEligible"] is False, refreshed_row
+assert refreshed_row["repairEligible"] is False, refreshed_row
+assert "keep disabled" in refreshed_row["action"], refreshed_row
+assert refreshed["authorityRefreshedProviders"] == ["showbox-like"], refreshed
+assert refreshed["lifecycleDisabledQueue"] == ["showbox-like"], refreshed
+assert refreshed["authorityRediscoveryQueue"] == [], refreshed
+assert refreshed["authorityBlockedQueue"] == ["showbox-like"], refreshed
+assert refreshed["repairQueue"] == [], refreshed
+
 print("WAF census transport-only merge contract passed")
