@@ -42,6 +42,8 @@ assert "NUVIO_SKIP_ACTIVATION_PRESERVATION: '1'" not in text, "Domain Refresh is
 assert 'os.environ.get("NUVIO_SKIP_ACTIVATION_PRESERVATION") != "1"' in validator
 assert "FIELD_RELEASE_INTEGRITY activation_preservation=skipped owner=domain_refresh" in validator
 assert "provider_dns_preflight.mjs" in text
+assert 'print(lines[0] if lines else "")' in text
+assert 'splitlines()[0]' not in text
 assert "python scripts/audit_provider_v3_static.py --domain-only" in text
 assert text.count("python scripts/audit_provider_v3_static.py --domain-only") == 2
 assert "python scripts/audit_provider_v3_static.py\n" not in text
