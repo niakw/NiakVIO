@@ -1,6 +1,17 @@
 # NiakVIO — Recovery Memory
 
 
+## 2026-09-21 12:55 Europe/Paris — current Brain blockers revalidated; Repair preflight + Learning queue resilience fixed
+
+- Revalidated real repository state before changing code: `main` had advanced through bot census/lifecycle persistence to `f2dae880353e`; persisted Repair census from `cd2150c49388b` still reports `symptomatic=17 / repair=12`. Residential/Tailscale evidence is transport-only: WookaFR moved from harness-only to normal `CHAIN REACHED` repair debt, while the residential provider replay still has no raw/playable/verified provider-media promotion.
+- Latest canonical Repair run `35582300668` (SHA `cd2150c49388b`) never reached provider work. Its preflight passed Brain orchestration, causal intelligence, bounded exploration, multi-round attribution and accepted-program capture, then failed only in `brain_accepted_program_v3_compiler_test.py`. The test fixture already contained historical `search_request_plan` DATA but incorrectly asserted that this key was absent from the unchanged input object. The compiler itself already deep-copies its input. Fix `1335319fc2ce` replaces the impossible assertion with an input-immutability check; this run contributes no provider repair evidence.
+- Latest long Learning run `35575738318` (SHA `cd2150c49388b`) did reach the adaptive queue and processed the discovery superset. It failed when Frenchstream route refresh generated current terminal authority `fs27.lol` while staged/historical bytes still represented `french-stream.one`; `validate_override_pipeline.py` rejected that provider-specific intermediate state. Frenchstream is not a current /46 census row, so one historical/superset provider was able to abort learning for the rest of the catalogue.
+- Generic queue-resilience fix `652e99199dc5`: `refresh_stage_routes()` now returns structured success/failure evidence. A provider-local domain/profile/override validation failure is recorded as `stage_refresh_blocked`, persisted in `isolatedProviderRefreshFailures`, and retried without aborting the whole Learning superset. This does **not** declare the provider repaired and does not allow invalid staged bytes to proceed through Lab acceptance.
+- The same fix also closes a latent second-pass bug: the Lab-challenge route-search path called `refresh_stage_routes(stage, work_deadline)` without the required provider id. It now always calls `refresh_stage_routes(stage, work_deadline, provider_id)`. Contract `024703e872c0` requires both refresh sites to be provider-scoped and locks the isolation telemetry.
+- Next authority is a fresh canonical Provider Recognition Repair V6 from current `main`. It must first prove the compiler preflight is green, then produce real Repair/census evidence; any deferred Learning successor must prove that a Frenchstream-like refresh debt is isolated and that later providers continue to execute. Do not count the code changes themselves as provider repairs.
+
+
+
 ## 2026-09-20 16:05 Europe/Paris — WAF native/client sensitivity proven; census monotonicity restored; Brain v4 executable
 
 - WAF diagnostics run `35514374727` completed **SUCCESS** on tested SHA `2793cd7c6d74`: contracts, Chromium matrix, NuvioTV-policy OkHttp 4.12 helper, artifact upload and persistence all completed. Evidence across 12 WAF lanes is **7 browser content reached / 5 challenge persisted**.
