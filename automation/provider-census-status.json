@@ -628,7 +628,7 @@
       "harnessTransportClass": "browser-profile-only",
       "harnessTransportEvidence": [
         "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted",
-        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
+        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted"
       ]
     },
     {
@@ -1489,5 +1489,31 @@
     "moviesmod",
     "vostfree",
     "wookafr"
-  ]
+  ],
+  "harnessEvidenceRunId": "35549274925-waf-transport",
+  "harnessEvidenceSha": "c9cced4c5c7ae2293390e71fe72bbd37bc2857f1",
+  "harnessTransportUpdatedProviders": [
+    "allwish",
+    "animesalt",
+    "animevost-fr",
+    "flemmix",
+    "fullanime",
+    "moviesmod",
+    "vostfree",
+    "wookafr"
+  ],
+  "residentialExitNodeEvidence": {
+    "enabled": true,
+    "available": false,
+    "profile": "tailscale-residential-exit",
+    "matchedProviderLanes": 0,
+    "reason": "tailscale-connect-failed",
+    "privacy": {
+      "exitNodeNamePersisted": false,
+      "tailscaleAddressPersisted": false,
+      "residentialPublicIpPersisted": false,
+      "responseBodiesPersisted": false,
+      "cookiesPersisted": false
+    }
+  }
 }

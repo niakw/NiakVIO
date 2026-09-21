@@ -181,7 +181,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 12247
+      "durationMs": 15887
     },
     {
       "provider": "allwish",
@@ -306,7 +306,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 12247
+      "durationMs": 15508
     },
     {
       "provider": "animesalt",
@@ -433,7 +433,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 13071
+      "durationMs": 16044
     },
     {
       "provider": "animevost-fr",
@@ -560,7 +560,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 28590
+      "durationMs": 20855
     },
     {
       "provider": "flemmix",
@@ -685,7 +685,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 8966
+      "durationMs": 9926
     },
     {
       "provider": "flemmix",
@@ -810,7 +810,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 8482
+      "durationMs": 10028
     },
     {
       "provider": "fullanime",
@@ -935,7 +935,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 11036
+      "durationMs": 11346
     },
     {
       "provider": "moviesmod",
@@ -1062,7 +1062,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 12948
+      "durationMs": 11938
     },
     {
       "provider": "moviesmod",
@@ -1169,7 +1169,7 @@
           "redirects": "HTTP+SSL enabled",
           "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
         },
-        "outcome": "okhttp_jvm_challenge_persisted",
+        "outcome": "okhttp_jvm_inconclusive",
         "attemptCount": 2,
         "attempts": [
           {
@@ -1179,8 +1179,8 @@
           },
           {
             "attempt": 2,
-            "outcome": "okhttp_jvm_challenge_persisted",
-            "status": 200
+            "outcome": "okhttp_jvm_inconclusive",
+            "status": 429
           }
         ],
         "exitCode": 0
@@ -1189,7 +1189,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 9777
+      "durationMs": 9902
     },
     {
       "provider": "vostfree",
@@ -1316,7 +1316,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 10419
+      "durationMs": 12760
     },
     {
       "provider": "wookafr",
@@ -1422,7 +1422,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 57903
+      "durationMs": 55912
     },
     {
       "provider": "wookafr",
@@ -1528,7 +1528,21 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 56595
+      "durationMs": 55070
     }
-  ]
+  ],
+  "residentialExitNodeEvidence": {
+    "enabled": true,
+    "available": false,
+    "profile": "tailscale-residential-exit",
+    "matchedProviderLanes": 0,
+    "reason": "tailscale-connect-failed",
+    "privacy": {
+      "exitNodeNamePersisted": false,
+      "tailscaleAddressPersisted": false,
+      "residentialPublicIpPersisted": false,
+      "responseBodiesPersisted": false,
+      "cookiesPersisted": false
+    }
+  }
 }
