@@ -121,6 +121,7 @@ with tempfile.TemporaryDirectory() as directory:
 
     routes=memory.provider_routes("demo",path=path)
     assert routes==["/search?q={query}","/api/file/"]
+    assert memory.provider_user_agent("demo",path=path)=="NiakVIO-Positive-Memory-Test/1.0"
 
     recipes=memory.provider_request_recipes("demo",path=path)
     assert any(row["role"]=="search" and row["route"]=="/search?q={query}" for row in recipes)
@@ -144,6 +145,9 @@ repair=(ROOT/"scripts/run_provider_brain_repair.py").read_text(encoding="utf-8")
 workflow=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(encoding="utf-8")
 assert "positive_program_routes(provider_id)" in adaptive
 assert "positive_program_request_recipes(provider_id)" in adaptive
+assert "positive_program_user_agent(provider_id)" in adaptive
+assert '"positiveProgramUserAgent": bool(validated_positive_user_agent)' in adaptive
+assert '"user_agent": validated_positive_user_agent or network_hints["user_agent"]' in adaptive
 assert "positive_program_learned_skills()" in base
 assert "merge_positive_program_records" in repair
 assert "automation/brain-positive-program-memory.json" in workflow
