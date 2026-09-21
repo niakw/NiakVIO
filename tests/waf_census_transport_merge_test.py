@@ -287,10 +287,11 @@ assert functional["counts"] == {
 # a repair; it transfers the provider to the normal Brain queue.
 post_harness_baseline = {
     "repairQueue": [],
-    "environmentQueue": ["wooka-like", "browser-only-runtime", "timeout-runtime"],
-    "harnessQueue": ["wooka-like", "browser-only-runtime", "timeout-runtime"],
-    "symptomaticProviders": ["wooka-like", "browser-only-runtime", "timeout-runtime"],
-    "brainQueue": ["wooka-like", "browser-only-runtime", "timeout-runtime"],
+    "authorityBlockedQueue": ["authority-blocked-runtime"],
+    "environmentQueue": ["wooka-like", "browser-only-runtime", "timeout-runtime", "authority-blocked-runtime"],
+    "harnessQueue": ["wooka-like", "browser-only-runtime", "timeout-runtime", "authority-blocked-runtime"],
+    "symptomaticProviders": ["wooka-like", "browser-only-runtime", "timeout-runtime", "authority-blocked-runtime"],
+    "brainQueue": ["wooka-like", "browser-only-runtime", "timeout-runtime", "authority-blocked-runtime"],
     "providers": [
         {
             "provider": "wooka-like",
@@ -320,6 +321,22 @@ post_harness_baseline = {
             "declaredLanes": ["movie"],
             "currentVerifiedLanes": [],
             "evidenceDepth": ["movie=lookup_only"],
+            "repairEligible": False,
+            "brainCheckRequired": True,
+        },
+        {
+            "provider": "authority-blocked-runtime",
+            "status": "HARNESS MISMATCH",
+            "color": "🟧",
+            "declaredLanes": ["movie"],
+            "currentVerifiedLanes": [],
+            "routeProof": ["1 live routes / movie"],
+            "evidenceDepth": ["movie=lookup_only"],
+            "authorityRepairEligible": False,
+            "authorityAction": "REDISCOVER_SEARCH",
+            "authorityClass": "unproven-direct-candidate",
+            "authorityConfidence": "low",
+            "authorityReasons": ["direct_candidate_unproven", "search_supplement_only"],
             "repairEligible": False,
             "brainCheckRequired": True,
         },
@@ -356,6 +373,13 @@ post_harness_waf = {
             "directHttpProfile": {"outcome": "direct_http_content_reached"},
             "okHttpJvmProfile": {"outcome": "okhttp_jvm_content_reached"},
         },
+        {
+            "provider": "authority-blocked-runtime",
+            "lane": "movie",
+            "outcome": "browser_content_reached",
+            "directHttpProfile": {"outcome": "direct_http_content_reached"},
+            "okHttpJvmProfile": {"outcome": "okhttp_jvm_content_reached"},
+        },
     ],
     "residentialProviderReplay": {
         "available": True,
@@ -364,6 +388,7 @@ post_harness_waf = {
             {"provider": "wooka-like", "lane": "tv", "status": "no_streams", "debugStage": "provider_network_exception", "raw": 0, "playable": 0, "verified": 0, "identitySafe": True},
             {"provider": "browser-only-runtime", "lane": "anime", "status": "no_streams", "debugStage": "provider_network_exception", "raw": 0, "playable": 0, "verified": 0, "identitySafe": True},
             {"provider": "timeout-runtime", "lane": "movie", "status": "timeout", "debugStage": "timeout", "raw": 0, "playable": 0, "verified": 0, "identitySafe": False},
+            {"provider": "authority-blocked-runtime", "lane": "movie", "status": "no_streams", "debugStage": "provider_network_exception", "raw": 0, "playable": 0, "verified": 0, "identitySafe": True},
         ],
     },
 }
@@ -375,7 +400,20 @@ assert post_by_id["wooka-like"]["residentialProviderReplayReclassified"] is True
 assert "wooka-like" in post_harness["repairQueue"]
 assert "wooka-like" not in post_harness["environmentQueue"]
 assert "wooka-like" not in post_harness["harnessQueue"]
+assert post_harness["residentialProviderReplayReclassifiedProviders"] == ["authority-blocked-runtime", "wooka-like"]
 assert post_harness["residentialProviderReplayRepairableProviders"] == ["wooka-like"]
+blocked = post_by_id["authority-blocked-runtime"]
+assert blocked["status"] == "PROVIDER NETWORK BLOCKED", blocked
+assert blocked["statusRepairEligible"] is True, blocked
+assert blocked["authorityRepairEligible"] is False, blocked
+assert blocked["repairEligible"] is False, blocked
+assert blocked["authorityAction"] == "REDISCOVER_SEARCH", blocked
+assert "rediscovery required before Repair" in blocked["action"], blocked
+assert "authority-blocked-runtime" not in post_harness["repairQueue"], post_harness
+assert "authority-blocked-runtime" not in post_harness["environmentQueue"], post_harness
+assert "authority-blocked-runtime" not in post_harness["harnessQueue"], post_harness
+assert "authority-blocked-runtime" in post_harness["brainQueue"], post_harness
+assert post_harness["authorityBlockedQueue"] == ["authority-blocked-runtime"], post_harness
 assert post_by_id["browser-only-runtime"]["status"] == "HARNESS MISMATCH"
 assert post_by_id["browser-only-runtime"]["repairEligible"] is False
 assert "browser-only-runtime" in post_harness["environmentQueue"]
