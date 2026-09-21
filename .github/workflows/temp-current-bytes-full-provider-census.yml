@@ -90,7 +90,7 @@ jobs:
     needs: scale
     # Large catalogues are owned by the 8-shard workflow. Bulk-stage and
     # sharded evidence commits also must not recursively launch this mono-job.
-    if: ${{ needs.scale.outputs.use_sharded != 'true' && (github.event_name != 'push' || (!startsWith(github.event.head_commit.message, 'provider: bulk stage ') && !startsWith(github.event.head_commit.message, 'ci(census-sharded):'))) }}
+    if: ${{ needs.scale.outputs.use_sharded != 'true' && (github.event_name != 'push' || (startsWith(github.event.head_commit.message, 'provider: bulk stage ') == false && startsWith(github.event.head_commit.message, 'ci(census-sharded):') == false)) }}
     runs-on: ubuntu-latest
     timeout-minutes: 55
     env:
