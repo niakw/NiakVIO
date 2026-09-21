@@ -440,7 +440,12 @@ def persist_accepted_programs(
 
 
 def materialize(provider_ids: set[str] | list[str]) -> None:
-    """Materialize accepted Brain state without reconciling unrelated providers."""
+    """Materialize only accepted Brain targets, then validate the published view."""
+    # PROVIDER_BRAIN_INCREMENTAL_MATERIALIZATION_V1
+    # Brain repairs mutate provider-owned DATA, not the common ProviderBase/Core.
+    # Rebuilding every active provider here makes one accepted repair O(catalogue)
+    # and dominates runtime as the catalogue grows. Keep common/global rebuilds in
+    # their release/Core lanes; a Brain wave rebuilds only providers it changed.
     targets = sorted({cid(value) for value in provider_ids if cid(value)})
     if not targets:
         return
@@ -452,12 +457,12 @@ def materialize(provider_ids: set[str] | list[str]) -> None:
             "--provider",
             provider_id,
         )
-    for command in (
-        (sys.executable, "scripts/materialize_provider_base_v3_store.py"),
-        (sys.executable, "scripts/materialize_provider_v3_all.py"),
-        (sys.executable, "scripts/validate_published_provider_config.py"),
-    ):
-        run(*command)
+        run(
+            sys.executable,
+            "scripts/materialize_provider_v3_one.py",
+            provider_id,
+        )
+    run(sys.executable, "scripts/validate_published_provider_config.py")
 
 
 def main() -> int:
