@@ -3,7 +3,7 @@
 
 Catalogue membership and activation are separate concerns:
 - only the 46 hub Provider Objects remain in the executable catalogue;
-- active providers are exactly the rows currently declared by ``hub-lab-matrix-46.json``;
+- the hub matrix defines current catalogue membership, while providers/ versus provider-disabled/ is activation authority;
 - non-hub providers survive only as historical ProviderBase bytes and Repair must not resurrect them;
 - a provider with executable LIVE DATA/recipe/Lego is directly executable;
 - a provider without a currently executable plan is accepted only when Repair V6
@@ -22,6 +22,8 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+
+from current_provider_scope import active_provider_ids, visible_provider_ids
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -166,6 +168,12 @@ def main() -> int:
         (ROOT / "automation/provider-v3-static-knowledge.json").read_text(encoding="utf-8")
     )
     targets = hub46_targets()
+    visible_ids = visible_provider_ids()
+    active_ids = active_provider_ids()
+    assert targets == visible_ids, (
+        f"hub46/current visible catalogue mismatch matrix_only={sorted(targets-visible_ids)} "
+        f"visible_only={sorted(visible_ids-targets)}"
+    )
 
     rows = manifest.get("scrapers") or []
     assert len({cid(row.get("id")) for row in rows}) == len(rows), "provider ids must be unique"
@@ -196,13 +204,13 @@ def main() -> int:
         model_row = static.get(provider_id) if isinstance(static.get(provider_id), dict) else {}
         model = model_row.get("model") if isinstance(model_row.get("model"), dict) else {}
 
-        expected_enabled = provider_id in targets
+        expected_enabled = provider_id in active_ids
         enabled = row.get("enabled") is True
         if enabled:
             enabled_count += 1
         if enabled != expected_enabled:
             failures.append(
-                f"{provider_id}: hub46 activation mismatch enabled={enabled} expected={expected_enabled}"
+                f"{provider_id}: provider-folder activation mismatch enabled={enabled} expected={expected_enabled}"
             )
             continue
 
@@ -301,8 +309,8 @@ def main() -> int:
                 f"(routeKinds={sorted(kinds)}, bases={len(bases)}, enabled={enabled}, terminal={state or 'none'})"
             )
 
-    if enabled_count != len(targets):
-        failures.append(f"active enabled count mismatch: {enabled_count} != {len(targets)}")
+    if enabled_count != len(active_ids):
+        failures.append(f"active enabled count mismatch: {enabled_count} != {len(active_ids)}")
 
     if failures:
         raise AssertionError("\n".join(failures))
