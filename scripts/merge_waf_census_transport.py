@@ -29,6 +29,69 @@ def load(path: Path) -> dict[str, Any]:
     return value
 
 
+def _refresh_authority_rows(
+    providers: list[dict[str, Any]],
+    authority_status: dict[str, Any] | None,
+) -> list[str]:
+    """Project current arbiter metadata onto carried census rows.
+
+    WAF remains transport-only: it never invents authority. This only prevents
+    a fresh transport overlay from preserving stale authority fields from an
+    older census after lifecycle/domain authority has already changed on main.
+    """
+    if not isinstance(authority_status, dict):
+        return []
+    authority_by_provider = {
+        str(row.get("provider") or "").strip().casefold(): row
+        for row in authority_status.get("providers") or []
+        if isinstance(row, dict) and str(row.get("provider") or "").strip()
+    }
+    changed: list[str] = []
+    for row in providers:
+        if not isinstance(row, dict):
+            continue
+        provider = str(row.get("provider") or "").strip().casefold()
+        authority = authority_by_provider.get(provider)
+        if not authority:
+            continue
+        fields = {
+            "authorityRepairEligible": authority.get("repairEligible") is True,
+            "authorityAction": str(authority.get("action") or "UNCLASSIFIED"),
+            "authorityClass": str(authority.get("authorityClass") or "unknown"),
+            "authorityConfidence": str(authority.get("confidence") or "unknown"),
+            "authorityReasons": [
+                str(value)
+                for value in authority.get("reasons") or []
+                if str(value).strip()
+            ],
+            "authorityKnown": True,
+        }
+        before = tuple(row.get(key) for key in (
+            "authorityRepairEligible", "authorityAction", "authorityClass",
+            "authorityConfidence", "authorityReasons", "authorityKnown",
+            "statusRepairEligible", "repairEligible", "action",
+        ))
+        row.update(fields)
+        status = str(row.get("status") or "")
+        row["statusRepairEligible"] = census.is_repair_eligible_status(status)
+        row["repairEligible"] = bool(
+            row["statusRepairEligible"] and fields["authorityRepairEligible"]
+        )
+        row["action"] = census._authority_action(
+            status,
+            str(row.get("harnessTransportClass") or "not-applicable"),
+            fields,
+        )
+        after = tuple(row.get(key) for key in (
+            "authorityRepairEligible", "authorityAction", "authorityClass",
+            "authorityConfidence", "authorityReasons", "authorityKnown",
+            "statusRepairEligible", "repairEligible", "action",
+        ))
+        if before != after:
+            changed.append(provider)
+    return sorted(set(changed))
+
+
 
 def network_differential(waf: dict[str, Any], provider: str) -> dict[str, Any]:
     wanted = str(provider or "").strip().casefold()
@@ -176,6 +239,7 @@ def merge_transport(
     baseline: dict[str, Any],
     waf: dict[str, Any],
     *,
+    authority_status: dict[str, Any] | None = None,
     evidence_run_id: str = "",
     evidence_sha: str = "",
 ) -> dict[str, Any]:
@@ -183,6 +247,8 @@ def merge_transport(
     providers = out.get("providers")
     if not isinstance(providers, list):
         raise ValueError("baseline census providers must be a list")
+
+    authority_refreshed = _refresh_authority_rows(providers, authority_status)
 
     baseline_environment = {
         str(value or "").strip().casefold()
@@ -339,10 +405,16 @@ def merge_transport(
             if str(value or "").strip()
         })
 
-    out["repairQueue"] = normalized([
-        *without_promoted(list(baseline.get("repairQueue") or [])),
-        *replay_repairable,
-    ])
+    # Recompute Repair from final rows, not from the carried baseline queue.
+    # This incorporates both strict residential replay outcomes and any newer
+    # arbiter/lifecycle decision projected above.
+    out["repairQueue"] = sorted(
+        str(row.get("provider") or "").strip().casefold()
+        for row in providers
+        if isinstance(row, dict)
+        and row.get("repairEligible") is True
+        and str(row.get("provider") or "").strip()
+    )
     authority_blocked = {
         str(row.get("provider") or "").strip().casefold()
         for row in providers
@@ -424,6 +496,7 @@ def merge_transport(
     ).items()))
     out["harnessEvidenceRunId"] = str(evidence_run_id or waf.get("runId") or "")
     out["harnessEvidenceSha"] = str(evidence_sha or waf.get("triggerSha") or "")
+    out["authorityRefreshedProviders"] = authority_refreshed
     out["harnessTransportUpdatedProviders"] = sorted(changed)
     out["networkDifferentialUpdatedProviders"] = sorted(network_changed)
     out["residentialProviderReplayPromotedProviders"] = sorted(replay_promoted)
@@ -442,14 +515,21 @@ def main() -> int:
     ap.add_argument("--status", type=Path, required=True)
     ap.add_argument("--waf", type=Path, required=True)
     ap.add_argument("--output", type=Path, required=True)
+    ap.add_argument(
+        "--authority-status",
+        type=Path,
+        default=Path("automation/provider-authority-status.json"),
+    )
     ap.add_argument("--run-id", default="")
     ap.add_argument("--sha", default="")
     args = ap.parse_args()
 
     baseline = load(args.status)
+    authority_status = load(args.authority_status) if args.authority_status.is_file() else {}
     merged = merge_transport(
         baseline,
         load(args.waf),
+        authority_status=authority_status,
         evidence_run_id=args.run_id,
         evidence_sha=args.sha,
     )
@@ -460,6 +540,7 @@ def main() -> int:
         f"repair_queue={len(merged.get('repairQueue') or [])} "
         f"environment_queue={len(merged.get('environmentQueue') or [])} "
         f"updated={len(merged.get('harnessTransportUpdatedProviders') or [])} "
+        f"authority_refreshed={len(merged.get('authorityRefreshedProviders') or [])} "
         f"network_differential={len(merged.get('networkDifferentialUpdatedProviders') or [])} "
         f"counts={json.dumps(merged.get('counts') or {}, sort_keys=True)}"
     )
