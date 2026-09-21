@@ -1,12 +1,12 @@
 {
   "schemaVersion": 4,
-  "requestedAt": "2026-09-21T23:47:00+02:00",
-  "retry": 114,
+  "requestedAt": "2026-09-21T23:50:00+02:00",
+  "retry": 115,
   "mode": "repair",
-  "scope": "supersession-guard-old-lane-replacement",
+  "scope": "provider-repair-main-v2-bounded-tailscale-current-head",
   "targetProviders": [],
-  "goal": "Replace the old provider-repair-main pending run with a current-SHA run that fails immediately if it becomes superseded, so the obsolete unbounded-Tailscale generation cannot later launch expensive Brain work.",
+  "goal": "Run current canonical Repair in the v2 Repair lane, with early supersession rejection, bounded optional Tailscale connection, fresh authority projection, split lifecycle/rediscovery/harness/environment census queues, authority-eligible Brain selection, durable experiment memory and strict non-regression. Persist canonical ledger only if this exact SHA is still current.",
   "branch": "main",
   "publication": false,
-  "sourceRef": "99fc847b2a8d7cabf1d79c6df02b2aac85e1865f"
+  "sourceRef": "98a5dad768f3ed76735033f282a5eb7654ab27b8"
 }
