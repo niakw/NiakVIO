@@ -581,6 +581,23 @@ def _authority_fields(authority_status: dict[str, Any], provider: str) -> dict[s
     }
 
 
+LIFECYCLE_DISABLED_ACTIONS = {
+    "KEEP_DISABLED",
+    "DISABLE_MANUAL_POLICY",
+    "DISABLE_SOURCE_REMOVED",
+    "DISABLE_AUTHORITY_EXHAUSTED",
+}
+
+
+def _lifecycle_disabled(authority: dict[str, Any]) -> bool:
+    return (
+        str(authority.get("authorityAction") or "") in LIFECYCLE_DISABLED_ACTIONS
+        or str(authority.get("authorityClass") or "") in {
+            "disabled", "manual-off", "source-removed", "stale-direct"
+        }
+    )
+
+
 def _authority_action(status: str, transport_class: str, authority: dict[str, Any]) -> str:
     if authority.get("authorityRepairEligible") is not False:
         return _harness_action(status, transport_class)
@@ -590,7 +607,7 @@ def _authority_action(status: str, transport_class: str, authority: dict[str, An
             "Domain/authority rediscovery required before Repair; search remains "
             "supplementary evidence only and cannot authorize provider mutation"
         )
-    if action in {"KEEP_DISABLED", "DISABLE_SOURCE_REMOVED", "DISABLE_AUTHORITY_EXHAUSTED"}:
+    if action in LIFECYCLE_DISABLED_ACTIONS:
         return (
             "provider lifecycle/authority blocks Repair; keep disabled until a "
             "new authoritative provider address/backend is qualified"
@@ -883,11 +900,21 @@ def render(
         if str(row.get("status") or "") == "HARNESS/ENV BLOCKED"
         and row.get("authorityRepairEligible") is not False
     )
-    authority_blocked_queue = sorted(
+    lifecycle_disabled_queue = sorted(
+        row["provider"] for row in rows
+        if row.get("brainCheckRequired") is True
+        and _lifecycle_disabled(row)
+    )
+    authority_rediscovery_queue = sorted(
         row["provider"] for row in rows
         if row.get("brainCheckRequired") is True
         and row.get("authorityRepairEligible") is False
+        and not _lifecycle_disabled(row)
     )
+    authority_blocked_queue = sorted({
+        *lifecycle_disabled_queue,
+        *authority_rediscovery_queue,
+    })
     short_sha = sha[:12] if sha else "unknown"
     scope = str(report.get("resolved_scope") or report.get("requested_scope") or "all")
 
@@ -919,7 +946,7 @@ def render(
         "",
         f"Latest provider census state: **{summary}** across **{len(rows)} providers**.",
         f"Evidence: run {run_id or 'local'} · SHA {short_sha} · scope **{scope}**.",
-        f"Symptomatic providers: **{len(symptomatic)}** · automated repair queue: **{len(repair_queue)}** · authority-blocked symptoms: **{len(authority_blocked_queue)}** · harness mismatch: **{len(harness_mismatch_queue)}** · environment blocked: **{len(environment_blocked_queue)}**.",
+        f"Symptomatic providers: **{len(symptomatic)}** · automated repair queue: **{len(repair_queue)}** · lifecycle disabled: **{len(lifecycle_disabled_queue)}** · authority rediscovery: **{len(authority_rediscovery_queue)}** · harness mismatch: **{len(harness_mismatch_queue)}** · environment blocked: **{len(environment_blocked_queue)}**.",
         "",
         "## Status semantics",
         "",
@@ -1052,10 +1079,22 @@ def main() -> int:
             "repairQueue": sorted(
                 row["provider"] for row in rows if row.get("repairEligible") is True
             ),
+            # Compatibility aggregate: all symptoms excluded by authority/lifecycle.
             "authorityBlockedQueue": sorted(
                 row["provider"] for row in rows
                 if row.get("brainCheckRequired") is True
                 and row.get("authorityRepairEligible") is False
+            ),
+            "lifecycleDisabledQueue": sorted(
+                row["provider"] for row in rows
+                if row.get("brainCheckRequired") is True
+                and _lifecycle_disabled(row)
+            ),
+            "authorityRediscoveryQueue": sorted(
+                row["provider"] for row in rows
+                if row.get("brainCheckRequired") is True
+                and row.get("authorityRepairEligible") is False
+                and not _lifecycle_disabled(row)
             ),
             # Backward-compatible combined transport queue. New consumers should
             # use the two exact queues below instead of interpreting this name as
