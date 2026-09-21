@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-21T02:12:00+02:00",
-  "goal": "Reprobe current harness/network-blocked lanes after Tailscale WIF trust-credential and tag:niakvio-ci -> autogroup:internet policy update. Measure GitHub-hosted network first after WIF connection without exit/DNS drift, then the same provider-owned routes through the private residential exit. Persist only bounded transport outcomes; never log or store the exit-node identity, Tailscale addresses, residential public IP, cookies, response bodies, tokens or environment secrets.",
-  "source": "tailscale-wif-rights-updated-residential-differential"
+  "requestedAt": "2026-09-21T03:14:30+02:00",
+  "goal": "Reprobe current harness/network-blocked lanes after Tailscale trust subject was set to repo:niakw/NiakVIO:ref:refs/heads/main. Require successful WIF join before residential comparison, then compare the same provider-owned routes on GitHub-hosted network vs the private residential exit. Persist only bounded transport outcomes and availability; never persist exit-node identity, Tailscale addresses, residential public IP, cookies, bodies or tokens.",
+  "source": "tailscale-trust-subject-main-ref-updated"
 }
