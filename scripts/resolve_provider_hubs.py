@@ -822,6 +822,51 @@ def search_candidates(provider_id: str, cfg: dict[str, Any], query: str, timeout
                     "query": query,
                     "document_index": index,
                 })
+                # DOMAIN_SEARCH_RESULT_REDIRECT_V1
+                # Search ranking is never publication authority by itself. A search
+                # result may become source_redirect evidence only after we fetch that
+                # exact same-brand result and observe a deterministic cross-host move.
+                if len([row for row in observations if row.get("search_result_probe")]) < 4:
+                    try:
+                        r_status, r_final, _r_doc, _r_headers = fetch(result_url, timeout)
+                        redirect_observation = {
+                            "engine": engine,
+                            "source_type": "search",
+                            "url": result_url,
+                            "status": r_status,
+                            "final_url": r_final,
+                            "query": query,
+                            "search_result_probe": True,
+                        }
+                        observations.append(redirect_observation)
+                        final_url = str(r_final or "").strip().rstrip("/")
+                        if (
+                            200 <= r_status < 400
+                            and final_url
+                            and host(final_url) != host(result_url)
+                            and is_provider_terminal_site_url(final_url)
+                            and same_brand(provider_id, final_url, cfg)
+                            and host(final_url) not in {str(item).casefold().strip(".") for item in cfg.get("blocked_hosts") or []}
+                        ):
+                            candidates.append({
+                                "url": final_url,
+                                "label": "search result redirect destination",
+                                "score": 82 - min(index, 10),
+                                "source_type": "source_redirect",
+                                "source": result_url,
+                                "query": query,
+                                "document_index": index,
+                                "source_redirect": True,
+                            })
+                    except Exception as exc:
+                        observations.append({
+                            "engine": engine,
+                            "source_type": "search",
+                            "url": result_url,
+                            "query": query,
+                            "search_result_probe": True,
+                            "error": f"{type(exc).__name__}: {exc}",
+                        })
                 if len(candidates) >= 8:
                     break
         except Exception as exc:
@@ -1001,9 +1046,83 @@ def _dedupe_ordered_candidates(candidates: list[dict[str, Any]]) -> list[dict[st
     )
 
 
+def _curated_direct_redirect_candidates(
+    provider_id: str,
+    cfg: dict[str, Any],
+    seeded: list[dict[str, Any]],
+    timeout: float,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Follow curated direct addresses only to learn deterministic moves.
+
+    This is address discovery, not terminal health validation. It is disabled for
+    direct_authority=explicit_current because that is an operator pin. For ordinary
+    curated direct/LKG registry entries, a real cross-host redirect to the same
+    provider brand is stronger current-address evidence than yesterday's URL.
+    """
+    # DOMAIN_CURATED_DIRECT_REDIRECT_V1
+    if str(cfg.get("direct_authority") or "").strip().casefold() == "explicit_current":
+        return [], []
+    output: list[dict[str, Any]] = []
+    observations: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for row in seeded:
+        if str(row.get("source_type") or "").strip().casefold() != "curated_direct":
+            continue
+        url = str(row.get("url") or "").strip()
+        identity = url.rstrip("/").casefold()
+        if not is_http_url(url) or identity in seen:
+            continue
+        seen.add(identity)
+        if len(seen) > 3:
+            break
+        try:
+            status, final, _document, _headers = fetch(url, timeout)
+            observation = {
+                "source_type": "curated_direct",
+                "url": url,
+                "status": status,
+                "final_url": final,
+                "redirect_discovery": True,
+            }
+            observations.append(observation)
+            final_url = str(final or "").strip().rstrip("/")
+            if not 200 <= status < 400:
+                continue
+            if not final_url or host(final_url) == host(url):
+                continue
+            if not is_provider_terminal_site_url(final_url):
+                continue
+            if not same_brand(provider_id, final_url, cfg):
+                continue
+            if host(final_url) in {str(item).casefold().strip(".") for item in cfg.get("blocked_hosts") or []}:
+                continue
+            output.append({
+                "url": final_url,
+                "label": "curated direct redirect destination",
+                "score": 110,
+                "source_type": "source_redirect",
+                "source": url,
+                "source_redirect": True,
+            })
+        except Exception as exc:
+            observations.append({
+                "source_type": "curated_direct",
+                "url": url,
+                "redirect_discovery": True,
+                "error": f"{type(exc).__name__}: {exc}",
+            })
+    return output, observations
+
+
 def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[str, Any], mode: str, timeout: float) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     candidates = _seed_known_candidates(cfg, history_row)
     observations: list[dict[str, Any]] = []
+
+    direct_redirects, direct_observations = _curated_direct_redirect_candidates(
+        provider_id, cfg, list(candidates), timeout
+    )
+    candidates.extend(direct_redirects)
+    observations.extend(direct_observations)
 
     for source in cfg.get("sources") or []:
         if not isinstance(source, dict):
