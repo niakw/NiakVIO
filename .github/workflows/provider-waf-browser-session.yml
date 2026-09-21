@@ -293,6 +293,7 @@ jobs:
             python scripts/merge_waf_census_transport.py \
               --status automation/provider-census-status.json \
               --waf automation/provider-waf-browser-session-latest.json \
+              --authority-status automation/provider-authority-status.json \
               --output /tmp/provider-census-status-merged.json \
               --run-id "${GITHUB_RUN_ID}-waf-transport" \
               --sha "$(git rev-parse HEAD)"
