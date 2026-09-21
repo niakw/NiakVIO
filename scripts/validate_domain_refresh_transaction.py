@@ -18,6 +18,10 @@ AUTHORITY_TYPES = {"hub", "curated_direct", "source_redirect", "provider_config"
 REGISTRY_SCOPED_AUTHORITY_TYPES = {"telegram_public", "redirect"}
 DOMAIN_PATCH_FIELDS = {"official_site", "official_hub", "domain_substitutions", "replacements", "runtime_domain_replacements"}
 DOMAIN_MANIFEST_OVERRIDE_FIELDS = {"logo", "icon", "favicon"}
+DOMAIN_PROVIDER_LEGO_SITE_KEYS = {
+    "base", "site", "referer", "referrer", "origin",
+    "base_url", "baseUrl", "site_url", "siteUrl",
+}
 PLACEHOLDER_TOKENS = ("${", "{{", "}}", "function(", "=>", "`", "<%", "%>")
 
 
@@ -100,6 +104,82 @@ def validate_manifest_domain_overrides(
                 f"does not follow terminal {expected_host!r}"
             )
     return bool(changed)
+
+
+def validate_provider_lego_domain_options(
+    provider_id: str,
+    before_patch: dict[str, Any],
+    after_patch: dict[str, Any],
+    before_site: str,
+    after_site: str,
+) -> bool:
+    """Allow only host rotation of declared provider-Lego site-root options."""
+    before = before_patch.get("provider_lego_options")
+    after = after_patch.get("provider_lego_options")
+    if before == after:
+        return False
+    if not isinstance(before, dict) or not isinstance(after, dict):
+        raise AssertionError(f"{provider_id}: provider_lego_options shape changed during domain refresh")
+    if set(before) != set(after):
+        raise AssertionError(f"{provider_id}: provider_lego_options script set changed during domain refresh")
+
+    before_host = (urlparse(before_site).hostname or "").casefold() if concrete_http(before_site) else ""
+    after_host = (urlparse(after_site).hostname or "").casefold() if concrete_http(after_site) else ""
+    if not before_host or not after_host or before_host == after_host:
+        raise AssertionError(
+            f"{provider_id}: provider Lego domain rotation requires distinct concrete site terminals"
+        )
+
+    changed = False
+    for script in sorted(before):
+        before_options = before.get(script)
+        after_options = after.get(script)
+        if not isinstance(before_options, dict) or not isinstance(after_options, dict):
+            if before_options != after_options:
+                raise AssertionError(
+                    f"{provider_id}: provider_lego_options[{script!r}] non-object changed"
+                )
+            continue
+        if set(before_options) != set(after_options):
+            raise AssertionError(
+                f"{provider_id}: provider_lego_options[{script!r}] option keys changed"
+            )
+        for key in sorted(before_options):
+            before_value = before_options.get(key)
+            after_value = after_options.get(key)
+            if before_value == after_value:
+                continue
+            changed = True
+            if key not in DOMAIN_PROVIDER_LEGO_SITE_KEYS:
+                raise AssertionError(
+                    f"{provider_id}: provider_lego_options[{script!r}].{key} "
+                    "is not Domain-owned site-root DATA"
+                )
+            if not concrete_http(before_value) or not concrete_http(after_value):
+                raise AssertionError(
+                    f"{provider_id}: provider_lego_options[{script!r}].{key} "
+                    "rotation requires concrete HTTP URLs"
+                )
+            before_url = urlparse(str(before_value))
+            after_url = urlparse(str(after_value))
+            if (before_url.hostname or "").casefold() != before_host:
+                raise AssertionError(
+                    f"{provider_id}: provider_lego_options[{script!r}].{key} "
+                    f"source host is not previous terminal {before_host!r}"
+                )
+            if (after_url.hostname or "").casefold() != after_host:
+                raise AssertionError(
+                    f"{provider_id}: provider_lego_options[{script!r}].{key} "
+                    f"target host is not current terminal {after_host!r}"
+                )
+            before_rest = (before_url.path, before_url.params, before_url.query, before_url.fragment)
+            after_rest = (after_url.path, after_url.params, after_url.query, after_url.fragment)
+            if before_rest != after_rest:
+                raise AssertionError(
+                    f"{provider_id}: provider_lego_options[{script!r}].{key} "
+                    "changed more than the domain host"
+                )
+    return changed
 
 
 def provider_patches(document: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -226,11 +306,17 @@ def validate(
             if before_patch.get(key) != after_patch.get(key)
         }
         manifest_changed = "manifest_overrides" in changed_fields
-        forbidden_fields = changed_fields - DOMAIN_PATCH_FIELDS - {"manifest_overrides"}
+        lego_changed = "provider_lego_options" in changed_fields
+        forbidden_fields = (
+            changed_fields
+            - DOMAIN_PATCH_FIELDS
+            - {"manifest_overrides", "provider_lego_options"}
+        )
         if forbidden_fields:
             raise AssertionError(
                 f"{provider_id}: domain refresh mutated non-domain fields: {sorted(forbidden_fields)}"
             )
+        before_site = str(before_patch.get("official_site") or "").rstrip("/")
         after_site_for_manifest = str(after_patch.get("official_site") or "").rstrip("/")
         manifest_domain_changed = validate_manifest_domain_overrides(
             provider_id,
@@ -238,9 +324,18 @@ def validate(
             after_patch,
             after_site_for_manifest,
         ) if manifest_changed else False
+        lego_domain_changed = validate_provider_lego_domain_options(
+            provider_id,
+            before_patch,
+            after_patch,
+            before_site,
+            after_site_for_manifest,
+        ) if lego_changed else False
         domain_fields = changed_fields & DOMAIN_PATCH_FIELDS
         if manifest_domain_changed:
             domain_fields.add("manifest_overrides")
+        if lego_domain_changed:
+            domain_fields.add("provider_lego_options")
         if not domain_fields:
             continue
         if scope is not None and provider_id not in scope:
