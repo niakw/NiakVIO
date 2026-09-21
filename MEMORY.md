@@ -1,6 +1,17 @@
 # NiakVIO — Recovery Memory
 
 
+## 2026-09-21 21:58 Europe/Paris — Repair #127 reached real Brain; late concurrency-report crash fixed
+
+- Repair run `35641490356` (#127), trigger SHA `753897003ad8`, is the first run in this sequence that passed the full preflight and entered the real authority-filtered Brain pipeline. Runtime scope was **8 providers**: `4khdhub, animesultra, animevostfr, vidfast, yflix, allanime, mallumv, moviebox`. Census still listed 10 repair targets, but authority correctly excluded `animetsu` and `showbox`; `wookafr` is now PARTIAL OK and therefore excluded from the non-green Repair scope.
+- Scalability behavior was real, not inferred: wave 1 staged all 8 targets into **one packed Deep process**. After its negative-memory/exhaustion decisions, later waves contained only **3 stubborn providers** (`4khdhub, mallumv, vidfast`) instead of replaying all 8. Wave 1 ran about 3m44; waves 2-5 ran about 1m38-1m57 each. This confirms packed families + per-batch health concurrency are active, while the remaining cost is repeated experiment rotation on the stubborn subset.
+- No repair was accepted. MalluMV repeatedly reached a stronger sandbox state with 3 extracted streams, but those streams were not playback-verified; strict acceptance correctly rejected promotion. 4KHDHub remained zero-stream after lookup progression; VidFast moved from HTTP-blocked baseline to lookup-completed/no-streams candidates but never to verified media.
+- #127 then failed **after all five Deep waves** while building `provider-brain-repair-latest.json`: `NameError: name 'concurrency' is not defined` at `run_provider_brain_repair.py`. Root cause is the packed-batch concurrency refactor `e14ff21b4f1f`, which removed the old global `concurrency` variable but left one report field referring to it. This is an orchestrator/reporting failure, not provider evidence.
+- `848aaa5b8393` replaces the dead global reference with the normalized requested concurrency setting, records `healthConcurrencyMode`, and persists each batch's effective `healthConcurrency`. `042bd1f14919` extends `provider_brain_repair_orchestrator_test.py` to forbid the stale `"healthConcurrency": concurrency` form and require both global-mode and per-batch reporting.
+- The failed run still persisted current census/negative Brain memory through bot commit `131ebb1c238d`, so the next Repair should reuse the learned rejected variants instead of restarting from a clean slate. Next action: trigger canonical Repair on current main; require the preflight contract to pass, require the Brain report to be written, then inspect deferred/resume behavior and post-Repair census before any further Brain change.
+
+
+
 ## 2026-09-21 20:54 Europe/Paris — Repair #126 preflight: parallel byte-validation test drift fixed
 
 - Repair run `35641162638` (#126) on trigger SHA `570104eca437` still did **not** reach provider probes. Authority contracts, documented-route discovery and Brain orchestrator contracts all passed. Preflight then failed in `tests/provider_materialization_byte_validation_contract_test.py` line 27.
