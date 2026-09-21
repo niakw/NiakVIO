@@ -1,6 +1,18 @@
 # NiakVIO — Recovery Memory
 
 
+## 2026-09-21 14:45 Europe/Paris — Durable positive-program memory closes accepted-repair forgetting
+
+- Repair artifact `35591042153` was inspected beyond the CI summary. The single **accepted Repair** was **MalluMV**: `strict_playable_stream_improvement`, playable `0 -> 1`, profile `adaptive_runtime_recovery`, failure family `media_extraction_gap`, signature `c92d106e5a46a2b33459e485`, variant 2. WookaFR was separately fixed/proven in Lab/current-yield evidence but was not the accepted mutation. This distinction is now explicit.
+- Structural defect confirmed: when the final portfolio preservation gate failed on unrelated historical `animevostfr:anime` proof drift, Repair correctly discarded candidate provider/Core bytes, but this also discarded the **compiled winning MalluMV program** from `provider-overrides.json`. Only success counters remained in `brain-repair-memory.json`. The Brain therefore remembered that a method succeeded without durably retaining enough sanitized execution DATA to replay it.
+- Generic fix series: `b3ba8139a8d6` adds `scripts/brain_positive_program_memory.py`; `0091c684595c` persists strict accepted programs into that evidence store; `87569b1f1000` replays same-provider positive routes/recipes in adaptive repair; `118491ccb7fd` exposes positive skills as planner priors; `1e2c37411e97` preserves the memory across Repair's deliberate `git reset --hard`; `c3c367406140` / `5fce8452c45a` gate it in Repair and Learning.
+- Safety was tightened before persistence. `e0c2de3cb979` rejects non-provider navigation/infrastructure origins (including Google/search-engine/analytics noise) from accepted-program DATA; `c37bda9c7136` preserves response semantics; `9330f6e18bd0` keeps executable recipes separate from route priors; `f4513ecd7eb4` deduplicates accepted recipes. Positive memory never stores candidate JS, cookies or response bodies and has `publicationAuthority=false`; every replay remains subject to current-byte playable, identity and non-regression gates.
+- Historical MalluMV success was backfilled from the immutable Repair artifact into `automation/brain-positive-program-memory.json` at `9b6a383c793a`. Sanitized replay data contains provider-owned MalluMV origins plus `/search.php?q={query}` and `/api/file/`; observed Google navigation from the old accepted sandbox program is excluded. This is prior evidence, not a current FULL/verified census promotion.
+- Exact-SHA Learning integrity remains in force from `482a9046ddd2` + `7bdc7df2ffff`; runs started before those/newer positive-memory commits must not be treated as authority for the new Brain.
+- Current authoritative validation is **Repair `35600761581` on SHA `dd6bf7b098ed`**. It must first pass positive-memory/compiler/workflow contracts, then run the current census `repairQueue`. Required proof: MalluMV reuses rather than forgets its validated prior, no harness-only provider is mutated, accepted positive memory survives a global portfolio failure, and unresolved cases escalate to generation-aware exact-SHA Learning.
+
+
+
 ## 2026-09-21 14:14 Europe/Paris — Repair produced unpublished Wooka proof; Learning now generation-aware g3-g5
 
 - Canonical Repair run `35591042153` on tested SHA `f176c2d62ca8` completed **FAILURE after real Repair**, not preflight failure. Brain summary: `selected=12 accepted=1 fixed_lab=2 deferred_learning=9 remaining=1 waves=2`. The accepted candidate yielded **WookaFR TV raw=1 / playable=1 / accepted_playable=1 / verified=1 / wrong_content=0** on post-repair quick-yield. No current published-byte promotion is implied.
