@@ -30,6 +30,7 @@ required=[
     "exit-node-unavailable",
     "residential-probe-failed",
     "scripts/merge_waf_network_profiles.py",
+    "--status automation/provider-census-status.json",
 ]
 for needle in required:
     assert needle in wf, f"missing Tailscale WAF contract: {needle}"
