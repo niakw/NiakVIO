@@ -38,6 +38,7 @@ jobs:
           python scripts/manage_provider_lifecycle.py --apply
           python -m py_compile scripts/manage_provider_lifecycle.py scripts/current_provider_scope.py scripts/classify_provider_authority.py
           python tests/provider_authority_arbiter_test.py
+          python tests/provider_domain_authority_memory_test.py
           python - <<'PY'
           import json
           import sys
