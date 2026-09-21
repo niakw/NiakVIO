@@ -28,6 +28,15 @@ for count in (1,2,4,8,16):
 
 assert mod.chunks(["a","b","c","d","e"],2)==[["a","b"],["c","d"],["e"]]
 
+assert mod.health_concurrency_for_batch(0,1)==1
+assert mod.health_concurrency_for_batch(0,3)==3
+assert mod.health_concurrency_for_batch(0,4)==4
+assert mod.health_concurrency_for_batch(0,6)==6
+assert mod.health_concurrency_for_batch(0,8)==8
+assert mod.health_concurrency_for_batch(0,48)==8
+assert mod.health_concurrency_for_batch(5,48)==5
+assert mod.health_concurrency_for_batch(99,48)==8
+
 
 assert mod.experiment_rotation_decision(
     accepted_count=0, remaining_count=3, wave=1, max_waves=5, memory_advanced=True
@@ -281,6 +290,7 @@ for required in (
     "unvisitedProviders",
     "provider_attempt_pressure_map",
     "PROVIDER_BRAIN_PACKED_FAMILY_BATCHES_V1",
+    "PROVIDER_BRAIN_BATCH_CONCURRENCY_V1",
 ):
     assert required in source, required
 
