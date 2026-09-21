@@ -60,8 +60,18 @@ jobs:
       - name: Checkout trusted production baseline with history
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 0
+
+      - name: Assert exact Learning SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}" || {
+            echo "Learning checkout drifted from event SHA." >&2
+            exit 1
+          }
+          echo "FIELD_BRAIN_LEARNING_SHA sha=${GITHUB_SHA}"
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
