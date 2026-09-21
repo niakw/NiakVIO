@@ -423,6 +423,8 @@ assert "authority-blocked-runtime" not in post_harness["environmentQueue"], post
 assert "authority-blocked-runtime" not in post_harness["harnessQueue"], post_harness
 assert "authority-blocked-runtime" in post_harness["brainQueue"], post_harness
 assert post_harness["authorityBlockedQueue"] == ["authority-blocked-runtime"], post_harness
+assert post_harness["lifecycleDisabledQueue"] == [], post_harness
+assert post_harness["authorityRediscoveryQueue"] == ["authority-blocked-runtime"], post_harness
 assert post_by_id["browser-only-runtime"]["status"] == "HARNESS MISMATCH"
 assert post_by_id["browser-only-runtime"]["repairEligible"] is False
 assert "browser-only-runtime" in post_harness["environmentQueue"]
