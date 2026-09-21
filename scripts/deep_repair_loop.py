@@ -77,9 +77,9 @@ def accepted_runtime_program(candidate: dict[str, Any]) -> dict[str, Any] | None
     allowed_option_keys = {
         "base_url", "endpoint_origins", "types", "search_paths", "direct_paths",
         "request_recipes", "repair_focus", "census_status", "experiment_variant",
-        "experiment_failure_class", "experiment_strategy", "new_strategy_id",
+        "experiment_generation", "experiment_failure_class", "experiment_strategy", "new_strategy_id",
         "peer_route_min_variant", "peer_recipe_min_variant", "negative_memory_matches",
-        "max_pages", "max_embeds", "max_depth", "timeout_ms", "user_agent",
+        "max_pages", "max_embeds", "max_depth", "max_recipe_passes", "timeout_ms", "user_agent",
         "blocked_hosts", "blocked_path_patterns", "route_prior_counts",
     }
     for record in reversed(candidate.get("local_patches") or []):
