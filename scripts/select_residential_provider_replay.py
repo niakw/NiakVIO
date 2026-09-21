@@ -30,10 +30,16 @@ def native_reached(prefix: dict[str, Any]) -> bool:
     )
 
 
-def select(report: dict[str, Any]) -> list[str]:
+def select(report: dict[str, Any], status: dict[str, Any] | None = None) -> list[str]:
     providers=set()
+    status=status or {}
+    environment={
+        str(value or "").strip().casefold()
+        for value in (status.get("environmentQueue") or status.get("harnessQueue") or [])
+        if str(value or "").strip()
+    }
     for row in report.get("rows") or []:
-        if not isinstance(row,dict) or str(row.get("seedKind") or "")!="network-failure-replay":
+        if not isinstance(row,dict):
             continue
         provider=str(row.get("provider") or "").strip().casefold()
         residential=row.get("residentialExitNodeProfile") if isinstance(row.get("residentialExitNodeProfile"),dict) else {}
@@ -41,7 +47,9 @@ def select(report: dict[str, Any]) -> list[str]:
             continue
         if native_reached(row):
             continue
-        if native_reached(residential):
+        if not native_reached(residential):
+            continue
+        if str(row.get("seedKind") or "")=="network-failure-replay" or provider in environment:
             providers.add(provider)
     return sorted(providers)
 
@@ -49,12 +57,14 @@ def select(report: dict[str, Any]) -> list[str]:
 def main() -> int:
     ap=argparse.ArgumentParser()
     ap.add_argument("--waf",type=Path,required=True)
+    ap.add_argument("--status",type=Path)
     ap.add_argument("--output",type=Path,required=True)
     args=ap.parse_args()
-    providers=select(load(args.waf))
+    status=load(args.status) if args.status and args.status.is_file() else {}
+    providers=select(load(args.waf),status)
     payload={
         "schemaVersion":1,
-        "selection":"github-native-failed-residential-native-reached",
+        "selection":"github-native-failed-residential-native-reached-network-or-harness",
         "providers":providers,
         "providerCount":len(providers),
     }
