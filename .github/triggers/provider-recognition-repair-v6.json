@@ -1,12 +1,12 @@
 {
   "schemaVersion": 4,
-  "requestedAt": "2026-09-21T23:45:00+02:00",
-  "retry": 113,
+  "requestedAt": "2026-09-21T23:47:00+02:00",
+  "retry": 114,
   "mode": "repair",
-  "scope": "current-head-bounded-tailscale-integrated-census-brain-validation",
+  "scope": "supersession-guard-old-lane-replacement",
   "targetProviders": [],
-  "goal": "Run canonical Repair on current main after bounding optional Tailscale connection duration and cancelling obsolete Repair 135. Require full preflight, integrated authority/WAF/Tailscale qualification, split lifecycle/rediscovery/harness/environment census queues, authority-eligible Brain selection only, durable experiment memory, strict non-regression, and post-Repair census persistence.",
+  "goal": "Replace the old provider-repair-main pending run with a current-SHA run that fails immediately if it becomes superseded, so the obsolete unbounded-Tailscale generation cannot later launch expensive Brain work.",
   "branch": "main",
   "publication": false,
-  "sourceRef": "82492ff5106a190ae364c9b22ec1d4370d74eadc"
+  "sourceRef": "99fc847b2a8d7cabf1d79c6df02b2aac85e1865f"
 }
