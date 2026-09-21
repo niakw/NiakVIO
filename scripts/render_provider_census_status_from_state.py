@@ -67,6 +67,16 @@ def residential_probe_cell(state: dict[str, Any], row: dict[str, Any]) -> str:
 
 
 
+def residential_replay_cell(row: dict[str, Any]) -> str:
+    replay_class = str(row.get("residentialProviderReplayClass") or "").strip()
+    if not replay_class:
+        return "—"
+    if row.get("residentialProviderReplayPromoted") is True:
+        lanes = joined(row.get("currentVerifiedLanes"))
+        return f"✅ {replay_class}" + (f" · {lanes}" if lanes else "")
+    return replay_class
+
+
 def network_differential_cell(row: dict[str, Any]) -> str:
     if str(row.get("status") or "") != "PROVIDER NETWORK BLOCKED":
         return "—"
@@ -133,8 +143,8 @@ def render(state: dict[str, Any]) -> str:
         "",
         "**Important:** browser/OkHttp reachability is transport evidence only. It never promotes playback status and never authorizes provider-code mutation by itself.",
         "",
-        "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Candidate proof | Route proof | Corpus progress | Evidence depth | Harness transport | Residential probe | Network differential | Latest lane verdicts | Dominant issue | Next action |",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+        "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Candidate proof | Route proof | Corpus progress | Evidence depth | Harness transport | Residential probe | Residential replay | Network differential | Latest lane verdicts | Dominant issue | Next action |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ])
     for row in providers:
         status = str(row.get("status") or "")
@@ -152,6 +162,7 @@ def render(state: dict[str, Any]) -> str:
             cell(joined(row.get("evidenceDepth"))),
             cell(row.get("harnessTransportClass") or "—"),
             cell(residential_probe_cell(state, row)),
+            cell(residential_replay_cell(row)),
             cell(network_differential_cell(row)),
             cell(joined(row.get("latestLaneVerdicts"))),
             cell(row.get("dominantIssue") or "none"),
@@ -159,7 +170,7 @@ def render(state: dict[str, Any]) -> str:
         ]) + " |")
     lines.extend([
         "",
-        "Playback/route/candidate/history depth is owned by the latest Repair census. Harness transport overlays may refine providers already in the environment queue; exact failed-route network differentials are annotations only and never remove a provider from Repair without a full provider replay.",
+        "Playback/route/candidate/history depth is owned by the latest Repair census. Harness transport overlays may refine providers already in the environment queue; exact failed-route network differentials are annotations only. Only a full provider replay with playable, identity-verified, contradiction-free media can promote functional status.",
         "",
     ])
     return "\n".join(lines)
