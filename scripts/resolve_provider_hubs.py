@@ -1291,6 +1291,47 @@ def update_provider_patch(config: dict[str, Any], provider_id: str, hub_cfg: dic
                 runtime[old] = new_site_host
                 changes.append({"from": old, "to": new_site_host, "kind": "site"})
 
+    # Provider-owned Lego options can carry a site root independently from
+    # official_site/domain_substitutions. When Domain Refresh rotates a terminal,
+    # migrate only top-level site-root option keys that point at a host we have
+    # just classified as an old provider terminal. Do not recursively rewrite
+    # arrays/mirror pools (for example VidFast's multi-base list): those may be
+    # deliberate alternate authorities.
+    lego_site_keys = {
+        "base", "site", "referer", "referrer", "origin",
+        "base_url", "baseUrl", "site_url", "siteUrl",
+    }
+    provider_lego_options = patch.get("provider_lego_options")
+    if isinstance(provider_lego_options, dict):
+        for script_name, options in provider_lego_options.items():
+            if not isinstance(options, dict):
+                continue
+            for key in lego_site_keys:
+                raw = options.get(key)
+                if not isinstance(raw, str) or not is_http_url(raw):
+                    continue
+                old_host = host(raw)
+                if not old_host or old_host == new_site_host:
+                    continue
+                if replacements.get(old_host) != new_site_host and runtime.get(old_host) != new_site_host:
+                    continue
+                parsed = urllib.parse.urlparse(raw)
+                rewritten = urllib.parse.urlunparse((
+                    parsed.scheme or "https",
+                    new_site_host,
+                    parsed.path,
+                    parsed.params,
+                    parsed.query,
+                    parsed.fragment,
+                )).rstrip("/")
+                if rewritten != raw.rstrip("/"):
+                    options[key] = rewritten
+                    changes.append({
+                        "from": old_host,
+                        "to": new_site_host,
+                        "kind": f"provider_lego_option:{script_name}:{key}",
+                    })
+
     if api_url:
         new_api_host = host(api_url)
         old_api_hosts = {str(item).lower().strip(".") for item in hub_cfg.get("old_api_hosts") or [] if item}
