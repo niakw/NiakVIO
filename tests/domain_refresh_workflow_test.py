@@ -17,9 +17,12 @@ validator = VALIDATOR.read_text(encoding="utf-8")
 assert text.startswith("name: CORE - Domain Refresh")
 assert "23 3 * * *" in text
 assert "contents: write" in text
-assert "startsWith(github.event.head_commit.message, 'provider: bulk stage ') == false" in text
-assert "startsWith(github.event.head_commit.message, 'provider: bulk activate ') == false" in text
-assert "!startsWith(" not in text, "GitHub workflow parser must not receive compact unary-negation function calls"
+assert "bulk-guard:" in text
+assert "Defer domain mutation during bulk onboarding" in text
+assert '"provider: bulk stage "*|"provider: bulk activate "*' in text
+assert "needs: bulk-guard" in text
+assert "if: needs.bulk-guard.outputs.run == 'true'" in text
+assert "github.event.head_commit.message" not in text, "bulk guard must not depend on fragile job-level event expression parsing"
 assert "scripts/domain_refresh_transaction_v2.py" in text
 assert "--apply" in text
 assert "provider-hubs.json" in text
