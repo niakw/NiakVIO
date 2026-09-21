@@ -1,0 +1,119 @@
+name: PROVIDERS - Remat Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: Provider DATA rematerialization scope
+        required: true
+        default: non-full
+        type: choice
+        options: [non-full, repair, all]
+      target_provider:
+        description: Optional exact provider id
+        required: false
+        default: ""
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/provider-remat-test.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-remat-test-main
+  cancel-in-progress: true
+
+jobs:
+  remat-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked Node tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Validate Remat/Test separation
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/run_provider_remat_test.py scripts/run_provider_retest.py scripts/materialize_provider_v3_one.py
+          python tests/provider_remat_test_separation_test.py
+          python tests/provider_retest_scope_test.py
+          python tests/provider_v3_override_pipeline_contract_test.py
+      - name: Rematerialize current DATA and Retest
+        shell: bash
+        env:
+          DISPATCH_SCOPE: ${{ inputs.scope || '' }}
+          DISPATCH_PROVIDER: ${{ inputs.target_provider || '' }}
+        run: |
+          set -euo pipefail
+          scope="${DISPATCH_SCOPE:-non-full}"
+          providers=()
+          if [ "${{ github.event_name }}" = "push" ]; then
+            readarray -t vals < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('.github/triggers/provider-remat-test.json').read_text())
+          print(str(d.get('scope') or 'non-full'))
+          for p in d.get('targetProviders') or []:
+              p=str(p or '').strip().lower()
+              if p:
+                  print(p)
+          PY
+            )
+            scope="${vals[0]:-non-full}"
+            providers=("${vals[@]:1}")
+          else
+            [ -z "${DISPATCH_PROVIDER:-}" ] || providers+=("$DISPATCH_PROVIDER")
+          fi
+          args=(python scripts/run_provider_remat_test.py --scope "$scope")
+          for p in "${providers[@]}"; do args+=(--provider "$p"); done
+          printf 'PROVIDER_REMAT_TEST_ARGS %q ' "${args[@]}"; echo
+          "${args[@]}"
+      - name: Verify Remat/Test never prepares publication
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('automation/provider-remat-test-latest.json').read_text())
+          assert d.get('publicationAllowed') is False, d
+          print(
+              'FIELD_PROVIDER_REMAT_TEST_VERIFY '
+              f"providers={d.get('providerCount',0)} "
+              f"changed={d.get('changedByteProviderCount',0)}"
+          )
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: provider-remat-test-${{ github.run_id }}
+          path: |
+            automation/provider-remat-test-latest.json
+            automation/provider-retest-latest.json
+            automation/provider-retest-targets-latest.json
+            automation/provider-census-status.json
+            automation/provider-repair-batch-plan-latest.json
+            PROVIDER_CENSUS_STATUS.md
+            provider-v3-quick-yield.json
+            provider-v3-materialization.json
+            manifest.json
+            provider-overrides.json
+            providers/
+          retention-days: 14
+          if-no-files-found: warn
