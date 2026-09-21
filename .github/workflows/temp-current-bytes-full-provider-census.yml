@@ -353,13 +353,21 @@ jobs:
           print(f"{d.get('verifiedProviderCount',0)}/{d.get('providerCount',0)}")
           PY
           )"
+          # Canonical census evidence is byte/SHA-specific. Never rebase an old
+          # completed census onto a newer main and overwrite a fresher Retest/Repair
+          # ledger merely because this longer run finished later.
+          git fetch origin main
+          remote_main="$(git rev-parse origin/main)"
+          if [ "$remote_main" != "$GITHUB_SHA" ]; then
+            echo "FIELD_CURRENT_BYTES_CENSUS_STALE source=$GITHUB_SHA remote=$remote_main"
+            exit 0
+          fi
+
           # Rematerialization intentionally mutates the workspace. Evidence publication
           # must not accidentally publish those candidate bytes or fail because they
           # are unstaged.
           git reset --hard "${GITHUB_SHA}"
           git clean -fd
-          git fetch origin main
-          git rebase origin/main
           mkdir -p automation
           cp "/tmp/census-summary-${run_id}.json" "automation/current-bytes-full-provider-census-${run_id}-summary.json"
           cp "/tmp/census-full-${run_id}.json" "automation/current-bytes-full-provider-census-${run_id}.json"
