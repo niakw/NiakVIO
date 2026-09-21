@@ -32,3 +32,7 @@ assert '"last_refresh_scope": "targeted"' in profiles_script
 assert 'build_provider_runtime_profiles.py"), "--stage", str(stage), "--apply-stage", "--provider", provider_id' in queue
 
 print("Learning targeted domain-refresh scope contract passed")
+assert '"--stage", str(stage), "--provider", provider_id' in queue
+validator=(ROOT/"scripts/validate_override_pipeline.py").read_text(encoding="utf-8")
+assert 'parser.add_argument("--provider"' in validator
+assert 'if selected_provider and provider_id != selected_provider' in validator
