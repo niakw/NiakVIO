@@ -56,6 +56,9 @@ assert "git diff --exit-code -- scripts/provider_patches provider-bases provider
 assert "update_provider_v3_domain_config.py" not in text, "partial officialSite-only updater must not own Domain Refresh"
 assert "validate_domain_refresh_scope.py" not in text, "old official_site-only scope validator is obsolete"
 assert "materialize_provider_v3_all.py" not in text, "domain changes must not rematerialize/rewrite the global Core"
+assert "project_domain_owned_provider_legos" in source
+assert "provider_domain_runtime_projection_drift_ids" in source
+assert '"runtime_projection_drift"' in source
 for forbidden in (
     "run_adaptive_deep_repair.py",
     "run_adaptive_quick_repair.py",
@@ -85,7 +88,9 @@ for required in (
     "DOMAIN_REFRESH_CURRENT_SCOPE_PROJECTION_DRIFT_V1",
     "DOMAIN_CONFIG_DATA_OWNERSHIP_V1",
     "replace_provider_fix",
-    "domain refresh changed bytes outside CONFIG Lego",
+    "project_domain_owned_provider_legos",
+    "provider_domain_runtime_projection_drift_ids",
+    "domain refresh changed bytes outside domain-owned Provider Lego",
     '"core_mutation": False',
 ):
     assert required in source, required
