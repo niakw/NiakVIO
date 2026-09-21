@@ -403,7 +403,7 @@ post_harness_waf = {
 }
 post_harness = mod.merge_transport(post_harness_baseline, post_harness_waf)
 post_by_id = {row["provider"]: row for row in post_harness["providers"]}
-assert post_by_id["wooka-like"]["status"] == "PROVIDER NETWORK BLOCKED", post_by_id["wooka-like"]
+assert post_by_id["wooka-like"]["status"] == "CHAIN REACHED", post_by_id["wooka-like"]
 assert post_by_id["wooka-like"]["repairEligible"] is True
 assert post_by_id["wooka-like"]["residentialProviderReplayReclassified"] is True
 assert "wooka-like" in post_harness["repairQueue"]
@@ -412,7 +412,7 @@ assert "wooka-like" not in post_harness["harnessQueue"]
 assert post_harness["residentialProviderReplayReclassifiedProviders"] == ["authority-blocked-runtime", "wooka-like"]
 assert post_harness["residentialProviderReplayRepairableProviders"] == ["wooka-like"]
 blocked = post_by_id["authority-blocked-runtime"]
-assert blocked["status"] == "PROVIDER NETWORK BLOCKED", blocked
+assert blocked["status"] == "ROUTE PROVEN", blocked
 assert blocked["statusRepairEligible"] is True, blocked
 assert blocked["authorityRepairEligible"] is False, blocked
 assert blocked["repairEligible"] is False, blocked
