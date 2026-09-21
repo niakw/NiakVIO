@@ -6,7 +6,7 @@ wf=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(encod
 
 required=[
     "id-token: write",
-    "group: provider-repair-main",
+    "group: provider-repair-main-v2",
     "Prepare integrated Repair WAF/network qualification",
     "scripts/classify_provider_authority.py",
     'row.get("repairEligible") is True',
@@ -35,6 +35,8 @@ connect=wf.index("- name: Connect optional Repair Tailscale transport")
 merge=wf.index("- name: Apply integrated WAF qualification to Repair census")
 canonical=wf.index("- name: Run canonical recognition and correction only for unresolved providers")
 assert prepare < authority < pre_render < connect < merge < canonical
+assert "Reject superseded Repair SHA before expensive work" in wf
+assert "FIELD_REPAIR_SUPERSEDED_EARLY" in wf
 
 # Tailscale is enhancement, never a prerequisite for Repair.
 connect_block=wf[connect:merge]
