@@ -235,6 +235,11 @@ def sync_patch_domain_authority(
     for name in ("runtime_domain_replacements", "domain_substitutions"):
         mapping = patch.get(name)
         if not isinstance(mapping, dict):
+            # Do not mutate a provider merely by observing its already-current
+            # terminal. Create execution-domain memory only when an actual
+            # terminal rotation needs an old-host -> new-host edge.
+            if not before_host or before_host == next_host:
+                continue
             mapping = {}
             patch[name] = mapping
         if _rewrite_connected_domain_map(mapping, before_host, next_host):
