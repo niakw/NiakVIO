@@ -70,6 +70,7 @@ assert "chore(domains): finalize Provider v3 domain transaction" in commit_lines
 assert "push origin HEAD:main" in text
 assert text.count("push origin HEAD:main") == 1, "Domain Refresh must expose only one remote publication point"
 assert "gh workflow run sync.yml --ref main -f mode=quick" in text
+assert text.count("gh workflow run provider-disabled-lifecycle.yml --ref main") == 1
 
 for required in (
     "provider-hubs-authoritative-terminal",
