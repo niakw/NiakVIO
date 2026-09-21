@@ -283,6 +283,38 @@ def current_repair_priority(
     return list(deferred), list(deferred), "learning-current-observation-fallback"
 
 
+def authoritative_learning_order(
+    base_order: list[str],
+    census_repair: list[str],
+    repair_deferred: list[str],
+    reconstruction_required: list[str],
+    info_by_id: dict[str, dict[str, Any]],
+    staged_candidates: dict[str, dict[str, Any]],
+) -> list[str]:
+    """Put current census repair debt before broad reconstruction/backlog work.
+
+    Learning has a finite wall-clock budget. A portfolio-wide reconstruction
+    backlog must therefore never consume the slot before providers that the
+    current canonical census says are broken. Historical exhausted signatures
+    remain next, then clean-reconstruction debt, then ordinary queue cycling.
+    """
+    priority = unique([
+        *census_repair,
+        *repair_deferred,
+        *reconstruction_required,
+    ])
+    eligible_priority = [
+        provider_id
+        for provider_id in priority
+        if provider_id in info_by_id and provider_id in staged_candidates
+    ]
+    priority_set = set(eligible_priority)
+    return unique([
+        *eligible_priority,
+        *[provider_id for provider_id in base_order if provider_id not in priority_set],
+    ])
+
+
 def candidate_map(registry: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {
         norm(row.get("canonical_id") or row.get("upstream_id")): row
@@ -662,13 +694,17 @@ def main() -> int:
     )
     reconstruction_required_set = set(reconstruction_required)
     if not args.provider:
-        # Clean reconstruction debt remains first; exhausted Repair signatures
-        # are next and outrank routine anomaly/healthy cycling.
-        priority = unique([*reconstruction_required, *census_repair, *repair_deferred])
-        order = [
-            *[provider_id for provider_id in priority if provider_id in info_by_id and provider_id in staged_candidates],
-            *[provider_id for provider_id in order if provider_id not in set(priority)],
-        ]
+        # The canonical current census is the first Learning authority. Broad
+        # clean-reconstruction debt is important, but it must not starve current
+        # broken providers inside a finite Learning slot.
+        order = authoritative_learning_order(
+            order,
+            census_repair,
+            repair_deferred,
+            reconstruction_required,
+            info_by_id,
+            staged_candidates,
+        )
 
     queue["deferredRepairProviders"] = repair_deferred
     queue["deferredRepairProviderCount"] = len(repair_deferred)
