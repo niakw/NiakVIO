@@ -43,23 +43,23 @@ def patch() -> bool:
     before=json.dumps(cfg,ensure_ascii=False,sort_keys=True)
 
     a=patches["animevostfr"]
-    a["official_site"]="https://v2.animevostfr.org"
+    a["official_site"]="https://animevostfr.org"
     a["capability"]="mixed_embed_resolver"
     a["identity_input"]={"mode":"catalog_search","requires_tmdb_before_run":True,"required_fields":["title","mediaType"]}
-    a["proof_search_bases"]=["https://v2.animevostfr.org"]
+    a["proof_search_bases"]=["https://animevostfr.org"]
     a["learned_routes"]=[
-        "https://v2.animevostfr.org/?s={query}",
-        "https://v2.animevostfr.org/animes/{slug}/",
-        "https://v2.animevostfr.org/episode/{slug}-{season}-episode-{episode}/",
-        "https://v2.animevostfr.org/?trembed={id}&trid={id}&trtype=2",
+        "https://animevostfr.org/?s={query}",
+        "https://animevostfr.org/animes/{slug}/",
+        "https://animevostfr.org/episode/{slug}-{season}-episode-{episode}/",
+        "https://animevostfr.org/?trembed={id}&trid={id}&trtype=2",
     ]
     a["candidate_learned_routes"]=uniq(list(a.get("candidate_learned_routes") or [])+a["learned_routes"])
     for key in ("api_recipe","search_request_plan","provider_value_plan"):
         a.pop(key,None)
-    set_lego(a,ANIMEVOST,{"base":"https://v2.animevostfr.org","targetStreams":3})
+    set_lego(a,ANIMEVOST,{"base":"https://animevostfr.org","targetStreams":3})
     ac=caps.setdefault("animevostfr",{})
     ac["strategy"]="mixed_embed_resolver"; ac["validation"]="provider_native"
-    ac["observed_origins"]=uniq(["https://v2.animevostfr.org"]+list(ac.get("observed_origins") or []))
+    ac["observed_origins"]=uniq(["https://animevostfr.org"]+list(ac.get("observed_origins") or []))
 
     k=patches["kurage"]
     k["official_site"]="https://kurage.live"
@@ -100,7 +100,7 @@ def patch() -> bool:
     knowledge=json.loads(KNOWLEDGE.read_text(encoding="utf-8"))
     providers=knowledge.setdefault("providers",{})
     specs={
-        "animevostfr":("https://v2.animevostfr.org","mixed_embed_resolver",a["learned_routes"]),
+        "animevostfr":("https://animevostfr.org","mixed_embed_resolver",a["learned_routes"]),
         "kurage":("https://kurage.live","api_stream_resolver",k["learned_routes"]),
         "voiranime":("https://voir-anime.to","mixed_embed_resolver",v["learned_routes"]),
     }
