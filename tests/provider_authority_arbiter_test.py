@@ -131,10 +131,37 @@ r=module.classify(
 )
 assert r["action"]=="KEEP_LKG_COMBO",r
 
+# A bare direct candidate sourced only from search is not authority by itself.
+bare_direct = reg(direct="https://candidate.example/")
+bare_direct["sources"] = [{"type":"search","query":"demo official"}]
+r = module.classify("demo", row(True), bare_direct, patch(), {})
+assert r["action"] == "REDISCOVER_SEARCH", r
+assert r["repairEligible"] is False, r
+
+# The same non-explicit direct becomes usable once provider-owned execution has
+# produced positive route evidence.
+proven = patch()
+proven["route_proof"] = {
+    "provenRouteCount": 1,
+    "lastRepairProbe": {"positiveExecutionEvidence": True},
+}
+r = module.classify("demo", row(True), bare_direct, proven, {})
+assert r["action"] == "KEEP_DIRECT", r
+assert r["repairEligible"] is True, r
+
+# explicit_current remains an intentional stronger authority until persisted
+# Domain failure memory demotes it.
+explicit = reg(direct="https://current.example/")
+explicit["direct_authority"] = "explicit_current"
+r = module.classify("demo", row(True), explicit, patch(), {})
+assert r["action"] == "KEEP_DIRECT", r
+assert r["confidence"] == "high", r
+
 # Existing manual lifecycle decisions remain terminal.
 r=module.classify("demo",row(False),reg(),patch(manual_off_reason="manual_off_test"),{})
 assert r["action"]=="KEEP_DISABLED",r
 
 assert "PROVIDER_AUTHORITY_BACKEND_SCOPE_V1" in SCRIPT.read_text(encoding="utf-8")
+assert "PROVIDER_AUTHORITY_DIRECT_PROOF_V1" in SCRIPT.read_text(encoding="utf-8")
 assert module.ROOT.joinpath("scripts/manage_provider_lifecycle.py").read_text(encoding="utf-8").find("RETENTION_DAYS = 7")>=0
 print("provider authority arbiter contract ok")
