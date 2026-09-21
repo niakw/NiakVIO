@@ -361,19 +361,33 @@ def route_search(provider_id: str, run_dir: Path, deadline: float) -> dict[str, 
         "routeEvidenceCount": route_evidence_count(hub_payload) + route_evidence_count(payload),
     }
 
-def refresh_stage_routes(stage: Path, deadline: float, provider_id: str) -> None:
+def refresh_stage_routes(stage: Path, deadline: float, provider_id: str) -> dict[str, Any]:
     # Route discovery can rotate a provider terminal. Reconcile provider-owned
     # metadata/config bytes before reapplying runtime profiles, exactly as the
-    # canonical Domain Refresh lane does. This keeps old-host -> terminal mappings
-    # and generated provider CONFIG in one transaction instead of validating an
-    # intermediate split-brain state.
-    for cmd in (
-        [sys.executable, str(SCRIPTS / "reconcile_provider_domain_metadata.py"), "--rebuild", "--provider", provider_id],
-        [sys.executable, str(SCRIPTS / "build_provider_runtime_profiles.py"), "--stage", str(stage), "--apply-stage", "--provider", provider_id],
-        [sys.executable, str(SCRIPTS / "normalize_terminal_quarantine_stage.py"), "--stage", str(stage)],
-        [sys.executable, str(SCRIPTS / "validate_override_pipeline.py"), "--stage", str(stage), "--provider", provider_id],
-    ):
-        run(cmd, env=os.environ.copy(), deadline=deadline)
+    # canonical Domain Refresh lane does. A provider-local refresh failure is
+    # evidence about that provider, not a reason to abort the whole Learning
+    # superset: return a structured blocker so the queue can persist/retry it.
+    steps = (
+        ("domain_metadata_reconcile", [sys.executable, str(SCRIPTS / "reconcile_provider_domain_metadata.py"), "--rebuild", "--provider", provider_id]),
+        ("runtime_profile_reapply", [sys.executable, str(SCRIPTS / "build_provider_runtime_profiles.py"), "--stage", str(stage), "--apply-stage", "--provider", provider_id]),
+        ("terminal_quarantine_normalize", [sys.executable, str(SCRIPTS / "normalize_terminal_quarantine_stage.py"), "--stage", str(stage)]),
+        ("override_pipeline_validate", [sys.executable, str(SCRIPTS / "validate_override_pipeline.py"), "--stage", str(stage), "--provider", provider_id]),
+    )
+    for step, cmd in steps:
+        completed = run(cmd, env=os.environ.copy(), deadline=deadline, allow_fail=True)
+        if completed.returncode != 0:
+            result = {
+                "ok": False,
+                "provider": provider_id,
+                "step": step,
+                "returncode": int(completed.returncode),
+            }
+            print(
+                "FIELD_BRAIN_PROVIDER_REFRESH_ISOLATED "
+                f"provider={provider_id} step={step} returncode={completed.returncode}"
+            )
+            return result
+    return {"ok": True, "provider": provider_id, "step": "complete", "returncode": 0}
 
 def declared_type(candidate: dict[str, Any]) -> str:
     metadata = candidate.get("metadata") if isinstance(candidate.get("metadata"), dict) else {}
@@ -615,17 +629,20 @@ def main() -> int:
             run_dir.mkdir(parents=True, exist_ok=True)
             info = info_by_id.get(provider_id, {"provider": provider_id, "status": "", "needs_route_search": False})
             route = None
+            route_refresh: dict[str, Any] | None = None
     
             if bool(info.get("needs_route_search")) and time.time() < work_deadline:
                 route = route_search(provider_id, run_dir, work_deadline)
-                refresh_stage_routes(stage, work_deadline, provider_id)
+                route_refresh = refresh_stage_routes(stage, work_deadline, provider_id)
     
             provider_attempts: list[dict[str, Any]] = []
             seen_method_sets: set[tuple[str, ...]] = set()
             final_lab: dict[str, Any] | None = None
             resolved = False
     
-            while time.time() < work_deadline:
+            while time.time() < work_deadline and not (
+                isinstance(route_refresh, dict) and route_refresh.get("ok") is False
+            ):
                 full_registry = load_json(full_registry_path, {})
                 target_path = run_dir / "candidates.json"
                 write_json(target_path, targeted_registry(full_registry, provider_id))
@@ -671,7 +688,9 @@ def main() -> int:
                 any_runtime = any(int(x.get("runtimeStreams") or 0) > 0 for x in (final_lab.get("clients") or {}).values())
                 if not any_runtime and route is None and time.time() < work_deadline:
                     route = route_search(provider_id, run_dir, work_deadline)
-                    refresh_stage_routes(stage, work_deadline)
+                    route_refresh = refresh_stage_routes(stage, work_deadline, provider_id)
+                    if route_refresh.get("ok") is False:
+                        break
                     continue
     
                 # Continue only while the previous cycle found a genuinely new method
@@ -683,6 +702,9 @@ def main() -> int:
                 if repair["accepted"] == 0:
                     break
     
+            if isinstance(route_refresh, dict) and route_refresh.get("ok") is False:
+                state["lastStatus"] = "stage_refresh_blocked"
+                state["lastStageRefresh"] = copy.deepcopy(route_refresh)
             processed.append(provider_id)
             if not resolved:
                 retry_next.append(provider_id)
@@ -690,6 +712,7 @@ def main() -> int:
                 "provider": provider_id,
                 "coreHypothesis": info,
                 "routeSearch": route,
+                "routeRefresh": route_refresh,
                 "resolved": resolved,
                 "attempts": provider_attempts,
                 "finalLab": final_lab,
@@ -760,6 +783,14 @@ def main() -> int:
     queue["completedProviders"] = processed
     queue["hiddenFailureProviders"] = unique(hidden_failures)
     queue["fixtureHistoryUpdates"] = fixture_updates
+    queue["isolatedProviderRefreshFailures"] = unique([
+        str(row.get("provider") or "")
+        for row in run_results
+        if isinstance(row, dict)
+        and isinstance(row.get("routeRefresh"), dict)
+        and row["routeRefresh"].get("ok") is False
+        and str(row.get("provider") or "")
+    ])
 
     hidden_core_failures = sorted({
         str(row.get("provider") or "")
@@ -792,6 +823,7 @@ def main() -> int:
         "timeBudgetExhausted": queue["timeBudgetExhausted"],
         "retryProviders": queue["retryProviders"],
         "hiddenFailureProviders": hidden_core_failures,
+        "isolatedProviderRefreshFailures": queue["isolatedProviderRefreshFailures"],
         "results": run_results,
         "productionWritesAllowed": False,
         "publicationAllowed": False,
