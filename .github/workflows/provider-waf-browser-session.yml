@@ -1,20 +1,23 @@
 name: Provider WAF Browser Session Diagnostics
 
 on:
-  # Canonical production transport qualification runs inside Repair. This
-  # standalone workflow is intentionally manual diagnostics only so code/test
-  # pushes cannot race or stale a canonical Repair ledger.
+  # Transport qualification is an explicit lane. Ordinary code/test pushes do
+  # not trigger it; only manual dispatch or the dedicated trigger file does.
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/provider-waf-browser-session'
 
 permissions:
   contents: write
   id-token: write
 
 concurrency:
-  group: provider-census-waf-main
-  # Census persistence and the transport overlay share one repository-wide
-  # serialization lane. Never let a later census erase fresher residential evidence.
-  cancel-in-progress: false
+  group: provider-waf-transport-main
+  # Only the newest explicit transport qualification matters. Full census no
+  # longer owns canonical WAF evidence, so it must not block this lane.
+  cancel-in-progress: true
 
 jobs:
   browser-session:
