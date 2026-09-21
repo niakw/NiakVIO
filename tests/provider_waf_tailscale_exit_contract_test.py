@@ -17,8 +17,8 @@ required=[
     "tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8",
     "oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}",
     "audience: ${{ env.TS_AUDIENCE }}",
-    'tailscale ping --timeout=10s "$TS_EXIT_NODE" >/dev/null',
     'sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false',
+    "tag:niakvio-ci -> autogroup:internet policy",
     "scripts/merge_waf_network_profiles.py",
 ]
 for needle in required:
@@ -31,6 +31,7 @@ for forbidden in (
     "icanhazip",
     "curl -s https://ip",
     "tailscale status --json",
+    "tailscale ping --timeout",
     "log-mode:",
     'echo "$TS_EXIT_NODE"',
 ):
