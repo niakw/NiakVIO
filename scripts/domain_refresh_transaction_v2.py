@@ -5,9 +5,11 @@ Domain Refresh is address authority, not provider repair. A successful run:
 1. resolves the current terminal only from authoritative hub/channel/redirect sources;
 2. persists that terminal in provider-overrides, provider-domain-history and provider-hubs;
 3. reconciles only domain-routing derivatives connected to the previous terminal;
-4. rebuilds the complete managed CONFIG DATA block for changed Provider v3 bundles;
+4. rebuilds managed CONFIG DATA and projects explicit old->current host moves into
+   existing provider-owned runtime Lego for changed/stale Provider v3 bundles;
 5. republishes changed bundles with their existing source-qualified namespace;
-6. leaves every byte outside PROVIDER.*.CONFIG.V1 (including all Core Lego) unchanged.
+6. leaves every byte outside those domain-owned PROVIDER.* blocks (especially all
+   CORE.* Lego) unchanged.
 
 Manifest/release version synchronization is intentionally performed by the workflow
 after this transaction, once the domain mutation and Provider CONFIG rebuild pass.
@@ -19,6 +21,8 @@ import concurrent.futures
 import copy
 import hashlib
 import json
+import re
+import urllib.parse
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +34,7 @@ from provider_patch_blocks import (
     decode_managed_data,
     owned_span,
     replace_provider_fix,
+    strip_managed_fix,
     validate_managed_fixes,
 )
 
@@ -254,7 +259,109 @@ def sync_patch_domain_authority(
     ):
         changed.append("replacements")
 
+    if before_host and before_host != next_host:
+        provider_lego_options = patch.get("provider_lego_options")
+        if isinstance(provider_lego_options, dict):
+            site_keys = {
+                "base", "site", "referer", "referrer", "origin",
+                "base_url", "baseUrl", "site_url", "siteUrl",
+            }
+            lego_changed = False
+            for options in provider_lego_options.values():
+                if not isinstance(options, dict):
+                    continue
+                for key in site_keys:
+                    raw = options.get(key)
+                    if not isinstance(raw, str) or not raw.startswith(("http://", "https://")):
+                        continue
+                    try:
+                        parsed = urllib.parse.urlparse(raw)
+                    except ValueError:
+                        continue
+                    if str(parsed.hostname or "").casefold() != before_host:
+                        continue
+                    port = f":{parsed.port}" if parsed.port else ""
+                    rewritten = urllib.parse.urlunparse((
+                        parsed.scheme or "https",
+                        next_host + port,
+                        parsed.path,
+                        parsed.params,
+                        parsed.query,
+                        parsed.fragment,
+                    ))
+                    if rewritten != raw:
+                        options[key] = rewritten
+                        lego_changed = True
+            if lego_changed:
+                changed.append("provider_lego_options")
+
     return sorted(set(changed))
+
+
+def _domain_runtime_rewrites(patch: dict[str, Any]) -> dict[str, str]:
+    """Return only explicit old-site -> current-site host migrations."""
+    current_host = domain_host(patch.get("official_site"))
+    if not current_host:
+        return {}
+    rewrites: dict[str, str] = {}
+    for name in ("runtime_domain_replacements", "domain_substitutions"):
+        mapping = patch.get(name)
+        if not isinstance(mapping, dict):
+            continue
+        for source, target in mapping.items():
+            source_host = domain_host(source)
+            target_host = domain_host(target)
+            if source_host and source_host != current_host and target_host == current_host:
+                rewrites[source_host] = current_host
+    return rewrites
+
+
+def _replace_domain_host_tokens(text: str, rewrites: dict[str, str]) -> str:
+    output = text
+    for source, target in sorted(rewrites.items(), key=lambda item: -len(item[0])):
+        pattern = rf"(?<![A-Za-z0-9.-]){re.escape(source)}(?![A-Za-z0-9.-])"
+        output = re.sub(pattern, target, output, flags=re.IGNORECASE)
+    return output
+
+
+def project_domain_owned_provider_legos(
+    text: str,
+    provider_id: str,
+    config_fix_id: str,
+    patch: dict[str, Any],
+) -> tuple[str, list[str]]:
+    """Project explicit domain migrations into provider-owned runtime blocks only.
+
+    This is deliberately not a provider-code rebuild. Existing runtime algorithms
+    stay byte-identical except for concrete host tokens already authorized by
+    runtime_domain_replacements/domain_substitutions. Core Lego is never touched.
+    """
+    rewrites = _domain_runtime_rewrites(patch)
+    if not rewrites:
+        return text, []
+    current = text
+    changed: list[str] = []
+    prefix = f"PROVIDER.{provider_id.upper()}."
+    for fix_id in validate_managed_fixes(current):
+        if fix_id == config_fix_id or not fix_id.startswith(prefix):
+            continue
+        span = owned_span(current, fix_id)
+        if span is None:
+            continue
+        before_block = current[span[0]:span[1]]
+        after_block = _replace_domain_host_tokens(before_block, rewrites)
+        if after_block == before_block:
+            continue
+        current = current[:span[0]] + after_block + current[span[1]:]
+        changed.append(fix_id)
+    return current, changed
+
+
+def _strip_domain_owned_blocks(text: str, fix_ids: list[str]) -> str:
+    output = text
+    for fix_id in sorted(set(fix_ids)):
+        output = strip_managed_fix(output, fix_id)
+    return output
 
 
 def _config_fix_id(text: str, provider_id: str) -> str:
@@ -395,6 +502,42 @@ def provider_domain_projection_drift_ids(provider_ids: list[str]) -> list[str]:
     return drift
 
 
+def provider_domain_runtime_projection_drift_ids(provider_ids: list[str]) -> list[str]:
+    """Find stale explicit old-site hosts inside provider-owned runtime Lego."""
+    wanted = sorted(set(canonical(value) for value in provider_ids if canonical(value)))
+    if not wanted:
+        return []
+    manifest = load(MANIFEST_PATH)
+    overrides = load(CONFIG_PATH)
+    manifest_by_id = {
+        canonical(row.get("id")): row
+        for row in manifest.get("scrapers") or []
+        if isinstance(row, dict) and canonical(row.get("id"))
+    }
+    patches = overrides.get("provider_patches") or {}
+    drift: list[str] = []
+    for provider_id in wanted:
+        entry = manifest_by_id.get(provider_id)
+        patch = patches.get(provider_id) if isinstance(patches, dict) else None
+        if not isinstance(entry, dict) or not isinstance(patch, dict):
+            continue
+        rewrites = _domain_runtime_rewrites(patch)
+        if not rewrites:
+            continue
+        rel = str(entry.get("filename") or "")
+        path = ROOT / rel
+        if not rel.startswith("providers/") or not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        config_fix_id = _config_fix_id(text, provider_id)
+        projected, changed = project_domain_owned_provider_legos(
+            text, provider_id, config_fix_id, patch
+        )
+        if changed and projected != text:
+            drift.append(provider_id)
+    return drift
+
+
 def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
     """Rebuild only Domain-owned CONFIG DATA for changed providers, preserving Core and non-domain DATA."""
     if not provider_ids:
@@ -466,9 +609,12 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
             f"const NIAKVIO_PROVIDER_MODEL = Object.freeze({payload});",
             data=data,
         )
+        after, runtime_fix_ids = project_domain_owned_provider_legos(
+            after, provider_id, fix_id, patch
+        )
         validate_managed_fixes(after)
 
-        # CONFIG-only rebuilds start from already published fixed-point bytes.
+        # Domain-only rebuilds start from already published fixed-point bytes.
         # Canonicalize the replacement through the same safe minimizer used by
         # publication, then re-check the Core/outside-CONFIG byte invariant below.
         before_fixed = allmat.minimize_text(before)
@@ -484,8 +630,11 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
         after_span = owned_span(after, fix_id)
         if after_span is None:
             raise RuntimeError(f"{provider_id}: CONFIG span lost")
-        if before[: before_span[0]] + before[before_span[1] :] != after[: after_span[0]] + after[after_span[1] :]:
-            raise RuntimeError(f"{provider_id}: domain refresh changed bytes outside CONFIG Lego")
+        allowed_fix_ids = [fix_id, *runtime_fix_ids]
+        if _strip_domain_owned_blocks(before, allowed_fix_ids) != _strip_domain_owned_blocks(after, allowed_fix_ids):
+            raise RuntimeError(
+                f"{provider_id}: domain refresh changed bytes outside domain-owned Provider Lego"
+            )
 
         raw = after.encode("utf-8")
         digest = hashlib.sha256(raw).hexdigest()
@@ -498,7 +647,12 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
         report["providerDataSha256"] = _data_digest(data)
         if old_path != new_path and old_path.exists():
             old_path.unlink()
-        updates.append({"provider": provider_id, "from": old_rel, "to": new_rel})
+        updates.append({
+            "provider": provider_id,
+            "from": old_rel,
+            "to": new_rel,
+            "runtimeFixes": ",".join(runtime_fix_ids),
+        })
 
     materialization["generation"] = _generation(material_rows)
     materialization["providerCount"] = CURRENT_PROVIDER_COUNT
@@ -635,7 +789,11 @@ def main() -> int:
         # provider, even when this run's network resolver is inconclusive. This
         # catches stale bundles such as an accepted explicit-current domain that
         # was persisted in DATA but never rematerialized into published bytes.
-        projection_drift_ids = provider_domain_projection_drift_ids(sorted(current_provider_ids))
+        config_projection_drift_ids = provider_domain_projection_drift_ids(sorted(current_provider_ids))
+        runtime_projection_drift_ids = provider_domain_runtime_projection_drift_ids(sorted(current_provider_ids))
+        projection_drift_ids = sorted(
+            set(config_projection_drift_ids) | set(runtime_projection_drift_ids)
+        )
         rebuild_ids = sorted(set(changed_provider_ids) | set(projection_drift_ids))
         bundle_updates = rebuild_provider_configs(rebuild_ids)
         from sync_manifest_projection_rows import sync as sync_manifest_projections
@@ -646,6 +804,7 @@ def main() -> int:
         "changed": sorted(set(changed_provider_ids)),
         "registry_changed": sorted(set(registry_changed_ids)),
         "projection_drift": sorted(set(projection_drift_ids)),
+        "runtime_projection_drift": sorted(set(runtime_projection_drift_ids if args.apply else [])),
         "bundle_updates": bundle_updates,
         "allowed_patch_fields": sorted(DOMAIN_PATCH_FIELDS),
         "core_mutation": False,
@@ -666,8 +825,9 @@ def main() -> int:
         f"scope={len(current_provider_ids)} resolved={resolved} unresolved={unresolved} "
         f"applied={len(set(changed_provider_ids))} "
         f"registry={len(set(registry_changed_ids))} "
-        f"projection_drift={len(set(projection_drift_ids))} bundles={len(bundle_updates)} "
-        "terminal_probe=false core_mutation=false"
+        f"projection_drift={len(set(projection_drift_ids))} "
+        f"runtime_projection_drift={len(set(runtime_projection_drift_ids if args.apply else []))} "
+        f"bundles={len(bundle_updates)} terminal_probe=false core_mutation=false"
     )
     return 0
 
