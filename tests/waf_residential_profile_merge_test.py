@@ -76,4 +76,11 @@ diag2=render.harness_transport_diagnostic(blocked,"allwish")
 assert diag2["classification"]=="residential-exit-all-challenged",diag2
 assert render.browser_harness_status(blocked,"allwish")=="HARNESS/ENV BLOCKED"
 
+fallback=merge.mark_residential_unavailable(baseline,reason="tailscale-connect-failed")
+assert fallback["residentialExitNodeEvidence"]["available"] is False
+assert fallback["residentialExitNodeEvidence"]["reason"]=="tailscale-connect-failed"
+serialized_fallback=repr(fallback)
+assert "203.0.113.123" not in serialized_fallback
+assert render.harness_transport_diagnostic(fallback,"allwish")["classification"]=="github-all-transports-challenged"
+
 print("WAF private residential exit evidence merge contract passed")
