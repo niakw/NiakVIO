@@ -42,6 +42,7 @@ assert "NUVIO_SKIP_ACTIVATION_PRESERVATION: '1'" not in text, "Domain Refresh is
 assert 'os.environ.get("NUVIO_SKIP_ACTIVATION_PRESERVATION") != "1"' in validator
 assert "FIELD_RELEASE_INTEGRITY activation_preservation=skipped owner=domain_refresh" in validator
 assert "provider_dns_preflight.mjs" in text
+assert "python scripts/audit_provider_v3_static.py --domain-only" in text
 assert "continue-on-error: true" in text, "DNS/HTTP observation must not gate hub address authority"
 assert "authoritative_hub_domain_refresh_test.py" in text
 assert "provider_v3_workflow_ownership_test.py" in text
@@ -75,6 +76,7 @@ for required in (
     "has_domain_refresh_source",
     '"projection_drift"',
     "DOMAIN_REFRESH_CURRENT_SCOPE_PROJECTION_DRIFT_V1",
+    "DOMAIN_CONFIG_DATA_OWNERSHIP_V1",
     "replace_provider_fix",
     "domain refresh changed bytes outside CONFIG Lego",
     '"core_mutation": False',
@@ -179,6 +181,33 @@ assert module._normalized_domain_projection(current_projection) == module._norma
 # DATA is already authoritative must still be eligible for CONFIG-only repair.
 assert "provider_domain_projection_drift_ids(sorted(current_provider_ids))" in source
 assert "provider_domain_projection_drift_ids(resolved_provider_ids)" not in source
+
+# Regression 2d: Domain Refresh may not publish unrelated current structured
+# changes just because a provider's CONFIG bundle is being rotated for a domain.
+published_data = {
+    "providerId": "yflix",
+    "officialSite": "https://old.example",
+    "knownSite": "https://old.example",
+    "officialHub": None,
+    "domainSubstitutions": {"old.example": "old.example"},
+    "apiRecipe": {"base": "https://enc-dec.app", "recipeKind": "typed-resolver-api"},
+    "routes": ["/published-route"],
+}
+expected_data = {
+    **published_data,
+    "officialSite": "https://new.example",
+    "knownSite": "https://new.example",
+    "domainSubstitutions": {"old.example": "new.example"},
+    "apiRecipe": None,
+    "routes": ["/new-unrelated-route"],
+}
+domain_projected = module.project_domain_owned_config_data(published_data, expected_data)
+assert domain_projected["officialSite"] == "https://new.example"
+assert domain_projected["knownSite"] == "https://new.example"
+assert domain_projected["domainSubstitutions"] == {"old.example": "new.example"}
+assert domain_projected["apiRecipe"] == published_data["apiRecipe"]
+assert domain_projected["routes"] == published_data["routes"]
+assert domain_projected["providerId"] == "yflix"
 
 # Regression 3: only domain-connected runtime maps follow a terminal rotation;
 # unrelated API replacement DATA must remain untouched.
