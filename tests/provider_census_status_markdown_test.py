@@ -121,7 +121,9 @@ assert "Harness transport" in md
 assert "Candidate proof" in md
 assert "Route proof" in md
 assert "CANDIDATE OK preserves verified playback from an unpublished repair/reconstruction candidate" in md
-assert "PARTIAL OK still requires at least one current verified playable lane" in md
+assert "PARTIAL OK still requires at least one verified playable lane" in md
+assert "Repair eligibility is the intersection of runtime status and provider address/backend authority" in md
+assert "Authority" in md
 assert "carried" in md
 assert "run 123" in md
 assert "SHA abcdef012345" in md
@@ -226,6 +228,124 @@ assert native_row["status"] == "HARNESS MISMATCH", native_row
 assert native_row["harnessTransportClass"] == "native-policy-reachable", native_row
 assert "NuvioTV-like/native transport" in native_row["action"], native_row
 assert native_row["repairEligible"] is False, native_row
+
+# Authority is an independent prerequisite for automated Repair. A provider may
+# remain evidence-symptomatic/ROUTE PROVEN while Domain/lifecycle blocks Repair.
+authority_status = {
+    "providers": [
+        {
+            "provider": "route",
+            "action": "REDISCOVER_SEARCH",
+            "repairEligible": False,
+            "confidence": "low",
+            "authorityClass": "unproven-direct-candidate",
+            "reasons": ["direct_candidate_unproven", "search_supplement_only"],
+        },
+        {
+            "provider": "broken",
+            "action": "KEEP_ROUTE_AUTHORITY",
+            "repairEligible": True,
+            "confidence": "high",
+            "authorityClass": "hub-or-redirect",
+            "reasons": ["authoritative_route_source"],
+        },
+    ]
+}
+authority_rows = {
+    row["provider"]: row
+    for row in build_status_rows(
+        report,
+        history,
+        baseline,
+        candidate_evidence,
+        provider_overrides,
+        waf_browser_evidence,
+        authority_status,
+    )
+}
+assert authority_rows["route"]["status"] == "ROUTE PROVEN", authority_rows["route"]
+assert authority_rows["route"]["statusRepairEligible"] is True, authority_rows["route"]
+assert authority_rows["route"]["authorityRepairEligible"] is False, authority_rows["route"]
+assert authority_rows["route"]["repairEligible"] is False, authority_rows["route"]
+assert authority_rows["route"]["authorityAction"] == "REDISCOVER_SEARCH", authority_rows["route"]
+assert "rediscovery required before Repair" in authority_rows["route"]["action"], authority_rows["route"]
+assert authority_rows["broken"]["repairEligible"] is True, authority_rows["broken"]
+
+authority_md = render(
+    report,
+    run_id="124",
+    sha="abcdef0123456789",
+    history=history,
+    baseline=baseline,
+    candidate_evidence=candidate_evidence,
+    provider_overrides=provider_overrides,
+    waf_browser_evidence=waf_browser_evidence,
+    authority_status=authority_status,
+)
+assert "authority-blocked symptoms: **1**" in authority_md, authority_md
+assert "REDISCOVER_SEARCH / unproven-direct-candidate / blocked" in authority_md, authority_md
+
+# Legacy carried green rows are reconciled against their own latest verdict.
+# They cannot remain FULL/PARTIAL OK when the latest stored lane says failure.
+carried_inconsistent = {
+    "providers": [
+        {
+            "provider": "carried-network-green",
+            "status": "FULL OK",
+            "color": "🟢",
+            "declaredLanes": ["anime"],
+            "currentVerifiedLanes": ["anime"],
+            "historicalProof": [],
+            "candidateProof": [],
+            "routeProof": ["1 live routes / anime"],
+            "latestLaneVerdicts": ["anime=no_streams/provider_network_http_error"],
+            "dominantIssue": "provider_network_http_error",
+            "searchProgress": ["anime: retained"],
+            "evidenceDepth": ["anime=none"],
+            "harnessTransportClass": "not-applicable",
+            "action": "protect + replay retained proof",
+            "brainCheckRequired": False,
+            "repairEligible": False,
+            "testedThisRun": True,
+        },
+        {
+            "provider": "carried-waf-green",
+            "status": "FULL OK",
+            "color": "🟢",
+            "declaredLanes": ["anime"],
+            "currentVerifiedLanes": ["anime"],
+            "historicalProof": [],
+            "candidateProof": [],
+            "routeProof": ["1 live routes / anime"],
+            "latestLaneVerdicts": ["anime=no_streams/provider_waf_challenge"],
+            "dominantIssue": "provider_waf_challenge",
+            "searchProgress": ["anime: retained"],
+            "evidenceDepth": ["anime=none"],
+            "harnessTransportClass": "browser-profile-only",
+            "action": "protect + replay retained proof",
+            "brainCheckRequired": False,
+            "repairEligible": False,
+            "testedThisRun": True,
+        },
+    ]
+}
+carried_rows = {
+    row["provider"]: row
+    for row in build_status_rows(
+        {"provider_count": 0, "rows": []},
+        {},
+        carried_inconsistent,
+        {},
+        {},
+        {"rows": [{"provider": "carried-waf-green", "outcome": "browser_content_reached"}]},
+        {},
+    )
+}
+assert carried_rows["carried-network-green"]["status"] == "PROVIDER NETWORK BLOCKED", carried_rows
+assert carried_rows["carried-network-green"]["currentVerifiedLanes"] == [], carried_rows
+assert carried_rows["carried-network-green"]["reconciledFromCarriedGreen"] is True, carried_rows
+assert carried_rows["carried-waf-green"]["status"] == "HARNESS MISMATCH", carried_rows
+assert carried_rows["carried-waf-green"]["repairEligible"] is False, carried_rows
 
 # A previously proven fixture that is explicitly replayed and now returns a
 # clean zero is a provider regression, not NO PROOF.
