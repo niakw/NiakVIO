@@ -1,5 +1,32 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-21 23:06 Europe/Paris — WAF moved inside Repair; Tailscale is optional transport, AnimeVOSTFR runtime authority reconciled
+
+- User correction accepted: WAF/network qualification is not a separate post-Repair concern. It is now an integral pre-Brain Repair phase. Tailscale is an optional extra transport only; Repair must continue when the private exit node is offline/unconfigured.
+- Fresh evidence from WAF run `35651768587` (#97) proves the private Tailscale path itself works: ephemeral node connected, residential exit selected, `FIELD_WAF_RESIDENTIAL_PROFILE_MERGE available=true matched=16`, and 11 full providers were replayed through the residential exit (`playable=0 verified=0 wrong=0`). The later census overwrote this overlay because census/WAF were concurrent writers; Tailscale was not the failure.
+- Residential evidence from #97 materially reclassified the old blanket environment bucket:
+  - AllWish remained challenged even residentially -> genuine HARNESS/ENV BLOCKED.
+  - AnimeSalt, AnimeVOST-FR, MoviesMod and VostFree reached browser content on GitHub/residential profiles while direct/OkHttp remained challenged -> HARNESS MISMATCH/native-policy issue, not a generic environment block.
+  - Flemmix became native-policy-inconclusive residentially, not proven environment-blocked.
+  - YFlix was network-reachable on both GitHub and residential profiles and remained zero-result -> provider/runtime symptom.
+  - VidFast remained provider HTTP-error under residential full-provider replay -> provider/runtime symptom, not GitHub-IP-only WAF.
+- `0bd554ca347c`, `90a1d29554e9`, `db9d7dee7088`, `3f3dbf8da534` serialize mono/sharded census and WAF persistence on the same concurrency lane and dispatch a fresh residential WAF overlay after a persisted census. This prevents a later census from silently erasing fresher Tailscale evidence.
+- `2bd41f966cc9` makes WAF part of `.github/workflows/provider-recognition-repair-v6.yml` before canonical provider selection: current authority-eligible symptomatic providers get targeted quick-yield, GitHub browser/OkHttp/direct qualification, optional Tailscale residential re-probe/full-provider replay, WAF->census merge, batch-plan rebuild, then the canonical Repair/Brain consumes that qualified census. Tailscale connection, exit selection and residential probe are `continue-on-error`; absent/offline Tailscale records an unavailable reason and Repair continues on GitHub/native/browser evidence.
+- Repair, census and standalone WAF now share `provider-census-waf-main` serialization; Repair persists `provider-waf-browser-session-latest.json` together with its census/authority/Brain memory. `9fb43fbffafe` locks ordering and offline fallback in `provider_repair_waf_integration_workflow_test.py`.
+- Manual authority reconciliation remains:
+  - FullAnime stays disabled: no trustworthy hub/current authority; generic search is supplementary only.
+  - Animetsu stays disabled: EverythingMoe authoritative source marks it removed/broken since July 2026; fake search domains cannot reactivate it.
+  - ShowBox stays search-only/authority-blocked; showbox.media is not promoted without independent runtime proof.
+  - DesiFlix stays disabled because the former site chain became inappropriate/compromised.
+  - PersianStremio remains authority-eligible via structured backend/runtime and is currently PARTIAL OK; no public hub is required for deterministic backend authority.
+  - YFlix remains authority-eligible because of structured backend authority, not search results.
+  - MalluMV remains provisionally authority-eligible from current structured-site + positive route runtime evidence; generic-name search is not its authority. Do not disable while that runtime evidence remains current, but require verified media before promotion.
+  - AnimeSultra's old v2 address is not treated as permanently valid merely because it was once explicit_current; fresh browser evidence currently reaches the host, so keep it active while Domain failure memory continues to arbitrate current authority.
+  - VidFast official documentation proves `/embed/movie/{id}` and `/embed/tv/{id}/{season}/{episode}`; current registry/Lego already carries these current routes.
+- AnimeVOSTFR had a real split-brain bug: registry/override `official_site=https://animevostfr.org` and `v2 -> root` migration were current, but the provider Lego option/default still used `https://v2.animevostfr.org`. `dcd605f2a5d5` and `514a7587bb00` move the executable runtime base/default to `https://animevostfr.org`; `36893fa7b7e` locks that contract.
+- `b575bed1061e` adds a generic materializer guard: nested HTTP URLs in provider Lego/patch-script options are projected through current runtime/domain substitution DATA when their old host is already mapped to a current authority host. `e189e41f7420` proves an AnimeVOSTFR-like stale nested runtime option is rewritten to the current host, preventing future Domain-vs-Lego divergence.
+- Next authoritative validation: canonical Repair on current main. Require preflight green, integrated WAF phase to run before `FIELD_PROVIDER_REPAIR_SCOPE`, observe whether Tailscale is available without making it mandatory, inspect the WAF-qualified repair/environment queues, then evaluate Brain repair results and persist the resulting census/memory.
+
 ## 2026-09-21 22:23 Europe/Paris — Census runner reached real contracts; stale Flemmix assertion fixed
 
 - TEMP census run `35649485922` (#1309, SHA `01220f219471`) confirmed the workflow-validation issue is closed: both `scale` and `census` jobs were allocated. The census then failed in the real contract suite before network probing.
