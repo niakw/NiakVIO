@@ -36,3 +36,11 @@ assert "networkDifferentialClass" in state_renderer
 assert "Authority" in state_renderer
 assert "authorityBlockedQueue" in state_renderer
 assert "authorityRepairEligible" in state_renderer
+
+# Canonical census interpretation owns status generation. Changing that renderer
+# must not launch a transport-only writer against an older persisted schema.
+assert "'scripts/render_provider_census_status.py'" not in workflow
+assert "'tests/provider_census_status_markdown_test.py'" not in workflow
+assert "FIELD_WAF_CENSUS_BASE_NOT_READY authority_schema_v3_required" in workflow
+assert 'assert int(state.get("schemaVersion") or 0) >= 3' in workflow
+assert '"authorityRepairEligible" in row and "authorityAction" in row' in workflow
