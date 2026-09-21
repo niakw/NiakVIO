@@ -21,6 +21,7 @@ if str(SCRIPTS) not in sys.path:
 from brain_positive_program_memory import (
     provider_request_recipes as positive_program_request_recipes,
     provider_routes as positive_program_routes,
+    provider_user_agent as positive_program_user_agent,
 )
 BASE_PATH = ROOT / "scripts" / "runtime_repair.py"
 _spec = importlib.util.spec_from_file_location("_nuvio_runtime_repair_base", BASE_PATH)
@@ -844,6 +845,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
                 break
 
     network_hints = _runtime_network_hints(patch)
+    validated_positive_user_agent = positive_program_user_agent(provider_id)
     explicit = [
         recovery_options.get("base_url"), patch.get("official_site"),
         *network_hints["bases"],
@@ -1151,6 +1153,9 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             "requestRecipes": len(request_recipes),
             "currentObservationRequestRecipes": len(current_request_recipes),
             "providerRequestRecipes": len(provider_request_recipes),
+            "positiveProgramRequestRecipes": len(positive_program_request_recipes(provider_id)),
+            "positiveProgramRoutes": len(positive_program_routes(provider_id)),
+            "positiveProgramUserAgent": bool(validated_positive_user_agent),
             "peerRequestRecipes": len(peer_request_recipes),
         },
         "repair_focus": (
@@ -1218,7 +1223,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             else 3,
         ),
         "timeout_ms": max(2000, min(int(recovery_options.get("timeout_ms") or 9000), 20000)),
-        "user_agent": network_hints["user_agent"],
+        "user_agent": validated_positive_user_agent or network_hints["user_agent"],
         "blocked_hosts": sorted(blocked_hosts),
         "blocked_path_patterns": sorted(blocked_paths),
     }
