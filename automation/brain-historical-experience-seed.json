@@ -481,6 +481,276 @@
         "repo-history"
       ],
       "lesson": "Use external sources only for routes/types/contracts; rebuild owned NiakVIO ProviderBase/JS from structured DATA."
+    },
+    {
+      "id": "hist-streamzo-anime-false-film",
+      "firstObserved": "2026-08-28",
+      "providers": [
+        "streamzo"
+      ],
+      "symptomFamilies": [
+        "anime_returns_movie",
+        "wrong_content",
+        "series_transport_alias"
+      ],
+      "failureClass": "identity_mismatch",
+      "solutionClass": "transport_alias_plus_post_result_identity_validation",
+      "transferableSignals": [
+        "anime transported as tv/movie upstream",
+        "fallback movie endpoint returns plausible playable media",
+        "season/episode identity absent"
+      ],
+      "avoid": [
+        "accepting playable duration alone",
+        "mapping anime to movie as semantic type"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Transport aliases may differ from semantic identity; route anime through compatible upstream transport only if Core validates requested title/year/season/episode and rejects movie fallback contradictions."
+    },
+    {
+      "id": "hist-purstream-semantic-transport-split",
+      "firstObserved": "2026-08-31",
+      "providers": [
+        "purstream"
+      ],
+      "symptomFamilies": [
+        "anime_zero",
+        "series_player_failure",
+        "type_regression"
+      ],
+      "failureClass": "runtime_contract_drift",
+      "solutionClass": "separate_canonical_identity_from_provider_transport",
+      "transferableSignals": [
+        "series/show alias",
+        "anime namespace requires TMDB movie/tv transport",
+        "provider transport contract differs from UI label"
+      ],
+      "avoid": [
+        "letting provider transport mutate canonical media identity"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Keep canonical requested identity separate from provider transport type; normalize client aliases globally and preserve identity through Core."
+    },
+    {
+      "id": "hist-playable-first-tail-leak",
+      "firstObserved": "2026-08-31",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "unverified_tail_streams",
+        "player_failure_after_some_valid_streams"
+      ],
+      "failureClass": "media_validation_gap",
+      "solutionClass": "return_only_validated_streams",
+      "transferableSignals": [
+        "head subset validated",
+        "tail appended without probe",
+        "403/HTML/non-media survive"
+      ],
+      "avoid": [
+        "reinjecting unvalidated tail",
+        "treating one valid stream as validation of siblings"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Playable-first must be fail-closed per stream: zero validated => []; otherwise return only streams individually validated."
+    },
+    {
+      "id": "hist-provider-global-time-budget",
+      "firstObserved": "2026-08-30",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "provider_hang",
+        "desktop_timeout",
+        "late_fetch_result"
+      ],
+      "failureClass": "runtime_timeout_gap",
+      "solutionClass": "cooperative_global_provider_deadline",
+      "transferableSignals": [
+        "provider exceeds client budget",
+        "late fetch/result arrives after request generation",
+        "setTimeout unavailable in QuickJS"
+      ],
+      "avoid": [
+        "provider-specific timer patches",
+        "assuming native blocking call is abortable"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Use one Core-owned cooperative provider deadline and discard late results; native blocking bridges may remain unkillable and must be classified separately."
+    },
+    {
+      "id": "hist-safe-structured-parse",
+      "firstObserved": "2026-08-22",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "json_parse_error",
+        "escaped_json",
+        "structured_parse_gap"
+      ],
+      "failureClass": "structured_parse_gap",
+      "solutionClass": "bounded_safe_structured_parse",
+      "transferableSignals": [
+        "JSON.parse fails on escaped/wrapped payload",
+        "response otherwise provider-owned"
+      ],
+      "avoid": [
+        "provider-specific parser forks",
+        "unbounded eval/unescape"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Use a bounded shared structured parser for common escaped/wrapped JSON patterns, then preserve provider-specific extraction as DATA."
+    },
+    {
+      "id": "hist-quarantine-filename-not-runtime",
+      "firstObserved": "2026-08-24",
+      "providers": [
+        "streamzo",
+        "videasy"
+      ],
+      "symptomFamilies": [
+        "false_quarantine",
+        "historical_filename_leak"
+      ],
+      "failureClass": "state_authority_gap",
+      "solutionClass": "derive_runtime_state_from_current_data_not_historical_filename",
+      "transferableSignals": [
+        "historical filename contains quarantine marker",
+        "current runtime is healthy",
+        "builder infers state from artifact name"
+      ],
+      "avoid": [
+        "using historical filenames as current execution authority"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Current structured DATA/runtime state is authority; historical artifact names are provenance only and must never drive quarantine or activation."
+    },
+    {
+      "id": "hist-activation-requires-playable-proof",
+      "firstObserved": "2026-09-17",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "declared_types_green_but_zero_streams",
+        "false_activation"
+      ],
+      "failureClass": "activation_proof_gap",
+      "solutionClass": "require_exact_bundle_playable_verified_lane",
+      "transferableSignals": [
+        "declared type and routes exist",
+        "no playable verified stream",
+        "provider stays active"
+      ],
+      "avoid": [
+        "activation from route/type declaration alone"
+      ],
+      "evidence": [
+        "project-chat",
+        "user-tv-tests",
+        "repo-history"
+      ],
+      "lesson": "Activation is a current exact-bundle property: at least one supported lane must have playable identity-safe proof; route/type declarations alone are insufficient."
+    },
+    {
+      "id": "hist-desktop-intersearch-lifecycle",
+      "firstObserved": "2026-08-31",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "works_after_restart",
+        "fails_between_searches",
+        "stale_generation"
+      ],
+      "failureClass": "client_lifecycle_gap",
+      "solutionClass": "generation_scoped_request_state",
+      "transferableSignals": [
+        "direct client launch works",
+        "subsequent search fails",
+        "same provider works after restart"
+      ],
+      "avoid": [
+        "repairing provider when lifecycle is client-owned"
+      ],
+      "evidence": [
+        "project-chat",
+        "native-labs"
+      ],
+      "lesson": "If restart restores streams, classify stale request/generation/session state before provider mutation; lifecycle bugs can masquerade as provider regressions."
+    },
+    {
+      "id": "hist-providerbase-runtime-timer-shim",
+      "firstObserved": "2026-09-13",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "settimeout_missing",
+        "native_runtime_compat"
+      ],
+      "failureClass": "runtime_compatibility_gap",
+      "solutionClass": "core_runtime_compat_timer_shim",
+      "transferableSignals": [
+        "timer API absent on native runtime",
+        "provider/Core helper assumes browser timer"
+      ],
+      "avoid": [
+        "adding OS branches to providers"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Runtime compatibility belongs in shared Core/ProviderBase; providers should remain platform-neutral."
+    },
+    {
+      "id": "hist-historical-proof-not-current-authority",
+      "firstObserved": "2026-09-11",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "historical_green_current_red",
+        "stale_proof"
+      ],
+      "failureClass": "proof_freshness_gap",
+      "solutionClass": "use_history_as_prior_then_replay_current_bytes",
+      "transferableSignals": [
+        "older version verified lane",
+        "current bundle lacks proof",
+        "historical route still informative"
+      ],
+      "avoid": [
+        "promoting current provider from historical proof alone",
+        "discarding historical solution entirely"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Historical success is valuable strategy memory, but current status/publishing requires replay on current exact bytes."
     }
   ]
 }
