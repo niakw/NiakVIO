@@ -106,6 +106,48 @@ assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
+# Regression 0: domain projection may update an explicit old->current host inside
+# provider-owned runtime Lego, while leaving Core and unrelated provider bytes
+# exactly unchanged.
+from provider_patch_blocks import render_managed_fix
+synthetic = "\n".join([
+    render_managed_fix(
+        "PROVIDER.DEMO.CONFIG.V1",
+        'const NIAKVIO_PROVIDER_MODEL={};',
+        data={"providerId": "demo"},
+    ),
+    render_managed_fix(
+        "PROVIDER.DEMO.RUNTIME.V1",
+        'const SITE="https://old.example/path?q=1";',
+        data={"runtimeFamily": "demo"},
+    ),
+    render_managed_fix(
+        "CORE.DEMO.TEST.V1",
+        'const CORE_SITE="https://old.example/must-stay";',
+        data={"scope": "core"},
+    ),
+])
+projected, projected_fixes = module.project_domain_owned_provider_legos(
+    synthetic,
+    "demo",
+    "PROVIDER.DEMO.CONFIG.V1",
+    {
+        "official_site": "https://new.example",
+        "runtime_domain_replacements": {"old.example": "new.example"},
+        "domain_substitutions": {"old.example": "new.example"},
+    },
+)
+assert projected_fixes == ["PROVIDER.DEMO.RUNTIME.V1"], projected_fixes
+assert 'SITE="https://new.example/path?q=1"' in projected, projected
+assert 'CORE_SITE="https://old.example/must-stay"' in projected, projected
+assert module._strip_domain_owned_blocks(
+    synthetic,
+    ["PROVIDER.DEMO.CONFIG.V1", "PROVIDER.DEMO.RUNTIME.V1"],
+) == module._strip_domain_owned_blocks(
+    projected,
+    ["PROVIDER.DEMO.CONFIG.V1", "PROVIDER.DEMO.RUNTIME.V1"],
+)
+
 # Regression 1: stale embedded official_domain_hubs must not shadow provider-hubs.json.
 legacy_config = {
     "official_domain_hubs": {
