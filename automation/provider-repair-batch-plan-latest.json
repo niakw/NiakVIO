@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35591042153-post-repair",
+  "sourceRunId": "35591042153-post-repair-candidate-reconciled",
   "sourceTriggerSha": "f176c2d62ca8f981d9dd3e2097fd85451ed0461d",
   "unresolvedProviderCount": 16,
   "groupCount": 11,
@@ -12,30 +12,31 @@
   },
   "groups": [
     {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
+      "groupId": "harness-compatibility|mixed_embed_resolver",
+      "repairScope": "harness-compatibility",
       "runtimeFamilies": [
-        "dle-full-story-sibnet",
-        "menu-search-series-focus-player",
-        "yflix-db-encrypted-ajax-v1"
+        "mixed_embed_resolver",
+        "wookafr-current-multiplayer-v2"
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "lookup",
+        "chain",
         "none"
       ],
       "dominantIssues": [
-        "network_exception",
-        "network_http_error"
+        "waf_challenge"
       ],
-      "harnessTransportClasses": [],
+      "harnessTransportClasses": [
+        "native-policy-inconclusive",
+        "residential-exit-all-challenged"
+      ],
       "providerCount": 3,
       "providers": [
-        "anime-ultime",
-        "animesultra",
-        "yflix"
+        "flemmix",
+        "fullanime",
+        "wookafr"
       ],
-      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
+      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -68,32 +69,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "native-policy-inconclusive",
-        "residential-exit-all-challenged"
-      ],
-      "providerCount": 2,
-      "providers": [
-        "flemmix",
-        "fullanime"
-      ],
-      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "route-to-terminal|html_scraper",
       "repairScope": "route-to-terminal",
       "runtimeFamilies": [
@@ -113,6 +88,31 @@
         "showbox"
       ],
       "action": "replay proven routes in batch and apply shared detail/player traversal profile",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|mixed_embed_resolver",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "dle-full-story-sibnet",
+        "yflix-db-encrypted-ajax-v1"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception"
+      ],
+      "harnessTransportClasses": [],
+      "providerCount": 2,
+      "providers": [
+        "animesultra",
+        "yflix"
+      ],
+      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
