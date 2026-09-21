@@ -43,6 +43,8 @@ assert 'os.environ.get("NUVIO_SKIP_ACTIVATION_PRESERVATION") != "1"' in validato
 assert "FIELD_RELEASE_INTEGRITY activation_preservation=skipped owner=domain_refresh" in validator
 assert "provider_dns_preflight.mjs" in text
 assert "python scripts/audit_provider_v3_static.py --domain-only" in text
+assert text.count("python scripts/audit_provider_v3_static.py --domain-only") == 2
+assert "python scripts/audit_provider_v3_static.py\n" not in text
 assert "continue-on-error: true" in text, "DNS/HTTP observation must not gate hub address authority"
 assert "authoritative_hub_domain_refresh_test.py" in text
 assert "provider_v3_workflow_ownership_test.py" in text
