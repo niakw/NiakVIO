@@ -8,16 +8,20 @@ import hashlib
 import importlib.util
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qsl, unquote, urlparse
+
+ROOT = Path(__file__).resolve().parents[2]
+SCRIPTS = ROOT / "scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
 
 from brain_positive_program_memory import (
     provider_request_recipes as positive_program_request_recipes,
     provider_routes as positive_program_routes,
 )
-
-ROOT = Path(__file__).resolve().parents[2]
 BASE_PATH = ROOT / "scripts" / "runtime_repair.py"
 _spec = importlib.util.spec_from_file_location("_nuvio_runtime_repair_base", BASE_PATH)
 if _spec is None or _spec.loader is None:
