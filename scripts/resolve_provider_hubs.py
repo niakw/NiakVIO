@@ -501,6 +501,8 @@ def merge_hub_registry(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
         target.setdefault("allowed_terminal_host_patterns", row.get("allowed_terminal_host_patterns") or [])
         target.setdefault("terminal_markers", row.get("terminal_markers") or [])
         target.setdefault("search_confirmation_runs", int(row.get("search_confirmation_runs") or 2))
+        target.setdefault("legacy_search_refresh", bool(row.get("legacy_search_refresh", False)))
+        target.setdefault("search_role", str(row.get("search_role") or "supplementary"))
 
         sources = [dict(item) for item in (target.get("sources") or []) if isinstance(item, dict)]
         for item in row.get("sources") or []:
@@ -816,7 +818,7 @@ def search_candidates(provider_id: str, cfg: dict[str, Any], query: str, timeout
                 candidates.append({
                     "url": result_url.rstrip("/"),
                     "label": label or f"{engine} search result",
-                    "score": 45 - min(index, 10),
+                    "score": 22 - min(index, 10),
                     "source_type": "search",
                     "source": engine,
                     "query": query,
@@ -851,7 +853,7 @@ def search_candidates(provider_id: str, cfg: dict[str, Any], query: str, timeout
                             candidates.append({
                                 "url": final_url,
                                 "label": "search result redirect destination",
-                                "score": 82 - min(index, 10),
+                                "score": 62 - min(index, 10),
                                 "source_type": "source_redirect",
                                 "source": result_url,
                                 "query": query,
@@ -1166,8 +1168,11 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
         except Exception as exc:
             observations.append({"source_type": source_type, "url": url, "error": f"{type(exc).__name__}: {exc}"})
 
-    disabled = str(cfg.get("manifest_status") or "").casefold() in {"désactivé", "desactive", "disabled"}
-    if (not has_authoritative_route_source(cfg)) and mode == "deep" and (not disabled or bool(cfg.get("search_when_disabled", False))):
+    disabled = str(cfg.get("manifest_status") or "").casefold() in {"désactivé", "desactive", "disabled", "inactif", "inactive"}
+    legacy_search = bool(cfg.get("legacy_search_refresh", False))
+    deep_search = mode == "deep" and not has_authoritative_route_source(cfg)
+    historical_quick_search = mode == "quick" and legacy_search
+    if (deep_search or historical_quick_search) and (not disabled or bool(cfg.get("search_when_disabled", False)) or legacy_search):
         for query in list(dict.fromkeys(str(item).strip() for item in cfg.get("search_queries") or [] if str(item).strip()))[:2]:
             found, search_observations = search_candidates(provider_id, cfg, query, timeout)
             candidates.extend(found)
@@ -1650,8 +1655,22 @@ def sanitize_unsafe_published_routes(
 
 
 def update_history_row(history_row: dict[str, Any], item: dict[str, Any]) -> None:
-    if item.get("status") not in {"validated", "site_validated"}:
+    """Persist consecutive address-authority outcomes for autonomous arbitration."""
+    # DOMAIN_AUTHORITY_FAILURE_MEMORY_V1
+    status = str(item.get("status") or "inconclusive").strip().casefold()
+    if status not in {"validated", "site_validated"}:
+        # Search confirmation is an unfinished positive observation, not a failure.
+        if status == "pending_confirmation":
+            return
+        previous = history_row.get("authority_failures") if isinstance(history_row.get("authority_failures"), dict) else {}
+        history_row["authority_failures"] = {
+            "consecutive": max(0, int(previous.get("consecutive") or 0)) + 1,
+            "last_status": status,
+            "last_reason": str(item.get("reason") or ""),
+            "last_seen": now_iso(),
+        }
         return
+    history_row.pop("authority_failures", None)
     terminal = str(item.get("official_site") or "").rstrip("/")
     if not terminal:
         return
@@ -1759,6 +1778,8 @@ def main() -> int:
                 item = future.result()
             except Exception as exc:
                 item = {"provider_id": provider_id, "status": "inconclusive", "reason": "exception", "error": f"{type(exc).__name__}: {exc}"}
+            if args.apply:
+                update_history_row(history_row, item)
             if args.apply and item.get("status") in {"validated", "site_validated"}:
                 if args.domain_only:
                     patch = config.setdefault("provider_patches", {}).setdefault(provider_id, {})
@@ -1770,12 +1791,10 @@ def main() -> int:
                         changes.append({"from": before_site, "to": next_site, "kind": "official_site"})
                     item["applied_changes"] = changes
                     report["applied"] += len(changes)
-                    update_history_row(history_row, item)
                 else:
                     changes = update_provider_patch(config, provider_id, cfg, str(item["official_site"]), item.get("validated_api"), history_row)
                     item["applied_changes"] = changes
                     report["applied"] += len(changes)
-                    update_history_row(history_row, item)
             report["providers"][provider_id] = item
 
     output = ROOT / args.output
