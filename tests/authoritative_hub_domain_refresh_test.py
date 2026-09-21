@@ -124,4 +124,44 @@ assert pinned["official_site"] == pinned_current, pinned
 assert pinned["reason"] == "registry_explicit_current_terminal_authority", pinned
 assert pinned["site_candidates"][0]["registry_explicit_current"] is True, pinned
 
+# Regression: a curated direct address may itself become yesterday's URL. In
+# quick mode we may follow that redirect as address evidence, but we must not
+# fetch the newly discovered terminal a second time.
+direct_old = "https://v2.animevostfr.example/"
+direct_new = "https://animevostfr.example"
+direct_cfg = {
+    "hub": None,
+    "aliases": ["animevostfr"],
+    "direct_candidates": [direct_old],
+    "allowed_terminal_hosts": ["v2.animevostfr.example", "animevostfr.example"],
+    "sources": [{"type": "search", "query": "animevostfr lien", "priority": 35}],
+}
+calls = []
+original_fetch = resolver.fetch
+
+def fake_direct_redirect_fetch(url: str, timeout: float = 10.0):
+    calls.append(url)
+    if url == direct_old.rstrip("/"):
+        return (200, direct_new + "/", "<html></html>", {"Content-Type": "text/html"})
+    if url == direct_old:
+        return (200, direct_new + "/", "<html></html>", {"Content-Type": "text/html"})
+    raise AssertionError(f"new terminal must not be fetched during redirect discovery: {url}")
+
+try:
+    resolver.fetch = fake_direct_redirect_fetch
+    direct_item = refresh.resolve_authoritative_hub_domain(
+        "animevostfr", direct_cfg, {}, "quick", 0.2
+    )
+finally:
+    resolver.fetch = original_fetch
+
+assert calls == [direct_old.rstrip("/")], calls
+assert direct_item["status"] == "site_authoritative", direct_item
+assert direct_item["official_site"] == direct_new, direct_item
+assert direct_item["selected_source_type"] == "source_redirect", direct_item
+assert direct_item["site_candidates"][0]["source_redirect"] is True, direct_item
+assert refresh.has_domain_refresh_source(direct_cfg, "quick") is True
+assert refresh.has_domain_refresh_source({"search_queries": ["demo"]}, "quick") is False
+assert refresh.has_domain_refresh_source({"search_queries": ["demo"]}, "deep") is True
+
 print("authoritative hub domain refresh skips terminal validation and accepts current hub destination")
