@@ -12,6 +12,11 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qsl, unquote, urlparse
 
+from brain_positive_program_memory import (
+    provider_request_recipes as positive_program_request_recipes,
+    provider_routes as positive_program_routes,
+)
+
 ROOT = Path(__file__).resolve().parents[2]
 BASE_PATH = ROOT / "scripts" / "runtime_repair.py"
 _spec = importlib.util.spec_from_file_location("_nuvio_runtime_repair_base", BASE_PATH)
@@ -874,7 +879,11 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     if not types:
         types = ["movie", "tv", "anime"]
 
-    learned_routes = _patch_routes(patch)
+    learned_routes = _unique_routes(
+        positive_program_routes(provider_id),
+        _patch_routes(patch),
+        limit=64,
+    )
     learned_search = [route for route in learned_routes if _route_role(route) == "search"]
     learned_direct = [route for route in learned_routes if _route_role(route) != "search"]
     strategy = str(capability.get("strategy") or patch.get("capability") or "unknown").strip().casefold()
@@ -890,7 +899,11 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         recipe for recipe in candidate.get("brain_observed_request_recipes") or []
         if isinstance(recipe, dict) and recipe.get("source") == "current-observation"
     ]
-    provider_request_recipes = _provider_request_recipes(provider_id)
+    provider_request_recipes = _unique_request_recipes(
+        positive_program_request_recipes(provider_id),
+        _provider_request_recipes(provider_id),
+        limit=32,
+    )
     peer_request_recipes = _peer_request_recipes(strategy)
     request_recipes = _unique_request_recipes(
         current_request_recipes,
