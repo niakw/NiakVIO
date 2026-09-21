@@ -222,17 +222,29 @@ jobs:
 
           python scripts/update_provider_census_proof_history.py provider-v3-quick-yield.json             --history automation/provider-census-proof-history.json             --run-id "$GITHUB_RUN_ID"             --sha "$GITHUB_SHA"
 
-          python scripts/render_provider_census_status.py provider-v3-quick-yield.json             --output PROVIDER_CENSUS_STATUS.md             --json-output automation/provider-census-status.json             --history automation/provider-census-proof-history.json             --baseline-status automation/provider-census-status.json             --run-id "$GITHUB_RUN_ID"             --sha "$GITHUB_SHA"
+          # Authority is part of the census contract. Build it before rendering so
+          # repairQueue matches the exact gate the canonical Repair pipeline uses.
+          python scripts/classify_provider_authority.py
+
+          # First pass gives the WAF probe the current runtime classifications and
+          # declared lanes. This is provisional: it may use older browser evidence.
+          python scripts/render_provider_census_status.py provider-v3-quick-yield.json             --output PROVIDER_CENSUS_STATUS.md             --json-output automation/provider-census-status.json             --history automation/provider-census-proof-history.json             --baseline-status automation/provider-census-status.json             --authority-status automation/provider-authority-status.json             --run-id "$GITHUB_RUN_ID"             --sha "$GITHUB_SHA"
+
+          # WAF diagnostic only: ordinary Chrome session, no stealth/CAPTCHA solver/token export.
+          # Final census is rendered AFTER this current-run evidence exists.
+          python scripts/probe_waf_browser_session.py provider-v3-quick-yield.json \
+            --output automation/provider-waf-browser-session.json \
+            --status automation/provider-census-status.json \
+            --overrides provider-overrides.json \
+            --network-report provider-v3-quick-yield.json \
+            --timeout 20 --virtual-time-ms 7000 --workers 3 --max-targets 16
+
+          python scripts/render_provider_census_status.py provider-v3-quick-yield.json             --output PROVIDER_CENSUS_STATUS.md             --json-output automation/provider-census-status.json             --history automation/provider-census-proof-history.json             --baseline-status automation/provider-census-status.json             --waf-browser-evidence automation/provider-waf-browser-session.json             --authority-status automation/provider-authority-status.json             --run-id "$GITHUB_RUN_ID"             --sha "$GITHUB_SHA"
 
           python scripts/build_provider_repair_batch_plan.py \
             --status automation/provider-census-status.json \
             --overrides provider-overrides.json \
             --output automation/provider-repair-batch-plan.json
-
-          # WAF diagnostic only: ordinary Chrome session, no stealth/CAPTCHA solver/token export.
-          python scripts/probe_waf_browser_session.py provider-v3-quick-yield.json \
-            --output automation/provider-waf-browser-session.json \
-            --timeout 20 --virtual-time-ms 7000 --workers 3 --max-targets 16
 
           cp provider-v3-quick-yield.json automation/current-bytes-full-provider-census.json
           python - <<'PY'
@@ -292,6 +304,8 @@ jobs:
             automation/current-bytes-full-provider-census-summary.json
             automation/provider-census-status.json
             automation/provider-census-proof-history.json
+            automation/provider-authority-status.json
+            automation/provider-waf-browser-session.json
             automation/provider-repair-batch-plan.json
             PROVIDER_CENSUS_STATUS.md
           retention-days: 8
