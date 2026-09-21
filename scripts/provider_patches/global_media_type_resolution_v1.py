@@ -60,7 +60,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 25_000)), 120_000)),
         "tvProviderTimeoutMs": max(5_000, min(int(cfg.get("tv_provider_timeout_ms", 25_000)), 120_000)),
         "supersedeSettleMs": max(100, min(int(cfg.get("supersede_settle_ms", 1200)), 3000)),
-        "fetchSliceMs": max(100, min(int(cfg.get("fetch_slice_ms", 7_000)), 15_000)),
+        "fetchSliceMs": max(100, min(int(cfg.get("fetch_slice_ms", 12_000)), 15_000)),
         "maxHardFailures": max(2, min(int(cfg.get("max_hard_failures", 3)), 8)),
         "semanticTypes": semantic_types,
         "requestTypeAliases": {
@@ -515,7 +515,7 @@ async function settlePrior(promise){if(!promise||typeof promise.then!=="function
 function deadlineExpired(deadline){var n=Number(deadline);return Number.isFinite(n)&&n>0&&Date.now()>=n}
 function tvRuntime(){try{var ua=s(g&&g.navigator&&g.navigator.userAgent);return /NuvioTV|Android TV/i.test(ua)||(g&&g.__NUVIO_TV_RUNTIME__===true)}catch(_){return false}}
 function providerBudgetMs(){return tvRuntime()?Number(c.tvProviderTimeoutMs||25000):Number(c.providerTimeoutMs||25000)}
-function providerFetchSliceMs(){var n=Number(c.fetchSliceMs||7000);return Number.isFinite(n)?Math.max(100,Math.min(n,15000)):7000}
+function providerFetchSliceMs(){var n=Number(c.fetchSliceMs||12000);return Number.isFinite(n)?Math.max(100,Math.min(n,15000)):12000}
 function hardHttpStatus(status){var n=Number(status||0);return n===400||n===401||n===403||n===408||n===410||n===425||n===429||n===451||n>=500}
 function budgetedFetch(original,deadline,requestToken,requestController){
   if(typeof original!=="function")return original;
