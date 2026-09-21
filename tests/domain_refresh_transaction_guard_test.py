@@ -198,6 +198,61 @@ except AssertionError as exc:
 else:
     raise AssertionError("manifest asset rotation to unrelated host must fail closed")
 
+# A configured redirect is authoritative only when the exact registry source
+# declares address authority. Arbitrary redirects remain rejected.
+redirect_before = copy.deepcopy(before_overrides)
+redirect_after = copy.deepcopy(before_overrides)
+redirect_after["provider_patches"]["demo"]["official_site"] = "https://demo-new.example"
+redirect_registry = copy.deepcopy(before_hubs)
+redirect_registry["providers"]["demo"]["sources"] = [{
+    "type": "redirect",
+    "url": "https://demo-old.example/",
+    "purpose": "Authoritative current terminal redirect seed",
+}]
+redirect_report = {
+    "providers": {
+        "demo": {
+            "status": "site_authoritative",
+            "official_site": "https://demo-new.example",
+            "selected_source_type": "redirect",
+            "selected_source": "https://demo-old.example/",
+            "site_candidates": [{
+                "url": "https://demo-new.example",
+                "label": "validated redirect destination",
+                "source_type": "redirect",
+                "source": "https://demo-old.example/",
+            }],
+        }
+    }
+}
+result = validate(
+    redirect_before,
+    redirect_after,
+    redirect_registry,
+    copy.deepcopy(redirect_registry),
+    before_history,
+    redirect_report,
+    {"changed": ["demo"], "registry_changed": []},
+)
+assert result["changed"] == ["demo"]
+
+untrusted_redirect_registry = copy.deepcopy(redirect_registry)
+untrusted_redirect_registry["providers"]["demo"]["sources"][0]["purpose"] = "Fallback redirect"
+try:
+    validate(
+        redirect_before,
+        redirect_after,
+        untrusted_redirect_registry,
+        copy.deepcopy(untrusted_redirect_registry),
+        before_history,
+        redirect_report,
+        {"changed": ["demo"], "registry_changed": []},
+    )
+except AssertionError as exc:
+    assert "non-authoritative source" in str(exc)
+else:
+    raise AssertionError("untrusted configured redirect must fail closed")
+
 # Unresolved discovery may never mutate the published terminal.
 after_overrides = copy.deepcopy(before_overrides)
 after_overrides["provider_patches"]["demo"]["official_site"] = "https://other.example"
