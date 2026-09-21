@@ -510,7 +510,7 @@ def merge_transport(
         str(row.get("provider") or "").strip().casefold()
         for row in providers
         if isinstance(row, dict)
-        and row.get("brainCheckRequired") is True
+        and census.is_symptomatic_status(str(row.get("status") or ""))
         and str(row.get("provider") or "").strip()
     )
     out["brainQueue"] = list(out["symptomaticProviders"])
