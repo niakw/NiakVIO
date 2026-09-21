@@ -32,10 +32,11 @@ on:
       - 'automation/provider-bulk-activation-latest.json'
 
 permissions:
-  contents: read
+  contents: write
+  actions: write
 
 concurrency:
-  group: provider-census-sharded-main
+  group: provider-census-waf-main
   # Keep an exact bulk-import proof running even if another repair lands.
   cancel-in-progress: false
 
@@ -327,6 +328,15 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add             "automation/provider-census-sharded-${run_id}.json"             automation/provider-census-sharded-latest.json             automation/provider-census-sharded-latest-summary.json             automation/provider-census-status.json             automation/provider-repair-batch-plan-latest.json             automation/provider-census-proof-history.json             automation/provider-authority-status.json             "automation/provider-waf-browser-session-${run_id}.json"             automation/provider-waf-browser-session-latest.json             PROVIDER_CENSUS_STATUS.md
-          git diff --cached --quiet && exit 0
-          git commit -m "ci(census-sharded): persist ${verified} from ${SOURCE_SHA:0:12}"
-          git push origin HEAD:main
+          if git diff --cached --quiet; then
+            echo "FIELD_SHARDED_CENSUS_NO_CHANGES"
+          else
+            git commit -m "ci(census-sharded): persist ${verified} from ${SOURCE_SHA:0:12}"
+            git push origin HEAD:main
+          fi
+
+          if ! gh workflow run provider-waf-browser-session.yml --ref main; then
+            echo "FIELD_SHARDED_CENSUS_WAF_DISPATCH_FAILED nonfatal=true" >&2
+          else
+            echo "FIELD_SHARDED_CENSUS_WAF_DISPATCHED source_run=${GITHUB_RUN_ID}"
+          fi
