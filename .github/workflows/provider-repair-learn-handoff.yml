@@ -4,6 +4,7 @@ on:
   workflow_run:
     workflows:
       - "Provider Repair Parallel Batch Proof"
+      - "PROVIDERS - Fast Brain Repair"
     types:
       - completed
 
@@ -29,7 +30,7 @@ jobs:
       - name: Download completed repair proof artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          pattern: provider-repair-*-${{ github.event.workflow_run.id }}
+          pattern: provider-*-${{ github.event.workflow_run.id }}
           path: repair-proof-artifacts
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
@@ -39,7 +40,10 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob globstar
-          reports=(repair-proof-artifacts/**/automation/provider-repair-fast-summary.json)
+          reports=(
+            repair-proof-artifacts/**/automation/provider-repair-fast-summary.json
+            repair-proof-artifacts/**/automation/provider-fast-repair-summary.json
+          )
           if [ ${#reports[@]} -eq 0 ]; then
             echo "FIELD_PROVIDER_REPAIR_LEARN_HANDOFF skipped=1 reason=no-summary"
             exit 0
@@ -53,18 +57,45 @@ jobs:
             --run-id "${{ github.event.workflow_run.id }}" \
             "${args[@]}"
           python tests/provider_repair_learn_handoff_v1_test.py
+      - name: Arm bounded Learning when Fast Brain exhausted strategies
+        shell: bash
+        run: |
+          set -euo pipefail
+          count="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('automation/provider-repair-learn-handoff-v1.json')
+          d=json.loads(p.read_text()) if p.exists() else {}
+          print(int(d.get('providerCount') or 0))
+          PY
+          )"
+          if [ "$count" -gt 0 ] && [ "${{ github.event.workflow_run.name }}" = "PROVIDERS - Fast Brain Repair" ]; then
+            cat > .github/triggers/brain-learning-reconstruction <<EOF
+          Explicit trigger for isolated Brain strategy learning after Fast Repair.
+          last_repair_run: ${{ github.event.workflow_run.id }}
+          source_sha: ${{ github.event.workflow_run.head_sha }}
+          budget_minutes: 20
+          reason: fast-brain-strategy-exhaustion
+          expected_scope: deferred-and-unresolved-current-repair-providers
+          publication_policy: proposal-only-until-current-byte-playback-identity-and-non-regression-proof
+          EOF
+            echo "FIELD_PROVIDER_REPAIR_LEARN_ARMED providers=$count budget_minutes=20"
+          else
+            echo "FIELD_PROVIDER_REPAIR_LEARN_ARMED providers=$count skipped=true"
+          fi
+
       - name: Commit sanitized LEARN handoff only
         shell: bash
         run: |
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add automation/provider-repair-learn-handoff-v1.json
+          git add automation/provider-repair-learn-handoff-v1.json .github/triggers/brain-learning-reconstruction
           if git diff --cached --quiet; then
             echo "FIELD_PROVIDER_REPAIR_LEARN_HANDOFF_PERSIST changed=false"
             exit 0
           fi
-          git commit -m 'data(learn): persist repair handoff'
+          git commit -m 'data(learn): persist Fast Brain handoff'
           git pull --rebase origin main
           git push origin HEAD:main
           echo "FIELD_PROVIDER_REPAIR_LEARN_HANDOFF_PERSIST changed=true"
