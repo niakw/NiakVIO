@@ -37,6 +37,7 @@ assert "Authority" in state_renderer
 assert "lifecycleDisabledQueue" in state_renderer
 assert "authorityRediscoveryQueue" in state_renderer
 assert "authorityRepairEligible" in state_renderer
+assert "--authority-status automation/provider-authority-status.json" in workflow
 
 # Canonical census interpretation owns status generation. Changing that renderer
 # must not launch a transport-only writer against an older persisted schema.
