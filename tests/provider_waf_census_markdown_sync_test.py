@@ -47,6 +47,9 @@ assert "FIELD_WAF_CENSUS_BASE_NOT_READY authority_schema_v3_required" in workflo
 assert 'assert int(state.get("schemaVersion") or 0) >= 3' in workflow
 assert '"authorityRepairEligible" in row and "authorityAction" in row' in workflow
 
-# Transport overlay writer must not auto-run from code/test pushes now that Repair owns WAF end-to-end.
+# Transport overlay writer is explicit: manual dispatch or the dedicated trigger
+# path only. Generic code/test pushes must not start it.
 assert "workflow_dispatch:" in workflow
-assert "\n  push:" not in workflow.split("permissions:",1)[0]
+header=workflow.split("permissions:",1)[0]
+assert "\n  push:" in header
+assert "'.github/triggers/provider-waf-browser-session'" in header
