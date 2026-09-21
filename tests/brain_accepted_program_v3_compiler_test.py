@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import copy
 import importlib.util
 import json
 from pathlib import Path
@@ -93,6 +94,7 @@ overrides={"provider_patches":{"demo":{
         "sourceRole":"historical-positive",
     }],
 }}}
+original=copy.deepcopy(overrides)
 proposed=mod.apply_compiled(overrides,compiled)
 patch=proposed["provider_patches"]["demo"]
 assert patch["official_site"]=="https://provider.example"
@@ -101,7 +103,7 @@ assert patch["search_request_plan"][1]["sourceRole"]=="historical-positive"
 assert patch["provider_value_plan"][0]==compiled["providerValuePlan"][0]
 assert patch["provider_value_plan"][1]["sourceRole"]=="historical-positive"
 assert patch["brain_accepted_program"]["source"]=="strict-brain-accepted-runtime-program"
-assert "search_request_plan" not in overrides["provider_patches"]["demo"]
+assert overrides==original
 
 report={
     "acceptedRepairs":[{
