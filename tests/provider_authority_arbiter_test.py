@@ -68,6 +68,26 @@ assert r["action"]=="REDISCOVER_DIRECT",r
 r=module.classify("demo",row(),direct,patch(),{"authority_failures":{"consecutive":3}})
 assert r["action"]=="DISABLE_AUTHORITY_EXHAUSTED",r
 
+# Curated directs remain Repair-eligible until persisted failures contradict them.
+r=module.classify("demo",row(),reg(direct="https://demo.example/"),patch(),{})
+assert r["action"]=="KEEP_DIRECT",r
+
+# A mixed embed resolver may be driven by an explicit delegated DB/API backend.
+r=module.classify(
+    "demo",row(),reg(search_queries=["demo"]),
+    patch(capability="mixed_embed_resolver",provider_lego_options={"runtime":{"db":"https://backend.example/db","api":"https://backend.example/api"}}),
+    {},
+)
+assert r["action"]=="KEEP_BACKEND",r
+
+# Structured site + positive route proof is a valid medium-confidence historical combo.
+r=module.classify(
+    "demo",row(),reg(search_queries=["demo"]),
+    patch(official_site="https://demo.example",route_proof={"provenRouteCount":2,"lastRepairProbe":{"positiveExecutionEvidence":True}}),
+    {},
+)
+assert r["action"]=="KEEP_PROVEN_SITE",r
+
 # Fresh historical combinations may unlock Repair without promoting search itself.
 from datetime import datetime, timezone
 fresh={"current":{"url":"https://demo.example","last_seen":datetime.now(timezone.utc).isoformat()}}
