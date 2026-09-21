@@ -2967,18 +2967,18 @@
         "flemmix",
         "wiflix"
       ],
-      "direct": "https://flemmix.me/",
-      "last_verified": "2026-09-20",
-      "schema_notes": "Current upstream provider source and fresh public catalogue on 2026-09-20 expose flemmix.me. Previous flemmix.cloud authority is retained as historical/fallback evidence but GitHub census receives a Cloudflare challenge there.",
+      "direct": "https://flemmix.party/",
+      "last_verified": "2026-09-21",
+      "schema_notes": "Current redirect chain and current Flemmix address sources on 2026-09-21 converge on flemmix.party. flemmix.cloud and flemmix.me are retained only as historical/redirect entry points; neufneuf.space is a discovery redirector, not a runtime terminal.",
       "direct_candidates": [
-        "https://flemmix.me/",
+        "https://flemmix.party/",
         "https://flemmix.cloud/",
-        "https://flemmix.party/"
+        "https://flemmix.me/"
       ],
       "allowed_terminal_hosts": [
-        "flemmix.me",
         "flemmix.party",
-        "flemmix.cloud"
+        "flemmix.cloud",
+        "flemmix.me"
       ],
       "search_queries": [],
       "sources": [
@@ -2987,6 +2987,12 @@
           "url": "https://ww1.wiflix-adresses.fun/",
           "priority": 110,
           "purpose": "Official Wiflix/Flemmix address list"
+        },
+        {
+          "type": "redirect",
+          "url": "https://neufneuf.space/",
+          "priority": 105,
+          "purpose": "Stable address redirector resolving to current Flemmix terminal"
         }
       ],
       "search_confirmation_runs": 2,
@@ -2999,8 +3005,8 @@
       ],
       "validation_scope": "catalogue_terminal",
       "direct_authority": "explicit_current",
-      "direct_authority_source": "current-upstream-provider-source-plus-fresh-public-catalogue",
-      "direct_authority_observed_at": "2026-09-20"
+      "direct_authority_source": "current-redirect-chain-plus-official-address-source",
+      "direct_authority_observed_at": "2026-09-21"
     },
     "animezey": {
       "id": "animezey",
