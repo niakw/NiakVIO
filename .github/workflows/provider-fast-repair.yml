@@ -1,0 +1,217 @@
+name: PROVIDERS - Fast Brain Repair
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_provider:
+        description: Optional exact provider in current repairQueue; empty = whole repairQueue
+        required: false
+        default: ""
+        type: string
+      waves:
+        description: Brain waves
+        required: true
+        default: "3"
+        type: choice
+        options: ["1", "2", "3", "4", "5"]
+      time_budget_seconds:
+        description: Provider-local Brain budget
+        required: true
+        default: "1200"
+        type: choice
+        options: ["600", "900", "1200", "1800", "2400"]
+      publish_validated:
+        description: Persist provider-local DATA/bytes only when every accepted candidate passes current-byte Retest
+        required: false
+        default: true
+        type: boolean
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/provider-fast-repair.json'
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: provider-fast-repair-main
+  cancel-in-progress: false
+
+jobs:
+  fast-repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked Node tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Validate fast lane contracts
+        run: |
+          set -euo pipefail
+          python -m py_compile             scripts/run_provider_fast_repair.py             scripts/run_provider_retest.py             scripts/run_provider_brain_repair.py             scripts/compile_brain_accepted_program_v3.py
+          python tests/provider_fast_repair_separation_test.py
+          python tests/provider_retest_scope_test.py
+          python tests/provider_brain_repair_orchestrator_test.py
+          python tests/brain_accepted_program_capture_test.py
+          python tests/brain_accepted_program_v3_compiler_test.py
+          python tests/brain_accepted_program_v3_persistence_test.py
+          python tests/provider_census_status_markdown_test.py
+          python tests/waf_census_transport_merge_test.py
+      - name: Run provider-local Brain Repair
+        id: repair
+        shell: bash
+        env:
+          DISPATCH_PROVIDER: ${{ inputs.target_provider || '' }}
+          DISPATCH_WAVES: ${{ inputs.waves || '3' }}
+          DISPATCH_BUDGET: ${{ inputs.time_budget_seconds || '1200' }}
+          DISPATCH_PUBLISH: ${{ inputs.publish_validated || 'true' }}
+        run: |
+          set -euo pipefail
+          provider="${DISPATCH_PROVIDER:-}"
+          waves="${DISPATCH_WAVES:-3}"
+          budget="${DISPATCH_BUDGET:-1200}"
+          publish="${DISPATCH_PUBLISH:-true}"
+          providers=()
+          if [ "${{ github.event_name }}" = "push" ]; then
+            readarray -t vals < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('.github/triggers/provider-fast-repair.json').read_text())
+          print(str(int(d.get('waves') or 3)))
+          print(str(int(d.get('timeBudgetSeconds') or 1200)))
+          print('true' if d.get('publishValidated', True) is True else 'false')
+          for p in d.get('targetProviders') or []:
+              p=str(p or '').strip().lower()
+              if p:
+                  print(p)
+          PY
+            )
+            waves="${vals[0]:-3}"
+            budget="${vals[1]:-1200}"
+            publish="${vals[2]:-true}"
+            providers=("${vals[@]:3}")
+          else
+            [ -z "$provider" ] || providers+=("$provider")
+          fi
+          args=(python scripts/run_provider_fast_repair.py --waves "$waves" --time-budget-seconds "$budget")
+          for p in "${providers[@]}"; do args+=(--provider "$p"); done
+          printf 'PROVIDER_FAST_REPAIR_ARGS %q ' "${args[@]}"; echo
+          "${args[@]}"
+          echo "publish=$publish" >> "$GITHUB_OUTPUT"
+      - name: Verify provider-local mutation boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import subprocess
+          changed=subprocess.check_output(['git','diff','--name-only','HEAD'],text=True).splitlines()
+          forbidden=[
+              p for p in changed
+              if p.startswith((
+                  'scripts/',
+                  'tests/',
+                  '.github/',
+                  'engine_v2/',
+              ))
+          ]
+          if forbidden:
+              raise SystemExit('fast Brain crossed provider-local boundary: '+','.join(forbidden))
+          print('FIELD_PROVIDER_FAST_REPAIR_DIFF files='+str(len(changed)))
+          for p in changed:
+              print('FIELD_PROVIDER_FAST_REPAIR_CHANGED '+p)
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: provider-fast-repair-${{ github.run_id }}
+          path: |
+            automation/provider-fast-repair-summary.json
+            automation/provider-brain-repair-latest.json
+            automation/brain-repair-experience.json
+            automation/brain-repair-memory.json
+            automation/brain-positive-program-memory.json
+            automation/provider-retest-latest.json
+            automation/provider-retest-targets-latest.json
+            automation/provider-census-status.json
+            automation/provider-census-proof-history.json
+            automation/provider-repair-batch-plan-latest.json
+            PROVIDER_CENSUS_STATUS.md
+            provider-v3-quick-yield.json
+            provider-overrides.json
+            providers/
+            provider-bases/
+            provider-v3-materialization.json
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Persist validated provider-local repair or evidence
+        if: ${{ github.ref == 'refs/heads/main' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          publication_allowed="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('automation/provider-fast-repair-summary.json')
+          d=json.loads(p.read_text()) if p.exists() else {}
+          print('true' if d.get('publicationAllowed') is True else 'false')
+          PY
+          )"
+          publish="${{ steps.repair.outputs.publish }}"
+          git fetch --quiet origin main
+          remote_main="$(git rev-parse origin/main)"
+          if [ "$remote_main" != "$GITHUB_SHA" ]; then
+            echo "FIELD_PROVIDER_FAST_REPAIR_STALE source=$GITHUB_SHA remote=$remote_main"
+            echo "FIELD_PROVIDER_FAST_REPAIR_REQUEUE current_main=$remote_main"
+            gh workflow run provider-fast-repair.yml --repo "$GITHUB_REPOSITORY" --ref main
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if [ "$publish" = "true" ] && [ "$publication_allowed" = "true" ]; then
+            git add               provider-overrides.json               providers               provider-bases               provider-v3-materialization.json               PROVIDER_CENSUS_STATUS.md               automation/provider-fast-repair-summary.json               automation/provider-brain-repair-latest.json               automation/brain-repair-experience.json               automation/brain-repair-memory.json               automation/brain-positive-program-memory.json               automation/provider-retest-latest.json               automation/provider-retest-targets-latest.json               automation/provider-census-status.json               automation/provider-census-proof-history.json               automation/provider-repair-batch-plan-latest.json               automation/provider-v3-static-knowledge.json               provider-v3-quick-yield.json
+            if git diff --cached --quiet; then
+              echo "Validated repair already current"
+            else
+              git commit -m "repair(brain): persist validated provider-local repair"
+              git push origin HEAD:main
+            fi
+            echo "FIELD_PROVIDER_FAST_REPAIR_PUBLISHED validated=true"
+          else
+            tmp="$RUNNER_TEMP/provider-fast-repair-evidence"
+            mkdir -p "$tmp/automation"
+            for f in               automation/provider-fast-repair-summary.json               automation/provider-brain-repair-latest.json               automation/brain-repair-experience.json               automation/brain-repair-memory.json               automation/brain-positive-program-memory.json               automation/provider-census-status.json               automation/provider-census-proof-history.json               automation/provider-repair-batch-plan-latest.json               PROVIDER_CENSUS_STATUS.md
+            do
+              [ ! -f "$f" ] || { mkdir -p "$tmp/$(dirname "$f")"; cp "$f" "$tmp/$f"; }
+            done
+            git reset --hard "$GITHUB_SHA"
+            git clean -fd
+            for f in               automation/provider-fast-repair-summary.json               automation/provider-brain-repair-latest.json               automation/brain-repair-experience.json               automation/brain-repair-memory.json               automation/brain-positive-program-memory.json               automation/provider-census-status.json               automation/provider-census-proof-history.json               automation/provider-repair-batch-plan-latest.json               PROVIDER_CENSUS_STATUS.md
+            do
+              [ ! -f "$tmp/$f" ] || { mkdir -p "$(dirname "$f")"; cp "$tmp/$f" "$f"; }
+            done
+            git add PROVIDER_CENSUS_STATUS.md automation
+            if git diff --cached --quiet; then
+              echo "Brain evidence already current"
+            else
+              git commit -m "ci(brain): persist fast repair evidence"
+              git push origin HEAD:main
+            fi
+            echo "FIELD_PROVIDER_FAST_REPAIR_PUBLISHED validated=false"
+          fi
