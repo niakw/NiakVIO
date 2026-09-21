@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "sourceRunId": "35654380620",
   "sourceTriggerSha": "0bd554ca347c89b7aa450c7339c523f652904bcc",
-  "unresolvedProviderCount": 18,
+  "unresolvedProviderCount": 16,
   "groupCount": 11,
   "executionModel": {
     "default": "family/signature batch",
@@ -11,63 +11,6 @@
     "providerLocalRepair": "exception path only"
   },
   "groups": [
-    {
-      "groupId": "harness-compatibility|html_scraper",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "html_scraper",
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "browser-profile-only",
-        "residential-exit-all-challenged"
-      ],
-      "providerCount": 3,
-      "providers": [
-        "allwish",
-        "animesalt",
-        "moviesmod"
-      ],
-      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "browser-profile-only",
-        "github-all-transports-challenged",
-        "residential-exit-all-challenged"
-      ],
-      "providerCount": 3,
-      "providers": [
-        "flemmix",
-        "fullanime",
-        "vostfree"
-      ],
-      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
     {
       "groupId": "transport|mixed_embed_resolver",
       "repairScope": "transport",
@@ -93,6 +36,60 @@
         "yflix"
       ],
       "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|html_scraper",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "html_scraper",
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "browser-profile-only",
+        "residential-exit-all-challenged"
+      ],
+      "providerCount": 2,
+      "providers": [
+        "allwish",
+        "moviesmod"
+      ],
+      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "github-all-transports-challenged",
+        "residential-exit-all-challenged"
+      ],
+      "providerCount": 2,
+      "providers": [
+        "flemmix",
+        "fullanime"
+      ],
+      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
