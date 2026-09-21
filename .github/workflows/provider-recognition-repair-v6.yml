@@ -71,6 +71,7 @@ jobs:
             scripts/run_provider_repair_pipeline_v6.py \
             scripts/run_provider_brain_repair.py \
             scripts/build_brain_repair_experience.py \
+            scripts/classify_provider_authority.py \
             scripts/adaptive_runtime/runtime_recovery_generator.py \
             scripts/provider_patches/adaptive_runtime_recovery_v5.py \
             scripts/upgrade_provider_repair_v6.py \
@@ -85,6 +86,7 @@ jobs:
             scripts/merge_provider_same_run_positive_evidence.py
           python scripts/upgrade_provider_runtime_reconstruction_v21_12.py
           python tests/provider_repair_pipeline_v6_contract_test.py
+          python tests/provider_authority_arbiter_test.py
           python tests/provider_same_run_positive_evidence_merge_test.py
           python tests/targeted_quick_yield_canonical_cli_test.py
           python tests/provider_brain_repair_orchestrator_test.py
@@ -228,6 +230,7 @@ jobs:
             automation/provider-repair-yield-v6.json
             automation/provider-repair-v6-summary.json
             automation/provider-brain-repair-latest.json
+            automation/provider-authority-status.json
             automation/brain-repair-experience.json
             automation/brain-repair-memory.json
             automation/brain-positive-program-memory.json
