@@ -291,7 +291,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/merge_waf_census_transport.py             --status automation/provider-census-status.json             --waf automation/provider-waf-browser-session-latest.json             --output /tmp/provider-repair-census-waf.json             --run-id "${GITHUB_RUN_ID}-repair-waf"             --sha "$GITHUB_SHA"
+          python scripts/merge_waf_census_transport.py             --status automation/provider-census-status.json             --waf automation/provider-waf-browser-session-latest.json             --authority-status automation/provider-authority-status.json             --output /tmp/provider-repair-census-waf.json             --run-id "${GITHUB_RUN_ID}-repair-waf"             --sha "$GITHUB_SHA"
           mv /tmp/provider-repair-census-waf.json automation/provider-census-status.json
           python scripts/build_provider_repair_batch_plan.py             --status automation/provider-census-status.json             --overrides provider-overrides.json             --output automation/provider-repair-batch-plan-latest.json
           python scripts/render_provider_census_status_from_state.py             --status automation/provider-census-status.json             --output PROVIDER_CENSUS_STATUS.md
