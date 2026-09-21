@@ -129,7 +129,8 @@ assert "run 123" in md
 assert "SHA abcdef012345" in md
 assert "Symptomatic providers: **7**" in md
 assert "automated repair queue: **6**" in md
-assert "harness/environment queue: **1**" in md
+assert "harness mismatch: **1**" in md
+assert "environment blocked: **0**" in md
 
 # A GitHub-hosted browser challenge that remains unresolved is still an
 # environment/harness state, not proof that provider JS is broken.
