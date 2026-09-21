@@ -6,7 +6,9 @@ for the authoritative replay: some providers fail before a safe exact GET can
 be extracted, or require POST/player/session behavior only the real provider
 runtime can reproduce. Once the private residential exit is confirmed active,
 replay every *current* provider whose census status is environment/network
-blocked. The replay itself remains the only functional authority.
+blocked and whose provider address/backend still has authority. Domain/lifecycle-
+blocked providers stay out of this transport queue. The replay itself remains
+the only functional authority.
 """
 from __future__ import annotations
 
@@ -43,6 +45,7 @@ def select(report: dict[str, Any], status: dict[str, Any]) -> list[str]:
         for row in status.get("providers") or []
         if isinstance(row, dict)
         and str(row.get("status") or "") in ELIGIBLE_STATUSES
+        and row.get("authorityRepairEligible") is not False
         and str(row.get("provider") or "").strip()
     }
     return sorted(providers)
