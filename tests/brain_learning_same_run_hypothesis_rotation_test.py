@@ -23,6 +23,7 @@ def report(variant: int, generation: int = 1) -> dict:
                     "signature": "search-gap:route-proven",
                     "experimentVariant": variant,
                     "experimentGeneration": generation,
+                    "action": "probe-targeted-repair",
                     "allowedProfiles": ["adaptive_runtime_recovery"],
                 }
             }
@@ -40,6 +41,11 @@ assert v0 == module.repair_method_fingerprints(report(0), ["adaptive_runtime_rec
 assert module.repair_method_fingerprints({}, ["adaptive_runtime_recovery"]) == [
     "profile:adaptive_runtime_recovery"
 ]
+architecture_debt = report(5, 5)
+architecture_plan = next(iter(architecture_debt["brain"]["plans"].values()))
+architecture_plan["action"] = "collect-more-evidence"
+architecture_plan["allowedProfiles"] = []
+assert module.repair_method_fingerprints(architecture_debt, []) == []
 
 source = SCRIPT.read_text(encoding="utf-8")
 assert 'method_set = tuple(repair["attemptedMethods"])' in source
