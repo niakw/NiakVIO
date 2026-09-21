@@ -61,9 +61,7 @@
     "fullanime",
     "showbox"
   ],
-  "disabledNow": [
-    "showbox"
-  ],
+  "disabledNow": [],
   "providers": [
     {
       "provider": "anime-sama",
@@ -589,15 +587,14 @@
     },
     {
       "provider": "showbox",
-      "action": "DISABLE_MANUAL_POLICY",
+      "action": "KEEP_DISABLED",
       "repairEligible": false,
       "confidence": "terminal",
-      "authorityClass": "manual-off",
+      "authorityClass": "disabled",
       "failureCount": 0,
       "reasons": [
         "manual_off_no_current_authority_search_only"
-      ],
-      "appliedDisableReason": "manual_off_no_current_authority_search_only"
+      ]
     },
     {
       "provider": "vidlove",
