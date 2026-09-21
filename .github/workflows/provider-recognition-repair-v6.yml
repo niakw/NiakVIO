@@ -116,6 +116,10 @@ jobs:
           python tests/provider_repair_unresolved_scope_test.py
           python tests/provider_census_status_markdown_test.py
           python tests/provider_v3_override_pipeline_contract_test.py
+          # Fail fast on provider-folder activation/lifecycle drift. This used to
+          # run only after the expensive Brain stage and made a stale 46-active
+          # assumption waste a complete Repair cycle.
+          python tests/provider_v3_strategy_plan_contract_test.py
           python tests/provider_clean_worker_smoke_test.py
           python tests/provider_stage_profile_worker_smoke_test.py
           python tests/provider_wookafr_current_runtime_behavior_test.py
