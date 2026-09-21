@@ -44,4 +44,17 @@ for forbidden in (
 ):
     assert forbidden not in source, forbidden
 
+
+workflow = (ROOT / ".github/workflows/provider-fast-repair.yml").read_text(encoding="utf-8")
+for required in (
+    "Persist current unresolved Fast Brain debt into LEARN handoff",
+    "scripts/provider_repair_learn_handoff_v1.py",
+    "automation/provider-repair-learn-handoff-v1.json",
+    ".github/triggers/brain-learning-reconstruction",
+    "budget_minutes: 20",
+    "learnHandoffProviders",
+):
+    assert required in workflow, required
+assert "workflow_run" not in workflow
+
 print("provider fast repair separation contract passed")
