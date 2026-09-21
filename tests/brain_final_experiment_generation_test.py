@@ -37,6 +37,7 @@ policy={
             "rotateExperimentAfterFailures":1,
             "maxVariantsPerSignature":5,
             "finalVariantGeneration":2,
+            "maxLearningGenerationsPerSignature":5,
         },
         "maxHypotheses":3,
         "maxMutationsPerProvider":2,
@@ -58,9 +59,9 @@ def row(variant:int,generation:int=1):
         "successes":0,
     }
 
-def plan(memory):
+def plan(memory, mode="repair"):
     payload={
-        "mode":"repair",
+        "mode":mode,
         "policy":policy,
         "learnedSkills":{},
         "negativeMemory":memory,
@@ -81,7 +82,7 @@ assert fresh["experimentVariant"]==4,fresh
 assert fresh["experimentGeneration"]==2,fresh
 assert fresh["experimentExhausted"] is False,fresh
 assert fresh["action"]=="probe-targeted-repair",fresh
-assert fresh["negativeMemoryMatches"]==4,fresh
+assert fresh["negativeMemoryMatches"]==5,fresh
 
 # Once the current generation itself fails, all five variants are exhausted again.
 exhausted=plan([*old,row(4,2)])
@@ -89,6 +90,34 @@ assert exhausted["experimentExhausted"] is True,exhausted
 assert exhausted["experimentGeneration"]==2,exhausted
 assert exhausted["repairScope"]=="deferred",exhausted
 assert exhausted["action"]=="deferred_retry",exhausted
+assert exhausted["experimentGenerationLimit"]==2,exhausted
+
+# Learning owns bounded strategy evolution after production g2 is exhausted.
+# Each failed final generation advances to a genuinely new generation until the
+# configured limit, then turns into explicit architecture debt.
+learning_g3=plan([*old,row(4,2)],"learning")
+assert learning_g3["experimentVariant"]==4,learning_g3
+assert learning_g3["experimentGeneration"]==3,learning_g3
+assert learning_g3["experimentExhausted"] is False,learning_g3
+assert learning_g3["action"]=="probe-targeted-repair",learning_g3
+assert learning_g3["experimentGenerationLimit"]==5,learning_g3
+
+learning_g4=plan([*old,row(4,2),row(4,3)],"learning")
+assert learning_g4["experimentGeneration"]==4,learning_g4
+assert learning_g4["experimentExhausted"] is False,learning_g4
+
+learning_g5=plan([*old,row(4,2),row(4,3),row(4,4)],"learning")
+assert learning_g5["experimentGeneration"]==5,learning_g5
+assert learning_g5["experimentExhausted"] is False,learning_g5
+
+learning_exhausted=plan([*old,row(4,2),row(4,3),row(4,4),row(4,5)],"learning")
+assert learning_exhausted["experimentGeneration"]==5,learning_exhausted
+assert learning_exhausted["experimentExhausted"] is True,learning_exhausted
+assert learning_exhausted["repairScope"]=="learning",learning_exhausted
+assert learning_exhausted["repairType"]=="architecture_gap",learning_exhausted
+assert learning_exhausted["action"]=="collect-more-evidence",learning_exhausted
+assert learning_exhausted["exitReason"]=="learning_generations_exhausted",learning_exhausted
+assert learning_exhausted["learningDisposition"]=="propose_new_or_evolved_core_type",learning_exhausted
 
 # Python memory plumbing must preserve old rows as generation 1 and explicit new rows as 2.
 spec=importlib.util.spec_from_file_location("brain_runtime",ROOT/"scripts/brain_repair_runtime.py")
