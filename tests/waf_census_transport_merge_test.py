@@ -145,4 +145,46 @@ assert merged["harnessEvidenceRunId"] == "waf-run"
 assert merged["harnessEvidenceSha"] == "waf-sha"
 assert merged["harnessTransportUpdatedProviders"] == ["all-blocked", "browser-only"]
 
+
+
+network_baseline = {
+    "runId": "repair-authority",
+    "triggerSha": "repair-sha",
+    "repairQueue": ["net"],
+    "environmentQueue": [],
+    "harnessQueue": [],
+    "symptomaticProviders": ["net"],
+    "brainQueue": ["net"],
+    "providers": [{
+        "provider": "net",
+        "status": "PROVIDER NETWORK BLOCKED",
+        "color": "🟤",
+        "repairEligible": True,
+        "brainCheckRequired": True,
+    }],
+}
+network_waf = {
+    "rows": [{
+        "provider": "net",
+        "lane": "movie",
+        "seedKind": "network-failure-replay",
+        "outcome": "browser_timeout",
+        "directHttpProfile": {"outcome": "direct_http_timeout"},
+        "okHttpJvmProfile": {"outcome": "okhttp_jvm_timeout"},
+        "residentialExitNodeProfile": {
+            "outcome": "browser_content_reached",
+            "directHttpProfile": {"outcome": "direct_http_content_reached"},
+            "okHttpJvmProfile": {"outcome": "okhttp_jvm_content_reached"},
+        },
+    }],
+}
+network_merged = mod.merge_transport(network_baseline, network_waf)
+net = network_merged["providers"][0]
+assert net["status"] == "PROVIDER NETWORK BLOCKED", net
+assert net["repairEligible"] is True, net
+assert net["networkDifferentialClass"] == "residential-native-route-reachable", net
+assert network_merged["repairQueue"] == ["net"], network_merged
+assert network_merged["environmentQueue"] == [], network_merged
+assert network_merged["networkDifferentialUpdatedProviders"] == ["net"], network_merged
+
 print("WAF census transport-only merge contract passed")
