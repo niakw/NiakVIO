@@ -282,4 +282,106 @@ assert functional["counts"] == {
     "PARTIAL OK": 1,
 }, functional["counts"]
 
+# Native-like reachability plus a full provider replay that fails after
+# entering provider runtime is no longer environment-only. This does NOT grant
+# a repair; it transfers the provider to the normal Brain queue.
+post_harness_baseline = {
+    "repairQueue": [],
+    "environmentQueue": ["wooka-like", "browser-only-runtime", "timeout-runtime"],
+    "harnessQueue": ["wooka-like", "browser-only-runtime", "timeout-runtime"],
+    "symptomaticProviders": ["wooka-like", "browser-only-runtime", "timeout-runtime"],
+    "brainQueue": ["wooka-like", "browser-only-runtime", "timeout-runtime"],
+    "providers": [
+        {
+            "provider": "wooka-like",
+            "status": "HARNESS MISMATCH",
+            "color": "🟧",
+            "declaredLanes": ["movie", "tv"],
+            "currentVerifiedLanes": [],
+            "routeProof": ["2 live routes / movie, tv"],
+            "evidenceDepth": ["movie=lookup_only", "tv=chain_reached"],
+            "repairEligible": False,
+            "brainCheckRequired": True,
+        },
+        {
+            "provider": "browser-only-runtime",
+            "status": "HARNESS MISMATCH",
+            "color": "🟧",
+            "declaredLanes": ["anime"],
+            "currentVerifiedLanes": [],
+            "evidenceDepth": ["anime=lookup_only"],
+            "repairEligible": False,
+            "brainCheckRequired": True,
+        },
+        {
+            "provider": "timeout-runtime",
+            "status": "HARNESS MISMATCH",
+            "color": "🟧",
+            "declaredLanes": ["movie"],
+            "currentVerifiedLanes": [],
+            "evidenceDepth": ["movie=lookup_only"],
+            "repairEligible": False,
+            "brainCheckRequired": True,
+        },
+    ],
+}
+post_harness_waf = {
+    "rows": [
+        {
+            "provider": "wooka-like",
+            "lane": "movie",
+            "outcome": "browser_content_reached",
+            "directHttpProfile": {"outcome": "direct_http_content_reached"},
+            "okHttpJvmProfile": {"outcome": "okhttp_jvm_content_reached"},
+        },
+        {
+            "provider": "wooka-like",
+            "lane": "tv",
+            "outcome": "browser_content_reached",
+            "directHttpProfile": {"outcome": "direct_http_content_reached"},
+            "okHttpJvmProfile": {"outcome": "okhttp_jvm_content_reached"},
+        },
+        {
+            "provider": "browser-only-runtime",
+            "lane": "anime",
+            "outcome": "browser_content_reached",
+            "clientProfileMatrix": [{"profile": "nuvio-tv-ua-browser", "outcome": "browser_content_reached"}],
+            "directHttpProfile": {"outcome": "direct_http_challenge_persisted"},
+            "okHttpJvmProfile": {"outcome": "okhttp_jvm_challenge_persisted"},
+        },
+        {
+            "provider": "timeout-runtime",
+            "lane": "movie",
+            "outcome": "browser_content_reached",
+            "directHttpProfile": {"outcome": "direct_http_content_reached"},
+            "okHttpJvmProfile": {"outcome": "okhttp_jvm_content_reached"},
+        },
+    ],
+    "residentialProviderReplay": {
+        "available": True,
+        "rows": [
+            {"provider": "wooka-like", "lane": "movie", "status": "no_streams", "debugStage": "provider_network_exception", "raw": 0, "playable": 0, "verified": 0, "identitySafe": True},
+            {"provider": "wooka-like", "lane": "tv", "status": "no_streams", "debugStage": "provider_network_exception", "raw": 0, "playable": 0, "verified": 0, "identitySafe": True},
+            {"provider": "browser-only-runtime", "lane": "anime", "status": "no_streams", "debugStage": "provider_network_exception", "raw": 0, "playable": 0, "verified": 0, "identitySafe": True},
+            {"provider": "timeout-runtime", "lane": "movie", "status": "timeout", "debugStage": "timeout", "raw": 0, "playable": 0, "verified": 0, "identitySafe": False},
+        ],
+    },
+}
+post_harness = mod.merge_transport(post_harness_baseline, post_harness_waf)
+post_by_id = {row["provider"]: row for row in post_harness["providers"]}
+assert post_by_id["wooka-like"]["status"] == "PROVIDER NETWORK BLOCKED", post_by_id["wooka-like"]
+assert post_by_id["wooka-like"]["repairEligible"] is True
+assert post_by_id["wooka-like"]["residentialProviderReplayReclassified"] is True
+assert "wooka-like" in post_harness["repairQueue"]
+assert "wooka-like" not in post_harness["environmentQueue"]
+assert "wooka-like" not in post_harness["harnessQueue"]
+assert post_harness["residentialProviderReplayRepairableProviders"] == ["wooka-like"]
+assert post_by_id["browser-only-runtime"]["status"] == "HARNESS MISMATCH"
+assert post_by_id["browser-only-runtime"]["repairEligible"] is False
+assert "browser-only-runtime" in post_harness["environmentQueue"]
+assert post_by_id["timeout-runtime"]["status"] == "HARNESS MISMATCH"
+assert post_by_id["timeout-runtime"]["repairEligible"] is False
+assert "timeout-runtime" in post_harness["environmentQueue"]
+
+
 print("WAF census transport-only merge contract passed")
