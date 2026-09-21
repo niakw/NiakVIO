@@ -55,10 +55,10 @@ permissions:
 
 concurrency:
   group: provider-census-waf-main
-  # Preserve the exact-SHA census already running when the repair branch advances.
-  # Newer commits queue behind it; evidence must record the SHA actually tested
-  # rather than repeatedly cancelling long validation before it produces an artifact.
-  cancel-in-progress: false
+  # Retest is now the canonical fast current-byte ledger. A superseded full
+  # census must never monopolize the queue or finish later and overwrite newer
+  # evidence; stale completed runs are also rejected again before persistence.
+  cancel-in-progress: true
 
 jobs:
   scale:
