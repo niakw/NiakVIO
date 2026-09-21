@@ -72,6 +72,18 @@ jobs:
           python tests/provider_waf_tailscale_exit_contract_test.py
           python tests/waf_residential_profile_merge_test.py
 
+      - name: Normalize private Tailscale CI tag
+        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="${TS_TAG_NAME:-niakvio-ci}"
+          case "$raw" in
+            tag:*) normalized="$raw" ;;
+            *) normalized="tag:$raw" ;;
+          esac
+          printf 'TS_ACTION_TAG=%s\n' "$normalized" >> "$GITHUB_ENV"
+
 
       - name: Reprobe persisted WAF lanes on GitHub-hosted network
         shell: bash
@@ -97,9 +109,8 @@ jobs:
         with:
           oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
           audience: ${{ env.TS_AUDIENCE }}
-          tags: ${{ env.TS_TAG_NAME || 'tag:niakvio-ci' }}
+          tags: ${{ env.TS_ACTION_TAG }}
           version: '1.94.2'
-          log-mode: quiet
 
       - name: Select private residential exit node
         if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
