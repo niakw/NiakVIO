@@ -44,19 +44,66 @@ def canonical(value: object) -> str:
     return str(value or "").strip().casefold()
 
 
-def current_provider_ids(manifest_path: Path) -> set[str]:
+def current_provider_rows(manifest_path: Path) -> dict[str, dict[str, Any]]:
     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
     rows = payload.get("scrapers") if isinstance(payload, dict) else None
     if not isinstance(rows, list) or not rows:
         raise AssertionError(f"{manifest_path}: non-empty scrapers list required")
-    ids = {
-        canonical(row.get("id"))
+    output = {
+        canonical(row.get("id")): row
         for row in rows
         if isinstance(row, dict) and canonical(row.get("id"))
     }
-    if len(ids) != len(rows):
+    if len(output) != len(rows):
         raise AssertionError(f"{manifest_path}: duplicate or missing provider id")
-    return ids
+    return output
+
+
+def current_provider_ids(manifest_path: Path) -> set[str]:
+    return set(current_provider_rows(manifest_path))
+
+
+def ensure_registry_coverage(
+    document: dict[str, Any],
+    manifest_rows: dict[str, dict[str, Any]],
+) -> list[str]:
+    """Ensure every visible provider has a registry identity without inventing authority."""
+    # PROVIDER_HUB_REGISTRY_TOTAL_COVERAGE_V1
+    providers = document.get("providers")
+    if not isinstance(providers, dict):
+        raise AssertionError("provider-hubs.json providers must be an object")
+    created: list[str] = []
+    for provider_id, manifest_row in sorted(manifest_rows.items()):
+        if provider_id in providers:
+            continue
+        supported = [
+            str(value).strip().casefold()
+            for value in manifest_row.get("canonicalSupportedTypes") or manifest_row.get("supportedTypes") or []
+            if str(value).strip()
+        ]
+        providers[provider_id] = {
+            "id": provider_id,
+            "name": str(manifest_row.get("name") or provider_id),
+            "manifest_status": "Actif" if manifest_row.get("enabled") is not False else "Désactivé",
+            "category": " / ".join(supported) if supported else "Unknown",
+            "hub": None,
+            "direct": None,
+            "source": "current_provider_registry_autofill",
+            "schema_notes": (
+                "Autofilled from the current manifest for registry coverage only; "
+                "this row grants no address authority and opts into no search policy."
+            ),
+            "aliases": [provider_id],
+            "direct_candidates": [],
+            "allowed_terminal_hosts": [],
+            "search_queries": [],
+            "sources": [],
+            "legacy_search_refresh": False,
+            "search_role": "supplementary",
+            "registry_state": "unresolved",
+        }
+        created.append(provider_id)
+    return created
 
 
 def dedupe(values: list[str]) -> list[str]:
@@ -182,11 +229,14 @@ def main() -> int:
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
 
-    provider_ids = current_provider_ids(Path(args.manifest))
+    manifest_rows = current_provider_rows(Path(args.manifest))
+    provider_ids = set(manifest_rows)
 
     registry_path = Path(args.registry)
     registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    registry_created = ensure_registry_coverage(registry, manifest_rows)
     registry, registry_changed = sanitize(registry, provider_ids)
+    registry_changed = sorted(set(registry_created) | set(registry_changed))
 
     history_path = Path(args.history)
     history = json.loads(history_path.read_text(encoding="utf-8"))
