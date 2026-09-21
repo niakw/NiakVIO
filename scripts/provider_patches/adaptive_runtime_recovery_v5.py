@@ -178,6 +178,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
                 'if(media(xs[i],"","",""))continue;var nestedEpisode=episodeMarker(xs[i],q),ps=playerScore(xs[i],page);',
                 'var inlineProof=mediaProof(xs[i],"","","");if(inlineProof&&inlineProof!=="extension")continue;var nestedEpisode=episodeMarker(xs[i],q),ps=playerScore(xs[i],page);',
             ),
+            (
+                'if(media(xs[i],"","",""))continue;var nestedEpisode=episodeMarker(xs[i],q),ps=playerScore(xs[i],page);',
+                'var inlineProof=mediaProof(xs[i],"","","");if(inlineProof&&inlineProof!=="extension")continue;var nestedEpisode=episodeMarker(xs[i],q),ps=playerScore(xs[i],page);',
+            ),
         ),
         "nested_extension_recurse",
     )
@@ -196,6 +200,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         (
             'if(media(handXs[hi],"","",""))continue;var handEpisode=episodeMarker(handXs[hi],q);',
             'var handInlineProof=mediaProof(handXs[hi],"","","");if(handInlineProof&&handInlineProof!=="extension")continue;var handEpisode=episodeMarker(handXs[hi],q);',
+            'if(media(handXs[hi],"","",""))continue;var handEpisode=episodeMarker(handXs[hi],q);',
         ),
         'var handInlineProof=mediaProof(handXs[hi],"","","");if(handInlineProof&&handInlineProof!=="extension")continue;var handEpisode=episodeMarker(handXs[hi],q);',
         "handoff_nested_extension_recurse",
