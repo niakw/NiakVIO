@@ -121,6 +121,7 @@ synthetic = "\n".join([
         'const SITE="https://old.example/path?q=1";',
         data={"runtimeFamily": "demo"},
     ),
+    "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */",
     render_managed_fix(
         "CORE.DEMO.TEST.V1",
         'const CORE_SITE="https://old.example/must-stay";',
