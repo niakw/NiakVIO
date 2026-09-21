@@ -90,7 +90,7 @@ for required in (
     "replace_provider_fix",
     "project_domain_owned_provider_legos",
     "provider_domain_runtime_projection_drift_ids",
-    "domain refresh changed bytes outside domain-owned Provider Lego",
+    "domain refresh changed bytes beyond CONFIG + authorized provider host projection",
     '"core_mutation": False',
 ):
     assert required in source, required
@@ -147,6 +147,31 @@ assert module._strip_domain_owned_blocks(
     projected,
     ["PROVIDER.DEMO.CONFIG.V1", "PROVIDER.DEMO.RUNTIME.V1"],
 )
+
+# Historical pre-managed runtime is also domain-projectable, but only before the
+# Core boundary. This is the exact AnimeVOSTFR split-brain shape found in main.
+raw_synthetic = (
+    synthetic.replace(
+        render_managed_fix(
+            "PROVIDER.DEMO.RUNTIME.V1",
+            'const SITE="https://old.example/path?q=1";',
+            data={"runtimeFamily": "demo"},
+        ),
+        'const NIAKVIO_PROVIDER_RUNTIME_LEGO_V1={"base":"https://old.example"};\n',
+    )
+)
+raw_projected, raw_scopes = module.project_domain_owned_provider_legos(
+    raw_synthetic,
+    "demo",
+    "PROVIDER.DEMO.CONFIG.V1",
+    {
+        "official_site": "https://new.example",
+        "runtime_domain_replacements": {"old.example": "new.example"},
+    },
+)
+assert "PROVIDER.DEMO.RAW.DOMAIN" in raw_scopes, raw_scopes
+assert '"base":"https://new.example"' in raw_projected, raw_projected
+assert 'CORE_SITE="https://old.example/must-stay"' in raw_projected, raw_projected
 
 # Regression 1: stale embedded official_domain_hubs must not shadow provider-hubs.json.
 legacy_config = {
