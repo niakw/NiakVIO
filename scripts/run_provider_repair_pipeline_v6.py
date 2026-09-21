@@ -34,6 +34,7 @@ CENSUS_HISTORY = ROOT / "automation" / "provider-census-proof-history.json"
 CENSUS_MD = ROOT / "PROVIDER_CENSUS_STATUS.md"
 CENSUS_POST_REPAIR = ROOT / "automation" / "provider-census-post-repair.json"
 REPAIR_CANDIDATE_EVIDENCE = ROOT / "automation" / "provider-repair-candidate-evidence.json"
+AUTHORITY_STATUS = ROOT / "automation" / "provider-authority-status.json"
 CURRENT_OVERRIDES_SNAPSHOT = RUNTIME_PLAN_LKG.parent / "provider-overrides-pre-repair.json"
 CENSUS_ENVIRONMENT_ONLY = {"HARNESS MISMATCH", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}
 
@@ -338,7 +339,30 @@ def main() -> int:
         raise SystemExit("provider census status missing; run census before Repair")
     census = load(CENSUS_STATUS)
 
-    # Census is the only automatic target authority. First re-check only its
+    # Address/identity authority is a prerequisite for site-dependent Repair.
+    # Search-only or stale-domain providers are rediscovered by Domain first;
+    # deterministic API/backend providers remain eligible without a homepage.
+    run(sys.executable, "scripts/classify_provider_authority.py")
+    authority = load(AUTHORITY_STATUS)
+    authority_rows = {
+        cid(row.get("provider")): row
+        for row in authority.get("providers") or []
+        if isinstance(row, dict) and cid(row.get("provider"))
+    }
+    authority_blocked = {
+        provider for provider, row in authority_rows.items()
+        if row.get("repairEligible") is not True
+    }
+    skipped.update(authority_blocked)
+    if requested & authority_blocked:
+        blocked = sorted(requested & authority_blocked)
+        print(
+            "FIELD_PROVIDER_REPAIR_AUTHORITY_BLOCKED providers=" + ",".join(blocked),
+            flush=True,
+        )
+
+    # Census is the only automatic symptom authority; the provider-authority
+    # arbiter is an independent prerequisite gate before network Repair.
     # current repairQueue, merge those fresh observations into the ledger, then
     # repair only providers that remain symptomatic.
     initial_targets, auto_excluded_green = unresolved_target_scope(
@@ -354,7 +378,8 @@ def main() -> int:
             "mode": args.mode,
             "publicationAllowed": False,
             "mainWritesAllowed": False,
-            "selectionAuthority": "provider-census-status.json:repairQueue",
+            "selectionAuthority": "provider-census-status.json:repairQueue + provider-authority-status.json",
+            "authorityBlockedProviders": sorted(authority_blocked),
             "targetedProviderCount": 0,
             "targetedProviders": [],
             "censusStatusUpdated": False,
@@ -381,7 +406,8 @@ def main() -> int:
             "mode": args.mode,
             "publicationAllowed": False,
             "mainWritesAllowed": False,
-            "selectionAuthority": "provider-census-status.json:repairQueue",
+            "selectionAuthority": "provider-census-status.json:repairQueue + provider-authority-status.json",
+            "authorityBlockedProviders": sorted(authority_blocked),
             "targetedProviderCount": 0,
             "targetedProviders": [],
             "preRepairRetestedProviders": initial_targets,
@@ -408,7 +434,7 @@ def main() -> int:
     print(
         "FIELD_PROVIDER_REPAIR_SCOPE "
         f"mode={args.mode} catalogue={len(catalogue)} active={len(active_catalogue)} targeted={len(targets)} "
-        f"skip_file={len(skipped)} disposition_green_excluded={len(auto_excluded_green)} "
+        f"skip_file={len(skipped)} authority_blocked={len(authority_blocked)} disposition_green_excluded={len(auto_excluded_green)} "
         f"regression_reactivated={len(regression_reactivated)} "
         f"attempts={attempts} workers={repair_workers} providers={','.join(targets)}",
         flush=True,
