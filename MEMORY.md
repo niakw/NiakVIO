@@ -1,6 +1,16 @@
 # NiakVIO — Recovery Memory
 
 
+## 2026-09-21 20:45 Europe/Paris — Repair #124 preflight found and fixed false direct authority promotion
+
+- Canonical Repair run `35640096441` (#124) on trigger SHA `fd3140d48295` did **not** reach provider probes. It failed in preflight at `provider_authority_current_catalogue_test.py`: ShowBox recalculated as `KEEP_DIRECT` although the durable intended state is `REDISCOVER_SEARCH`. No Brain/provider result from #124 is valid repair evidence.
+- Root cause: `classify_provider_authority.py` treated any registry `direct` HTTP URL as sufficient authority. ShowBox had `direct=https://www.showbox.media/` recorded as a runtime candidate, but its registry provenance is still search-only/historical supplementary and its route proof has `provenRouteCount=0`, `positiveExecutionEvidence=false`. The candidate was therefore incorrectly promoted merely by being present.
+- `3cdd2f836ee8` adds `PROVIDER_AUTHORITY_DIRECT_PROOF_V1`: `direct_authority=explicit_current` remains strong until Domain failure memory demotes it; otherwise a direct candidate is Repair authority only with provider-owned positive route proof or a fresh matching runtime observation. A bare direct candidate falls back to rediscovery (`REDISCOVER_SEARCH` when search supplement exists). Existing proven direct providers such as Kurage/Sekai/StreamZo/VoirAnime-rip remain eligible because they carry positive route evidence.
+- `56c6b9218b95` locks bare-search direct rejection, proof-backed direct acceptance and explicit-current strength. `d99c6ec92334` locks the live ShowBox catalogue decision and its reasons: `direct_candidate_unproven + search_supplement_only`.
+- Lifecycle auto-recomputation was triggered by the authority-code change. Next action: require a successful current-head lifecycle recomputation, then relaunch canonical Repair with the same census/authority-filtered scope.
+
+
+
 ## 2026-09-21 20:38 Europe/Paris — Domain publication confirmed; Repair queue authority-filtered to 9
 
 - Revalidated current `main` after the Domain/lifecycle authority work. Domain run `35638237327` (#1032) is a **successful publication with a false-red post step**: the workflow passed registry sanitize, Domain resolve/reconcile, transaction guard, DNS, domain-only static audit, active/native Hub46 release checks, then committed `35bbcf89bf59` and final `efdad41cd72b`; `git push` succeeded and logged `FIELD_DOMAIN_PUBLICATION_OK base=9bdf5bd... final=efdad41c...`. The run only turned red afterward because `gh workflow run sync.yml` hit GitHub installation API rate limiting (`HTTP 403`).
