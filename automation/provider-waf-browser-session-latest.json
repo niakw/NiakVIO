@@ -182,7 +182,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 20958,
+      "durationMs": 12237,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -335,7 +335,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 20650,
+      "durationMs": 12567,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -490,7 +490,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 21745,
+      "durationMs": 12688,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -648,7 +648,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 19612,
+      "durationMs": 19982,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -803,7 +803,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 10997,
+      "durationMs": 9495,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_inconclusive",
@@ -956,7 +956,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 10303,
+      "durationMs": 9305,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_inconclusive",
@@ -1109,7 +1109,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 11507,
+      "durationMs": 11079,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1179,10 +1179,14 @@
           "profile": "nuvio-tv-ua-browser",
           "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
           "outcome": "browser_content_reached",
-          "attemptCount": 1,
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
+              "outcome": "browser_timeout"
+            },
+            {
+              "attempt": 2,
               "outcome": "browser_content_reached",
               "exitCode": 0
             }
@@ -1241,7 +1245,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 8670,
+      "durationMs": 81749,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -1287,12 +1291,15 @@
       "seedKind": "network-failure-replay",
       "seedRoute": null,
       "outcome": "browser_content_reached",
-      "attemptCount": 1,
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_content_reached",
-          "exitCode": 0
+          "outcome": "browser_timeout"
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_timeout"
         }
       ],
       "ordinarySessionReused": true,
@@ -1300,13 +1307,16 @@
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_content_reached",
-          "attemptCount": 1,
+          "outcome": "browser_timeout",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_content_reached",
-              "exitCode": 0
+              "outcome": "browser_timeout"
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_timeout"
             }
           ],
           "ordinarySessionReused": true
@@ -1371,13 +1381,12 @@
         "exitCode": 0
       },
       "contentProfiles": [
-        "github-default-browser",
         "nuvio-tv-ua-browser",
         "nuvio-tv-direct-http-approx",
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 8200,
+      "durationMs": 92395,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -1537,7 +1546,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 13099,
+      "durationMs": 12662,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -1675,18 +1684,18 @@
           "redirects": "HTTP+SSL enabled",
           "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
         },
-        "outcome": "okhttp_jvm_inconclusive",
+        "outcome": "okhttp_jvm_challenge_persisted",
         "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
-            "outcome": "okhttp_jvm_inconclusive",
-            "status": 429
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
           },
           {
             "attempt": 2,
-            "outcome": "okhttp_jvm_inconclusive",
-            "status": 429
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
           }
         ],
         "exitCode": 0
@@ -1695,7 +1704,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 9391,
+      "durationMs": 9423,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -1853,7 +1862,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 11654,
+      "durationMs": 10662,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -1990,7 +1999,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 55950,
+      "durationMs": 62068,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -2003,8 +2012,8 @@
           },
           {
             "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_content_reached",
-            "attemptCount": 1
+            "outcome": "browser_timeout",
+            "attemptCount": 2
           }
         ],
         "directHttpProfile": {
@@ -2019,7 +2028,6 @@
         },
         "contentProfiles": [
           "github-default-browser",
-          "nuvio-tv-ua-browser",
           "nuvio-tv-direct-http-approx",
           "nuvio-tv-okhttp-jvm"
         ]
@@ -2129,7 +2137,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 55544,
+      "durationMs": 58173,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -2231,7 +2239,7 @@
           {
             "attempt": 1,
             "outcome": "direct_http_content_reached",
-            "status": 200,
+            "status": 400,
             "exitCode": 0
           }
         ],
@@ -2254,7 +2262,7 @@
           {
             "attempt": 1,
             "outcome": "okhttp_jvm_content_reached",
-            "status": 200
+            "status": 400
           }
         ],
         "exitCode": 0
@@ -2266,7 +2274,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3796,
+      "durationMs": 3941,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -2368,7 +2376,7 @@
           {
             "attempt": 1,
             "outcome": "direct_http_content_reached",
-            "status": 200,
+            "status": 400,
             "exitCode": 0
           }
         ],
@@ -2391,7 +2399,7 @@
           {
             "attempt": 1,
             "outcome": "okhttp_jvm_content_reached",
-            "status": 200
+            "status": 400
           }
         ],
         "exitCode": 0
@@ -2403,7 +2411,7 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 3178,
+      "durationMs": 3293,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -2455,28 +2463,20 @@
   "residentialProviderReplay": {
     "available": true,
     "profile": "tailscale-residential-exit",
-    "providerCount": 10,
+    "providerCount": 8,
     "providers": [
       "allwish",
-      "anime-ultime",
       "animesultra",
       "animevost-fr",
       "flemmix",
       "fullanime",
       "moviebox",
       "moviesmod",
-      "vidfast",
-      "yflix"
+      "vidfast"
     ],
-    "rawProviders": [
-      "anime-ultime"
-    ],
-    "playableProviders": [
-      "anime-ultime"
-    ],
-    "verifiedProviders": [
-      "anime-ultime"
-    ],
+    "rawProviders": [],
+    "playableProviders": [],
+    "verifiedProviders": [],
     "wrongContentProviders": [],
     "rows": [
       {
@@ -2502,17 +2502,6 @@
         "identitySafe": true
       },
       {
-        "provider": "anime-ultime",
-        "lane": "anime",
-        "status": "playable_verified",
-        "debugStage": "provider_returned_streams",
-        "raw": 1,
-        "playable": 1,
-        "verified": 1,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
         "provider": "animesultra",
         "lane": "anime",
         "status": "no_streams",
@@ -2527,7 +2516,7 @@
         "provider": "animevost-fr",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
+        "debugStage": "provider_waf_challenge",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2592,19 +2581,19 @@
       {
         "provider": "moviesmod",
         "lane": "movie",
-        "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
+        "status": "timeout",
+        "debugStage": "timeout",
         "raw": 0,
         "playable": 0,
         "verified": 0,
         "contradictions": 0,
-        "identitySafe": true
+        "identitySafe": false
       },
       {
         "provider": "moviesmod",
         "lane": "tv",
         "status": "no_streams",
-        "debugStage": "provider_zero_before_provider_network",
+        "debugStage": "provider_network_zero_result",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2627,28 +2616,6 @@
         "lane": "tv",
         "status": "no_streams",
         "debugStage": "provider_network_http_error",
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "yflix",
-        "lane": "movie",
-        "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
-        "raw": 0,
-        "playable": 0,
-        "verified": 0,
-        "contradictions": 0,
-        "identitySafe": true
-      },
-      {
-        "provider": "yflix",
-        "lane": "tv",
-        "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
         "raw": 0,
         "playable": 0,
         "verified": 0,
