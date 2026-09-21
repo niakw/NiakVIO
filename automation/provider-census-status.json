@@ -254,8 +254,8 @@
       "testedThisRun": true,
       "networkDifferentialClass": "github-native-route-reachable",
       "networkDifferentialEvidence": [
-        "movie: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=unavailable, residential-okhttp=unavailable, residential-direct=unavailable",
-        "tv: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=unavailable, residential-okhttp=unavailable, residential-direct=unavailable"
+        "movie: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
+        "tv: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ]
     },
     {
@@ -361,8 +361,8 @@
       "testedThisRun": true,
       "networkDifferentialClass": "github-native-route-reachable",
       "networkDifferentialEvidence": [
-        "movie: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=unavailable, residential-okhttp=unavailable, residential-direct=unavailable",
-        "tv: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=unavailable, residential-okhttp=unavailable, residential-direct=unavailable"
+        "movie: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
+        "tv: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ]
     },
     {
@@ -426,14 +426,14 @@
         "movie=lookup_only",
         "tv=chain_reached"
       ],
-      "action": "replay provider-owned route with NuvioTV-like/native transport; do not mutate provider JS unless route/playback still fails causally",
+      "action": "GitHub-hosted IP/environment differential confirmed by private residential exit; keep provider JS unchanged and reproduce with native transport/playback before any code blame",
       "brainCheckRequired": true,
       "repairEligible": false,
       "testedThisRun": false,
-      "harnessTransportClass": "native-policy-reachable",
+      "harnessTransportClass": "residential-exit-native-reachable",
       "harnessTransportEvidence": [
-        "movie: browser=browser_content_reached, tv-browser=browser_timeout, okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached",
-        "tv: browser=browser_content_reached, tv-browser=browser_timeout, okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached"
+        "movie: browser=browser_content_reached, tv-browser=browser_timeout, okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
+        "tv: browser=browser_content_reached, tv-browser=browser_timeout, okhttp=okhttp_jvm_content_reached, direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ]
     },
     {
@@ -461,14 +461,14 @@
         "movie=none",
         "tv=none"
       ],
-      "action": "require real native-device/IP transport evidence before blaming provider code",
+      "action": "private residential exit is also challenged; GitHub IP reputation alone does not explain the block",
       "brainCheckRequired": true,
       "testedThisRun": false,
       "repairEligible": false,
-      "harnessTransportClass": "github-all-transports-challenged",
+      "harnessTransportClass": "residential-exit-all-challenged",
       "harnessTransportEvidence": [
-        "movie: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted",
-        "tv: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
+        "movie: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_challenge_persisted, residential-tv-browser=browser_challenge_persisted, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted",
+        "tv: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_challenge_persisted, residential-tv-browser=browser_challenge_persisted, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted"
       ]
     },
     {
@@ -494,13 +494,13 @@
       "evidenceDepth": [
         "anime=none"
       ],
-      "action": "compare browser/JS challenge resolution with native fetch/TLS/IP; provider JS mutation is not justified by CI challenge",
+      "action": "private residential exit improves reachability but native-like transport is not yet proven; treat as harness/client differential, not provider-code failure",
       "brainCheckRequired": true,
       "testedThisRun": false,
       "repairEligible": false,
-      "harnessTransportClass": "browser-profile-only",
+      "harnessTransportClass": "residential-exit-browser-reachable",
       "harnessTransportEvidence": [
-        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
+        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted"
       ]
     },
     {
@@ -526,13 +526,13 @@
       "evidenceDepth": [
         "anime=lookup_only"
       ],
-      "action": "compare browser/JS challenge resolution with native fetch/TLS/IP; provider JS mutation is not justified by CI challenge",
+      "action": "private residential exit improves reachability but native-like transport is not yet proven; treat as harness/client differential, not provider-code failure",
       "brainCheckRequired": true,
       "testedThisRun": false,
       "repairEligible": false,
-      "harnessTransportClass": "browser-profile-only",
+      "harnessTransportClass": "residential-exit-browser-reachable",
       "harnessTransportEvidence": [
-        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
+        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted"
       ]
     },
     {
@@ -568,8 +568,8 @@
       "repairEligible": false,
       "harnessTransportClass": "native-policy-inconclusive",
       "harnessTransportEvidence": [
-        "movie: browser=browser_challenge_persisted, tv-browser=browser_inconclusive, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted",
-        "tv: browser=browser_challenge_persisted, tv-browser=browser_inconclusive, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted"
+        "movie: browser=browser_challenge_persisted, tv-browser=browser_inconclusive, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted, residential-browser=browser_inconclusive, residential-tv-browser=browser_inconclusive, residential-okhttp=okhttp_jvm_inconclusive, residential-direct=direct_http_inconclusive",
+        "tv: browser=browser_challenge_persisted, tv-browser=browser_inconclusive, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted, residential-browser=browser_inconclusive, residential-tv-browser=browser_inconclusive, residential-okhttp=okhttp_jvm_inconclusive, residential-direct=direct_http_inconclusive"
       ]
     },
     {
@@ -595,13 +595,13 @@
       "evidenceDepth": [
         "anime=none"
       ],
-      "action": "require real native-device/IP transport evidence before blaming provider code",
+      "action": "private residential exit is also challenged; GitHub IP reputation alone does not explain the block",
       "brainCheckRequired": true,
       "testedThisRun": false,
       "repairEligible": false,
-      "harnessTransportClass": "github-all-transports-challenged",
+      "harnessTransportClass": "residential-exit-all-challenged",
       "harnessTransportEvidence": [
-        "anime: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
+        "anime: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_challenge_persisted, residential-tv-browser=browser_challenge_persisted, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted"
       ]
     },
     {
@@ -631,14 +631,14 @@
         "movie=lookup_only",
         "tv=lookup_only"
       ],
-      "action": "compare browser/JS challenge resolution with native fetch/TLS/IP; provider JS mutation is not justified by CI challenge",
+      "action": "private residential exit improves reachability but native-like transport is not yet proven; treat as harness/client differential, not provider-code failure",
       "brainCheckRequired": true,
       "testedThisRun": false,
       "repairEligible": false,
-      "harnessTransportClass": "browser-profile-only",
+      "harnessTransportClass": "residential-exit-browser-reachable",
       "harnessTransportEvidence": [
-        "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted",
-        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted"
+        "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted",
+        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted"
       ]
     },
     {
@@ -702,13 +702,13 @@
       "evidenceDepth": [
         "anime=none"
       ],
-      "action": "compare browser/JS challenge resolution with native fetch/TLS/IP; provider JS mutation is not justified by CI challenge",
+      "action": "private residential exit improves reachability but native-like transport is not yet proven; treat as harness/client differential, not provider-code failure",
       "brainCheckRequired": true,
       "testedThisRun": false,
       "repairEligible": false,
-      "harnessTransportClass": "browser-profile-only",
+      "harnessTransportClass": "residential-exit-browser-reachable",
       "harnessTransportEvidence": [
-        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
+        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted"
       ]
     },
     {
@@ -1500,8 +1500,8 @@
     "vostfree",
     "wookafr"
   ],
-  "harnessEvidenceRunId": "35550837403-waf-transport",
-  "harnessEvidenceSha": "1f3f2c58ab111cbad497cd504accd69f370ec882",
+  "harnessEvidenceRunId": "35551294702-waf-transport",
+  "harnessEvidenceSha": "39bcdaa624a0dbcf9dea94e6f2071334254ced8a",
   "harnessTransportUpdatedProviders": [
     "allwish",
     "animesalt",
@@ -1518,10 +1518,9 @@
   ],
   "residentialExitNodeEvidence": {
     "enabled": true,
-    "available": false,
+    "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 0,
-    "reason": "tailscale-connect-failed",
+    "matchedProviderLanes": 16,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
