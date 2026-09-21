@@ -794,16 +794,21 @@ def _peer_recipe_min_variant(failure_class: str) -> int:
     return 2
 
 
-def _new_strategy_id(failure_class: str, variant: int) -> str:
+def _new_strategy_id(failure_class: str, variant: int, generation: int = 1) -> str:
     if int(variant) != 4:
         return ""
-    return {
+    base = {
         "provider_transport_gap": "provider_origin_failover_v1",
         "route_proven_gap": "proven_route_terminal_traversal_v1",
         "chain_terminal_gap": "chain_terminal_extractor_v1",
         "candidate_replay_gap": "retained_candidate_replay_v1",
         "media_extraction_gap": "player_media_extractor_v1",
     }.get(str(failure_class or "").strip().casefold(), "expanded_family_strategy_v1")
+    generation = max(1, int(generation or 1))
+    # Generation 2 is the current production-safe final strategy. Higher
+    # generations are Learning-only planner outputs and must correspond to
+    # materially different sandbox exploration, never a relabelled retry.
+    return base if generation <= 2 else f"{base}_g{generation}"
 
 
 def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any]) -> dict[str, Any] | None:
@@ -876,6 +881,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     census_focus = _census_runtime_focus(provider_id)
     brain_plan = candidate.get("brain_repair_plan") if isinstance(candidate.get("brain_repair_plan"), dict) else {}
     experiment_variant = max(0, min(int(brain_plan.get("experimentVariant") or 0), 4))
+    experiment_generation = max(1, int(brain_plan.get("experimentGeneration") or 1))
     experiment_failure = str(brain_plan.get("failureClass") or "").strip()
     peer_route_min_variant = _peer_route_min_variant(experiment_failure)
     peer_recipe_min_variant = _peer_recipe_min_variant(experiment_failure)
@@ -892,12 +898,20 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         peer_request_recipes if experiment_variant >= peer_recipe_min_variant else [],
         limit=32,
     )
-    new_strategy_id = _new_strategy_id(experiment_failure, experiment_variant)
+    new_strategy_id = _new_strategy_id(experiment_failure, experiment_variant, experiment_generation)
     if experiment_variant == 4 and experiment_failure in {"candidate_replay_gap", "media_extraction_gap"}:
-        # Terminal/current-byte evidence outranks peer transfer here. Once the
-        # player is proven, another provider's request recipe is more likely to
-        # waste budget or invent the wrong internal-id contract.
-        request_recipes = _unique_request_recipes(current_request_recipes, provider_request_recipes, limit=32)
+        # Production g2 stays conservative and prioritizes current/provider-owned
+        # terminal evidence. Learning g3+ deliberately fuses peer recipes again:
+        # that is a new causal strategy, still bounded by identity/media gates.
+        if experiment_generation <= 2:
+            request_recipes = _unique_request_recipes(current_request_recipes, provider_request_recipes, limit=32)
+        else:
+            request_recipes = _unique_request_recipes(
+                current_request_recipes,
+                provider_request_recipes,
+                peer_request_recipes,
+                limit=32,
+            )
     peer_search = [route for route in peer_routes if _route_role(route) == "search"]
     peer_direct = [route for route in peer_routes if _route_role(route) != "search"]
     configured_search = [str(v) for v in recovery_options.get("search_paths") or [] if str(v).strip()]
@@ -1006,6 +1020,35 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             direct_paths = _unique_routes(
                 learned_direct, configured_direct, peer_direct, generic_direct, limit=32
             )
+    # Final-strategy Learning generations are deliberately different programs:
+    # g3 = evidence fusion, g4 = broader terminal traversal, g5 = bounded broad
+    # fallback. Production never emits >g2.
+    if experiment_variant == 4 and experiment_generation >= 3:
+        search_paths = _unique_routes(search_paths, peer_search, limit=28)
+        direct_paths = _unique_routes(direct_paths, peer_direct, limit=36)
+    if experiment_variant == 4 and experiment_generation >= 4:
+        direct_paths = _unique_routes(
+            direct_paths,
+            [
+                "/player/{id}", "/embed/{id}", "/watch/{slug}",
+                "/api/sources/{id}", "/api/stream/{id}", "/api/servers/{id}",
+                "/episode/{id}/{season}/{episode}",
+            ],
+            limit=40,
+        )
+    if experiment_variant == 4 and experiment_generation >= 5:
+        search_paths = _unique_routes(
+            search_paths,
+            generic_search,
+            [
+                "/api/search?q={query}",
+                "/ajax/search?query={query}",
+                "/index.php?do=search&subaction=search&story={query}",
+            ],
+            limit=32,
+        )
+        direct_paths = _unique_routes(direct_paths, generic_direct, limit=40)
+
     role_preferences = _experiment_role_preferences(
         census_focus,
         experiment_failure,
@@ -1069,7 +1112,11 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     if experiment_variant == 4 and experiment_failure == "provider_transport_gap":
         alternates = [origin for origin in endpoint_origins if origin != base_url]
         if alternates:
-            base_url = alternates[0]
+            # g2 keeps the established first failover. Learning g3+ rotates the
+            # provider-owned origin deterministically so repeated generations do
+            # not probe the same transport topology under a different label.
+            alternate_index = 0 if experiment_generation <= 2 else (experiment_generation - 2) % len(alternates)
+            base_url = alternates[alternate_index]
 
     return {
         "provider_name": str(metadata.get("name") or provider_id or "Provider"),
@@ -1096,6 +1143,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         ),
         "census_status": census_focus.get("status") or "",
         "experiment_variant": experiment_variant,
+        "experiment_generation": experiment_generation,
         "experiment_failure_class": experiment_failure,
         "experiment_strategy": (
             "owned-evidence"
@@ -1112,17 +1160,45 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         "peer_route_min_variant": peer_route_min_variant,
         "peer_recipe_min_variant": peer_recipe_min_variant,
         "negative_memory_matches": max(0, int(brain_plan.get("negativeMemoryMatches") or 0)),
+        "max_recipe_passes": (
+            3 if experiment_generation <= 2
+            else 4 if experiment_generation == 3
+            else 5 if experiment_generation == 4
+            else 6
+        ),
         "max_pages": max(
             int(census_focus.get("max_pages") or 10),
-            14 if experiment_variant == 1 else 12 if experiment_variant == 2 else 20 if experiment_variant == 3 else 24 if experiment_variant == 4 else 10,
+            14 if experiment_variant == 1
+            else 12 if experiment_variant == 2
+            else 20 if experiment_variant == 3
+            else (
+                24 if experiment_generation <= 2
+                else 28 if experiment_generation == 3
+                else 32 if experiment_generation == 4
+                else 36
+            ) if experiment_variant == 4
+            else 10,
         ),
         "max_embeds": max(
             int(census_focus.get("max_embeds") or 10),
-            24 if experiment_variant in {1, 2, 3, 4} else 10,
+            (
+                24 if experiment_generation <= 2
+                else 28 if experiment_generation == 3
+                else 32 if experiment_generation == 4
+                else 36
+            ) if experiment_variant == 4
+            else 24 if experiment_variant in {1, 2, 3}
+            else 10,
         ),
         "max_depth": max(
             int(census_focus.get("max_depth") or 3),
-            4 if experiment_variant in {1, 2, 3, 4} else 3,
+            (
+                4 if experiment_generation <= 2
+                else 5 if experiment_generation in {3, 4}
+                else 6
+            ) if experiment_variant == 4
+            else 4 if experiment_variant in {1, 2, 3}
+            else 3,
         ),
         "timeout_ms": max(2000, min(int(recovery_options.get("timeout_ms") or 9000), 20000)),
         "user_agent": network_hints["user_agent"],
