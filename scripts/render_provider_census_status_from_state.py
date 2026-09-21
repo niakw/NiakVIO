@@ -128,7 +128,7 @@ def render(state: dict[str, Any]) -> str:
         "",
         "Latest provider census state: **" + " · ".join(count_parts) + f"** across **{len(providers)} providers**.",
         evidence_line + ".",
-        f"Symptomatic providers: **{len(state.get('symptomaticProviders') or [])}** · automated repair queue: **{len(state.get('repairQueue') or [])}** · harness/environment queue: **{len(state.get('environmentQueue') or [])}**.",
+        f"Symptomatic providers: **{len(state.get('symptomaticProviders') or [])}** · automated repair queue: **{len(state.get('repairQueue') or [])}** · authority-blocked symptoms: **{len(state.get('authorityBlockedQueue') or [])}** · harness/environment queue: **{len(state.get('environmentQueue') or [])}**.",
         *([residential_notice] if residential_notice else []),
         "",
         "## Status semantics",
@@ -143,8 +143,8 @@ def render(state: dict[str, Any]) -> str:
         "",
         "**Important:** browser/OkHttp reachability is transport evidence only. It never promotes playback status and never authorizes provider-code mutation by itself.",
         "",
-        "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Candidate proof | Route proof | Corpus progress | Evidence depth | Harness transport | Residential probe | Residential replay | Network differential | Latest lane verdicts | Dominant issue | Next action |",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+        "| Provider | Status | Run | Declared lanes | Verified lanes | Retained proof | Candidate proof | Route proof | Authority | Corpus progress | Evidence depth | Harness transport | Residential probe | Residential replay | Network differential | Latest lane verdicts | Dominant issue | Next action |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ])
     for row in providers:
         status = str(row.get("status") or "")
@@ -158,6 +158,10 @@ def render(state: dict[str, Any]) -> str:
             cell(joined(row.get("historicalProof"))),
             cell(joined(row.get("candidateProof"))),
             cell(joined(row.get("routeProof"))),
+            cell(
+                f"{row.get('authorityAction') or 'UNCLASSIFIED'} / {row.get('authorityClass') or 'unclassified'}"
+                + (" / blocked" if row.get("authorityRepairEligible") is False else "")
+            ),
             cell(joined(row.get("searchProgress"))),
             cell(joined(row.get("evidenceDepth"))),
             cell(row.get("harnessTransportClass") or "—"),
