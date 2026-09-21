@@ -207,6 +207,7 @@ def merge_transport(
     changed: list[str] = []
     network_changed: list[str] = []
     replay_promoted: set[str] = set()
+    replay_reclassified: set[str] = set()
     replay_repairable: set[str] = set()
     replay_summary = waf.get("residentialProviderReplay") if isinstance(waf.get("residentialProviderReplay"), dict) else {}
     replay_rows = replay_summary.get("rows") if isinstance(replay_summary.get("rows"), list) else []
@@ -292,12 +293,20 @@ def merge_transport(
             if repair_state:
                 row["status"] = repair_state
                 row["color"] = census.STATUS_META[repair_state][0]
-                row["action"] = census._action(repair_state)
                 row["brainCheckRequired"] = True
-                row["repairEligible"] = True
+                authority_allowed = row.get("authorityRepairEligible") is not False
+                row["statusRepairEligible"] = census.is_repair_eligible_status(repair_state)
+                row["repairEligible"] = bool(row["statusRepairEligible"] and authority_allowed)
+                row["action"] = (
+                    census._action(repair_state)
+                    if authority_allowed
+                    else census._authority_action(repair_state, diagnostic["classification"], row)
+                )
                 row["testedThisRun"] = True
                 row["residentialProviderReplayReclassified"] = True
-                replay_repairable.add(provider)
+                replay_reclassified.add(provider)
+                if row["repairEligible"]:
+                    replay_repairable.add(provider)
             else:
                 status = census.browser_harness_status(waf, provider)
                 row["status"] = status
@@ -332,18 +341,22 @@ def merge_transport(
     out["environmentQueue"] = normalized([
         value
         for value in without_promoted(list(baseline.get("environmentQueue") or []))
-        if str(value or "").strip().casefold() not in replay_repairable
+        if str(value or "").strip().casefold() not in replay_reclassified
     ])
     out["harnessQueue"] = normalized([
         value
         for value in without_promoted(list(baseline.get("harnessQueue") or baseline.get("environmentQueue") or []))
-        if str(value or "").strip().casefold() not in replay_repairable
+        if str(value or "").strip().casefold() not in replay_reclassified
     ])
     out["symptomaticProviders"] = normalized(without_promoted(list(baseline.get("symptomaticProviders") or [])))
     out["brainQueue"] = normalized([
         *without_promoted(list(baseline.get("brainQueue") or baseline.get("symptomaticProviders") or [])),
-        *replay_repairable,
+        *replay_reclassified,
     ])
+    if "authorityBlockedQueue" in baseline:
+        out["authorityBlockedQueue"] = normalized(
+            without_promoted(list(baseline.get("authorityBlockedQueue") or []))
+        )
 
     out["counts"] = dict(sorted(Counter(
         str(row.get("status") or "")
@@ -355,6 +368,7 @@ def merge_transport(
     out["harnessTransportUpdatedProviders"] = sorted(changed)
     out["networkDifferentialUpdatedProviders"] = sorted(network_changed)
     out["residentialProviderReplayPromotedProviders"] = sorted(replay_promoted)
+    out["residentialProviderReplayReclassifiedProviders"] = sorted(replay_reclassified)
     out["residentialProviderReplayRepairableProviders"] = sorted(replay_repairable)
     residential = waf.get("residentialExitNodeEvidence")
     if isinstance(residential, dict):
