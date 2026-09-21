@@ -83,6 +83,13 @@ assert three["repairScope"]=="capability",three
 assert three["action"]=="probe-targeted-repair",three
 assert "adaptive_runtime_recovery" in three["allowedProfiles"],three
 
+# A strategy that succeeded historically must rotate again after a fresh
+# consecutive failure on current bytes. successes>0 is history, not immunity.
+stale_success={**base(2),"failures":6,"consecutiveFailures":1,"successes":5}
+after_stale_success=run([base(0),base(1),stale_success])
+assert after_stale_success["experimentVariant"]==3,after_stale_success
+assert after_stale_success["experimentExhausted"] is False,after_stale_success
+
 four=run([base(0),base(1),base(2),base(3)])
 assert four["failureClass"]=="chain_terminal_gap",four
 assert four["experimentVariant"]==4,four
