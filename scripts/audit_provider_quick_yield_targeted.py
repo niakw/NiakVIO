@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Retry quick-yield only for providers lost by a before/after preservation comparison."""
+"""Run canonical quick-yield for an explicit provider set, optionally repeatedly."""
 from __future__ import annotations
 
 import argparse
 import importlib.util
 import json
+import sys
 import tempfile
 from pathlib import Path
 
@@ -34,13 +35,14 @@ def main() -> int:
     if not selected:
         Path(args.output).write_text(json.dumps({
             "provider_count": 0,
+            "providers": [],
             "raw_providers": [],
             "playable_providers": [],
             "verified_providers": [],
             "wrong_content_providers": [],
             "rows": [],
         }, indent=2) + "\n", encoding="utf-8")
-        print("TARGETED_YIELD_RETRY skipped=no_losses")
+        print("TARGETED_YIELD_RETRY skipped=no_providers")
         return 0
 
     spec = importlib.util.spec_from_file_location("niakvio_quick_yield", BASE_PATH)
@@ -49,50 +51,71 @@ def main() -> int:
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
 
-    original_build = mod.build_tasks
-
-    def filtered_build_tasks():
-        tasks, _provider_count = original_build()
-        filtered = [row for row in tasks if str(row.get("provider_id") or "").casefold() in selected]
-        present = {str(row.get("provider_id") or "").casefold() for row in filtered}
-        missing = sorted(selected - present)
-        if missing:
-            raise RuntimeError("selected providers missing from current manifest: " + ",".join(missing))
-        return filtered, len(present)
-
-    mod.build_tasks = filtered_build_tasks
     attempts = max(1, min(int(args.attempts), 3))
     reports: list[dict] = []
-    with tempfile.TemporaryDirectory() as tmp:
-        root = Path(tmp)
-        for attempt in range(1, attempts + 1):
-            path = root / f"attempt-{attempt}.json"
-            mod.OUTPUT = path
-            print(f"TARGETED_YIELD_RETRY attempt={attempt}/{attempts} providers={','.join(sorted(selected))}")
-            rc = mod.main()
-            if rc != 0:
-                raise SystemExit(rc)
-            reports.append(load(path))
+    original_argv = list(sys.argv)
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for attempt in range(1, attempts + 1):
+                path = root / f"attempt-{attempt}.json"
+                sys.argv = [str(BASE_PATH), "--scope", "all", "--output", str(path)]
+                for provider in sorted(selected):
+                    sys.argv.extend(["--provider", provider])
+                print(
+                    f"TARGETED_YIELD_RETRY attempt={attempt}/{attempts} "
+                    f"providers={','.join(sorted(selected))}"
+                )
+                rc = mod.main()
+                if rc != 0:
+                    raise SystemExit(rc)
+                report = load(path)
+                present = {
+                    str(row.get("provider_id") or "").strip().casefold()
+                    for row in report.get("rows") or []
+                    if isinstance(row, dict) and str(row.get("provider_id") or "").strip()
+                }
+                missing = sorted(selected - present)
+                if missing:
+                    raise RuntimeError(
+                        "selected providers missing from current manifest/replay: " + ",".join(missing)
+                    )
+                reports.append(report)
+    finally:
+        sys.argv = original_argv
 
     def union(key: str) -> list[str]:
         values: set[str] = set()
         for report in reports:
-            values.update(str(v).strip().casefold() for v in report.get(key) or [] if str(v).strip())
+            values.update(
+                str(v).strip().casefold()
+                for v in report.get(key) or []
+                if str(v).strip()
+            )
         return sorted(values)
 
     merged = {
-        "schema_version": 1,
-        "environment": "targeted-retry-union-of-quick-yield-attempts",
+        "schema_version": 2,
+        "environment": "targeted-canonical-quick-yield-union",
         "provider_count": len(selected),
         "attempts": attempts,
         "providers": sorted(selected),
         "raw_providers": union("raw_providers"),
         "playable_providers": union("playable_providers"),
+        "accepted_playable_providers": union("accepted_playable_providers"),
         "verified_providers": union("verified_providers"),
         "wrong_content_providers": union("wrong_content_providers"),
-        "rows": [row for report in reports for row in report.get("rows") or [] if isinstance(row, dict)],
+        "rows": [
+            row
+            for report in reports
+            for row in report.get("rows") or []
+            if isinstance(row, dict)
+        ],
     }
-    Path(args.output).write_text(json.dumps(merged, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    Path(args.output).write_text(
+        json.dumps(merged, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
     print(
         "TARGETED_YIELD_RETRY_DONE "
         f"providers={len(selected)} attempts={attempts} raw={len(merged['raw_providers'])} "
