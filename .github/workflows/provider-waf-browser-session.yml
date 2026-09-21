@@ -152,6 +152,7 @@ jobs:
             --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*' \
             --status automation/provider-census-status.json \
             --overrides provider-overrides.json \
+            --network-report provider-v3-quick-yield.json \
             --workers 3 \
             --max-targets 24 \
             --timeout 25 \
