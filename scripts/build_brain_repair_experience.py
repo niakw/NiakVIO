@@ -24,6 +24,7 @@ OVERRIDES = ROOT / "provider-overrides.json"
 STATUS = ROOT / "automation/provider-census-status.json"
 DEFAULT_OUTPUT = ROOT / "automation/brain-repair-experience.json"
 ROUTE_RECOVERY = ROOT / "automation/provider-route-recovery-v6.json"
+HISTORICAL_SEED = ROOT / "automation/brain-historical-experience-seed.json"
 GREEN = {"FULL OK", "PARTIAL OK"}
 ROUTE_KEYS = ("candidate_learned_routes", "learned_routes", "candidate_routes", "routes")
 PLACEHOLDER = re.compile(r"\{(?:query|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type|binding:[A-Za-z0-9_.-]+)\}", re.I)
@@ -187,6 +188,233 @@ def host_of(raw: object) -> str | None:
         return None
 
 
+def _request_spec_from_plan(raw: object) -> dict:
+    spec = raw if isinstance(raw, dict) else {}
+    method = str(spec.get("method") or "GET").upper()
+    if method not in {"GET", "POST"}:
+        return {}
+    body_kind = str(spec.get("bodyKind") or "none").casefold()
+    if body_kind not in {"none", "form", "json"}:
+        return {}
+    headers = {
+        str(key): str(value)
+        for key, value in (spec.get("headers") or {}).items()
+        if str(key).casefold() in SAFE_HEADER_NAMES and len(str(value)) <= 320
+    }
+    body = spec.get("body") if isinstance(spec.get("body"), dict) else {}
+    clean_body: dict[str, str] = {}
+    if method == "POST":
+        for key, value in body.items():
+            safe_key = str(key or "").strip()
+            safe_value = _safe_body_value(value)
+            if not re.fullmatch(r"[A-Za-z0-9_.:-]{1,64}", safe_key) or safe_value is None:
+                return {}
+            clean_body[safe_key] = safe_value
+        if body_kind == "none" or not clean_body:
+            return {}
+    return {
+        "method": method,
+        "bodyKind": body_kind,
+        "body": clean_body,
+        "headers": headers,
+    }
+
+
+def _split_recipe_route(base: object, route: object) -> tuple[str, str]:
+    base_text = str(base or "").strip().rstrip("/")
+    route_text = str(route or "").strip()
+    if route_text.startswith(("http://", "https://")):
+        parsed = urlsplit(route_text)
+        origin = f"{parsed.scheme}://{parsed.netloc}"
+        path = parsed.path or "/"
+        if parsed.query:
+            path += "?" + parsed.query
+        return origin, path
+    return base_text, route_text
+
+
+def _recipe_from_plan(
+    *,
+    base: object,
+    route: object,
+    request_spec: object,
+    role: str,
+    semantic_type: str,
+    response: str = "html-or-text",
+    stream_proof: bool = False,
+) -> dict | None:
+    origin, route_value = _split_recipe_route(base, route)
+    route_value = reusable_route(route_value, peer=False)
+    if not route_value:
+        return None
+    origin_host = host_of(origin)
+    if not origin_host or origin_host in IDENTITY_INFRA_HOSTS:
+        return None
+    spec = _request_spec_from_plan(request_spec)
+    if not spec:
+        return None
+    recipe = {
+        "route": route_value,
+        "origin": origin,
+        "role": str(role or classify_route(route_value)).casefold(),
+        "method": spec["method"],
+        "bodyKind": spec["bodyKind"],
+        "body": spec["body"],
+        "headerNames": sorted(str(key).casefold() for key in spec["headers"]),
+        "response": response if response in {"json", "html-or-text"} else "html-or-text",
+        "semanticType": str(semantic_type or "").casefold(),
+        "streamProof": bool(stream_proof),
+        "executable": True,
+    }
+    return recipe
+
+
+def proof_owned_patch_recipes(patch: dict) -> list[dict]:
+    """Harvest already-proven Provider DATA as reusable Brain examples.
+
+    This is deliberately stricter than provider execution: only proof-model >=5
+    request plans/recipes are imported, and every recipe still goes through the
+    ordinary sanitizer before peer transfer.
+    """
+    out: list[dict] = []
+    seen: set[str] = set()
+
+    def add(recipe: dict | None) -> None:
+        if not recipe:
+            return
+        clean = sanitize_request_recipe({
+            **recipe,
+            "requestSpecReusable": True,
+            "status": 200,
+            "requestSpec": {
+                "method": recipe.get("method"),
+                "bodyKind": recipe.get("bodyKind"),
+                "body": recipe.get("body"),
+                "headers": {name: "x" for name in recipe.get("headerNames") or []},
+            },
+            "contentType": "application/json" if recipe.get("response") == "json" else "text/html",
+            "taskStreamCount": 1 if recipe.get("streamProof") is True else 0,
+        }, peer=False)
+        if not clean:
+            return
+        if recipe.get("origin"):
+            clean["origin"] = str(recipe["origin"]).rstrip("/")
+        key = json.dumps(clean, sort_keys=True, separators=(",", ":"))
+        if key not in seen:
+            seen.add(key)
+            out.append(clean)
+
+    for row in patch.get("search_request_plan") or []:
+        if not isinstance(row, dict) or int(row.get("proofModelVersion") or 0) < 5:
+            continue
+        types = [str(value).casefold() for value in row.get("semanticTypes") or []] or [""]
+        for semantic_type in types:
+            add(_recipe_from_plan(
+                base=row.get("base"),
+                route=row.get("route"),
+                request_spec=row.get("requestSpec"),
+                role="search",
+                semantic_type=semantic_type,
+                response=str(row.get("responseKind") or "html-or-text").casefold(),
+                stream_proof=row.get("streamProof") is True,
+            ))
+
+    for plan in patch.get("provider_value_plan") or []:
+        if not isinstance(plan, dict) or int(plan.get("proofModelVersion") or 0) < 5:
+            continue
+        types = [str(value).casefold() for value in plan.get("semanticTypes") or []] or [""]
+        for step in plan.get("steps") or []:
+            if not isinstance(step, dict):
+                continue
+            for semantic_type in types:
+                add(_recipe_from_plan(
+                    base=step.get("base"),
+                    route=step.get("route"),
+                    request_spec=step.get("requestSpec"),
+                    role=str(step.get("role") or "detail"),
+                    semantic_type=semantic_type,
+                    response=str(step.get("responseKind") or "html-or-text").casefold(),
+                    stream_proof=step.get("streamProof") is True,
+                ))
+
+    api = patch.get("api_recipe")
+    if isinstance(api, dict) and int(api.get("proofModelVersion") or 0) >= 5:
+        base = api.get("base") or api.get("api")
+        definitions = (
+            ("searchRoute", "searchRequest", "search", ""),
+            ("movieRoute", "movieRequest", "api", "movie"),
+            ("episodeRoute", "episodeRequest", "api", "tv"),
+            ("directRoute", "directRequest", "api", ""),
+        )
+        for route_key, request_key, role, semantic_type in definitions:
+            route = api.get(route_key)
+            if not route:
+                continue
+            spec = api.get(request_key) if isinstance(api.get(request_key), dict) else {
+                "method": "GET",
+                "headers": api.get("requestHeaders") if isinstance(api.get("requestHeaders"), dict) else {},
+            }
+            add(_recipe_from_plan(
+                base=base,
+                route=route,
+                request_spec=spec,
+                role=role,
+                semantic_type=semantic_type,
+                response="json",
+                stream_proof=False,
+            ))
+    return out[:64]
+
+
+def load_historical_cases(path: Path = HISTORICAL_SEED) -> list[dict]:
+    """Load only the explicitly-scoped NiakVIO technical history seed.
+
+    No account memory, personal profile or other GPT project is accepted here.
+    The seed is schema-whitelisted and prior-only; it cannot publish/mutate code.
+    """
+    if not path.is_file():
+        return []
+    payload = load(path)
+    if payload.get("role") != "historical-repair-prior-only":
+        raise ValueError("historical Brain seed role is not prior-only")
+    scope = str(payload.get("sourceScope") or "")
+    if not scope.startswith("NiakVIO project chats + repository history"):
+        raise ValueError("historical Brain seed source scope is not NiakVIO-only")
+    safety = payload.get("safety") if isinstance(payload.get("safety"), dict) else {}
+    if safety.get("directMutationAuthority") is not False or safety.get("publicationAuthority") is not False:
+        raise ValueError("historical Brain seed unexpectedly grants mutation/publication authority")
+    allowed_evidence = {
+        "project-chat", "repo-history", "user-tv-tests", "native-labs",
+        "tailscale-residential-runs", "user-manual-tests", "provider-overrides",
+    }
+    allowed_keys = {
+        "id", "firstObserved", "providers", "symptomFamilies", "failureClass",
+        "solutionClass", "transferableSignals", "avoid", "evidence", "lesson",
+    }
+    output: list[dict] = []
+    for raw in payload.get("cases") or []:
+        if not isinstance(raw, dict) or set(raw) - allowed_keys:
+            raise ValueError("historical Brain case contains non-whitelisted fields")
+        evidence = [str(value) for value in raw.get("evidence") or []]
+        if not evidence or any(value not in allowed_evidence for value in evidence):
+            raise ValueError("historical Brain case has non-NiakVIO evidence source")
+        row = {
+            "id": str(raw.get("id") or "")[:160],
+            "firstObserved": str(raw.get("firstObserved") or "")[:32],
+            "providers": [canonical(value) for value in raw.get("providers") or [] if canonical(value)][:64],
+            "symptomFamilies": [str(value)[:96] for value in raw.get("symptomFamilies") or []][:32],
+            "failureClass": str(raw.get("failureClass") or "")[:96],
+            "solutionClass": str(raw.get("solutionClass") or "")[:128],
+            "transferableSignals": [str(value)[:240] for value in raw.get("transferableSignals") or []][:32],
+            "avoid": [str(value)[:240] for value in raw.get("avoid") or []][:32],
+            "evidence": evidence[:16],
+            "lesson": str(raw.get("lesson") or "")[:800],
+        }
+        if row["id"] and row["failureClass"] and row["solutionClass"]:
+            output.append(row)
+    return output[:512]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--overrides", type=Path, default=OVERRIDES)
@@ -237,6 +465,31 @@ def main() -> int:
         peer_request_recipes: list[dict] = []
         seen_local_requests: set[str] = set()
         seen_peer_requests: set[str] = set()
+
+        for recipe in proof_owned_patch_recipes(raw_patch):
+            key = json.dumps(recipe, sort_keys=True, separators=(",", ":"))
+            if key not in seen_local_requests:
+                seen_local_requests.add(key)
+                local_request_recipes.append(recipe)
+            peer_recipe = sanitize_request_recipe({
+                **recipe,
+                "requestSpecReusable": True,
+                "status": 200,
+                "requestSpec": {
+                    "method": recipe.get("method"),
+                    "bodyKind": recipe.get("bodyKind"),
+                    "body": recipe.get("body"),
+                    "headers": {name: "x" for name in recipe.get("headerNames") or []},
+                },
+                "contentType": "application/json" if recipe.get("response") == "json" else "text/html",
+                "taskStreamCount": 1 if recipe.get("streamProof") is True else 0,
+            }, peer=True)
+            if peer_recipe and peer_recipe.get("executable") is True:
+                peer_key = json.dumps(peer_recipe, sort_keys=True, separators=(",", ":"))
+                if peer_key not in seen_peer_requests:
+                    seen_peer_requests.add(peer_key)
+                    peer_request_recipes.append(peer_recipe)
+
         for request_row in recovery_row.get("routeData") or []:
             if not isinstance(request_row, dict):
                 continue
@@ -336,6 +589,7 @@ def main() -> int:
         "operationalProviderCount": sum(1 for row in providers.values() if row["operational"]),
         "providers": providers,
         "strategyPatterns": patterns,
+        "historicalCases": load_historical_cases(),
         "safety": {
             "peerRouteMinimumProviders": 2,
             "peerRequestMinimumProviders": 2,
@@ -344,6 +598,10 @@ def main() -> int:
             "nonReconstructiblePostExecution": False,
             "fixtureLiteralPeerTransfer": False,
             "directMutationAuthority": False,
+            "historicalCasesArePriorOnly": True,
+            "historicalSourceScope": "NiakVIO-only",
+            "personalDataAllowed": False,
+            "crossProjectDataAllowed": False,
             "requiresDeepValidation": True,
         },
     }
@@ -353,7 +611,7 @@ def main() -> int:
     print(
         "FIELD_BRAIN_REPAIR_EXPERIENCE "
         f"providers={payload['providerCount']} operational={payload['operationalProviderCount']} "
-        f"strategies={len(patterns)}"
+        f"strategies={len(patterns)} historical_cases={len(payload['historicalCases'])}"
     )
     return 0
 
