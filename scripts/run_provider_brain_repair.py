@@ -290,6 +290,19 @@ def provider_attempt_pressure_map() -> dict[str, int]:
         output[provider] += max(0, int(row.get("successes") or 0))
     return output
 
+def health_concurrency_for_batch(requested: int, batch_count: int) -> int:
+    """Bound network concurrency to the actual packed Deep batch size."""
+    # PROVIDER_BRAIN_BATCH_CONCURRENCY_V1
+    if int(requested) > 0:
+        return max(1, min(int(requested), 8))
+    count = max(1, int(batch_count))
+    if count >= 8:
+        return 8
+    if count >= 4:
+        return min(6, count)
+    return count
+
+
 def experiment_rotation_decision(
     *,
     accepted_count: int,
@@ -543,7 +556,7 @@ def main() -> int:
     parser.add_argument("--provider", action="append", default=[], help="Optional provider id; repeatable. Empty = current census repairQueue only.")
     parser.add_argument("--waves", type=int, default=5)
     parser.add_argument("--batch-size", type=int, default=48)
-    parser.add_argument("--health-concurrency", type=int, default=0, help="0 = auto (6/8 depending on target count)")
+    parser.add_argument("--health-concurrency", type=int, default=0, help="0 = auto per packed batch (1..8)")
     parser.add_argument("--include-environment", action="store_true", help="Include harness/environment-blocked cases in diagnostic staging; provider-code mutation still requires implementation evidence.")
     parser.add_argument("--shard-count", type=int, default=1)
     parser.add_argument("--shard-index", type=int, default=0)
@@ -616,10 +629,7 @@ def main() -> int:
     started_monotonic = time.monotonic()
     deadline_monotonic = started_monotonic + time_budget_seconds
 
-    concurrency = int(args.health_concurrency)
-    if concurrency <= 0:
-        concurrency = 8 if len(selected) >= 48 else 6
-    concurrency = max(1, min(concurrency, 8))
+    requested_health_concurrency = int(args.health_concurrency)
 
     try:
         for wave in range(1, waves + 1):
@@ -647,7 +657,8 @@ def main() -> int:
 
                 run(sys.executable, "scripts/stage_published.py", "--stage", str(stage), "--include-file", str(targets_file))
                 env = os.environ.copy()
-                env["NUVIO_HEALTH_CONCURRENCY"] = str(concurrency)
+                batch_concurrency = health_concurrency_for_batch(requested_health_concurrency, len(batch))
+                env["NUVIO_HEALTH_CONCURRENCY"] = str(batch_concurrency)
                 env["NUVIO_BRAIN_REPAIR_WAVE"] = str(wave)
                 env["NUVIO_BRAIN_EXPLORATION_CHAIN"] = "1"
                 batch_timeout = max(
