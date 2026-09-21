@@ -243,6 +243,36 @@ def provider_request_recipes(provider_id: str, *, path: Path = MEMORY_PATH) -> l
     return output[:32]
 
 
+def provider_user_agent(provider_id: str, *, path: Path = MEMORY_PATH) -> str:
+    """Return the first sanitized User-Agent that participated in accepted proof."""
+    for entry in reversed(provider_entries(provider_id, path=path)):
+        compiled = entry.get("compiledProgram") if isinstance(entry.get("compiledProgram"), dict) else {}
+        plans = [
+            *(compiled.get("searchRequestPlan") or []),
+            *(compiled.get("providerValuePlan") or []),
+        ]
+        for plan in plans:
+            if not isinstance(plan, dict):
+                continue
+            specs = []
+            if isinstance(plan.get("requestSpec"), dict):
+                specs.append(plan["requestSpec"])
+            if isinstance(plan.get("searchRequestSpec"), dict):
+                specs.append(plan["searchRequestSpec"])
+            for step in plan.get("steps") or []:
+                if isinstance(step, dict) and isinstance(step.get("requestSpec"), dict):
+                    specs.append(step["requestSpec"])
+            for spec in specs:
+                headers = spec.get("headers") if isinstance(spec.get("headers"), dict) else {}
+                for key, value in headers.items():
+                    if str(key).casefold() != "user-agent":
+                        continue
+                    user_agent = str(value or "").strip()
+                    if 8 <= len(user_agent) <= 240 and "\n" not in user_agent and "\r" not in user_agent:
+                        return user_agent
+    return ""
+
+
 def provider_routes(provider_id: str, *, path: Path = MEMORY_PATH) -> list[str]:
     output: list[str] = []
     for entry in provider_entries(provider_id, path=path):
