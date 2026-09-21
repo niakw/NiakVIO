@@ -17,6 +17,7 @@ from urllib.parse import urlparse
 AUTHORITY_TYPES = {"hub", "curated_direct", "source_redirect", "provider_config", "live_current"}
 REGISTRY_SCOPED_AUTHORITY_TYPES = {"telegram_public"}
 DOMAIN_PATCH_FIELDS = {"official_site", "official_hub", "domain_substitutions", "replacements", "runtime_domain_replacements"}
+DOMAIN_MANIFEST_OVERRIDE_FIELDS = {"logo", "icon", "favicon"}
 PLACEHOLDER_TOKENS = ("${", "{{", "}}", "function(", "=>", "`", "<%", "%>")
 
 
@@ -56,6 +57,49 @@ def concrete_http(value: object) -> bool:
     except ValueError:
         return False
     return bool(parsed.scheme in {"http", "https"} and parsed.hostname)
+
+
+def validate_manifest_domain_overrides(
+    provider_id: str,
+    before_patch: dict[str, Any],
+    after_patch: dict[str, Any],
+    after_site: str,
+) -> bool:
+    """Allow only provider-owned asset URL rotations inside manifest_overrides."""
+    # DOMAIN_MANIFEST_ASSET_ROTATION_V1
+    before = before_patch.get("manifest_overrides")
+    after = after_patch.get("manifest_overrides")
+    if before == after:
+        return False
+    if not isinstance(before, dict) or not isinstance(after, dict):
+        raise AssertionError(f"{provider_id}: manifest_overrides shape changed during domain refresh")
+    changed = {
+        key
+        for key in set(before) | set(after)
+        if before.get(key) != after.get(key)
+    }
+    forbidden = changed - DOMAIN_MANIFEST_OVERRIDE_FIELDS
+    if forbidden:
+        raise AssertionError(
+            f"{provider_id}: domain refresh mutated non-domain manifest_overrides fields: {sorted(forbidden)}"
+        )
+    expected_host = (urlparse(after_site).hostname or "").casefold()
+    if not expected_host:
+        raise AssertionError(f"{provider_id}: manifest asset rotation without concrete terminal")
+    for field in sorted(changed):
+        before_value = str(before.get(field) or "").strip()
+        after_value = str(after.get(field) or "").strip()
+        if not concrete_http(before_value) or not concrete_http(after_value):
+            raise AssertionError(
+                f"{provider_id}: manifest_overrides.{field} domain rotation requires concrete HTTP URLs"
+            )
+        after_host = (urlparse(after_value).hostname or "").casefold()
+        if after_host != expected_host:
+            raise AssertionError(
+                f"{provider_id}: manifest_overrides.{field} host {after_host!r} "
+                f"does not follow terminal {expected_host!r}"
+            )
+    return bool(changed)
 
 
 def provider_patches(document: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -181,12 +225,22 @@ def validate(
             for key in set(before_patch) | set(after_patch)
             if before_patch.get(key) != after_patch.get(key)
         }
-        forbidden_fields = changed_fields - DOMAIN_PATCH_FIELDS
+        manifest_changed = "manifest_overrides" in changed_fields
+        forbidden_fields = changed_fields - DOMAIN_PATCH_FIELDS - {"manifest_overrides"}
         if forbidden_fields:
             raise AssertionError(
                 f"{provider_id}: domain refresh mutated non-domain fields: {sorted(forbidden_fields)}"
             )
+        after_site_for_manifest = str(after_patch.get("official_site") or "").rstrip("/")
+        manifest_domain_changed = validate_manifest_domain_overrides(
+            provider_id,
+            before_patch,
+            after_patch,
+            after_site_for_manifest,
+        ) if manifest_changed else False
         domain_fields = changed_fields & DOMAIN_PATCH_FIELDS
+        if manifest_domain_changed:
+            domain_fields.add("manifest_overrides")
         if not domain_fields:
             continue
         if scope is not None and provider_id not in scope:
