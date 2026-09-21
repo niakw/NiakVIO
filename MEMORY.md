@@ -1,5 +1,20 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-21 23:34 Europe/Paris — Census/authority/Tailscale state corrected; Repair #134 blocked only by fail-fast ordering contract
+
+- Current provider authority/lifecycle now matches the manual evidence supplied for the ambiguous catalogue cases:
+  - AnimeVOSTFR: current terminal is `https://animevostfr.org`; stale `v2.animevostfr.org` remains a redirect seed only. Domain Refresh now also migrates top-level provider Lego site-root options when a terminal rotates.
+  - MoviesMod: authoritative hub is `https://modlist.in/?type=hollywood`, with current terminal `https://moviesmod.ai.in`.
+  - Animetsu and FullAnime remain disabled-retained; search is supplementary only.
+  - ShowBox is now disabled-retained (`manual_off_no_current_authority_search_only`); private Telegram/search-only discovery cannot reactivate it.
+  - DesiFlix remains disabled-retained because the public site became inappropriate/compromised.
+  - PersianStremio/YFlix remain backend-authority cases; absence of a public homepage/hub does not invalidate explicit structured runtime/backend authority.
+- Tailscale residential diagnostics are real and working. The earlier apparent absence was caused by census/WAF persistence races. Canonical Repair now owns the integrated WAF/Tailscale qualification path before Brain target selection.
+- Census semantics now split disabled lifecycle, authority rediscovery, harness mismatch and environment blocked. New state writes exact lifecycleDisabledQueue, authorityRediscoveryQueue, harnessMismatchQueue and environmentBlockedQueue.
+- Repair #133 failed preflight on a stale WAF integration workflow contract; that contract was aligned.
+- Repair #134 passed the provider/authority/Brain/WAF integration contracts but failed only brain_preflight_fail_fast_order_test.py because lifecycle activation validation still came after Brain-experience transfer. No WAF/provider probe/Brain mutation ran. Commit `900bbf840223` moves lifecycle validation before Brain-experience transfer.
+- Next action: trigger canonical Repair on current main, require preflight to pass, then inspect integrated GitHub+Tailscale WAF reclassification, exact split queues, Brain-selected providers, accepted/deferred results and post-Repair census.
+
 ## 2026-09-21 23:34 Europe/Paris — Repair starvation removed; stale-ledger overwrite guarded; Hub46 decoupled from catalogue size
 
 - GitHub concurrency semantics were confirmed in practice: a concurrency group retains at most one running + one pending run, and newer census/WAF pushes were replacing a pending Repair even with `cancel-in-progress: false`. Repair #131 was cancelled this way before execution.
