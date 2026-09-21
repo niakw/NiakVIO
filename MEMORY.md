@@ -1,6 +1,16 @@
 # NiakVIO — Recovery Memory
 
 
+## 2026-09-21 18:24 Europe/Paris — Flemmix redirect-chain authority corrected; stale-static resurrection blocked
+
+- User live observation: `flemmix.cloud` redirects through `neufneuf.space` and then to `https://flemmix.party/`. Public current-address sources independently corroborate `flemmix.party` as the current Flemmix terminal and `neufneuf.space` as a redirector. Treat `.cloud` / `.me` as historical or redirect entry points, not final runtime authority.
+- `bced1af141ab` updates `provider-hubs.json`: Flemmix `direct=https://flemmix.party/`, `direct_authority=explicit_current`, current observation date 2026-09-21, `.party/.cloud/.me` retained as candidates, and `https://neufneuf.space/` recorded only as a `redirect` discovery source.
+- `008010714c54` aligns Flemmix structured runtime DATA with `.party`: `official_site`, search-plan base and runtime Lego base now use `.party`; historical site-domain replacement maps terminate at `.party` and the current `.party` host is removed as a replacement source to avoid a cycle. `67116e9435d5` changes the Flemmix runtime default base to `.party`; contracts `1159df4ec6a8` and `6334d4dab2e9` were updated accordingly.
+- Generic root cause fixed by `517af61e0159`: `materialize_provider_v3_one.py` previously treated static Provider knowledge as newer domain authority and could resurrect a stale host after Domain Refresh. `PROVIDER_DOMAIN_EXPLICIT_CURRENT_PRECEDENCE_V1` now overlays registry `direct_authority=explicit_current` before static reconciliation. Contract `45ae9785d986` proves a stale static `.cloud` model cannot replace current `.party` during incremental materialization.
+- Published Flemmix bundle/manifest bytes are not yet claimed corrected until Domain Refresh rematerializes and the resulting current manifest target is inspected.
+
+
+
 ## 2026-09-21 16:30 Europe/Paris — Brain incremental materialization implemented; Domain rerun still required
 
 - Revalidated current `main` before mutation. Latest durable census commit was `6e8da363e8e5`; current Repair queue remains **11** with 16 symptomatic providers. The latest inspected Repair `35606270612` executed the real 11-provider queue and still ended fail-closed on the unrelated historical preservation loss `animevostfr:anime`.
