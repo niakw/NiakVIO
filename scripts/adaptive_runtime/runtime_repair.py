@@ -801,6 +801,37 @@ def _experiment_role_preferences(
     return list(fallbacks[variant] or fallbacks[1])
 
 
+def _historical_failure_priors(provider_id: str, failure_class: str) -> list[dict[str, Any]]:
+    experience = _load_experience()
+    wanted_provider = str(provider_id or "").strip().casefold()
+    wanted_failure = str(failure_class or "").strip().casefold()
+    if not wanted_failure:
+        return []
+    output: list[dict[str, Any]] = []
+    for row in experience.get("historicalCases") or []:
+        if not isinstance(row, dict):
+            continue
+        if str(row.get("failureClass") or "").strip().casefold() != wanted_failure:
+            continue
+        providers = {
+            str(value or "").strip().casefold()
+            for value in row.get("providers") or []
+            if str(value or "").strip()
+        }
+        if providers and "global" not in providers and wanted_provider not in providers:
+            continue
+        case_id = str(row.get("id") or "").strip()
+        solution = str(row.get("solutionClass") or "").strip()
+        if case_id and solution:
+            output.append({
+                "id": case_id,
+                "solutionClass": solution,
+                "providers": sorted(providers),
+                "priorOnly": True,
+            })
+    return output[:16]
+
+
 def _peer_route_min_variant(failure_class: str) -> int:
     failure = str(failure_class or "").strip().casefold()
     if failure in {"candidate_replay_gap", "media_extraction_gap"}:
@@ -935,8 +966,14 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     experiment_variant = max(0, min(int(brain_plan.get("experimentVariant") or 0), 4))
     experiment_generation = max(1, int(brain_plan.get("experimentGeneration") or 1))
     experiment_failure = str(brain_plan.get("failureClass") or "").strip()
+    historical_priors = _historical_failure_priors(provider_id, experiment_failure)
     peer_route_min_variant = _peer_route_min_variant(experiment_failure)
     peer_recipe_min_variant = _peer_recipe_min_variant(experiment_failure)
+    if historical_priors:
+        # Historical NiakVIO evidence is a prior only: it may reach compatible
+        # peer DATA one failed variant earlier, never skip deep validation.
+        peer_route_min_variant = max(1, peer_route_min_variant - 1)
+        peer_recipe_min_variant = max(1, peer_recipe_min_variant - 1)
     peer_routes = _peer_routes(strategy) if experiment_variant >= peer_route_min_variant else []
     provider_request_recipes = _unique_request_recipes(
         positive_request_recipes,
@@ -1178,7 +1215,10 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         "search_paths": search_paths,
         "direct_paths": direct_paths,
         "request_recipes": request_recipes,
+        "historical_prior_ids": [row["id"] for row in historical_priors],
+        "historical_solution_classes": [row["solutionClass"] for row in historical_priors],
         "route_prior_counts": {
+            "historicalCases": len(historical_priors),
             "provider": len(learned_routes),
             "peer": len(peer_routes),
             "search": len(search_paths),
