@@ -221,6 +221,47 @@ flemmix_patch = flemmix_overrides["provider_patches"]["flemmix"]
 assert flemmix_patch["official_site"] == "https://flemmix.party", flemmix_patch
 assert "flemmix.party" not in flemmix_patch["domain_substitutions"], flemmix_patch
 
+# Runtime Lego options are executable address DATA too. If Domain already knows
+# old -> current, materialization must not keep a stale provider-specific base.
+animevostfr_overrides = {
+    "provider_patches": {
+        "animevostfr": {
+            "official_site": "https://animevostfr.org",
+            "provider_lego_options": {
+                "scripts/provider_patches/animevostfr_runtime_v1.py": {
+                    "base": "https://v2.animevostfr.org",
+                    "nested": {"endpoint": "https://v2.animevostfr.org/api/test?q=1"},
+                }
+            },
+            "runtime_domain_replacements": {
+                "v2.animevostfr.org": "animevostfr.org",
+            },
+            "domain_substitutions": {
+                "v2.animevostfr.org": "animevostfr.org",
+            },
+        }
+    }
+}
+animevostfr_static = {
+    "providers": {
+        "animevostfr": {
+            "model": {
+                "knownSite": "https://animevostfr.org",
+                "officialSite": "https://animevostfr.org",
+            }
+        }
+    }
+}
+animevostfr_changed = module.reconcile_provider_authority(
+    animevostfr_overrides,
+    animevostfr_static,
+    "animevostfr",
+)
+assert animevostfr_changed == ["animevostfr"], animevostfr_changed
+animevostfr_opts = animevostfr_overrides["provider_patches"]["animevostfr"]["provider_lego_options"]["scripts/provider_patches/animevostfr_runtime_v1.py"]
+assert animevostfr_opts["base"] == "https://animevostfr.org", animevostfr_opts
+assert animevostfr_opts["nested"]["endpoint"] == "https://animevostfr.org/api/test?q=1", animevostfr_opts
+
 # Domain reconciliation now runs only for provider N. It must preserve the
 # canonical .id targets and must not pre-touch provider N+1.
 domain_changed = module.reconcile_domain_substitutions(
