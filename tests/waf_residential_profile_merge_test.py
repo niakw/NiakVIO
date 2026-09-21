@@ -60,6 +60,54 @@ diag=render.harness_transport_diagnostic(merged,"allwish")
 assert diag["classification"]=="residential-exit-native-reachable",diag
 assert render.browser_harness_status(merged,"allwish")=="HARNESS MISMATCH"
 
+
+# Residential evidence is differential only. If GitHub native-like transport
+# already reached content, the classification stays native-policy-reachable.
+already_native={
+    "rows":[{
+        "provider":"already-native","lane":"movie","outcome":"browser_content_reached",
+        "clientProfileMatrix":[
+            {"profile":"github-default-browser","outcome":"browser_content_reached"},
+            {"profile":"nuvio-tv-ua-browser","outcome":"browser_content_reached"},
+        ],
+        "directHttpProfile":{"outcome":"direct_http_content_reached"},
+        "okHttpJvmProfile":{"outcome":"okhttp_jvm_content_reached"},
+    }]
+}
+already_native_res={
+    "rows":[{
+        "provider":"already-native","lane":"movie","outcome":"browser_content_reached",
+        "clientProfileMatrix":[
+            {"profile":"github-default-browser","outcome":"browser_content_reached"},
+            {"profile":"nuvio-tv-ua-browser","outcome":"browser_content_reached"},
+        ],
+        "directHttpProfile":{"outcome":"direct_http_content_reached"},
+        "okHttpJvmProfile":{"outcome":"okhttp_jvm_content_reached"},
+    }]
+}
+diag_same=render.harness_transport_diagnostic(
+    merge.merge_profiles(already_native,already_native_res),
+    "already-native",
+)
+assert diag_same["classification"]=="native-policy-reachable",diag_same
+
+browser_only={
+    "rows":[{
+        "provider":"browser-only","lane":"anime","outcome":"browser_content_reached",
+        "clientProfileMatrix":[
+            {"profile":"github-default-browser","outcome":"browser_content_reached"},
+            {"profile":"nuvio-tv-ua-browser","outcome":"browser_content_reached"},
+        ],
+        "directHttpProfile":{"outcome":"direct_http_challenge_persisted"},
+        "okHttpJvmProfile":{"outcome":"okhttp_jvm_challenge_persisted"},
+    }]
+}
+diag_browser=render.harness_transport_diagnostic(
+    merge.merge_profiles(browser_only,browser_only),
+    "browser-only",
+)
+assert diag_browser["classification"]=="browser-profile-only",diag_browser
+
 blocked=merge.merge_profiles(
     baseline,
     {"rows":[{
