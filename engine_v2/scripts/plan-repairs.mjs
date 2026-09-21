@@ -77,52 +77,102 @@ function buildPlan(item) {
   const maxVariants = Math.max(1, finiteNumber(negativeMemoryPolicy.maxVariantsPerSignature, 5));
   const finalVariant = maxVariants - 1;
   const finalVariantGeneration = Math.max(1, finiteNumber(negativeMemoryPolicy.finalVariantGeneration, 1));
-  const memoryMatches = negativeMemory.filter((row) => {
+  const maxLearningGenerations = Math.max(
+    finalVariantGeneration,
+    finiteNumber(negativeMemoryPolicy.maxLearningGenerationsPerSignature, finalVariantGeneration),
+  );
+  const allMemoryMatches = negativeMemory.filter((row) => {
     if (stringValue(row.providerId).toLowerCase() !== providerId) return false;
     const failure = stringValue(row.failureClass);
     if (failure && failure !== evidence.failureClass) return false;
     const rowSignature = stringValue(row.signature);
     if (rowSignature && rowSignature !== signature) return false;
-    if (finiteNumber(row.successes, 0) !== 0) return false;
-    const variant = Math.max(0, Math.min(finalVariant, finiteNumber(row.experimentVariant, 0)));
-    if (variant === finalVariant) {
-      const generation = Math.max(1, finiteNumber(row.experimentGeneration, 1));
-      if (generation !== finalVariantGeneration) return false;
-    }
-    return true;
+    return finiteNumber(row.successes, 0) === 0;
   });
-  const variantStats = new Map();
-  for (const row of memoryMatches) {
+  const productionMemoryMatches = allMemoryMatches.filter((row) => {
     const variant = Math.max(0, Math.min(finalVariant, finiteNumber(row.experimentVariant, 0)));
-    const current = variantStats.get(variant) ?? { failures: 0, consecutiveFailures: 0 };
+    if (variant !== finalVariant) return true;
+    const generation = Math.max(1, finiteNumber(row.experimentGeneration, 1));
+    return generation === finalVariantGeneration;
+  });
+  const baseVariantStats = new Map();
+  for (const row of allMemoryMatches) {
+    const variant = Math.max(0, Math.min(finalVariant, finiteNumber(row.experimentVariant, 0)));
+    if (variant === finalVariant) continue;
+    const current = baseVariantStats.get(variant) ?? { failures: 0, consecutiveFailures: 0 };
     current.failures += Math.max(0, finiteNumber(row.failures, 0));
     current.consecutiveFailures = Math.max(current.consecutiveFailures, Math.max(0, finiteNumber(row.consecutiveFailures, 0)));
-    variantStats.set(variant, current);
+    baseVariantStats.set(variant, current);
   }
-  const experimentExhausted = Array.from({ length: maxVariants }, (_unused, variant) => variant)
-    .every((variant) => {
-      const stats = variantStats.get(variant);
-      return stats && stats.consecutiveFailures >= rotateEvery;
-    });
   let experimentVariant = 0;
-  if (!experimentExhausted) {
-    for (let variant = 0; variant < maxVariants; variant += 1) {
-      const stats = variantStats.get(variant);
-      if (!stats || stats.consecutiveFailures < rotateEvery) {
-        experimentVariant = variant;
-        break;
+  let experimentGeneration = 1;
+  let experimentExhausted = false;
+  if (learningMode) {
+    const baseExhausted = Array.from({ length: finalVariant }, (_unused, variant) => variant)
+      .every((variant) => {
+        const stats = baseVariantStats.get(variant);
+        return stats && stats.consecutiveFailures >= rotateEvery;
+      });
+    if (!baseExhausted) {
+      for (let variant = 0; variant < finalVariant; variant += 1) {
+        const stats = baseVariantStats.get(variant);
+        if (!stats || stats.consecutiveFailures < rotateEvery) {
+          experimentVariant = variant;
+          break;
+        }
+      }
+    } else {
+      experimentVariant = finalVariant;
+      const failedGenerations = new Set();
+      for (const row of allMemoryMatches) {
+        const variant = Math.max(0, Math.min(finalVariant, finiteNumber(row.experimentVariant, 0)));
+        if (variant !== finalVariant) continue;
+        const generation = Math.max(1, finiteNumber(row.experimentGeneration, 1));
+        if (generation < finalVariantGeneration || generation > maxLearningGenerations) continue;
+        if (Math.max(0, finiteNumber(row.consecutiveFailures, 0)) >= rotateEvery) {
+          failedGenerations.add(generation);
+        }
+      }
+      experimentGeneration = finalVariantGeneration;
+      while (
+        experimentGeneration <= maxLearningGenerations
+        && failedGenerations.has(experimentGeneration)
+      ) {
+        experimentGeneration += 1;
+      }
+      if (experimentGeneration > maxLearningGenerations) {
+        experimentGeneration = maxLearningGenerations;
+        experimentExhausted = true;
       }
     }
   } else {
-    // Exhaustion is itself evidence about the CURRENT terminal experiment
-    // generation. Keep diagnostics pinned to the final variant/generation
-    // rather than reporting an arbitrary older least-failed variant: downstream
-    // orchestration must never confuse generation-1 history with the materially
-    // new final-variant generation that was actually exhausted.
-    experimentVariant = finalVariant;
+    const variantStats = new Map();
+    for (const row of productionMemoryMatches) {
+      const variant = Math.max(0, Math.min(finalVariant, finiteNumber(row.experimentVariant, 0)));
+      const current = variantStats.get(variant) ?? { failures: 0, consecutiveFailures: 0 };
+      current.failures += Math.max(0, finiteNumber(row.failures, 0));
+      current.consecutiveFailures = Math.max(current.consecutiveFailures, Math.max(0, finiteNumber(row.consecutiveFailures, 0)));
+      variantStats.set(variant, current);
+    }
+    experimentExhausted = Array.from({ length: maxVariants }, (_unused, variant) => variant)
+      .every((variant) => {
+        const stats = variantStats.get(variant);
+        return stats && stats.consecutiveFailures >= rotateEvery;
+      });
+    if (!experimentExhausted) {
+      for (let variant = 0; variant < maxVariants; variant += 1) {
+        const stats = variantStats.get(variant);
+        if (!stats || stats.consecutiveFailures < rotateEvery) {
+          experimentVariant = variant;
+          break;
+        }
+      }
+    } else {
+      experimentVariant = finalVariant;
+    }
+    experimentGeneration = experimentVariant === finalVariant ? finalVariantGeneration : 1;
   }
-  const experimentGeneration = experimentVariant === finalVariant ? finalVariantGeneration : 1;
-  const negativeMemoryMatches = memoryMatches.reduce((sum, row) => sum + Math.max(1, finiteNumber(row.failures, 0)), 0);
+  const negativeMemoryMatches = allMemoryMatches.reduce((sum, row) => sum + Math.max(1, finiteNumber(row.failures, 0)), 0);
   const reusable = learnedSkills
     .filter((skill) => !skill.failureClass || skill.failureClass === evidence.failureClass || skill.failure_class === evidence.failureClass)
     .map((skill) => {
@@ -200,24 +250,36 @@ function buildPlan(item) {
   });
   const hypotheses = asArray(plan.hypotheses).filter(isRecord);
   const baseRepairTarget = resolveRepairTarget(plan.failureClass, capabilityStrategy, evidence.observedPipelineStage, stringValue(input.mode, "quick"));
-  const repairTarget = experimentExhausted && !learningMode
-    ? {
-        ...baseRepairTarget,
-        scope: "deferred",
-        repairType: "experiment_strategy_exhausted",
-        engine: "independent_learning_queue",
-        pipelineStage: "deferred_learning",
-        profiles: [],
-        learningDisposition: "queue_new_strategy_after_variant_exhaustion",
-      }
+  const repairTarget = experimentExhausted
+    ? (
+        learningMode
+          ? {
+              ...baseRepairTarget,
+              scope: "learning",
+              repairType: "architecture_gap",
+              engine: "brain_learning_lab",
+              pipelineStage: "learning",
+              profiles: [],
+              learningDisposition: "propose_new_or_evolved_core_type",
+            }
+          : {
+              ...baseRepairTarget,
+              scope: "deferred",
+              repairType: "experiment_strategy_exhausted",
+              engine: "independent_learning_queue",
+              pipelineStage: "deferred_learning",
+              profiles: [],
+              learningDisposition: "queue_new_strategy_after_variant_exhaustion",
+            }
+      )
     : baseRepairTarget;
-  const effectiveAction = experimentExhausted && !learningMode
-    ? "deferred_retry"
+  const effectiveAction = experimentExhausted
+    ? (learningMode ? "collect-more-evidence" : "deferred_retry")
     : stringValue(plan.action, "deferred_retry");
-  const effectiveExitReason = experimentExhausted && !learningMode
-    ? "experiment_variants_exhausted"
+  const effectiveExitReason = experimentExhausted
+    ? (learningMode ? "learning_generations_exhausted" : "experiment_variants_exhausted")
     : plan.exitReason ?? null;
-  const effectiveHypotheses = experimentExhausted && !learningMode ? [] : hypotheses;
+  const effectiveHypotheses = experimentExhausted ? [] : hypotheses;
   return {
     brainVersion: finiteNumber(plan.brainVersion, BRAIN_CONTROL_PLANE_VERSION),
     providerId,
@@ -236,6 +298,7 @@ function buildPlan(item) {
     experimentExhausted,
     experimentRotationEvery: rotateEvery,
     experimentVariantCount: maxVariants,
+    experimentGenerationLimit: learningMode ? maxLearningGenerations : finalVariantGeneration,
     learningDisposition: repairTarget.learningDisposition,
     capabilityStrategy,
     signature,
