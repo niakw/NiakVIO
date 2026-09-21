@@ -532,6 +532,132 @@ def _search_progress(history: dict[str, Any], provider: str, row: dict[str, Any]
     return f"{lane}: {this_run} works tested / {total_misses} retained misses{suffix}"
 
 
+def _authority_row(authority_status: dict[str, Any], provider: str) -> dict[str, Any]:
+    wanted = str(provider or "").strip().casefold()
+    for row in authority_status.get("providers") or []:
+        if (
+            isinstance(row, dict)
+            and str(row.get("provider") or "").strip().casefold() == wanted
+        ):
+            return row
+    return {}
+
+
+def _authority_fields(authority_status: dict[str, Any], provider: str) -> dict[str, Any]:
+    row = _authority_row(authority_status, provider)
+    if not row:
+        # Renderer unit tests and historical local invocations may not carry an
+        # authority artifact. Missing authority is "unknown", not an implicit
+        # production block; main/Repair always provides the persisted arbiter.
+        return {
+            "authorityRepairEligible": True,
+            "authorityAction": "UNCLASSIFIED",
+            "authorityClass": "unclassified",
+            "authorityConfidence": "unknown",
+            "authorityReasons": [],
+            "authorityKnown": False,
+        }
+    return {
+        "authorityRepairEligible": row.get("repairEligible") is True,
+        "authorityAction": str(row.get("action") or "UNCLASSIFIED"),
+        "authorityClass": str(row.get("authorityClass") or "unknown"),
+        "authorityConfidence": str(row.get("confidence") or "unknown"),
+        "authorityReasons": [
+            str(value) for value in row.get("reasons") or [] if str(value).strip()
+        ],
+        "authorityKnown": True,
+    }
+
+
+def _authority_action(status: str, transport_class: str, authority: dict[str, Any]) -> str:
+    if authority.get("authorityRepairEligible") is not False:
+        return _harness_action(status, transport_class)
+    action = str(authority.get("authorityAction") or "")
+    if action.startswith("REDISCOVER"):
+        return (
+            "Domain/authority rediscovery required before Repair; search remains "
+            "supplementary evidence only and cannot authorize provider mutation"
+        )
+    if action in {"KEEP_DISABLED", "DISABLE_SOURCE_REMOVED", "DISABLE_AUTHORITY_EXHAUSTED"}:
+        return (
+            "provider lifecycle/authority blocks Repair; keep disabled until a "
+            "new authoritative provider address/backend is qualified"
+        )
+    return "provider authority blocks Repair; resolve address/backend authority first"
+
+
+def _ok_lanes_from_verdicts(verdicts: list[str]) -> set[str]:
+    output: set[str] = set()
+    for verdict in verdicts:
+        text = str(verdict or "")
+        if "=" not in text:
+            continue
+        lane, value = text.split("=", 1)
+        if value.strip().upper().startswith("OK"):
+            output.add(lane.strip().casefold())
+    return output
+
+
+def _carried_non_green_status(carried: dict[str, Any], provider: str, waf_browser_evidence: dict[str, Any]) -> str:
+    issue = str(carried.get("dominantIssue") or "").casefold()
+    candidate = bool(carried.get("candidateProof"))
+    route = bool(carried.get("routeProof"))
+    depth = {str(value or "").casefold() for value in carried.get("evidenceDepth") or []}
+    historical = bool(carried.get("historicalProof"))
+
+    if "provider_waf_challenge" in issue:
+        return browser_harness_status(waf_browser_evidence, provider)
+    if any(value in issue for value in ("provider_network_http_error", "provider_network_exception", "timeout")):
+        return "REGRESSION PROVIDER" if historical else "PROVIDER NETWORK BLOCKED"
+    if "provider_network_zero_result" in issue:
+        if candidate:
+            return "CANDIDATE OK"
+        if any("chain_reached" in value for value in depth):
+            return "CHAIN REACHED"
+        if route:
+            return "ROUTE PROVEN"
+        return "NO PROOF"
+    if any(value in issue for value in JS_BROKEN_STAGES):
+        return "REGRESSION PROVIDER JS" if historical else "PROVIDER JS BROKEN"
+    return "REGRESSION PROVIDER JS" if historical else "PROVIDER JS BROKEN"
+
+
+def _reconcile_carried_green(
+    carried: dict[str, Any],
+    provider: str,
+    waf_browser_evidence: dict[str, Any],
+) -> dict[str, Any]:
+    status = str(carried.get("status") or "")
+    if status not in HEALTHY_STATES:
+        return carried
+    declared = {
+        str(value or "").strip().casefold()
+        for value in carried.get("declaredLanes") or []
+        if str(value or "").strip()
+    }
+    verdicts = [str(value) for value in carried.get("latestLaneVerdicts") or []]
+    if not verdicts:
+        return carried
+    ok_lanes = _ok_lanes_from_verdicts(verdicts)
+    verified = [
+        str(value or "").strip().casefold()
+        for value in carried.get("currentVerifiedLanes") or []
+        if str(value or "").strip().casefold() in ok_lanes
+    ]
+    carried["currentVerifiedLanes"] = verified
+
+    if declared and set(verified) == declared:
+        carried["status"] = "FULL OK"
+    elif verified:
+        carried["status"] = "PARTIAL OK"
+    else:
+        carried["status"] = _carried_non_green_status(carried, provider, waf_browser_evidence)
+        carried["reconciledFromCarriedGreen"] = True
+        carried["consistencyNote"] = "carried green contradicted by its latest lane verdict"
+    carried["color"] = STATUS_META[str(carried["status"])][0]
+    return carried
+
+
 def _action(status: str) -> str:
     return {
         "FULL OK": "protect + replay retained proof",
@@ -558,12 +684,14 @@ def build_status_rows(
     candidate_evidence: dict[str, Any] | None = None,
     provider_overrides: dict[str, Any] | None = None,
     waf_browser_evidence: dict[str, Any] | None = None,
+    authority_status: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     history = history or {}
     baseline = baseline or {}
     candidate_evidence = candidate_evidence or {}
     provider_overrides = provider_overrides or {}
     waf_browser_evidence = waf_browser_evidence or {}
+    authority_status = authority_status or {}
     by: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in report.get("rows") or []:
         if not isinstance(row, dict):
@@ -615,6 +743,8 @@ def build_status_rows(
             if status in ENVIRONMENT_ONLY_STATES
             else {"classification": "not-applicable", "evidence": [], "lanes": []}
         )
+        authority = _authority_fields(authority_status, provider)
+        status_repair_eligible = is_repair_eligible_status(status)
         out.append({
             "provider": provider,
             "status": status,
@@ -630,9 +760,11 @@ def build_status_rows(
             "evidenceDepth": evidence_depth,
             "harnessTransportClass": harness_diag["classification"],
             "harnessTransportEvidence": harness_diag["evidence"],
-            "action": _harness_action(status, harness_diag["classification"]),
+            **authority,
+            "action": _authority_action(status, harness_diag["classification"], authority),
             "brainCheckRequired": is_symptomatic_status(status),
-            "repairEligible": is_repair_eligible_status(status),
+            "statusRepairEligible": status_repair_eligible,
+            "repairEligible": status_repair_eligible and authority["authorityRepairEligible"],
             "testedThisRun": True,
         })
 
@@ -647,6 +779,31 @@ def build_status_rows(
         if not provider or provider in current:
             continue
         carried = dict(previous)
+
+        # Refresh dynamic retained evidence for carried rows instead of blindly
+        # preserving a stale snapshot from an older renderer.
+        declared = [
+            str(value or "").strip().casefold()
+            for value in carried.get("declaredLanes") or []
+            if str(value or "").strip()
+        ]
+        proof_labels = []
+        for lane in declared:
+            label = _history_label(history, provider, lane)
+            if label != "—":
+                proof_labels.append(f"{lane}: {label}")
+        carried["historicalProof"] = proof_labels
+        carried["candidateProof"] = [
+            f"run {x['runId']}" if x.get("runId") else x.get("key", "candidate")
+            for x in candidate_proofs(candidate_evidence, provider)
+        ]
+        route = route_proof(provider_overrides, provider)
+        carried["routeProof"] = (
+            [f"{route['liveValidatedRouteCount']} live routes / {', '.join(route['validatedTypes'])}"]
+            if route else []
+        )
+
+        carried = _reconcile_carried_green(carried, provider, waf_browser_evidence)
         carried_status = str(carried.get("status") or "")
         if carried_status == "PROVIDER WAF/ANTIBOT" or carried_status in ENVIRONMENT_ONLY_STATES:
             migrated = browser_harness_status(waf_browser_evidence, provider)
@@ -656,8 +813,18 @@ def build_status_rows(
             carried["harnessTransportClass"] = diag["classification"]
             carried["harnessTransportEvidence"] = diag["evidence"]
             carried["action"] = _harness_action(migrated, diag["classification"])
-        carried["brainCheckRequired"] = is_symptomatic_status(str(carried.get("status") or ""))
-        carried["repairEligible"] = is_repair_eligible_status(str(carried.get("status") or ""))
+        final_status = str(carried.get("status") or "")
+        authority = _authority_fields(authority_status, provider)
+        status_repair_eligible = is_repair_eligible_status(final_status)
+        carried.update(authority)
+        carried["brainCheckRequired"] = is_symptomatic_status(final_status)
+        carried["statusRepairEligible"] = status_repair_eligible
+        carried["repairEligible"] = status_repair_eligible and authority["authorityRepairEligible"]
+        carried["action"] = _authority_action(
+            final_status,
+            str(carried.get("harnessTransportClass") or "not-applicable"),
+            authority,
+        )
         carried["testedThisRun"] = False
         out.append(carried)
     return out
@@ -673,6 +840,7 @@ def render(
     candidate_evidence: dict[str, Any] | None = None,
     provider_overrides: dict[str, Any] | None = None,
     waf_browser_evidence: dict[str, Any] | None = None,
+    authority_status: dict[str, Any] | None = None,
 ) -> str:
     rows = build_status_rows(
         report,
@@ -681,6 +849,7 @@ def render(
         candidate_evidence,
         provider_overrides,
         waf_browser_evidence,
+        authority_status,
     )
     states = Counter(row["status"] for row in rows)
     symptomatic = sorted(row["provider"] for row in rows if row.get("brainCheckRequired") is True)
@@ -688,6 +857,11 @@ def render(
     environment_queue = sorted(
         row["provider"] for row in rows
         if str(row.get("status") or "") in ENVIRONMENT_ONLY_STATES
+    )
+    authority_blocked_queue = sorted(
+        row["provider"] for row in rows
+        if row.get("brainCheckRequired") is True
+        and row.get("authorityRepairEligible") is False
     )
     short_sha = sha[:12] if sha else "unknown"
     scope = str(report.get("resolved_scope") or report.get("requested_scope") or "all")
@@ -720,7 +894,7 @@ def render(
         "",
         f"Latest provider census state: **{summary}** across **{len(rows)} providers**.",
         f"Evidence: run {run_id or 'local'} · SHA {short_sha} · scope **{scope}**.",
-        f"Symptomatic providers: **{len(symptomatic)}** · automated repair queue: **{len(repair_queue)}** · harness/environment queue: **{len(environment_queue)}**.",
+        f"Symptomatic providers: **{len(symptomatic)}** · automated repair queue: **{len(repair_queue)}** · authority-blocked symptoms: **{len(authority_blocked_queue)}** · harness/environment queue: **{len(environment_queue)}**.",
         "",
         "## Status semantics",
         "",
@@ -732,10 +906,11 @@ def render(
         "",
         "**Important:** provider_network_zero_result is not a healthy-provider verdict. Search/lookup-only stays NO PROOF only when no retained positive/candidate/route proof exists; "
         "a content-specific detail/episode/player chain becomes CHAIN REACHED; ROUTE PROVEN preserves qualified live provider routes without pretending terminal media worked; "
-        "CANDIDATE OK preserves verified playback from an unpublished repair/reconstruction candidate that current published bytes have not reproduced; PARTIAL OK still requires at least one current verified playable lane.",
+        "CANDIDATE OK preserves verified playback from an unpublished repair/reconstruction candidate that current published bytes have not reproduced; PARTIAL OK still requires at least one verified playable lane. "
+        "A carried row is last-known evidence, not a claim that this scoped run re-probed it. Repair eligibility is the intersection of runtime status and provider address/backend authority.",
         "",
-        "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Candidate proof | Route proof | Corpus progress | Evidence depth | Harness transport | Latest lane verdicts | Dominant issue | Next action |",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+        "| Provider | Status | Run | Declared lanes | Verified lanes | Retained proof | Candidate proof | Route proof | Authority | Corpus progress | Evidence depth | Harness transport | Latest lane verdicts | Dominant issue | Next action |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ])
 
     state_order = {
@@ -763,6 +938,8 @@ def render(
             f"{'; '.join(row['historicalProof']) or '—'} | "
             f"{'; '.join(row.get('candidateProof') or []) or '—'} | "
             f"{'; '.join(row.get('routeProof') or []) or '—'} | "
+            f"{row.get('authorityAction') or 'UNCLASSIFIED'} / {row.get('authorityClass') or 'unclassified'}"
+            f"{' / blocked' if row.get('authorityRepairEligible') is False else ''} | "
             f"{'; '.join(row['searchProgress']) or '—'} | "
             f"{'; '.join(row.get('evidenceDepth') or []) or '—'} | "
             f"{row.get('harnessTransportClass') if row.get('harnessTransportClass') != 'not-applicable' else '—'} | "
@@ -775,7 +952,7 @@ def render(
     lines.extend([
         "",
         "The source JSON is the exact provider-v3-quick-yield.json from the same census. "
-        "Retained proof/search memory is automation/provider-census-proof-history.json.",
+        "Retained proof/search memory is automation/provider-census-proof-history.json; Repair authority is automation/provider-authority-status.json.",
         "",
     ])
     return "\n".join(lines)
@@ -792,6 +969,7 @@ def main() -> int:
     parser.add_argument("--repair-candidate-evidence", type=Path, default=Path("automation/provider-repair-candidate-evidence.json"))
     parser.add_argument("--provider-overrides", type=Path, default=Path("provider-overrides.json"))
     parser.add_argument("--waf-browser-evidence", type=Path, default=Path("automation/provider-waf-browser-session-latest.json"))
+    parser.add_argument("--authority-status", type=Path, default=Path("automation/provider-authority-status.json"))
     parser.add_argument("--run-id", default="")
     parser.add_argument("--sha", default="")
     args = parser.parse_args()
@@ -808,6 +986,7 @@ def main() -> int:
     candidate_evidence = merge_candidate_evidence(candidate_evidence, repair_candidate_evidence)
     provider_overrides = load(args.provider_overrides) if args.provider_overrides.is_file() else {}
     waf_browser_evidence = load(args.waf_browser_evidence) if args.waf_browser_evidence.is_file() else {}
+    authority_status = load(args.authority_status) if args.authority_status.is_file() else {}
     rows = build_status_rows(
         report,
         history,
@@ -815,6 +994,7 @@ def main() -> int:
         candidate_evidence,
         provider_overrides,
         waf_browser_evidence,
+        authority_status,
     )
     args.output.write_text(
         render(
@@ -826,13 +1006,14 @@ def main() -> int:
             candidate_evidence=candidate_evidence,
             provider_overrides=provider_overrides,
             waf_browser_evidence=waf_browser_evidence,
+            authority_status=authority_status,
         ),
         encoding="utf-8",
     )
     if args.json_output is not None:
         args.json_output.parent.mkdir(parents=True, exist_ok=True)
         payload = {
-            "schemaVersion": 2,
+            "schemaVersion": 3,
             "runId": str(args.run_id),
             "triggerSha": str(args.sha),
             "providers": rows,
@@ -845,6 +1026,11 @@ def main() -> int:
             ),
             "repairQueue": sorted(
                 row["provider"] for row in rows if row.get("repairEligible") is True
+            ),
+            "authorityBlockedQueue": sorted(
+                row["provider"] for row in rows
+                if row.get("brainCheckRequired") is True
+                and row.get("authorityRepairEligible") is False
             ),
             "environmentQueue": sorted(
                 row["provider"] for row in rows
