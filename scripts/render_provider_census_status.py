@@ -148,6 +148,7 @@ def harness_transport_diagnostic(
     native_inconclusive = False
     all_challenged = True
 
+    github_browser_reached = False
     residential_attempted = False
     residential_native_reached = False
     residential_browser_reached = False
@@ -179,11 +180,13 @@ def harness_transport_diagnostic(
             native_inconclusive = True
             all_challenged = False
 
-        if tv_browser_outcome == "browser_content_reached" and okhttp_outcome != "okhttp_jvm_content_reached":
-            browser_only = True
+        if default_outcome == "browser_content_reached" or tv_browser_outcome == "browser_content_reached":
+            github_browser_reached = True
             all_challenged = False
+            if okhttp_outcome != "okhttp_jvm_content_reached":
+                browser_only = True
 
-        if default_outcome == "browser_content_reached" or direct_outcome == "direct_http_content_reached":
+        if direct_outcome == "direct_http_content_reached":
             all_challenged = False
 
         residential = (
@@ -264,13 +267,15 @@ def harness_transport_diagnostic(
             f"{residential_parts}"
         )
 
-    if residential_native_reached:
+    # Residential labels are DIFFERENTIAL labels, not a second way of
+    # describing reachability already proved on the GitHub runner.
+    if residential_native_reached and not native_reached:
         classification = "residential-exit-native-reachable"
-    elif residential_browser_reached:
+    elif residential_browser_reached and not github_browser_reached and not native_reached:
         classification = "residential-exit-browser-reachable"
     elif native_reached:
         classification = "native-policy-reachable"
-    elif browser_only:
+    elif github_browser_reached or browser_only:
         classification = "browser-profile-only"
     elif native_inconclusive:
         classification = "native-policy-inconclusive"
