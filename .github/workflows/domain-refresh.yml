@@ -47,10 +47,38 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  bulk-guard:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+    steps:
+      - name: Defer domain mutation during bulk onboarding
+        id: decide
+        shell: bash
+        run: |
+          set -euo pipefail
+          message="$(python - <<'PY'
+          import json, os
+          from pathlib import Path
+          try:
+              event=json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text(encoding="utf-8"))
+          except (OSError, json.JSONDecodeError):
+              event={}
+          print(str(((event.get("head_commit") or {}).get("message") or "")).splitlines()[0])
+          PY
+          )"
+          run=true
+          if [ "${GITHUB_EVENT_NAME}" = "push" ]; then
+            case "$message" in
+              "provider: bulk stage "*|"provider: bulk activate "*) run=false ;;
+            esac
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+          echo "FIELD_DOMAIN_BULK_GUARD run=$run event=${GITHUB_EVENT_NAME}"
+
   refresh:
-    # A bulk onboarding commit may add hundreds of pending providers. Do not
-    # race a global domain mutation against their exact sharded baseline.
-    if: ${{ github.event_name != 'push' || (startsWith(github.event.head_commit.message, 'provider: bulk stage ') == false && startsWith(github.event.head_commit.message, 'provider: bulk activate ') == false) }}
+    needs: bulk-guard
+    if: needs.bulk-guard.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 70
     steps:
