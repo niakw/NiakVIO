@@ -72,6 +72,7 @@ for required in (
     "sync_patch_domain_authority",
     "rebuild_provider_configs",
     "provider_domain_projection_drift_ids",
+    "has_domain_refresh_source",
     '"projection_drift"',
     "DOMAIN_REFRESH_CURRENT_SCOPE_PROJECTION_DRIFT_V1",
     "replace_provider_fix",
