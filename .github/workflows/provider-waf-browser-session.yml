@@ -30,8 +30,10 @@ permissions:
   id-token: write
 
 concurrency:
-  group: provider-waf-browser-session-main
-  cancel-in-progress: true
+  group: provider-census-waf-main
+  # Census persistence and the transport overlay share one repository-wide
+  # serialization lane. Never let a later census erase fresher residential evidence.
+  cancel-in-progress: false
 
 jobs:
   browser-session:
@@ -255,7 +257,7 @@ jobs:
           if-no-files-found: error
 
       - name: Persist WAF evidence and refresh census transport state
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main' }}
         shell: bash
         run: |
           set -euo pipefail
