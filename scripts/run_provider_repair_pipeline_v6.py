@@ -35,6 +35,7 @@ CENSUS_MD = ROOT / "PROVIDER_CENSUS_STATUS.md"
 CENSUS_POST_REPAIR = ROOT / "automation" / "provider-census-post-repair.json"
 REPAIR_CANDIDATE_EVIDENCE = ROOT / "automation" / "provider-repair-candidate-evidence.json"
 AUTHORITY_STATUS = ROOT / "automation" / "provider-authority-status.json"
+WAF_STATUS = ROOT / "automation" / "provider-waf-browser-session-latest.json"
 CURRENT_OVERRIDES_SNAPSHOT = RUNTIME_PLAN_LKG.parent / "provider-overrides-pre-repair.json"
 CENSUS_ENVIRONMENT_ONLY = {"HARNESS MISMATCH", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}
 
@@ -168,6 +169,14 @@ def refresh_census(report_path: Path, *, phase: str) -> dict[str, Any]:
         "--json-output", str(CENSUS_STATUS.relative_to(ROOT)),
         "--history", str(CENSUS_HISTORY.relative_to(ROOT)),
         "--baseline-status", str(CENSUS_STATUS.relative_to(ROOT)),
+        *(
+            ["--waf-browser-evidence", str(WAF_STATUS.relative_to(ROOT))]
+            if WAF_STATUS.exists() else []
+        ),
+        *(
+            ["--authority-status", str(AUTHORITY_STATUS.relative_to(ROOT))]
+            if AUTHORITY_STATUS.exists() else []
+        ),
         "--run-id", f"{run_id}-{phase}",
         "--sha", sha or phase,
     )
@@ -267,6 +276,14 @@ def render_persisted_byte_census(
         "--baseline-status", str(CENSUS_STATUS.relative_to(ROOT)),
         "--repair-candidate-evidence", str(REPAIR_CANDIDATE_EVIDENCE.relative_to(ROOT)),
         "--provider-overrides", str(provider_overrides),
+        *(
+            ["--waf-browser-evidence", str(WAF_STATUS.relative_to(ROOT))]
+            if WAF_STATUS.exists() else []
+        ),
+        *(
+            ["--authority-status", str(AUTHORITY_STATUS.relative_to(ROOT))]
+            if AUTHORITY_STATUS.exists() else []
+        ),
         "--run-id", f"{run_id}-{phase}",
         "--sha", sha or phase,
     )
