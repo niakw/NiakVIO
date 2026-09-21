@@ -59,6 +59,7 @@ assert "validate_managed_fixes" in one
 assert "minimize_text" in one
 assert "reconcile_provider_authority" in one
 assert "FIELD_PROVIDER_STATIC_AUTHORITY_RECONCILED" in one
+assert "PROVIDER_DOMAIN_EXPLICIT_CURRENT_PRECEDENCE_V1" in one
 assert "reconcile_domain_substitutions" in one
 assert "FIELD_PROVIDER_DOMAIN_SUBSTITUTIONS_RECONCILED" in one
 assert "provider_id=provider_id" in one
@@ -178,6 +179,47 @@ assert "api.purstream.id" not in purstream["replacements"], purstream["replaceme
 assert "purstream.id" not in purstream["runtime_domain_replacements"], purstream["runtime_domain_replacements"]
 assert "api.purstream.id" not in purstream["runtime_domain_replacements"], purstream["runtime_domain_replacements"]
 assert purstream["replacements"]["legacy-only.example"] == "elsewhere.example"
+
+# Explicit-current Domain registry outranks stale static Provider memory. This
+# protects incremental Brain materialization from resurrecting yesterday's host.
+flemmix_overrides = {
+    "provider_patches": {
+        "flemmix": {
+            "official_site": "https://flemmix.me",
+            "domain_substitutions": {"flemmix.party": "flemmix.me", "flemmix.cloud": "flemmix.me"},
+            "replacements": {"flemmix.me": "flemmix.party", "flemmix.cloud": "flemmix.party"},
+            "runtime_domain_replacements": {"flemmix.me": "flemmix.party", "flemmix.cloud": "flemmix.party"},
+        }
+    }
+}
+flemmix_static = {
+    "providers": {
+        "flemmix": {
+            "model": {
+                "knownSite": "https://flemmix.cloud",
+                "officialSite": "https://flemmix.cloud",
+            }
+        }
+    }
+}
+flemmix_registry = {
+    "providers": {
+        "flemmix": {
+            "direct": "https://flemmix.party/",
+            "direct_authority": "explicit_current",
+        }
+    }
+}
+flemmix_changed = module.reconcile_provider_authority(
+    flemmix_overrides,
+    flemmix_static,
+    "flemmix",
+    flemmix_registry,
+)
+assert flemmix_changed == ["flemmix"], flemmix_changed
+flemmix_patch = flemmix_overrides["provider_patches"]["flemmix"]
+assert flemmix_patch["official_site"] == "https://flemmix.party", flemmix_patch
+assert "flemmix.party" not in flemmix_patch["domain_substitutions"], flemmix_patch
 
 # Domain reconciliation now runs only for provider N. It must preserve the
 # canonical .id targets and must not pre-touch provider N+1.
