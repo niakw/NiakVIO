@@ -612,7 +612,7 @@
       "official_site": "https://flemmix.party",
       "manifest_overrides": {
         "supportsExternalPlayer": true,
-        "logo": "https://flemmix.me/favicon.ico",
+        "logo": "https://flemmix.party/favicon.ico",
         "enabled": true
       },
       "published_types": [
@@ -1694,7 +1694,7 @@
         "TMDB metadata remains Core-owned; provider upstream JavaScript and embedded upstream credentials are not executed.",
         "Detail/episode URLs are discovered from current provider HTML and are not persisted as guessed route authority."
       ],
-      "official_hub": "https://4khdhub.one/",
+      "official_hub": "https://hdhub4u.ec",
       "official_site": "https://4khdhub.one",
       "manifest_overrides": {
         "enabled": true
@@ -4005,7 +4005,7 @@
     "animevostfr": {
       "capability": "mixed_embed_resolver",
       "official_hub": null,
-      "official_site": "https://v2.animevostfr.org",
+      "official_site": "https://animevostfr.org",
       "manifest_overrides": {
         "enabled": true
       },
@@ -4251,6 +4251,12 @@
           "base": "https://v2.animevostfr.org",
           "maxStreams": 6
         }
+      },
+      "runtime_domain_replacements": {
+        "v2.animevostfr.org": "animevostfr.org"
+      },
+      "domain_substitutions": {
+        "v2.animevostfr.org": "animevostfr.org"
       }
     },
     "castle": {
@@ -5333,7 +5339,7 @@
         "2026-09-19 runtime authority: moviesmod.zone redirects to moviesmod.ai.in and the live provider page announces the moved official domain; army returned 403 in current probes."
       ],
       "capability": "html_scraper",
-      "official_hub": null,
+      "official_hub": "https://modlist.in/?type=hollywood",
       "official_site": "https://moviesmod.ai.in",
       "manifest_overrides": {
         "enabled": true
@@ -8026,7 +8032,7 @@
     "voiranime": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://voiranime.org.uk/",
-      "official_site": "https://voiranime.diy",
+      "official_site": "https://voir-anime.to",
       "manifest_overrides": {
         "enabled": true
       },
@@ -8245,14 +8251,14 @@
         "evidenceDestructive": false
       },
       "runtime_domain_replacements": {
-        "voiranime.store": "voiranime.diy",
-        "voiranime.com": "voiranime.diy",
-        "voir-anime.to": "voiranime.diy"
+        "voiranime.store": "voir-anime.to",
+        "voiranime.com": "voir-anime.to",
+        "voiranime.diy": "voir-anime.to"
       },
       "domain_substitutions": {
-        "voiranime.com": "voiranime.diy",
-        "voiranime.store": "voiranime.diy",
-        "voir-anime.to": "voiranime.diy"
+        "voiranime.com": "voir-anime.to",
+        "voiranime.store": "voir-anime.to",
+        "voiranime.diy": "voir-anime.to"
       },
       "identity_input": {
         "mode": "catalog_search",
