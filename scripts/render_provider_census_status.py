@@ -873,6 +873,16 @@ def render(
         if str(row.get("status") or "") in ENVIRONMENT_ONLY_STATES
         and row.get("authorityRepairEligible") is not False
     )
+    harness_mismatch_queue = sorted(
+        row["provider"] for row in rows
+        if str(row.get("status") or "") == "HARNESS MISMATCH"
+        and row.get("authorityRepairEligible") is not False
+    )
+    environment_blocked_queue = sorted(
+        row["provider"] for row in rows
+        if str(row.get("status") or "") == "HARNESS/ENV BLOCKED"
+        and row.get("authorityRepairEligible") is not False
+    )
     authority_blocked_queue = sorted(
         row["provider"] for row in rows
         if row.get("brainCheckRequired") is True
@@ -909,7 +919,7 @@ def render(
         "",
         f"Latest provider census state: **{summary}** across **{len(rows)} providers**.",
         f"Evidence: run {run_id or 'local'} · SHA {short_sha} · scope **{scope}**.",
-        f"Symptomatic providers: **{len(symptomatic)}** · automated repair queue: **{len(repair_queue)}** · authority-blocked symptoms: **{len(authority_blocked_queue)}** · harness/environment queue: **{len(environment_queue)}**.",
+        f"Symptomatic providers: **{len(symptomatic)}** · automated repair queue: **{len(repair_queue)}** · authority-blocked symptoms: **{len(authority_blocked_queue)}** · harness mismatch: **{len(harness_mismatch_queue)}** · environment blocked: **{len(environment_blocked_queue)}**.",
         "",
         "## Status semantics",
         "",
@@ -1047,9 +1057,22 @@ def main() -> int:
                 if row.get("brainCheckRequired") is True
                 and row.get("authorityRepairEligible") is False
             ),
+            # Backward-compatible combined transport queue. New consumers should
+            # use the two exact queues below instead of interpreting this name as
+            # "environment blocked".
             "environmentQueue": sorted(
                 row["provider"] for row in rows
                 if str(row.get("status") or "") in ENVIRONMENT_ONLY_STATES
+                and row.get("authorityRepairEligible") is not False
+            ),
+            "harnessMismatchQueue": sorted(
+                row["provider"] for row in rows
+                if str(row.get("status") or "") == "HARNESS MISMATCH"
+                and row.get("authorityRepairEligible") is not False
+            ),
+            "environmentBlockedQueue": sorted(
+                row["provider"] for row in rows
+                if str(row.get("status") or "") == "HARNESS/ENV BLOCKED"
                 and row.get("authorityRepairEligible") is not False
             ),
             "harnessQueue": sorted(
