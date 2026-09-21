@@ -60,7 +60,7 @@ def compile_program(program:dict[str,Any],provider:str)->dict[str,Any]:
         route=safe_route(raw)
         if route.startswith('/') and route!='/' and route not in learned_routes:
             learned_routes.append(route)
-    norm=[]
+    norm=[];seen_norm=set()
     for i,r in enumerate(recipes):
         origin=safe_origin(r.get('origin') or o.get('base_url'));route=safe_route(r.get('route'))
         if not origin or not route:
@@ -75,7 +75,7 @@ def compile_program(program:dict[str,Any],provider:str)->dict[str,Any]:
         if sorted(set(rb))!=sorted(set(bindings)) and (rb or bindings):raise ValueError('binding not route representable')
         response_kind=str(r.get('response') or 'html-or-text').casefold()
         if response_kind not in {'json','html-or-text'}:response_kind='html-or-text'
-        norm.append({
+        row={
             'origin':origin,
             'route':route,
             'role':str(r.get('role') or 'other').casefold(),
@@ -84,7 +84,10 @@ def compile_program(program:dict[str,Any],provider:str)->dict[str,Any]:
             'requestSpec':request_spec(r,ua,origin),
             'responseKind':response_kind,
             'streamProof':r.get('streamProof') is True,
-        })
+        }
+        key=json.dumps(row,sort_keys=True,separators=(',',':'))
+        if key in seen_norm:continue
+        seen_norm.add(key);norm.append(row)
     if not norm:raise ValueError('no provider-owned executable recipes')
     indep=[x for x in norm if not x['bindings']];dep=[x for x in norm if x['bindings']];search=[]
     for x in indep:
