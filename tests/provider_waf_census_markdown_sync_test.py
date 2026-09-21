@@ -22,3 +22,8 @@ markdown_add_pos = workflow.index("PROVIDER_CENSUS_STATUS.md", git_add_pos)
 assert merge_pos < render_pos < git_add_pos < markdown_add_pos
 
 print("provider WAF census Markdown synchronization contract passed")
+
+state_renderer=(ROOT/"scripts/render_provider_census_status_from_state.py").read_text(encoding="utf-8")
+assert "Residential probe" in state_renderer
+assert "⚠️ unavailable · GitHub-only" in state_renderer
+assert "residentialExitNodeEvidence" in state_renderer
