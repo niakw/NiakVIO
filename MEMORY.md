@@ -1,6 +1,18 @@
 # NiakVIO — Recovery Memory
 
 
+## 2026-09-21 16:30 Europe/Paris — Brain incremental materialization implemented; Domain rerun still required
+
+- Revalidated current `main` before mutation. Latest durable census commit was `6e8da363e8e5`; current Repair queue remains **11** with 16 symptomatic providers. The latest inspected Repair `35606270612` executed the real 11-provider queue and still ended fail-closed on the unrelated historical preservation loss `animevostfr:anime`.
+- Runtime evidence from `35606270612` confirms the scalability bottleneck: after MalluMV/WookaFR became the only durable materialization targets for the wave, `run_provider_brain_repair.py` still ran `materialize_provider_base_v3_store.py` over all 44 active providers and then `materialize_provider_v3_all.py` over all 44. The all-provider materializer alone ran from roughly 14:18:53Z to 14:22:06Z (~3m13s) for that single wave.
+- `8ce729b98c7e` changes Brain post-accept materialization to **provider-local incremental rebuilds**: reconcile only each target provider, run `materialize_provider_v3_one.py <provider>`, then run the global published-CONFIG validator once. Common ProviderBase/Core rebuilds stay owned by their release/Core lanes instead of making one provider repair O(catalogue).
+- `b76343dd928e` updates the Brain orchestrator contract to require `PROVIDER_BRAIN_INCREMENTAL_MATERIALIZATION_V1`, require the one-provider materializer, and explicitly reject `materialize_provider_v3_all.py` / `materialize_provider_base_v3_store.py` inside Brain's `materialize()` path. Full workflow preflight/runtime validation is still required before calling the speedup proven.
+- Flemmix is **not yet publication-correct**: structured `provider-overrides.json` has `official_site=https://flemmix.me` and old-host -> `flemmix.me` runtime mappings, but current published bundle `flemmix--nuvio--a503f8935cf25568.js` still embeds `knownSite/officialSite/searchRequestPlan=https://flemmix.cloud`.
+- Domain Refresh run `35603604915` reached real projection repair and proposed four CONFIG-only bundle rebuilds including Flemmix, but failed its transaction guard: actual override mutations were `4khdhub, animesalt, voiranime` while the journal declared only `4khdhub, voiranime`. Root cause was a no-op observation creating a missing `runtime_domain_replacements` map on already-current AnimeSalt. This was already fixed on current main by `a9847485b375` and locked by `0ec0285612ef`; no post-fix Domain run has yet proved publication.
+- Next authoritative sequence: rerun Domain Refresh on current main and verify Flemmix's final published CONFIG bytes; only then launch a fresh current-HEAD Repair so Brain preflight proves incremental materialization and the real queue runs without the prior whole-catalogue per-wave rebuild.
+
+
+
 ## 2026-09-21 15:36 Europe/Paris — Positive-memory replay runtime-proven; observation noise removed before exploration
 
 - Completed Repair `35601540093` on tested SHA `ee4a2238ab49` passed the full positive-memory preflight and executed the real 11-provider census Repair queue. Brain summary: `selected=11 accepted=1 fixed_lab=2 deferred_learning=8 remaining=1 processed=11`.
