@@ -12,6 +12,7 @@ import argparse
 import copy
 import hashlib
 import json
+import urllib.parse
 from pathlib import Path
 
 import materialize_provider_v3_all as allmat
@@ -58,6 +59,78 @@ def _registry_explicit_current_site(
         return ""
     direct = str(row.get("direct") or "").strip().rstrip("/")
     return direct if direct.startswith(("http://", "https://")) else ""
+
+
+def _normalize_runtime_option_domains(
+    patch: dict[str, object],
+    authority_hosts: set[str],
+) -> bool:
+    """Project stale provider-owned runtime option URLs onto current domain DATA.
+
+    Domain Refresh owns address discovery and records old->current mappings in
+    runtime_domain_replacements/domain_substitutions. Provider Lego options are
+    executable DATA, so the materializer must not keep calling an obsolete host
+    after current authority has moved. Only concrete HTTP(S) URLs whose source
+    host is already mapped to a current authority host are rewritten.
+    """
+    redirects: dict[str, str] = {}
+    for key in ("runtime_domain_replacements", "domain_substitutions"):
+        mapping = patch.get(key)
+        if not isinstance(mapping, dict):
+            continue
+        for source, target in mapping.items():
+            source_host = _host(source)
+            target_host = _host(target)
+            if source_host and target_host and target_host in authority_hosts:
+                redirects[source_host] = target_host
+    if not redirects:
+        return False
+
+    def rewrite(value: object) -> tuple[object, bool]:
+        if isinstance(value, dict):
+            changed = False
+            out: dict[object, object] = {}
+            for key, child in value.items():
+                next_child, child_changed = rewrite(child)
+                out[key] = next_child
+                changed = changed or child_changed
+            return out, changed
+        if isinstance(value, list):
+            changed = False
+            out: list[object] = []
+            for child in value:
+                next_child, child_changed = rewrite(child)
+                out.append(next_child)
+                changed = changed or child_changed
+            return out, changed
+        if not isinstance(value, str) or not value.startswith(("http://", "https://")):
+            return value, False
+        try:
+            parsed = urllib.parse.urlparse(value)
+        except ValueError:
+            return value, False
+        source_host = str(parsed.hostname or "").strip().casefold()
+        target_host = redirects.get(source_host)
+        if not target_host:
+            return value, False
+        # Provider domain migrations are host-level. Preserve path/query/fragment
+        # exactly while moving the executable option to the current authority.
+        port = f":{parsed.port}" if parsed.port else ""
+        rewritten = urllib.parse.urlunparse(
+            (parsed.scheme or "https", target_host + port, parsed.path, parsed.params, parsed.query, parsed.fragment)
+        )
+        return rewritten, rewritten != value
+
+    changed = False
+    for key in ("provider_lego_options", "patch_script_options"):
+        section = patch.get(key)
+        if not isinstance(section, dict):
+            continue
+        rewritten, section_changed = rewrite(section)
+        if section_changed:
+            patch[key] = rewritten
+            changed = True
+    return changed
 
 
 def _current_authority_hosts(model: dict[str, object]) -> set[str]:
@@ -225,6 +298,9 @@ def reconcile_provider_authority(
                 cleaned_substitutions[source] = target
             if cleaned_substitutions != substitutions:
                 patch["domain_substitutions"] = cleaned_substitutions
+
+        if _normalize_runtime_option_domains(patch, authority_hosts):
+            changed = True
 
     if changed:
         print(
