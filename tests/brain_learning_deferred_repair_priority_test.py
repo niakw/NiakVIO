@@ -61,4 +61,31 @@ memory2 = {"entries": [
 ]}
 assert mod.exhausted_repair_providers(memory2, policy2) == ["needs-two"]
 
+info = {
+    "uhdmovies": {"status": "healthy"},
+    "wookafr": {"status": "no_streams"},
+    "other": {"status": "runtime_error"},
+}
+staged = {key: {"canonical_id": key} for key in info}
+census = {"repairQueue": ["wookafr", "other"]}
+current, deferred, authority = mod.current_repair_priority(
+    ["uhdmovies", "other"],
+    census,
+    info,
+    staged,
+)
+assert current == ["wookafr", "other"], current
+assert deferred == ["other"], deferred
+assert authority == "provider-census-status.json"
+
+fallback_current, fallback_deferred, fallback_authority = mod.current_repair_priority(
+    ["uhdmovies", "wookafr"],
+    {},
+    info,
+    staged,
+)
+assert fallback_current == ["wookafr"], fallback_current
+assert fallback_deferred == ["wookafr"], fallback_deferred
+assert fallback_authority == "learning-current-observation-fallback"
+
 print("Brain Learning exhausted-Repair priority contract passed")
