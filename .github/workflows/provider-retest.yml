@@ -114,6 +114,7 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
       - name: Persist observational census
+        id: persist
         if: ${{ github.ref == 'refs/heads/main' }}
         shell: bash
         run: |
@@ -122,6 +123,7 @@ jobs:
           remote_main="$(git rev-parse origin/main)"
           if [ "$remote_main" != "$GITHUB_SHA" ]; then
             echo "FIELD_PROVIDER_RETEST_STALE source=$GITHUB_SHA remote=$remote_main"
+            echo "persisted=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name "github-actions[bot]"
@@ -133,8 +135,9 @@ jobs:
             git commit -m "ci(retest): refresh current provider census"
             git push origin HEAD:main
           fi
+          echo "persisted=true" >> "$GITHUB_OUTPUT"
       - name: Launch Fast Repair when requested
-        if: ${{ steps.retest.outputs.auto_repair == 'true' }}
+        if: ${{ steps.retest.outputs.auto_repair == 'true' && steps.persist.outputs.persisted == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
