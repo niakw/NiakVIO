@@ -22,6 +22,7 @@ required=[
     "tag:niakvio-ci -> autogroup:internet policy",
     "id: tailscale_connect",
     "continue-on-error: true",
+    "timeout-minutes: 4",
     "steps.tailscale_connect.outcome == 'success'",
     "id: select_residential_exit",
     "id: residential_probe",
