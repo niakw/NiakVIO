@@ -1746,6 +1746,7 @@ def update_history_row(history_row: dict[str, Any], item: dict[str, Any]) -> Non
             if same_current and current.get("validated_at")
             else now_iso()
         ),
+        "last_seen": now_iso(),
         "source_type": next_source_type,
         "source": next_source,
     }
