@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-21T15:11:57.703876+00:00",
+  "generated_at": "2026-09-21T20:30:08.055540+00:00",
   "test_environment": "github-actions-node",
-  "checked_providers": 44,
+  "checked_providers": 43,
   "status_counts": {
-    "healthy": 1,
+    "healthy": 2,
     "reachable": 0,
     "blocked": 1,
     "degraded": 1,
     "no_streams": 8,
-    "provider_unreachable": 30,
+    "provider_unreachable": 29,
     "runtime_error": 0,
-    "unavailable": 3,
+    "unavailable": 2,
     "excluded": 0
   },
   "policy": {
@@ -1627,17 +1627,15 @@
     },
     {
       "id": "animetsu",
-      "status": "provider_unreachable",
+      "status": "not-checked",
       "action": "unchanged",
-      "enabled": true,
+      "enabled": false,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
       "response_categories": [],
-      "host_health": {},
-      "activation_eligible": false,
-      "activation_mode": "preserved_current_ci_uncertain"
+      "host_health": {}
     },
     {
       "id": "animevostfr",
@@ -2855,7 +2853,7 @@
     },
     {
       "id": "wookafr",
-      "status": "unavailable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 1,
@@ -3029,17 +3027,21 @@
     },
     {
       "id": "vidlove",
-      "status": "no_streams",
+      "status": "healthy",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 0,
-      "hosts": [],
-      "response_categories": [],
+      "consecutive_successes": 1,
+      "hosts": [
+        "d.whysosigmabro.fun"
+      ],
+      "response_categories": [
+        "playable"
+      ],
       "host_health": {
         "ballerinacappuccinalovestungtungtungsahur.com": {
-          "last_checked_at": "2026-09-20T18:55:45.392800+00:00",
+          "last_checked_at": "2026-09-21T20:30:08.055540+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3050,7 +3052,7 @@
           "consecutive_blocked": 0
         },
         "a2.whysosigmabro.fun": {
-          "last_checked_at": "2026-09-20T18:55:45.392800+00:00",
+          "last_checked_at": "2026-09-21T20:30:08.055540+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3061,14 +3063,14 @@
           "consecutive_blocked": 0
         },
         "d.whysosigmabro.fun": {
-          "last_checked_at": "2026-09-20T18:55:45.392800+00:00",
+          "last_checked_at": "2026-09-21T20:30:08.055540+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 206,
-          "latency_ms": 601,
+          "latency_ms": 602,
           "kind": "mp4",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 3,
+          "consecutive_successes": 4,
           "consecutive_blocked": 0
         }
       },
