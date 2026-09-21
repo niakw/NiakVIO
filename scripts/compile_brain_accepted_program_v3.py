@@ -68,8 +68,6 @@ def compile_program(program:dict[str,Any],provider:str)->dict[str,Any]:
             # navigation unrelated to the provider. Ignore that noise rather
             # than turning it into durable provider execution DATA.
             continue
-        if route.startswith('/') and route!='/' and route not in learned_routes:
-            learned_routes.append(route)
         semantic=str(r.get('semanticType') or '').strip().casefold();lanes=[semantic] if semantic in SAFE_TYPES else types
         bindings=[str(x).strip().casefold() for x in r.get('requiredBindings') or [] if str(x).strip()]
         if any(x not in SUPPORTED_BINDINGS for x in bindings):raise ValueError('unsupported binding')
