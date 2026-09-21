@@ -88,6 +88,9 @@ def merge_transport(
     out["harnessEvidenceRunId"] = str(evidence_run_id or waf.get("runId") or "")
     out["harnessEvidenceSha"] = str(evidence_sha or waf.get("triggerSha") or "")
     out["harnessTransportUpdatedProviders"] = sorted(changed)
+    residential = waf.get("residentialExitNodeEvidence")
+    if isinstance(residential, dict):
+        out["residentialExitNodeEvidence"] = copy.deepcopy(residential)
     return out
 
 
