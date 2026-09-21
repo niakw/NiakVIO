@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -324,6 +325,22 @@ def _normalized_domain_projection(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+DOMAIN_CONFIG_DATA_FIELDS = ("officialSite", "knownSite", "officialHub", "domainSubstitutions")
+
+
+def project_domain_owned_config_data(
+    published: dict[str, Any],
+    expected: dict[str, Any],
+) -> dict[str, Any]:
+    """Overlay only Domain Refresh-owned CONFIG DATA onto published bytes."""
+    # DOMAIN_CONFIG_DATA_OWNERSHIP_V1
+    output = copy.deepcopy(published)
+    for key in DOMAIN_CONFIG_DATA_FIELDS:
+        if key in expected or key in output:
+            output[key] = copy.deepcopy(expected.get(key))
+    return output
+
+
 def provider_domain_projection_drift_ids(provider_ids: list[str]) -> list[str]:
     """Find stale published CONFIG domain DATA without treating it as provider repair.
 
@@ -379,7 +396,7 @@ def provider_domain_projection_drift_ids(provider_ids: list[str]) -> list[str]:
 
 
 def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
-    """Rebuild complete CONFIG DATA for changed providers, preserving Core bytes."""
+    """Rebuild only Domain-owned CONFIG DATA for changed providers, preserving Core and non-domain DATA."""
     if not provider_ids:
         return []
     manifest = load(MANIFEST_PATH)
@@ -419,7 +436,7 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
             raise RuntimeError(f"{provider_id}: incomplete Provider v3 structured state")
 
         model = allmat.provider_model(provider_id, patch, capability, static_row)
-        data = allmat.build_provider_data_model(
+        expected_data = allmat.build_provider_data_model(
             provider_id,
             entry,
             known_site=model.get("knownSite"),
@@ -438,6 +455,9 @@ def rebuild_provider_configs(provider_ids: list[str]) -> list[dict[str, str]]:
         previous_data = decode_managed_data(before, fix_id)
         if canonical(previous_data.get("providerId")) != provider_id:
             raise RuntimeError(f"{provider_id}: CONFIG providerId mismatch")
+        data = project_domain_owned_config_data(previous_data, expected_data)
+        if canonical(data.get("providerId")) != provider_id:
+            raise RuntimeError(f"{provider_id}: domain CONFIG projection changed providerId")
 
         payload = json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
         after = replace_provider_fix(
