@@ -10,7 +10,7 @@ PATH = ROOT / "provider-overrides.json"
 LEGO = "scripts/provider_patches/non_display_recovery_runtime_v1.py"
 PROVIDERS = {
     "animesama-co": "https://animesama.co",
-    "animevostfr": "https://v2.animevostfr.org",
+    "animevostfr": "https://animevostfr.org",
     "coflix": "https://coflix.wiki",
     "neko-sama": "https://animes-sama.su",
     "sekai": "https://sekai.one",
