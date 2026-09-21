@@ -16,6 +16,9 @@ required=[
     "resumeRecommended",
     "gh workflow run provider-recognition-repair-v6.yml",
     "cancel-in-progress: false",
+    "FIELD_REPAIR_CENSUS_NOT_PERSISTED authority_schema_v3_required",
+    "automation/provider-authority-status.json",
+    '"authorityRepairEligible" in row and "authorityAction" in row',
 ]
 for needle in required:
     assert needle in workflow, f"missing causal Learning escalation contract: {needle}"
@@ -32,5 +35,8 @@ persist_block=workflow[persist:dispatch]
 assert 'cp automation/brain-positive-program-memory.json "$tmp/brain-positive-program-memory.json"' in persist_block
 assert 'cp "$tmp/brain-positive-program-memory.json" automation/brain-positive-program-memory.json' in persist_block
 assert 'git add automation/brain-positive-program-memory.json' in persist_block
+assert 'cp automation/provider-authority-status.json "$tmp/provider-authority-status.json"' in persist_block
+assert 'cp "$tmp/provider-authority-status.json" automation/provider-authority-status.json' in persist_block
+assert 'git add automation/provider-authority-status.json' in persist_block
 
 print("provider Repair-to-Learning causal escalation workflow contract passed")
