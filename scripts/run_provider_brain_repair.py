@@ -33,6 +33,7 @@ if str(SCRIPTS) not in sys.path:
 
 from repair_identity_gate import automatic_repair_identity_gate
 from compile_brain_accepted_program_v3 import apply_compiled, compile_program
+from brain_positive_program_memory import MEMORY_PATH as DEFAULT_POSITIVE_MEMORY, merge_records as merge_positive_program_records
 STATUS = ROOT / "automation" / "provider-census-status.json"
 DEFAULT_OUTPUT = ROOT / "automation" / "provider-brain-repair-latest.json"
 DEFAULT_WORK = ROOT / "automation" / ".provider-brain-repair-work"
@@ -41,6 +42,7 @@ BATCH_PLAN = ROOT / "automation" / "provider-repair-batch-plan-latest.json"
 REPAIR_MEMORY = ROOT / "automation" / "brain-repair-memory.json"
 BRAIN_POLICY = ROOT / "engine_v2" / "config" / "brain-policy.json"
 OVERRIDES = ROOT / "provider-overrides.json"
+POSITIVE_MEMORY = DEFAULT_POSITIVE_MEMORY
 
 GREEN = {"FULL OK", "PARTIAL OK"}
 ENVIRONMENT = {"HARNESS MISMATCH", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}
@@ -337,6 +339,11 @@ def accepted_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
                 "statusAfter": accepted.get("status_after"),
                 "playableBefore": int(accepted.get("streams_playable_before") or 0),
                 "playableAfter": int(accepted.get("streams_playable_after") or 0),
+                "brainPlan": copy.deepcopy(
+                    accepted.get("brain_plan")
+                    if isinstance(accepted.get("brain_plan"), dict)
+                    else {}
+                ),
                 "acceptedProgram": copy.deepcopy(
                     accepted.get("accepted_program")
                     if isinstance(accepted.get("accepted_program"), dict)
@@ -391,6 +398,7 @@ def persist_accepted_programs(
         current = {}
     compiled: set[str] = set()
     rejected: dict[str, str] = {}
+    positive_records: list[tuple[dict[str, Any], dict[str, Any]]] = []
     for row in accepted:
         if not isinstance(row, dict):
             continue
@@ -410,14 +418,24 @@ def persist_accepted_programs(
             }
             continue
         compiled.add(provider)
+        positive_records.append((row, compiled_data))
         row["v3ProgramPersistence"] = {
             "status": "compiled",
+            "learnedRouteCount": len(compiled_data.get("learnedRoutes") or []),
             "searchPlanCount": len(compiled_data.get("searchRequestPlan") or []),
             "providerValuePlanCount": len(compiled_data.get("providerValuePlan") or []),
             "source": str(compiled_data.get("source") or ""),
         }
     if compiled:
         write(OVERRIDES, current)
+        positive = merge_positive_program_records(positive_records, path=POSITIVE_MEMORY)
+        durable = {cid(row.get("providerId")) for row in positive.get("entries") or [] if isinstance(row, dict)}
+        for row, _compiled_data in positive_records:
+            provider = cid(row.get("provider"))
+            row["positiveProgramMemory"] = {
+                "status": "persisted" if provider in durable else "missing",
+                "path": POSITIVE_MEMORY.relative_to(ROOT).as_posix() if POSITIVE_MEMORY.is_relative_to(ROOT) else str(POSITIVE_MEMORY),
+            }
     return compiled, rejected
 
 
