@@ -31,10 +31,11 @@ on:
   schedule:
     - cron: "17 2 * * *"
 
-# Brain runs are learning evidence. A later main push must not erase a failed-repair
-# observation before it can be converted into sanitized memory/skill proposals.
+# Brain runs are persistent learning transactions. Serialize whole runs so a
+# later run restores the memory committed by the previous one instead of
+# concurrently rebuilding from the same stale snapshot and overwriting evidence.
 concurrency:
-  group: niakvio-brain-learning-lab-${{ github.run_id }}
+  group: niakvio-brain-learning-lab
   cancel-in-progress: false
 
 jobs:
