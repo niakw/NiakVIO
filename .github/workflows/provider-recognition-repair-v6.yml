@@ -162,13 +162,20 @@ jobs:
           import json
           from pathlib import Path
           state=json.loads(Path("automation/provider-census-status.json").read_text(encoding="utf-8"))
+          authority=json.loads(Path("automation/provider-authority-status.json").read_text(encoding="utf-8"))
+          allowed={
+              str(row.get("provider") or "").strip().lower()
+              for row in authority.get("providers") or []
+              if isinstance(row,dict)
+              and row.get("repairEligible") is True
+              and str(row.get("provider") or "").strip()
+          }
           providers=sorted({
               str(row.get("provider") or "").strip().lower()
               for row in state.get("providers") or []
               if isinstance(row,dict)
               and row.get("brainCheckRequired") is True
-              and row.get("authorityRepairEligible") is not False
-              and str(row.get("provider") or "").strip()
+              and str(row.get("provider") or "").strip().lower() in allowed
           })
           Path("/tmp/repair-waf-targets.json").write_text(
               json.dumps({"providers":providers},ensure_ascii=False,indent=2)+"\n",
@@ -177,6 +184,7 @@ jobs:
           print(f"FIELD_REPAIR_WAF_SCOPE providers={len(providers)} ids={','.join(providers)}")
           PY
           python scripts/audit_provider_quick_yield_targeted.py             --providers-json /tmp/repair-waf-targets.json             --output /tmp/provider-repair-waf-network.json             --attempts 1
+          python scripts/render_provider_census_status.py /tmp/provider-repair-waf-network.json             --output PROVIDER_CENSUS_STATUS.md             --json-output automation/provider-census-status.json             --history automation/provider-census-proof-history.json             --baseline-status automation/provider-census-status.json             --authority-status automation/provider-authority-status.json             --run-id "${GITHUB_RUN_ID}-repair-pre-waf"             --sha "$GITHUB_SHA"
           python scripts/probe_waf_browser_session.py             /tmp/provider-repair-waf-network.json             --output /tmp/provider-repair-waf-github.json             --attempts 2             --client-profile-matrix             --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*'             --status automation/provider-census-status.json             --overrides provider-overrides.json             --network-report /tmp/provider-repair-waf-network.json             --workers 3             --max-targets 32             --timeout 25             --virtual-time-ms 8000
 
       - name: Normalize optional Repair Tailscale tag
