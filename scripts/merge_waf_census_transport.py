@@ -138,10 +138,43 @@ def merge_transport(
 
     changed: list[str] = []
     network_changed: list[str] = []
+    replay_summary = waf.get("residentialProviderReplay") if isinstance(waf.get("residentialProviderReplay"), dict) else {}
+    replay_rows = replay_summary.get("rows") if isinstance(replay_summary.get("rows"), list) else []
+    replay_by_provider: dict[str, list[dict[str, Any]]] = {}
+    for replay_row in replay_rows:
+        if not isinstance(replay_row, dict):
+            continue
+        replay_provider = str(replay_row.get("provider") or "").strip().casefold()
+        if replay_provider:
+            replay_by_provider.setdefault(replay_provider, []).append(replay_row)
     for row in providers:
         if not isinstance(row, dict):
             continue
         provider = str(row.get("provider") or "").strip().casefold()
+        provider_replay_rows = replay_by_provider.get(provider) or []
+        if provider_replay_rows:
+            verified_lanes = sorted({
+                str(value.get("lane") or "")
+                for value in provider_replay_rows
+                if int(value.get("verified") or 0) > 0 and str(value.get("lane") or "")
+            })
+            playable_lanes = sorted({
+                str(value.get("lane") or "")
+                for value in provider_replay_rows
+                if int(value.get("playable") or 0) > 0 and str(value.get("lane") or "")
+            })
+            row["residentialProviderReplayClass"] = (
+                "verified" if verified_lanes
+                else "playable-unverified" if playable_lanes
+                else "no-verified-media"
+            )
+            row["residentialProviderReplayEvidence"] = [
+                f"{str(value.get('lane') or 'unknown')}: status={str(value.get('status') or 'unknown')}, "
+                f"stage={str(value.get('debugStage') or 'unknown')}, raw={int(value.get('raw') or 0)}, "
+                f"playable={int(value.get('playable') or 0)}, verified={int(value.get('verified') or 0)}, "
+                f"identitySafe={str(value.get('identitySafe') is True).lower()}"
+                for value in provider_replay_rows
+            ]
         if provider in network_allowed:
             differential = network_differential(waf, provider)
             if differential["classification"] != "no-network-differential-evidence":
@@ -184,6 +217,8 @@ def merge_transport(
     residential = waf.get("residentialExitNodeEvidence")
     if isinstance(residential, dict):
         out["residentialExitNodeEvidence"] = copy.deepcopy(residential)
+    if replay_summary:
+        out["residentialProviderReplay"] = copy.deepcopy(replay_summary)
     return out
 
 
