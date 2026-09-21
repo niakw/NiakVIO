@@ -15,7 +15,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 AUTHORITY_TYPES = {"hub", "curated_direct", "source_redirect", "provider_config", "live_current"}
-REGISTRY_SCOPED_AUTHORITY_TYPES = {"telegram_public"}
+REGISTRY_SCOPED_AUTHORITY_TYPES = {"telegram_public", "redirect"}
 DOMAIN_PATCH_FIELDS = {"official_site", "official_hub", "domain_substitutions", "replacements", "runtime_domain_replacements"}
 DOMAIN_MANIFEST_OVERRIDE_FIELDS = {"logo", "icon", "favicon"}
 PLACEHOLDER_TOKENS = ("${", "{{", "}}", "function(", "=>", "`", "<%", "%>")
