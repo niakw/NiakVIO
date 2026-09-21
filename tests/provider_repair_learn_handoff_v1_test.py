@@ -41,4 +41,19 @@ with tempfile.TemporaryDirectory() as td:
     path = Path(td) / "handoff.json"
     module.write(path, merged)
     assert module.load(path)["providerCount"] == 3
+
+
+fast_summary = {
+    "selectedProviders": ["EXHAUSTED", "remaining-one", "fixed-now"],
+    "validatedProviders": ["fixed-now"],
+    "brainDeferredLearningProviders": ["EXHAUSTED"],
+    "brainRemainingProviders": ["remaining-one"],
+    "learnHandoffProviders": ["EXHAUSTED", "remaining-one"],
+}
+fast = module.merge_summary({"schemaVersion":1,"providers":{}}, fast_summary, run_id="777")
+assert set(fast["providers"]) == {"exhausted", "remaining-one"}, fast
+assert fast["providers"]["exhausted"]["reason"] == "brain-strategy-exhausted", fast
+assert fast["providers"]["remaining-one"]["reason"] == "brain-unresolved", fast
+assert "fixed-now" not in fast["providers"], fast
+
 print("provider repair -> LEARN lane-aware handoff tests passed")
