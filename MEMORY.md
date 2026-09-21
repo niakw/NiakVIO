@@ -1,5 +1,15 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-21 22:05 Europe/Paris — Brain outer-wave replay loop diagnosed and fixed
+
+- Repair #127 exposed a second structural Brain problem after packed batching was working: later waves regenerated the exact same candidate bytes for stubborn providers. VidFast repeatedly produced candidate hashes `fa9891f1` / `5ea95646`; MalluMV repeatedly produced `23ab95c0` / `da59b791`. This was not CPU pressure.
+- Two distinct causes were confirmed from planner/runtime code plus persisted `brain-repair-memory.json`:
+  1. **Historical-success immunity**: planner negative-memory matching discarded any experiment row with `successes > 0`, even if that same row now had fresh `consecutiveFailures > 0`. MalluMV variant 2 had `successes=5, failures=5, consecutiveFailures=5, lastOutcome=rejected`, so the planner could keep selecting a stale historically-successful strategy despite current repeated rejection.
+  2. **Lost terminal exploration progress**: sandbox `exploration_progress` is intentionally non-publishable and was not recorded as a consumed experiment. When a bounded Deep invocation ended without an accepted repair, the outer wave restaged published bytes and replayed the same final strategy. This matches VidFast's `blocked -> no_streams` and MalluMV's `unreachable -> 3 returned but unverified streams` plateaus.
+- `a47711f3a526` changes planner negative-memory semantics: current `consecutiveFailures > 0` is authoritative even when a strategy succeeded historically; an accepted experiment still resets consecutive failures to zero. Legacy never-successful failed rows remain negative.
+- `b4309761cf9d` persists bounded sandbox progress as `exploration_progress_nonpublishable` when the provider finishes the whole Deep invocation without any accepted repair. It increments failed/consecutive experiment memory and a `progresses` counter, preventing exact outer-wave replay. Exploration steps that lead to an accepted repair in the same invocation are explicitly not penalized.
+- Contracts added: `8f977345ee01` proves a stale successful variant rotates after fresh consecutive failure; `cdc2868f4c0b` proves terminal sandbox progress becomes durable negative experiment memory and that progress leading to a later accepted repair does not.
+- Repair #128 (`35647529494`, SHA `850e40992a01`) is intentionally still validating the earlier concurrency-report fix on its immutable SHA. Its full preflight passed and the canonical Repair step started. The new causal-loop fixes are on newer main and must be validated by the next Repair after #128 persistence so it can also consume #128's latest memory.
 
 ## 2026-09-21 21:58 Europe/Paris — Repair #127 reached real Brain; late concurrency-report crash fixed
 
