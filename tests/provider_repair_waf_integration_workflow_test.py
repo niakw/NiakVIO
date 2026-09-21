@@ -50,3 +50,8 @@ assert 'cp "$tmp/provider-waf-browser-session-latest.json" automation/provider-w
 assert "git add automation/provider-waf-browser-session-latest.json" in persist_block
 
 print("Repair-integrated WAF/Tailscale qualification workflow contract passed")
+
+pipeline=(ROOT/"scripts/run_provider_repair_pipeline_v6.py").read_text(encoding="utf-8")
+assert 'WAF_STATUS = ROOT / "automation" / "provider-waf-browser-session-latest.json"' in pipeline
+assert pipeline.count('"--waf-browser-evidence", str(WAF_STATUS.relative_to(ROOT))') >= 2
+assert pipeline.count('"--authority-status", str(AUTHORITY_STATUS.relative_to(ROOT))') >= 2
