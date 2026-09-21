@@ -99,15 +99,16 @@ jobs:
           [[ "$phase" =~ ^[0-9]+$ ]] || phase=1
           if [ "$phase" -lt 1 ]; then phase=1; fi
 
-          # Fast Brain handoff uses the existing push trigger and writes a
-          # bounded budget into that trigger file. Manual/scheduled runs keep
-          # their existing semantics.
+          # A Fast Brain handoff can bound a push-triggered Learning phase by
+          # writing budget_minutes into the existing trigger file.
           if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ "$remaining" -eq 0 ] && [ -f .github/triggers/brain-learning-reconstruction ]; then
-            trigger_budget="$(python - <<'PY'
-          import re
-          from pathlib import Path
-          text=Path('.github/triggers/brain-learning-reconstruction').read_text(encoding='utf-8')
-          match=re.search(r'(?m)^budget_minutes:\s*(\d+)\s*
+            trigger_budget="$(sed -n 's/^budget_minutes:[[:space:]]*\([0-9][0-9]*\)[[:space:]]*$/\1/p' .github/triggers/brain-learning-reconstruction | head -n 1)"
+            if [[ "${trigger_budget:-0}" =~ ^[0-9]+$ ]] && [ "${trigger_budget:-0}" -gt 0 ]; then
+              remaining="$trigger_budget"
+            fi
+          fi
+
+          if [ "$remaining" -gt 0 ]; then
             budget="$remaining"
             if [ "$budget" -gt 300 ]; then budget=300; fi
             next_remaining=$((remaining - budget))
