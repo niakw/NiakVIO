@@ -1404,7 +1404,7 @@ def discover_documented_routes(site_url: str, site_document: str) -> list[str]:
     placeholders = ("{id}", "{tmdbId}", "{imdbId}", "{season}", "{episode}", "{query}", "{slug}")
     found: list[str] = []
     seen: set[str] = set()
-    for match in re.finditer(r"https?://[^\\s<>\"'`]+", decoded, re.I):
+    for match in re.finditer(r"https?://[^\s<>\"'`]+", decoded, re.I):
         value = str(match.group(0) or "").strip().rstrip(".,;:)")
         if not any(token in value for token in placeholders):
             continue
