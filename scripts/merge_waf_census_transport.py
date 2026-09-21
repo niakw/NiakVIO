@@ -222,6 +222,11 @@ def merge_transport(
         if not isinstance(row, dict):
             continue
         provider = str(row.get("provider") or "").strip().casefold()
+        # This output represents the current WAF run only. Drop any replay/
+        # differential annotation inherited from a previous overlay before
+        # applying the evidence collected now.
+        for field in census.TRANSPORT_OVERLAY_ROW_FIELDS:
+            row.pop(field, None)
         provider_replay_rows = replay_by_provider.get(provider) or []
         if provider_replay_rows:
             verified_lanes = sorted({
