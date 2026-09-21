@@ -123,6 +123,40 @@ try:
     assert counts["positiveProgramRoutes"]==2
     assert counts["positiveProgramRequestRecipes"]==1
     assert counts["positiveProgramUserAgent"] is True
+
+    # A provider-scoped executable recipe is itself sufficient runtime origin
+    # evidence. This covers providers such as Yflix whose durable experience
+    # identifies an API origin even when no branded official_site is known.
+    mod.positive_program_routes=lambda provider_id:[]
+    mod.positive_program_request_recipes=lambda provider_id:[]
+    mod.positive_program_user_agent=lambda provider_id:""
+    mod._patch_routes=lambda patch:[]
+    mod._provider_request_recipes=lambda provider_id:[{
+        **legacy_recipe,
+        "origin":"https://enc-dec.app",
+        "route":"/db/flix/find?tmdb_id={tmdbId}&type=movie",
+        "response":"json",
+    }] if provider_id=="yflix" else []
+    mod._peer_routes=lambda strategy:[]
+    mod._peer_request_recipes=lambda strategy:[]
+    yflix_config={
+        "provider_patches":{"yflix":{"published_types":["movie","tv"]}},
+        "provider_capabilities":{"yflix":{"strategy":"mixed_embed_resolver","catalogue_types":["movie","tv"],"observed_origins":[]}},
+    }
+    yflix_candidate={
+        "canonical_id":"yflix",
+        "metadata":{"name":"Yflix"},
+        "brain_observed_request_recipes":[],
+        "brain_repair_plan":{
+            "failureClass":"route_proven_gap",
+            "experimentVariant":0,
+            "experimentGeneration":1,
+        },
+    }
+    yflix_options=mod._adaptive_runtime_options(yflix_candidate,yflix_config)
+    assert isinstance(yflix_options,dict), yflix_options
+    assert yflix_options["base_url"]=="https://enc-dec.app"
+    assert yflix_options["request_recipes"][0]["origin"]=="https://enc-dec.app"
 finally:
     mod.positive_program_routes=old_routes
     mod.positive_program_request_recipes=old_recipes
