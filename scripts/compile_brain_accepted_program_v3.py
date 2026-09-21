@@ -75,14 +75,34 @@ def compile_program(program:dict[str,Any],provider:str)->dict[str,Any]:
         if any(x not in SUPPORTED_BINDINGS for x in bindings):raise ValueError('unsupported binding')
         rb=[m.group(1).casefold() for m in BINDING.finditer(route)]
         if sorted(set(rb))!=sorted(set(bindings)) and (rb or bindings):raise ValueError('binding not route representable')
-        norm.append({'origin':origin,'route':route,'role':str(r.get('role') or 'other').casefold(),'semanticTypes':lanes,'bindings':bindings,'requestSpec':request_spec(r,ua,origin)})
+        response_kind=str(r.get('response') or 'html-or-text').casefold()
+        if response_kind not in {'json','html-or-text'}:response_kind='html-or-text'
+        norm.append({
+            'origin':origin,
+            'route':route,
+            'role':str(r.get('role') or 'other').casefold(),
+            'semanticTypes':lanes,
+            'bindings':bindings,
+            'requestSpec':request_spec(r,ua,origin),
+            'responseKind':response_kind,
+            'streamProof':r.get('streamProof') is True,
+        })
     if not norm:raise ValueError('no provider-owned executable recipes')
     indep=[x for x in norm if not x['bindings']];dep=[x for x in norm if x['bindings']];search=[]
     for x in indep:
         ser=json.dumps({'route':x['route'],'requestSpec':x['requestSpec']})
         if x['role']=='search' and any(t in ser for t in ('{query}','{tmdbId}','{imdbId}')):search.append(x)
     if not search:raise ValueError('no accepted search seed')
-    srp=[{'base':x['origin'],'route':x['route'],'requestSpec':x['requestSpec'],'proofModelVersion':6,'sourceRole':'brain-accepted-runtime','semanticTypes':x['semanticTypes']} for x in search[:6]]
+    srp=[{
+        'base':x['origin'],
+        'route':x['route'],
+        'requestSpec':x['requestSpec'],
+        'responseKind':x['responseKind'],
+        'streamProof':x['streamProof'],
+        'proofModelVersion':6,
+        'sourceRole':'brain-accepted-runtime',
+        'semanticTypes':x['semanticTypes'],
+    } for x in search[:6]]
     pvp=[]
     for s in search:
         steps=[]
@@ -91,7 +111,14 @@ def compile_program(program:dict[str,Any],provider:str)->dict[str,Any]:
             route=x['route']
             for b in x['bindings']:route=re.sub(r'\{binding:'+re.escape(b)+r'\}','{'+b+'}',route,flags=re.I)
             if not re.search(r'\{(?:id|slug)\}',route,re.I):raise ValueError('dependent recipe not representable')
-            steps.append({'base':x['origin'],'route':route,'requestSpec':x['requestSpec'],'role':x['role'] if x['role'] in {'detail','episode','player','api','source'} else 'detail'})
+            steps.append({
+                'base':x['origin'],
+                'route':route,
+                'requestSpec':x['requestSpec'],
+                'responseKind':x['responseKind'],
+                'streamProof':x['streamProof'],
+                'role':x['role'] if x['role'] in {'detail','episode','player','api','source'} else 'detail',
+            })
         if steps:pvp.append({'searchBase':s['origin'],'searchRoute':s['route'],'searchRequestSpec':s['requestSpec'],'steps':steps[:8],'semanticTypes':s['semanticTypes'],'proofModelVersion':6,'sourceRole':'brain-accepted-provider-value-correlation'})
     if dep and not pvp:raise ValueError('lost dependent dataflow')
     return {
