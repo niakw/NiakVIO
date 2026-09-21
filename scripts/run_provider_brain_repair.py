@@ -630,6 +630,11 @@ def main() -> int:
     deadline_monotonic = started_monotonic + time_budget_seconds
 
     requested_health_concurrency = int(args.health_concurrency)
+    health_concurrency_setting = (
+        max(1, min(requested_health_concurrency, 8))
+        if requested_health_concurrency > 0
+        else 0
+    )
 
     try:
         for wave in range(1, waves + 1):
@@ -709,6 +714,7 @@ def main() -> int:
                     "familyGroups": batch_plan.get("familyGroups") or [],
                     "providerCount": len(batch),
                     "providers": batch,
+                    "healthConcurrency": batch_concurrency,
                     "acceptedCount": len(accepted),
                     "accepted": accepted,
                     "fixedInLab": sorted(fixed),
@@ -806,7 +812,8 @@ def main() -> int:
             },
             "shardCount": shard_count,
             "shardIndex": shard_index,
-            "healthConcurrency": concurrency,
+            "healthConcurrency": health_concurrency_setting,
+            "healthConcurrencyMode": "fixed" if health_concurrency_setting else "auto-per-batch",
             "batchSize": batch_size,
             "maxWaves": waves,
             "timeBudgetSeconds": time_budget_seconds,
