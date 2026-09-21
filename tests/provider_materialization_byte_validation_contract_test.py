@@ -24,7 +24,7 @@ assert src.index("for pending in pending_validation:",submit_at) < resolve_at
 print("provider materialization canonical byte-validation contract passed")
 
 assert "verified_bundle, byte_validation = future.result()" in src
-assert "verify_bytes(bundle)" in src
+assert "validation_pool.submit(verify_bytes, bundle)" in src
 assert "verified_bundle, byte_validation = allmat.verify_bytes(bundle)" in one
 for candidate in (src, one):
     assert "materialized provider artifact validation failed" in candidate
