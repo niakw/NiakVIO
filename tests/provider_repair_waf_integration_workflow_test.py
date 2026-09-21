@@ -8,6 +8,8 @@ required=[
     "id-token: write",
     "group: provider-census-waf-main",
     "Prepare integrated Repair WAF/network qualification",
+    "scripts/classify_provider_authority.py",
+    'row.get("repairEligible") is True',
     "FIELD_REPAIR_WAF_SCOPE",
     "audit_provider_quick_yield_targeted.py",
     "probe_waf_browser_session.py",
@@ -26,10 +28,12 @@ for needle in required:
     assert needle in wf, f"missing Repair/WAF integration contract: {needle}"
 
 prepare=wf.index("- name: Prepare integrated Repair WAF/network qualification")
+authority=wf.index("scripts/classify_provider_authority.py",prepare)
+pre_render=wf.index("scripts/render_provider_census_status.py /tmp/provider-repair-waf-network.json",prepare)
 connect=wf.index("- name: Connect optional Repair Tailscale transport")
 merge=wf.index("- name: Apply integrated WAF qualification to Repair census")
 canonical=wf.index("- name: Run canonical recognition and correction only for unresolved providers")
-assert prepare < connect < merge < canonical
+assert prepare < authority < pre_render < connect < merge < canonical
 
 # Tailscale is enhancement, never a prerequisite for Repair.
 connect_block=wf[connect:merge]
