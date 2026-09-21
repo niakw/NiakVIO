@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35548630027-post-repair",
-  "sourceTriggerSha": "cab9beefcac6c4f696ac84871e3ef618390b4478",
+  "sourceRunId": "35550425371-post-repair",
+  "sourceTriggerSha": "0082f7b4e1c348367902b44d7a7d4163ce5e5745",
   "unresolvedProviderCount": 19,
   "groupCount": 11,
   "executionModel": {
@@ -27,10 +27,10 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
+        "browser-profile-only",
+        "github-all-transports-challenged",
         "native-policy-inconclusive",
-        "residential-exit-all-challenged",
-        "residential-exit-browser-reachable",
-        "residential-exit-native-reachable"
+        "native-policy-reachable"
       ],
       "providerCount": 4,
       "providers": [
@@ -59,8 +59,8 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "residential-exit-all-challenged",
-        "residential-exit-browser-reachable"
+        "browser-profile-only",
+        "github-all-transports-challenged"
       ],
       "providerCount": 3,
       "providers": [
@@ -159,7 +159,7 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "residential-exit-browser-reachable"
+        "browser-profile-only"
       ],
       "providerCount": 1,
       "providers": [
