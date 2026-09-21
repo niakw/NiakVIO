@@ -69,6 +69,7 @@ assert animesultra["failureCount"] == 0, animesultra
 # Search is still available for the historical catalogue, but never as current
 # authority by itself. New registry autofill rows opt out by default.
 showbox_registry = registries["showbox"]
+assert classify("showbox")["reasons"] == ["direct_candidate_unproven", "search_supplement_only"], classify("showbox")
 assert showbox_registry.get("legacy_search_refresh") is True, showbox_registry
 assert classify("showbox")["confidence"] == "low"
 for provider, row in registries.items():
