@@ -37,6 +37,11 @@ INFRASTRUCTURE_HOSTS = {
     "api.themoviedb.org", "graphql.anilist.co", "kitsu.io",
     "arm.haglund.dev", "v3-cinemeta.strem.io", "raw.githubusercontent.com",
     "github.com", "npms.io", "lodash.com", "openjsf.org", "underscorejs.org",
+    "google.com", "google.co.in", "support.google.com", "www.google.com", "www.google.co.in",
+    "bing.com", "www.bing.com", "duckduckgo.com", "html.duckduckgo.com",
+    "yandex.com", "www.yandex.com", "googletagmanager.com", "google-analytics.com",
+    "static.cloudflareinsights.com", "cloudflareinsights.com", "connect.facebook.net",
+    "doubleclick.net", "googlesyndication.com",
 }
 ADAPTIVE_MARKERS = (
     "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V",
@@ -138,6 +143,8 @@ def _safe_route(raw: Any) -> str | None:
     if _ROUTE_OPAQUE.search(route):
         return None
     if any(token in lower for token in ("cdn-cgi/email-protection", "/gtag/", "/track", "/report", "/beacon")):
+        return None
+    if lower in {"/favicon.ico", "/robots.txt", "/sitemap.xml"}:
         return None
     if re.search(r"[?&](?:sid|token|auth|signature|hash)=", lower) and not _ROUTE_PLACEHOLDER.search(route):
         return None
@@ -252,7 +259,13 @@ def _safe_request_recipe(raw: Any, *, peer: bool = False) -> dict[str, Any] | No
     if not peer:
         origin = str(raw.get("origin") or "").strip().rstrip("/")
         if origin.startswith(("http://", "https://")):
-            recipe["origin"] = origin
+            normalized = _origin(origin)
+            if not normalized:
+                return None
+            host = (urlparse(normalized).hostname or "").casefold()
+            if host in INFRASTRUCTURE_HOSTS or any(host.endswith("." + item) for item in INFRASTRUCTURE_HOSTS):
+                return None
+            recipe["origin"] = normalized
     return recipe
 
 
