@@ -68,6 +68,22 @@ assert r["action"]=="REDISCOVER_DIRECT",r
 r=module.classify("demo",row(),direct,patch(),{"authority_failures":{"consecutive":3}})
 assert r["action"]=="DISABLE_AUTHORITY_EXHAUSTED",r
 
+# Fresh historical combinations may unlock Repair without promoting search itself.
+from datetime import datetime, timezone
+fresh={"current":{"url":"https://demo.example","last_seen":datetime.now(timezone.utc).isoformat()}}
+r=module.classify(
+    "demo",row(),
+    reg(search_queries=["demo"],legacy_search_refresh=True,direct_candidates=["https://demo.example"]),
+    patch(),fresh,
+)
+assert r["action"]=="KEEP_LIVE_CANDIDATE",r
+r=module.classify(
+    "demo",row(),
+    reg(search_queries=["demo"],legacy_search_refresh=True),
+    patch(route_proof={"provenRouteCount":1,"lastRepairProbe":{"positiveExecutionEvidence":True}}),fresh,
+)
+assert r["action"]=="KEEP_LKG_COMBO",r
+
 # Existing manual lifecycle decisions remain terminal.
 r=module.classify("demo",row(False),reg(),patch(manual_off_reason="manual_off_test"),{})
 assert r["action"]=="KEEP_DISABLED",r
