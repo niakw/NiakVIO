@@ -55,3 +55,5 @@ merge=wf.index("Merge residential exit evidence without node identity")
 assert connect < baseline < activate < residential < merge
 
 print("Tailscale residential WAF workflow contract passed")
+
+assert wf.count("--network-report provider-v3-quick-yield.json") == 2
