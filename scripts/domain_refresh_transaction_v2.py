@@ -529,7 +529,7 @@ def main() -> int:
             continue
         if selected and provider_id not in selected:
             continue
-        if not resolver.has_authoritative_hub_source(cfg):
+        if not refresh.has_domain_refresh_source(cfg, args.mode):
             continue
         disabled = str(cfg.get("manifest_status") or "").casefold() in {
             "désactivé",
