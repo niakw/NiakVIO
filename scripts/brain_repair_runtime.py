@@ -831,6 +831,41 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                 mem["lastReason"] = _clip_text(attempt.get("reason"), 160)
                 negative_experiment_events += 1
 
+        # Sandbox progress is deliberately non-publishable. If a bounded Deep
+        # invocation ends without any accepted repair for that provider, every
+        # exploration strategy consumed on the path must still become durable
+        # experiment memory. Otherwise the next outer wave restages published
+        # bytes, forgets that the strategy already plateaued below the strict
+        # playable gate, and regenerates the exact same candidate forever.
+        #
+        # Do not penalize exploration steps that led to an accepted repair in
+        # this same invocation: those were useful causal stepping stones.
+        accepted_parent_keys = {
+            str(accepted.get("parent_key") or "")
+            for round_row in report.get("rounds") or []
+            for accepted in round_row.get("accepted") or []
+            if isinstance(accepted, dict) and str(accepted.get("parent_key") or "")
+        }
+        if memory_policy.get("enabled") is True:
+            for round_row in report.get("rounds") or []:
+                for progress in round_row.get("exploration_progress") or []:
+                    if not isinstance(progress, dict):
+                        continue
+                    parent_key = str(progress.get("parent_key") or "")
+                    if not parent_key or parent_key in accepted_parent_keys:
+                        continue
+                    plan = event_plan(progress, parent_key)
+                    profile = str(progress.get("profile") or "")
+                    if not profile:
+                        continue
+                    mem = memory_entry(plan, profile)
+                    mem["failures"] = int(mem.get("failures") or 0) + 1
+                    mem["consecutiveFailures"] = int(mem.get("consecutiveFailures") or 0) + 1
+                    mem["progresses"] = int(mem.get("progresses") or 0) + 1
+                    mem["lastOutcome"] = "exploration_progress_nonpublishable"
+                    mem["lastReason"] = _clip_text(progress.get("reason"), 160)
+                    negative_experiment_events += 1
+
         for round_row in report.get("rounds") or []:
             for rejected in round_row.get("rejected") or []:
                 if not isinstance(rejected, dict):
