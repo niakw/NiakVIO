@@ -379,14 +379,6 @@ jobs:
           git commit -m "ci(census): persist current bytes ${verified} from ${GITHUB_SHA::12}"
           git push origin HEAD:main
 
-          # Transport evidence is a serialized overlay on the freshly persisted
-          # census. Re-run the residential/Tailscale diagnostic after the ledger
-          # commit so a long census can never erase newer private-exit evidence.
-          if ! gh workflow run provider-waf-browser-session.yml --ref main; then
-            echo "FIELD_CENSUS_WAF_DISPATCH_FAILED nonfatal=true" >&2
-          else
-            echo "FIELD_CENSUS_WAF_DISPATCHED source_run=${GITHUB_RUN_ID}"
-          fi
 
 # PR_OBSERVABILITY_TRIGGER_20260919_R19_STATIC_FIXED
 
