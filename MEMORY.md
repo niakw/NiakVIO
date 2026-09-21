@@ -1,6 +1,20 @@
 # NiakVIO — Recovery Memory
 
 
+## 2026-09-21 20:25 Europe/Paris — Authority reasons corrected; Hub46 decoupled from active cardinality
+
+- Lifecycle run `35637578802` (#16) completed SUCCESS after the authority-policy auto-trigger was added. It persisted the stricter `PROVIDER_AUTHORITY_BACKEND_SCOPE_V1` result without reducing current Repair eligibility (**42/46**): YFlix/PersianStremio remain true `KEEP_BACKEND`; ARM identity infrastructure and generic `fallbackBases` no longer establish backend authority.
+- `566fae3b9448` changes backend authority to explicit provider execution fields only (`official_api`, fixed/api recipe backend fields, provider Lego `api/db/api_base/apiBase/backend/endpoint`) and excludes `api.themoviedb.org`, `v3-cinemeta.strem.io`, `arm.haglund.dev`; `fallbackBases` are no longer backend authority. `7da36921377b` locks both exclusions.
+- Runtime result after recomputation confirms correct fallback classifications: Anime-Sama/CoFlix/Papadustream = `KEEP_ROUTE_AUTHORITY`; French-Manga = `KEEP_DIRECT`; VoirAnime-Homes = `KEEP_PROVEN_SITE`; YFlix/PersianStremio = `KEEP_BACKEND`. This removes false-positive backend confidence without blocking repairable providers.
+- `940c9f917130` makes Lifecycle automatically run when its authority/lifecycle code or contracts change. `b003df186f49` makes a successful Domain publication dispatch one Lifecycle recomputation; `f7d8b975c848` locks that dispatch. Normal authority evolution no longer needs a manual trigger.
+- Domain run `35636912360` (#1030) proved lifecycle-aware DNS and registry contracts through the full Domain validation phase: disabled providers were skipped as active DNS candidates, provider registry/Domain ownership tests passed, and static audit reported `active=43 visible=46 structured_data=domain-current`. DNS completed 43 active providers instead of failing on DesiFlix.
+- #1030 then failed after native Hub46 transport build because `native_hub46_transport_manifest_test.py` still asserted the historical Hub-46 matrix cardinality equalled `active_provider_count()`. This is obsolete after legitimate lifecycle disables and cannot scale to future hundreds of providers.
+- `8ca0333b89f0` adds `HUB46_CURRENT_ACTIVE_TRANSPORT_SCOPE_V1`: native transport test derives exact membership from current `manifest-hub46.json` and requires equality with `active_provider_ids()`, not a frozen matrix count.
+- `4d1b5bc5e2f5` / `46d26e1c1dbd` similarly decouple upstream parity: `hub-lab-matrix-46.json` remains a historical/campaign scope, but runtime parity intersects that matrix with current active providers and reports inactive matrix members instead of failing when a provider is disabled. This also avoids assuming a historical 46-item campaign represents the future full catalogue.
+- Domain #1031 ran before these scope commits and is non-authoritative for the new release contract. Next authoritative action: stable-head Domain run after `46d26e1c1dbd`; require final release validation + publication, then inspect persisted registry coverage and launch canonical Repair.
+
+
+
 ## 2026-09-21 20:12 Europe/Paris — Provider authority recomputed; 42/46 Repair-eligible; registry/DNS aligned with lifecycle
 
 - Revalidated authority on current main after `adc585cf415f` / `bd175ec97ce9`. Lifecycle run `35636288265` (#14) completed SUCCESS and bot commit `95181b1dd738` persisted a fresh `automation/provider-authority-status.json`: **46 providers, 42 Repair-eligible**. This closes the prior over-conservative report rather than inferring success from code alone.
