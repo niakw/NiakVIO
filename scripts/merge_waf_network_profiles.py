@@ -94,8 +94,44 @@ def merge_profiles(
 
     out["residentialExitNodeEvidence"] = {
         "enabled": True,
+        "available": True,
         "profile": "tailscale-residential-exit",
         "matchedProviderLanes": matched,
+        "privacy": {
+            "exitNodeNamePersisted": False,
+            "tailscaleAddressPersisted": False,
+            "residentialPublicIpPersisted": False,
+            "responseBodiesPersisted": False,
+            "cookiesPersisted": False,
+        },
+    }
+    return out
+
+
+
+def mark_residential_unavailable(
+    baseline: dict[str, Any],
+    *,
+    reason: str = "tailscale-unavailable",
+) -> dict[str, Any]:
+    """Persist a bounded availability signal while keeping GitHub evidence usable."""
+    out = copy.deepcopy(baseline)
+    if not isinstance(out.get("rows"), list):
+        raise ValueError("baseline WAF report rows must be a list")
+    safe_reason = str(reason or "tailscale-unavailable").strip().casefold()
+    if safe_reason not in {
+        "tailscale-unavailable",
+        "tailscale-connect-failed",
+        "exit-node-unavailable",
+        "residential-probe-failed",
+    }:
+        safe_reason = "tailscale-unavailable"
+    out["residentialExitNodeEvidence"] = {
+        "enabled": True,
+        "available": False,
+        "profile": "tailscale-residential-exit",
+        "matchedProviderLanes": 0,
+        "reason": safe_reason,
         "privacy": {
             "exitNodeNamePersisted": False,
             "tailscaleAddressPersisted": False,
@@ -110,15 +146,23 @@ def merge_profiles(
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--baseline", type=Path, required=True)
-    ap.add_argument("--residential", type=Path, required=True)
+    ap.add_argument("--residential", type=Path)
+    ap.add_argument("--unavailable-reason", default="")
     ap.add_argument("--output", type=Path, required=True)
     args = ap.parse_args()
 
-    merged = merge_profiles(load(args.baseline), load(args.residential))
+    if args.residential and args.residential.is_file():
+        merged = merge_profiles(load(args.baseline), load(args.residential))
+    else:
+        merged = mark_residential_unavailable(
+            load(args.baseline),
+            reason=args.unavailable_reason or "tailscale-unavailable",
+        )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(merged, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         "FIELD_WAF_RESIDENTIAL_PROFILE_MERGE "
+        f"available={str(bool((merged.get('residentialExitNodeEvidence') or {}).get('available'))).lower()} "
         f"matched={int((merged.get('residentialExitNodeEvidence') or {}).get('matchedProviderLanes') or 0)}"
     )
     return 0
