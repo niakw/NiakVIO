@@ -8,7 +8,10 @@ v5=workflow.index("python tests/brain_repair_experience_transfer_test.py")
 lifecycle=workflow.index("python tests/provider_v3_strategy_plan_contract_test.py")
 materialize=workflow.index("python scripts/materialize_provider_v3_all.py")
 discovery=workflow.index("python tests/provider_discovery_v3_composition_test.py")
-assert v5 < lifecycle < materialize < discovery, (v5,lifecycle,materialize,discovery)
+# Catalogue/lifecycle activation drift is cheaper and more fundamental than
+# historical Brain-experience transfer. Fail it first, then validate Brain
+# transfer, then pay the global materialization/discovery cost.
+assert lifecycle < v5 < materialize < discovery, (lifecycle,v5,materialize,discovery)
 assert workflow.count("python tests/brain_repair_experience_transfer_test.py")==1
 assert workflow.count("python tests/provider_v3_strategy_plan_contract_test.py")==1
 
