@@ -179,6 +179,7 @@ def main() -> int:
     assert '"clientSelection": "tv_desktop_mobile_for_scheduled_learning"' in policy_source
     assert '"streamSampling": "all_returned_streams_with_safety_cap"' in policy_source
     assert '"retryPolicy": "continue_with_new_hypotheses_until_global_deadline_or_no_new_method"' in policy_source
+    assert '"maxLearningGenerationsPerSignature": 5' in policy_source, "bounded multi-generation Learning evolution disappeared"
     assert '"maxRepairRounds"' not in policy_source, "obsolete one-round Learning limit returned"
     assert '"selfArchitectureAudit": true' in policy_source
     assert '"selfArchitectureChanges": "review_only_pr_with_allowlisted_policy_changes_and_structural_change_plan"' in policy_source
