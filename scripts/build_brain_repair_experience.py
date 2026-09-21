@@ -26,7 +26,7 @@ DEFAULT_OUTPUT = ROOT / "automation/brain-repair-experience.json"
 ROUTE_RECOVERY = ROOT / "automation/provider-route-recovery-v6.json"
 HISTORICAL_SEED = ROOT / "automation/brain-historical-experience-seed.json"
 GREEN = {"FULL OK", "PARTIAL OK"}
-ROUTE_KEYS = ("candidate_learned_routes", "learned_routes", "candidate_routes", "routes")
+ROUTE_KEYS = ("documented_routes", "candidate_learned_routes", "learned_routes", "candidate_routes", "routes")
 PLACEHOLDER = re.compile(r"\{(?:query|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type|binding:[A-Za-z0-9_.-]+)\}", re.I)
 OPAQUE = re.compile(r"(?:[A-Za-z0-9+/]{72,}={0,2}|%[0-9A-Fa-f]{2}.{100,}|[A-Fa-f0-9]{96,})")
 BODY_PLACEHOLDER = re.compile(r"\{(?:query|queryDots|slug|id|tmdbId|imdbId|year|season|episode|mediaType|type|binding:[A-Za-z0-9_.-]+)\}", re.I)
