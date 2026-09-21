@@ -69,7 +69,7 @@ repair=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(e
 for source in (wf,temp,sharded):
     assert "group: provider-census-waf-main" in source, source[:400]
     assert "cancel-in-progress: false" in source, source[:400]
-assert "group: provider-repair-main" in repair, repair[:600]
+assert "group: provider-repair-main-v2" in repair, repair[:600]
 assert "cancel-in-progress: false" in repair, repair[:600]
 assert "workflow_dispatch:" in temp
 assert "FIELD_REPAIR_CANONICAL_LEDGER_STALE" in repair
@@ -80,3 +80,5 @@ assert "gh workflow run provider-waf-browser-session.yml --ref main" not in temp
 assert "gh workflow run provider-waf-browser-session.yml --ref main" not in sharded
 assert "Prepare integrated Repair WAF/network qualification" in repair
 assert "if: ${{ github.ref == 'refs/heads/main' }}" in wf
+
+assert "FIELD_REPAIR_SUPERSEDED_EARLY" in repair
