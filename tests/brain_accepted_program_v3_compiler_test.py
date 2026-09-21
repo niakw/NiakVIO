@@ -21,6 +21,11 @@ program={
         "base_url":"https://provider.example",
         "types":["movie"],
         "user_agent":"NiakVIO-Compiler-Test/1.0",
+        "search_paths":["/engine/ajax/search.php"],
+        "direct_paths":["/api/file/"],
+        "experiment_variant":4,
+        "experiment_generation":3,
+        "experiment_failure_class":"media_extraction_gap",
         "request_recipes":[
             {
                 "route":"/engine/ajax/search.php",
@@ -30,6 +35,19 @@ program={
                 "bodyKind":"form",
                 "body":{"query":"{query}"},
                 "headerNames":["accept","content-type","referer"],
+                "response":"html-or-text",
+                "semanticType":"movie",
+                "requiredBindings":[],
+                "executable":True,
+            },
+            {
+                "route":"/search?q={query}",
+                "origin":"https://www.google.com",
+                "role":"search",
+                "method":"GET",
+                "bodyKind":"none",
+                "body":{},
+                "headerNames":["accept","referer"],
                 "response":"html-or-text",
                 "semanticType":"movie",
                 "requiredBindings":[],
@@ -67,12 +85,20 @@ assert compiled["searchRequestPlan"]==[{
         "bodyKind":"form",
         "body":{"query":"{query}"},
     },
+    "responseKind":"html-or-text",
+    "streamProof":False,
     "proofModelVersion":6,
     "sourceRole":"brain-accepted-runtime",
     "semanticTypes":["movie"],
 }]
+assert compiled["experimentVariant"]==4
+assert compiled["experimentGeneration"]==3
+assert compiled["experimentFailureClass"]=="media_extraction_gap"
+assert compiled["learnedRoutes"]==["/engine/ajax/search.php","/api/file/"]
+assert all("google." not in row["base"] for row in compiled["searchRequestPlan"])
 assert compiled["providerValuePlan"][0]["steps"][0]["route"]=="/player/{id}"
 assert compiled["providerValuePlan"][0]["steps"][0]["base"]=="https://player.example"
+assert compiled["providerValuePlan"][0]["steps"][0]["responseKind"]=="html-or-text"
 
 overrides={"provider_patches":{"demo":{
     "official_site":"https://provider.example",
@@ -98,6 +124,8 @@ original=copy.deepcopy(overrides)
 proposed=mod.apply_compiled(overrides,compiled)
 patch=proposed["provider_patches"]["demo"]
 assert patch["official_site"]=="https://provider.example"
+assert patch["learned_routes"][0:2]==["/engine/ajax/search.php","/api/file/"]
+assert patch["brain_accepted_program"]["experiment_generation"]==3
 assert patch["search_request_plan"][0]==compiled["searchRequestPlan"][0]
 assert patch["search_request_plan"][1]["sourceRole"]=="historical-positive"
 assert patch["provider_value_plan"][0]==compiled["providerValuePlan"][0]
