@@ -238,14 +238,50 @@ def classify(
         }
 
     if http_url(direct):
-        if failures < 2:
-            reasons.append("explicit_current_direct" if explicit_current else "curated_direct")
+        # PROVIDER_AUTHORITY_DIRECT_PROOF_V1
+        # A direct URL is not automatically authority. explicit_current is an
+        # operator/Domain pin; otherwise the candidate needs provider-owned
+        # positive route evidence or a fresh matching runtime observation.
+        direct_route_proven = has_positive_route_prior(patch)
+        current = history.get("current") if isinstance(history.get("current"), dict) else {}
+        current_url = str(current.get("url") or "").rstrip("/")
+        direct_url = direct.rstrip("/")
+        fresh_direct_observation = (
+            failures == 0
+            and fresh_history_authority(history)
+            and current_url == direct_url
+        )
+
+        if explicit_current and failures < 2:
+            reasons.append("explicit_current_direct")
             return {
                 "provider": provider,
                 "action": "KEEP_DIRECT",
                 "repairEligible": True,
-                "confidence": "high" if explicit_current else "medium",
+                "confidence": "high",
                 "authorityClass": "direct",
+                "failureCount": failures,
+                "reasons": reasons,
+            }
+        if not explicit_current and failures < 2 and direct_route_proven:
+            reasons.extend(["curated_direct", "existing_positive_route_prior"])
+            return {
+                "provider": provider,
+                "action": "KEEP_DIRECT",
+                "repairEligible": True,
+                "confidence": "medium",
+                "authorityClass": "direct",
+                "failureCount": failures,
+                "reasons": reasons,
+            }
+        if not explicit_current and fresh_direct_observation:
+            reasons.append("fresh_curated_candidate_runtime_observation")
+            return {
+                "provider": provider,
+                "action": "KEEP_LIVE_CANDIDATE",
+                "repairEligible": True,
+                "confidence": "medium",
+                "authorityClass": "fresh-curated-candidate",
                 "failureCount": failures,
                 "reasons": reasons,
             }
@@ -260,13 +296,15 @@ def classify(
                 "failureCount": failures,
                 "reasons": reasons,
             }
-        reasons.append("direct_requires_rediscovery")
+        reasons.append("direct_candidate_unproven")
+        if search:
+            reasons.append("search_supplement_only")
         return {
             "provider": provider,
-            "action": "REDISCOVER_DIRECT",
+            "action": "REDISCOVER_SEARCH" if search else "REDISCOVER_DIRECT",
             "repairEligible": False,
             "confidence": "low",
-            "authorityClass": "stale-direct",
+            "authorityClass": "unproven-direct-candidate",
             "failureCount": failures,
             "reasons": reasons,
         }
