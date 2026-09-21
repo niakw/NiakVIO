@@ -120,6 +120,43 @@ assert search_targets[0]["seedRoute"] == "/?s={query}"
 assert search_targets[0]["url"] == "https://search-waf.example/?s=niakvio"
 assert search_targets[0]["publicUrl"] == "https://search-waf.example/"
 
+
+network_targets = mod.extract_network_failure_targets(
+    {
+        "rows": [
+            {
+                "provider_id": "yflix",
+                "semantic_type": "movie",
+                "debug_stage": "provider_network_exception",
+                "debug_fetches": [
+                    {"url": "https://api.themoviedb.org/3/movie/157336?api_key=%3Credacted%3E", "method": "GET", "status": 200},
+                    {"url": "https://enc-dec.app/db/flix/find?tmdb_id=157336&type=movie", "method": "GET", "status": 0, "error": "AbortError"},
+                ],
+            },
+            {
+                "provider_id": "secret-provider",
+                "semantic_type": "movie",
+                "debug_stage": "provider_network_http_error",
+                "debug_fetches": [
+                    {"url": "https://secret.example/api?token=do-not-probe", "method": "GET", "status": 403},
+                ],
+            },
+        ]
+    },
+    {
+        "providers": [
+            {"provider": "yflix", "status": "PROVIDER NETWORK BLOCKED"},
+            {"provider": "secret-provider", "status": "PROVIDER NETWORK BLOCKED"},
+        ]
+    },
+)
+assert len(network_targets) == 1, network_targets
+assert network_targets[0]["provider"] == "yflix"
+assert network_targets[0]["url"] == "https://enc-dec.app/db/flix/find?tmdb_id=157336&type=movie"
+assert network_targets[0]["publicUrl"] == "https://enc-dec.app/db/flix/find"
+assert network_targets[0]["seedKind"] == "network-failure-replay"
+assert "tmdb_id" not in network_targets[0]["publicUrl"]
+
 targets = mod.extract_targets(report)
 assert len(targets) == 2, targets
 allwish = next(row for row in targets if row["provider"] == "allwish")
