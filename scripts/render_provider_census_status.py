@@ -29,6 +29,7 @@ STATUS_META = {
     "PROVIDER JS FULLY BROKEN": ("🔴", "repeated technical failure without a retained positive proof; BRAIN LEARNING owns it"),
     "REGRESSION PROVIDER JS": ("🟣", "provider/lane was historically positive but current JS/runtime structure regressed"),
     "REGRESSION PROVIDER": ("🔴", "provider was historically positive but current upstream/network no longer answers successfully"),
+    "DISABLED": ("⚫", "provider is intentionally lifecycle-disabled and excluded from automatic Retest/Repair"),
 }
 
 NO_PROOF_STAGES = {
@@ -55,6 +56,7 @@ NETWORK_BROKEN_STAGES = {
 }
 
 HEALTHY_STATES = {"FULL OK", "PARTIAL OK"}
+NON_ACTIONABLE_STATES = {"DISABLED"}
 ENVIRONMENT_ONLY_STATES = {"HARNESS MISMATCH", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}
 
 # These fields belong to one concrete WAF/residential overlay run. They must
@@ -71,7 +73,8 @@ TRANSPORT_OVERLAY_ROW_FIELDS = {
 
 
 def is_symptomatic_status(status: str) -> bool:
-    return str(status or "") not in HEALTHY_STATES
+    value = str(status or "")
+    return value not in HEALTHY_STATES and value not in NON_ACTIONABLE_STATES
 
 
 def is_repair_eligible_status(status: str) -> bool:
@@ -703,6 +706,7 @@ def _action(status: str) -> str:
         "PROVIDER JS FULLY BROKEN": "BRAIN LEARNING slot",
         "REGRESSION PROVIDER JS": "A/B against retained proof; restore JS/runtime",
         "REGRESSION PROVIDER": "re-run retained proof + verify upstream/provider state",
+        "DISABLED": "lifecycle disabled; exclude from automatic Retest/Repair until authority re-enables it",
     }.get(status, "BRAIN checks")
 
 
@@ -773,10 +777,14 @@ def build_status_rows(
             else {"classification": "not-applicable", "evidence": [], "lanes": []}
         )
         authority = _authority_fields(authority_status, provider)
+        underlying_status = status
+        if _lifecycle_disabled(authority):
+            status = "DISABLED"
         status_repair_eligible = is_repair_eligible_status(status)
         out.append({
             "provider": provider,
             "status": status,
+            "underlyingStatus": underlying_status if status == "DISABLED" else "",
             "color": STATUS_META[status][0],
             "declaredLanes": declared,
             "currentVerifiedLanes": verified,
@@ -846,8 +854,13 @@ def build_status_rows(
             carried["action"] = _harness_action(migrated, diag["classification"])
         final_status = str(carried.get("status") or "")
         authority = _authority_fields(authority_status, provider)
-        status_repair_eligible = is_repair_eligible_status(final_status)
         carried.update(authority)
+        if _lifecycle_disabled(authority):
+            carried["underlyingStatus"] = final_status
+            final_status = "DISABLED"
+            carried["status"] = final_status
+            carried["color"] = STATUS_META[final_status][0]
+        status_repair_eligible = is_repair_eligible_status(final_status)
         carried["brainCheckRequired"] = is_symptomatic_status(final_status)
         carried["statusRepairEligible"] = status_repair_eligible
         carried["repairEligible"] = status_repair_eligible and authority["authorityRepairEligible"]
@@ -902,8 +915,7 @@ def render(
     )
     lifecycle_disabled_queue = sorted(
         row["provider"] for row in rows
-        if row.get("brainCheckRequired") is True
-        and _lifecycle_disabled(row)
+        if _lifecycle_disabled(row)
     )
     authority_rediscovery_queue = sorted(
         row["provider"] for row in rows
