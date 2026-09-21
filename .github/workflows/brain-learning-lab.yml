@@ -536,6 +536,18 @@ jobs:
           set -euo pipefail
           BRANCH="brain-learning/proposals"
           git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
+
+          candidate_ms="$(node -e "const x=require('./brain-learning-output/latest.json');const t=Date.parse(x.generatedAt||'');if(!Number.isFinite(t))process.exit(2);process.stdout.write(String(t))")"
+          existing_ms=""
+          if git cat-file -e "refs/remotes/origin/$BRANCH:engine_v2/learning/latest.json" 2>/dev/null; then
+            git show "refs/remotes/origin/$BRANCH:engine_v2/learning/latest.json" > "$RUNNER_TEMP/brain-learning-existing.json"
+            existing_ms="$(node -e "const fs=require('fs');const x=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+'/brain-learning-existing.json','utf8'));const t=Date.parse(x.generatedAt||'');if(Number.isFinite(t))process.stdout.write(String(t))")"
+          fi
+          if [ -n "$existing_ms" ] && [ "$candidate_ms" -le "$existing_ms" ]; then
+            echo "FIELD_BRAIN_MEMORY_PUBLISH skipped=stale candidate_ms=$candidate_ms existing_ms=$existing_ms"
+            exit 0
+          fi
+
           git switch -C "$BRANCH" "$GITHUB_SHA"
           mkdir -p engine_v2/learning
           cp brain-learning-output/latest.json engine_v2/learning/latest.json
@@ -653,6 +665,11 @@ jobs:
           git config user.name "niakvio-brain"
           git config user.email "actions@users.noreply.github.com"
           git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
+          if git rev-parse --verify "refs/remotes/origin/$BRANCH" >/dev/null 2>&1 \
+             && git merge-base --is-ancestor "$GITHUB_SHA" "refs/remotes/origin/$BRANCH"; then
+            echo "FIELD_BRAIN_PR skipped=stale-source source=$GITHUB_SHA branch=$BRANCH"
+            exit 0
+          fi
           git switch -C "$BRANCH" "$GITHUB_SHA"
           git add provider-overrides.json PROVENANCE.json provider-bases
           git commit -m "brain: propose validated learning repairs"
@@ -778,7 +795,12 @@ jobs:
           git config user.name "niakvio-brain"
           git config user.email "actions@users.noreply.github.com"
           git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
-          git switch -C "$BRANCH" main
+          if git rev-parse --verify "refs/remotes/origin/$BRANCH" >/dev/null 2>&1 \
+             && git merge-base --is-ancestor "$GITHUB_SHA" "refs/remotes/origin/$BRANCH"; then
+            echo "FIELD_BRAIN_ARCH_PR skipped=stale-source source=$GITHUB_SHA branch=$BRANCH"
+            exit 0
+          fi
+          git switch -C "$BRANCH" "$GITHUB_SHA"
           mkdir -p engine_v2/learning
           cp brain-learning-output/brain-architecture-proposal.json engine_v2/learning/architecture-proposal.json
           if [ "$(node -e "const x=require('./$SUMMARY');process.stdout.write(x.policyChanged===true?'true':'false')")" = "true" ]; then
