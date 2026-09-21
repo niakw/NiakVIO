@@ -106,6 +106,72 @@ def network_differential(waf: dict[str, Any], provider: str) -> dict[str, Any]:
     return {"classification": classification, "evidence": evidence}
 
 
+def _post_harness_repair_state(
+    row: dict[str, Any],
+    diagnostic: dict[str, Any],
+    replay_rows: list[dict[str, Any]],
+) -> str | None:
+    """Return a normal Brain/census state only after native-like transport is proven.
+
+    Residential/browser reachability alone is not enough. The full provider
+    runtime must have executed without a WAF/timeout/identity failure and exposed
+    a provider/runtime symptom. This is a lane transfer, never a repair proof.
+    """
+    if str(diagnostic.get("classification") or "") not in {
+        "native-policy-reachable",
+        "residential-exit-native-reachable",
+    }:
+        return None
+    if not replay_rows:
+        return None
+
+    stages = {
+        str(item.get("debugStage") or item.get("debug_stage") or "").strip().casefold()
+        for item in replay_rows
+        if isinstance(item, dict)
+    }
+    statuses = {
+        str(item.get("status") or "").strip().casefold()
+        for item in replay_rows
+        if isinstance(item, dict)
+    }
+    if any(int(item.get("playable") or 0) > 0 for item in replay_rows if isinstance(item, dict)):
+        return None
+    if any(item.get("identitySafe") is False for item in replay_rows if isinstance(item, dict)):
+        return None
+    if stages & {"provider_waf_challenge", "timeout"} or statuses & {"timeout"}:
+        return None
+
+    explicit_network = {
+        "provider_network_exception",
+        "provider_network_http_error",
+        "provider_network_timeout",
+    }
+    if stages & explicit_network:
+        return "PROVIDER NETWORK BLOCKED"
+
+    normal_zero = {
+        "provider_network_zero_result",
+        "content_lookup_completed_no_streams",
+        "provider_zero_before_provider_network",
+        "no_provider_request_observed",
+        "no_streams",
+    }
+    if not (stages & normal_zero):
+        return None
+
+    depths = {
+        str(value or "").split("=", 1)[-1].strip().casefold()
+        for value in row.get("evidenceDepth") or []
+        if str(value or "").strip()
+    }
+    if "chain_reached" in depths:
+        return "CHAIN REACHED"
+    if "lookup_only" in depths:
+        return "ROUTE PROVEN" if row.get("routeProof") else "NO PROOF"
+    return "NO PROOF"
+
+
 def merge_transport(
     baseline: dict[str, Any],
     waf: dict[str, Any],
@@ -141,6 +207,7 @@ def merge_transport(
     changed: list[str] = []
     network_changed: list[str] = []
     replay_promoted: set[str] = set()
+    replay_repairable: set[str] = set()
     replay_summary = waf.get("residentialProviderReplay") if isinstance(waf.get("residentialProviderReplay"), dict) else {}
     replay_rows = replay_summary.get("rows") if isinstance(replay_summary.get("rows"), list) else []
     replay_by_provider: dict[str, list[dict[str, Any]]] = {}
@@ -221,14 +288,25 @@ def merge_transport(
         row["harnessTransportClass"] = diagnostic["classification"]
         row["harnessTransportEvidence"] = list(diagnostic["evidence"])
         if provider not in replay_promoted:
-            status = census.browser_harness_status(waf, provider)
-            row["status"] = status
-            row["color"] = census.STATUS_META[status][0]
-            row["action"] = census._harness_action(status, diagnostic["classification"])
-            row["brainCheckRequired"] = True
-            row["repairEligible"] = False
-            # Narrow transport diagnostics are not provider playback probes.
-            row["testedThisRun"] = bool(row.get("testedThisRun", False)) and False
+            repair_state = _post_harness_repair_state(row, diagnostic, provider_replay_rows)
+            if repair_state:
+                row["status"] = repair_state
+                row["color"] = census.STATUS_META[repair_state][0]
+                row["action"] = census._action(repair_state)
+                row["brainCheckRequired"] = True
+                row["repairEligible"] = True
+                row["testedThisRun"] = True
+                row["residentialProviderReplayReclassified"] = True
+                replay_repairable.add(provider)
+            else:
+                status = census.browser_harness_status(waf, provider)
+                row["status"] = status
+                row["color"] = census.STATUS_META[status][0]
+                row["action"] = census._harness_action(status, diagnostic["classification"])
+                row["brainCheckRequired"] = True
+                row["repairEligible"] = False
+                # Narrow transport diagnostics are not provider playback probes.
+                row["testedThisRun"] = bool(row.get("testedThisRun", False)) and False
         changed.append(provider)
 
     # Membership authority is preserved. Transport diagnostics may move a member
@@ -240,11 +318,32 @@ def merge_transport(
             if str(value or "").strip().casefold() not in replay_promoted
         ]
 
-    out["repairQueue"] = without_promoted(list(baseline.get("repairQueue") or []))
-    out["environmentQueue"] = without_promoted(list(baseline.get("environmentQueue") or []))
-    out["harnessQueue"] = without_promoted(list(baseline.get("harnessQueue") or baseline.get("environmentQueue") or []))
-    out["symptomaticProviders"] = without_promoted(list(baseline.get("symptomaticProviders") or []))
-    out["brainQueue"] = without_promoted(list(baseline.get("brainQueue") or baseline.get("symptomaticProviders") or []))
+    def normalized(values: list[Any]) -> list[str]:
+        return sorted({
+            str(value or "").strip().casefold()
+            for value in values
+            if str(value or "").strip()
+        })
+
+    out["repairQueue"] = normalized([
+        *without_promoted(list(baseline.get("repairQueue") or [])),
+        *replay_repairable,
+    ])
+    out["environmentQueue"] = normalized([
+        value
+        for value in without_promoted(list(baseline.get("environmentQueue") or []))
+        if str(value or "").strip().casefold() not in replay_repairable
+    ])
+    out["harnessQueue"] = normalized([
+        value
+        for value in without_promoted(list(baseline.get("harnessQueue") or baseline.get("environmentQueue") or []))
+        if str(value or "").strip().casefold() not in replay_repairable
+    ])
+    out["symptomaticProviders"] = normalized(without_promoted(list(baseline.get("symptomaticProviders") or [])))
+    out["brainQueue"] = normalized([
+        *without_promoted(list(baseline.get("brainQueue") or baseline.get("symptomaticProviders") or [])),
+        *replay_repairable,
+    ])
 
     out["counts"] = dict(sorted(Counter(
         str(row.get("status") or "")
@@ -256,6 +355,7 @@ def merge_transport(
     out["harnessTransportUpdatedProviders"] = sorted(changed)
     out["networkDifferentialUpdatedProviders"] = sorted(network_changed)
     out["residentialProviderReplayPromotedProviders"] = sorted(replay_promoted)
+    out["residentialProviderReplayRepairableProviders"] = sorted(replay_repairable)
     residential = waf.get("residentialExitNodeEvidence")
     if isinstance(residential, dict):
         out["residentialExitNodeEvidence"] = copy.deepcopy(residential)
