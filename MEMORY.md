@@ -1,5 +1,17 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-21 22:14 Europe/Paris — Census authority/last-verdict reconciliation fixed
+
+- The persisted `PROVIDER_CENSUS_STATUS.md` was internally inconsistent in two independent ways:
+  1. its `repairQueue` was status-only (10 providers) while canonical Repair independently applied `provider-authority-status.json` and actually targeted 8; `animetsu` and `showbox` were therefore advertised as automated Repair targets despite authority actions `KEEP_DISABLED` and `REDISCOVER_SEARCH`;
+  2. three carried rows were still green while their own stored latest verdict contradicted green: `anime-ultime` FULL OK + `provider_network_http_error`, `animesalt` FULL OK + `provider_waf_challenge`, and `vostfree` FULL OK + `provider_waf_challenge`. None had a retained playback proof in current census history.
+- `b13676ac0008` makes census Repair eligibility the intersection of runtime/status eligibility and current provider address/backend authority. Each row now carries authority action/class/confidence/reasons, the markdown exposes an Authority column, and JSON schema v3 adds `authorityBlockedQueue`. Authority-blocked symptomatic providers remain visible as symptoms but are excluded from automated Repair.
+- The same renderer now refreshes carried rows' retained proof/candidate proof/route proof from current durable evidence instead of blindly copying stale snapshots. A carried FULL/PARTIAL row is reconciled against its own latest lane verdict: verified lanes not marked OK are removed and, when no verified lane remains, the row is reclassified from its latest causal evidence (network block, harness/WAF, route/candidate/no-proof, or JS failure). This prevents stale green status from surviving contradictory evidence.
+- `e753b48e43fa` locks both authority filtering and carried-green reconciliation with synthetic census tests.
+- `0cf1041d08ac` fixes the mono census workflow ordering: current provider authority is classified before rendering; a provisional status seeds the bounded WAF diagnostic; the final census is rendered only after current-run WAF/network evidence exists. Batch planning therefore consumes the final coherent status, not a pre-WAF snapshot.
+- `f3e1e8430263` applies the same authority/WAF/final-render semantics to the 8-shard census used when the provider catalogue grows past the mono-job threshold, and persists the sharded WAF/authority evidence with the canonical census.
+- Existing TEMP census push runs are currently failing before job creation (`jobs=[]`), so those instant-red runs are not evidence against the renderer changes. The canonical Repair preflight includes `provider_census_status_markdown_test.py`; next Repair on current HEAD is the authoritative validation path while the TEMP workflow issue remains separate.
+
 ## 2026-09-21 22:05 Europe/Paris — Brain outer-wave replay loop diagnosed and fixed
 
 - Repair #127 exposed a second structural Brain problem after packed batching was working: later waves regenerated the exact same candidate bytes for stubborn providers. VidFast repeatedly produced candidate hashes `fa9891f1` / `5ea95646`; MalluMV repeatedly produced `23ab95c0` / `da59b791`. This was not CPU pressure.
