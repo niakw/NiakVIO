@@ -113,6 +113,7 @@ jobs:
       - name: Connect ephemeral Tailscale diagnostic node
         id: tailscale_connect
         continue-on-error: true
+        timeout-minutes: 4
         if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
         uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8
         with:
