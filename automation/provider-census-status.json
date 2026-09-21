@@ -251,7 +251,12 @@
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "networkDifferentialClass": "github-native-route-reachable",
+      "networkDifferentialEvidence": [
+        "movie: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=unavailable, residential-okhttp=unavailable, residential-direct=unavailable",
+        "tv: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=unavailable, residential-okhttp=unavailable, residential-direct=unavailable"
+      ]
     },
     {
       "provider": "showbox",
@@ -353,7 +358,12 @@
       "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "networkDifferentialClass": "github-native-route-reachable",
+      "networkDifferentialEvidence": [
+        "movie: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=unavailable, residential-okhttp=unavailable, residential-direct=unavailable",
+        "tv: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=unavailable, residential-okhttp=unavailable, residential-direct=unavailable"
+      ]
     },
     {
       "provider": "uhdmovies",
@@ -628,7 +638,7 @@
       "harnessTransportClass": "browser-profile-only",
       "harnessTransportEvidence": [
         "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted",
-        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted"
+        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted"
       ]
     },
     {
@@ -1489,5 +1499,35 @@
     "moviesmod",
     "vostfree",
     "wookafr"
-  ]
+  ],
+  "harnessEvidenceRunId": "35550837403-waf-transport",
+  "harnessEvidenceSha": "1f3f2c58ab111cbad497cd504accd69f370ec882",
+  "harnessTransportUpdatedProviders": [
+    "allwish",
+    "animesalt",
+    "animevost-fr",
+    "flemmix",
+    "fullanime",
+    "moviesmod",
+    "vostfree",
+    "wookafr"
+  ],
+  "networkDifferentialUpdatedProviders": [
+    "moviebox",
+    "yflix"
+  ],
+  "residentialExitNodeEvidence": {
+    "enabled": true,
+    "available": false,
+    "profile": "tailscale-residential-exit",
+    "matchedProviderLanes": 0,
+    "reason": "tailscale-connect-failed",
+    "privacy": {
+      "exitNodeNamePersisted": false,
+      "tailscaleAddressPersisted": false,
+      "residentialPublicIpPersisted": false,
+      "responseBodiesPersisted": false,
+      "cookiesPersisted": false
+    }
+  }
 }
