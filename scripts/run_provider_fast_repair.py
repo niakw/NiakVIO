@@ -135,8 +135,19 @@ def main() -> int:
         if by_provider.get(provider) in {"FULL OK", "PARTIAL OK"}
     )
     unresolved = sorted(set(candidates) - set(validated))
+    deferred_learning = sorted({
+        cid(value)
+        for value in brain.get("deferredLearningProviders") or []
+        if cid(value)
+    })
+    remaining_brain = sorted({
+        cid(value)
+        for value in brain.get("remainingProviders") or []
+        if cid(value)
+    })
+    learn_handoff = sorted((set(deferred_learning) | set(remaining_brain)) - set(validated))
     payload = {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "sourceCensusRunId": status_before.get("runId"),
         "selectedProviders": selected,
         "candidateProviders": candidates,
@@ -146,9 +157,9 @@ def main() -> int:
         "brainAcceptedRepairCount": int(brain.get("acceptedRepairCount") or 0),
         "brainFixedInLabProviders": sorted(fixed),
         "brainCompiledProviders": sorted(compiled),
-        "brainRemainingProviders": sorted(
-            cid(value) for value in brain.get("remainingProviders") or [] if cid(value)
-        ),
+        "brainDeferredLearningProviders": deferred_learning,
+        "brainRemainingProviders": remaining_brain,
+        "learnHandoffProviders": learn_handoff,
         "brainNoProgressReason": brain.get("noProgressReason"),
         "brainTimeBudgetExhausted": brain.get("timeBudgetExhausted") is True,
         "repairQueueAfter": list(status_after.get("repairQueue") or []),
@@ -166,7 +177,8 @@ def main() -> int:
         "FIELD_PROVIDER_FAST_REPAIR_DONE "
         f"selected={len(selected)} candidates={len(candidates)} "
         f"validated={len(validated)} unresolved_candidates={len(unresolved)} "
-        f"remaining={len(payload['brainRemainingProviders'])}",
+        f"remaining={len(payload['brainRemainingProviders'])} "
+        f"learn_handoff={len(payload['learnHandoffProviders'])}",
         flush=True,
     )
     return 0
