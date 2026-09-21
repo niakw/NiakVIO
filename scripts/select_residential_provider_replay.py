@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Select providers eligible for a full replay through a private residential exit.
+"""Select current harness/network symptoms for full residential provider replay.
 
-Selection requires a provider-owned exact failed-route probe that was NOT
-native-reachable on the GitHub network but became native-reachable (OkHttp or
-direct HTTP approximation) through the residential exit. This file never stores
-the exit-node identity or public IP.
+The transport differential is useful diagnosis, but it is not a prerequisite
+for the authoritative replay: some providers fail before a safe exact GET can
+be extracted, or require POST/player/session behavior only the real provider
+runtime can reproduce. Once the private residential exit is confirmed active,
+replay every *current* provider whose census status is environment/network
+blocked. The replay itself remains the only functional authority.
 """
 from __future__ import annotations
 
@@ -13,65 +15,58 @@ import json
 from pathlib import Path
 from typing import Any
 
+ELIGIBLE_STATUSES = {
+    "HARNESS MISMATCH",
+    "HARNESS/ENV BLOCKED",
+    "PROVIDER NETWORK BLOCKED",
+}
+
 
 def load(path: Path) -> dict[str, Any]:
-    value=json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(value,dict):
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
         raise ValueError(path)
     return value
 
 
-def native_reached(prefix: dict[str, Any]) -> bool:
-    direct=prefix.get("directHttpProfile") if isinstance(prefix.get("directHttpProfile"),dict) else {}
-    okhttp=prefix.get("okHttpJvmProfile") if isinstance(prefix.get("okHttpJvmProfile"),dict) else {}
-    return (
-        str(direct.get("outcome") or "")=="direct_http_content_reached"
-        or str(okhttp.get("outcome") or "")=="okhttp_jvm_content_reached"
+def select(report: dict[str, Any], status: dict[str, Any]) -> list[str]:
+    residential = (
+        report.get("residentialExitNodeEvidence")
+        if isinstance(report.get("residentialExitNodeEvidence"), dict)
+        else {}
     )
+    if residential.get("available") is not True:
+        return []
 
-
-def select(report: dict[str, Any], status: dict[str, Any] | None = None) -> list[str]:
-    providers=set()
-    status=status or {}
-    environment={
-        str(value or "").strip().casefold()
-        for value in (status.get("environmentQueue") or status.get("harnessQueue") or [])
-        if str(value or "").strip()
+    providers = {
+        str(row.get("provider") or "").strip().casefold()
+        for row in status.get("providers") or []
+        if isinstance(row, dict)
+        and str(row.get("status") or "") in ELIGIBLE_STATUSES
+        and str(row.get("provider") or "").strip()
     }
-    for row in report.get("rows") or []:
-        if not isinstance(row,dict):
-            continue
-        provider=str(row.get("provider") or "").strip().casefold()
-        residential=row.get("residentialExitNodeProfile") if isinstance(row.get("residentialExitNodeProfile"),dict) else {}
-        if not provider or not residential:
-            continue
-        if native_reached(row):
-            continue
-        if not native_reached(residential):
-            continue
-        if str(row.get("seedKind") or "")=="network-failure-replay" or provider in environment:
-            providers.add(provider)
     return sorted(providers)
 
 
 def main() -> int:
-    ap=argparse.ArgumentParser()
-    ap.add_argument("--waf",type=Path,required=True)
-    ap.add_argument("--status",type=Path)
-    ap.add_argument("--output",type=Path,required=True)
-    args=ap.parse_args()
-    status=load(args.status) if args.status and args.status.is_file() else {}
-    providers=select(load(args.waf),status)
-    payload={
-        "schemaVersion":1,
-        "selection":"github-native-failed-residential-native-reached-network-or-harness",
-        "providers":providers,
-        "providerCount":len(providers),
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--waf", type=Path, required=True)
+    ap.add_argument("--status", type=Path, required=True)
+    ap.add_argument("--output", type=Path, required=True)
+    args = ap.parse_args()
+
+    providers = select(load(args.waf), load(args.status))
+    payload = {
+        "schemaVersion": 2,
+        "selection": "current-census-harness-network-residential-full-replay",
+        "eligibleStatuses": sorted(ELIGIBLE_STATUSES),
+        "providers": providers,
+        "providerCount": len(providers),
     }
-    args.output.write_text(json.dumps(payload,indent=2)+"\n",encoding="utf-8")
+    args.output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     print(f"FIELD_RESIDENTIAL_PROVIDER_REPLAY_SELECTION providers={len(providers)}")
     return 0
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     raise SystemExit(main())
