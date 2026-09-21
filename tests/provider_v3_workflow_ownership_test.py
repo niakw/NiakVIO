@@ -145,7 +145,10 @@ assert "cancel-in-progress: false" in finalizer
 sanitizer=(ROOT/"scripts/sanitize_provider_hub_registry.py").read_text(encoding="utf-8")
 for required in (
     'parser.add_argument("--manifest", default="manifest.json")',
-    "provider_ids = current_provider_ids(Path(args.manifest))",
+    "manifest_rows = current_provider_rows(Path(args.manifest))",
+    "provider_ids = set(manifest_rows)",
+    "ensure_registry_coverage(registry, manifest_rows)",
+    "PROVIDER_HUB_REGISTRY_TOTAL_COVERAGE_V1",
     "sanitize(registry, provider_ids)",
     "sanitize_history(history, provider_ids)",
 ):
