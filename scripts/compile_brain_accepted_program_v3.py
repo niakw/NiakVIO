@@ -7,7 +7,7 @@ SAFE_TYPES={'movie','tv','anime'}; SAFE_METHODS={'GET','POST'}
 SAFE_HEADER_NAMES={'accept','accept-language','content-type','origin','referer','user-agent'}
 SUPPORTED_BINDINGS={'id','slug'}; BINDING=re.compile(r'\{binding:([A-Za-z0-9_.-]+)\}',re.I); PROOF_MODEL_VERSION=6
 
-def cid(v): return str(v or '').strip().casefold()
+def cid(v): return str(v or '').strip().casefold().replace('_','-')
 def safe_origin(v):
     t=str(v or '').strip().rstrip('/')
     try:p=urlsplit(t)
