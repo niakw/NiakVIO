@@ -117,8 +117,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          tailscale ping --timeout=10s "$TS_EXIT_NODE" >/dev/null
-          sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false
+          selected=0
+          for attempt in 1 2 3 4 5; do
+            if sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false >/dev/null 2>&1; then
+              selected=1
+              break
+            fi
+            sleep "$((attempt * 2))"
+          done
+          if [ "$selected" -ne 1 ]; then
+            echo "Private exit node could not be selected; verify exit-node advertisement/approval and tag:niakvio-ci -> autogroup:internet policy." >&2
+            exit 1
+          fi
           echo "NIAKVIO_RESIDENTIAL_EXIT_ACTIVE=1" >> "$GITHUB_ENV"
 
       - name: Reprobe WAF lanes through private residential exit
