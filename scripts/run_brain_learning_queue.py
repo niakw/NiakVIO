@@ -252,6 +252,37 @@ def exhausted_repair_providers(memory: dict[str, Any], policy: dict[str, Any]) -
     })
 
 
+def current_repair_priority(
+    exhausted: list[str],
+    census: dict[str, Any],
+    info_by_id: dict[str, dict[str, Any]],
+    staged_candidates: dict[str, dict[str, Any]],
+) -> tuple[list[str], list[str], str]:
+    """Reconcile historical Repair debt with current census/observation authority."""
+    raw_census_repair = census.get("repairQueue") if isinstance(census, dict) else None
+    census_authoritative = isinstance(raw_census_repair, list)
+    if census_authoritative:
+        census_repair = [
+            provider_id
+            for provider_id in unique(raw_census_repair or [])
+            if provider_id in info_by_id and provider_id in staged_candidates
+        ]
+        current = set(census_repair)
+        deferred = [
+            provider_id for provider_id in exhausted
+            if provider_id in current
+        ]
+        return census_repair, deferred, "provider-census-status.json"
+
+    deferred = [
+        provider_id for provider_id in exhausted
+        if provider_id in info_by_id
+        and provider_id in staged_candidates
+        and str(info_by_id[provider_id].get("status") or "") != "healthy"
+    ]
+    return list(deferred), list(deferred), "learning-current-observation-fallback"
+
+
 def candidate_map(registry: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {
         norm(row.get("canonical_id") or row.get("upstream_id")): row
@@ -599,37 +630,16 @@ def main() -> int:
         load_json(ROOT / "automation" / "brain-repair-memory.json", {}),
         load_json(ROOT / "engine_v2" / "config" / "brain-policy.json", {}),
     )
-    census = load_json(ROOT / "automation" / "provider-census-status.json", {})
-    raw_census_repair = census.get("repairQueue") if isinstance(census, dict) else None
-    census_repair_authoritative = isinstance(raw_census_repair, list)
-    census_repair = [
-        provider_id
-        for provider_id in unique(raw_census_repair or [])
-        if provider_id in info_by_id and provider_id in staged_candidates
-    ]
-    census_repair_set = set(census_repair)
-    if census_repair_authoritative:
-        # Current census evidence outranks historical experiment debt. A provider
-        # that recovered to FULL/PARTIAL must not be reopened solely because an
-        # old signature exhausted its variants. Conversely every current Repair
-        # target deserves early Learning attention even before that signature
-        # accumulates all historical variants.
-        repair_deferred = [
-            provider_id for provider_id in repair_deferred
-            if provider_id in census_repair_set
-        ]
-    else:
-        # Fail safe when no census authority is available: old negative memory may
-        # prioritize only providers that are still anomalous in this Learning
-        # observation, never a currently healthy provider.
-        repair_deferred = [
-            provider_id for provider_id in repair_deferred
-            if provider_id in info_by_id
-            and provider_id in staged_candidates
-            and str(info_by_id[provider_id].get("status") or "") != "healthy"
-        ]
-        census_repair = list(repair_deferred)
-        census_repair_set = set(census_repair)
+    census_repair, repair_deferred, census_repair_authority = current_repair_priority(
+        repair_deferred,
+        load_json(ROOT / "automation" / "provider-census-status.json", {}),
+        info_by_id,
+        staged_candidates,
+    )
+    # Current census evidence outranks historical experiment debt. A provider
+    # that recovered to FULL/PARTIAL must not be reopened solely because an old
+    # signature exhausted its variants. Conversely every current Repair target
+    # deserves early Learning attention even before all variants are exhausted.
     repair_deferred_set = set(repair_deferred)
     if not args.provider and repair_deferred:
         # New Repair evidence reopens a provider even if an older Learning cycle
@@ -663,7 +673,7 @@ def main() -> int:
     queue["deferredRepairReason"] = "repair_experiment_variants_exhausted_new_strategy_required"
     queue["censusRepairProviders"] = census_repair
     queue["censusRepairProviderCount"] = len(census_repair)
-    queue["censusRepairAuthority"] = "provider-census-status.json" if census_repair_authoritative else "learning-current-observation-fallback"
+    queue["censusRepairAuthority"] = census_repair_authority
     queue["cleanReconstructionRequiredProviders"] = reconstruction_required
     queue["cleanReconstructionRequiredCount"] = len(reconstruction_required)
     queue["cleanReconstructionAuthoringPolicy"] = "niakvio-owned-v2"
