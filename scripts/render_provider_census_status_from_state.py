@@ -50,6 +50,22 @@ def cell(value: object) -> str:
     return text.replace("|", "\\|").replace("\n", " ")
 
 
+
+def residential_probe_cell(state: dict[str, Any], row: dict[str, Any]) -> str:
+    residential = state.get("residentialExitNodeEvidence")
+    status = str(row.get("status") or "")
+    if status not in census.ENVIRONMENT_ONLY_STATES:
+        return "—"
+    if not isinstance(residential, dict) or residential.get("enabled") is not True:
+        return "—"
+    if residential.get("available") is not True:
+        return "⚠️ unavailable · GitHub-only"
+    transport = str(row.get("harnessTransportClass") or "")
+    if transport.startswith("residential-exit-"):
+        return "✅ compared"
+    return "residential available · no matched lane"
+
+
 def render(state: dict[str, Any]) -> str:
     counts = state.get("counts") if isinstance(state.get("counts"), dict) else {}
     providers = [row for row in state.get("providers") or [] if isinstance(row, dict)]
@@ -79,6 +95,14 @@ def render(state: dict[str, Any]) -> str:
     if transport_run:
         evidence_line += f" · transport overlay {transport_run}"
 
+    residential = state.get("residentialExitNodeEvidence") if isinstance(state.get("residentialExitNodeEvidence"), dict) else {}
+    residential_notice = ""
+    if residential.get("enabled") is True:
+        if residential.get("available") is True:
+            residential_notice = "Residential harness: **available** · private exit compared where matched."
+        else:
+            residential_notice = "⚠️ Residential harness: **unavailable** · this overlay used GitHub-hosted transport only."
+
     lines = [
         "# NiakVIO Provider Census Status",
         "",
@@ -87,6 +111,7 @@ def render(state: dict[str, Any]) -> str:
         "Latest provider census state: **" + " · ".join(count_parts) + f"** across **{len(providers)} providers**.",
         evidence_line + ".",
         f"Symptomatic providers: **{len(state.get('symptomaticProviders') or [])}** · automated repair queue: **{len(state.get('repairQueue') or [])}** · harness/environment queue: **{len(state.get('environmentQueue') or [])}**.",
+        *([residential_notice] if residential_notice else []),
         "",
         "## Status semantics",
         "",
@@ -100,8 +125,8 @@ def render(state: dict[str, Any]) -> str:
         "",
         "**Important:** browser/OkHttp reachability is transport evidence only. It never promotes playback status and never authorizes provider-code mutation by itself.",
         "",
-        "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Candidate proof | Route proof | Corpus progress | Evidence depth | Harness transport | Latest lane verdicts | Dominant issue | Next action |",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+        "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Candidate proof | Route proof | Corpus progress | Evidence depth | Harness transport | Residential probe | Latest lane verdicts | Dominant issue | Next action |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ])
     for row in providers:
         status = str(row.get("status") or "")
@@ -118,6 +143,7 @@ def render(state: dict[str, Any]) -> str:
             cell(joined(row.get("searchProgress"))),
             cell(joined(row.get("evidenceDepth"))),
             cell(row.get("harnessTransportClass") or "—"),
+            cell(residential_probe_cell(state, row)),
             cell(joined(row.get("latestLaneVerdicts"))),
             cell(row.get("dominantIssue") or "none"),
             cell(row.get("action") or "—"),
