@@ -239,4 +239,23 @@ result = validate(
 )
 assert result["changed"] == ["demo"]
 
+
+
+# Already-current domain authority must remain byte-stable when an optional
+# replacement map does not exist. Observation alone is not a domain mutation.
+noop_patch = {
+    "official_site": "https://animesalt.cx",
+    "official_hub": "https://animesalt.ac/",
+    "domain_substitutions": {"animesalt.link": "animesalt.cx"},
+}
+noop_before = json.dumps(noop_patch, sort_keys=True)
+noop_fields = module.sync_patch_domain_authority(
+    noop_patch,
+    {"hub": "https://animesalt.ac/"},
+    "https://animesalt.cx",
+)
+assert noop_fields == [], noop_fields
+assert json.dumps(noop_patch, sort_keys=True) == noop_before, noop_patch
+assert "runtime_domain_replacements" not in noop_patch
+
 print("domain refresh transaction guard tests passed")
