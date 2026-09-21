@@ -35,9 +35,10 @@ permissions:
   id-token: write
 
 concurrency:
-  group: provider-census-waf-main
-  # Repair is now resumable. A successor run must queue behind the run that
-  # persisted its causal memory instead of cancelling that persistence step.
+  group: provider-repair-main
+  # Repair owns its integrated GitHub/Tailscale transport qualification. Keep
+  # Repair runs serialized with each other, but do not let observational
+  # census/WAF pushes replace a pending Repair in GitHub's one-pending-run slot.
   cancel-in-progress: false
 
 jobs:
@@ -483,37 +484,66 @@ jobs:
           git reset --hard "$GITHUB_SHA"
           git clean -fd
           git fetch origin main
+          remote_main="$(git rev-parse origin/main)"
+          canonical_ledger_current=1
+          if [ "$remote_main" != "$GITHUB_SHA" ]; then
+            canonical_ledger_current=0
+            echo "FIELD_REPAIR_CANONICAL_LEDGER_STALE source=$GITHUB_SHA remote=$remote_main"
+          fi
           git rebase origin/main
 
           mkdir -p automation
-          cp "$tmp/PROVIDER_CENSUS_STATUS.md" PROVIDER_CENSUS_STATUS.md
-          cp "$tmp/provider-census-status.json" automation/provider-census-status.json
-          [ ! -f "$tmp/provider-authority-status.json" ] || cp "$tmp/provider-authority-status.json" automation/provider-authority-status.json
-          [ ! -f "$tmp/provider-waf-browser-session-latest.json" ] || cp "$tmp/provider-waf-browser-session-latest.json" automation/provider-waf-browser-session-latest.json
-          [ ! -f "$tmp/provider-census-proof-history.json" ] || cp "$tmp/provider-census-proof-history.json" automation/provider-census-proof-history.json
+
+          # Causal Brain memory is Repair-owned and remains useful after a
+          # concurrent observational commit. Canonical census/authority/WAF,
+          # however, describe exact tested bytes and must never overwrite a
+          # newer HEAD merely because this longer Repair finished later.
           [ ! -f "$tmp/brain-repair-memory.json" ] || cp "$tmp/brain-repair-memory.json" automation/brain-repair-memory.json
           [ ! -f "$tmp/brain-positive-program-memory.json" ] || cp "$tmp/brain-positive-program-memory.json" automation/brain-positive-program-memory.json
-          [ ! -f "$tmp/provider-census-post-repair.json" ] || cp "$tmp/provider-census-post-repair.json" automation/provider-census-post-repair.json
-          [ ! -f "$tmp/provider-repair-candidate-evidence.json" ] || cp "$tmp/provider-repair-candidate-evidence.json" automation/provider-repair-candidate-evidence.json
-          [ ! -f "$tmp/provider-repair-batch-plan-latest.json" ] || cp "$tmp/provider-repair-batch-plan-latest.json" automation/provider-repair-batch-plan-latest.json
+          if [ -f "$tmp/provider-brain-repair-latest.json" ]; then
+            cp "$tmp/provider-brain-repair-latest.json" "automation/provider-brain-repair-${GITHUB_RUN_ID}.json"
+          fi
+
+          if [ "$canonical_ledger_current" = "1" ]; then
+            cp "$tmp/PROVIDER_CENSUS_STATUS.md" PROVIDER_CENSUS_STATUS.md
+            cp "$tmp/provider-census-status.json" automation/provider-census-status.json
+            [ ! -f "$tmp/provider-authority-status.json" ] || cp "$tmp/provider-authority-status.json" automation/provider-authority-status.json
+            [ ! -f "$tmp/provider-waf-browser-session-latest.json" ] || cp "$tmp/provider-waf-browser-session-latest.json" automation/provider-waf-browser-session-latest.json
+            [ ! -f "$tmp/provider-census-proof-history.json" ] || cp "$tmp/provider-census-proof-history.json" automation/provider-census-proof-history.json
+            [ ! -f "$tmp/provider-census-post-repair.json" ] || cp "$tmp/provider-census-post-repair.json" automation/provider-census-post-repair.json
+            [ ! -f "$tmp/provider-repair-candidate-evidence.json" ] || cp "$tmp/provider-repair-candidate-evidence.json" automation/provider-repair-candidate-evidence.json
+            [ ! -f "$tmp/provider-repair-batch-plan-latest.json" ] || cp "$tmp/provider-repair-batch-plan-latest.json" automation/provider-repair-batch-plan-latest.json
+          else
+            echo "FIELD_REPAIR_CANONICAL_LEDGER_SKIPPED reason=newer-main-requires-fresh-census"
+          fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add PROVIDER_CENSUS_STATUS.md automation/provider-census-status.json
-          [ ! -f automation/provider-authority-status.json ] || git add automation/provider-authority-status.json
-          [ ! -f automation/provider-waf-browser-session-latest.json ] || git add automation/provider-waf-browser-session-latest.json
-          [ ! -f automation/provider-census-proof-history.json ] || git add automation/provider-census-proof-history.json
+          if [ "$canonical_ledger_current" = "1" ]; then
+            git add PROVIDER_CENSUS_STATUS.md automation/provider-census-status.json
+            [ ! -f automation/provider-authority-status.json ] || git add automation/provider-authority-status.json
+            [ ! -f automation/provider-waf-browser-session-latest.json ] || git add automation/provider-waf-browser-session-latest.json
+            [ ! -f automation/provider-census-proof-history.json ] || git add automation/provider-census-proof-history.json
+            [ ! -f automation/provider-census-post-repair.json ] || git add automation/provider-census-post-repair.json
+            [ ! -f automation/provider-repair-candidate-evidence.json ] || git add automation/provider-repair-candidate-evidence.json
+            [ ! -f automation/provider-repair-batch-plan-latest.json ] || git add automation/provider-repair-batch-plan-latest.json
+          fi
           [ ! -f automation/brain-repair-memory.json ] || git add automation/brain-repair-memory.json
           [ ! -f automation/brain-positive-program-memory.json ] || git add automation/brain-positive-program-memory.json
-          [ ! -f automation/provider-census-post-repair.json ] || git add automation/provider-census-post-repair.json
-          [ ! -f automation/provider-repair-candidate-evidence.json ] || git add automation/provider-repair-candidate-evidence.json
-          [ ! -f automation/provider-repair-batch-plan-latest.json ] || git add automation/provider-repair-batch-plan-latest.json
+          [ ! -f "automation/provider-brain-repair-${GITHUB_RUN_ID}.json" ] || git add "automation/provider-brain-repair-${GITHUB_RUN_ID}.json"
 
           if git diff --cached --quiet; then
-            echo "Repair census already current"
+            echo "Repair evidence already current"
           else
-            git commit -m "ci(census): persist Repair symptoms ${counts} from ${GITHUB_SHA::12}"
+            git commit -m "ci(repair): persist evidence ${counts} from ${GITHUB_SHA::12}"
             git push origin HEAD:main
+          fi
+
+          if [ "$canonical_ledger_current" != "1" ]; then
+            echo "FIELD_REPAIR_FRESH_CENSUS_DISPATCH source_run=${GITHUB_RUN_ID}"
+            gh workflow run temp-current-bytes-full-provider-census.yml \
+              --repo "$GITHUB_REPOSITORY" \
+              --ref main
           fi
 
           if [ -s "$tmp/provider-brain-repair-latest.json" ]; then
