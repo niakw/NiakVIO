@@ -14,6 +14,7 @@ on:
       - 'scripts/merge_waf_network_profiles.py'
       - 'scripts/merge_residential_provider_replay.py'
       - 'scripts/select_residential_provider_replay.py'
+      - 'scripts/audit_provider_quick_yield_targeted.py'
       - 'tests/provider_census_status_markdown_test.py'
       - 'tests/waf_census_transport_merge_test.py'
       - 'tests/provider_waf_census_markdown_sync_test.py'
@@ -22,6 +23,7 @@ on:
       - 'tests/provider_waf_tailscale_exit_contract_test.py'
       - 'tests/waf_residential_profile_merge_test.py'
       - 'tests/residential_provider_replay_summary_test.py'
+      - 'tests/targeted_quick_yield_canonical_cli_test.py'
       - 'tests/residential_provider_replay_selection_test.py'
       - 'tools/waf-okhttp-probe/**'
 
@@ -77,6 +79,7 @@ jobs:
           python tests/waf_residential_profile_merge_test.py
           python tests/residential_provider_replay_selection_test.py
           python tests/residential_provider_replay_summary_test.py
+          python tests/targeted_quick_yield_canonical_cli_test.py
 
       - name: Normalize private Tailscale CI tag
         if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
