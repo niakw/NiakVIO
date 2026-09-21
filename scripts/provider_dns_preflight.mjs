@@ -1038,8 +1038,17 @@ async function registryFromPublishedManifest(manifestPath) {
     }
     const providerPath = path.resolve(ROOT, filename);
     const providersRoot = path.resolve(ROOT, 'providers');
+    const disabledRoot = path.resolve(ROOT, 'provider-disabled');
+    if (entry.enabled === false) {
+      if (providerPath !== disabledRoot && !providerPath.startsWith(`${disabledRoot}${path.sep}`)) {
+        throw new Error(`disabled provider artifact outside provider-disabled/: ${filename}`);
+      }
+      await fs.access(providerPath);
+      seen.add(canonicalId);
+      continue;
+    }
     if (providerPath !== providersRoot && !providerPath.startsWith(`${providersRoot}${path.sep}`)) {
-      throw new Error(`provider artifact outside providers/: ${filename}`);
+      throw new Error(`active provider artifact outside providers/: ${filename}`);
     }
     await fs.access(providerPath);
     seen.add(canonicalId);
