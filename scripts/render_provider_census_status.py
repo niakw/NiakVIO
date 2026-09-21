@@ -18,7 +18,7 @@ GOOD = "playable_verified"
 STATUS_META = {
     "FULL OK": ("🟢", "all declared semantic lanes have current verified playback"),
     "PARTIAL OK": ("🟡", "at least one declared lane has current verified playback"),
-    "CANDIDATE OK": ("🟦", "a reconstruction candidate was live/playback verified, but current published bytes have not reproduced it yet"),
+    "CANDIDATE OK": ("🟦", "an unpublished repair/reconstruction candidate was live/playback verified, but current published bytes have not reproduced it yet"),
     "ROUTE PROVEN": ("🟪", "live provider routes are qualified for the declared lanes, but terminal media is not currently verified"),
     "NO PROOF": ("🔵", "search/lookup ran but no content-specific chain was reached; keep rotating the corpus"),
     "CHAIN REACHED": ("🟣", "content/detail/episode/player chain was reached, but no terminal media is verified yet"),
@@ -732,7 +732,7 @@ def render(
         "",
         "**Important:** provider_network_zero_result is not a healthy-provider verdict. Search/lookup-only stays NO PROOF only when no retained positive/candidate/route proof exists; "
         "a content-specific detail/episode/player chain becomes CHAIN REACHED; ROUTE PROVEN preserves qualified live provider routes without pretending terminal media worked; "
-        "CANDIDATE OK preserves verified playback from a reconstruction candidate that current published bytes have not reproduced; PARTIAL OK still requires at least one current verified playable lane.",
+        "CANDIDATE OK preserves verified playback from an unpublished repair/reconstruction candidate that current published bytes have not reproduced; PARTIAL OK still requires at least one current verified playable lane.",
         "",
         "| Provider | Status | Run | Declared lanes | Current verified | Retained proof | Candidate proof | Route proof | Corpus progress | Evidence depth | Harness transport | Latest lane verdicts | Dominant issue | Next action |",
         "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
