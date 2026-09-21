@@ -69,14 +69,36 @@ with tempfile.TemporaryDirectory() as directory:
             }
         }
     }),encoding="utf-8")
-    old=mod.OVERRIDES
+    positive=root/"brain-positive-program-memory.json"
+    old_overrides=mod.OVERRIDES
+    old_positive=mod.POSITIVE_MEMORY
     mod.OVERRIDES=overrides
+    mod.POSITIVE_MEMORY=positive
     try:
-        accepted=[{"provider":"demo","acceptedProgram":program}]
+        accepted=[{
+            "provider":"demo",
+            "profile":"adaptive_runtime_recovery",
+            "reason":"strict_playable_stream_improvement",
+            "playableBefore":0,
+            "playableAfter":1,
+            "brainPlan":{
+                "failureClass":"media_extraction_gap",
+                "signature":"demo-signature",
+                "experimentVariant":2,
+                "experimentGeneration":1,
+            },
+            "acceptedProgram":program,
+        }]
         compiled,rejected=mod.persist_accepted_programs(accepted)
         assert compiled=={"demo"},compiled
         assert rejected=={},rejected
         assert accepted[0]["v3ProgramPersistence"]["status"]=="compiled"
+        assert accepted[0]["positiveProgramMemory"]["status"]=="persisted"
+        positive_saved=json.loads(positive.read_text(encoding="utf-8"))
+        assert positive_saved["role"]=="validated-positive-program-prior-only"
+        assert positive_saved["entries"][0]["providerId"]=="demo"
+        assert positive_saved["entries"][0]["signature"]=="demo-signature"
+        assert positive_saved["entries"][0]["playableAfter"]==1
         saved=json.loads(overrides.read_text(encoding="utf-8"))
         patch=saved["provider_patches"]["demo"]
         assert patch["search_request_plan"][0]["sourceRole"]=="brain-accepted-runtime"
@@ -93,12 +115,15 @@ with tempfile.TemporaryDirectory() as directory:
         assert rejected_rows[0]["v3ProgramPersistence"]["status"]=="rejected"
         assert overrides.read_text(encoding="utf-8")==before
     finally:
-        mod.OVERRIDES=old
+        mod.OVERRIDES=old_overrides
+        mod.POSITIVE_MEMORY=old_positive
 
 source=(ROOT/"scripts/run_provider_brain_repair.py").read_text(encoding="utf-8")
 assert "blocked_fixed = accepted_program_providers - compiled_this_wave" in source
 assert "effective_fixed_this_wave = fixed_this_wave - blocked_fixed" in source
 assert "materialize_targets_this_wave" in source
 assert '"acceptedProgramCompileFailures"' in source
+assert "merge_positive_program_records" in source
+assert "positiveProgramMemory" in source
 
 print("Brain accepted program v3 persistence/orchestration contract passed")
