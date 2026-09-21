@@ -609,12 +609,13 @@ def main() -> int:
         history["updated_at"] = resolver.now_iso()
         write(HISTORY_PATH, history)
 
-        resolved_provider_ids = [
-            provider_id
-            for provider_id, item in report["providers"].items()
-            if isinstance(item, dict) and item.get("status") == "site_authoritative"
-        ]
-        projection_drift_ids = provider_domain_projection_drift_ids(resolved_provider_ids)
+        # DOMAIN_REFRESH_CURRENT_SCOPE_PROJECTION_DRIFT_V1
+        # Projection repair is read-only with respect to structured authority:
+        # compare current accepted DATA to published CONFIG for every current
+        # provider, even when this run's network resolver is inconclusive. This
+        # catches stale bundles such as an accepted explicit-current domain that
+        # was persisted in DATA but never rematerialized into published bytes.
+        projection_drift_ids = provider_domain_projection_drift_ids(sorted(current_provider_ids))
         rebuild_ids = sorted(set(changed_provider_ids) | set(projection_drift_ids))
         bundle_updates = rebuild_provider_configs(rebuild_ids)
         from sync_manifest_projection_rows import sync as sync_manifest_projections
