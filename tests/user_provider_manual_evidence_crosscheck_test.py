@@ -37,10 +37,10 @@ flem=patches["flemmix"]
 assert "Flemmix**: DLE-style search" in ledger
 assert "/index.php?do=search&subaction=search&...&story=<query>" in ledger
 assert flem["search_request_plan"][0]["route"]=="/search?q={query}"
-assert flem["search_request_plan"][0]["base"]=="https://flemmix.me"
+assert flem["search_request_plan"][0]["base"]=="https://flemmix.party"
 assert flem["search_request_plan"][0]["requestSpec"]["method"]=="GET"
 assert "flemmix.cloud" in (flem.get("domain_substitutions") or {})
-assert (flem.get("domain_substitutions") or {}).get("flemmix.cloud")=="flemmix.me"
+assert (flem.get("domain_substitutions") or {}).get("flemmix.cloud")=="flemmix.party"
 
 uhd_src=(ROOT/"scripts/provider_patches/uhdmovies_runtime_v1.py").read_text(encoding="utf-8")
 assert "/search/" in uhd_src
