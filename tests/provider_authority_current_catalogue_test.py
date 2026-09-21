@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import importlib.util
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPT = ROOT / "scripts" / "classify_provider_authority.py"
+spec = importlib.util.spec_from_file_location("provider_authority", SCRIPT)
+assert spec and spec.loader
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+
+manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+hubs = json.loads((ROOT / "provider-hubs.json").read_text(encoding="utf-8"))
+overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+history = json.loads((ROOT / "provider-domain-history.json").read_text(encoding="utf-8"))
+
+rows = {
+    str(row.get("id") or "").strip().casefold(): row
+    for row in manifest.get("scrapers") or []
+    if isinstance(row, dict)
+}
+registries = hubs.get("providers") or {}
+patches = overrides.get("provider_patches") or {}
+histories = history.get("providers") or {}
+
+def classify(provider: str) -> dict:
+    return module.classify(
+        provider,
+        rows[provider],
+        registries.get(provider) if isinstance(registries.get(provider), dict) else {},
+        patches.get(provider) if isinstance(patches.get(provider), dict) else {},
+        histories.get(provider) if isinstance(histories.get(provider), dict) else {},
+    )
+
+expected = {
+    "yflix": "KEEP_BACKEND",
+    "persianstremio": "KEEP_BACKEND",
+    "vidfast": "KEEP_ROUTE_AUTHORITY",
+    "kurage": "KEEP_DIRECT",
+    "sekai": "KEEP_DIRECT",
+    "streamzo": "KEEP_DIRECT",
+    "voiranime-rip": "KEEP_DIRECT",
+    "animekai": "KEEP_PROVEN_SITE",
+    "neko-sama": "KEEP_PROVEN_SITE",
+    "anime-ultime": "KEEP_PROVEN_SITE",
+    "mallumv": "KEEP_PROVEN_SITE",
+    "showbox": "REDISCOVER_SEARCH",
+    "animetsu": "KEEP_DISABLED",
+    "fullanime": "KEEP_DISABLED",
+    "desiflix": "KEEP_DISABLED",
+}
+for provider, action in expected.items():
+    result = classify(provider)
+    assert result["action"] == action, (provider, result)
+    if action.startswith("KEEP_") and action != "KEEP_DISABLED":
+        assert result["repairEligible"] is True, (provider, result)
+    if action in {"KEEP_DISABLED", "REDISCOVER_SEARCH"}:
+        assert result["repairEligible"] is False, (provider, result)
+
+# An explicit-current site is allowed while Domain has no persisted contradiction.
+# Domain failure memory, not a human hunch or raw search result, must demote it.
+animesultra = classify("animesultra")
+assert animesultra["action"] == "KEEP_DIRECT", animesultra
+assert animesultra["failureCount"] == 0, animesultra
+
+# Search is still available for the historical catalogue, but never as current
+# authority by itself. New registry autofill rows opt out by default.
+showbox_registry = registries["showbox"]
+assert showbox_registry.get("legacy_search_refresh") is True, showbox_registry
+assert classify("showbox")["confidence"] == "low"
+for provider, row in registries.items():
+    if isinstance(row, dict) and row.get("registry_state") == "unresolved":
+        assert row.get("legacy_search_refresh") is not True, (provider, row)
+        assert not row.get("direct") and not row.get("hub"), (provider, row)
+
+print("provider current catalogue authority contract ok")
