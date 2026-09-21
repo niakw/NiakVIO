@@ -6,13 +6,17 @@ import json
 import math
 import re
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import Any, Callable
 
-from brain_positive_program_memory import learned_skills as positive_program_learned_skills
-
 ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS = ROOT / "scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+
+from brain_positive_program_memory import learned_skills as positive_program_learned_skills
 PLAN_SCRIPT = ROOT / "engine_v2" / "scripts" / "plan-repairs.mjs"
 POLICY_PATH = ROOT / "engine_v2" / "config" / "brain-policy.json"
 OVERRIDES_PATH = ROOT / "provider-overrides.json"
