@@ -517,13 +517,40 @@ def main() -> int:
             or raw_patch.get("runtime_domain_replacements")
             or raw_patch.get("replacements")
         )
+        media_types = sorted({
+            str(value).casefold()
+            for value in raw_patch.get("published_types") or capability.get("catalogue_types") or []
+            if str(value).casefold() in {"movie", "tv", "anime"}
+        })
+        recipe_roles = sorted({
+            str(recipe.get("role") or "").casefold()
+            for recipe in local_request_recipes
+            if str(recipe.get("role") or "").strip()
+        })
+        recipe_methods = sorted({
+            str(recipe.get("method") or "GET").upper()
+            for recipe in local_request_recipes
+        })
+        recipe_responses = sorted({
+            str(recipe.get("response") or "html-or-text").casefold()
+            for recipe in local_request_recipes
+        })
         providers[provider_id] = {
             "status": state,
             "operational": operational,
             "strategy": strategy,
+            "mediaTypes": media_types,
             "routeTemplates": local_routes,
+            "peerRouteTemplates": peer_routes[:48],
             "routeFamilies": route_families,
             "requestRecipes": local_request_recipes[:32],
+            "peerRequestRecipes": peer_request_recipes[:32],
+            "recipeRoles": recipe_roles,
+            "recipeMethods": recipe_methods,
+            "recipeResponses": recipe_responses,
+            "hasApiRecipe": isinstance(raw_patch.get("api_recipe"), dict),
+            "hasProviderValuePlan": bool(raw_patch.get("provider_value_plan")),
+            "hasSearchRequestPlan": bool(raw_patch.get("search_request_plan")),
             "providerLegoScripts": lego,
             "domainMemory": domain_memory,
             "officialHost": official_host,
@@ -589,6 +616,16 @@ def main() -> int:
         "operationalProviderCount": sum(1 for row in providers.values() if row["operational"]),
         "providers": providers,
         "strategyPatterns": patterns,
+        "archetypeModel": {
+            "version": 1,
+            "matching": "strategy+media-types+route-roles+request-shape",
+            "maxNearestPeers": 3,
+            "providerIds": sorted(
+                provider_id
+                for provider_id, row in providers.items()
+                if row.get("operational") is True
+            ),
+        },
         "historicalCases": load_historical_cases(),
         "safety": {
             "peerRouteMinimumProviders": 2,
