@@ -1,6 +1,17 @@
 # NiakVIO — Recovery Memory
 
 
+## 2026-09-21 20:50 Europe/Paris — Repair #125 preflight fixed; documented-route parser corrected; Domain #1034 green
+
+- Lifecycle run `35640498691` (#20) completed SUCCESS and bot commit `fe6d67a08372` persisted the corrected authority state: 46 providers, 42 Repair-eligible, ShowBox=`REDISCOVER_SEARCH` with reasons `direct_candidate_unproven + search_supplement_only`; no additional safe disable was applied.
+- Repair run `35640602284` (#125) on `c5c1d8c1fb33` again stopped in preflight before provider probing. Authority arbiter/current-catalogue/domain-memory tests all passed. The next contract, `provider_documented_route_discovery_test.py`, failed with `AssertionError: []`; therefore #125 contains no provider/Brain repair evidence.
+- Root cause was a raw-regex double escape in `discover_documented_routes()`: `r"https?://[^\\\\s...]"` treated `s` as a forbidden literal character, truncating provider URLs such as `vidfast.to` before URL parsing. `8eb80bceeedf` changes this to the real whitespace class `\s`. The existing contract already proves only same-origin literal placeholder routes are learned, while concrete fixture URLs and foreign-domain docs remain excluded.
+- A targeted scan of `resolve_provider_hubs.py`, `adaptive_runtime/runtime_repair.py` and `build_brain_repair_experience.py` found no remaining obvious `\\s` / escaped-placeholder pattern of this class.
+- The resolver change auto-triggered Domain run `35640767459` (#1034). It completed **SUCCESS through every step**: resolve, reconcile, transaction guard, no-op history, DNS/HTTP, domain-only Provider-v3 validation, release/native Hub46 projection, publish step and artifact upload. This also proves `d2435d98` correctly prevents post-publication auxiliary dispatch problems from turning the Domain run red.
+- Next action: relaunch canonical authority-filtered Repair on the new current HEAD; require it to reach the actual provider queue before evaluating Brain scalability or repair quality.
+
+
+
 ## 2026-09-21 20:45 Europe/Paris — Repair #124 preflight found and fixed false direct authority promotion
 
 - Canonical Repair run `35640096441` (#124) on trigger SHA `fd3140d48295` did **not** reach provider probes. It failed in preflight at `provider_authority_current_catalogue_test.py`: ShowBox recalculated as `KEEP_DIRECT` although the durable intended state is `REDISCOVER_SEARCH`. No Brain/provider result from #124 is valid repair evidence.
