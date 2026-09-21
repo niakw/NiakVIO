@@ -254,8 +254,8 @@ for required in (
     "build_brain_repair_experience.py",
     "brain-repair-experience.json",
     "stage_published.py",
-    "materialize_provider_base_v3_store.py",
-    "materialize_provider_v3_all.py",
+    "materialize_provider_v3_one.py",
+    "PROVIDER_BRAIN_INCREMENTAL_MATERIALIZATION_V1",
     "validatedRepairLearningExecuted",
     "family-batched-multi-wave-brain-repair",
     "rotating_rejected_experiment",
@@ -293,3 +293,9 @@ source=(ROOT/"scripts/run_provider_brain_repair.py").read_text(encoding="utf-8")
 assert 'def materialize(provider_ids:' in source
 assert '"--provider",\n            provider_id' in source
 assert '(sys.executable, "scripts/reconcile_provider_domain_metadata.py", "--rebuild")' not in source
+materialize_source = source.split("def materialize(provider_ids:", 1)[1].split("\ndef main()", 1)[0]
+assert "PROVIDER_BRAIN_INCREMENTAL_MATERIALIZATION_V1" in materialize_source
+assert '"scripts/materialize_provider_v3_one.py"' in materialize_source
+assert '"scripts/materialize_provider_v3_all.py"' not in materialize_source
+assert '"scripts/materialize_provider_base_v3_store.py"' not in materialize_source
+assert materialize_source.count('"scripts/validate_published_provider_config.py"') == 1
