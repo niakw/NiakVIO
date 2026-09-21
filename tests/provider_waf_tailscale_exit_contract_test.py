@@ -58,3 +58,17 @@ assert connect < baseline < activate < residential < merge
 print("Tailscale residential WAF workflow contract passed")
 
 assert wf.count("--network-report provider-v3-quick-yield.json") == 2
+
+# Census and WAF persistence must share one serialization lane. A census commit
+# then explicitly dispatches a residential overlay, which is allowed to persist
+# on workflow_dispatch as well as push.
+temp=(ROOT/".github/workflows/temp-current-bytes-full-provider-census.yml").read_text(encoding="utf-8")
+sharded=(ROOT/".github/workflows/provider-census-sharded.yml").read_text(encoding="utf-8")
+for source in (wf,temp,sharded):
+    assert "group: provider-census-waf-main" in source, source[:400]
+    assert "cancel-in-progress: false" in source, source[:400]
+assert "actions: write" in temp
+assert "actions: write" in sharded
+assert "gh workflow run provider-waf-browser-session.yml --ref main" in temp
+assert "gh workflow run provider-waf-browser-session.yml --ref main" in sharded
+assert "if: ${{ github.ref == 'refs/heads/main' }}" in wf
