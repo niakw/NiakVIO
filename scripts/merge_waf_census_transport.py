@@ -170,7 +170,7 @@ def merge_transport(
                 str(value.get("lane") or "").strip().casefold()
                 for value in provider_replay_rows
                 if int(value.get("playable") or 0) > 0
-                and int(value.get("verified") or 0) > 0
+                and int(value.get("verified") or 0) == int(value.get("playable") or 0)
                 and value.get("identitySafe") is True
                 and int(value.get("contradictions") or 0) == 0
                 and str(value.get("lane") or "").strip()
