@@ -8,14 +8,12 @@ on:
       - '.github/workflows/provider-waf-browser-session.yml'
       - '.github/triggers/provider-waf-browser-session.json'
       - 'scripts/probe_waf_browser_session.py'
-      - 'scripts/render_provider_census_status.py'
       - 'scripts/render_provider_census_status_from_state.py'
       - 'scripts/merge_waf_census_transport.py'
       - 'scripts/merge_waf_network_profiles.py'
       - 'scripts/merge_residential_provider_replay.py'
       - 'scripts/select_residential_provider_replay.py'
       - 'scripts/audit_provider_quick_yield_targeted.py'
-      - 'tests/provider_census_status_markdown_test.py'
       - 'tests/waf_census_transport_merge_test.py'
       - 'tests/provider_waf_census_markdown_sync_test.py'
       - 'tests/provider_waf_browser_session_test.py'
@@ -269,8 +267,27 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             mkdir -p automation
-            cp /tmp/provider-waf-browser-session-latest.json automation/provider-waf-browser-session-latest.json
             test -s automation/provider-census-status.json
+
+            # WAF is an overlay, never a census authority. Do not project fresh
+            # transport evidence onto an older status schema that predates the
+            # address/backend authority fields, because that can resurrect an
+            # obsolete repairQueue after a newer renderer change.
+            if ! python - <<'PY'
+          import json
+          from pathlib import Path
+          state=json.loads(Path("automation/provider-census-status.json").read_text())
+          rows=[row for row in state.get("providers") or [] if isinstance(row,dict)]
+          assert int(state.get("schemaVersion") or 0) >= 3
+          assert rows
+          assert all("authorityRepairEligible" in row and "authorityAction" in row for row in rows)
+          PY
+            then
+              echo "FIELD_WAF_CENSUS_BASE_NOT_READY authority_schema_v3_required"
+              return 0
+            fi
+
+            cp /tmp/provider-waf-browser-session-latest.json automation/provider-waf-browser-session-latest.json
             python scripts/merge_waf_census_transport.py \
               --status automation/provider-census-status.json \
               --waf automation/provider-waf-browser-session-latest.json \
