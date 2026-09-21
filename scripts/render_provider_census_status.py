@@ -57,6 +57,18 @@ NETWORK_BROKEN_STAGES = {
 HEALTHY_STATES = {"FULL OK", "PARTIAL OK"}
 ENVIRONMENT_ONLY_STATES = {"HARNESS MISMATCH", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}
 
+# These fields belong to one concrete WAF/residential overlay run. They must
+# never be inherited by the next canonical census merely because a provider row
+# was carried from the previous ledger.
+TRANSPORT_OVERLAY_ROW_FIELDS = {
+    "networkDifferentialClass",
+    "networkDifferentialEvidence",
+    "residentialProviderReplayClass",
+    "residentialProviderReplayEvidence",
+    "residentialProviderReplayPromoted",
+    "residentialProviderReplayReclassified",
+}
+
 
 def is_symptomatic_status(status: str) -> bool:
     return str(status or "") not in HEALTHY_STATES
@@ -779,6 +791,8 @@ def build_status_rows(
         if not provider or provider in current:
             continue
         carried = dict(previous)
+        for field in TRANSPORT_OVERLAY_ROW_FIELDS:
+            carried.pop(field, None)
 
         # Refresh dynamic retained evidence for carried rows instead of blindly
         # preserving a stale snapshot from an older renderer.
