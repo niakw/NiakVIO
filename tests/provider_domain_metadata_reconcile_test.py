@@ -40,6 +40,7 @@ history = {
 changed = reconcile_patch("flemmix", patch, registry, history)
 assert "manifest_overrides.logo" in changed
 assert patch["manifest_overrides"]["logo"] == "https://flemmix.cloud/favicon.ico"
+assert patch["manifest_overrides"].get("enabled", True) is True
 # External/CDN assets are not provider-domain metadata and must stay untouched.
 assert patch["manifest_overrides"]["icon"] == "https://cdn.example/flemmix.png"
 assert patch["domain_substitutions"]["flemmix.men"] == "flemmix.cloud"
