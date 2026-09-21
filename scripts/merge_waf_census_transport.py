@@ -27,6 +27,83 @@ def load(path: Path) -> dict[str, Any]:
     return value
 
 
+
+def network_differential(waf: dict[str, Any], provider: str) -> dict[str, Any]:
+    wanted = str(provider or "").strip().casefold()
+    rows = [
+        row for row in waf.get("rows") or []
+        if isinstance(row, dict)
+        and str(row.get("provider") or "").strip().casefold() == wanted
+        and str(row.get("seedKind") or "") == "network-failure-replay"
+    ]
+    if not rows:
+        return {"classification": "no-network-differential-evidence", "evidence": []}
+
+    evidence: list[str] = []
+    residential_native = False
+    residential_browser = False
+    residential_present = False
+    residential_blocked = False
+    github_native = False
+    github_browser = False
+
+    for row in rows:
+        lane = str(row.get("lane") or "unknown").strip().casefold() or "unknown"
+        direct = row.get("directHttpProfile") if isinstance(row.get("directHttpProfile"), dict) else {}
+        okhttp = row.get("okHttpJvmProfile") if isinstance(row.get("okHttpJvmProfile"), dict) else {}
+        g_direct = str(direct.get("outcome") or "")
+        g_okhttp = str(okhttp.get("outcome") or "")
+        g_browser = str(row.get("outcome") or "")
+        if g_direct == "direct_http_content_reached" or g_okhttp == "okhttp_jvm_content_reached":
+            github_native = True
+        if g_browser == "browser_content_reached":
+            github_browser = True
+
+        residential = row.get("residentialExitNodeProfile") if isinstance(row.get("residentialExitNodeProfile"), dict) else {}
+        r_browser = ""
+        r_direct = ""
+        r_okhttp = ""
+        if residential:
+            residential_present = True
+            r_browser = str(residential.get("outcome") or "")
+            r_direct_row = residential.get("directHttpProfile") if isinstance(residential.get("directHttpProfile"), dict) else {}
+            r_okhttp_row = residential.get("okHttpJvmProfile") if isinstance(residential.get("okHttpJvmProfile"), dict) else {}
+            r_direct = str(r_direct_row.get("outcome") or "")
+            r_okhttp = str(r_okhttp_row.get("outcome") or "")
+            if r_direct == "direct_http_content_reached" or r_okhttp == "okhttp_jvm_content_reached":
+                residential_native = True
+            if r_browser == "browser_content_reached":
+                residential_browser = True
+            blocked_values = [value for value in (r_browser, r_direct, r_okhttp) if value]
+            if blocked_values and all(
+                ("challenge_persisted" in value) or value.endswith("_timeout") or value.endswith("_error")
+                for value in blocked_values
+            ):
+                residential_blocked = True
+
+        evidence.append(
+            f"{lane}: github-browser={g_browser or 'unknown'}, "
+            f"github-okhttp={g_okhttp or 'unknown'}, github-direct={g_direct or 'unknown'}, "
+            f"residential-browser={r_browser or 'unavailable'}, "
+            f"residential-okhttp={r_okhttp or 'unavailable'}, "
+            f"residential-direct={r_direct or 'unavailable'}"
+        )
+
+    if residential_native and not github_native:
+        classification = "residential-native-route-reachable"
+    elif github_native:
+        classification = "github-native-route-reachable"
+    elif residential_browser and not github_browser:
+        classification = "residential-browser-route-reachable"
+    elif residential_present and residential_blocked:
+        classification = "residential-route-still-blocked"
+    elif not residential_present:
+        classification = "residential-unavailable"
+    else:
+        classification = "network-route-inconclusive"
+    return {"classification": classification, "evidence": evidence}
+
+
 def merge_transport(
     baseline: dict[str, Any],
     waf: dict[str, Any],
@@ -50,12 +127,27 @@ def merge_transport(
         if isinstance(row, dict) and str(row.get("provider") or "").strip()
     }
     allowed = baseline_environment & waf_providers
+    baseline_network = {
+        str(row.get("provider") or "").strip().casefold()
+        for row in providers
+        if isinstance(row, dict)
+        and str(row.get("status") or "") == "PROVIDER NETWORK BLOCKED"
+        and str(row.get("provider") or "").strip()
+    }
+    network_allowed = baseline_network & waf_providers
 
     changed: list[str] = []
+    network_changed: list[str] = []
     for row in providers:
         if not isinstance(row, dict):
             continue
         provider = str(row.get("provider") or "").strip().casefold()
+        if provider in network_allowed:
+            differential = network_differential(waf, provider)
+            if differential["classification"] != "no-network-differential-evidence":
+                row["networkDifferentialClass"] = differential["classification"]
+                row["networkDifferentialEvidence"] = list(differential["evidence"])
+                network_changed.append(provider)
         if provider not in allowed:
             continue
         diagnostic = census.harness_transport_diagnostic(waf, provider)
@@ -88,6 +180,7 @@ def merge_transport(
     out["harnessEvidenceRunId"] = str(evidence_run_id or waf.get("runId") or "")
     out["harnessEvidenceSha"] = str(evidence_sha or waf.get("triggerSha") or "")
     out["harnessTransportUpdatedProviders"] = sorted(changed)
+    out["networkDifferentialUpdatedProviders"] = sorted(network_changed)
     residential = waf.get("residentialExitNodeEvidence")
     if isinstance(residential, dict):
         out["residentialExitNodeEvidence"] = copy.deepcopy(residential)
@@ -117,6 +210,7 @@ def main() -> int:
         f"repair_queue={len(merged.get('repairQueue') or [])} "
         f"environment_queue={len(merged.get('environmentQueue') or [])} "
         f"updated={len(merged.get('harnessTransportUpdatedProviders') or [])} "
+        f"network_differential={len(merged.get('networkDifferentialUpdatedProviders') or [])} "
         f"counts={json.dumps(merged.get('counts') or {}, sort_keys=True)}"
     )
     return 0
