@@ -283,6 +283,19 @@ jobs:
           run_id="$GITHUB_RUN_ID"
           cp automation/provider-census-sharded-merged.json /tmp/provider-census-sharded.json
           cp automation/provider-census-sharded-status.json /tmp/provider-census-status.json
+          if ! python - <<'PY'
+          import json
+          from pathlib import Path
+          state=json.loads(Path("/tmp/provider-census-status.json").read_text())
+          rows=[row for row in state.get("providers") or [] if isinstance(row,dict)]
+          assert int(state.get("schemaVersion") or 0) >= 3
+          assert rows
+          assert all("authorityRepairEligible" in row and "authorityAction" in row for row in rows)
+          PY
+          then
+            echo "FIELD_SHARDED_CENSUS_NOT_PERSISTED authority_schema_v3_required"
+            exit 0
+          fi
           cp automation/provider-census-sharded-summary.json /tmp/provider-census-sharded-summary.json
           cp automation/provider-repair-batch-plan-sharded.json /tmp/provider-repair-batch-plan.json
           cp automation/provider-census-proof-history.json /tmp/provider-census-proof-history.json
