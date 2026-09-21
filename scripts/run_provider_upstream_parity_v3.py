@@ -38,6 +38,7 @@ from typing import Any
 import run_provider_upstream_parity as parity
 import run_provider_upstream_parity_v2 as parity_v2
 from rotating_corpus import default_seed, select_fixtures
+from current_provider_scope import active_provider_ids
 from parity_hls_terminal_probe import verify_hls_terminal
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -592,7 +593,12 @@ def main() -> int:
     scope_path = args.scope_matrix
     if not scope_path.is_absolute():
         scope_path = ROOT / scope_path
-    scoped = scope_ids(scope_path)
+    matrix_scoped = scope_ids(scope_path)
+    active = active_provider_ids()
+    scoped = matrix_scoped & active
+    inactive_matrix_providers = sorted(matrix_scoped - active)
+    if not scoped:
+        raise SystemExit("parity campaign has no currently active providers")
     local_all = parity.local_catalog()
     local = {pid: row for pid, row in local_all.items() if pid in scoped}
     missing_local = sorted(scoped - set(local))
@@ -692,6 +698,8 @@ def main() -> int:
         "method": "rotating-hub46-upstream-parity-terminal-verified",
         "terminalMediaRequired": True,
         "scopeProviderCount": len(scoped),
+        "matrixScopeProviderCount": len(matrix_scoped),
+        "inactiveMatrixProviders": inactive_matrix_providers,
         "selectedProviderCount": len(accounting_scope),
         "matchedUpstreamProviders": len(provider_ids),
         "testedProviders": len(rows),
