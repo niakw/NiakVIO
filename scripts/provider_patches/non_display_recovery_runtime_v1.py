@@ -74,7 +74,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         raise ValueError(f"unsupported non-display recovery provider: {provider!r}")
     default_bases = {
         "animesama-co": "https://animesama.co",
-        "animevostfr": "https://v2.animevostfr.org",
+        "animevostfr": "https://animevostfr.org",
         "coflix": "https://coflix.wiki",
         "neko-sama": "https://animes-sama.su",
         "sekai": "https://sekai.one",
