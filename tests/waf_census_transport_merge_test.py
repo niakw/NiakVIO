@@ -161,6 +161,11 @@ network_baseline = {
         "color": "🟤",
         "repairEligible": True,
         "brainCheckRequired": True,
+        "networkDifferentialClass": "stale-network-overlay",
+        "networkDifferentialEvidence": ["stale"],
+        "residentialProviderReplayClass": "verified",
+        "residentialProviderReplayEvidence": ["stale"],
+        "residentialProviderReplayPromoted": True,
     }],
 }
 network_waf = {
@@ -183,6 +188,10 @@ net = network_merged["providers"][0]
 assert net["status"] == "PROVIDER NETWORK BLOCKED", net
 assert net["repairEligible"] is True, net
 assert net["networkDifferentialClass"] == "residential-native-route-reachable", net
+assert net["networkDifferentialEvidence"] != ["stale"], net
+assert "residentialProviderReplayClass" not in net, net
+assert "residentialProviderReplayEvidence" not in net, net
+assert "residentialProviderReplayPromoted" not in net, net
 assert network_merged["repairQueue"] == ["net"], network_merged
 assert network_merged["environmentQueue"] == [], network_merged
 assert network_merged["networkDifferentialUpdatedProviders"] == ["net"], network_merged
@@ -421,5 +430,47 @@ assert post_by_id["timeout-runtime"]["status"] == "HARNESS MISMATCH"
 assert post_by_id["timeout-runtime"]["repairEligible"] is False
 assert "timeout-runtime" in post_harness["environmentQueue"]
 
+
+# Canonical census ownership also strips WAF-only fields from a carried row.
+# Otherwise a later census can correctly reclassify status while still showing
+# a stale "residential replay verified" annotation from an older overlay.
+canonical_carried = {
+    "providers": [{
+        "provider": "carried-overlay",
+        "status": "FULL OK",
+        "color": "🟢",
+        "declaredLanes": ["movie"],
+        "currentVerifiedLanes": ["movie"],
+        "historicalProof": [],
+        "candidateProof": [],
+        "routeProof": [],
+        "latestLaneVerdicts": ["movie=OK"],
+        "dominantIssue": "none",
+        "searchProgress": ["movie: retained"],
+        "evidenceDepth": ["movie=none"],
+        "harnessTransportClass": "not-applicable",
+        "harnessTransportEvidence": [],
+        "repairEligible": False,
+        "brainCheckRequired": False,
+        "testedThisRun": True,
+        "residentialProviderReplayClass": "verified",
+        "residentialProviderReplayEvidence": ["stale"],
+        "residentialProviderReplayPromoted": True,
+        "networkDifferentialClass": "stale",
+        "networkDifferentialEvidence": ["stale"],
+    }]
+}
+canonical_rows = mod.census.build_status_rows(
+    {"provider_count": 0, "rows": []},
+    {},
+    canonical_carried,
+    {},
+    {},
+    {},
+    {},
+)
+canonical = canonical_rows[0]
+for field in mod.census.TRANSPORT_OVERLAY_ROW_FIELDS:
+    assert field not in canonical, (field, canonical)
 
 print("WAF census transport-only merge contract passed")
