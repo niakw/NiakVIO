@@ -190,13 +190,10 @@ def classify(
             "reasons": reasons,
         }
 
-    backend_authority = bool(backends) and (
-        capability in API_CAPABILITIES
-        or bool(patch.get("api_recipe"))
-        or bool(patch.get("fixed_endpoint"))
-        or any("/stream/" in str(route) for route in patch.get("learned_routes") or [])
-        or any("/embed/" in str(route) for route in patch.get("documented_routes") or [])
-    )
+    # backend_urls() only collects explicitly backend-shaped fields (api/db/
+    # fixed endpoint), never a generic site base. Their presence is therefore
+    # enough to establish backend authority even for mixed_embed_resolver.
+    backend_authority = bool(backends)
     if backend_authority:
         reasons.append("structured_backend_authority")
         return {
@@ -235,13 +232,13 @@ def classify(
         }
 
     if http_url(direct):
-        if explicit_current and failures < 2:
-            reasons.append("explicit_current_direct")
+        if failures < 2:
+            reasons.append("explicit_current_direct" if explicit_current else "curated_direct")
             return {
                 "provider": provider,
                 "action": "KEEP_DIRECT",
                 "repairEligible": True,
-                "confidence": "medium",
+                "confidence": "high" if explicit_current else "medium",
                 "authorityClass": "direct",
                 "failureCount": failures,
                 "reasons": reasons,
@@ -269,6 +266,17 @@ def classify(
         }
 
     if capability in SITE_DEPENDENT_CAPABILITIES or not capability:
+        if failures == 0 and http_url(official_site) and has_positive_route_prior(patch):
+            reasons.extend(["structured_official_site", "existing_positive_route_prior"])
+            return {
+                "provider": provider,
+                "action": "KEEP_PROVEN_SITE",
+                "repairEligible": True,
+                "confidence": "medium",
+                "authorityClass": "structured-site-plus-route-proof",
+                "failureCount": failures,
+                "reasons": reasons,
+            }
         current = history.get("current") if isinstance(history.get("current"), dict) else {}
         current_url = str(current.get("url") or "").rstrip("/")
         direct_candidates = {str(value or "").rstrip("/") for value in registry.get("direct_candidates") or [] if http_url(value)}
