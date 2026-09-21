@@ -8,7 +8,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count
+from current_provider_scope import active_provider_count, active_provider_ids
 
 BUILDER = ROOT / "scripts" / "build_hub46_native_manifest.py"
 
@@ -17,14 +17,16 @@ assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
-scope_data = json.loads((ROOT / "automation/evidence/hub-lab-matrix-46.json").read_text(encoding="utf-8"))
-scope = {
-    module.cid(row.get("manifestId") or row.get("provider"))
-    for row in scope_data["rows"]
-}
-assert len(scope) == active_provider_count()
-
+# HUB46_CURRENT_ACTIVE_TRANSPORT_SCOPE_V1
+# "Hub46" is a historical campaign name. The native production transport is
+# defined by the current active manifest, never by a frozen campaign cardinality.
 source = json.loads((ROOT / "manifest-hub46.json").read_text(encoding="utf-8"))
+scope = {
+    module.cid(row.get("id"))
+    for row in source.get("scrapers") or []
+    if isinstance(row, dict) and module.cid(row.get("id"))
+}
+assert scope == active_provider_ids(), (len(scope), active_provider_count())
 provider_sha = "1" * 40
 payload = module.build(
     source,
