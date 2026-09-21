@@ -133,11 +133,11 @@ jobs:
           # run only after the expensive Brain stage and made a stale 46-active
           # assumption waste a complete Repair cycle.
           python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/brain_repair_experience_transfer_test.py
           python tests/provider_clean_worker_smoke_test.py
           python tests/provider_stage_profile_worker_smoke_test.py
           python tests/provider_wookafr_current_runtime_behavior_test.py
           python tests/provider_fetch_slice_budget_test.py
-          python tests/brain_repair_experience_transfer_test.py
           python tests/brain_preflight_fail_fast_order_test.py
           cp manifest.json "$RUNNER_TEMP/provider-preflight-manifest.json"
           python scripts/materialize_provider_v3_all.py \
