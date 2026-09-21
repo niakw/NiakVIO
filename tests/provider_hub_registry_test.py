@@ -407,6 +407,33 @@ assert direct_fresh_history['current']['url'] == 'https://new-direct.example'
 assert direct_fresh_history['current']['source_type'] == 'curated_direct'
 assert direct_fresh_history['previous'][0]['url'] == 'https://old-direct.example'
 
+# A raw search result is never publication authority, but a same-brand search
+# result that deterministically redirects may produce source_redirect evidence.
+_original_search_urls = resolver.search_engine_urls
+_original_fetch = resolver.fetch
+try:
+    resolver.search_engine_urls = lambda _query: [("test", "https://search.example/?q=demo")]
+    def fake_search_redirect_fetch(url: str, timeout: float = 10.0):
+        if url.startswith("https://search.example/"):
+            return (200, url, '<a href="https://old.demo-provider.example/">Demo Provider</a>', {"Content-Type": "text/html"})
+        if url == "https://old.demo-provider.example/":
+            return (200, "https://demo-provider.example/", "<html></html>", {"Content-Type": "text/html"})
+        raise AssertionError(url)
+    resolver.fetch = fake_search_redirect_fetch
+    found, observed = resolver.search_candidates(
+        "demo-provider",
+        {"aliases": ["demo-provider"], "blocked_hosts": []},
+        "demo provider",
+        0.2,
+    )
+finally:
+    resolver.search_engine_urls = _original_search_urls
+    resolver.fetch = _original_fetch
+assert any(row.get("source_type") == "search" for row in found), found
+redirect_rows = [row for row in found if row.get("source_type") == "source_redirect"]
+assert redirect_rows and redirect_rows[0]["url"] == "https://demo-provider.example", found
+assert any(row.get("search_result_probe") for row in observed), observed
+
 # Deep discovery uses Yandex first and DuckDuckGo as a bounded fallback.
 engines = resolver.search_engine_urls('example provider')
 assert engines[0][0] == 'yandex' and 'yandex.com/search/' in engines[0][1]
@@ -440,6 +467,15 @@ for provider_id in ('flemmix', '1shows', 'allwish', 'anidb', 'cinefreak', 'moonf
     }
     assert str(current.get('source') or '').rstrip('/') in authoritative_sources, (provider_id, current)
     assert current.get('source_type') in {'hub', 'telegram_public', 'redirect', 'curated_official_hub'}, (provider_id, current)
+
+assert hubs['animevostfr']['sources'][0]['type'] == 'redirect', hubs['animevostfr']
+assert hubs['animevostfr']['sources'][0]['url'] == 'https://v2.animevostfr.org/', hubs['animevostfr']
+assert 'animevostfr.org' in hubs['animevostfr']['allowed_terminal_hosts'], hubs['animevostfr']
+assert hubs['moviesmod']['hub'] == 'https://modlist.in/?type=hollywood', hubs['moviesmod']
+assert any(
+    source.get('type') == 'hub' and source.get('url') == 'https://modlist.in/?type=hollywood'
+    for source in hubs['moviesmod'].get('sources') or []
+), hubs['moviesmod']
 
 assert 'dahmermovies' not in registry['providers']
 assert 'dahmermovies-tv' not in registry['providers']
