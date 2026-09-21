@@ -99,8 +99,10 @@ for required in ("materialize_provider_v3_all.py","verify_provider_v3_reverse_re
 assert "Refuse direct main mutation" in manual
 assert "NUVIO_PROVIDER_V3_CONTEXT: workspace" in manual
 
-# Domain Refresh owns only address authority and the resulting managed Provider
-# CONFIG publication. It must never execute Repair or rematerialize the global Core.
+# Domain Refresh owns only address authority and its bounded provider-owned
+# projection: CONFIG DATA plus explicit old-host -> current-host rewrites inside
+# pre-Core PROVIDER.* Lego. It must never execute Repair or rematerialize/mutate
+# the global Core.
 for required in (
     "domain_refresh_transaction_v2.py",
     "provider_dns_preflight.mjs",
@@ -126,7 +128,8 @@ for forbidden in (
 transaction=(ROOT/"scripts/domain_refresh_transaction_v2.py").read_text(encoding="utf-8")
 for required in (
     "replace_provider_fix",
-    "domain refresh changed bytes outside CONFIG Lego",
+    "project_domain_owned_provider_legos",
+    "domain refresh changed bytes beyond CONFIG + authorized provider host projection",
     '"core_mutation": False',
     "active_provider_ids",
     "current_provider_ids",
