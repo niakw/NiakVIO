@@ -15,14 +15,14 @@
     "vidfast",
     "yflix"
   ],
-  "elapsedSeconds": 127.374,
+  "elapsedSeconds": 149.729,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 26,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "35664884720-retest",
-    "sourceSha": "af5a1abf3af8328eb9b35dd6bde83cc56875dbaf",
+    "sourceRunId": "35667571681-retest",
+    "sourceSha": "6d51673e3560a7ac189b20325730da1fd23b682e",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -87,7 +87,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "35664884720-retest",
+  "sourceCensusRunId": "35667571681-retest",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -224,21 +224,40 @@
                 "signature": "c92d106e5a46a2b33459e485"
               },
               "published:persianstremio": {
-                "action": "deferred_retry",
-                "allowedProfiles": [],
-                "exitReason": "repair_loop_detected",
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "exitReason": null,
                 "experimentExhausted": false,
                 "experimentGeneration": 1,
-                "experimentVariant": 0,
+                "experimentVariant": 1,
                 "experimentVariantCount": 5,
-                "failureClass": "media_extraction_gap",
-                "hypotheses": [],
+                "failureClass": "transport_blocked",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "bootstrap-session",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "alternate-official-route",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
                 "learningDisposition": "core_repair_only",
-                "negativeMemoryMatches": 0,
+                "negativeMemoryMatches": 1,
                 "providerId": "persianstremio",
                 "repairScope": "capability",
-                "repairType": "terminal_media_resolution",
-                "signature": "c92d106e5a46a2b33459e485"
+                "repairType": "session_transport",
+                "signature": "407798151f15452ec1ccd098"
               },
               "published:vidfast": {
                 "action": "deferred_retry",
@@ -428,21 +447,40 @@
             "learnedEvents": 0,
             "plans": {
               "published:persianstremio": {
-                "action": "deferred_retry",
-                "allowedProfiles": [],
-                "exitReason": "repair_loop_detected",
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "exitReason": null,
                 "experimentExhausted": false,
                 "experimentGeneration": 1,
-                "experimentVariant": 1,
+                "experimentVariant": 2,
                 "experimentVariantCount": 5,
-                "failureClass": "media_extraction_gap",
-                "hypotheses": [],
+                "failureClass": "transport_blocked",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "bootstrap-session",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "alternate-official-route",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
                 "learningDisposition": "core_repair_only",
                 "negativeMemoryMatches": 2,
                 "providerId": "persianstremio",
                 "repairScope": "capability",
-                "repairType": "terminal_media_resolution",
-                "signature": "c92d106e5a46a2b33459e485"
+                "repairType": "session_transport",
+                "signature": "407798151f15452ec1ccd098"
               }
             },
             "queuedForLearning": [],
@@ -501,7 +539,7 @@
                 "exitReason": null,
                 "experimentExhausted": false,
                 "experimentGeneration": 1,
-                "experimentVariant": 0,
+                "experimentVariant": 3,
                 "experimentVariantCount": 5,
                 "failureClass": "transport_blocked",
                 "hypotheses": [
@@ -523,7 +561,7 @@
                   }
                 ],
                 "learningDisposition": "core_repair_only",
-                "negativeMemoryMatches": 0,
+                "negativeMemoryMatches": 3,
                 "providerId": "persianstremio",
                 "repairScope": "capability",
                 "repairType": "session_transport",
