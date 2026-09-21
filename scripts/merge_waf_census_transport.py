@@ -338,15 +338,24 @@ def merge_transport(
         *without_promoted(list(baseline.get("repairQueue") or [])),
         *replay_repairable,
     ])
+    authority_blocked = {
+        str(row.get("provider") or "").strip().casefold()
+        for row in providers
+        if isinstance(row, dict)
+        and row.get("authorityRepairEligible") is False
+        and str(row.get("provider") or "").strip()
+    }
     out["environmentQueue"] = normalized([
         value
         for value in without_promoted(list(baseline.get("environmentQueue") or []))
         if str(value or "").strip().casefold() not in replay_reclassified
+        and str(value or "").strip().casefold() not in authority_blocked
     ])
     out["harnessQueue"] = normalized([
         value
         for value in without_promoted(list(baseline.get("harnessQueue") or baseline.get("environmentQueue") or []))
         if str(value or "").strip().casefold() not in replay_reclassified
+        and str(value or "").strip().casefold() not in authority_blocked
     ])
     out["symptomaticProviders"] = normalized(without_promoted(list(baseline.get("symptomaticProviders") or [])))
     out["brainQueue"] = normalized([
