@@ -334,6 +334,11 @@ def accepted_rows(report: dict[str, Any]) -> list[dict[str, Any]]:
                 "statusAfter": accepted.get("status_after"),
                 "playableBefore": int(accepted.get("streams_playable_before") or 0),
                 "playableAfter": int(accepted.get("streams_playable_after") or 0),
+                "acceptedProgram": copy.deepcopy(
+                    accepted.get("accepted_program")
+                    if isinstance(accepted.get("accepted_program"), dict)
+                    else {}
+                ),
             })
     return out
 
