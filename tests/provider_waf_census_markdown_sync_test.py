@@ -28,5 +28,7 @@ assert "Residential probe" in state_renderer
 assert "⚠️ unavailable · GitHub-only" in state_renderer
 assert "residentialExitNodeEvidence" in state_renderer
 
+assert "Residential replay" in state_renderer
+assert "residentialProviderReplayClass" in state_renderer
 assert "Network differential" in state_renderer
 assert "networkDifferentialClass" in state_renderer
