@@ -502,6 +502,33 @@ def run_lab(
     summary["streamProbeCap"] = max(1, min(int(stream_cap), 2))
     return summary
 
+def repair_method_fingerprints(report: dict[str, Any], attempted_profiles: list[str]) -> list[str]:
+    """Identify one causal Learning method beyond the coarse profile name.
+
+    Adaptive recovery deliberately reuses the same profile while the Brain rotates
+    experiment variants/generations. Comparing only profile names makes every
+    later hypothesis look identical and prematurely stops same-run Learning.
+    """
+    output: list[str] = []
+    plans = (report.get("brain") or {}).get("plans") if isinstance(report.get("brain"), dict) else {}
+    if isinstance(plans, dict):
+        for plan in plans.values():
+            if not isinstance(plan, dict):
+                continue
+            provider_id = norm(plan.get("providerId"))
+            signature = str(plan.get("signature") or plan.get("failureClass") or "").strip()
+            generation = max(1, int(plan.get("experimentGeneration") or 1))
+            variant = max(0, int(plan.get("experimentVariant") or 0))
+            profiles = sorted({str(value) for value in plan.get("allowedProfiles") or [] if str(value)})
+            if provider_id or signature or profiles:
+                output.append(
+                    f"{provider_id}|{signature}|g{generation}|v{variant}|{','.join(profiles)}"
+                )
+    if not output:
+        output = [f"profile:{value}" for value in attempted_profiles if str(value)]
+    return sorted(set(output))
+
+
 def repair_attempt(
     provider_id: str,
     stage: Path,
@@ -535,7 +562,14 @@ def repair_attempt(
         for x in report.get("rounds") or [] if isinstance(x, dict)
         for a in x.get("attempts") or [] if isinstance(a, dict) and str(a.get("profile") or "")
     })
-    return {"returnCode": completed.returncode, "accepted": accepted, "attemptedProfiles": attempted, "report": report}
+    methods = repair_method_fingerprints(report, attempted)
+    return {
+        "returnCode": completed.returncode,
+        "accepted": accepted,
+        "attemptedProfiles": attempted,
+        "attemptedMethods": methods,
+        "report": report,
+    }
 
 def main() -> int:
     p = argparse.ArgumentParser()
@@ -665,11 +699,12 @@ def main() -> int:
                 media_type = declared_type(candidate)
                 fixture = choose_fixture(health_config, state, media_type)
                 final_lab = run_lab(lab_session, provider_id, target_path, stage, fixture, attempt_dir, work_deadline, args.stream_safety_cap)
-                method_set = tuple(repair["attemptedProfiles"])
+                method_set = tuple(repair["attemptedMethods"])
                 provider_attempts.append({
                     "attempt": attempt_no,
                     "repairAccepted": repair["accepted"],
                     "attemptedProfiles": repair["attemptedProfiles"],
+                    "attemptedMethods": repair["attemptedMethods"],
                     "lab": final_lab,
                 })
                 state["attemptCount"] = attempt_no
@@ -693,14 +728,16 @@ def main() -> int:
                         break
                     continue
     
-                # Continue only while the previous cycle found a genuinely new method
-                # or accepted progress. Repeating the exact same failed method is
-                # learning evidence, not a reason to burn the remaining hour.
-                if method_set in seen_method_sets or (not method_set and repair["accepted"] == 0):
+                # Learning is allowed to turn a failed experiment into the next
+                # planner variant/generation in the same run. The adaptive profile
+                # name is intentionally stable, so the causal fingerprint includes
+                # signature + experiment generation + variant. Stop only when the
+                # Brain repeats that exact method (or produced no method at all).
+                if method_set in seen_method_sets or not method_set:
                     break
                 seen_method_sets.add(method_set)
                 if repair["accepted"] == 0:
-                    break
+                    continue
     
             if isinstance(route_refresh, dict) and route_refresh.get("ok") is False:
                 state["lastStatus"] = "stage_refresh_blocked"
