@@ -72,6 +72,8 @@ with tempfile.TemporaryDirectory() as directory:
 
 workflow=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 assert "brain-learning-output/provider-bases/" in workflow
+assert workflow.count('git fetch origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH" || true') >= 3
+assert 'git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true' not in workflow
 source=(SCRIPTS/"materialize_clean_provider_reconstruction.py").read_text(encoding="utf-8")
 assert "supportingBaseCount" in source
 assert "proposal provenance is not self-contained" in source
