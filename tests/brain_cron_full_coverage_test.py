@@ -138,6 +138,9 @@ def main() -> int:
     assert "- name: Assert exact Learning SHA" in workflow
     assert 'test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"' in workflow
     assert "FIELD_BRAIN_LEARNING_SHA" in workflow
+    assert "group: niakvio-brain-learning-lab" in workflow
+    assert "niakvio-brain-learning-lab-${{ github.run_id }}" not in workflow
+    assert "cancel-in-progress: false" in workflow
     assert "group: niakvio-brain-learning-memory-publish" in workflow
     assert "group: niakvio-brain-repair-proposal-publish" in workflow
     assert "group: niakvio-brain-architecture-proposal-publish" in workflow
