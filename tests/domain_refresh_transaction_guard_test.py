@@ -201,8 +201,12 @@ else:
 # A configured redirect is authoritative only when the exact registry source
 # declares address authority. Arbitrary redirects remain rejected.
 redirect_before = copy.deepcopy(before_overrides)
-redirect_after = copy.deepcopy(before_overrides)
+redirect_before["provider_patches"]["demo"]["official_site"] = "https://demo-old.example"
+redirect_after = copy.deepcopy(redirect_before)
 redirect_after["provider_patches"]["demo"]["official_site"] = "https://demo-new.example"
+redirect_history = copy.deepcopy(before_history)
+redirect_history["providers"]["demo"]["current"] = {"url": "https://demo-old.example"}
+redirect_history["providers"]["demo"]["previous"] = []
 redirect_registry = copy.deepcopy(before_hubs)
 redirect_registry["providers"]["demo"]["sources"] = [{
     "type": "redirect",
@@ -230,7 +234,7 @@ result = validate(
     redirect_after,
     redirect_registry,
     copy.deepcopy(redirect_registry),
-    before_history,
+    redirect_history,
     redirect_report,
     {"changed": ["demo"], "registry_changed": []},
 )
@@ -244,7 +248,7 @@ try:
         redirect_after,
         untrusted_redirect_registry,
         copy.deepcopy(untrusted_redirect_registry),
-        before_history,
+        redirect_history,
         redirect_report,
         {"changed": ["demo"], "registry_changed": []},
     )
