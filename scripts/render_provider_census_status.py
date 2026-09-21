@@ -128,7 +128,12 @@ def harness_transport_diagnostic(
     waf_browser_evidence: dict[str, Any],
     provider: str,
 ) -> dict[str, Any]:
-    """Summarize transport evidence without promoting it to playback proof."""
+    """Summarize transport evidence without promoting it to playback proof.
+
+    Residential exit-node evidence is intentionally identity-free: the report
+    carries only bounded transport outcomes, never the private node name,
+    Tailscale address or residential public IP.
+    """
     rows = _waf_rows(waf_browser_evidence, provider)
     if not rows:
         return {
@@ -142,6 +147,12 @@ def harness_transport_diagnostic(
     browser_only = False
     native_inconclusive = False
     all_challenged = True
+
+    residential_attempted = False
+    residential_native_reached = False
+    residential_browser_reached = False
+    residential_inconclusive = False
+    residential_all_challenged = True
 
     for row in rows:
         lane = str(row.get("lane") or "unknown").strip().casefold() or "unknown"
@@ -175,19 +186,98 @@ def harness_transport_diagnostic(
         if default_outcome == "browser_content_reached" or direct_outcome == "direct_http_content_reached":
             all_challenged = False
 
+        residential = (
+            row.get("residentialExitNodeProfile")
+            if isinstance(row.get("residentialExitNodeProfile"), dict)
+            else {}
+        )
+        residential_parts = ""
+        if residential:
+            residential_attempted = True
+            residential_matrix = (
+                residential.get("clientProfileMatrix")
+                if isinstance(residential.get("clientProfileMatrix"), list)
+                else []
+            )
+            residential_tv = next(
+                (
+                    item for item in residential_matrix
+                    if isinstance(item, dict)
+                    and str(item.get("profile") or "") == "nuvio-tv-ua-browser"
+                ),
+                {},
+            )
+            residential_tv_outcome = str(residential_tv.get("outcome") or "")
+            residential_default = str(residential.get("outcome") or "")
+            residential_okhttp = (
+                residential.get("okHttpJvmProfile")
+                if isinstance(residential.get("okHttpJvmProfile"), dict)
+                else {}
+            )
+            residential_okhttp_outcome = str(residential_okhttp.get("outcome") or "")
+            residential_direct = (
+                residential.get("directHttpProfile")
+                if isinstance(residential.get("directHttpProfile"), dict)
+                else {}
+            )
+            residential_direct_outcome = str(residential_direct.get("outcome") or "")
+
+            if residential_okhttp_outcome == "okhttp_jvm_content_reached":
+                residential_native_reached = True
+                residential_all_challenged = False
+            if (
+                residential_default == "browser_content_reached"
+                or residential_tv_outcome == "browser_content_reached"
+                or residential_direct_outcome == "direct_http_content_reached"
+            ):
+                residential_browser_reached = True
+                residential_all_challenged = False
+            residential_outcomes = {
+                residential_default,
+                residential_tv_outcome,
+                residential_okhttp_outcome,
+                residential_direct_outcome,
+            }
+            if any(
+                value.endswith("_inconclusive")
+                or value.endswith("_timeout")
+                or value.endswith("_error")
+                or value.endswith("_unavailable")
+                for value in residential_outcomes
+                if value
+            ):
+                residential_inconclusive = True
+                residential_all_challenged = False
+
+            residential_parts = (
+                f", residential-browser={residential_default or 'unknown'}, "
+                f"residential-tv-browser={residential_tv_outcome or 'unknown'}, "
+                f"residential-okhttp={residential_okhttp_outcome or 'unknown'}, "
+                f"residential-direct={residential_direct_outcome or 'unknown'}"
+            )
+
         evidence.append(
             f"{lane}: browser={default_outcome or 'unknown'}, "
             f"tv-browser={tv_browser_outcome or 'unknown'}, "
             f"okhttp={okhttp_outcome or 'unknown'}, "
             f"direct={direct_outcome or 'unknown'}"
+            f"{residential_parts}"
         )
 
-    if native_reached:
+    if residential_native_reached:
+        classification = "residential-exit-native-reachable"
+    elif residential_browser_reached:
+        classification = "residential-exit-browser-reachable"
+    elif native_reached:
         classification = "native-policy-reachable"
     elif browser_only:
         classification = "browser-profile-only"
     elif native_inconclusive:
         classification = "native-policy-inconclusive"
+    elif residential_attempted and residential_all_challenged:
+        classification = "residential-exit-all-challenged"
+    elif residential_attempted and residential_inconclusive:
+        classification = "residential-exit-inconclusive"
     elif all_challenged:
         classification = "github-all-transports-challenged"
     else:
@@ -208,6 +298,8 @@ def browser_harness_status(waf_browser_evidence: dict[str, Any], provider: str) 
     """Classify CI/browser evidence without blaming provider code."""
     diagnostic = harness_transport_diagnostic(waf_browser_evidence, provider)
     if diagnostic["classification"] in {
+        "residential-exit-native-reachable",
+        "residential-exit-browser-reachable",
         "native-policy-reachable",
         "browser-profile-only",
         "native-policy-inconclusive",
@@ -221,6 +313,14 @@ def _harness_action(status: str, transport_class: str) -> str:
     if status not in ENVIRONMENT_ONLY_STATES:
         return _action(status)
     return {
+        "residential-exit-native-reachable": (
+            "GitHub-hosted IP/environment differential confirmed by private residential exit; "
+            "keep provider JS unchanged and reproduce with native transport/playback before any code blame"
+        ),
+        "residential-exit-browser-reachable": (
+            "private residential exit improves reachability but native-like transport is not yet proven; "
+            "treat as harness/client differential, not provider-code failure"
+        ),
         "native-policy-reachable": (
             "replay provider-owned route with NuvioTV-like/native transport; "
             "do not mutate provider JS unless route/playback still fails causally"
@@ -232,6 +332,12 @@ def _harness_action(status: str, transport_class: str) -> str:
         "native-policy-inconclusive": (
             "probe provider-owned search/detail route with representative native transport; "
             "current HTTP 200 is not playback proof"
+        ),
+        "residential-exit-all-challenged": (
+            "private residential exit is also challenged; GitHub IP reputation alone does not explain the block"
+        ),
+        "residential-exit-inconclusive": (
+            "private residential exit probe was inconclusive; keep provider code untouched until transport evidence is decisive"
         ),
         "github-all-transports-challenged": (
             "require real native-device/IP transport evidence before blaming provider code"
