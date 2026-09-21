@@ -496,6 +496,9 @@ jobs:
   publish-learning:
     name: LEARNING - Publish sanitized memory
     needs: experiment
+    concurrency:
+      group: niakvio-brain-learning-memory-publish
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -533,7 +536,7 @@ jobs:
           set -euo pipefail
           BRANCH="brain-learning/proposals"
           git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
-          git switch -C "$BRANCH" main
+          git switch -C "$BRANCH" "$GITHUB_SHA"
           mkdir -p engine_v2/learning
           cp brain-learning-output/latest.json engine_v2/learning/latest.json
           cp brain-learning-output/latest.md engine_v2/learning/latest.md
@@ -551,18 +554,28 @@ jobs:
     name: LEARNING - Open validated repair proposal PR
     if: github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true')
     needs: experiment
+    concurrency:
+      group: niakvio-brain-repair-proposal-publish
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
       pull-requests: write
     steps:
-      - name: Checkout trusted production tree
+      - name: Checkout exact Learning source tree
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: true
+
+      - name: Assert proposal source SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          echo "FIELD_BRAIN_PROPOSAL_SHA sha=${GITHUB_SHA}"
 
       - name: Download validated Brain proposal
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
@@ -640,7 +653,7 @@ jobs:
           git config user.name "niakvio-brain"
           git config user.email "actions@users.noreply.github.com"
           git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
-          git switch -C "$BRANCH" main
+          git switch -C "$BRANCH" "$GITHUB_SHA"
           git add provider-overrides.json PROVENANCE.json provider-bases
           git commit -m "brain: propose validated learning repairs"
           git push --force-with-lease origin HEAD:"$BRANCH"
@@ -677,18 +690,28 @@ jobs:
     name: LEARNING - Open Brain architecture evolution PR
     if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true')
     needs: experiment
+    concurrency:
+      group: niakvio-brain-architecture-proposal-publish
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
       pull-requests: write
     steps:
-      - name: Checkout trusted production tree
+      - name: Checkout exact Learning source tree
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: true
+
+      - name: Assert architecture proposal source SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          echo "FIELD_BRAIN_ARCH_PROPOSAL_SHA sha=${GITHUB_SHA}"
 
       - name: Download Brain architecture proposal
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
