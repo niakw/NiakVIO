@@ -269,6 +269,7 @@ jobs:
           [ ! -s automation/provider-census-proof-history.json ] || cp automation/provider-census-proof-history.json "$tmp/provider-census-proof-history.json"
           [ ! -s automation/brain-repair-memory.json ] || cp automation/brain-repair-memory.json "$tmp/brain-repair-memory.json"
           [ ! -s automation/provider-census-post-repair.json ] || cp automation/provider-census-post-repair.json "$tmp/provider-census-post-repair.json"
+          [ ! -s automation/provider-repair-candidate-evidence.json ] || cp automation/provider-repair-candidate-evidence.json "$tmp/provider-repair-candidate-evidence.json"
           [ ! -s automation/provider-repair-batch-plan-latest.json ] || cp automation/provider-repair-batch-plan-latest.json "$tmp/provider-repair-batch-plan-latest.json"
           [ ! -s automation/provider-brain-repair-latest.json ] || cp automation/provider-brain-repair-latest.json "$tmp/provider-brain-repair-latest.json"
 
@@ -292,6 +293,7 @@ jobs:
           [ ! -f "$tmp/provider-census-proof-history.json" ] || cp "$tmp/provider-census-proof-history.json" automation/provider-census-proof-history.json
           [ ! -f "$tmp/brain-repair-memory.json" ] || cp "$tmp/brain-repair-memory.json" automation/brain-repair-memory.json
           [ ! -f "$tmp/provider-census-post-repair.json" ] || cp "$tmp/provider-census-post-repair.json" automation/provider-census-post-repair.json
+          [ ! -f "$tmp/provider-repair-candidate-evidence.json" ] || cp "$tmp/provider-repair-candidate-evidence.json" automation/provider-repair-candidate-evidence.json
           [ ! -f "$tmp/provider-repair-batch-plan-latest.json" ] || cp "$tmp/provider-repair-batch-plan-latest.json" automation/provider-repair-batch-plan-latest.json
 
           git config user.name "github-actions[bot]"
@@ -300,6 +302,7 @@ jobs:
           [ ! -f automation/provider-census-proof-history.json ] || git add automation/provider-census-proof-history.json
           [ ! -f automation/brain-repair-memory.json ] || git add automation/brain-repair-memory.json
           [ ! -f automation/provider-census-post-repair.json ] || git add automation/provider-census-post-repair.json
+          [ ! -f automation/provider-repair-candidate-evidence.json ] || git add automation/provider-repair-candidate-evidence.json
           [ ! -f automation/provider-repair-batch-plan-latest.json ] || git add automation/provider-repair-batch-plan-latest.json
 
           if git diff --cached --quiet; then
