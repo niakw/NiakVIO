@@ -90,6 +90,7 @@ assert fallback_authority == "learning-current-observation-fallback"
 
 ordered = mod.authoritative_learning_order(
     ["1shows", "animepahe", "wookafr", "other"],
+    ["other"],
     ["wookafr", "other"],
     ["other"],
     ["1shows", "animepahe"],
@@ -106,10 +107,12 @@ ordered = mod.authoritative_learning_order(
         "other": {"canonical_id": "other"},
     },
 )
-assert ordered == ["wookafr", "other", "1shows", "animepahe"], ordered
+assert ordered == ["other", "wookafr", "1shows", "animepahe"], ordered
 
 source = (ROOT / "scripts" / "run_brain_learning_queue.py").read_text(encoding="utf-8")
 assert "authoritative_learning_order(" in source
 assert "current census is the first Learning authority" in source
+assert "fastRepairHandoffProviders" in source
+assert "provider-repair-learn-handoff-v1.json" in source
 
 print("Brain Learning exhausted-Repair priority contract passed")
