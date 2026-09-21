@@ -34,8 +34,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python scripts/classify_provider_authority.py --apply-safe-disables
           python scripts/manage_provider_lifecycle.py --apply
-          python -m py_compile scripts/manage_provider_lifecycle.py scripts/current_provider_scope.py
+          python -m py_compile scripts/manage_provider_lifecycle.py scripts/current_provider_scope.py scripts/classify_provider_authority.py
+          python tests/provider_authority_arbiter_test.py
           python - <<'PY'
           import json
           import sys
@@ -75,7 +77,8 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
             manifest-hub46.json native-hub46/manifest.json provider_catalog.json \
-            automation/provider-disabled-lifecycle.json providers provider-disabled provider-bases provider-old
+            automation/provider-disabled-lifecycle.json automation/provider-authority-status.json \
+            provider-overrides.json provider-hubs.json providers provider-disabled provider-bases provider-old
           if git diff --cached --quiet; then
             echo PROVIDER_LIFECYCLE_NO_CHANGE
             exit 0
