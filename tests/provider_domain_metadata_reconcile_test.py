@@ -145,6 +145,8 @@ assert "voiranime.diy" in hubs["voiranime"]["blocked_hosts"]
 source=(ROOT/"scripts/reconcile_provider_domain_metadata.py").read_text(encoding="utf-8")
 assert 'parser.add_argument("--changes-output", default="")' in source
 assert 'transaction_changes["reconcile_changed"] = sorted(changed)' in source
+assert "transaction.canonical(value)" in source
+assert "canonical(value)" not in source.replace("transaction.canonical(value)", "")
 workflow=(ROOT/".github/workflows/domain-refresh.yml").read_text(encoding="utf-8")
 assert 'reconcile_provider_domain_metadata.py --rebuild --changes-output health-output/domain-site-changes.json' in workflow
 
