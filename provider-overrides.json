@@ -3935,9 +3935,9 @@
         ]
       },
       "manifest_overrides": {
-        "enabled": true
+        "enabled": false
       },
-      "route_data_state": "repair",
+      "route_data_state": "off",
       "repair_disposition": {
         "schemaVersion": 1,
         "authority": "provider-repair-disposition-v1",
@@ -4000,7 +4000,9 @@
           ],
           "maxStreams": 8
         }
-      }
+      },
+      "activation_eligible": false,
+      "manual_off_reason": "auto_off_authoritative_source_removed"
     },
     "animevostfr": {
       "capability": "mixed_embed_resolver",

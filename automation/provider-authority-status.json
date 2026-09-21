@@ -1,0 +1,619 @@
+{
+  "schemaVersion": 1,
+  "authority": "provider-authority-arbiter-v1",
+  "policy": {
+    "searchRole": "historical-supplement-only",
+    "futureHubSearchDefault": false,
+    "repairRequiresAddressAuthorityForSiteDependentProviders": true,
+    "disableAfterConsecutiveDomainFailures": 2,
+    "staleDirectDisableAfterConsecutiveDomainFailures": 3,
+    "apiBackendMayOperateWithoutHomepage": true
+  },
+  "providerCount": 46,
+  "repairEligible": [
+    "4khdhub",
+    "allanime",
+    "allwish",
+    "anikototv",
+    "anime-sama",
+    "animesalt",
+    "animesama-co",
+    "animesultra",
+    "animevost-fr",
+    "animevostfr",
+    "castle",
+    "coflix",
+    "flemmix",
+    "french-manga",
+    "hindmoviez",
+    "kehflix",
+    "moviebox",
+    "movieshunt",
+    "moviesmod",
+    "mugiwarastream",
+    "papadustream",
+    "persianstremio",
+    "playimdb",
+    "purstream",
+    "uhdmovies",
+    "videasy",
+    "vidfast",
+    "vidlove",
+    "vidrock",
+    "voiranime",
+    "voiranime-homes",
+    "vostfree",
+    "wookafr"
+  ],
+  "repairBlocked": [
+    "anime-ultime",
+    "animekai",
+    "animetsu",
+    "desiflix",
+    "fullanime",
+    "kurage",
+    "mallumv",
+    "neko-sama",
+    "sekai",
+    "showbox",
+    "streamzo",
+    "voiranime-rip",
+    "yflix"
+  ],
+  "disabledNow": [
+    "animetsu"
+  ],
+  "providers": [
+    {
+      "provider": "anime-sama",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "purstream",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
+      "failureCount": 0,
+      "backendUrls": [
+        "https://api.purstream.ad/api/v1"
+      ],
+      "reasons": [
+        "structured_backend_authority"
+      ]
+    },
+    {
+      "provider": "flemmix",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "uhdmovies",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "movieshunt",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "hindmoviez",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "4khdhub",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "persianstremio",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
+      "failureCount": 0,
+      "backendUrls": [
+        "https://persianstremio.vercel.app"
+      ],
+      "reasons": [
+        "structured_backend_authority"
+      ]
+    },
+    {
+      "provider": "desiflix",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "manual_off_compromised_or_inappropriate_redirect"
+      ]
+    },
+    {
+      "provider": "kehflix",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "anikototv",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "animekai",
+      "action": "REDISCOVER_SEARCH",
+      "repairEligible": false,
+      "confidence": "low",
+      "authorityClass": "search-only-or-missing",
+      "failureCount": 0,
+      "reasons": [
+        "no_authoritative_route_source",
+        "search_supplement_only",
+        "published_site_is_lkg_only"
+      ]
+    },
+    {
+      "provider": "animesalt",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "animesama-co",
+      "action": "KEEP_DIRECT",
+      "repairEligible": true,
+      "confidence": "medium",
+      "authorityClass": "direct",
+      "failureCount": 0,
+      "reasons": [
+        "explicit_current_direct"
+      ]
+    },
+    {
+      "provider": "animesultra",
+      "action": "KEEP_DIRECT",
+      "repairEligible": true,
+      "confidence": "medium",
+      "authorityClass": "direct",
+      "failureCount": 0,
+      "reasons": [
+        "explicit_current_direct"
+      ]
+    },
+    {
+      "provider": "animetsu",
+      "action": "DISABLE_SOURCE_REMOVED",
+      "repairEligible": false,
+      "confidence": "high",
+      "authorityClass": "source-removed",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_source_removed"
+      ],
+      "appliedDisableReason": "auto_off_authoritative_source_removed"
+    },
+    {
+      "provider": "animevostfr",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "castle",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
+      "failureCount": 0,
+      "backendUrls": [
+        "https://api.hlowb.com"
+      ],
+      "reasons": [
+        "structured_backend_authority"
+      ]
+    },
+    {
+      "provider": "coflix",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
+      "failureCount": 0,
+      "backendUrls": [
+        "https://arm.haglund.dev"
+      ],
+      "reasons": [
+        "structured_backend_authority"
+      ]
+    },
+    {
+      "provider": "french-manga",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
+      "failureCount": 0,
+      "backendUrls": [
+        "https://arm.haglund.dev"
+      ],
+      "reasons": [
+        "structured_backend_authority"
+      ]
+    },
+    {
+      "provider": "kurage",
+      "action": "REDISCOVER_DIRECT",
+      "repairEligible": false,
+      "confidence": "low",
+      "authorityClass": "stale-direct",
+      "failureCount": 0,
+      "reasons": [
+        "direct_requires_rediscovery"
+      ]
+    },
+    {
+      "provider": "moviesmod",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "mugiwarastream",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "neko-sama",
+      "action": "REDISCOVER_MISSING_REGISTRY",
+      "repairEligible": false,
+      "confidence": "low",
+      "authorityClass": "search-only-or-missing",
+      "failureCount": 0,
+      "reasons": [
+        "no_authoritative_route_source",
+        "published_site_is_lkg_only"
+      ]
+    },
+    {
+      "provider": "papadustream",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
+      "failureCount": 0,
+      "backendUrls": [
+        "https://arm.haglund.dev"
+      ],
+      "reasons": [
+        "structured_backend_authority"
+      ]
+    },
+    {
+      "provider": "playimdb",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
+      "failureCount": 0,
+      "backendUrls": [
+        "https://streamdata.vaplayer.ru"
+      ],
+      "reasons": [
+        "structured_backend_authority"
+      ]
+    },
+    {
+      "provider": "sekai",
+      "action": "REDISCOVER_DIRECT",
+      "repairEligible": false,
+      "confidence": "low",
+      "authorityClass": "stale-direct",
+      "failureCount": 0,
+      "reasons": [
+        "direct_requires_rediscovery"
+      ]
+    },
+    {
+      "provider": "streamzo",
+      "action": "REDISCOVER_DIRECT",
+      "repairEligible": false,
+      "confidence": "low",
+      "authorityClass": "stale-direct",
+      "failureCount": 0,
+      "reasons": [
+        "direct_requires_rediscovery"
+      ]
+    },
+    {
+      "provider": "videasy",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
+      "failureCount": 0,
+      "backendUrls": [
+        "https://api.speedracelight.com"
+      ],
+      "reasons": [
+        "structured_backend_authority"
+      ]
+    },
+    {
+      "provider": "vidfast",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "vidrock",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "voiranime",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "voiranime-homes",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
+      "failureCount": 0,
+      "backendUrls": [
+        "https://arm.haglund.dev"
+      ],
+      "reasons": [
+        "structured_backend_authority"
+      ]
+    },
+    {
+      "provider": "voiranime-rip",
+      "action": "REDISCOVER_DIRECT",
+      "repairEligible": false,
+      "confidence": "low",
+      "authorityClass": "stale-direct",
+      "failureCount": 0,
+      "reasons": [
+        "direct_requires_rediscovery"
+      ]
+    },
+    {
+      "provider": "vostfree",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "wookafr",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "yflix",
+      "action": "REDISCOVER_SEARCH",
+      "repairEligible": false,
+      "confidence": "low",
+      "authorityClass": "search-only-or-missing",
+      "failureCount": 0,
+      "reasons": [
+        "no_authoritative_route_source",
+        "search_supplement_only",
+        "historical_search_refresh_enabled"
+      ]
+    },
+    {
+      "provider": "allanime",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "allwish",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "anime-ultime",
+      "action": "REDISCOVER_MISSING_REGISTRY",
+      "repairEligible": false,
+      "confidence": "low",
+      "authorityClass": "search-only-or-missing",
+      "failureCount": 0,
+      "reasons": [
+        "no_authoritative_route_source",
+        "published_site_is_lkg_only"
+      ]
+    },
+    {
+      "provider": "animevost-fr",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
+      "failureCount": 0,
+      "backendUrls": [
+        "https://animevost.fr"
+      ],
+      "reasons": [
+        "structured_backend_authority"
+      ]
+    },
+    {
+      "provider": "fullanime",
+      "action": "KEEP_DISABLED",
+      "repairEligible": false,
+      "confidence": "terminal",
+      "authorityClass": "disabled",
+      "failureCount": 0,
+      "reasons": [
+        "manual_off_no_current_hub_authority"
+      ]
+    },
+    {
+      "provider": "mallumv",
+      "action": "REDISCOVER_SEARCH",
+      "repairEligible": false,
+      "confidence": "low",
+      "authorityClass": "search-only-or-missing",
+      "failureCount": 0,
+      "reasons": [
+        "no_authoritative_route_source",
+        "search_supplement_only",
+        "historical_search_refresh_enabled",
+        "published_site_is_lkg_only"
+      ]
+    },
+    {
+      "provider": "moviebox",
+      "action": "KEEP_ROUTE_AUTHORITY",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "hub-or-redirect",
+      "failureCount": 0,
+      "reasons": [
+        "authoritative_route_source"
+      ]
+    },
+    {
+      "provider": "showbox",
+      "action": "REDISCOVER_SEARCH",
+      "repairEligible": false,
+      "confidence": "low",
+      "authorityClass": "search-only-or-missing",
+      "failureCount": 0,
+      "reasons": [
+        "no_authoritative_route_source",
+        "search_supplement_only",
+        "historical_search_refresh_enabled"
+      ]
+    },
+    {
+      "provider": "vidlove",
+      "action": "KEEP_BACKEND",
+      "repairEligible": true,
+      "confidence": "high",
+      "authorityClass": "api-or-backend",
+      "failureCount": 0,
+      "backendUrls": [
+        "https://api.vidlove.cc"
+      ],
+      "reasons": [
+        "structured_backend_authority"
+      ]
+    }
+  ]
+}
