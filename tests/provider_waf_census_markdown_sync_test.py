@@ -27,3 +27,6 @@ state_renderer=(ROOT/"scripts/render_provider_census_status_from_state.py").read
 assert "Residential probe" in state_renderer
 assert "⚠️ unavailable · GitHub-only" in state_renderer
 assert "residentialExitNodeEvidence" in state_renderer
+
+assert "Network differential" in state_renderer
+assert "networkDifferentialClass" in state_renderer
