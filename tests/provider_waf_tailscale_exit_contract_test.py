@@ -20,6 +20,15 @@ required=[
     "args: --accept-dns=false",
     'sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false',
     "tag:niakvio-ci -> autogroup:internet policy",
+    "id: tailscale_connect",
+    "continue-on-error: true",
+    "steps.tailscale_connect.outcome == 'success'",
+    "id: select_residential_exit",
+    "id: residential_probe",
+    "--unavailable-reason \"$reason\"",
+    "tailscale-connect-failed",
+    "exit-node-unavailable",
+    "residential-probe-failed",
     "scripts/merge_waf_network_profiles.py",
 ]
 for needle in required:
