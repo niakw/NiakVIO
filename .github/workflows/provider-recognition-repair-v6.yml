@@ -32,9 +32,10 @@ on:
 permissions:
   contents: write
   actions: write
+  id-token: write
 
 concurrency:
-  group: provider-recognition-repair-v6-${{ github.ref }}
+  group: provider-census-waf-main
   # Repair is now resumable. A successor run must queue behind the run that
   # persisted its causal memory instead of cancelling that persistence step.
   cancel-in-progress: false
@@ -48,6 +49,10 @@ jobs:
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
       GITHUB_TOKEN: ${{ github.token }}
       NUVIO_PROVIDER_V3_CONTEXT: workspace
+      TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+      TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}
+      TS_EXIT_NODE: ${{ secrets.TS_EXIT_NODE }}
+      TS_TAG_NAME: ${{ secrets.TS_TAG_NAME }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -60,8 +65,14 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
       - name: Install locked tooling
-        run: npm ci --ignore-scripts --no-audit --no-fund
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          mvn -q -f tools/waf-okhttp-probe/pom.xml -DskipTests package
 
       - name: Prove one canonical Learn Force repair implementation
         shell: bash
@@ -113,6 +124,7 @@ jobs:
           python tests/brain_replan_transport_retry_test.py
           python tests/brain_exploration_budget_test.py
           python tests/provider_repair_learning_escalation_workflow_test.py
+          python tests/provider_repair_waf_integration_workflow_test.py
           python tests/provider_repair_unresolved_scope_test.py
           python tests/provider_census_status_markdown_test.py
           python tests/provider_v3_override_pipeline_contract_test.py
@@ -140,6 +152,150 @@ jobs:
           node engine_v2/tests/repair-brain.test.mjs
           python tests/core_repair_type_architecture_test.py
           python tests/provider_non_regression_contract_test.py
+
+      - name: Prepare integrated Repair WAF/network qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/classify_provider_authority.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          state=json.loads(Path("automation/provider-census-status.json").read_text(encoding="utf-8"))
+          providers=sorted({
+              str(row.get("provider") or "").strip().lower()
+              for row in state.get("providers") or []
+              if isinstance(row,dict)
+              and row.get("brainCheckRequired") is True
+              and row.get("authorityRepairEligible") is not False
+              and str(row.get("provider") or "").strip()
+          })
+          Path("/tmp/repair-waf-targets.json").write_text(
+              json.dumps({"providers":providers},ensure_ascii=False,indent=2)+"\n",
+              encoding="utf-8",
+          )
+          print(f"FIELD_REPAIR_WAF_SCOPE providers={len(providers)} ids={','.join(providers)}")
+          PY
+          python scripts/audit_provider_quick_yield_targeted.py             --providers-json /tmp/repair-waf-targets.json             --output /tmp/provider-repair-waf-network.json             --attempts 1
+          python scripts/probe_waf_browser_session.py             /tmp/provider-repair-waf-network.json             --output /tmp/provider-repair-waf-github.json             --attempts 2             --client-profile-matrix             --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*'             --status automation/provider-census-status.json             --overrides provider-overrides.json             --network-report /tmp/provider-repair-waf-network.json             --workers 3             --max-targets 32             --timeout 25             --virtual-time-ms 8000
+
+      - name: Normalize optional Repair Tailscale tag
+        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="${TS_TAG_NAME:-niakvio-ci}"
+          case "$raw" in
+            tag:*) normalized="$raw" ;;
+            *) normalized="tag:$raw" ;;
+          esac
+          printf 'TS_ACTION_TAG=%s\n' "$normalized" >> "$GITHUB_ENV"
+
+      - name: Connect optional Repair Tailscale transport
+        id: repair_tailscale_connect
+        continue-on-error: true
+        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
+        uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8
+        with:
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ env.TS_AUDIENCE }}
+          tags: ${{ env.TS_ACTION_TAG }}
+          version: '1.94.2'
+          args: --accept-dns=false
+
+      - name: Select optional Repair residential exit
+        id: repair_residential_exit
+        continue-on-error: true
+        if: ${{ steps.repair_tailscale_connect.outcome == 'success' && env.TS_EXIT_NODE != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            if sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false >/dev/null 2>&1; then
+              echo "NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE=1" >> "$GITHUB_ENV"
+              echo "FIELD_REPAIR_TAILSCALE active=true"
+              exit 0
+            fi
+            sleep "$((attempt * 2))"
+          done
+          echo "FIELD_REPAIR_TAILSCALE active=false reason=exit-node-offline-or-unavailable" >&2
+          exit 1
+
+      - name: Reprobe Repair WAF through optional residential exit
+        id: repair_residential_probe
+        continue-on-error: true
+        if: ${{ steps.repair_residential_exit.outcome == 'success' && env.NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE == '1' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/probe_waf_browser_session.py             /tmp/provider-repair-waf-github.json             --output /tmp/provider-repair-waf-residential.json             --attempts 2             --client-profile-matrix             --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*'             --status automation/provider-census-status.json             --overrides provider-overrides.json             --network-report /tmp/provider-repair-waf-network.json             --workers 3             --max-targets 32             --timeout 25             --virtual-time-ms 8000
+
+      - name: Merge Repair WAF profiles with offline-safe Tailscale fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -s /tmp/provider-repair-waf-residential.json ]; then
+            python scripts/merge_waf_network_profiles.py               --baseline /tmp/provider-repair-waf-github.json               --residential /tmp/provider-repair-waf-residential.json               --output automation/provider-waf-browser-session-latest.json
+          else
+            reason="tailscale-not-configured"
+            if [ -n "${TS_OAUTH_CLIENT_ID:-}" ] && [ -n "${TS_AUDIENCE:-}" ] && [ -n "${TS_EXIT_NODE:-}" ]; then
+              reason="tailscale-offline-or-unavailable"
+            fi
+            if [ "${{ steps.repair_tailscale_connect.outcome }}" = "failure" ]; then
+              reason="tailscale-connect-failed"
+            elif [ "${{ steps.repair_residential_exit.outcome }}" = "failure" ]; then
+              reason="exit-node-offline-or-unavailable"
+            elif [ "${{ steps.repair_residential_probe.outcome }}" = "failure" ]; then
+              reason="residential-probe-failed"
+            fi
+            python scripts/merge_waf_network_profiles.py               --baseline /tmp/provider-repair-waf-github.json               --unavailable-reason "$reason"               --output automation/provider-waf-browser-session-latest.json
+            echo "FIELD_REPAIR_TAILSCALE_FALLBACK reason=$reason"
+          fi
+
+      - name: Replay Repair providers through residential exit when available
+        if: ${{ env.NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE == '1' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/select_residential_provider_replay.py             --waf automation/provider-waf-browser-session-latest.json             --status automation/provider-census-status.json             --output /tmp/repair-residential-provider-replay-targets.json
+          count="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('/tmp/repair-residential-provider-replay-targets.json').read_text())
+          print(int(data.get('providerCount') or 0))
+          PY
+          )"
+          if [ "$count" -gt 0 ]; then
+            python scripts/audit_provider_quick_yield_targeted.py               --providers-json /tmp/repair-residential-provider-replay-targets.json               --output /tmp/provider-repair-residential-network-replay.json               --attempts 1
+            python scripts/merge_residential_provider_replay.py               --waf automation/provider-waf-browser-session-latest.json               --replay /tmp/provider-repair-residential-network-replay.json               --output /tmp/provider-repair-waf-with-residential-replay.json
+            mv /tmp/provider-repair-waf-with-residential-replay.json automation/provider-waf-browser-session-latest.json
+          fi
+          echo "FIELD_REPAIR_RESIDENTIAL_REPLAY providers=$count"
+
+      - name: Clear optional Repair residential routing
+        if: ${{ always() && env.NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE == '1' }}
+        shell: bash
+        run: sudo tailscale set --exit-node= || true
+
+      - name: Apply integrated WAF qualification to Repair census
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/merge_waf_census_transport.py             --status automation/provider-census-status.json             --waf automation/provider-waf-browser-session-latest.json             --output /tmp/provider-repair-census-waf.json             --run-id "${GITHUB_RUN_ID}-repair-waf"             --sha "$GITHUB_SHA"
+          mv /tmp/provider-repair-census-waf.json automation/provider-census-status.json
+          python scripts/build_provider_repair_batch_plan.py             --status automation/provider-census-status.json             --overrides provider-overrides.json             --output automation/provider-repair-batch-plan-latest.json
+          python scripts/render_provider_census_status_from_state.py             --status automation/provider-census-status.json             --output PROVIDER_CENSUS_STATUS.md
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          state=json.loads(Path("automation/provider-census-status.json").read_text(encoding="utf-8"))
+          print(
+              "FIELD_REPAIR_WAF_QUALIFIED "
+              f"repair={len(state.get('repairQueue') or [])} "
+              f"environment={len(state.get('environmentQueue') or [])} "
+              f"authority_blocked={len(state.get('authorityBlockedQueue') or [])}"
+          )
+          PY
 
       - name: Run canonical recognition and correction only for unresolved providers
         id: canonical-repair
@@ -238,6 +394,7 @@ jobs:
             automation/provider-repair-v6-summary.json
             automation/provider-brain-repair-latest.json
             automation/provider-authority-status.json
+            automation/provider-waf-browser-session-latest.json
             automation/brain-repair-experience.json
             automation/brain-repair-memory.json
             automation/brain-positive-program-memory.json
@@ -297,6 +454,7 @@ jobs:
           cp PROVIDER_CENSUS_STATUS.md "$tmp/PROVIDER_CENSUS_STATUS.md"
           cp automation/provider-census-status.json "$tmp/provider-census-status.json"
           [ ! -s automation/provider-authority-status.json ] || cp automation/provider-authority-status.json "$tmp/provider-authority-status.json"
+          [ ! -s automation/provider-waf-browser-session-latest.json ] || cp automation/provider-waf-browser-session-latest.json "$tmp/provider-waf-browser-session-latest.json"
           [ ! -s automation/provider-census-proof-history.json ] || cp automation/provider-census-proof-history.json "$tmp/provider-census-proof-history.json"
           [ ! -s automation/brain-repair-memory.json ] || cp automation/brain-repair-memory.json "$tmp/brain-repair-memory.json"
           [ ! -s automation/brain-positive-program-memory.json ] || cp automation/brain-positive-program-memory.json "$tmp/brain-positive-program-memory.json"
@@ -323,6 +481,7 @@ jobs:
           cp "$tmp/PROVIDER_CENSUS_STATUS.md" PROVIDER_CENSUS_STATUS.md
           cp "$tmp/provider-census-status.json" automation/provider-census-status.json
           [ ! -f "$tmp/provider-authority-status.json" ] || cp "$tmp/provider-authority-status.json" automation/provider-authority-status.json
+          [ ! -f "$tmp/provider-waf-browser-session-latest.json" ] || cp "$tmp/provider-waf-browser-session-latest.json" automation/provider-waf-browser-session-latest.json
           [ ! -f "$tmp/provider-census-proof-history.json" ] || cp "$tmp/provider-census-proof-history.json" automation/provider-census-proof-history.json
           [ ! -f "$tmp/brain-repair-memory.json" ] || cp "$tmp/brain-repair-memory.json" automation/brain-repair-memory.json
           [ ! -f "$tmp/brain-positive-program-memory.json" ] || cp "$tmp/brain-positive-program-memory.json" automation/brain-positive-program-memory.json
@@ -334,6 +493,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add PROVIDER_CENSUS_STATUS.md automation/provider-census-status.json
           [ ! -f automation/provider-authority-status.json ] || git add automation/provider-authority-status.json
+          [ ! -f automation/provider-waf-browser-session-latest.json ] || git add automation/provider-waf-browser-session-latest.json
           [ ! -f automation/provider-census-proof-history.json ] || git add automation/provider-census-proof-history.json
           [ ! -f automation/brain-repair-memory.json ] || git add automation/brain-repair-memory.json
           [ ! -f automation/brain-positive-program-memory.json ] || git add automation/brain-positive-program-memory.json
