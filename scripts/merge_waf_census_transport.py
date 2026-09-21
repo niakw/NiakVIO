@@ -362,6 +362,24 @@ def merge_transport(
         if str(value or "").strip().casefold() not in replay_reclassified
         and str(value or "").strip().casefold() not in authority_blocked
     ])
+    # Exact transport queues are recomputed from final row status after the
+    # overlay. Keep environmentQueue/harnessQueue above for compatibility only.
+    out["harnessMismatchQueue"] = sorted(
+        str(row.get("provider") or "").strip().casefold()
+        for row in providers
+        if isinstance(row, dict)
+        and str(row.get("status") or "") == "HARNESS MISMATCH"
+        and row.get("authorityRepairEligible") is not False
+        and str(row.get("provider") or "").strip()
+    )
+    out["environmentBlockedQueue"] = sorted(
+        str(row.get("provider") or "").strip().casefold()
+        for row in providers
+        if isinstance(row, dict)
+        and str(row.get("status") or "") == "HARNESS/ENV BLOCKED"
+        and row.get("authorityRepairEligible") is not False
+        and str(row.get("provider") or "").strip()
+    )
     out["symptomaticProviders"] = normalized(without_promoted(list(baseline.get("symptomaticProviders") or [])))
     out["brainQueue"] = normalized([
         *without_promoted(list(baseline.get("brainQueue") or baseline.get("symptomaticProviders") or [])),
