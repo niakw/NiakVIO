@@ -91,7 +91,7 @@
       "aliases": [
         "animevostfr"
       ],
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "schema_notes": "Current address is refreshed from the curated direct redirect chain; v2.animevostfr.org is retained as a redirect seed, not assumed to remain the terminal.",
       "search_queries": [
         "animevostfr lien"
       ],
@@ -99,9 +99,16 @@
         "https://v2.animevostfr.org/"
       ],
       "allowed_terminal_hosts": [
-        "v2.animevostfr.org"
+        "v2.animevostfr.org",
+        "animevostfr.org"
       ],
       "sources": [
+        {
+          "type": "redirect",
+          "url": "https://v2.animevostfr.org/",
+          "priority": 100,
+          "purpose": "Curated legacy/current-entry URL whose redirect destination declares the current AnimeVOSTFR terminal"
+        },
         {
           "type": "search",
           "query": "animevostfr lien",
@@ -1488,10 +1495,10 @@
       "name": "MoviesMod",
       "manifest_status": "Actif",
       "category": "International",
-      "hub": null,
+      "hub": "https://modlist.in/?type=hollywood",
       "direct": "https://moviesmod.ai.in/",
       "source": "curated_user_registry",
-      "schema_notes": "moviesmod.zone currently redirects to moviesmod.ai.in and the resulting provider page announces the moved official domain; army is no longer runtime authority.",
+      "schema_notes": "modlist.in/?type=hollywood is the MoviesMod address hub; it currently points to the live MoviesMod terminal. moviesmod.zone remains historical redirect knowledge and moviesmod.ai.in is the current explicit terminal.",
       "aliases": [
         "moviesmod"
       ],
@@ -1508,6 +1515,12 @@
       ],
       "sources": [
         {
+          "type": "hub",
+          "url": "https://modlist.in/?type=hollywood",
+          "priority": 125,
+          "purpose": "MoviesMod-specific Hollywood address hub"
+        },
+        {
           "type": "search",
           "query": "\"MoviesMod\" official domain",
           "priority": 35,
@@ -1518,7 +1531,7 @@
       "direct_authority": "explicit_current",
       "direct_authority_source": "current-public-provider-redirect-and-site-announcement",
       "direct_authority_observed_at": "2026-09-19",
-      "last_verified": "2026-09-19",
+      "last_verified": "2026-09-21",
       "blocked_hosts": [
         "moviesmod.army",
         "moviesmod.money",
