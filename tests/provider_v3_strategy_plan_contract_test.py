@@ -23,11 +23,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-from current_provider_scope import active_provider_ids, visible_provider_ids
-
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts" / "provider_patches"))
+
+from current_provider_scope import active_provider_ids, visible_provider_ids
 HUB46 = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 ALLOWED = {
     "mixed_embed_resolver",
