@@ -73,12 +73,33 @@ assert compiled["searchRequestPlan"]==[{
 assert compiled["providerValuePlan"][0]["steps"][0]["route"]=="/player/{id}"
 assert compiled["providerValuePlan"][0]["steps"][0]["base"]=="https://player.example"
 
-overrides={"provider_patches":{"demo":{"official_site":"https://provider.example"}}}
+overrides={"provider_patches":{"demo":{
+    "official_site":"https://provider.example",
+    "search_request_plan":[{
+        "base":"https://legacy.example",
+        "route":"/?q={query}",
+        "requestSpec":{"method":"GET","headers":{}},
+        "proofModelVersion":5,
+        "sourceRole":"historical-positive",
+        "semanticTypes":["movie"],
+    }],
+    "provider_value_plan":[{
+        "searchBase":"https://legacy.example",
+        "searchRoute":"/?q={query}",
+        "searchRequestSpec":{"method":"GET","headers":{}},
+        "steps":[{"base":"https://legacy.example","route":"/watch/{id}","requestSpec":{"method":"GET","headers":{}},"role":"player"}],
+        "semanticTypes":["movie"],
+        "proofModelVersion":5,
+        "sourceRole":"historical-positive",
+    }],
+}}}
 proposed=mod.apply_compiled(overrides,compiled)
 patch=proposed["provider_patches"]["demo"]
 assert patch["official_site"]=="https://provider.example"
-assert patch["search_request_plan"]==compiled["searchRequestPlan"]
-assert patch["provider_value_plan"]==compiled["providerValuePlan"]
+assert patch["search_request_plan"][0]==compiled["searchRequestPlan"][0]
+assert patch["search_request_plan"][1]["sourceRole"]=="historical-positive"
+assert patch["provider_value_plan"][0]==compiled["providerValuePlan"][0]
+assert patch["provider_value_plan"][1]["sourceRole"]=="historical-positive"
 assert patch["brain_accepted_program"]["source"]=="strict-brain-accepted-runtime-program"
 assert "search_request_plan" not in overrides["provider_patches"]["demo"]
 
