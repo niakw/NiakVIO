@@ -43,6 +43,49 @@ assert 'fs03.lol' not in cycle_patch['replacements']
 assert cycle_patch['replacements']['fs16.lol'] == 'fs03.lol'
 assert cycle_patch['required_values'] == []
 
+# Provider Lego top-level site roots follow the same authoritative terminal
+# rotation. Mirror arrays are deliberately left intact because they can encode
+# distinct valid authorities.
+lego_config = {
+    'provider_patches': {
+        'animevostfr': {
+            'official_site': 'https://v2.animevostfr.example/',
+            'replacements': {},
+            'runtime_domain_replacements': {},
+            'provider_lego_options': {
+                'scripts/provider_patches/animevostfr_runtime_v1.py': {
+                    'base': 'https://v2.animevostfr.example',
+                    'maxStreams': 6,
+                    'bases': [
+                        {'base': 'https://v2.animevostfr.example'},
+                        {'base': 'https://mirror.example'},
+                    ],
+                }
+            },
+        }
+    }
+}
+lego_hub = {
+    'hub': None,
+    'sources': [{'type': 'redirect', 'url': 'https://v2.animevostfr.example/', 'priority': 100}],
+    'direct_candidates': ['https://animevostfr.example/', 'https://v2.animevostfr.example/'],
+    'historical_terminal_candidates': ['https://v2.animevostfr.example/'],
+    'allowed_terminal_hosts': ['animevostfr.example', 'v2.animevostfr.example'],
+}
+resolver.update_provider_patch(
+    lego_config,
+    'animevostfr',
+    lego_hub,
+    'https://animevostfr.example/',
+    None,
+    {},
+)
+lego_patch = lego_config['provider_patches']['animevostfr']
+lego_options = lego_patch['provider_lego_options']['scripts/provider_patches/animevostfr_runtime_v1.py']
+assert lego_options['base'] == 'https://animevostfr.example', lego_options
+assert lego_options['bases'][0]['base'] == 'https://v2.animevostfr.example', lego_options
+assert lego_options['bases'][1]['base'] == 'https://mirror.example', lego_options
+
 # Provider-specific endpoint bootstraps follow the same resolved domain.
 toflix_config = {
     'provider_patches': {
