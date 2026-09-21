@@ -67,6 +67,9 @@ jobs:
           python -m py_compile             scripts/run_provider_fast_repair.py             scripts/run_provider_retest.py             scripts/run_provider_brain_repair.py             scripts/compile_brain_accepted_program_v3.py
           python tests/provider_fast_repair_separation_test.py
           python tests/provider_retest_scope_test.py
+          python tests/provider_remat_test_separation_test.py
+          python tests/provider_repair_learn_handoff_v1_test.py
+          python tests/brain_learning_deferred_repair_priority_test.py
           python tests/provider_brain_repair_orchestrator_test.py
           python tests/brain_accepted_program_capture_test.py
           python tests/brain_accepted_program_v3_compiler_test.py
