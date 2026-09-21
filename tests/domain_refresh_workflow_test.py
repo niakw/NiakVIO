@@ -73,6 +73,7 @@ for required in (
     "rebuild_provider_configs",
     "provider_domain_projection_drift_ids",
     '"projection_drift"',
+    "DOMAIN_REFRESH_CURRENT_SCOPE_PROJECTION_DRIFT_V1",
     "replace_provider_fix",
     "domain refresh changed bytes outside CONFIG Lego",
     '"core_mutation": False',
@@ -171,6 +172,12 @@ equivalent_current_projection = {
     "domainSubstitutions": {"KEHFLIX.LOL": "KEHFLIX.COM"},
 }
 assert module._normalized_domain_projection(current_projection) == module._normalized_domain_projection(equivalent_current_projection)
+
+# Regression 2c: published domain projection drift is independent from this
+# run's network-resolution verdict. A current provider whose accepted structured
+# DATA is already authoritative must still be eligible for CONFIG-only repair.
+assert "provider_domain_projection_drift_ids(sorted(current_provider_ids))" in source
+assert "provider_domain_projection_drift_ids(resolved_provider_ids)" not in source
 
 # Regression 3: only domain-connected runtime maps follow a terminal rotation;
 # unrelated API replacement DATA must remain untouched.
