@@ -203,9 +203,9 @@ def main() -> int:
         changes_path = ROOT / args.changes_output
         transaction_changes = load(changes_path) if changes_path.is_file() else {"schema_version": 3}
         declared = {
-            canonical(value)
+            transaction.canonical(value)
             for value in transaction_changes.get("changed") or []
-            if canonical(value)
+            if transaction.canonical(value)
         }
         declared.update(changed)
         transaction_changes["changed"] = sorted(declared)
