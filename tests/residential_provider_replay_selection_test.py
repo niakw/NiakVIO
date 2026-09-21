@@ -12,49 +12,39 @@ mod=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 
 report={
+    "residentialExitNodeEvidence":{"available":True},
     "rows":[
         {
             "provider":"yflix","lane":"movie","seedKind":"network-failure-replay",
-            "outcome":"browser_timeout",
-            "directHttpProfile":{"outcome":"direct_http_timeout"},
-            "okHttpJvmProfile":{"outcome":"okhttp_jvm_timeout"},
-            "residentialExitNodeProfile":{
-                "outcome":"browser_content_reached",
-                "directHttpProfile":{"outcome":"direct_http_content_reached"},
-                "okHttpJvmProfile":{"outcome":"okhttp_jvm_content_reached"},
-            },
-        },
-        {
-            "provider":"already-github","lane":"movie","seedKind":"network-failure-replay",
             "directHttpProfile":{"outcome":"direct_http_content_reached"},
-            "okHttpJvmProfile":{"outcome":"okhttp_jvm_content_reached"},
-            "residentialExitNodeProfile":{
-                "directHttpProfile":{"outcome":"direct_http_content_reached"},
-                "okHttpJvmProfile":{"outcome":"okhttp_jvm_content_reached"},
-            },
+            "residentialExitNodeProfile":{"directHttpProfile":{"outcome":"direct_http_content_reached"}},
         },
         {
             "provider":"waf-only","lane":"movie","seedKind":"metadata-homepage",
-            "directHttpProfile":{"outcome":"direct_http_timeout"},
-            "residentialExitNodeProfile":{
-                "directHttpProfile":{"outcome":"direct_http_content_reached"},
-            },
+            "directHttpProfile":{"outcome":"direct_http_challenge_persisted"},
+            "residentialExitNodeProfile":{"directHttpProfile":{"outcome":"direct_http_challenge_persisted"}},
         },
-        {
-            "provider":"still-blocked","lane":"movie","seedKind":"network-failure-replay",
-            "directHttpProfile":{"outcome":"direct_http_timeout"},
-            "okHttpJvmProfile":{"outcome":"okhttp_jvm_timeout"},
-            "residentialExitNodeProfile":{
-                "directHttpProfile":{"outcome":"direct_http_timeout"},
-                "okHttpJvmProfile":{"outcome":"okhttp_jvm_timeout"},
-            },
-        },
-    ]
+    ],
 }
-status={"environmentQueue":["waf-only","still-blocked"]}
-assert mod.select(report,status)==["waf-only","yflix"],mod.select(report,status)
+status={
+    "providers":[
+        {"provider":"yflix","status":"PROVIDER NETWORK BLOCKED"},
+        {"provider":"waf-only","status":"HARNESS MISMATCH"},
+        {"provider":"all-blocked","status":"HARNESS/ENV BLOCKED"},
+        {"provider":"green","status":"FULL OK"},
+        {"provider":"route","status":"ROUTE PROVEN"},
+    ],
+    "environmentQueue":["waf-only","all-blocked"],
+    "repairQueue":["yflix","route"],
+}
+selected=mod.select(report,status)
+assert selected==["all-blocked","waf-only","yflix"],selected
+assert "green" not in selected and "route" not in selected
 
-# Residential/native reachability that was already present on GitHub is not a
-# differential and must not trigger a redundant full provider replay.
-assert "already-github" not in mod.select(report,status)
+unavailable={"residentialExitNodeEvidence":{"available":False}}
+assert mod.select(unavailable,status)==[]
+assert mod.ELIGIBLE_STATUSES=={
+    "HARNESS MISMATCH","HARNESS/ENV BLOCKED","PROVIDER NETWORK BLOCKED"
+}
+
 print("residential full-provider replay selection contract passed")
