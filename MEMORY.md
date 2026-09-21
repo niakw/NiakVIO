@@ -1,6 +1,17 @@
 # NiakVIO — Recovery Memory
 
 
+## 2026-09-21 15:31 Europe/Paris — Planner/runtime applicability gap fixed; positive evidence now establishes runtime origin
+
+- Artifact `35600977459` was inspected despite the run later being cancelled. It targeted the correct **11-provider Repair queue** and retained 107 negative-memory entries. Several providers have already exhausted v0-v4 / g1-g2 for one stable signature (AllAnime, AnimeSultra, Animetsu, AnimeVostFR, MovieBox, etc.), confirming that Learning g3-g5 is the appropriate next strategy family rather than another blind routine retry.
+- MalluMV positive memory is present as one validated program: `media_extraction_gap`, signature `c92d106e5a46a2b33459e485`, variant 2, playable `0 -> 1`, with sanitized provider-owned origins/routes only. This remains prior evidence, not publication authority.
+- A new generic planner/runtime mismatch was confirmed from memory outcomes: Showbox/Yflix accumulated `profile_unavailable / planned_profile_not_applicable_to_current_bytes` after the Brain had already selected `adaptive_runtime_recovery`. Yflix specifically had executable provider-scoped recipes on `https://enc-dec.app` but no branded `official_site`; `_adaptive_runtime_options()` required a base URL **before** consulting those provider recipes, so an executable plan was discarded.
+- Fix `5fe8dffa659f`: runtime base resolution now considers origins from **current observation recipes, validated positive-program recipes, and historical provider-specific recipes** before returning profile-unavailable. These origins remain provider-scoped and pass the existing infrastructure-host denylist; peer/generic evidence cannot establish the provider base. Fresh observation remains strongest, followed by validated same-provider positive memory, older provider DATA, then peer transfer.
+- Contract `b180189e4393` proves both the positive-program priority order and the Yflix-like case where `enc-dec.app` provider evidence alone makes the adaptive profile executable. Showbox remains fail-closed unless current/provider-scoped evidence provides a real origin.
+- A current-head Repair successor must include this fix before its provider results are authoritative. Existing in-flight Repair `35601540093` on `ee4a2238ab49` is still useful evidence but predates this planner/runtime applicability correction.
+
+
+
 ## 2026-09-21 15:09 Europe/Paris — Domain lane restored; Learning publication/proposal races hardened
 
 - CORE quick-gate remained red on a domain-only drift, not Brain logic: published Flemmix DATA still exposed `officialSite=https://flemmix.cloud` while current structured authority is `https://flemmix.me`. The correct owner is Domain Refresh, not a provider-local manual JS edit.
