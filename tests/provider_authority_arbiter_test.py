@@ -167,6 +167,24 @@ r = module.classify("demo", row(True), explicit, patch(), {})
 assert r["action"] == "KEEP_DIRECT", r
 assert r["confidence"] == "high", r
 
+# A newly curated manual-off decision on an enabled provider must enter the
+# standard disabled-retention lifecycle immediately instead of remaining merely
+# Repair-blocked while still executable.
+manual_registry=reg(manual_off_reason="manual_off_no_current_authority_search_only")
+r=module.classify("demo",row(True),manual_registry,patch(),{})
+assert r["action"]=="DISABLE_MANUAL_POLICY",r
+assert r["repairEligible"] is False,r
+manifest_row=row(True)
+manual_patch=patch()
+reason=module.apply_disable(manifest_row,manual_registry,manual_patch,r["action"])
+assert reason=="manual_off_no_current_authority_search_only",reason
+assert manifest_row["enabled"] is False,manifest_row
+assert manifest_row["disabledReason"]==reason,manifest_row
+assert manual_patch["manifest_overrides"]["enabled"] is False,manual_patch
+assert manual_patch["route_data_state"]=="off",manual_patch
+assert manual_registry["manifest_status"]=="Désactivé",manual_registry
+assert manual_registry["activation_eligible"] is False,manual_registry
+
 # Existing manual lifecycle decisions remain terminal.
 r=module.classify("demo",row(False),reg(),patch(manual_off_reason="manual_off_test"),{})
 assert r["action"]=="KEEP_DISABLED",r
