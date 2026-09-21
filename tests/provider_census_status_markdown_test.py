@@ -250,6 +250,14 @@ authority_status = {
             "authorityClass": "hub-or-redirect",
             "reasons": ["authoritative_route_source"],
         },
+        {
+            "provider": "waf",
+            "action": "KEEP_DISABLED",
+            "repairEligible": False,
+            "confidence": "terminal",
+            "authorityClass": "disabled",
+            "reasons": ["manual_off_test"],
+        },
     ]
 }
 authority_rows = {
@@ -271,6 +279,9 @@ assert authority_rows["route"]["repairEligible"] is False, authority_rows["route
 assert authority_rows["route"]["authorityAction"] == "REDISCOVER_SEARCH", authority_rows["route"]
 assert "rediscovery required before Repair" in authority_rows["route"]["action"], authority_rows["route"]
 assert authority_rows["broken"]["repairEligible"] is True, authority_rows["broken"]
+assert authority_rows["waf"]["authorityRepairEligible"] is False, authority_rows["waf"]
+assert authority_rows["waf"]["authorityAction"] == "KEEP_DISABLED", authority_rows["waf"]
+assert "keep disabled" in authority_rows["waf"]["action"], authority_rows["waf"]
 
 authority_md = render(
     report,
@@ -283,8 +294,10 @@ authority_md = render(
     waf_browser_evidence=waf_browser_evidence,
     authority_status=authority_status,
 )
-assert "authority-blocked symptoms: **1**" in authority_md, authority_md
+assert "lifecycle disabled: **1**" in authority_md, authority_md
+assert "authority rediscovery: **1**" in authority_md, authority_md
 assert "REDISCOVER_SEARCH / unproven-direct-candidate / blocked" in authority_md, authority_md
+assert "KEEP_DISABLED / disabled / blocked" in authority_md, authority_md
 
 # Legacy carried green rows are reconciled against their own latest verdict.
 # They cannot remain FULL/PARTIAL OK when the latest stored lane says failure.
