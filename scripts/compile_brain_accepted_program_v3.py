@@ -6,6 +6,14 @@ from urllib.parse import urlsplit
 SAFE_TYPES={'movie','tv','anime'}; SAFE_METHODS={'GET','POST'}
 SAFE_HEADER_NAMES={'accept','accept-language','content-type','origin','referer','user-agent'}
 SUPPORTED_BINDINGS={'id','slug'}; BINDING=re.compile(r'\{binding:([A-Za-z0-9_.-]+)\}',re.I); PROOF_MODEL_VERSION=6
+NON_PROVIDER_HOSTS={
+    'api.themoviedb.org','graphql.anilist.co','kitsu.io','v3-cinemeta.strem.io','arm.haglund.dev',
+    'github.com','raw.githubusercontent.com','google.com','www.google.com','google.co.in','www.google.co.in',
+    'support.google.com','bing.com','www.bing.com','duckduckgo.com','html.duckduckgo.com',
+    'yandex.com','www.yandex.com','googletagmanager.com','google-analytics.com',
+    'static.cloudflareinsights.com','cloudflareinsights.com','connect.facebook.net','doubleclick.net',
+    'googlesyndication.com',
+}
 
 def cid(v): return str(v or '').strip().casefold().replace('_','-')
 def safe_origin(v):
