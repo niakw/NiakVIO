@@ -25,7 +25,19 @@ import resolve_provider_hubs as hubresolver
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / "provider-overrides.json"
 HISTORY_PATH = ROOT / "provider-domain-history.json"
-ALLOWED_SOURCE_TYPES = {"hub", "telegram_public", "redirect"}
+ALLOWED_SOURCE_TYPES = {"hub", "telegram_public", "redirect", "source_redirect"}
+
+
+def has_domain_refresh_source(cfg: dict[str, Any], mode: str) -> bool:
+    """Return whether this provider has enough bounded address evidence to inspect."""
+    # DOMAIN_REFRESH_DIRECT_AND_SEARCH_REDIRECT_SOURCE_V1
+    if hubresolver.has_authoritative_hub_source(cfg):
+        return True
+    if hubresolver.has_authoritative_direct_source(cfg):
+        return True
+    if str(mode or "").casefold() == "deep":
+        return any(str(value or "").strip() for value in cfg.get("search_queries") or [])
+    return False
 
 
 def _candidate_url(row: dict[str, Any]) -> str:
@@ -143,9 +155,9 @@ def resolve_authoritative_hub_domain(
         "status": "hub_unresolved",
         "terminal_probe_skipped": True,
     }
-    if not hubresolver.has_authoritative_hub_source(cfg):
+    if not has_domain_refresh_source(cfg, mode):
         item["status"] = "not_applicable"
-        item["reason"] = "no_authoritative_hub_source"
+        item["reason"] = "no_bounded_domain_refresh_source"
         return item
 
     # Snapshot curated authority before network discovery.  Discovery helpers
@@ -299,7 +311,7 @@ def main() -> int:
     for provider_id, cfg in sorted(hubs.items()):
         if selected_ids and provider_id not in selected_ids:
             continue
-        if not hubresolver.has_authoritative_hub_source(cfg):
+        if not has_domain_refresh_source(cfg, args.mode):
             continue
         disabled = str(cfg.get("manifest_status") or "").casefold() in {"désactivé", "desactive", "disabled"}
         if disabled and not args.include_disabled:
