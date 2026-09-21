@@ -36,7 +36,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "maxPages": max(2, min(int(cfg.get("max_pages", 10)), 24)),
         "maxEmbeds": max(2, min(int(cfg.get("max_embeds", 10)), 24)),
         "maxDepth": max(1, min(int(cfg.get("max_depth", 3)), 4)),
-        "timeoutMs": max(2000, min(int(cfg.get("timeout_ms", 9000)), 20000)),
+        "timeoutMs": max(2000, min(int(cfg.get("timeout_ms", 12000)), 20000)),
         "userAgent": str(cfg.get("user_agent") or "").strip()[:320],
         "blockedHosts": [str(value).lower().lstrip(".") for value in cfg.get("blocked_hosts", [])],
         "blockedPaths": [str(value).lower() for value in cfg.get("blocked_path_patterns", [])],
