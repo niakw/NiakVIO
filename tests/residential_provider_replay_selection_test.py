@@ -51,5 +51,10 @@ report={
         },
     ]
 }
-assert mod.select(report)==["yflix"],mod.select(report)
+status={"environmentQueue":["waf-only","still-blocked"]}
+assert mod.select(report,status)==["waf-only","yflix"],mod.select(report,status)
+
+# Residential/native reachability that was already present on GitHub is not a
+# differential and must not trigger a redundant full provider replay.
+assert "already-github" not in mod.select(report,status)
 print("residential full-provider replay selection contract passed")
