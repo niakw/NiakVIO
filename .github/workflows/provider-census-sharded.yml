@@ -335,8 +335,3 @@ jobs:
             git push origin HEAD:main
           fi
 
-          if ! gh workflow run provider-waf-browser-session.yml --ref main; then
-            echo "FIELD_SHARDED_CENSUS_WAF_DISPATCH_FAILED nonfatal=true" >&2
-          else
-            echo "FIELD_SHARDED_CENSUS_WAF_DISPATCHED source_run=${GITHUB_RUN_ID}"
-          fi
