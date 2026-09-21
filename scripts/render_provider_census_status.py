@@ -857,6 +857,7 @@ def render(
     environment_queue = sorted(
         row["provider"] for row in rows
         if str(row.get("status") or "") in ENVIRONMENT_ONLY_STATES
+        and row.get("authorityRepairEligible") is not False
     )
     authority_blocked_queue = sorted(
         row["provider"] for row in rows
@@ -1035,10 +1036,12 @@ def main() -> int:
             "environmentQueue": sorted(
                 row["provider"] for row in rows
                 if str(row.get("status") or "") in ENVIRONMENT_ONLY_STATES
+                and row.get("authorityRepairEligible") is not False
             ),
             "harnessQueue": sorted(
                 row["provider"] for row in rows
                 if str(row.get("status") or "") in ENVIRONMENT_ONLY_STATES
+                and row.get("authorityRepairEligible") is not False
             ),
         }
         args.json_output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
