@@ -10,6 +10,8 @@ import time
 from pathlib import Path
 from typing import Any, Callable
 
+from brain_positive_program_memory import learned_skills as positive_program_learned_skills
+
 ROOT = Path(__file__).resolve().parents[1]
 PLAN_SCRIPT = ROOT / "engine_v2" / "scripts" / "plan-repairs.mjs"
 POLICY_PATH = ROOT / "engine_v2" / "config" / "brain-policy.json"
@@ -210,8 +212,40 @@ def policy() -> dict[str, Any]:
 def learned_skills() -> dict[str, Any]:
     config = _load_json(OVERRIDES_PATH, {})
     runtime = config.get("runtime_repair") if isinstance(config.get("runtime_repair"), dict) else {}
-    skills = runtime.get("learned_skills")
-    return skills if isinstance(skills, dict) else {}
+    raw = runtime.get("learned_skills")
+    merged = copy.deepcopy(raw) if isinstance(raw, dict) else {}
+    # A globally rejected Repair publication must not erase a strictly validated
+    # provider-local success. Positive-program memory is sanitized DATA/prior only;
+    # it never grants publication authority or bypasses current-byte gates.
+    for key, positive in positive_program_learned_skills().items():
+        if not isinstance(positive, dict):
+            continue
+        current = merged.get(key)
+        if not isinstance(current, dict):
+            merged[key] = copy.deepcopy(positive)
+            continue
+        providers = sorted({
+            str(value or "").strip().casefold()
+            for value in [*(current.get("providers") or []), *(positive.get("providers") or [])]
+            if str(value or "").strip()
+        })
+        signatures = sorted({
+            str(value or "").strip()
+            for value in [*(current.get("signatures") or []), *(positive.get("signatures") or [])]
+            if str(value or "").strip()
+        })
+        current["providers"] = providers
+        current["signatures"] = signatures
+        current["validated"] = current.get("validated") is True or positive.get("validated") is True
+        current["successCount"] = max(
+            int(current.get("successCount") or 0),
+            int(positive.get("successCount") or 0),
+        )
+        current["confidence"] = max(
+            float(current.get("confidence") or 0.0),
+            float(positive.get("confidence") or 0.0),
+        )
+    return merged
 
 
 def planner_learned_skills(mode: str) -> dict[str, Any]:
