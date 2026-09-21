@@ -108,12 +108,28 @@ def candidate_proofs(candidate_evidence: dict[str, Any], provider: str) -> list[
     out: list[dict[str, str]] = []
     wanted = provider.strip().casefold()
     for key, row in ci.items():
-        if not isinstance(row, dict) or str(row.get("scope") or "") != "reconstruction-candidate":
+        if (
+            not isinstance(row, dict)
+            or str(row.get("scope") or "") not in {"reconstruction-candidate", "repair-candidate"}
+        ):
             continue
         verified = {str(v or "").strip().casefold() for v in (row.get("verifiedProviders") or []) if str(v or "").strip()}
         if wanted in verified:
             out.append({"key": str(key), "runId": str(row.get("runId") or ""), "note": str(row.get("note") or "")})
     return out
+
+def merge_candidate_evidence(*values: dict[str, Any]) -> dict[str, Any]:
+    merged: dict[str, Any] = {"ciEvidence": {}}
+    target = merged["ciEvidence"]
+    for value in values:
+        if not isinstance(value, dict):
+            continue
+        rows = value.get("ciEvidence") if isinstance(value.get("ciEvidence"), dict) else {}
+        for key, row in rows.items():
+            if isinstance(row, dict):
+                target[str(key)] = row
+    return merged
+
 
 def _waf_rows(waf_browser_evidence: dict[str, Any], provider: str) -> list[dict[str, Any]]:
     wanted = str(provider or "").strip().casefold()
@@ -773,6 +789,7 @@ def main() -> int:
     parser.add_argument("--history", type=Path, default=Path("automation/provider-census-proof-history.json"))
     parser.add_argument("--baseline-status", type=Path, default=Path("automation/provider-census-status.json"))
     parser.add_argument("--candidate-evidence", type=Path, default=Path("automation/provider-history-evidence-v1.json"))
+    parser.add_argument("--repair-candidate-evidence", type=Path, default=Path("automation/provider-repair-candidate-evidence.json"))
     parser.add_argument("--provider-overrides", type=Path, default=Path("provider-overrides.json"))
     parser.add_argument("--waf-browser-evidence", type=Path, default=Path("automation/provider-waf-browser-session-latest.json"))
     parser.add_argument("--run-id", default="")
@@ -783,6 +800,12 @@ def main() -> int:
     history = load(args.history) if args.history.is_file() else {}
     baseline = load(args.baseline_status) if args.baseline_status.is_file() else {}
     candidate_evidence = load(args.candidate_evidence) if args.candidate_evidence.is_file() else {}
+    repair_candidate_evidence = (
+        load(args.repair_candidate_evidence)
+        if args.repair_candidate_evidence.is_file()
+        else {}
+    )
+    candidate_evidence = merge_candidate_evidence(candidate_evidence, repair_candidate_evidence)
     provider_overrides = load(args.provider_overrides) if args.provider_overrides.is_file() else {}
     waf_browser_evidence = load(args.waf_browser_evidence) if args.waf_browser_evidence.is_file() else {}
     rows = build_status_rows(
