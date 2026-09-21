@@ -14,6 +14,7 @@ Forbidden as executable seeds:
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import hashlib
 import json
 import os
@@ -48,6 +49,26 @@ DEFAULT_REPORT = ROOT / "provider-v3-materialization.json"
 
 # PROVIDER_V3_FINAL_STAGE_MINIMIZER_GATE_V1
 FINAL_MINIMIZER_ENV = "NIAKVIO_PROVIDER_V3_FINAL_MINIMIZE"
+MATERIALIZE_VALIDATION_CONCURRENCY_ENV = "NUVIO_MATERIALIZE_VALIDATION_CONCURRENCY"
+
+
+def materialization_validation_concurrency(provider_count: int) -> int:
+    """Bound independent syntax validators without weakening their isolation."""
+    # PROVIDER_V3_PARALLEL_BYTE_VALIDATION_V1
+    count = max(1, int(provider_count))
+    raw = str(os.environ.get(MATERIALIZE_VALIDATION_CONCURRENCY_ENV) or "").strip()
+    if raw:
+        try:
+            requested = int(raw)
+        except ValueError as exc:
+            raise ValueError(f"invalid {MATERIALIZE_VALIDATION_CONCURRENCY_ENV}: {raw}") from exc
+        return max(1, min(requested, 8, count))
+    cpu = max(1, int(os.cpu_count() or 1))
+    # Each task preserves the canonical validator process + nested node --check.
+    # Keep the default conservative on GitHub runners while allowing larger hosts
+    # to amortize catalogue-wide validation without one process chain per provider
+    # being serialized behind the previous provider.
+    return max(1, min(4, count, max(2, cpu)))
 
 def materialization_context() -> str:
     context = str(os.environ.get("NUVIO_PROVIDER_V3_CONTEXT") or "workspace").strip().casefold()
@@ -552,167 +573,202 @@ def materialize_all(
     output_dir.mkdir(parents=True, exist_ok=True)
     report_rows: list[dict[str, Any]] = []
     aggregate = hashlib.sha256()
+    validation_workers = materialization_validation_concurrency(len(rows))
+    pending_validation: list[dict[str, Any]] = []
+    print(
+        "FIELD_PROVIDER_V3_VALIDATION_POOL "
+        f"providers={len(rows)} workers={validation_workers} validator=node-check-isolated",
+        flush=True,
+    )
 
-    for index, entry in enumerate(rows, start=1):
-        provider_id = canonical_id(str(entry.get("id") or ""))
-        patch = patches.get(provider_id)
-        capability = capabilities.get(provider_id)
-        if not isinstance(patch, dict) or not isinstance(capability, dict):
-            raise ValueError(f"{provider_id}: missing structured DATA")
-        projected_types = project_published_semantic_types(entry, patch)
-        normalize_anime_transport_compatibility(entry)
-        print(
-            "FIELD_PROVIDER_V3_MATERIALIZE_BEGIN "
-            f"index={index} total={len(rows)} provider={provider_id} "
-            f"published_types_projected={str(projected_types).lower()}",
-            flush=True,
-        )
-
-        static_row = static_rows.get(provider_id)
-        if not isinstance(static_row, dict):
-            raise ValueError(f"{provider_id}: missing durable static knowledge")
-        model = provider_model(provider_id, patch, capability, static_row)
-        seed = build_clean_provider_seed(
-            provider_id,
-            entry,
-            known_site=model.get("knownSite"),
-            provider_model=model,
-        )
-        base, stripped = build_base_from_seed(
-            provider_id,
-            seed,
-            overrides_path=overrides_path,
-        )
-        data = build_provider_data_model(
-            provider_id,
-            entry,
-            known_site=model.get("knownSite"),
-            provider_model=model,
-        )
-        bundle = compose_provider_bundle(provider_id, base, data)
-        bundle, applied = apply_overrides(
-            provider_id,
-            bundle,
-            phase="discovery",
-            include_global_core=True,
-            config_path=overrides_path,
-        )
-        text = bundle.decode("utf-8", errors="strict")
-
-        if text.count("/* BEGIN NIAKVIO_PROVIDER */") != 1:
-            raise ValueError(f"{provider_id}: BEGIN PROVIDER cardinality")
-        if text.count("/* END NIAKVIO_PROVIDER */") != 1:
-            raise ValueError(f"{provider_id}: END PROVIDER cardinality")
-        if not text.rstrip().endswith("/* END NIAKVIO_PROVIDER */"):
-            raise ValueError(f"{provider_id}: bytes after END PROVIDER")
-        if "searchParams.set(" in text or "searchParams.delete(" in text:
-            raise ValueError(f"{provider_id}: QuickJS URLSearchParams mutation remains")
-
-        fix_ids = validate_managed_fixes(text)
-        config_id = f"PROVIDER.{provider_id.upper()}.CONFIG.V1"
-        if config_id not in fix_ids:
-            raise ValueError(f"{provider_id}: provider CONFIG Lego missing")
-        core_ids = [fix_id for fix_id in fix_ids if fix_id.startswith("CORE.")]
-        if not core_ids:
-            raise ValueError(f"{provider_id}: no Core Lego materialized")
-        boundary = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
-        if text.count(boundary) != 1:
-            raise ValueError(
-                f"{provider_id}: Core boundary count={text.count(boundary)} expected=1"
+    validation_pool = concurrent.futures.ThreadPoolExecutor(max_workers=validation_workers)
+    try:
+        for index, entry in enumerate(rows, start=1):
+            provider_id = canonical_id(str(entry.get("id") or ""))
+            patch = patches.get(provider_id)
+            capability = capabilities.get(provider_id)
+            if not isinstance(patch, dict) or not isinstance(capability, dict):
+                raise ValueError(f"{provider_id}: missing structured DATA")
+            projected_types = project_published_semantic_types(entry, patch)
+            normalize_anime_transport_compatibility(entry)
+            print(
+                "FIELD_PROVIDER_V3_MATERIALIZE_BEGIN "
+                f"index={index} total={len(rows)} provider={provider_id} "
+                f"published_types_projected={str(projected_types).lower()}",
+                flush=True,
             )
-        boundary_at = text.index(boundary)
-        provider_fix_positions = []
-        core_fix_positions = []
-        for fix_id in fix_ids:
-            span = owned_span(text, fix_id)
-            if span is None:
-                raise ValueError(f"{provider_id}: managed Lego span missing: {fix_id}")
-            if fix_id.startswith("PROVIDER."):
-                provider_fix_positions.append(span[0])
-            elif fix_id.startswith("CORE."):
-                core_fix_positions.append(span[0])
-        if provider_fix_positions and max(provider_fix_positions) >= boundary_at:
-            raise ValueError(f"{provider_id}: Provider Lego found after Core boundary")
-        if core_fix_positions and min(core_fix_positions) <= boundary_at:
-            raise ValueError(f"{provider_id}: Core Lego found before Core boundary")
 
-        minimizer_report = {
-            "enabled": False,
-            "savedBytes": 0,
-            "transformedLines": 0,
-            "skippedReason": "final-stage-only",
-        }
-        if minimize_enabled:
-            minimized = minimize_text(text)
-            validate_transform(text, minimized.text)
-            text = minimized.text
-            minimizer_report = {
-                "enabled": True,
-                "savedBytes": minimized.saved_bytes,
-                "transformedLines": minimized.transformed_lines,
-                "skippedReason": minimized.skipped_reason,
-            }
+            static_row = static_rows.get(provider_id)
+            if not isinstance(static_row, dict):
+                raise ValueError(f"{provider_id}: missing durable static knowledge")
+            model = provider_model(provider_id, patch, capability, static_row)
+            seed = build_clean_provider_seed(
+                provider_id,
+                entry,
+                known_site=model.get("knownSite"),
+                provider_model=model,
+            )
+            base, stripped = build_base_from_seed(
+                provider_id,
+                seed,
+                overrides_path=overrides_path,
+            )
+            data = build_provider_data_model(
+                provider_id,
+                entry,
+                known_site=model.get("knownSite"),
+                provider_model=model,
+            )
+            bundle = compose_provider_bundle(provider_id, base, data)
+            bundle, applied = apply_overrides(
+                provider_id,
+                bundle,
+                phase="discovery",
+                include_global_core=True,
+                config_path=overrides_path,
+            )
+            text = bundle.decode("utf-8", errors="strict")
 
-            # Prove final-stage minimization kept Lego ownership and envelope byte-addressable.
-            minimized_fix_ids = validate_managed_fixes(text)
-            if minimized_fix_ids != fix_ids:
-                raise ValueError(f"{provider_id}: minimizer changed managed Lego ownership")
-            if text.count("/* BEGIN NIAKVIO_PROVIDER */") != 1 or text.count("/* END NIAKVIO_PROVIDER */") != 1:
-                raise ValueError(f"{provider_id}: minimizer changed Provider v3 envelope")
+            if text.count("/* BEGIN NIAKVIO_PROVIDER */") != 1:
+                raise ValueError(f"{provider_id}: BEGIN PROVIDER cardinality")
+            if text.count("/* END NIAKVIO_PROVIDER */") != 1:
+                raise ValueError(f"{provider_id}: END PROVIDER cardinality")
+            if not text.rstrip().endswith("/* END NIAKVIO_PROVIDER */"):
+                raise ValueError(f"{provider_id}: bytes after END PROVIDER")
+            if "searchParams.set(" in text or "searchParams.delete(" in text:
+                raise ValueError(f"{provider_id}: QuickJS URLSearchParams mutation remains")
+
+            fix_ids = validate_managed_fixes(text)
+            config_id = f"PROVIDER.{provider_id.upper()}.CONFIG.V1"
+            if config_id not in fix_ids:
+                raise ValueError(f"{provider_id}: provider CONFIG Lego missing")
+            core_ids = [fix_id for fix_id in fix_ids if fix_id.startswith("CORE.")]
+            if not core_ids:
+                raise ValueError(f"{provider_id}: no Core Lego materialized")
+            boundary = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
             if text.count(boundary) != 1:
-                raise ValueError(f"{provider_id}: minimizer changed Core boundary")
-        bundle = text.encode("utf-8")
-        try:
-            verified_bundle, byte_validation = verify_bytes(bundle)
-        except Exception as exc:
-            raise RuntimeError(
-                f"{provider_id}: materialized provider artifact validation failed: {exc}"
-            ) from exc
-        if verified_bundle != bundle:
-            raise AssertionError(
-                f"{provider_id}: materialized byte validator rewrote provider bytes"
-            )
-        bundle = verified_bundle
+                raise ValueError(
+                    f"{provider_id}: Core boundary count={text.count(boundary)} expected=1"
+                )
+            boundary_at = text.index(boundary)
+            provider_fix_positions = []
+            core_fix_positions = []
+            for fix_id in fix_ids:
+                span = owned_span(text, fix_id)
+                if span is None:
+                    raise ValueError(f"{provider_id}: managed Lego span missing: {fix_id}")
+                if fix_id.startswith("PROVIDER."):
+                    provider_fix_positions.append(span[0])
+                elif fix_id.startswith("CORE."):
+                    core_fix_positions.append(span[0])
+            if provider_fix_positions and max(provider_fix_positions) >= boundary_at:
+                raise ValueError(f"{provider_id}: Provider Lego found after Core boundary")
+            if core_fix_positions and min(core_fix_positions) <= boundary_at:
+                raise ValueError(f"{provider_id}: Core Lego found before Core boundary")
 
-        digest = hashlib.sha256(bundle).hexdigest()
-        filename = f"{provider_id}-{digest[:16]}.js"
-        relative = f"providers/{filename}"
-        (output_dir / filename).write_bytes(bundle)
+            minimizer_report = {
+                "enabled": False,
+                "savedBytes": 0,
+                "transformedLines": 0,
+                "skippedReason": "final-stage-only",
+            }
+            if minimize_enabled:
+                minimized = minimize_text(text)
+                validate_transform(text, minimized.text)
+                text = minimized.text
+                minimizer_report = {
+                    "enabled": True,
+                    "savedBytes": minimized.saved_bytes,
+                    "transformedLines": minimized.transformed_lines,
+                    "skippedReason": minimized.skipped_reason,
+                }
 
-        entry["filename"] = relative
-        entry["version"] = base_version(entry.get("version"))
+                # Prove final-stage minimization kept Lego ownership and envelope byte-addressable.
+                minimized_fix_ids = validate_managed_fixes(text)
+                if minimized_fix_ids != fix_ids:
+                    raise ValueError(f"{provider_id}: minimizer changed managed Lego ownership")
+                if text.count("/* BEGIN NIAKVIO_PROVIDER */") != 1 or text.count("/* END NIAKVIO_PROVIDER */") != 1:
+                    raise ValueError(f"{provider_id}: minimizer changed Provider v3 envelope")
+                if text.count(boundary) != 1:
+                    raise ValueError(f"{provider_id}: minimizer changed Core boundary")
+            bundle = text.encode("utf-8")
+            pending_validation.append({
+                "provider_id": provider_id,
+                "entry": entry,
+                "bundle": bundle,
+                "data": data,
+                "stripped": stripped,
+                "fix_ids": fix_ids,
+                "core_ids": core_ids,
+                "applied": applied,
+                "minimizer_report": minimizer_report,
+                "future": validation_pool.submit(verify_bytes, bundle),
+            })
 
-        aggregate.update(provider_id.encode("utf-8"))
-        aggregate.update(bytes.fromhex(digest))
-        report_rows.append({
-            "provider": provider_id,
-            "file": relative,
-            "sha256": digest,
-            "providerDataSha256": hashlib.sha256(
-                json.dumps(
-                    data,
-                    ensure_ascii=False,
-                    sort_keys=True,
-                    separators=(",", ":"),
-                ).encode("utf-8")
-            ).hexdigest(),
-            "baseStrippedGeneratedCore": bool(stripped),
-            "fixIds": fix_ids,
-            "coreCount": len(core_ids),
-            "applied": applied,
-            "deviceSpecificJs": False,
-            "devices": ["tv", "mobile", "desktop"],
-            "legacyProviderJsExecuted": False,
-            "upstreamJsExecuted": False,
-            "byteValidation": {
-                "tool": byte_validation.get("tool"),
-                "toolVersion": byte_validation.get("toolVersion"),
-                "phase": byte_validation.get("phase"),
-                "sourceSha256": byte_validation.get("sourceSha256"),
-                "fixedPointVerified": bool(byte_validation.get("fixedPointVerified")),
-            },
-            "minimizer": minimizer_report,
-        })
+        # Resolve futures in original catalogue order. Validation itself overlaps,
+        # while filenames, manifest rows, generation hash and report ordering remain
+        # byte-for-byte deterministic relative to sequential materialization.
+        for pending in pending_validation:
+            provider_id = str(pending["provider_id"])
+            entry = pending["entry"]
+            bundle = pending["bundle"]
+            future = pending["future"]
+            try:
+                verified_bundle, byte_validation = future.result()
+            except Exception as exc:
+                raise RuntimeError(
+                    f"{provider_id}: materialized provider artifact validation failed: {exc}"
+                ) from exc
+            if verified_bundle != bundle:
+                raise AssertionError(
+                    f"{provider_id}: materialized byte validator rewrote provider bytes"
+                )
+            bundle = verified_bundle
+
+            digest = hashlib.sha256(bundle).hexdigest()
+            filename = f"{provider_id}-{digest[:16]}.js"
+            relative = f"providers/{filename}"
+            (output_dir / filename).write_bytes(bundle)
+
+            entry["filename"] = relative
+            entry["version"] = base_version(entry.get("version"))
+
+            aggregate.update(provider_id.encode("utf-8"))
+            aggregate.update(bytes.fromhex(digest))
+            data = pending["data"]
+            fix_ids = pending["fix_ids"]
+            core_ids = pending["core_ids"]
+            report_rows.append({
+                "provider": provider_id,
+                "file": relative,
+                "sha256": digest,
+                "providerDataSha256": hashlib.sha256(
+                    json.dumps(
+                        data,
+                        ensure_ascii=False,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    ).encode("utf-8")
+                ).hexdigest(),
+                "baseStrippedGeneratedCore": bool(pending["stripped"]),
+                "fixIds": fix_ids,
+                "coreCount": len(core_ids),
+                "applied": pending["applied"],
+                "deviceSpecificJs": False,
+                "devices": ["tv", "mobile", "desktop"],
+                "legacyProviderJsExecuted": False,
+                "upstreamJsExecuted": False,
+                "byteValidation": {
+                    "tool": byte_validation.get("tool"),
+                    "toolVersion": byte_validation.get("toolVersion"),
+                    "phase": byte_validation.get("phase"),
+                    "sourceSha256": byte_validation.get("sourceSha256"),
+                    "fixedPointVerified": bool(byte_validation.get("fixedPointVerified")),
+                },
+                "minimizer": pending["minimizer_report"],
+            })
+    finally:
+        validation_pool.shutdown(wait=True, cancel_futures=True)
 
     generation = aggregate.hexdigest()
     manifest["version"] = str(manifest.get("version") or "0")
@@ -732,6 +788,7 @@ def materialize_all(
         "generation": generation,
         "providerCount": len(report_rows),
         "activeProviderIdentityCount": len(active_ids),
+        "byteValidationConcurrency": validation_workers,
         "providers": report_rows,
         "devicePolicy": {
             "providerJsIsDeviceAgnostic": True,
