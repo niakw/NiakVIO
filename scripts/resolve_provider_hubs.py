@@ -958,12 +958,16 @@ def _candidate_identity(candidate: dict[str, Any]) -> str:
 
 
 def has_authoritative_hub_source(cfg: dict[str, Any]) -> bool:
-    """A declared hub/channel/redirect supersedes direct/history/search authority."""
-    if is_http_url(cfg.get("hub")):
+    """A live declared hub/channel/redirect supersedes direct/history/search authority."""
+    removed_states = {"removed", "dead", "retired", "graveyard", "compromised"}
+    hub_value = cfg.get("hub")
+    hub_state = str(cfg.get("hub_status") or "").strip().casefold()
+    if is_http_url(hub_value) and hub_state not in removed_states:
         return True
     return any(
         isinstance(source, dict)
         and str(source.get("type") or "").strip().casefold() in {"hub", "telegram_public", "redirect"}
+        and str(source.get("source_status") or source.get("status") or "").strip().casefold() not in removed_states
         and is_http_url(source.get("url"))
         for source in (cfg.get("sources") or [])
     )
@@ -1128,6 +1132,14 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
 
     for source in cfg.get("sources") or []:
         if not isinstance(source, dict):
+            continue
+        if str(source.get("source_status") or source.get("status") or "").strip().casefold() in {"removed", "dead", "retired", "graveyard", "compromised"}:
+            observations.append({
+                "source_type": str(source.get("type") or "hub"),
+                "url": str(source.get("url") or ""),
+                "skipped": True,
+                "reason": "source_marked_removed",
+            })
             continue
         source_type = str(source.get("type") or "hub")
         if source_type == "search":
