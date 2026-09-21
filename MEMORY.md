@@ -1,5 +1,13 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-21 22:23 Europe/Paris — Census runner reached real contracts; stale Flemmix assertion fixed
+
+- TEMP census run `35649485922` (#1309, SHA `01220f219471`) confirmed the workflow-validation issue is closed: both `scale` and `census` jobs were allocated. The census then failed in the real contract suite before network probing.
+- Exact failure: `tests/provider_flemmix_anime_ultime_runtime_contract_test.py` still asserted that `flemmix.me` must be absent from `domain_substitutions`. That assertion is stale relative to current Domain authority: `provider-hubs.json` pins `https://flemmix.party/` as `explicit_current`, lists `flemmix.me` as a historical/redirect candidate, and current overrides intentionally normalize both `flemmix.cloud` and `flemmix.me` to `flemmix.party`.
+- `4244a3cf0298` updates the contract to require `flemmix.me -> flemmix.party` in both domain/runtime replacement maps instead of forbidding the historical host.
+- `9f4bfabc5d29` closes a census evidence-consistency gap: mono census already rendered with current `provider-authority-status.json`, but its persistence step did not save that exact authority artifact with the status/markdown. Authority is now copied through the reset/rebase boundary and committed with the exact census ledger so later readers can reproduce why a symptom was or was not in `repairQueue`.
+- TEMP census #1310 (`35649760235`, SHA `9f4bfabc5d29`) is the validation run for these fixes. Do not call the census coherent until its contract step passes, the unresolved census executes, and `PROVIDER_CENSUS_STATUS.md` is regenerated/persisted.
+
 ## 2026-09-21 22:19 Europe/Paris — TEMP census workflow validation restored
 
 - Repeated `TEMP - Current Bytes Full Provider Census` runs were not test failures: GitHub created the workflow run under the file path name, immediately concluded failure, and exposed `jobs=[]`. This is workflow-validation failure before runner allocation.
