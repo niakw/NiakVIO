@@ -1,5 +1,12 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-21 22:19 Europe/Paris — TEMP census workflow validation restored
+
+- Repeated `TEMP - Current Bytes Full Provider Census` runs were not test failures: GitHub created the workflow run under the file path name, immediately concluded failure, and exposed `jobs=[]`. This is workflow-validation failure before runner allocation.
+- The break was traced to the provider-count routing added on 2026-09-20 (`39016ca35d02`): the mono census job acquired a compound job-level GitHub expression combining `needs.scale.outputs`, event type and commit-message `startsWith` calls. Merely rewriting unary `!startsWith` did not repair validation (`f2839047d01c`, run 1308 still had zero jobs).
+- `01220f219471` moves catalogue-size and recursion decisions into the already checked-out `scale` shell step. It emits `use_sharded` and `should_run`; the census job now uses only `if: needs.scale.outputs.should_run == 'true'`. The >120-provider handoff to the 8-shard workflow and recursion suppression are preserved without a fragile compound job expression.
+- Validation evidence: run `35649485922` (#1309) is recognized by GitHub under the declared name **TEMP - Current Bytes Full Provider Census** and created job `scale`; the scale job completed successfully. This closes the pre-run workflow-validation failure. The actual census job/result remains to be inspected before calling the census run green.
+
 ## 2026-09-21 22:14 Europe/Paris — Census authority/last-verdict reconciliation fixed
 
 - The persisted `PROVIDER_CENSUS_STATUS.md` was internally inconsistent in two independent ways:
