@@ -51,8 +51,9 @@
       "maxVariantsPerSignature": 5,
       "providerCodeWrite": false,
       "publicationAllowed": false,
-      "role": "rotate bounded repair hypotheses; variants 0-3 retain historical negative memory, while the final learned causal strategy is generation-versioned so materially new sandbox/replanning semantics can be re-evaluated without erasing prior evidence; never grant success",
-      "finalVariantGeneration": 2
+      "role": "rotate bounded repair hypotheses; production variants 0-3 plus final generation 2 remain conservative, while Learning may advance the final causal strategy through materially distinct generations up to maxLearningGenerationsPerSignature; exhaustion then becomes architecture debt, never success",
+      "finalVariantGeneration": 2,
+      "maxLearningGenerationsPerSignature": 5
     },
     "explorationChainBudget": {
       "maxMutationsPerProvider": 3,
