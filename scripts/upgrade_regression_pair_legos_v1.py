@@ -21,7 +21,7 @@ PATH = ROOT / "provider-overrides.json"
 PROVIDERS: dict[str, dict[str, Any]] = {
     "animevostfr": {
         "script": "scripts/provider_patches/animevostfr_runtime_v1.py",
-        "options": {"base": "https://v2.animevostfr.org", "targetStreams": 3},
+        "options": {"base": "https://animevostfr.org", "targetStreams": 3},
         "required": ["movie", "anime"],
         "routes": [
             "/?s={query}",
