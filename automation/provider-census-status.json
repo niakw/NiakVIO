@@ -110,10 +110,10 @@
         "movie=none",
         "tv=none"
       ],
-      "harnessTransportClass": "github-all-transports-challenged",
+      "harnessTransportClass": "residential-exit-all-challenged",
       "harnessTransportEvidence": [
-        "movie: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown",
-        "tv: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown"
+        "movie: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_challenge_persisted, residential-tv-browser=browser_challenge_persisted, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted",
+        "tv: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_challenge_persisted, residential-tv-browser=browser_challenge_persisted, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted"
       ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_ROUTE_AUTHORITY",
@@ -123,11 +123,16 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "require real native-device/IP transport evidence before blaming provider code",
+      "action": "private residential exit is also challenged; GitHub IP reputation alone does not explain the block",
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "animesultra",
@@ -166,7 +171,11 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "animetsu",
@@ -209,8 +218,8 @@
     },
     {
       "provider": "animevost-fr",
-      "status": "HARNESS/ENV BLOCKED",
-      "color": "🟫",
+      "status": "HARNESS MISMATCH",
+      "color": "🟧",
       "declaredLanes": [
         "anime"
       ],
@@ -230,9 +239,9 @@
       "evidenceDepth": [
         "anime=lookup_only"
       ],
-      "harnessTransportClass": "github-all-transports-challenged",
+      "harnessTransportClass": "browser-profile-only",
       "harnessTransportEvidence": [
-        "anime: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown"
+        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted"
       ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_BACKEND",
@@ -242,11 +251,15 @@
         "structured_backend_authority"
       ],
       "authorityKnown": true,
-      "action": "require real native-device/IP transport evidence before blaming provider code",
+      "action": "compare browser/JS challenge resolution with native fetch/TLS/IP; provider JS mutation is not justified by CI challenge",
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_waf_challenge, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "animevostfr",
@@ -291,8 +304,8 @@
     },
     {
       "provider": "flemmix",
-      "status": "HARNESS/ENV BLOCKED",
-      "color": "🟫",
+      "status": "HARNESS MISMATCH",
+      "color": "🟧",
       "declaredLanes": [
         "movie",
         "tv"
@@ -316,10 +329,10 @@
         "movie=none",
         "tv=none"
       ],
-      "harnessTransportClass": "github-all-transports-challenged",
+      "harnessTransportClass": "native-policy-inconclusive",
       "harnessTransportEvidence": [
-        "movie: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown",
-        "tv: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown"
+        "movie: browser=browser_challenge_persisted, tv-browser=browser_inconclusive, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted, residential-browser=browser_inconclusive, residential-tv-browser=browser_inconclusive, residential-okhttp=okhttp_jvm_inconclusive, residential-direct=direct_http_inconclusive",
+        "tv: browser=browser_challenge_persisted, tv-browser=browser_inconclusive, okhttp=okhttp_jvm_inconclusive, direct=direct_http_challenge_persisted, residential-browser=browser_inconclusive, residential-tv-browser=browser_inconclusive, residential-okhttp=okhttp_jvm_inconclusive, residential-direct=direct_http_inconclusive"
       ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_ROUTE_AUTHORITY",
@@ -329,11 +342,16 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "require real native-device/IP transport evidence before blaming provider code",
+      "action": "probe provider-owned search/detail route with representative native transport; current HTTP 200 is not playback proof",
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "fullanime",
@@ -358,9 +376,9 @@
       "evidenceDepth": [
         "anime=none"
       ],
-      "harnessTransportClass": "github-all-transports-challenged",
+      "harnessTransportClass": "residential-exit-all-challenged",
       "harnessTransportEvidence": [
-        "anime: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown"
+        "anime: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_challenge_persisted, residential-tv-browser=browser_challenge_persisted, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted"
       ],
       "authorityRepairEligible": false,
       "authorityAction": "KEEP_DISABLED",
@@ -370,11 +388,15 @@
         "manual_off_no_current_hub_authority"
       ],
       "authorityKnown": true,
-      "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
+      "action": "private residential exit is also challenged; GitHub IP reputation alone does not explain the block",
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "mallumv",
@@ -457,12 +479,22 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "networkDifferentialClass": "github-native-route-reachable",
+      "networkDifferentialEvidence": [
+        "movie: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
+        "tv: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+      ]
     },
     {
       "provider": "moviesmod",
-      "status": "HARNESS/ENV BLOCKED",
-      "color": "🟫",
+      "status": "HARNESS MISMATCH",
+      "color": "🟧",
       "declaredLanes": [
         "movie",
         "tv"
@@ -486,10 +518,10 @@
         "movie=lookup_only",
         "tv=lookup_only"
       ],
-      "harnessTransportClass": "github-all-transports-challenged",
+      "harnessTransportClass": "browser-profile-only",
       "harnessTransportEvidence": [
-        "movie: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown",
-        "tv: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown"
+        "movie: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_inconclusive, residential-direct=direct_http_challenge_persisted",
+        "tv: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_inconclusive, residential-direct=direct_http_challenge_persisted"
       ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_ROUTE_AUTHORITY",
@@ -499,11 +531,16 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "require real native-device/IP transport evidence before blaming provider code",
+      "action": "compare browser/JS challenge resolution with native fetch/TLS/IP; provider JS mutation is not justified by CI challenge",
       "brainCheckRequired": true,
       "statusRepairEligible": false,
       "repairEligible": false,
-      "testedThisRun": true
+      "testedThisRun": false,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "showbox",
@@ -590,7 +627,12 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "residentialProviderReplayClass": "no-verified-media",
+      "residentialProviderReplayEvidence": [
+        "movie: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true",
+        "tv: status=no_streams, stage=provider_network_http_error, raw=0, playable=0, verified=0, identitySafe=true"
+      ]
     },
     {
       "provider": "yflix",
@@ -633,7 +675,12 @@
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
-      "testedThisRun": true
+      "testedThisRun": true,
+      "networkDifferentialClass": "github-native-route-reachable",
+      "networkDifferentialEvidence": [
+        "movie: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached",
+        "tv: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
+      ]
     },
     {
       "provider": "wookafr",
@@ -778,8 +825,8 @@
     },
     {
       "provider": "animesalt",
-      "status": "HARNESS/ENV BLOCKED",
-      "color": "🟫",
+      "status": "HARNESS MISMATCH",
+      "color": "🟧",
       "declaredLanes": [
         "anime"
       ],
@@ -799,13 +846,13 @@
       "evidenceDepth": [
         "anime=none"
       ],
-      "action": "require real native-device/IP transport evidence before blaming provider code",
+      "action": "compare browser/JS challenge resolution with native fetch/TLS/IP; provider JS mutation is not justified by CI challenge",
       "brainCheckRequired": true,
       "testedThisRun": false,
       "repairEligible": false,
-      "harnessTransportClass": "github-all-transports-challenged",
+      "harnessTransportClass": "browser-profile-only",
       "harnessTransportEvidence": [
-        "anime: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown"
+        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted"
       ],
       "residentialProviderReplayClass": "verified",
       "residentialProviderReplayEvidence": [
@@ -873,8 +920,8 @@
     },
     {
       "provider": "vostfree",
-      "status": "HARNESS/ENV BLOCKED",
-      "color": "🟫",
+      "status": "HARNESS MISMATCH",
+      "color": "🟧",
       "declaredLanes": [
         "anime"
       ],
@@ -894,13 +941,13 @@
       "evidenceDepth": [
         "anime=none"
       ],
-      "action": "require real native-device/IP transport evidence before blaming provider code",
+      "action": "compare browser/JS challenge resolution with native fetch/TLS/IP; provider JS mutation is not justified by CI challenge",
       "brainCheckRequired": true,
       "testedThisRun": false,
       "repairEligible": false,
-      "harnessTransportClass": "github-all-transports-challenged",
+      "harnessTransportClass": "browser-profile-only",
       "harnessTransportEvidence": [
-        "anime: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown"
+        "anime: browser=browser_content_reached, tv-browser=browser_content_reached, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_content_reached, residential-tv-browser=browser_content_reached, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted"
       ],
       "residentialProviderReplayClass": "verified",
       "residentialProviderReplayEvidence": [
@@ -1968,7 +2015,8 @@
     "CANDIDATE OK": 1,
     "CHAIN REACHED": 2,
     "FULL OK": 25,
-    "HARNESS/ENV BLOCKED": 7,
+    "HARNESS MISMATCH": 5,
+    "HARNESS/ENV BLOCKED": 2,
     "PARTIAL OK": 3,
     "PROVIDER NETWORK BLOCKED": 5,
     "ROUTE PROVEN": 3
@@ -2046,5 +2094,207 @@
     "fullanime",
     "moviesmod",
     "vostfree"
-  ]
+  ],
+  "harnessEvidenceRunId": "35650348152-waf-transport",
+  "harnessEvidenceSha": "635e07d72dbf9957da5f94d7cf0aa047a7303b5b",
+  "harnessTransportUpdatedProviders": [
+    "allwish",
+    "animesalt",
+    "animevost-fr",
+    "flemmix",
+    "fullanime",
+    "moviesmod",
+    "vostfree"
+  ],
+  "networkDifferentialUpdatedProviders": [
+    "moviebox",
+    "yflix"
+  ],
+  "residentialProviderReplayPromotedProviders": [],
+  "residentialProviderReplayReclassifiedProviders": [],
+  "residentialProviderReplayRepairableProviders": [],
+  "residentialExitNodeEvidence": {
+    "enabled": true,
+    "available": true,
+    "profile": "tailscale-residential-exit",
+    "matchedProviderLanes": 16,
+    "privacy": {
+      "exitNodeNamePersisted": false,
+      "tailscaleAddressPersisted": false,
+      "residentialPublicIpPersisted": false,
+      "responseBodiesPersisted": false,
+      "cookiesPersisted": false
+    }
+  },
+  "residentialProviderReplay": {
+    "available": true,
+    "profile": "tailscale-residential-exit",
+    "providerCount": 8,
+    "providers": [
+      "allwish",
+      "animesultra",
+      "animevost-fr",
+      "flemmix",
+      "fullanime",
+      "moviebox",
+      "moviesmod",
+      "vidfast"
+    ],
+    "rawProviders": [],
+    "playableProviders": [],
+    "verifiedProviders": [],
+    "wrongContentProviders": [],
+    "rows": [
+      {
+        "provider": "allwish",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "allwish",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_network_zero_result",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "animesultra",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "animevost-fr",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_waf_challenge",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "flemmix",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_zero_result",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "flemmix",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_network_zero_result",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "fullanime",
+        "lane": "anime",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "moviebox",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "moviebox",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "moviesmod",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "moviesmod",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_zero_before_provider_network",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "vidfast",
+        "lane": "movie",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      },
+      {
+        "provider": "vidfast",
+        "lane": "tv",
+        "status": "no_streams",
+        "debugStage": "provider_network_http_error",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
+        "contradictions": 0,
+        "identitySafe": true
+      }
+    ],
+    "privacy": {
+      "exitNodeNamePersisted": false,
+      "tailscaleAddressPersisted": false,
+      "residentialPublicIpPersisted": false,
+      "responseBodiesPersisted": false,
+      "cookiesPersisted": false
+    }
+  }
 }
