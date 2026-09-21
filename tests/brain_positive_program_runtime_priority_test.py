@@ -157,6 +157,16 @@ try:
     assert isinstance(yflix_options,dict), yflix_options
     assert yflix_options["base_url"]=="https://enc-dec.app"
     assert yflix_options["request_recipes"][0]["origin"]=="https://enc-dec.app"
+
+    # Runtime sanitation happens before exploration, not only when accepted
+    # programs are compiled for durable memory.
+    google_noise={
+        **legacy_recipe,
+        "origin":"https://www.google.co.in",
+        "route":"/search?q={query}",
+    }
+    assert mod._safe_request_recipe(google_noise,peer=False) is None
+    assert mod._safe_route("/favicon.ico") is None
 finally:
     mod.positive_program_routes=old_routes
     mod.positive_program_request_recipes=old_recipes
