@@ -113,6 +113,23 @@ def render(state: dict[str, Any]) -> str:
     if transport_run:
         evidence_line += f" · transport overlay {transport_run}"
 
+    harness_mismatch_queue = state.get("harnessMismatchQueue")
+    if not isinstance(harness_mismatch_queue, list):
+        harness_mismatch_queue = [
+            str(row.get("provider") or "")
+            for row in providers
+            if str(row.get("status") or "") == "HARNESS MISMATCH"
+            and row.get("authorityRepairEligible") is not False
+        ]
+    environment_blocked_queue = state.get("environmentBlockedQueue")
+    if not isinstance(environment_blocked_queue, list):
+        environment_blocked_queue = [
+            str(row.get("provider") or "")
+            for row in providers
+            if str(row.get("status") or "") == "HARNESS/ENV BLOCKED"
+            and row.get("authorityRepairEligible") is not False
+        ]
+
     residential = state.get("residentialExitNodeEvidence") if isinstance(state.get("residentialExitNodeEvidence"), dict) else {}
     residential_notice = ""
     if residential.get("enabled") is True:
@@ -128,7 +145,7 @@ def render(state: dict[str, Any]) -> str:
         "",
         "Latest provider census state: **" + " · ".join(count_parts) + f"** across **{len(providers)} providers**.",
         evidence_line + ".",
-        f"Symptomatic providers: **{len(state.get('symptomaticProviders') or [])}** · automated repair queue: **{len(state.get('repairQueue') or [])}** · authority-blocked symptoms: **{len(state.get('authorityBlockedQueue') or [])}** · harness/environment queue: **{len(state.get('environmentQueue') or [])}**.",
+        f"Symptomatic providers: **{len(state.get('symptomaticProviders') or [])}** · automated repair queue: **{len(state.get('repairQueue') or [])}** · authority-blocked symptoms: **{len(state.get('authorityBlockedQueue') or [])}** · harness mismatch: **{len(harness_mismatch_queue)}** · environment blocked: **{len(environment_blocked_queue)}**.",
         *([residential_notice] if residential_notice else []),
         "",
         "## Status semantics",
