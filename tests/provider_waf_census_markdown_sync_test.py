@@ -46,3 +46,7 @@ assert "'tests/provider_census_status_markdown_test.py'" not in workflow
 assert "FIELD_WAF_CENSUS_BASE_NOT_READY authority_schema_v3_required" in workflow
 assert 'assert int(state.get("schemaVersion") or 0) >= 3' in workflow
 assert '"authorityRepairEligible" in row and "authorityAction" in row' in workflow
+
+# Transport overlay writer must not auto-run from code/test pushes now that Repair owns WAF end-to-end.
+assert "workflow_dispatch:" in workflow
+assert "\n  push:" not in workflow.split("permissions:",1)[0]
