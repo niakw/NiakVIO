@@ -142,11 +142,17 @@ def chunks(values: list[str], size: int) -> list[list[str]]:
 
 
 def repair_batches(values: list[str], size: int) -> list[dict[str, Any]]:
-    """Group current repair targets by census-derived family/signature plan.
+    """Schedule by family/signature, but pack families into bounded executions.
 
-    The batch plan is only a scheduling/transfer prior. A stale plan is ignored,
-    and every candidate still passes the ordinary deep/identity/playback gates.
+    Family groups remain scheduling/diagnostic priors; the adaptive Brain plans
+    each provider independently from current evidence. Running every tiny family
+    as a separate Python/health process adds large fixed network/startup cost and
+    prevents NUVIO_HEALTH_CONCURRENCY from working across the portfolio. Pack
+    adjacent family groups up to the requested size while preserving membership
+    in familyGroups. Negative memory remains sequential between packed batches,
+    so no shared-memory write race is introduced.
     """
+    # PROVIDER_BRAIN_PACKED_FAMILY_BATCHES_V1
     selected = {cid(value) for value in values if cid(value)}
     if not selected:
         return []
@@ -156,11 +162,17 @@ def repair_batches(values: list[str], size: int) -> list[dict[str, Any]]:
     plan = load(BATCH_PLAN, {})
     if not isinstance(plan, dict) or str(plan.get("sourceRunId") or "") != str(status.get("runId") or ""):
         return [
-            {"groupId": "fallback", "repairScope": "unknown", "providers": batch}
+            {
+                "groupId": "fallback",
+                "repairScope": "unknown",
+                "capabilityStrategy": "unknown",
+                "providers": batch,
+                "familyGroups": [],
+            }
             for batch in chunks(sorted(selected, key=rank), size)
         ]
 
-    out: list[dict[str, Any]] = []
+    atomic: list[dict[str, Any]] = []
     assigned: set[str] = set()
     for group in plan.get("groups") or []:
         if not isinstance(group, dict):
@@ -174,25 +186,86 @@ def repair_batches(values: list[str], size: int) -> list[dict[str, Any]]:
         )
         if not members:
             continue
+        group_id = str(group.get("groupId") or "unknown")
+        repair_scope = str(group.get("repairScope") or "unknown")
+        capability_strategy = str(group.get("capabilityStrategy") or "unknown")
         for batch in chunks(members, size):
-            out.append({
-                "groupId": str(group.get("groupId") or "unknown"),
-                "repairScope": str(group.get("repairScope") or "unknown"),
-                "capabilityStrategy": str(group.get("capabilityStrategy") or "unknown"),
-                "providers": batch,
+            family = {
+                "groupId": group_id,
+                "repairScope": repair_scope,
+                "capabilityStrategy": capability_strategy,
+                "providers": list(batch),
+            }
+            atomic.append({
+                **family,
+                "familyGroups": [family],
             })
             assigned.update(batch)
 
     leftovers = sorted(selected - assigned, key=rank)
     for batch in chunks(leftovers, size):
-        out.append({"groupId": "unplanned", "repairScope": "unknown", "providers": batch})
-    out.sort(
+        family = {
+            "groupId": "unplanned",
+            "repairScope": "unknown",
+            "capabilityStrategy": "unknown",
+            "providers": list(batch),
+        }
+        atomic.append({**family, "familyGroups": [family]})
+
+    atomic.sort(
         key=lambda row: (
             min((pressure.get(cid(provider), 0) for provider in row.get("providers") or []), default=0),
             str(row.get("groupId") or ""),
         )
     )
-    return out
+
+    packed: list[dict[str, Any]] = []
+    pending: list[dict[str, Any]] = []
+    pending_count = 0
+
+    def flush() -> None:
+        nonlocal pending, pending_count
+        if not pending:
+            return
+        providers = [
+            provider
+            for row in pending
+            for provider in row.get("providers") or []
+        ]
+        families = [
+            family
+            for row in pending
+            for family in row.get("familyGroups") or []
+            if isinstance(family, dict)
+        ]
+        if len(families) == 1:
+            group_id = str(families[0].get("groupId") or "unknown")
+            repair_scope = str(families[0].get("repairScope") or "unknown")
+            capability_strategy = str(families[0].get("capabilityStrategy") or "unknown")
+        else:
+            group_id = "packed"
+            repair_scope = "mixed"
+            capability_strategy = "mixed"
+        packed.append({
+            "groupId": group_id,
+            "repairScope": repair_scope,
+            "capabilityStrategy": capability_strategy,
+            "providers": providers,
+            "familyGroups": families,
+        })
+        pending = []
+        pending_count = 0
+
+    for row in atomic:
+        row_count = len(row.get("providers") or [])
+        if pending and pending_count + row_count > size:
+            flush()
+        pending.append(row)
+        pending_count += row_count
+        if pending_count >= size:
+            flush()
+    flush()
+    return packed
 
 
 def repair_memory_fingerprint() -> str:
@@ -622,6 +695,7 @@ def main() -> int:
                     "groupId": batch_plan.get("groupId"),
                     "repairScope": batch_plan.get("repairScope"),
                     "capabilityStrategy": batch_plan.get("capabilityStrategy"),
+                    "familyGroups": batch_plan.get("familyGroups") or [],
                     "providerCount": len(batch),
                     "providers": batch,
                     "acceptedCount": len(accepted),
