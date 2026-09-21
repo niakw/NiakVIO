@@ -21,6 +21,7 @@ required=[
     "merge_residential_provider_replay.py",
     "Apply integrated WAF qualification to Repair census",
     "merge_waf_census_transport.py",
+    "--authority-status automation/provider-authority-status.json",
     "FIELD_REPAIR_WAF_QUALIFIED",
     "automation/provider-waf-browser-session-latest.json",
 ]
