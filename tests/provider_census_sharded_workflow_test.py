@@ -33,7 +33,7 @@ for needle in required:
     assert needle in text, needle
 
 assert "matrix.shard + 1" not in text
-assert "permissions:\n  contents: read" in text
+assert "permissions:\n  contents: write\n  actions: write" in text
 assert "permissions:\n      contents: write" in text
 assert text.count("provider-census-shard-${{ matrix.shard }}") >= 2
 print("Provider sharded census workflow contract passed")
