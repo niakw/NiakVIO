@@ -17,6 +17,7 @@ required=[
     "tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8",
     "oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}",
     "audience: ${{ env.TS_AUDIENCE }}",
+    "args: --accept-dns=false",
     'sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false',
     "tag:niakvio-ci -> autogroup:internet policy",
     "scripts/merge_waf_network_profiles.py",
@@ -42,6 +43,6 @@ connect=wf.index("Connect ephemeral Tailscale diagnostic node")
 activate=wf.index("Select private residential exit node")
 residential=wf.index("Reprobe WAF lanes through private residential exit")
 merge=wf.index("Merge residential exit evidence without node identity")
-assert baseline < connect < activate < residential < merge
+assert connect < baseline < activate < residential < merge
 
 print("Tailscale residential WAF workflow contract passed")
