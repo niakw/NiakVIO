@@ -34,7 +34,7 @@ history = {
         "broken": {"lanes": {"movie": {"proofs": [], "misses": [], "consecutiveTechnicalRuns": 1}}},
     }
 }
-candidate_evidence = {"ciEvidence": {"run87_reconstruction": {"runId": "34309729426", "scope": "reconstruction-candidate", "verifiedProviders": ["candidate"]}}}
+candidate_evidence = {"ciEvidence": {"run87_repair": {"runId": "34309729426", "scope": "repair-candidate", "verifiedProviders": ["candidate"], "verifiedLanes": {"candidate": ["anime"]}}}}
 
 provider_overrides = {
     "provider_patches": {
@@ -120,7 +120,7 @@ assert "Evidence depth" in md
 assert "Harness transport" in md
 assert "Candidate proof" in md
 assert "Route proof" in md
-assert "CANDIDATE OK preserves verified playback from a reconstruction candidate" in md
+assert "CANDIDATE OK preserves verified playback from an unpublished repair/reconstruction candidate" in md
 assert "PARTIAL OK still requires at least one current verified playable lane" in md
 assert "carried" in md
 assert "run 123" in md
