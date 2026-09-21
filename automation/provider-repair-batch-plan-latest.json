@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35591042153-post-repair-candidate-reconciled",
-  "sourceTriggerSha": "f176c2d62ca8f981d9dd3e2097fd85451ed0461d",
+  "sourceRunId": "35600977459-pre-repair",
+  "sourceTriggerSha": "7400a23dfbf6765cbf8d82f9954d58cd6c50222c",
   "unresolvedProviderCount": 16,
-  "groupCount": 11,
+  "groupCount": 12,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -11,35 +11,6 @@
     "providerLocalRepair": "exception path only"
   },
   "groups": [
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver",
-        "wookafr-current-multiplayer-v2"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "chain",
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "native-policy-inconclusive",
-        "residential-exit-all-challenged"
-      ],
-      "providerCount": 3,
-      "providers": [
-        "flemmix",
-        "fullanime",
-        "wookafr"
-      ],
-      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
     {
       "groupId": "harness-compatibility|html_scraper",
       "repairScope": "harness-compatibility",
@@ -63,6 +34,32 @@
       "providers": [
         "allwish",
         "moviesmod"
+      ],
+      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "native-policy-inconclusive",
+        "residential-exit-all-challenged"
+      ],
+      "providerCount": 2,
+      "providers": [
+        "flemmix",
+        "fullanime"
       ],
       "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
       "executionPolicy": "batch-first",
@@ -96,11 +93,10 @@
       "repairScope": "transport",
       "runtimeFamilies": [
         "dle-full-story-sibnet",
-        "yflix-db-encrypted-ajax-v1"
+        "wookafr-current-multiplayer-v2"
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
-        "lookup",
         "none"
       ],
       "dominantIssues": [
@@ -110,7 +106,7 @@
       "providerCount": 2,
       "providers": [
         "animesultra",
-        "yflix"
+        "wookafr"
       ],
       "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
       "executionPolicy": "batch-first",
@@ -179,6 +175,28 @@
       "providerCount": 1,
       "providers": [
         "animetsu"
+      ],
+      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "route-to-terminal|mixed_embed_resolver",
+      "repairScope": "route-to-terminal",
+      "runtimeFamilies": [
+        "yflix-db-encrypted-ajax-v1"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "network_zero_result"
+      ],
+      "harnessTransportClasses": [],
+      "providerCount": 1,
+      "providers": [
+        "yflix"
       ],
       "action": "replay proven routes in batch and apply shared detail/player traversal profile",
       "executionPolicy": "batch-first",
