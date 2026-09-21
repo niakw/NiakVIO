@@ -75,7 +75,7 @@ def main() -> int:
         scripts.append(SCRIPT)
     row["provider_lego_scripts"] = scripts
     opts = row.get("provider_lego_options") if isinstance(row.get("provider_lego_options"), dict) else {}
-    opts[SCRIPT] = {"base": "https://v2.animevostfr.org", "targetStreams": 3}
+    opts[SCRIPT] = {"base": "https://animevostfr.org", "targetStreams": 3}
     row["provider_lego_options"] = opts
     row["route_data_state"] = "repair"
     row["route_proof_version"] = max(5, int(row.get("route_proof_version") or 0))
