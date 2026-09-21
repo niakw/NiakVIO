@@ -80,6 +80,33 @@ r=module.classify(
 )
 assert r["action"]=="KEEP_BACKEND",r
 
+# Shared identity infrastructure must not establish provider backend authority.
+# The provider may still be Repair-eligible through its own site + route proof.
+r=module.classify(
+    "demo",row(),reg(search_queries=["demo"]),
+    patch(
+        capability="mixed_embed_resolver",
+        official_site="https://demo.example",
+        api_recipe={"base":"https://arm.haglund.dev"},
+        route_proof={"provenRouteCount":2,"lastRepairProbe":{"positiveExecutionEvidence":True}},
+    ),
+    {},
+)
+assert r["action"]=="KEEP_PROVEN_SITE",r
+assert "backendUrls" not in r
+
+# fallbackBases are site failovers, not deterministic backend authority.
+r=module.classify(
+    "demo",row(),reg(search_queries=["demo"]),
+    patch(
+        official_site="https://demo.example",
+        provider_lego_options={"runtime":{"fallbackBases":["https://mirror.example"]}},
+        route_proof={"provenRouteCount":1,"lastRepairProbe":{"positiveExecutionEvidence":True}},
+    ),
+    {},
+)
+assert r["action"]=="KEEP_PROVEN_SITE",r
+
 # Structured site + positive route proof is a valid medium-confidence historical combo.
 r=module.classify(
     "demo",row(),reg(search_queries=["demo"]),
@@ -108,5 +135,6 @@ assert r["action"]=="KEEP_LKG_COMBO",r
 r=module.classify("demo",row(False),reg(),patch(manual_off_reason="manual_off_test"),{})
 assert r["action"]=="KEEP_DISABLED",r
 
+assert "PROVIDER_AUTHORITY_BACKEND_SCOPE_V1" in SCRIPT.read_text(encoding="utf-8")
 assert module.ROOT.joinpath("scripts/manage_provider_lifecycle.py").read_text(encoding="utf-8").find("RETENTION_DAYS = 7")>=0
 print("provider authority arbiter contract ok")
