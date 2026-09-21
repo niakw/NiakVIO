@@ -187,4 +187,99 @@ assert network_merged["repairQueue"] == ["net"], network_merged
 assert network_merged["environmentQueue"] == [], network_merged
 assert network_merged["networkDifferentialUpdatedProviders"] == ["net"], network_merged
 
+
+
+# A full residential provider replay is stronger than the narrow transport
+# overlay, but only strict current playable + identity-safe proof may promote.
+functional_baseline = {
+    "runId": "repair-authority",
+    "triggerSha": "repair-sha",
+    "repairQueue": ["net-ok"],
+    "environmentQueue": ["harness-ok", "partial", "unsafe"],
+    "harnessQueue": ["harness-ok", "partial", "unsafe"],
+    "symptomaticProviders": ["net-ok", "harness-ok", "partial", "unsafe"],
+    "brainQueue": ["net-ok", "harness-ok", "partial", "unsafe"],
+    "providers": [
+        {
+            "provider": "net-ok",
+            "status": "PROVIDER NETWORK BLOCKED",
+            "color": "🟤",
+            "declaredLanes": ["movie"],
+            "currentVerifiedLanes": [],
+            "repairEligible": True,
+            "brainCheckRequired": True,
+        },
+        {
+            "provider": "harness-ok",
+            "status": "HARNESS/ENV BLOCKED",
+            "color": "🟫",
+            "declaredLanes": ["anime"],
+            "currentVerifiedLanes": [],
+            "repairEligible": False,
+            "brainCheckRequired": True,
+        },
+        {
+            "provider": "partial",
+            "status": "HARNESS MISMATCH",
+            "color": "🟧",
+            "declaredLanes": ["movie", "tv"],
+            "currentVerifiedLanes": [],
+            "repairEligible": False,
+            "brainCheckRequired": True,
+        },
+        {
+            "provider": "unsafe",
+            "status": "HARNESS MISMATCH",
+            "color": "🟧",
+            "declaredLanes": ["tv"],
+            "currentVerifiedLanes": [],
+            "repairEligible": False,
+            "brainCheckRequired": True,
+        },
+    ],
+}
+functional_waf = {
+    "rows": [],
+    "residentialProviderReplay": {
+        "available": True,
+        "rows": [
+            {"provider": "net-ok", "lane": "movie", "raw": 2, "playable": 1, "verified": 1, "contradictions": 0, "identitySafe": True},
+            {"provider": "harness-ok", "lane": "anime", "raw": 1, "playable": 1, "verified": 1, "contradictions": 0, "identitySafe": True},
+            {"provider": "partial", "lane": "movie", "raw": 1, "playable": 1, "verified": 1, "contradictions": 0, "identitySafe": True},
+            {"provider": "partial", "lane": "tv", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "identitySafe": False},
+            {"provider": "unsafe", "lane": "tv", "raw": 1, "playable": 1, "verified": 1, "contradictions": 0, "identitySafe": False},
+        ],
+    },
+}
+functional = mod.merge_transport(functional_baseline, functional_waf)
+functional_by_id = {row["provider"]: row for row in functional["providers"]}
+
+assert functional_by_id["net-ok"]["status"] == "FULL OK", functional_by_id["net-ok"]
+assert functional_by_id["harness-ok"]["status"] == "FULL OK", functional_by_id["harness-ok"]
+assert functional_by_id["partial"]["status"] == "PARTIAL OK", functional_by_id["partial"]
+assert functional_by_id["unsafe"]["status"] == "HARNESS MISMATCH", functional_by_id["unsafe"]
+assert functional_by_id["unsafe"]["residentialProviderReplayClass"] == "playable-unverified"
+
+for provider in ("net-ok", "harness-ok", "partial"):
+    row = functional_by_id[provider]
+    assert row["residentialProviderReplayPromoted"] is True, row
+    assert row["repairEligible"] is False, row
+    assert row["brainCheckRequired"] is False, row
+    assert row["testedThisRun"] is True, row
+
+assert functional_by_id["net-ok"]["currentVerifiedLanes"] == ["movie"]
+assert functional_by_id["harness-ok"]["currentVerifiedLanes"] == ["anime"]
+assert functional_by_id["partial"]["currentVerifiedLanes"] == ["movie"]
+assert functional["residentialProviderReplayPromotedProviders"] == ["harness-ok", "net-ok", "partial"]
+assert functional["repairQueue"] == []
+assert functional["environmentQueue"] == ["unsafe"]
+assert functional["harnessQueue"] == ["unsafe"]
+assert functional["symptomaticProviders"] == ["unsafe"]
+assert functional["brainQueue"] == ["unsafe"]
+assert functional["counts"] == {
+    "FULL OK": 2,
+    "HARNESS MISMATCH": 1,
+    "PARTIAL OK": 1,
+}, functional["counts"]
+
 print("WAF census transport-only merge contract passed")
