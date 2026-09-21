@@ -173,6 +173,23 @@ assert "PROVIDER.DEMO.RAW.DOMAIN" in raw_scopes, raw_scopes
 assert '"base":"https://new.example"' in raw_projected, raw_projected
 assert 'CORE_SITE="https://old.example/must-stay"' in raw_projected, raw_projected
 
+# Real-catalogue regression: the old AnimeVOSTFR redirect seed may remain inside
+# CONFIG as substitution history, but executable provider bytes before Core must
+# use the current root after Domain Refresh projection.
+manifest_now = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+anime_row = next(
+    row for row in manifest_now.get("scrapers") or []
+    if isinstance(row, dict) and str(row.get("id") or "").casefold() == "animevostfr"
+)
+anime_text = (ROOT / str(anime_row["filename"])).read_text(encoding="utf-8")
+anime_config = module._config_fix_id(anime_text, "animevostfr")
+anime_boundary = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
+assert anime_text.count(anime_boundary) == 1, anime_row
+anime_provider_region = anime_text[:anime_text.index(anime_boundary)]
+anime_provider_without_config = module.strip_managed_fix(anime_provider_region, anime_config)
+assert "https://v2.animevostfr.org" not in anime_provider_without_config, anime_row
+assert "https://animevostfr.org" in anime_provider_without_config, anime_row
+
 # Regression 1: stale embedded official_domain_hubs must not shadow provider-hubs.json.
 legacy_config = {
     "official_domain_hubs": {
