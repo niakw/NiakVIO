@@ -9,6 +9,10 @@ on:
     paths:
       - '.github/workflows/provider-disabled-lifecycle.yml'
       - '.github/triggers/provider-disabled-lifecycle'
+      - 'scripts/classify_provider_authority.py'
+      - 'scripts/manage_provider_lifecycle.py'
+      - 'tests/provider_authority_arbiter_test.py'
+      - 'tests/provider_authority_current_catalogue_test.py'
 
 permissions:
   contents: write
