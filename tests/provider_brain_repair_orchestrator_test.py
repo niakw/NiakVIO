@@ -174,6 +174,7 @@ repair={
 }
 accepted=mod.accepted_rows(repair)
 assert accepted[0]["provider"]=="a"
+assert accepted[0]["acceptedProgram"]=={}, accepted
 assert accepted[0]["playableAfter"]==2
 
 brain_summary=mod.sanitized_brain({
