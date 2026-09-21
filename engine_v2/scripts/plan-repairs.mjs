@@ -87,7 +87,15 @@ function buildPlan(item) {
     if (failure && failure !== evidence.failureClass) return false;
     const rowSignature = stringValue(row.signature);
     if (rowSignature && rowSignature !== signature) return false;
-    return finiteNumber(row.successes, 0) === 0;
+    // Historical success must not grant permanent immunity to a strategy that
+    // is failing on current bytes. Accepted experiments reset
+    // consecutiveFailures to zero; later bounded failures raise it again.
+    // Legacy rows without that counter remain negative only when they never
+    // recorded a success.
+    const consecutiveFailures = Math.max(0, finiteNumber(row.consecutiveFailures, 0));
+    const failures = Math.max(0, finiteNumber(row.failures, 0));
+    const successes = Math.max(0, finiteNumber(row.successes, 0));
+    return consecutiveFailures > 0 || (successes === 0 && failures > 0);
   });
   const productionMemoryMatches = allMemoryMatches.filter((row) => {
     const variant = Math.max(0, Math.min(finalVariant, finiteNumber(row.experimentVariant, 0)));
