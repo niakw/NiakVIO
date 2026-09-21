@@ -45,6 +45,8 @@ assert "provider_dns_preflight.mjs" in text
 assert 'print(lines[0] if lines else "")' in text
 assert 'splitlines()[0]' not in text
 assert "python scripts/audit_provider_v3_static.py --domain-only" in text
+assert "gh workflow run sync.yml --ref main -f mode=quick || echo \"FIELD_DOMAIN_POST_PUBLISH_DISPATCH_WARN workflow=sync\"" in text
+assert "gh workflow run provider-disabled-lifecycle.yml --ref main || echo \"FIELD_DOMAIN_POST_PUBLISH_DISPATCH_WARN workflow=provider-disabled-lifecycle\"" in text
 assert text.count("python scripts/audit_provider_v3_static.py --domain-only") == 2
 assert "python scripts/audit_provider_v3_static.py\n" not in text
 assert "continue-on-error: true" in text, "DNS/HTTP observation must not gate hub address authority"
