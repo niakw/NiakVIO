@@ -751,6 +751,142 @@
         "repo-history"
       ],
       "lesson": "Historical success is valuable strategy memory, but current status/publishing requires replay on current exact bytes."
+    },
+    {
+      "id": "hist-current-provider-transport-gap",
+      "firstObserved": "2026-08-01",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "provider_network_blocked",
+        "network_http_error",
+        "origin_failure"
+      ],
+      "failureClass": "provider_transport_gap",
+      "solutionClass": "provider_owned_origin_header_and_domain_replay",
+      "transferableSignals": [
+        "provider route known",
+        "transport fails before extraction",
+        "alternate provider-owned origins/headers may exist"
+      ],
+      "avoid": [
+        "peer origin as provider authority",
+        "provider mutation for pure WAF evidence"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "For transport gaps, replay provider-owned current/LKG origins, request specs and domain memory before inventing extraction logic; peer experience is ordering evidence only."
+    },
+    {
+      "id": "hist-current-route-proven-gap",
+      "firstObserved": "2026-08-01",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "route_proven_no_stream",
+        "lookup_only"
+      ],
+      "failureClass": "route_proven_gap",
+      "solutionClass": "search_detail_player_terminal_traversal",
+      "transferableSignals": [
+        "route responds",
+        "catalog/search match reachable",
+        "terminal not reached"
+      ],
+      "avoid": [
+        "rediscovering domain from scratch",
+        "declaring healthy from route response"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "When route proof exists, spend budget on the missing next stage (detail/player/source/API) using proven request specs and peer route shapes rather than repeating origin discovery."
+    },
+    {
+      "id": "hist-current-chain-terminal-gap",
+      "firstObserved": "2026-08-01",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "chain_reached_no_media",
+        "terminal_extraction"
+      ],
+      "failureClass": "chain_terminal_gap",
+      "solutionClass": "terminal_media_extractor_with_playback_validation",
+      "transferableSignals": [
+        "chain reached",
+        "player/embed/API observed",
+        "no accepted media"
+      ],
+      "avoid": [
+        "restarting catalogue lookup",
+        "accepting iframe/player URL as stream"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "A reached chain should move directly to terminal extraction and media validation; do not pay again for catalogue discovery already proven."
+    },
+    {
+      "id": "hist-current-candidate-replay-gap",
+      "firstObserved": "2026-09-01",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "candidate_ok_not_published",
+        "historical_candidate_proof"
+      ],
+      "failureClass": "candidate_replay_gap",
+      "solutionClass": "same_provider_candidate_program_replay",
+      "transferableSignals": [
+        "strict candidate proof exists",
+        "current bytes still red",
+        "sanitized program retained"
+      ],
+      "avoid": [
+        "discarding validated candidate knowledge",
+        "promoting without current replay"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Replay sanitized same-provider candidate programs first; historical candidate evidence is a high-priority prior but current bytes remain publication authority."
+    },
+    {
+      "id": "hist-current-media-extraction-gap",
+      "firstObserved": "2026-08-01",
+      "providers": [
+        "global"
+      ],
+      "symptomFamilies": [
+        "lookup_and_chain_ok_no_stream",
+        "media_extraction"
+      ],
+      "failureClass": "media_extraction_gap",
+      "solutionClass": "proven_request_program_and_terminal_extraction",
+      "transferableSignals": [
+        "provider match resolved",
+        "terminal request sequence known or learnable",
+        "zero playable media"
+      ],
+      "avoid": [
+        "returning player pages",
+        "generic origin hopping"
+      ],
+      "evidence": [
+        "project-chat",
+        "repo-history"
+      ],
+      "lesson": "Use provider-local positive programs and proof-owned request recipes first, then compatible peer terminal patterns; accept only strict playable identity-safe improvement."
     }
   ]
 }
