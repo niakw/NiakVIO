@@ -29,4 +29,11 @@ assert 'cfg.get("fetch_slice_ms", 12_000)' in migration
 assert 'c.fetchSliceMs||12000' in migration
 assert 'fetch_slice_ms=12000' in migration
 
+
+
+alias_source=(ROOT/"scripts/provider_patches/global_catalogue_alias_recovery_v2.py").read_text(encoding="utf-8")
+assert 'cfg.get("timeout_ms", 12000)' in alias_source
+adaptive_source=(ROOT/"scripts/adaptive_runtime/runtime_recovery_generator.py").read_text(encoding="utf-8")
+assert 'cfg.get("timeout_ms", 12000)' in adaptive_source
+
 print("provider fetch-slice budget contract passed")
