@@ -1,6 +1,15 @@
 # NiakVIO — Recovery Memory
 
 
+## 2026-09-21 20:54 Europe/Paris — Repair #126 preflight: parallel byte-validation test drift fixed
+
+- Repair run `35641162638` (#126) on trigger SHA `570104eca437` still did **not** reach provider probes. Authority contracts, documented-route discovery and Brain orchestrator contracts all passed. Preflight then failed in `tests/provider_materialization_byte_validation_contract_test.py` line 27.
+- Runtime/code inspection proves strict validation was not missing. `materialize_provider_v3_all.py` submits canonical `verify_bytes` calls through the bounded `validation_pool`, resolves each `future.result()` in deterministic catalogue order, then hashes/writes bytes. `materialize_provider_v3_one.py` still calls `allmat.verify_bytes(bundle)` synchronously before digest/write.
+- The failing assertion was stale and contradictory: after already requiring `validation_pool.submit(verify_bytes, bundle)`, it additionally required the old sequential literal `verify_bytes(bundle)` in the all-provider source. `daa1230e160a` replaces that obsolete literal check with the parallel canonical-submit assertion while preserving checks for resolve-before-digest/write and unit-materializer validation.
+- No provider/Brain repair result from #126 is valid evidence. Next action: rerun canonical Repair; the run is only meaningful once preflight passes and the actual authority-filtered provider queue is probed.
+
+
+
 ## 2026-09-21 20:50 Europe/Paris — Repair #125 preflight fixed; documented-route parser corrected; Domain #1034 green
 
 - Lifecycle run `35640498691` (#20) completed SUCCESS and bot commit `fe6d67a08372` persisted the corrected authority state: 46 providers, 42 Repair-eligible, ShowBox=`REDISCOVER_SEARCH` with reasons `direct_candidate_unproven + search_supplement_only`; no additional safe disable was applied.
