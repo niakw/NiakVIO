@@ -146,6 +146,11 @@ def main() -> int:
     assert "- name: Assert architecture proposal source SHA" in workflow
     assert "FIELD_BRAIN_ARCH_PROPOSAL_SHA" in workflow
     assert 'git switch -C "$BRANCH" "$GITHUB_SHA"' in workflow
+    assert "FIELD_BRAIN_MEMORY_PUBLISH skipped=stale" in workflow
+    assert "candidate_ms=" in workflow and "existing_ms=" in workflow
+    assert "FIELD_BRAIN_PR skipped=stale-source" in workflow
+    assert "FIELD_BRAIN_ARCH_PR skipped=stale-source" in workflow
+    assert 'git merge-base --is-ancestor "$GITHUB_SHA" "refs/remotes/origin/$BRANCH"' in workflow
     assert "20 * 60 * 60" in availability_workflow
     assert 'if [ "$((10#$HOUR))" -lt 4 ]' in availability_workflow
 
