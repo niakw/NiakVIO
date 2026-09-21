@@ -1,6 +1,17 @@
 # NiakVIO — Recovery Memory
 
 
+## 2026-09-21 20:38 Europe/Paris — Domain publication confirmed; Repair queue authority-filtered to 9
+
+- Revalidated current `main` after the Domain/lifecycle authority work. Domain run `35638237327` (#1032) is a **successful publication with a false-red post step**: the workflow passed registry sanitize, Domain resolve/reconcile, transaction guard, DNS, domain-only static audit, active/native Hub46 release checks, then committed `35bbcf89bf59` and final `efdad41cd72b`; `git push` succeeded and logged `FIELD_DOMAIN_PUBLICATION_OK base=9bdf5bd... final=efdad41c...`. The run only turned red afterward because `gh workflow run sync.yml` hit GitHub installation API rate limiting (`HTTP 403`).
+- Persisted bundle inspection confirms publication bytes, not just structured intent: AnimeVOSTFR bundle `animevostfr--nuvio--835c6ce5...` has `knownSite/officialSite=https://animevostfr.org` and `domainSubstitutions.v2.animevostfr.org=animevostfr.org`; Flemmix `2bb7316f...` has `knownSite/officialSite=https://flemmix.party` with historical hosts mapping to `.party`; MoviesMod `a09c81e8...` has `officialSite=https://moviesmod.ai.in` and `officialHub=https://modlist.in/?type=hollywood`; VidFast `1186d645...` has `knownSite/officialSite=https://vidfast.to`.
+- `d2435d982846` makes post-publication `sync.yml` / `provider-disabled-lifecycle.yml` dispatch failures non-fatal because publication is already durable at that point; `7354ed4d0338` locks this contract. A GitHub API rate-limit can no longer mislabel an already-pushed Domain transaction as failed.
+- Current authority report is durable: **46 providers, 42 Repair-eligible, 4 blocked** (`animetsu`, `desiflix`, `fullanime`, `showbox`). Search remains `historical-supplement-only`; future hub imports do not depend on raw search by default. Lifecycle retention is **7 days**, with active `providers/ -> provider-disabled/ -> provider-old/` policy.
+- Current census repairQueue is ["4khdhub","allanime","animesultra","animetsu","animevostfr","mallumv","moviebox","showbox","vidfast","wookafr","yflix"]. Authority intersection removes `animetsu` (`KEEP_DISABLED`) and `showbox` (`REDISCOVER_SEARCH`), leaving **9 canonical Repair targets**: 4khdhub, allanime, animesultra, animevostfr, mallumv, moviebox, vidfast, wookafr, yflix. Environment/harness-only providers remain excluded by census semantics.
+- Next authoritative action: trigger canonical Repair on current `main` with an empty explicit target list so the workflow uses census repairQueue **and** the authority gate. Measure packed family batches, batch health concurrency, provider-local post-wave materialization and global byte-validation overlap against the old 11-target baseline; do not infer success from queue shrink alone.
+
+
+
 ## 2026-09-21 20:25 Europe/Paris — Authority reasons corrected; Hub46 decoupled from active cardinality
 
 - Lifecycle run `35637578802` (#16) completed SUCCESS after the authority-policy auto-trigger was added. It persisted the stricter `PROVIDER_AUTHORITY_BACKEND_SCOPE_V1` result without reducing current Repair eligibility (**42/46**): YFlix/PersianStremio remain true `KEEP_BACKEND`; ARM identity infrastructure and generic `fallbackBases` no longer establish backend authority.
