@@ -451,6 +451,36 @@ assert confirmed and detail['required'] == 1
 
 registry = json.loads((ROOT / 'provider-hubs.json').read_text())
 history_registry = json.loads((ROOT / 'provider-domain-history.json').read_text())
+
+manifest_registry = json.loads((ROOT / 'manifest.json').read_text())
+visible_ids = {
+    str(row.get('id') or '').strip().casefold()
+    for row in manifest_registry.get('scrapers') or []
+    if isinstance(row, dict) and str(row.get('id') or '').strip()
+}
+registry_ids = {str(value).strip().casefold() for value in registry.get('providers') or {}}
+missing_registry_ids = sorted(visible_ids - registry_ids)
+# The sanitizer must be able to fill any historical gaps without granting
+# direct/search authority to the auto-created rows.
+san_spec = importlib.util.spec_from_file_location('hub_sanitizer', ROOT / 'scripts' / 'sanitize_provider_hub_registry.py')
+san = importlib.util.module_from_spec(san_spec)
+assert san_spec and san_spec.loader
+san_spec.loader.exec_module(san)
+registry_copy = copy.deepcopy(registry)
+manifest_rows = {
+    str(row.get('id') or '').strip().casefold(): row
+    for row in manifest_registry.get('scrapers') or []
+    if isinstance(row, dict) and str(row.get('id') or '').strip()
+}
+created = san.ensure_registry_coverage(registry_copy, manifest_rows)
+assert sorted(created) == missing_registry_ids, (created, missing_registry_ids)
+assert visible_ids <= {str(value).casefold() for value in registry_copy['providers']}, missing_registry_ids
+for provider_id in created:
+    generated = registry_copy['providers'][provider_id]
+    assert generated['registry_state'] == 'unresolved', generated
+    assert generated['legacy_search_refresh'] is False, generated
+    assert generated['hub'] is None and generated['direct'] is None, generated
+    assert generated['sources'] == [] and generated['search_queries'] == [], generated
 assert registry.get('schema_version', 0) >= 3
 assert history_registry.get('schema_version') == 1
 
@@ -484,7 +514,11 @@ for private_note_fragment in ('recherche yandex', 'premier bloc button', 'lien s
     assert private_note_fragment not in raw
 for provider_id, row in registry['providers'].items():
     assert isinstance(row, dict), provider_id
-    assert row.get('sources') or row.get('direct_candidates') or row.get('search_queries'), provider_id
+    if row.get('registry_state') == 'unresolved':
+        assert not row.get('hub') and not row.get('direct'), provider_id
+        assert row.get('legacy_search_refresh') is not True, provider_id
+    else:
+        assert row.get('sources') or row.get('direct_candidates') or row.get('search_queries'), provider_id
     for source in row.get('sources') or []:
         assert source.get('type') in {'hub', 'telegram_public', 'redirect', 'search', 'upstream_provider'}, (provider_id, source)
         assert source.get('url') or source.get('query'), (provider_id, source)
