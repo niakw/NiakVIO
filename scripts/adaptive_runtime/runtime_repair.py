@@ -195,6 +195,104 @@ def _peer_routes(strategy: str) -> list[str]:
     return output[:48]
 
 
+def _jaccard(left: set[str], right: set[str]) -> float:
+    if not left and not right:
+        return 1.0
+    union = left | right
+    if not union:
+        return 0.0
+    return len(left & right) / len(union)
+
+
+def _nearest_archetype_peers(
+    provider_id: str,
+    strategy: str,
+    media_types: list[str],
+    provider_routes: list[str],
+    provider_recipes: list[dict[str, Any]],
+    *,
+    limit: int = 3,
+) -> list[dict[str, Any]]:
+    """Rank operational NiakVIO peers by structural similarity, not provider name."""
+    experience = _load_experience()
+    providers = experience.get("providers")
+    if not isinstance(providers, dict):
+        return []
+    wanted_strategy = str(strategy or "").strip().casefold()
+    wanted_types = {str(value).casefold() for value in media_types if str(value).casefold()}
+    wanted_roles = {_route_role(route) for route in provider_routes}
+    wanted_roles.update(
+        str(recipe.get("role") or "").casefold()
+        for recipe in provider_recipes
+        if str(recipe.get("role") or "").strip()
+    )
+    wanted_methods = {
+        str(recipe.get("method") or "GET").upper()
+        for recipe in provider_recipes
+        if isinstance(recipe, dict)
+    }
+    wanted_responses = {
+        str(recipe.get("response") or "html-or-text").casefold()
+        for recipe in provider_recipes
+        if isinstance(recipe, dict)
+    }
+
+    ranked: list[dict[str, Any]] = []
+    for peer_id, row in providers.items():
+        if (
+            not isinstance(row, dict)
+            or row.get("operational") is not True
+            or str(peer_id).casefold() == str(provider_id).casefold()
+        ):
+            continue
+        peer_strategy = str(row.get("strategy") or "").strip().casefold()
+        if wanted_strategy and wanted_strategy != "unknown" and peer_strategy != wanted_strategy:
+            continue
+        peer_types = {str(value).casefold() for value in row.get("mediaTypes") or [] if str(value)}
+        peer_roles = {str(value).casefold() for value in row.get("routeFamilies") or [] if str(value)}
+        peer_roles.update(str(value).casefold() for value in row.get("recipeRoles") or [] if str(value))
+        peer_methods = {str(value).upper() for value in row.get("recipeMethods") or [] if str(value)}
+        peer_responses = {str(value).casefold() for value in row.get("recipeResponses") or [] if str(value)}
+
+        score = 0.0
+        if wanted_strategy and peer_strategy == wanted_strategy:
+            score += 6.0
+        score += 4.0 * _jaccard(wanted_types, peer_types)
+        score += 5.0 * _jaccard(wanted_roles, peer_roles)
+        score += 2.0 * _jaccard(wanted_methods, peer_methods)
+        score += 2.0 * _jaccard(wanted_responses, peer_responses)
+        if not wanted_roles and not wanted_methods and wanted_strategy == peer_strategy:
+            score += 1.0
+        if score <= 0:
+            continue
+
+        routes: list[str] = []
+        for raw in row.get("peerRouteTemplates") or []:
+            route = _safe_route(raw)
+            if route and route not in routes:
+                routes.append(route)
+        recipes: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        for raw in row.get("peerRequestRecipes") or []:
+            recipe = _safe_request_recipe(raw, peer=True)
+            if not recipe:
+                continue
+            key = json.dumps(recipe, sort_keys=True, separators=(",", ":"))
+            if key in seen:
+                continue
+            seen.add(key)
+            recipes.append(recipe)
+        ranked.append({
+            "providerId": str(peer_id).casefold(),
+            "strategy": peer_strategy,
+            "score": round(score, 4),
+            "routes": routes[:24],
+            "requestRecipes": recipes[:16],
+        })
+    ranked.sort(key=lambda row: (-float(row["score"]), str(row["providerId"])))
+    return ranked[: max(1, min(int(limit), 5))]
+
+
 def _safe_request_recipe(raw: Any, *, peer: bool = False) -> dict[str, Any] | None:
     if not isinstance(raw, dict) or raw.get("executable") is not True:
         return None
@@ -967,20 +1065,42 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     experiment_generation = max(1, int(brain_plan.get("experimentGeneration") or 1))
     experiment_failure = str(brain_plan.get("failureClass") or "").strip()
     historical_priors = _historical_failure_priors(provider_id, experiment_failure)
-    peer_route_min_variant = _peer_route_min_variant(experiment_failure)
-    peer_recipe_min_variant = _peer_recipe_min_variant(experiment_failure)
-    if historical_priors:
-        # Historical NiakVIO evidence is a prior only: it may reach compatible
-        # peer DATA one failed variant earlier, never skip deep validation.
-        peer_route_min_variant = max(1, peer_route_min_variant - 1)
-        peer_recipe_min_variant = max(1, peer_recipe_min_variant - 1)
-    peer_routes = _peer_routes(strategy) if experiment_variant >= peer_route_min_variant else []
     provider_request_recipes = _unique_request_recipes(
         positive_request_recipes,
         historical_provider_request_recipes,
         limit=32,
     )
-    peer_request_recipes = _peer_request_recipes(strategy)
+    nearest_peers = _nearest_archetype_peers(
+        provider_id,
+        strategy,
+        types,
+        learned_routes,
+        provider_request_recipes,
+        limit=3,
+    )
+    peer_route_min_variant = _peer_route_min_variant(experiment_failure)
+    peer_recipe_min_variant = _peer_recipe_min_variant(experiment_failure)
+    if historical_priors or nearest_peers:
+        # NiakVIO experience is a prior only: it may reach structurally similar
+        # peer DATA one failed variant earlier, never skip deep validation.
+        peer_route_min_variant = max(1, peer_route_min_variant - 1)
+        peer_recipe_min_variant = max(1, peer_recipe_min_variant - 1)
+    nearest_peer_routes = _unique_routes(
+        *[row.get("routes") or [] for row in nearest_peers],
+        limit=48,
+    )
+    broad_peer_routes = _peer_routes(strategy)
+    peer_routes = _unique_routes(nearest_peer_routes, broad_peer_routes, limit=48) if experiment_variant >= peer_route_min_variant else []
+    nearest_peer_recipes = _unique_request_recipes(
+        *[row.get("requestRecipes") or [] for row in nearest_peers],
+        limit=24,
+    )
+    broad_peer_recipes = _peer_request_recipes(strategy)
+    peer_request_recipes = _unique_request_recipes(
+        nearest_peer_recipes,
+        broad_peer_recipes,
+        limit=24,
+    )
     request_recipes = _unique_request_recipes(
         current_request_recipes,
         provider_request_recipes,
@@ -1217,8 +1337,13 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         "request_recipes": request_recipes,
         "historical_prior_ids": [row["id"] for row in historical_priors],
         "historical_solution_classes": [row["solutionClass"] for row in historical_priors],
+        "nearest_archetype_peers": [
+            {"providerId": row["providerId"], "score": row["score"], "strategy": row["strategy"]}
+            for row in nearest_peers
+        ],
         "route_prior_counts": {
             "historicalCases": len(historical_priors),
+            "nearestArchetypePeers": len(nearest_peers),
             "provider": len(learned_routes),
             "peer": len(peer_routes),
             "search": len(search_paths),
