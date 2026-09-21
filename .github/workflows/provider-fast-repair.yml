@@ -117,6 +117,29 @@ jobs:
           printf 'PROVIDER_FAST_REPAIR_ARGS %q ' "${args[@]}"; echo
           "${args[@]}"
           echo "publish=$publish" >> "$GITHUB_OUTPUT"
+
+      - name: Persist current unresolved Fast Brain debt into LEARN handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/provider_repair_learn_handoff_v1.py \
+            --registry automation/provider-repair-learn-handoff-v1.json \
+            --summary automation/provider-fast-repair-summary.json \
+            --run-id "${GITHUB_RUN_ID}"
+          python tests/provider_repair_learn_handoff_v1_test.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          summary=json.loads(Path('automation/provider-fast-repair-summary.json').read_text())
+          handoff=json.loads(Path('automation/provider-repair-learn-handoff-v1.json').read_text())
+          current=[str(x) for x in summary.get('learnHandoffProviders') or [] if str(x)]
+          print(
+              'FIELD_PROVIDER_FAST_REPAIR_LEARN_HANDOFF '
+              f'current={len(current)} registry={int(handoff.get("providerCount") or 0)} '
+              f'providers={",".join(current) or "none"}'
+          )
+          PY
+
       - name: Verify provider-local mutation boundary
         shell: bash
         run: |
@@ -145,6 +168,7 @@ jobs:
           name: provider-fast-repair-${{ github.run_id }}
           path: |
             automation/provider-fast-repair-summary.json
+            automation/provider-repair-learn-handoff-v1.json
             automation/provider-brain-repair-latest.json
             automation/brain-repair-experience.json
             automation/brain-repair-memory.json
@@ -176,6 +200,31 @@ jobs:
           PY
           )"
           publish="${{ steps.repair.outputs.publish }}"
+          learn_handoff_count="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('automation/provider-fast-repair-summary.json')
+          d=json.loads(p.read_text()) if p.exists() else {}
+          print(len([x for x in d.get('learnHandoffProviders') or [] if str(x or '').strip()]))
+          PY
+          )"
+          arm_learning_trigger() {
+            if [ "${learn_handoff_count:-0}" -le 0 ]; then
+              echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_ARM skipped=true current=0"
+              return 0
+            fi
+            mkdir -p .github/triggers
+            cat > .github/triggers/brain-learning-reconstruction <<EOF
+          Explicit trigger for isolated Brain strategy learning after Fast Repair.
+          last_repair_run: ${GITHUB_RUN_ID}
+          source_sha: ${GITHUB_SHA}
+          budget_minutes: 20
+          reason: fast-brain-strategy-exhaustion
+          expected_scope: current-fast-repair-handoff-only
+          publication_policy: proposal-only-until-current-byte-playback-identity-and-non-regression-proof
+          EOF
+            echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_ARM current=${learn_handoff_count} budget_minutes=20"
+          }
           git fetch --quiet origin main
           remote_main="$(git rev-parse origin/main)"
           if [ "$remote_main" != "$GITHUB_SHA" ]; then
@@ -188,7 +237,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           if [ "$publish" = "true" ] && [ "$publication_allowed" = "true" ]; then
-            git add               provider-overrides.json               providers               provider-bases               provider-v3-materialization.json               PROVIDER_CENSUS_STATUS.md               automation/provider-fast-repair-summary.json               automation/provider-brain-repair-latest.json               automation/brain-repair-experience.json               automation/brain-repair-memory.json               automation/brain-positive-program-memory.json               automation/provider-retest-latest.json               automation/provider-retest-targets-latest.json               automation/provider-census-status.json               automation/provider-census-proof-history.json               automation/provider-repair-batch-plan-latest.json               automation/provider-v3-static-knowledge.json               provider-v3-quick-yield.json
+            arm_learning_trigger
+            git add               provider-overrides.json               providers               provider-bases               provider-v3-materialization.json               PROVIDER_CENSUS_STATUS.md               automation/provider-fast-repair-summary.json               automation/provider-repair-learn-handoff-v1.json               automation/provider-brain-repair-latest.json               .github/triggers/brain-learning-reconstruction               automation/brain-repair-experience.json               automation/brain-repair-memory.json               automation/brain-positive-program-memory.json               automation/provider-retest-latest.json               automation/provider-retest-targets-latest.json               automation/provider-census-status.json               automation/provider-census-proof-history.json               automation/provider-repair-batch-plan-latest.json               automation/provider-v3-static-knowledge.json               provider-v3-quick-yield.json
             if git diff --cached --quiet; then
               echo "Validated repair already current"
             else
@@ -199,17 +249,18 @@ jobs:
           else
             tmp="$RUNNER_TEMP/provider-fast-repair-evidence"
             mkdir -p "$tmp/automation"
-            for f in               automation/provider-fast-repair-summary.json               automation/provider-brain-repair-latest.json               automation/brain-repair-experience.json               automation/brain-repair-memory.json               automation/brain-positive-program-memory.json               automation/provider-census-status.json               automation/provider-census-proof-history.json               automation/provider-repair-batch-plan-latest.json               PROVIDER_CENSUS_STATUS.md
+            for f in               automation/provider-fast-repair-summary.json               automation/provider-repair-learn-handoff-v1.json               automation/provider-brain-repair-latest.json               automation/brain-repair-experience.json               automation/brain-repair-memory.json               automation/brain-positive-program-memory.json               automation/provider-census-status.json               automation/provider-census-proof-history.json               automation/provider-repair-batch-plan-latest.json               PROVIDER_CENSUS_STATUS.md
             do
               [ ! -f "$f" ] || { mkdir -p "$tmp/$(dirname "$f")"; cp "$f" "$tmp/$f"; }
             done
             git reset --hard "$GITHUB_SHA"
             git clean -fd
-            for f in               automation/provider-fast-repair-summary.json               automation/provider-brain-repair-latest.json               automation/brain-repair-experience.json               automation/brain-repair-memory.json               automation/brain-positive-program-memory.json               automation/provider-census-status.json               automation/provider-census-proof-history.json               automation/provider-repair-batch-plan-latest.json               PROVIDER_CENSUS_STATUS.md
+            for f in               automation/provider-fast-repair-summary.json               automation/provider-repair-learn-handoff-v1.json               automation/provider-brain-repair-latest.json               automation/brain-repair-experience.json               automation/brain-repair-memory.json               automation/brain-positive-program-memory.json               automation/provider-census-status.json               automation/provider-census-proof-history.json               automation/provider-repair-batch-plan-latest.json               PROVIDER_CENSUS_STATUS.md
             do
               [ ! -f "$tmp/$f" ] || { mkdir -p "$(dirname "$f")"; cp "$tmp/$f" "$f"; }
             done
-            git add PROVIDER_CENSUS_STATUS.md automation
+            arm_learning_trigger
+            git add PROVIDER_CENSUS_STATUS.md automation .github/triggers/brain-learning-reconstruction
             if git diff --cached --quiet; then
               echo "Brain evidence already current"
             else
