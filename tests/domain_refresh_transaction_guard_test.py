@@ -143,6 +143,61 @@ except AssertionError as exc:
 else:
     raise AssertionError("non-domain provider mutation must fail closed")
 
+# Provider-owned manifest asset URLs are domain metadata when and only when
+# they rotate to the exact authoritative terminal. Other nested manifest fields
+# remain outside Domain Refresh ownership.
+asset_before = copy.deepcopy(before_overrides)
+asset_before["provider_patches"]["demo"]["manifest_overrides"] = {
+    "logo": "https://demo-old.example/favicon.ico",
+    "enabled": True,
+}
+asset_after = copy.deepcopy(asset_before)
+asset_after["provider_patches"]["demo"]["manifest_overrides"]["logo"] = "https://demo-new.example/favicon.ico"
+asset_result = validate(
+    asset_before,
+    asset_after,
+    before_hubs,
+    copy.deepcopy(before_hubs),
+    before_history,
+    report_synced,
+    {"changed": ["demo"], "registry_changed": []},
+)
+assert asset_result["changed"] == ["demo"]
+
+asset_bad_field = copy.deepcopy(asset_after)
+asset_bad_field["provider_patches"]["demo"]["manifest_overrides"]["enabled"] = False
+try:
+    validate(
+        asset_before,
+        asset_bad_field,
+        before_hubs,
+        copy.deepcopy(before_hubs),
+        before_history,
+        report_synced,
+        {"changed": ["demo"], "registry_changed": []},
+    )
+except AssertionError as exc:
+    assert "non-domain manifest_overrides fields" in str(exc)
+else:
+    raise AssertionError("non-domain manifest override mutation must fail closed")
+
+asset_wrong_host = copy.deepcopy(asset_before)
+asset_wrong_host["provider_patches"]["demo"]["manifest_overrides"]["logo"] = "https://cdn.example/favicon.ico"
+try:
+    validate(
+        asset_before,
+        asset_wrong_host,
+        before_hubs,
+        copy.deepcopy(before_hubs),
+        before_history,
+        report_synced,
+        {"changed": ["demo"], "registry_changed": []},
+    )
+except AssertionError as exc:
+    assert "does not follow terminal" in str(exc)
+else:
+    raise AssertionError("manifest asset rotation to unrelated host must fail closed")
+
 # Unresolved discovery may never mutate the published terminal.
 after_overrides = copy.deepcopy(before_overrides)
 after_overrides["provider_patches"]["demo"]["official_site"] = "https://other.example"
