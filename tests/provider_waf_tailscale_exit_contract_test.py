@@ -60,15 +60,18 @@ print("Tailscale residential WAF workflow contract passed")
 
 assert wf.count("--network-report provider-v3-quick-yield.json") == 2
 
-# Census + standalone WAF share an observational serialization lane. Repair
-# owns integrated transport qualification and uses a separate lane so GitHub's
-# one-pending-run concurrency slot cannot starve a Repair behind census pushes.
+# WAF/Tailscale is now its own explicit transport lane. Full/sharded census
+# may still serialize census work, but they no longer own the canonical WAF
+# latest and must not block residential qualification.
 temp=(ROOT/".github/workflows/temp-current-bytes-full-provider-census.yml").read_text(encoding="utf-8")
 sharded=(ROOT/".github/workflows/provider-census-sharded.yml").read_text(encoding="utf-8")
 repair=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(encoding="utf-8")
-for source in (wf,temp,sharded):
-    assert "group: provider-census-waf-main" in source, source[:400]
-    assert "cancel-in-progress: false" in source, source[:400]
+assert "group: provider-waf-transport-main" in wf
+assert "cancel-in-progress: true" in wf
+assert "group: provider-census-waf-main" in temp
+assert "cancel-in-progress: true" in temp
+assert "group: provider-census-waf-main" in sharded
+assert "cancel-in-progress: false" in sharded
 assert "group: provider-repair-main-v2" in repair, repair[:600]
 assert "cancel-in-progress: false" in repair, repair[:600]
 assert "workflow_dispatch:" in temp
@@ -83,6 +86,9 @@ assert "if: ${{ github.ref == 'refs/heads/main' }}" in wf
 
 assert "FIELD_REPAIR_SUPERSEDED_EARLY" in repair
 
-# Standalone WAF is manual diagnostics only; canonical transport qualification belongs to Repair.
+# WAF remains explicit: manual or a dedicated trigger-file push only. Ordinary
+# repository pushes still cannot start transport qualification.
 assert "workflow_dispatch:" in wf
-assert "\n  push:" not in wf.split("permissions:",1)[0]
+header=wf.split("permissions:",1)[0]
+assert "\n  push:" in header
+assert "'.github/triggers/provider-waf-browser-session'" in header
