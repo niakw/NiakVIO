@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from "node:fs";
+import crypto from "node:crypto";
 import process from "node:process";
 import { BRAIN_CONTROL_PLANE_VERSION, classifyFailure, planRepair } from "../src/repair-brain.mjs";
 import { evidenceSignature } from "../src/recipe-memory.mjs";
@@ -90,6 +91,28 @@ const POST_EXHAUSTION_STRATEGIES = {
   ],
 };
 
+const EVOLVED_STRATEGY_IMPLEMENTATION_FILES = [
+  "scripts/adaptive_runtime/runtime_repair.py",
+  "scripts/adaptive_runtime/runtime_recovery_generator.py",
+  "scripts/provider_patches/adaptive_runtime_recovery_v5.py",
+];
+
+function strategyImplementationFingerprint(profile) {
+  const normalized = stringValue(profile).toLowerCase();
+  if (!normalized || normalized === "provider_positive_program_replay_v1") return "";
+  const hash = crypto.createHash("sha256");
+  hash.update(`profile:${normalized}\n`);
+  for (const file of EVOLVED_STRATEGY_IMPLEMENTATION_FILES) {
+    try {
+      hash.update(`file:${file}\n`);
+      hash.update(fs.readFileSync(file));
+    } catch (_error) {
+      return "";
+    }
+  }
+  return hash.digest("hex");
+}
+
 const output = {
   schemaVersion: 2,
   brainVersion: BRAIN_CONTROL_PLANE_VERSION,
@@ -170,19 +193,27 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery) {
   const candidates = POST_EXHAUSTION_STRATEGIES[failure] ?? [];
   for (let index = 0; index < candidates.length; index += 1) {
     const row = candidates[index];
-    const alreadyFailed = memoryRows.some((memory) => (
-      stringValue(memory.profile) === row.profile
-      && Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) >= rotateEvery
-    ));
+    const implementationFingerprint = strategyImplementationFingerprint(row.profile);
+    const alreadyFailed = memoryRows.some((memory) => {
+      if (
+        stringValue(memory.profile) !== row.profile
+        || Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) < rotateEvery
+      ) return false;
+      const rememberedFingerprint = stringValue(memory.strategyImplementationFingerprint).toLowerCase();
+      return implementationFingerprint
+        ? rememberedFingerprint === implementationFingerprint
+        : true;
+    });
     if (!alreadyFailed) {
       return {
         profile: row.profile,
         method: row.method,
         index,
+        strategyImplementationFingerprint: implementationFingerprint,
       };
     }
   }
-  return { profile: "", method: "", index: -1 };
+  return { profile: "", method: "", index: -1, strategyImplementationFingerprint: "" };
 }
 
 function providerPositiveProgramReplayHint(reusableSkills, memoryRows, rotateEvery) {
@@ -569,6 +600,7 @@ function buildPlan(item) {
     strategyEscalated,
     providerPositiveProgramReplay: postExhaustionHint.profile === "provider_positive_program_replay_v1",
     positiveProgramFingerprint: stringValue(postExhaustionHint.positiveProgramFingerprint).toLowerCase(),
+    strategyImplementationFingerprint: stringValue(postExhaustionHint.strategyImplementationFingerprint).toLowerCase(),
     postExhaustionStrategyProfile: postExhaustionHint.profile,
     postExhaustionStrategyMethod: postExhaustionHint.method,
     postExhaustionStrategyIndex: postExhaustionHint.index,
