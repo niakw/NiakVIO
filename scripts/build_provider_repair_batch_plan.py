@@ -75,12 +75,13 @@ def main()->int:
         depth=depth_class(list(row.get("evidenceDepth") or []))
         issue=issue_class(scalar(row.get("dominantIssue")))
         scope,action=action_for(scalar(row.get("status")),depth,issue)
-        # First-pass batch identity is deliberately broad: repair scope +
-        # capability strategy only. Evidence depth, issue class and exact runtime
-        # families remain metadata. The post-probe refiner is responsible for
-        # splitting a broad hypothesis when observed network/runtime signatures
-        # actually diverge.
-        key=(scope,strategy)
+        # Normal provider failures batch broadly by repair scope + capability.
+        # Harness failures are different: transport causality is already known
+        # here, so browser-only/TLS divergence must never share an experiment
+        # family with "challenged even through residential exit". Mixing those
+        # signatures teaches contradictory client strategies.
+        harness_class=scalar(row.get("harnessTransportClass"), "not-applicable")
+        key=(scope,strategy,harness_class) if scope=="harness-compatibility" else (scope,strategy)
         groups[key].append({
             "provider":pid,
             "status":scalar(row.get("status")),
@@ -93,7 +94,8 @@ def main()->int:
         })
     out_groups=[]
     for key,members in groups.items():
-        scope,strategy=key
+        scope,strategy=key[:2]
+        transport_signature=(key[2] if len(key)>2 else "not-applicable")
         providers=sorted(m["provider"] for m in members)
         families=sorted({scalar(m.get("runtimeFamily")) for m in members})
         depths=sorted({scalar(m.get("evidenceDepth")) for m in members})
@@ -116,13 +118,14 @@ def main()->int:
             "evidenceDepths":depths,
             "dominantIssues":issues,
             "harnessTransportClasses":harness_classes,
+            "transportSignature":transport_signature,
             "providerCount":len(providers),
             "providers":providers,
             "action":action,
             "executionPolicy":"batch-first",
             "providerLocalFallback":"only-after-shared-profile-failure",
         })
-    out_groups.sort(key=lambda x:(-x["providerCount"],x["repairScope"],x["capabilityStrategy"],x["groupId"]))
+    out_groups.sort(key=lambda x:(-x["providerCount"],x["repairScope"],x["capabilityStrategy"],x.get("transportSignature",""),x["groupId"]))
     payload={
         "schemaVersion":1,
         "sourceRunId":status.get("runId"),
