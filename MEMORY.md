@@ -4054,3 +4054,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The fingerprint is preserved through planner output, immutable attempt snapshots, runtime memory, Learning phase ledger, sanitized cross-day Learning memory, and memory keys. This prevents old/new implementations from being merged into one negative experiment.
 - Regression coverage now proves both directions: stale implementation debt reopens the current strategy, while exact-build debt rotates to the next evolved strategy; cross-phase memory must preserve the fingerprint.
 - No MalluMV status promotion is justified yet. Next proof is a fresh MalluMV-only Learning run on the current HEAD showing actual `terminal_transition_graph_v1` execution with a current fingerprint, then current-byte playable and identity-safe evidence before Repair/Retest/census promotion.
+
+
+### 2026-09-22 — Repair loop switched from single-provider witness to 9-provider fair-share
+
+- Current authoritative census before the switch remains 25 FULL OK, 1 PARTIAL OK across 46 providers. The current repairQueue contains exactly 9 providers: 4khdhub, allanime, anime-ultime, animevostfr, mallumv, moviebox, persianstremio, vidfast, yflix.
+- All 9 are simultaneously LEARN-owned and pending in automation/provider-repair-learn-handoff-v1.json. Therefore the next Learning proof must use the existing Fast-Handoff fair-share cohort instead of continuing a MalluMV-only target.
+- MalluMV was used as a witness for generic Brain defects, not as a provider-local repair target. The recent fixes (owned neutral transition mining plus implementation-fingerprinted evolved-strategy debt) are generic and may apply to other route/chain terminal gaps.
+- User priority: do not allow one provider to monopolize the repair loop. Run the 9-provider cohort with the existing per-provider fair-share deadline and bounded attempts, persist exact per-provider outcomes, then improve the Brain from the cohort's common failures.
+- The prior MalluMV-only run on SHA 34a6693d... is superseded once the batch trigger lands; do not treat its cancellation as provider evidence.
