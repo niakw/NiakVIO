@@ -35,6 +35,14 @@ with tempfile.TemporaryDirectory() as directory:
     existing_name=f"existing--base--{existing_sha[:16]}.js"
     (output/existing_name).write_bytes(existing)
 
+    archived=b"/* identical archived content-addressed base */\n"
+    archived_sha=hashlib.sha256(archived).hexdigest()
+    archived_name=f"archived-owner--base--{archived_sha[:16]}.js"
+    archived_dir=source/"provider-disabled"/"provider-bases"
+    archived_dir.mkdir(parents=True)
+    (archived_dir/archived_name).write_bytes(archived)
+    historical_name=f"historical-owner--base--{archived_sha[:16]}.js"
+
     rows={
         "demo":{
             "base_filename":f"provider-bases/{demo_name}",
@@ -44,11 +52,16 @@ with tempfile.TemporaryDirectory() as directory:
             "base_filename":f"provider-bases/{existing_name}",
             "base_sha256":existing_sha,
         },
+        "historical":{
+            "base_filename":f"provider-bases/{historical_name}",
+            "base_sha256":archived_sha,
+        },
     }
     copied=mod.materialize_supporting_bases(rows,output,source_root=source)
-    assert copied==["demo"], copied
+    assert copied==["demo","historical"], copied
     assert (output/demo_name).read_bytes()==demo
     assert (output/existing_name).read_bytes()==existing
+    assert (output/historical_name).read_bytes()==archived
 
     bad=dict(rows)
     bad["missing"]={
