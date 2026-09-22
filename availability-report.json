@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-22T13:31:08.202107+00:00",
+  "generated_at": "2026-09-22T19:48:20.273781+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 42,
   "status_counts": {
-    "healthy": 3,
+    "healthy": 1,
     "reachable": 0,
     "blocked": 1,
     "degraded": 1,
     "no_streams": 6,
-    "provider_unreachable": 29,
+    "provider_unreachable": 30,
     "runtime_error": 0,
-    "unavailable": 2,
+    "unavailable": 3,
     "excluded": 0
   },
   "policy": {
@@ -537,7 +537,7 @@
     },
     {
       "id": "hindmoviez",
-      "status": "healthy",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2868,7 +2868,7 @@
     },
     {
       "id": "wookafr",
-      "status": "no_streams",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 1,
@@ -3040,18 +3040,14 @@
     },
     {
       "id": "vidlove",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "a2.whysosigmabro.fun"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "ballerinacappuccinalovestungtungtungsahur.com": {
           "last_checked_at": "2026-09-22T05:11:55.419248+00:00",
