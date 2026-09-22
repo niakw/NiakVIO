@@ -139,6 +139,15 @@ jobs:
           row=rows.get(target)
           if not isinstance(row,dict) or str(row.get('owner') or '')!='LEARN' or str(row.get('status') or '')!='pending':
               raise SystemExit(f"target provider is not LEARN/pending in current handoff: {target}")
+          data={
+              "schemaVersion": 1,
+              "fastHandoff": True,
+              "providerCount": 1,
+              "providers": [target],
+              "providerFilter": target,
+              "policy": "target-scoped-handoff",
+          }
+          json.dump(data,open(sys.argv[2],"w",encoding="utf-8"),ensure_ascii=False,indent=2)
           PY
             fast_handoff=true
             provider_filter="$target_provider"
