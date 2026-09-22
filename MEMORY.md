@@ -4112,3 +4112,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - AnimeVOSTFR hub DATA now marks `https://animevostfr.org/` as `direct_authority=explicit_current`; `v2.animevostfr.org` remains a redirect/discovery seed only. The accepted override again uses `official_site=https://animevostfr.org` with `v2.animevostfr.org -> animevostfr.org` in runtime/domain substitutions.
 - Regression coverage now simulates stale static memory on `v2.animevostfr.org` plus an explicit-current registry at `animevostfr.org` and requires the current hub authority to win. The Projection Reconcile workflow contract also requires structured-DATA preservation.
 - Next proof: Projection Reconcile must rebuild only the resulting drifted provider(s), leave `provider-overrides.json` byte-identical, publish atomically, then dispatch a fresh current-byte census. The census must pass AnimeVOSTFR contract and re-measure residential/WAF classifications.
+
+
+### 2026-09-22 — Native residential qualification trigger contract corrected
+
+- Current main at `7409baa36bfe34195b64895439bde2f312877c5d` allows push-triggered targeted Native corpus execution only for `.github/triggers/native-residential-transport-targeted.json`. This is intentional: it runs a real NuvioTV Android TV client through the configured private Tailscale exit for exact current harness-mismatch providers.
+- CORE Workflow Gate `35767925814` on `3e88d8bb...` failed only because `tests/native_corpus_device_lab_test.py` still asserted that the targeted runtime workflow could never contain a `push:` trigger. That assertion became stale after the residential proof lane was added.
+- Commit `7409baa3...` replaces the stale prohibition with a stricter scoped contract: workflow_dispatch remains supported, pull_request remains forbidden, and the sole push trigger must be the explicit residential trigger file under main.
+- Native run `35767925881` is the active real-client proof for `animesultra, animevost-fr, moviesmod` on TV via residential exit. No reclassification is claimed until its per-provider artifacts/logs complete.
+- Separate CORE Verify failure on the preceding SHA remains open: `vidfast: published security hardening is not idempotent`. This is independent from Tailscale/harness qualification and must be fixed generically before CORE can be called green.
