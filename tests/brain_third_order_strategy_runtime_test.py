@@ -87,6 +87,28 @@ salvage_options = runtime._adaptive_runtime_options(
 )
 assert salvage_options and salvage_options["runtime_response_salvage"] is True, salvage_options
 
+terminal_options = runtime._adaptive_runtime_options(
+    candidate("terminal_transition_graph_v1", "chain_terminal_gap", "CHAIN REACHED"),
+    {
+        "provider_patches": {
+            "synthetic-third-order": {
+                "official_site": "https://provider.example",
+                "documented_routes": [
+                    "/search?q={query}",
+                    "/movie/{id}/{slug}.xhtml",
+                    "/confirm/{id}/{fileId}/{slug}.xhtml",
+                    "/internal/{id}/{fileId}/{slug}.xhtml",
+                    "/api/file/",
+                ],
+            }
+        },
+        "provider_capabilities": config["provider_capabilities"],
+    },
+)
+assert terminal_options and terminal_options["runtime_response_salvage"] is True, terminal_options
+assert terminal_options["transition_prefixes"][:2] == ["/confirm/", "/internal/"], terminal_options
+assert "/movie/" not in terminal_options["transition_prefixes"], terminal_options
+
 form_options = runtime._adaptive_runtime_options(
     candidate("document_request_contract_mining_v1", "media_extraction_gap", "CHAIN REACHED"),
     config,
@@ -129,6 +151,9 @@ generated = generator.apply(
 for marker in (
     '"aliasSearch":true',
     '"runtimeResponseSalvage":true',
+    '"transitionPrefixes":',
+    "function transitionUrls(",
+    "function transitionMatch(",
     '"documentRequestMining":true',
     '"sessionBootstrap":true',
     "function documentForms(",
@@ -259,5 +284,71 @@ assert any(str(row.get("url") or "").endswith("/the-colony.m3u8") for row in ali
 
 salvage_result = run_node(salvage_js, "salvage")
 assert any(str(row.get("url") or "").endswith("/interstellar.m3u8") for row in salvage_result["rows"]), salvage_result
+
+# Real execution proof 3: a CHAIN REACHED provider stops after a valid detail
+# response. The Brain must use provider-owned route templates as recognition
+# hints, mine neutral same-origin transitions from the already-observed document,
+# and traverse them without any provider-specific repair code.
+v5_spec = importlib.util.spec_from_file_location(
+    "adaptive_v5_transition_test",
+    ROOT / "scripts/provider_patches/adaptive_runtime_recovery_v5.py",
+)
+assert v5_spec and v5_spec.loader
+v5 = importlib.util.module_from_spec(v5_spec)
+v5_spec.loader.exec_module(v5)
+base_transition = (
+    'module.exports={getStreams:async function(){'
+    'await fetch("https://provider.example/search?q=Interstellar");'
+    'await fetch("https://provider.example/movie/42/interstellar.xhtml");'
+    'return []}};'
+)
+transition_js = v5.apply(base_transition, options=terminal_options)
+
+def run_transition(module_source: str) -> list[dict]:
+    with tempfile.TemporaryDirectory() as td:
+        td = Path(td)
+        module_path = td / "provider.cjs"
+        runner_path = td / "runner.cjs"
+        module_path.write_text(module_source, encoding="utf-8")
+        runner_path.write_text(
+            r'''
+globalThis.TMDB_API_KEY="test";
+function response(body,type="text/html",status=200,url=""){
+  const headers={get:(name)=>String(name||"").toLowerCase()==="content-type"?type:null,getSetCookie:()=>[]};
+  return {ok:status>=200&&status<300,status,url,headers,text:async()=>String(body),json:async()=>JSON.parse(String(body)),clone(){return response(body,type,status,url)}};
+}
+globalThis.fetch=async function(url){
+  url=String(url);
+  if(url.includes("api.themoviedb.org")) return response(JSON.stringify({title:"Interstellar",release_date:"2014-11-05"}),"application/json",200,url);
+  if(url==="https://provider.example/search?q=Interstellar") return response('<a href="/movie/42/interstellar.xhtml">Interstellar 2014</a>',"text/html",200,url);
+  if(url==="https://provider.example/movie/42/interstellar.xhtml") return response('<script>window.next="\\/confirm\\/42\\/9\\/interstellar.xhtml"</script>',"text/html",200,url);
+  if(url==="https://provider.example/confirm/42/9/interstellar.xhtml") return response('<div data-next="internal/42/9/interstellar.xhtml">continue</div>',"text/html",200,url);
+  if(url==="https://provider.example/internal/42/9/interstellar.xhtml") return response('<script>var file="https://cdn.example/interstellar/master.m3u8"</script>',"text/html",200,url);
+  if(url==="https://cdn.example/interstellar/master.m3u8") return response("#EXTM3U\n#EXT-X-VERSION:3\n","application/vnd.apple.mpegurl",200,url);
+  return response("not found","text/plain",404,url);
+};
+(async()=>{
+  const provider=require(process.argv[2]);
+  const rows=await provider.getStreams({tmdbId:"157336",mediaType:"movie",title:"Interstellar",year:2014});
+  process.stdout.write(JSON.stringify(rows));
+})().catch(e=>{console.error(e&&e.stack||e);process.exit(1)});
+''',
+            encoding="utf-8",
+        )
+        proc = subprocess.run(
+            ["node", str(runner_path), str(module_path)],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            timeout=20,
+            check=False,
+        )
+        assert proc.returncode == 0, proc.stderr
+        rows = json.loads(proc.stdout or "[]")
+        assert isinstance(rows, list), rows
+        return rows
+
+transition_rows = run_transition(transition_js)
+assert any(str(row.get("url") or "") == "https://cdn.example/interstellar/master.m3u8" for row in transition_rows), transition_rows
 
 print("Brain third-order runtime strategy execution passed")

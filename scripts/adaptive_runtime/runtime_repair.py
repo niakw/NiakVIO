@@ -799,6 +799,39 @@ def _unique_routes(*groups: list[str], limit: int = 32) -> list[str]:
     return output
 
 
+def _owned_transition_prefixes(routes: list[str], *, limit: int = 24) -> list[str]:
+    """Compile bounded same-origin transition hints from provider-owned route DATA.
+
+    These are not executable guessed routes. They are literal prefixes used only
+    to recognize URLs that are actually present in successful provider responses.
+    This lets a CHAIN REACHED repair follow provider-specific intermediate steps
+    (confirm/internal/go/etc.) without teaching the Brain provider names or IDs.
+    """
+    output: list[str] = []
+    for raw in routes:
+        route = _safe_route(raw)
+        if not route or _route_role(route) == "search":
+            continue
+        # Detail discovery already has title/TMDB identity gates. Transition
+        # mining is reserved for the post-detail side of the chain.
+        if _route_role(route) == "detail":
+            continue
+        literal = route.split("{", 1)[0]
+        path = literal.split("?", 1)[0]
+        if not path.startswith("/") or path in {"", "/"}:
+            continue
+        # Require at least one meaningful path segment so root-query templates
+        # cannot turn the bounded transition miner into a site-wide crawler.
+        if len(path.strip("/")) < 2:
+            continue
+        prefix = literal
+        if prefix not in output:
+            output.append(prefix)
+            if len(output) >= limit:
+                break
+    return output
+
+
 def _runtime_network_hints(patch: dict[str, Any]) -> dict[str, Any]:
     bases: list[str] = []
     user_agent = ""
@@ -1314,6 +1347,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     # change which evidence is trusted and which graph is traversed after the
     # bounded g2..g5 family is exhausted.
     second_order_role_preferences: list[str] | None = None
+    transition_prefixes: list[str] = []
     if new_strategy_id == "route_transition_graph_v1":
         search_paths = _unique_routes(configured_search, learned_search, limit=12)
         direct_paths = _unique_routes(
@@ -1342,6 +1376,10 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         request_recipes = _unique_request_recipes(
             current_request_recipes, provider_request_recipes, peer_request_recipes, limit=40
         )
+        # Provider-owned route DATA may contain intermediate post-detail route
+        # families that are intentionally not classified as player/api routes.
+        # Mine them only when they are observed in successful response bodies.
+        transition_prefixes = _owned_transition_prefixes(learned_direct)
         second_order_role_preferences = ["source", "api", "player", "episode", "detail", "other"]
     elif new_strategy_id == "terminal_request_program_inference_v1":
         search_paths = _unique_routes(learned_search, configured_search, limit=8)
@@ -1525,6 +1563,7 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         "types": types,
         "search_paths": search_paths,
         "direct_paths": direct_paths,
+        "transition_prefixes": transition_prefixes,
         "request_recipes": request_recipes,
         "historical_prior_ids": [row["id"] for row in historical_priors],
         "historical_solution_classes": [row["solutionClass"] for row in historical_priors],
@@ -1569,7 +1608,10 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         ),
         "new_strategy_id": new_strategy_id,
         "alias_search": new_strategy_id == "identity_alias_search_traversal_v1",
-        "runtime_response_salvage": new_strategy_id == "runtime_response_salvage_v1",
+        "runtime_response_salvage": new_strategy_id in {
+            "runtime_response_salvage_v1",
+            "terminal_transition_graph_v1",
+        },
         "document_request_mining": new_strategy_id == "document_request_contract_mining_v1",
         "session_bootstrap": new_strategy_id == "provider_session_bootstrap_replay_v1",
         "historical_strategy_profile": historical_strategy_profile,
