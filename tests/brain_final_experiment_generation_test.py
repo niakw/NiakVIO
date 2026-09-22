@@ -144,7 +144,37 @@ second_escalation_failed={
     **row(4,5),
     "profile":"terminal_request_program_inference_v1",
 }
-learning_exhausted=plan([*base_exhausted,first_escalation_failed,second_escalation_failed],"learning")
+after_second=plan([*base_exhausted,first_escalation_failed,second_escalation_failed],"learning")
+assert after_second["experimentExhausted"] is False,after_second
+assert after_second["postExhaustionStrategyProfile"]=="runtime_response_salvage_v1",after_second
+assert after_second["allowedProfiles"]==["runtime_response_salvage_v1"],after_second
+
+third_escalation_failed={
+    **row(4,5),
+    "profile":"runtime_response_salvage_v1",
+}
+after_third=plan(
+    [*base_exhausted,first_escalation_failed,second_escalation_failed,third_escalation_failed],
+    "learning",
+)
+assert after_third["experimentExhausted"] is False,after_third
+assert after_third["postExhaustionStrategyProfile"]=="document_request_contract_mining_v1",after_third
+assert after_third["allowedProfiles"]==["document_request_contract_mining_v1"],after_third
+
+fourth_escalation_failed={
+    **row(4,5),
+    "profile":"document_request_contract_mining_v1",
+}
+learning_exhausted=plan(
+    [
+        *base_exhausted,
+        first_escalation_failed,
+        second_escalation_failed,
+        third_escalation_failed,
+        fourth_escalation_failed,
+    ],
+    "learning",
+)
 assert learning_exhausted["experimentGeneration"]==5,learning_exhausted
 assert learning_exhausted["baseExperimentExhausted"] is True,learning_exhausted
 assert learning_exhausted["experimentExhausted"] is True,learning_exhausted
