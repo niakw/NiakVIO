@@ -1144,12 +1144,15 @@ def main() -> int:
     queue["fastRepairHandoffCausalBatchOrder"] = causal_group_order
     queue["fastRepairHandoffCausalBatchCount"] = len(causal_group_order)
     queue["fastRepairHandoffOrderingPolicy"] = "causal-batch-round-robin"
+    # Fast-Handoff mode is an input to causal-wave materialization. Compute it
+    # before the wave builder so the real Repair->Learning handoff cannot reach
+    # an uninitialized local even though static helper tests pass.
+    fair_handoff = bool(handoff_priority) and not bool(args.provider)
     causal_waves = causal_family_waves(order, batch_plan, max_parallel=4) if fair_handoff else []
     queue["fastRepairHandoffCausalWaves"] = causal_waves
     queue["fastRepairHandoffCausalWaveCount"] = len(causal_waves)
     queue["fastRepairHandoffCausalWaveMaxParallel"] = 4
     queue["fastRepairHandoffParallelExecutionEnabled"] = False
-    fair_handoff = bool(handoff_priority) and not bool(args.provider)
     queue["fastRepairHandoffMaxAttemptsPerProviderThisPhase"] = 1 if fair_handoff else 0
     queue["fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase"] = 3 if fair_handoff else 0
     queue["deferredRepairProviders"] = repair_deferred
