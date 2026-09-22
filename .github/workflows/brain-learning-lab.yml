@@ -222,6 +222,7 @@ jobs:
           node -e "const x=require('./brain-learning-input/previous.json'); if(x.productionWritesAllowed===true||x.publicationAllowed===true) process.exit(1)"
 
       - name: Import latest weekly FULL native Lab diagnostics into Learning memory
+        if: ${{ steps.learning-slot.outputs.fast_handoff != 'true' }}
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
