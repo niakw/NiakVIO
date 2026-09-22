@@ -1,12 +1,12 @@
 {
   "schemaVersion": 4,
-  "requestedAt": "2026-09-22T12:45:00+02:00",
-  "retry": 116,
+  "requestedAt": "2026-09-22T12:49:00+02:00",
+  "retry": 117,
   "mode": "repair",
-  "scope": "provider-repair-main-v2-current-head-after-learning-return-fix",
+  "scope": "provider-repair-main-v2-after-peer-floor-fix",
   "targetProviders": [],
-  "goal": "Run canonical Repair now on current main while Learning v18 continues independently. Attempt real current-byte repairs for census repairQueue providers, validate accepted candidates with strict identity/playback gates, persist canonical evidence, trigger fresh census when required, and escalate only unresolved causal debt to Learning.",
+  "goal": "Re-run canonical Repair after the late-stage peer-transfer floor fix. Preflight must pass brain_current_observation_recipe and experience-transfer contracts, then execute WAF/network qualification and canonical correction for the current repairQueue, requiring current-byte playable identity-safe proof before acceptance and canonical census persistence.",
   "branch": "main",
   "publication": false,
-  "sourceRef": "7b5bb5f9d971553ec16aafe907ba2d3e866edfe3"
+  "sourceRef": "8d47c59a246b4fc4ab80da659f75f17feac00cfe"
 }
