@@ -3812,3 +3812,15 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Les solutionClass historiques NiakVIO sont désormais des priors Learning exécutables bornés, toujours soumis aux gates current-byte Deep/playback/identity.
 - Le causal execution router/Autopilot choisit désormais le propriétaire REMAT_TEST, FAST_REPAIR, DOMAIN/transport, CORE_CLIENT_LEARNING ou BRAIN_LEARNING au lieu d'envoyer tous les cas vers Repair.
 - Prochaine action autorisée: Learning long chaîné sur le même handoff, proposal-only, avec fair-share et sans publication production sans preuve current-byte + playback + identity + non-régression.
+
+### 2026-09-22 — Long Learning exposed and fixed cross-phase experiment-memory reset
+- Long chained Learning ran four logical phases on source SHA `256a452...`: #246 `35681235121`, #247 `35681820137`, #248 `35682328126`, #249 `35682783307`. Sandbox/learning work completed successfully in every phase; #246/#248 overall conclusions were cancelled only because their successor phase superseded the workflow after the useful jobs had completed.
+- The four phases were **sterile** despite fair-share speed: each repeated approximately `negative_entries=167 / skills=1 / processed=9 / retries=9 / pending=9 / proposals=49 / provider_proposals=0`. Comparison of the targeted provider experiment memory before/after the chain showed no useful generation/counter progression. Do not treat this long chain as additional repair learning.
+- Root cause: `run_brain_learning_sandbox.py` consumed `previous.experimentMemory` only to suppress repeated profiles, while `brain_repair_runtime.py` still computed `experimentVariant/experimentGeneration` solely from production `automation/brain-repair-memory.json`. In addition, `learning-lab.mjs` discarded experiment variant/generation and keyed memory only by provider/version/signature/profile, collapsing distinct generations.
+- Cross-phase fix:
+  - Learning child processes now receive the prior sanitized state as `NIAKVIO_BRAIN_LEARNING_MEMORY` before importing Brain runtime.
+  - `brain_repair_runtime.repair_memory()` overlays sanitized cross-phase experiment memory **only when planner mode is Learning**; normal production Repair remains anchored to canonical production memory.
+  - Learning experiment memory now preserves and keys `experimentVariant + experimentGeneration`, along with bounded causal metadata.
+  - Added `brain_cross_phase_experiment_memory_test.py`: a previous Learning g2 failure must make the next Learning plan choose g3, while production Repair must not import that unvalidated g2 Learning state.
+  - Added `FIELD_BRAIN_PROVIDER_PLAN` logging with provider/failure/variant/generation/profiles/historical strategy/exhaustion for direct run-time proof.
+- CORE Workflow Gate #5679 / run `35693120105` completed **success** on HEAD `187a56ff0fa0...`, including the new cross-phase progression contract. Next proof must be a real targeted Learning run showing generation progression in `FIELD_BRAIN_PROVIDER_PLAN`; a green workflow alone is insufficient.
