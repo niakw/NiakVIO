@@ -1,5 +1,14 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-22 11:12 Europe/Paris — Domain manual-off resurrection fixed; Repair preflight blocker isolated
+
+- Current main diagnosis started from HEAD `850374f15d728d57262073e385b4a3bbb09950db`. Repair run `35706702360` on source SHA `2d0bfa448177cfe5640622aa9ac25ecb938f842d` did **not** execute a valid provider Repair cycle: it failed in canonical preflight at `tests/provider_authority_current_catalogue_test.py` because ShowBox had been repopulated as `direct=https://www.showbox.media/` even though the durable authority row still carried `activation_eligible=false` and `manual_off_reason=manual_off_no_current_authority_search_only`.
+- Root cause is generic Domain ownership, not a ShowBox-specific provider defect. `sync_registry_terminal()` promoted every observed terminal into current `direct` authority. A later Domain transaction therefore resurrected a forensic candidate after the explicit manual-off decision. Historical commit `f1a5c34fb3d8` had correctly cleared ShowBox `direct`; the later Domain generation reintroduced it.
+- `4fe4b02b61fa` changes `scripts/domain_refresh_transaction_v2.py`: a non-empty `manual_off_reason` now outranks passive Domain observation. Observed terminals remain in bounded `direct_candidates` / allowed-host knowledge, but `direct` is forced to `null` until a separate explicit authority requalification clears the manual-off reason.
+- `1f43789f65ba` adds the generic regression to `tests/domain_refresh_workflow_test.py`: a stale ShowBox-like manual-off row with a resurrected direct is self-healed to `direct=null` while retaining the forensic candidate.
+- `ea8b7bab24a4` restores current `provider-hubs.json` ShowBox state to `direct=null`; its forensic candidate, supplementary search, disabled lifecycle and manual-off reason remain intact.
+- Validation is **pending** at this checkpoint. Next sequence: run the owning Domain workflow to prove the transaction regression and ensure it cannot reintroduce the direct URL, inspect any Domain publication on the exact SHA, then run canonical Repair on the resulting current main and continue the Brain → Repair loop. Do not count `35706702360` as provider repair evidence; its expensive WAF/Brain stages were skipped.
+
 ## 2026-09-21 23:40 Europe/Paris — Residential census proof now real; stale-authority WAF overlay fixed but pending validation
 
 - Standalone WAF #107 (`35657232795`) completed green with Tailscale residential exit available. The persisted census transport overlay now reports **27 FULL OK**, including residentially verified AnimeSalt/VostFree from the earlier successful replay lineage, with exact transport queues **HARNESS MISMATCH: animevost-fr, moviesmod** and **environment blocked: allwish, flemmix**. Tailscale is therefore operational; these classifications are evidence-backed, not inferred from GitHub-only probes.
