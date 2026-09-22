@@ -435,11 +435,39 @@ function mergeExperimentMemory(previousMemory, report, planMap, limit) {
       const profile = String(attempt.profile || '');
       const signature = String(plan.signature || plan.failureClass || 'unknown_failure');
       if (!providerId || !profile || !signature) continue;
-      const key = memoryKey({ providerId, providerVersion: '*', signature, profile });
+      const experimentVariant = nonNegative(plan.experimentVariant);
+      const experimentGeneration = Math.max(1, nonNegative(plan.experimentGeneration) || 1);
+      const key = memoryKey({
+        providerId,
+        providerVersion: '*',
+        signature,
+        profile,
+        experimentVariant,
+        experimentGeneration,
+      });
       const next = map.get(key) || {
-        providerId, providerVersion: '*', signature, failureClass: String(plan.failureClass || 'unknown_failure'), profile,
-        attempts: 0, successes: 0, failures: 0, consecutiveFailures: 0, lastOutcome: null, lastReason: null, lastSeenAt: null,
+        providerId,
+        providerVersion: '*',
+        signature,
+        failureClass: String(plan.failureClass || 'unknown_failure'),
+        profile,
+        experimentVariant,
+        experimentGeneration,
+        capabilityStrategy: String(plan.capabilityStrategy || '').slice(0, 96),
+        observedPipelineStage: String(plan.observedPipelineStage || '').slice(0, 64),
+        attempts: 0,
+        successes: 0,
+        failures: 0,
+        consecutiveFailures: 0,
+        progresses: 0,
+        lastOutcome: null,
+        lastReason: null,
+        lastSeenAt: null,
       };
+      next.experimentVariant = experimentVariant;
+      next.experimentGeneration = experimentGeneration;
+      if (String(plan.capabilityStrategy || '')) next.capabilityStrategy = String(plan.capabilityStrategy).slice(0, 96);
+      if (String(plan.observedPipelineStage || '')) next.observedPipelineStage = String(plan.observedPipelineStage).slice(0, 64);
       next.attempts += 1;
       const repairKey = String(attempt.repair_key || '');
       const accepted = acceptedByRepair.get(repairKey);
@@ -469,16 +497,35 @@ function sanitizeMemoryEntry(raw) {
   const profile = String(raw.profile || '').trim().slice(0, 96);
   if (!providerId || !signature || !profile) return null;
   return {
-    providerId, providerVersion: String(raw.providerVersion || '*').trim().slice(0, 64) || '*', signature,
-    failureClass: String(raw.failureClass || 'unknown_failure').trim().slice(0, 96), profile,
-    attempts: nonNegative(raw.attempts), successes: nonNegative(raw.successes), failures: nonNegative(raw.failures),
+    providerId,
+    providerVersion: String(raw.providerVersion || '*').trim().slice(0, 64) || '*',
+    signature,
+    failureClass: String(raw.failureClass || 'unknown_failure').trim().slice(0, 96),
+    profile,
+    experimentVariant: nonNegative(raw.experimentVariant),
+    experimentGeneration: Math.max(1, nonNegative(raw.experimentGeneration) || 1),
+    capabilityStrategy: String(raw.capabilityStrategy || '').trim().toLowerCase().slice(0, 96),
+    observedPipelineStage: String(raw.observedPipelineStage || '').trim().toLowerCase().slice(0, 64),
+    attempts: nonNegative(raw.attempts),
+    successes: nonNegative(raw.successes),
+    failures: nonNegative(raw.failures),
     consecutiveFailures: nonNegative(raw.consecutiveFailures),
+    progresses: nonNegative(raw.progresses),
     lastOutcome: raw.lastOutcome ? String(raw.lastOutcome).slice(0, 48) : null,
     lastReason: raw.lastReason ? sanitizeReason(raw.lastReason) : null,
     lastSeenAt: raw.lastSeenAt ? String(raw.lastSeenAt).slice(0, 48) : null,
   };
 }
-function memoryKey(row) { return `${row.providerId}::${row.providerVersion || '*'}::${row.signature}::${row.profile}`; }
+function memoryKey(row) {
+  return [
+    row.providerId,
+    row.providerVersion || '*',
+    row.signature,
+    row.profile,
+    `g${Math.max(1, nonNegative(row.experimentGeneration) || 1)}`,
+    `v${nonNegative(row.experimentVariant)}`,
+  ].join('::');
+}
 function providerFromKey(value) { const raw = String(value || '').split('::', 1)[0]; const parts = raw.split(':'); return parts.length > 1 ? parts.slice(1).join(':') : raw; }
 function sanitizeReason(value) { return String(value || '').replace(/https?:\/\/\S+/gi, '<url>').replace(/(?:(?:token|authorization|cookie|secret)\s*[:=]\s*)\S+/gi, 'credential=<redacted>').replace(/\s+/g, ' ').trim().slice(0, 240); }
 function nonNegative(value) { const n = Number(value); return Number.isFinite(n) ? Math.max(0, Math.trunc(n)) : 0; }
