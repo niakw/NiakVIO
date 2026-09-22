@@ -57,6 +57,7 @@ assert row["profile"] == "chain_terminal_extractor_v1_g3", row
 assert row["lastOutcome"] == "rejected", row
 assert row["failures"] == 1 and row["consecutiveFailures"] == 1, row
 assert row["memoryRole"] == "fair-share-exact-experiment-ledger", row
+assert row["executionObserved"] is True, row
 
 # A planned profile that cannot even materialize must retain the exact causal
 # generation identity instead of falling back to g1/v0.
@@ -76,6 +77,7 @@ assert unavailable[0]["experimentVariant"] == 4, unavailable
 assert unavailable[0]["experimentGeneration"] == 4, unavailable
 assert unavailable[0]["profile"] == "chain_terminal_extractor_v1_g4", unavailable
 assert unavailable[0]["lastOutcome"] == "profile_unavailable", unavailable
+assert unavailable[0]["executionObserved"] is False, unavailable
 
 # Planner action labels may change when a selected causal profile cannot
 # materialize. The exact selected g/v/profile is still durable negative
@@ -229,7 +231,27 @@ assert phase_state["productionWritesAllowed"] is False
 assert queue.should_continue_evolved_frontier(next_evolved, 1) is True
 assert queue.should_continue_evolved_frontier(next_evolved, 2) is True
 assert queue.should_continue_evolved_frontier(next_evolved, 3) is False
-assert queue.should_continue_evolved_frontier({**next_evolved, "repairType": "provider_runtime"}, 1) is False
+
+# The first attempt may still report the exact final g5 strategy it just ran.
+# That boundary must receive one continuation so phase memory can expose and
+# execute the newly unlocked evolved strategy in the next sandbox process.
+final_g5 = {
+    **executed_g5,
+    "repairType": "provider_runtime",
+    "experimentGenerationLimit": 5,
+    "experimentExhausted": False,
+}
+assert queue.should_continue_evolved_frontier(final_g5, 1) is True
+assert queue.should_continue_evolved_frontier(final_g5, 2) is True
+assert queue.should_continue_evolved_frontier(final_g5, 3) is False
+assert queue.should_continue_evolved_frontier(
+    {**final_g5, "experimentGeneration": 4},
+    1,
+) is False
+assert queue.should_continue_evolved_frontier(
+    {**next_evolved, "repairType": "provider_runtime", "experimentGenerationLimit": 0},
+    1,
+) is False
 
 source = SCRIPT.read_text(encoding="utf-8")
 assert "phase_learning_state_path" in source
