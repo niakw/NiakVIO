@@ -311,11 +311,16 @@ def fetch_bytes(url: str, attempts: int = 3, timeout: int = 35) -> bytes:
     raise RuntimeError(f"download failed for {url}: {last_error}")
 
 
-def fetch_manifest(urls: list[str]) -> tuple[dict[str, Any], str]:
+def fetch_manifest(
+    urls: list[str],
+    *,
+    attempts: int = 3,
+    timeout: int = 35,
+) -> tuple[dict[str, Any], str]:
     errors: list[str] = []
     for url in urls:
         try:
-            payload = json.loads(fetch_bytes(url).decode("utf-8-sig"))
+            payload = json.loads(fetch_bytes(url, attempts=attempts, timeout=timeout).decode("utf-8-sig"))
             if not isinstance(payload, dict) or not isinstance(payload.get("scrapers"), list):
                 raise ValueError("missing scrapers array")
             return payload, url
@@ -908,6 +913,11 @@ def main() -> int:
     requested_provider_ids = {canonical_id(value) for value in args.provider if canonical_id(value)}
 
     config = load_discovery_config()
+    targeted_network = bool(requested_provider_ids)
+    manifest_attempts = 1 if targeted_network else 3
+    manifest_timeout = 12 if targeted_network else 35
+    provider_attempts = 2 if targeted_network else 3
+    provider_timeout = 20 if targeted_network else 35
     exclusions = config.get("exclusions", {})
     overrides = json.loads(OVERRIDES_PATH.read_text(encoding="utf-8"))
     try:
@@ -940,7 +950,11 @@ def main() -> int:
         live_manifest = False
         raw_provider_records: dict[str, tuple[bytes, str]] = {}
         try:
-            manifest, manifest_url = fetch_manifest(source_cfg["manifest_urls"])
+            manifest, manifest_url = fetch_manifest(
+                source_cfg["manifest_urls"],
+                attempts=manifest_attempts,
+                timeout=manifest_timeout,
+            )
             validate_manifest_quality(manifest, source_key, upstream_lkg_registry)
             live_manifest = True
         except Exception as live_exc:
@@ -1014,7 +1028,11 @@ def main() -> int:
                 download_error: Exception | None = None
                 if live_manifest:
                     try:
-                        data = fetch_bytes(provider_url)
+                        data = fetch_bytes(
+                            provider_url,
+                            attempts=provider_attempts,
+                            timeout=provider_timeout,
+                        )
                         validate_javascript(data, provider_url)
                         raw_provider_records[upstream_id] = (data, provider_url)
                     except Exception as exc:
@@ -1027,7 +1045,11 @@ def main() -> int:
                     elif not live_manifest:
                         # A partially populated LKG may still reference a reachable historical URL.
                         try:
-                            data = fetch_bytes(provider_url)
+                            data = fetch_bytes(
+                                provider_url,
+                                attempts=provider_attempts,
+                                timeout=provider_timeout,
+                            )
                             validate_javascript(data, provider_url)
                         except Exception as exc:
                             download_error = exc
