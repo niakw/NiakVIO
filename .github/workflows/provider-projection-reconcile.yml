@@ -56,6 +56,7 @@ jobs:
           set -euo pipefail
           python -m py_compile scripts/detect_provider_projection_drift.py scripts/materialize_provider_v3_one.py scripts/reconcile_targeted_provider_publication.py
           python tests/provider_projection_drift_detector_test.py
+          python tests/provider_projection_reconcile_workflow_test.py
           python scripts/detect_provider_projection_drift.py --output "$RUNNER_TEMP/projection-drift.before.json"
           python - <<'PY' >> "$GITHUB_OUTPUT"
           import json, os
