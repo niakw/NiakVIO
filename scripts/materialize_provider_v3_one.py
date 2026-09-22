@@ -402,25 +402,37 @@ def reconcile_domain_substitutions(
     return changed
 
 
-def materialize_one(provider_id: str) -> dict[str, object]:
+def materialize_one(
+    provider_id: str,
+    *,
+    preserve_structured_data: bool = False,
+) -> dict[str, object]:
     provider_id = allmat.canonical_id(provider_id)
     manifest = allmat.load(allmat.DEFAULT_SOURCE_MANIFEST)
     overrides = allmat.load(allmat.DEFAULT_OVERRIDES)
     static_knowledge = allmat.load(allmat.DEFAULT_STATIC_KNOWLEDGE)
     registry = allmat.load(REGISTRY)
 
-    authority_changed = reconcile_provider_authority(
-        overrides,
-        static_knowledge,
-        provider_id,
-        registry,
-    )
-    changed_domains = reconcile_domain_substitutions(
-        overrides,
-        provider_id=provider_id,
-    )
-    if authority_changed or changed_domains:
-        allmat.write_json(allmat.DEFAULT_OVERRIDES, overrides)
+    # Projection-only reconstruction must be a pure function of already accepted
+    # structured DATA. It may rebuild published bytes, but it must never let
+    # historical/static memory rewrite provider-overrides as a side effect.
+    # Repair/Domain flows keep the existing reconciliation behavior.
+    if preserve_structured_data:
+        authority_changed: list[str] = []
+        changed_domains: list[str] = []
+    else:
+        authority_changed = reconcile_provider_authority(
+            overrides,
+            static_knowledge,
+            provider_id,
+            registry,
+        )
+        changed_domains = reconcile_domain_substitutions(
+            overrides,
+            provider_id=provider_id,
+        )
+        if authority_changed or changed_domains:
+            allmat.write_json(allmat.DEFAULT_OVERRIDES, overrides)
 
     patches = overrides.get("provider_patches") or {}
     capabilities = overrides.get("provider_capabilities") or {}
@@ -590,8 +602,16 @@ def materialize_one(provider_id: str) -> dict[str, object]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("provider_id")
+    parser.add_argument(
+        "--preserve-structured-data",
+        action="store_true",
+        help="rebuild bytes from accepted DATA without mutating provider-overrides",
+    )
     args = parser.parse_args()
-    materialize_one(args.provider_id)
+    materialize_one(
+        args.provider_id,
+        preserve_structured_data=args.preserve_structured_data,
+    )
     return 0
 
 
