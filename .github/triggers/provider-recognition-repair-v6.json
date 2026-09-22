@@ -1,12 +1,12 @@
 {
   "schemaVersion": 4,
-  "requestedAt": "2026-09-21T23:50:00+02:00",
-  "retry": 115,
+  "requestedAt": "2026-09-22T12:45:00+02:00",
+  "retry": 116,
   "mode": "repair",
-  "scope": "provider-repair-main-v2-bounded-tailscale-current-head",
+  "scope": "provider-repair-main-v2-current-head-after-learning-return-fix",
   "targetProviders": [],
-  "goal": "Run current canonical Repair in the v2 Repair lane, with early supersession rejection, bounded optional Tailscale connection, fresh authority projection, split lifecycle/rediscovery/harness/environment census queues, authority-eligible Brain selection, durable experiment memory and strict non-regression. Persist canonical ledger only if this exact SHA is still current.",
+  "goal": "Run canonical Repair now on current main while Learning v18 continues independently. Attempt real current-byte repairs for census repairQueue providers, validate accepted candidates with strict identity/playback gates, persist canonical evidence, trigger fresh census when required, and escalate only unresolved causal debt to Learning.",
   "branch": "main",
   "publication": false,
-  "sourceRef": "98a5dad768f3ed76735033f282a5eb7654ab27b8"
+  "sourceRef": "7b5bb5f9d971553ec16aafe907ba2d3e866edfe3"
 }
