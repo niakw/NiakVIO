@@ -396,6 +396,28 @@ def merge_phase_learning_state(
     return output
 
 
+def merge_wave_experiment_entries(
+    state: dict[str, Any],
+    provider_entries: list[list[dict[str, Any]]],
+    *,
+    max_entries: int = 1000,
+) -> dict[str, Any]:
+    """Merge isolated provider evidence deterministically at a causal-wave barrier.
+
+    Concurrent workers must never write shared Learning state directly. Each
+    worker returns sanitized experiment rows; the barrier sorts those rows by
+    their exact experiment identity and reuses the canonical phase-memory merge.
+    """
+    rows = [
+        copy.deepcopy(row)
+        for group in provider_entries
+        for row in group
+        if isinstance(row, dict)
+    ]
+    rows.sort(key=_phase_experiment_key)
+    return merge_phase_learning_state(state, rows, max_entries=max_entries)
+
+
 def should_continue_evolved_frontier(
     plan: dict[str, Any],
     attempts_this_phase: int,
