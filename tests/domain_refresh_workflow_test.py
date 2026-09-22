@@ -250,6 +250,33 @@ else:
     raise AssertionError("explicit_current terminal must refuse a contradictory hub observation")
 assert pinned_registry["providers"]["kehflix"]["direct"] == "https://kehflix.com/"
 
+# Regression 2a.1: a terminal observed by Domain must never resurrect a provider
+# carrying an explicit manual-off lifecycle decision. The terminal remains
+# bounded forensic address knowledge until a separate authority requalification
+# clears manual_off_reason.
+manual_off_registry = {
+    "providers": {
+        "showbox": {
+            "id": "showbox",
+            "manifest_status": "Désactivé",
+            "direct": "https://www.showbox.media/",
+            "direct_candidates": ["https://www.showbox.media/"],
+            "allowed_terminal_hosts": ["showbox.media", "www.showbox.media"],
+            "activation_eligible": False,
+            "manual_off_reason": "manual_off_no_current_authority_search_only",
+        }
+    }
+}
+assert module.sync_registry_terminal(
+    manual_off_registry,
+    "showbox",
+    "https://www.showbox.media",
+) is True
+manual_off_row = manual_off_registry["providers"]["showbox"]
+assert manual_off_row["direct"] is None, manual_off_row
+assert "https://www.showbox.media/" in manual_off_row["direct_candidates"], manual_off_row
+assert manual_off_row["manual_off_reason"] == "manual_off_no_current_authority_search_only"
+
 # Regression 2b: stale published domain CONFIG must be distinguishable from
 # already-current structured authority.  This is the Kehflix state that used to
 # make Domain Refresh report applied=0/bundles=0 forever.
