@@ -10,6 +10,7 @@ const outputDir = resolveArg('--output-dir', path.join(root, 'engine_v2/learning
 const repairPath = resolveArg('--repair-report', path.join(root, 'repair-report.json'));
 const historicalPath = optionalArg('--historical-training');
 const previousPath = optionalArg('--previous-state');
+const runtimeExperimentPath = optionalArg('--runtime-experiment-memory');
 const nativeSummaryPath = optionalArg('--native-summary');
 const targetedLabPath = optionalArg('--targeted-lab-summary');
 const portfolioPath = optionalArg('--provider-portfolio');
@@ -29,6 +30,7 @@ const targetedLabs = Array.isArray(targetedLab.providers)
 const diagnostics = readJson(path.join(root, 'diagnostics-report.json'), {});
 const policy = readJson(path.join(root, 'engine_v2/config/brain-policy.json'), {});
 const previous = previousPath ? readJson(previousPath, {}) : {};
+const runtimeExperimentMemory = runtimeExperimentPath ? readJson(runtimeExperimentPath, {}) : {};
 const previousReaderMemory = isRecord(previous.nativeReaderRepairMemory) ? previous.nativeReaderRepairMemory : null;
 const previousNativeFeedback = isRecord(previous.nativeFeedback) ? previous.nativeFeedback : {};
 const historical = historicalPath ? readJson(historicalPath, {}) : {};
@@ -64,7 +66,13 @@ for (const skill of Object.values(learnedSkills)) {
   trustedByFailure.set(key, (trustedByFailure.get(key) ?? 0) + 1);
 }
 
-const experimentMemory = mergeExperimentMemory(previous.experimentMemory, repair, plans, maxMemory);
+const experimentMemory = mergeExperimentMemory(
+  previous.experimentMemory,
+  runtimeExperimentMemory,
+  repair,
+  plans,
+  maxMemory,
+);
 const learningQueue = mergeLearningQueue(previous.learningQueue, queueState);
 const proposals = [];
 for (const [failureClass, count] of [...counts.entries()].sort((a, b) => b[1] - a[1])) {
@@ -417,14 +425,50 @@ function mergeLearningQueue(previousQueue, currentQueue) {
 }
 
 
-function mergeExperimentMemory(previousMemory, report, planMap, limit) {
+function mergeExperimentMemory(previousMemory, runtimeMemory, report, planMap, limit) {
   const map = new Map();
   const previousEntries = Array.isArray(previousMemory?.entries) ? previousMemory.entries : [];
   for (const raw of previousEntries) {
     const row = sanitizeMemoryEntry(raw);
     if (row) map.set(memoryKey(row), row);
   }
-  for (const round of Array.isArray(report.rounds) ? report.rounds : []) {
+
+  // brain_repair_runtime owns the complete experiment ledger for the sandbox:
+  // it records generated failures plus structurally unavailable profiles,
+  // candidate-generation failures and non-publishable progress. These events
+  // are not all representable in repair-report.rounds, so this read-only
+  // runtime memory is the canonical cross-phase source when present.
+  const runtimeEntries = Array.isArray(runtimeMemory?.entries) ? runtimeMemory.entries : [];
+  for (const raw of runtimeEntries) {
+    const row = sanitizeMemoryEntry(raw);
+    if (!row) continue;
+    const key = memoryKey(row);
+    const current = map.get(key);
+    if (!current) {
+      map.set(key, row);
+      continue;
+    }
+    map.set(key, {
+      ...current,
+      ...row,
+      attempts: Math.max(nonNegative(current.attempts), nonNegative(row.attempts)),
+      successes: Math.max(nonNegative(current.successes), nonNegative(row.successes)),
+      failures: Math.max(nonNegative(current.failures), nonNegative(row.failures)),
+      consecutiveFailures: Math.max(
+        nonNegative(current.consecutiveFailures),
+        nonNegative(row.consecutiveFailures),
+      ),
+      progresses: Math.max(nonNegative(current.progresses), nonNegative(row.progresses)),
+      lastOutcome: row.lastOutcome || current.lastOutcome,
+      lastReason: row.lastReason || current.lastReason,
+      lastSeenAt: row.lastSeenAt || current.lastSeenAt,
+    });
+  }
+
+  // Legacy/fallback path for older sandbox reports that do not expose a
+  // runtime experiment ledger. Never double-count the same current attempts
+  // when the complete runtime memory is available.
+  if (runtimeEntries.length === 0) for (const round of Array.isArray(report.rounds) ? report.rounds : []) {
     const acceptedByRepair = new Map((round?.accepted || []).filter(isRecord).map((row) => [String(row.repair_key || ''), row]));
     const rejectedByRepair = new Map((round?.rejected || []).filter(isRecord).map((row) => [String(row.repair_key || ''), row]));
     for (const attempt of Array.isArray(round?.attempts) ? round.attempts : []) {
