@@ -77,7 +77,7 @@ generic = {
     "actions": ["generic chain repair"],
 }
 
-def plan_for(provider: str) -> dict:
+def plan_for(provider: str, negative_memory: list[dict] | None = None) -> dict:
     item_candidate = copy.deepcopy(candidate)
     item_candidate["canonical_id"] = provider
     payload = {
@@ -88,7 +88,7 @@ def plan_for(provider: str) -> dict:
             generic["id"]: generic,
         },
         "historicalSolutions": [],
-        "negativeMemory": [],
+        "negativeMemory": negative_memory or [],
         "items": [{
             "key": f"published:{provider}",
             "candidate": item_candidate,
@@ -116,6 +116,58 @@ assert same["hypotheses"][0]["id"] == positive["id"], same
 assert same["hypotheses"][0]["profile"] == "adaptive_runtime_recovery", same
 assert same["hypotheses"][0]["transferScore"] > same["hypotheses"][1]["transferScore"], same
 assert same["allowedProfiles"][0] == "adaptive_runtime_recovery", same
+
+# Once the ordinary experiment family is truly exhausted, the strict provider-
+# local positive program gets one separately-addressed replay. Generic adaptive
+# failures must not pre-exhaust this identity before it actually runs.
+exhausted_memory = []
+for variant in range(4):
+    exhausted_memory.append({
+        "providerId": "mallumv-like",
+        "providerVersion": "*",
+        "failureClass": same["failureClass"],
+        "signature": same["signature"],
+        "profile": "adaptive_runtime_recovery",
+        "experimentVariant": variant,
+        "experimentGeneration": 1,
+        "failures": 1,
+        "consecutiveFailures": 1,
+        "successes": 0,
+    })
+for generation in range(2, 6):
+    profile = "chain_terminal_extractor_v1" if generation == 2 else f"chain_terminal_extractor_v1_g{generation}"
+    exhausted_memory.append({
+        "providerId": "mallumv-like",
+        "providerVersion": "*",
+        "failureClass": same["failureClass"],
+        "signature": same["signature"],
+        "profile": profile,
+        "experimentVariant": 4,
+        "experimentGeneration": generation,
+        "failures": 1,
+        "consecutiveFailures": 1,
+        "successes": 0,
+    })
+replay = plan_for("mallumv-like", exhausted_memory)
+assert replay["action"] == "probe-targeted-repair", replay
+assert replay["providerPositiveProgramReplay"] is True, replay
+assert replay["postExhaustionStrategyProfile"] == "provider_positive_program_replay_v1", replay
+assert replay["allowedProfiles"][0] == "provider_positive_program_replay_v1", replay
+
+failed_replay_memory = exhausted_memory + [{
+    "providerId": "mallumv-like",
+    "providerVersion": "*",
+    "failureClass": same["failureClass"],
+    "signature": same["signature"],
+    "profile": "provider_positive_program_replay_v1",
+    "experimentVariant": 4,
+    "experimentGeneration": 5,
+    "failures": 1,
+    "consecutiveFailures": 1,
+    "successes": 0,
+}]
+after_failed_replay = plan_for("mallumv-like", failed_replay_memory)
+assert after_failed_replay["postExhaustionStrategyProfile"] != "provider_positive_program_replay_v1", after_failed_replay
 
 # Same historical program must not jump to another provider merely because its
 # current failure class is similar. Provider-local positive memory is not a
