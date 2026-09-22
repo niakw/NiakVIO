@@ -77,6 +77,18 @@ write(previous, {
   experimentMemory: { entries: [{
     providerId: 'foo', providerVersion: '*', signature: 'sig-foo', failureClass: 'search_gap', profile: 'adaptive_runtime_recovery',
     attempts: 1, successes: 0, failures: 1, consecutiveFailures: 1, lastOutcome: 'rejected', lastReason: 'no improvement', lastSeenAt: '2026-08-16T00:00:00Z',
+  }, {
+    providerId: 'stale-evolved', providerVersion: '*', signature: 'sig-stale', failureClass: 'chain_terminal_gap',
+    profile: 'terminal_transition_graph_v1', experimentVariant: 4, experimentGeneration: 5,
+    attempts: 1, successes: 0, failures: 1, consecutiveFailures: 1,
+    lastOutcome: 'profile_unavailable', lastReason: 'planned_profile_not_applicable_to_current_bytes',
+    lastSeenAt: '2026-08-16T00:00:00Z',
+  }, {
+    providerId: 'executed-evolved', providerVersion: '*', signature: 'sig-executed', failureClass: 'chain_terminal_gap',
+    profile: 'terminal_transition_graph_v1', experimentVariant: 4, experimentGeneration: 5,
+    attempts: 1, successes: 0, failures: 1, consecutiveFailures: 1,
+    lastOutcome: 'profile_unavailable', lastReason: 'candidate_generation_failed',
+    lastSeenAt: '2026-08-16T00:00:00Z', executionObserved: true,
   }] },
   nativeReaderRepairMemory: readerMemory,
   nativeFeedback: { readerRepairAccepted: 3, readerRepairRejected: 2, readerRepairInconclusive: 1 },
@@ -150,6 +162,15 @@ assert.equal(entry.consecutiveFailures, 5);
 assert.equal(entry.progresses, 2);
 assert.equal(entry.lastOutcome, 'profile_unavailable');
 assert.equal(entry.lastReason, 'planned_profile_not_applicable_to_current_bytes');
+assert.equal(entry.executionObserved, false);
+assert.equal(
+  latest.experimentMemory.entries.some((row) => row.providerId === 'stale-evolved'),
+  false,
+  'legacy unexecuted post-g5 debt must be purged from persistent memory',
+);
+const executedEvolved = latest.experimentMemory.entries.find((row) => row.providerId === 'executed-evolved');
+assert.ok(executedEvolved, 'actually executed evolved-strategy evidence must be retained');
+assert.equal(executedEvolved.executionObserved, true);
 // Runtime ledger is authoritative when available; the repair-report fallback
 // must not double-count the same current phase.
 assert.equal(
