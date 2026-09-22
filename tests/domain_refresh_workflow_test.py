@@ -3,8 +3,10 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "domain-refresh.yml"
@@ -189,8 +191,12 @@ anime_boundary = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
 assert anime_text.count(anime_boundary) == 1, anime_row
 anime_provider_region = anime_text[:anime_text.index(anime_boundary)]
 anime_provider_without_config = module.strip_managed_fix(anime_provider_region, anime_config)
-assert "https://v2.animevostfr.org" not in anime_provider_without_config, anime_row
-assert "https://animevostfr.org" in anime_provider_without_config, anime_row
+anime_provider_hosts = {
+    (urlparse(value).hostname or "").casefold()
+    for value in re.findall(r"https?://[^\\s\\\"'<>]+", anime_provider_without_config)
+}
+assert "v2.animevostfr.org" not in anime_provider_hosts, anime_row
+assert "animevostfr.org" in anime_provider_hosts, anime_row
 
 # Regression 1: stale embedded official_domain_hubs must not shadow provider-hubs.json.
 legacy_config = {
