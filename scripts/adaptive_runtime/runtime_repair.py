@@ -1120,7 +1120,12 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         peer_request_recipes if experiment_variant >= peer_recipe_min_variant else [],
         limit=32,
     )
-    new_strategy_id = _new_strategy_id(experiment_failure, experiment_variant, experiment_generation)
+    historical_strategy_profile = str(brain_plan.get("historicalStrategyProfile") or "").strip()
+    new_strategy_id = historical_strategy_profile or _new_strategy_id(
+        experiment_failure,
+        experiment_variant,
+        experiment_generation,
+    )
     if experiment_variant == 4 and experiment_failure in {"candidate_replay_gap", "media_extraction_gap"}:
         # Production g2 stays conservative and prioritizes current/provider-owned
         # terminal evidence. Learning g3+ deliberately fuses peer recipes again:
@@ -1390,6 +1395,8 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             else "learned-family-new-strategy"
         ),
         "new_strategy_id": new_strategy_id,
+        "historical_strategy_profile": historical_strategy_profile,
+        "historical_strategy_case": str(brain_plan.get("historicalStrategyCase") or ""),
         "peer_route_min_variant": peer_route_min_variant,
         "peer_recipe_min_variant": peer_recipe_min_variant,
         "negative_memory_matches": max(0, int(brain_plan.get("negativeMemoryMatches") or 0)),
