@@ -93,7 +93,7 @@
       "aliases": [
         "animevostfr"
       ],
-      "schema_notes": "Current address is refreshed from the curated direct redirect chain; v2.animevostfr.org is retained as a redirect seed, not assumed to remain the terminal.",
+      "schema_notes": "Current address is animevostfr.org; v2.animevostfr.org is retained only as an authoritative redirect/discovery seed and must never overwrite the current runtime terminal.",
       "search_queries": [
         "animevostfr lien"
       ],
@@ -119,7 +119,10 @@
           "purpose": "Fallback discovery when curated sources fail"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "direct_authority": "explicit_current",
+      "direct_authority_source": "curated-user-current-address",
+      "direct_authority_observed_at": "2026-09-21"
     },
     "dulourd": {
       "id": "dulourd",
