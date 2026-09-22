@@ -60,6 +60,7 @@ const POST_EXHAUSTION_STRATEGIES = {
     { profile: "route_peer_transition_replay_v1", method: "structural-peer-route-transition-replay" },
     { profile: "identity_alias_search_traversal_v1", method: "tmdb-identity-alias-search-traversal" },
     { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
+    { profile: "document_request_contract_mining_v1", method: "provider-document-request-contract-mining" },
   ],
   chain_terminal_gap: [
     { profile: "terminal_transition_graph_v1", method: "terminal-response-transition-graph" },
@@ -72,6 +73,7 @@ const POST_EXHAUSTION_STRATEGIES = {
     { profile: "candidate_request_program_replay_v1", method: "retained-request-program-replay" },
     { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
     { profile: "identity_alias_search_traversal_v1", method: "tmdb-identity-alias-search-traversal" },
+    { profile: "document_request_contract_mining_v1", method: "provider-document-request-contract-mining" },
   ],
   media_extraction_gap: [
     { profile: "player_protocol_family_replay_v1", method: "player-protocol-family-replay" },
@@ -84,6 +86,7 @@ const POST_EXHAUSTION_STRATEGIES = {
     { profile: "search_response_route_binding_v1", method: "search-response-route-binding" },
     { profile: "identity_alias_search_traversal_v1", method: "tmdb-identity-alias-search-traversal" },
     { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
+    { profile: "document_request_contract_mining_v1", method: "provider-document-request-contract-mining" },
   ],
 };
 
