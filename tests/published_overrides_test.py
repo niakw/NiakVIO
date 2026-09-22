@@ -405,6 +405,7 @@ fingerprint_a = provider_build_input_sha(
     "demo",
     "a" * 64,
     "b" * 64,
+    "c" * 64,
     {
         "activation_mode": "catalogue_audit_scoped_quarantine",
         "catalogue_audit_quarantine_scopes": scope,
@@ -414,6 +415,7 @@ fingerprint_b = provider_build_input_sha(
     "demo",
     "a" * 64,
     "b" * 64,
+    "c" * 64,
     {
         "activation_mode": "catalogue_audit_scoped_quarantine",
         "catalogue_audit_quarantine_scopes": scope + [{
