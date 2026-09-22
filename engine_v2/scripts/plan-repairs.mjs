@@ -187,23 +187,42 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery) {
 
 function providerPositiveProgramReplayHint(reusableSkills, memoryRows, rotateEvery) {
   const profile = "provider_positive_program_replay_v1";
-  const hasStrictSameProviderProgram = reusableSkills.some(
+  const strictPrograms = reusableSkills.filter(
     (skill) => skill.sameProviderPositiveProgram === true,
   );
-  if (!hasStrictSameProviderProgram) {
-    return { profile: "", method: "", index: -1 };
+  if (!strictPrograms.length) {
+    return { profile: "", method: "", index: -1, positiveProgramFingerprint: "" };
   }
+  const fingerprints = [...new Set(
+    strictPrograms
+      .map((skill) => stringValue(skill.positiveProgramFingerprint).toLowerCase())
+      .filter((value) => /^[0-9a-f]{64}$/.test(value)),
+  )].sort();
+  // Every same-provider positive skill is projected from the same durable
+  // provider program set, so one aggregate fingerprint is expected. Keep a
+  // deterministic aggregate if older mixed skill state temporarily exposes
+  // more than one value rather than falling back to profile-wide suppression.
+  const positiveProgramFingerprint = fingerprints.length === 1
+    ? fingerprints[0]
+    : fingerprints.length > 1
+      ? fingerprints.join(":")
+      : "";
   const alreadyFailed = memoryRows.some((memory) => (
     stringValue(memory.profile) === profile
     && Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) >= rotateEvery
+    && (
+      !positiveProgramFingerprint
+      || stringValue(memory.positiveProgramFingerprint).toLowerCase() === positiveProgramFingerprint
+    )
   ));
   if (alreadyFailed) {
-    return { profile: "", method: "", index: -1 };
+    return { profile: "", method: "", index: -1, positiveProgramFingerprint };
   }
   return {
     profile,
     method: "strict-same-provider-positive-program-replay",
     index: -1,
+    positiveProgramFingerprint,
   };
 }
 
@@ -403,6 +422,9 @@ function buildPlan(item) {
         transferScore,
         validated: skill.validated === true,
         sameProviderPositiveProgram,
+        positiveProgramFingerprint: sameProviderPositiveProgram
+          ? stringValue(asRecord(skill.positiveProgramFingerprintsByProvider)[providerId]).toLowerCase()
+          : "",
         source: stringValue(skill.source),
       };
     })
@@ -546,6 +568,7 @@ function buildPlan(item) {
     experimentExhausted: experimentExhausted && !strategyEscalated,
     strategyEscalated,
     providerPositiveProgramReplay: postExhaustionHint.profile === "provider_positive_program_replay_v1",
+    positiveProgramFingerprint: stringValue(postExhaustionHint.positiveProgramFingerprint).toLowerCase(),
     postExhaustionStrategyProfile: postExhaustionHint.profile,
     postExhaustionStrategyMethod: postExhaustionHint.method,
     postExhaustionStrategyIndex: postExhaustionHint.index,
