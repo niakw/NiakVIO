@@ -37,11 +37,14 @@ assert by["chain"]["lane"]=="FAST_REPAIR"
 assert by["transport"]["lane"]=="DOMAIN_REFRESH"
 assert by["tls"]["lane"]=="CORE_CLIENT_LEARNING"
 assert by["tls"]["strategyBlueprint"]=="native_tls_browser_differential_v1"
-assert by["tls"]["dispatchAllowed"] is False
+assert by["tls"]["dispatchAllowed"] is True
+assert by["tls"]["workflow"]=="provider-waf-browser-session.yml"
+assert by["tls"]["mutatesProduction"] is False
+assert by["tls"]["applicationValidated"] is False
 assert by["challenge"]["strategyBlueprint"]=="persistent_challenge_session_boundary_v1"
 assert by["learn"]["lane"]=="BRAIN_LEARNING"
 assert out["providerCount"]==7
-assert out["blockedExecutionCount"]==2
+assert out["blockedExecutionCount"]==0
 
 # A stale/mismatched batch may never auto-dispatch.
 bad_status={**status,"repairQueue":["route","chain","network","unknown"]}
