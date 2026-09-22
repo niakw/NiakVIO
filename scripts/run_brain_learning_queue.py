@@ -725,6 +725,8 @@ def main() -> int:
     queue["fastRepairHandoffProviders"] = handoff_priority
     queue["fastRepairHandoffProviderCount"] = len(handoff_priority)
     queue["fastRepairHandoffAuthority"] = "provider-repair-learn-handoff-v1.json"
+    fair_handoff = bool(handoff_priority) and not bool(args.provider)
+    queue["fastRepairHandoffMaxAttemptsPerProviderThisPhase"] = 1 if fair_handoff else 0
     queue["deferredRepairProviders"] = repair_deferred
     queue["deferredRepairProviderCount"] = len(repair_deferred)
     queue["deferredRepairReason"] = "repair_experiment_variants_exhausted_new_strategy_required"
@@ -770,6 +772,13 @@ def main() -> int:
             seen_method_sets: set[tuple[str, ...]] = set()
             final_lab: dict[str, Any] | None = None
             resolved = False
+            attempts_this_phase = 0
+            if fair_handoff:
+                print(
+                    "FIELD_BRAIN_HANDOFF_FAIR_SHARE "
+                    f"provider={provider_id} max_attempts=1 "
+                    f"remaining_providers={max(1, len(order) - len(processed))}"
+                )
     
             while time.time() < work_deadline and not (
                 isinstance(route_refresh, dict) and route_refresh.get("ok") is False
@@ -809,6 +818,7 @@ def main() -> int:
                 state["lastStatus"] = final_lab.get("status")
                 state["lastFixture"] = final_lab.get("fixtureSlug")
                 state["lastClients"] = final_lab.get("clients")
+                attempts_this_phase += 1
     
                 if final_lab.get("status") == "playable":
                     resolved = True
@@ -823,7 +833,16 @@ def main() -> int:
                     route_refresh = refresh_stage_routes(stage, work_deadline, provider_id)
                     if route_refresh.get("ok") is False:
                         break
+                    if fair_handoff and attempts_this_phase >= 1:
+                        break
                     continue
+
+                # A targeted Fast-Handoff phase distributes exploration across
+                # the whole unresolved cohort. Persist one complete experiment
+                # per provider, then rotate. A later phase consumes the next
+                # generation from memory instead of starving unseen providers.
+                if fair_handoff and attempts_this_phase >= 1:
+                    break
     
                 # Learning is allowed to turn a failed experiment into the next
                 # planner variant/generation in the same run. The adaptive profile
@@ -948,6 +967,7 @@ def main() -> int:
         "budgetMinutes": args.budget_minutes,
         "fastRepairHandoffProviders": handoff_priority,
         "fastRepairHandoffProviderCount": len(handoff_priority),
+        "fastRepairHandoffMaxAttemptsPerProviderThisPhase": 1 if fair_handoff else 0,
         "cleanReconstructionRequiredProviders": reconstruction_required,
         "cleanReconstructionRequiredCount": len(reconstruction_required),
         "deferredRepairProviders": repair_deferred,
