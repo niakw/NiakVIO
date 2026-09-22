@@ -70,7 +70,7 @@ base=lambda variant:{
     "providerId":"synthetic-exhaustion",
     "failureClass":"chain_terminal_gap",
     "experimentVariant":variant,
-    "experimentGeneration":2 if variant == 4 else 1,
+    "experimentGeneration":1,
     "profile":"chain_terminal_extractor_v1" if variant == 4 else "adaptive_runtime_recovery",
     "failures":1,
     "consecutiveFailures":1,
