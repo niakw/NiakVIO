@@ -14,6 +14,11 @@ on:
         required: false
         default: ""
         type: string
+      target_providers:
+        description: Optional comma-separated provider cohort; takes precedence over target_provider
+        required: false
+        default: ""
+        type: string
   push:
     branches: [main]
     paths:
@@ -60,9 +65,11 @@ jobs:
         env:
           DISPATCH_SCOPE: ${{ inputs.scope || '' }}
           DISPATCH_PROVIDER: ${{ inputs.target_provider || '' }}
+          DISPATCH_PROVIDERS: ${{ inputs.target_providers || '' }}
         run: |
           set -euo pipefail
           scope="${DISPATCH_SCOPE:-non-full}"
+          providers_csv="${DISPATCH_PROVIDERS:-}"
           providers=()
           if [ "${{ github.event_name }}" = "push" ]; then
             readarray -t vals < <(python - <<'PY'
@@ -79,7 +86,15 @@ jobs:
             scope="${vals[0]:-non-full}"
             providers=("${vals[@]:1}")
           else
-            [ -z "${DISPATCH_PROVIDER:-}" ] || providers+=("$DISPATCH_PROVIDER")
+            if [ -n "$providers_csv" ]; then
+              IFS=',' read -r -a raw_providers <<< "$providers_csv"
+              for p in "${raw_providers[@]}"; do
+                p="$(printf '%s' "$p" | tr '[:upper:]_' '[:lower:]-' | xargs)"
+                [ -z "$p" ] || providers+=("$p")
+              done
+            else
+              [ -z "${DISPATCH_PROVIDER:-}" ] || providers+=("$DISPATCH_PROVIDER")
+            fi
           fi
           args=(python scripts/run_provider_remat_test.py --scope "$scope")
           for p in "${providers[@]}"; do args+=(--provider "$p"); done
