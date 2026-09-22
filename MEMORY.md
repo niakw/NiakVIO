@@ -1,5 +1,12 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-22 12:04 Europe/Paris — First v16 proof blocked in preflight by execution-marker projection contract
+
+- Targeted Learning run `35713082191` on SHA `4e4b0a9e55b4` failed **before provider execution** in the Brain contract suite. Provider queue/Lab evidence from this run is therefore nonexistent and must not be interpreted as a post-g5 result.
+- Failure was isolated to `tests/brain_cross_phase_experiment_memory_test.py`: the new migration correctly retained an actually executed `terminal_transition_graph_v1` row, but `planner_negative_memory()` stripped the sanitized `executionObserved` marker before returning the planner memory. The test therefore saw the profile but could not distinguish it from a merely planned legacy row.
+- `84b94b1bdc38` preserves the boolean `executionObserved` field in planner negative-memory projection. This is sanitized metadata only; it does not grant mutation/publication authority and keeps the stale-unexecuted migration test meaningful.
+- Next action: rerun the exact targeted 9-provider Learning proof. Require preflight green, then actual post-g5 strategy profiles in runtime plan/ledger before proceeding to canonical Repair.
+
 ## 2026-09-22 11:58 Europe/Paris — g5→post-g5 boundary and stale evolved-memory debt fixed after canonical proof
 
 - Canonical targeted Learning run `35711571976` completed SUCCESS on source SHA `405996313d07`. It correctly scoped to the 9 current Repair providers: `4khdhub, allanime, anime-ultime, animevostfr, mallumv, moviebox, persianstremio, vidfast, yflix`. All Brain contract tests, targeted stage, queue, cross-day memory publication and artifact generation were green.
