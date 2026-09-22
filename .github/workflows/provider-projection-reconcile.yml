@@ -54,8 +54,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m py_compile scripts/detect_provider_projection_drift.py scripts/materialize_provider_v3_one.py scripts/reconcile_targeted_provider_publication.py
+          python -m py_compile scripts/detect_provider_projection_drift.py scripts/materialize_provider_v3_one.py scripts/reconcile_targeted_provider_publication.py scripts/reindex_provider_publication_fingerprints.py
           python tests/provider_projection_drift_detector_test.py
+          python tests/publication_contract_fingerprint_test.py
+          python tests/published_overrides_test.py
           python tests/provider_projection_reconcile_workflow_test.py
           python scripts/detect_provider_projection_drift.py --output "$RUNNER_TEMP/projection-drift.before.json"
           python - <<'PY' >> "$GITHUB_OUTPUT"
@@ -108,6 +110,7 @@ jobs:
           PY
           python scripts/validate_published_provider_config.py
           python scripts/audit_provider_v3_static.py
+          python scripts/reindex_provider_publication_fingerprints.py
           python scripts/reapply_published_overrides.py --check
           python tests/published_provider_lego_contract_test.py
           python tests/provider_js_lego_ownership_test.py
