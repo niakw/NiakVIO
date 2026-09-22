@@ -73,13 +73,15 @@ jobs:
             sleep "$((attempt * 2))"
           done
           test "$selected" -eq 1
-          curl --fail --silent --show-error --max-time 15 https://chatgpt.com/ -o /tmp/chatgpt-live.html || true
-          test -s /tmp/chatgpt-live.html
-          if grep -qi 'Just a moment' /tmp/chatgpt-live.html; then
+          status="$(curl --silent --show-error --max-time 15 -A 'Mozilla/5.0' -o /tmp/chatgpt-live.html -w '%{http_code}' https://chatgpt.com/ || true)"
+          echo "LIVE_RESIDENTIAL_HTTP_STATUS=${status:-curl-error}"
+          if [ -s /tmp/chatgpt-live.html ] && grep -qi 'Just a moment' /tmp/chatgpt-live.html; then
             echo 'LIVE_RESIDENTIAL_CLOUDFLARE_CHALLENGE=1'
           else
             echo 'LIVE_RESIDENTIAL_CLOUDFLARE_CHALLENGE=0'
           fi
+          # A curl 403 is not authoritative: Cloudflare treats a raw HTTP client differently
+          # from the browser. Always continue to the real Playwright differential below.
 
       - name: Install NiakGPT visual lab
         working-directory: NiakGPT/visual-lab
