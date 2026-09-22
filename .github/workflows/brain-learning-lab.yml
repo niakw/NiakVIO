@@ -651,7 +651,18 @@ jobs:
             exit 0
           fi
 
-          git switch -C "$BRANCH" "$GITHUB_SHA"
+          if git rev-parse --verify "refs/remotes/origin/$BRANCH" >/dev/null 2>&1; then
+            # The learning branch is a persistent memory ref, not a mirror of
+            # the production source SHA. Base the commit on its own current
+            # tree so a Learning run can never carry unrelated workflow/code
+            # changes into this ref (and never needs workflows permission).
+            git switch -C "$BRANCH" "refs/remotes/origin/$BRANCH"
+          else
+            # First publication: create a minimal memory-only branch instead of
+            # copying the production tree.
+            git switch --orphan "$BRANCH"
+            git rm -rf . >/dev/null 2>&1 || true
+          fi
           mkdir -p engine_v2/learning
           cp brain-learning-output/latest.json engine_v2/learning/latest.json
           cp brain-learning-output/latest.md engine_v2/learning/latest.md
