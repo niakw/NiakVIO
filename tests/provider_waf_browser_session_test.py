@@ -159,6 +159,9 @@ assert "tmdb_id" not in network_targets[0]["publicUrl"]
 
 targets = mod.extract_targets(report)
 assert len(targets) == 2, targets
+assert [row["provider"] for row in mod.filter_targets_by_provider(targets, {"allwish"})] == ["allwish"]
+assert mod.filter_targets_by_provider(targets, {"missing"}) == []
+assert mod.filter_targets_by_provider(targets, set()) == targets
 allwish = next(row for row in targets if row["provider"] == "allwish")
 assert allwish["publicUrl"] == "https://all-wish.me/filter"
 assert "keyword=" not in allwish["publicUrl"]
