@@ -3980,3 +3980,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The run then stopped in Brain preflight only because `tests/brain_learning_push_target_workflow_test.py` searched the first occurrence of `steps.learning-slot.outputs.target_provider`, which is the job output declaration above the validation block, instead of the queue-step occurrence. All preceding Brain contracts passed, including same-provider positive-program cross-failure replay.
 - Commit `c5b9ef5e...` scopes that ordering assertion to the `Run adaptive Learning provider queue` step. This is a test-contract correction; run `35737448566` produced no provider repair evidence.
 - Next proof is again MalluMV-only on current HEAD. Required evidence remains actual provider-local positive-program replay on current bytes and independent playable/identity-safe Lab validation before any provider status promotion.
+
+
+### 2026-09-22 — Explicit MalluMV scope now propagates to downstream health validation
+- MalluMV proof run `35737809635` on SHA `019f085b...` passed the complete Brain preflight and actually ran the targeted health observation with `NUVIO_HEALTH_PROVIDER_FILTER=mallumv`; the health stage selected exactly 1 provider.
+- The run stopped at `Prove targeted Fast-Handoff observation coverage` because the effective shell scope was MalluMV but `/tmp/fast-learning-handoff.json` still contained the earlier empty selector output. The validator therefore failed with `fast handoff has no providers`. This is orchestration metadata drift, not provider evidence.
+- Commits `e561b30b...` and `03627c01...` make explicit current-Repair targeting rewrite the sanitized temporary handoff file to the exact one-provider scope after repairQueue + LEARN/pending validation. Downstream health-scope validation now consumes the same scope that the health command actually executes.
+- Run `35737809635` was superseded/cancelled and produced no MalluMV repair result. The next run must reach the actual provider queue before positive-program replay is judged.
