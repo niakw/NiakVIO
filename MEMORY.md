@@ -4094,3 +4094,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Regression coverage proves an Alpha override or static-row change cannot invalidate Beta, while a true top-level static policy change still invalidates the global contract.
 - Retry run `35763384537` never reached drift detection because Projection Reconcile incorrectly ran the unrelated `tests/published_overrides_test.py`, whose assertion targets `sync.yml`. That unrelated gate is removed from the targeted lane; the lane keeps its dedicated detector/workflow/fixed-point tests and publication audits.
 - Required proof: fresh Projection Reconcile from the trigger in this commit must rebuild only detected drift providers, reindex fingerprints metadata-only, pass `reapply_published_overrides.py --check`, publish atomically, inspect Flemmix current bytes, then dispatch and persist a fresh census.
+
+
+### 2026-09-22 — Projection reconcile gate: published Lego test was stale, not 43 providers
+
+- Projection Reconcile run `35764120214` proved the provider-scoped publication fingerprint v3 works: seven real drifts were rebuilt, drift detector reached `providers=0`, static audit passed, fingerprint reindex reported `providers=42 bytes_changed=0`, and `reapply_published_overrides.py --check` returned a fixed-point HIT.
+- Publication then stopped on `tests/published_provider_lego_contract_test.py`, not on provider materialization. The test hardcoded media-type revision v31 while the authoritative Core source and current published provider bytes are on v34 (`tmdb-data-contract-launch-gate-v34-anime-pre-network-semantic-gate`). It also expected 46 rows while deliberately skipping four `provider-disabled/` rows, producing a false `portfolio incomplete checked=42 expected=46`.
+- The Lego contract now derives the required media-type revision from the authoritative Core source and scopes portfolio completeness to active `providers/` rows. This validates source/published parity without freezing the test to an obsolete revision.
+- Required proof: rerun Projection Reconcile from this commit; it must pass Lego ownership, publish only the seven drifted providers plus metadata/manifests, then verify Flemmix current bytes and launch a fresh census.

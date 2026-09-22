@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -25,7 +26,15 @@ UNIVERSAL_CORE_IDS = {
     "CORE.MEDIA_TYPE_RESOLUTION.V1",
 }
 
-MEDIA_TYPE_REVISION = "tmdb-data-contract-launch-gate-v31-pre-network-semantic-gate"
+MEDIA_TYPE_SOURCE = ROOT / "scripts" / "provider_patches" / "global_media_type_resolution_v1.py"
+_media_source = MEDIA_TYPE_SOURCE.read_text(encoding="utf-8")
+_media_revision_match = re.search(
+    r'"revision"\s*:\s*"(tmdb-data-contract-launch-gate-v[^"]+)"',
+    _media_source,
+)
+if _media_revision_match is None:
+    raise AssertionError("Core media-type source exposes no launch-gate revision")
+MEDIA_TYPE_REVISION = _media_revision_match.group(1)
 LAUNCH_EVENT_GATE = 'if(providerEvent!=="launch")return []'
 POSITIVE_OUTPUT_GATE = 'if(!hasProviderOutput(value))return []'
 
@@ -119,7 +128,9 @@ def main() -> int:
                 errors.append(f"{provider_id}: Provider brick leaked into Core tail={fix_id}")
 
         if MEDIA_TYPE_REVISION not in text:
-            errors.append(f"{provider_id}: media-type runtime is not v31")
+            errors.append(
+                f"{provider_id}: media-type runtime revision mismatch expected={MEDIA_TYPE_REVISION}"
+            )
         if LAUNCH_EVENT_GATE not in text:
             errors.append(f"{provider_id}: launch event gate missing")
         if POSITIVE_OUTPUT_GATE not in text:
@@ -127,7 +138,11 @@ def main() -> int:
 
     expected = len([
         row for row in manifest.get("scrapers") or []
-        if isinstance(row, dict) and str(row.get("id") or "").strip()
+        if (
+            isinstance(row, dict)
+            and str(row.get("id") or "").strip()
+            and str(row.get("filename") or "").strip().startswith("providers/")
+        )
     ])
     if checked + quarantined != expected:
         errors.append(f"portfolio incomplete: checked={checked} quarantined={quarantined} expected={expected}")
@@ -140,7 +155,7 @@ def main() -> int:
     print(
         "FIELD_PUBLISHED_PROVIDER_LEGO "
         f"providers={checked} quarantined={quarantined} "
-        f"universal_bricks={len(UNIVERSAL_CORE_IDS)} media_type=v31 launch_gate=true"
+        f"universal_bricks={len(UNIVERSAL_CORE_IDS)} media_type={MEDIA_TYPE_REVISION} launch_gate=true"
     )
     print("published provider Lego contract passed")
     return 0
