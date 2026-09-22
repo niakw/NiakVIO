@@ -183,6 +183,7 @@ jobs:
           python tests/brain_historical_solution_execution_test.py
           python tests/brain_cross_phase_experiment_memory_test.py
           python tests/brain_learning_unexecuted_evolved_suppression_test.py
+          python tests/brain_learning_repair_return_workflow_test.py
           python tests/brain_learning_queue_experiment_ledger_test.py
           python tests/brain_fast_handoff_active_context_test.py
           python tests/brain_archetype_matching_test.py
@@ -610,6 +611,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
+      actions: write
     steps:
       - name: Checkout trusted production tree only
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -638,6 +640,7 @@ jobs:
           fi
 
       - name: Update the single sanitized learning-memory ref
+        id: publish-memory
         shell: bash
         run: |
           set -euo pipefail
@@ -652,6 +655,7 @@ jobs:
           fi
           if [ -n "$existing_ms" ] && [ "$candidate_ms" -le "$existing_ms" ]; then
             echo "FIELD_BRAIN_MEMORY_PUBLISH skipped=stale candidate_ms=$candidate_ms existing_ms=$existing_ms"
+            echo "published=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -687,6 +691,20 @@ jobs:
             git push origin HEAD:"$BRANCH"
           fi
           echo "FIELD_BRAIN_MEMORY_PUBLISH mode=orphan-memory-only files=2"
+          echo "published=true" >> "$GITHUB_OUTPUT"
+
+      - name: Resume canonical Repair after push-triggered Learning
+        if: github.event_name == 'push' && steps.publish-memory.outputs.published == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "FIELD_BRAIN_REPAIR_RETURN source_run=${GITHUB_RUN_ID} target=provider-recognition-repair-v6"
+          gh workflow run provider-recognition-repair-v6.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f mode=repair
 
   publish-repair-proposal:
     name: LEARNING - Open validated repair proposal PR
