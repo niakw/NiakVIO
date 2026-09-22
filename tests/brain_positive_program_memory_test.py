@@ -138,6 +138,8 @@ with tempfile.TemporaryDirectory() as directory:
     assert skill["maturity"]=="experimental"
     assert skill["providers"]==["demo"]
     assert skill["autoApply"] is False
+    assert skill["sameProviderPositiveProgram"] is True
+    assert skill["source"]=="brain-positive-program-memory"
 
 adaptive=(ROOT/"scripts/adaptive_runtime/runtime_repair.py").read_text(encoding="utf-8")
 base=(ROOT/"scripts/brain_repair_runtime.py").read_text(encoding="utf-8")
