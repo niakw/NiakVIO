@@ -49,6 +49,13 @@ ADAPTIVE_MARKERS = (
 )
 ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 SAFE_STRUCTURED_PARSE_PROFILE = "safe_structured_parse"
+CAUSAL_STRATEGY_BASES = {
+    "provider_transport_gap": "provider_origin_failover_v1",
+    "route_proven_gap": "proven_route_terminal_traversal_v1",
+    "chain_terminal_gap": "chain_terminal_extractor_v1",
+    "candidate_replay_gap": "retained_candidate_replay_v1",
+    "media_extraction_gap": "player_media_extractor_v1",
+}
 # `excluded` is not an availability/runtime failure. It represents a deliberate
 # policy/safety exclusion and therefore must not be turned into an unattended
 # network-repair attempt. Every other non-healthy/non-playable observation is a
@@ -949,18 +956,24 @@ def _peer_recipe_min_variant(failure_class: str) -> int:
 def _new_strategy_id(failure_class: str, variant: int, generation: int = 1) -> str:
     if int(variant) != 4:
         return ""
-    base = {
-        "provider_transport_gap": "provider_origin_failover_v1",
-        "route_proven_gap": "proven_route_terminal_traversal_v1",
-        "chain_terminal_gap": "chain_terminal_extractor_v1",
-        "candidate_replay_gap": "retained_candidate_replay_v1",
-        "media_extraction_gap": "player_media_extractor_v1",
-    }.get(str(failure_class or "").strip().casefold(), "expanded_family_strategy_v1")
+    base = CAUSAL_STRATEGY_BASES.get(str(failure_class or "").strip().casefold())
+    if not base:
+        return ""
     generation = max(1, int(generation or 1))
     # Generation 2 is the current production-safe final strategy. Higher
     # generations are Learning-only planner outputs and must correspond to
     # materially different sandbox exploration, never a relabelled retry.
     return base if generation <= 2 else f"{base}_g{generation}"
+
+
+def _is_causal_strategy_profile(profile_name: str) -> bool:
+    value = str(profile_name or "").strip()
+    if not value:
+        return False
+    for base in CAUSAL_STRATEGY_BASES.values():
+        if value == base or re.fullmatch(re.escape(base) + r"_g[3-9][0-9]*", value):
+            return True
+    return False
 
 
 def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any]) -> dict[str, Any] | None:
@@ -1470,9 +1483,17 @@ def matching_profiles(candidate: dict[str, Any], result: dict[str, Any], source_
         and SAFE_STRUCTURED_PARSE_PROFILE not in matches
     ):
         matches.append(SAFE_STRUCTURED_PARSE_PROFILE)
-    name = "adaptive_runtime_recovery"
-    if _adaptive_failure(result) and _adaptive_runtime_options(candidate, config) is not None and name not in matches:
-        matches.append(name)
+    if _adaptive_failure(result):
+        options = _adaptive_runtime_options(candidate, config)
+        if options is not None:
+            causal = str(options.get("new_strategy_id") or "").strip()
+            # The final causal strategy is addressable as its own profile so
+            # success/failure memory is attributed to the actual strategy rather
+            # than collapsing every experiment into adaptive_runtime_recovery.
+            if causal and _is_causal_strategy_profile(causal) and causal not in matches:
+                matches.append(causal)
+            if "adaptive_runtime_recovery" not in matches:
+                matches.append("adaptive_runtime_recovery")
     return matches
 
 
@@ -1512,10 +1533,21 @@ def _source_endpoint_origins(source_text: str) -> list[str]:
     return output
 
 
-def _apply_adaptive(parent_data: bytes, candidate: dict[str, Any]) -> tuple[bytes, list[dict[str, Any]]]:
+def _apply_adaptive(
+    parent_data: bytes,
+    candidate: dict[str, Any],
+    *,
+    profile_name: str = "adaptive_runtime_recovery",
+) -> tuple[bytes, list[dict[str, Any]]]:
     options = _adaptive_runtime_options(candidate, load_overrides())
     if options is None:
         return parent_data, []
+    expected = str(options.get("new_strategy_id") or "").strip()
+    if profile_name != "adaptive_runtime_recovery":
+        if not _is_causal_strategy_profile(profile_name) or profile_name != expected:
+            raise ValueError(
+                f"causal profile does not match current Brain plan: requested={profile_name} expected={expected or 'none'}"
+            )
     source_text = parent_data.decode("utf-8", errors="strict")
     native_source = _strip_generated_adaptive_wrapper(source_text)
     options = dict(options)
@@ -1533,7 +1565,14 @@ def _apply_adaptive(parent_data: bytes, candidate: dict[str, Any]) -> tuple[byte
     patched = module.apply(source_text, options=options).encode("utf-8")
     if patched == parent_data:
         return parent_data, []
-    return patched, [{"type": "patch_profile", "profile": "adaptive_runtime_recovery", "phase": "runtime", "revision": 5, "options": options}]
+    return patched, [{
+        "type": "patch_profile",
+        "profile": profile_name,
+        "strategy": expected or "adaptive_runtime_recovery",
+        "phase": "runtime",
+        "revision": 5,
+        "options": options,
+    }]
 
 
 def _apply_safe_structured_parse(parent_data: bytes) -> tuple[bytes, list[dict[str, Any]]]:
@@ -1601,7 +1640,11 @@ def _materialize_repair(
 
 
 def create_repair_candidate(stage: Path, candidate: dict[str, Any], profile_name: str, round_number: int) -> tuple[dict[str, Any] | None, str | None]:
-    if profile_name not in {"adaptive_runtime_recovery", SAFE_STRUCTURED_PARSE_PROFILE}:
+    adaptive_profile = (
+        profile_name == "adaptive_runtime_recovery"
+        or _is_causal_strategy_profile(profile_name)
+    )
+    if not adaptive_profile and profile_name != SAFE_STRUCTURED_PARSE_PROFILE:
         return _base.create_repair_candidate(stage, candidate, profile_name, round_number)
     source_path = (stage / str(candidate.get("local_path") or "")).resolve()
     providers_root = (stage / "providers").resolve()
@@ -1617,7 +1660,11 @@ def create_repair_candidate(stage: Path, candidate: dict[str, Any], profile_name
             patched, records = _apply_safe_structured_parse(parent_data)
             revision = 1
         else:
-            patched, records = _apply_adaptive(parent_data, candidate)
+            patched, records = _apply_adaptive(
+                parent_data,
+                candidate,
+                profile_name=profile_name,
+            )
             revision = 5
     except Exception as exc:
         return None, f"patch_exception:{type(exc).__name__}:{exc}"
