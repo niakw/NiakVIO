@@ -16,7 +16,8 @@ assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
-assert module.PUBLICATION_CONTRACT_SCHEMA == 2
+assert module.PUBLICATION_CONTRACT_SCHEMA == 3
+assert module.LEGACY_PUBLICATION_CONTRACT_SCHEMA == 2
 
 # The stored per-provider build fingerprint must describe the final provenance
 # row, not an intermediate state that is mutated again later in publication.
@@ -31,6 +32,37 @@ for mutation in (
 ):
     assert source.index(mutation) < fingerprint_write, mutation
 assert source.index('row.pop("catalogue_audit_quarantine_scopes", None)') < fingerprint_write
+
+config_a = {
+    "schema_version": 7,
+    "blocked_domains": ["localhost"],
+    "provider_patches": {
+        "alpha": {"official_site": "https://alpha.example"},
+        "beta": {"official_site": "https://beta.example"},
+    },
+    "provider_capabilities": {
+        "alpha": {"strategy": "html_scraper"},
+        "beta": {"strategy": "direct_media"},
+    },
+}
+config_b = json.loads(json.dumps(config_a))
+config_b["provider_patches"]["alpha"]["official_site"] = "https://alpha-new.example"
+
+global_a = module.publication_contract_sha(config_a)
+global_b = module.publication_contract_sha(config_b)
+assert global_a == global_b, (global_a, global_b)
+assert module.legacy_publication_contract_sha(config_a) != module.legacy_publication_contract_sha(config_b)
+
+alpha_a = module.provider_policy_sha(config_a, "alpha")
+alpha_b = module.provider_policy_sha(config_b, "alpha")
+beta_a = module.provider_policy_sha(config_a, "beta")
+beta_b = module.provider_policy_sha(config_b, "beta")
+assert alpha_a != alpha_b, (alpha_a, alpha_b)
+assert beta_a == beta_b, (beta_a, beta_b)
+
+fingerprint_a = module.provider_build_input_sha("alpha", "a"*64, global_a, alpha_a, {})
+fingerprint_b = module.provider_build_input_sha("alpha", "a"*64, global_a, alpha_b, {})
+assert fingerprint_a != fingerprint_b
 
 base = {
     "name": "fixture",
@@ -71,4 +103,4 @@ with tempfile.TemporaryDirectory() as raw:
     third = module._publication_file_sha("package-lock.json", path)
     assert third != first, (first, third)
 
-print("publication contract fingerprint v2 tests passed")
+print("publication contract fingerprint v3 provider-scoped tests passed")
