@@ -157,19 +157,19 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
     assert "engine_v2/src/repair-brain.mjs" in row["targets"], row
     assert result["deferredRepairProviderCount"] == 2, result
     assert result["deferredRepairProviders"] == ["alpha", "beta"], result
-    assert "do not recycle v0-v3" in row["recommendation"].casefold(), row
+    assert "do not recycle the exhausted bounded g2..g5 family" in row["recommendation"].casefold(), row
     assert "requiresHumanMerge" in row and row["requiresHumanMerge"] is True, row
     blueprints = result["strategyBlueprints"]
     assert result["strategyBlueprintCount"] == 3, result
     assert {item["strategyId"] for item in blueprints} == {
-        "chain_terminal_extractor_v1",
-        "native_transport_differential_v1",
+        "terminal_transition_graph_v1",
+        "transport_request_differential_v1",
         "representative_native_transport_alignment_v1",
     }, blueprints
-    terminal = next(item for item in blueprints if item["strategyId"] == "chain_terminal_extractor_v1")
+    terminal = next(item for item in blueprints if item["strategyId"] == "terminal_transition_graph_v1")
     assert terminal["providers"] == ["alpha"], terminal
     assert "playback-verified media" in terminal["acceptanceProof"], terminal
-    transport = next(item for item in blueprints if item["strategyId"] == "native_transport_differential_v1")
+    transport = next(item for item in blueprints if item["strategyId"] == "transport_request_differential_v1")
     assert transport["providers"] == ["beta"], transport
     assert "representative native TV/mobile" in transport["method"], transport
     assert "provider mutation only after harness mismatch excluded" in transport["acceptanceProof"], transport
