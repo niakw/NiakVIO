@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import ast
 import hashlib
 import json
 import subprocess
@@ -12,6 +13,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from provider_security_hardening import MARKER, harden_text, known_unsafe_findings
 from harden_staged_provider_security import harden_stage
 from provider_patches.global_provider_security_hardening_v1 import harden_bundle
+from current_provider_scope import active_provider_ids
 
 
 def js_ok(text: str) -> None:
@@ -258,3 +260,47 @@ with tempfile.TemporaryDirectory() as raw:
     assert updated["local_patches"] == []
     assert known_unsafe_findings(secured_text) == []
 print("staged provider security validation-only tests passed")
+
+# Provider-owned Lego JavaScript is injected after the base security normalization.
+# Therefore its source must itself already be a security fixed point; otherwise a
+# second published hardening pass mutates the final bundle.
+overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+active = active_provider_ids()
+source_errors = []
+checked_lego_scripts = set()
+for provider_id in sorted(active):
+    row = (overrides.get("provider_patches") or {}).get(provider_id)
+    if not isinstance(row, dict):
+        continue
+    scripts = []
+    for key in ("provider_lego_scripts", "patch_scripts"):
+        raw = row.get(key)
+        if isinstance(raw, str):
+            scripts.append(raw)
+        elif isinstance(raw, list):
+            scripts.extend(str(value) for value in raw)
+    for rel in scripts:
+        rel = str(rel or "").strip()
+        if not rel or rel in checked_lego_scripts:
+            continue
+        checked_lego_scripts.add(rel)
+        path = ROOT / rel
+        assert path.is_file(), (provider_id, rel)
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=rel)
+        for node in ast.walk(tree):
+            value = None
+            if isinstance(node, ast.Assign) and isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                value = node.value.value
+            elif isinstance(node, ast.AnnAssign) and isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                value = node.value.value
+            if not value or len(value) < 80:
+                continue
+            findings = set(known_unsafe_findings(value)) & {
+                "incomplete_literal_escape",
+                "double_html_entity_unescape",
+            }
+            if findings:
+                source_errors.append((provider_id, rel, sorted(findings)))
+assert not source_errors, source_errors
+print(f"FIELD_PROVIDER_LEGO_SECURITY_SOURCE scripts={len(checked_lego_scripts)} unsafe=0")
+
