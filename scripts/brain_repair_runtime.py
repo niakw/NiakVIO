@@ -310,6 +310,12 @@ def learned_skills() -> dict[str, Any]:
             float(current.get("confidence") or 0.0),
             float(positive.get("confidence") or 0.0),
         )
+        current["sameProviderPositiveProgram"] = (
+            current.get("sameProviderPositiveProgram") is True
+            or positive.get("sameProviderPositiveProgram") is True
+        )
+        if positive.get("source"):
+            current["positiveProgramSource"] = str(positive.get("source"))
     return merged
 
 
