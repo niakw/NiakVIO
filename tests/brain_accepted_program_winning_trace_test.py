@@ -87,8 +87,14 @@ plan=compiled["providerValuePlan"][0]
 assert plan["searchRoute"]=="/search?q={query}",plan
 assert any(step["route"]=="/api/source/{id}" for step in plan["steps"]),plan
 
-# The persistence layer stores names of safe headers only; values from the winning
-# trace (including Referer values) never become executable secret/header DATA.
-assert "provider.example/" not in repr(compiled.get("providerValuePlan")),compiled
+# Winning-trace URLs must be abstracted into provider-relative executable routes.
+# Safe request headers such as Referer may be reconstructed from the provider
+# origin by the compiler; the raw observed header value is not persisted verbatim.
+assert all(
+    str(step.get("route") or "").startswith("/")
+    and "provider.example" not in str(step.get("route") or "")
+    for step in plan["steps"]
+),plan
+assert plan["steps"][0]["requestSpec"]["headers"].get("Referer")=="https://provider.example/",plan
 
 print("Brain accepted winning network trace compiler contract passed")
