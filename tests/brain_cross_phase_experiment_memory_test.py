@@ -147,6 +147,51 @@ with tempfile.TemporaryDirectory() as td:
         assert next_learning["experimentExhausted"] is False, next_learning
         assert next_learning["allowedProfiles"] == ["chain_terminal_extractor_v1_g3"], next_learning
 
+        # Regression: pre-exact-ledger Learning could pre-fail an evolved strategy
+        # by persisting profile_unavailable before the strategy ever executed.
+        # Missing executionObserved on that legacy row must therefore not consume
+        # a post-g5 strategy slot.
+        stale_post_g5 = {
+            **row(4, 5),
+            "profile": "terminal_transition_graph_v1",
+            "lastOutcome": "profile_unavailable",
+            "lastReason": "planned_profile_not_applicable_to_current_bytes",
+        }
+        learning.write_text(json.dumps({
+            "schemaVersion": 1,
+            "publicationAllowed": False,
+            "productionWritesAllowed": False,
+            "experimentMemory": {
+                "schemaVersion": 1,
+                "entries": [row(4, 2), stale_post_g5],
+            },
+        }), encoding="utf-8")
+        migrated_memory = brain.planner_negative_memory("learning")
+        assert not any(
+            x.get("profile") == "terminal_transition_graph_v1"
+            for x in migrated_memory
+        ), migrated_memory
+
+        executed_post_g5 = {
+            **stale_post_g5,
+            "executionObserved": True,
+        }
+        learning.write_text(json.dumps({
+            "schemaVersion": 1,
+            "publicationAllowed": False,
+            "productionWritesAllowed": False,
+            "experimentMemory": {
+                "schemaVersion": 1,
+                "entries": [row(4, 2), executed_post_g5],
+            },
+        }), encoding="utf-8")
+        executed_memory = brain.planner_negative_memory("learning")
+        assert any(
+            x.get("profile") == "terminal_transition_graph_v1"
+            and x.get("executionObserved") is True
+            for x in executed_memory
+        ), executed_memory
+
         os.environ["NUVIO_BRAIN_PLANNER_MODE"] = "repair"
         production_memory = brain.planner_negative_memory("repair")
         assert not any(
