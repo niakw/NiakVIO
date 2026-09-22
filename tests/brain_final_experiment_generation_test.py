@@ -115,9 +115,40 @@ learning_g5=plan([*old,row(4,2),row(4,3),row(4,4)],"learning")
 assert learning_g5["experimentGeneration"]==5,learning_g5
 assert learning_g5["experimentExhausted"] is False,learning_g5
 
-learning_exhausted=plan([*old,row(4,2),row(4,3),row(4,4),row(4,5)],"learning")
+# After the bounded g2..g5 family is exhausted, Learning must not stop at a
+# label-only architecture gap. It enters a finite second-order strategy family
+# with its own profile identity and method.
+base_exhausted=[*old,row(4,2),row(4,3),row(4,4),row(4,5)]
+learning_escalated=plan(base_exhausted,"learning")
+assert learning_escalated["experimentGeneration"]==5,learning_escalated
+assert learning_escalated["baseExperimentExhausted"] is True,learning_escalated
+assert learning_escalated["experimentExhausted"] is False,learning_escalated
+assert learning_escalated["strategyEscalated"] is True,learning_escalated
+assert learning_escalated["postExhaustionStrategyProfile"]=="terminal_transition_graph_v1",learning_escalated
+assert learning_escalated["postExhaustionStrategyMethod"]=="terminal-response-transition-graph",learning_escalated
+assert learning_escalated["repairType"]=="evolved_strategy",learning_escalated
+assert learning_escalated["action"]=="probe-targeted-repair",learning_escalated
+assert learning_escalated["allowedProfiles"]==["terminal_transition_graph_v1"],learning_escalated
+assert learning_escalated["learningDisposition"]=="execute_bounded_evolved_strategy",learning_escalated
+
+first_escalation_failed={
+    **row(4,5),
+    "profile":"terminal_transition_graph_v1",
+}
+learning_escalated_2=plan([*base_exhausted,first_escalation_failed],"learning")
+assert learning_escalated_2["experimentExhausted"] is False,learning_escalated_2
+assert learning_escalated_2["postExhaustionStrategyProfile"]=="terminal_request_program_inference_v1",learning_escalated_2
+assert learning_escalated_2["allowedProfiles"]==["terminal_request_program_inference_v1"],learning_escalated_2
+
+second_escalation_failed={
+    **row(4,5),
+    "profile":"terminal_request_program_inference_v1",
+}
+learning_exhausted=plan([*base_exhausted,first_escalation_failed,second_escalation_failed],"learning")
 assert learning_exhausted["experimentGeneration"]==5,learning_exhausted
+assert learning_exhausted["baseExperimentExhausted"] is True,learning_exhausted
 assert learning_exhausted["experimentExhausted"] is True,learning_exhausted
+assert learning_exhausted["strategyEscalated"] is False,learning_exhausted
 assert learning_exhausted["repairScope"]=="learning",learning_exhausted
 assert learning_exhausted["repairType"]=="architecture_gap",learning_exhausted
 assert learning_exhausted["action"]=="collect-more-evidence",learning_exhausted
