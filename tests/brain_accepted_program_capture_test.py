@@ -18,7 +18,8 @@ candidate={
         {"type":"patch_profile","profile":"other","phase":"runtime","options":{"secret":"drop"}},
         {
             "type":"patch_profile",
-            "profile":"adaptive_runtime_recovery",
+            "profile":"provider_positive_program_replay_v1",
+            "engine":"adaptive_runtime_recovery",
             "phase":"runtime",
             "revision":5,
             "options":{
@@ -46,9 +47,10 @@ candidate={
         },
     ]
 }
-program=mod.accepted_runtime_program(candidate)
+program=mod.accepted_runtime_program(candidate, {"status":"healthy"})
 assert program is not None
 assert program["profile"]=="adaptive_runtime_recovery"
+assert program["executedProfile"]=="provider_positive_program_replay_v1"
 assert program["revision"]==5
 opts=program["options"]
 assert opts["base_url"]=="https://provider.example"
