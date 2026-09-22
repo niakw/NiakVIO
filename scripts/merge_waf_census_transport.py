@@ -439,6 +439,33 @@ def merge_transport(
                 row["testedThisRun"] = True
                 row["residentialProviderReplayPromoted"] = True
                 replay_promoted.add(provider)
+
+        if provider in baseline_network and provider not in replay_promoted:
+            replay_zero_state = _residential_zero_replay_state(row, provider_replay_rows)
+            if replay_zero_state:
+                row["status"] = replay_zero_state
+                row["color"] = census.STATUS_META[replay_zero_state][0]
+                row["brainCheckRequired"] = True
+                authority_allowed = row.get("authorityRepairEligible") is not False
+                row["statusRepairEligible"] = census.is_repair_eligible_status(replay_zero_state)
+                row["repairEligible"] = bool(row["statusRepairEligible"] and authority_allowed)
+                row["action"] = (
+                    census._action(replay_zero_state)
+                    if authority_allowed
+                    else census._authority_action(
+                        replay_zero_state,
+                        "residential-provider-zero-result",
+                        row,
+                    )
+                )
+                row["testedThisRun"] = True
+                row["residentialProviderReplayReclassified"] = True
+                replay_reclassified.add(provider)
+                if row["repairEligible"]:
+                    replay_repairable.add(provider)
+                changed.append(provider)
+                continue
+
         if provider in network_allowed:
             differential = network_differential(waf, provider)
             if differential["classification"] != "no-network-differential-evidence":
@@ -462,30 +489,6 @@ def merge_transport(
                 changed.append(provider)
                 continue
             if provider not in replay_promoted:
-                replay_zero_state = _residential_zero_replay_state(row, provider_replay_rows)
-                if replay_zero_state:
-                    row["status"] = replay_zero_state
-                    row["color"] = census.STATUS_META[replay_zero_state][0]
-                    row["brainCheckRequired"] = True
-                    authority_allowed = row.get("authorityRepairEligible") is not False
-                    row["statusRepairEligible"] = census.is_repair_eligible_status(replay_zero_state)
-                    row["repairEligible"] = bool(row["statusRepairEligible"] and authority_allowed)
-                    row["action"] = (
-                        census._action(replay_zero_state)
-                        if authority_allowed
-                        else census._authority_action(
-                            replay_zero_state,
-                            "residential-provider-zero-result",
-                            row,
-                        )
-                    )
-                    row["testedThisRun"] = True
-                    row["residentialProviderReplayReclassified"] = True
-                    replay_reclassified.add(provider)
-                    if row["repairEligible"]:
-                        replay_repairable.add(provider)
-                    changed.append(provider)
-                    continue
                 repair_state = _post_harness_repair_state(row, differential, provider_replay_rows)
                 if repair_state:
                     row["status"] = repair_state
