@@ -29,6 +29,20 @@ LEARNING_MEMORY_PATH = Path(os.environ.get("NIAKVIO_BRAIN_LEARNING_MEMORY", ""))
 PLANS: dict[str, dict[str, Any]] = {}
 RUNTIME_STATE: dict[str, dict[str, Any]] = {}
 
+POST_EXHAUSTION_STRATEGY_PROFILES = {
+    "transport_request_differential_v1",
+    "route_transition_graph_v1",
+    "route_peer_transition_replay_v1",
+    "terminal_transition_graph_v1",
+    "terminal_request_program_inference_v1",
+    "candidate_divergence_trace_v1",
+    "candidate_request_program_replay_v1",
+    "player_protocol_family_replay_v1",
+    "media_response_shape_inference_v1",
+    "search_contract_inference_v1",
+    "search_response_route_binding_v1",
+}
+
 
 def _load_json(path: Path, default: Any) -> Any:
     try:
@@ -359,6 +373,18 @@ def _learning_experiment_entries() -> list[dict[str, Any]]:
         profile = _clip_text(raw.get("profile"), 96)
         if not provider or not signature or not profile:
             continue
+        last_outcome = _clip_text(raw.get("lastOutcome"), 48)
+        execution_observed = raw.get("executionObserved") is True
+        # Memory published before the exact-ledger fix could mark a newly
+        # planned post-g5 strategy as profile_unavailable without ever running
+        # it. Such rows are applicability noise, not executed negative evidence,
+        # and must not exhaust the evolved-strategy family.
+        if (
+            profile in POST_EXHAUSTION_STRATEGY_PROFILES
+            and last_outcome == "profile_unavailable"
+            and not execution_observed
+        ):
+            continue
         out.append({
             "providerId": provider,
             "providerVersion": _clip_text(raw.get("providerVersion") or "*", 64),
@@ -374,8 +400,9 @@ def _learning_experiment_entries() -> list[dict[str, Any]]:
             "consecutiveFailures": max(0, int(raw.get("consecutiveFailures") or 0)),
             "successes": max(0, int(raw.get("successes") or 0)),
             "progresses": max(0, int(raw.get("progresses") or 0)),
-            "lastOutcome": _clip_text(raw.get("lastOutcome"), 48),
+            "lastOutcome": last_outcome,
             "lastReason": _clip_text(raw.get("lastReason"), 240),
+            "executionObserved": execution_observed,
         })
     return out
 
