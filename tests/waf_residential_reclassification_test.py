@@ -53,6 +53,57 @@ assert row["residentialProviderReplayReclassified"] is True,row
 assert zero["repairQueue"]==["net-zero"],zero
 assert zero["environmentQueue"]==[],zero
 
+harness_zero_baseline={
+    "schemaVersion":3,
+    "repairQueue":[],
+    "environmentQueue":["env-zero"],
+    "harnessQueue":["env-zero"],
+    "symptomaticProviders":["env-zero"],
+    "brainQueue":["env-zero"],
+    "providers":[{
+        "provider":"env-zero",
+        "status":"HARNESS/ENV BLOCKED",
+        "color":"🟫",
+        "routeProof":["1 live routes / movie"],
+        "evidenceDepth":["movie=lookup_only"],
+        "authorityRepairEligible":True,
+        "authorityAction":"KEEP_ROUTE_AUTHORITY",
+        "authorityClass":"hub-or-redirect",
+        "repairEligible":False,
+        "brainCheckRequired":True,
+    }],
+}
+harness_zero_waf={
+    "rows":[{
+        "provider":"env-zero",
+        "lane":"movie",
+        "outcome":"browser_challenge_persisted",
+        "residentialExitNodeProfile":{
+            "outcome":"browser_challenge_persisted",
+            "directHttpProfile":{"outcome":"direct_http_challenge_persisted"},
+            "okHttpJvmProfile":{"outcome":"okhttp_jvm_challenge_persisted"},
+        },
+    }],
+    "residentialProviderReplay":{
+        "available":True,
+        "rows":[{
+            "provider":"env-zero",
+            "lane":"movie",
+            "status":"no_streams",
+            "debugStage":"provider_network_zero_result",
+            "raw":0,"playable":0,"verified":0,"contradictions":0,
+            "identitySafe":True,
+        }],
+    },
+}
+harness_zero=mod.merge_transport(harness_zero_baseline,harness_zero_waf)
+row=harness_zero["providers"][0]
+assert row["status"]=="ROUTE PROVEN",row
+assert row["repairEligible"] is True,row
+assert row["residentialProviderReplayReclassified"] is True,row
+assert harness_zero["repairQueue"]==["env-zero"],harness_zero
+assert harness_zero["environmentQueue"]==[],harness_zero
+
 tls_baseline={
     "schemaVersion":3,
     "repairQueue":["tls-browser-only"],
