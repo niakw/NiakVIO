@@ -124,17 +124,17 @@ jobs:
           provider_filter="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print(d.get('providerFilter') or '')")"
           if [ -n "$target_provider" ]; then
             python - "$target_provider" /tmp/fast-learning-handoff.json <<'PY'
-import json,sys
-target=str(sys.argv[1] or '').strip().lower().replace('_','-')
-data=json.load(open(sys.argv[2],encoding='utf-8'))
-allowed={
-    str(value or '').strip().lower().replace('_','-')
-    for value in str(data.get('providerFilter') or '').split(',')
-    if str(value or '').strip()
-}
-if target not in allowed:
-    raise SystemExit(f"target provider is not in current Repair Learning handoff: {target}")
-PY
+          import json,sys
+          target=str(sys.argv[1] or '').strip().lower().replace('_','-')
+          data=json.load(open(sys.argv[2],encoding='utf-8'))
+          allowed={
+              str(value or '').strip().lower().replace('_','-')
+              for value in str(data.get('providerFilter') or '').split(',')
+              if str(value or '').strip()
+          }
+          if target not in allowed:
+              raise SystemExit(f"target provider is not in current Repair Learning handoff: {target}")
+          PY
             fast_handoff=true
             provider_filter="$target_provider"
           fi
