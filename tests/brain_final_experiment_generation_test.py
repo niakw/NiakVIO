@@ -131,27 +131,46 @@ assert learning_escalated["action"]=="probe-targeted-repair",learning_escalated
 assert learning_escalated["allowedProfiles"]==["terminal_transition_graph_v1"],learning_escalated
 assert learning_escalated["learningDisposition"]=="execute_bounded_evolved_strategy",learning_escalated
 
-first_escalation_failed={
+terminal_fp=learning_escalated["strategyImplementationFingerprint"]
+assert len(terminal_fp)==64 and all(ch in "0123456789abcdef" for ch in terminal_fp),learning_escalated
+
+# Debt from an older/unversioned implementation must not suppress a materially
+# changed evolved strategy.
+stale_first_escalation_failed={
     **row(4,5),
     "profile":"terminal_transition_graph_v1",
+}
+stale_retry=plan([*base_exhausted,stale_first_escalation_failed],"learning")
+assert stale_retry["postExhaustionStrategyProfile"]=="terminal_transition_graph_v1",stale_retry
+assert stale_retry["strategyImplementationFingerprint"]==terminal_fp,stale_retry
+
+first_escalation_failed={
+    **stale_first_escalation_failed,
+    "strategyImplementationFingerprint":terminal_fp,
 }
 learning_escalated_2=plan([*base_exhausted,first_escalation_failed],"learning")
 assert learning_escalated_2["experimentExhausted"] is False,learning_escalated_2
 assert learning_escalated_2["postExhaustionStrategyProfile"]=="terminal_request_program_inference_v1",learning_escalated_2
 assert learning_escalated_2["allowedProfiles"]==["terminal_request_program_inference_v1"],learning_escalated_2
+request_fp=learning_escalated_2["strategyImplementationFingerprint"]
+assert len(request_fp)==64 and request_fp!=terminal_fp,learning_escalated_2
 
 second_escalation_failed={
     **row(4,5),
     "profile":"terminal_request_program_inference_v1",
+    "strategyImplementationFingerprint":request_fp,
 }
 after_second=plan([*base_exhausted,first_escalation_failed,second_escalation_failed],"learning")
 assert after_second["experimentExhausted"] is False,after_second
 assert after_second["postExhaustionStrategyProfile"]=="runtime_response_salvage_v1",after_second
 assert after_second["allowedProfiles"]==["runtime_response_salvage_v1"],after_second
+salvage_fp=after_second["strategyImplementationFingerprint"]
+assert len(salvage_fp)==64 and salvage_fp not in {terminal_fp,request_fp},after_second
 
 third_escalation_failed={
     **row(4,5),
     "profile":"runtime_response_salvage_v1",
+    "strategyImplementationFingerprint":salvage_fp,
 }
 after_third=plan(
     [*base_exhausted,first_escalation_failed,second_escalation_failed,third_escalation_failed],
@@ -160,10 +179,13 @@ after_third=plan(
 assert after_third["experimentExhausted"] is False,after_third
 assert after_third["postExhaustionStrategyProfile"]=="document_request_contract_mining_v1",after_third
 assert after_third["allowedProfiles"]==["document_request_contract_mining_v1"],after_third
+document_fp=after_third["strategyImplementationFingerprint"]
+assert len(document_fp)==64 and document_fp not in {terminal_fp,request_fp,salvage_fp},after_third
 
 fourth_escalation_failed={
     **row(4,5),
     "profile":"document_request_contract_mining_v1",
+    "strategyImplementationFingerprint":document_fp,
 }
 learning_exhausted=plan(
     [
