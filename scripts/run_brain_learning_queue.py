@@ -773,11 +773,22 @@ def main() -> int:
             final_lab: dict[str, Any] | None = None
             resolved = False
             attempts_this_phase = 0
+            provider_deadline = work_deadline
             if fair_handoff:
+                remaining_providers = max(1, len(order) - len(processed))
+                fair_seconds = max(
+                    45,
+                    min(
+                        120,
+                        int(max(1.0, work_deadline - time.time()) / remaining_providers),
+                    ),
+                )
+                provider_deadline = min(work_deadline, time.time() + fair_seconds)
                 print(
                     "FIELD_BRAIN_HANDOFF_FAIR_SHARE "
                     f"provider={provider_id} max_attempts=1 "
-                    f"remaining_providers={max(1, len(order) - len(processed))}"
+                    f"slice_seconds={fair_seconds} "
+                    f"remaining_providers={remaining_providers}"
                 )
     
             while time.time() < work_deadline and not (
@@ -790,7 +801,23 @@ def main() -> int:
                 attempt_no = int(state.get("attemptCount") or 0) + 1
                 attempt_dir = run_dir / f"attempt-{attempt_no}"
                 attempt_dir.mkdir(parents=True, exist_ok=True)
-                repair = repair_attempt(provider_id, stage, target_path, attempt_dir, args.previous_state.resolve(), work_deadline)
+                try:
+                    repair = repair_attempt(
+                        provider_id,
+                        stage,
+                        target_path,
+                        attempt_dir,
+                        args.previous_state.resolve(),
+                        provider_deadline,
+                    )
+                except BudgetExhausted as error:
+                    state["lastStatus"] = "fair_share_slice_exhausted"
+                    state["lastAttemptAt"] = datetime.now(timezone.utc).isoformat()
+                    print(
+                        "FIELD_BRAIN_HANDOFF_SLICE_EXHAUSTED "
+                        f"provider={provider_id} stage=repair reason={error}"
+                    )
+                    break
                 merge_target_candidate(full_registry_path, target_path, provider_id)
                 for key, value in ((repair["report"].get("brain") or {}).get("plans") or {}).items():
                     combined_plans[str(key)] = value
@@ -804,7 +831,33 @@ def main() -> int:
                 candidate = candidate_map(full_registry).get(provider_id) or {}
                 media_type = declared_type(candidate)
                 fixture = choose_fixture(health_config, state, media_type)
-                final_lab = run_lab(lab_session, provider_id, target_path, stage, fixture, attempt_dir, work_deadline, args.stream_safety_cap)
+                try:
+                    final_lab = run_lab(
+                        lab_session,
+                        provider_id,
+                        target_path,
+                        stage,
+                        fixture,
+                        attempt_dir,
+                        provider_deadline,
+                        args.stream_safety_cap,
+                    )
+                except BudgetExhausted as error:
+                    state["lastStatus"] = "fair_share_slice_exhausted"
+                    state["lastAttemptAt"] = datetime.now(timezone.utc).isoformat()
+                    provider_attempts.append({
+                        "attempt": attempt_no,
+                        "repairAccepted": repair["accepted"],
+                        "attemptedProfiles": repair["attemptedProfiles"],
+                        "attemptedMethods": repair["attemptedMethods"],
+                        "lab": {"status": "fair_share_slice_exhausted"},
+                    })
+                    attempts_this_phase += 1
+                    print(
+                        "FIELD_BRAIN_HANDOFF_SLICE_EXHAUSTED "
+                        f"provider={provider_id} stage=lab reason={error}"
+                    )
+                    break
                 method_set = tuple(repair["attemptedMethods"])
                 provider_attempts.append({
                     "attempt": attempt_no,
