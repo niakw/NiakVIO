@@ -50,6 +50,7 @@ jobs:
       slot_next_phase: ${{ steps.learning-slot.outputs.next_phase }}
       slot_budget_minutes: ${{ steps.learning-slot.outputs.budget_minutes }}
       slot_phase: ${{ steps.learning-slot.outputs.phase }}
+      target_provider: ${{ steps.learning-slot.outputs.target_provider }}
     runs-on: ubuntu-latest
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
@@ -94,6 +95,7 @@ jobs:
         env:
           REQUESTED_REMAINING: ${{ inputs.slot_remaining_minutes || '0' }}
           REQUESTED_PHASE: ${{ inputs.slot_phase || '1' }}
+          REQUESTED_TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
         run: |
           set -euo pipefail
           remaining="${REQUESTED_REMAINING:-0}"
@@ -101,6 +103,12 @@ jobs:
           [[ "$remaining" =~ ^[0-9]+$ ]] || remaining=0
           [[ "$phase" =~ ^[0-9]+$ ]] || phase=1
           if [ "$phase" -lt 1 ]; then phase=1; fi
+          target_provider="${REQUESTED_TARGET_PROVIDER:-}"
+          if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ -f .github/triggers/brain-learning-reconstruction ]; then
+            trigger_target="$(awk -F: '/^target_provider:[[:space:]]*/ {sub(/^[^:]*:[[:space:]]*/, ""); gsub(/[[:space:]]/, ""); print; exit}' .github/triggers/brain-learning-reconstruction)"
+            if [ -n "${trigger_target:-}" ]; then target_provider="$trigger_target"; fi
+          fi
+          target_provider="$(printf '%s' "$target_provider" | tr '[:upper:]_' '[:lower:]-' | xargs)"
 
           # Fast Brain handoff may bound a push-triggered Learning phase.
           if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ "$remaining" -eq 0 ] && [ -f .github/triggers/brain-learning-reconstruction ]; then
@@ -114,6 +122,22 @@ jobs:
             --output /tmp/fast-learning-handoff.json
           fast_handoff="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print('true' if d.get('fastHandoff') else 'false')")"
           provider_filter="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print(d.get('providerFilter') or '')")"
+          if [ -n "$target_provider" ]; then
+            python - "$target_provider" /tmp/fast-learning-handoff.json <<'PY'
+import json,sys
+target=str(sys.argv[1] or '').strip().lower().replace('_','-')
+data=json.load(open(sys.argv[2],encoding='utf-8'))
+allowed={
+    str(value or '').strip().lower().replace('_','-')
+    for value in str(data.get('providerFilter') or '').split(',')
+    if str(value or '').strip()
+}
+if target not in allowed:
+    raise SystemExit(f"target provider is not in current Repair Learning handoff: {target}")
+PY
+            fast_handoff=true
+            provider_filter="$target_provider"
+          fi
 
           if [ "$remaining" -gt 0 ]; then
             budget="$remaining"
@@ -138,8 +162,9 @@ jobs:
             echo "continue=$continue_slot"
             echo "fast_handoff=$fast_handoff"
             echo "provider_filter=$provider_filter"
+            echo "target_provider=$target_provider"
           } >> "$GITHUB_OUTPUT"
-          echo "FIELD_BRAIN_LONG_SLOT phase=$phase budget_minutes=$budget next_remaining_minutes=$next_remaining continue=$continue_slot fast_handoff=$fast_handoff provider_filter=${provider_filter:-none}"
+          echo "FIELD_BRAIN_LONG_SLOT phase=$phase budget_minutes=$budget next_remaining_minutes=$next_remaining continue=$continue_slot fast_handoff=$fast_handoff provider_filter=${provider_filter:-none} target_provider=${target_provider:-none}"
 
       - name: Install pinned runtime dependencies
         shell: bash
@@ -454,7 +479,7 @@ jobs:
       - name: Run adaptive Learning provider queue
         shell: bash
         env:
-          TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
+          TARGET_PROVIDER: ${{ steps.learning-slot.outputs.target_provider || inputs.target_provider || '' }}
         run: |
           set -euo pipefail
           args=(python scripts/run_brain_learning_queue.py
