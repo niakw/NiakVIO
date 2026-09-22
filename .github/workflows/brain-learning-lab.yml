@@ -123,17 +123,22 @@ jobs:
           fast_handoff="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print('true' if d.get('fastHandoff') else 'false')")"
           provider_filter="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print(d.get('providerFilter') or '')")"
           if [ -n "$target_provider" ]; then
-            python - "$target_provider" /tmp/fast-learning-handoff.json <<'PY'
+            python - "$target_provider" automation/provider-census-status.json automation/provider-repair-learn-handoff-v1.json <<'PY'
           import json,sys
           target=str(sys.argv[1] or '').strip().lower().replace('_','-')
-          data=json.load(open(sys.argv[2],encoding='utf-8'))
-          allowed={
+          census=json.load(open(sys.argv[2],encoding='utf-8'))
+          handoff=json.load(open(sys.argv[3],encoding='utf-8'))
+          repair={
               str(value or '').strip().lower().replace('_','-')
-              for value in str(data.get('providerFilter') or '').split(',')
+              for value in census.get('repairQueue') or []
               if str(value or '').strip()
           }
-          if target not in allowed:
-              raise SystemExit(f"target provider is not in current Repair Learning handoff: {target}")
+          if target not in repair:
+              raise SystemExit(f"target provider is not in current census repairQueue: {target}")
+          rows=handoff.get('providers') if isinstance(handoff.get('providers'),dict) else {}
+          row=rows.get(target)
+          if not isinstance(row,dict) or str(row.get('owner') or '')!='LEARN' or str(row.get('status') or '')!='pending':
+              raise SystemExit(f"target provider is not LEARN/pending in current handoff: {target}")
           PY
             fast_handoff=true
             provider_filter="$target_provider"
