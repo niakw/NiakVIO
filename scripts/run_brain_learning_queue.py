@@ -312,6 +312,9 @@ def phase_experiment_entries(
             "positiveProgramFingerprint": str(
                 effective_plan.get("positiveProgramFingerprint") or ""
             ).strip().casefold(),
+            "strategyImplementationFingerprint": str(
+                effective_plan.get("strategyImplementationFingerprint") or ""
+            ).strip().casefold(),
             "experimentVariant": variant,
             "experimentGeneration": generation,
             "capabilityStrategy": str(effective_plan.get("capabilityStrategy") or "").strip().casefold(),
@@ -330,7 +333,7 @@ def phase_experiment_entries(
     return entries
 
 
-def _phase_experiment_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str, int, int]:
+def _phase_experiment_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str, str, int, int]:
     return (
         norm(row.get("providerId")),
         str(row.get("providerVersion") or "*").strip() or "*",
@@ -338,6 +341,7 @@ def _phase_experiment_key(row: dict[str, Any]) -> tuple[str, str, str, str, str,
         str(row.get("signature") or "").strip(),
         str(row.get("profile") or "").strip(),
         str(row.get("positiveProgramFingerprint") or "").strip().casefold(),
+        str(row.get("strategyImplementationFingerprint") or "").strip().casefold(),
         max(0, int(row.get("experimentVariant") or 0)),
         max(1, int(row.get("experimentGeneration") or 1)),
     )
