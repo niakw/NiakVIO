@@ -78,6 +78,7 @@ def accepted_runtime_program(candidate: dict[str, Any]) -> dict[str, Any] | None
         "base_url", "endpoint_origins", "types", "search_paths", "direct_paths",
         "request_recipes", "repair_focus", "census_status", "experiment_variant",
         "experiment_generation", "experiment_failure_class", "experiment_strategy", "new_strategy_id",
+        "alias_search", "runtime_response_salvage", "document_request_mining", "session_bootstrap",
         "peer_route_min_variant", "peer_recipe_min_variant", "negative_memory_matches",
         "max_pages", "max_embeds", "max_depth", "max_recipe_passes", "timeout_ms", "user_agent",
         "blocked_hosts", "blocked_path_patterns", "route_prior_counts",
