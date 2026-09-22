@@ -32,13 +32,40 @@ def cid(value: object) -> str:
     return str(value or "").strip().casefold().replace("_", "-")
 
 
-def trigger_is_fast_handoff(path: Path) -> bool:
+def trigger_fields(path: Path) -> dict[str, str]:
     if not path.is_file():
+        return {}
+    fields: dict[str, str] = {}
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        if ":" not in raw:
+            continue
+        key, value = raw.split(":", 1)
+        key = key.strip().casefold().replace("-", "_")
+        value = value.strip()
+        if key and value:
+            fields[key] = value
+    return fields
+
+
+def trigger_is_fast_handoff(path: Path) -> bool:
+    fields = trigger_fields(path)
+    if not fields:
         return False
-    text = path.read_text(encoding="utf-8")
+    reason = fields.get("reason", "")
+    scope = fields.get("expected_scope", "")
+    mode = fields.get("execution_mode", "")
+    # Backward-compatible original Fast Repair marker.
+    if (
+        reason == "fast-brain-strategy-exhaustion"
+        and scope == "current-fast-repair-handoff-only"
+    ):
+        return True
+    # Versioned targeted handoff markers may evolve their descriptive reason or
+    # exact cohort cardinality. The stable contract is an explicit
+    # targeted-fast-handoff execution mode plus a provider-repair-handoff scope.
     return (
-        "reason: fast-brain-strategy-exhaustion" in text
-        and "expected_scope: current-fast-repair-handoff-only" in text
+        mode.startswith("targeted-fast-handoff")
+        and "provider-repair-handoff" in scope
     )
 
 
