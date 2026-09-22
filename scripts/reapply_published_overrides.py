@@ -706,7 +706,6 @@ PUBLICATION_CONTRACT_FILES = (
     "scripts/apply_provider_overrides.py",
     "scripts/provider_base_store.py",
     "scripts/materialize_provider_v3_all.py",
-    "automation/provider-v3-static-knowledge.json",
     "scripts/override_text_utils.py",
     "scripts/provider_engine_normalizer.py",
     "scripts/provider_security_hardening.py",
@@ -775,9 +774,30 @@ def _provider_script_paths(config: dict[str, Any], provider_id: str) -> set[str]
     return paths
 
 
+def _static_knowledge_contract(
+    static_knowledge: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    if static_knowledge is None:
+        loaded = json.loads(STATIC_KNOWLEDGE.read_text(encoding="utf-8"))
+    else:
+        loaded = static_knowledge
+    if not isinstance(loaded, dict):
+        raise ValueError("Provider v3 static knowledge must be an object")
+    providers = loaded.get("providers")
+    if not isinstance(providers, dict):
+        raise ValueError("Provider v3 static knowledge providers map required")
+    global_static = {
+        key: value
+        for key, value in loaded.items()
+        if key != "providers"
+    }
+    return global_static, providers
+
+
 def legacy_publication_contract_sha(config: dict[str, Any]) -> str:
     """Schema-v2 fingerprint retained only to verify pre-migration provenance."""
     relatives = set(PUBLICATION_CONTRACT_FILES)
+    relatives.add("automation/provider-v3-static-knowledge.json")
     patch_dir = ROOT / "scripts" / "provider_patches"
     if patch_dir.is_dir():
         relatives.update(
@@ -792,37 +812,50 @@ def legacy_publication_contract_sha(config: dict[str, Any]) -> str:
     })
 
 
-def publication_contract_sha(config: dict[str, Any]) -> str:
+def publication_contract_sha(
+    config: dict[str, Any],
+    static_knowledge: dict[str, Any] | None = None,
+) -> str:
     """Hash only build inputs shared by every provider.
 
-    Provider-local DATA and provider-owned Lego source are deliberately excluded
-    here and fingerprinted by :func:`provider_policy_sha`. This prevents one
-    provider's hub/route/runtime change from invalidating every other provider.
+    Provider-local DATA, static knowledge and provider-owned Lego source are
+    deliberately excluded here and fingerprinted by :func:`provider_policy_sha`.
+    This prevents one provider's hub/route/runtime/static change from invalidating
+    every other provider while retaining top-level static policy as a global input.
     """
     global_config = {
         key: value
         for key, value in config.items()
         if key not in {"provider_patches", "provider_capabilities"}
     }
+    global_static, _providers = _static_knowledge_contract(static_knowledge)
     return _canonical_sha({
         "schema_version": PUBLICATION_CONTRACT_SCHEMA,
         "config": global_config,
+        "static": global_static,
         "files": _contract_file_hashes(set(PUBLICATION_CONTRACT_FILES)),
     })
 
 
-def provider_policy_sha(config: dict[str, Any], provider_id: str) -> str:
+def provider_policy_sha(
+    config: dict[str, Any],
+    provider_id: str,
+    static_knowledge: dict[str, Any] | None = None,
+) -> str:
     provider_id = str(provider_id or "").strip().casefold()
     patches = config.get("provider_patches")
     capabilities = config.get("provider_capabilities")
     patch = patches.get(provider_id) if isinstance(patches, dict) else None
     capability = capabilities.get(provider_id) if isinstance(capabilities, dict) else None
+    _global_static, static_rows = _static_knowledge_contract(static_knowledge)
+    static_row = static_rows.get(provider_id)
     script_paths = _provider_script_paths(config, provider_id)
     return _canonical_sha({
         "schema_version": PUBLICATION_CONTRACT_SCHEMA,
         "provider_id": provider_id,
         "patch": patch if isinstance(patch, dict) else None,
         "capability": capability if isinstance(capability, dict) else None,
+        "static": static_row if isinstance(static_row, dict) else None,
         "provider_files": _contract_file_hashes(script_paths),
     })
 

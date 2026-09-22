@@ -64,6 +64,35 @@ fingerprint_a = module.provider_build_input_sha("alpha", "a"*64, global_a, alpha
 fingerprint_b = module.provider_build_input_sha("alpha", "a"*64, global_a, alpha_b, {})
 assert fingerprint_a != fingerprint_b
 
+static_a = {
+    "legacyProviderJsExecuted": False,
+    "upstreamJsExecuted": False,
+    "providers": {
+        "alpha": {"model": {"knownSite": "https://alpha.example"}},
+        "beta": {"model": {"knownSite": "https://beta.example"}},
+    },
+}
+static_alpha_changed = json.loads(json.dumps(static_a))
+static_alpha_changed["providers"]["alpha"]["model"]["knownSite"] = "https://alpha-new.example"
+
+static_global_a = module.publication_contract_sha(config_a, static_a)
+static_global_b = module.publication_contract_sha(config_a, static_alpha_changed)
+assert static_global_a == static_global_b, (static_global_a, static_global_b)
+
+alpha_static_a = module.provider_policy_sha(config_a, "alpha", static_a)
+alpha_static_b = module.provider_policy_sha(config_a, "alpha", static_alpha_changed)
+beta_static_a = module.provider_policy_sha(config_a, "beta", static_a)
+beta_static_b = module.provider_policy_sha(config_a, "beta", static_alpha_changed)
+assert alpha_static_a != alpha_static_b, (alpha_static_a, alpha_static_b)
+assert beta_static_a == beta_static_b, (beta_static_a, beta_static_b)
+
+static_global_changed = json.loads(json.dumps(static_a))
+static_global_changed["upstreamJsExecuted"] = True
+assert (
+    module.publication_contract_sha(config_a, static_a)
+    != module.publication_contract_sha(config_a, static_global_changed)
+)
+
 base = {
     "name": "fixture",
     "version": "5.21.8",
