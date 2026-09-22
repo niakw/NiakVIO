@@ -709,12 +709,15 @@ jobs:
             throw new Error('unsafe Brain proposal policy');
           }
           const count=Number(x.proposalCount||0);
+          const providerCount=Number(x.providerProposalCount||0);
+          const skillCount=Number(x.learnedSkillProposalCount||0);
           const reconstructionCount=Number(reconstruction.candidateCount||0);
-          const total=count+reconstructionCount;
-          console.log('FIELD_BRAIN_PR_CANDIDATE proposals='+count+' reconstructions='+reconstructionCount+' provider='+Number(x.providerProposalCount||0)+' skills='+Number(x.learnedSkillProposalCount||0));
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'proposal_count='+total+'\n');
+          const reviewableProviderChanges=providerCount+reconstructionCount;
+          console.log('FIELD_BRAIN_PR_CANDIDATE proposals='+count+' reconstructions='+reconstructionCount+' provider='+providerCount+' skills='+skillCount+' reviewable_provider_changes='+reviewableProviderChanges);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'proposal_count='+count+'\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'provider_change_count='+reviewableProviderChanges+'\n');
           fs.appendFileSync(process.env.GITHUB_OUTPUT, 'reconstruction_count='+reconstructionCount+'\n');
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'has_changes='+(total>0?'true':'false')+'\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'has_changes='+(reviewableProviderChanges>0?'true':'false')+'\n');
           NODE
 
       - name: Materialize only the validated configuration diff
