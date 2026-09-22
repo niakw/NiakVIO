@@ -812,12 +812,19 @@ def _owned_transition_prefixes(routes: list[str], *, limit: int = 24) -> list[st
         route = _safe_route(raw)
         if not route or _route_role(route) == "search":
             continue
-        # Detail discovery already has title/TMDB identity gates. Transition
-        # mining is reserved for the post-detail side of the chain.
-        if _route_role(route) == "detail":
-            continue
         literal = route.split("{", 1)[0]
         path = literal.split("?", 1)[0]
+        # _route_role() intentionally treats any {slug} route as detail-like.
+        # Neutral post-detail transitions can also carry {slug}; do not discard
+        # them merely because of that placeholder. Exclude only conventional
+        # catalogue-entry families whose literal path itself identifies a title
+        # page. Everything retained here is still recognition-only: the runtime
+        # follows it only when the exact URL is observed in a successful response.
+        if re.match(
+            r"^/(?:movie|film|films|serie|series|anime|title)(?:/|$)|^/download-",
+            path.casefold(),
+        ):
+            continue
         if not path.startswith("/") or path in {"", "/"}:
             continue
         # Require at least one meaningful path segment so root-query templates

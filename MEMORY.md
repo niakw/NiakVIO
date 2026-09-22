@@ -4035,3 +4035,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Regression proof is synthetic and provider-agnostic: a fake provider stops after a detail request; provider-owned route templates describe two otherwise-neutral intermediate families; the response embeds those transitions in escaped/non-anchor text; the production V5 adaptive wrapper must discover both and reach a MIME-verified HLS terminal.
 - Next proof is targeted Learning on MalluMV from current main. Success requires the Brain-selected `terminal_transition_graph_v1` (or a later Brain strategy) to generate current-byte playable/identity-safe evidence. No MalluMV status promotion is allowed from the engine patch or synthetic test alone.
 
+
+
+### 2026-09-22 — terminal_transition_graph_v1 preflight failure corrected before live proof
+
+- Targeted Learning run `35752370169` on SHA `19d485ab9a72fc6f6ff010a4c013e5175f083bb9` failed in preflight before MalluMV execution. The generic synthetic contract expected provider-owned neutral prefixes `/confirm/` and `/internal/`, but the compiler emitted only `/api/file/`.
+- Root cause is generic route classification, not MalluMV code: `_route_role()` classifies any route containing `{slug}` as `detail`, and `_owned_transition_prefixes()` discarded every `detail` route. Neutral post-detail transitions carrying a slug were therefore erased before the runtime could observe them.
+- The transition compiler now excludes only conventional catalogue-entry literal families (movie/film/series/anime/title/download-title) and retains other provider-owned routes as recognition-only prefixes. No route is executed by guessing; traversal still requires that the exact URL appear in a successful provider response.
+- A second bug in the newly added transition scanner was found before live execution: its URL-character regex had been corrupted by an insertion splice. The scanner is restored to a bounded URL-safe character class and also normalizes escaped slashes before prefix matching.
+- Required next proof remains MalluMV-only Learning on current HEAD. Promotion still requires current-byte playable, identity-safe evidence plus non-regression; synthetic green alone is insufficient.
