@@ -662,7 +662,10 @@ function resolveRepairTarget(failureClass, capabilityStrategy, observedPipelineS
 
 function profilesForRepairTarget(plan, repairTarget) {
   if (stringValue(plan.action) !== "probe-targeted-repair") return [];
-  if (repairTarget.scope !== "capability") return [];
+  if (
+    repairTarget.scope !== "capability"
+    && stringValue(repairTarget.repairType) !== "evolved_strategy"
+  ) return [];
   const transferred = asArray(plan.hypotheses)
     .filter((row) => isRecord(row) && row.learned === true)
     .sort((a, b) => finiteNumber(b.transferScore, 0) - finiteNumber(a.transferScore, 0))
