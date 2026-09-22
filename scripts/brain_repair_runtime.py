@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 import json
 import math
+import os
 import re
 import subprocess
 import sys
@@ -22,6 +23,7 @@ POLICY_PATH = ROOT / "engine_v2" / "config" / "brain-policy.json"
 OVERRIDES_PATH = ROOT / "provider-overrides.json"
 CENSUS_STATUS_PATH = ROOT / "automation" / "provider-census-status.json"
 REPAIR_MEMORY_PATH = ROOT / "automation" / "brain-repair-memory.json"
+LEARNING_MEMORY_PATH = Path(os.environ.get("NIAKVIO_BRAIN_LEARNING_MEMORY", "")).resolve() if os.environ.get("NIAKVIO_BRAIN_LEARNING_MEMORY") else None
 
 PLANS: dict[str, dict[str, Any]] = {}
 RUNTIME_STATE: dict[str, dict[str, Any]] = {}
@@ -213,11 +215,51 @@ def policy() -> dict[str, Any]:
     return _load_json(POLICY_PATH, {})
 
 
+def _learning_memory_skills() -> dict[str, Any]:
+    if LEARNING_MEMORY_PATH is None:
+        return {}
+    value = _load_json(LEARNING_MEMORY_PATH, {})
+    if not isinstance(value, dict):
+        return {}
+    if value.get("publicationAllowed") is not False or value.get("productionWritesAllowed") is not False:
+        return {}
+    raw = value.get("learnedSkills")
+    if not isinstance(raw, dict):
+        return {}
+    return {
+        str(key): copy.deepcopy(skill)
+        for key, skill in list(raw.items())[:400]
+        if isinstance(skill, dict) and skill.get("validated") is True
+    }
+
+
 def learned_skills() -> dict[str, Any]:
     config = _load_json(OVERRIDES_PATH, {})
     runtime = config.get("runtime_repair") if isinstance(config.get("runtime_repair"), dict) else {}
     raw = runtime.get("learned_skills")
     merged = copy.deepcopy(raw) if isinstance(raw, dict) else {}
+    # Persistent Learning memory is an input prior only. It has already been
+    # sanitized by sanitize_brain_learning_memory.py and still passes the same
+    # maturity/confidence/provider-diversity policy below before Repair can use it.
+    for key, learned in _learning_memory_skills().items():
+        current = merged.get(key)
+        if not isinstance(current, dict):
+            merged[key] = copy.deepcopy(learned)
+            continue
+        providers = sorted({
+            str(value or "").strip().casefold()
+            for value in [*(current.get("providers") or []), *(learned.get("providers") or [])]
+            if str(value or "").strip()
+        })
+        current["providers"] = providers
+        current["validated"] = current.get("validated") is True or learned.get("validated") is True
+        current["successCount"] = max(int(current.get("successCount") or 0), int(learned.get("successCount") or 0))
+        current["failureCount"] = max(int(current.get("failureCount") or 0), int(learned.get("failureCount") or 0))
+        current["confidence"] = max(float(current.get("confidence") or 0.0), float(learned.get("confidence") or 0.0))
+        maturity_rank = {"experimental": 0, "candidate": 1, "trusted": 2}
+        if maturity_rank.get(str(learned.get("maturity") or "experimental"), 0) > maturity_rank.get(str(current.get("maturity") or "experimental"), 0):
+            current["maturity"] = learned.get("maturity")
+        current["autoApply"] = False
     # A globally rejected Repair publication must not erase a strictly validated
     # provider-local success. Positive-program memory is sanitized DATA/prior only;
     # it never grants publication authority or bypasses current-byte gates.
