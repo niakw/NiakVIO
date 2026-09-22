@@ -16,7 +16,9 @@ for required in (
     "domain-refresh.yml",
     "brain-learning-lab.yml",
     "CORE_CLIENT_LEARNING",
-    "no_validated_autonomous_core_client_application_lane",
+    "provider-waf-browser-session.yml",
+    "target_providers=\"$HARNESS\"",
+    "mutation=false",
 ):
     assert required in autopilot,required
 
