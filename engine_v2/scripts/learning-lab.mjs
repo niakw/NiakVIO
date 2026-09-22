@@ -5,6 +5,7 @@ import process from 'node:process';
 import { REPAIR_RECIPES } from '../src/repair-brain.mjs';
 
 const POST_EXHAUSTION_STRATEGY_PROFILES = new Set([
+  'provider_positive_program_replay_v1',
   'transport_request_differential_v1',
   'route_transition_graph_v1',
   'route_peer_transition_replay_v1',
