@@ -12,17 +12,18 @@
     "animevostfr",
     "mallumv",
     "moviebox",
+    "persianstremio",
     "vidfast",
     "yflix"
   ],
-  "elapsedSeconds": 149.729,
+  "elapsedSeconds": 118.227,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
-    "operationalProviderCount": 26,
+    "operationalProviderCount": 28,
     "providerCount": 46,
     "schemaVersion": 2,
-    "sourceRunId": "35667571681-retest",
-    "sourceSha": "6d51673e3560a7ac189b20325730da1fd23b682e",
+    "sourceRunId": "35670326477-retest",
+    "sourceSha": "21dfe55b27b21b5258533bd9d2b9e43b80eb7eb7",
     "strategyCount": 5
   },
   "fixedInLabProviders": [],
@@ -35,9 +36,9 @@
     "animesultra": "PROVIDER NETWORK BLOCKED",
     "animevostfr": "CANDIDATE OK",
     "mallumv": "CHAIN REACHED",
-    "moviebox": "PROVIDER NETWORK BLOCKED",
+    "moviebox": "CHAIN REACHED",
     "persianstremio": "CANDIDATE OK",
-    "vidfast": "PROVIDER NETWORK BLOCKED",
+    "vidfast": "ROUTE PROVEN",
     "yflix": "ROUTE PROVEN"
   },
   "maxWaves": 3,
@@ -56,9 +57,7 @@
     "yflix"
   ],
   "providerSpecificRules": false,
-  "remainingProviders": [
-    "persianstremio"
-  ],
+  "remainingProviders": [],
   "resumeRecommended": false,
   "safety": {
     "acceptedMutationRequiresStrictImprovement": true,
@@ -87,7 +86,7 @@
   "shardCount": 1,
   "shardIndex": 0,
   "skippedEnvironmentProviders": [],
-  "sourceCensusRunId": "35667571681-retest",
+  "sourceCensusRunId": "35670326477-retest",
   "timeBudgetExhausted": false,
   "timeBudgetSeconds": 1200,
   "unvisitedProviders": [],
@@ -224,40 +223,21 @@
                 "signature": "c92d106e5a46a2b33459e485"
               },
               "published:persianstremio": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "adaptive_runtime_recovery"
-                ],
-                "exitReason": null,
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "repair_loop_detected",
                 "experimentExhausted": false,
-                "experimentGeneration": 1,
-                "experimentVariant": 1,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
                 "experimentVariantCount": 5,
-                "failureClass": "transport_blocked",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "bootstrap-session",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "alternate-official-route",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
+                "failureClass": "media_extraction_gap",
+                "hypotheses": [],
                 "learningDisposition": "core_repair_only",
-                "negativeMemoryMatches": 1,
+                "negativeMemoryMatches": 6,
                 "providerId": "persianstremio",
                 "repairScope": "capability",
-                "repairType": "session_transport",
-                "signature": "407798151f15452ec1ccd098"
+                "repairType": "terminal_media_resolution",
+                "signature": "c92d106e5a46a2b33459e485"
               },
               "published:vidfast": {
                 "action": "deferred_retry",
@@ -316,18 +296,11 @@
             "animevostfr",
             "mallumv",
             "moviebox",
+            "persianstremio",
             "vidfast",
             "yflix"
           ],
           "familyGroups": [
-            {
-              "capabilityStrategy": "direct_media",
-              "groupId": "candidate-replay|direct_media",
-              "providers": [
-                "persianstremio"
-              ],
-              "repairScope": "candidate-replay"
-            },
             {
               "capabilityStrategy": "mixed_embed_resolver",
               "groupId": "candidate-replay|mixed_embed_resolver",
@@ -352,6 +325,14 @@
                 "animesultra"
               ],
               "repairScope": "transport"
+            },
+            {
+              "capabilityStrategy": "direct_media",
+              "groupId": "candidate-replay|direct_media",
+              "providers": [
+                "persianstremio"
+              ],
+              "repairScope": "candidate-replay"
             },
             {
               "capabilityStrategy": "mixed_embed_resolver",
@@ -399,11 +380,11 @@
           "healthConcurrency": 8,
           "providerCount": 10,
           "providers": [
-            "persianstremio",
             "animevostfr",
             "allanime",
             "anime-ultime",
             "animesultra",
+            "persianstremio",
             "yflix",
             "moviebox",
             "vidfast",
@@ -421,188 +402,19 @@
         "animevostfr",
         "mallumv",
         "moviebox",
+        "persianstremio",
         "vidfast",
         "yflix"
       ],
-      "deferredToLearningCount": 9,
+      "deferredToLearningCount": 10,
       "durableMaterializeTargets": [],
       "experimentMemoryAdvanced": true,
       "fixedInLab": [],
       "fixedInLabCount": 0,
       "inputProviderCount": 10,
-      "remainingProviderCount": 1,
+      "remainingProviderCount": 0,
       "timeBudgetExhausted": false,
       "wave": 1
-    },
-    {
-      "acceptedCount": 0,
-      "acceptedProgramCompileFailures": {},
-      "acceptedProgramCompiledProviders": [],
-      "batches": [
-        {
-          "accepted": [],
-          "acceptedCount": 0,
-          "batch": 1,
-          "brain": {
-            "learnedEvents": 0,
-            "plans": {
-              "published:persianstremio": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "adaptive_runtime_recovery"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 1,
-                "experimentVariant": 2,
-                "experimentVariantCount": 5,
-                "failureClass": "transport_blocked",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "bootstrap-session",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "alternate-official-route",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "negativeMemoryMatches": 2,
-                "providerId": "persianstremio",
-                "repairScope": "capability",
-                "repairType": "session_transport",
-                "signature": "407798151f15452ec1ccd098"
-              }
-            },
-            "queuedForLearning": [],
-            "validatedRepairLearningExecuted": true
-          },
-          "capabilityStrategy": "direct_media",
-          "deferredToLearning": [],
-          "familyGroups": [
-            {
-              "capabilityStrategy": "direct_media",
-              "groupId": "candidate-replay|direct_media",
-              "providers": [
-                "persianstremio"
-              ],
-              "repairScope": "candidate-replay"
-            }
-          ],
-          "fixedInLab": [],
-          "groupId": "candidate-replay|direct_media",
-          "healthConcurrency": 1,
-          "providerCount": 1,
-          "providers": [
-            "persianstremio"
-          ],
-          "repairScope": "candidate-replay"
-        }
-      ],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
-      "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": true,
-      "fixedInLab": [],
-      "fixedInLabCount": 0,
-      "inputProviderCount": 1,
-      "remainingProviderCount": 1,
-      "timeBudgetExhausted": false,
-      "wave": 2
-    },
-    {
-      "acceptedCount": 0,
-      "acceptedProgramCompileFailures": {},
-      "acceptedProgramCompiledProviders": [],
-      "batches": [
-        {
-          "accepted": [],
-          "acceptedCount": 0,
-          "batch": 1,
-          "brain": {
-            "learnedEvents": 0,
-            "plans": {
-              "published:persianstremio": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "adaptive_runtime_recovery"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
-                "experimentGeneration": 1,
-                "experimentVariant": 3,
-                "experimentVariantCount": 5,
-                "failureClass": "transport_blocked",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "bootstrap-session",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "alternate-official-route",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
-                "negativeMemoryMatches": 3,
-                "providerId": "persianstremio",
-                "repairScope": "capability",
-                "repairType": "session_transport",
-                "signature": "407798151f15452ec1ccd098"
-              }
-            },
-            "queuedForLearning": [],
-            "validatedRepairLearningExecuted": true
-          },
-          "capabilityStrategy": "direct_media",
-          "deferredToLearning": [],
-          "familyGroups": [
-            {
-              "capabilityStrategy": "direct_media",
-              "groupId": "candidate-replay|direct_media",
-              "providers": [
-                "persianstremio"
-              ],
-              "repairScope": "candidate-replay"
-            }
-          ],
-          "fixedInLab": [],
-          "groupId": "candidate-replay|direct_media",
-          "healthConcurrency": 1,
-          "providerCount": 1,
-          "providers": [
-            "persianstremio"
-          ],
-          "repairScope": "candidate-replay"
-        }
-      ],
-      "deferredToLearning": [],
-      "deferredToLearningCount": 0,
-      "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": true,
-      "fixedInLab": [],
-      "fixedInLabCount": 0,
-      "inputProviderCount": 1,
-      "remainingProviderCount": 1,
-      "timeBudgetExhausted": false,
-      "wave": 3
     }
   ]
 }
