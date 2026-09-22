@@ -1108,9 +1108,16 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     )
     peer_route_min_variant = _peer_route_min_variant(experiment_failure)
     peer_recipe_min_variant = _peer_recipe_min_variant(experiment_failure)
-    if historical_priors or nearest_peers:
+    peer_sensitive_late_failures = {"candidate_replay_gap", "media_extraction_gap"}
+    if (
+        (historical_priors or nearest_peers)
+        and experiment_failure.casefold() not in peer_sensitive_late_failures
+    ):
         # NiakVIO experience is a prior only: it may reach structurally similar
-        # peer DATA one failed variant earlier, never skip deep validation.
+        # peer DATA one failed variant earlier for broad route/transport gaps.
+        # Retained-candidate and terminal-media extraction already have stronger
+        # provider/current-observation evidence; keep their conservative v3
+        # peer-transfer floor so a historical peer cannot contaminate v2.
         peer_route_min_variant = max(1, peer_route_min_variant - 1)
         peer_recipe_min_variant = max(1, peer_recipe_min_variant - 1)
     nearest_peer_routes = _unique_routes(
