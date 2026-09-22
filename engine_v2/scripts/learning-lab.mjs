@@ -339,8 +339,8 @@ function mergeLearnedSkills(previousSkills, currentSkills) {
         providers: [...new Set([...(existing.providers || []), ...(skill.providers || [])])].slice(0, 96),
         sameProviderPositiveProgram: existing.sameProviderPositiveProgram === true || skill.sameProviderPositiveProgram === true,
         positiveProgramFingerprintsByProvider: {
-          ...asRecord(existing.positiveProgramFingerprintsByProvider),
-          ...asRecord(skill.positiveProgramFingerprintsByProvider),
+          ...recordValue(existing.positiveProgramFingerprintsByProvider),
+          ...recordValue(skill.positiveProgramFingerprintsByProvider),
         },
         successCount: Math.max(nonNegative(existing.successCount), nonNegative(skill.successCount)),
         failureCount: Math.max(nonNegative(existing.failureCount), nonNegative(skill.failureCount)),
@@ -371,7 +371,7 @@ function sanitizeLearnedSkill(raw) {
     providers: [...new Set((Array.isArray(raw.providers) ? raw.providers : []).map((v) => String(v || '').trim().toLowerCase().slice(0, 128)).filter(Boolean))].slice(0, 96),
     sameProviderPositiveProgram: raw.sameProviderPositiveProgram === true,
     positiveProgramFingerprintsByProvider: Object.fromEntries(
-      Object.entries(asRecord(raw.positiveProgramFingerprintsByProvider))
+      Object.entries(recordValue(raw.positiveProgramFingerprintsByProvider))
         .map(([provider, fingerprint]) => [
           String(provider || '').trim().toLowerCase().slice(0, 128),
           String(fingerprint || '').trim().toLowerCase().slice(0, 256),
@@ -662,6 +662,7 @@ function renderMarkdown(data) {
   lines.push('## Privacy', '', data.privacy, '');
   return lines.join('\n');
 }
+function recordValue(value) { return isRecord(value) ? value : {}; }
 function isRecord(value) { return Boolean(value) && typeof value === 'object' && !Array.isArray(value); }
 function arg(name) { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : null; }
 function optionalArg(name) { const value = arg(name); return value ? path.resolve(value) : null; }
