@@ -67,7 +67,7 @@ def learning_deadline_reached() -> bool:
         return False
 
 
-def accepted_runtime_program(candidate: dict[str, Any]) -> dict[str, Any] | None:
+def accepted_runtime_program(candidate: dict[str, Any], result: dict[str, Any] | None = None) -> dict[str, Any] | None:
     """Return the bounded, sanitized runtime program that produced an accepted repair.
 
     The program is DATA, not published JavaScript. It deliberately excludes raw
@@ -378,7 +378,7 @@ def main() -> int:
                         "parent_sha256": str(repair_event.get("parent_sha256") or ""),
                         "profile": str(repair_event.get("profile") or ""),
                     }
-                    accepted_program = accepted_runtime_program(updated_candidate)
+                    accepted_program = accepted_runtime_program(updated_candidate, selected_result)
                     if accepted_program:
                         updated_candidate["accepted_runtime_program"] = accepted_program
                     updated_candidate["key"] = parent_key
