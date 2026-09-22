@@ -65,6 +65,40 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
         "selection.json": selection,
         "route.json": {},
         "fallback.json": {},
+        "batch.json": {
+            "groups": [
+                {
+                    "groupId": "harness-compatibility|api|browser-profile-only",
+                    "repairScope": "harness-compatibility",
+                    "capabilityStrategy": "api_stream_resolver",
+                    "transportSignature": "browser-profile-only",
+                    "providers": ["browser-only"],
+                    "runtimeFamilies": ["api"],
+                    "dominantIssues": ["waf_challenge"],
+                    "harnessTransportClasses": ["browser-profile-only"],
+                },
+                {
+                    "groupId": "harness-compatibility|api|browser-profile-only-both-networks",
+                    "repairScope": "harness-compatibility",
+                    "capabilityStrategy": "api_stream_resolver",
+                    "transportSignature": "browser-profile-only-both-networks",
+                    "providers": ["tls-gap"],
+                    "runtimeFamilies": ["api"],
+                    "dominantIssues": ["network_exception"],
+                    "harnessTransportClasses": ["browser-profile-only-both-networks"],
+                },
+                {
+                    "groupId": "harness-compatibility|html|residential-exit-all-challenged",
+                    "repairScope": "harness-compatibility",
+                    "capabilityStrategy": "html_scraper",
+                    "transportSignature": "residential-exit-all-challenged",
+                    "providers": ["challenged"],
+                    "runtimeFamilies": ["html"],
+                    "dominantIssues": ["waf_challenge"],
+                    "harnessTransportClasses": ["residential-exit-all-challenged"],
+                },
+            ]
+        },
     }.items():
         path = tmp / name
         path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
@@ -86,6 +120,7 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
             "--target-selection", str(paths["selection.json"]),
             "--route-report", str(paths["route.json"]),
             "--route-fallback", str(paths["fallback.json"]),
+            "--batch-plan", str(paths["batch.json"]),
             "--output-policy", str(proposed),
             "--summary", str(summary),
             "--markdown", str(markdown),
@@ -103,6 +138,18 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
     assert "core_sampling_blind_spot" in kinds
     assert "route_discovery_blind_spot" in kinds
     assert "method_exhaustion" in kinds
+
+    strategies={
+        row.get("strategyId"): row
+        for row in data.get("strategyBlueprints") or []
+        if isinstance(row,dict)
+    }
+    assert "browser_session_transport_bridge_v1" in strategies, strategies
+    assert "native_tls_browser_differential_v1" in strategies, strategies
+    assert "persistent_challenge_session_boundary_v1" in strategies, strategies
+    assert strategies["browser_session_transport_bridge_v1"]["providers"] == ["browser-only"]
+    assert strategies["native_tls_browser_differential_v1"]["providers"] == ["tls-gap"]
+    assert strategies["persistent_challenge_session_boundary_v1"]["providers"] == ["challenged"]
 
     assert data["policy"]["publicationAllowed"] is False
     assert data["policy"]["productionWritesAllowed"] is False
