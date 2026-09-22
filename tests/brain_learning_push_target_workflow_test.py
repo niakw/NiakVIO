@@ -22,4 +22,9 @@ filter_index = workflow.index('provider_filter="$target_provider"')
 queue_index = workflow.index("steps.learning-slot.outputs.target_provider")
 assert parse_index < scope_index < filter_index < queue_index
 
+lines = workflow.splitlines()
+start = next(i for i,line in enumerate(lines) if "fast-learning-handoff.json <<'PY'" in line)
+end = next(i for i in range(start + 1, len(lines)) if lines[i].strip() == "PY")
+assert all(lines[i].startswith("          ") for i in range(start + 1, end + 1)), lines[start:end + 1]
+
 print("Brain push-targeted Learning workflow contract passed")
