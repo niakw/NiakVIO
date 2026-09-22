@@ -77,15 +77,21 @@ jobs:
         run: |
           set -euo pipefail
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"
           IFS=',' read -r -a providers <<< "$TARGETS"
           reconcile=(python scripts/reconcile_targeted_provider_publication.py)
           for provider in "${providers[@]}"; do
             [ -n "$provider" ] || continue
             echo "FIELD_PROVIDER_PROJECTION_REBUILD provider=$provider"
-            python scripts/materialize_provider_v3_one.py "$provider"
+            python scripts/materialize_provider_v3_one.py "$provider" --preserve-structured-data
             reconcile+=(--provider "$provider")
           done
           "${reconcile[@]}"
+          cmp -s provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json" || {
+            echo "Projection reconcile mutated accepted provider-overrides.json." >&2
+            git --no-pager diff -- provider-overrides.json >&2 || true
+            exit 1
+          }
           python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
           python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest.before.json"
           python scripts/generate_hub46_manifest.py \
@@ -125,13 +131,13 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
           git add \
-            PROVENANCE.json provider-overrides.json provider-v3-materialization.json \
+            PROVENANCE.json provider-v3-materialization.json \
             manifest.json manifest-hub46.json \
             vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
             providers/ package.json package-lock.json sources.json provider_catalog.json nuvio-client-id-state.json
           changed="$(git diff --cached --name-only)"
           printf '%s\n' "$changed"
-          if printf '%s\n' "$changed" | grep -Ev '^(PROVENANCE\.json|provider-overrides\.json|provider-v3-materialization\.json|manifest\.json|manifest-hub46\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|providers/[^/]+|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|nuvio-client-id-state\.json)$'; then
+          if printf '%s\n' "$changed" | grep -Ev '^(PROVENANCE\.json|provider-v3-materialization\.json|manifest\.json|manifest-hub46\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|providers/[^/]+|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|nuvio-client-id-state\.json)$'; then
             echo "Projection reconcile staged a forbidden path." >&2
             exit 1
           fi
