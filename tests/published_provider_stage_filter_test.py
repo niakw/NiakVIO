@@ -39,6 +39,6 @@ assert "if requested:" in source
 assert "rows=active_provider_rows()" in source
 assert source.index("if requested:") < source.index("rows=active_provider_rows()")
 workflow=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
-assert 'timeout 120s "${args[@]}"' in workflow
+assert 'timeout --signal=TERM --kill-after=5s 30s "${args[@]}"' in workflow
 
 print("published provider stage filter contract passed")
