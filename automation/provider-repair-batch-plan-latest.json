@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "sourceRunId": "35667571681-retest",
   "sourceTriggerSha": "6d51673e3560a7ac189b20325730da1fd23b682e",
-  "unresolvedProviderCount": 16,
+  "unresolvedProviderCount": 14,
   "groupCount": 12,
   "executionModel": {
     "default": "family/signature batch",
@@ -27,38 +27,13 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "github-all-transports-challenged"
-      ],
-      "providerCount": 3,
-      "providers": [
-        "allwish",
-        "animesalt",
-        "moviesmod"
-      ],
-      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "github-all-transports-challenged"
+        "browser-profile-only",
+        "residential-exit-all-challenged"
       ],
       "providerCount": 2,
       "providers": [
-        "flemmix",
-        "vostfree"
+        "allwish",
+        "moviesmod"
       ],
       "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
       "executionPolicy": "batch-first",
@@ -147,11 +122,35 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "github-all-transports-challenged"
+        "browser-profile-only"
       ],
       "providerCount": 1,
       "providers": [
         "animevost-fr"
+      ],
+      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-all-challenged"
+      ],
+      "providerCount": 1,
+      "providers": [
+        "flemmix"
       ],
       "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
       "executionPolicy": "batch-first",
