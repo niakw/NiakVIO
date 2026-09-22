@@ -24,10 +24,13 @@ for required in (
     'if [ "$CURRENT_SHA" != "$GITHUB_SHA" ]',
     "git push origin HEAD:main",
     "temp-current-bytes-full-provider-census.yml",
+    "--preserve-structured-data",
+    "Projection reconcile mutated accepted provider-overrides.json.",
 ):
     assert required in wf, required
 
 assert "materialize_provider_v3_all.py" not in wf
 assert 'steps.drift.outputs.count != \'0\'' in wf
 assert "Projection reconcile staged a forbidden path." in wf
+assert "PROVENANCE.json provider-overrides.json provider-v3-materialization.json" not in wf
 print("provider projection reconcile workflow contract passed")
