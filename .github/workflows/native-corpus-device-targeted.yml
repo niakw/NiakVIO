@@ -13,9 +13,24 @@ on:
           - mobile
           - desktop
           - all
+      target_providers:
+        description: Optional comma-separated exact provider ids
+        required: false
+        default: ""
+        type: string
+      residential_exit:
+        description: Route the real native client through the configured private Tailscale exit
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/native-residential-transport-targeted.json'
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: native-corpus-device-targeted-${{ github.ref }}-${{ inputs.device || 'tv' }}
@@ -41,26 +56,76 @@ jobs:
         id: resolve
         shell: bash
         env:
-          INPUT_DEVICE: ${{ inputs.device }}
+          INPUT_DEVICE: ${{ inputs.device || '' }}
+          INPUT_TARGET_PROVIDERS: ${{ inputs.target_providers || '' }}
+          INPUT_RESIDENTIAL_EXIT: ${{ inputs.residential_exit || false }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          DEVICE="${INPUT_DEVICE:-tv}"
-          DEVICE="$DEVICE" python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json
           import os
           from pathlib import Path
 
-          device = os.environ["DEVICE"]
+          event = os.environ.get("EVENT_NAME", "")
+          device = (os.environ.get("INPUT_DEVICE") or "tv").strip().lower()
+          providers = [
+              value.strip().lower()
+              for value in (os.environ.get("INPUT_TARGET_PROVIDERS") or "").split(",")
+              if value.strip()
+          ]
+          residential = str(os.environ.get("INPUT_RESIDENTIAL_EXIT") or "").strip().lower() == "true"
+
+          if event == "push":
+              trigger = Path(".github/triggers/native-residential-transport-targeted.json")
+              payload = json.loads(trigger.read_text(encoding="utf-8"))
+              device = str(payload.get("device") or "tv").strip().lower()
+              providers = sorted({
+                  str(value or "").strip().lower()
+                  for value in payload.get("targetProviders") or []
+                  if str(value or "").strip()
+              })
+              residential = payload.get("residentialExit") is True
+
           if device in {"desktop", "mobile", "tv"}:
-              targets = [{"device": device, "fixture": "all"}]
+              devices = [device]
           elif device == "all":
-              targets = [
-                  {"device": "desktop", "fixture": "all"},
-                  {"device": "mobile", "fixture": "all"},
-                  {"device": "tv", "fixture": "all"},
-              ]
+              devices = ["desktop", "mobile", "tv"]
           else:
               raise SystemExit(f"unsupported device: {device}")
+
+          if len(providers) > 8:
+              raise SystemExit("targeted native provider cohort is capped at 8")
+          if residential and not providers:
+              raise SystemExit("residential native transport proof requires explicit target provider(s)")
+
+          manifest = json.loads(Path("manifest.json").read_text(encoding="utf-8"))
+          available = {
+              str(row.get("id") or "").strip().lower(): row
+              for row in manifest.get("scrapers") or []
+              if isinstance(row, dict) and str(row.get("id") or "").strip()
+          }
+          missing = sorted(set(providers) - set(available))
+          if missing:
+              raise SystemExit("unknown target provider(s): " + ",".join(missing))
+          disabled = sorted(
+              provider for provider in providers
+              if available[provider].get("enabled") is not True
+          )
+          if disabled:
+              raise SystemExit("disabled target provider(s): " + ",".join(disabled))
+
+          target_providers = providers or ["declared-type"]
+          targets = [
+              {
+                  "device": selected_device,
+                  "fixture": "all",
+                  "provider": provider,
+                  "residential": residential,
+              }
+              for selected_device in devices
+              for provider in target_providers
+          ]
           print("targets=" + json.dumps({"include": targets}, separators=(",", ":")))
 
           data = json.loads(Path("sources.json").read_text(encoding="utf-8"))
@@ -83,6 +148,12 @@ jobs:
       matrix: ${{ fromJSON(needs.resolve.outputs.targets) }}
     runs-on: ubuntu-latest
     timeout-minutes: 220
+    env:
+      TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+      TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}
+      TS_EXIT_NODE: ${{ secrets.TS_EXIT_NODE }}
+      TS_TAG_NAME: ${{ secrets.TS_TAG_NAME }}
+      NIAKVIO_TARGET_PROVIDER: ${{ matrix.provider }}
     steps:
       - name: Checkout exact Niakvio generation
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -90,6 +161,98 @@ jobs:
           ref: ${{ github.sha }}
           path: niakvio
           persist-credentials: false
+
+      - name: Validate targeted residential native contract
+        run: python3 niakvio/tests/native_residential_transport_targeted_workflow_test.py
+
+      - name: Build exact targeted provider scope
+        if: ${{ matrix.provider != 'declared-type' }}
+        shell: bash
+        env:
+          TARGET_PROVIDER: ${{ matrix.provider }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path(os.environ["GITHUB_WORKSPACE"]) / "niakvio"
+          manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+          wanted = os.environ["TARGET_PROVIDER"].strip().lower()
+          row = next(
+              (
+                  row for row in manifest.get("scrapers") or []
+                  if isinstance(row, dict)
+                  and str(row.get("id") or "").strip().lower() == wanted
+                  and row.get("enabled") is True
+              ),
+              None,
+          )
+          if row is None:
+              raise SystemExit(f"target provider unavailable: {wanted}")
+          actual = str(row["id"]).strip()
+          scope = {
+              "schemaVersion": 1,
+              "providerCount": 1,
+              "hubCount": 1,
+              "rows": [{"provider": actual, "manifestId": actual}],
+          }
+          path = root / "automation/native-target-provider-scope.json"
+          path.write_text(json.dumps(scope, indent=2) + "\n", encoding="utf-8")
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as handle:
+              handle.write(f"NIAKVIO_PROVIDER_SCOPE_MATRIX={path}\n")
+              handle.write(f"NIAKVIO_TARGET_PROVIDER={actual}\n")
+          print(f"FIELD_NATIVE_TARGET_SCOPE provider={actual} providers=1")
+          PY
+
+      - name: Require configured residential exit
+        if: ${{ matrix.residential == true }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TS_OAUTH_CLIENT_ID:-}"
+          test -n "${TS_AUDIENCE:-}"
+          test -n "${TS_EXIT_NODE:-}"
+
+      - name: Normalize native Tailscale tag
+        if: ${{ matrix.residential == true }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw="${TS_TAG_NAME:-niakvio-ci}"
+          case "$raw" in
+            tag:*) normalized="$raw" ;;
+            *) normalized="tag:$raw" ;;
+          esac
+          printf 'TS_ACTION_TAG=%s\n' "$normalized" >> "$GITHUB_ENV"
+
+      - name: Connect native client host to Tailscale
+        if: ${{ matrix.residential == true }}
+        uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8
+        with:
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ env.TS_AUDIENCE }}
+          tags: ${{ env.TS_ACTION_TAG }}
+          version: '1.94.2'
+          args: --accept-dns=false
+
+      - name: Select residential exit before native emulator boot
+        if: ${{ matrix.residential == true }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          selected=0
+          for attempt in 1 2 3 4 5; do
+            if sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false >/dev/null 2>&1; then
+              selected=1
+              break
+            fi
+            sleep "$((attempt * 2))"
+          done
+          test "$selected" -eq 1
+          echo "NIAKVIO_NATIVE_RESIDENTIAL_EXIT_ACTIVE=1" >> "$GITHUB_ENV"
+          echo "FIELD_NATIVE_RESIDENTIAL_EXIT active=true provider=${{ matrix.provider }} device=${{ matrix.device }}"
 
       - name: Set up JDK
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
@@ -260,17 +423,22 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
 
+      - name: Clear native residential exit
+        if: ${{ always() && matrix.residential == true }}
+        shell: bash
+        run: sudo tailscale set --exit-node= || true
+
       - name: Upload sanitized native corpus logs
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: native-corpus-${{ matrix.device }}-${{ matrix.fixture }}-${{ github.run_id }}
+          name: native-corpus-${{ matrix.device }}-${{ matrix.provider }}-${{ matrix.fixture }}-${{ github.run_id }}
           path: ${{ matrix.device }}-native-corpus-*.log
           retention-days: 1
           if-no-files-found: warn
 
   cross-runtime-gate:
-    if: ${{ always() && inputs.device == 'all' }}
+    if: ${{ always() && inputs.device == 'all' && inputs.target_providers == '' }}
     needs: [native-corpus]
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -291,19 +459,19 @@ jobs:
       - name: Download Desktop extraction-runtime evidence
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          name: native-corpus-desktop-all-${{ github.run_id }}
+          name: native-corpus-desktop-declared-type-all-${{ github.run_id }}
           path: cross-runtime/desktop
 
       - name: Download Mobile extraction-runtime evidence
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          name: native-corpus-mobile-all-${{ github.run_id }}
+          name: native-corpus-mobile-declared-type-all-${{ github.run_id }}
           path: cross-runtime/mobile
 
       - name: Download TV extraction-runtime evidence
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          name: native-corpus-tv-all-${{ github.run_id }}
+          name: native-corpus-tv-declared-type-all-${{ github.run_id }}
           path: cross-runtime/tv
 
       - name: Gate Desktop Mobile TV runtime divergence
