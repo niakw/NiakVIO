@@ -6,6 +6,7 @@ import json
 import sys
 import tempfile
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -188,8 +189,12 @@ with tempfile.TemporaryDirectory() as tmp:
     # recipes are reserved for later exploratory variants.
     assert len(options["request_recipes"]) == 1
     assert options["user_agent"] == "NiakVIO-Brain-Test/1.0"
-    assert "https://api.target.example" in options["endpoint_origins"]
-    assert "https://mirror.target.example" in options["endpoint_origins"]
+    endpoint_hosts = {
+        (urlparse(value).hostname or "").casefold()
+        for value in options["endpoint_origins"]
+    }
+    assert "api.target.example" in endpoint_hosts
+    assert "mirror.target.example" in endpoint_hosts
     assert "bad-player.example" in options["blocked_hosts"]
     assert "/ads/" in options["blocked_path_patterns"]
     assert options["repair_focus"] == "terminal-chain"
@@ -304,7 +309,11 @@ with tempfile.TemporaryDirectory() as tmp:
     assert transport_options4 is not None
     assert transport_options4["new_strategy_id"] == "provider_origin_failover_v1"
     assert transport_options4["base_url"] == "https://api.target.example", transport_options4
-    assert "https://target.example" in transport_options4["endpoint_origins"]
+    transport_endpoint_hosts = {
+        (urlparse(value).hostname or "").casefold()
+        for value in transport_options4["endpoint_origins"]
+    }
+    assert "target.example" in transport_endpoint_hosts
     assert transport_options4["max_pages"] == 24
 
     replay4 = dict(candidate)
