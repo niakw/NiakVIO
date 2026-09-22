@@ -12,6 +12,13 @@ on:
       - 'scripts/provider_base_store.py'
       - 'scripts/apply_provider_overrides.py'
       - 'scripts/materialize_provider_v3_all.py'
+      - 'scripts/materialize_provider_v3_one.py'
+      - 'scripts/select_provider_materialization_scope.py'
+      - 'scripts/provider_patch_blocks.py'
+      - 'scripts/provider_engine_normalizer.py'
+      - 'scripts/provider_byte_stability.py'
+      - 'automation/provider-v3-static-knowledge.json'
+      - 'manifest.json'
       - 'scripts/render_provider_census_status.py'
       - 'scripts/update_provider_census_proof_history.py'
       - 'scripts/audit_provider_quick_yield.py'
@@ -39,6 +46,13 @@ on:
       - 'scripts/provider_base_store.py'
       - 'scripts/apply_provider_overrides.py'
       - 'scripts/materialize_provider_v3_all.py'
+      - 'scripts/materialize_provider_v3_one.py'
+      - 'scripts/select_provider_materialization_scope.py'
+      - 'scripts/provider_patch_blocks.py'
+      - 'scripts/provider_engine_normalizer.py'
+      - 'scripts/provider_byte_stability.py'
+      - 'automation/provider-v3-static-knowledge.json'
+      - 'manifest.json'
       - 'scripts/probe_waf_browser_session.py'
       - 'tests/provider_waf_browser_session_test.py'
       - 'tests/allanime_site_runtime_contract_test.py'
@@ -165,6 +179,7 @@ jobs:
           python tests/provider_census_status_markdown_test.py
           python tests/provider_census_scope_history_test.py
           python tests/provider_materialization_byte_validation_contract_test.py
+          python tests/provider_census_incremental_materialization_scope_test.py
           python tests/provider_shared_player_fanout_contract_test.py
           python tests/provider_repair_batch_plan_test.py
           python tests/provider_repair_batch_runner_test.py
@@ -177,19 +192,58 @@ jobs:
           python tests/provider_census_new_provider_scope_test.py
           python tests/provider_bulk_onboarding_test.py
           python tests/provider_bulk_onboarding_workflow_test.py
-          python -m py_compile scripts/audit_provider_quick_yield.py scripts/build_provider_repair_batch_plan.py scripts/merge_provider_census_shards.py scripts/refine_provider_repair_batches.py scripts/run_provider_repair_batch.py scripts/render_provider_census_status.py scripts/update_provider_census_proof_history.py scripts/rotating_corpus.py
+          python -m py_compile scripts/audit_provider_quick_yield.py scripts/build_provider_repair_batch_plan.py scripts/merge_provider_census_shards.py scripts/refine_provider_repair_batches.py scripts/run_provider_repair_batch.py scripts/render_provider_census_status.py scripts/update_provider_census_proof_history.py scripts/rotating_corpus.py scripts/select_provider_materialization_scope.py
 
       - name: Project provider-local current domain metadata
         run: |
           set -euo pipefail
           python scripts/reconcile_provider_domain_metadata.py --rebuild
 
-      - name: Materialize current candidate bytes
+      - name: Select provider materialization scope
+        id: materialization-scope
+        shell: bash
+        env:
+          EVENT_BEFORE: ${{ github.event.before || '' }}
         run: |
           set -euo pipefail
-          python scripts/materialize_provider_base_v3_store.py
-          python scripts/materialize_provider_v3_all.py
-          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/select_provider_materialization_scope.py \
+            --base "${EVENT_BEFORE:-}" \
+            --head "$GITHUB_SHA" \
+            --output /tmp/provider-materialization-scope.json
+          mode="$(python -c 'import json; print(json.load(open("/tmp/provider-materialization-scope.json"))["mode"])')"
+          providers="$(python -c 'import json; print(",".join(json.load(open("/tmp/provider-materialization-scope.json"))["providers"]))')"
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "providers=$providers" >> "$GITHUB_OUTPUT"
+
+      - name: Materialize only changed candidate bytes
+        env:
+          MATERIALIZE_MODE: ${{ steps.materialization-scope.outputs.mode }}
+          MATERIALIZE_PROVIDERS: ${{ steps.materialization-scope.outputs.providers }}
+        run: |
+          set -euo pipefail
+          case "$MATERIALIZE_MODE" in
+            none)
+              echo "FIELD_PROVIDER_V3_MATERIALIZE_SKIP reason=no-provider-byte-input-changed"
+              ;;
+            providers)
+              IFS=',' read -r -a ids <<< "${MATERIALIZE_PROVIDERS:-}"
+              test "${#ids[@]}" -gt 0
+              for provider in "${ids[@]}"; do
+                [ -n "$provider" ] || continue
+                python scripts/materialize_provider_v3_one.py "$provider"
+              done
+              python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+              ;;
+            all)
+              python scripts/materialize_provider_base_v3_store.py
+              python scripts/materialize_provider_v3_all.py
+              python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+              ;;
+            *)
+              echo "Unknown materialization mode: $MATERIALIZE_MODE" >&2
+              exit 1
+              ;;
+          esac
           python scripts/validate_published_provider_config.py
           python tests/provider_js_lego_ownership_test.py
           python tests/manual_tv_live_regressions_v34_test.py
