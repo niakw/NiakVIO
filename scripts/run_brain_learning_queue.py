@@ -814,18 +814,6 @@ def main() -> int:
             run_dir = output / "providers" / provider_id
             run_dir.mkdir(parents=True, exist_ok=True)
             info = info_by_id.get(provider_id, {"provider": provider_id, "status": "", "needs_route_search": False})
-            route = None
-            route_refresh: dict[str, Any] | None = None
-    
-            if bool(info.get("needs_route_search")) and time.time() < work_deadline:
-                route = route_search(provider_id, run_dir, work_deadline)
-                route_refresh = refresh_stage_routes(stage, work_deadline, provider_id)
-    
-            provider_attempts: list[dict[str, Any]] = []
-            seen_method_sets: set[tuple[str, ...]] = set()
-            final_lab: dict[str, Any] | None = None
-            resolved = False
-            attempts_this_phase = 0
             provider_deadline = work_deadline
             if fair_handoff:
                 remaining_providers = max(1, len(order) - len(processed))
@@ -843,6 +831,18 @@ def main() -> int:
                     f"slice_seconds={fair_seconds} "
                     f"remaining_providers={remaining_providers}"
                 )
+
+            route = None
+            route_refresh: dict[str, Any] | None = None
+            if bool(info.get("needs_route_search")) and time.time() < provider_deadline:
+                route = route_search(provider_id, run_dir, provider_deadline)
+                route_refresh = refresh_stage_routes(stage, provider_deadline, provider_id)
+    
+            provider_attempts: list[dict[str, Any]] = []
+            seen_method_sets: set[tuple[str, ...]] = set()
+            final_lab: dict[str, Any] | None = None
+            resolved = False
+            attempts_this_phase = 0
     
             while time.time() < work_deadline and not (
                 isinstance(route_refresh, dict) and route_refresh.get("ok") is False
@@ -934,9 +934,9 @@ def main() -> int:
                 # independent Lab cannot reach any runtime, challenge the diagnosis
                 # with a route search before abandoning the provider.
                 any_runtime = any(int(x.get("runtimeStreams") or 0) > 0 for x in (final_lab.get("clients") or {}).values())
-                if not any_runtime and route is None and time.time() < work_deadline:
-                    route = route_search(provider_id, run_dir, work_deadline)
-                    route_refresh = refresh_stage_routes(stage, work_deadline, provider_id)
+                if not any_runtime and route is None and time.time() < provider_deadline:
+                    route = route_search(provider_id, run_dir, provider_deadline)
+                    route_refresh = refresh_stage_routes(stage, provider_deadline, provider_id)
                     if route_refresh.get("ok") is False:
                         break
                     if fair_handoff and attempts_this_phase >= 1:
