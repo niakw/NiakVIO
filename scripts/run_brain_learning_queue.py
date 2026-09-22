@@ -652,6 +652,11 @@ def repair_attempt(
     env = os.environ.copy()
     env["NUVIO_BRAIN_TARGET_PROVIDER"] = provider_id
     env["NUVIO_BRAIN_LEARNING_STATE"] = str(previous_state_path)
+    # The child planner imports brain_repair_runtime before sandbox main() runs,
+    # so the previous sanitized Learning state must be present in the process
+    # environment at spawn time. This is Learning-only memory; production Repair
+    # still reads automation/brain-repair-memory.json.
+    env["NIAKVIO_BRAIN_LEARNING_MEMORY"] = str(previous_state_path)
     env["NUVIO_BRAIN_DEADLINE_EPOCH_MS"] = str(int(deadline * 1000))
     env["NUVIO_WORKER_MEMORY_MB"] = "1024"
     completed = run([
