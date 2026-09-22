@@ -3987,3 +3987,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The run stopped at `Prove targeted Fast-Handoff observation coverage` because the effective shell scope was MalluMV but `/tmp/fast-learning-handoff.json` still contained the earlier empty selector output. The validator therefore failed with `fast handoff has no providers`. This is orchestration metadata drift, not provider evidence.
 - Commits `e561b30b...` and `03627c01...` make explicit current-Repair targeting rewrite the sanitized temporary handoff file to the exact one-provider scope after repairQueue + LEARN/pending validation. Downstream health-scope validation now consumes the same scope that the health command actually executes.
 - Run `35737809635` was superseded/cancelled and produced no MalluMV repair result. The next run must reach the actual provider queue before positive-program replay is judged.
+
+
+### 2026-09-22 — Target-scope handoff write bug isolated before MalluMV execution
+- MalluMV proof run `35738124587` on SHA `1a97b914...` passed the complete Brain preflight and built a one-provider published stage. Health execution was correctly scoped to MalluMV (`FIELD_HEALTH_PROVIDER_FILTER requested=1 selected=1 ids=mallumv`).
+- Downstream scope validation still failed with `fast handoff has no providers`. Root cause was an argument-index bug in the new explicit-target propagation: the temporary target handoff JSON was written to `sys.argv[2]`, which is the sandbox census path, while the validator continued reading the untouched `/tmp/fast-learning-handoff.json`.
+- Commits `2630f460...` and `8959f7df...` pass `/tmp/fast-learning-handoff.json` explicitly as argv[4] and write the one-provider sanitized target scope there. The erroneous write was sandbox-only; run `35738124587` published no state and produced no provider repair evidence.
