@@ -425,8 +425,8 @@ def main() -> int:
             ],
             (
                 "Synthesize one or more new bounded repair/evidence strategies from the common "
-                "failure cohorts and independent Lab observations. Do not recycle v0-v3 or "
-                "increase retry counts. Each new strategy must have an explicit causal trigger, "
+                "failure cohorts and independent Lab observations. Do not recycle the exhausted "
+                "bounded g2..g5 family or increase retry counts. Each new strategy must have an explicit causal trigger, "
                 "negative-memory signature, playback/identity acceptance proof and regression test "
                 "before it may re-enter Core Repair."
             ),
