@@ -161,6 +161,30 @@ def materialize_supporting_bases(
         target = output_dir / rel.name
         if not target.is_file():
             source = source_root / rel
+            if not source.is_file() and expected:
+                # Historical provenance may retain a provider-specific path
+                # after the identical content-addressed base was archived under
+                # another provider/lifecycle tree. Reuse bytes only by exact
+                # content hash; provider/path names are never trusted.
+                digest_prefix = expected[:16]
+                archive_roots = (
+                    source_root / "provider-bases",
+                    source_root / "provider-disabled" / "provider-bases",
+                    source_root / "provider-old" / "provider-bases",
+                )
+                for archive_root in archive_roots:
+                    if not archive_root.is_dir():
+                        continue
+                    for candidate in archive_root.glob(f"*--base--{digest_prefix}.js"):
+                        try:
+                            candidate_raw = candidate.read_bytes()
+                        except OSError:
+                            continue
+                        if sha256(candidate_raw).casefold() == expected:
+                            source = candidate
+                            break
+                    if source.is_file():
+                        break
             if not source.is_file():
                 missing.append(f"{provider_id}:{relative}")
                 continue
