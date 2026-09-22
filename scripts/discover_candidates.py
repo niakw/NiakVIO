@@ -1291,6 +1291,9 @@ def main() -> int:
         for entry in published_manifest.get("scrapers", []) if isinstance(entry, dict)
     }
     for provider_id, record in sorted(lkg_records.items() if isinstance(lkg_records, dict) else []):
+        provider_id = canonical_id(str(provider_id))
+        if requested_provider_ids and provider_id not in requested_provider_ids:
+            continue
         if not isinstance(record, dict):
             continue
         filename = record.get("filename")
