@@ -328,16 +328,101 @@ def planner_learned_skills(mode: str) -> dict[str, Any]:
     return out
 
 
+def _memory_entry_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, int, int]:
+    return (
+        _clip_text(row.get("providerId"), 160).casefold(),
+        _clip_text(row.get("providerVersion") or "*", 64),
+        _clip_text(row.get("failureClass"), 96),
+        _clip_text(row.get("signature"), 160),
+        _clip_text(row.get("profile"), 96),
+        max(0, int(row.get("experimentVariant") or 0)),
+        max(1, int(row.get("experimentGeneration") or 1)),
+    )
+
+
+def _learning_experiment_entries() -> list[dict[str, Any]]:
+    if LEARNING_MEMORY_PATH is None:
+        return []
+    value = _load_json(LEARNING_MEMORY_PATH, {})
+    if not isinstance(value, dict):
+        return []
+    if value.get("publicationAllowed") is not False or value.get("productionWritesAllowed") is not False:
+        return []
+    memory = value.get("experimentMemory") if isinstance(value.get("experimentMemory"), dict) else {}
+    rows = memory.get("entries") if isinstance(memory.get("entries"), list) else []
+    out: list[dict[str, Any]] = []
+    for raw in rows[:1000]:
+        if not isinstance(raw, dict):
+            continue
+        provider = _clip_text(raw.get("providerId"), 160).casefold()
+        signature = _clip_text(raw.get("signature"), 160)
+        profile = _clip_text(raw.get("profile"), 96)
+        if not provider or not signature or not profile:
+            continue
+        out.append({
+            "providerId": provider,
+            "providerVersion": _clip_text(raw.get("providerVersion") or "*", 64),
+            "failureClass": _clip_text(raw.get("failureClass"), 96),
+            "signature": signature,
+            "profile": profile,
+            "experimentVariant": max(0, int(raw.get("experimentVariant") or 0)),
+            "experimentGeneration": max(1, int(raw.get("experimentGeneration") or 1)),
+            "capabilityStrategy": _clip_text(raw.get("capabilityStrategy"), 96).casefold(),
+            "observedPipelineStage": _clip_text(raw.get("observedPipelineStage"), 64).casefold(),
+            "attempts": max(0, int(raw.get("attempts") or 0)),
+            "failures": max(0, int(raw.get("failures") or 0)),
+            "consecutiveFailures": max(0, int(raw.get("consecutiveFailures") or 0)),
+            "successes": max(0, int(raw.get("successes") or 0)),
+            "progresses": max(0, int(raw.get("progresses") or 0)),
+            "lastOutcome": _clip_text(raw.get("lastOutcome"), 48),
+            "lastReason": _clip_text(raw.get("lastReason"), 240),
+        })
+    return out
+
+
 def repair_memory() -> dict[str, Any]:
     value = _load_json(REPAIR_MEMORY_PATH, {})
     if not isinstance(value, dict):
         value = {}
-    entries = value.get("entries")
-    if not isinstance(entries, list):
-        entries = []
+    entries = [row for row in (value.get("entries") or []) if isinstance(row, dict)][:1000]
+
+    # Production Repair remains anchored to automation/brain-repair-memory.json.
+    # Only the isolated Learning planner may overlay the read-only sanitized
+    # experiment memory published by the previous Learning phase.
+    if str(os.environ.get("NUVIO_BRAIN_PLANNER_MODE") or "").strip().casefold() == "learning":
+        merged: dict[tuple[str, str, str, str, str, int, int], dict[str, Any]] = {
+            _memory_entry_key(row): copy.deepcopy(row)
+            for row in entries
+        }
+        for incoming in _learning_experiment_entries():
+            key = _memory_entry_key(incoming)
+            current = merged.get(key)
+            if current is None:
+                merged[key] = copy.deepcopy(incoming)
+                continue
+            next_row = copy.deepcopy(current)
+            for field in (
+                "attempts", "failures", "consecutiveFailures",
+                "successes", "progresses",
+            ):
+                next_row[field] = max(
+                    max(0, int(current.get(field) or 0)),
+                    max(0, int(incoming.get(field) or 0)),
+                )
+            for field in (
+                "failureClass", "capabilityStrategy", "observedPipelineStage",
+                "lastOutcome", "lastReason",
+            ):
+                if str(incoming.get(field) or ""):
+                    next_row[field] = incoming[field]
+            next_row["experimentVariant"] = incoming["experimentVariant"]
+            next_row["experimentGeneration"] = incoming["experimentGeneration"]
+            merged[key] = next_row
+        entries = list(merged.values())
+
     return {
         "schemaVersion": max(1, int(value.get("schemaVersion") or 1)),
-        "entries": [row for row in entries if isinstance(row, dict)][:1000],
+        "entries": entries[:1000],
     }
 
 
