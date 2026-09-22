@@ -29,6 +29,10 @@ for required in (
 ):
     assert required in wf, required
 
+prove = wf.split("- name: Prove projection fixed point", 1)[1].split("- name: Build atomic provider publication", 1)[0]
+assert prove.index("reindex_provider_publication_fingerprints.py") < prove.index("detect_provider_projection_drift.py"), prove
+assert prove.count("reindex_provider_publication_fingerprints.py") == 1, prove
+
 assert "materialize_provider_v3_all.py" not in wf
 assert 'steps.drift.outputs.count != \'0\'' in wf
 assert "Projection reconcile staged a forbidden path." in wf
