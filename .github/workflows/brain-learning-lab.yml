@@ -502,7 +502,7 @@ jobs:
             --targeted-lab-summary brain-sandbox/health-output/targeted-lab-summary.json
             --learning-queue-state brain-sandbox/health-output/learning-queue-state.json
             --previous-state brain-learning-input/previous.json
-            --runtime-experiment-memory automation/brain-repair-memory.json
+            --runtime-experiment-memory brain-sandbox/health-output/runtime-experiment-memory.json
             --overrides provider-overrides.json)
           if [ -n "${FAST_HANDOFF_PROVIDER_FILTER:-}" ]; then
             args+=(--provider-filter "$FAST_HANDOFF_PROVIDER_FILTER")
@@ -592,6 +592,7 @@ jobs:
             brain-sandbox/daily-learning-coverage.json
             brain-sandbox/health-output/learning-queue-state.json
             brain-sandbox/health-output/learning-queue-summary.json
+            brain-sandbox/health-output/runtime-experiment-memory.json
             brain-sandbox/health-output/targeted-lab-summary.json
           retention-days: 14
           if-no-files-found: error
