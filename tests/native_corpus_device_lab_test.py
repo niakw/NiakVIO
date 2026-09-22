@@ -197,7 +197,15 @@ assert "native-corpus-device-lab.yml" not in brain_learning
 assert "--native-summary brain-learning-input/native-reader-summary.json" in brain_learning
 
 assert "workflow_dispatch:" in targeted_runtime
-assert "\n  push:" not in targeted_runtime
+# Targeted native runtime is normally dispatch-only. The sole push exception is
+# the explicit residential-transport trigger used to qualify current harness
+# mismatches through a real NuvioTV Android client.
+assert "\n  push:" in targeted_runtime
+assert "branches: [main]" in targeted_runtime
+assert "- '.github/triggers/native-residential-transport-targeted.json'" in targeted_runtime
+push_block = targeted_runtime.split("\n  push:", 1)[1].split("\npermissions:", 1)[0]
+assert push_block.count(".github/triggers/") == 1, push_block
+assert "native-residential-transport-targeted.json" in push_block, push_block
 assert "\n  pull_request:" not in targeted_runtime
 
 for source, label in ((prepare_client, "prepare"), (restage_client, "restage")):
