@@ -10,13 +10,23 @@ def main()->int:
     p=argparse.ArgumentParser()
     p.add_argument("--manifest",type=Path,default=ROOT/"manifest.json")
     p.add_argument("--stage",type=Path,default=ROOT/"staging-published")
+    p.add_argument("--provider",action="append",default=[],help="Optional exact provider id filter; may be repeated.")
     args=p.parse_args()
+    requested={str(x or "").strip().casefold().replace("_","-") for x in args.provider if str(x or "").strip()}
     # The default publication contract is the physical active providers/ set.
     if args.manifest.resolve() != (ROOT/"manifest.json").resolve():
         payload=json.loads(args.manifest.read_text(encoding="utf-8"))
         rows=[r for r in payload.get("scrapers") or [] if isinstance(r,dict) and r.get("enabled") is not False and str(r.get("filename") or "").startswith("providers/")]
     else:
         rows=active_provider_rows()
+    if requested:
+        available={str(row.get("id") or "").strip().casefold().replace("_","-") for row in rows if isinstance(row,dict)}
+        missing=sorted(requested-available)
+        if missing: raise SystemExit("published provider stage missing requested ids: "+",".join(missing))
+        rows=[
+            row for row in rows
+            if str(row.get("id") or "").strip().casefold().replace("_","-") in requested
+        ]
     if args.stage.exists(): shutil.rmtree(args.stage)
     (args.stage/"providers").mkdir(parents=True,exist_ok=True)
     candidates=[]; seen=set()
@@ -33,6 +43,6 @@ def main()->int:
     if not candidates: raise SystemExit("no active published providers")
     registry={"schema_version":1,"source":"published-provider-v3","candidate_count":len(candidates),"excluded_count":0,"repair_allowed":False,"candidates":candidates}
     (args.stage/"candidates.json").write_text(json.dumps(registry,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
-    print(f"FIELD_PUBLISHED_V3_STAGE providers={len(candidates)} repair_allowed=false")
+    print(f"FIELD_PUBLISHED_V3_STAGE providers={len(candidates)} repair_allowed=false filtered={'true' if requested else 'false'}")
     return 0
 if __name__=="__main__": raise SystemExit(main())
