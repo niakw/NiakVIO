@@ -23,6 +23,7 @@ POLICY_PATH = ROOT / "engine_v2" / "config" / "brain-policy.json"
 OVERRIDES_PATH = ROOT / "provider-overrides.json"
 CENSUS_STATUS_PATH = ROOT / "automation" / "provider-census-status.json"
 REPAIR_MEMORY_PATH = ROOT / "automation" / "brain-repair-memory.json"
+EXPERIENCE_PATH = ROOT / "automation" / "brain-repair-experience.json"
 LEARNING_MEMORY_PATH = Path(os.environ.get("NIAKVIO_BRAIN_LEARNING_MEMORY", "")).resolve() if os.environ.get("NIAKVIO_BRAIN_LEARNING_MEMORY") else None
 
 PLANS: dict[str, dict[str, Any]] = {}
@@ -340,6 +341,46 @@ def repair_memory() -> dict[str, Any]:
     }
 
 
+def planner_historical_solutions() -> list[dict[str, Any]]:
+    """Expose only sanitized NiakVIO historical solution classes to the planner.
+
+    Historical cases are priors, never proof or mutation authority. The Node
+    planner may only map whitelisted solutionClass values to repair profiles it
+    already knows how to execute and every candidate still passes the ordinary
+    current-byte/identity/playback gates.
+    """
+    value = _load_json(EXPERIENCE_PATH, {})
+    if not isinstance(value, dict) or value.get("role") != "repair-prior-only":
+        return []
+    safety = value.get("safety") if isinstance(value.get("safety"), dict) else {}
+    if safety.get("directMutationAuthority") is not False:
+        return []
+    out: list[dict[str, Any]] = []
+    for raw in value.get("historicalCases") or []:
+        if not isinstance(raw, dict):
+            continue
+        case_id = _clip_text(raw.get("id"), 160)
+        failure = _clip_text(raw.get("failureClass"), 96).casefold()
+        solution = _clip_text(raw.get("solutionClass"), 128).casefold()
+        providers = [
+            _clip_text(provider, 160).casefold()
+            for provider in raw.get("providers") or []
+            if str(provider or "").strip()
+        ][:64]
+        if not case_id or not failure or not solution:
+            continue
+        out.append({
+            "id": case_id,
+            "failureClass": failure,
+            "solutionClass": solution,
+            "providers": providers,
+            "priorOnly": True,
+        })
+        if len(out) >= 512:
+            break
+    return out
+
+
 def planner_negative_memory(_mode: str) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for raw in repair_memory().get("entries") or []:
@@ -432,6 +473,7 @@ def _execute_planner(items: list[dict[str, Any]], mode: str) -> dict[str, dict[s
         "explorationChain": _exploration_chain_enabled(),
         "policy": policy(),
         "learnedSkills": planner_learned_skills(mode),
+        "historicalSolutions": planner_historical_solutions(),
         "negativeMemory": planner_negative_memory(mode),
         "items": items,
     }
@@ -617,6 +659,8 @@ def _plan_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         "capabilityStrategy": str(plan.get("capabilityStrategy") or ""),
         "action": str(plan.get("action") or ""),
         "allowedProfiles": [str(value) for value in plan.get("allowedProfiles") or [] if str(value)],
+        "historicalStrategyProfile": str(plan.get("historicalStrategyProfile") or ""),
+        "historicalStrategyCase": str(plan.get("historicalStrategyCase") or ""),
         "hypotheses": copy.deepcopy([row for row in plan.get("hypotheses") or [] if isinstance(row, dict)]),
     }
 
