@@ -24,18 +24,27 @@ def scalar(value:Any, default:str="unknown")->str:
 
 def action_for(status:str, depth:str, issue:str)->tuple[str,str]:
     s=status.upper(); d=depth.lower(); i=issue.lower()
-    if "HARNESS" in s or "WAF/ANTIBOT" in s or "waf_challenge" in i:
-        return "harness-compatibility", "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge"
-    if "NETWORK BLOCKED" in s or "network_http_error" in i or "network_exception" in i:
-        return "transport", "domain/upstream transport refresh across the whole capability family before provider-local code changes"
+    # Final causal status is stronger than an older dominantIssue. A provider
+    # that currently proves lookup/player depth must not regress to transport
+    # merely because one lane also recorded an HTTP/network error earlier.
+    if "HARNESS" in s or "WAF/ANTIBOT" in s:
+        return "harness-compatibility", "compare browser/native/residential transport and route client-owned gaps away from provider mutation"
     if "CANDIDATE OK" in s:
-        return "candidate-replay", "replay retained candidate proofs against current bytes in batch"
+        return "candidate-replay", "replay/rematerialize retained candidate knowledge against current bytes before new mutation"
     if "PARTIAL OK" in s:
         return "missing-lanes", "protect green lanes and batch-test only missing semantic lanes"
     if "CHAIN REACHED" in s or "chain_reached" in d:
         return "terminal-extraction", "apply/test shared terminal-player extraction profile to the whole capability family"
     if "ROUTE PROVEN" in s or "lookup_only" in d:
         return "route-to-terminal", "replay proven routes in batch and apply shared detail/player traversal profile"
+    if "NETWORK BLOCKED" in s:
+        return "transport", "refresh domain/upstream transport and residential/native evidence before provider-local code changes"
+    # Issue-only WAF/network evidence is a fallback only when the final census
+    # has no deeper semantic proof.
+    if "waf_challenge" in i:
+        return "harness-compatibility", "qualify browser/native/residential transport before any provider mutation"
+    if "network_http_error" in i or "network_exception" in i:
+        return "transport", "refresh transport authority before provider-local code changes"
     return "learning", "queue by signature for Brain learning; provider-local repair only after shared profiles fail"
 
 def depth_class(values:list[str])->str:
