@@ -150,8 +150,10 @@ assert 'BRANCH="brain-learning/proposals"' in brain
 brain_branch_maintenance = (ROOT / ".github/workflows/brain-branch-maintenance.yml").read_text(encoding="utf-8")
 assert 'BRANCH="brain-learning/proposals"' in brain_branch_maintenance
 assert 'REPAIR_BRANCH="brain-repair/proposal"' in brain_branch_maintenance
-assert "git switch -C \"$BRANCH\" origin/main" in brain_branch_maintenance
-assert "engine_v2/learning/latest.json|engine_v2/learning/latest.md" in brain_branch_maintenance
+assert 'git switch -C "$BRANCH" origin/main' not in brain_branch_maintenance
+assert 'git push --force-with-lease origin HEAD:"$BRANCH"' not in brain_branch_maintenance
+assert "memory-ref-read-only" in brain_branch_maintenance
+assert "engine_v2/learning/latest.json engine_v2/learning/latest.md" in brain_branch_maintenance
 assert "gh pr list" in brain_branch_maintenance
 assert "git push origin --delete \"$REPAIR_BRANCH\"" in brain_branch_maintenance
 assert 'HEAD:"$REPAIR_BRANCH"' not in brain_branch_maintenance
