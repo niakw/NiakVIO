@@ -107,6 +107,11 @@ jobs:
             fi
           fi
 
+          python scripts/select_fast_learning_handoff.py \
+            --output /tmp/fast-learning-handoff.json
+          fast_handoff="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print('true' if d.get('fastHandoff') else 'false')")"
+          provider_filter="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print(d.get('providerFilter') or '')")"
+
           if [ "$remaining" -gt 0 ]; then
             budget="$remaining"
             if [ "$budget" -gt 300 ]; then budget=300; fi
@@ -128,8 +133,10 @@ jobs:
             echo "phase=$phase"
             echo "next_phase=$next_phase"
             echo "continue=$continue_slot"
+            echo "fast_handoff=$fast_handoff"
+            echo "provider_filter=$provider_filter"
           } >> "$GITHUB_OUTPUT"
-          echo "FIELD_BRAIN_LONG_SLOT phase=$phase budget_minutes=$budget next_remaining_minutes=$next_remaining continue=$continue_slot"
+          echo "FIELD_BRAIN_LONG_SLOT phase=$phase budget_minutes=$budget next_remaining_minutes=$next_remaining continue=$continue_slot fast_handoff=$fast_handoff provider_filter=${provider_filter:-none}"
 
       - name: Install pinned runtime dependencies
         shell: bash
@@ -152,6 +159,9 @@ jobs:
           python tests/brain_architecture_deferred_cohort_test.py
           python tests/daily_learning_coverage_test.py
           python tests/brain_learning_deferred_repair_priority_test.py
+          python tests/fast_learning_handoff_scope_test.py
+          python tests/fast_learning_targeted_health_test.py
+          python tests/health_provider_filter_contract_test.py
           python tests/learning_targeted_domain_refresh_contract_test.py
           python tests/brain_learning_same_run_hypothesis_rotation_test.py
           python tests/brain_final_experiment_generation_test.py
@@ -174,6 +184,8 @@ jobs:
           python -m py_compile \
             scripts/run_brain_learning_sandbox.py \
             scripts/run_brain_learning_queue.py \
+            scripts/select_fast_learning_handoff.py \
+            scripts/validate_fast_learning_health_scope.py \
             scripts/brain_positive_program_memory.py \
             scripts/compile_brain_accepted_program_v3.py \
             scripts/brain_repair_runtime.py \
@@ -295,6 +307,7 @@ jobs:
           NUVIO_HEALTH_OUTPUT: brain-sandbox/full-health
           NUVIO_HEALTH_RESULTS_FILENAME: health-results.json
           NUVIO_WORKER_MEMORY_MB: "1024"
+          NUVIO_HEALTH_PROVIDER_FILTER: ${{ steps.learning-slot.outputs.provider_filter }}
         run: |
           set -euo pipefail
           mkdir -p brain-sandbox/full-health brain-sandbox/health-output
@@ -303,6 +316,7 @@ jobs:
           cp brain-sandbox/full-health/health-results.json brain-sandbox/health-output/health-results.json
 
       - name: Reject common runtime collapse before provider Learning
+        if: ${{ steps.learning-slot.outputs.fast_handoff != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -313,6 +327,7 @@ jobs:
             --output brain-sandbox/learning-runtime-baseline.json
 
       - name: Prove daily published-provider observation coverage
+        if: ${{ steps.learning-slot.outputs.fast_handoff != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -321,6 +336,16 @@ jobs:
             --stage staging/candidates.json \
             --health brain-sandbox/full-health/health-results.json \
             --output brain-sandbox/daily-learning-coverage.json
+
+      - name: Prove targeted Fast-Handoff observation coverage
+        if: ${{ steps.learning-slot.outputs.fast_handoff == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_fast_learning_health_scope.py \
+            --handoff /tmp/fast-learning-handoff.json \
+            --health brain-sandbox/full-health/health-results.json \
+            --output brain-sandbox/fast-learning-health-scope.json
 
       - name: Build clean ProviderBase reconstruction stage
         shell: bash
@@ -392,17 +417,23 @@ jobs:
 
       - name: Compare sandbox evidence against historical audit
         shell: bash
+        env:
+          FAST_HANDOFF_PROVIDER_FILTER: ${{ steps.learning-slot.outputs.provider_filter }}
         run: |
           set -euo pipefail
-          node engine_v2/scripts/build-historical-learning.mjs \
-            --baseline-config engine_v2/config/historical-audit-baselines.json \
-            --baseline-id excel-provider-audit-5.20.63 \
-            --baseline-manifest brain-learning-input/baseline-manifest.json \
-            --baseline-health brain-learning-input/baseline-health.json \
-            --current-manifest manifest.json \
-            --current-health brain-sandbox/health-output/health-results.json \
-            --repair-report brain-sandbox/health-output/repair-report.json \
-            --output brain-sandbox/historical-training.json
+          args=(node engine_v2/scripts/build-historical-learning.mjs
+            --baseline-config engine_v2/config/historical-audit-baselines.json
+            --baseline-id excel-provider-audit-5.20.63
+            --baseline-manifest brain-learning-input/baseline-manifest.json
+            --baseline-health brain-learning-input/baseline-health.json
+            --current-manifest manifest.json
+            --current-health brain-sandbox/health-output/health-results.json
+            --repair-report brain-sandbox/health-output/repair-report.json
+            --output brain-sandbox/historical-training.json)
+          if [ -n "${FAST_HANDOFF_PROVIDER_FILTER:-}" ]; then
+            args+=(--provider-filter "$FAST_HANDOFF_PROVIDER_FILTER")
+          fi
+          "${args[@]}"
 
       - name: Build sanitized cross-day Brain state
         shell: bash
