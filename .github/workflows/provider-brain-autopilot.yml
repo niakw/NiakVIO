@@ -1,0 +1,128 @@
+name: PROVIDERS - Brain Autopilot
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build the causal execution plan without dispatching child lanes
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/provider-brain-autopilot.json'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: provider-brain-autopilot-main
+  cancel-in-progress: true
+
+jobs:
+  route:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Validate causal routing contracts
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/build_provider_repair_batch_plan.py scripts/build_provider_execution_plan.py
+          python tests/provider_repair_batch_causal_precedence_test.py
+          python tests/provider_execution_plan_test.py
+
+      - name: Build exact current causal execution plan
+        id: plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/build_provider_repair_batch_plan.py             --status automation/provider-census-status.json             --overrides provider-overrides.json             --output "$RUNNER_TEMP/provider-repair-batch-plan.json"
+          python scripts/build_provider_execution_plan.py             --batch-plan "$RUNNER_TEMP/provider-repair-batch-plan.json"             --status automation/provider-census-status.json             --output "$RUNNER_TEMP/provider-execution-plan.json"
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          from pathlib import Path
+          p=json.loads((Path(os.environ["RUNNER_TEMP"])/"provider-execution-plan.json").read_text())
+          def cohort(lane):
+              values=[]
+              for row in p.get("executions") or []:
+                  if row.get("lane")==lane and row.get("dispatchAllowed") is True:
+                      values.extend(row.get("providers") or [])
+              return ",".join(sorted(set(values)))
+          print("domain="+cohort("DOMAIN_REFRESH"))
+          print("remat="+cohort("REMAT_TEST"))
+          print("fast="+cohort("FAST_REPAIR"))
+          print("learning="+cohort("BRAIN_LEARNING"))
+          print("harness="+cohort("CORE_CLIENT_LEARNING"))
+          print("blocked="+str(int(p.get("blockedExecutionCount") or 0)))
+          PY
+          cat "$RUNNER_TEMP/provider-execution-plan.json"
+
+      - name: Dispatch causal owner lanes
+        if: ${{ inputs.dry_run != true }}
+        shell: bash
+        env:
+          DOMAIN: ${{ steps.plan.outputs.domain }}
+          REMAT: ${{ steps.plan.outputs.remat }}
+          FAST: ${{ steps.plan.outputs.fast }}
+          LEARNING: ${{ steps.plan.outputs.learning }}
+          HARNESS: ${{ steps.plan.outputs.harness }}
+        run: |
+          set -euo pipefail
+
+          # A true transport/domain owner can invalidate every downstream
+          # provider assumption. Run it alone; its publication/retest cycle
+          # will rebuild a new execution plan.
+          if [ -n "$DOMAIN" ]; then
+            gh workflow run domain-refresh.yml --repo "$GITHUB_REPOSITORY" --ref main -f mode=quick
+            echo "FIELD_PROVIDER_AUTOPILOT dispatch=DOMAIN_REFRESH providers=$DOMAIN"
+            exit 0
+          fi
+
+          # REMAT diagnostics and provider-local repair are disjoint cohorts and
+          # may execute in parallel. REMAT is observational and never publishes.
+          if [ -n "$REMAT" ]; then
+            gh workflow run provider-remat-test.yml               --repo "$GITHUB_REPOSITORY" --ref main               -f scope=non-full -f target_providers="$REMAT"
+            echo "FIELD_PROVIDER_AUTOPILOT dispatch=REMAT_TEST providers=$REMAT"
+          fi
+
+          if [ -n "$FAST" ]; then
+            gh workflow run provider-fast-repair.yml               --repo "$GITHUB_REPOSITORY" --ref main               -f target_providers="$FAST"               -f waves=3 -f time_budget_seconds=1200 -f publish_validated=true
+            echo "FIELD_PROVIDER_AUTOPILOT dispatch=FAST_REPAIR providers=$FAST"
+          fi
+
+          # Unclassified repair debt can enter bounded Learning directly only
+          # when no provider-local Repair cohort is already going to hand off
+          # unresolved work to the same serialized Learning lane.
+          if [ -n "$LEARNING" ] && [ -z "$FAST" ]; then
+            gh workflow run brain-learning-lab.yml               --repo "$GITHUB_REPOSITORY" --ref main               -f publish_proposal=false -f slot_remaining_minutes=20 -f slot_phase=1
+            echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING providers=$LEARNING"
+          fi
+
+          # Harness/Core-client work is deliberately not provider mutation.
+          # The execution plan exposes the exact blocked cohort/blueprints until
+          # a validated autonomous Core-client application lane exists.
+          if [ -n "$HARNESS" ]; then
+            echo "FIELD_PROVIDER_AUTOPILOT blocked=CORE_CLIENT_LEARNING providers=$HARNESS reason=no_validated_autonomous_core_client_application_lane"
+          fi
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: provider-brain-autopilot-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/provider-repair-batch-plan.json
+            ${{ runner.temp }}/provider-execution-plan.json
+          retention-days: 14
+          if-no-files-found: warn
