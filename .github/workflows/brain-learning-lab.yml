@@ -502,6 +502,7 @@ jobs:
             --targeted-lab-summary brain-sandbox/health-output/targeted-lab-summary.json
             --learning-queue-state brain-sandbox/health-output/learning-queue-state.json
             --previous-state brain-learning-input/previous.json
+            --runtime-experiment-memory automation/brain-repair-memory.json
             --overrides provider-overrides.json)
           if [ -n "${FAST_HANDOFF_PROVIDER_FILTER:-}" ]; then
             args+=(--provider-filter "$FAST_HANDOFF_PROVIDER_FILTER")
