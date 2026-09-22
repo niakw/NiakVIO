@@ -123,7 +123,7 @@ jobs:
           fast_handoff="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print('true' if d.get('fastHandoff') else 'false')")"
           provider_filter="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print(d.get('providerFilter') or '')")"
           if [ -n "$target_provider" ]; then
-            python - "$target_provider" automation/provider-census-status.json automation/provider-repair-learn-handoff-v1.json <<'PY'
+            python - "$target_provider" automation/provider-census-status.json automation/provider-repair-learn-handoff-v1.json /tmp/fast-learning-handoff.json <<'PY'
           import json,sys
           target=str(sys.argv[1] or '').strip().lower().replace('_','-')
           census=json.load(open(sys.argv[2],encoding='utf-8'))
@@ -147,7 +147,7 @@ jobs:
               "providerFilter": target,
               "policy": "target-scoped-handoff",
           }
-          json.dump(data,open(sys.argv[2],"w",encoding="utf-8"),ensure_ascii=False,indent=2)
+          json.dump(data,open(sys.argv[4],"w",encoding="utf-8"),ensure_ascii=False,indent=2)
           PY
             fast_handoff=true
             provider_filter="$target_provider"
