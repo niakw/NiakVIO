@@ -13,7 +13,7 @@ required = [
     "target provider is not LEARN/pending in current handoff",
     'provider_filter="$target_provider"',
     '"policy": "target-scoped-handoff"',
-    'json.dump(data,open(sys.argv[2],"w",encoding="utf-8"),ensure_ascii=False,indent=2)',
+    'json.dump(data,open(sys.argv[4],"w",encoding="utf-8"),ensure_ascii=False,indent=2)',
     'echo "target_provider=$target_provider"',
     "steps.learning-slot.outputs.target_provider",
     'if [ -n "$TARGET_PROVIDER" ]; then args+=(--provider "$TARGET_PROVIDER"); fi',
@@ -41,7 +41,7 @@ assert 'row.get("owner")' in target_block or "row.get('owner')" in target_block,
 assert 'row.get("status")' in target_block or "row.get('status')" in target_block, target_block
 
 lines = workflow.splitlines()
-start = next(i for i,line in enumerate(lines) if "automation/provider-census-status.json automation/provider-repair-learn-handoff-v1.json <<'PY'" in line)
+start = next(i for i,line in enumerate(lines) if "automation/provider-census-status.json automation/provider-repair-learn-handoff-v1.json /tmp/fast-learning-handoff.json <<'PY' in line)
 end = next(i for i in range(start + 1, len(lines)) if lines[i].strip() == "PY")
 assert all(lines[i].startswith("          ") for i in range(start + 1, end + 1)), lines[start:end + 1]
 
