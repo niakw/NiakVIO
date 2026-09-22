@@ -1626,6 +1626,60 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     }
 
 
+
+def augment_accepted_runtime_program(
+    candidate: dict[str, Any],
+    result: dict[str, Any] | None,
+    program: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    """Merge only replayable current-run winning requests into accepted DATA.
+
+    The repair options describe what the generator intended to try. The winning
+    health result is higher-authority evidence of what actually executed. Reuse
+    the same conservative observation->recipe compiler used by Brain exploration
+    so secrets/opaque values stay excluded and dependent requests require an
+    observed causal binding.
+    """
+    if not isinstance(program, dict) or not isinstance(result, dict):
+        return program
+    options = program.get("options")
+    if not isinstance(options, dict):
+        return program
+    observed = observed_request_recipes(candidate, result)
+    if not observed:
+        return program
+
+    existing = [
+        row for row in options.get("request_recipes") or []
+        if isinstance(row, dict)
+    ]
+    options["request_recipes"] = _unique_request_recipes(
+        observed,
+        existing,
+        limit=32,
+    )
+
+    search_paths = [
+        str(value) for value in options.get("search_paths") or []
+        if _safe_route(value)
+    ]
+    direct_paths = [
+        str(value) for value in options.get("direct_paths") or []
+        if _safe_route(value)
+    ]
+    for recipe in observed:
+        route = _safe_route(recipe.get("route"))
+        if not route:
+            continue
+        role = str(recipe.get("role") or "").casefold()
+        target = search_paths if role == "search" else direct_paths
+        if route not in target:
+            target.append(route)
+    options["search_paths"] = search_paths[:16]
+    options["direct_paths"] = direct_paths[:32]
+    return program
+
+
 def _adaptive_failure(result: dict[str, Any]) -> bool:
     """Return whether a runtime observation must enter bounded repair.
 
@@ -1755,6 +1809,7 @@ def _apply_adaptive(
         "type": "patch_profile",
         "profile": profile_name,
         "strategy": expected or "adaptive_runtime_recovery",
+        "engine": "adaptive_runtime_recovery",
         "phase": "runtime",
         "revision": 5,
         "options": options,
