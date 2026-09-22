@@ -27,6 +27,7 @@ const skillTransfer = asRecord(production.learnedSkillTransferPolicy);
 const learnedSkillInputAllowed = learningMode || production.learnedSkillInputAllowed === true;
 const negativeMemoryPolicy = asRecord(production.negativeExperimentMemory);
 const negativeMemory = asArray(input.negativeMemory).filter(isRecord);
+const historicalSolutions = asArray(input.historicalSolutions).filter(isRecord);
 const learnedSkills = learnedSkillInputAllowed
   ? [
       ...normalizeLearnedSkills(input.learnedSkills),
@@ -76,6 +77,47 @@ function causalStrategyProfile(failureClass, variant, generation, finalVariant) 
   if (!base) return "";
   const currentGeneration = Math.max(1, finiteNumber(generation, 1));
   return currentGeneration <= 2 ? base : `${base}_g${currentGeneration}`;
+}
+
+const HISTORICAL_SOLUTION_PROFILES = {
+  provider_owned_origin_header_and_domain_replay: "provider_origin_failover_v1",
+  search_detail_player_terminal_traversal: "proven_route_terminal_traversal_v1",
+  terminal_media_extractor_with_playback_validation: "chain_terminal_extractor_v1",
+  same_provider_candidate_program_replay: "retained_candidate_replay_v1",
+  proven_request_program_and_terminal_extraction: "player_media_extractor_v1",
+};
+
+function generationProfile(base, generation) {
+  if (!base) return "";
+  const currentGeneration = Math.max(1, finiteNumber(generation, 1));
+  return currentGeneration <= 2 ? base : `${base}_g${currentGeneration}`;
+}
+
+function historicalStrategyHint(providerId, failureClass, generation, memoryRows, rotateEvery) {
+  const provider = stringValue(providerId).toLowerCase();
+  const failure = stringValue(failureClass).toLowerCase();
+  const candidates = historicalSolutions
+    .filter((row) => {
+      if (stringValue(row.failureClass).toLowerCase() !== failure) return false;
+      const providers = stringArray(row.providers).map((value) => value.toLowerCase());
+      return providers.length === 0 || providers.includes("global") || providers.includes(provider);
+    })
+    .map((row) => ({
+      caseId: stringValue(row.id),
+      solutionClass: stringValue(row.solutionClass).toLowerCase(),
+      providerSpecific: stringArray(row.providers).map((value) => value.toLowerCase()).includes(provider),
+    }))
+    .filter((row) => Boolean(HISTORICAL_SOLUTION_PROFILES[row.solutionClass]))
+    .sort((a, b) => Number(b.providerSpecific) - Number(a.providerSpecific) || a.caseId.localeCompare(b.caseId));
+  for (const row of candidates) {
+    const profile = generationProfile(HISTORICAL_SOLUTION_PROFILES[row.solutionClass], generation);
+    const alreadyFailed = memoryRows.some((memory) => (
+      stringValue(memory.profile) === profile
+      && Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) >= rotateEvery
+    ));
+    if (!alreadyFailed) return { profile, caseId: row.caseId, solutionClass: row.solutionClass };
+  }
+  return { profile: "", caseId: "", solutionClass: "" };
 }
 
 function buildPlan(item) {
@@ -315,13 +357,29 @@ function buildPlan(item) {
             }
       )
     : baseRepairTarget;
+  const historicalHint = (
+    !experimentExhausted
+    && learningMode
+    && experimentVariant >= Math.max(1, finalVariant - 1)
+  )
+    ? historicalStrategyHint(
+        providerId,
+        evidence.failureClass,
+        experimentGeneration,
+        allMemoryMatches,
+        rotateEvery,
+      )
+    : { profile: "", caseId: "", solutionClass: "" };
   const causalProfile = experimentExhausted
     ? ""
-    : causalStrategyProfile(
-        evidence.failureClass,
-        experimentVariant,
-        experimentGeneration,
-        finalVariant,
+    : (
+        historicalHint.profile
+        || causalStrategyProfile(
+          evidence.failureClass,
+          experimentVariant,
+          experimentGeneration,
+          finalVariant,
+        )
       );
   const executionRepairTarget = causalProfile
     ? {
@@ -358,6 +416,9 @@ function buildPlan(item) {
     experimentRotationEvery: rotateEvery,
     experimentVariantCount: maxVariants,
     experimentGenerationLimit: learningMode ? maxLearningGenerations : finalVariantGeneration,
+    historicalStrategyProfile: historicalHint.profile,
+    historicalStrategyCase: historicalHint.caseId,
+    historicalSolutionClass: historicalHint.solutionClass,
     learningDisposition: repairTarget.learningDisposition,
     capabilityStrategy,
     signature,
