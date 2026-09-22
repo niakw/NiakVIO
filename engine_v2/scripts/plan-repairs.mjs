@@ -47,29 +47,43 @@ const HISTORICAL_SOLUTION_PROFILES = {
 const POST_EXHAUSTION_STRATEGIES = {
   provider_transport_gap: [
     { profile: "transport_request_differential_v1", method: "provider-owned-request-differential" },
+    { profile: "provider_session_bootstrap_replay_v1", method: "provider-owned-session-bootstrap-replay" },
+    { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
   ],
   transport_blocked: [
     { profile: "transport_request_differential_v1", method: "provider-owned-request-differential" },
+    { profile: "provider_session_bootstrap_replay_v1", method: "provider-owned-session-bootstrap-replay" },
+    { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
   ],
   route_proven_gap: [
     { profile: "route_transition_graph_v1", method: "provider-owned-route-transition-graph" },
     { profile: "route_peer_transition_replay_v1", method: "structural-peer-route-transition-replay" },
+    { profile: "identity_alias_search_traversal_v1", method: "tmdb-identity-alias-search-traversal" },
+    { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
   ],
   chain_terminal_gap: [
     { profile: "terminal_transition_graph_v1", method: "terminal-response-transition-graph" },
     { profile: "terminal_request_program_inference_v1", method: "terminal-request-program-inference" },
+    { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
+    { profile: "document_request_contract_mining_v1", method: "provider-document-request-contract-mining" },
   ],
   candidate_replay_gap: [
     { profile: "candidate_divergence_trace_v1", method: "retained-candidate-divergence-trace" },
     { profile: "candidate_request_program_replay_v1", method: "retained-request-program-replay" },
+    { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
+    { profile: "identity_alias_search_traversal_v1", method: "tmdb-identity-alias-search-traversal" },
   ],
   media_extraction_gap: [
     { profile: "player_protocol_family_replay_v1", method: "player-protocol-family-replay" },
     { profile: "media_response_shape_inference_v1", method: "media-response-shape-inference" },
+    { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
+    { profile: "document_request_contract_mining_v1", method: "provider-document-request-contract-mining" },
   ],
   search_gap: [
     { profile: "search_contract_inference_v1", method: "search-contract-inference" },
     { profile: "search_response_route_binding_v1", method: "search-response-route-binding" },
+    { profile: "identity_alias_search_traversal_v1", method: "tmdb-identity-alias-search-traversal" },
+    { profile: "runtime_response_salvage_v1", method: "successful-runtime-response-salvage" },
   ],
 };
 
