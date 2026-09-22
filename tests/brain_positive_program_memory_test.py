@@ -139,6 +139,10 @@ with tempfile.TemporaryDirectory() as directory:
     assert skill["providers"]==["demo"]
     assert skill["autoApply"] is False
     assert skill["sameProviderPositiveProgram"] is True
+    fingerprints=skill["positiveProgramFingerprintsByProvider"]
+    assert set(fingerprints)=={"demo"},fingerprints
+    assert len(fingerprints["demo"])==64,fingerprints
+    assert all(ch in "0123456789abcdef" for ch in fingerprints["demo"]),fingerprints
     assert skill["source"]=="brain-positive-program-memory"
 
 adaptive=(ROOT/"scripts/adaptive_runtime/runtime_repair.py").read_text(encoding="utf-8")
