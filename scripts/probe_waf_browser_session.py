@@ -721,6 +721,19 @@ def probe_target(
     }
 
 
+def filter_targets_by_provider(
+    targets: list[dict[str, Any]],
+    providers: set[str],
+) -> list[dict[str, Any]]:
+    if not providers:
+        return targets
+    wanted = {str(value or "").strip().casefold() for value in providers if str(value or "").strip()}
+    return [
+        row for row in targets
+        if str(row.get("provider") or "").strip().casefold() in wanted
+    ]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("report", type=Path)
@@ -735,6 +748,8 @@ def main() -> int:
     ap.add_argument("--overrides", type=Path)
     ap.add_argument("--network-report", type=Path)
     ap.add_argument("--max-targets", type=int, default=16)
+    ap.add_argument("--provider", action="append", default=[])
+    ap.add_argument("--providers", default="")
     args = ap.parse_args()
 
     report = load(args.report)
@@ -768,6 +783,15 @@ def main() -> int:
             )
         ]
         targets.extend(network_targets)
+    requested = {
+        str(value or "").strip().casefold()
+        for value in [
+            *args.provider,
+            *str(args.providers or "").split(","),
+        ]
+        if str(value or "").strip()
+    }
+    targets = filter_targets_by_provider(targets, requested)
     targets = targets[: max(1, args.max_targets)]
     browser = browser_binary()
     rows: list[dict[str, Any]] = []
@@ -799,6 +823,7 @@ def main() -> int:
         "browserAvailable": bool(browser),
         "browserExecutable": Path(browser).name if browser else None,
         "targetCount": len(targets),
+        "providerFilter": sorted(requested),
         "attemptsPerTarget": max(1, min(int(args.attempts), 3)),
         "clientProfileMatrixEnabled": bool(args.client_profile_matrix),
         "clientProfiles": [
