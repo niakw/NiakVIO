@@ -185,6 +185,28 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery) {
   return { profile: "", method: "", index: -1 };
 }
 
+function providerPositiveProgramReplayHint(reusableSkills, memoryRows, rotateEvery) {
+  const profile = "provider_positive_program_replay_v1";
+  const hasStrictSameProviderProgram = reusableSkills.some(
+    (skill) => skill.sameProviderPositiveProgram === true,
+  );
+  if (!hasStrictSameProviderProgram) {
+    return { profile: "", method: "", index: -1 };
+  }
+  const alreadyFailed = memoryRows.some((memory) => (
+    stringValue(memory.profile) === profile
+    && Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) >= rotateEvery
+  ));
+  if (alreadyFailed) {
+    return { profile: "", method: "", index: -1 };
+  }
+  return {
+    profile,
+    method: "strict-same-provider-positive-program-replay",
+    index: -1,
+  };
+}
+
 function buildPlan(item) {
   const candidate = asRecord(item.candidate);
   const result = asRecord(item.result);
@@ -417,9 +439,14 @@ function buildPlan(item) {
   });
   const hypotheses = asArray(plan.hypotheses).filter(isRecord);
   const baseRepairTarget = resolveRepairTarget(plan.failureClass, capabilityStrategy, evidence.observedPipelineStage, stringValue(input.mode, "quick"));
-  const postExhaustionHint = (learningMode && experimentExhausted)
-    ? postExhaustionStrategyHint(evidence.failureClass, allMemoryMatches, rotateEvery)
+  const positiveProgramReplayHint = (learningMode && experimentExhausted)
+    ? providerPositiveProgramReplayHint(reusable, allMemoryMatches, rotateEvery)
     : { profile: "", method: "", index: -1 };
+  const postExhaustionHint = positiveProgramReplayHint.profile
+    ? positiveProgramReplayHint
+    : (learningMode && experimentExhausted)
+      ? postExhaustionStrategyHint(evidence.failureClass, allMemoryMatches, rotateEvery)
+      : { profile: "", method: "", index: -1 };
   const strategyEscalated = Boolean(postExhaustionHint.profile);
   const repairTarget = experimentExhausted
     ? (
@@ -518,6 +545,7 @@ function buildPlan(item) {
     baseExperimentExhausted: experimentExhausted,
     experimentExhausted: experimentExhausted && !strategyEscalated,
     strategyEscalated,
+    providerPositiveProgramReplay: postExhaustionHint.profile === "provider_positive_program_replay_v1",
     postExhaustionStrategyProfile: postExhaustionHint.profile,
     postExhaustionStrategyMethod: postExhaustionHint.method,
     postExhaustionStrategyIndex: postExhaustionHint.index,
