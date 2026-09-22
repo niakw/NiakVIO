@@ -337,6 +337,11 @@ function mergeLearnedSkills(previousSkills, currentSkills) {
         ...existing,
         ...skill,
         providers: [...new Set([...(existing.providers || []), ...(skill.providers || [])])].slice(0, 96),
+        sameProviderPositiveProgram: existing.sameProviderPositiveProgram === true || skill.sameProviderPositiveProgram === true,
+        positiveProgramFingerprintsByProvider: {
+          ...asRecord(existing.positiveProgramFingerprintsByProvider),
+          ...asRecord(skill.positiveProgramFingerprintsByProvider),
+        },
         successCount: Math.max(nonNegative(existing.successCount), nonNegative(skill.successCount)),
         failureCount: Math.max(nonNegative(existing.failureCount), nonNegative(skill.failureCount)),
         confidence: Math.max(Number(existing.confidence || 0), Number(skill.confidence || 0)),
@@ -364,6 +369,17 @@ function sanitizeLearnedSkill(raw) {
     actions: (Array.isArray(raw.actions) ? raw.actions : []).map((v) => sanitizeReason(v).slice(0, 240)).filter(Boolean).slice(0, 12),
     capabilities: [...new Set((Array.isArray(raw.capabilities) ? raw.capabilities : []).map((v) => sanitizeReason(v).slice(0, 64)).filter(Boolean))].slice(0, 24),
     providers: [...new Set((Array.isArray(raw.providers) ? raw.providers : []).map((v) => String(v || '').trim().toLowerCase().slice(0, 128)).filter(Boolean))].slice(0, 96),
+    sameProviderPositiveProgram: raw.sameProviderPositiveProgram === true,
+    positiveProgramFingerprintsByProvider: Object.fromEntries(
+      Object.entries(asRecord(raw.positiveProgramFingerprintsByProvider))
+        .map(([provider, fingerprint]) => [
+          String(provider || '').trim().toLowerCase().slice(0, 128),
+          String(fingerprint || '').trim().toLowerCase().slice(0, 256),
+        ])
+        .filter(([provider, fingerprint]) => provider && /^[0-9a-f:]{64,256}$/.test(fingerprint))
+        .slice(0, 96)
+    ),
+    source: sanitizeReason(raw.source || '').slice(0, 96),
     successCount: nonNegative(raw.successCount),
     failureCount: nonNegative(raw.failureCount),
     validated: true,
@@ -505,6 +521,7 @@ function mergeExperimentMemory(previousMemory, runtimeMemory, report, planMap, l
         providerVersion: '*',
         signature,
         profile,
+        positiveProgramFingerprint: String(plan.positiveProgramFingerprint || '').trim().toLowerCase().slice(0, 256),
         experimentVariant,
         experimentGeneration,
       });
@@ -514,6 +531,7 @@ function mergeExperimentMemory(previousMemory, runtimeMemory, report, planMap, l
         signature,
         failureClass: String(plan.failureClass || 'unknown_failure'),
         profile,
+        positiveProgramFingerprint: String(plan.positiveProgramFingerprint || '').trim().toLowerCase().slice(0, 256),
         experimentVariant,
         experimentGeneration,
         capabilityStrategy: String(plan.capabilityStrategy || '').slice(0, 96),
@@ -576,6 +594,7 @@ function sanitizeMemoryEntry(raw) {
     signature,
     failureClass: String(raw.failureClass || 'unknown_failure').trim().slice(0, 96),
     profile,
+    positiveProgramFingerprint: String(raw.positiveProgramFingerprint || '').trim().toLowerCase().slice(0, 256),
     experimentVariant: nonNegative(raw.experimentVariant),
     experimentGeneration: Math.max(1, nonNegative(raw.experimentGeneration) || 1),
     capabilityStrategy: String(raw.capabilityStrategy || '').trim().toLowerCase().slice(0, 96),
@@ -597,6 +616,7 @@ function memoryKey(row) {
     row.providerVersion || '*',
     row.signature,
     row.profile,
+    row.positiveProgramFingerprint || '',
     `g${Math.max(1, nonNegative(row.experimentGeneration) || 1)}`,
     `v${nonNegative(row.experimentVariant)}`,
   ].join('::');
