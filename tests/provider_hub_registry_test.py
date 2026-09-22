@@ -3,6 +3,7 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
@@ -457,7 +458,8 @@ _original_fetch = resolver.fetch
 try:
     resolver.search_engine_urls = lambda _query: [("test", "https://search.example/?q=demo")]
     def fake_search_redirect_fetch(url: str, timeout: float = 10.0):
-        if url.startswith("https://search.example/"):
+        parsed = urlparse(url)
+        if parsed.scheme == "https" and parsed.hostname == "search.example":
             return (200, url, '<a href="https://old.demo-provider.example/">Demo Provider</a>', {"Content-Type": "text/html"})
         if url == "https://old.demo-provider.example/":
             return (200, "https://demo-provider.example/", "<html></html>", {"Content-Type": "text/html"})
@@ -479,8 +481,10 @@ assert any(row.get("search_result_probe") for row in observed), observed
 
 # Deep discovery uses Yandex first and DuckDuckGo as a bounded fallback.
 engines = resolver.search_engine_urls('example provider')
-assert engines[0][0] == 'yandex' and 'yandex.com/search/' in engines[0][1]
-assert engines[1][0] == 'duckduckgo' and 'duckduckgo.com/html/' in engines[1][1]
+yandex_url = urlparse(engines[0][1])
+duckduckgo_url = urlparse(engines[1][1])
+assert engines[0][0] == 'yandex' and yandex_url.hostname == 'yandex.com' and yandex_url.path.startswith('/search/')
+assert engines[1][0] == 'duckduckgo' and duckduckgo_url.hostname == 'duckduckgo.com' and duckduckgo_url.path.startswith('/html/')
 
 # Search-only discoveries require two consecutive confirmations, while a hub,
 # Telegram or curated source can be accepted immediately.
