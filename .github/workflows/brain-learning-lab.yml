@@ -31,12 +31,12 @@ on:
   schedule:
     - cron: "17 2 * * *"
 
-# Brain runs are persistent learning transactions. Serialize whole runs so a
-# later run restores the memory committed by the previous one instead of
-# concurrently rebuilding from the same stale snapshot and overwriting evidence.
+# Scheduled/full Learning remains serialized. An explicit Fast-Repair handoff
+# may supersede an older unpublished Learning run: its source census/handoff is
+# newer, and cancelling before publish avoids hours of obsolete global discovery.
 concurrency:
   group: niakvio-brain-learning-lab
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.slot_remaining_minutes != '0') }}
 
 jobs:
   experiment:
