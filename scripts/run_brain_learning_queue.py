@@ -192,14 +192,13 @@ def phase_experiment_entries(
         for value in repair.get("attemptedProfiles") or []
         if str(value).strip()
     ]
-    profiles = list(dict.fromkeys([*allowed, *attempted]))
+    # If the child replanned after testing a profile, allowedProfiles belongs
+    # to the *next* hypothesis, not the experiment that just ran. Never record
+    # that future strategy as failed before it has actually been attempted.
+    profiles = list(dict.fromkeys(attempted or allowed))
     if not profiles:
         return []
 
-    variant = max(0, int(plan.get("experimentVariant") or 0))
-    generation = max(1, int(plan.get("experimentGeneration") or 1))
-    signature = str(plan.get("signature") or plan.get("failureClass") or "").strip()
-    failure_class = str(plan.get("failureClass") or "unknown_failure").strip()
     now = datetime.now(timezone.utc).isoformat()
     playable = isinstance(final_lab, dict) and str(final_lab.get("status") or "") == "playable"
 
@@ -234,6 +233,26 @@ def phase_experiment_entries(
             row for row in attempts
             if str(row.get("status") or "") == "generated"
         ]
+
+        # Round events snapshot the plan that actually selected this profile.
+        # The report-level plan may already be the replan for the next strategy.
+        event_plan = next(
+            (
+                row.get("brain_plan")
+                for row in [*attempts, *accepted, *progress, *rejected]
+                if isinstance(row.get("brain_plan"), dict) and row.get("brain_plan")
+            ),
+            None,
+        )
+        effective_plan = event_plan if isinstance(event_plan, dict) else plan
+        variant = max(0, int(effective_plan.get("experimentVariant") or 0))
+        generation = max(1, int(effective_plan.get("experimentGeneration") or 1))
+        signature = str(
+            effective_plan.get("signature")
+            or effective_plan.get("failureClass")
+            or ""
+        ).strip()
+        failure_class = str(effective_plan.get("failureClass") or "unknown_failure").strip()
 
         success_count = len(accepted) if playable else 0
         failures = 0
@@ -274,8 +293,8 @@ def phase_experiment_entries(
             "profile": profile,
             "experimentVariant": variant,
             "experimentGeneration": generation,
-            "capabilityStrategy": str(plan.get("capabilityStrategy") or "").strip().casefold(),
-            "observedPipelineStage": str(plan.get("observedPipelineStage") or "").strip().casefold(),
+            "capabilityStrategy": str(effective_plan.get("capabilityStrategy") or "").strip().casefold(),
+            "observedPipelineStage": str(effective_plan.get("observedPipelineStage") or "").strip().casefold(),
             "attempts": max(1, len(attempts)),
             "successes": success_count,
             "failures": failures,
@@ -287,6 +306,89 @@ def phase_experiment_entries(
             "memoryRole": "fair-share-exact-experiment-ledger",
         })
     return entries
+
+
+def _phase_experiment_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, int, int]:
+    return (
+        norm(row.get("providerId")),
+        str(row.get("providerVersion") or "*").strip() or "*",
+        str(row.get("failureClass") or "").strip(),
+        str(row.get("signature") or "").strip(),
+        str(row.get("profile") or "").strip(),
+        max(0, int(row.get("experimentVariant") or 0)),
+        max(1, int(row.get("experimentGeneration") or 1)),
+    )
+
+
+def merge_phase_learning_state(
+    state: dict[str, Any],
+    entries: list[dict[str, Any]],
+    *,
+    max_entries: int = 1000,
+) -> dict[str, Any]:
+    """Feed exact experiment outcomes to the next attempt without publishing them."""
+    output = copy.deepcopy(state) if isinstance(state, dict) else {}
+    output["publicationAllowed"] = False
+    output["productionWritesAllowed"] = False
+    memory = output.get("experimentMemory")
+    if not isinstance(memory, dict):
+        memory = {"schemaVersion": 1, "entries": []}
+        output["experimentMemory"] = memory
+    rows = [
+        copy.deepcopy(row)
+        for row in memory.get("entries") or []
+        if isinstance(row, dict)
+    ]
+    by_key = {_phase_experiment_key(row): row for row in rows}
+
+    for raw in entries:
+        if not isinstance(raw, dict):
+            continue
+        row = copy.deepcopy(raw)
+        key = _phase_experiment_key(row)
+        current = by_key.get(key)
+        if current is None:
+            rows.append(row)
+            by_key[key] = row
+            continue
+
+        new_successes = max(0, int(row.get("successes") or 0))
+        new_failures = max(0, int(row.get("failures") or 0))
+        current["attempts"] = max(0, int(current.get("attempts") or 0)) + max(1, int(row.get("attempts") or 1))
+        current["successes"] = max(0, int(current.get("successes") or 0)) + new_successes
+        current["failures"] = max(0, int(current.get("failures") or 0)) + new_failures
+        current["progresses"] = max(0, int(current.get("progresses") or 0)) + max(0, int(row.get("progresses") or 0))
+        current["consecutiveFailures"] = (
+            0
+            if new_successes > 0
+            else max(0, int(current.get("consecutiveFailures") or 0)) + new_failures
+        )
+        for field in ("lastOutcome", "lastReason", "lastSeenAt", "memoryRole", "capabilityStrategy", "observedPipelineStage"):
+            if field in row:
+                current[field] = row[field]
+
+    limit = max(1, int(max_entries))
+    memory["entries"] = rows[-limit:]
+    memory["schemaVersion"] = max(1, int(memory.get("schemaVersion") or 1))
+    return output
+
+
+def should_continue_evolved_frontier(
+    plan: dict[str, Any],
+    attempts_this_phase: int,
+    *,
+    max_attempts: int = 3,
+) -> bool:
+    """Use the remaining fair-share slice to execute, not merely plan, post-g5 strategies."""
+    return (
+        1 <= int(attempts_this_phase) < max(2, int(max_attempts))
+        and isinstance(plan, dict)
+        and str(plan.get("action") or "") == "probe-targeted-repair"
+        and str(plan.get("repairType") or "") == "evolved_strategy"
+        and str(plan.get("learningDisposition") or "") == "execute_bounded_evolved_strategy"
+        and bool([value for value in plan.get("allowedProfiles") or [] if str(value).strip()])
+    )
+
 
 def interleave(retries: list[str], pending: list[str]) -> list[str]:
     """Retry unresolved work without starving unseen providers."""
@@ -930,6 +1032,7 @@ def main() -> int:
     queue["fastRepairHandoffOrderingPolicy"] = "causal-batch-round-robin"
     fair_handoff = bool(handoff_priority) and not bool(args.provider)
     queue["fastRepairHandoffMaxAttemptsPerProviderThisPhase"] = 1 if fair_handoff else 0
+    queue["fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase"] = 3 if fair_handoff else 0
     queue["deferredRepairProviders"] = repair_deferred
     queue["deferredRepairProviderCount"] = len(repair_deferred)
     queue["deferredRepairReason"] = "repair_experiment_variants_exhausted_new_strategy_required"
@@ -949,6 +1052,11 @@ def main() -> int:
     combined_rounds: list[dict[str, Any]] = []
     combined_plans: dict[str, Any] = {}
     phase_experiment_ledger: list[dict[str, Any]] = []
+    phase_learning_state = copy.deepcopy(previous)
+    phase_learning_state["publicationAllowed"] = False
+    phase_learning_state["productionWritesAllowed"] = False
+    phase_learning_state_path = output / "phase-learning-state.json"
+    write_json(phase_learning_state_path, phase_learning_state)
 
     interrupted_provider = ""
     lab_session = LearningLabSession(work_deadline)
@@ -978,7 +1086,7 @@ def main() -> int:
                 provider_deadline = min(work_deadline, time.time() + fair_seconds)
                 print(
                     "FIELD_BRAIN_HANDOFF_FAIR_SHARE "
-                    f"provider={provider_id} max_attempts=1 "
+                    f"provider={provider_id} max_attempts=1 evolved_max_attempts=3 "
                     f"slice_seconds={fair_seconds} "
                     f"remaining_providers={remaining_providers}"
                 )
@@ -1011,7 +1119,7 @@ def main() -> int:
                         stage,
                         target_path,
                         attempt_dir,
-                        args.previous_state.resolve(),
+                        phase_learning_state_path,
                         provider_deadline,
                     )
                 except BudgetExhausted as error:
@@ -1102,14 +1210,19 @@ def main() -> int:
                 attempts_this_phase += 1
 
                 if provider_plan:
-                    phase_experiment_ledger.extend(
-                        phase_experiment_entries(
-                            provider_id,
-                            provider_plan,
-                            repair,
-                            final_lab,
-                        )
+                    attempt_entries = phase_experiment_entries(
+                        provider_id,
+                        provider_plan,
+                        repair,
+                        final_lab,
                     )
+                    phase_experiment_ledger.extend(attempt_entries)
+                    if attempt_entries:
+                        phase_learning_state = merge_phase_learning_state(
+                            phase_learning_state,
+                            attempt_entries,
+                        )
+                        write_json(phase_learning_state_path, phase_learning_state)
     
                 if final_lab.get("status") == "playable":
                     resolved = True
@@ -1124,15 +1237,22 @@ def main() -> int:
                     route_refresh = refresh_stage_routes(stage, provider_deadline, provider_id)
                     if route_refresh.get("ok") is False:
                         break
-                    if fair_handoff and attempts_this_phase >= 1:
+                    if fair_handoff and attempts_this_phase >= 1 and not should_continue_evolved_frontier(
+                        provider_plan,
+                        attempts_this_phase,
+                    ):
                         break
                     continue
 
-                # A targeted Fast-Handoff phase distributes exploration across
-                # the whole unresolved cohort. Persist one complete experiment
-                # per provider, then rotate. A later phase consumes the next
-                # generation from memory instead of starving unseen providers.
-                if fair_handoff and attempts_this_phase >= 1:
+                # Ordinary Fast-Handoff still rotates after one complete
+                # experiment. The only exception is a bounded post-g5 evolved
+                # frontier: its newly planned strategy is fed the exact outcome
+                # above and may execute immediately while this provider's
+                # existing fair-share deadline still has budget.
+                if fair_handoff and attempts_this_phase >= 1 and not should_continue_evolved_frontier(
+                    provider_plan,
+                    attempts_this_phase,
+                ):
                     break
     
                 # Learning is allowed to turn a failed experiment into the next
@@ -1262,6 +1382,7 @@ def main() -> int:
         "fastRepairHandoffCausalBatchOrder": causal_group_order,
         "fastRepairHandoffOrderingPolicy": "causal-batch-round-robin",
         "fastRepairHandoffMaxAttemptsPerProviderThisPhase": 1 if fair_handoff else 0,
+        "fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase": 3 if fair_handoff else 0,
         "cleanReconstructionRequiredProviders": reconstruction_required,
         "cleanReconstructionRequiredCount": len(reconstruction_required),
         "deferredRepairProviders": repair_deferred,
