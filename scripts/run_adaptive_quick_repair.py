@@ -43,6 +43,7 @@ if _loaded != _expected:
 _base_run_health = loop.run_health
 _base_matching_profiles = loop.matching_profiles
 _base_create_repair_candidate = loop.create_repair_candidate
+_base_accepted_runtime_program = loop.accepted_runtime_program
 def _validated_create_repair_candidate(stage, candidate, profile_name, round_number):
     repaired, error = _base_create_repair_candidate(stage, candidate, profile_name, round_number)
     if not isinstance(repaired, dict):
@@ -61,6 +62,12 @@ def _validated_create_repair_candidate(stage, candidate, profile_name, round_num
             pass
         return None, f"byte_stability_failed:{type(exc).__name__}:{exc}"
     return repaired, error
+
+
+
+def _accepted_runtime_program_with_winning_trace(candidate, result=None):
+    program = _base_accepted_runtime_program(candidate, result)
+    return runtime_repair.augment_accepted_runtime_program(candidate, result, program)
 
 
 def _category_playable_totals(result: dict[str, Any]) -> dict[str, int]:
@@ -327,6 +334,7 @@ def main() -> int:
         loop.run_health = _quick_run_health
         loop.matching_profiles = _brain_matching_profiles
         loop.create_repair_candidate = brain.wrap_create_repair_candidate(_validated_create_repair_candidate)
+        loop.accepted_runtime_program = _accepted_runtime_program_with_winning_trace
         loop.persist_runtime_profiles = lambda _config, _assignments: []
         sys.argv = [
             str(SCRIPTS / "deep_repair_loop.py"), "--stage", str(stage), "--output", str(output),
@@ -352,6 +360,7 @@ def main() -> int:
         loop.run_health = original_run_health
         loop.matching_profiles = original_matching
         loop.create_repair_candidate = original_create
+        loop.accepted_runtime_program = _base_accepted_runtime_program
         loop.persist_runtime_profiles = original_persist
 
 
