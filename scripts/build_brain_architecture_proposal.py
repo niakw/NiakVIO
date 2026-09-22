@@ -155,9 +155,41 @@ def build_strategy_blueprints(
         if not providers:
             continue
         row = dict(template)
+        transport_signature = str(group.get("transportSignature") or "").strip().casefold()
+        dominant_issues = {
+            str(value or "").strip().casefold()
+            for value in group.get("dominantIssues") or []
+            if str(value or "").strip()
+        }
+        if scope == "harness-compatibility":
+            if transport_signature == "residential-exit-all-challenged":
+                row.update({
+                    "strategyId": "persistent_challenge_session_boundary_v1",
+                    "causalTrigger": "browser/direct/native-like transports remain challenged even through the private residential exit",
+                    "method": "keep provider mutation disabled; isolate whether a legitimate browser session state/JavaScript challenge is required, prototype only a bounded provider-domain session bridge, and retain environment-blocked status unless the same mechanism is reproducible without fabricated challenge tokens",
+                    "requiredEvidence": ["GitHub profile matrix", "residential profile matrix", "sanitized browser-session state requirement"],
+                    "acceptanceProof": ["challenge/session cause reproduced", "no challenge-token fabrication", "no cross-provider cookie/session leakage", "playback proof required before functional promotion"],
+                })
+            elif transport_signature == "browser-profile-only-both-networks" and "network_exception" in dominant_issues:
+                row.update({
+                    "strategyId": "native_tls_browser_differential_v1",
+                    "causalTrigger": "Chromium reaches content on GitHub and residential networks while native-like HTTP stacks fail before provider logic completes",
+                    "method": "compare audited native TLS/SNI/ALPN/DNS/redirect behavior against Chromium, then prototype a platform transport compatibility layer or alternate audited native stack; never patch provider JavaScript to hide a client TLS defect",
+                    "requiredEvidence": ["browser success on both networks", "native stack exception class", "sanitized TLS/client differential"],
+                    "acceptanceProof": ["native transport reaches the same provider-owned route", "no provider-code mutation", "TV/mobile/desktop non-regression"],
+                })
+            elif transport_signature.startswith("browser-profile-only"):
+                row.update({
+                    "strategyId": "browser_session_transport_bridge_v1",
+                    "causalTrigger": "a real browser session reaches provider content while direct/native-like fetch remains challenged or inconclusive",
+                    "method": "isolate the minimal browser-only requirement (JavaScript execution, cookie/session continuity, redirect or fetch semantics) and prototype an opt-in provider-domain browser-backed transport bridge with strict domain/session isolation and platform capability gates",
+                    "requiredEvidence": ["browser success", "native/direct failure", "minimal session/JavaScript requirement"],
+                    "acceptanceProof": ["same provider route succeeds through the bounded bridge", "cookies/session remain provider-scoped", "no provider-code mutation", "playback proof required before status promotion"],
+                })
         row.update({
             "groupId": str(group.get("groupId") or ""),
             "repairScope": scope,
+            "transportSignature": transport_signature or "not-applicable",
             "capabilityStrategy": str(group.get("capabilityStrategy") or "unknown"),
             "providers": providers,
             "providerCount": len(providers),
@@ -166,19 +198,16 @@ def build_strategy_blueprints(
                 for value in group.get("runtimeFamilies") or []
                 if str(value or "").strip()
             }),
-            "dominantIssues": sorted({
-                str(value or "").strip()
-                for value in group.get("dominantIssues") or []
-                if str(value or "").strip()
-            }),
+            "dominantIssues": sorted(dominant_issues),
             "harnessTransportClasses": sorted({
                 str(value or "").strip()
                 for value in group.get("harnessTransportClasses") or []
                 if str(value or "").strip()
             }),
             "negativeMemorySignature": (
-                f"strategy:{template['strategyId']}|scope:{scope}|"
-                f"capability:{str(group.get('capabilityStrategy') or 'unknown')}"
+                f"strategy:{row['strategyId']}|scope:{scope}|"
+                f"capability:{str(group.get('capabilityStrategy') or 'unknown')}|"
+                f"transport:{transport_signature or 'not-applicable'}"
             ),
             "reentryPolicy": (
                 "proposal -> executable harness contract -> native differential proof -> census refresh"
