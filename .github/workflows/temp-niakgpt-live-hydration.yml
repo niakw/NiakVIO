@@ -1,0 +1,105 @@
+name: TEMP NiakGPT Live Hydration via Residential Exit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/temp-niakgpt-live-hydration.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: temp-niakgpt-live-hydration
+  cancel-in-progress: true
+
+jobs:
+  live-residential:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+      TS_AUDIENCE: ${{ secrets.TS_AUDIENCE }}
+      TS_EXIT_NODE: ${{ secrets.TS_EXIT_NODE }}
+      TS_TAG_NAME: ${{ secrets.TS_TAG_NAME }}
+      NIAKGPT_BROWSER_LABEL: residential-chromium
+    steps:
+      - name: Checkout NiakGPT diagnostic branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: niakw/NiakGPT
+          ref: diag/v109-live-chatgpt-hydration
+          path: NiakGPT
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: NiakGPT/visual-lab/package-lock.json
+
+      - name: Validate residential exit prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${TS_OAUTH_CLIENT_ID:-}"
+          test -n "${TS_AUDIENCE:-}"
+          test -n "${TS_EXIT_NODE:-}"
+          raw="${TS_TAG_NAME:-niakvio-ci}"
+          case "$raw" in tag:*) normalized="$raw" ;; *) normalized="tag:$raw" ;; esac
+          printf 'TS_ACTION_TAG=%s\n' "$normalized" >> "$GITHUB_ENV"
+
+      - name: Connect ephemeral Tailscale node
+        uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8
+        with:
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ env.TS_AUDIENCE }}
+          tags: ${{ env.TS_ACTION_TAG }}
+          version: '1.94.2'
+          args: --accept-dns=false
+
+      - name: Select private residential exit
+        shell: bash
+        run: |
+          set -euo pipefail
+          selected=0
+          for attempt in 1 2 3 4 5; do
+            if sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false >/dev/null 2>&1; then
+              selected=1
+              break
+            fi
+            sleep "$((attempt * 2))"
+          done
+          test "$selected" -eq 1
+          curl --fail --silent --show-error --max-time 15 https://chatgpt.com/ -o /tmp/chatgpt-live.html || true
+          test -s /tmp/chatgpt-live.html
+          if grep -qi 'Just a moment' /tmp/chatgpt-live.html; then
+            echo 'LIVE_RESIDENTIAL_CLOUDFLARE_CHALLENGE=1'
+          else
+            echo 'LIVE_RESIDENTIAL_CLOUDFLARE_CHALLENGE=0'
+          fi
+
+      - name: Install NiakGPT visual lab
+        working-directory: NiakGPT/visual-lab
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Run real ChatGPT hydration differential through residential exit
+        working-directory: NiakGPT/visual-lab
+        run: npx playwright test tests/live-chatgpt-hydration-v109.spec.js --workers=1 --reporter=line
+
+      - name: Upload live residential evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: niakgpt-live-residential-hydration
+          path: NiakGPT/visual-lab/artifacts/live-chatgpt-v109
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Clear residential exit
+        if: always()
+        run: sudo tailscale set --exit-node= || true
