@@ -144,7 +144,13 @@ def sanitize(
         row["direct_candidates"] = candidates
 
         direct = row.get("direct")
-        if not concrete_http(direct):
+        manual_off_reason = str(row.get("manual_off_reason") or "").strip()
+        if manual_off_reason:
+            # Explicit lifecycle authority outranks address cleanup. A curated
+            # candidate may stay available for bounded rediscovery/forensics,
+            # but sanitization must never promote it back to current authority.
+            row["direct"] = None
+        elif not concrete_http(direct):
             row["direct"] = candidates[0] if candidates else None
         elif str(direct).rstrip("/").casefold() not in {
             value.rstrip("/").casefold() for value in candidates
