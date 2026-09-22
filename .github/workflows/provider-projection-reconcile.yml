@@ -223,4 +223,5 @@ jobs:
           echo "FIELD_PROVIDER_PROJECTION_VALIDATION_DISPATCH sha=$FINAL_SHA"
           gh workflow run temp-current-bytes-full-provider-census.yml --repo "$GITHUB_REPOSITORY" --ref main
           gh workflow run sync.yml --repo "$GITHUB_REPOSITORY" --ref main -f mode=quick
+          gh workflow run codeql.yml --repo "$GITHUB_REPOSITORY" --ref main
           gh workflow run security-final-gate.yml --repo "$GITHUB_REPOSITORY" --ref main
