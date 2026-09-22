@@ -86,12 +86,13 @@ def _declared_categories(candidate: dict[str, Any]) -> set[str]:
 
 
 def _brain_matching_profiles(candidate: dict[str, Any], result: dict[str, Any], source_text: str, config: dict[str, Any] | None = None) -> list[str]:
-    base = _base_matching_profiles(candidate, result, source_text, config)
     key = str(candidate.get("key") or "")
     parent_key = str((candidate.get("runtime_repair") or {}).get("parent_key") or "")
     plan = brain.PLANS.get(parent_key or key) or {}
     if str(plan.get("action") or "") != "probe-targeted-repair":
         return []
+    candidate["brain_repair_plan"] = brain._plan_snapshot(plan)
+    base = _base_matching_profiles(candidate, result, source_text, config)
     allowed = {str(value) for value in plan.get("allowedProfiles") or [] if str(value)}
     return [profile for profile in base if profile in allowed]
 
