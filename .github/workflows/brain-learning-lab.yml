@@ -486,19 +486,25 @@ jobs:
 
       - name: Build sanitized cross-day Brain state
         shell: bash
+        env:
+          FAST_HANDOFF_PROVIDER_FILTER: ${{ steps.learning-slot.outputs.provider_filter }}
         run: |
           set -euo pipefail
           rm -rf brain-learning-output
           mkdir -p brain-learning-output
-          node engine_v2/scripts/learning-lab.mjs \
-            --output-dir brain-learning-output \
-            --repair-report brain-sandbox/health-output/repair-report.json \
-            --historical-training brain-sandbox/historical-training.json \
-            --native-summary brain-learning-input/native-reader-summary.json \
-            --targeted-lab-summary brain-sandbox/health-output/targeted-lab-summary.json \
-            --learning-queue-state brain-sandbox/health-output/learning-queue-state.json \
-            --previous-state brain-learning-input/previous.json \
-            --overrides provider-overrides.json
+          args=(node engine_v2/scripts/learning-lab.mjs
+            --output-dir brain-learning-output
+            --repair-report brain-sandbox/health-output/repair-report.json
+            --historical-training brain-sandbox/historical-training.json
+            --native-summary brain-learning-input/native-reader-summary.json
+            --targeted-lab-summary brain-sandbox/health-output/targeted-lab-summary.json
+            --learning-queue-state brain-sandbox/health-output/learning-queue-state.json
+            --previous-state brain-learning-input/previous.json
+            --overrides provider-overrides.json)
+          if [ -n "${FAST_HANDOFF_PROVIDER_FILTER:-}" ]; then
+            args+=(--provider-filter "$FAST_HANDOFF_PROVIDER_FILTER")
+          fi
+          "${args[@]}"
           node engine_v2/tests/repair-brain.test.mjs
           node engine_v2/tests/recipe-memory.test.mjs
           node engine_v2/tests/learning-lab-memory.test.mjs
