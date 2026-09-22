@@ -524,6 +524,34 @@ for provider_id in created:
     assert generated['legacy_search_refresh'] is False, generated
     assert generated['hub'] is None and generated['direct'] is None, generated
     assert generated['sources'] == [] and generated['search_queries'] == [], generated
+
+# A manual lifecycle decision is stronger authority than a concrete forensic
+# direct candidate. Sanitization must self-heal stale current authority without
+# deleting the candidate that a later explicit requalification may inspect.
+manual_off_registry = {
+    'providers': {
+        'showbox': {
+            'id': 'showbox',
+            'direct': 'https://www.showbox.media/',
+            'direct_candidates': ['https://www.showbox.media/'],
+            'allowed_terminal_hosts': ['showbox.media', 'www.showbox.media'],
+            'activation_eligible': False,
+            'manual_off_reason': 'manual_off_no_current_authority_search_only',
+        }
+    }
+}
+manual_clean, manual_changed = san.sanitize(copy.deepcopy(manual_off_registry), {'showbox'})
+manual_row = manual_clean['providers']['showbox']
+assert manual_changed == ['showbox'], manual_changed
+assert manual_row['direct'] is None, manual_row
+assert manual_row['direct_candidates'] == ['https://www.showbox.media/'], manual_row
+assert manual_row['allowed_terminal_hosts'] == ['showbox.media', 'www.showbox.media'], manual_row
+assert manual_row['manual_off_reason'] == 'manual_off_no_current_authority_search_only', manual_row
+
+manual_clean_2, manual_changed_2 = san.sanitize(copy.deepcopy(manual_clean), {'showbox'})
+assert manual_changed_2 == [], manual_changed_2
+assert manual_clean_2['providers']['showbox']['direct'] is None, manual_clean_2
+
 assert registry.get('schema_version', 0) >= 3
 assert history_registry.get('schema_version') == 1
 
