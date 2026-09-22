@@ -699,7 +699,8 @@ def merge_patch_records(existing: Any, records: list[dict[str, Any]]) -> list[An
     return merged
 
 
-PUBLICATION_CONTRACT_SCHEMA = 2
+PUBLICATION_CONTRACT_SCHEMA = 3
+LEGACY_PUBLICATION_CONTRACT_SCHEMA = 2
 PUBLICATION_CONTRACT_FILES = (
     "scripts/reapply_published_overrides.py",
     "scripts/apply_provider_overrides.py",
@@ -744,24 +745,8 @@ def _publication_file_sha(relative: str, path: Path) -> str:
     return _canonical_sha(normalized)
 
 
-def publication_contract_sha(config: dict[str, Any]) -> str:
-    """Hash every deterministic input that can change derived provider bytes.
-
-    This deliberately includes the complete sanitized override/capability policy.
-    A real policy change may rebuild more providers than strictly necessary, but a
-    Core invocation with unchanged inputs performs no provider reconstruction at all.
-    Release-only version metadata is canonicalized out of package-lock.json so
-    version synchronization cannot invalidate the provider build it follows.
-    """
+def _contract_file_hashes(relatives: set[str]) -> dict[str, str]:
     files: dict[str, str] = {}
-    relatives = set(PUBLICATION_CONTRACT_FILES)
-    patch_dir = ROOT / "scripts" / "provider_patches"
-    if patch_dir.is_dir():
-        relatives.update(
-            path.relative_to(ROOT).as_posix()
-            for path in patch_dir.rglob("*.py")
-            if path.is_file()
-        )
     for relative in sorted(relatives):
         path = (ROOT / relative).resolve()
         try:
@@ -771,10 +756,74 @@ def publication_contract_sha(config: dict[str, Any]) -> str:
         if not path.is_file():
             raise ValueError(f"missing publication contract input: {relative}")
         files[relative] = _publication_file_sha(relative, path)
+    return files
+
+
+def _provider_script_paths(config: dict[str, Any], provider_id: str) -> set[str]:
+    patches = config.get("provider_patches")
+    row = patches.get(provider_id) if isinstance(patches, dict) else None
+    if not isinstance(row, dict):
+        return set()
+    paths: set[str] = set()
+    for key in ("provider_lego_scripts", "patch_scripts"):
+        raw = row.get(key)
+        values = [raw] if isinstance(raw, str) else list(raw or []) if isinstance(raw, list) else []
+        for value in values:
+            relative = str(value or "").strip()
+            if relative:
+                paths.add(relative)
+    return paths
+
+
+def legacy_publication_contract_sha(config: dict[str, Any]) -> str:
+    """Schema-v2 fingerprint retained only to verify pre-migration provenance."""
+    relatives = set(PUBLICATION_CONTRACT_FILES)
+    patch_dir = ROOT / "scripts" / "provider_patches"
+    if patch_dir.is_dir():
+        relatives.update(
+            path.relative_to(ROOT).as_posix()
+            for path in patch_dir.rglob("*.py")
+            if path.is_file()
+        )
+    return _canonical_sha({
+        "schema_version": LEGACY_PUBLICATION_CONTRACT_SCHEMA,
+        "config": config,
+        "files": _contract_file_hashes(relatives),
+    })
+
+
+def publication_contract_sha(config: dict[str, Any]) -> str:
+    """Hash only build inputs shared by every provider.
+
+    Provider-local DATA and provider-owned Lego source are deliberately excluded
+    here and fingerprinted by :func:`provider_policy_sha`. This prevents one
+    provider's hub/route/runtime change from invalidating every other provider.
+    """
+    global_config = {
+        key: value
+        for key, value in config.items()
+        if key not in {"provider_patches", "provider_capabilities"}
+    }
     return _canonical_sha({
         "schema_version": PUBLICATION_CONTRACT_SCHEMA,
-        "config": config,
-        "files": files,
+        "config": global_config,
+        "files": _contract_file_hashes(set(PUBLICATION_CONTRACT_FILES)),
+    })
+
+
+def provider_policy_sha(config: dict[str, Any], provider_id: str) -> str:
+    provider_id = str(provider_id or "").strip().casefold()
+    patches = config.get("provider_patches")
+    capabilities = config.get("provider_capabilities")
+    patch = patches.get(provider_id) if isinstance(patches, dict) else None
+    capability = capabilities.get(provider_id) if isinstance(capabilities, dict) else None
+    script_paths = _provider_script_paths(config, provider_id)
+    return _canonical_sha({
+        "schema_version": PUBLICATION_CONTRACT_SCHEMA,
+        "provider_id": provider_id,
+        "patch": patch if isinstance(patch, dict) else None,
+        "capability": capability if isinstance(capability, dict) else None,
+        "provider_files": _contract_file_hashes(script_paths),
     })
 
 
@@ -794,10 +843,31 @@ def _adaptive_runtime_contract(row: dict[str, Any]) -> list[dict[str, Any]]:
     ]
 
 
+def legacy_provider_build_input_sha(
+    provider_id: str,
+    base_sha256: str,
+    contract_sha256: str,
+    provenance_row: dict[str, Any],
+) -> str:
+    return _canonical_sha({
+        "schema_version": LEGACY_PUBLICATION_CONTRACT_SCHEMA,
+        "provider_id": str(provider_id).casefold(),
+        "base_sha256": str(base_sha256).casefold(),
+        "publication_contract_sha256": str(contract_sha256).casefold(),
+        "adaptive_runtime": _adaptive_runtime_contract(provenance_row),
+        "preservation": {
+            "activation_mode": provenance_row.get("activation_mode"),
+            "preserved_reason": provenance_row.get("preserved_reason"),
+            "catalogue_audit_quarantine_scopes": provenance_row.get("catalogue_audit_quarantine_scopes"),
+        },
+    })
+
+
 def provider_build_input_sha(
     provider_id: str,
     base_sha256: str,
     contract_sha256: str,
+    provider_policy_sha256: str,
     provenance_row: dict[str, Any],
 ) -> str:
     return _canonical_sha({
@@ -805,6 +875,7 @@ def provider_build_input_sha(
         "provider_id": str(provider_id).casefold(),
         "base_sha256": str(base_sha256).casefold(),
         "publication_contract_sha256": str(contract_sha256).casefold(),
+        "provider_policy_sha256": str(provider_policy_sha256).casefold(),
         "adaptive_runtime": _adaptive_runtime_contract(provenance_row),
         "preservation": {
             "activation_mode": provenance_row.get("activation_mode"),
@@ -832,11 +903,15 @@ def fast_fixed_point_check(
 
     rows = provenance["providers"]
     version_floors = load_provider_version_floors()
-    contract_sha = publication_contract_sha(config)
     contract_meta = provenance.get("provider_publication_contract")
     if not isinstance(contract_meta, dict):
         return False, "missing-publication-contract"
-    if int(contract_meta.get("schema_version") or 0) != PUBLICATION_CONTRACT_SCHEMA:
+    contract_schema = int(contract_meta.get("schema_version") or 0)
+    if contract_schema == LEGACY_PUBLICATION_CONTRACT_SCHEMA:
+        contract_sha = legacy_publication_contract_sha(config)
+    elif contract_schema == PUBLICATION_CONTRACT_SCHEMA:
+        contract_sha = publication_contract_sha(config)
+    else:
         return False, "publication-contract-schema-changed"
     if str(contract_meta.get("sha256") or "").casefold() != contract_sha:
         return False, "publication-contract-changed"
@@ -868,7 +943,19 @@ def fast_fixed_point_check(
             return False, f"missing-provenance:{provider_id}"
         base_path, base_sha = resolve_runtime_base(provider_id, row, require=True)
         assert base_path is not None and base_sha is not None
-        expected_input = provider_build_input_sha(provider_id, base_sha, contract_sha, row)
+        if contract_schema == LEGACY_PUBLICATION_CONTRACT_SCHEMA:
+            expected_input = legacy_provider_build_input_sha(provider_id, base_sha, contract_sha, row)
+        else:
+            policy_sha = provider_policy_sha(config, provider_id)
+            if str(row.get("provider_policy_sha256") or "").casefold() != policy_sha:
+                return False, f"provider-policy-changed:{provider_id}"
+            expected_input = provider_build_input_sha(
+                provider_id,
+                base_sha,
+                contract_sha,
+                policy_sha,
+                row,
+            )
         if str(row.get("build_input_sha256") or "").casefold() != expected_input:
             return False, f"provider-input-changed:{provider_id}"
         if str(row.get("published_filename") or "") != relative:
@@ -1357,10 +1444,13 @@ def main() -> int:
             # earlier makes the immediate --check compare against a newer
             # activation/preservation state and report a false
             # provider-input-changed miss.
+            policy_sha = provider_policy_sha(override_config, provider_id)
+            row["provider_policy_sha256"] = policy_sha
             row["build_input_sha256"] = provider_build_input_sha(
                 provider_id,
                 str(update["base_sha256"]),
                 publication_contract,
+                policy_sha,
                 row,
             )
 
