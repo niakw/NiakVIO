@@ -4121,3 +4121,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Commit `7409baa3...` replaces the stale prohibition with a stricter scoped contract: workflow_dispatch remains supported, pull_request remains forbidden, and the sole push trigger must be the explicit residential trigger file under main.
 - Native run `35767925881` is the active real-client proof for `animesultra, animevost-fr, moviesmod` on TV via residential exit. No reclassification is claimed until its per-provider artifacts/logs complete.
 - Separate CORE Verify failure on the preceding SHA remains open: `vidfast: published security hardening is not idempotent`. This is independent from Tailscale/harness qualification and must be fixed generically before CORE can be called green.
+
+
+### 2026-09-22 — Projection fixed-point check now follows fingerprint reindex
+
+- Projection Reconcile run `35769444748` on SHA `d46a08fca1800edb12fe72006f1e18adb043e432` rebuilt all 42 active providers because a shared publication build-input fingerprint had changed. The provider rebuilds themselves completed; structured authority preservation remained intact.
+- The run failed in the fixed-point proof because `detect_provider_projection_drift.py` was executed before `reindex_provider_publication_fingerprints.py`. Every rebuilt provider therefore still carried the pre-rebuild publication fingerprint and was falsely reported again as `publication-build-input-drift`.
+- Generic pipeline correction: after provider reconstruction/reconciliation, publication fingerprints are reindexed metadata-only before the post-rebuild drift detector runs. The drift detector then judges the new byte/build pair, followed by CONFIG/static/Lego/fixed-point audits.
+- This is orchestration-only; it does not justify a provider status change. Required proof is a fresh Projection Reconcile reaching `FIELD_PROVIDER_PROJECTION_FIXED_POINT providers=0`, publishing atomically, then a fresh census on the published SHA.
+- Native residential run `35767925881` is not provider evidence: all three TV jobs failed while cloning NuvioTV after the exit node was already selected. Current workflow now delays residential exit selection until after client/dependency/AVD bootstrap; a fresh native run is required for AnimeSultra, AnimeVost-FR and MoviesMod.
