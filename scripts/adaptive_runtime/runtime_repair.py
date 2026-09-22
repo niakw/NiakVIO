@@ -68,6 +68,10 @@ POST_EXHAUSTION_STRATEGY_PROFILES = {
     "media_response_shape_inference_v1",
     "search_contract_inference_v1",
     "search_response_route_binding_v1",
+    "identity_alias_search_traversal_v1",
+    "runtime_response_salvage_v1",
+    "document_request_contract_mining_v1",
+    "provider_session_bootstrap_replay_v1",
 }
 # `excluded` is not an availability/runtime failure. It represents a deliberate
 # policy/safety exclusion and therefore must not be turned into an unattended
@@ -1407,6 +1411,42 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             current_request_recipes, provider_request_recipes, limit=32
         )
         second_order_role_preferences = ["api", "detail", "search", "player", "source", "episode", "other"]
+    elif new_strategy_id == "identity_alias_search_traversal_v1":
+        search_paths = _unique_routes(configured_search, learned_search, peer_search, generic_search, limit=32)
+        direct_paths = _unique_routes(
+            [route for route in learned_direct if _route_role(route) in {"detail", "episode", "player", "source", "api"}],
+            peer_direct,
+            limit=32,
+        )
+        request_recipes = _unique_request_recipes(
+            current_request_recipes, provider_request_recipes, peer_request_recipes, limit=40
+        )
+        second_order_role_preferences = ["search", "detail", "episode", "player", "source", "api", "other"]
+    elif new_strategy_id == "runtime_response_salvage_v1":
+        search_paths = _unique_routes(configured_search, learned_search, limit=16)
+        direct_paths = _unique_routes(learned_direct, configured_direct, limit=28)
+        request_recipes = _unique_request_recipes(
+            current_request_recipes, provider_request_recipes, positive_request_recipes, limit=40
+        )
+        second_order_role_preferences = ["api", "source", "player", "detail", "episode", "search", "other"]
+    elif new_strategy_id == "document_request_contract_mining_v1":
+        search_paths = _unique_routes(learned_search, configured_search, limit=12)
+        direct_paths = _unique_routes(
+            [route for route in learned_direct if _route_role(route) in TERMINAL_MEDIA_ROLES | {"detail", "episode"}],
+            [route for route in configured_direct if _route_role(route) in TERMINAL_MEDIA_ROLES | {"detail", "episode"}],
+            limit=32,
+        )
+        request_recipes = _unique_request_recipes(
+            current_request_recipes, provider_request_recipes, positive_request_recipes, limit=40
+        )
+        second_order_role_preferences = ["player", "source", "api", "episode", "detail", "other"]
+    elif new_strategy_id == "provider_session_bootstrap_replay_v1":
+        search_paths = _unique_routes(learned_search, configured_search, limit=12)
+        direct_paths = _unique_routes(learned_direct, configured_direct, limit=24)
+        request_recipes = _unique_request_recipes(
+            current_request_recipes, provider_request_recipes, limit=32
+        )
+        second_order_role_preferences = ["detail", "search", "api", "player", "source", "episode", "other"]
 
     role_preferences = second_order_role_preferences or _experiment_role_preferences(
         census_focus,
@@ -1527,6 +1567,10 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             else "learned-family-new-strategy"
         ),
         "new_strategy_id": new_strategy_id,
+        "alias_search": new_strategy_id == "identity_alias_search_traversal_v1",
+        "runtime_response_salvage": new_strategy_id == "runtime_response_salvage_v1",
+        "document_request_mining": new_strategy_id == "document_request_contract_mining_v1",
+        "session_bootstrap": new_strategy_id == "provider_session_bootstrap_replay_v1",
         "historical_strategy_profile": historical_strategy_profile,
         "historical_strategy_case": str(brain_plan.get("historicalStrategyCase") or ""),
         "post_exhaustion_strategy_profile": post_exhaustion_strategy_profile,
