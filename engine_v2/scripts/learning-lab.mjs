@@ -14,6 +14,7 @@ const nativeSummaryPath = optionalArg('--native-summary');
 const targetedLabPath = optionalArg('--targeted-lab-summary');
 const portfolioPath = optionalArg('--provider-portfolio');
 const queueStatePath = optionalArg('--learning-queue-state');
+const providerFilterRaw = optionalArg('--provider-filter');
 const overridesPath = resolveArg('--overrides', path.join(root, 'provider-overrides.json'));
 fs.mkdirSync(outputDir, { recursive: true });
 
@@ -34,6 +35,16 @@ const historical = historicalPath ? readJson(historicalPath, {}) : {};
 const nativeSummary = nativeSummaryPath ? readJson(nativeSummaryPath, {}) : {};
 const portfolio = portfolioPath ? readJson(portfolioPath, {}) : {};
 const queueState = queueStatePath ? readJson(queueStatePath, {}) : {};
+const activeProviderFilter = new Set(
+  String(providerFilterRaw || '')
+    .split(',')
+    .map((value) => value.trim().toLowerCase().replaceAll('_', '-'))
+    .filter(Boolean)
+);
+const providerInScope = (value) => (
+  activeProviderFilter.size === 0
+  || activeProviderFilter.has(String(value || '').trim().toLowerCase().replaceAll('_', '-'))
+);
 const currentSkills = overrides.runtime_repair?.learned_skills ?? {};
 const learnedSkills = mergeLearnedSkills(previous.learnedSkills, currentSkills);
 const plans = repair.brain?.plans ?? {};
@@ -72,7 +83,10 @@ for (const [failureClass, count] of [...counts.entries()].sort((a, b) => b[1] - 
   }
 }
 
-for (const row of experimentMemory.entries.filter((entry) => entry.successes === 0 && entry.consecutiveFailures >= repeatedThreshold).slice(0, 80)) {
+for (const row of experimentMemory.entries
+  .filter((entry) => entry.successes === 0 && entry.consecutiveFailures >= repeatedThreshold)
+  .filter((entry) => providerInScope(entry.providerId))
+  .slice(0, 80)) {
   proposals.push({
     type: 'avoid_failed_profile',
     priority: row.consecutiveFailures >= repeatedThreshold + 1 ? 'high' : 'medium',
@@ -87,6 +101,7 @@ for (const row of experimentMemory.entries.filter((entry) => entry.successes ===
 
 const historicalTargets = (historical.cases || [])
   .filter((item) => item && item.trainingRole === 'unresolved' && ['critical', 'high'].includes(item.priority))
+  .filter((item) => providerInScope(item.providerId))
   .sort((a, b) => priorityScore(b.priority) - priorityScore(a.priority) || String(a.providerId).localeCompare(String(b.providerId)))
   .slice(0, 160)
   .map((row) => ({ providerId: String(row.providerId || '').toLowerCase(), priority: row.priority, delta: row.delta }));
@@ -104,11 +119,13 @@ for (const target of historicalTargets.slice(0, 80)) {
 }
 
 const nativeRepairTargets = (portfolio.providers || [])
-  .filter((item) => item && item.recommendation === 'repair_runtime_or_transport')
+  .filter((item) => item && providerInScope(item.provider))
+  .filter((item) => item.recommendation === 'repair_runtime_or_transport')
   .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))
   .map((row) => String(row.provider || '').toLowerCase()).filter(Boolean).slice(0, 200);
 for (const row of (portfolio.providers || [])
-  .filter((item) => item && ['repair_runtime_or_transport', 'quarantine_unsafe'].includes(item.recommendation))
+  .filter((item) => item && providerInScope(item.provider))
+  .filter((item) => ['repair_runtime_or_transport', 'quarantine_unsafe'].includes(item.recommendation))
   .sort((a, b) => Number(b.score || 0) - Number(a.score || 0)).slice(0, 80)) {
   proposals.push({
     type: row.recommendation === 'quarantine_unsafe' ? 'native_safety_target' : 'native_cross_device_repair_target',
@@ -125,7 +142,12 @@ for (const row of (portfolio.providers || [])
 // Reader evidence has precedence over generic transport labels because it is the
 // closest observation to what a human sees after pressing Play on the real OS.
 const readerSignals = Array.isArray(nativeSummary.readerFailureSignals) ? nativeSummary.readerFailureSignals : [];
-for (const row of readerSignals.slice(0, 80)) {
+for (const rawRow of readerSignals) {
+  const scopedProviders = Array.isArray(rawRow?.providers)
+    ? rawRow.providers.filter((provider) => providerInScope(provider))
+    : [];
+  if (activeProviderFilter.size && scopedProviders.length === 0) continue;
+  const row = activeProviderFilter.size ? { ...rawRow, providers: scopedProviders } : rawRow;
   const failureClass = String(row?.failureClass || 'unknown_failure');
   const recipes = REPAIR_RECIPES[failureClass] ?? REPAIR_RECIPES.unknown_failure;
   proposals.push({
@@ -145,7 +167,8 @@ for (const row of readerSignals.slice(0, 80)) {
   });
 }
 
-const providerReaderFailures = Array.isArray(nativeSummary.providerReaderFailures) ? nativeSummary.providerReaderFailures : [];
+const providerReaderFailures = (Array.isArray(nativeSummary.providerReaderFailures) ? nativeSummary.providerReaderFailures : [])
+  .filter((row) => providerInScope(row?.provider));
 for (const row of providerReaderFailures.slice(0, 120)) {
   const classes = isRecord(row?.failureClasses) ? row.failureClasses : {};
   const dominant = Object.entries(classes).sort((a, b) => Number(b[1]) - Number(a[1]))[0]?.[0] || 'unknown_failure';
@@ -162,8 +185,9 @@ for (const row of providerReaderFailures.slice(0, 120)) {
   });
 }
 
-const repeatedReaderFailures = Array.isArray(nativeSummary.engineSignals?.repeatedReaderFailures)
-  ? nativeSummary.engineSignals.repeatedReaderFailures : [];
+const repeatedReaderFailures = (Array.isArray(nativeSummary.engineSignals?.repeatedReaderFailures)
+  ? nativeSummary.engineSignals.repeatedReaderFailures : [])
+  .filter((row) => providerInScope(row?.provider));
 for (const row of repeatedReaderFailures.slice(0, 80)) {
   proposals.push({
     type: 'native_reader_repeated_signature', priority: 'critical',
@@ -258,12 +282,13 @@ const payload = {
       providerCount: targetedLabs.length,
     } : null,
   },
+  activeProviderFilter: [...activeProviderFilter],
   privacy: 'No raw URLs, tokens, header values, cookies, private notes or spreadsheet text are copied into persistent Brain learning state.',
 };
 
 fs.writeFileSync(path.join(outputDir, 'latest.json'), JSON.stringify(payload, null, 2) + '\n');
 fs.writeFileSync(path.join(outputDir, 'latest.md'), renderMarkdown(payload));
-console.log(`FIELD_BRAIN_LEARNING proposals=${payload.proposals.length} skills=${payload.learnedSkillCount} memory=${payload.experimentMemory.entries.length} historical_high=${Number(payload.historicalTraining.stats?.unresolvedHighPriority || 0)} native_repair=${payload.nativeFeedback.repairPriorityProviders.length} reader_failures=${payload.nativeFeedback.nativeReaderFailures} targeted_lab=${payload.nativeFeedback.targetedLab?.status || 'none'}`);
+console.log(`FIELD_BRAIN_LEARNING proposals=${payload.proposals.length} skills=${payload.learnedSkillCount} memory=${payload.experimentMemory.entries.length} historical_high=${Number(payload.historicalTraining.stats?.unresolvedHighPriority || 0)} native_repair=${payload.nativeFeedback.repairPriorityProviders.length} reader_failures=${payload.nativeFeedback.nativeReaderFailures} targeted_lab=${payload.nativeFeedback.targetedLab?.status || 'none'} active_filter=${payload.activeProviderFilter.length}`);
 
 function mergeLearnedSkills(previousSkills, currentSkills) {
   const out = {};
