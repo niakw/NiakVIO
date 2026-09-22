@@ -14,7 +14,7 @@ const nativeSummaryPath = optionalArg('--native-summary');
 const targetedLabPath = optionalArg('--targeted-lab-summary');
 const portfolioPath = optionalArg('--provider-portfolio');
 const queueStatePath = optionalArg('--learning-queue-state');
-const providerFilterRaw = optionalArg('--provider-filter');
+const providerFilterRaw = arg('--provider-filter');
 const overridesPath = resolveArg('--overrides', path.join(root, 'provider-overrides.json'));
 fs.mkdirSync(outputDir, { recursive: true });
 
