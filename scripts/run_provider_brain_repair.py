@@ -349,14 +349,18 @@ def exhausted_from_negative_memory(brain_summary: dict[str, Any]) -> set[str]:
                 continue
             if failure_class and str(row.get("failureClass") or "") != failure_class:
                 continue
-            if allowed_profiles and str(row.get("profile") or "") not in allowed_profiles:
-                continue
             if int(row.get("successes") or 0) > 0:
                 continue
             if int(row.get("consecutiveFailures") or 0) < rotate_every:
                 continue
             variant = max(0, min(variant_count - 1, int(row.get("experimentVariant") or 0)))
             if variant == variant_count - 1:
+                # Final variants may now be causal named strategies. Historical
+                # v0-v3 generic adaptive failures still count, but the final
+                # variant is exhausted only by the exact profile currently
+                # allowed by the planner.
+                if allowed_profiles and str(row.get("profile") or "") not in allowed_profiles:
+                    continue
                 required_generation = max(
                     1,
                     int(plan.get("experimentGeneration") or negative.get("finalVariantGeneration") or 1),
