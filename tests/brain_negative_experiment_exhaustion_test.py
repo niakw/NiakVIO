@@ -70,6 +70,8 @@ base=lambda variant:{
     "providerId":"synthetic-exhaustion",
     "failureClass":"chain_terminal_gap",
     "experimentVariant":variant,
+    "experimentGeneration":2 if variant == 4 else 1,
+    "profile":"chain_terminal_extractor_v1" if variant == 4 else "adaptive_runtime_recovery",
     "failures":1,
     "consecutiveFailures":1,
     "successes":0,
@@ -96,7 +98,15 @@ assert four["experimentVariant"]==4,four
 assert four["experimentExhausted"] is False,four
 assert four["repairScope"]=="capability",four
 assert four["action"]=="probe-targeted-repair",four
-assert "adaptive_runtime_recovery" in four["allowedProfiles"],four
+assert four["allowedProfiles"]==["chain_terminal_extractor_v1"],four
+
+# A legacy generic final-variant failure is not evidence that the newly named
+# causal strategy has failed. It must still receive one bounded attempt.
+legacy_final={**base(4),"profile":"adaptive_runtime_recovery"}
+legacy=run([base(0),base(1),base(2),base(3),legacy_final])
+assert legacy["experimentVariant"]==4,legacy
+assert legacy["experimentExhausted"] is False,legacy
+assert legacy["allowedProfiles"]==["chain_terminal_extractor_v1"],legacy
 
 five=run([base(0),base(1),base(2),base(3),base(4)])
 assert five["failureClass"]=="chain_terminal_gap",five
