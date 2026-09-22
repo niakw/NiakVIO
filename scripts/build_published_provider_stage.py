@@ -13,20 +13,35 @@ def main()->int:
     p.add_argument("--provider",action="append",default=[],help="Optional exact provider id filter; may be repeated.")
     args=p.parse_args()
     requested={str(x or "").strip().casefold().replace("_","-") for x in args.provider if str(x or "").strip()}
-    # The default publication contract is the physical active providers/ set.
-    if args.manifest.resolve() != (ROOT/"manifest.json").resolve():
+    # Targeted Learning must scale with the requested cohort, not the full
+    # catalogue. When explicit providers are supplied, validate only those
+    # manifest rows/files. Full physical-folder validation remains the default
+    # unfiltered publication contract.
+    if requested:
+        payload=json.loads(args.manifest.read_text(encoding="utf-8"))
+        by_id={
+            str(row.get("id") or "").strip().casefold().replace("_","-"): row
+            for row in payload.get("scrapers") or []
+            if isinstance(row,dict) and str(row.get("id") or "").strip()
+        }
+        missing=sorted(requested-set(by_id))
+        if missing: raise SystemExit("published provider stage missing requested ids: "+",".join(missing))
+        rows=[]
+        for pid in sorted(requested):
+            row=by_id[pid]
+            filename=str(row.get("filename") or "")
+            if row.get("enabled") is False or not filename.startswith("providers/"):
+                raise SystemExit(f"{pid}: requested provider is not active published Provider v3")
+            path=(ROOT/filename).resolve()
+            path.relative_to((ROOT/"providers").resolve())
+            if not path.is_file():
+                raise SystemExit(f"{pid}: requested published provider asset missing: {filename}")
+            rows.append(row)
+    elif args.manifest.resolve() != (ROOT/"manifest.json").resolve():
         payload=json.loads(args.manifest.read_text(encoding="utf-8"))
         rows=[r for r in payload.get("scrapers") or [] if isinstance(r,dict) and r.get("enabled") is not False and str(r.get("filename") or "").startswith("providers/")]
     else:
         rows=active_provider_rows()
-    if requested:
-        available={str(row.get("id") or "").strip().casefold().replace("_","-") for row in rows if isinstance(row,dict)}
-        missing=sorted(requested-available)
-        if missing: raise SystemExit("published provider stage missing requested ids: "+",".join(missing))
-        rows=[
-            row for row in rows
-            if str(row.get("id") or "").strip().casefold().replace("_","-") in requested
-        ]
     if args.stage.exists(): shutil.rmtree(args.stage)
     (args.stage/"providers").mkdir(parents=True,exist_ok=True)
     candidates=[]; seen=set()
