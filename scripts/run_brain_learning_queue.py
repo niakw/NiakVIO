@@ -172,7 +172,12 @@ def phase_experiment_entries(
     """
     if not isinstance(plan, dict) or not plan:
         return []
-    if str(plan.get("action") or "") != "probe-targeted-repair":
+
+    # The experiment identity is the selected causal profile/generation, not a
+    # fragile planner action label. A plan can legitimately fall back to
+    # collect/defer semantics when the selected profile cannot materialize;
+    # that profile_unavailable outcome must still advance cross-phase memory.
+    if str(plan.get("failureClass") or "").strip().casefold() == "healthy":
         return []
 
     report = repair.get("report") if isinstance(repair.get("report"), dict) else {}
@@ -1037,6 +1042,7 @@ def main() -> int:
                         "FIELD_BRAIN_PROVIDER_PLAN "
                         f"provider={provider_id} "
                         f"failure={str(provider_plan.get('failureClass') or 'unknown')} "
+                        f"action={str(provider_plan.get('action') or 'unknown')} "
                         f"variant={int(provider_plan.get('experimentVariant') or 0)} "
                         f"generation={max(1, int(provider_plan.get('experimentGeneration') or 1))} "
                         f"profiles={profiles} "
