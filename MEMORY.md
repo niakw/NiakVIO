@@ -1,5 +1,14 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-22 11:28 Europe/Paris — Second Domain writer found: sanitizer was resurrecting manual-off direct authority
+
+- Validation of the first Domain guard exposed a second independent writer. Domain run `35709774525` completed SUCCESS on trigger SHA `b61e18028203`, including `domain_refresh_workflow_test.py`, domain-only validation, release integrity and atomic publication (`provider=0fd366212dcf`, `final=7f1f229914ac`). However, post-publication inspection still showed ShowBox with `direct=https://www.showbox.media/`.
+- The run log identified the upstream mutation exactly: `FIELD_HUB_REGISTRY_SANITIZE scope=46 registry_changed=1 registry_providers=showbox` occurred before `FIELD_DOMAIN_REFRESH_V2 scope=42 ... registry=0`. The sanitizer promoted the first concrete `direct_candidates` value into `direct`; disabled ShowBox was then outside the active Domain resolver scope, so the later `sync_registry_terminal()` manual-off guard never ran.
+- `dc4322b6a9da` fixes `scripts/sanitize_provider_hub_registry.py`: a non-empty `manual_off_reason` is now terminal lifecycle authority for sanitization. The sanitizer forces `direct=null` while preserving concrete `direct_candidates` and allowed hosts for bounded forensic rediscovery.
+- `213255539503` adds a sanitizer regression in `tests/provider_hub_registry_test.py`: a stale manual-off ShowBox-like row is self-healed to `direct=null`, candidate/hosts are retained, and a second sanitize pass is byte-semantically idempotent (`changed=[]`).
+- `e8a110fc99b9` clears the direct URL reintroduced by Domain run `35709774525`.
+- The earlier `sync_registry_terminal()` guard remains necessary because active providers can still reach that writer; the sanitizer fix closes the earlier pre-resolution writer. Validation remains **pending** until a fresh full Domain workflow completes and the published post-run `provider-hubs.json` still has ShowBox `direct=null`.
+
 ## 2026-09-22 11:12 Europe/Paris — Domain manual-off resurrection fixed; Repair preflight blocker isolated
 
 - Current main diagnosis started from HEAD `850374f15d728d57262073e385b4a3bbb09950db`. Repair run `35706702360` on source SHA `2d0bfa448177cfe5640622aa9ac25ecb938f842d` did **not** execute a valid provider Repair cycle: it failed in canonical preflight at `tests/provider_authority_current_catalogue_test.py` because ShowBox had been repopulated as `direct=https://www.showbox.media/` even though the durable authority row still carried `activation_eligible=false` and `manual_off_reason=manual_off_no_current_authority_search_only`.
