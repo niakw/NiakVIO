@@ -364,16 +364,28 @@ jobs:
 
       - name: Build clean ProviderBase reconstruction stage
         shell: bash
+        env:
+          FAST_HANDOFF: ${{ steps.learning-slot.outputs.fast_handoff }}
+          FAST_HANDOFF_PROVIDER_FILTER: ${{ steps.learning-slot.outputs.provider_filter }}
         run: |
           set -euo pipefail
           rm -rf staging-reconstruction
-          python scripts/discover_candidates.py \
-            --stage staging-reconstruction \
-            --require-all-upstreams \
-            --clean-reconstruction
-          node engine_v2/scripts/validate-stage-against-catalog.mjs \
-            --catalog provider_catalog.json \
-            --stage staging-reconstruction/candidates.json
+          args=(python scripts/discover_candidates.py
+            --stage staging-reconstruction
+            --require-all-upstreams
+            --clean-reconstruction)
+          if [ "$FAST_HANDOFF" = "true" ] && [ -n "${FAST_HANDOFF_PROVIDER_FILTER:-}" ]; then
+            IFS=',' read -r -a providers <<< "$FAST_HANDOFF_PROVIDER_FILTER"
+            for provider in "${providers[@]}"; do
+              [ -z "$provider" ] || args+=(--provider "$provider")
+            done
+          fi
+          "${args[@]}"
+          if [ "$FAST_HANDOFF" != "true" ]; then
+            node engine_v2/scripts/validate-stage-against-catalog.mjs \
+              --catalog provider_catalog.json \
+              --stage staging-reconstruction/candidates.json
+          fi
           python scripts/build_provider_runtime_profiles.py \
             --stage staging-reconstruction \
             --apply-stage
@@ -383,14 +395,24 @@ jobs:
           const fs=require('fs');
           const x=JSON.parse(fs.readFileSync('staging-reconstruction/candidates.json','utf8'));
           const candidates=(x.candidates||[]).filter(Boolean);
-          const byId=new Map(candidates.map(r=>[String(r.canonical_id||'').toLowerCase(),r]).filter(([id])=>id));
+          const byId=new Map(candidates.map(r=>[String(r.canonical_id||'').toLowerCase().replaceAll('_','-'),r]).filter(([id])=>id));
+          const fast=String(process.env.FAST_HANDOFF||'')==='true';
+          const filtered=new Set(
+            String(process.env.FAST_HANDOFF_PROVIDER_FILTER||'')
+              .split(',').map(v=>v.trim().toLowerCase().replaceAll('_','-')).filter(Boolean)
+          );
           const catalog=JSON.parse(fs.readFileSync('provider_catalog.json','utf8'));
-          const expected=new Set((catalog.providers||[]).map(r=>String(r.canonicalId||'').toLowerCase()).filter(Boolean));
+          const expected=fast
+            ? filtered
+            : new Set((catalog.providers||[]).map(r=>String(r.canonicalId||'').toLowerCase().replaceAll('_','-')).filter(Boolean));
           const missingCurrent=[...expected].filter(id=>!byId.has(id));
           if(missingCurrent.length) {
-            throw new Error('clean reconstruction stage is missing current catalogue providers: '+missingCurrent.join(','));
+            throw new Error('clean reconstruction stage is missing expected providers: '+missingCurrent.join(','));
           }
           const extraIds=[...byId.keys()].filter(id=>!expected.has(id));
+          if(fast && extraIds.length) {
+            throw new Error('Fast-Handoff reconstruction escaped target scope: '+extraIds.join(','));
+          }
           const rows=candidates.filter(r=>r.provider_base_reconstruction_required===true);
           if(rows.some(r=>r.candidate_code_origin!=='new-niakvio-clean-seed')) {
             throw new Error('clean reconstruction stage contains a legacy executable seed');
@@ -400,9 +422,10 @@ jobs:
           }
           console.log(
             'FIELD_CLEAN_RECONSTRUCTION_STAGE total='+byId.size+
-            ' current='+expected.size+
+            ' expected='+expected.size+
             ' extra='+extraIds.length+
-            ' required='+rows.length
+            ' required='+rows.length+
+            ' fast_handoff='+fast
           );
           NODE
 
