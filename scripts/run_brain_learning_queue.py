@@ -877,8 +877,31 @@ def main() -> int:
                     )
                     break
                 merge_target_candidate(full_registry_path, target_path, provider_id)
-                for key, value in ((repair["report"].get("brain") or {}).get("plans") or {}).items():
+                brain_plans = ((repair["report"].get("brain") or {}).get("plans") or {})
+                provider_plan: dict[str, Any] = {}
+                for key, value in brain_plans.items():
                     combined_plans[str(key)] = value
+                    if (
+                        isinstance(value, dict)
+                        and str(value.get("providerId") or "").strip().casefold() == provider_id
+                    ):
+                        provider_plan = value
+                if provider_plan:
+                    profiles = ",".join(
+                        str(value)
+                        for value in provider_plan.get("allowedProfiles") or []
+                        if str(value)
+                    ) or "none"
+                    print(
+                        "FIELD_BRAIN_PROVIDER_PLAN "
+                        f"provider={provider_id} "
+                        f"failure={str(provider_plan.get('failureClass') or 'unknown')} "
+                        f"variant={int(provider_plan.get('experimentVariant') or 0)} "
+                        f"generation={max(1, int(provider_plan.get('experimentGeneration') or 1))} "
+                        f"profiles={profiles} "
+                        f"historical={str(provider_plan.get('historicalStrategyCase') or 'none')} "
+                        f"exhausted={str(provider_plan.get('experimentExhausted') is True).lower()}"
+                    )
                 for row in repair["report"].get("rounds") or []:
                     if isinstance(row, dict):
                         tagged = copy.deepcopy(row)
