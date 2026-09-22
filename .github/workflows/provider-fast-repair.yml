@@ -225,6 +225,19 @@ jobs:
           EOF
             echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_ARM current=${learn_handoff_count} budget_minutes=20"
           }
+          dispatch_learning() {
+            if [ "${learn_handoff_count:-0}" -le 0 ]; then
+              echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_DISPATCH skipped=true current=0"
+              return 0
+            fi
+            gh workflow run brain-learning-lab.yml \
+              --repo "$GITHUB_REPOSITORY" \
+              --ref main \
+              -f publish_proposal=false \
+              -f slot_remaining_minutes=20 \
+              -f slot_phase=1
+            echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_DISPATCH current=${learn_handoff_count} budget_minutes=20"
+          }
           git fetch --quiet origin main
           remote_main="$(git rev-parse origin/main)"
           if [ "$remote_main" != "$GITHUB_SHA" ]; then
@@ -245,6 +258,7 @@ jobs:
               git commit -m "repair(brain): persist validated provider-local repair"
               git push origin HEAD:main
             fi
+            dispatch_learning
             echo "FIELD_PROVIDER_FAST_REPAIR_PUBLISHED validated=true"
           else
             tmp="$RUNNER_TEMP/provider-fast-repair-evidence"
@@ -267,5 +281,6 @@ jobs:
               git commit -m "ci(brain): persist fast repair evidence"
               git push origin HEAD:main
             fi
+            dispatch_learning
             echo "FIELD_PROVIDER_FAST_REPAIR_PUBLISHED validated=false"
           fi
