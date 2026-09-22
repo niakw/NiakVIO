@@ -6,6 +6,7 @@ import argparse
 import copy
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -142,6 +143,145 @@ def unique(values: list[str]) -> list[str]:
             out.append(key)
             seen.add(key)
     return out
+
+
+def sanitize_experiment_reason(value: Any, limit: int = 180) -> str:
+    """Keep cross-phase experiment evidence compact and free of raw network data."""
+    text = str(value or "")
+    text = re.sub(r"https?://\S+", "<url>", text, flags=re.IGNORECASE)
+    text = re.sub(
+        r"(?i)(token|authorization|cookie|secret)\s*[:=]\s*\S+",
+        r"\1=<redacted>",
+        text,
+    )
+    return " ".join(text.split())[:limit]
+
+
+def phase_experiment_entries(
+    provider_id: str,
+    plan: dict[str, Any],
+    repair: dict[str, Any],
+    final_lab: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    """Materialize the exact fair-share experiment identity and outcome.
+
+    The outer Learning queue is the authoritative owner of one experiment per
+    provider/phase. Child runtime memory can contain older or replanned state;
+    this ledger freezes the exact provider plan that the queue actually ran so
+    the next phase cannot accidentally turn g3/v4 back into g1/v0.
+    """
+    if not isinstance(plan, dict) or not plan:
+        return []
+    if str(plan.get("action") or "") != "probe-targeted-repair":
+        return []
+
+    report = repair.get("report") if isinstance(repair.get("report"), dict) else {}
+    rounds = [row for row in report.get("rounds") or [] if isinstance(row, dict)]
+    allowed = [
+        str(value)
+        for value in plan.get("allowedProfiles") or []
+        if str(value).strip()
+    ]
+    attempted = [
+        str(value)
+        for value in repair.get("attemptedProfiles") or []
+        if str(value).strip()
+    ]
+    profiles = list(dict.fromkeys([*allowed, *attempted]))
+    if not profiles:
+        return []
+
+    variant = max(0, int(plan.get("experimentVariant") or 0))
+    generation = max(1, int(plan.get("experimentGeneration") or 1))
+    signature = str(plan.get("signature") or plan.get("failureClass") or "").strip()
+    failure_class = str(plan.get("failureClass") or "unknown_failure").strip()
+    now = datetime.now(timezone.utc).isoformat()
+    playable = isinstance(final_lab, dict) and str(final_lab.get("status") or "") == "playable"
+
+    def events(kind: str, profile: str) -> list[dict[str, Any]]:
+        output: list[dict[str, Any]] = []
+        for round_row in rounds:
+            for raw in round_row.get(kind) or []:
+                if not isinstance(raw, dict):
+                    continue
+                raw_profile = str(raw.get("profile") or "")
+                if raw_profile and raw_profile != profile:
+                    continue
+                if not raw_profile and kind == "accepted":
+                    # Accepted events may omit profile; the planned/attempted
+                    # profile is still exact when the fair-share plan has one.
+                    if len(profiles) != 1:
+                        continue
+                output.append(raw)
+        return output
+
+    entries: list[dict[str, Any]] = []
+    for profile in profiles:
+        attempts = events("attempts", profile)
+        accepted = events("accepted", profile)
+        progress = events("exploration_progress", profile)
+        rejected = events("rejected", profile)
+        not_generated = [
+            row for row in attempts
+            if str(row.get("status") or "") == "not_generated"
+        ]
+        generated = [
+            row for row in attempts
+            if str(row.get("status") or "") == "generated"
+        ]
+
+        success_count = len(accepted) if playable else 0
+        failures = 0
+        progresses = 0
+        outcome = ""
+        reason = ""
+
+        if success_count > 0:
+            outcome = "accepted"
+            reason = str(accepted[-1].get("reason") or "strict_playable_stream_improvement")
+        elif progress:
+            failures = 1
+            progresses = len(progress)
+            outcome = "exploration_progress_nonpublishable"
+            reason = str(progress[-1].get("reason") or "sandbox_diagnostic_progress")
+        elif rejected:
+            failures = 1
+            outcome = "rejected"
+            reason = str(rejected[-1].get("reason") or "no_validated_improvement")
+        elif not_generated:
+            failures = 1
+            outcome = "not_generated"
+            reason = str(not_generated[-1].get("reason") or "candidate_generation_failed")
+        elif profile not in attempted and not generated:
+            failures = 1
+            outcome = "profile_unavailable"
+            reason = "planned_profile_not_applicable_to_current_bytes"
+        else:
+            failures = 1
+            outcome = "rejected"
+            reason = "fair_share_no_validated_improvement"
+
+        entries.append({
+            "providerId": norm(provider_id),
+            "providerVersion": "*",
+            "failureClass": failure_class,
+            "signature": signature,
+            "profile": profile,
+            "experimentVariant": variant,
+            "experimentGeneration": generation,
+            "capabilityStrategy": str(plan.get("capabilityStrategy") or "").strip().casefold(),
+            "observedPipelineStage": str(plan.get("observedPipelineStage") or "").strip().casefold(),
+            "attempts": max(1, len(attempts)),
+            "successes": success_count,
+            "failures": failures,
+            "consecutiveFailures": 0 if success_count else failures,
+            "progresses": progresses,
+            "lastOutcome": outcome,
+            "lastReason": sanitize_experiment_reason(reason),
+            "lastSeenAt": now,
+            "memoryRole": "fair-share-exact-experiment-ledger",
+        })
+    return entries
 
 def interleave(retries: list[str], pending: list[str]) -> list[str]:
     """Retry unresolved work without starving unseen providers."""
@@ -803,6 +943,7 @@ def main() -> int:
     run_results: list[dict[str, Any]] = []
     combined_rounds: list[dict[str, Any]] = []
     combined_plans: dict[str, Any] = {}
+    phase_experiment_ledger: list[dict[str, Any]] = []
 
     interrupted_provider = ""
     lab_session = LearningLabSession(work_deadline)
@@ -953,6 +1094,16 @@ def main() -> int:
                 state["lastFixture"] = final_lab.get("fixtureSlug")
                 state["lastClients"] = final_lab.get("clients")
                 attempts_this_phase += 1
+
+                if provider_plan:
+                    phase_experiment_ledger.extend(
+                        phase_experiment_entries(
+                            provider_id,
+                            provider_plan,
+                            repair,
+                            final_lab,
+                        )
+                    )
     
                 if final_lab.get("status") == "playable":
                     resolved = True
@@ -1124,6 +1275,15 @@ def main() -> int:
 
     write_json(output / "learning-queue-state.json", queue)
     write_json(output / "learning-queue-summary.json", summary)
+    write_json(output / "runtime-experiment-memory.json", {
+        "schemaVersion": 2,
+        "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "memoryRole": "fair-share-exact-experiment-ledger",
+        "productionWritesAllowed": False,
+        "publicationAllowed": False,
+        "providerCount": len({str(row.get("providerId") or "") for row in phase_experiment_ledger if str(row.get("providerId") or "")}),
+        "entries": phase_experiment_ledger,
+    })
     write_json(output / "repair-report.json", {
         "schema_version": 3,
         "mode": "learning_queue",
@@ -1147,6 +1307,11 @@ def main() -> int:
         "FIELD_BRAIN_QUEUE "
         f"processed={len(processed)} retries={len(queue['retryProviders'])} "
         f"pending={len(queue['pendingProviders'])} exhausted={str(queue['timeBudgetExhausted']).lower()}"
+    )
+    print(
+        "FIELD_BRAIN_PHASE_LEDGER "
+        f"entries={len(phase_experiment_ledger)} "
+        f"providers={len({str(row.get('providerId') or '') for row in phase_experiment_ledger if str(row.get('providerId') or '')})}"
     )
     return 0
 
