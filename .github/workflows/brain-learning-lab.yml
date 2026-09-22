@@ -152,6 +152,8 @@ jobs:
           # invariants already require the common clean ProviderBase v3. Learning
           # is read-only for production, so rematerialize that canonical base only
           # inside this sandbox before enforcing the reconstruction contract.
+          mkdir -p brain-learning-input
+          cp PROVENANCE.json brain-learning-input/source-provenance.json
           python scripts/materialize_provider_base_v3_store.py
           python scripts/provider_base_store.py validate
           python tests/provider_v3_override_pipeline_contract_test.py
@@ -529,6 +531,7 @@ jobs:
             --stage staging-reconstruction/candidates.json \
             --queue-summary brain-sandbox/health-output/learning-queue-summary.json \
             --overrides brain-learning-output/provider-overrides.proposed.json \
+            --provenance brain-learning-input/source-provenance.json \
             --output-dir brain-learning-output/provider-bases \
             --proposed-provenance brain-learning-output/PROVENANCE.proposed.json \
             --summary brain-learning-output/provider-reconstruction-proposal.json
