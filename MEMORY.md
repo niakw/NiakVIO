@@ -3777,3 +3777,30 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Retest #9 (`35674898034`) completed/persisted green on the current code and rebuilt the causal batch plan. Canonical census remains 27 FULL OK / 1 PARTIAL / 2 CANDIDATE / 4 ROUTE / 3 CHAIN / 3 HARNESS MISMATCH / 2 HARNESS-ENV BLOCKED / 4 DISABLED, with **0 PROVIDER NETWORK BLOCKED**.
 - Current Repair queue is still 9: `4khdhub, allanime, anime-ultime, animevostfr, mallumv, moviebox, persianstremio, vidfast, yflix`.
 - Current harness split is exact: mismatch = `animesultra, animevost-fr, moviesmod`; environment/challenge = `allwish, flemmix`. The rebuilt batch plan creates one harness group per transport signature/capability instead of mixing contradictory causes.
+
+
+### 2026-09-22 — Targeted Brain pipeline green; control-plane intelligence upgraded
+- Learning #244 (`35678577804`, source SHA `ecf095680026...`) is the first fully successful current Fast-Handoff Learning cycle. It ran exactly the 9 current repair providers (`4khdhub, allanime, anime-ultime, animevostfr, mallumv, moviebox, persianstremio, vidfast, yflix`), used the published-exact targeted stage, proved Fast-Handoff scope, built a 9-provider clean reconstruction stage, completed fair-share adaptive Learning, historical comparison, sanitized cross-day state, repair proposal materialization, architecture proposal materialization, artifact upload and sanitized-memory publication.
+- #244 queue result: `processed=9 retries=9 pending=9 exhausted=false`. It generated 226 Learning proposals, 167 experiment-memory entries, 1 learned skill and 2 architecture proposals. **It accepted 0 concrete provider repairs and 0 clean reconstruction candidates.** A green Learning run is therefore not proof that the current provider debt is repaired.
+- #244 exposed an active-context defect: retained native-reader memory (2548 failures / 70 repair-priority providers) dominated the final proposal list with providers outside the current 9-provider handoff. Retained memory is useful, but it must not become current-task authority.
+- `learning-lab.mjs` now accepts an explicit provider filter in Fast-Handoff mode. Active proposals from experiment memory, historical targets, native portfolio, native reader aggregate signals, provider reader failures and repeated reader signatures are filtered to the current cohort. `nativeReaderRepairMemory` remains preserved unchanged for future tasks. Behavioral contract: `brain_fast_handoff_active_context_test.py`.
+- The historical NiakVIO repair corpus is now an **executable prior**, not only a route/recipe hint. `brain_repair_runtime.py` exposes sanitized `historicalCases.solutionClass` rows to the planner only when the experience artifact is `repair-prior-only` and has no direct mutation authority. In Learning only, exact failure-class matches can select an already-supported causal profile one step before generic final exploration:
+  - provider-owned origin/header/domain replay -> `provider_origin_failover_v1`
+  - search/detail/player traversal -> `proven_route_terminal_traversal_v1`
+  - terminal media extraction -> `chain_terminal_extractor_v1`
+  - retained candidate replay -> `retained_candidate_replay_v1`
+  - proven request program + media extraction -> `player_media_extractor_v1`
+  Production Repair keeps its normal bounded variant order. Every historical selection still requires current-byte Deep/playback/identity proof.
+- The first historical-strategy implementation initially failed closed because `HISTORICAL_SOLUTION_PROFILES` was initialized after the planner's top-level planning loop (JavaScript temporal-dead-zone). It was moved before planning; `brain_historical_solution_execution_test.py` now passes and proves a synthetic ROUTE PROVEN case selects `proven_route_terminal_traversal_v1` in Learning while production does not shortcut.
+- The Fast-Handoff provider filter initially used the path-oriented `optionalArg` parser and converted `target-a` into an absolute filesystem path. It now uses scalar `arg()`; the active-context behavior test passes.
+- Repair batch routing now obeys **deepest current causal proof > stale lower-layer issue text**. CHAIN REACHED cannot be downgraded to transport merely because an old `network_http_error` remains dominantIssue; ROUTE PROVEN similarly remains route-to-terminal. Only final `PROVIDER NETWORK BLOCKED` status owns transport refresh.
+- Added `scripts/build_provider_execution_plan.py`: machine causal owner router above individual scripts. Current lane ownership is:
+  - CANDIDATE OK -> `REMAT_TEST` first, fallback `FAST_REPAIR`
+  - ROUTE PROVEN / CHAIN REACHED / missing lanes -> `FAST_REPAIR`
+  - true NETWORK BLOCKED -> `DOMAIN_REFRESH`, fallback transport qualification
+  - harness/client transport causes -> `CORE_CLIENT_LEARNING` (no provider mutation)
+  - otherwise -> `BRAIN_LEARNING`
+  It fails closed on batch/census queue mismatch and records that autonomous Core/client application is not yet validated.
+- Added `.github/workflows/provider-brain-autopilot.yml`. Retest no longer launches Fast Repair directly: after an exact persisted census it dispatches Brain Autopilot. Autopilot rebuilds the batch plan + execution plan, runs a true domain owner alone when present, otherwise may dispatch disjoint REMAT and FAST REPAIR cohorts in parallel, and explicitly blocks Core/client production mutation until a validated application lane exists. Fast Repair and REMAT workflows now accept comma-separated provider cohorts for catalogue-scale runs.
+- Core Workflow Gate `35680170486` completed **success** on the intelligence/autopilot contract set: Python syntax, runtime contracts, historical executable strategy, Fast-Handoff active-context isolation, deepest-proof routing, execution router, Autopilot workflow, native loading compatibility and side-effect purity all passed.
+- Next authoritative proof is a fresh Retest with Autopilot enabled on current HEAD. The success criterion is not merely a green run: inspect the generated execution plan, actual lane dispatches, historical strategy use, accepted candidates and current-byte validation.
