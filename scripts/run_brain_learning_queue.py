@@ -304,6 +304,7 @@ def phase_experiment_entries(
             "lastReason": sanitize_experiment_reason(reason),
             "lastSeenAt": now,
             "memoryRole": "fair-share-exact-experiment-ledger",
+            "executionObserved": bool(attempts),
         })
     return entries
 
@@ -366,6 +367,10 @@ def merge_phase_learning_state(
         for field in ("lastOutcome", "lastReason", "lastSeenAt", "memoryRole", "capabilityStrategy", "observedPipelineStage"):
             if field in row:
                 current[field] = row[field]
+        current["executionObserved"] = (
+            current.get("executionObserved") is True
+            or row.get("executionObserved") is True
+        )
 
     limit = max(1, int(max_entries))
     memory["entries"] = rows[-limit:]
@@ -379,14 +384,34 @@ def should_continue_evolved_frontier(
     *,
     max_attempts: int = 3,
 ) -> bool:
-    """Use the remaining fair-share slice to execute, not merely plan, post-g5 strategies."""
-    return (
+    """Use the remaining fair-share slice to cross the g5 -> evolved-strategy boundary."""
+    if not (
         1 <= int(attempts_this_phase) < max(2, int(max_attempts))
         and isinstance(plan, dict)
         and str(plan.get("action") or "") == "probe-targeted-repair"
-        and str(plan.get("repairType") or "") == "evolved_strategy"
-        and str(plan.get("learningDisposition") or "") == "execute_bounded_evolved_strategy"
         and bool([value for value in plan.get("allowedProfiles") or [] if str(value).strip()])
+    ):
+        return False
+
+    if (
+        str(plan.get("repairType") or "") == "evolved_strategy"
+        and str(plan.get("learningDisposition") or "") == "execute_bounded_evolved_strategy"
+    ):
+        return True
+
+    # The report returned by a sandbox attempt describes the strategy that just
+    # ran. The next post-g5 strategy is only visible after that exact g5 failure
+    # is merged into phase-learning-state.json. Allow one bounded continuation
+    # at the explicit final Learning generation so the next sandbox process can
+    # actually cross the boundary instead of stopping after merely proving g5.
+    variant = max(0, int(plan.get("experimentVariant") or 0))
+    generation = max(1, int(plan.get("experimentGeneration") or 1))
+    generation_limit = max(0, int(plan.get("experimentGenerationLimit") or 0))
+    return (
+        variant == 4
+        and generation_limit >= 3
+        and generation >= generation_limit
+        and plan.get("experimentExhausted") is not True
     )
 
 
