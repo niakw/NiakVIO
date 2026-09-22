@@ -1,5 +1,17 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-22 12:23 Europe/Paris — v17 proved post-g5 selection but exposed Learning suppression split-brain
+
+- Targeted Learning run `35713333206` on SHA `555a6d74fd28` completed SUCCESS and processed the exact 9-provider Repair handoff.
+- Artifact `10688193101` was downloaded and inspected directly. The exact runtime experiment ledger proves final g5 execution is now correctly attributed (`executionObserved=true`) for cases such as `4khdhub:proven_route_terminal_traversal_v1_g5`, `allanime:chain_terminal_extractor_v1_g5`, `animevostfr:retained_candidate_replay_v1_g5`, `mallumv:chain_terminal_extractor_v1_g5`, `persianstremio:player_media_extractor_v1_g5`, and `moviebox:player_media_extractor_v1_g5`.
+- v17 also proves the planner now advances beyond g5: it selected `route_transition_graph_v1` / `route_peer_transition_replay_v1`, `terminal_transition_graph_v1` / `terminal_request_program_inference_v1`, `candidate_divergence_trace_v1` / `candidate_request_program_replay_v1`, `player_protocol_family_replay_v1`, `transport_request_differential_v1`, and `search_contract_inference_v1` according to the provider failure class.
+- However these evolved strategies were **not yet executed as generated repair candidates** in v17. The queue summary shows their method selected while `attemptedProfiles=[]`, and runtime memory records `profile_unavailable` with `executionObserved=false`. Therefore v17 is proof of second-order selection, not proof of second-order candidate execution.
+- Root cause: `scripts/run_brain_learning_sandbox.py::_negative_entries()` consumed the previous persistent memory without the stale-unexecuted migration already applied in `brain_repair_runtime.py` and `learning-lab.mjs`. The Learning matcher therefore suppressed a newly selected evolved profile because an older run had pre-marked it `profile_unavailable` before execution. This created split-brain behavior: planner says execute; Learning applicability filter says already failed.
+- `06874c47fa4a` aligns Learning negative-memory filtering: post-g5 `profile_unavailable` rows without `executionObserved=true` are ignored and cannot suppress the first real execution.
+- `905b54df6782` adds a regression test proving stale unexecuted evolved debt is filtered while executed evolved evidence and ordinary negative memory remain active. `5a5705588fc3` adds this test to the Brain Learning preflight gate.
+- No provider is reclassified or repaired from v17: all 9 remain unresolved; no provider repair proposal was produced. Canonical Repair must wait for a subsequent Learning proof with actual `attemptedProfiles` containing evolved strategy names and `executionObserved=true`.
+- Scaling observation: v17 took materially longer because fair-share allowed up to 3 bounded post-g5 attempts. Once real second-order execution is proven, measure per-provider cost and move independent provider slices toward bounded parallel/family execution rather than serially multiplying this cost across hundreds of providers.
+
 ## 2026-09-22 12:04 Europe/Paris — First v16 proof blocked in preflight by execution-marker projection contract
 
 - Targeted Learning run `35713082191` on SHA `4e4b0a9e55b4` failed **before provider execution** in the Brain contract suite. Provider queue/Lab evidence from this run is therefore nonexistent and must not be interpreted as a post-g5 result.
