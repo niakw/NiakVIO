@@ -56,6 +56,19 @@ CAUSAL_STRATEGY_BASES = {
     "candidate_replay_gap": "retained_candidate_replay_v1",
     "media_extraction_gap": "player_media_extractor_v1",
 }
+POST_EXHAUSTION_STRATEGY_PROFILES = {
+    "transport_request_differential_v1",
+    "route_transition_graph_v1",
+    "route_peer_transition_replay_v1",
+    "terminal_transition_graph_v1",
+    "terminal_request_program_inference_v1",
+    "candidate_divergence_trace_v1",
+    "candidate_request_program_replay_v1",
+    "player_protocol_family_replay_v1",
+    "media_response_shape_inference_v1",
+    "search_contract_inference_v1",
+    "search_response_route_binding_v1",
+}
 # `excluded` is not an availability/runtime failure. It represents a deliberate
 # policy/safety exclusion and therefore must not be turned into an unattended
 # network-repair attempt. Every other non-healthy/non-playable observation is a
@@ -970,6 +983,8 @@ def _is_causal_strategy_profile(profile_name: str) -> bool:
     value = str(profile_name or "").strip()
     if not value:
         return False
+    if value in POST_EXHAUSTION_STRATEGY_PROFILES:
+        return True
     for base in CAUSAL_STRATEGY_BASES.values():
         if value == base or re.fullmatch(re.escape(base) + r"_g[3-9][0-9]*", value):
             return True
@@ -1121,10 +1136,17 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         limit=32,
     )
     historical_strategy_profile = str(brain_plan.get("historicalStrategyProfile") or "").strip()
-    new_strategy_id = historical_strategy_profile or _new_strategy_id(
-        experiment_failure,
-        experiment_variant,
-        experiment_generation,
+    post_exhaustion_strategy_profile = str(
+        brain_plan.get("postExhaustionStrategyProfile") or ""
+    ).strip()
+    new_strategy_id = (
+        post_exhaustion_strategy_profile
+        or historical_strategy_profile
+        or _new_strategy_id(
+            experiment_failure,
+            experiment_variant,
+            experiment_generation,
+        )
     )
     if experiment_variant == 4 and experiment_failure in {"candidate_replay_gap", "media_extraction_gap"}:
         # Production g2 stays conservative and prioritizes current/provider-owned
@@ -1276,7 +1298,110 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         )
         direct_paths = _unique_routes(direct_paths, generic_direct, limit=40)
 
-    role_preferences = _experiment_role_preferences(
+    # Second-order strategies are not another wider gN pass. They deliberately
+    # change which evidence is trusted and which graph is traversed after the
+    # bounded g2..g5 family is exhausted.
+    second_order_role_preferences: list[str] | None = None
+    if new_strategy_id == "route_transition_graph_v1":
+        search_paths = _unique_routes(configured_search, learned_search, limit=12)
+        direct_paths = _unique_routes(
+            learned_direct,
+            [route for route in peer_direct if _route_role(route) in {"detail", "episode", "player", "source", "api"}],
+            limit=36,
+        )
+        request_recipes = _unique_request_recipes(
+            current_request_recipes, provider_request_recipes, peer_request_recipes, limit=36
+        )
+        second_order_role_preferences = ["detail", "episode", "player", "source", "api", "other"]
+    elif new_strategy_id == "route_peer_transition_replay_v1":
+        search_paths = _unique_routes(learned_search, peer_search, limit=18)
+        direct_paths = _unique_routes(peer_direct, learned_direct, limit=40)
+        request_recipes = _unique_request_recipes(
+            peer_request_recipes, current_request_recipes, provider_request_recipes, limit=40
+        )
+        second_order_role_preferences = ["player", "source", "api", "detail", "episode", "other"]
+    elif new_strategy_id == "terminal_transition_graph_v1":
+        search_paths = _unique_routes(configured_search, learned_search, limit=8)
+        direct_paths = _unique_routes(
+            [route for route in learned_direct if _route_role(route) in TERMINAL_MEDIA_ROLES | {"episode"}],
+            [route for route in peer_direct if _route_role(route) in TERMINAL_MEDIA_ROLES | {"episode"}],
+            limit=36,
+        )
+        request_recipes = _unique_request_recipes(
+            current_request_recipes, provider_request_recipes, peer_request_recipes, limit=40
+        )
+        second_order_role_preferences = ["source", "api", "player", "episode", "detail", "other"]
+    elif new_strategy_id == "terminal_request_program_inference_v1":
+        search_paths = _unique_routes(learned_search, configured_search, limit=8)
+        direct_paths = _unique_routes(
+            [route for route in learned_direct if _route_role(route) in TERMINAL_MEDIA_ROLES | {"episode"}],
+            limit=28,
+        )
+        request_recipes = _unique_request_recipes(
+            current_request_recipes, positive_request_recipes, historical_provider_request_recipes,
+            peer_request_recipes, limit=48
+        )
+        second_order_role_preferences = ["api", "source", "player", "episode", "other", "detail"]
+    elif new_strategy_id == "candidate_divergence_trace_v1":
+        retained_routes = _unique_routes(positive_program_routes(provider_id), _patch_routes(patch), limit=48)
+        search_paths = [route for route in retained_routes if _route_role(route) == "search"][:12]
+        direct_paths = [route for route in retained_routes if _route_role(route) != "search"][:32]
+        request_recipes = _unique_request_recipes(
+            current_request_recipes, positive_request_recipes, historical_provider_request_recipes, limit=36
+        )
+        second_order_role_preferences = ["player", "source", "api", "detail", "episode", "other"]
+    elif new_strategy_id == "candidate_request_program_replay_v1":
+        retained_routes = _unique_routes(positive_program_routes(provider_id), learned_routes, limit=48)
+        search_paths = [route for route in retained_routes if _route_role(route) == "search"][:12]
+        direct_paths = [route for route in retained_routes if _route_role(route) != "search"][:32]
+        request_recipes = _unique_request_recipes(
+            positive_request_recipes, current_request_recipes, provider_request_recipes, limit=48
+        )
+        second_order_role_preferences = ["api", "player", "source", "detail", "episode", "other"]
+    elif new_strategy_id == "player_protocol_family_replay_v1":
+        search_paths = _unique_routes(learned_search, configured_search, limit=8)
+        direct_paths = _unique_routes(
+            [route for route in learned_direct if _route_role(route) in TERMINAL_MEDIA_ROLES],
+            [route for route in peer_direct if _route_role(route) in TERMINAL_MEDIA_ROLES],
+            limit=32,
+        )
+        request_recipes = _unique_request_recipes(
+            current_request_recipes, provider_request_recipes, peer_request_recipes, limit=48
+        )
+        second_order_role_preferences = ["source", "api", "player", "other", "episode", "detail"]
+    elif new_strategy_id == "media_response_shape_inference_v1":
+        search_paths = _unique_routes(learned_search, limit=6)
+        direct_paths = _unique_routes(
+            [route for route in learned_direct if _route_role(route) in TERMINAL_MEDIA_ROLES],
+            limit=24,
+        )
+        request_recipes = _unique_request_recipes(
+            current_request_recipes, positive_request_recipes, provider_request_recipes, limit=48
+        )
+        second_order_role_preferences = ["api", "source", "player", "other", "episode", "detail"]
+    elif new_strategy_id == "search_contract_inference_v1":
+        search_paths = _unique_routes(learned_search, peer_search, configured_search, generic_search, limit=32)
+        direct_paths = _unique_routes(learned_direct, peer_direct, limit=24)
+        request_recipes = _unique_request_recipes(
+            current_request_recipes, provider_request_recipes, peer_request_recipes, limit=40
+        )
+        second_order_role_preferences = ["search", "detail", "episode", "player", "source", "api", "other"]
+    elif new_strategy_id == "search_response_route_binding_v1":
+        search_paths = _unique_routes(peer_search, learned_search, configured_search, limit=28)
+        direct_paths = _unique_routes(peer_direct, learned_direct, limit=32)
+        request_recipes = _unique_request_recipes(
+            peer_request_recipes, current_request_recipes, provider_request_recipes, limit=48
+        )
+        second_order_role_preferences = ["search", "api", "detail", "player", "source", "episode", "other"]
+    elif new_strategy_id == "transport_request_differential_v1":
+        search_paths = _unique_routes(learned_search, configured_search, limit=12)
+        direct_paths = _unique_routes(learned_direct, configured_direct, limit=24)
+        request_recipes = _unique_request_recipes(
+            current_request_recipes, provider_request_recipes, limit=32
+        )
+        second_order_role_preferences = ["api", "detail", "search", "player", "source", "episode", "other"]
+
+    role_preferences = second_order_role_preferences or _experiment_role_preferences(
         census_focus,
         experiment_failure,
         experiment_variant,
@@ -1397,6 +1522,8 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         "new_strategy_id": new_strategy_id,
         "historical_strategy_profile": historical_strategy_profile,
         "historical_strategy_case": str(brain_plan.get("historicalStrategyCase") or ""),
+        "post_exhaustion_strategy_profile": post_exhaustion_strategy_profile,
+        "post_exhaustion_strategy_method": str(brain_plan.get("postExhaustionStrategyMethod") or ""),
         "peer_route_min_variant": peer_route_min_variant,
         "peer_recipe_min_variant": peer_recipe_min_variant,
         "negative_memory_matches": max(0, int(brain_plan.get("negativeMemoryMatches") or 0)),
