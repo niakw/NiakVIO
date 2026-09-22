@@ -158,4 +158,82 @@ assert "--runtime-experiment-memory brain-sandbox/health-output/runtime-experime
 assert "brain-sandbox/health-output/runtime-experiment-memory.json" in workflow
 assert "--runtime-experiment-memory automation/brain-repair-memory.json" not in workflow
 
+
+
+# A child may already have replanned to the next post-g5 strategy after the
+# experiment it actually executed failed. The ledger must attribute the failure
+# to the event's plan snapshot and must not pre-fail the unexecuted replan.
+executed_g5 = {
+    **plan,
+    "signature": "sig-g5",
+    "experimentGeneration": 5,
+    "allowedProfiles": ["chain_terminal_extractor_v1_g5"],
+}
+next_evolved = {
+    **executed_g5,
+    "repairType": "evolved_strategy",
+    "strategyEscalated": True,
+    "learningDisposition": "execute_bounded_evolved_strategy",
+    "allowedProfiles": ["terminal_request_program_inference_v1"],
+}
+replanned_repair = {
+    "attemptedProfiles": ["chain_terminal_extractor_v1_g5"],
+    "report": {
+        "rounds": [{
+            "attempts": [{
+                "profile": "chain_terminal_extractor_v1_g5",
+                "status": "generated",
+                "brain_plan": executed_g5,
+            }],
+            "accepted": [],
+            "exploration_progress": [],
+            "rejected": [{
+                "profile": "chain_terminal_extractor_v1_g5",
+                "reason": "no_validated_improvement",
+                "brain_plan": executed_g5,
+            }],
+        }]
+    },
+}
+replanned_rows = queue.phase_experiment_entries(
+    "synthetic-ledger",
+    next_evolved,
+    replanned_repair,
+    {"status": "no_streams"},
+)
+assert len(replanned_rows) == 1, replanned_rows
+assert replanned_rows[0]["profile"] == "chain_terminal_extractor_v1_g5", replanned_rows
+assert replanned_rows[0]["experimentGeneration"] == 5, replanned_rows
+assert replanned_rows[0]["signature"] == "sig-g5", replanned_rows
+assert all(row["profile"] != "terminal_request_program_inference_v1" for row in replanned_rows)
+
+# Exact outcomes become an in-memory, read-only Learning prior immediately so
+# the next attempt can advance instead of replaying the same generation.
+phase_state = {
+    "publicationAllowed": False,
+    "productionWritesAllowed": False,
+    "experimentMemory": {"schemaVersion": 1, "entries": []},
+}
+phase_state = queue.merge_phase_learning_state(phase_state, replanned_rows)
+stored = phase_state["experimentMemory"]["entries"]
+assert len(stored) == 1 and stored[0]["failures"] == 1, stored
+phase_state = queue.merge_phase_learning_state(phase_state, replanned_rows)
+stored = phase_state["experimentMemory"]["entries"]
+assert len(stored) == 1, stored
+assert stored[0]["failures"] == 2 and stored[0]["consecutiveFailures"] == 2, stored
+assert phase_state["publicationAllowed"] is False
+assert phase_state["productionWritesAllowed"] is False
+
+# Fair-share remains one attempt for ordinary work, but a finite evolved
+# strategy family may consume the remainder of the same provider slice.
+assert queue.should_continue_evolved_frontier(next_evolved, 1) is True
+assert queue.should_continue_evolved_frontier(next_evolved, 2) is True
+assert queue.should_continue_evolved_frontier(next_evolved, 3) is False
+assert queue.should_continue_evolved_frontier({**next_evolved, "repairType": "provider_runtime"}, 1) is False
+
+source = SCRIPT.read_text(encoding="utf-8")
+assert "phase_learning_state_path" in source
+assert "merge_phase_learning_state(" in source
+assert "fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase" in source
+
 print("Brain fair-share exact experiment ledger contract passed")
