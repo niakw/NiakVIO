@@ -1,5 +1,11 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-22 11:31 Europe/Paris — Manual-off Domain authority invariant validated end-to-end
+
+- Fresh Domain run `35710451389` completed SUCCESS from trigger SHA `a2dc21287fa7`, including sanitizer, resolver, metadata reconciliation, domain-only Provider v3 tests, release reprojection/integrity and atomic publication.
+- The run published staged SHA `7c8bb8d53a37` and final SHA `897b9248a56f`. Post-publication inspection of the actual main branch confirms ShowBox remains `direct=null` while `https://www.showbox.media/` remains only in `direct_candidates`, with `activation_eligible=false` and `manual_off_reason=manual_off_no_current_authority_search_only`.
+- This validates the two-layer generic fix: sanitizer cannot promote a forensic candidate across a manual-off lifecycle decision, and `sync_registry_terminal()` cannot promote a later observed terminal across the same decision. The previous failed Repair `35706702360` should now be retried only after the Brain fair-share/experiment-ledger defect below is fixed.
+
 ## 2026-09-22 11:28 Europe/Paris — Second Domain writer found: sanitizer was resurrecting manual-off direct authority
 
 - Validation of the first Domain guard exposed a second independent writer. Domain run `35709774525` completed SUCCESS on trigger SHA `b61e18028203`, including `domain_refresh_workflow_test.py`, domain-only validation, release integrity and atomic publication (`provider=0fd366212dcf`, `final=7f1f229914ac`). However, post-publication inspection still showed ShowBox with `direct=https://www.showbox.media/`.
