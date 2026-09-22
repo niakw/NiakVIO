@@ -174,6 +174,7 @@ with tempfile.TemporaryDirectory() as td:
 
         executed_post_g5 = {
             **stale_post_g5,
+            "strategyImplementationFingerprint": "b" * 64,
             "executionObserved": True,
         }
         learning.write_text(json.dumps({
@@ -188,6 +189,7 @@ with tempfile.TemporaryDirectory() as td:
         executed_memory = brain.planner_negative_memory("learning")
         assert any(
             x.get("profile") == "terminal_transition_graph_v1"
+            and x.get("strategyImplementationFingerprint") == "b" * 64
             and x.get("executionObserved") is True
             for x in executed_memory
         ), executed_memory
