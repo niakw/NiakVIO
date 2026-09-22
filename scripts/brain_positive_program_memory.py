@@ -311,6 +311,12 @@ def learned_skills(*, path: Path = MEMORY_PATH) -> dict[str, dict[str, Any]]:
             "failureCount": 0,
             "actions": [f"replay sanitized validated program prior for {key} under current-byte gates"],
             "autoApply": False,
+            # Explicitly distinguish a strictly validated same-provider program
+            # from a transferable learned skill. The planner may replay this
+            # prior for the same provider even if the diagnostic failure label
+            # drifted, but current-byte playback/identity/non-regression remain
+            # mandatory and peer transfer remains forbidden.
+            "sameProviderPositiveProgram": True,
             "source": "brain-positive-program-memory",
         }
     return output
