@@ -93,34 +93,35 @@ def build_strategy_blueprints(
 ) -> list[dict[str, Any]]:
     """Turn census repair families into bounded, reviewable new-strategy designs.
 
-    These are architecture blueprints only: no profile becomes executable until
-    its causal trigger, negative signature, playback/identity proof and
-    non-regression contract are implemented and reviewed.
+    These are architecture blueprints and the same strategy ids may be executed
+    sandbox-only by Learning after bounded g2..g5 exhaustion. They never gain
+    production mutation authority from this proposal: playback/identity proof,
+    non-regression, and the normal publication gate remain mandatory.
     """
     templates: dict[str, dict[str, Any]] = {
         "route-to-terminal": {
-            "strategyId": "proven_route_terminal_traversal_v1",
+            "strategyId": "route_transition_graph_v1",
             "causalTrigger": "catalogue/detail route is live and identity-qualified but no terminal/player media is reached",
             "method": "start from retained route proof; traverse only identity-correlated detail/player/server transitions; learn reusable route shapes without copying provider domains",
             "requiredEvidence": ["retained route proof", "same-work identity correlation", "terminal/player response trace"],
             "acceptanceProof": ["playback-verified media", "content identity not contradicted", "no green-lane regression"],
         },
         "terminal-extraction": {
-            "strategyId": "chain_terminal_extractor_v1",
+            "strategyId": "terminal_transition_graph_v1",
             "causalTrigger": "retained chain hit reaches player/resolver territory but media extraction/validation is incomplete",
             "method": "replay retained chain hit first; classify terminal host/player family; apply bounded extractor/resolver capability and follow only scored player/media transitions",
             "requiredEvidence": ["retained chain hit", "terminal host/player family", "response/body route proof"],
             "acceptanceProof": ["playback-verified media", "terminal identity preserved", "no green-lane regression"],
         },
         "transport": {
-            "strategyId": "native_transport_differential_v1",
+            "strategyId": "transport_request_differential_v1",
             "causalTrigger": "provider request fails with HTTP/network exception before a code-level causal defect is proven",
             "method": "compare GitHub Node transport with representative native TV/mobile HTTP policy first; if native-like transport succeeds, classify harness mismatch; mutate provider code only when the same request fails under representative transport with implementation evidence",
             "requiredEvidence": ["sanitized request shape", "GitHub transport verdict", "representative native-transport verdict"],
             "acceptanceProof": ["causal transport classification", "provider mutation only after harness mismatch excluded", "no credential/challenge-token fabrication"],
         },
         "candidate-replay": {
-            "strategyId": "retained_candidate_replay_v1",
+            "strategyId": "candidate_divergence_trace_v1",
             "causalTrigger": "historical candidate/playback proof exists but current bytes no longer reproduce it",
             "method": "replay the exact retained fixture and proof path against current bytes before discovery; diff route/data/runtime changes and repair only the first proven divergence",
             "requiredEvidence": ["retained candidate fixture", "historical proof metadata", "current replay trace"],
