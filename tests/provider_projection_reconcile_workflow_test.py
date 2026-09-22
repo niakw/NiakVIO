@@ -11,6 +11,8 @@ for required in (
     "detect_provider_projection_drift.py",
     "materialize_provider_v3_one.py",
     "reconcile_targeted_provider_publication.py",
+    "reindex_provider_publication_fingerprints.py",
+    "publication_contract_fingerprint_test.py",
     "provider_projection_drift_detector_test.py",
     "audit_provider_v3_static.py",
     "reapply_published_overrides.py --check",
