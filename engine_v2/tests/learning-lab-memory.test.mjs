@@ -11,6 +11,7 @@ const out = path.join(tmp, 'out');
 const repair = path.join(tmp, 'repair.json');
 const previous = path.join(tmp, 'previous.json');
 const historical = path.join(tmp, 'historical.json');
+const runtimeMemory = path.join(tmp, 'runtime-memory.json');
 const portfolio = path.join(tmp, 'portfolio.json');
 const overrides = path.join(tmp, 'overrides.json');
 
@@ -80,6 +81,25 @@ write(previous, {
   nativeReaderRepairMemory: readerMemory,
   nativeFeedback: { readerRepairAccepted: 3, readerRepairRejected: 2, readerRepairInconclusive: 1 },
 });
+write(runtimeMemory, {
+  schemaVersion: 1,
+  entries: [{
+    providerId: 'foo',
+    providerVersion: '*',
+    signature: 'sig-foo',
+    failureClass: 'search_gap',
+    profile: 'adaptive_runtime_recovery',
+    experimentVariant: 4,
+    experimentGeneration: 3,
+    attempts: 0,
+    successes: 0,
+    failures: 5,
+    consecutiveFailures: 5,
+    progresses: 2,
+    lastOutcome: 'profile_unavailable',
+    lastReason: 'planned_profile_not_applicable_to_current_bytes',
+  }],
+});
 write(historical, {
   baseline: { id: 'excel-provider-audit-5.20.63', release: '5.20.63' },
   stats: { unresolvedHighPriority: 1 },
@@ -111,16 +131,36 @@ const result = spawnSync(process.execPath, [script,
   '--output-dir', out,
   '--repair-report', repair,
   '--previous-state', previous,
+  '--runtime-experiment-memory', runtimeMemory,
   '--historical-training', historical,
   '--provider-portfolio', portfolio,
   '--overrides', overrides,
 ], { cwd: repo, encoding: 'utf8' });
 assert.equal(result.status, 0, result.stderr);
 const latest = JSON.parse(fs.readFileSync(path.join(out, 'latest.json'), 'utf8'));
-const entry = latest.experimentMemory.entries.find((row) => row.providerId === 'foo' && row.profile === 'adaptive_runtime_recovery');
-assert.ok(entry, 'negative-memory entry missing');
-assert.equal(entry.failures, 2);
-assert.equal(entry.consecutiveFailures, 2);
+const entry = latest.experimentMemory.entries.find((row) =>
+  row.providerId === 'foo'
+  && row.profile === 'adaptive_runtime_recovery'
+  && row.experimentVariant === 4
+  && row.experimentGeneration === 3
+);
+assert.ok(entry, 'runtime negative-memory generation entry missing');
+assert.equal(entry.failures, 5);
+assert.equal(entry.consecutiveFailures, 5);
+assert.equal(entry.progresses, 2);
+assert.equal(entry.lastOutcome, 'profile_unavailable');
+assert.equal(entry.lastReason, 'planned_profile_not_applicable_to_current_bytes');
+// Runtime ledger is authoritative when available; the repair-report fallback
+// must not double-count the same current phase.
+assert.equal(
+  latest.experimentMemory.entries.filter((row) =>
+    row.providerId === 'foo'
+    && row.profile === 'adaptive_runtime_recovery'
+    && row.experimentVariant === 4
+    && row.experimentGeneration === 3
+  ).length,
+  1,
+);
 assert.ok(latest.proposals.some((row) => row.type === 'avoid_failed_profile' && row.providerId === 'foo'));
 assert.ok(latest.proposals.some((row) => row.type === 'historical_provider_repair_target' && row.providerId === 'foo'));
 assert.ok(latest.proposals.some((row) => row.type === 'native_cross_device_repair_target' && row.providerId === 'foo'));
