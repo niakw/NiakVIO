@@ -158,7 +158,13 @@ def sync_registry_terminal(registry: dict[str, Any], provider_id: str, terminal:
     before = json.dumps(row, ensure_ascii=False, sort_keys=True)
     old_direct = row.get("direct")
     old_candidates = list(row.get("direct_candidates") or [])
-    row["direct"] = normalized
+
+    # A manual lifecycle/authority decision outranks passive Domain observation.
+    # Keep newly observed terminals as bounded forensic candidates, but never
+    # resurrect them as current authority until the manual-off reason is cleared
+    # by an explicit requalification step.
+    manual_off_reason = str(row.get("manual_off_reason") or "").strip()
+    row["direct"] = None if manual_off_reason else normalized
     row["direct_candidates"] = _unique_urls([normalized, old_direct, *old_candidates])
 
     allowed: list[str] = []
