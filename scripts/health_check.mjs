@@ -99,6 +99,30 @@ function formatHealthDiagnosticSuffix(failures, errorSuffix) {
 const requestedMode = requestedHealthMode(process.argv);
 
 const registry = JSON.parse(await fs.readFile(REGISTRY_PATH, 'utf8'));
+function normalizedProviderFilterId(value) {
+  return String(value || '').trim().toLowerCase().replaceAll('_', '-');
+}
+const requestedProviderFilter = new Set(
+  String(process.env.NUVIO_HEALTH_PROVIDER_FILTER || '')
+    .split(',')
+    .map(normalizedProviderFilterId)
+    .filter(Boolean),
+);
+if (requestedProviderFilter.size > 0) {
+  const originalCandidates = Array.isArray(registry.candidates) ? registry.candidates : [];
+  const selected = originalCandidates.filter((candidate) =>
+    requestedProviderFilter.has(normalizedProviderFilterId(candidate?.canonical_id))
+  );
+  const selectedIds = new Set(selected.map((candidate) => normalizedProviderFilterId(candidate?.canonical_id)));
+  const missing = [...requestedProviderFilter].filter((providerId) => !selectedIds.has(providerId)).sort(compareText);
+  if (missing.length > 0) {
+    throw new Error(`health provider filter missing staged candidates: ${missing.join(',')}`);
+  }
+  registry.candidates = selected;
+  process.stdout.write(
+    `FIELD_HEALTH_PROVIDER_FILTER requested=${requestedProviderFilter.size} selected=${selected.length} ids=${[...selectedIds].sort(compareText).join(',')}\n`,
+  );
+}
 const config = JSON.parse(await fs.readFile(CONFIG_PATH, 'utf8'));
 const modeConfig = config.modes?.[requestedMode] || config.modes?.quick || {};
 
