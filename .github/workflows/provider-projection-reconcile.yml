@@ -186,9 +186,41 @@ jobs:
           fi
           git push origin HEAD:main
           echo "FIELD_PROVIDER_PROJECTION_PUBLISHED baseline=$GITHUB_SHA final=$(git rev-parse HEAD) providers=${{ steps.drift.outputs.providers }}"
-          gh workflow run temp-current-bytes-full-provider-census.yml --repo "$GITHUB_REPOSITORY" --ref main || \
-            echo "FIELD_PROVIDER_PROJECTION_CENSUS_DISPATCH_WARN"
 
       - name: Report no-op
         if: steps.drift.outputs.count == '0'
         run: echo "FIELD_PROVIDER_PROJECTION_RECONCILE drift=0 publication=noop"
+
+      - name: Finalize integrity and dispatch exact-head validation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Actions-authored pushes do not recursively trigger ordinary push
+          # workflows. Projection publication therefore owns explicit exact-head
+          # handoff to census, CORE Quick and the final security gate.
+          BASE_SHA="$(git rev-parse HEAD)"
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python tests/release_hash_scope_test.py
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(release): refresh post-reconcile integrity"
+            git fetch origin main
+            CURRENT_SHA="$(git rev-parse origin/main)"
+            if [ "$CURRENT_SHA" != "$BASE_SHA" ]; then
+              echo "FIELD_PROVIDER_PROJECTION_VALIDATION_SKIPPED reason=main_advanced baseline=$BASE_SHA current=$CURRENT_SHA"
+              exit 1
+            fi
+            git push origin HEAD:main
+          fi
+
+          FINAL_SHA="$(git rev-parse HEAD)"
+          echo "FIELD_PROVIDER_PROJECTION_VALIDATION_DISPATCH sha=$FINAL_SHA"
+          gh workflow run temp-current-bytes-full-provider-census.yml --repo "$GITHUB_REPOSITORY" --ref main
+          gh workflow run sync.yml --repo "$GITHUB_REPOSITORY" --ref main -f mode=quick
+          gh workflow run security-final-gate.yml --repo "$GITHUB_REPOSITORY" --ref main
