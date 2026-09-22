@@ -66,4 +66,11 @@ for needle in (
 ):
     assert needle in source, needle
 
+# Regression for Repair->Learning Fast-Handoff initialization. The real handoff
+# previously crashed before provider 1 because causal_waves read fair_handoff
+# before the local had been assigned. Keep the runtime dependency order locked.
+fair_assignment = source.index("fair_handoff = bool(handoff_priority) and not bool(args.provider)")
+wave_assignment = source.index("causal_waves = causal_family_waves(order, batch_plan, max_parallel=4) if fair_handoff else []")
+assert fair_assignment < wave_assignment, (fair_assignment, wave_assignment)
+
 print("Brain Learning causal-wave memory merge tests passed")
