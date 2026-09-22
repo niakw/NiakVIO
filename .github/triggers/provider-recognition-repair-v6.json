@@ -1,12 +1,14 @@
 {
   "schemaVersion": 4,
-  "requestedAt": "2026-09-22T12:49:00+02:00",
-  "retry": 117,
+  "requestedAt": "2026-09-22T17:09:00+02:00",
+  "retry": 118,
   "mode": "repair",
-  "scope": "provider-repair-main-v2-after-peer-floor-fix",
-  "targetProviders": [],
-  "goal": "Re-run canonical Repair after the late-stage peer-transfer floor fix. Preflight must pass brain_current_observation_recipe and experience-transfer contracts, then execute WAF/network qualification and canonical correction for the current repairQueue, requiring current-byte playable identity-safe proof before acceptance and canonical census persistence.",
+  "scope": "mallumv-winning-trace-and-declared-lego-proof",
+  "targetProviders": [
+    "mallumv"
+  ],
+  "goal": "Target MalluMV only after winning-trace positive-memory capture and declared Provider-Lego publication contracts. Materialize current v3 bytes, require declared MalluMV Lego in published bytes, then run canonical Deep Repair/Retest. Accept only current-byte playable identity-safe proof and persist census only on exact current HEAD.",
   "branch": "main",
   "publication": false,
-  "sourceRef": "8d47c59a246b4fc4ab80da659f75f17feac00cfe"
+  "sourceRef": "9b99682f9b2900ddd2509755b7611d91ec225167"
 }
