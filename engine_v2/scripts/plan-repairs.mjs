@@ -323,9 +323,20 @@ function buildPlan(item) {
   }
   const negativeMemoryMatches = allMemoryMatches.reduce((sum, row) => sum + Math.max(1, finiteNumber(row.failures, 0)), 0);
   const reusable = learnedSkills
-    .filter((skill) => !skill.failureClass || skill.failureClass === evidence.failureClass || skill.failure_class === evidence.failureClass)
+    .filter((skill) => {
+      const providers = stringArray(skill.providers ?? skill.provenOnProviders).map((value) => value.toLowerCase());
+      const sameProviderPositiveProgram = skill.sameProviderPositiveProgram === true && providers.includes(providerId);
+      // Strict same-provider positive programs are allowed to survive diagnostic
+      // label drift. They remain priors only: the generated candidate still has
+      // to pass current-byte playback, identity and non-regression gates.
+      return sameProviderPositiveProgram
+        || !skill.failureClass
+        || skill.failureClass === evidence.failureClass
+        || skill.failure_class === evidence.failureClass;
+    })
     .map((skill) => {
       const providers = stringArray(skill.providers ?? skill.provenOnProviders).map((value) => value.toLowerCase());
+      const sameProviderPositiveProgram = skill.sameProviderPositiveProgram === true && providers.includes(providerId);
       const signatures = stringArray(skill.signatures ?? skill.evidenceSignatures);
       const strategies = stringArray(skill.capabilityStrategies ?? skill.capabilityStrategy).map((value) => value.toLowerCase());
       const stages = stringArray(skill.observedPipelineStages ?? skill.observedPipelineStage).map((value) => value.toLowerCase());
@@ -345,10 +356,15 @@ function buildPlan(item) {
         confidence,
         successCount,
         failureCount,
+        sameProviderPositiveProgram,
       });
       return {
         id: stringValue(skill.id),
-        failureClass: skill.failureClass ?? skill.failure_class ?? null,
+        // planRepair performs a second failure-class filter. A strictly
+        // validated same-provider program is intentionally failure-agnostic at
+        // this point so it can be replayed after a diagnostic relabel.
+        failureClass: sameProviderPositiveProgram ? null : (skill.failureClass ?? skill.failure_class ?? null),
+        originalFailureClass: skill.failureClass ?? skill.failure_class ?? null,
         capabilities: stringArray(skill.capabilities),
         clientVersions: asRecord(skill.clientVersions ?? skill.runtimeVersions),
         actions: stringArray(skill.actions).length ? stringArray(skill.actions) : [`apply learned profile ${stringValue(skill.profile)}`],
@@ -364,6 +380,8 @@ function buildPlan(item) {
         observedPipelineStages: stages,
         transferScore,
         validated: skill.validated === true,
+        sameProviderPositiveProgram,
+        source: stringValue(skill.source),
       };
     })
     .filter((skill) => skill.id && skill.profile)
@@ -630,8 +648,14 @@ function learnedSkillTransferEligible(skill) {
 function learnedSkillTransferScore({
   providerId, signature, capabilityStrategy, observedPipelineStage,
   providers, signatures, strategies, stages, confidence, successCount, failureCount,
+  sameProviderPositiveProgram = false,
 }) {
   let score = finiteNumber(skillTransfer.genericFailureClassBase, 15);
+  if (sameProviderPositiveProgram) {
+    // Provider-local strict positive proof outranks exploratory/global priors,
+    // but only in Learning and only for that provider. It never grants success.
+    score += finiteNumber(skillTransfer.sameProviderPositiveProgramBonus, 1000);
+  }
   if (signature && signatures.includes(signature)) score += finiteNumber(skillTransfer.exactSignatureBonus, 100);
   if (capabilityStrategy && strategies.includes(capabilityStrategy)) score += finiteNumber(skillTransfer.capabilityStrategyBonus, 40);
   if (observedPipelineStage && stages.includes(String(observedPipelineStage).toLowerCase())) score += finiteNumber(skillTransfer.observedStageBonus, 20);
