@@ -522,6 +522,7 @@ function mergeExperimentMemory(previousMemory, runtimeMemory, report, planMap, l
         signature,
         profile,
         positiveProgramFingerprint: String(plan.positiveProgramFingerprint || '').trim().toLowerCase().slice(0, 256),
+        strategyImplementationFingerprint: String(plan.strategyImplementationFingerprint || '').trim().toLowerCase().slice(0, 256),
         experimentVariant,
         experimentGeneration,
       });
@@ -532,6 +533,7 @@ function mergeExperimentMemory(previousMemory, runtimeMemory, report, planMap, l
         failureClass: String(plan.failureClass || 'unknown_failure'),
         profile,
         positiveProgramFingerprint: String(plan.positiveProgramFingerprint || '').trim().toLowerCase().slice(0, 256),
+        strategyImplementationFingerprint: String(plan.strategyImplementationFingerprint || '').trim().toLowerCase().slice(0, 256),
         experimentVariant,
         experimentGeneration,
         capabilityStrategy: String(plan.capabilityStrategy || '').slice(0, 96),
@@ -595,6 +597,7 @@ function sanitizeMemoryEntry(raw) {
     failureClass: String(raw.failureClass || 'unknown_failure').trim().slice(0, 96),
     profile,
     positiveProgramFingerprint: String(raw.positiveProgramFingerprint || '').trim().toLowerCase().slice(0, 256),
+    strategyImplementationFingerprint: String(raw.strategyImplementationFingerprint || '').trim().toLowerCase().slice(0, 256),
     experimentVariant: nonNegative(raw.experimentVariant),
     experimentGeneration: Math.max(1, nonNegative(raw.experimentGeneration) || 1),
     capabilityStrategy: String(raw.capabilityStrategy || '').trim().toLowerCase().slice(0, 96),
@@ -617,6 +620,7 @@ function memoryKey(row) {
     row.signature,
     row.profile,
     row.positiveProgramFingerprint || '',
+    row.strategyImplementationFingerprint || '',
     `g${Math.max(1, nonNegative(row.experimentGeneration) || 1)}`,
     `v${nonNegative(row.experimentVariant)}`,
   ].join('::');
