@@ -8,6 +8,11 @@ on:
         required: false
         default: ""
         type: string
+      target_providers:
+        description: Optional comma-separated current repairQueue cohort; takes precedence over target_provider
+        required: false
+        default: ""
+        type: string
       waves:
         description: Brain waves
         required: true
@@ -104,12 +109,14 @@ jobs:
         shell: bash
         env:
           DISPATCH_PROVIDER: ${{ inputs.target_provider || '' }}
+          DISPATCH_PROVIDERS: ${{ inputs.target_providers || '' }}
           DISPATCH_WAVES: ${{ inputs.waves || '3' }}
           DISPATCH_BUDGET: ${{ inputs.time_budget_seconds || '1200' }}
           DISPATCH_PUBLISH: ${{ inputs.publish_validated || 'true' }}
         run: |
           set -euo pipefail
           provider="${DISPATCH_PROVIDER:-}"
+          providers_csv="${DISPATCH_PROVIDERS:-}"
           waves="${DISPATCH_WAVES:-3}"
           budget="${DISPATCH_BUDGET:-1200}"
           publish="${DISPATCH_PUBLISH:-true}"
@@ -133,7 +140,15 @@ jobs:
             publish="${vals[2]:-true}"
             providers=("${vals[@]:3}")
           else
-            [ -z "$provider" ] || providers+=("$provider")
+            if [ -n "$providers_csv" ]; then
+              IFS=',' read -r -a raw_providers <<< "$providers_csv"
+              for p in "${raw_providers[@]}"; do
+                p="$(printf '%s' "$p" | tr '[:upper:]_' '[:lower:]-' | xargs)"
+                [ -z "$p" ] || providers+=("$p")
+              done
+            else
+              [ -z "$provider" ] || providers+=("$provider")
+            fi
           fi
           args=(python scripts/run_provider_fast_repair.py --waves "$waves" --time-budget-seconds "$budget")
           for p in "${providers[@]}"; do args+=(--provider "$p"); done
