@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35670326477-retest",
-  "sourceTriggerSha": "21dfe55b27b21b5258533bd9d2b9e43b80eb7eb7",
+  "sourceRunId": "35674101065-retest",
+  "sourceTriggerSha": "ef8cdb56b1b1a651d87b40a96697c7cab65665b0",
   "unresolvedProviderCount": 14,
   "groupCount": 12,
   "executionModel": {
@@ -40,11 +40,11 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "transport|mixed_embed_resolver",
-      "repairScope": "transport",
+      "groupId": "harness-compatibility|mixed_embed_resolver",
+      "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "dle-full-story-sibnet",
-        "menu-search-series-focus-player"
+        "mixed_embed_resolver"
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
@@ -52,15 +52,18 @@
       ],
       "dominantIssues": [
         "network_exception",
-        "network_http_error"
+        "waf_challenge"
       ],
-      "harnessTransportClasses": [],
+      "harnessTransportClasses": [
+        "browser-profile-only-both-networks",
+        "residential-exit-all-challenged"
+      ],
       "providerCount": 2,
       "providers": [
-        "anime-ultime",
-        "animesultra"
+        "animesultra",
+        "flemmix"
       ],
-      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
+      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -127,30 +130,6 @@
       "providerCount": 1,
       "providers": [
         "animevost-fr"
-      ],
-      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-all-challenged"
-      ],
-      "providerCount": 1,
-      "providers": [
-        "flemmix"
       ],
       "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
       "executionPolicy": "batch-first",
@@ -283,6 +262,28 @@
       "providerCount": 1,
       "providers": [
         "vidfast"
+      ],
+      "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|mixed_embed_resolver",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "menu-search-series-focus-player"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "network_http_error"
+      ],
+      "harnessTransportClasses": [],
+      "providerCount": 1,
+      "providers": [
+        "anime-ultime"
       ],
       "action": "domain/upstream transport refresh across the whole capability family before provider-local code changes",
       "executionPolicy": "batch-first",

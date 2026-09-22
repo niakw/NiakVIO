@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "35670326477-retest",
-  "triggerSha": "21dfe55b27b21b5258533bd9d2b9e43b80eb7eb7",
+  "runId": "35674101065-retest",
+  "triggerSha": "ef8cdb56b1b1a651d87b40a96697c7cab65665b0",
   "providers": [
     {
       "provider": "4khdhub",
@@ -139,9 +139,9 @@
     },
     {
       "provider": "anime-ultime",
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "ROUTE PROVEN",
       "underlyingStatus": "",
-      "color": "🟤",
+      "color": "🟪",
       "declaredLanes": [
         "anime"
       ],
@@ -172,7 +172,7 @@
         "existing_positive_route_prior"
       ],
       "authorityKnown": true,
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -180,13 +180,14 @@
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "anime: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      ],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "animesultra",
-      "status": "PROVIDER NETWORK BLOCKED",
+      "status": "HARNESS MISMATCH",
       "underlyingStatus": "",
-      "color": "🟤",
+      "color": "🟧",
       "declaredLanes": [
         "anime"
       ],
@@ -206,8 +207,10 @@
       "evidenceDepth": [
         "anime=none"
       ],
-      "harnessTransportClass": "not-applicable",
-      "harnessTransportEvidence": [],
+      "harnessTransportClass": "browser-profile-only-both-networks",
+      "harnessTransportEvidence": [
+        "anime: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_error, github-direct=direct_http_error, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_error, residential-direct=direct_http_error"
+      ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_DIRECT",
       "authorityClass": "direct",
@@ -216,16 +219,16 @@
         "explicit_current_direct"
       ],
       "authorityKnown": true,
-      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
+      "action": "replay with representative TV/mobile transport; align harness headers/session/fetch stack before provider repair",
       "brainCheckRequired": true,
-      "statusRepairEligible": true,
-      "repairEligible": true,
-      "testedThisRun": true,
+      "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": false,
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "anime: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true"
       ],
-      "networkDifferentialClass": "network-route-inconclusive",
+      "networkDifferentialClass": "browser-profile-only-both-networks",
       "networkDifferentialEvidence": [
         "anime: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_error, github-direct=direct_http_error, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_error, residential-direct=direct_http_error"
       ]
@@ -2039,11 +2042,10 @@
     "CHAIN REACHED": 3,
     "DISABLED": 4,
     "FULL OK": 27,
-    "HARNESS MISMATCH": 2,
+    "HARNESS MISMATCH": 3,
     "HARNESS/ENV BLOCKED": 2,
     "PARTIAL OK": 1,
-    "PROVIDER NETWORK BLOCKED": 2,
-    "ROUTE PROVEN": 3
+    "ROUTE PROVEN": 4
   },
   "symptomaticProviders": [
     "4khdhub",
@@ -2081,7 +2083,6 @@
     "4khdhub",
     "allanime",
     "anime-ultime",
-    "animesultra",
     "animevostfr",
     "mallumv",
     "moviebox",
@@ -2104,11 +2105,13 @@
   "authorityRediscoveryQueue": [],
   "environmentQueue": [
     "allwish",
+    "animesultra",
     "animevost-fr",
     "flemmix",
     "moviesmod"
   ],
   "harnessMismatchQueue": [
+    "animesultra",
     "animevost-fr",
     "moviesmod"
   ],
@@ -2118,16 +2121,19 @@
   ],
   "harnessQueue": [
     "allwish",
+    "animesultra",
     "animevost-fr",
     "flemmix",
     "moviesmod"
   ],
-  "harnessEvidenceRunId": "35670326477-retest-transport",
-  "harnessEvidenceSha": "21dfe55b27b21b5258533bd9d2b9e43b80eb7eb7",
+  "harnessEvidenceRunId": "35674101065-retest-transport",
+  "harnessEvidenceSha": "ef8cdb56b1b1a651d87b40a96697c7cab65665b0",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "allwish",
+    "anime-ultime",
     "animesalt",
+    "animesultra",
     "animevost-fr",
     "flemmix",
     "moviebox",
@@ -2145,10 +2151,12 @@
     "vostfree"
   ],
   "residentialProviderReplayReclassifiedProviders": [
+    "anime-ultime",
     "moviebox",
     "vidfast"
   ],
   "residentialProviderReplayRepairableProviders": [
+    "anime-ultime",
     "moviebox",
     "vidfast"
   ],
