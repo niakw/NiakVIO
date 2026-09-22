@@ -36,6 +36,16 @@ with tempfile.TemporaryDirectory() as td:
         "upstreamJsExecuted":False,
         "providers":{"alpha":{"model":{}}},
     })+"\n",encoding="utf-8")
+    (root/"PROVENANCE.json").write_text(json.dumps({
+        "provider_publication_contract":{"schema_version":3,"sha256":"c"*64},
+        "providers":{"alpha":{
+            "base_filename":"provider-bases/alpha.js",
+            "base_sha256":"b"*64,
+            "build_contract_schema":3,
+            "provider_policy_sha256":"p"*64,
+            "build_input_sha256":"i"*64,
+        }},
+    })+"\n",encoding="utf-8")
     (root/"scripts/provider_patches/alpha.py").write_text(
         'MANAGED_FIX_ID = "PROVIDER.ALPHA.RUNTIME.V1"\n',
         encoding="utf-8",
@@ -52,17 +62,23 @@ with tempfile.TemporaryDirectory() as td:
     ])
     (root/"providers/alpha.js").write_text(stale,encoding="utf-8")
 
-    old=(mod.ROOT,mod.MANIFEST,mod.OVERRIDES,mod.STATIC,mod.active_provider_ids,
-         mod.normalize_anime_transport_compatibility,mod.provider_model,mod.build_provider_data_model)
+    old=(mod.ROOT,mod.MANIFEST,mod.OVERRIDES,mod.STATIC,mod.PROVENANCE,mod.active_provider_ids,
+         mod.normalize_anime_transport_compatibility,mod.provider_model,mod.build_provider_data_model,
+         mod.publication_contract_sha,mod.provider_policy_sha,mod.provider_build_input_sha,mod.resolve_runtime_base)
     try:
         mod.ROOT=root
         mod.MANIFEST=root/"manifest.json"
         mod.OVERRIDES=root/"provider-overrides.json"
         mod.STATIC=root/"automation/provider-v3-static-knowledge.json"
+        mod.PROVENANCE=root/"PROVENANCE.json"
         mod.active_provider_ids=lambda:{"alpha"}
         mod.normalize_anime_transport_compatibility=lambda entry:None
         mod.provider_model=lambda *_args,**_kwargs:{"knownSite":"https://new.example"}
         mod.build_provider_data_model=lambda *_args,**_kwargs:{"providerId":"alpha","officialSite":"https://new.example"}
+        mod.publication_contract_sha=lambda *_args,**_kwargs:"c"*64
+        mod.provider_policy_sha=lambda *_args,**_kwargs:"p"*64
+        mod.provider_build_input_sha=lambda *_args,**_kwargs:"i"*64
+        mod.resolve_runtime_base=lambda *_args,**_kwargs:(root/"provider-bases/alpha.js","b"*64)
 
         report=mod.detect()
         assert report["providers"]==["alpha"],report
@@ -88,8 +104,18 @@ with tempfile.TemporaryDirectory() as td:
         ])
         (root/"providers/alpha.js").write_text(current,encoding="utf-8")
         assert mod.detect()["providerCount"]==0,mod.detect()
+
+        # A shared publication-contract change must invalidate the published
+        # provider even when CONFIG DATA and provider-local Lego are unchanged.
+        mod.publication_contract_sha=lambda *_args,**_kwargs:"d"*64
+        build_drift=mod.detect()
+        assert build_drift["providers"]==["alpha"],build_drift
+        build_row=build_drift["rows"][0]
+        assert "publication-build-input-drift" in build_row["reasons"],build_row
+        assert "publicationContract" in build_row["changedBuildInputs"],build_row
     finally:
-        (mod.ROOT,mod.MANIFEST,mod.OVERRIDES,mod.STATIC,mod.active_provider_ids,
-         mod.normalize_anime_transport_compatibility,mod.provider_model,mod.build_provider_data_model)=old
+        (mod.ROOT,mod.MANIFEST,mod.OVERRIDES,mod.STATIC,mod.PROVENANCE,mod.active_provider_ids,
+         mod.normalize_anime_transport_compatibility,mod.provider_model,mod.build_provider_data_model,
+         mod.publication_contract_sha,mod.provider_policy_sha,mod.provider_build_input_sha,mod.resolve_runtime_base)=old
 
 print("provider projection drift detector tests passed")
