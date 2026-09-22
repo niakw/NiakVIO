@@ -440,7 +440,14 @@ def merge_transport(
                 row["residentialProviderReplayPromoted"] = True
                 replay_promoted.add(provider)
 
-        if provider in baseline_network and provider not in replay_promoted:
+        # A full provider replay through the residential exit outranks the
+        # narrower seed transport probe when it completed normally. This applies
+        # to both rows previously labelled NETWORK BLOCKED and rows carried in
+        # HARNESS/ENV: if the real provider runtime reached a clean identity-safe
+        # zero-result, egress/WAF is no longer the causal blocker. Return the row
+        # to ordinary Brain evidence depth instead of leaving it trapped in an
+        # environment bucket.
+        if provider in (baseline_network | baseline_environment) and provider not in replay_promoted:
             replay_zero_state = _residential_zero_replay_state(row, provider_replay_rows)
             if replay_zero_state:
                 row["status"] = replay_zero_state
