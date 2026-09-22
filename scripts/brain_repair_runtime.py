@@ -521,12 +521,17 @@ def wrap_run_health(base_run_health: Callable[..., dict[str, Any]], mode: str) -
 
 def wrap_matching_profiles(base_matching: Callable[..., list[str]]) -> Callable[..., list[str]]:
     def _matching(candidate: dict[str, Any], result: dict[str, Any], source_text: str, config: dict[str, Any] | None = None) -> list[str]:
-        profiles = list(base_matching(candidate, result, source_text, config))
         key = str(candidate.get("key") or "")
         plan = PLANS.get(key) or {}
         action = str(plan.get("action") or "")
         if action in {"none", "deferred_retry", "collect-more-evidence", "hold-or-quarantine-pending-proof"}:
             return []
+        # Matching must see the same causal experiment snapshot as candidate
+        # creation. Otherwise final named strategy profiles are invisible during
+        # applicability filtering and become profile_unavailable before they can
+        # execute.
+        candidate["brain_repair_plan"] = copy.deepcopy(_plan_snapshot(plan))
+        profiles = list(base_matching(candidate, result, source_text, config))
         allowed_order = [str(value) for value in plan.get("allowedProfiles") or [] if str(value)]
         allowed = set(allowed_order)
         order = {profile: index for index, profile in enumerate(allowed_order)}
