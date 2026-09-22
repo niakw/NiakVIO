@@ -64,18 +64,35 @@ jobs:
       - name: Validate fast lane contracts
         run: |
           set -euo pipefail
-          python -m py_compile             scripts/run_provider_fast_repair.py             scripts/run_provider_retest.py             scripts/run_provider_brain_repair.py             scripts/compile_brain_accepted_program_v3.py
+          python -m py_compile             scripts/run_provider_fast_repair.py             scripts/run_provider_retest.py             scripts/run_provider_brain_repair.py             scripts/brain_repair_runtime.py             scripts/sanitize_brain_learning_memory.py             scripts/compile_brain_accepted_program_v3.py
           python tests/provider_fast_repair_separation_test.py
           python tests/provider_retest_scope_test.py
           python tests/provider_remat_test_separation_test.py
           python tests/provider_repair_learn_handoff_v1_test.py
           python tests/brain_learning_deferred_repair_priority_test.py
+          python tests/brain_learning_memory_import_test.py
           python tests/provider_brain_repair_orchestrator_test.py
           python tests/brain_accepted_program_capture_test.py
           python tests/brain_accepted_program_v3_compiler_test.py
           python tests/brain_accepted_program_v3_persistence_test.py
           python tests/provider_census_status_markdown_test.py
           python tests/waf_census_transport_merge_test.py
+      - name: Import sanitized persistent Learning priors
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --quiet origin brain-learning/proposals:refs/remotes/origin/brain-learning/proposals || true
+          if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json 2>/dev/null; then
+            git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json > "$RUNNER_TEMP/brain-learning-latest.json"
+            python scripts/sanitize_brain_learning_memory.py \
+              --input "$RUNNER_TEMP/brain-learning-latest.json" \
+              --output "$RUNNER_TEMP/brain-learning-fast-repair.json"
+            echo "NIAKVIO_BRAIN_LEARNING_MEMORY=$RUNNER_TEMP/brain-learning-fast-repair.json" >> "$GITHUB_ENV"
+            echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_MEMORY imported=true"
+          else
+            echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_MEMORY imported=false reason=no-persistent-learning-memory"
+          fi
+
       - name: Run provider-local Brain Repair
         id: repair
         shell: bash
