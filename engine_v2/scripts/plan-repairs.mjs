@@ -64,6 +64,20 @@ for (const rawItem of asArray(input.items)) {
 
 process.stdout.write(JSON.stringify(output));
 
+function causalStrategyProfile(failureClass, variant, generation, finalVariant) {
+  if (finiteNumber(variant, -1) !== finiteNumber(finalVariant, -2)) return "";
+  const base = {
+    provider_transport_gap: "provider_origin_failover_v1",
+    route_proven_gap: "proven_route_terminal_traversal_v1",
+    chain_terminal_gap: "chain_terminal_extractor_v1",
+    candidate_replay_gap: "retained_candidate_replay_v1",
+    media_extraction_gap: "player_media_extractor_v1",
+  }[stringValue(failureClass).toLowerCase()];
+  if (!base) return "";
+  const currentGeneration = Math.max(1, finiteNumber(generation, 1));
+  return currentGeneration <= 2 ? base : `${base}_g${currentGeneration}`;
+}
+
 function buildPlan(item) {
   const candidate = asRecord(item.candidate);
   const result = asRecord(item.result);
@@ -97,11 +111,24 @@ function buildPlan(item) {
     const successes = Math.max(0, finiteNumber(row.successes, 0));
     return consecutiveFailures > 0 || (successes === 0 && failures > 0);
   });
+  const finalProductionProfile = causalStrategyProfile(
+    evidence.failureClass,
+    finalVariant,
+    finalVariantGeneration,
+    finalVariant,
+  );
   const productionMemoryMatches = allMemoryMatches.filter((row) => {
     const variant = Math.max(0, Math.min(finalVariant, finiteNumber(row.experimentVariant, 0)));
     if (variant !== finalVariant) return true;
     const generation = Math.max(1, finiteNumber(row.experimentGeneration, 1));
-    return generation === finalVariantGeneration;
+    if (generation !== finalVariantGeneration) return false;
+    // Final causal strategies have their own memory identity. Historical
+    // failures recorded under the generic adaptive profile must not pre-exhaust
+    // a named strategy that has never actually run.
+    if (finalProductionProfile) {
+      return stringValue(row.profile) === finalProductionProfile;
+    }
+    return true;
   });
   const baseVariantStats = new Map();
   for (const row of allMemoryMatches) {
@@ -137,6 +164,13 @@ function buildPlan(item) {
         if (variant !== finalVariant) continue;
         const generation = Math.max(1, finiteNumber(row.experimentGeneration, 1));
         if (generation < finalVariantGeneration || generation > maxLearningGenerations) continue;
+        const expectedProfile = causalStrategyProfile(
+          evidence.failureClass,
+          finalVariant,
+          generation,
+          finalVariant,
+        );
+        if (expectedProfile && stringValue(row.profile) !== expectedProfile) continue;
         if (Math.max(0, finiteNumber(row.consecutiveFailures, 0)) >= rotateEvery) {
           failedGenerations.add(generation);
         }
@@ -281,6 +315,23 @@ function buildPlan(item) {
             }
       )
     : baseRepairTarget;
+  const causalProfile = experimentExhausted
+    ? ""
+    : causalStrategyProfile(
+        evidence.failureClass,
+        experimentVariant,
+        experimentGeneration,
+        finalVariant,
+      );
+  const executionRepairTarget = causalProfile
+    ? {
+        ...repairTarget,
+        profiles: [
+          causalProfile,
+          ...stringArray(repairTarget.profiles).filter((profile) => profile !== "adaptive_runtime_recovery"),
+        ],
+      }
+    : repairTarget;
   const effectiveAction = experimentExhausted
     ? (learningMode ? "collect-more-evidence" : "deferred_retry")
     : stringValue(plan.action, "deferred_retry");
@@ -323,7 +374,7 @@ function buildPlan(item) {
       transferScore: finiteNumber(row.transferScore, 0),
       confidence: finiteNumber(row.confidence, 0),
     })).filter((row) => row.id),
-    allowedProfiles: profilesForRepairTarget({ ...plan, action: effectiveAction, hypotheses: effectiveHypotheses }, repairTarget),
+    allowedProfiles: profilesForRepairTarget({ ...plan, action: effectiveAction, hypotheses: effectiveHypotheses }, executionRepairTarget),
     budget: asRecord(plan.budget),
     fallbackPolicy: stringValue(plan.fallbackPolicy, "lkg_only_after_repair_budget"),
     coreMutationPolicy: stringValue(plan.coreMutationPolicy, "proposal_only"),
