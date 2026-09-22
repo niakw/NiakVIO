@@ -88,6 +88,7 @@ def _brain_matching(candidate, result, source_text, config=None):
     # before consulting historical provider/peer/generic priors. Exploration
     # round N+1 therefore learns directly from the requests observed in round N.
     candidate["brain_observed_request_recipes"] = runtime_repair.observed_request_recipes(candidate, result)
+    candidate["brain_repair_plan"] = brain._plan_snapshot(plan)
     profiles = list(_base_matching(candidate, result, source_text, config))
     if str(plan.get("action") or "") != "probe-targeted-repair":
         return []
