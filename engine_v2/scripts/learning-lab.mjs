@@ -4,6 +4,20 @@ import path from 'node:path';
 import process from 'node:process';
 import { REPAIR_RECIPES } from '../src/repair-brain.mjs';
 
+const POST_EXHAUSTION_STRATEGY_PROFILES = new Set([
+  'transport_request_differential_v1',
+  'route_transition_graph_v1',
+  'route_peer_transition_replay_v1',
+  'terminal_transition_graph_v1',
+  'terminal_request_program_inference_v1',
+  'candidate_divergence_trace_v1',
+  'candidate_request_program_replay_v1',
+  'player_protocol_family_replay_v1',
+  'media_response_shape_inference_v1',
+  'search_contract_inference_v1',
+  'search_response_route_binding_v1',
+]);
+
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
 const args = process.argv.slice(2);
 const outputDir = resolveArg('--output-dir', path.join(root, 'engine_v2/learning'));
@@ -540,6 +554,17 @@ function sanitizeMemoryEntry(raw) {
   const signature = String(raw.signature || '').trim().slice(0, 160);
   const profile = String(raw.profile || '').trim().slice(0, 96);
   if (!providerId || !signature || !profile) return null;
+  const lastOutcome = raw.lastOutcome ? String(raw.lastOutcome).slice(0, 48) : null;
+  const executionObserved = raw.executionObserved === true;
+  // Memory created before exact event-plan attribution could persist the next
+  // post-g5 strategy as unavailable before it had ever been executed. Drop that
+  // stale debt at persistence time as well as planner-read time so it cannot
+  // pollute avoid_failed_profile proposals or accumulate indefinitely.
+  if (
+    POST_EXHAUSTION_STRATEGY_PROFILES.has(profile)
+    && lastOutcome === 'profile_unavailable'
+    && executionObserved !== true
+  ) return null;
   return {
     providerId,
     providerVersion: String(raw.providerVersion || '*').trim().slice(0, 64) || '*',
@@ -555,9 +580,10 @@ function sanitizeMemoryEntry(raw) {
     failures: nonNegative(raw.failures),
     consecutiveFailures: nonNegative(raw.consecutiveFailures),
     progresses: nonNegative(raw.progresses),
-    lastOutcome: raw.lastOutcome ? String(raw.lastOutcome).slice(0, 48) : null,
+    lastOutcome,
     lastReason: raw.lastReason ? sanitizeReason(raw.lastReason) : null,
     lastSeenAt: raw.lastSeenAt ? String(raw.lastSeenAt).slice(0, 48) : null,
+    executionObserved,
   };
 }
 function memoryKey(row) {
