@@ -4,6 +4,12 @@ on:
   # Transport qualification is an explicit lane. Ordinary code/test pushes do
   # not trigger it; only manual dispatch or the dedicated trigger file does.
   workflow_dispatch:
+    inputs:
+      target_providers:
+        description: Optional comma-separated provider cohort for causal transport qualification
+        required: false
+        default: ""
+        type: string
   push:
     branches: [main]
     paths:
@@ -30,6 +36,7 @@ jobs:
       TS_TAG_NAME: ${{ secrets.TS_TAG_NAME }}
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      TARGET_PROVIDERS: ${{ inputs.target_providers || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -112,19 +119,22 @@ jobs:
         run: |
           set -euo pipefail
           test -s automation/provider-waf-browser-session-latest.json
-          python scripts/probe_waf_browser_session.py \
-            automation/provider-waf-browser-session-latest.json \
-            --output /tmp/provider-waf-github.json \
-            --attempts 2 \
-            --client-profile-matrix \
-            --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*' \
-            --status automation/provider-census-status.json \
-            --overrides provider-overrides.json \
-            --network-report provider-v3-quick-yield.json \
-            --workers 3 \
-            --max-targets 24 \
-            --timeout 25 \
-            --virtual-time-ms 8000
+          args=(python scripts/probe_waf_browser_session.py
+            automation/provider-waf-browser-session-latest.json
+            --output /tmp/provider-waf-github.json
+            --attempts 2
+            --client-profile-matrix
+            --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*'
+            --status automation/provider-census-status.json
+            --overrides provider-overrides.json
+            --network-report provider-v3-quick-yield.json
+            --workers 3
+            --max-targets 24
+            --timeout 25
+            --virtual-time-ms 8000)
+          [ -z "${TARGET_PROVIDERS:-}" ] || args+=(--providers "$TARGET_PROVIDERS")
+          printf 'FIELD_WAF_TARGET_COHORT providers=%s\n' "${TARGET_PROVIDERS:-all-current-waf}"
+          "${args[@]}"
 
       - name: Select private residential exit node
         id: select_residential_exit
@@ -154,19 +164,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/probe_waf_browser_session.py \
-            /tmp/provider-waf-github.json \
-            --output /tmp/provider-waf-residential.json \
-            --attempts 2 \
-            --client-profile-matrix \
-            --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*' \
-            --status automation/provider-census-status.json \
-            --overrides provider-overrides.json \
-            --network-report provider-v3-quick-yield.json \
-            --workers 3 \
-            --max-targets 24 \
-            --timeout 25 \
-            --virtual-time-ms 8000
+          args=(python scripts/probe_waf_browser_session.py
+            /tmp/provider-waf-github.json
+            --output /tmp/provider-waf-residential.json
+            --attempts 2
+            --client-profile-matrix
+            --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*'
+            --status automation/provider-census-status.json
+            --overrides provider-overrides.json
+            --network-report provider-v3-quick-yield.json
+            --workers 3
+            --max-targets 24
+            --timeout 25
+            --virtual-time-ms 8000)
+          [ -z "${TARGET_PROVIDERS:-}" ] || args+=(--providers "$TARGET_PROVIDERS")
+          "${args[@]}"
 
       - name: Merge residential exit evidence without node identity
         shell: bash
