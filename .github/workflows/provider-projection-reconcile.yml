@@ -105,6 +105,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Publication fingerprints are projection metadata. Rebuilt bytes must
+          # be reindexed before the drift detector can judge the new fixed point;
+          # otherwise the detector compares fresh bytes to the pre-rebuild build
+          # fingerprint and falsely reopens every provider.
+          python scripts/reindex_provider_publication_fingerprints.py
           python scripts/detect_provider_projection_drift.py --output "$RUNNER_TEMP/projection-drift.after.json"
           python - <<'PY'
           import json, os
@@ -115,7 +120,6 @@ jobs:
           PY
           python scripts/validate_published_provider_config.py
           python scripts/audit_provider_v3_static.py
-          python scripts/reindex_provider_publication_fingerprints.py
           python scripts/reapply_published_overrides.py --check
           python tests/published_provider_lego_contract_test.py
           python tests/provider_js_lego_ownership_test.py
