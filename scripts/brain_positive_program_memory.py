@@ -285,10 +285,30 @@ def provider_routes(provider_id: str, *, path: Path = MEMORY_PATH) -> list[str]:
 
 
 def learned_skills(*, path: Path = MEMORY_PATH) -> dict[str, dict[str, Any]]:
-    groups: dict[str, list[dict[str, Any]]] = {}
-    for row in load_memory(path).get("entries") or []:
-        if not isinstance(row, dict) or row.get("validated") is not True:
+    rows_all = [
+        row
+        for row in load_memory(path).get("entries") or []
+        if isinstance(row, dict) and row.get("validated") is True
+    ]
+    # Negative replay memory must identify the exact provider-local positive
+    # program set that was executed. A later accepted program changes this
+    # aggregate fingerprint, so failures against an older replay cannot
+    # permanently suppress a newly learned program.
+    provider_fingerprints: dict[str, str] = {}
+    by_provider: dict[str, list[str]] = {}
+    for row in rows_all:
+        provider = cid(row.get("providerId"))
+        if not provider:
             continue
+        fingerprint = str(row.get("fingerprint") or _fingerprint(row)).strip().casefold()
+        if re.fullmatch(r"[0-9a-f]{64}", fingerprint):
+            by_provider.setdefault(provider, []).append(fingerprint)
+    for provider, fingerprints in by_provider.items():
+        raw = json.dumps(sorted(set(fingerprints)), separators=(",", ":"), ensure_ascii=True)
+        provider_fingerprints[provider] = hashlib.sha256(raw.encode("ascii")).hexdigest()
+
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for row in rows_all:
         failure = str(row.get("failureClass") or "").strip()
         profile = str(row.get("profile") or "").strip()
         if not failure or not profile:
@@ -317,6 +337,11 @@ def learned_skills(*, path: Path = MEMORY_PATH) -> dict[str, dict[str, Any]]:
             # drifted, but current-byte playback/identity/non-regression remain
             # mandatory and peer transfer remains forbidden.
             "sameProviderPositiveProgram": True,
+            "positiveProgramFingerprintsByProvider": {
+                provider: provider_fingerprints[provider]
+                for provider in providers
+                if provider in provider_fingerprints
+            },
             "source": "brain-positive-program-memory",
         }
     return output
