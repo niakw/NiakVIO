@@ -32,6 +32,13 @@ _base_compare = loop.compare_results
 _base_create = loop.create_repair_candidate
 _base_run_health = loop.run_health
 _base_matching = loop.matching_profiles
+_base_accepted_runtime_program = loop.accepted_runtime_program
+
+
+
+def _accepted_runtime_program_with_winning_trace(candidate, result=None):
+    program = _base_accepted_runtime_program(candidate, result)
+    return runtime_repair.augment_accepted_runtime_program(candidate, result, program)
 
 
 def _identity_safe_compare(parent: dict, repaired: dict) -> tuple[bool, str]:
@@ -144,6 +151,7 @@ def main() -> int:
         loop.create_repair_candidate = brain.wrap_create_repair_candidate(_profiled_create)
         loop.run_health = _brain_run_health
         loop.matching_profiles = _brain_matching
+        loop.accepted_runtime_program = _accepted_runtime_program_with_winning_trace
         sys.argv[0] = str(SCRIPTS / "deep_repair_loop.py")
         exploration_chain = str(os.environ.get("NUVIO_BRAIN_EXPLORATION_CHAIN") or "").strip() == "1"
         bounded_rounds = "3" if exploration_chain else "1"
@@ -163,6 +171,7 @@ def main() -> int:
         loop.create_repair_candidate = _base_create
         loop.run_health = _base_run_health
         loop.matching_profiles = _base_matching
+        loop.accepted_runtime_program = _base_accepted_runtime_program
 
 
 if __name__ == "__main__":
