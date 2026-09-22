@@ -327,7 +327,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Persist exact census evidence
-        if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        if: ${{ always() && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -353,7 +353,7 @@ jobs:
           print(f"{d.get('verifiedProviderCount',0)}/{d.get('providerCount',0)}")
           PY
           )"
-          # Canonical census evidence is byte/SHA-specific. Never rebase an old
+          # Canonical census evidence is byte/SHA-specific. Manual dispatches may persist too,\n          # but only while they still test the exact current main SHA. Never rebase an old
           # completed census onto a newer main and overwrite a fresher Retest/Repair
           # ledger merely because this longer run finished later.
           git fetch origin main
