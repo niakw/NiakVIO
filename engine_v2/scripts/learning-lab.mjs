@@ -16,6 +16,10 @@ const POST_EXHAUSTION_STRATEGY_PROFILES = new Set([
   'media_response_shape_inference_v1',
   'search_contract_inference_v1',
   'search_response_route_binding_v1',
+  'identity_alias_search_traversal_v1',
+  'runtime_response_salvage_v1',
+  'document_request_contract_mining_v1',
+  'provider_session_bootstrap_replay_v1',
 ]);
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
