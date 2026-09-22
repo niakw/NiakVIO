@@ -10,6 +10,12 @@ const baselineId = arg('--baseline-id') || baselineConfig.baselines?.[0]?.id;
 const baseline = (baselineConfig.baselines || []).find((row) => row?.id === baselineId);
 if (!baseline) throw new Error(`historical baseline not found: ${baselineId || '<none>'}`);
 const output = resolveArg('--output', path.join(root, 'brain-learning-output/historical-training.json'));
+const providerFilter = new Set(
+  String(arg('--provider-filter') || '')
+    .split(',')
+    .map(norm)
+    .filter(Boolean),
+);
 
 // The historical spreadsheet is a bootstrap seed, not a permanent external oracle.
 // Once the sanitized Brain state proves that this exact bootstrap was consumed,
@@ -71,7 +77,11 @@ const ids = new Set([
   ...quarantine, ...recoveredReference, ...disabledReference,
 ]);
 
-const cases = [...ids].filter(Boolean).sort().map((providerId) => {
+const cases = [...ids]
+  .filter(Boolean)
+  .filter((providerId) => providerFilter.size === 0 || providerFilter.has(providerId))
+  .sort()
+  .map((providerId) => {
   const bm = bManifest.get(providerId) || emptyManifest(providerId);
   const cm = cManifest.get(providerId) || emptyManifest(providerId);
   const bh = bHealth.get(providerId) || emptyHealth(providerId);
@@ -163,6 +173,10 @@ const payload = {
     consumed: false,
     policy: 'one_shot_historical_seed',
     futureEvidence: 'brain_memory_and_native_runtime_only',
+  },
+  scope: {
+    providerFilterApplied: providerFilter.size > 0,
+    providerFilter: [...providerFilter].sort(),
   },
   privacy: 'Initial bootstrap retains structured spreadsheet classifications and aggregate counters plus coarse provider evidence from the audited Git snapshot; no raw URLs, tokens, cookies or headers are persisted.',
 };
