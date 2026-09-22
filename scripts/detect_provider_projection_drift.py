@@ -19,10 +19,18 @@ from materialize_provider_v3_all import (  # noqa: E402
 )
 from provider_base_store import build_provider_data_model  # noqa: E402
 from provider_patch_blocks import decode_managed_data, validate_managed_fixes  # noqa: E402
+from reapply_published_overrides import (  # noqa: E402
+    PUBLICATION_CONTRACT_SCHEMA,
+    provider_build_input_sha,
+    provider_policy_sha,
+    publication_contract_sha,
+    resolve_runtime_base,
+)
 
 MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 STATIC = ROOT / "automation" / "provider-v3-static-knowledge.json"
+PROVENANCE = ROOT / "PROVENANCE.json"
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -73,10 +81,24 @@ def detect() -> dict[str, Any]:
     manifest = load(MANIFEST)
     overrides = load(OVERRIDES)
     static = load(STATIC)
+    provenance = load(PROVENANCE)
     active = active_provider_ids()
     patches = overrides.get("provider_patches") or {}
     capabilities = overrides.get("provider_capabilities") or {}
     static_rows = static.get("providers") or {}
+    provenance_rows = provenance.get("providers")
+    contract_meta = provenance.get("provider_publication_contract")
+    if not isinstance(provenance_rows, dict):
+        raise ValueError("PROVENANCE.providers must be an object")
+    if not isinstance(contract_meta, dict):
+        contract_meta = {}
+    current_contract_sha = publication_contract_sha(overrides, static)
+    stored_contract_schema = int(contract_meta.get("schema_version") or 0)
+    stored_contract_sha = str(contract_meta.get("sha256") or "").strip().casefold()
+    global_contract_drift = (
+        stored_contract_schema != PUBLICATION_CONTRACT_SCHEMA
+        or stored_contract_sha != current_contract_sha
+    )
 
     rows: list[dict[str, Any]] = []
     for entry in manifest.get("scrapers") or []:
@@ -90,13 +112,49 @@ def detect() -> dict[str, Any]:
         reasons: list[str] = []
         changed_keys: list[str] = []
         missing_fix_ids: list[str] = []
+        changed_build_inputs: list[str] = []
 
         patch = patches.get(provider_id)
         capability = capabilities.get(provider_id)
         static_row = static_rows.get(provider_id)
         if not all(isinstance(value, dict) for value in (patch, capability, static_row)):
             reasons.append("structured-data-incomplete")
-        elif not rel.startswith("providers/") or not path.is_file():
+        else:
+            provenance_row = provenance_rows.get(provider_id)
+            if not isinstance(provenance_row, dict):
+                reasons.append("publication-provenance-missing")
+            else:
+                try:
+                    _base_path, base_sha = resolve_runtime_base(
+                        provider_id, provenance_row, require=True
+                    )
+                    if not base_sha:
+                        raise ValueError("missing runtime ProviderBase SHA")
+                    current_policy_sha = provider_policy_sha(
+                        overrides, provider_id, static
+                    )
+                    expected_build_input = provider_build_input_sha(
+                        provider_id,
+                        base_sha,
+                        current_contract_sha,
+                        current_policy_sha,
+                        provenance_row,
+                    )
+                    if global_contract_drift:
+                        changed_build_inputs.append("publicationContract")
+                    if int(provenance_row.get("build_contract_schema") or 0) != PUBLICATION_CONTRACT_SCHEMA:
+                        changed_build_inputs.append("buildContractSchema")
+                    if str(provenance_row.get("provider_policy_sha256") or "").casefold() != current_policy_sha:
+                        changed_build_inputs.append("providerPolicy")
+                    if str(provenance_row.get("build_input_sha256") or "").casefold() != expected_build_input:
+                        changed_build_inputs.append("buildInput")
+                    if changed_build_inputs:
+                        reasons.append("publication-build-input-drift")
+                except Exception as exc:
+                    reasons.append("publication-build-input-unresolved")
+                    changed_build_inputs.append(type(exc).__name__)
+
+        if not rel.startswith("providers/") or not path.is_file():
             reasons.append("published-bundle-missing")
         else:
             text = path.read_text(encoding="utf-8")
@@ -133,12 +191,13 @@ def detect() -> dict[str, Any]:
                 "reasons": sorted(set(reasons)),
                 "changedKeys": changed_keys,
                 "missingFixIds": missing_fix_ids,
+                "changedBuildInputs": sorted(set(changed_build_inputs)),
                 "publishedFile": rel,
             })
 
     providers = sorted(row["provider"] for row in rows)
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "providerCount": len(providers),
         "providers": providers,
         "rows": rows,
