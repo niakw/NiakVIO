@@ -15,7 +15,7 @@ on:
         default: ""
         type: string
       auto_repair:
-        description: Launch Fast Repair after persisting the refreshed census when repairQueue is non-empty
+        description: Launch causal Brain Autopilot after persisting the refreshed census
         required: false
         default: false
         type: boolean
@@ -136,21 +136,24 @@ jobs:
             git push origin HEAD:main
           fi
           echo "persisted=true" >> "$GITHUB_OUTPUT"
-      - name: Launch Fast Repair when requested
+      - name: Launch causal Brain Autopilot when requested
         if: ${{ steps.retest.outputs.auto_repair == 'true' && steps.persist.outputs.persisted == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
-          count="$(python - <<'PY'
+          repair_count="$(python - <<'PY'
           import json
           from pathlib import Path
           d=json.loads(Path('automation/provider-census-status.json').read_text())
           print(len(d.get('repairQueue') or []))
           PY
           )"
-          if [ "$count" -gt 0 ]; then
-            echo "FIELD_PROVIDER_RETEST_CHAIN_FAST_REPAIR repair_queue=$count"
-            gh workflow run provider-fast-repair.yml --repo "$GITHUB_REPOSITORY" --ref main
-          else
-            echo "FIELD_PROVIDER_RETEST_CHAIN_SKIP repair_queue=0"
-          fi
+          environment_count="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('automation/provider-census-status.json').read_text())
+          print(len(d.get('environmentQueue') or []))
+          PY
+          )"
+          gh workflow run provider-brain-autopilot.yml --repo "$GITHUB_REPOSITORY" --ref main
+          echo "FIELD_PROVIDER_RETEST_CHAIN_AUTOPILOT repair_queue=$repair_count environment_queue=$environment_count"
