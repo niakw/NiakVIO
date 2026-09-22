@@ -164,6 +164,8 @@ def network_differential(waf: dict[str, Any], provider: str) -> dict[str, Any]:
         classification = "residential-native-route-reachable"
     elif github_native:
         classification = "github-native-route-reachable"
+    elif github_browser and residential_browser and not github_native and not residential_native:
+        classification = "browser-profile-only-both-networks"
     elif residential_browser and not github_browser:
         classification = "residential-browser-route-reachable"
     elif residential_present and residential_blocked:
@@ -173,6 +175,63 @@ def network_differential(waf: dict[str, Any], provider: str) -> dict[str, Any]:
     else:
         classification = "network-route-inconclusive"
     return {"classification": classification, "evidence": evidence}
+
+
+def _residential_zero_replay_state(
+    row: dict[str, Any],
+    replay_rows: list[dict[str, Any]],
+) -> str | None:
+    """Reclassify a network-blocked row when full residential provider replay
+    completed normally with zero results.
+
+    This does not require native transport proof because the provider runtime
+    itself already completed through the residential path. Network exceptions,
+    WAF challenges, timeouts and identity-unsafe rows are deliberately excluded.
+    """
+    if not replay_rows:
+        return None
+    if any(item.get("identitySafe") is False for item in replay_rows if isinstance(item, dict)):
+        return None
+    if any(int(item.get("playable") or 0) > 0 for item in replay_rows if isinstance(item, dict)):
+        return None
+    stages = {
+        str(item.get("debugStage") or item.get("debug_stage") or "").strip().casefold()
+        for item in replay_rows
+        if isinstance(item, dict)
+    }
+    statuses = {
+        str(item.get("status") or "").strip().casefold()
+        for item in replay_rows
+        if isinstance(item, dict)
+    }
+    blocked = {
+        "provider_network_exception",
+        "provider_network_http_error",
+        "provider_network_timeout",
+        "provider_waf_challenge",
+        "timeout",
+    }
+    if stages & blocked or statuses & {"timeout"}:
+        return None
+    normal_zero = {
+        "provider_network_zero_result",
+        "content_lookup_completed_no_streams",
+        "provider_zero_before_provider_network",
+        "no_provider_request_observed",
+        "no_streams",
+    }
+    if not (stages & normal_zero):
+        return None
+    depths = {
+        str(value or "").split("=", 1)[-1].strip().casefold()
+        for value in row.get("evidenceDepth") or []
+        if str(value or "").strip()
+    }
+    if "chain_reached" in depths:
+        return "CHAIN REACHED"
+    if "lookup_only" in depths or row.get("routeProof"):
+        return "ROUTE PROVEN"
+    return "NO PROOF"
 
 
 def _post_harness_repair_state(
@@ -386,7 +445,47 @@ def merge_transport(
                 row["networkDifferentialClass"] = differential["classification"]
                 row["networkDifferentialEvidence"] = list(differential["evidence"])
                 network_changed.append(provider)
+            if (
+                provider not in replay_promoted
+                and differential["classification"] == "browser-profile-only-both-networks"
+            ):
+                status = "HARNESS MISMATCH"
+                row["status"] = status
+                row["color"] = census.STATUS_META[status][0]
+                row["harnessTransportClass"] = differential["classification"]
+                row["harnessTransportEvidence"] = list(differential["evidence"])
+                row["action"] = census._harness_action(status, differential["classification"])
+                row["brainCheckRequired"] = True
+                row["statusRepairEligible"] = False
+                row["repairEligible"] = False
+                row["testedThisRun"] = False
+                changed.append(provider)
+                continue
             if provider not in replay_promoted:
+                replay_zero_state = _residential_zero_replay_state(row, provider_replay_rows)
+                if replay_zero_state:
+                    row["status"] = replay_zero_state
+                    row["color"] = census.STATUS_META[replay_zero_state][0]
+                    row["brainCheckRequired"] = True
+                    authority_allowed = row.get("authorityRepairEligible") is not False
+                    row["statusRepairEligible"] = census.is_repair_eligible_status(replay_zero_state)
+                    row["repairEligible"] = bool(row["statusRepairEligible"] and authority_allowed)
+                    row["action"] = (
+                        census._action(replay_zero_state)
+                        if authority_allowed
+                        else census._authority_action(
+                            replay_zero_state,
+                            "residential-provider-zero-result",
+                            row,
+                        )
+                    )
+                    row["testedThisRun"] = True
+                    row["residentialProviderReplayReclassified"] = True
+                    replay_reclassified.add(provider)
+                    if row["repairEligible"]:
+                        replay_repairable.add(provider)
+                    changed.append(provider)
+                    continue
                 repair_state = _post_harness_repair_state(row, differential, provider_replay_rows)
                 if repair_state:
                     row["status"] = repair_state
