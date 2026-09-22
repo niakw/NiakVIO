@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from provider_patch_blocks import begin_marker, end_marker, owned_span, validate_managed_fixes  # noqa: E402
+from apply_provider_overrides import _load_patch_module, load_overrides  # noqa: E402
 
 MANIFEST = ROOT / "manifest.json"
 CORE_BOUNDARY = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
@@ -31,6 +32,8 @@ POSITIVE_OUTPUT_GATE = 'if(!hasProviderOutput(value))return []'
 
 def main() -> int:
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    overrides = load_overrides()
+    provider_patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
     checked = 0
     quarantined = 0
     errors: list[str] = []
@@ -73,6 +76,31 @@ def main() -> int:
         missing = sorted(UNIVERSAL_CORE_IDS - set(fix_ids))
         if missing:
             errors.append(f"{provider_id}: missing universal Core bricks={','.join(missing)}")
+
+        specific = provider_patches.get(provider_id) if isinstance(provider_patches.get(provider_id), dict) else {}
+        declared_provider_legos = [
+            str(value) for value in specific.get("provider_lego_scripts") or []
+            if str(value).strip()
+        ]
+        for patch_script in declared_provider_legos:
+            try:
+                module = _load_patch_module(patch_script, provider_id)
+            except Exception as exc:
+                errors.append(
+                    f"{provider_id}: declared Provider Lego cannot load={patch_script}: "
+                    f"{type(exc).__name__}: {exc}"
+                )
+                continue
+            fix_id = str(getattr(module, "MANAGED_FIX_ID", "") or "").strip().upper()
+            optional = bool(getattr(module, "MANAGED_FIX_OPTIONAL", False))
+            if not fix_id:
+                errors.append(f"{provider_id}: declared Provider Lego has no MANAGED_FIX_ID={patch_script}")
+                continue
+            if not optional and fix_id not in fix_ids:
+                errors.append(
+                    f"{provider_id}: declared Provider Lego missing from published bytes="
+                    f"{fix_id} script={patch_script}"
+                )
 
         boundary = text.index(CORE_BOUNDARY)
         for fix_id in fix_ids:
