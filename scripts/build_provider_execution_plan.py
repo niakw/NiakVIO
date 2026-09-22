@@ -68,13 +68,14 @@ def lane_for(group:dict[str,Any])->dict[str,Any]:
         return {
             "owner":"CORE_CLIENT_TRANSPORT",
             "lane":"CORE_CLIENT_LEARNING",
-            "workflow":None,
-            "dispatchAllowed":False,
+            "workflow":"provider-waf-browser-session.yml",
+            "dispatchAllowed":True,
             "mutatesProduction":False,
-            "fallbackLane":None,
+            "fallbackLane":"BRAIN_ARCHITECTURE_LEARNING",
             "strategyBlueprint":strategy,
-            "decision":"client/harness causal gap: learn/propose Core-client transport architecture; never hide it with provider JS mutation",
-            "blocker":"architecture proposal exists but no autonomous validated Core/client application lane yet",
+            "decision":"run targeted browser/direct/OkHttp/residential transport differential first; keep provider mutation forbidden and escalate persistent client/harness gaps to architecture Learning",
+            "applicationValidated":False,
+            "applicationBlocker":"evidence collection is autonomous; Core/client production mutation still requires a validated native-Lab application contract",
         }
     return {
         "owner":"BRAIN_LEARNING",
