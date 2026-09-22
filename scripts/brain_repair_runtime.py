@@ -509,6 +509,7 @@ def planner_negative_memory(_mode: str) -> list[dict[str, Any]]:
             "failures": max(0, int(raw.get("failures") or 0)),
             "consecutiveFailures": max(0, int(raw.get("consecutiveFailures") or 0)),
             "successes": max(0, int(raw.get("successes") or 0)),
+            "executionObserved": raw.get("executionObserved") is True,
         })
     return rows
 
