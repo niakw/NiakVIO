@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "35759899750",
-  "triggerSha": "15f177318f6441a286d095bfd95324ffcc80e3e5",
+  "runId": "35766992973",
+  "triggerSha": "fdab1558b4ba1ad5dd9482896f1bbbca96d4aab3",
   "providers": [
     {
       "provider": "4khdhub",
@@ -89,9 +89,9 @@
     },
     {
       "provider": "allwish",
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "NO PROOF",
       "underlyingStatus": "",
-      "color": "🟫",
+      "color": "🔵",
       "declaredLanes": [
         "movie",
         "tv"
@@ -113,10 +113,10 @@
         "movie=none",
         "tv=none"
       ],
-      "harnessTransportClass": "residential-exit-all-challenged",
+      "harnessTransportClass": "github-all-transports-challenged",
       "harnessTransportEvidence": [
-        "movie: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_challenge_persisted, residential-tv-browser=browser_challenge_persisted, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted",
-        "tv: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_challenge_persisted, residential-tv-browser=browser_challenge_persisted, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted"
+        "movie: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown",
+        "tv: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown"
       ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_ROUTE_AUTHORITY",
@@ -126,16 +126,17 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "private residential exit is also challenged; GitHub IP reputation alone does not explain the block",
+      "action": "continue corpus proof search; BRAIN checks",
       "brainCheckRequired": true,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": false,
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true,
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "movie: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true",
         "tv: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      ],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "anime-ultime",
@@ -370,10 +371,12 @@
         "tv"
       ],
       "currentVerifiedLanes": [
-        "movie"
+        "movie",
+        "tv"
       ],
       "historicalProof": [
-        "movie: Avengers: Infinity War / Spider-Man: Homecoming"
+        "movie: Avengers: Infinity War / Spider-Man: Homecoming",
+        "tv: Breaking Bad"
       ],
       "candidateProof": [
         "run 34323567439"
@@ -383,12 +386,12 @@
       ],
       "latestLaneVerdicts": [
         "movie=OK",
-        "tv=no_streams/provider_network_zero_result"
+        "tv=OK"
       ],
-      "dominantIssue": "provider_network_zero_result",
+      "dominantIssue": "none",
       "searchProgress": [
-        "movie: 3 works tested / 0 retained misses / 4 retained chain hits",
-        "tv: 8 works tested / 0 retained misses / 8 retained chain hits"
+        "movie: 1 works tested / 0 retained misses / 4 retained chain hits",
+        "tv: 1 works tested / 0 retained misses / 7 retained chain hits"
       ],
       "evidenceDepth": [
         "movie=chain_reached",
@@ -412,9 +415,9 @@
     },
     {
       "provider": "flemmix",
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "ROUTE PROVEN",
       "underlyingStatus": "",
-      "color": "🟫",
+      "color": "🟪",
       "declaredLanes": [
         "movie",
         "tv"
@@ -438,10 +441,10 @@
         "movie=none",
         "tv=none"
       ],
-      "harnessTransportClass": "residential-exit-all-challenged",
+      "harnessTransportClass": "github-all-transports-challenged",
       "harnessTransportEvidence": [
-        "movie: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_challenge_persisted, residential-tv-browser=browser_challenge_persisted, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted",
-        "tv: browser=browser_challenge_persisted, tv-browser=browser_challenge_persisted, okhttp=okhttp_jvm_challenge_persisted, direct=direct_http_challenge_persisted, residential-browser=browser_challenge_persisted, residential-tv-browser=browser_challenge_persisted, residential-okhttp=okhttp_jvm_challenge_persisted, residential-direct=direct_http_challenge_persisted"
+        "movie: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown",
+        "tv: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown"
       ],
       "authorityRepairEligible": true,
       "authorityAction": "KEEP_ROUTE_AUTHORITY",
@@ -451,16 +454,17 @@
         "authoritative_route_source"
       ],
       "authorityKnown": true,
-      "action": "private residential exit is also challenged; GitHub IP reputation alone does not explain the block",
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": false,
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true,
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "movie: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true",
         "tv: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+      ],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "fullanime",
@@ -752,9 +756,9 @@
     },
     {
       "provider": "yflix",
-      "status": "ROUTE PROVEN",
+      "status": "PROVIDER NETWORK BLOCKED",
       "underlyingStatus": "",
-      "color": "🟪",
+      "color": "🟤",
       "declaredLanes": [
         "movie",
         "tv"
@@ -766,10 +770,10 @@
         "1 live routes / movie, tv"
       ],
       "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_zero_result"
+        "movie=no_streams/provider_network_exception",
+        "tv=no_streams/provider_network_exception"
       ],
-      "dominantIssue": "provider_network_zero_result×2",
+      "dominantIssue": "provider_network_exception×2",
       "searchProgress": [
         "movie: 1 works tested / 43 retained misses",
         "tv: 1 works tested / 42 retained misses"
@@ -788,7 +792,7 @@
         "structured_backend_authority"
       ],
       "authorityKnown": true,
-      "action": "replay qualified route fixtures and finish terminal extraction/validation",
+      "action": "verify domain/upstream transport; repair JS only with implementation evidence",
       "brainCheckRequired": true,
       "statusRepairEligible": true,
       "repairEligible": true,
@@ -2049,9 +2053,9 @@
     "DISABLED": 4,
     "FULL OK": 27,
     "HARNESS MISMATCH": 3,
-    "HARNESS/ENV BLOCKED": 2,
+    "NO PROOF": 1,
     "PARTIAL OK": 2,
-    "PROVIDER NETWORK BLOCKED": 2,
+    "PROVIDER NETWORK BLOCKED": 3,
     "ROUTE PROVEN": 3
   },
   "symptomaticProviders": [
@@ -2087,8 +2091,10 @@
   "repairQueue": [
     "4khdhub",
     "allanime",
+    "allwish",
     "anime-ultime",
     "animevostfr",
+    "flemmix",
     "mallumv",
     "moviebox",
     "vidfast",
@@ -2108,10 +2114,8 @@
   ],
   "authorityRediscoveryQueue": [],
   "environmentQueue": [
-    "allwish",
     "animesultra",
     "animevost-fr",
-    "flemmix",
     "moviesmod"
   ],
   "harnessMismatchQueue": [
@@ -2119,19 +2123,14 @@
     "animevost-fr",
     "moviesmod"
   ],
-  "environmentBlockedQueue": [
-    "allwish",
-    "flemmix"
-  ],
+  "environmentBlockedQueue": [],
   "harnessQueue": [
-    "allwish",
     "animesultra",
     "animevost-fr",
-    "flemmix",
     "moviesmod"
   ],
-  "harnessEvidenceRunId": "35759899750-canonical-waf",
-  "harnessEvidenceSha": "15f177318f6441a286d095bfd95324ffcc80e3e5",
+  "harnessEvidenceRunId": "35766992973-canonical-waf",
+  "harnessEvidenceSha": "fdab1558b4ba1ad5dd9482896f1bbbca96d4aab3",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "allwish",
@@ -2153,9 +2152,13 @@
     "vostfree"
   ],
   "residentialProviderReplayReclassifiedProviders": [
+    "allwish",
+    "flemmix",
     "vidfast"
   ],
   "residentialProviderReplayRepairableProviders": [
+    "allwish",
+    "flemmix",
     "vidfast"
   ],
   "residentialExitNodeEvidence": {
