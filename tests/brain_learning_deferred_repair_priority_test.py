@@ -116,6 +116,9 @@ assert "fastRepairHandoffProviders" in source
 assert "provider-repair-learn-handoff-v1.json" in source
 assert "fastRepairHandoffMaxAttemptsPerProviderThisPhase" in source
 assert "FIELD_BRAIN_HANDOFF_FAIR_SHARE" in source
+assert "FIELD_BRAIN_HANDOFF_SLICE_EXHAUSTED" in source
+assert "provider_deadline" in source
+assert "min(" in source and "120" in source
 assert "if fair_handoff and attempts_this_phase >= 1" in source
 
 print("Brain Learning exhausted-Repair priority contract passed")
