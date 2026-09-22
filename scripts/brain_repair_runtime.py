@@ -774,6 +774,16 @@ def _plan_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         "allowedProfiles": [str(value) for value in plan.get("allowedProfiles") or [] if str(value)],
         "historicalStrategyProfile": str(plan.get("historicalStrategyProfile") or ""),
         "historicalStrategyCase": str(plan.get("historicalStrategyCase") or ""),
+        # These fields are executable planner intent, not presentation metadata.
+        # Dropping them makes the runtime recompute the final g5 family and
+        # silently prevents post-exhaustion strategies from materializing.
+        "postExhaustionStrategyProfile": str(plan.get("postExhaustionStrategyProfile") or ""),
+        "postExhaustionStrategyMethod": str(plan.get("postExhaustionStrategyMethod") or ""),
+        "repairType": str(plan.get("repairType") or ""),
+        "learningDisposition": str(plan.get("learningDisposition") or ""),
+        "experimentGenerationLimit": max(0, int(plan.get("experimentGenerationLimit") or 0)),
+        "strategyEscalated": plan.get("strategyEscalated") is True,
+        "baseExperimentExhausted": plan.get("baseExperimentExhausted") is True,
         "hypotheses": copy.deepcopy([row for row in plan.get("hypotheses") or [] if isinstance(row, dict)]),
     }
 
