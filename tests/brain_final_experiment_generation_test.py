@@ -49,11 +49,15 @@ policy={
 }
 
 def row(variant:int,generation:int=1):
+    profile="adaptive_runtime_recovery"
+    if variant==4 and generation>=2:
+        profile="chain_terminal_extractor_v1" if generation==2 else f"chain_terminal_extractor_v1_g{generation}"
     return {
         "providerId":"synthetic-generation",
         "failureClass":"chain_terminal_gap",
         "experimentVariant":variant,
         "experimentGeneration":generation,
+        "profile":profile,
         "failures":1,
         "consecutiveFailures":1,
         "successes":0,
@@ -82,6 +86,7 @@ assert fresh["experimentVariant"]==4,fresh
 assert fresh["experimentGeneration"]==2,fresh
 assert fresh["experimentExhausted"] is False,fresh
 assert fresh["action"]=="probe-targeted-repair",fresh
+assert fresh["allowedProfiles"]==["chain_terminal_extractor_v1"],fresh
 assert fresh["negativeMemoryMatches"]==5,fresh
 
 # Once the current generation itself fails, all five variants are exhausted again.
@@ -151,7 +156,7 @@ with tempfile.TemporaryDirectory() as td:
         "providerId":"synthetic-generation",
         "failureClass":"chain_terminal_gap",
         "signature":"sig",
-        "allowedProfiles":["adaptive_runtime_recovery"],
+        "allowedProfiles":["chain_terminal_extractor_v1"],
         "experimentVariant":4,
         "experimentGeneration":2,
         "experimentVariantCount":5,
@@ -161,7 +166,7 @@ with tempfile.TemporaryDirectory() as td:
         memory_rows.append({
             **row(v,1),
             "signature":"sig",
-            "profile":"adaptive_runtime_recovery",
+            "profile":"chain_terminal_extractor_v1" if v == 4 else "adaptive_runtime_recovery",
         })
     mem.write_text(json.dumps({"schemaVersion":1,"entries":memory_rows}),encoding="utf-8")
     try:
@@ -169,7 +174,7 @@ with tempfile.TemporaryDirectory() as td:
         memory_rows.append({
             **row(4,2),
             "signature":"sig",
-            "profile":"adaptive_runtime_recovery",
+            "profile":"chain_terminal_extractor_v1",
         })
         mem.write_text(json.dumps({"schemaVersion":1,"entries":memory_rows}),encoding="utf-8")
         assert "synthetic-generation" in orch.exhausted_from_negative_memory(summary)
