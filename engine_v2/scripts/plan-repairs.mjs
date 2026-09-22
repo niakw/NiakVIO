@@ -44,6 +44,34 @@ const HISTORICAL_SOLUTION_PROFILES = {
   same_provider_candidate_program_replay: "retained_candidate_replay_v1",
   proven_request_program_and_terminal_extraction: "player_media_extractor_v1",
 };
+const POST_EXHAUSTION_STRATEGIES = {
+  provider_transport_gap: [
+    { profile: "transport_request_differential_v1", method: "provider-owned-request-differential" },
+  ],
+  transport_blocked: [
+    { profile: "transport_request_differential_v1", method: "provider-owned-request-differential" },
+  ],
+  route_proven_gap: [
+    { profile: "route_transition_graph_v1", method: "provider-owned-route-transition-graph" },
+    { profile: "route_peer_transition_replay_v1", method: "structural-peer-route-transition-replay" },
+  ],
+  chain_terminal_gap: [
+    { profile: "terminal_transition_graph_v1", method: "terminal-response-transition-graph" },
+    { profile: "terminal_request_program_inference_v1", method: "terminal-request-program-inference" },
+  ],
+  candidate_replay_gap: [
+    { profile: "candidate_divergence_trace_v1", method: "retained-candidate-divergence-trace" },
+    { profile: "candidate_request_program_replay_v1", method: "retained-request-program-replay" },
+  ],
+  media_extraction_gap: [
+    { profile: "player_protocol_family_replay_v1", method: "player-protocol-family-replay" },
+    { profile: "media_response_shape_inference_v1", method: "media-response-shape-inference" },
+  ],
+  search_gap: [
+    { profile: "search_contract_inference_v1", method: "search-contract-inference" },
+    { profile: "search_response_route_binding_v1", method: "search-response-route-binding" },
+  ],
+};
 
 const output = {
   schemaVersion: 2,
@@ -118,6 +146,26 @@ function historicalStrategyHint(providerId, failureClass, generation, memoryRows
     if (!alreadyFailed) return { profile, caseId: row.caseId, solutionClass: row.solutionClass };
   }
   return { profile: "", caseId: "", solutionClass: "" };
+}
+
+function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery) {
+  const failure = stringValue(failureClass).toLowerCase();
+  const candidates = POST_EXHAUSTION_STRATEGIES[failure] ?? [];
+  for (let index = 0; index < candidates.length; index += 1) {
+    const row = candidates[index];
+    const alreadyFailed = memoryRows.some((memory) => (
+      stringValue(memory.profile) === row.profile
+      && Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) >= rotateEvery
+    ));
+    if (!alreadyFailed) {
+      return {
+        profile: row.profile,
+        method: row.method,
+        index,
+      };
+    }
+  }
+  return { profile: "", method: "", index: -1 };
 }
 
 function buildPlan(item) {
@@ -334,27 +382,41 @@ function buildPlan(item) {
   });
   const hypotheses = asArray(plan.hypotheses).filter(isRecord);
   const baseRepairTarget = resolveRepairTarget(plan.failureClass, capabilityStrategy, evidence.observedPipelineStage, stringValue(input.mode, "quick"));
+  const postExhaustionHint = (learningMode && experimentExhausted)
+    ? postExhaustionStrategyHint(evidence.failureClass, allMemoryMatches, rotateEvery)
+    : { profile: "", method: "", index: -1 };
+  const strategyEscalated = Boolean(postExhaustionHint.profile);
   const repairTarget = experimentExhausted
     ? (
-        learningMode
+        strategyEscalated
           ? {
               ...baseRepairTarget,
               scope: "learning",
-              repairType: "architecture_gap",
+              repairType: "evolved_strategy",
               engine: "brain_learning_lab",
               pipelineStage: "learning",
-              profiles: [],
-              learningDisposition: "propose_new_or_evolved_core_type",
+              profiles: [postExhaustionHint.profile],
+              learningDisposition: "execute_bounded_evolved_strategy",
             }
-          : {
-              ...baseRepairTarget,
-              scope: "deferred",
-              repairType: "experiment_strategy_exhausted",
-              engine: "independent_learning_queue",
-              pipelineStage: "deferred_learning",
-              profiles: [],
-              learningDisposition: "queue_new_strategy_after_variant_exhaustion",
-            }
+          : learningMode
+            ? {
+                ...baseRepairTarget,
+                scope: "learning",
+                repairType: "architecture_gap",
+                engine: "brain_learning_lab",
+                pipelineStage: "learning",
+                profiles: [],
+                learningDisposition: "propose_new_or_evolved_core_type",
+              }
+            : {
+                ...baseRepairTarget,
+                scope: "deferred",
+                repairType: "experiment_strategy_exhausted",
+                engine: "independent_learning_queue",
+                pipelineStage: "deferred_learning",
+                profiles: [],
+                learningDisposition: "queue_new_strategy_after_variant_exhaustion",
+              }
       )
     : baseRepairTarget;
   const historicalHint = (
@@ -370,33 +432,39 @@ function buildPlan(item) {
         rotateEvery,
       )
     : { profile: "", caseId: "", solutionClass: "" };
-  const causalProfile = experimentExhausted
-    ? ""
-    : (
-        historicalHint.profile
-        || causalStrategyProfile(
-          evidence.failureClass,
-          experimentVariant,
-          experimentGeneration,
-          finalVariant,
-        )
-      );
+  const causalProfile = strategyEscalated
+    ? postExhaustionHint.profile
+    : experimentExhausted
+      ? ""
+      : (
+          historicalHint.profile
+          || causalStrategyProfile(
+            evidence.failureClass,
+            experimentVariant,
+            experimentGeneration,
+            finalVariant,
+          )
+        );
   const executionRepairTarget = causalProfile
     ? {
         ...repairTarget,
         profiles: [
           causalProfile,
-          ...stringArray(repairTarget.profiles).filter((profile) => profile !== "adaptive_runtime_recovery"),
+          ...stringArray(repairTarget.profiles).filter((profile) => profile !== "adaptive_runtime_recovery" && profile !== causalProfile),
         ],
       }
     : repairTarget;
-  const effectiveAction = experimentExhausted
-    ? (learningMode ? "collect-more-evidence" : "deferred_retry")
-    : stringValue(plan.action, "deferred_retry");
-  const effectiveExitReason = experimentExhausted
-    ? (learningMode ? "learning_generations_exhausted" : "experiment_variants_exhausted")
-    : plan.exitReason ?? null;
-  const effectiveHypotheses = experimentExhausted ? [] : hypotheses;
+  const effectiveAction = strategyEscalated
+    ? "probe-targeted-repair"
+    : experimentExhausted
+      ? (learningMode ? "collect-more-evidence" : "deferred_retry")
+      : stringValue(plan.action, "deferred_retry");
+  const effectiveExitReason = strategyEscalated
+    ? null
+    : experimentExhausted
+      ? (learningMode ? "learning_generations_exhausted" : "experiment_variants_exhausted")
+      : plan.exitReason ?? null;
+  const effectiveHypotheses = (experimentExhausted && !strategyEscalated) ? [] : hypotheses;
   return {
     brainVersion: finiteNumber(plan.brainVersion, BRAIN_CONTROL_PLANE_VERSION),
     providerId,
@@ -412,7 +480,12 @@ function buildPlan(item) {
     negativeMemoryMatches,
     experimentVariant,
     experimentGeneration,
-    experimentExhausted,
+    baseExperimentExhausted: experimentExhausted,
+    experimentExhausted: experimentExhausted && !strategyEscalated,
+    strategyEscalated,
+    postExhaustionStrategyProfile: postExhaustionHint.profile,
+    postExhaustionStrategyMethod: postExhaustionHint.method,
+    postExhaustionStrategyIndex: postExhaustionHint.index,
     experimentRotationEvery: rotateEvery,
     experimentVariantCount: maxVariants,
     experimentGenerationLimit: learningMode ? maxLearningGenerations : finalVariantGeneration,
