@@ -896,8 +896,16 @@ def main() -> int:
         metavar="PROVIDER_ID",
         help="Explicitly rebuild only the named clean ProviderBase candidate from current structured knowledge. May be repeated.",
     )
+    parser.add_argument(
+        "--provider",
+        action="append",
+        default=[],
+        metavar="PROVIDER_ID",
+        help="Optional exact canonical provider filter. May be repeated; lower-priority upstreams stop once every target is staged.",
+    )
     args = parser.parse_args()
     forced_reconstruction_ids = {canonical_id(value) for value in args.force_clean_reconstruction if canonical_id(value)}
+    requested_provider_ids = {canonical_id(value) for value in args.provider if canonical_id(value)}
 
     config = load_discovery_config()
     exclusions = config.get("exclusions", {})
@@ -966,6 +974,8 @@ def main() -> int:
                 continue
             upstream_id = str(entry.get("id") or entry.get("name") or f"entry-{index}")
             provider_id = canonical_id(upstream_id)
+            if requested_provider_ids and provider_id not in requested_provider_ids:
+                continue
             preliminary_reason = exclusion_reason(entry, None, exclusions)
             if preliminary_reason:
                 excluded.append({"source": source_key, "id": upstream_id, "reason": preliminary_reason})
@@ -1140,6 +1150,13 @@ def main() -> int:
             "provider_lkg_fallbacks": source_lkg_provider_fallbacks,
             "failures": source_failures,
         }
+        if requested_provider_ids and requested_provider_ids.issubset(set(seen_canonical_ids)):
+            print(
+                "FIELD_DISCOVERY_TARGET_SCOPE_COMPLETE "
+                f"providers={len(requested_provider_ids)} upstreams_scanned={priority + 1}",
+                flush=True,
+            )
+            break
 
     write_pending(upstream_lkg_pending, stage)
 
@@ -1165,6 +1182,8 @@ def main() -> int:
         if not isinstance(entry, dict):
             continue
         provider_id = canonical_id(str(entry.get("id") or entry.get("name") or ""))
+        if requested_provider_ids and provider_id not in requested_provider_ids:
+            continue
         filename = entry.get("filename")
         if not provider_id or not isinstance(filename, str):
             continue
