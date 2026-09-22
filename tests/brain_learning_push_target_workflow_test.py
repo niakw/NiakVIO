@@ -23,7 +23,8 @@ parse_index = workflow.index("trigger_target=")
 census_index = workflow.index("target provider is not in current census repairQueue")
 handoff_index = workflow.index("target provider is not LEARN/pending in current handoff")
 filter_index = workflow.index('provider_filter="$target_provider"')
-queue_index = workflow.index("steps.learning-slot.outputs.target_provider")
+queue_step = workflow.index("- name: Run adaptive Learning provider queue")
+queue_index = workflow.index("steps.learning-slot.outputs.target_provider", queue_step)
 assert parse_index < census_index < handoff_index < filter_index < queue_index
 
 # Explicit provider targeting is independent from the ephemeral fastHandoff
