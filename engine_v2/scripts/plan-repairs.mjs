@@ -740,7 +740,13 @@ function profilesForRepairTarget(plan, repairTarget) {
     .sort((a, b) => finiteNumber(b.transferScore, 0) - finiteNumber(a.transferScore, 0))
     .map((row) => stringValue(row.profile))
     .filter(Boolean);
-  return [...new Set([...transferred, ...stringArray(repairTarget.profiles)])];
+  const explicit = stringArray(repairTarget.profiles);
+  // An explicitly selected evolved strategy is the causal experiment being
+  // tested now. Learned generic profiles remain fallbacks, but must not execute
+  // ahead of that strategy and consume the bounded attempt first.
+  return stringValue(repairTarget.repairType) === "evolved_strategy"
+    ? [...new Set([...explicit, ...transferred])]
+    : [...new Set([...transferred, ...explicit])];
 }
 
 function applyCensusPrior(rawEvidence, candidate) {
