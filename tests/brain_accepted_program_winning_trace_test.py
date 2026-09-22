@@ -84,8 +84,8 @@ compiled=compiler.compile_program(program,"demo")
 assert compiled["searchRequestPlan"],compiled
 assert compiled["providerValuePlan"],compiled
 plan=compiled["providerValuePlan"][0]
-assert "id" in plan["requiredBindings"],plan
-assert any(step["route"]=="/api/source/{binding:id}" for step in plan["steps"]),plan
+assert plan["searchRoute"]=="/search?q={query}",plan
+assert any(step["route"]=="/api/source/{id}" for step in plan["steps"]),plan
 
 # The persistence layer stores names of safe headers only; values from the winning
 # trace (including Referer values) never become executable secret/header DATA.
