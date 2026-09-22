@@ -58,6 +58,7 @@ def unresolved_target_scope(
     disposition: dict[str, Any] | None = None,
     current_verified: set[str] | None = None,
     census: dict[str, Any] | None = None,
+    authority_blocked: set[str] | None = None,
 ) -> tuple[list[str], list[str]]:
     """Return only providers currently marked symptomatic by the census.
 
@@ -79,15 +80,22 @@ def unresolved_target_scope(
             ]
         queue = {cid(value) for value in queue_values or [] if cid(value)}
         selected = (set(requested) & queue) if requested else queue
+        hard_blocked = {
+            cid(value) for value in (authority_blocked or set()) if cid(value)
+        }
+        # Current-byte census is stronger authority than provider-repair-skip.
+        # A provider reopened by repairQueue must be re-probed even when an old
+        # exact-byte optimization still names it. Independent authority blockers
+        # remain a hard prerequisite and are never bypassed here.
         targets = [
             provider
             for provider in active_catalogue
-            if provider in selected and provider not in skipped
+            if provider in selected and provider not in hard_blocked
         ]
         excluded = [
             provider
             for provider in active_catalogue
-            if provider not in selected or provider in skipped
+            if provider not in selected or provider in hard_blocked
         ]
         return targets, excluded
 
@@ -388,6 +396,7 @@ def main() -> int:
         requested,
         disposition,
         census=census,
+        authority_blocked=authority_blocked,
     )
     if not initial_targets:
         summary = {
@@ -415,6 +424,7 @@ def main() -> int:
         requested,
         disposition,
         census=census,
+        authority_blocked=authority_blocked,
     )
     regression_reactivated: list[str] = []
     if not targets:

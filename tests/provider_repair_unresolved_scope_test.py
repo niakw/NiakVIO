@@ -32,8 +32,19 @@ assert set(excluded) == {"green-a", "waf-c", "partial-e"}, (targets, excluded)
 targets, excluded = unresolved_target_scope(active, set(), {"green-a", "repair-b"}, census=census)
 assert targets == ["repair-b"], (targets, excluded)
 
-# Skip still has final veto authority.
+# Historical provider-wide skip is only an optimization. A current repairQueue
+# entry reopens the provider and must outrank stale/exact-byte skip memory.
 targets, excluded = unresolved_target_scope(active, {"repair-b"}, set(), census=census)
+assert targets == ["repair-b", "route-d"], (targets, excluded)
+
+# Independent authority blockers remain a hard Repair prerequisite.
+targets, excluded = unresolved_target_scope(
+    active,
+    {"repair-b"},
+    set(),
+    census=census,
+    authority_blocked={"repair-b"},
+)
 assert targets == ["route-d"], (targets, excluded)
 
 # Legacy fallback remains deterministic for compatibility callers only.

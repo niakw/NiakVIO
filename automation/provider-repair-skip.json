@@ -3,18 +3,7 @@
   "policy": "Skip only providers whose entire declared capability surface is currently live-proven on the exact locked published bundle. Partial green lanes are protected by provider-live-baseline-locks.json but the provider remains repair-eligible for its unresolved lanes.",
   "baseline": "5.21.37 exact published bytes + 2026-09-09 current field/published-byte evidence",
   "sourceOfTruth": "automation/provider-live-baseline-locks.json",
-  "providers": {
-    "castle": {
-      "bundle": "providers/castle--nuvio--5f92106210cec916.js",
-      "verifiedLanes": ["movie", "tv"],
-      "reason": "current TV field evidence proves both declared canonical lanes on exact published bytes"
-    },
-    "persianstremio": {
-      "bundle": "providers/persianstremio--nuvio--0d5ef668a8d05840.js",
-      "verifiedLanes": ["movie", "tv"],
-      "reason": "current published-byte guard and TV field evidence prove both declared canonical lanes"
-    }
-  },
+  "providers": {},
   "retiredProviderWideHints": {
     "allwish": "historical quick-yield only; no current full-capability proof",
     "anime-sama": "anime lane protected, other declared lanes remain repair-eligible",
@@ -24,6 +13,8 @@
     "playimdb": "targeted candidate proof is not current published full-capability proof",
     "streamzo": "movie lane protected; TV currently wrong-content and remains repair-eligible",
     "videasy": "historical quick-yield only; no current full-capability proof",
-    "wookafr": "historical quick-yield only; no current full-capability proof"
+    "wookafr": "historical quick-yield only; no current full-capability proof",
+    "castle": "stale exact-bundle skip retired; current census FULL/PARTIAL state is the automatic authority",
+    "persianstremio": "stale exact-bundle skip retired after current census reopened provider as CANDIDATE OK"
   }
 }

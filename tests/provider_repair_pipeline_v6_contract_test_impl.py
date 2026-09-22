@@ -41,9 +41,11 @@ assert 'provider-repair-portfolio-retry.json' in workflow
 # scope is owned by the durable census repairQueue; disposition is compatibility
 # evidence only and may never drag a stable FULL/PARTIAL provider back into Repair.
 assert skip.get('schemaVersion') == 2
-assert set((skip.get('providers') or {}).keys()) == {'castle', 'persianstremio'}
+assert set((skip.get('providers') or {}).keys()) == set()
 assert 'entire declared capability surface' in str(skip.get('policy') or '')
 assert 'Partial green lanes are protected' in str(skip.get('policy') or '')
+assert 'authority_blocked=authority_blocked' in pipeline
+assert 'provider in selected and provider not in hard_blocked' in pipeline
 for marker in (
     'def unresolved_target_scope(',
     'provider-census-status.json:repairQueue',

@@ -4063,3 +4063,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - MalluMV was used as a witness for generic Brain defects, not as a provider-local repair target. The recent fixes (owned neutral transition mining plus implementation-fingerprinted evolved-strategy debt) are generic and may apply to other route/chain terminal gaps.
 - User priority: do not allow one provider to monopolize the repair loop. Run the 9-provider cohort with the existing per-provider fair-share deadline and bounded attempts, persist exact per-provider outcomes, then improve the Brain from the cohort's common failures.
 - The prior MalluMV-only run on SHA 34a6693d... is superseded once the batch trigger lands; do not treat its cancellation as provider evidence.
+
+
+### 2026-09-22 — Current census now outranks stale provider-wide Repair skips
+
+- Canonical Repair run `35753843377` reached a current pre-Repair `repairQueue=9`, but the Brain received only 8 providers. `persianstremio` was silently removed by `automation/provider-repair-skip.json`.
+- The skip was stale by its own exact-byte policy: it referenced PersianStremio bundle `0d5ef668...` while the current manifest references `8866987f...`. Castle's retained skip bundle was stale as well (`5f921062...` vs current `f62ea897...`).
+- Generic correction: when a schema-v3/current census is present, `repairQueue` is the automatic symptom authority and historical provider-wide skip memory cannot veto a reopened provider. Independent `provider-authority-status.json` blockers remain a hard prerequisite through the explicit `authority_blocked` argument.
+- The stale provider-wide skip map is cleared. Compatibility callers without a census still retain the legacy skip behavior, while current Repair is driven by current evidence.
+- Regression coverage in `tests/provider_repair_unresolved_scope_test.py` now proves both directions: a current `repairQueue` entry survives a stale skip, while an independent authority blocker still excludes it.
+- Required validation: CORE/Repair contracts must pass, then a fresh Repair on current HEAD must select all current repairQueue providers, including PersianStremio when it remains unresolved.
