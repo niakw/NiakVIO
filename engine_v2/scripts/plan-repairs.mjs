@@ -37,6 +37,14 @@ const learnedSkills = learnedSkillInputAllowed
 const runtimeCompatibility = buildRuntimeCompatibility(
   readJsonFile("automation/nuvio-client-compatibility-matrix.json", {}),
 );
+const HISTORICAL_SOLUTION_PROFILES = {
+  provider_owned_origin_header_and_domain_replay: "provider_origin_failover_v1",
+  search_detail_player_terminal_traversal: "proven_route_terminal_traversal_v1",
+  terminal_media_extractor_with_playback_validation: "chain_terminal_extractor_v1",
+  same_provider_candidate_program_replay: "retained_candidate_replay_v1",
+  proven_request_program_and_terminal_extraction: "player_media_extractor_v1",
+};
+
 const output = {
   schemaVersion: 2,
   brainVersion: BRAIN_CONTROL_PLANE_VERSION,
@@ -78,14 +86,6 @@ function causalStrategyProfile(failureClass, variant, generation, finalVariant) 
   const currentGeneration = Math.max(1, finiteNumber(generation, 1));
   return currentGeneration <= 2 ? base : `${base}_g${currentGeneration}`;
 }
-
-const HISTORICAL_SOLUTION_PROFILES = {
-  provider_owned_origin_header_and_domain_replay: "provider_origin_failover_v1",
-  search_detail_player_terminal_traversal: "proven_route_terminal_traversal_v1",
-  terminal_media_extractor_with_playback_validation: "chain_terminal_extractor_v1",
-  same_provider_candidate_program_replay: "retained_candidate_replay_v1",
-  proven_request_program_and_terminal_extraction: "player_media_extractor_v1",
-};
 
 function generationProfile(base, generation) {
   if (!base) return "";
