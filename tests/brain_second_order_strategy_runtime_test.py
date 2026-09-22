@@ -14,6 +14,7 @@ runtime=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(runtime)
 
 expected={
+    "provider_positive_program_replay_v1",
     "transport_request_differential_v1",
     "route_transition_graph_v1",
     "route_peer_transition_replay_v1",
@@ -134,5 +135,12 @@ profiles=runtime.matching_profiles(
     config,
 )
 assert "terminal_transition_graph_v1" in profiles,profiles
+
+positive_replay=runtime._adaptive_runtime_options(
+    candidate("provider_positive_program_replay_v1","chain_terminal_gap"),
+    config,
+)
+assert positive_replay,positive_replay
+assert positive_replay["new_strategy_id"]=="provider_positive_program_replay_v1",positive_replay
 
 print("Brain second-order runtime strategy contract passed")
