@@ -110,11 +110,15 @@ jobs:
             echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING providers=$LEARNING"
           fi
 
-          # Harness/Core-client work is deliberately not provider mutation.
-          # The execution plan exposes the exact blocked cohort/blueprints until
-          # a validated autonomous Core-client application lane exists.
+          # Harness/Core-client evidence collection is autonomous but remains
+          # non-mutating. The targeted WAF/Tailscale lane classifies
+          # browser/direct/OkHttp/residential divergence; any persistent client
+          # gap remains architecture/native-Lab work, never provider mutation.
           if [ -n "$HARNESS" ]; then
-            echo "FIELD_PROVIDER_AUTOPILOT blocked=CORE_CLIENT_LEARNING providers=$HARNESS reason=no_validated_autonomous_core_client_application_lane"
+            gh workflow run provider-waf-browser-session.yml \
+              --repo "$GITHUB_REPOSITORY" --ref main \
+              -f target_providers="$HARNESS"
+            echo "FIELD_PROVIDER_AUTOPILOT dispatch=CORE_CLIENT_LEARNING providers=$HARNESS workflow=provider-waf-browser-session.yml mutation=false"
           fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
