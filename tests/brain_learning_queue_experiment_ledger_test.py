@@ -77,6 +77,24 @@ assert unavailable[0]["experimentGeneration"] == 4, unavailable
 assert unavailable[0]["profile"] == "chain_terminal_extractor_v1_g4", unavailable
 assert unavailable[0]["lastOutcome"] == "profile_unavailable", unavailable
 
+# Planner action labels may change when a selected causal profile cannot
+# materialize. The exact selected g/v/profile is still durable negative
+# experiment evidence and must advance the next phase.
+deferred_plan = {
+    **g4_plan,
+    "action": "collect-more-evidence",
+}
+deferred_unavailable = queue.phase_experiment_entries(
+    "synthetic-ledger",
+    deferred_plan,
+    {"attemptedProfiles": [], "report": {"rounds": []}},
+    {"status": "unresolved"},
+)
+assert len(deferred_unavailable) == 1, deferred_unavailable
+assert deferred_unavailable[0]["experimentGeneration"] == 4, deferred_unavailable
+assert deferred_unavailable[0]["profile"] == "chain_terminal_extractor_v1_g4", deferred_unavailable
+assert deferred_unavailable[0]["lastOutcome"] == "profile_unavailable", deferred_unavailable
+
 # Non-publishable progress is still durable experiment evidence and raw endpoint
 # or credential-shaped text must never enter cross-phase memory.
 progress_repair = {
