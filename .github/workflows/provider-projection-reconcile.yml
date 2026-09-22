@@ -1,0 +1,181 @@
+name: PROVIDERS - Projection Reconcile
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/provider-projection-reconcile.json'
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: niakvio-core-release-mutation-main
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: main
+      NIAKVIO_PROVIDER_V3_FINAL_MINIMIZE: '1'
+      NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'
+    steps:
+      - name: Checkout exact projection baseline
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Require exact trigger head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install locked tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Detect exact published projection drift
+        id: drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/detect_provider_projection_drift.py scripts/materialize_provider_v3_one.py scripts/reconcile_targeted_provider_publication.py
+          python tests/provider_projection_drift_detector_test.py
+          python scripts/detect_provider_projection_drift.py --output "$RUNNER_TEMP/projection-drift.before.json"
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          from pathlib import Path
+          d=json.loads((Path(os.environ["RUNNER_TEMP"])/"projection-drift.before.json").read_text())
+          providers=sorted({str(x or "").strip().lower() for x in d.get("providers") or [] if str(x or "").strip()})
+          print("count="+str(len(providers)))
+          print("providers="+",".join(providers))
+          PY
+          cat "$RUNNER_TEMP/projection-drift.before.json"
+
+      - name: Rebuild only drifted providers from accepted DATA and Lego
+        if: steps.drift.outputs.count != '0'
+        shell: bash
+        env:
+          TARGETS: ${{ steps.drift.outputs.providers }}
+        run: |
+          set -euo pipefail
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          IFS=',' read -r -a providers <<< "$TARGETS"
+          reconcile=(python scripts/reconcile_targeted_provider_publication.py)
+          for provider in "${providers[@]}"; do
+            [ -n "$provider" ] || continue
+            echo "FIELD_PROVIDER_PROJECTION_REBUILD provider=$provider"
+            python scripts/materialize_provider_v3_one.py "$provider"
+            reconcile+=(--provider "$provider")
+          done
+          "${reconcile[@]}"
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest.before.json"
+          python scripts/generate_hub46_manifest.py \
+            --source manifest.json \
+            --matrix automation/evidence/hub-lab-matrix-46.json \
+            --output manifest-hub46.json
+          python scripts/prune_unreferenced_providers.py
+
+      - name: Prove projection fixed point
+        if: steps.drift.outputs.count != '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/detect_provider_projection_drift.py --output "$RUNNER_TEMP/projection-drift.after.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          d=json.loads((Path(os.environ["RUNNER_TEMP"])/"projection-drift.after.json").read_text())
+          assert int(d.get("providerCount") or 0)==0,d
+          print("FIELD_PROVIDER_PROJECTION_FIXED_POINT providers=0")
+          PY
+          python scripts/validate_published_provider_config.py
+          python scripts/audit_provider_v3_static.py
+          python scripts/reapply_published_overrides.py --check
+          python tests/published_provider_lego_contract_test.py
+          python tests/provider_js_lego_ownership_test.py
+          git diff --check
+
+      - name: Build atomic provider publication
+        if: steps.drift.outputs.count != '0'
+        id: publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+          git add \
+            PROVENANCE.json provider-overrides.json provider-v3-materialization.json \
+            manifest.json manifest-hub46.json \
+            vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
+            providers/ package.json package-lock.json sources.json provider_catalog.json nuvio-client-id-state.json
+          changed="$(git diff --cached --name-only)"
+          printf '%s\n' "$changed"
+          if printf '%s\n' "$changed" | grep -Ev '^(PROVENANCE\.json|provider-overrides\.json|provider-v3-materialization\.json|manifest\.json|manifest-hub46\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|providers/[^/]+|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|nuvio-client-id-state\.json)$'; then
+            echo "Projection reconcile staged a forbidden path." >&2
+            exit 1
+          fi
+          git diff --cached --quiet && {
+            echo "Projection detector found drift but rebuild produced no publication delta." >&2
+            exit 1
+          }
+          git commit -m "fix(providers): reconcile accepted projection drift"
+          PROVIDER_SHA="$(git rev-parse HEAD)"
+          echo "provider_sha=$PROVIDER_SHA" >> "$GITHUB_OUTPUT"
+
+          python scripts/build_hub46_native_manifest.py \
+            --provider-sha "$PROVIDER_SHA" \
+            --source manifest-hub46.json \
+            --output native-hub46/manifest.json
+          python tests/native_hub46_manifest_test.py
+          python tests/native_hub46_transport_manifest_test.py
+          python tests/release_projection_scope_test.py
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python tests/release_hash_scope_test.py
+
+          git add native-hub46/manifest.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git diff --cached --quiet && {
+            echo "Projection publication produced no final pin/integrity delta." >&2
+            exit 1
+          }
+          git commit -m "chore(providers): pin reconciled projection publication"
+
+      - name: Publish exact reconciled projection
+        if: steps.drift.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          CURRENT_SHA="$(git rev-parse origin/main)"
+          if [ "$CURRENT_SHA" != "$GITHUB_SHA" ]; then
+            echo "FIELD_PROVIDER_PROJECTION_PUBLISH_SKIPPED reason=main_advanced baseline=$GITHUB_SHA current=$CURRENT_SHA"
+            exit 1
+          fi
+          git push origin HEAD:main
+          echo "FIELD_PROVIDER_PROJECTION_PUBLISHED baseline=$GITHUB_SHA final=$(git rev-parse HEAD) providers=${{ steps.drift.outputs.providers }}"
+          gh workflow run temp-current-bytes-full-provider-census.yml --repo "$GITHUB_REPOSITORY" --ref main || \
+            echo "FIELD_PROVIDER_PROJECTION_CENSUS_DISPATCH_WARN"
+
+      - name: Report no-op
+        if: steps.drift.outputs.count == '0'
+        run: echo "FIELD_PROVIDER_PROJECTION_RECONCILE drift=0 publication=noop"
