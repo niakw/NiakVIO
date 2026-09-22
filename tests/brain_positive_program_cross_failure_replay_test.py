@@ -62,6 +62,7 @@ positive = {
     "failureCount": 0,
     "actions": ["replay strict provider-local positive program"],
     "sameProviderPositiveProgram": True,
+    "positiveProgramFingerprintsByProvider": {"mallumv-like": "a" * 64},
     "source": "brain-positive-program-memory",
 }
 generic = {
@@ -153,8 +154,12 @@ assert replay["action"] == "probe-targeted-repair", replay
 assert replay["providerPositiveProgramReplay"] is True, replay
 assert replay["postExhaustionStrategyProfile"] == "provider_positive_program_replay_v1", replay
 assert replay["allowedProfiles"][0] == "provider_positive_program_replay_v1", replay
+assert replay["positiveProgramFingerprint"] == "a" * 64, replay
 
-failed_replay_memory = exhausted_memory + [{
+# Legacy replay debt has no exact positive-program identity. Once current
+# positive memory is fingerprinted, that old debt cannot condemn the new
+# provider-local replay program.
+legacy_failed_replay_memory = exhausted_memory + [{
     "providerId": "mallumv-like",
     "providerVersion": "*",
     "failureClass": same["failureClass"],
@@ -166,7 +171,27 @@ failed_replay_memory = exhausted_memory + [{
     "consecutiveFailures": 1,
     "successes": 0,
 }]
-after_failed_replay = plan_for("mallumv-like", failed_replay_memory)
+legacy_retry = plan_for("mallumv-like", legacy_failed_replay_memory)
+assert legacy_retry["postExhaustionStrategyProfile"] == "provider_positive_program_replay_v1", legacy_retry
+assert legacy_retry["positiveProgramFingerprint"] == "a" * 64, legacy_retry
+
+# A failure against an older exact positive program also cannot suppress a
+# newly learned program fingerprint.
+old_program_failed_memory = exhausted_memory + [{
+    **legacy_failed_replay_memory[-1],
+    "positiveProgramFingerprint": "b" * 64,
+}]
+rotated = plan_for("mallumv-like", old_program_failed_memory)
+assert rotated["postExhaustionStrategyProfile"] == "provider_positive_program_replay_v1", rotated
+assert rotated["positiveProgramFingerprint"] == "a" * 64, rotated
+
+# The exact same positive program remains bounded: once that fingerprint has
+# failed, the planner must rotate away instead of looping forever.
+current_program_failed_memory = exhausted_memory + [{
+    **legacy_failed_replay_memory[-1],
+    "positiveProgramFingerprint": "a" * 64,
+}]
+after_failed_replay = plan_for("mallumv-like", current_program_failed_memory)
 assert after_failed_replay["postExhaustionStrategyProfile"] != "provider_positive_program_replay_v1", after_failed_replay
 
 # Same historical program must not jump to another provider merely because its
