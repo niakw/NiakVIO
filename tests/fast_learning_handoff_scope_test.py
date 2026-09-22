@@ -33,6 +33,21 @@ with TemporaryDirectory() as td:
     census={"repairQueue":["current-a","current-b","done-one","repair-owned"]}
     assert mod.select(trigger,handoff,census)==["current-a","current-b"]
 
+    trigger.write_text(
+        "reason: fair-share-repair-strategy-learning-after-causal-census\n"
+        "expected_scope: current-nine-provider-repair-handoff-only\n"
+        "execution_mode: targeted-fast-handoff-v6-cohort-stage-bounded-slices-content-addressed-proposal\n",
+        encoding="utf-8",
+    )
+    assert mod.select(trigger,handoff,census)==["current-a","current-b"]
+
+    trigger.write_text(
+        "reason: fair-share-repair-strategy-learning-after-causal-census\n"
+        "expected_scope: current-nine-provider-repair-handoff-only\n",
+        encoding="utf-8",
+    )
+    assert mod.select(trigger,handoff,census)==[]
+
     trigger.write_text("reason: scheduled-learning\n",encoding="utf-8")
     assert mod.select(trigger,handoff,census)==[]
 
@@ -40,6 +55,8 @@ source=SCRIPT.read_text(encoding="utf-8")
 for required in (
     "fast-brain-strategy-exhaustion",
     "current-fast-repair-handoff-only",
+    "targeted-fast-handoff",
+    "provider-repair-handoff",
     "repairQueue",
     'str(row.get("owner") or "") != "LEARN"',
     'str(row.get("status") or "") != "pending"',
