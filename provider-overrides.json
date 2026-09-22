@@ -4007,7 +4007,7 @@
     "animevostfr": {
       "capability": "mixed_embed_resolver",
       "official_hub": null,
-      "official_site": "https://v2.animevostfr.org",
+      "official_site": "https://animevostfr.org",
       "manifest_overrides": {
         "enabled": true
       },
@@ -4254,8 +4254,12 @@
           "maxStreams": 6
         }
       },
-      "runtime_domain_replacements": {},
-      "domain_substitutions": {}
+      "runtime_domain_replacements": {
+        "v2.animevostfr.org": "animevostfr.org"
+      },
+      "domain_substitutions": {
+        "v2.animevostfr.org": "animevostfr.org"
+      }
     },
     "castle": {
       "capability": "api_stream_resolver",
