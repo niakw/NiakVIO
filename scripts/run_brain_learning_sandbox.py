@@ -50,7 +50,25 @@ def _load_state() -> dict[str, Any]:
 def _negative_entries(state: dict[str, Any]) -> list[dict[str, Any]]:
     memory = state.get("experimentMemory") if isinstance(state.get("experimentMemory"), dict) else {}
     rows = memory.get("entries") if isinstance(memory.get("entries"), list) else []
-    return [row for row in rows if isinstance(row, dict)]
+    out: list[dict[str, Any]] = []
+    post_g5 = set(getattr(quick.brain, "POST_EXHAUSTION_STRATEGY_PROFILES", set()))
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        profile = str(row.get("profile") or "").strip()
+        # Keep Learning's suppression view consistent with the planner and
+        # persistent-memory migration. Legacy runs could mark a newly planned
+        # evolved strategy profile_unavailable before any candidate bytes were
+        # generated. Such rows must not suppress the very strategy that still
+        # needs its first real execution.
+        if (
+            profile in post_g5
+            and str(row.get("lastOutcome") or "") == "profile_unavailable"
+            and row.get("executionObserved") is not True
+        ):
+            continue
+        out.append(row)
+    return out
 
 
 def _norm(value: Any) -> str:
