@@ -12,6 +12,8 @@ required = [
     "target provider is not in current census repairQueue",
     "target provider is not LEARN/pending in current handoff",
     'provider_filter="$target_provider"',
+    '"policy": "target-scoped-handoff"',
+    'json.dump(data,open(sys.argv[2],"w",encoding="utf-8"),ensure_ascii=False,indent=2)',
     'echo "target_provider=$target_provider"',
     "steps.learning-slot.outputs.target_provider",
     'if [ -n "$TARGET_PROVIDER" ]; then args+=(--provider "$TARGET_PROVIDER"); fi',
@@ -34,6 +36,7 @@ assert parse_index < census_index < handoff_index < filter_index < queue_index
 target_block = workflow[census_index:filter_index]
 assert "/tmp/fast-learning-handoff.json" not in target_block, target_block
 assert "repairQueue" in target_block, target_block
+assert '"policy": "target-scoped-handoff"' in workflow, workflow
 assert 'row.get("owner")' in target_block or "row.get('owner')" in target_block, target_block
 assert 'row.get("status")' in target_block or "row.get('status')" in target_block, target_block
 
