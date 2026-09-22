@@ -57,6 +57,9 @@ policy = {
     "skillMaturity": {},
 }
 
+SIGNATURE = ""
+
+
 def row(variant: int, generation: int = 1) -> dict:
     profile = "adaptive_runtime_recovery"
     if variant == 4 and generation >= 2:
@@ -65,7 +68,7 @@ def row(variant: int, generation: int = 1) -> dict:
         "providerId": "cross-phase-demo",
         "providerVersion": "*",
         "failureClass": "chain_terminal_gap",
-        "signature": "cross-phase-signature",
+        "signature": SIGNATURE,
         "profile": profile,
         "experimentVariant": variant,
         "experimentGeneration": generation,
@@ -98,6 +101,9 @@ def plan(memory: list[dict], mode: str) -> dict:
         timeout=20,
     )
     return next(iter((json.loads(completed.stdout).get("plans") or {}).values()))
+
+SIGNATURE = plan([], "learning")["signature"]
+assert SIGNATURE
 
 with tempfile.TemporaryDirectory() as td:
     td = Path(td)
