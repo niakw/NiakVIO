@@ -30,6 +30,7 @@ PLANS: dict[str, dict[str, Any]] = {}
 RUNTIME_STATE: dict[str, dict[str, Any]] = {}
 
 POST_EXHAUSTION_STRATEGY_PROFILES = {
+    "provider_positive_program_replay_v1",
     "transport_request_differential_v1",
     "route_transition_graph_v1",
     "route_peer_transition_replay_v1",
