@@ -1048,7 +1048,7 @@ function _spv188HtmlAttr(tag, name) {
   const key = _text(name);
   if (!/^[A-Za-z][A-Za-z0-9_-]*$/.test(key)) return "";
   const quoted = source.match(new RegExp("\\b" + key + "\\s*=\\s*([\\\"'])([\\s\\S]*?)\\1", "i"));
-  if (quoted) return quoted[2].replace(/&amp;/gi, "&").replace(/&quot;/gi, '"').replace(/&#39;/gi, "'");
+  if (quoted) return quoted[2].replace(/&quot;/gi, '"').replace(/&#39;/gi, "'").replace(/&amp;/gi, "&");
   const bare = source.match(new RegExp("\\b" + key + "\\s*=\\s*([^\\s>]+)", "i"));
   return bare ? bare[1] : "";
 }
