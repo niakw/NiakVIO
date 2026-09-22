@@ -1,5 +1,13 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-22 11:34 Europe/Paris — Brain post-g5 execution defect fixed; validation pending
+
+- The fair-share Learning queue had two coupled defects. First, `phase_experiment_entries()` combined the report-level final replan with profiles actually attempted by the child. After a g5 failure, the child could already expose a new post-g5 `evolved_strategy`; the ledger could therefore mark that **unexecuted future strategy** as `profile_unavailable`, advancing negative memory without ever running the strategy.
+- `6f4b287a7b7e` now attributes each ledger row to the exact event-level `brain_plan` snapshot that selected the attempted profile. When any profile was actually attempted, only attempted profiles enter the ledger; report-level allowed profiles are used only for the genuine no-attempt/profile-unavailable case.
+- The same commit adds a read-only intra-phase Learning state. Exact fair-share experiment rows are merged into a temporary `phase-learning-state.json` after every attempt and supplied to the next sandbox process. This lets the next attempt see the just-finished g/v/profile outcome instead of replaying the persistent state from the start of the phase.
+- Ordinary Fast-Handoff remains one attempt/provider. Only when the replan is explicitly `repairType=evolved_strategy` + `learningDisposition=execute_bounded_evolved_strategy` may the provider consume up to 3 attempts inside its already-bounded fair-share time slice. This is intended to execute the finite post-g5 strategy family rather than merely plan it and stop.
+- `8b67e9612b1d` adds regression coverage for g5-attempt → evolved-replan attribution, immediate read-only phase-memory merge/aggregation, and the bounded continuation rule. Validation is **pending** in the canonical Brain Learning workflow.
+
 ## 2026-09-22 11:31 Europe/Paris — Manual-off Domain authority invariant validated end-to-end
 
 - Fresh Domain run `35710451389` completed SUCCESS from trigger SHA `a2dc21287fa7`, including sanitizer, resolver, metadata reconciliation, domain-only Provider v3 tests, release reprojection/integrity and atomic publication.
