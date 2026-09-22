@@ -237,23 +237,6 @@ jobs:
           version: '1.94.2'
           args: --accept-dns=false
 
-      - name: Select residential exit before native emulator boot
-        if: ${{ matrix.residential == true }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          selected=0
-          for attempt in 1 2 3 4 5; do
-            if sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false >/dev/null 2>&1; then
-              selected=1
-              break
-            fi
-            sleep "$((attempt * 2))"
-          done
-          test "$selected" -eq 1
-          echo "NIAKVIO_NATIVE_RESIDENTIAL_EXIT_ACTIVE=1" >> "$GITHUB_ENV"
-          echo "FIELD_NATIVE_RESIDENTIAL_EXIT active=true provider=${{ matrix.provider }} device=${{ matrix.device }}"
-
       - name: Set up JDK
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with:
@@ -302,6 +285,23 @@ jobs:
               python3 niakvio/scripts/prepare_native_corpus_client.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE"
               ;;
           esac
+
+      - name: Select residential exit before native emulator boot
+        if: ${{ matrix.residential == true }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          selected=0
+          for attempt in 1 2 3 4 5; do
+            if sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false >/dev/null 2>&1; then
+              selected=1
+              break
+            fi
+            sleep "$((attempt * 2))"
+          done
+          test "$selected" -eq 1
+          echo "NIAKVIO_NATIVE_RESIDENTIAL_EXIT_ACTIVE=1" >> "$GITHUB_ENV"
+          echo "FIELD_NATIVE_RESIDENTIAL_EXIT active=true provider=${{ matrix.provider }} device=${{ matrix.device }}"
 
       - name: Set up Gradle runtime
         if: matrix.device != 'desktop'
