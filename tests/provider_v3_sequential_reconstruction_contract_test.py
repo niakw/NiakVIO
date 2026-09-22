@@ -246,9 +246,17 @@ animevostfr_static = {
     "providers": {
         "animevostfr": {
             "model": {
-                "knownSite": "https://animevostfr.org",
-                "officialSite": "https://animevostfr.org",
+                "knownSite": "https://v2.animevostfr.org",
+                "officialSite": "https://v2.animevostfr.org",
             }
+        }
+    }
+}
+animevostfr_registry = {
+    "providers": {
+        "animevostfr": {
+            "direct": "https://animevostfr.org/",
+            "direct_authority": "explicit_current",
         }
     }
 }
@@ -256,8 +264,10 @@ animevostfr_changed = module.reconcile_provider_authority(
     animevostfr_overrides,
     animevostfr_static,
     "animevostfr",
+    animevostfr_registry,
 )
 assert animevostfr_changed == ["animevostfr"], animevostfr_changed
+assert animevostfr_overrides["provider_patches"]["animevostfr"]["official_site"] == "https://animevostfr.org"
 animevostfr_opts = animevostfr_overrides["provider_patches"]["animevostfr"]["provider_lego_options"]["scripts/provider_patches/animevostfr_runtime_v1.py"]
 assert animevostfr_opts["base"] == "https://animevostfr.org", animevostfr_opts
 assert animevostfr_opts["nested"]["endpoint"] == "https://animevostfr.org/api/test?q=1", animevostfr_opts
