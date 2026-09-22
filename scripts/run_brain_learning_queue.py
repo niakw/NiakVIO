@@ -79,6 +79,24 @@ class LearningLabSession:
             self.process.wait(timeout=3)
 
 
+def ensure_learning_lab_session(
+    session: LearningLabSession,
+    deadline: float,
+    *,
+    factory: Any = LearningLabSession,
+) -> LearningLabSession:
+    """Recreate the warm Lab process after a provider-local slice timeout.
+
+    A request timeout intentionally closes the shared Node process so no stale
+    request can bleed into the next provider. The queue itself is longer-lived:
+    the next provider must get a fresh session rather than failing the whole
+    Learning phase because the previous provider consumed its fair-share slice.
+    """
+    if session.process.poll() is None:
+        return session
+    return factory(deadline)
+
+
 ANOMALY_SCORES = {
     "provider_unreachable": 120,
     "unavailable": 110,
@@ -1193,6 +1211,10 @@ def main() -> int:
                 media_type = declared_type(candidate)
                 fixture = choose_fixture(health_config, state, media_type)
                 try:
+                    lab_session = ensure_learning_lab_session(
+                        lab_session,
+                        work_deadline,
+                    )
                     final_lab = run_lab(
                         lab_session,
                         provider_id,
