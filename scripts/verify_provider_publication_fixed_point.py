@@ -35,7 +35,8 @@ def main() -> int:
         raise ValueError("PROVENANCE.providers must be an object")
 
     contract = provenance.get("provider_publication_contract")
-    if not isinstance(contract, dict) or int(contract.get("schema_version") or 0) != 2:
+    contract_schema = int(contract.get("schema_version") or 0) if isinstance(contract, dict) else 0
+    if contract_schema not in {2, 3}:
         raise ValueError("missing current provider publication contract proof")
     if not str(contract.get("sha256") or "").strip():
         raise ValueError("provider publication contract SHA is missing")
@@ -80,6 +81,8 @@ def main() -> int:
             raise ValueError(f"{provider_id}: stale fixed-point raw-byte version")
         if str(proof.get("sha256") or "").casefold() != digest:
             raise ValueError(f"{provider_id}: fixed-point proof SHA mismatch")
+        if contract_schema >= 3 and not str(row.get("provider_policy_sha256") or "").strip():
+            raise ValueError(f"{provider_id}: missing provider-local policy fingerprint")
         if not str(row.get("build_input_sha256") or "").strip():
             raise ValueError(f"{provider_id}: missing publication input fingerprint")
         checked += 1
