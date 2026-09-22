@@ -21,6 +21,7 @@ assert overrides["official_site"] == "https://animevostfr.org"
 assert overrides["provider_lego_options"]["scripts/provider_patches/animevostfr_runtime_v1.py"]["base"] == "https://animevostfr.org"
 assert overrides["runtime_domain_replacements"]["v2.animevostfr.org"] == "animevostfr.org"
 assert hubs["direct"] == "https://animevostfr.org/"
+assert hubs["direct_authority"] == "explicit_current"
 assert any(
     row.get("type") == "redirect" and row.get("url") == "https://v2.animevostfr.org/"
     for row in hubs.get("sources") or []
