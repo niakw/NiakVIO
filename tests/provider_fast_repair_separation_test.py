@@ -53,6 +53,9 @@ for required in (
     ".github/triggers/brain-learning-reconstruction",
     "budget_minutes: 20",
     "learnHandoffProviders",
+    "gh workflow run brain-learning-lab.yml",
+    "slot_remaining_minutes=20",
+    "FIELD_PROVIDER_FAST_REPAIR_LEARN_DISPATCH",
 ):
     assert required in workflow, required
 assert "workflow_run" not in workflow
