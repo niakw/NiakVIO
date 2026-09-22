@@ -491,6 +491,55 @@ def causal_batch_round_robin(
             break
     return unique(out), group_order
 
+def causal_family_waves(
+    order: list[str],
+    batch_plan: dict[str, Any],
+    *,
+    max_parallel: int = 4,
+) -> list[list[str]]:
+    """Build safe Learning waves with at most one provider per causal family.
+
+    Families are causal memory barriers: siblings from one family must see the
+    evidence produced by an earlier sibling. Different families may eventually
+    execute in parallel from the same read-only phase-memory snapshot, then
+    merge sanitized evidence at the wave barrier.
+    """
+    groups = batch_plan.get("groups") if isinstance(batch_plan.get("groups"), list) else []
+    provider_group: dict[str, str] = {}
+    for row in groups:
+        if not isinstance(row, dict):
+            continue
+        group_id = str(row.get("groupId") or "").strip()
+        if not group_id:
+            continue
+        for value in row.get("providers") or []:
+            provider = norm(value)
+            if provider and provider not in provider_group:
+                provider_group[provider] = group_id
+
+    buckets: dict[str, list[str]] = {}
+    group_order: list[str] = []
+    for provider in unique(order):
+        group_id = provider_group.get(provider) or f"provider-local:{provider}"
+        if group_id not in buckets:
+            buckets[group_id] = []
+            group_order.append(group_id)
+        buckets[group_id].append(provider)
+
+    width = max(1, int(max_parallel))
+    waves: list[list[str]] = []
+    while any(buckets[group_id] for group_id in group_order):
+        round_rows: list[str] = []
+        for group_id in group_order:
+            if buckets[group_id]:
+                round_rows.append(buckets[group_id].pop(0))
+        for index in range(0, len(round_rows), width):
+            wave = round_rows[index:index + width]
+            if wave:
+                waves.append(wave)
+    return waves
+
+
 def build_queue(
     report: dict[str, Any],
     previous: dict[str, Any],
@@ -1073,6 +1122,11 @@ def main() -> int:
     queue["fastRepairHandoffCausalBatchOrder"] = causal_group_order
     queue["fastRepairHandoffCausalBatchCount"] = len(causal_group_order)
     queue["fastRepairHandoffOrderingPolicy"] = "causal-batch-round-robin"
+    causal_waves = causal_family_waves(order, batch_plan, max_parallel=4) if fair_handoff else []
+    queue["fastRepairHandoffCausalWaves"] = causal_waves
+    queue["fastRepairHandoffCausalWaveCount"] = len(causal_waves)
+    queue["fastRepairHandoffCausalWaveMaxParallel"] = 4
+    queue["fastRepairHandoffParallelExecutionEnabled"] = False
     fair_handoff = bool(handoff_priority) and not bool(args.provider)
     queue["fastRepairHandoffMaxAttemptsPerProviderThisPhase"] = 1 if fair_handoff else 0
     queue["fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase"] = 3 if fair_handoff else 0
@@ -1428,6 +1482,10 @@ def main() -> int:
         "fastRepairHandoffCausalBatchCount": len(causal_group_order),
         "fastRepairHandoffCausalBatchOrder": causal_group_order,
         "fastRepairHandoffOrderingPolicy": "causal-batch-round-robin",
+        "fastRepairHandoffCausalWaves": causal_waves,
+        "fastRepairHandoffCausalWaveCount": len(causal_waves),
+        "fastRepairHandoffCausalWaveMaxParallel": 4,
+        "fastRepairHandoffParallelExecutionEnabled": False,
         "fastRepairHandoffMaxAttemptsPerProviderThisPhase": 1 if fair_handoff else 0,
         "fastRepairHandoffMaxEvolvedAttemptsPerProviderThisPhase": 3 if fair_handoff else 0,
         "cleanReconstructionRequiredProviders": reconstruction_required,
