@@ -156,6 +156,51 @@ def interleave(retries: list[str], pending: list[str]) -> list[str]:
                 out.append(pending.pop(0))
     return unique(out)
 
+
+def causal_batch_round_robin(
+    order: list[str],
+    batch_plan: dict[str, Any],
+) -> tuple[list[str], list[str]]:
+    """Visit one provider per causal batch before siblings from the same batch.
+
+    This does not skip providers or transfer unverified fixes. It only changes
+    investigation order so a strategy learned on the first member of a causal
+    family is available in memory before the next member is explored.
+    """
+    groups = batch_plan.get("groups") if isinstance(batch_plan.get("groups"), list) else []
+    provider_group: dict[str, str] = {}
+    for row in groups:
+        if not isinstance(row, dict):
+            continue
+        group_id = str(row.get("groupId") or "").strip()
+        if not group_id:
+            continue
+        for value in row.get("providers") or []:
+            provider = norm(value)
+            if provider and provider not in provider_group:
+                provider_group[provider] = group_id
+
+    buckets: dict[str, list[str]] = {}
+    group_order: list[str] = []
+    for provider in unique(order):
+        group_id = provider_group.get(provider) or f"provider-local:{provider}"
+        if group_id not in buckets:
+            buckets[group_id] = []
+            group_order.append(group_id)
+        buckets[group_id].append(provider)
+
+    out: list[str] = []
+    while True:
+        progressed = False
+        for group_id in group_order:
+            bucket = buckets[group_id]
+            if bucket:
+                out.append(bucket.pop(0))
+                progressed = True
+        if not progressed:
+            break
+    return unique(out), group_order
+
 def build_queue(
     report: dict[str, Any],
     previous: dict[str, Any],
@@ -722,9 +767,17 @@ def main() -> int:
             staged_candidates,
         )
 
+    batch_plan = load_json(ROOT / "automation" / "provider-repair-batch-plan-latest.json", {})
+    causal_group_order: list[str] = []
+    if handoff_priority and not args.provider:
+        order, causal_group_order = causal_batch_round_robin(order, batch_plan)
+
     queue["fastRepairHandoffProviders"] = handoff_priority
     queue["fastRepairHandoffProviderCount"] = len(handoff_priority)
     queue["fastRepairHandoffAuthority"] = "provider-repair-learn-handoff-v1.json"
+    queue["fastRepairHandoffCausalBatchOrder"] = causal_group_order
+    queue["fastRepairHandoffCausalBatchCount"] = len(causal_group_order)
+    queue["fastRepairHandoffOrderingPolicy"] = "causal-batch-round-robin"
     fair_handoff = bool(handoff_priority) and not bool(args.provider)
     queue["fastRepairHandoffMaxAttemptsPerProviderThisPhase"] = 1 if fair_handoff else 0
     queue["deferredRepairProviders"] = repair_deferred
@@ -1020,6 +1073,9 @@ def main() -> int:
         "budgetMinutes": args.budget_minutes,
         "fastRepairHandoffProviders": handoff_priority,
         "fastRepairHandoffProviderCount": len(handoff_priority),
+        "fastRepairHandoffCausalBatchCount": len(causal_group_order),
+        "fastRepairHandoffCausalBatchOrder": causal_group_order,
+        "fastRepairHandoffOrderingPolicy": "causal-batch-round-robin",
         "fastRepairHandoffMaxAttemptsPerProviderThisPhase": 1 if fair_handoff else 0,
         "cleanReconstructionRequiredProviders": reconstruction_required,
         "cleanReconstructionRequiredCount": len(reconstruction_required),
