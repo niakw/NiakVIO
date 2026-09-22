@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35674101065-retest",
-  "sourceTriggerSha": "ef8cdb56b1b1a651d87b40a96697c7cab65665b0",
+  "sourceRunId": "35674898034-retest",
+  "sourceTriggerSha": "921072b094c4f716b31a098d78f2c4f5c417eea6",
   "unresolvedProviderCount": 14,
-  "groupCount": 12,
+  "groupCount": 14,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -11,62 +11,6 @@
     "providerLocalRepair": "exception path only"
   },
   "groups": [
-    {
-      "groupId": "harness-compatibility|html_scraper",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "html_scraper",
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "browser-profile-only",
-        "residential-exit-all-challenged"
-      ],
-      "providerCount": 2,
-      "providers": [
-        "allwish",
-        "moviesmod"
-      ],
-      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "dle-full-story-sibnet",
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "browser-profile-only-both-networks",
-        "residential-exit-all-challenged"
-      ],
-      "providerCount": 2,
-      "providers": [
-        "animesultra",
-        "flemmix"
-      ],
-      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
     {
       "groupId": "candidate-replay|direct_media",
       "repairScope": "candidate-replay",
@@ -81,6 +25,7 @@
         "network_zero_result"
       ],
       "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
         "persianstremio"
@@ -103,6 +48,7 @@
         "network_zero_result"
       ],
       "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
         "animevostfr"
@@ -112,7 +58,7 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|api_stream_resolver",
+      "groupId": "harness-compatibility|api_stream_resolver|browser-profile-only",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "api_stream_resolver"
@@ -127,9 +73,110 @@
       "harnessTransportClasses": [
         "browser-profile-only"
       ],
+      "transportSignature": "browser-profile-only",
       "providerCount": 1,
       "providers": [
         "animevost-fr"
+      ],
+      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|html_scraper|browser-profile-only",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "html_scraper"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "browser-profile-only"
+      ],
+      "transportSignature": "browser-profile-only",
+      "providerCount": 1,
+      "providers": [
+        "moviesmod"
+      ],
+      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|html_scraper|residential-exit-all-challenged",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-all-challenged"
+      ],
+      "transportSignature": "residential-exit-all-challenged",
+      "providerCount": 1,
+      "providers": [
+        "allwish"
+      ],
+      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|browser-profile-only-both-networks",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "dle-full-story-sibnet"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception"
+      ],
+      "harnessTransportClasses": [
+        "browser-profile-only-both-networks"
+      ],
+      "transportSignature": "browser-profile-only-both-networks",
+      "providerCount": 1,
+      "providers": [
+        "animesultra"
+      ],
+      "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-all-challenged",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-all-challenged"
+      ],
+      "transportSignature": "residential-exit-all-challenged",
+      "providerCount": 1,
+      "providers": [
+        "flemmix"
       ],
       "action": "compare GitHub Node/Chromium transport with representative TV/mobile client; never mutate provider code solely to hide a CI challenge",
       "executionPolicy": "batch-first",
@@ -149,6 +196,7 @@
         "network_zero_result"
       ],
       "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
         "4khdhub"
@@ -171,6 +219,7 @@
         "network_zero_result"
       ],
       "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
         "yflix"
@@ -193,6 +242,7 @@
         "network_zero_result"
       ],
       "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
         "allanime"
@@ -215,6 +265,7 @@
         "network_zero_result"
       ],
       "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
         "mallumv"
@@ -237,6 +288,7 @@
         "network_http_error"
       ],
       "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
         "moviebox"
@@ -259,6 +311,7 @@
         "network_http_error"
       ],
       "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
         "vidfast"
@@ -281,6 +334,7 @@
         "network_http_error"
       ],
       "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
         "anime-ultime"
