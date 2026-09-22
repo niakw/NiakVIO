@@ -88,7 +88,10 @@ def accepted_runtime_program(candidate: dict[str, Any], result: dict[str, Any] |
             continue
         if (
             record.get("type") != "patch_profile"
-            or record.get("profile") != "adaptive_runtime_recovery"
+            or (
+                record.get("profile") != "adaptive_runtime_recovery"
+                and record.get("engine") != "adaptive_runtime_recovery"
+            )
             or record.get("phase") != "runtime"
             or not isinstance(record.get("options"), dict)
         ):
@@ -101,6 +104,7 @@ def accepted_runtime_program(candidate: dict[str, Any], result: dict[str, Any] |
         return {
             "schemaVersion": 1,
             "profile": "adaptive_runtime_recovery",
+            "executedProfile": str(record.get("profile") or "adaptive_runtime_recovery"),
             "revision": int(record.get("revision") or 0),
             "options": options,
         }
