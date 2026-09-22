@@ -149,10 +149,13 @@ def main() -> int:
     assert "- name: Assert architecture proposal source SHA" in workflow
     assert "FIELD_BRAIN_ARCH_PROPOSAL_SHA" in workflow
     memory_publish = workflow.split("  publish-learning:", 1)[1].split("  publish-repair-proposal:", 1)[0]
-    assert 'git switch -C "$BRANCH" "refs/remotes/origin/$BRANCH"' in memory_publish
-    assert 'git switch --orphan "$BRANCH"' in memory_publish
+    assert 'TMP_BRANCH="brain-learning-memory-$GITHUB_RUN_ID"' in memory_publish
+    assert 'git switch --orphan "$TMP_BRANCH"' in memory_publish
+    assert 'git switch -C "$BRANCH" "refs/remotes/origin/$BRANCH"' not in memory_publish
     assert 'git switch -C "$BRANCH" "$GITHUB_SHA"' not in memory_publish
-    assert "persistent memory ref, not a mirror of" in memory_publish
+    assert '--force-with-lease="$BRANCH:$expected_sha"' in memory_publish
+    assert 'FIELD_BRAIN_MEMORY_PUBLISH mode=orphan-memory-only files=2' in memory_publish
+    assert "fresh orphan tree" in memory_publish
     assert "FIELD_BRAIN_MEMORY_PUBLISH skipped=stale" in memory_publish
     assert "candidate_ms=" in memory_publish and "existing_ms=" in memory_publish
     assert "FIELD_BRAIN_PR skipped=stale-source" in workflow
