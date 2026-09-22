@@ -92,4 +92,47 @@ assert candidate_replay["new_strategy_id"]=="candidate_divergence_trace_v1",cand
 assert "/film/{slug}" not in candidate_replay["direct_paths"],candidate_replay
 assert "/api/search?q={query}" not in candidate_replay["search_paths"],candidate_replay
 
+# Regression: the planner's post-g5 decision must survive the snapshot attached
+# to the concrete candidate. Without this, matching_profiles() recomputes the g5
+# strategy from generation=5 and the allowed second-order profile disappears.
+brain_spec=importlib.util.spec_from_file_location(
+    "brain_runtime_second_order_snapshot",
+    ROOT/"scripts/brain_repair_runtime.py",
+)
+assert brain_spec and brain_spec.loader
+brain=importlib.util.module_from_spec(brain_spec)
+brain_spec.loader.exec_module(brain)
+post_plan={
+    "providerId":"synthetic-second-order",
+    "failureClass":"chain_terminal_gap",
+    "signature":"sig-post-g5",
+    "experimentVariant":4,
+    "experimentGeneration":5,
+    "experimentGenerationLimit":5,
+    "action":"probe-targeted-repair",
+    "repairType":"evolved_strategy",
+    "learningDisposition":"execute_bounded_evolved_strategy",
+    "allowedProfiles":["terminal_transition_graph_v1"],
+    "postExhaustionStrategyProfile":"terminal_transition_graph_v1",
+    "postExhaustionStrategyMethod":"terminal-response-transition-graph",
+    "strategyEscalated":True,
+    "baseExperimentExhausted":True,
+}
+snapshot=brain._plan_snapshot(post_plan)
+assert snapshot["postExhaustionStrategyProfile"]=="terminal_transition_graph_v1",snapshot
+assert snapshot["postExhaustionStrategyMethod"]=="terminal-response-transition-graph",snapshot
+assert snapshot["repairType"]=="evolved_strategy",snapshot
+assert snapshot["learningDisposition"]=="execute_bounded_evolved_strategy",snapshot
+assert snapshot["experimentGenerationLimit"]==5,snapshot
+
+snap_candidate=candidate("terminal_transition_graph_v1","chain_terminal_gap")
+snap_candidate["brain_repair_plan"]=snapshot
+profiles=runtime.matching_profiles(
+    snap_candidate,
+    {"status":"provider_unreachable","evidence":{"streams_playable":0}},
+    "async function provider(){}",
+    config,
+)
+assert "terminal_transition_graph_v1" in profiles,profiles
+
 print("Brain second-order runtime strategy contract passed")
