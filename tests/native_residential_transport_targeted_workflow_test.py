@@ -14,7 +14,7 @@ required = (
     "TS_EXIT_NODE: ${{ secrets.TS_EXIT_NODE }}",
     "TS_TAG_NAME: ${{ secrets.TS_TAG_NAME }}",
     "tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8",
-    "Select residential exit before native emulator boot",
+    "Select residential exit immediately before native runtime",
     'sudo tailscale set --exit-node="$TS_EXIT_NODE" --exit-node-allow-lan-access=false',
     "FIELD_NATIVE_RESIDENTIAL_EXIT active=true",
     "native-target-provider-scope.json",
@@ -30,11 +30,16 @@ for needle in required:
     assert needle in workflow, needle
 
 connect = workflow.index("Connect native client host to Tailscale")
-exit_node = workflow.index("Select residential exit before native emulator boot")
-mobile_boot = workflow.index("Restore Mobile AVD snapshot")
-tv_boot = workflow.index("Restore TV AVD snapshot")
-assert connect < exit_node < mobile_boot
-assert exit_node < tv_boot
+exit_node = workflow.index("Select residential exit immediately before native runtime")
+prepare = workflow.index("Prepare exact upstream client checkout")
+mobile_snapshot = workflow.index("Create Mobile AVD snapshot on cache miss")
+tv_snapshot = workflow.index("Create TV AVD snapshot on cache miss")
+desktop_runtime = workflow.index("Execute six works across every provider in official Desktop runtime")
+mobile_runtime = workflow.index("Execute six works across every provider in isolated Mobile emulator")
+tv_runtime = workflow.index("Execute six works across every provider in isolated Android TV emulator")
+assert connect < prepare < mobile_snapshot < exit_node
+assert connect < prepare < tv_snapshot < exit_node
+assert exit_node < desktop_runtime < mobile_runtime < tv_runtime
 
 assert "continue-on-error: true" not in workflow[connect:exit_node], "native residential connection must fail closed"
 assert "matrix.residential == true" in workflow
