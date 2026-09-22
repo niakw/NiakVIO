@@ -302,7 +302,7 @@ jobs:
             for provider in "${providers[@]}"; do
               [ -z "$provider" ] || args+=(--provider "$provider")
             done
-            timeout 120s "${args[@]}"
+            timeout --signal=TERM --kill-after=5s 30s "${args[@]}"
             echo "FIELD_FAST_LEARNING_STAGE source=published-exact providers=${#providers[@]}"
           else
             python scripts/normalize_provider_activation_overrides.py
