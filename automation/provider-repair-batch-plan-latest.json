@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35839250026-post-repair-candidate",
-  "sourceTriggerSha": "a5e10e4f7b8dc3a9dc115cb96573cb6a65065a95",
+  "sourceRunId": "35907823143-post-repair-candidate",
+  "sourceTriggerSha": "6a333144632eb54079555bdf16e43f73935c4129",
   "unresolvedProviderCount": 15,
-  "groupCount": 13,
+  "groupCount": 12,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -37,6 +37,33 @@
         "yflix"
       ],
       "action": "refresh domain/upstream transport and residential/native evidence before provider-local code changes",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|html_scraper|browser-profile-only",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "html_scraper"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "browser-profile-only"
+      ],
+      "transportSignature": "browser-profile-only",
+      "providerCount": 2,
+      "providers": [
+        "animesalt",
+        "moviesmod"
+      ],
+      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -89,31 +116,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|html_scraper|browser-profile-only",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "html_scraper"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "browser-profile-only"
-      ],
-      "transportSignature": "browser-profile-only",
-      "providerCount": 1,
-      "providers": [
-        "moviesmod"
-      ],
-      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "harness-compatibility|html_scraper|residential-exit-all-challenged",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
@@ -133,31 +135,6 @@
       "providerCount": 1,
       "providers": [
         "allwish"
-      ],
-      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|html_scraper|residential-exit-browser-reachable",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "html_scraper"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-browser-reachable"
-      ],
-      "transportSignature": "residential-exit-browser-reachable",
-      "providerCount": 1,
-      "providers": [
-        "animesalt"
       ],
       "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
       "executionPolicy": "batch-first",
