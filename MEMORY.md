@@ -4345,3 +4345,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - External guidance drift validation is changed from a growing path whitelist to the existing provider-byte materialization classifier. A guidance prior is reusable only when `select_provider_materialization_scope.py` proves `mode=none` between its source NiakVIO SHA and the current Repair SHA. Any provider/global materialization drift fails closed.
 - This makes evidence/control-plane commits (census, WAF ledger, workflow/test changes) cheap while preserving the real safety boundary: provider byte inputs must be unchanged before reusing a prior.
 - A fresh private-guided advisor run `35930708414` was launched in `NiakVIO-Brain-LLM` against exact NiakVIO SHA `b3508f8405a4f0341810d9fb34303654b91f6093`. Do not claim the refreshed guidance is active until that run publishes the sanitized guidance ref successfully.
+
+
+### 2026-09-24 — Observation-only main drift no longer forces another full census
+
+- The scaled Repair/census overlap exposed a persistence loop: a concurrent census or control-plane commit could advance `main` without changing any provider byte input; Repair then treated the newer HEAD as fully stale and dispatched another full census.
+- Repair persistence now classifies the exact intervening diff with `select_provider_materialization_scope.py` after rebasing onto current main.
+- The newer canonical census/authority/WAF ledger is still never overwritten by an older Repair. However, `mode=none` means provider inputs are unchanged, so causal Brain memory/report can be kept and **no extra full census is dispatched**. Only `providers` or `all` provider-input drift triggers a fresh exact current-byte census.
+- This breaks the census -> stale Repair -> census loop without weakening SHA/current-byte acceptance.

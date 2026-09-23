@@ -75,6 +75,11 @@ assert "git add automation/provider-waf-browser-session-latest.json" in persist_
 assert "FIELD_REPAIR_CANONICAL_LEDGER_STALE" in persist_block
 assert "FIELD_REPAIR_CANONICAL_LEDGER_SKIPPED" in persist_block
 assert "FIELD_REPAIR_FRESH_CENSUS_DISPATCH" in persist_block
+assert "FIELD_REPAIR_CONCURRENT_PROVIDER_DRIFT" in persist_block
+assert "FIELD_REPAIR_FRESH_CENSUS_SKIPPED" in persist_block
+assert "select_provider_materialization_scope.py" in persist_block
+assert "provider_input_drift=0" in persist_block
+assert '[ "$provider_input_drift" = "1" ]' in persist_block
 
 print("Repair-integrated WAF/Tailscale qualification workflow contract passed")
 

@@ -706,11 +706,34 @@ jobs:
           git fetch origin main
           remote_main="$(git rev-parse origin/main)"
           canonical_ledger_current=1
+          provider_input_drift=0
           if [ "$remote_main" != "$GITHUB_SHA" ]; then
             canonical_ledger_current=0
             echo "FIELD_REPAIR_CANONICAL_LEDGER_STALE source=$GITHUB_SHA remote=$remote_main"
           fi
           git rebase origin/main
+
+          # Observation-only main drift must not create a census -> Repair -> census loop.
+          # Canonical ledger overwrite stays forbidden whenever main advanced, but a fresh
+          # census is needed only when actual provider byte inputs changed.
+          if [ "$canonical_ledger_current" != "1" ]; then
+            python scripts/select_provider_materialization_scope.py \
+              --base "$GITHUB_SHA" \
+              --head HEAD \
+              --output "$tmp/concurrent-main-provider-scope.json"
+            provider_drift_mode="$(python - "$tmp/concurrent-main-provider-scope.json" <<'PY'
+          import json,sys
+          d=json.load(open(sys.argv[1],encoding="utf-8"))
+          print(str(d.get("mode") or "all"))
+          PY
+            )"
+            if [ "$provider_drift_mode" = "none" ]; then
+              echo "FIELD_REPAIR_CONCURRENT_PROVIDER_DRIFT neutral=true source=$GITHUB_SHA remote=$remote_main"
+            else
+              provider_input_drift=1
+              echo "FIELD_REPAIR_CONCURRENT_PROVIDER_DRIFT neutral=false mode=$provider_drift_mode source=$GITHUB_SHA remote=$remote_main"
+            fi
+          fi
 
           mkdir -p automation
 
@@ -759,11 +782,13 @@ jobs:
             git push origin HEAD:main
           fi
 
-          if [ "$canonical_ledger_current" != "1" ]; then
-            echo "FIELD_REPAIR_FRESH_CENSUS_DISPATCH source_run=${GITHUB_RUN_ID}"
+          if [ "$canonical_ledger_current" != "1" ] && [ "$provider_input_drift" = "1" ]; then
+            echo "FIELD_REPAIR_FRESH_CENSUS_DISPATCH source_run=${GITHUB_RUN_ID} reason=provider-input-drift"
             gh workflow run temp-current-bytes-full-provider-census.yml \
               --repo "$GITHUB_REPOSITORY" \
               --ref main
+          elif [ "$canonical_ledger_current" != "1" ]; then
+            echo "FIELD_REPAIR_FRESH_CENSUS_SKIPPED source_run=${GITHUB_RUN_ID} reason=provider-neutral-main-drift"
           fi
 
           if [ -s "$tmp/provider-brain-repair-latest.json" ]; then
