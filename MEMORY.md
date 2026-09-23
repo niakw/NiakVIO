@@ -4204,3 +4204,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - This exposed a generic production bug: `planner_negative_memory()` projected those applicability-only rows as failures, so `llmAdvisorStrategyHint()` would suppress the new private-informed advice before it ever ran.
 - Production modes now exclude only this exact unexecuted legacy condition from negative planner memory. Learning mode keeps it as exploration history. New memory writes explicitly mark `executionObserved=false` for unavailable profiles and `true` for accepted, generated/rejected and nonpublishable executed attempts.
 - The correction is generic and does not clear real negative memory. Executed failures remain suppressive. No provider is promoted by this fix; the next exact-head Repair must show the advisor profile was actually attempted and then pass playback/identity/non-regression gates.
+
+
+### 2026-09-23 — External guidance source drift: Brain control-plane is neutral, provider truth is not
+
+- The private-informed guidance was generated from exact NiakVIO SHA `30b6da7498c0d200044a8ececf34ca982bf3acac`. Subsequent commits changed only Brain/workflow/tests/memory control-plane files; provider DATA, published provider bytes, census evidence and authority state did not change.
+- `scripts/brain_repair_runtime.py` is now explicitly allowed as neutral source drift for the external guidance importer. This is intentionally narrow: `provider-overrides.json`, provider bundles, manifests, census/authority evidence and other provider-relevant paths still invalidate stale external guidance.
+- This allows the same source-evidence guidance to be consumed after the unexecuted-debt control-plane fix without weakening current-byte proof gates.
