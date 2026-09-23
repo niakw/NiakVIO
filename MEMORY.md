@@ -4378,3 +4378,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Repair `35931292610` still forced `FIELD_PROVIDER_MATERIALIZATION_SCOPE mode=all` because deterministic source migrations changed the workspace on every invocation. Live logs identified `upgrade_provider_route_authority_v5.py`, `upgrade_provider_external_identity_route_v11_1.py`, source-plan-v5 submigrations and `upgrade_mugiwara_episode_failclosed_v2.py` as repeat offenders.
 - A dedicated one-shot consolidation workflow is armed. It applies those deterministic migrations once, captures the exact diff, reruns the same migrations, and requires byte-for-byte identical workspace diff on the second pass. It also fails closed if any path outside the explicit migration source/DATA allowlist changes.
 - Consolidation deliberately does **not** publish provider JS. The normal reconstruction/census lanes remain the only current-byte publication authority. After the consolidated source/DATA commit, one final global rematerialization is expected; subsequent Repairs must show these migrations `changed=false` and avoid global materialization unless a real common ProviderBase change occurs.
+
+
+### 2026-09-24 — Migration consolidation retry isolates test-side mutation
+
+- Consolidation run `35935327552` proved the migration set itself is idempotent: applying it twice produced an identical git diff. The persistence step did not run because the validation phase then executed `manual_tv_live_regressions_v34_test.py`, which intentionally patches ProviderBase while testing and therefore changed the dirty workspace after the migration diff was captured.
+- The retry resets all test-side workspace mutations after validation, reapplies only the explicit consolidation migration set, and requires that reconstructed diff to match the original first-pass diff byte-for-byte before commit. This preserves the useful tests without accidentally persisting their helper-side mutations.
