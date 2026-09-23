@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35773404758",
-  "sourceTriggerSha": "b01f3bdc176d01ed3619585a69f053085b5e9a88",
-  "unresolvedProviderCount": 13,
-  "groupCount": 12,
+  "sourceRunId": "35839250026-post-repair-candidate",
+  "sourceTriggerSha": "a5e10e4f7b8dc3a9dc115cb96573cb6a65065a95",
+  "unresolvedProviderCount": 15,
+  "groupCount": 13,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -15,6 +15,7 @@
       "groupId": "transport|mixed_embed_resolver",
       "repairScope": "transport",
       "runtimeFamilies": [
+        "dle-full-story-sibnet",
         "menu-search-series-focus-player",
         "yflix-db-encrypted-ajax-v1"
       ],
@@ -29,9 +30,10 @@
       ],
       "harnessTransportClasses": [],
       "transportSignature": "not-applicable",
-      "providerCount": 2,
+      "providerCount": 3,
       "providers": [
         "anime-ultime",
+        "animesultra",
         "yflix"
       ],
       "action": "refresh domain/upstream transport and residential/native evidence before provider-local code changes",
@@ -112,7 +114,7 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|html_scraper|github-all-transports-challenged",
+      "groupId": "harness-compatibility|html_scraper|residential-exit-all-challenged",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "mixed_embed_resolver"
@@ -125,37 +127,87 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "github-all-transports-challenged"
+        "residential-exit-all-challenged"
       ],
-      "transportSignature": "github-all-transports-challenged",
+      "transportSignature": "residential-exit-all-challenged",
       "providerCount": 1,
       "providers": [
         "allwish"
       ],
-      "action": "qualify browser/native/residential transport before any provider mutation",
+      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|browser-profile-only-both-networks",
+      "groupId": "harness-compatibility|html_scraper|residential-exit-browser-reachable",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
-        "dle-full-story-sibnet"
+        "html_scraper"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-browser-reachable"
+      ],
+      "transportSignature": "residential-exit-browser-reachable",
+      "providerCount": 1,
+      "providers": [
+        "animesalt"
+      ],
+      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|browser-profile-only",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
       ],
       "capabilityStrategy": "mixed_embed_resolver",
       "evidenceDepths": [
         "none"
       ],
       "dominantIssues": [
-        "network_exception"
+        "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "browser-profile-only-both-networks"
+        "browser-profile-only"
       ],
-      "transportSignature": "browser-profile-only-both-networks",
+      "transportSignature": "browser-profile-only",
       "providerCount": 1,
       "providers": [
-        "animesultra"
+        "vostfree"
+      ],
+      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "harness-compatibility|mixed_embed_resolver|residential-exit-all-challenged",
+      "repairScope": "harness-compatibility",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-all-challenged"
+      ],
+      "transportSignature": "residential-exit-all-challenged",
+      "providerCount": 1,
+      "providers": [
+        "flemmix"
       ],
       "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
       "executionPolicy": "batch-first",
@@ -179,54 +231,6 @@
       "providerCount": 1,
       "providers": [
         "4khdhub"
-      ],
-      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "route-to-terminal|iframe_player",
-      "repairScope": "route-to-terminal",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "iframe_player",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "network_http_error"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "vidfast"
-      ],
-      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "route-to-terminal|mixed_embed_resolver",
-      "repairScope": "route-to-terminal",
-      "runtimeFamilies": [
-        "mixed_embed_resolver"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "github-all-transports-challenged"
-      ],
-      "transportSignature": "not-applicable",
-      "providerCount": 1,
-      "providers": [
-        "flemmix"
       ],
       "action": "replay proven routes in batch and apply shared detail/player traversal profile",
       "executionPolicy": "batch-first",
@@ -296,6 +300,29 @@
       "providerCount": 1,
       "providers": [
         "moviebox"
+      ],
+      "action": "refresh domain/upstream transport and residential/native evidence before provider-local code changes",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|iframe_player",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "mixed_embed_resolver"
+      ],
+      "capabilityStrategy": "iframe_player",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "network_http_error"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "vidfast"
       ],
       "action": "refresh domain/upstream transport and residential/native evidence before provider-local code changes",
       "executionPolicy": "batch-first",
