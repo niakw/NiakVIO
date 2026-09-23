@@ -4371,3 +4371,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The run output now records `rawLabAcceptedCount/rawLabAcceptedRepairs`, `acceptedRepairCount/acceptedRepairs`, and per-wave `compileRejectedToLearning`. This prevents false success metrics and prevents a rejected MalluMV-style candidate from consuming another Repair wave.
 - Learning run `35932716927` did not fail in Qwen/private-memory execution; it stopped in preflight because `brain_cron_full_coverage_test.py` still asserted an obsolete workflow-dispatch cancellation expression. The workflow is push-only cancelling by design; the test now matches that live contract.
 - Next performance blocker remains deterministic migration drift inside canonical Repair: several one-shot migrations still report `changed=true` on every run and force a global ProviderBase rematerialization. These migrations must be consolidated into main once, then proven idempotent before another Repair benchmark.
+
+
+### 2026-09-24 — One-shot migration consolidation armed
+
+- Repair `35931292610` still forced `FIELD_PROVIDER_MATERIALIZATION_SCOPE mode=all` because deterministic source migrations changed the workspace on every invocation. Live logs identified `upgrade_provider_route_authority_v5.py`, `upgrade_provider_external_identity_route_v11_1.py`, source-plan-v5 submigrations and `upgrade_mugiwara_episode_failclosed_v2.py` as repeat offenders.
+- A dedicated one-shot consolidation workflow is armed. It applies those deterministic migrations once, captures the exact diff, reruns the same migrations, and requires byte-for-byte identical workspace diff on the second pass. It also fails closed if any path outside the explicit migration source/DATA allowlist changes.
+- Consolidation deliberately does **not** publish provider JS. The normal reconstruction/census lanes remain the only current-byte publication authority. After the consolidated source/DATA commit, one final global rematerialization is expected; subsequent Repairs must show these migrations `changed=false` and avoid global materialization unless a real common ProviderBase change occurs.

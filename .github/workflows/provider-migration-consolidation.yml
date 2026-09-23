@@ -1,0 +1,143 @@
+name: PROVIDERS - Consolidate Runtime Migrations
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/provider-migration-consolidation.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: provider-migration-consolidation-main
+  cancel-in-progress: true
+
+jobs:
+  consolidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Apply deterministic migrations and prove second-pass idempotence
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          apply_migrations() {
+            python scripts/upgrade_provider_route_authority_v5.py
+            python scripts/upgrade_provider_external_identity_route_v11_1.py
+            python scripts/upgrade_provider_v3_source_plan_v5.py
+            python scripts/upgrade_mugiwara_episode_failclosed_v2.py
+          }
+
+          apply_migrations | tee /tmp/provider-migration-pass1.log
+          git diff --binary HEAD > /tmp/provider-migration-pass1.diff
+          git diff --name-only HEAD | sort -u > /tmp/provider-migration-paths.txt
+
+          python - <<'PY'
+          from pathlib import Path
+          allowed={
+              ".github/triggers/nuvio-client-lab.json",
+              "provider-overrides.json",
+              "automation/provider-v3-static-knowledge.json",
+              "scripts/discover_candidates.py",
+              "scripts/materialize_provider_v3_all.py",
+              "scripts/provider_base_store.py",
+              "scripts/provider_route_proof.py",
+              "scripts/provider_worker.cjs",
+              "scripts/recover_provider_routes_from_upstreams.py",
+              "scripts/validate_provider_v3_routes_sequential.py",
+              "scripts/provider_patches/mugiwarastream_packed_runtime_v1.py",
+          }
+          paths=[
+              line.strip()
+              for line in Path("/tmp/provider-migration-paths.txt").read_text().splitlines()
+              if line.strip()
+          ]
+          unexpected=sorted(set(paths)-allowed)
+          if unexpected:
+              raise SystemExit("migration touched unexpected paths: "+",".join(unexpected))
+          if not paths:
+              print("FIELD_PROVIDER_MIGRATION_CONSOLIDATION changed=false")
+          else:
+              print("FIELD_PROVIDER_MIGRATION_CONSOLIDATION changed=true paths="+",".join(paths))
+          PY
+
+          apply_migrations | tee /tmp/provider-migration-pass2.log
+          git diff --binary HEAD > /tmp/provider-migration-pass2.diff
+          cmp /tmp/provider-migration-pass1.diff /tmp/provider-migration-pass2.diff || {
+            echo "provider migration second pass changed workspace" >&2
+            diff -u /tmp/provider-migration-pass1.diff /tmp/provider-migration-pass2.diff || true
+            exit 1
+          }
+          echo "FIELD_PROVIDER_MIGRATION_IDEMPOTENCE second_pass_diff=false"
+
+      - name: Validate consolidated runtime contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/provider_base_store.py validate
+          node --check scripts/provider_worker.cjs
+          python tests/provider_route_proof_authority_test.py
+          python tests/provider_source_plan_v12_regression_test.py
+          python tests/provider_route_plan_v13_regression_test.py
+          python tests/provider_source_plan_v15_contract_test.py
+          python tests/provider_repair_pipeline_v6_contract_test.py
+          python tests/manual_tv_live_regressions_v34_test.py
+
+          # The contract tests may call the same migrations. They must not create
+          # any additional source/DATA diff beyond the already consolidated pass.
+          git diff --binary HEAD > /tmp/provider-migration-after-tests.diff
+          cmp /tmp/provider-migration-pass1.diff /tmp/provider-migration-after-tests.diff || {
+            echo "validation introduced new migration drift" >&2
+            exit 1
+          }
+          echo "FIELD_PROVIDER_MIGRATION_VALIDATION idempotent=true"
+
+      - name: Persist consolidated migration state
+        if: ${{ github.ref == 'refs/heads/main' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --quiet origin main
+          remote="$(git rev-parse origin/main)"
+          if [ "$remote" != "$GITHUB_SHA" ]; then
+            echo "FIELD_PROVIDER_MIGRATION_PERSIST skipped=stale source=$GITHUB_SHA remote=$remote"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            .github/triggers/nuvio-client-lab.json \
+            provider-overrides.json \
+            automation/provider-v3-static-knowledge.json \
+            scripts/discover_candidates.py \
+            scripts/materialize_provider_v3_all.py \
+            scripts/provider_base_store.py \
+            scripts/provider_route_proof.py \
+            scripts/provider_worker.cjs \
+            scripts/recover_provider_routes_from_upstreams.py \
+            scripts/validate_provider_v3_routes_sequential.py \
+            scripts/provider_patches/mugiwarastream_packed_runtime_v1.py
+          if git diff --cached --quiet; then
+            echo "FIELD_PROVIDER_MIGRATION_PERSIST changed=false"
+            exit 0
+          fi
+          git commit -m "chore(provider): consolidate deterministic runtime migrations"
+          git push origin HEAD:main
+          echo "FIELD_PROVIDER_MIGRATION_PERSIST changed=true"
