@@ -484,7 +484,7 @@ engines = resolver.search_engine_urls('example provider')
 yandex_url = urlparse(engines[0][1])
 duckduckgo_url = urlparse(engines[1][1])
 assert engines[0][0] == 'yandex' and yandex_url.hostname == 'yandex.com' and yandex_url.path.startswith('/search/')
-assert engines[1][0] == 'duckduckgo' and duckduckgo_url.hostname == 'duckduckgo.com' and duckduckgo_url.path.startswith('/html/')
+assert engines[1][0] == 'duckduckgo' and duckduckgo_url.hostname == 'html.duckduckgo.com' and duckduckgo_url.path.startswith('/html/')
 
 # Search-only discoveries require two consecutive confirmations, while a hub,
 # Telegram or curated source can be accepted immediately.
