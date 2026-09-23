@@ -7,6 +7,9 @@ wf=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(encod
 required=[
     "id-token: write",
     "group: provider-repair-main-v2",
+    "Decide reusable Repair WAF evidence",
+    "FIELD_REPAIR_WAF_REUSE",
+    "select_provider_materialization_scope.py",
     "Prepare integrated Repair WAF/network qualification",
     "scripts/classify_provider_authority.py",
     'row.get("repairEligible") is True',
@@ -30,6 +33,7 @@ required=[
 for needle in required:
     assert needle in wf, f"missing Repair/WAF integration contract: {needle}"
 
+reuse=wf.index("- name: Decide reusable Repair WAF evidence")
 prepare=wf.index("- name: Prepare integrated Repair WAF/network qualification")
 authority=wf.index("scripts/classify_provider_authority.py",prepare)
 pre_render=wf.index("scripts/render_provider_census_status.py /tmp/provider-repair-waf-network.json",prepare)
@@ -38,7 +42,15 @@ merge=wf.index("- name: Apply integrated WAF qualification to Repair census")
 canonical=wf.index("- name: Run canonical recognition and correction only for unresolved providers")
 final_merge=wf.index("- name: Reapply integrated WAF qualification after canonical Repair")
 persist=wf.index("- name: Persist Repair census state")
-assert prepare < authority < pre_render < connect < merge < canonical < final_merge < persist
+assert reuse < prepare < authority < pre_render < connect < merge < canonical < final_merge < persist
+prepare_block=wf[prepare:connect]
+assert "steps.repair_waf_reuse.outputs.reuse != 'true'" in prepare_block
+reuse_block=wf[reuse:prepare]
+assert 'git log -1 --format=%H -- "$waf"' in reuse_block
+assert '--base "$source"' in reuse_block
+assert '"mode") or "all"' in reuse_block
+assert 'residential.get("available") is True' in reuse_block
+assert 'replay.get("available") is True' in reuse_block
 final_block=wf[final_merge:persist]
 assert "if: ${{ always() }}" in final_block
 assert "merge_waf_census_transport.py" in final_block

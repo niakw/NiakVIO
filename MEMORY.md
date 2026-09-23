@@ -4325,3 +4325,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - High-volume onboarding already uses an 8-shard census and 8-shard targeted recovery above 120 providers. A missing continuation was found: after merging/refining sharded recovery, the workflow persisted the refined plan but stopped instead of handing it to Brain Autopilot.
 - Sharded refinement now preserves sourceRunId, transportSignature and causal metadata. Brain execution planning consumes the refined plan only when its source census and provider set exactly match the freshly rebuilt canonical plan; stale, partial or mismatched refinement fails closed to the canonical plan.
 - Provider Targeted Recovery - Sharded now dispatches Provider Brain Autopilot after persisting a non-empty refined plan. This closes the bulk path: bulk stage -> 8-shard census -> 8-shard targeted recovery -> exact refined causal plan -> Autopilot/Brain, rather than re-aggregating hundreds of providers blindly.
+
+
+### 2026-09-24 — Canonical Repair reuses fresh Tailscale evidence only across provider-neutral drift
+
+- Scaled Repair run `35929895303` showed the remaining wall-time bottleneck before Brain execution: the canonical workflow re-ran GitHub browser/direct/OkHttp + residential Tailscale qualification even though the WAF ledger had just been persisted and all changes since then were provider-neutral control-plane/trigger changes.
+- Repair now derives the provenance commit of `automation/provider-waf-browser-session-latest.json` with repository history, then runs `select_provider_materialization_scope.py` from that commit to the exact Repair SHA.
+- Existing WAF/Tailscale evidence is reused only when the provider materialization scope is exactly `none`, the ledger contains rows, residential exit evidence is available, and full residential provider replay is available. Any provider/global materialization drift fails closed and runs the complete GitHub + Tailscale probe again.
+- Reuse skips only the expensive WAF/Tailscale collection steps. Authority is still refreshed, the existing transport ledger is still merged into the current census before Brain, and the final post-Repair transport overlay remains mandatory.
+- A superseding trigger is issued so the obsolete run is cancelled by the existing push-only Repair concurrency policy rather than spending additional minutes on duplicate transport proof.

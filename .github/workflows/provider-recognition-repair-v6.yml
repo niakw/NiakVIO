@@ -205,7 +205,54 @@ jobs:
           python tests/core_repair_type_architecture_test.py
           python tests/provider_non_regression_contract_test.py
 
+      - name: Decide reusable Repair WAF evidence
+        id: repair_waf_reuse
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/classify_provider_authority.py
+          echo "reuse=false" >> "$GITHUB_OUTPUT"
+          waf="automation/provider-waf-browser-session-latest.json"
+          if [ ! -s "$waf" ]; then
+            echo "FIELD_REPAIR_WAF_REUSE reuse=false reason=missing-ledger"
+            exit 0
+          fi
+          source="$(git log -1 --format=%H -- "$waf" || true)"
+          if ! [[ "$source" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "FIELD_REPAIR_WAF_REUSE reuse=false reason=missing-source-commit"
+            exit 0
+          fi
+          python scripts/select_provider_materialization_scope.py \
+            --base "$source" \
+            --head "$GITHUB_SHA" \
+            --output "$RUNNER_TEMP/repair-waf-reuse-scope.json"
+          mode="$(python - <<'PY'
+          import json,os
+          from pathlib import Path
+          d=json.loads((Path(os.environ["RUNNER_TEMP"])/"repair-waf-reuse-scope.json").read_text())
+          print(str(d.get("mode") or "all"))
+          PY
+          )"
+          evidence_ok="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path("automation/provider-waf-browser-session-latest.json").read_text(encoding="utf-8"))
+          residential=d.get("residentialExitNodeEvidence") if isinstance(d.get("residentialExitNodeEvidence"),dict) else {}
+          replay=d.get("residentialProviderReplay") if isinstance(d.get("residentialProviderReplay"),dict) else {}
+          rows=d.get("rows") if isinstance(d.get("rows"),list) else []
+          print("true" if rows and residential.get("available") is True and replay.get("available") is True else "false")
+          PY
+          )"
+          if [ "$mode" = "none" ] && [ "$evidence_ok" = "true" ]; then
+            echo "reuse=true" >> "$GITHUB_OUTPUT"
+            echo "source_sha=$source" >> "$GITHUB_OUTPUT"
+            echo "FIELD_REPAIR_WAF_REUSE reuse=true source=$source provider_drift=none"
+          else
+            echo "FIELD_REPAIR_WAF_REUSE reuse=false source=$source provider_drift=$mode evidence_ok=$evidence_ok"
+          fi
+
       - name: Prepare integrated Repair WAF/network qualification
+        if: ${{ steps.repair_waf_reuse.outputs.reuse != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -240,7 +287,7 @@ jobs:
           python scripts/probe_waf_browser_session.py             /tmp/provider-repair-waf-network.json             --output /tmp/provider-repair-waf-github.json             --attempts 2             --client-profile-matrix             --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*'             --status automation/provider-census-status.json             --overrides provider-overrides.json             --network-report /tmp/provider-repair-waf-network.json             --workers 3             --max-targets 32             --timeout 25             --virtual-time-ms 8000
 
       - name: Normalize optional Repair Tailscale tag
-        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
+        if: ${{ steps.repair_waf_reuse.outputs.reuse != 'true' && env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -255,7 +302,7 @@ jobs:
         id: repair_tailscale_connect
         continue-on-error: true
         timeout-minutes: 4
-        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
+        if: ${{ steps.repair_waf_reuse.outputs.reuse != 'true' && env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
         uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8
         with:
           oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
@@ -292,6 +339,7 @@ jobs:
           python scripts/probe_waf_browser_session.py             /tmp/provider-repair-waf-github.json             --output /tmp/provider-repair-waf-residential.json             --attempts 2             --client-profile-matrix             --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*'             --status automation/provider-census-status.json             --overrides provider-overrides.json             --network-report /tmp/provider-repair-waf-network.json             --workers 3             --max-targets 32             --timeout 25             --virtual-time-ms 8000
 
       - name: Merge Repair WAF profiles with offline-safe Tailscale fallback
+        if: ${{ steps.repair_waf_reuse.outputs.reuse != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -314,7 +362,7 @@ jobs:
           fi
 
       - name: Replay Repair providers through residential exit when available
-        if: ${{ env.NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE == '1' }}
+        if: ${{ steps.repair_waf_reuse.outputs.reuse != 'true' && env.NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE == '1' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -334,7 +382,7 @@ jobs:
           echo "FIELD_REPAIR_RESIDENTIAL_REPLAY providers=$count"
 
       - name: Clear optional Repair residential routing
-        if: ${{ always() && env.NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE == '1' }}
+        if: ${{ always() && steps.repair_waf_reuse.outputs.reuse != 'true' && env.NIAKVIO_REPAIR_RESIDENTIAL_EXIT_ACTIVE == '1' }}
         shell: bash
         run: sudo tailscale set --exit-node= || true
 
