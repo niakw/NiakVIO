@@ -56,6 +56,11 @@ for required in (
     "gh workflow run brain-learning-lab.yml",
     "slot_remaining_minutes=20",
     "FIELD_PROVIDER_FAST_REPAIR_LEARN_DISPATCH",
+    "Import sanitized persistent Learning and Brain LLM priors",
+    "scripts/import_external_brain_llm_guidance.py",
+    "NiakVIO-Brain-LLM.git",
+    "NIAKVIO_BRAIN_LLM_GUIDANCE=",
+    "FIELD_PROVIDER_FAST_REPAIR_EXTERNAL_LLM_GUIDANCE",
 ):
     assert required in workflow, required
 assert "workflow_run" not in workflow

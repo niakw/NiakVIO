@@ -69,7 +69,7 @@ jobs:
       - name: Validate fast lane contracts
         run: |
           set -euo pipefail
-          python -m py_compile             scripts/run_provider_fast_repair.py             scripts/run_provider_retest.py             scripts/run_provider_brain_repair.py             scripts/brain_repair_runtime.py             scripts/sanitize_brain_learning_memory.py             scripts/compile_brain_accepted_program_v3.py
+          python -m py_compile             scripts/run_provider_fast_repair.py             scripts/run_provider_retest.py             scripts/run_provider_brain_repair.py             scripts/brain_repair_runtime.py             scripts/sanitize_brain_learning_memory.py             scripts/import_external_brain_llm_guidance.py             scripts/compile_brain_accepted_program_v3.py
           python tests/provider_fast_repair_separation_test.py
           python tests/provider_retest_scope_test.py
           python tests/provider_remat_test_separation_test.py
@@ -83,6 +83,7 @@ jobs:
           python tests/brain_fast_handoff_active_context_test.py
           python tests/brain_learning_deferred_repair_priority_test.py
           python tests/brain_learning_memory_import_test.py
+          python tests/brain_external_llm_guidance_import_test.py
           python tests/brain_negative_experiment_exhaustion_test.py
           python tests/brain_final_experiment_generation_test.py
           python tests/brain_second_order_strategy_runtime_test.py
@@ -97,7 +98,7 @@ jobs:
           python tests/brain_accepted_program_v3_persistence_test.py
           python tests/provider_census_status_markdown_test.py
           python tests/waf_census_transport_merge_test.py
-      - name: Import sanitized persistent Learning priors
+      - name: Import sanitized persistent Learning and Brain LLM priors
         shell: bash
         run: |
           set -euo pipefail
@@ -111,6 +112,34 @@ jobs:
             echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_MEMORY imported=true"
           else
             echo "FIELD_PROVIDER_FAST_REPAIR_LEARNING_MEMORY imported=false reason=no-persistent-learning-memory"
+          fi
+
+          external_imported=false
+          external_ref="refs/remotes/niakvio-brain-llm/niakvio-guidance"
+          if git fetch --quiet https://github.com/niakw/NiakVIO-Brain-LLM.git \
+               "+refs/heads/niakvio-guidance:$external_ref" 2>/dev/null \
+             && git cat-file -e "$external_ref:guidance/niakvio-guidance.json" 2>/dev/null; then
+            git show "$external_ref:guidance/niakvio-guidance.json" > "$RUNNER_TEMP/external-brain-llm-guidance.json"
+            guidance_commit="$(git rev-parse "$external_ref")"
+            if python scripts/import_external_brain_llm_guidance.py \
+                 --input "$RUNNER_TEMP/external-brain-llm-guidance.json" \
+                 --output "$RUNNER_TEMP/external-brain-llm-guidance-fast-repair.json" \
+                 --current-sha "$GITHUB_SHA" \
+                 --guidance-commit "$guidance_commit"; then
+              echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/external-brain-llm-guidance-fast-repair.json" >> "$GITHUB_ENV"
+              external_imported=true
+              echo "FIELD_PROVIDER_FAST_REPAIR_EXTERNAL_LLM_GUIDANCE imported=true commit=$guidance_commit"
+            else
+              echo "FIELD_PROVIDER_FAST_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=provider-byte-drift-or-safety-gate"
+            fi
+          else
+            echo "FIELD_PROVIDER_FAST_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=no-public-guidance-ref"
+          fi
+
+          if [ "$external_imported" != "true" ] && git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/llm-guidance.json 2>/dev/null; then
+            git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/llm-guidance.json > "$RUNNER_TEMP/brain-learning-llm-guidance-fast-repair.json"
+            echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/brain-learning-llm-guidance-fast-repair.json" >> "$GITHUB_ENV"
+            echo "FIELD_PROVIDER_FAST_REPAIR_LLM_GUIDANCE imported=true source=niakvio-learning-fallback"
           fi
 
       - name: Run provider-local Brain Repair

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate and re-scope the public sanitized Brain-LLM advisor prior."""
 from __future__ import annotations
-import argparse,json,re,subprocess
+import argparse,json,re,subprocess,sys,tempfile
 from pathlib import Path
 from typing import Any
 
@@ -21,6 +21,7 @@ TOP_LEVEL_FIELDS={"schemaVersion","sourceNiakvioSha","brainLlmSha","publicationA
 ROW_FIELDS={"providerId","failureClass","targetLayer","strategy","profile","confidence","priorOnly"}
 NEUTRAL_DRIFT_PREFIXES=(".github/workflows/",".github/triggers/","tests/","automation/provider-brain-repair-")
 NEUTRAL_DRIFT_FILES={"MEMORY.md","scripts/import_external_brain_llm_guidance.py","scripts/brain_repair_runtime.py","scripts/run_provider_brain_repair.py","scripts/select_provider_materialization_scope.py","scripts/run_provider_repair_pipeline_v6.py"}
+MATERIALIZATION_SCOPE_SCRIPT=ROOT/"scripts/select_provider_materialization_scope.py"
 
 def canon(value:object)->str:
  return str(value or "").strip().casefold().replace("_","-")
@@ -32,17 +33,34 @@ def neutral_source_drift(paths:list[str])->tuple[bool,list[str]]:
  blocked=[p for p in paths if p not in NEUTRAL_DRIFT_FILES and not any(p.startswith(x) for x in NEUTRAL_DRIFT_PREFIXES)]
  return not blocked,blocked
 
-def source_changed_paths(root:Path,source_sha:str,current_sha:str)->list[str]:
- if source_sha==current_sha:return []
+def provider_materialization_scope(root:Path,source_sha:str,current_sha:str)->dict[str,Any]:
+ if source_sha==current_sha:
+  return {"mode":"none","providers":[],"changedPaths":[],"reasons":[]}
  for sha in (source_sha,current_sha):
   if git(root,"cat-file","-e",f"{sha}^{{commit}}").returncode!=0:raise ValueError(f"guidance source commit unavailable: {sha}")
  if git(root,"merge-base","--is-ancestor",source_sha,current_sha).returncode!=0:raise ValueError("guidance source is not an ancestor of current Repair SHA")
- d=git(root,"diff","--name-only",source_sha,current_sha)
- if d.returncode!=0:raise ValueError("cannot compare guidance source to current Repair SHA")
- paths=sorted({x.strip() for x in d.stdout.splitlines() if x.strip()})
- ok,blocked=neutral_source_drift(paths)
- if not ok:raise ValueError("provider-relevant drift since guidance source: "+",".join(blocked))
- return paths
+ script=root/"scripts/select_provider_materialization_scope.py"
+ if not script.is_file():raise ValueError("provider materialization scope selector missing")
+ with tempfile.TemporaryDirectory(prefix="niakvio-guidance-scope-") as tmp:
+  output=Path(tmp)/"scope.json"
+  p=subprocess.run(
+   [sys.executable,str(script),"--base",source_sha,"--head",current_sha,"--output",str(output)],
+   cwd=root,text=True,capture_output=True,check=False,
+  )
+  if p.returncode!=0 or not output.is_file():
+   raise ValueError("cannot classify provider drift since guidance source")
+  scope=json.loads(output.read_text(encoding="utf-8"))
+ if not isinstance(scope,dict):raise ValueError("provider drift classifier returned invalid payload")
+ return scope
+
+def source_changed_paths(root:Path,source_sha:str,current_sha:str)->list[str]:
+ scope=provider_materialization_scope(root,source_sha,current_sha)
+ mode=str(scope.get("mode") or "all").strip().casefold()
+ if mode!="none":
+  providers=",".join(str(x) for x in scope.get("providers") or [])
+  reasons=";".join(str(x) for x in scope.get("reasons") or [])
+  raise ValueError(f"provider-relevant drift since guidance source: mode={mode} providers={providers or '-'} reasons={reasons or '-'}")
+ return sorted({str(x).strip() for x in scope.get("changedPaths") or [] if str(x).strip()})
 
 def sanitize(value:dict[str,Any],*,current_sha:str,guidance_commit:str="")->dict[str,Any]:
  if not isinstance(value,dict):raise ValueError("external Brain-LLM guidance must be an object")
