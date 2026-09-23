@@ -89,6 +89,36 @@ jobs:
           node-version: "24"
           package-manager-cache: false
 
+      - name: Checkout pinned NiakVIO Brain LLM advisor
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: niakw/NiakVIO-Brain-LLM
+          ref: c752f5c21ded26c578eaeacb492611f3fdb137a9
+          path: brain-llm
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Checkout private NiakVIO chat memory read-only
+        id: brain_llm_private
+        continue-on-error: true
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: niakw/niakvio-private
+          ref: main
+          token: \${{ secrets.NIAKVIO_PRIVATE_READ_TOKEN }}
+          path: brain-llm-private
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            raw/chatgpt-project/g-p-6a7f1d27495c819182b4081bfccdafd8
+          sparse-checkout-cone-mode: true
+
+      - name: Install pinned Brain LLM advisor package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install -e brain-llm
+
       - name: Configure bounded Learning slot phase
         id: learning-slot
         shell: bash
@@ -224,6 +254,8 @@ jobs:
           python tests/brain_positive_program_cross_failure_replay_test.py
           python tests/brain_historical_experience_scope_test.py
           python tests/brain_historical_solution_execution_test.py
+          python tests/brain_llm_guidance_contract_test.py
+          python tests/brain_llm_advisor_execution_test.py
           python tests/brain_cross_phase_experiment_memory_test.py
           python tests/brain_learning_unexecuted_evolved_suppression_test.py
           python tests/brain_learning_repair_return_workflow_test.py
@@ -252,6 +284,7 @@ jobs:
             scripts/brain_positive_program_memory.py \
             scripts/compile_brain_accepted_program_v3.py \
             scripts/brain_repair_runtime.py \
+            scripts/brain_llm_guidance.py \
             scripts/adaptive_runtime/runtime_repair.py \
             scripts/build_brain_repair_proposal.py \
             scripts/materialize_clean_provider_reconstruction.py \
@@ -491,6 +524,168 @@ jobs:
             ' fast_handoff='+fast
           );
           NODE
+
+      - name: Build bounded Brain LLM public and private memory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p brain-sandbox/brain-llm
+          python brain-llm/scripts/import_public_niakvio.py \
+            --niakvio-root . \
+            --output brain-sandbox/brain-llm/public-experience.jsonl
+          python brain-llm/scripts/import_public_docs.py \
+            --niakvio-root . \
+            --config brain-llm/config/document_sources.json \
+            --output brain-sandbox/brain-llm/public-documents.jsonl \
+            > brain-sandbox/brain-llm/public-document-report.json
+
+          private_project="brain-llm-private/raw/chatgpt-project/g-p-6a7f1d27495c819182b4081bfccdafd8"
+          if [ -d "$private_project" ]; then
+            python brain-llm/scripts/import_private_chat_project.py \
+              --project-root "$private_project" \
+              --output brain-sandbox/brain-llm/private-documents.jsonl \
+              > brain-sandbox/brain-llm/private-memory-report.json
+            echo "FIELD_BRAIN_LLM_PRIVATE_MEMORY available=true"
+          else
+            : > brain-sandbox/brain-llm/private-documents.jsonl
+            echo "FIELD_BRAIN_LLM_PRIVATE_MEMORY available=false"
+          fi
+
+      - name: Pre-route Learning cohort through Brain LLM router
+        id: brain_llm_route
+        shell: bash
+        env:
+          PROVIDER_FILTER: \${{ steps.learning-slot.outputs.provider_filter }}
+        run: |
+          set -euo pipefail
+          args=(python brain-llm/scripts/route_batch_from_checkout.py
+            --niakvio-root .
+            --experience brain-sandbox/brain-llm/public-experience.jsonl
+            --mode brain
+            --output brain-sandbox/brain-llm/routing.jsonl
+            --summary brain-sandbox/brain-llm/routing-summary.json)
+          if [ -n "\${PROVIDER_FILTER:-}" ]; then
+            IFS=',' read -r -a ids <<< "$PROVIDER_FILTER"
+            for provider in "\${ids[@]}"; do
+              provider="$(printf '%s' "$provider" | xargs)"
+              [ -z "$provider" ] || args+=(--provider "$provider")
+            done
+          fi
+          "\${args[@]}"
+          needed="$(python -c 'import json; d=json.load(open("brain-sandbox/brain-llm/routing-summary.json")); print("true" if d.get("llm_needed") else "false")')"
+          targets="$(python -c 'import json; d=json.load(open("brain-sandbox/brain-llm/routing-summary.json")); print(int(d.get("llm_targets") or 0))')"
+          echo "llm_needed=$needed" >> "$GITHUB_OUTPUT"
+          echo "llm_targets=$targets" >> "$GITHUB_OUTPUT"
+          echo "FIELD_BRAIN_LLM_ROUTE llm_needed=$needed llm_targets=$targets"
+
+      - uses: actions/cache@v4
+        if: steps.brain_llm_route.outputs.llm_needed == 'true'
+        id: brain_llm_llama_cache
+        with:
+          path: .brain-llm-runtime/llama.cpp
+          key: niakvio-brain-llama-server-linux-v1
+
+      - name: Build cached llama.cpp server when needed
+        if: steps.brain_llm_route.outputs.llm_needed == 'true' && steps.brain_llm_llama_cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev
+          mkdir -p .brain-llm-runtime
+          git clone --depth 1 https://github.com/ggml-org/llama.cpp.git .brain-llm-runtime/llama.cpp
+          cmake -S .brain-llm-runtime/llama.cpp -B .brain-llm-runtime/llama.cpp/build \
+            -DGGML_NATIVE=OFF -DLLAMA_CURL=ON -DCMAKE_BUILD_TYPE=Release
+          cmake --build .brain-llm-runtime/llama.cpp/build --config Release -j2 --target llama-server
+
+      - name: Prepare cached llama.cpp runtime dependencies
+        if: steps.brain_llm_route.outputs.llm_needed == 'true' && steps.brain_llm_llama_cache.outputs.cache-hit == 'true'
+        continue-on-error: true
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev
+
+      - uses: actions/cache@v4
+        if: steps.brain_llm_route.outputs.llm_needed == 'true'
+        with:
+          path: |
+            ~/.cache/llama.cpp
+            ~/.cache/huggingface
+          key: qwen25-coder-3b-q4-km-v1
+
+      - name: Start bounded local Qwen advisor when needed
+        id: brain_llm_server
+        if: steps.brain_llm_route.outputs.llm_needed == 'true'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          binary=".brain-llm-runtime/llama.cpp/build/bin/llama-server"
+          if [ ! -x "$binary" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "FIELD_BRAIN_LLM_SERVER available=false reason=binary-missing"
+            exit 0
+          fi
+          "$binary" \
+            -hf Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M \
+            --host 127.0.0.1 --port 8080 -c 4096 -np 1 \
+            > brain-sandbox/brain-llm/llama-server.log 2>&1 &
+          for _ in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1; then
+              echo "available=true" >> "$GITHUB_OUTPUT"
+              echo "FIELD_BRAIN_LLM_SERVER available=true"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "available=false" >> "$GITHUB_OUTPUT"
+          echo "FIELD_BRAIN_LLM_SERVER available=false reason=health-timeout"
+          tail -80 brain-sandbox/brain-llm/llama-server.log || true
+          exit 0
+
+      - name: Produce sanitized Brain LLM advisor guidance
+        shell: bash
+        env:
+          PROVIDER_FILTER: \${{ steps.learning-slot.outputs.provider_filter }}
+          LLM_NEEDED: \${{ steps.brain_llm_route.outputs.llm_needed }}
+          LLM_AVAILABLE: \${{ steps.brain_llm_server.outputs.available }}
+        run: |
+          set -euo pipefail
+          batch="brain-sandbox/brain-llm/batch.jsonl"
+          : > "$batch"
+          if [ "\${LLM_NEEDED:-false}" != "true" ] || [ "\${LLM_AVAILABLE:-false}" = "true" ]; then
+            args=(python brain-llm/scripts/plan_batch_from_checkout.py
+              --niakvio-root .
+              --experience brain-sandbox/brain-llm/public-experience.jsonl
+              --documents brain-sandbox/brain-llm/public-documents.jsonl
+              --mode brain
+              --endpoint http://127.0.0.1:8080
+              --model qwen2.5-coder-3b
+              --output "$batch")
+            if [ -s brain-sandbox/brain-llm/private-documents.jsonl ]; then
+              args+=(--extra-documents brain-sandbox/brain-llm/private-documents.jsonl)
+            fi
+            if [ -n "\${PROVIDER_FILTER:-}" ]; then
+              IFS=',' read -r -a ids <<< "$PROVIDER_FILTER"
+              for provider in "\${ids[@]}"; do
+                provider="$(printf '%s' "$provider" | xargs)"
+                [ -z "$provider" ] || args+=(--provider "$provider")
+              done
+            fi
+            "\${args[@]}" || true
+          else
+            echo "FIELD_BRAIN_LLM_ADVISOR available=false fallback=deterministic"
+          fi
+
+          python scripts/brain_llm_guidance.py \
+            --input "$batch" \
+            --output brain-sandbox/brain-llm/guidance.json \
+            --source-sha "$GITHUB_SHA" \
+            --brain-llm-sha c752f5c21ded26c578eaeacb492611f3fdb137a9
+          echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/brain-sandbox/brain-llm/guidance.json" >> "$GITHUB_ENV"
+          rm -f brain-sandbox/brain-llm/private-documents.jsonl brain-sandbox/brain-llm/private-memory-report.json
+          rm -rf brain-llm-private
 
       - name: Run adaptive Learning provider queue
         shell: bash
