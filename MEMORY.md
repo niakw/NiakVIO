@@ -4398,3 +4398,8 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The consolidation job now exports GH_TOKEN and resolves the most recent persisted chore(provider): consolidate deterministic runtime migrations commit plus its parent.
 - TEMP Current Bytes Full Provider Census now accepts an optional materialization_base_sha workflow-dispatch input. The consolidation workflow dispatches the census with the parent of the persisted consolidation commit, guaranteeing that the one-time source/DATA delta is classified even after later control-plane commits.
 - The workflow-update commit itself is excluded from push census execution by message so it cannot launch an incorrect provider-neutral census before the explicit dispatch.
+
+### 2026-09-24 — Fixed-point census dispatch shell quoting corrected
+
+- No-op consolidation run 35935783160 again passed migration fixed-point and validation with changed=false. It failed only while locating the persisted consolidation commit because the generated git log --grep shell line had an unterminated single-quoted pattern.
+- The grep is now fixed-string/double-quoted. No migration or provider logic changes in this retry.

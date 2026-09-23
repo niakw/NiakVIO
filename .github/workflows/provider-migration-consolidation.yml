@@ -158,7 +158,7 @@ jobs:
           # Dispatch, rather than push-trigger, so the census selector falls back
           # to HEAD^ and sees the exact consolidation commit as its provider-byte
           # input delta. This is the one final global reconstruction proof.
-          consolidated_sha="$(git log -1 --format=%H --grep='^chore(provider): consolidate deterministic runtime migrations)"
+          consolidated_sha="$(git log -1 --format=%H --fixed-strings --grep="chore(provider): consolidate deterministic runtime migrations")"
           if ! [[ "$consolidated_sha" =~ ^[0-9a-f]{40}$ ]]; then
             echo "Cannot locate persisted consolidation commit" >&2
             exit 1
