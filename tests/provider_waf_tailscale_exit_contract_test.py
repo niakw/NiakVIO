@@ -36,6 +36,11 @@ required=[
     "push-triggered WAF qualification requires targetProviders",
     "targeted WAF cohort is capped at 12",
     "FIELD_WAF_EXPLICIT_TARGETS",
+    "WAF_ATTEMPTS=1",
+    "WAF_WORKERS=4",
+    "Merge targeted refresh into complete WAF evidence ledger",
+    "scripts/merge_targeted_waf_refresh.py",
+    "FIELD_WAF_TARGETED_LEDGER_MERGE",
 ]
 for needle in required:
     assert needle in wf, f"missing Tailscale WAF contract: {needle}"

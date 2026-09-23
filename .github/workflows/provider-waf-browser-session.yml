@@ -85,6 +85,13 @@ jobs:
             )"
           fi
           echo "TARGET_PROVIDERS=$target" >> "$GITHUB_ENV"
+          if [ -n "$target" ]; then
+            echo "WAF_ATTEMPTS=1" >> "$GITHUB_ENV"
+            echo "WAF_WORKERS=4" >> "$GITHUB_ENV"
+          else
+            echo "WAF_ATTEMPTS=2" >> "$GITHUB_ENV"
+            echo "WAF_WORKERS=3" >> "$GITHUB_ENV"
+          fi
           echo "FIELD_WAF_EXPLICIT_TARGETS providers=${target:-all-current-waf}"
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
@@ -118,6 +125,7 @@ jobs:
           python tests/residential_provider_replay_selection_test.py
           python tests/residential_provider_replay_summary_test.py
           python tests/targeted_quick_yield_canonical_cli_test.py
+          python tests/targeted_waf_refresh_merge_test.py
 
       - name: Normalize private Tailscale CI tag
         if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
@@ -164,16 +172,17 @@ jobs:
         run: |
           set -euo pipefail
           test -s automation/provider-waf-browser-session-latest.json
+          cp automation/provider-waf-browser-session-latest.json /tmp/provider-waf-prior.json
           args=(python scripts/probe_waf_browser_session.py
             automation/provider-waf-browser-session-latest.json
             --output /tmp/provider-waf-github.json
-            --attempts 2
+            --attempts "${WAF_ATTEMPTS:-2}"
             --client-profile-matrix
             --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*'
             --status automation/provider-census-status.json
             --overrides provider-overrides.json
             --network-report provider-v3-quick-yield.json
-            --workers 3
+            --workers "${WAF_WORKERS:-3}"
             --max-targets 24
             --timeout 25
             --virtual-time-ms 8000)
@@ -212,13 +221,13 @@ jobs:
           args=(python scripts/probe_waf_browser_session.py
             /tmp/provider-waf-github.json
             --output /tmp/provider-waf-residential.json
-            --attempts 2
+            --attempts "${WAF_ATTEMPTS:-2}"
             --client-profile-matrix
             --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*'
             --status automation/provider-census-status.json
             --overrides provider-overrides.json
             --network-report provider-v3-quick-yield.json
-            --workers 3
+            --workers "${WAF_WORKERS:-3}"
             --max-targets 24
             --timeout 25
             --virtual-time-ms 8000)
@@ -288,6 +297,18 @@ jobs:
         if: ${{ always() && env.NIAKVIO_RESIDENTIAL_EXIT_ACTIVE == '1' }}
         shell: bash
         run: sudo tailscale set --exit-node= || true
+
+      - name: Merge targeted refresh into complete WAF evidence ledger
+        if: ${{ env.TARGET_PROVIDERS != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/merge_targeted_waf_refresh.py \
+            --baseline /tmp/provider-waf-prior.json \
+            --refresh automation/provider-waf-browser-session-latest.json \
+            --providers "$TARGET_PROVIDERS" \
+            --output /tmp/provider-waf-targeted-merged.json
+          mv /tmp/provider-waf-targeted-merged.json automation/provider-waf-browser-session-latest.json
 
       - name: Upload WAF browser-session evidence
         if: always()

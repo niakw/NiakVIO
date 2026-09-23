@@ -4286,3 +4286,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Push triggers now require an explicit `targetProviders` JSON cohort, normalized/deduplicated and capped at 12 providers. Manual dispatch keeps its existing optional cohort behavior.
 - The current transport retry is intentionally scoped to the eight disputed rows only: `animesultra, animevost-fr, moviesmod, vostfree, anime-ultime, moviebox, vidfast, yflix`.
 - This run is transport/census evidence only. It must not mutate provider bytes; its purpose is to preserve Tailscale/browser/direct/OkHttp differential evidence and correct the durable census before the next provider Repair.
+
+
+### 2026-09-24 — Targeted WAF refresh is now bounded and non-destructive
+
+- A second scaling defect was found before the eight-provider transport retry could persist: a filtered `probe_waf_browser_session.py --providers ...` output contains only the requested cohort, so persisting it directly as `provider-waf-browser-session-latest.json` would delete unrelated transport evidence.
+- Targeted runs now snapshot the complete prior ledger and merge refreshed rows/replay rows back provider-by-provider. Unrelated WAF/Tailscale evidence is preserved. The merged ledger records `lastRefreshProviderFilter` without pretending the whole ledger was freshly probed.
+- Explicit targeted transport runs now use one fresh attempt per browser/direct/OkHttp profile and four workers. Negative rows can otherwise cost roughly four browser attempts plus direct/OkHttp waits per target. Full untargeted qualification retains two attempts and three workers.
+- The superseding targeted transport trigger will cancel the slower in-flight run through the existing `provider-waf-transport-main` concurrency group and rerun the same eight providers with the bounded policy.
