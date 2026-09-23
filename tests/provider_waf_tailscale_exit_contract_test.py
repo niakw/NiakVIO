@@ -32,6 +32,10 @@ required=[
     "residential-probe-failed",
     "scripts/merge_waf_network_profiles.py",
     "--status automation/provider-census-status.json",
+    "Resolve explicit transport target cohort",
+    "push-triggered WAF qualification requires targetProviders",
+    "targeted WAF cohort is capped at 12",
+    "FIELD_WAF_EXPLICIT_TARGETS",
 ]
 for needle in required:
     assert needle in wf, f"missing Tailscale WAF contract: {needle}"

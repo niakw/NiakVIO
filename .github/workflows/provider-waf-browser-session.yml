@@ -42,6 +42,51 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Resolve explicit transport target cohort
+        shell: bash
+        env:
+          DISPATCH_TARGET_PROVIDERS: ${{ inputs.target_providers || '' }}
+        run: |
+          set -euo pipefail
+          target="${DISPATCH_TARGET_PROVIDERS:-}"
+          if [ "${GITHUB_EVENT_NAME}" = "push" ]; then
+            trigger=".github/triggers/provider-waf-browser-session"
+            test -s "$trigger"
+            target="$(python - "$trigger" <<'PY'
+          import json,sys
+          from pathlib import Path
+          path=Path(sys.argv[1])
+          data=json.loads(path.read_text(encoding="utf-8"))
+          values=[]
+          for raw in data.get("targetProviders") or []:
+              value=str(raw or "").strip().lower()
+              if value and value not in values:
+                  values.append(value)
+          if not values:
+              raise SystemExit("push-triggered WAF qualification requires targetProviders")
+          if len(values)>12:
+              raise SystemExit("targeted WAF cohort is capped at 12")
+          print(",".join(values))
+          PY
+            )"
+          fi
+          if [ -n "$target" ]; then
+            target="$(python - "$target" <<'PY'
+          import sys
+          values=[]
+          for raw in sys.argv[1].split(","):
+              value=raw.strip().lower()
+              if value and value not in values:
+                  values.append(value)
+          if len(values)>12:
+              raise SystemExit("targeted WAF cohort is capped at 12")
+          print(",".join(values))
+          PY
+            )"
+          fi
+          echo "TARGET_PROVIDERS=$target" >> "$GITHUB_ENV"
+          echo "FIELD_WAF_EXPLICIT_TARGETS providers=${target:-all-current-waf}"
+
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.12'

@@ -4278,3 +4278,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Tailscale/WAF evidence was merged before Repair but the final census renderer later overwrote the transport overlay. Repair now reapplies `merge_waf_census_transport.py` **after canonical Repair, even on Repair failure**, then regenerates the batch plan/Markdown before persistence. This is required so residential/native evidence remains authoritative in the durable census.
 - Current evidence already shows Vidfast's exact failed routes reachable through browser, direct HTTP and OkHttp on both GitHub and residential paths; it must therefore leave `PROVIDER NETWORK BLOCKED` after the terminal overlay and return to normal provider Repair. Anime-Ultime's residential full-provider replay reaches a normal pre-network zero state and likewise must leave the network-blocked bucket. Moviebox (HTTP 400 on both paths) and Yflix (residential-browser reachable but native/direct failure) remain causal transport/runtime cases requiring separate treatment, not blanket “network blocked” assumptions.
 - The four browser-only HARNESS MISMATCH cases are not IP failures: browser succeeds on both GitHub and residential networks while native-like direct/OkHttp fails. Tailscale therefore disproves IP/egress as the cause and the causal owner remains Core/client transport Learning, not repeated provider mutation.
+
+
+### 2026-09-24 — Targeted Tailscale transport qualification no longer defaults to the full WAF cohort
+
+- The dedicated `provider-waf-browser-session.yml` push lane already existed, but push-triggered runs ignored the trigger payload and therefore defaulted to every current WAF/network target. This made a transport-only retry unnecessarily broad.
+- Push triggers now require an explicit `targetProviders` JSON cohort, normalized/deduplicated and capped at 12 providers. Manual dispatch keeps its existing optional cohort behavior.
+- The current transport retry is intentionally scoped to the eight disputed rows only: `animesultra, animevost-fr, moviesmod, vostfree, anime-ultime, moviebox, vidfast, yflix`.
+- This run is transport/census evidence only. It must not mutate provider bytes; its purpose is to preserve Tailscale/browser/direct/OkHttp differential evidence and correct the durable census before the next provider Repair.
