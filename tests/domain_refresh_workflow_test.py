@@ -193,7 +193,7 @@ anime_provider_region = anime_text[:anime_text.index(anime_boundary)]
 anime_provider_without_config = module.strip_managed_fix(anime_provider_region, anime_config)
 anime_provider_hosts = {
     (urlparse(value).hostname or "").casefold()
-    for value in re.findall(r"https?://[^\\s\\\"'<>]+", anime_provider_without_config)
+    for value in re.findall(r"https?://[^\s\\\"'<>]+", anime_provider_without_config)
 }
 assert "v2.animevostfr.org" not in anime_provider_hosts, anime_row
 assert "animevostfr.org" in anime_provider_hosts, anime_row
