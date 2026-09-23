@@ -346,6 +346,40 @@ jobs:
               --output "$RUNNER_TEMP/brain-learning-canonical-repair.json"
             echo "NIAKVIO_BRAIN_LEARNING_MEMORY=$RUNNER_TEMP/brain-learning-canonical-repair.json" >> "$GITHUB_ENV"
             echo "FIELD_CANONICAL_REPAIR_LEARNING_MEMORY imported=true"
+            if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/llm-guidance.json 2>/dev/null; then
+              git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/llm-guidance.json > "$RUNNER_TEMP/brain-learning-llm-guidance.json"
+              python - "$RUNNER_TEMP/brain-learning-llm-guidance.json" "$RUNNER_TEMP/brain-learning-llm-guidance-repair.json" "$GITHUB_SHA" <<'PY'
+          import json,re,sys
+          from pathlib import Path
+          source=Path(sys.argv[1]); destination=Path(sys.argv[2]); current_sha=sys.argv[3].strip().lower()
+          data=json.loads(source.read_text(encoding="utf-8"))
+          if not isinstance(data,dict):
+              raise SystemExit("persistent LLM guidance must be an object")
+          for key in ("publicationAuthority","directMutationAuthority","proofAuthority","rawMutationContentRetained"):
+              if data.get(key) is not False:
+                  raise SystemExit(f"unsafe persistent LLM guidance flag: {key}")
+          if not re.fullmatch(r"[0-9a-f]{40}",current_sha):
+              raise SystemExit("canonical Repair SHA is invalid")
+          rows=data.get("rows")
+          if not isinstance(rows,list):
+              raise SystemExit("persistent LLM guidance rows missing")
+          allowed={"providerId","failureClass","targetLayer","strategy","profile","confidence","priorOnly"}
+          for row in rows:
+              if not isinstance(row,dict) or row.get("priorOnly") is not True or row.get("targetLayer")!="provider":
+                  raise SystemExit("unsafe persistent LLM guidance row")
+              if set(row)-allowed:
+                  raise SystemExit("unexpected persistent LLM guidance fields")
+          data["sourceLearningSha"]=str(data.get("sourceSha") or "")
+          data["sourceSha"]=current_sha
+          data["persistentLearningPrior"]=True
+          destination.write_text(json.dumps(data,indent=2,sort_keys=True)+"\n",encoding="utf-8")
+          print(f"FIELD_CANONICAL_REPAIR_LLM_GUIDANCE providers={int(data.get('providerCount') or 0)} rows={len(rows)}")
+          PY
+              echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/brain-learning-llm-guidance-repair.json" >> "$GITHUB_ENV"
+              echo "FIELD_CANONICAL_REPAIR_LLM_GUIDANCE imported=true"
+            else
+              echo "FIELD_CANONICAL_REPAIR_LLM_GUIDANCE imported=false reason=no-persistent-llm-guidance"
+            fi
           else
             echo "FIELD_CANONICAL_REPAIR_LEARNING_MEMORY imported=false reason=no-persistent-learning-memory"
           fi

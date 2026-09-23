@@ -140,6 +140,8 @@ def replan_observation(
         "explorationChain": _BASE._exploration_chain_enabled(),
         "policy": _BASE.policy(),
         "learnedSkills": _BASE.planner_learned_skills(mode),
+        "historicalSolutions": _BASE.planner_historical_solutions(),
+        "llmGuidance": _BASE.planner_llm_guidance(),
         "negativeMemory": _BASE.planner_negative_memory(mode),
     }
     plans = _run_planner_batch(base_payload, [item])
@@ -179,6 +181,8 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
         "mode": mode,
         "policy": _BASE.policy(),
         "learnedSkills": _BASE.planner_learned_skills(mode),
+        "historicalSolutions": _BASE.planner_historical_solutions(),
+        "llmGuidance": _BASE.planner_llm_guidance(),
         "negativeMemory": _BASE.planner_negative_memory(mode),
     }
     # 24 keeps normal stdin payloads well below the failing ~500 KiB batch seen

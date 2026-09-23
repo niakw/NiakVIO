@@ -834,6 +834,7 @@ jobs:
             brain-learning-output/brain-policy.proposed.json
             brain-learning-output/brain-architecture-proposal.json
             brain-learning-output/brain-architecture-proposal.md
+            brain-sandbox/brain-llm/guidance.json
             brain-learning-input/native-reader-summary.json
             brain-sandbox/daily-learning-coverage.json
             brain-sandbox/health-output/learning-queue-state.json
@@ -875,8 +876,22 @@ jobs:
           set -euo pipefail
           test -s brain-learning-output/latest.json
           test -s brain-learning-output/latest.md
+          test -s brain-sandbox/brain-llm/guidance.json
           node -e "const x=require('./brain-learning-output/latest.json'); if(x.productionWritesAllowed!==false||x.publicationAllowed!==false) process.exit(1)"
-          if grep -Eiq 'https?://|authorization[=:]|cookie[=:]|token[=:]' brain-learning-output/latest.json; then
+          node - <<'NODE'
+          const fs=require('fs');
+          const g=JSON.parse(fs.readFileSync('brain-sandbox/brain-llm/guidance.json','utf8'));
+          for (const key of ['publicationAuthority','directMutationAuthority','proofAuthority','rawMutationContentRetained']) {
+            if (g[key] !== false) throw new Error('unsafe persisted LLM guidance flag: '+key);
+          }
+          if (!Array.isArray(g.rows)) throw new Error('LLM guidance rows missing');
+          const allowed=new Set(['providerId','failureClass','targetLayer','strategy','profile','confidence','priorOnly']);
+          for (const row of g.rows) {
+            if (!row || row.priorOnly !== true || row.targetLayer !== 'provider') throw new Error('unsafe LLM guidance row');
+            for (const key of Object.keys(row)) if (!allowed.has(key)) throw new Error('unexpected LLM guidance field: '+key);
+          }
+          NODE
+          if grep -Eiq 'https?://|authorization[=:]|cookie[=:]|token[=:]' brain-learning-output/latest.json brain-sandbox/brain-llm/guidance.json; then
             echo 'refusing unsafe learning artifact' >&2
             exit 1
           fi
@@ -914,13 +929,14 @@ jobs:
           mkdir -p engine_v2/learning
           cp brain-learning-output/latest.json engine_v2/learning/latest.json
           cp brain-learning-output/latest.md engine_v2/learning/latest.md
+          cp brain-sandbox/brain-llm/guidance.json engine_v2/learning/llm-guidance.json
           git config user.name "niakvio-brain"
           git config user.email "actions@users.noreply.github.com"
-          git add engine_v2/learning/latest.json engine_v2/learning/latest.md
+          git add engine_v2/learning/latest.json engine_v2/learning/latest.md engine_v2/learning/llm-guidance.json
           git commit -m "brain: refresh sandbox repair learning"
 
           tracked="$(git ls-files | sort)"
-          expected="$(printf '%s\n' engine_v2/learning/latest.json engine_v2/learning/latest.md | sort)"
+          expected="$(printf '%s\n' engine_v2/learning/latest.json engine_v2/learning/latest.md engine_v2/learning/llm-guidance.json | sort)"
           test "$tracked" = "$expected" || {
             echo "refusing non-minimal Brain memory tree" >&2
             printf 'tracked:\n%s\n' "$tracked" >&2
@@ -932,7 +948,7 @@ jobs:
           else
             git push origin HEAD:"$BRANCH"
           fi
-          echo "FIELD_BRAIN_MEMORY_PUBLISH mode=orphan-memory-only files=2"
+          echo "FIELD_BRAIN_MEMORY_PUBLISH mode=orphan-memory-only files=3"
           echo "published=true" >> "$GITHUB_OUTPUT"
 
       - name: Resume canonical Repair after push-triggered Learning

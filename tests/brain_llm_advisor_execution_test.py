@@ -55,13 +55,13 @@ guidance=[{
     "priorOnly":True,
 }]
 
-def plan(mode:str,memory:list[dict]|None=None):
+def plan(mode:str,memory:list[dict]|None=None,guidance_rows:list[dict]|None=None):
     payload={
         "mode":mode,
         "policy":policy,
         "learnedSkills":{},
         "historicalSolutions":[],
-        "llmGuidance":guidance,
+        "llmGuidance":guidance if guidance_rows is None else guidance_rows,
         "negativeMemory":memory or [],
         "items":[{
             "key":"published:synthetic-llm-advisor",
@@ -100,15 +100,65 @@ assert blocked["llmAdvisorApplied"] is False,blocked
 assert blocked["llmAdvisorProfile"]=="",blocked
 assert blocked["allowedProfiles"][0]!="proven_route_terminal_traversal_v1",blocked
 
-# Production Repair never consumes LLM advice. The LLM is an acceleration prior
-# for the sandbox Learning path only.
+# Production Repair consumes the same sanitized advisor only as hypothesis
+# ordering. Current-byte playback/identity gates remain the sole acceptance
+# authority.
 production=plan("repair")
-assert production["llmAdvisorApplied"] is False,production
-assert production["llmAdvisorProfile"]=="",production
-assert production["allowedProfiles"]==["adaptive_runtime_recovery"],production
+assert production["llmAdvisorApplied"] is True,production
+assert production["llmAdvisorRescue"] is False,production
+assert production["llmAdvisorProfile"]=="proven_route_terminal_traversal_v1",production
+assert production["allowedProfiles"][0]=="proven_route_terminal_traversal_v1",production
+
+# If ordinary production variants are exhausted, a different advisor profile
+# that has not itself failed gets one bounded rescue. Exact profile debt still
+# blocks repetition on the next cycle.
+exhausted_memory=[
+    {
+        "providerId":"synthetic-llm-advisor",
+        "failureClass":"route_proven_gap",
+        "experimentVariant":variant,
+        "experimentGeneration":1,
+        "profile":"proven_route_terminal_traversal_v1" if variant==4 else "adaptive_runtime_recovery",
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+    }
+    for variant in range(5)
+]
+rescue_guidance=[{
+    **guidance[0],
+    "strategy":"discover-api-from-current-page-and-bundles",
+    "profile":"search_contract_inference_v1",
+}]
+rescued=plan("repair",exhausted_memory,rescue_guidance)
+assert rescued["baseExperimentExhausted"] is True,rescued
+assert rescued["experimentExhausted"] is False,rescued
+assert rescued["llmAdvisorApplied"] is True,rescued
+assert rescued["llmAdvisorRescue"] is True,rescued
+assert rescued["allowedProfiles"][0]=="search_contract_inference_v1",rescued
+assert rescued["action"]=="probe-targeted-repair",rescued
+
+rescue_failed=plan("repair",[
+    *exhausted_memory,
+    {
+        "providerId":"synthetic-llm-advisor",
+        "failureClass":"route_proven_gap",
+        "experimentVariant":4,
+        "experimentGeneration":1,
+        "profile":"search_contract_inference_v1",
+        "failures":1,
+        "consecutiveFailures":1,
+        "successes":0,
+    },
+],rescue_guidance)
+assert rescue_failed["llmAdvisorApplied"] is False,rescue_failed
+assert rescue_failed["experimentExhausted"] is True,rescue_failed
 
 brain=(ROOT/"scripts/brain_repair_runtime.py").read_text(encoding="utf-8")
+overlay=(ROOT/"scripts/adaptive_runtime/brain_repair_runtime.py").read_text(encoding="utf-8")
 assert '"llmGuidance": planner_llm_guidance()' in brain
+assert overlay.count('"llmGuidance": _BASE.planner_llm_guidance()')==2,overlay
+assert overlay.count('"historicalSolutions": _BASE.planner_historical_solutions()')==2,overlay
 assert "rawMutationContentRetained" in brain
 
 print("Brain LLM advisor execution contract passed")

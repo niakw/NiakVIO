@@ -22,6 +22,9 @@ required=[
     "scripts/sanitize_brain_learning_memory.py",
     "NIAKVIO_BRAIN_LEARNING_MEMORY=",
     "FIELD_CANONICAL_REPAIR_LEARNING_MEMORY imported=true",
+    "engine_v2/learning/llm-guidance.json",
+    "NIAKVIO_BRAIN_LLM_GUIDANCE=",
+    "FIELD_CANONICAL_REPAIR_LLM_GUIDANCE imported=true",
     '"authorityRepairEligible" in row and "authorityAction" in row',
 ]
 for needle in required:
@@ -35,6 +38,9 @@ assert "brain-learning/proposals" in learning_block
 assert "engine_v2/learning/latest.json" in learning_block
 assert "sanitize_brain_learning_memory.py" in learning_block
 assert "NIAKVIO_BRAIN_LEARNING_MEMORY=" in learning_block
+assert "engine_v2/learning/llm-guidance.json" in learning_block
+assert "NIAKVIO_BRAIN_LLM_GUIDANCE=" in learning_block
+assert 'data["persistentLearningPrior"]=True' in learning_block
 
 persist=workflow.index("- name: Persist Repair census state")
 copy=workflow.index("provider-brain-repair-latest.json",persist)

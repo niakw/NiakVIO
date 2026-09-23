@@ -572,7 +572,7 @@ function buildPlan(item) {
               }
       )
     : baseRepairTarget;
-  const llmAdvisorHint = (!experimentExhausted && learningMode)
+  const llmAdvisorHint = (!experimentExhausted || !learningMode)
     ? llmAdvisorStrategyHint(
         providerId,
         evidence.failureClass,
@@ -580,6 +580,11 @@ function buildPlan(item) {
         rotateEvery,
       )
     : { profile: "", strategy: "", confidence: 0 };
+  const llmAdvisorProductionRescue = (
+    !learningMode
+    && experimentExhausted
+    && Boolean(llmAdvisorHint.profile)
+  );
   const historicalHint = (
     !experimentExhausted
     && learningMode
@@ -593,48 +598,57 @@ function buildPlan(item) {
         rotateEvery,
       )
     : { profile: "", caseId: "", solutionClass: "" };
+  const effectiveRepairTarget = llmAdvisorProductionRescue ? baseRepairTarget : repairTarget;
   const causalProfile = strategyEscalated
     ? postExhaustionHint.profile
-    : experimentExhausted
-      ? ""
-      : (
-          llmAdvisorHint.profile
-          || historicalHint.profile
-          || causalStrategyProfile(
-            evidence.failureClass,
-            experimentVariant,
-            experimentGeneration,
-            finalVariant,
-          )
-        );
+    : (
+        llmAdvisorHint.profile
+        || (
+          experimentExhausted
+            ? ""
+            : (
+                historicalHint.profile
+                || causalStrategyProfile(
+                  evidence.failureClass,
+                  experimentVariant,
+                  experimentGeneration,
+                  finalVariant,
+                )
+              )
+        )
+      );
   const executionRepairTarget = causalProfile
     ? {
-        ...repairTarget,
+        ...effectiveRepairTarget,
         profiles: [
           causalProfile,
-          ...stringArray(repairTarget.profiles).filter((profile) => profile !== "adaptive_runtime_recovery" && profile !== causalProfile),
+          ...stringArray(effectiveRepairTarget.profiles).filter((profile) => profile !== "adaptive_runtime_recovery" && profile !== causalProfile),
         ],
       }
-    : repairTarget;
-  const effectiveAction = strategyEscalated
+    : effectiveRepairTarget;
+  const effectiveAction = (strategyEscalated || llmAdvisorProductionRescue)
     ? "probe-targeted-repair"
     : experimentExhausted
       ? (learningMode ? "collect-more-evidence" : "deferred_retry")
       : stringValue(plan.action, "deferred_retry");
-  const effectiveExitReason = strategyEscalated
+  const effectiveExitReason = (strategyEscalated || llmAdvisorProductionRescue)
     ? null
     : experimentExhausted
       ? (learningMode ? "learning_generations_exhausted" : "experiment_variants_exhausted")
       : plan.exitReason ?? null;
-  const effectiveHypotheses = (experimentExhausted && !strategyEscalated) ? [] : hypotheses;
+  const effectiveHypotheses = (
+    experimentExhausted
+    && !strategyEscalated
+    && !llmAdvisorProductionRescue
+  ) ? [] : hypotheses;
   return {
     brainVersion: finiteNumber(plan.brainVersion, BRAIN_CONTROL_PLANE_VERSION),
     providerId,
     failureClass: stringValue(plan.failureClass, "unknown_failure"),
-    repairScope: repairTarget.scope,
-    repairType: repairTarget.repairType,
-    repairEngine: repairTarget.engine,
-    pipelineStage: repairTarget.pipelineStage,
+    repairScope: effectiveRepairTarget.scope,
+    repairType: effectiveRepairTarget.repairType,
+    repairEngine: effectiveRepairTarget.engine,
+    pipelineStage: effectiveRepairTarget.pipelineStage,
     observedPipelineStage: stringValue(evidence.observedPipelineStage, "unknown"),
     censusStatus: stringValue(asRecord(candidate.censusPrior).status),
     censusPriorApplied: evidence.censusPriorApplied === true,
@@ -643,7 +657,7 @@ function buildPlan(item) {
     experimentVariant,
     experimentGeneration,
     baseExperimentExhausted: experimentExhausted,
-    experimentExhausted: experimentExhausted && !strategyEscalated,
+    experimentExhausted: experimentExhausted && !strategyEscalated && !llmAdvisorProductionRescue,
     strategyEscalated,
     providerPositiveProgramReplay: postExhaustionHint.profile === "provider_positive_program_replay_v1",
     positiveProgramFingerprint: stringValue(postExhaustionHint.positiveProgramFingerprint).toLowerCase(),
@@ -655,13 +669,14 @@ function buildPlan(item) {
     experimentVariantCount: maxVariants,
     experimentGenerationLimit: learningMode ? maxLearningGenerations : finalVariantGeneration,
     llmAdvisorApplied: Boolean(llmAdvisorHint.profile),
+    llmAdvisorRescue: llmAdvisorProductionRescue,
     llmAdvisorStrategy: llmAdvisorHint.strategy,
     llmAdvisorProfile: llmAdvisorHint.profile,
     llmAdvisorConfidence: llmAdvisorHint.confidence,
     historicalStrategyProfile: historicalHint.profile,
     historicalStrategyCase: historicalHint.caseId,
     historicalSolutionClass: historicalHint.solutionClass,
-    learningDisposition: repairTarget.learningDisposition,
+    learningDisposition: effectiveRepairTarget.learningDisposition,
     capabilityStrategy,
     signature,
     action: effectiveAction,

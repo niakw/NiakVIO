@@ -154,7 +154,9 @@ def main() -> int:
     assert 'git switch -C "$BRANCH" "refs/remotes/origin/$BRANCH"' not in memory_publish
     assert 'git switch -C "$BRANCH" "$GITHUB_SHA"' not in memory_publish
     assert '--force-with-lease="$BRANCH:$expected_sha"' in memory_publish
-    assert 'FIELD_BRAIN_MEMORY_PUBLISH mode=orphan-memory-only files=2' in memory_publish
+    assert 'FIELD_BRAIN_MEMORY_PUBLISH mode=orphan-memory-only files=3' in memory_publish
+    assert "engine_v2/learning/llm-guidance.json" in memory_publish
+    assert "brain-sandbox/brain-llm/guidance.json" in workflow
     assert "fresh orphan tree" in memory_publish
     assert "FIELD_BRAIN_MEMORY_PUBLISH skipped=stale" in memory_publish
     assert "candidate_ms=" in memory_publish and "existing_ms=" in memory_publish
