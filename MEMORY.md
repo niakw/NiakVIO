@@ -4218,3 +4218,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The canonical Repair preflight previously ran a temporary full `materialize_provider_v3_all.py` for every cycle, even when the SHA changed only Brain/workflow/trigger files. That cost roughly the same catalogue-wide reconstruction the user explicitly wanted to avoid.
 - Preflight now calls the existing materialization-scope classifier against `HEAD^..HEAD`. If the scope is `none`, the temporary 42-provider rematerialization is skipped. If provider/global inputs changed, the full temporary reconstruction remains as the conservative validation path.
 - This optimization is intentionally independent from the post-recovery incremental materialization added earlier. Together they remove catalogue-wide rematerialization from ordinary targeted Brain retries while preserving a full fallback for real provider/common-runtime changes.
+
+
+### 2026-09-23 — Persist LLM-advisor execution proof in Brain reports
+
+- The planner already exposes `llmAdvisorApplied`, `llmAdvisorRescue`, strategy, profile and confidence, but `brain_repair_runtime.py` previously stripped those fields from its sanitized plan report.
+- Brain reports now retain exactly those non-sensitive advisor metadata fields. This does not retain prompts, private documents, raw model output or mutations. It allows the canonical Repair artifact to prove whether private-informed guidance was actually selected for each provider instead of inferring usage from configuration.
