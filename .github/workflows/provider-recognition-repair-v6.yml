@@ -168,11 +168,28 @@ jobs:
           python tests/provider_wookafr_current_runtime_behavior_test.py
           python tests/provider_fetch_slice_budget_test.py
           python tests/brain_preflight_fail_fast_order_test.py
-          cp manifest.json "$RUNNER_TEMP/provider-preflight-manifest.json"
-          python scripts/materialize_provider_v3_all.py \
-            --source-manifest "$RUNNER_TEMP/provider-preflight-manifest.json" \
-            --output-dir "$RUNNER_TEMP/provider-preflight-artifacts" \
-            --report "$RUNNER_TEMP/provider-preflight-materialization.json"
+          python tests/brain_preflight_incremental_scope_test.py
+          python scripts/select_provider_materialization_scope.py \
+            --base HEAD^ \
+            --head HEAD \
+            --output "$RUNNER_TEMP/provider-preflight-scope.json"
+          preflight_mode="$(python - <<'PY'
+          import json, os
+          from pathlib import Path
+          d=json.loads((Path(os.environ["RUNNER_TEMP"])/"provider-preflight-scope.json").read_text())
+          print(str(d.get("mode") or "all"))
+          PY
+          )"
+          if [ "$preflight_mode" = "none" ]; then
+            echo "FIELD_PROVIDER_PREFLIGHT_MATERIALIZATION mode=none skipped=true"
+          else
+            cp manifest.json "$RUNNER_TEMP/provider-preflight-manifest.json"
+            python scripts/materialize_provider_v3_all.py \
+              --source-manifest "$RUNNER_TEMP/provider-preflight-manifest.json" \
+              --output-dir "$RUNNER_TEMP/provider-preflight-artifacts" \
+              --report "$RUNNER_TEMP/provider-preflight-materialization.json"
+            echo "FIELD_PROVIDER_PREFLIGHT_MATERIALIZATION mode=$preflight_mode skipped=false"
+          fi
           python tests/provider_discovery_v3_composition_test.py
           python tests/brain_generation_failure_memory_test.py
           python tests/brain_negative_experiment_exhaustion_test.py

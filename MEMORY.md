@@ -4211,3 +4211,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The private-informed guidance was generated from exact NiakVIO SHA `30b6da7498c0d200044a8ececf34ca982bf3acac`. Subsequent commits changed only Brain/workflow/tests/memory control-plane files; provider DATA, published provider bytes, census evidence and authority state did not change.
 - `scripts/brain_repair_runtime.py` is now explicitly allowed as neutral source drift for the external guidance importer. This is intentionally narrow: `provider-overrides.json`, provider bundles, manifests, census/authority evidence and other provider-relevant paths still invalidate stale external guidance.
 - This allows the same source-evidence guidance to be consumed after the unexecuted-debt control-plane fix without weakening current-byte proof gates.
+
+
+### 2026-09-23 — Repair preflight no longer rematerializes 42/42 on control-plane-only runs
+
+- The canonical Repair preflight previously ran a temporary full `materialize_provider_v3_all.py` for every cycle, even when the SHA changed only Brain/workflow/trigger files. That cost roughly the same catalogue-wide reconstruction the user explicitly wanted to avoid.
+- Preflight now calls the existing materialization-scope classifier against `HEAD^..HEAD`. If the scope is `none`, the temporary 42-provider rematerialization is skipped. If provider/global inputs changed, the full temporary reconstruction remains as the conservative validation path.
+- This optimization is intentionally independent from the post-recovery incremental materialization added earlier. Together they remove catalogue-wide rematerialization from ordinary targeted Brain retries while preserving a full fallback for real provider/common-runtime changes.
