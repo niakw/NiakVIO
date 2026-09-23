@@ -4253,3 +4253,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Canonical Repair remains serialized, but `cancel-in-progress` is now true **only for push-triggered Repair**. The workflow's push path is already restricted to `.github/triggers/provider-recognition-repair-v6.json`, so a newer explicit trigger can cancel an obsolete older push run.
 - Manual `workflow_dispatch` and scheduled Repairs keep non-cancelling serialization. Ordinary census, MEMORY, test or provider commits do not trigger this workflow and therefore cannot evict a Repair.
 - This change is orchestration-only; it does not alter provider acceptance, proof, WAF/Tailscale semantics or repair authority.
+
+
+### 2026-09-23 — Cancelled stale Repair report removed before final LLM run
+
+- Obsolete push Repair `35918698089` was cancelled by the new push-only concurrency policy, but its old workflow revision persisted one stale tracked file immediately before cancellation: `automation/provider-brain-repair-35918698089.json`.
+- The payload proved it was not current-run evidence: it referenced historical source SHA `d12ada427f02...`, 7 providers and the old 1200-second/3-wave configuration. It is deleted on `829c495ac24f7d5c60f306579b4a22e7672df29b`.
+- Current workflow revision already prevents recurrence by persisting Brain reports only when canonical Repair actually ran and `experienceMemory.sourceSha == GITHUB_SHA`.
+- The next Repair trigger must therefore start from this cleaned HEAD lineage and is the only run whose advisor metadata/provider outcomes may be treated as current proof.
