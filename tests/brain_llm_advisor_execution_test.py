@@ -117,7 +117,9 @@ exhausted_memory=[
         "providerId":"synthetic-llm-advisor",
         "failureClass":"route_proven_gap",
         "experimentVariant":variant,
-        "experimentGeneration":1,
+        # v4 is generation-aware; true exhaustion requires the configured
+        # final generation, not only generation 1.
+        "experimentGeneration":2 if variant==4 else 1,
         "profile":"proven_route_terminal_traversal_v1" if variant==4 else "adaptive_runtime_recovery",
         "failures":1,
         "consecutiveFailures":1,
@@ -147,7 +149,7 @@ rescue_failed=plan("repair",[
         "providerId":"synthetic-llm-advisor",
         "failureClass":"route_proven_gap",
         "experimentVariant":4,
-        "experimentGeneration":1,
+        "experimentGeneration":2,
         "profile":"search_contract_inference_v1",
         "failures":1,
         "consecutiveFailures":1,

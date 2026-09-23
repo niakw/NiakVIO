@@ -466,6 +466,11 @@ def sanitized_brain(report: dict[str, Any]) -> dict[str, Any]:
                 "experimentVariantCount": row.get("experimentVariantCount"),
                 "experimentExhausted": row.get("experimentExhausted") is True,
                 "negativeMemoryMatches": row.get("negativeMemoryMatches"),
+                "llmAdvisorApplied": row.get("llmAdvisorApplied") is True,
+                "llmAdvisorRescue": row.get("llmAdvisorRescue") is True,
+                "llmAdvisorStrategy": row.get("llmAdvisorStrategy"),
+                "llmAdvisorProfile": row.get("llmAdvisorProfile"),
+                "llmAdvisorConfidence": row.get("llmAdvisorConfidence"),
                 "hypotheses": row.get("hypotheses") or [],
             }
             for key, row in plans.items()

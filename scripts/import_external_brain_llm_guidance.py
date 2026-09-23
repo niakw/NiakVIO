@@ -19,8 +19,8 @@ STRATEGY_TO_PROFILE={
 }
 TOP_LEVEL_FIELDS={"schemaVersion","sourceNiakvioSha","brainLlmSha","publicationAuthority","directMutationAuthority","proofAuthority","rawMutationContentRetained","privateContentRetained","minConfidence","providerCount","rows"}
 ROW_FIELDS={"providerId","failureClass","targetLayer","strategy","profile","confidence","priorOnly"}
-NEUTRAL_DRIFT_PREFIXES=(".github/workflows/",".github/triggers/","tests/")
-NEUTRAL_DRIFT_FILES={"MEMORY.md","scripts/import_external_brain_llm_guidance.py","scripts/select_provider_materialization_scope.py","scripts/run_provider_repair_pipeline_v6.py"}
+NEUTRAL_DRIFT_PREFIXES=(".github/workflows/",".github/triggers/","tests/","automation/provider-brain-repair-")
+NEUTRAL_DRIFT_FILES={"MEMORY.md","scripts/import_external_brain_llm_guidance.py","scripts/brain_repair_runtime.py","scripts/run_provider_brain_repair.py","scripts/select_provider_materialization_scope.py","scripts/run_provider_repair_pipeline_v6.py"}
 
 def canon(value:object)->str:
  return str(value or "").strip().casefold().replace("_","-")

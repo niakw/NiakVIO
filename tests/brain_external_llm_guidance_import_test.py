@@ -8,7 +8,7 @@ base={"schemaVersion":1,"sourceNiakvioSha":"a"*40,"brainLlmSha":"b"*40,"publicat
 safe=mod.sanitize(base,current_sha="c"*40,guidance_commit="d"*40)
 assert safe["sourceSha"]=="c"*40 and safe["sourceExternalNiakvioSha"]=="a"*40
 assert safe["rows"][0]["providerId"]=="movie-box" and safe["rows"][0]["failureClass"]=="media_extraction_gap"
-ok,blocked=mod.neutral_source_drift([".github/workflows/provider-recognition-repair-v6.yml",".github/triggers/provider-recognition-repair-v6.json","tests/x.py","scripts/import_external_brain_llm_guidance.py","scripts/select_provider_materialization_scope.py","scripts/run_provider_repair_pipeline_v6.py","MEMORY.md"]);assert ok and not blocked
+ok,blocked=mod.neutral_source_drift([".github/workflows/provider-recognition-repair-v6.yml",".github/triggers/provider-recognition-repair-v6.json","tests/x.py","scripts/import_external_brain_llm_guidance.py","scripts/brain_repair_runtime.py","scripts/run_provider_brain_repair.py","scripts/select_provider_materialization_scope.py","scripts/run_provider_repair_pipeline_v6.py","automation/provider-brain-repair-123.json","MEMORY.md"]);assert ok and not blocked
 ok,blocked=mod.neutral_source_drift(["provider-overrides.json","providers/demo.js"]);assert not ok and blocked==["provider-overrides.json","providers/demo.js"]
 for bad in [
  {**base,"privateContentRetained":True},

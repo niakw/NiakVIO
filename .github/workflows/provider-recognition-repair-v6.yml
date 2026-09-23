@@ -575,12 +575,38 @@ jobs:
           [ ! -s automation/provider-authority-status.json ] || cp automation/provider-authority-status.json "$tmp/provider-authority-status.json"
           [ ! -s automation/provider-waf-browser-session-latest.json ] || cp automation/provider-waf-browser-session-latest.json "$tmp/provider-waf-browser-session-latest.json"
           [ ! -s automation/provider-census-proof-history.json ] || cp automation/provider-census-proof-history.json "$tmp/provider-census-proof-history.json"
-          [ ! -s automation/brain-repair-memory.json ] || cp automation/brain-repair-memory.json "$tmp/brain-repair-memory.json"
-          [ ! -s automation/brain-positive-program-memory.json ] || cp automation/brain-positive-program-memory.json "$tmp/brain-positive-program-memory.json"
+          canonical_repair_outcome="${{ steps.canonical-repair.outcome }}"
+          if [ "$canonical_repair_outcome" != "skipped" ]; then
+            if [ -s automation/brain-repair-memory.json ] && ! git diff --quiet "$GITHUB_SHA" -- automation/brain-repair-memory.json; then
+              cp automation/brain-repair-memory.json "$tmp/brain-repair-memory.json"
+            fi
+            if [ -s automation/brain-positive-program-memory.json ] && ! git diff --quiet "$GITHUB_SHA" -- automation/brain-positive-program-memory.json; then
+              cp automation/brain-positive-program-memory.json "$tmp/brain-positive-program-memory.json"
+            fi
+            if [ -s automation/provider-brain-repair-latest.json ]; then
+              if python - "$GITHUB_SHA" <<'PY'
+          import json,sys
+          from pathlib import Path
+          current=sys.argv[1].strip().lower()
+          data=json.loads(Path("automation/provider-brain-repair-latest.json").read_text(encoding="utf-8"))
+          experience=data.get("experienceMemory") if isinstance(data.get("experienceMemory"),dict) else {}
+          source=str(experience.get("sourceSha") or "").strip().lower()
+          if source != current:
+              raise SystemExit(f"stale Brain report sourceSha={source or '<missing>'} current={current}")
+          PY
+              then
+                cp automation/provider-brain-repair-latest.json "$tmp/provider-brain-repair-latest.json"
+                echo "FIELD_REPAIR_CURRENT_RUN_BRAIN_REPORT captured=true outcome=$canonical_repair_outcome"
+              else
+                echo "FIELD_REPAIR_CURRENT_RUN_BRAIN_REPORT captured=false reason=source-sha-mismatch"
+              fi
+            fi
+          else
+            echo "FIELD_REPAIR_CURRENT_RUN_BRAIN_REPORT captured=false reason=canonical-repair-skipped"
+          fi
           [ ! -s automation/provider-census-post-repair.json ] || cp automation/provider-census-post-repair.json "$tmp/provider-census-post-repair.json"
           [ ! -s automation/provider-repair-candidate-evidence.json ] || cp automation/provider-repair-candidate-evidence.json "$tmp/provider-repair-candidate-evidence.json"
           [ ! -s automation/provider-repair-batch-plan-latest.json ] || cp automation/provider-repair-batch-plan-latest.json "$tmp/provider-repair-batch-plan-latest.json"
-          [ ! -s automation/provider-brain-repair-latest.json ] || cp automation/provider-brain-repair-latest.json "$tmp/provider-brain-repair-latest.json"
 
           counts="$(python - <<'PY'
           import json
