@@ -1,5 +1,15 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-23 21:02 Europe/Paris — First live Brain LLM launch exposed strategy canonicalization bug
+
+- Push-triggered Learning run `35904796058` executed on exact SHA `16bb314ad9147c9940fe23fb7e7f82213f7830f0` and failed in preflight before provider/network/LLM execution.
+- The private NiakVIO memory checkout and pinned Brain LLM checkout both succeeded; the failure was isolated to `tests/brain_llm_guidance_contract_test.py`.
+- Root cause: `brain_llm_guidance.canon()` normalizes strategy identifiers from snake_case to kebab-case, while `STRATEGY_TO_PROFILE` was still keyed by snake_case. Consequently even a valid high-confidence provider-local LLM proposal was silently discarded and `providerCount` became 0.
+- Commit `273c4d194137` makes the mapping vocabulary canonicalization-consistent by storing the allowlisted strategy keys in the exact kebab-case form consumed by the sanitiser. The test contract already pins the expected valid MalluMV mapping and therefore serves as the regression proof in the next Learning preflight.
+- No provider status or repair result is claimed from run `35904796058`; it never reached the LLM guidance or adaptive Learning queue.
+- Next action: trigger a fresh Brain-LLM-guided Learning run on current main, require the LLM bridge preflight to pass, then verify router/server/guidance markers and the existing Learning -> canonical Repair return edge.
+
+
 ## 2026-09-23 20:50 Europe/Paris — Brain LLM Learning bridge made executable before fresh Repair
 
 - Current main Brain LLM integration was revalidated against the real workflow, not inferred from commit messages. The Learning workflow pins the current NiakVIO-Brain-LLM commit `c752f5c21ded26c578eaeacb492611f3fdb137a9`, builds bounded public/private memory, pre-routes the current cohort, starts local Qwen through llama.cpp only when the router requests it, sanitizes guidance, and exposes it to the deterministic Learning planner as prior-only evidence.
