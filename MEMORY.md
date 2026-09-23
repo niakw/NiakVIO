@@ -4300,3 +4300,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 
 - Targeted WAF run `35928054146` stopped before network/Tailscale work because the static workflow contract incorrectly required the runtime marker `FIELD_WAF_TARGETED_LEDGER_MERGE` to appear literally in YAML. The marker is emitted by `scripts/merge_targeted_waf_refresh.py`, and that helper has its own executable unit contract.
 - The stale YAML-string assertion is removed; workflow still requires the merge step/script and the helper unit test. No transport result is inferred from the failed run.
+
+
+### 2026-09-24 — Existing Tailscale evidence can now reclassify without a network rerun
+
+- The current disputed transport evidence was produced on provider bytes rooted at `5829ecc1020f...`. The evidence persistence commit `b38f896...` changed only census/Brain/WAF evidence files; later changes are Brain/workflow/test control-plane. Re-running the same network matrix is therefore unnecessary just to repair the lost final census overlay.
+- The WAF lane now supports `reuseExistingEvidence=true` only when `select_provider_materialization_scope.py` proves `mode=none` between the evidence source SHA and the current SHA. Any provider-impact drift fails closed and forces a real fresh probe.
+- In reuse mode Java/Tailscale/network probes are skipped; the existing complete WAF ledger is reapplied to the current census and persisted. This makes transport reclassification a seconds/minutes operation instead of repeating a multi-minute network diagnostic.
