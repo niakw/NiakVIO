@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: provider-migration-consolidation-main
@@ -146,8 +147,15 @@ jobs:
             scripts/provider_patches/mugiwarastream_packed_runtime_v1.py
           if git diff --cached --quiet; then
             echo "FIELD_PROVIDER_MIGRATION_PERSIST changed=false"
-            exit 0
+          else
+            git commit -m "chore(provider): consolidate deterministic runtime migrations"
+            git push origin HEAD:main
+            echo "FIELD_PROVIDER_MIGRATION_PERSIST changed=true"
           fi
-          git commit -m "chore(provider): consolidate deterministic runtime migrations"
-          git push origin HEAD:main
-          echo "FIELD_PROVIDER_MIGRATION_PERSIST changed=true"
+
+          # Dispatch, rather than push-trigger, so the census selector falls back
+          # to HEAD^ and sees the exact consolidation commit as its provider-byte
+          # input delta. This is the one final global reconstruction proof.
+          gh workflow run temp-current-bytes-full-provider-census.yml \
+            --repo "$GITHUB_REPOSITORY" --ref main
+          echo "FIELD_PROVIDER_MIGRATION_CENSUS_DISPATCH ref=main"

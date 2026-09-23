@@ -4384,3 +4384,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 
 - Consolidation run `35935327552` proved the migration set itself is idempotent: applying it twice produced an identical git diff. The persistence step did not run because the validation phase then executed `manual_tv_live_regressions_v34_test.py`, which intentionally patches ProviderBase while testing and therefore changed the dirty workspace after the migration diff was captured.
 - The retry resets all test-side workspace mutations after validation, reapplies only the explicit consolidation migration set, and requires that reconstructed diff to match the original first-pass diff byte-for-byte before commit. This preserves the useful tests without accidentally persisting their helper-side mutations.
+
+### 2026-09-24 — Consolidated migrations persisted; final current-byte reconstruction explicitly dispatched
+
+- Consolidation retry 35935430487 completed SUCCESS and pushed 11c71b4c7750ec2484881d65fc94c237a156e1b5 (chore(provider): consolidate deterministic runtime migrations).
+- The persisted migration diff is intentionally source/DATA only. A follow-up no-op consolidation run is armed to prove those migrations now produce no workspace change on 11c71b4.
+- That no-op run explicitly dispatches temp-current-bytes-full-provider-census.yml via workflow_dispatch. With no push before SHA, the census materialization selector uses HEAD^, so it compares the consolidated source commit to its parent and performs the one required global rebuild rather than incorrectly treating a later trigger-only commit as provider-neutral.
+- After this census persists current bytes, the next Repair benchmark must show the migration chain changed=false and scoped materialization instead of recurring mode=all.
