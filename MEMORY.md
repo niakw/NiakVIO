@@ -4261,3 +4261,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The payload proved it was not current-run evidence: it referenced historical source SHA `d12ada427f02...`, 7 providers and the old 1200-second/3-wave configuration. It is deleted on `829c495ac24f7d5c60f306579b4a22e7672df29b`.
 - Current workflow revision already prevents recurrence by persisting Brain reports only when canonical Repair actually ran and `experienceMemory.sourceSha == GITHUB_SHA`.
 - The next Repair trigger must therefore start from this cleaned HEAD lineage and is the only run whose advisor metadata/provider outcomes may be treated as current proof.
+
+
+### 2026-09-23 — Repair preflight concurrency contract aligned with push-only cancellation
+
+- Clean private-guided Repair run `35919831743` on `74aec897b37c0f2823bd925a76e95a449ec69987` stopped before any network/provider mutation. The only failing preflight was `tests/provider_waf_tailscale_exit_contract_test.py`, which still hard-coded `cancel-in-progress: false` for canonical Repair after the workflow moved to push-only cancellation.
+- The WAF/census sharded lane remains non-cancelling as before. Only the Repair assertion now requires `cancel-in-progress: ${{ github.event_name == 'push' }}`, matching the already validated workflow and preserving manual/scheduled serialization.
+- No provider result is inferred from `35919831743`; canonical Repair was skipped and current-run Brain report capture correctly remained disabled.

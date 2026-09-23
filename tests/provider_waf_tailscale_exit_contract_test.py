@@ -73,7 +73,7 @@ assert "cancel-in-progress: true" in temp
 assert "group: provider-census-waf-main" in sharded
 assert "cancel-in-progress: false" in sharded
 assert "group: provider-repair-main-v2" in repair, repair[:600]
-assert "cancel-in-progress: false" in repair, repair[:600]
+assert "cancel-in-progress: ${{ github.event_name == 'push' }}" in repair, repair[:600]
 assert "workflow_dispatch:" in temp
 assert "FIELD_REPAIR_CANONICAL_LEDGER_STALE" in repair
 assert "FIELD_REPAIR_CANONICAL_LEDGER_SKIPPED" in repair
