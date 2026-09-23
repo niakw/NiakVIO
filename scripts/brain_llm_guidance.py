@@ -14,12 +14,12 @@ from pathlib import Path
 from typing import Any
 
 STRATEGY_TO_PROFILE = {
-    "provider_owned_origin_header_and_domain_replay": "provider_origin_failover_v1",
-    "search_detail_player_terminal_traversal": "proven_route_terminal_traversal_v1",
-    "terminal_media_extractor_with_playback_validation": "chain_terminal_extractor_v1",
-    "same_provider_candidate_program_replay": "retained_candidate_replay_v1",
-    "proven_request_program_and_terminal_extraction": "player_media_extractor_v1",
-    "discover_api_from_current_page_and_bundles": "search_contract_inference_v1",
+    "provider-owned-origin-header-and-domain-replay": "provider_origin_failover_v1",
+    "search-detail-player-terminal-traversal": "proven_route_terminal_traversal_v1",
+    "terminal-media-extractor-with-playback-validation": "chain_terminal_extractor_v1",
+    "same-provider-candidate-program-replay": "retained_candidate_replay_v1",
+    "proven-request-program-and-terminal-extraction": "player_media_extractor_v1",
+    "discover-api-from-current-page-and-bundles": "search_contract_inference_v1",
 }
 ALLOWED_PROFILES = frozenset(STRATEGY_TO_PROFILE.values())
 PROVIDER_ID = re.compile(r"^[a-z0-9][a-z0-9._-]{0,159}$")
