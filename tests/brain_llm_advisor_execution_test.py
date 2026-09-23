@@ -122,6 +122,9 @@ exhausted_memory=[
         "failures":1,
         "consecutiveFailures":1,
         "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"executed_candidate_failed_validation",
     }
     for variant in range(5)
 ]
@@ -149,6 +152,9 @@ rescue_failed=plan("repair",[
         "failures":1,
         "consecutiveFailures":1,
         "successes":0,
+        "executionObserved":True,
+        "lastOutcome":"rejected",
+        "lastReason":"executed_candidate_failed_validation",
     },
 ],rescue_guidance)
 assert rescue_failed["llmAdvisorApplied"] is False,rescue_failed
