@@ -47,6 +47,21 @@ def action_for(status:str, depth:str, issue:str)->tuple[str,str]:
         return "transport", "refresh transport authority before provider-local code changes"
     return "learning", "queue by signature for Brain learning; provider-local repair only after shared profiles fail"
 
+def action_for_row(row:dict[str,Any], depth:str, issue:str)->tuple[str,str]:
+    status=scalar(row.get("status"))
+    replay=" ".join(str(value or "") for value in row.get("residentialProviderReplayEvidence") or []).casefold()
+    if (
+        status.upper()=="NO PROOF"
+        and row.get("repairEligible") is True
+        and row.get("residentialProviderReplayReclassified") is True
+        and "provider_zero_before_provider_network" in replay
+    ):
+        return (
+            "learning",
+            "residential full-provider replay disproved transport ownership; learn a provider-side request/route strategy before mutation",
+        )
+    return action_for(status,depth,issue)
+
 def depth_class(values:list[str])->str:
     lowered={str(v).split("=",1)[-1].strip().lower() for v in values if str(v).strip()}
     if "chain_reached" in lowered: return "chain"
@@ -83,7 +98,7 @@ def main()->int:
         strategy=scalar(cap.get("strategy") or patch.get("capability"))
         depth=depth_class(list(row.get("evidenceDepth") or []))
         issue=issue_class(scalar(row.get("dominantIssue")))
-        scope,action=action_for(scalar(row.get("status")),depth,issue)
+        scope,action=action_for_row(row,depth,issue)
         # Normal provider failures batch broadly by repair scope + capability.
         # Harness failures are different: transport causality is already known
         # here, so browser-only/TLS divergence must never share an experiment
@@ -100,6 +115,7 @@ def main()->int:
             "harnessTransportClass":scalar(row.get("harnessTransportClass"), "not-applicable"),
             "declaredLanes":row.get("declaredLanes") or [],
             "currentVerifiedLanes":row.get("currentVerifiedLanes") or [],
+            "action":action,
         })
     out_groups=[]
     for key,members in groups.items():
@@ -114,11 +130,7 @@ def main()->int:
             for m in members
             if scalar(m.get("harnessTransportClass")) != "not-applicable"
         })
-        _,action=action_for(
-            members[0]["status"],
-            depths[0] if len(depths)==1 else "mixed",
-            issues[0] if len(issues)==1 else "mixed",
-        )
+        action=scalar(members[0].get("action"),"queue by signature for Brain learning")
         out_groups.append({
             "groupId":"|".join(key),
             "repairScope":scope,

@@ -25,6 +25,19 @@ assert mod.action_for("HARNESS/ENV BLOCKED","none","network_exception")[0]=="har
 assert mod.action_for("NO PROOF","none","waf_challenge")[0]=="harness-compatibility"
 assert mod.action_for("NO PROOF","none","network_http_error")[0]=="transport"
 
+reclassified={
+    "status":"NO PROOF",
+    "repairEligible":True,
+    "residentialProviderReplayReclassified":True,
+    "residentialProviderReplayEvidence":[
+        "movie: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+    ],
+}
+assert mod.action_for_row(reclassified,"none","waf_challenge")[0]=="learning"
+not_reclassified={**reclassified,"residentialProviderReplayReclassified":False}
+assert mod.action_for_row(not_reclassified,"none","waf_challenge")[0]=="harness-compatibility"
+
 source=SCRIPT.read_text(encoding="utf-8")
 assert "Final causal status is stronger than an older dominantIssue" in source
+assert "residential full-provider replay disproved transport ownership" in source
 print("provider repair batch causal precedence contract passed")

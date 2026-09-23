@@ -13,6 +13,11 @@ on:
         required: false
         default: ""
         type: string
+      target_providers:
+        description: Optional comma-separated current repairQueue cohort for targeted Learning
+        required: false
+        default: ""
+        type: string
       slot_remaining_minutes:
         description: Optional total Learning slot minutes including this phase; 0 keeps the normal one-hour run
         required: false
@@ -31,15 +36,13 @@ on:
   schedule:
     - cron: "17 2 * * *"
 
-# Scheduled/full Learning remains serialized. An explicit Fast-Repair handoff
-# may supersede an older unpublished Learning run: its source census/handoff is
-# newer, and cancelling before publish avoids hours of obsolete global discovery.
+# Learning is globally serialized. Push-triggered reconstruction may replace
+# an older unpublished push run, but explicit targeted cohorts queue instead of
+# cancelling one another so FAST handoff and independent Learning debt cannot
+# starve each other.
 concurrency:
-  # v2 intentionally escapes the pre-split orphan lane where an obsolete global
-  # discovery subprocess can ignore cancellation. New targeted runs serialize
-  # and supersede each other here; old-lane runs have no publication authority.
   group: niakvio-brain-learning-lab-v2
-  cancel-in-progress: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.slot_remaining_minutes != '0') }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   experiment:
@@ -51,6 +54,7 @@ jobs:
       slot_budget_minutes: ${{ steps.learning-slot.outputs.budget_minutes }}
       slot_phase: ${{ steps.learning-slot.outputs.phase }}
       target_provider: ${{ steps.learning-slot.outputs.target_provider }}
+      target_providers: ${{ steps.learning-slot.outputs.target_providers }}
     runs-on: ubuntu-latest
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
@@ -126,6 +130,7 @@ jobs:
           REQUESTED_REMAINING: ${{ inputs.slot_remaining_minutes || '0' }}
           REQUESTED_PHASE: ${{ inputs.slot_phase || '1' }}
           REQUESTED_TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
+          REQUESTED_TARGET_PROVIDERS: ${{ inputs.target_providers || '' }}
         run: |
           set -euo pipefail
           remaining="${REQUESTED_REMAINING:-0}"
@@ -134,6 +139,18 @@ jobs:
           [[ "$phase" =~ ^[0-9]+$ ]] || phase=1
           if [ "$phase" -lt 1 ]; then phase=1; fi
           target_provider="${REQUESTED_TARGET_PROVIDER:-}"
+          target_providers="${REQUESTED_TARGET_PROVIDERS:-}"
+          target_providers="$(python - "$target_providers" <<'PY'
+          import sys
+          values=[]; seen=set()
+          for raw in str(sys.argv[1] or "").split(","):
+              value=raw.strip().lower().replace("_","-")
+              if value and value not in seen:
+                  seen.add(value); values.append(value)
+          print(",".join(values))
+          PY
+          )"
+          if [ -n "$target_providers" ]; then target_provider=""; fi
           if [ "${GITHUB_EVENT_NAME}" = "push" ] && [ -f .github/triggers/brain-learning-reconstruction ]; then
             trigger_target="$(awk -F: '/^target_provider:[[:space:]]*/ {sub(/^[^:]*:[[:space:]]*/, ""); gsub(/[[:space:]]/, ""); print; exit}' .github/triggers/brain-learning-reconstruction)"
             if [ -n "${trigger_target:-}" ]; then target_provider="$trigger_target"; fi
@@ -152,7 +169,25 @@ jobs:
             --output /tmp/fast-learning-handoff.json
           fast_handoff="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print('true' if d.get('fastHandoff') else 'false')")"
           provider_filter="$(python -c "import json; d=json.load(open('/tmp/fast-learning-handoff.json')); print(d.get('providerFilter') or '')")"
-          if [ -n "$target_provider" ]; then
+          if [ -n "$target_providers" ]; then
+            python - "$target_providers" automation/provider-census-status.json /tmp/fast-learning-handoff.json <<'PY'
+          import json,sys
+          requested=[]; seen=set()
+          for raw in str(sys.argv[1] or "").split(","):
+              value=raw.strip().lower().replace("_","-")
+              if value and value not in seen:
+                  seen.add(value); requested.append(value)
+          census=json.load(open(sys.argv[2],encoding="utf-8"))
+          repair={str(v or "").strip().lower().replace("_","-") for v in census.get("repairQueue") or [] if str(v or "").strip()}
+          missing=[v for v in requested if v not in repair]
+          if not requested: raise SystemExit("targeted Learning cohort is empty")
+          if missing: raise SystemExit("targeted Learning cohort escaped current repairQueue: "+",".join(missing))
+          data={"schemaVersion":1,"fastHandoff":True,"providerCount":len(requested),"providers":requested,"providerFilter":",".join(requested),"policy":"autopilot-targeted-learning"}
+          json.dump(data,open(sys.argv[3],"w",encoding="utf-8"),ensure_ascii=False,indent=2)
+          PY
+            fast_handoff=true
+            provider_filter="$target_providers"
+          elif [ -n "$target_provider" ]; then
             python - "$target_provider" automation/provider-census-status.json automation/provider-repair-learn-handoff-v1.json /tmp/fast-learning-handoff.json <<'PY'
           import json,sys
           target=str(sys.argv[1] or '').strip().lower().replace('_','-')
@@ -207,8 +242,9 @@ jobs:
             echo "fast_handoff=$fast_handoff"
             echo "provider_filter=$provider_filter"
             echo "target_provider=$target_provider"
+            echo "target_providers=$target_providers"
           } >> "$GITHUB_OUTPUT"
-          echo "FIELD_BRAIN_LONG_SLOT phase=$phase budget_minutes=$budget next_remaining_minutes=$next_remaining continue=$continue_slot fast_handoff=$fast_handoff provider_filter=${provider_filter:-none} target_provider=${target_provider:-none}"
+          echo "FIELD_BRAIN_LONG_SLOT phase=$phase budget_minutes=$budget next_remaining_minutes=$next_remaining continue=$continue_slot fast_handoff=$fast_handoff provider_filter=${provider_filter:-none} target_provider=${target_provider:-none} target_providers=${target_providers:-none}"
 
       - name: Install pinned runtime dependencies
         shell: bash
@@ -1260,16 +1296,24 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           NEXT_REMAINING: ${{ needs.experiment.outputs.slot_next_remaining_minutes }}
           NEXT_PHASE: ${{ needs.experiment.outputs.slot_next_phase }}
+          TARGET_PROVIDER: ${{ needs.experiment.outputs.target_provider }}
+          TARGET_PROVIDERS: ${{ needs.experiment.outputs.target_providers }}
         shell: bash
         run: |
           set -euo pipefail
           test -n "$NEXT_REMAINING"
           test -n "$NEXT_PHASE"
-          gh workflow run brain-learning-lab.yml \
-            --repo "$GITHUB_REPOSITORY" \
-            --ref main \
-            -f publish_proposal=true \
-            -f slot_remaining_minutes="$NEXT_REMAINING" \
-            -f slot_phase="$NEXT_PHASE"
+          args=(gh workflow run brain-learning-lab.yml
+            --repo "$GITHUB_REPOSITORY"
+            --ref main
+            -f publish_proposal=true
+            -f slot_remaining_minutes="$NEXT_REMAINING"
+            -f slot_phase="$NEXT_PHASE")
+          if [ -n "${TARGET_PROVIDERS:-}" ]; then
+            args+=(-f target_providers="$TARGET_PROVIDERS")
+          elif [ -n "${TARGET_PROVIDER:-}" ]; then
+            args+=(-f target_provider="$TARGET_PROVIDER")
+          fi
+          "${args[@]}"
           echo "FIELD_BRAIN_LONG_SLOT_DISPATCH next_phase=$NEXT_PHASE remaining_minutes=$NEXT_REMAINING"
 

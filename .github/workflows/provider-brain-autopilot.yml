@@ -102,12 +102,16 @@ jobs:
             echo "FIELD_PROVIDER_AUTOPILOT dispatch=FAST_REPAIR providers=$FAST"
           fi
 
-          # Unclassified repair debt can enter bounded Learning directly only
-          # when no provider-local Repair cohort is already going to hand off
-          # unresolved work to the same serialized Learning lane.
-          if [ -n "$LEARNING" ] && [ -z "$FAST" ]; then
-            gh workflow run brain-learning-lab.yml               --repo "$GITHUB_REPOSITORY" --ref main               -f publish_proposal=false -f slot_remaining_minutes=20 -f slot_phase=1
-            echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING providers=$LEARNING"
+          # Distinct Learning debt must not be starved by an unrelated FAST cohort.
+          # Learning is non-mutating and globally serialized, so later Fast-Repair
+          # handoff jobs queue behind this targeted cohort instead of cancelling it.
+          if [ -n "$LEARNING" ]; then
+            gh workflow run brain-learning-lab.yml \
+              --repo "$GITHUB_REPOSITORY" --ref main \
+              -f publish_proposal=false \
+              -f target_providers="$LEARNING" \
+              -f slot_remaining_minutes=20 -f slot_phase=1
+            echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING providers=$LEARNING targeted=true"
           fi
 
           # Harness/Core-client evidence collection is autonomous but remains

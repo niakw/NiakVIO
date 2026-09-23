@@ -8,6 +8,7 @@ autopilot=(ROOT/".github/workflows/provider-brain-autopilot.yml").read_text(enco
 retest=(ROOT/".github/workflows/provider-retest.yml").read_text(encoding="utf-8")
 fast=(ROOT/".github/workflows/provider-fast-repair.yml").read_text(encoding="utf-8")
 remat=(ROOT/".github/workflows/provider-remat-test.yml").read_text(encoding="utf-8")
+learning=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 
 for required in (
     "scripts/build_provider_execution_plan.py",
@@ -19,6 +20,8 @@ for required in (
     "provider-waf-browser-session.yml",
     "target_providers=\"$HARNESS\"",
     "mutation=false",
+    'target_providers="$LEARNING"',
+    "targeted=true",
 ):
     assert required in autopilot,required
 
@@ -36,6 +39,16 @@ for source in (fast,remat):
     assert "target_providers:" in source
     assert "DISPATCH_PROVIDERS" in source
     assert "IFS=',' read -r -a raw_providers" in source
+
+for required in (
+    "target_providers:",
+    "REQUESTED_TARGET_PROVIDERS",
+    "autopilot-targeted-learning",
+    "target_providers=$target_providers",
+):
+    assert required in learning,required
+assert "cancel-in-progress: ${{ github.event_name == 'push' }}" in learning
+assert 'if [ -n "$LEARNING" ] && [ -z "$FAST" ]' not in autopilot
 
 # Autopilot itself never mutates production provider bytes.
 for forbidden in (

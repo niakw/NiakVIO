@@ -4353,3 +4353,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Repair persistence now classifies the exact intervening diff with `select_provider_materialization_scope.py` after rebasing onto current main.
 - The newer canonical census/authority/WAF ledger is still never overwritten by an older Repair. However, `mode=none` means provider inputs are unchanged, so causal Brain memory/report can be kept and **no extra full census is dispatched**. Only `providers` or `all` provider-input drift triggers a fresh exact current-byte census.
 - This breaks the census -> stale Repair -> census loop without weakening SHA/current-byte acceptance.
+
+
+### 2026-09-24 — Replay-reclassified NO PROOF and independent targeted Learning
+
+- Current allwish evidence is provider-side despite stale WAF lane text: status NO PROOF, repairEligible=true, residentialProviderReplayReclassified=true, and full residential replay reaches provider_zero_before_provider_network with no provider request. The repair batch planner now gives that stronger replay evidence precedence and routes such rows to BRAIN_LEARNING instead of harness-compatibility.
+- Brain Learning gains a comma-separated target_providers workflow input. The cohort is normalized/deduplicated, must remain inside the current repairQueue, and reuses the existing targeted published-stage, health, reconstruction and provider-filter path. Learning remains non-mutating.
+- Brain Autopilot no longer suppresses a distinct BRAIN_LEARNING cohort merely because FAST_REPAIR is non-empty. It dispatches the targeted Learning cohort in parallel at the control-plane level; the Learning workflow itself serializes explicit cohorts so a later Fast-Repair handoff queues instead of cancelling independent debt.
+- Fresh private Brain-LLM run 35930708414 completed SUCCESS. Its sanitized guidance is sourced from NiakVIO b3508f8405a4f0341810d9fb34303654b91f6093 and contains 10 confidence-0.96 provider priors: allanime, mallumv, moviebox, 4khdhub, anime-ultime, animesalt, flemmix, moviesmod, vidfast and yflix. No private content, proof authority or direct mutation authority is published.
+- Animevostfr remains candidate-replay owned rather than LLM-first. Allwish is intentionally not in the Qwen prior set because it lacks a proven route; targeted Learning is now its correct next owner.
