@@ -40,12 +40,6 @@ required=[
     "WAF_WORKERS=4",
     "Merge targeted refresh into complete WAF evidence ledger",
     "scripts/merge_targeted_waf_refresh.py",
-    "reuseExistingEvidence",
-    "WAF_REUSE_EXISTING",
-    "WAF_EVIDENCE_SOURCE_SHA",
-    "Validate existing WAF evidence reuse against unchanged provider bytes",
-    "select_provider_materialization_scope.py",
-    "FIELD_WAF_EVIDENCE_REUSE_SAFE",
 ]
 for needle in required:
     assert needle in wf, f"missing Tailscale WAF contract: {needle}"
@@ -106,11 +100,3 @@ assert "workflow_dispatch:" in wf
 header=wf.split("permissions:",1)[0]
 assert "\n  push:" in header
 assert "'.github/triggers/provider-waf-browser-session'" in header
-
-# Reusing existing WAF evidence is allowed only after provider-impact drift is
-# proven absent, and expensive network/native setup must be skipped.
-reuse=wf.index("Validate existing WAF evidence reuse against unchanged provider bytes")
-setup_java=wf.index("actions/setup-java@")
-connect=wf.index("Connect ephemeral Tailscale diagnostic node")
-assert reuse < setup_java < connect
-assert "env.WAF_REUSE_EXISTING != '1'" in wf[setup_java:connect]

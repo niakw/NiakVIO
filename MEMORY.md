@@ -4307,3 +4307,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The current disputed transport evidence was produced on provider bytes rooted at `5829ecc1020f...`. The evidence persistence commit `b38f896...` changed only census/Brain/WAF evidence files; later changes are Brain/workflow/test control-plane. Re-running the same network matrix is therefore unnecessary just to repair the lost final census overlay.
 - The WAF lane now supports `reuseExistingEvidence=true` only when `select_provider_materialization_scope.py` proves `mode=none` between the evidence source SHA and the current SHA. Any provider-impact drift fails closed and forces a real fresh probe.
 - In reuse mode Java/Tailscale/network probes are skipped; the existing complete WAF ledger is reapplied to the current census and persisted. This makes transport reclassification a seconds/minutes operation instead of repeating a multi-minute network diagnostic.
+
+
+### 2026-09-24 — Tailscale reclassification materially reduced false transport debt
+
+- WAF/Tailscale run `35928423660` persisted transport overlay commit `74edf179de28d5814e34e445256214adc22b4a82` using the bounded eight-provider cohort and non-destructive ledger merge.
+- Durable census moved from **4 HARNESS MISMATCH + 4 PROVIDER NETWORK BLOCKED** to **1 HARNESS MISMATCH + 1 HARNESS/ENV BLOCKED + 0 PROVIDER NETWORK BLOCKED**. Current headline is **26 FULL OK · 2 PARTIAL OK · 1 CANDIDATE OK · 7 ROUTE PROVEN · 3 CHAIN REACHED · 1 NO PROOF · 1 HARNESS MISMATCH · 1 HARNESS/ENV BLOCKED · 4 DISABLED**.
+- `vostfree` is now **FULL OK** from strict residential full-provider replay with verified media. `anime-ultime`, `moviebox`, `vidfast`, and `yflix` are no longer network-blocked; they re-enter ordinary provider Repair as ROUTE/CHAIN cases because native-like route reachability or normal provider replay disproved the blanket network diagnosis.
+- Remaining transport debt is now only `animesultra` (**HARNESS MISMATCH**, browser works while direct/OkHttp fail) and `animevost-fr` (**HARNESS/ENV BLOCKED**, residential exit also challenged). These need native/Core transport proof rather than another broad provider Repair.
+- Experimental `reuseExistingEvidence` workflow syntax from `e79f03e...` never created a job and is removed from main; the validated targeted WAF workflow from `77e3efb...` is restored while preserving the newly persisted census/WAF evidence.

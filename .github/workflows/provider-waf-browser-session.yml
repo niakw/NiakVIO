@@ -49,12 +49,10 @@ jobs:
         run: |
           set -euo pipefail
           target="${DISPATCH_TARGET_PROVIDERS:-}"
-          reuse_existing=0
-          evidence_source_sha=""
           if [ "${GITHUB_EVENT_NAME}" = "push" ]; then
             trigger=".github/triggers/provider-waf-browser-session"
             test -s "$trigger"
-            mapfile -t resolved < <(python - "$trigger" <<'PY'
+            target="$(python - "$trigger" <<'PY'
           import json,sys
           from pathlib import Path
           path=Path(sys.argv[1])
@@ -69,13 +67,8 @@ jobs:
           if len(values)>12:
               raise SystemExit("targeted WAF cohort is capped at 12")
           print(",".join(values))
-          print("1" if data.get("reuseExistingEvidence") is True else "0")
-          print(str(data.get("evidenceSourceSha") or "").strip().lower())
           PY
-            )
-            target="${resolved[0]:-}"
-            reuse_existing="${resolved[1]:-0}"
-            evidence_source_sha="${resolved[2]:-}"
+            )"
           fi
           if [ -n "$target" ]; then
             target="$(python - "$target" <<'PY'
@@ -92,8 +85,6 @@ jobs:
             )"
           fi
           echo "TARGET_PROVIDERS=$target" >> "$GITHUB_ENV"
-          echo "WAF_REUSE_EXISTING=$reuse_existing" >> "$GITHUB_ENV"
-          echo "WAF_EVIDENCE_SOURCE_SHA=$evidence_source_sha" >> "$GITHUB_ENV"
           if [ -n "$target" ]; then
             echo "WAF_ATTEMPTS=1" >> "$GITHUB_ENV"
             echo "WAF_WORKERS=4" >> "$GITHUB_ENV"
@@ -101,43 +92,18 @@ jobs:
             echo "WAF_ATTEMPTS=2" >> "$GITHUB_ENV"
             echo "WAF_WORKERS=3" >> "$GITHUB_ENV"
           fi
-          echo "FIELD_WAF_EXPLICIT_TARGETS providers=${target:-all-current-waf} reuse_existing=$reuse_existing"
+          echo "FIELD_WAF_EXPLICIT_TARGETS providers=${target:-all-current-waf}"
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.12'
 
-      - name: Validate existing WAF evidence reuse against unchanged provider bytes
-        if: ${{ env.WAF_REUSE_EXISTING == '1' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "${WAF_EVIDENCE_SOURCE_SHA:-}" != ""
-          git cat-file -e "${WAF_EVIDENCE_SOURCE_SHA}^{commit}"
-          python scripts/select_provider_materialization_scope.py \
-            --base "$WAF_EVIDENCE_SOURCE_SHA" \
-            --head "$GITHUB_SHA" \
-            --output /tmp/waf-evidence-reuse-scope.json
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          data=json.loads(Path("/tmp/waf-evidence-reuse-scope.json").read_text())
-          if data.get("mode")!="none":
-              raise SystemExit("existing WAF evidence cannot be reused across provider-impact drift")
-          print(
-              "FIELD_WAF_EVIDENCE_REUSE_SAFE "
-              f"base={data.get('base')} head={data.get('head')} changed={len(data.get('changedPaths') or [])}"
-          )
-          PY
-
       - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
-        if: ${{ env.WAF_REUSE_EXISTING != '1' }}
         with:
           distribution: temurin
           java-version: "17"
 
       - name: Build NuvioTV-policy OkHttp diagnostic helper
-        if: ${{ env.WAF_REUSE_EXISTING != '1' }}
         run: mvn -q -f tools/waf-okhttp-probe/pom.xml -DskipTests package
 
       - name: Validate ordinary-browser diagnostic contract
@@ -162,7 +128,7 @@ jobs:
           python tests/targeted_waf_refresh_merge_test.py
 
       - name: Normalize private Tailscale CI tag
-        if: ${{ env.WAF_REUSE_EXISTING != '1' && (env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '') }}
+        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -175,7 +141,7 @@ jobs:
 
 
       - name: Inspect bounded GitHub OIDC claims
-        if: ${{ env.WAF_REUSE_EXISTING != '1' && (env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '') }}
+        if: ${{ env.TS_OAUTH_CLIENT_ID != '' && env.TS_AUDIENCE != '' && env.TS_EXIT_NODE != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -189,7 +155,6 @@ jobs:
           unset response OIDC_TOKEN encoded_audience
 
       - name: Connect ephemeral Tailscale diagnostic node
-        if: ${{ env.WAF_REUSE_EXISTING != '1' }}
         id: tailscale_connect
         continue-on-error: true
         timeout-minutes: 4
@@ -203,7 +168,6 @@ jobs:
           args: --accept-dns=false
 
       - name: Reprobe persisted WAF lanes on GitHub-hosted network
-        if: ${{ env.WAF_REUSE_EXISTING != '1' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -227,7 +191,6 @@ jobs:
           "${args[@]}"
 
       - name: Select private residential exit node
-        if: ${{ env.WAF_REUSE_EXISTING != '1' }}
         id: select_residential_exit
         continue-on-error: true
         if: ${{ steps.tailscale_connect.outcome == 'success' && env.TS_EXIT_NODE != '' }}
@@ -249,7 +212,6 @@ jobs:
           echo "NIAKVIO_RESIDENTIAL_EXIT_ACTIVE=1" >> "$GITHUB_ENV"
 
       - name: Reprobe WAF lanes through private residential exit
-        if: ${{ env.WAF_REUSE_EXISTING != '1' }}
         id: residential_probe
         continue-on-error: true
         if: ${{ steps.select_residential_exit.outcome == 'success' && env.NIAKVIO_RESIDENTIAL_EXIT_ACTIVE == '1' }}
@@ -273,7 +235,6 @@ jobs:
           "${args[@]}"
 
       - name: Merge residential exit evidence without node identity
-        if: ${{ env.WAF_REUSE_EXISTING != '1' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -298,7 +259,7 @@ jobs:
           fi
 
       - name: Select full providers for residential replay
-        if: ${{ env.WAF_REUSE_EXISTING != '1' && (env.NIAKVIO_RESIDENTIAL_EXIT_ACTIVE == '1') }}
+        if: ${{ env.NIAKVIO_RESIDENTIAL_EXIT_ACTIVE == '1' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -318,7 +279,7 @@ jobs:
           fi
 
       - name: Replay full providers through private residential exit
-        if: ${{ env.WAF_REUSE_EXISTING != '1' && (env.NIAKVIO_RESIDENTIAL_PROVIDER_REPLAY == '1') }}
+        if: ${{ env.NIAKVIO_RESIDENTIAL_PROVIDER_REPLAY == '1' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -333,12 +294,12 @@ jobs:
           mv /tmp/provider-waf-with-residential-replay.json automation/provider-waf-browser-session-latest.json
 
       - name: Clear private exit-node routing
-        if: ${{ env.WAF_REUSE_EXISTING != '1' && (always() && env.NIAKVIO_RESIDENTIAL_EXIT_ACTIVE == '1') }}
+        if: ${{ always() && env.NIAKVIO_RESIDENTIAL_EXIT_ACTIVE == '1' }}
         shell: bash
         run: sudo tailscale set --exit-node= || true
 
       - name: Merge targeted refresh into complete WAF evidence ledger
-        if: ${{ env.WAF_REUSE_EXISTING != '1' && (env.TARGET_PROVIDERS != '') }}
+        if: ${{ env.TARGET_PROVIDERS != '' }}
         shell: bash
         run: |
           set -euo pipefail
