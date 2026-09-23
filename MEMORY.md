@@ -4180,3 +4180,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Generic correction prepared on main: persist only the already-sanitized `engine_v2/learning/llm-guidance.json` on the isolated memory ref; canonical Repair validates/re-scopes it as a read-only prior; the adaptive overlay forwards it; production Repair may use a whitelisted advisor profile only to order hypotheses. If ordinary variants are exhausted, a different advisor profile with no exact negative debt gets one bounded rescue. Playback, identity, strict-improvement and current-byte gates remain unchanged acceptance authority.
 - Exact-profile negative memory still suppresses a repeated LLM suggestion, preventing an endless advisor loop. No provider status promotion is justified until a fresh Learning/Repair cycle proves current-byte playable, identity-safe output.
 - Learning run `35910596067` remains tied to source SHA `987afb0877de7fa7c00e7c3e14b1880f36cccc2c`; it successfully checked out `niakvio-private`, built bounded public/private LLM memory, routed the cohort and started the adaptive queue. Any later main commit must be distinguished from this tested source SHA.
+
+
+### 2026-09-23 — Private NiakVIO memory bridge proven end-to-end in Brain-LLM
+
+- Brain-LLM commit `77ccc76f463d6808d04a86d88b3a1b8659f25df8`; live run `35913019451` completed successfully against NiakVIO `30b6da7498c0d200044a8ececf34ca982bf3acac`.
+- Private memory was genuinely indexed: 180 source conversations, 162 indexed, 6435 technical documents. Qwen was called for 3/15 targets with 0 model errors.
+- Public orphan branch `niakvio-guidance` contains exactly one file and 3 prior-only rows: `allanime` and `mallumv` -> `chain_terminal_extractor_v1`; `4khdhub` -> `proven_route_terminal_traversal_v1`, confidence 0.96. It retains no private content or proof/mutation authority.
+- Canonical Repair imports that minimal surface only after exact-schema, safety and source-drift validation. Provider/census/current-byte drift rejects re-scoping; workflow/test/documentation-only drift is allowed.

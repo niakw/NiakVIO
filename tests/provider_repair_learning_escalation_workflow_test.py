@@ -25,6 +25,10 @@ required=[
     "engine_v2/learning/llm-guidance.json",
     "NIAKVIO_BRAIN_LLM_GUIDANCE=",
     "FIELD_CANONICAL_REPAIR_LLM_GUIDANCE imported=true",
+    "scripts/import_external_brain_llm_guidance.py",
+    "NiakVIO-Brain-LLM.git",
+    "niakvio-guidance",
+    "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=true",
     '"authorityRepairEligible" in row and "authorityAction" in row',
 ]
 for needle in required:
@@ -41,6 +45,10 @@ assert "NIAKVIO_BRAIN_LEARNING_MEMORY=" in learning_block
 assert "engine_v2/learning/llm-guidance.json" in learning_block
 assert "NIAKVIO_BRAIN_LLM_GUIDANCE=" in learning_block
 assert 'data["persistentLearningPrior"]=True' in learning_block
+assert "import_external_brain_llm_guidance.py" in learning_block
+assert "external-brain-llm-guidance-repair.json" in learning_block
+assert "external_imported=true" in learning_block
+assert learning_block.index("NiakVIO-Brain-LLM.git") < learning_block.index("source=niakvio-learning")
 
 persist=workflow.index("- name: Persist Repair census state")
 copy=workflow.index("provider-brain-repair-latest.json",persist)
