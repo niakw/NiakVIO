@@ -11,6 +11,7 @@ NON_PROVIDER_HOSTS={
     'github.com','raw.githubusercontent.com','google.com','www.google.com','google.co.in','www.google.co.in',
     'support.google.com','bing.com','www.bing.com','duckduckgo.com','html.duckduckgo.com',
     'yandex.com','www.yandex.com','googletagmanager.com','google-analytics.com',
+    'gstatic.com','www.gstatic.com',
     'static.cloudflareinsights.com','cloudflareinsights.com','connect.facebook.net','doubleclick.net',
     'googlesyndication.com',
 }
@@ -97,6 +98,10 @@ def compile_program(program:dict[str,Any],provider:str)->dict[str,Any]:
         if key in seen_norm:continue
         seen_norm.add(key);norm.append(row)
     if not norm:raise ValueError('no provider-owned executable recipes')
+    failure_class=str(o.get('experiment_failure_class') or '').strip().casefold()
+    media_failures={'media_extraction_gap','playback_context_gap','chain_terminal_gap'}
+    if failure_class in media_failures and not any(x.get('streamProof') is True for x in norm):
+        raise ValueError('no provider-owned stream-proof recipe')
     indep=[x for x in norm if not x['bindings']];dep=[x for x in norm if x['bindings']];search=[]
     for x in indep:
         ser=json.dumps({'route':x['route'],'requestSpec':x['requestSpec']})

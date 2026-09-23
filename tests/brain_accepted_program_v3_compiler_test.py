@@ -64,6 +64,7 @@ program={
                 "response":"html-or-text",
                 "semanticType":"movie",
                 "requiredBindings":["id"],
+                "streamProof":True,
                 "executable":True,
             },
         ],
@@ -170,5 +171,16 @@ except ValueError:
     pass
 else:
     raise AssertionError("binding that ProviderBase cannot represent losslessly was persisted")
+
+# Media-extraction success may not be learned from unrelated marketing/CDN media.
+marketing=json.loads(json.dumps(program))
+marketing["options"]["request_recipes"][2]["origin"]="https://www.gstatic.com"
+marketing["options"]["request_recipes"][2]["route"]="/marketing-cms/demo/videogen.mp4"
+try:
+    mod.compile_program(marketing,"demo")
+except ValueError as exc:
+    assert "stream-proof" in str(exc),exc
+else:
+    raise AssertionError("non-provider marketing media was persisted as positive stream proof")
 
 print("Brain accepted runtime program -> Provider v3 DATA compiler contract passed")

@@ -318,6 +318,46 @@ def experiment_rotation_decision(
     return "exhausted" if memory_advanced else "stalled"
 
 
+def generic_unadvised_learning_handoff(
+    brain_summary: dict[str, Any],
+    accepted: list[dict[str, Any]],
+    fixed: set[str],
+) -> set[str]:
+    """Escalate one failed generic attempt instead of burning variants 1..4.
+
+    The LLM/learning lane exists specifically to invent a better strategy. Once
+    canonical Repair has executed the generic adaptive profile once without a
+    strict accepted/fixed result, repeating the same family with variant-only
+    changes is poor portfolio economics. Advisor-backed or non-generic named
+    strategies remain eligible for their bounded Repair attempt.
+    """
+    # PROVIDER_BRAIN_GENERIC_MISS_TO_LEARNING_V1
+    accepted_providers = {
+        cid(row.get("provider"))
+        for row in accepted
+        if isinstance(row, dict) and cid(row.get("provider"))
+    }
+    out: set[str] = set()
+    for plan in (brain_summary.get("plans") or {}).values():
+        if not isinstance(plan, dict):
+            continue
+        provider = cid(plan.get("providerId"))
+        if not provider or provider in accepted_providers or provider in fixed:
+            continue
+        if str(plan.get("action") or "") != "probe-targeted-repair":
+            continue
+        if plan.get("llmAdvisorApplied") is True or plan.get("llmAdvisorRescue") is True:
+            continue
+        allowed = [
+            str(value)
+            for value in plan.get("allowedProfiles") or []
+            if str(value).strip()
+        ]
+        if allowed == ["adaptive_runtime_recovery"]:
+            out.add(provider)
+    return out
+
+
 def exhausted_from_negative_memory(brain_summary: dict[str, Any]) -> set[str]:
     """Reclassify signatures that became exhausted during the just-finished wave."""
     policy = load(BRAIN_POLICY, {})
@@ -712,6 +752,12 @@ def main() -> int:
                     and cid(row.get("providerId"))
                 }
                 deferred.update(exhausted_from_negative_memory(brain_summary))
+                generic_learning_handoff = generic_unadvised_learning_handoff(
+                    brain_summary,
+                    accepted,
+                    fixed,
+                )
+                deferred.update(generic_learning_handoff)
                 accepted_this_wave.extend(accepted)
                 fixed_this_wave.update(fixed)
                 deferred_this_wave.update(deferred)
@@ -728,6 +774,7 @@ def main() -> int:
                     "accepted": accepted,
                     "fixedInLab": sorted(fixed),
                     "deferredToLearning": sorted(deferred),
+                    "genericLearningHandoff": sorted(generic_learning_handoff),
                     "brain": brain_summary,
                 })
 
@@ -749,7 +796,7 @@ def main() -> int:
             )
 
             all_accepted.extend(accepted_this_wave)
-            all_fixed.update(fixed_this_wave)
+            all_fixed.update(effective_fixed_this_wave)
             all_deferred.update(deferred_this_wave)
             remaining = [
                 provider for provider in remaining
@@ -762,8 +809,9 @@ def main() -> int:
                 "inputProviderCount": sum(row["providerCount"] for row in batch_reports),
                 "acceptedCount": len(accepted_this_wave),
                 "timeBudgetExhausted": time_budget_exhausted,
-                "fixedInLabCount": len(fixed_this_wave),
-                "fixedInLab": sorted(fixed_this_wave),
+                "fixedInLabCount": len(effective_fixed_this_wave),
+                "fixedInLab": sorted(effective_fixed_this_wave),
+                "rawFixedInLab": sorted(fixed_this_wave),
                 "acceptedProgramCompiledProviders": sorted(compiled_this_wave),
                 "acceptedProgramCompileFailures": dict(sorted(compile_failures_this_wave.items())),
                 "durableMaterializeTargets": sorted(materialize_targets_this_wave),

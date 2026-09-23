@@ -23,6 +23,8 @@ required=[
     "merge_waf_census_transport.py",
     "--authority-status automation/provider-authority-status.json",
     "FIELD_REPAIR_WAF_QUALIFIED",
+    "Reapply integrated WAF qualification after canonical Repair",
+    "FIELD_REPAIR_WAF_FINAL",
     "automation/provider-waf-browser-session-latest.json",
 ]
 for needle in required:
@@ -34,7 +36,14 @@ pre_render=wf.index("scripts/render_provider_census_status.py /tmp/provider-repa
 connect=wf.index("- name: Connect optional Repair Tailscale transport")
 merge=wf.index("- name: Apply integrated WAF qualification to Repair census")
 canonical=wf.index("- name: Run canonical recognition and correction only for unresolved providers")
-assert prepare < authority < pre_render < connect < merge < canonical
+final_merge=wf.index("- name: Reapply integrated WAF qualification after canonical Repair")
+persist=wf.index("- name: Persist Repair census state")
+assert prepare < authority < pre_render < connect < merge < canonical < final_merge < persist
+final_block=wf[final_merge:persist]
+assert "if: ${{ always() }}" in final_block
+assert "merge_waf_census_transport.py" in final_block
+assert "render_provider_census_status_from_state.py" in final_block
+assert "FIELD_REPAIR_WAF_FINAL" in final_block
 assert "Reject superseded Repair SHA before expensive work" in wf
 assert "FIELD_REPAIR_SUPERSEDED_EARLY" in wf
 
@@ -47,7 +56,6 @@ assert "tailscale-not-configured" in connect_block
 assert "tailscale-offline-or-unavailable" in connect_block
 
 # WAF evidence must be part of the durable Repair evidence commit.
-persist=wf.index("- name: Persist Repair census state")
 persist_block=wf[persist:]
 assert 'cp automation/provider-waf-browser-session-latest.json "$tmp/provider-waf-browser-session-latest.json"' in persist_block
 assert 'cp "$tmp/provider-waf-browser-session-latest.json" automation/provider-waf-browser-session-latest.json' in persist_block

@@ -455,6 +455,42 @@ jobs:
           printf 'CANONICAL_REPAIR_ARGS %q ' "${args[@]}"; echo
           "${args[@]}"
 
+      - name: Reapply integrated WAF qualification after canonical Repair
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -s automation/provider-census-status.json ] || [ ! -s automation/provider-waf-browser-session-latest.json ]; then
+            echo "FIELD_REPAIR_WAF_FINAL skipped=true reason=missing-state-or-waf"
+            exit 0
+          fi
+          python scripts/merge_waf_census_transport.py \
+            --status automation/provider-census-status.json \
+            --waf automation/provider-waf-browser-session-latest.json \
+            --authority-status automation/provider-authority-status.json \
+            --output /tmp/provider-repair-census-waf-final.json \
+            --run-id "${GITHUB_RUN_ID}-repair-waf-final" \
+            --sha "$GITHUB_SHA"
+          mv /tmp/provider-repair-census-waf-final.json automation/provider-census-status.json
+          python scripts/build_provider_repair_batch_plan.py \
+            --status automation/provider-census-status.json \
+            --overrides provider-overrides.json \
+            --output automation/provider-repair-batch-plan-latest.json
+          python scripts/render_provider_census_status_from_state.py \
+            --status automation/provider-census-status.json \
+            --output PROVIDER_CENSUS_STATUS.md
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          state=json.loads(Path("automation/provider-census-status.json").read_text())
+          print(
+              "FIELD_REPAIR_WAF_FINAL "
+              f"repair={len(state.get('repairQueue') or [])} "
+              f"harness_mismatch={len(state.get('harnessMismatchQueue') or [])} "
+              f"network_blocked={sum(1 for row in state.get('providers') or [] if isinstance(row,dict) and row.get('status')=='PROVIDER NETWORK BLOCKED')}"
+          )
+          PY
+
       - name: Enforce four-version floor on repair candidate
         if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode != 'learn') }}
         shell: bash

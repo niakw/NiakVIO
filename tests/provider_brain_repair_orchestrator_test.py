@@ -54,6 +54,39 @@ assert mod.experiment_rotation_decision(
     accepted_count=1, remaining_count=3, wave=1, max_waves=5, memory_advanced=True
 )=="materialize"
 
+generic_summary={
+    "plans":{
+        "published:y":{
+            "providerId":"y",
+            "action":"probe-targeted-repair",
+            "allowedProfiles":["adaptive_runtime_recovery"],
+            "llmAdvisorApplied":False,
+            "llmAdvisorRescue":False,
+        },
+        "published:advisor":{
+            "providerId":"advisor",
+            "action":"probe-targeted-repair",
+            "allowedProfiles":["player_media_extractor_v1"],
+            "llmAdvisorApplied":True,
+            "llmAdvisorRescue":False,
+        },
+        "published:named":{
+            "providerId":"named",
+            "action":"probe-targeted-repair",
+            "allowedProfiles":["chain_terminal_extractor_v1"],
+            "llmAdvisorApplied":False,
+            "llmAdvisorRescue":False,
+        },
+    }
+}
+assert mod.generic_unadvised_learning_handoff(generic_summary,[],set())=={"y"}
+assert mod.generic_unadvised_learning_handoff(
+    generic_summary,[{"provider":"y"}],set()
+)==set()
+assert mod.generic_unadvised_learning_handoff(
+    generic_summary,[],{"y"}
+)==set()
+
 with tempfile.TemporaryDirectory() as tmp:
     old_status,old_plan,old_memory=mod.STATUS,mod.BATCH_PLAN,mod.REPAIR_MEMORY
     try:
@@ -298,6 +331,7 @@ for required in (
     "provider_attempt_pressure_map",
     "PROVIDER_BRAIN_PACKED_FAMILY_BATCHES_V1",
     "PROVIDER_BRAIN_BATCH_CONCURRENCY_V1",
+    "PROVIDER_BRAIN_GENERIC_MISS_TO_LEARNING_V1",
 ):
     assert required in source, required
 
