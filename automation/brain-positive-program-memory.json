@@ -79,6 +79,91 @@
       "statusBefore": "no_streams",
       "validated": true,
       "validationAuthority": "strict-deep-playable-improvement"
+    },
+    {
+      "compiledProgram": {
+        "acceptedProgramRevision": 5,
+        "experimentFailureClass": "media_extraction_gap",
+        "experimentGeneration": 2,
+        "experimentVariant": 4,
+        "learnedRoutes": [
+          "/search.php?q={query}",
+          "/api/file/",
+          "/mov",
+          "/marketing-cms/2b/2d/5773dbe7444982c82d71c4c0aa50/gemini-live.mp4",
+          "/marketing-cms/cd/0d/f10d1eba4df8acec24241acae3e2/videogen.mp4",
+          "/marketing-cms/3e/d4/472be25e4cb9af11bf1bdf9f73aa/flow-flowtv.mp4"
+        ],
+        "origins": [
+          "https://mallumv.cyou",
+          "https://mallumv.gay",
+          "https://mallumv.space",
+          "https://www.gstatic.com"
+        ],
+        "provider": "mallumv",
+        "providerValuePlan": [],
+        "schemaVersion": 1,
+        "searchRequestPlan": [
+          {
+            "base": "https://mallumv.gay",
+            "proofModelVersion": 6,
+            "requestSpec": {
+              "headers": {
+                "Accept": "text/html,application/xhtml+xml,application/json,*/*",
+                "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.5",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+              },
+              "method": "GET"
+            },
+            "responseKind": "html-or-text",
+            "route": "/search.php?q={query}",
+            "semanticTypes": [
+              "movie"
+            ],
+            "sourceRole": "brain-accepted-runtime",
+            "streamProof": false
+          },
+          {
+            "base": "https://mallumv.space",
+            "proofModelVersion": 6,
+            "requestSpec": {
+              "headers": {
+                "Accept": "text/html,application/xhtml+xml,application/json,*/*",
+                "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.5",
+                "Origin": "https://mallumv.space",
+                "Referer": "https://mallumv.space/",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+              },
+              "method": "GET"
+            },
+            "responseKind": "html-or-text",
+            "route": "/search.php?q={query}",
+            "semanticTypes": [
+              "movie"
+            ],
+            "sourceRole": "brain-accepted-runtime",
+            "streamProof": false
+          }
+        ],
+        "source": "strict-brain-accepted-runtime-program",
+        "types": [
+          "movie"
+        ]
+      },
+      "experimentGeneration": 2,
+      "experimentVariant": 4,
+      "failureClass": "media_extraction_gap",
+      "fingerprint": "bbd20565fffab86332b450ee3bd3d123bf87cf4429ed1f872aa9061b8aedc981",
+      "playableAfter": 1,
+      "playableBefore": 0,
+      "profile": "player_media_extractor_v1",
+      "providerId": "mallumv",
+      "reason": "strict_playable_stream_improvement",
+      "signature": "c92d106e5a46a2b33459e485",
+      "statusAfter": "healthy",
+      "statusBefore": "no_streams",
+      "validated": true,
+      "validationAuthority": "strict-deep-playable-improvement"
     }
   ],
   "role": "validated-positive-program-prior-only",

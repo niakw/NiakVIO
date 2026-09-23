@@ -1,0 +1,1598 @@
+{
+  "acceptedProgramCompileFailures": {},
+  "acceptedProgramCompiledProviders": [
+    "mallumv"
+  ],
+  "acceptedRepairCount": 1,
+  "acceptedRepairs": [
+    {
+      "acceptedProgram": {
+        "executedProfile": "player_media_extractor_v1",
+        "options": {
+          "alias_search": false,
+          "base_url": "https://mallumv.Space",
+          "blocked_hosts": [
+            "cloudflareinsights.com",
+            "connect.facebook.net",
+            "doubleclick.net",
+            "fstream.top",
+            "google-analytics.com",
+            "googlesyndication.com",
+            "googletagmanager.com",
+            "static.cloudflareinsights.com"
+          ],
+          "blocked_path_patterns": [
+            "/beacon.min.js",
+            "/cdn-cgi/rum",
+            "/gtag/js",
+            "/troll/"
+          ],
+          "census_status": "CHAIN REACHED",
+          "direct_paths": [
+            "/api/file/",
+            "/mov",
+            "/",
+            "/marketing-cms/2b/2d/5773dbe7444982c82d71c4c0aa50/gemini-live.mp4",
+            "/marketing-cms/cd/0d/f10d1eba4df8acec24241acae3e2/videogen.mp4",
+            "/marketing-cms/3e/d4/472be25e4cb9af11bf1bdf9f73aa/flow-flowtv.mp4"
+          ],
+          "document_request_mining": false,
+          "endpoint_origins": [
+            "https://mallumv.Space",
+            "https://mallumv.space",
+            "https://pixeldrain.net",
+            "https://old.invalid",
+            "https://mallumv.gay",
+            "https://mallumv.cyou",
+            "https://invalid.local",
+            "https://video.sibnet.ru"
+          ],
+          "experiment_failure_class": "media_extraction_gap",
+          "experiment_generation": 2,
+          "experiment_strategy": "learned-family-new-strategy",
+          "experiment_variant": 4,
+          "max_depth": 4,
+          "max_embeds": 24,
+          "max_pages": 24,
+          "max_recipe_passes": 3,
+          "negative_memory_matches": 8,
+          "new_strategy_id": "player_media_extractor_v1",
+          "peer_recipe_min_variant": 3,
+          "peer_route_min_variant": 3,
+          "repair_focus": "media-extraction",
+          "request_recipes": [
+            {
+              "body": {},
+              "bodyKind": "none",
+              "executable": true,
+              "headerNames": [
+                "accept",
+                "accept-language",
+                "origin",
+                "referer",
+                "user-agent"
+              ],
+              "method": "GET",
+              "origin": "https://mallumv.cyou",
+              "requiredBindings": [],
+              "response": "html-or-text",
+              "role": "detail",
+              "route": "/mov",
+              "semanticType": "movie",
+              "source": "current-observation",
+              "streamProof": false
+            },
+            {
+              "body": {},
+              "bodyKind": "none",
+              "executable": true,
+              "headerNames": [
+                "accept",
+                "accept-language",
+                "user-agent"
+              ],
+              "method": "GET",
+              "origin": "https://mallumv.gay",
+              "requiredBindings": [],
+              "response": "html-or-text",
+              "role": "search",
+              "route": "/search.php?q={query}",
+              "semanticType": "movie",
+              "source": "current-observation",
+              "streamProof": false
+            },
+            {
+              "body": {},
+              "bodyKind": "none",
+              "executable": true,
+              "headerNames": [
+                "accept",
+                "accept-language",
+                "origin",
+                "referer",
+                "user-agent"
+              ],
+              "method": "GET",
+              "origin": "https://mallumv.space",
+              "requiredBindings": [],
+              "response": "html-or-text",
+              "role": "search",
+              "route": "/search.php?q={query}",
+              "semanticType": "movie",
+              "source": "current-observation",
+              "streamProof": false
+            },
+            {
+              "body": {},
+              "bodyKind": "none",
+              "executable": true,
+              "headerNames": [
+                "accept",
+                "accept-language",
+                "origin",
+                "referer",
+                "user-agent"
+              ],
+              "method": "GET",
+              "origin": "https://mallumv.space",
+              "requiredBindings": [],
+              "response": "html-or-text",
+              "role": "other",
+              "route": "/",
+              "semanticType": "movie",
+              "source": "current-observation",
+              "streamProof": false
+            },
+            {
+              "body": {},
+              "bodyKind": "none",
+              "executable": true,
+              "headerNames": [
+                "accept",
+                "accept-language",
+                "origin",
+                "referer",
+                "user-agent"
+              ],
+              "method": "GET",
+              "origin": "https://www.gstatic.com",
+              "requiredBindings": [],
+              "response": "html-or-text",
+              "role": "detail",
+              "route": "/marketing-cms/2b/2d/5773dbe7444982c82d71c4c0aa50/gemini-live.mp4",
+              "semanticType": "movie",
+              "source": "current-observation",
+              "streamProof": false
+            },
+            {
+              "body": {},
+              "bodyKind": "none",
+              "executable": true,
+              "headerNames": [
+                "accept",
+                "accept-language",
+                "origin",
+                "referer",
+                "user-agent"
+              ],
+              "method": "GET",
+              "origin": "https://www.gstatic.com",
+              "requiredBindings": [],
+              "response": "html-or-text",
+              "role": "player",
+              "route": "/marketing-cms/cd/0d/f10d1eba4df8acec24241acae3e2/videogen.mp4",
+              "semanticType": "movie",
+              "source": "current-observation",
+              "streamProof": true
+            },
+            {
+              "body": {},
+              "bodyKind": "none",
+              "executable": true,
+              "headerNames": [
+                "accept",
+                "accept-language",
+                "origin",
+                "referer",
+                "user-agent"
+              ],
+              "method": "GET",
+              "origin": "https://www.gstatic.com",
+              "requiredBindings": [],
+              "response": "html-or-text",
+              "role": "detail",
+              "route": "/marketing-cms/3e/d4/472be25e4cb9af11bf1bdf9f73aa/flow-flowtv.mp4",
+              "semanticType": "movie",
+              "source": "current-observation",
+              "streamProof": false
+            },
+            {
+              "body": {},
+              "bodyKind": "none",
+              "executable": true,
+              "headerNames": [
+                "accept",
+                "accept-language",
+                "user-agent"
+              ],
+              "method": "GET",
+              "origin": "https://mallumv.gay",
+              "requiredBindings": [],
+              "response": "html-or-text",
+              "role": "search",
+              "route": "/search.php?q={query}",
+              "semanticType": "movie",
+              "source": "positive-program-memory",
+              "streamProof": false
+            },
+            {
+              "body": {},
+              "bodyKind": "none",
+              "executable": true,
+              "headerNames": [
+                "accept",
+                "accept-language",
+                "origin",
+                "referer",
+                "user-agent"
+              ],
+              "method": "GET",
+              "origin": "https://mallumv.space",
+              "requiredBindings": [],
+              "response": "html-or-text",
+              "role": "search",
+              "route": "/search.php?q={query}",
+              "semanticType": "movie",
+              "source": "positive-program-memory",
+              "streamProof": false
+            },
+            {
+              "body": {},
+              "bodyKind": "none",
+              "executable": true,
+              "headerNames": [
+                "accept",
+                "accept-language",
+                "user-agent"
+              ],
+              "method": "GET",
+              "origin": "https://mallumv.gay",
+              "requiredBindings": [],
+              "response": "html-or-text",
+              "role": "search",
+              "route": "/search.php?q={query}",
+              "semanticType": "movie",
+              "source": "provider-experience",
+              "streamProof": false
+            }
+          ],
+          "route_prior_counts": {
+            "currentObservationRequestRecipes": 3,
+            "direct": 1,
+            "historicalCases": 1,
+            "nearestArchetypePeers": 3,
+            "peer": 24,
+            "peerRequestRecipes": 13,
+            "positiveProgramRequestRecipes": 2,
+            "positiveProgramRoutes": 2,
+            "positiveProgramUserAgent": true,
+            "provider": 6,
+            "providerRequestRecipes": 3,
+            "requestRecipes": 6,
+            "search": 1
+          },
+          "runtime_response_salvage": false,
+          "search_paths": [
+            "/search.php?q={query}"
+          ],
+          "session_bootstrap": false,
+          "timeout_ms": 9000,
+          "types": [
+            "movie"
+          ],
+          "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+        },
+        "profile": "adaptive_runtime_recovery",
+        "revision": 5,
+        "schemaVersion": 1
+      },
+      "brainPlan": {
+        "action": "probe-targeted-repair",
+        "allowedProfiles": [
+          "player_media_extractor_v1"
+        ],
+        "baseExperimentExhausted": false,
+        "capabilityStrategy": "html_scraper",
+        "censusStatus": "CHAIN REACHED",
+        "experimentGeneration": 2,
+        "experimentGenerationLimit": 2,
+        "experimentVariant": 4,
+        "failureClass": "media_extraction_gap",
+        "historicalStrategyCase": "",
+        "historicalStrategyProfile": "",
+        "hypotheses": [
+          {
+            "actions": [
+              "inspect player XHR/fetch",
+              "extract HLS/DASH/direct candidates",
+              "keep player provenance"
+            ],
+            "capabilities": [
+              "media",
+              "xhr",
+              "json"
+            ],
+            "clientVersions": {},
+            "confidence": 0,
+            "id": "capture-media-network",
+            "learned": false,
+            "maturity": null,
+            "profile": null,
+            "transferScore": 0
+          },
+          {
+            "actions": [
+              "identify deterministic token/deobfuscation logic",
+              "reproduce only the required logic"
+            ],
+            "capabilities": [
+              "media",
+              "javascript"
+            ],
+            "clientVersions": {},
+            "confidence": 0,
+            "id": "inspect-player-javascript",
+            "learned": false,
+            "maturity": null,
+            "profile": null,
+            "transferScore": 0
+          }
+        ],
+        "learningDisposition": "core_repair_only",
+        "negativeMemoryMatches": 8,
+        "observedPipelineStage": "player",
+        "positiveProgramFingerprint": "",
+        "postExhaustionStrategyMethod": "",
+        "postExhaustionStrategyProfile": "",
+        "providerId": "mallumv",
+        "repairType": "terminal_media_resolution",
+        "signature": "c92d106e5a46a2b33459e485",
+        "strategyEscalated": false,
+        "strategyImplementationFingerprint": ""
+      },
+      "playableAfter": 1,
+      "playableBefore": 0,
+      "positiveProgramMemory": {
+        "path": "automation/brain-positive-program-memory.json",
+        "status": "persisted"
+      },
+      "profile": "player_media_extractor_v1",
+      "provider": "mallumv",
+      "reason": "strict_playable_stream_improvement",
+      "statusAfter": "healthy",
+      "statusBefore": "no_streams",
+      "v3ProgramPersistence": {
+        "learnedRouteCount": 6,
+        "providerValuePlanCount": 0,
+        "searchPlanCount": 2,
+        "source": "strict-brain-accepted-runtime-program",
+        "status": "compiled"
+      }
+    }
+  ],
+  "batchSize": 48,
+  "deferredLearningProviders": [
+    "4khdhub",
+    "allanime",
+    "anime-ultime",
+    "animevostfr",
+    "moviebox",
+    "vidfast",
+    "yflix"
+  ],
+  "elapsedSeconds": 1595.319,
+  "executionModel": "family-batched-multi-wave-brain-repair",
+  "experienceMemory": {
+    "operationalProviderCount": 27,
+    "providerCount": 46,
+    "schemaVersion": 2,
+    "sourceRunId": "35920323353-pre-repair",
+    "sourceSha": "5829ecc1020f9071d8d22f5d8474f006eac622e7",
+    "strategyCount": 5
+  },
+  "fixedInLabProviders": [
+    "mallumv"
+  ],
+  "healthConcurrency": 0,
+  "healthConcurrencyMode": "auto-per-batch",
+  "initialStatuses": {
+    "4khdhub": "ROUTE PROVEN",
+    "allanime": "CHAIN REACHED",
+    "anime-ultime": "PROVIDER NETWORK BLOCKED",
+    "animevostfr": "CANDIDATE OK",
+    "mallumv": "CHAIN REACHED",
+    "moviebox": "PROVIDER NETWORK BLOCKED",
+    "vidfast": "PROVIDER NETWORK BLOCKED",
+    "yflix": "PROVIDER NETWORK BLOCKED"
+  },
+  "maxWaves": 5,
+  "noProgressReason": "experiment_variants_exhausted",
+  "processedProviderCount": 8,
+  "processedProviders": [
+    "4khdhub",
+    "allanime",
+    "anime-ultime",
+    "animevostfr",
+    "mallumv",
+    "moviebox",
+    "vidfast",
+    "yflix"
+  ],
+  "providerSpecificRules": false,
+  "remainingProviders": [],
+  "resumeRecommended": false,
+  "safety": {
+    "acceptedMutationRequiresStrictImprovement": true,
+    "currentByteRetestRequired": true,
+    "directSkillApplication": false,
+    "experienceMemoryRole": "prior-only-no-acceptance-authority",
+    "identityGateRequired": true,
+    "learnedSkillRole": "hypothesis-ordering-only",
+    "wafEnvironmentExcludedByDefault": true
+  },
+  "schemaVersion": 1,
+  "selectedProviderCount": 8,
+  "selectedProviders": [
+    "4khdhub",
+    "allanime",
+    "anime-ultime",
+    "animevostfr",
+    "mallumv",
+    "moviebox",
+    "vidfast",
+    "yflix"
+  ],
+  "selectionSource": "automation/provider-census-status.json:repairQueue",
+  "shardCount": 1,
+  "shardIndex": 0,
+  "skippedEnvironmentProviders": [],
+  "sourceCensusRunId": "35920323353-pre-repair",
+  "timeBudgetExhausted": false,
+  "timeBudgetSeconds": 2100,
+  "unvisitedProviders": [],
+  "waves": [
+    {
+      "acceptedCount": 1,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [
+        "mallumv"
+      ],
+      "batches": [
+        {
+          "accepted": [
+            {
+              "acceptedProgram": {
+                "executedProfile": "player_media_extractor_v1",
+                "options": {
+                  "alias_search": false,
+                  "base_url": "https://mallumv.Space",
+                  "blocked_hosts": [
+                    "cloudflareinsights.com",
+                    "connect.facebook.net",
+                    "doubleclick.net",
+                    "fstream.top",
+                    "google-analytics.com",
+                    "googlesyndication.com",
+                    "googletagmanager.com",
+                    "static.cloudflareinsights.com"
+                  ],
+                  "blocked_path_patterns": [
+                    "/beacon.min.js",
+                    "/cdn-cgi/rum",
+                    "/gtag/js",
+                    "/troll/"
+                  ],
+                  "census_status": "CHAIN REACHED",
+                  "direct_paths": [
+                    "/api/file/",
+                    "/mov",
+                    "/",
+                    "/marketing-cms/2b/2d/5773dbe7444982c82d71c4c0aa50/gemini-live.mp4",
+                    "/marketing-cms/cd/0d/f10d1eba4df8acec24241acae3e2/videogen.mp4",
+                    "/marketing-cms/3e/d4/472be25e4cb9af11bf1bdf9f73aa/flow-flowtv.mp4"
+                  ],
+                  "document_request_mining": false,
+                  "endpoint_origins": [
+                    "https://mallumv.Space",
+                    "https://mallumv.space",
+                    "https://pixeldrain.net",
+                    "https://old.invalid",
+                    "https://mallumv.gay",
+                    "https://mallumv.cyou",
+                    "https://invalid.local",
+                    "https://video.sibnet.ru"
+                  ],
+                  "experiment_failure_class": "media_extraction_gap",
+                  "experiment_generation": 2,
+                  "experiment_strategy": "learned-family-new-strategy",
+                  "experiment_variant": 4,
+                  "max_depth": 4,
+                  "max_embeds": 24,
+                  "max_pages": 24,
+                  "max_recipe_passes": 3,
+                  "negative_memory_matches": 8,
+                  "new_strategy_id": "player_media_extractor_v1",
+                  "peer_recipe_min_variant": 3,
+                  "peer_route_min_variant": 3,
+                  "repair_focus": "media-extraction",
+                  "request_recipes": [
+                    {
+                      "body": {},
+                      "bodyKind": "none",
+                      "executable": true,
+                      "headerNames": [
+                        "accept",
+                        "accept-language",
+                        "origin",
+                        "referer",
+                        "user-agent"
+                      ],
+                      "method": "GET",
+                      "origin": "https://mallumv.cyou",
+                      "requiredBindings": [],
+                      "response": "html-or-text",
+                      "role": "detail",
+                      "route": "/mov",
+                      "semanticType": "movie",
+                      "source": "current-observation",
+                      "streamProof": false
+                    },
+                    {
+                      "body": {},
+                      "bodyKind": "none",
+                      "executable": true,
+                      "headerNames": [
+                        "accept",
+                        "accept-language",
+                        "user-agent"
+                      ],
+                      "method": "GET",
+                      "origin": "https://mallumv.gay",
+                      "requiredBindings": [],
+                      "response": "html-or-text",
+                      "role": "search",
+                      "route": "/search.php?q={query}",
+                      "semanticType": "movie",
+                      "source": "current-observation",
+                      "streamProof": false
+                    },
+                    {
+                      "body": {},
+                      "bodyKind": "none",
+                      "executable": true,
+                      "headerNames": [
+                        "accept",
+                        "accept-language",
+                        "origin",
+                        "referer",
+                        "user-agent"
+                      ],
+                      "method": "GET",
+                      "origin": "https://mallumv.space",
+                      "requiredBindings": [],
+                      "response": "html-or-text",
+                      "role": "search",
+                      "route": "/search.php?q={query}",
+                      "semanticType": "movie",
+                      "source": "current-observation",
+                      "streamProof": false
+                    },
+                    {
+                      "body": {},
+                      "bodyKind": "none",
+                      "executable": true,
+                      "headerNames": [
+                        "accept",
+                        "accept-language",
+                        "origin",
+                        "referer",
+                        "user-agent"
+                      ],
+                      "method": "GET",
+                      "origin": "https://mallumv.space",
+                      "requiredBindings": [],
+                      "response": "html-or-text",
+                      "role": "other",
+                      "route": "/",
+                      "semanticType": "movie",
+                      "source": "current-observation",
+                      "streamProof": false
+                    },
+                    {
+                      "body": {},
+                      "bodyKind": "none",
+                      "executable": true,
+                      "headerNames": [
+                        "accept",
+                        "accept-language",
+                        "origin",
+                        "referer",
+                        "user-agent"
+                      ],
+                      "method": "GET",
+                      "origin": "https://www.gstatic.com",
+                      "requiredBindings": [],
+                      "response": "html-or-text",
+                      "role": "detail",
+                      "route": "/marketing-cms/2b/2d/5773dbe7444982c82d71c4c0aa50/gemini-live.mp4",
+                      "semanticType": "movie",
+                      "source": "current-observation",
+                      "streamProof": false
+                    },
+                    {
+                      "body": {},
+                      "bodyKind": "none",
+                      "executable": true,
+                      "headerNames": [
+                        "accept",
+                        "accept-language",
+                        "origin",
+                        "referer",
+                        "user-agent"
+                      ],
+                      "method": "GET",
+                      "origin": "https://www.gstatic.com",
+                      "requiredBindings": [],
+                      "response": "html-or-text",
+                      "role": "player",
+                      "route": "/marketing-cms/cd/0d/f10d1eba4df8acec24241acae3e2/videogen.mp4",
+                      "semanticType": "movie",
+                      "source": "current-observation",
+                      "streamProof": true
+                    },
+                    {
+                      "body": {},
+                      "bodyKind": "none",
+                      "executable": true,
+                      "headerNames": [
+                        "accept",
+                        "accept-language",
+                        "origin",
+                        "referer",
+                        "user-agent"
+                      ],
+                      "method": "GET",
+                      "origin": "https://www.gstatic.com",
+                      "requiredBindings": [],
+                      "response": "html-or-text",
+                      "role": "detail",
+                      "route": "/marketing-cms/3e/d4/472be25e4cb9af11bf1bdf9f73aa/flow-flowtv.mp4",
+                      "semanticType": "movie",
+                      "source": "current-observation",
+                      "streamProof": false
+                    },
+                    {
+                      "body": {},
+                      "bodyKind": "none",
+                      "executable": true,
+                      "headerNames": [
+                        "accept",
+                        "accept-language",
+                        "user-agent"
+                      ],
+                      "method": "GET",
+                      "origin": "https://mallumv.gay",
+                      "requiredBindings": [],
+                      "response": "html-or-text",
+                      "role": "search",
+                      "route": "/search.php?q={query}",
+                      "semanticType": "movie",
+                      "source": "positive-program-memory",
+                      "streamProof": false
+                    },
+                    {
+                      "body": {},
+                      "bodyKind": "none",
+                      "executable": true,
+                      "headerNames": [
+                        "accept",
+                        "accept-language",
+                        "origin",
+                        "referer",
+                        "user-agent"
+                      ],
+                      "method": "GET",
+                      "origin": "https://mallumv.space",
+                      "requiredBindings": [],
+                      "response": "html-or-text",
+                      "role": "search",
+                      "route": "/search.php?q={query}",
+                      "semanticType": "movie",
+                      "source": "positive-program-memory",
+                      "streamProof": false
+                    },
+                    {
+                      "body": {},
+                      "bodyKind": "none",
+                      "executable": true,
+                      "headerNames": [
+                        "accept",
+                        "accept-language",
+                        "user-agent"
+                      ],
+                      "method": "GET",
+                      "origin": "https://mallumv.gay",
+                      "requiredBindings": [],
+                      "response": "html-or-text",
+                      "role": "search",
+                      "route": "/search.php?q={query}",
+                      "semanticType": "movie",
+                      "source": "provider-experience",
+                      "streamProof": false
+                    }
+                  ],
+                  "route_prior_counts": {
+                    "currentObservationRequestRecipes": 3,
+                    "direct": 1,
+                    "historicalCases": 1,
+                    "nearestArchetypePeers": 3,
+                    "peer": 24,
+                    "peerRequestRecipes": 13,
+                    "positiveProgramRequestRecipes": 2,
+                    "positiveProgramRoutes": 2,
+                    "positiveProgramUserAgent": true,
+                    "provider": 6,
+                    "providerRequestRecipes": 3,
+                    "requestRecipes": 6,
+                    "search": 1
+                  },
+                  "runtime_response_salvage": false,
+                  "search_paths": [
+                    "/search.php?q={query}"
+                  ],
+                  "session_bootstrap": false,
+                  "timeout_ms": 9000,
+                  "types": [
+                    "movie"
+                  ],
+                  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+                },
+                "profile": "adaptive_runtime_recovery",
+                "revision": 5,
+                "schemaVersion": 1
+              },
+              "brainPlan": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "player_media_extractor_v1"
+                ],
+                "baseExperimentExhausted": false,
+                "capabilityStrategy": "html_scraper",
+                "censusStatus": "CHAIN REACHED",
+                "experimentGeneration": 2,
+                "experimentGenerationLimit": 2,
+                "experimentVariant": 4,
+                "failureClass": "media_extraction_gap",
+                "historicalStrategyCase": "",
+                "historicalStrategyProfile": "",
+                "hypotheses": [
+                  {
+                    "actions": [
+                      "inspect player XHR/fetch",
+                      "extract HLS/DASH/direct candidates",
+                      "keep player provenance"
+                    ],
+                    "capabilities": [
+                      "media",
+                      "xhr",
+                      "json"
+                    ],
+                    "clientVersions": {},
+                    "confidence": 0,
+                    "id": "capture-media-network",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "actions": [
+                      "identify deterministic token/deobfuscation logic",
+                      "reproduce only the required logic"
+                    ],
+                    "capabilities": [
+                      "media",
+                      "javascript"
+                    ],
+                    "clientVersions": {},
+                    "confidence": 0,
+                    "id": "inspect-player-javascript",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "negativeMemoryMatches": 8,
+                "observedPipelineStage": "player",
+                "positiveProgramFingerprint": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
+                "providerId": "mallumv",
+                "repairType": "terminal_media_resolution",
+                "signature": "c92d106e5a46a2b33459e485",
+                "strategyEscalated": false,
+                "strategyImplementationFingerprint": ""
+              },
+              "playableAfter": 1,
+              "playableBefore": 0,
+              "positiveProgramMemory": {
+                "path": "automation/brain-positive-program-memory.json",
+                "status": "persisted"
+              },
+              "profile": "player_media_extractor_v1",
+              "provider": "mallumv",
+              "reason": "strict_playable_stream_improvement",
+              "statusAfter": "healthy",
+              "statusBefore": "no_streams",
+              "v3ProgramPersistence": {
+                "learnedRouteCount": 6,
+                "providerValuePlanCount": 0,
+                "searchPlanCount": 2,
+                "source": "strict-brain-accepted-runtime-program",
+                "status": "compiled"
+              }
+            }
+          ],
+          "acceptedCount": 1,
+          "batch": 1,
+          "brain": {
+            "learnedEvents": 1,
+            "plans": {
+              "published:4khdhub": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "experiment_variants_exhausted",
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "failureClass": "playback_context_gap",
+                "hypotheses": [],
+                "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": "",
+                "negativeMemoryMatches": 5,
+                "providerId": "4khdhub",
+                "repairScope": "deferred",
+                "repairType": "experiment_strategy_exhausted",
+                "signature": "7c6658344f6188f0f77ece7f"
+              },
+              "published:allanime": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "chain_terminal_extractor_v1"
+                ],
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "failureClass": "chain_terminal_gap",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "finish-reached-terminal-chain",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "resolve-terminal-wrapper",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.96,
+                "llmAdvisorProfile": "chain_terminal_extractor_v1",
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": "terminal_media_extractor_with_playback_validation",
+                "negativeMemoryMatches": 7,
+                "providerId": "allanime",
+                "repairScope": "capability",
+                "repairType": "terminal_media_resolution",
+                "signature": "8daa3e9bedf63b16471f7c0e"
+              },
+              "published:anime-ultime": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "experiment_variants_exhausted",
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "failureClass": "provider_transport_gap",
+                "hypotheses": [],
+                "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": "",
+                "negativeMemoryMatches": 8,
+                "providerId": "anime-ultime",
+                "repairScope": "deferred",
+                "repairType": "experiment_strategy_exhausted",
+                "signature": "3f71ef799c96cf80e6236485"
+              },
+              "published:animevostfr": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "retained_candidate_replay_v1"
+                ],
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "failureClass": "candidate_replay_gap",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "replay-verified-candidate-path",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": "",
+                "negativeMemoryMatches": 7,
+                "providerId": "animevostfr",
+                "repairScope": "capability",
+                "repairType": "candidate_runtime_replay",
+                "signature": "5e1425cc2e660b2d1adde03d"
+              },
+              "published:mallumv": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "player_media_extractor_v1"
+                ],
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "failureClass": "media_extraction_gap",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "capture-media-network",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "inspect-player-javascript",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": "",
+                "negativeMemoryMatches": 8,
+                "providerId": "mallumv",
+                "repairScope": "capability",
+                "repairType": "terminal_media_resolution",
+                "signature": "c92d106e5a46a2b33459e485"
+              },
+              "published:moviebox": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "player_media_extractor_v1"
+                ],
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "failureClass": "media_extraction_gap",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "capture-media-network",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "inspect-player-javascript",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": "",
+                "negativeMemoryMatches": 6,
+                "providerId": "moviebox",
+                "repairScope": "capability",
+                "repairType": "terminal_media_resolution",
+                "signature": "c92d106e5a46a2b33459e485"
+              },
+              "published:vidfast": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "experiment_variants_exhausted",
+                "experimentExhausted": true,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "failureClass": "transport_blocked",
+                "hypotheses": [],
+                "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": "",
+                "negativeMemoryMatches": 10,
+                "providerId": "vidfast",
+                "repairScope": "deferred",
+                "repairType": "experiment_strategy_exhausted",
+                "signature": "407798151f15452ec1ccd098"
+              },
+              "published:yflix": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 1,
+                "experimentVariant": 0,
+                "experimentVariantCount": 5,
+                "failureClass": "search_gap",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "rediscover-search-route",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "repair-search-parser",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": "",
+                "negativeMemoryMatches": 0,
+                "providerId": "yflix",
+                "repairScope": "capability",
+                "repairType": "catalogue_search_resolution",
+                "signature": "a5acf1ae6fc3078e15bcfc89"
+              }
+            },
+            "queuedForLearning": [
+              "4khdhub",
+              "anime-ultime",
+              "vidfast"
+            ],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed",
+          "deferredToLearning": [
+            "4khdhub",
+            "allanime",
+            "anime-ultime",
+            "animevostfr",
+            "moviebox",
+            "vidfast"
+          ],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "candidate-replay|mixed_embed_resolver",
+              "providers": [
+                "animevostfr"
+              ],
+              "repairScope": "candidate-replay"
+            },
+            {
+              "capabilityStrategy": "direct_media",
+              "groupId": "terminal-extraction|direct_media",
+              "providers": [
+                "allanime"
+              ],
+              "repairScope": "terminal-extraction"
+            },
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "transport|mixed_embed_resolver",
+              "providers": [
+                "yflix",
+                "anime-ultime"
+              ],
+              "repairScope": "transport"
+            },
+            {
+              "capabilityStrategy": "html_scraper",
+              "groupId": "transport|html_scraper",
+              "providers": [
+                "moviebox"
+              ],
+              "repairScope": "transport"
+            },
+            {
+              "capabilityStrategy": "iframe_player",
+              "groupId": "transport|iframe_player",
+              "providers": [
+                "vidfast"
+              ],
+              "repairScope": "transport"
+            },
+            {
+              "capabilityStrategy": "html_scraper",
+              "groupId": "route-to-terminal|html_scraper",
+              "providers": [
+                "4khdhub"
+              ],
+              "repairScope": "route-to-terminal"
+            },
+            {
+              "capabilityStrategy": "html_scraper",
+              "groupId": "terminal-extraction|html_scraper",
+              "providers": [
+                "mallumv"
+              ],
+              "repairScope": "terminal-extraction"
+            }
+          ],
+          "fixedInLab": [
+            "mallumv"
+          ],
+          "groupId": "packed",
+          "healthConcurrency": 8,
+          "providerCount": 8,
+          "providers": [
+            "animevostfr",
+            "allanime",
+            "yflix",
+            "anime-ultime",
+            "moviebox",
+            "vidfast",
+            "4khdhub",
+            "mallumv"
+          ],
+          "repairScope": "mixed"
+        }
+      ],
+      "deferredToLearning": [
+        "4khdhub",
+        "allanime",
+        "anime-ultime",
+        "animevostfr",
+        "moviebox",
+        "vidfast"
+      ],
+      "deferredToLearningCount": 6,
+      "durableMaterializeTargets": [
+        "mallumv"
+      ],
+      "experimentMemoryAdvanced": true,
+      "fixedInLab": [
+        "mallumv"
+      ],
+      "fixedInLabCount": 1,
+      "inputProviderCount": 8,
+      "remainingProviderCount": 1,
+      "timeBudgetExhausted": false,
+      "wave": 1
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "batch": 1,
+          "brain": {
+            "learnedEvents": 0,
+            "plans": {
+              "published:yflix": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 1,
+                "experimentVariant": 1,
+                "experimentVariantCount": 5,
+                "failureClass": "search_gap",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "rediscover-search-route",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "repair-search-parser",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": "",
+                "negativeMemoryMatches": 3,
+                "providerId": "yflix",
+                "repairScope": "capability",
+                "repairType": "catalogue_search_resolution",
+                "signature": "a5acf1ae6fc3078e15bcfc89"
+              }
+            },
+            "queuedForLearning": [],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed_embed_resolver",
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "transport|mixed_embed_resolver",
+              "providers": [
+                "yflix"
+              ],
+              "repairScope": "transport"
+            }
+          ],
+          "fixedInLab": [],
+          "groupId": "transport|mixed_embed_resolver",
+          "healthConcurrency": 1,
+          "providerCount": 1,
+          "providers": [
+            "yflix"
+          ],
+          "repairScope": "transport"
+        }
+      ],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": true,
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 1,
+      "remainingProviderCount": 1,
+      "timeBudgetExhausted": false,
+      "wave": 2
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "batch": 1,
+          "brain": {
+            "learnedEvents": 0,
+            "plans": {
+              "published:yflix": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 1,
+                "experimentVariant": 2,
+                "experimentVariantCount": 5,
+                "failureClass": "search_gap",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "rediscover-search-route",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "repair-search-parser",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": "",
+                "negativeMemoryMatches": 5,
+                "providerId": "yflix",
+                "repairScope": "capability",
+                "repairType": "catalogue_search_resolution",
+                "signature": "a5acf1ae6fc3078e15bcfc89"
+              }
+            },
+            "queuedForLearning": [],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed_embed_resolver",
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "transport|mixed_embed_resolver",
+              "providers": [
+                "yflix"
+              ],
+              "repairScope": "transport"
+            }
+          ],
+          "fixedInLab": [],
+          "groupId": "transport|mixed_embed_resolver",
+          "healthConcurrency": 1,
+          "providerCount": 1,
+          "providers": [
+            "yflix"
+          ],
+          "repairScope": "transport"
+        }
+      ],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": true,
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 1,
+      "remainingProviderCount": 1,
+      "timeBudgetExhausted": false,
+      "wave": 3
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "batch": 1,
+          "brain": {
+            "learnedEvents": 0,
+            "plans": {
+              "published:yflix": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 1,
+                "experimentVariant": 3,
+                "experimentVariantCount": 5,
+                "failureClass": "search_gap",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "rediscover-search-route",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "repair-search-parser",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": "",
+                "negativeMemoryMatches": 7,
+                "providerId": "yflix",
+                "repairScope": "capability",
+                "repairType": "catalogue_search_resolution",
+                "signature": "a5acf1ae6fc3078e15bcfc89"
+              }
+            },
+            "queuedForLearning": [],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed_embed_resolver",
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "transport|mixed_embed_resolver",
+              "providers": [
+                "yflix"
+              ],
+              "repairScope": "transport"
+            }
+          ],
+          "fixedInLab": [],
+          "groupId": "transport|mixed_embed_resolver",
+          "healthConcurrency": 1,
+          "providerCount": 1,
+          "providers": [
+            "yflix"
+          ],
+          "repairScope": "transport"
+        }
+      ],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": true,
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 1,
+      "remainingProviderCount": 1,
+      "timeBudgetExhausted": false,
+      "wave": 4
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "batch": 1,
+          "brain": {
+            "learnedEvents": 0,
+            "plans": {
+              "published:yflix": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery"
+                ],
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "failureClass": "search_gap",
+                "hypotheses": [
+                  {
+                    "confidence": 0,
+                    "id": "rediscover-search-route",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "repair-search-parser",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": "",
+                "negativeMemoryMatches": 9,
+                "providerId": "yflix",
+                "repairScope": "capability",
+                "repairType": "catalogue_search_resolution",
+                "signature": "a5acf1ae6fc3078e15bcfc89"
+              }
+            },
+            "queuedForLearning": [],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed_embed_resolver",
+          "deferredToLearning": [
+            "yflix"
+          ],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "transport|mixed_embed_resolver",
+              "providers": [
+                "yflix"
+              ],
+              "repairScope": "transport"
+            }
+          ],
+          "fixedInLab": [],
+          "groupId": "transport|mixed_embed_resolver",
+          "healthConcurrency": 1,
+          "providerCount": 1,
+          "providers": [
+            "yflix"
+          ],
+          "repairScope": "transport"
+        }
+      ],
+      "deferredToLearning": [
+        "yflix"
+      ],
+      "deferredToLearningCount": 1,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": true,
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 1,
+      "remainingProviderCount": 0,
+      "timeBudgetExhausted": false,
+      "wave": 5
+    }
+  ]
+}
