@@ -4224,3 +4224,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 
 - The planner already exposes `llmAdvisorApplied`, `llmAdvisorRescue`, strategy, profile and confidence, but `brain_repair_runtime.py` previously stripped those fields from its sanitized plan report.
 - Brain reports now retain exactly those non-sensitive advisor metadata fields. This does not retain prompts, private documents, raw model output or mutations. It allows the canonical Repair artifact to prove whether private-informed guidance was actually selected for each provider instead of inferring usage from configuration.
+
+
+### 2026-09-23 — Provider Non-Regression Gate skips live 42-provider census for control-plane-only changes
+
+- The push gate was triggered by broad `scripts/**`, `tests/**` and workflow changes and always rebuilt/retested all providers. Brain-only commits therefore paid a full live census and could fail on unrelated network drift (AnimeKai timed out in run `35912245946` while its provider bytes were unchanged).
+- The gate now classifies the exact diff before validation. Static anti-regression contracts still run for every matched push/PR. Materialization, rolling baseline seeding, live all-provider quick-yield census and candidate floor enforcement run only when the classifier reports provider impact.
+- Control-plane-only changes emit `FIELD_PROVIDER_NON_REGRESSION_NOOP ... live_census_skipped=true`. Provider DATA, manifest, provider patches, common ProviderBase inputs and other classified provider changes still retain the full live non-regression gate.
