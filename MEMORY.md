@@ -4245,3 +4245,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Advisor metadata is propagated through both runtime and portfolio sanitizers: durable run reports retain only `llmAdvisorApplied`, `llmAdvisorRescue`, strategy, profile and confidence. Prompts, private documents and raw model mutations remain absent.
 - External guidance source-drift validation treats only Brain/workflow/test/report-control paths as neutral. Provider DATA, manifests, published bundles, census/authority evidence and other provider truth still invalidate stale guidance.
 - Next required proof: after the current exact-byte census settles, trigger one fresh Repair from its exact HEAD/repairQueue and verify advisor use per provider plus playback/identity/non-regression before any status promotion.
+
+
+### 2026-09-23 — Superseded push Repairs now cancel instead of occupying the only Repair slot
+
+- Live orchestration exposed another performance defect: Repair `35918698089` had already passed its initial HEAD freshness check before a newer explicit Repair trigger advanced main, so it continued expensive WAF/Tailscale work while the corrected Repair remained pending behind the shared concurrency group.
+- Canonical Repair remains serialized, but `cancel-in-progress` is now true **only for push-triggered Repair**. The workflow's push path is already restricted to `.github/triggers/provider-recognition-repair-v6.json`, so a newer explicit trigger can cancel an obsolete older push run.
+- Manual `workflow_dispatch` and scheduled Repairs keep non-cancelling serialization. Ordinary census, MEMORY, test or provider commits do not trigger this workflow and therefore cannot evict a Repair.
+- This change is orchestration-only; it does not alter provider acceptance, proof, WAF/Tailscale semantics or repair authority.

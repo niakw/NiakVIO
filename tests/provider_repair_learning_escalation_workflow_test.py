@@ -15,7 +15,7 @@ required=[
     "FIELD_PROVIDER_BRAIN_RESUME",
     "resumeRecommended",
     "gh workflow run provider-recognition-repair-v6.yml",
-    "cancel-in-progress: false",
+    "cancel-in-progress: ${{ github.event_name == 'push' }}",
     "FIELD_REPAIR_CENSUS_NOT_PERSISTED authority_schema_v3_required",
     "automation/provider-authority-status.json",
     "Import sanitized Brain Learning priors for canonical Repair",

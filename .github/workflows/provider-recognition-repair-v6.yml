@@ -36,10 +36,10 @@ permissions:
 
 concurrency:
   group: provider-repair-main-v2
-  # Repair owns its integrated GitHub/Tailscale transport qualification. Keep
-  # Repair runs serialized with each other, but do not let observational
-  # census/WAF pushes replace a pending Repair in GitHub's one-pending-run slot.
-  cancel-in-progress: false
+  # Repair owns its integrated GitHub/Tailscale transport qualification.
+  # Only an explicit trigger-file push may supersede an older push-triggered
+  # Repair. Manual/scheduled long runs remain serialized and non-cancellable.
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   recognition-repair:
