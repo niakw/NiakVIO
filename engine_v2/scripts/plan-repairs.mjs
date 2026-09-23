@@ -29,6 +29,7 @@ const learnedSkillInputAllowed = learningMode || production.learnedSkillInputAll
 const negativeMemoryPolicy = asRecord(production.negativeExperimentMemory);
 const negativeMemory = asArray(input.negativeMemory).filter(isRecord);
 const historicalSolutions = asArray(input.historicalSolutions).filter(isRecord);
+const llmGuidance = asArray(input.llmGuidance).filter(isRecord);
 const learnedSkills = learnedSkillInputAllowed
   ? [
       ...normalizeLearnedSkills(input.learnedSkills),
@@ -45,6 +46,14 @@ const HISTORICAL_SOLUTION_PROFILES = {
   same_provider_candidate_program_replay: "retained_candidate_replay_v1",
   proven_request_program_and_terminal_extraction: "player_media_extractor_v1",
 };
+const LLM_ADVISOR_PROFILES = new Set([
+  "provider_origin_failover_v1",
+  "proven_route_terminal_traversal_v1",
+  "chain_terminal_extractor_v1",
+  "retained_candidate_replay_v1",
+  "player_media_extractor_v1",
+  "search_contract_inference_v1",
+]);
 const POST_EXHAUSTION_STRATEGIES = {
   provider_transport_gap: [
     { profile: "transport_request_differential_v1", method: "provider-owned-request-differential" },
@@ -214,6 +223,35 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery) {
     }
   }
   return { profile: "", method: "", index: -1, strategyImplementationFingerprint: "" };
+}
+
+function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEvery) {
+  const provider = stringValue(providerId).toLowerCase();
+  const failure = stringValue(failureClass).toLowerCase();
+  const rows = llmGuidance
+    .filter((row) => (
+      stringValue(row.providerId).toLowerCase() === provider
+      && stringValue(row.targetLayer).toLowerCase() === "provider"
+      && row.priorOnly === true
+      && finiteNumber(row.confidence, 0) >= 0.80
+      && LLM_ADVISOR_PROFILES.has(stringValue(row.profile).toLowerCase())
+      && (!stringValue(row.failureClass) || stringValue(row.failureClass).toLowerCase() === failure)
+    ))
+    .sort((a, b) => finiteNumber(b.confidence, 0) - finiteNumber(a.confidence, 0));
+  for (const row of rows) {
+    const profile = stringValue(row.profile).toLowerCase();
+    const alreadyFailed = memoryRows.some((memory) => (
+      stringValue(memory.profile).toLowerCase() === profile
+      && Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) >= rotateEvery
+    ));
+    if (alreadyFailed) continue;
+    return {
+      profile,
+      strategy: stringValue(row.strategy).toLowerCase(),
+      confidence: finiteNumber(row.confidence, 0),
+    };
+  }
+  return { profile: "", strategy: "", confidence: 0 };
 }
 
 function providerPositiveProgramReplayHint(reusableSkills, memoryRows, rotateEvery) {
@@ -534,6 +572,14 @@ function buildPlan(item) {
               }
       )
     : baseRepairTarget;
+  const llmAdvisorHint = (!experimentExhausted && learningMode)
+    ? llmAdvisorStrategyHint(
+        providerId,
+        evidence.failureClass,
+        allMemoryMatches,
+        rotateEvery,
+      )
+    : { profile: "", strategy: "", confidence: 0 };
   const historicalHint = (
     !experimentExhausted
     && learningMode
@@ -552,7 +598,8 @@ function buildPlan(item) {
     : experimentExhausted
       ? ""
       : (
-          historicalHint.profile
+          llmAdvisorHint.profile
+          || historicalHint.profile
           || causalStrategyProfile(
             evidence.failureClass,
             experimentVariant,
@@ -607,6 +654,10 @@ function buildPlan(item) {
     experimentRotationEvery: rotateEvery,
     experimentVariantCount: maxVariants,
     experimentGenerationLimit: learningMode ? maxLearningGenerations : finalVariantGeneration,
+    llmAdvisorApplied: Boolean(llmAdvisorHint.profile),
+    llmAdvisorStrategy: llmAdvisorHint.strategy,
+    llmAdvisorProfile: llmAdvisorHint.profile,
+    llmAdvisorConfidence: llmAdvisorHint.confidence,
     historicalStrategyProfile: historicalHint.profile,
     historicalStrategyCase: historicalHint.caseId,
     historicalSolutionClass: historicalHint.solutionClass,
