@@ -4196,3 +4196,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The post-recovery materialization now uses `select_provider_materialization_scope.py` with `none/providers/all`. Provider-local DATA/manifest changes rebuild only affected providers via `materialize_provider_v3_one.py` and reconcile manifest/materialization/PROVENANCE with `reconcile_targeted_provider_publication.py`.
 - Any changed `provider-bases/` path is explicitly global and retains `materialize_provider_v3_all.py`. The preflight full-catalogue reconstruction remains unchanged until the incremental post-recovery path is proven live.
 - This is a performance correction only. No provider is considered repaired until a fresh Repair run produces current-byte playback/identity proof.
+
+
+### 2026-09-23 — Unexecuted profile debt must not suppress production Repair guidance
+
+- Before the private-guided Repair reached its planner, the durable memory was inspected for the three Qwen-advised profiles. `allanime`, `mallumv` and `4khdhub` each already had one legacy row for exactly the advised profile, but every row was `lastOutcome=profile_unavailable`, `lastReason=planned_profile_not_applicable_to_current_bytes`, with no `executionObserved` field. These are **not executed failures**.
+- This exposed a generic production bug: `planner_negative_memory()` projected those applicability-only rows as failures, so `llmAdvisorStrategyHint()` would suppress the new private-informed advice before it ever ran.
+- Production modes now exclude only this exact unexecuted legacy condition from negative planner memory. Learning mode keeps it as exploration history. New memory writes explicitly mark `executionObserved=false` for unavailable profiles and `true` for accepted, generated/rejected and nonpublishable executed attempts.
+- The correction is generic and does not clear real negative memory. Executed failures remain suppressive. No provider is promoted by this fix; the next exact-head Repair must show the advisor profile was actually attempted and then pass playback/identity/non-regression gates.

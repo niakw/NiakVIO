@@ -600,7 +600,21 @@ def planner_historical_solutions() -> list[dict[str, Any]]:
 
 def planner_negative_memory(_mode: str) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
+    learning_mode = str(_mode or "").strip().casefold() == "learning"
     for raw in repair_memory().get("entries") or []:
+        execution_observed = raw.get("executionObserved") is True
+        # Legacy/old Repair memory could debit a selected profile even when the
+        # runtime produced no matching candidate and therefore never executed
+        # the strategy. Keep that applicability signal for Learning exploration,
+        # but never let it suppress a production Repair/LLM prior as if it were
+        # an observed negative experiment.
+        if (
+            not learning_mode
+            and _clip_text(raw.get("lastOutcome"), 48) == "profile_unavailable"
+            and _clip_text(raw.get("lastReason"), 240) == "planned_profile_not_applicable_to_current_bytes"
+            and not execution_observed
+        ):
+            continue
         rows.append({
             "providerId": _clip_text(raw.get("providerId"), 160).casefold(),
             "providerVersion": _clip_text(raw.get("providerVersion") or "*", 64),
@@ -620,7 +634,7 @@ def planner_negative_memory(_mode: str) -> list[dict[str, Any]]:
             "failures": max(0, int(raw.get("failures") or 0)),
             "consecutiveFailures": max(0, int(raw.get("consecutiveFailures") or 0)),
             "successes": max(0, int(raw.get("successes") or 0)),
-            "executionObserved": raw.get("executionObserved") is True,
+            "executionObserved": execution_observed,
         })
     return rows
 
@@ -1113,6 +1127,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     mem["successes"] = int(mem.get("successes") or 0) + 1
                     mem["consecutiveFailures"] = 0
                     mem["lastOutcome"] = "accepted"
+                    mem["executionObserved"] = True
                 accepted_count += 1
 
         # A planner-selected profile can also be structurally unavailable on
@@ -1147,6 +1162,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     mem["consecutiveFailures"] = int(mem.get("consecutiveFailures") or 0) + 1
                     mem["lastOutcome"] = "profile_unavailable"
                     mem["lastReason"] = "planned_profile_not_applicable_to_current_bytes"
+                    mem["executionObserved"] = False
                     negative_experiment_events += 1
 
         # Candidate-generation failures are real negative experiments too.
@@ -1167,6 +1183,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                 mem["consecutiveFailures"] = int(mem.get("consecutiveFailures") or 0) + 1
                 mem["lastOutcome"] = "not_generated"
                 mem["lastReason"] = _clip_text(attempt.get("reason"), 160)
+                mem["executionObserved"] = True
                 negative_experiment_events += 1
 
         # Sandbox progress is deliberately non-publishable. If a bounded Deep
@@ -1202,6 +1219,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     mem["progresses"] = int(mem.get("progresses") or 0) + 1
                     mem["lastOutcome"] = "exploration_progress_nonpublishable"
                     mem["lastReason"] = _clip_text(progress.get("reason"), 160)
+                    mem["executionObserved"] = True
                     negative_experiment_events += 1
 
         for round_row in report.get("rounds") or []:
@@ -1229,6 +1247,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     mem["consecutiveFailures"] = int(mem.get("consecutiveFailures") or 0) + 1
                     mem["lastOutcome"] = "rejected"
                     mem["lastReason"] = _clip_text(rejected.get("reason"), 160)
+                    mem["executionObserved"] = True
                     negative_experiment_events += 1
                 skill_id = f"{failure_class}:{profile}"
                 skill = skills.get(skill_id)
