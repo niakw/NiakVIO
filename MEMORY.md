@@ -1,5 +1,15 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-23 20:50 Europe/Paris — Brain LLM Learning bridge made executable before fresh Repair
+
+- Current main Brain LLM integration was revalidated against the real workflow, not inferred from commit messages. The Learning workflow pins the current NiakVIO-Brain-LLM commit `c752f5c21ded26c578eaeacb492611f3fdb137a9`, builds bounded public/private memory, pre-routes the current cohort, starts local Qwen through llama.cpp only when the router requests it, sanitizes guidance, and exposes it to the deterministic Learning planner as prior-only evidence.
+- A concrete workflow bug was found before launch: 13 newly added GitHub/shell interpolations were written as escaped `\${...}`. This affected the private-memory token expression, provider-filter expressions, LLM server state and shell array expansion, so a nominal Brain LLM run could silently miss its intended inputs or fall back.
+- Commit `0ac6835d975f` removes all 13 escaping defects and wires the Brain LLM expressions normally. Commit `340ff0b5659d` adds `tests/brain_llm_learning_workflow_contract_test.py` and includes it in the Learning preflight so this interpolation regression cannot recur silently.
+- The production Repair still does not grant the LLM direct mutation/proof/publication authority. The intended acceleration boundary is: LLM-guided Learning selects/prioritizes bounded provider profiles; deterministic current-byte Repair/Retest remains the acceptance authority.
+- Current census repairQueue before launch contains 9 providers: `4khdhub, allanime, anime-ultime, animesultra, animevostfr, mallumv, moviebox, vidfast, yflix`. Harness/environment-only rows stay outside provider mutation.
+- Next action: arm a fresh push-triggered Learning cohort on current main so the corrected Brain LLM guidance runs first, persists sanitized Learning memory, then uses the existing push-only return edge to launch canonical `provider-recognition-repair-v6.yml` in `mode=repair`.
+
+
 ## 2026-09-22 12:23 Europe/Paris — v17 proved post-g5 selection but exposed Learning suppression split-brain
 
 - Targeted Learning run `35713333206` on SHA `555a6d74fd28` completed SUCCESS and processed the exact 9-provider Repair handoff.
