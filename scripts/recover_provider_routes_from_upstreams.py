@@ -983,6 +983,10 @@ def recover_one(
         seen.add(fp)
         deduped.append(row)
     routes = unique([row.get("route") for row in deduped], 192)
+    # ROUTE_RECOVERY_HELPER_EVIDENCE_ONLY_V11_1
+    # TMDB/Cinemeta helper calls may carry critical identity evidence (IMDb, title,
+    # aliases), but they are not provider execution routes. Keep them in routeData
+    # and proven routes for causality while excluding them from the runtime plan.
     execution_routes = unique([
         row.get("route") for row in deduped
         if _repair_recipe_origin_allowed(row) and generic_execution_route(row)

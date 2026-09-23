@@ -2396,7 +2396,7 @@
       ],
       "capability": "html_scraper",
       "official_hub": "https://kehflix.wiki/",
-      "official_site": "https://kehflix.com",
+      "official_site": "https://kehflix.wiki",
       "published_types": [
         "movie",
         "tv",
@@ -2448,22 +2448,19 @@
         "recognition_seed_is_http_proof": false
       },
       "domain_substitutions": {
-        "kehflix.lol": "kehflix.com"
+        "kehflix.lol": "kehflix.wiki"
       },
       "runtime_domain_replacements": {
-        "kehflix.lol": "kehflix.com"
+        "kehflix.lol": "kehflix.wiki"
       },
       "terminal_domain_proof": {
-        "schemaVersion": 3,
-        "observedAt": "2026-09-18",
-        "reverifiedAt": "2026-09-18",
-        "authority": "official-hub-current-address",
-        "hub": "kehflix.wiki",
-        "terminal": "kehflix.com",
-        "rejectedRuntimeHosts": [
-          "kehflix.wiki",
-          "kehflix.lol"
-        ],
+        "schemaVersion": 2,
+        "observedAt": "2026-09-07",
+        "reverifiedAt": "2026-09-14",
+        "authority": "official-hub-live-path-proof",
+        "terminal": "kehflix.wiki",
+        "alternateLiveTerminal": "kehflix.com",
+        "rejectedRedirectOnly": "kehflix.lol",
         "pathRetentionFixtures": [
           "interstellar-2014",
           "house-of-the-dragon-s03e01"
@@ -2664,12 +2661,15 @@
         "anime"
       ],
       "learned_routes": [
-        "/api/v2/tmdb?id={tmdbId}&s={season}&e={episode}",
-        "/stream/{identityKind}/{identityId}/{episode}/{mode}",
-        "/stream/getSources?id={id}"
+        "/search?keyword={query}",
+        "/watch/{slug}",
+        "/ajax/episode/list/{id}",
+        "/ajax/server/list?servers={id}",
+        "/ajax/server?get={id}"
       ],
       "provider_lego_scripts": [
-        "scripts/provider_patches/anikototv_runtime_v2.py"
+        "scripts/provider_patches/anikototv_runtime_v2.py",
+        "scripts/provider_patches/anikototv_runtime_v1.py"
       ],
       "provider_lego_options": {
         "scripts/provider_patches/anikototv_runtime_v2.py": {
@@ -2678,6 +2678,15 @@
           "modes": [
             "sub",
             "dub"
+          ]
+        },
+        "scripts/provider_patches/anikototv_runtime_v1.py": {
+          "mirrors": [
+            "https://anikototv.to",
+            "https://anikoto.cz",
+            "https://anikoto.me",
+            "https://anikoto.net",
+            "https://anikototv.se"
           ]
         }
       },
@@ -3331,7 +3340,7 @@
         "https://animesama.co/"
       ],
       "learned_routes": [
-        "/template-php/defaut/fetch.php",
+        "/catalogue/?search={query}",
         "/anime/{id}-{slug}.html",
         "/anime/{id}-{slug}/saison-{season}.html",
         "/anime/{id}-{slug}/saison-{season}/episode-{episode}.html"
