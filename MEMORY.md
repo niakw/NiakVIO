@@ -4391,3 +4391,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The persisted migration diff is intentionally source/DATA only. A follow-up no-op consolidation run is armed to prove those migrations now produce no workspace change on 11c71b4.
 - That no-op run explicitly dispatches temp-current-bytes-full-provider-census.yml via workflow_dispatch. With no push before SHA, the census materialization selector uses HEAD^, so it compares the consolidated source commit to its parent and performs the one required global rebuild rather than incorrectly treating a later trigger-only commit as provider-neutral.
 - After this census persists current bytes, the next Repair benchmark must show the migration chain changed=false and scoped materialization instead of recurring mode=all.
+
+### 2026-09-24 — Census dispatch receives explicit consolidation base
+
+- No-op consolidation run 35935634351 again proved the migrations themselves are a fixed point and reached persistence with changed=false. Its only failure was GitHub CLI authentication: actions:write was present, but GH_TOKEN was not exported to gh.
+- The consolidation job now exports GH_TOKEN and resolves the most recent persisted chore(provider): consolidate deterministic runtime migrations commit plus its parent.
+- TEMP Current Bytes Full Provider Census now accepts an optional materialization_base_sha workflow-dispatch input. The consolidation workflow dispatches the census with the parent of the persisted consolidation commit, guaranteeing that the one-time source/DATA delta is classified even after later control-plane commits.
+- The workflow-update commit itself is excluded from push census execution by message so it cannot launch an incorrect provider-neutral census before the explicit dispatch.

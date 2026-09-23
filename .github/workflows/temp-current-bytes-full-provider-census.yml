@@ -2,6 +2,12 @@ name: TEMP - Current Bytes Full Provider Census
 
 on:
   workflow_dispatch:
+    inputs:
+      materialization_base_sha:
+        description: Optional exact base SHA for provider-byte materialization scope
+        required: false
+        default: ""
+        type: string
   push:
     branches: [main]
     paths:
@@ -106,7 +112,7 @@ jobs:
           fi
           if [ "$GITHUB_EVENT_NAME" = "push" ]; then
             case "$message" in
-              "provider: bulk stage "*|"ci(census-sharded):"*)
+              "provider: bulk stage "*|"ci(census-sharded):"*|"ci(provider): add explicit census materialization base"*)
                 should_run=false
                 ;;
             esac
@@ -204,10 +210,12 @@ jobs:
         shell: bash
         env:
           EVENT_BEFORE: ${{ github.event.before || '' }}
+          DISPATCH_BASE: ${{ inputs.materialization_base_sha || '' }}
         run: |
           set -euo pipefail
+          base="${DISPATCH_BASE:-${EVENT_BEFORE:-}}"
           python scripts/select_provider_materialization_scope.py \
-            --base "${EVENT_BEFORE:-}" \
+            --base "$base" \
             --head "$GITHUB_SHA" \
             --output /tmp/provider-materialization-scope.json
           mode="$(python -c 'import json; print(json.load(open("/tmp/provider-materialization-scope.json"))["mode"])')"

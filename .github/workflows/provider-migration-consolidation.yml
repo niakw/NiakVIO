@@ -19,6 +19,8 @@ jobs:
   consolidate:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -156,6 +158,13 @@ jobs:
           # Dispatch, rather than push-trigger, so the census selector falls back
           # to HEAD^ and sees the exact consolidation commit as its provider-byte
           # input delta. This is the one final global reconstruction proof.
+          consolidated_sha="$(git log -1 --format=%H --grep='^chore(provider): consolidate deterministic runtime migrations)"
+          if ! [[ "$consolidated_sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Cannot locate persisted consolidation commit" >&2
+            exit 1
+          fi
+          materialization_base="$(git rev-parse "$consolidated_sha^")"
           gh workflow run temp-current-bytes-full-provider-census.yml \
-            --repo "$GITHUB_REPOSITORY" --ref main
-          echo "FIELD_PROVIDER_MIGRATION_CENSUS_DISPATCH ref=main"
+            --repo "$GITHUB_REPOSITORY" --ref main \
+            -f materialization_base_sha="$materialization_base"
+          echo "FIELD_PROVIDER_MIGRATION_CENSUS_DISPATCH ref=main consolidated=$consolidated_sha base=$materialization_base"
