@@ -94,6 +94,7 @@ jobs:
           python -m py_compile \
             scripts/run_provider_repair_pipeline_v6.py \
             scripts/run_provider_brain_repair.py \
+            scripts/sanitize_brain_learning_memory.py \
             scripts/build_brain_repair_experience.py \
             scripts/classify_provider_authority.py \
             scripts/adaptive_runtime/runtime_recovery_generator.py \
@@ -132,6 +133,7 @@ jobs:
           python tests/brain_historical_experience_scope_test.py
           python tests/brain_historical_solution_execution_test.py
           python tests/brain_cross_phase_experiment_memory_test.py
+          python tests/brain_learning_memory_import_test.py
           python tests/brain_learning_queue_experiment_ledger_test.py
           python tests/brain_learning_causal_wave_merge_test.py
           python tests/brain_learning_lab_session_recovery_test.py
@@ -331,6 +333,22 @@ jobs:
               f"authority_blocked={len(state.get('authorityBlockedQueue') or [])}"
           )
           PY
+
+      - name: Import sanitized Brain Learning priors for canonical Repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --quiet origin brain-learning/proposals:refs/remotes/origin/brain-learning/proposals || true
+          if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json 2>/dev/null; then
+            git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json > "$RUNNER_TEMP/brain-learning-latest.json"
+            python scripts/sanitize_brain_learning_memory.py \
+              --input "$RUNNER_TEMP/brain-learning-latest.json" \
+              --output "$RUNNER_TEMP/brain-learning-canonical-repair.json"
+            echo "NIAKVIO_BRAIN_LEARNING_MEMORY=$RUNNER_TEMP/brain-learning-canonical-repair.json" >> "$GITHUB_ENV"
+            echo "FIELD_CANONICAL_REPAIR_LEARNING_MEMORY imported=true"
+          else
+            echo "FIELD_CANONICAL_REPAIR_LEARNING_MEMORY imported=false reason=no-persistent-learning-memory"
+          fi
 
       - name: Run canonical recognition and correction only for unresolved providers
         id: canonical-repair
