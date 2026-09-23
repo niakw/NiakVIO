@@ -25,6 +25,16 @@ CENSUS_STATUS_PATH = ROOT / "automation" / "provider-census-status.json"
 REPAIR_MEMORY_PATH = ROOT / "automation" / "brain-repair-memory.json"
 EXPERIENCE_PATH = ROOT / "automation" / "brain-repair-experience.json"
 LEARNING_MEMORY_PATH = Path(os.environ.get("NIAKVIO_BRAIN_LEARNING_MEMORY", "")).resolve() if os.environ.get("NIAKVIO_BRAIN_LEARNING_MEMORY") else None
+LLM_GUIDANCE_PATH = Path(os.environ.get("NIAKVIO_BRAIN_LLM_GUIDANCE", "")).resolve() if os.environ.get("NIAKVIO_BRAIN_LLM_GUIDANCE") else None
+
+LLM_ADVISOR_PROFILES = {
+    "provider_origin_failover_v1",
+    "proven_route_terminal_traversal_v1",
+    "chain_terminal_extractor_v1",
+    "retained_candidate_replay_v1",
+    "player_media_extractor_v1",
+    "search_contract_inference_v1",
+}
 
 PLANS: dict[str, dict[str, Any]] = {}
 RUNTIME_STATE: dict[str, dict[str, Any]] = {}
@@ -494,6 +504,60 @@ def repair_memory() -> dict[str, Any]:
     }
 
 
+def planner_llm_guidance() -> list[dict[str, Any]]:
+    """Load only the sanitized, non-authoritative Brain-LLM advisor surface."""
+    if LLM_GUIDANCE_PATH is None:
+        return []
+    value = _load_json(LLM_GUIDANCE_PATH, {})
+    if not isinstance(value, dict):
+        return []
+    if (
+        value.get("publicationAuthority") is not False
+        or value.get("directMutationAuthority") is not False
+        or value.get("proofAuthority") is not False
+        or value.get("rawMutationContentRetained") is not False
+    ):
+        return []
+    source_sha = _clip_text(value.get("sourceSha"), 64).casefold()
+    current_sha = _clip_text(os.environ.get("GITHUB_SHA"), 64).casefold()
+    if current_sha and source_sha and source_sha != current_sha:
+        return []
+
+    out: list[dict[str, Any]] = []
+    for raw in value.get("rows") or []:
+        if not isinstance(raw, dict):
+            continue
+        provider = _clip_text(raw.get("providerId"), 160).casefold().replace("_", "-")
+        failure = _clip_text(raw.get("failureClass"), 96).casefold().replace("-", "_")
+        profile = _clip_text(raw.get("profile"), 96).casefold()
+        strategy = _clip_text(raw.get("strategy"), 160).casefold().replace("-", "_")
+        target = _clip_text(raw.get("targetLayer"), 32).casefold()
+        try:
+            confidence = max(0.0, min(1.0, float(raw.get("confidence") or 0.0)))
+        except (TypeError, ValueError):
+            confidence = 0.0
+        if (
+            not provider
+            or target != "provider"
+            or confidence < 0.80
+            or profile not in LLM_ADVISOR_PROFILES
+            or raw.get("priorOnly") is not True
+        ):
+            continue
+        out.append({
+            "providerId": provider,
+            "failureClass": failure,
+            "targetLayer": "provider",
+            "strategy": strategy,
+            "profile": profile,
+            "confidence": confidence,
+            "priorOnly": True,
+        })
+        if len(out) >= 128:
+            break
+    return out
+
+
 def planner_historical_solutions() -> list[dict[str, Any]]:
     """Expose only sanitized NiakVIO historical solution classes to the planner.
 
@@ -634,6 +698,7 @@ def _execute_planner(items: list[dict[str, Any]], mode: str) -> dict[str, dict[s
         "policy": policy(),
         "learnedSkills": planner_learned_skills(mode),
         "historicalSolutions": planner_historical_solutions(),
+        "llmGuidance": planner_llm_guidance(),
         "negativeMemory": planner_negative_memory(mode),
         "items": items,
     }
