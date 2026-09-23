@@ -10,7 +10,7 @@ script=ROOT/"scripts/refine_provider_repair_batches.py"
 plan={
   "sourceRunId":"10",
   "groups":[
-    {"groupId":"route|html|lookup|zero","repairScope":"route-to-terminal","capabilityStrategy":"html_scraper","providers":["a","b","c"]}
+    {"groupId":"route|html|lookup|zero","repairScope":"route-to-terminal","capabilityStrategy":"html_scraper","transportSignature":"browser-profile-only","providers":["a","b","c"]}
   ]
 }
 verdict={
@@ -28,9 +28,11 @@ with tempfile.TemporaryDirectory() as td:
     vp.write_text(json.dumps(verdict),encoding="utf-8")
     subprocess.run(["python",str(script),"--plan",str(pp),"--verdict",str(vp),"--output",str(out)],check=True)
     value=json.loads(out.read_text(encoding="utf-8"))
+assert value["sourceRunId"]=="10"
 assert value["groupCount"]==2
 groups=sorted(value["groups"],key=lambda x:-x["providerCount"])
 assert groups[0]["providers"]==["a","b"]
 assert groups[0]["splitReason"]=="observed-signature-divergence"
+assert groups[0]["transportSignature"]=="browser-profile-only"
 assert groups[1]["providers"]==["c"]
 print("Provider repair batch refinement passed")

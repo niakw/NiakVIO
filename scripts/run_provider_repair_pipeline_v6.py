@@ -632,10 +632,10 @@ def main() -> int:
         brain_cmd = [
             sys.executable,
             "scripts/run_provider_brain_repair.py",
-            "--waves", "5",
+            "--waves", "3",
             "--batch-size", "48",
-            "--time-budget-seconds", "2100",
-            "--min-start-batch-seconds", "360",
+            "--time-budget-seconds", "1200",
+            "--min-start-batch-seconds", "180",
             "--output", str(BRAIN_REPAIR.relative_to(ROOT)),
         ]
         for provider in targets:

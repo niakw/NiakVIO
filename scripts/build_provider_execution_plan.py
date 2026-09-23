@@ -14,6 +14,7 @@ from typing import Any
 
 ROOT=Path(__file__).resolve().parents[1]
 BATCH=ROOT/"automation/provider-repair-batch-plan-latest.json"
+REFINED=ROOT/"automation/provider-repair-batch-refined-latest.json"
 STATUS=ROOT/"automation/provider-census-status.json"
 OUTPUT=ROOT/"automation/provider-execution-plan-latest.json"
 
@@ -23,6 +24,45 @@ def load(path:Path)->dict[str,Any]:
     if not isinstance(value,dict):
         raise ValueError(f"{path} must contain an object")
     return value
+
+
+def plan_providers(plan:dict[str,Any])->set[str]:
+    return {
+        str(provider).strip().casefold()
+        for group in plan.get("groups") or []
+        if isinstance(group,dict)
+        for provider in group.get("providers") or []
+        if str(provider).strip()
+    }
+
+
+def select_batch_plan(
+    base:dict[str,Any],
+    refined:dict[str,Any] | None,
+    status:dict[str,Any],
+)->tuple[dict[str,Any],str]:
+    """Use sharded refinement only when it is an exact current-census partition."""
+    if not isinstance(refined,dict) or not refined.get("groups"):
+        return base,"canonical"
+    base_run=str(base.get("sourceRunId") or "")
+    refined_run=str(refined.get("sourceRunId") or refined.get("sourcePlanRunId") or "")
+    if not base_run or refined_run!=base_run:
+        return base,"canonical-stale-refined"
+    base_providers=plan_providers(base)
+    refined_providers=plan_providers(refined)
+    if not base_providers or refined_providers!=base_providers:
+        return base,"canonical-refined-provider-mismatch"
+    current={
+        str(value).strip().casefold()
+        for value in [
+            *(status.get("repairQueue") or []),
+            *(status.get("environmentQueue") or []),
+        ]
+        if str(value).strip()
+    }
+    if not refined_providers.issubset(current):
+        return base,"canonical-refined-queue-mismatch"
+    return refined,"sharded-refined"
 
 
 def lane_for(group:dict[str,Any])->dict[str,Any]:
@@ -170,17 +210,24 @@ def build(batch:dict[str,Any],status:dict[str,Any])->dict[str,Any]:
 def main()->int:
     ap=argparse.ArgumentParser()
     ap.add_argument("--batch-plan",type=Path,default=BATCH)
+    ap.add_argument("--refined-plan",type=Path,default=REFINED)
     ap.add_argument("--status",type=Path,default=STATUS)
     ap.add_argument("--output",type=Path,default=OUTPUT)
     args=ap.parse_args()
-    payload=build(load(args.batch_plan),load(args.status))
+    status=load(args.status)
+    base=load(args.batch_plan)
+    refined=load(args.refined_plan) if args.refined_plan.is_file() else None
+    selected,plan_source=select_batch_plan(base,refined,status)
+    payload=build(selected,status)
+    payload["batchPlanSource"]=plan_source
     output=args.output if args.output.is_absolute() else ROOT/args.output
     output.parent.mkdir(parents=True,exist_ok=True)
     output.write_text(json.dumps(payload,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print(
         "FIELD_PROVIDER_EXECUTION_PLAN "
         f"providers={payload['providerCount']} executions={payload['executionCount']} "
-        f"dispatchable={payload['dispatchableExecutionCount']} blocked={payload['blockedExecutionCount']}"
+        f"dispatchable={payload['dispatchableExecutionCount']} blocked={payload['blockedExecutionCount']} "
+        f"plan_source={payload['batchPlanSource']}"
     )
     return 0
 

@@ -66,6 +66,9 @@ def main()->int:
                 "parentGroupId":group.get("groupId"),
                 "repairScope":group.get("repairScope"),
                 "capabilityStrategy":group.get("capabilityStrategy"),
+                "transportSignature":group.get("transportSignature") or "not-applicable",
+                "evidenceDepths":list(group.get("evidenceDepths") or []),
+                "dominantIssues":list(group.get("dominantIssues") or []),
                 "providerCount":len(providers),
                 "providers":sorted(providers),
                 "networkSignature":key,
@@ -77,6 +80,8 @@ def main()->int:
     refined.sort(key=lambda x:(-x["providerCount"],str(x["parentGroupId"]),str(x["groupId"])))
     payload={
         "schemaVersion":1,
+        "sourceRunId":plan.get("sourceRunId"),
+        "sourceTriggerSha":plan.get("sourceTriggerSha"),
         "sourcePlanRunId":plan.get("sourceRunId"),
         "sourceVerdictRunId":verdict.get("runId"),
         "providerCount":sum(x["providerCount"] for x in refined),

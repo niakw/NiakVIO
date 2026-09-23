@@ -53,6 +53,25 @@ candidate=next(row for row in bad["executions"] if row["groupId"]=="candidate")
 assert candidate["dispatchAllowed"] is False
 assert candidate["queueMismatchProviders"]==["candidate"]
 
+refined={
+    "sourceRunId":"run",
+    "groups":[
+        {**row,"groupId":str(row["groupId"])+"#r1"}
+        for row in batch["groups"]
+    ],
+}
+selected,source_name=mod.select_batch_plan(batch,refined,status)
+assert source_name=="sharded-refined"
+assert mod.plan_providers(selected)==mod.plan_providers(batch)
+
+stale={**refined,"sourceRunId":"old"}
+selected,source_name=mod.select_batch_plan(batch,stale,status)
+assert selected is batch and source_name=="canonical-stale-refined"
+
+missing={**refined,"groups":refined["groups"][:-1]}
+selected,source_name=mod.select_batch_plan(batch,missing,status)
+assert selected is batch and source_name=="canonical-refined-provider-mismatch"
+
 source=SCRIPT.read_text(encoding="utf-8")
 for required in (
     "causal-owner-router",
@@ -62,6 +81,7 @@ for required in (
     "FAST_REPAIR",
     "DOMAIN_REFRESH",
     "BRAIN_LEARNING",
+    "sharded-refined",
 ):
     assert required in source,required
 

@@ -64,6 +64,8 @@ for old, new in compat_replacements.items():
     source = source.replace(old, new, 1)
 
 pipeline_current = (ROOT / "scripts" / "run_provider_repair_pipeline_v6.py").read_text(encoding="utf-8")
-assert '"--waves", "5",' in pipeline_current, "canonical Repair must execute all five Brain experiment variants"
+assert '"--waves", "3",' in pipeline_current, "canonical Repair must stay bounded after generic misses hand off to Learning/LLM"
+assert '"--time-budget-seconds", "1200",' in pipeline_current
+assert '"--min-start-batch-seconds", "180",' in pipeline_current
 
 exec(compile(source, str(impl_path), "exec"), globals(), globals())

@@ -25,6 +25,9 @@ for needle in [
     "scripts/refine_provider_repair_batches.py",
     "provider-targeted-recovery-shard-*",
     "ci(repair-sharded): persist targeted recovery",
+    "provider-brain-autopilot.yml",
+    "FIELD_PROVIDER_SHARDED_AUTOPILOT",
+    "actions: write",
 ]:
     assert needle in sharded, needle
 

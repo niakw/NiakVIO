@@ -144,8 +144,10 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: write
+      actions: write
     env:
       SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -207,6 +209,19 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add automation/provider-targeted-regression-recovery-latest.json automation/provider-repair-batch-refined-latest.json
-          git diff --cached --quiet && exit 0
-          git commit -m "ci(repair-sharded): persist targeted recovery from ${SOURCE_SHA:0:12}"
-          git push origin HEAD:main
+          if git diff --cached --quiet; then
+            echo "FIELD_PROVIDER_SHARDED_EVIDENCE already_current=true"
+          else
+            git commit -m "ci(repair-sharded): persist targeted recovery from ${SOURCE_SHA:0:12}"
+            git push origin HEAD:main
+          fi
+          provider_count="$(python - <<'PY'
+          import json
+          d=json.load(open("automation/provider-repair-batch-refined-latest.json",encoding="utf-8"))
+          print(int(d.get("providerCount") or 0))
+          PY
+          )"
+          if [ "$provider_count" -gt 0 ]; then
+            gh workflow run provider-brain-autopilot.yml --repo "$GITHUB_REPOSITORY" --ref main -f dry_run=false
+            echo "FIELD_PROVIDER_SHARDED_AUTOPILOT providers=$provider_count"
+          fi

@@ -4316,3 +4316,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - `vostfree` is now **FULL OK** from strict residential full-provider replay with verified media. `anime-ultime`, `moviebox`, `vidfast`, and `yflix` are no longer network-blocked; they re-enter ordinary provider Repair as ROUTE/CHAIN cases because native-like route reachability or normal provider replay disproved the blanket network diagnosis.
 - Remaining transport debt is now only `animesultra` (**HARNESS MISMATCH**, browser works while direct/OkHttp fail) and `animevost-fr` (**HARNESS/ENV BLOCKED**, residential exit also challenged). These need native/Core transport proof rather than another broad provider Repair.
 - Experimental `reuseExistingEvidence` workflow syntax from `e79f03e...` never created a job and is removed from main; the validated targeted WAF workflow from `77e3efb...` is restored while preserving the newly persisted census/WAF evidence.
+
+
+### 2026-09-24 — Catalogue-scale Repair now stays sharded through Brain handoff
+
+- Current transport cleanup proved the census can remove false network debt without a full provider rerun: durable state is now 26 FULL OK, 2 PARTIAL OK, 1 CANDIDATE OK, 7 ROUTE PROVEN, 3 CHAIN REACHED, 1 NO PROOF, 1 HARNESS MISMATCH, 1 HARNESS/ENV BLOCKED, 4 DISABLED, with 0 PROVIDER NETWORK BLOCKED.
+- Canonical Brain Repair is now capped at 3 waves / 1200 seconds / 180-second minimum batch start. The earlier 5-wave/2100-second ceiling predated the generic-miss -> Learning/LLM handoff and allowed useless variant burning such as Yflix.
+- High-volume onboarding already uses an 8-shard census and 8-shard targeted recovery above 120 providers. A missing continuation was found: after merging/refining sharded recovery, the workflow persisted the refined plan but stopped instead of handing it to Brain Autopilot.
+- Sharded refinement now preserves sourceRunId, transportSignature and causal metadata. Brain execution planning consumes the refined plan only when its source census and provider set exactly match the freshly rebuilt canonical plan; stale, partial or mismatched refinement fails closed to the canonical plan.
+- Provider Targeted Recovery - Sharded now dispatches Provider Brain Autopilot after persisting a non-empty refined plan. This closes the bulk path: bulk stage -> 8-shard census -> 8-shard targeted recovery -> exact refined causal plan -> Autopilot/Brain, rather than re-aggregating hundreds of providers blindly.
