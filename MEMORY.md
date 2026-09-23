@@ -1,5 +1,16 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-23 21:16 Europe/Paris — Canonical Repair now consumes sanitized Learning priors
+
+- While targeted Brain LLM Learning run `35905378275` was progressing, the Learning -> Repair return edge was audited end-to-end.
+- Fast Repair already imported sanitized `brain-learning/proposals` memory, but canonical `provider-recognition-repair-v6.yml` did not set `NIAKVIO_BRAIN_LEARNING_MEMORY`. Therefore a successful LLM-guided Learning run could return to canonical Repair without the new learned-skill priors being visible to `brain_repair_runtime.py`.
+- Commit `302c696edff4` adds a canonical Repair pre-step that fetches the minimal `brain-learning/proposals` ref, sanitizes `engine_v2/learning/latest.json`, exports `NIAKVIO_BRAIN_LEARNING_MEMORY`, and logs `FIELD_CANONICAL_REPAIR_LEARNING_MEMORY`. It also adds the sanitizer and memory-import contract to Repair preflight.
+- Commit `db3cfe051bd0` extends the Repair-to-Learning workflow contract test so the Learning-memory import must remain before the canonical Repair step.
+- The authority boundary is unchanged: LLM output itself is not consumed directly by production Repair. Only sanitized learned-skill metadata crosses the phase boundary; current-byte Repair/Retest remains proof/publication authority.
+- The general CORE Workflow Gate is still red for a pre-existing/unrelated `provider_hub_registry_test.py` DuckDuckGo URL-shape assertion; syntax/runtime contract stages passed before that assertion.
+- Targeted Learning `35905378275` has already proven the intended fast-handoff behavior: weekly FULL native-Lab import and full runtime-collapse/daily-coverage gates are skipped, while targeted Fast-Handoff observation coverage passes.
+
+
 ## 2026-09-23 21:09 Europe/Paris — Brain LLM preflight green; full-scope trigger marker found inefficient
 
 - Retry Learning run `35905201996` on SHA `ef69f95af276c0806a20ad1a29be48317859aaf5` passed the complete Brain/LLM preflight that failed in run `35904796058`; the strategy canonicalization fix is therefore CI-proven.
