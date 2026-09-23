@@ -109,7 +109,9 @@ jobs:
             scripts/upgrade_provider_worker_route_proof_v1.py \
             scripts/build_provider_history_matrix_v3.py \
             scripts/check_provider_non_regression_v1.py \
-            scripts/merge_provider_same_run_positive_evidence.py
+            scripts/merge_provider_same_run_positive_evidence.py \
+            scripts/select_provider_materialization_scope.py \
+            scripts/reconcile_targeted_provider_publication.py
           python scripts/upgrade_provider_runtime_reconstruction_v21_12.py
           python tests/provider_repair_pipeline_v6_contract_test.py
           python tests/provider_authority_arbiter_test.py
@@ -120,6 +122,7 @@ jobs:
           python tests/targeted_quick_yield_canonical_cli_test.py
           python tests/provider_brain_repair_orchestrator_test.py
           python tests/provider_materialization_byte_validation_contract_test.py
+          python tests/provider_census_incremental_materialization_scope_test.py
           python tests/provider_v3_sequential_reconstruction_contract_test.py
           python tests/brain_causal_intelligence_contract_test.py
           python tests/brain_exploration_chain_test.py

@@ -10,6 +10,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 
+GLOBAL_PROVIDER_PREFIXES = ("provider-bases/",)
 GLOBAL_PROVIDER_INPUTS = {
     "scripts/provider_base_store.py",
     "scripts/apply_provider_overrides.py",
@@ -158,6 +159,8 @@ def classify(
     reasons: list[str] = []
 
     for path in changed_paths:
+        if any(path.startswith(prefix) for prefix in GLOBAL_PROVIDER_PREFIXES):
+            return "all", [], [*reasons, f"global-prefix:{path}"]
         if path in GLOBAL_PROVIDER_INPUTS:
             return "all", [], [*reasons, f"global:{path}"]
 

@@ -68,6 +68,9 @@ for required in (
     'scripts/apply_provider_route_recovery_report.py',
     'scripts/materialize_provider_base_v3_store.py',
     'scripts/materialize_provider_v3_all.py',
+    'scripts/materialize_provider_v3_one.py',
+    'scripts/select_provider_materialization_scope.py',
+    'scripts/reconcile_targeted_provider_publication.py',
     'scripts/finalize_provider_repair_disposition_v1.py',
 ):
     assert required in pipeline, required
@@ -148,6 +151,14 @@ for marker in (
 assert '--require-upstream-positive-preserved' in pipeline
 assert 'capture_portfolio_yield(PORTFOLIO_BASELINE, initial_targets)' in pipeline
 assert 'capture_portfolio_yield(PORTFOLIO_CANDIDATE, initial_targets)' in pipeline
+assert 'def rematerialize_repair_scope()' in pipeline
+assert '"--base", "HEAD"' in pipeline
+assert '"--head", "HEAD"' in pipeline
+assert 'if mode == "all":' in pipeline
+assert 'elif mode == "providers":' in pipeline
+assert 'elif mode != "none":' in pipeline
+assert '"FIELD_PROVIDER_REPAIR_MATERIALIZATION "' in pipeline
+assert '"repairMaterializationMode": repair_materialization_scope.get("mode")' in pipeline
 assert 'scripts/compare_quick_yield_preservation.py' in pipeline
 assert 'scripts/audit_provider_quick_yield_targeted.py' in pipeline
 assert 'portfolioPreservationGatePassed' in pipeline

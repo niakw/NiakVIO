@@ -34,6 +34,7 @@ CENSUS_HISTORY = ROOT / "automation" / "provider-census-proof-history.json"
 CENSUS_MD = ROOT / "PROVIDER_CENSUS_STATUS.md"
 CENSUS_POST_REPAIR = ROOT / "automation" / "provider-census-post-repair.json"
 REPAIR_CANDIDATE_EVIDENCE = ROOT / "automation" / "provider-repair-candidate-evidence.json"
+REPAIR_MATERIALIZATION_SCOPE = ROOT / "automation" / "provider-repair-materialization-scope.json"
 AUTHORITY_STATUS = ROOT / "automation" / "provider-authority-status.json"
 WAF_STATUS = ROOT / "automation" / "provider-waf-browser-session-latest.json"
 CURRENT_OVERRIDES_SNAPSHOT = RUNTIME_PLAN_LKG.parent / "provider-overrides-pre-repair.json"
@@ -314,6 +315,40 @@ def render_persisted_byte_census(
     return state
 
 
+
+def rematerialize_repair_scope() -> dict[str, Any]:
+    """Rebuild only provider bytes whose materialization inputs changed."""
+    run(
+        sys.executable,
+        "scripts/select_provider_materialization_scope.py",
+        "--base", "HEAD",
+        "--head", "HEAD",
+        "--output", str(REPAIR_MATERIALIZATION_SCOPE.relative_to(ROOT)),
+    )
+    scope = load(REPAIR_MATERIALIZATION_SCOPE)
+    mode = str(scope.get("mode") or "").strip().casefold()
+    providers = sorted({cid(value) for value in scope.get("providers") or [] if cid(value)})
+    if mode == "all":
+        run(sys.executable, "scripts/materialize_provider_v3_all.py")
+    elif mode == "providers":
+        if not providers:
+            raise RuntimeError("providers materialization mode without providers")
+        for provider in providers:
+            run(sys.executable, "scripts/materialize_provider_v3_one.py", provider)
+        reconcile = [sys.executable, "scripts/reconcile_targeted_provider_publication.py"]
+        for provider in providers:
+            reconcile.extend(["--provider", provider])
+        run(*reconcile)
+    elif mode != "none":
+        raise RuntimeError(f"invalid provider materialization mode: {mode!r}")
+    print(
+        "FIELD_PROVIDER_REPAIR_MATERIALIZATION "
+        f"mode={mode} providers={len(providers)} ids={','.join(providers) or '-'}",
+        flush=True,
+    )
+    return {"mode": mode, "providers": providers, "reasons": scope.get("reasons") or []}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=("repair", "learn", "force"), default="repair")
@@ -571,7 +606,7 @@ def main() -> int:
     run(sys.executable, "scripts/enforce_route_proof_manifest_policy_v1.py", "--report", str(MERGED_REPORT.relative_to(ROOT)), "--manifest", "manifest.json", "--overrides", "provider-overrides.json")
 
     run(sys.executable, "scripts/materialize_provider_base_v3_store.py")
-    run(sys.executable, "scripts/materialize_provider_v3_all.py")
+    repair_materialization_scope = rematerialize_repair_scope()
     run(sys.executable, "scripts/generate_language_manifests.py", "--manifest", "manifest.json", "--report", "health-report.json")
     run(sys.executable, "scripts/validate_published_provider_config.py")
 
@@ -751,6 +786,9 @@ def main() -> int:
         "targetedProviders": targets,
         "maxAttemptsPerTask": attempts,
         "routePlanRevision": "v21.12",
+        "repairMaterializationMode": repair_materialization_scope.get("mode"),
+        "repairMaterializedProviders": repair_materialization_scope.get("providers") or [],
+        "repairMaterializationReasons": repair_materialization_scope.get("reasons") or [],
         "brainRepair": brain_report or None,
         "brainRepairAcceptedCount": brain_accepted,
         "brainRepairDeferredLearningProviders": sorted(brain_deferred),

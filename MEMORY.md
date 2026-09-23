@@ -4188,3 +4188,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Private memory was genuinely indexed: 180 source conversations, 162 indexed, 6435 technical documents. Qwen was called for 3/15 targets with 0 model errors.
 - Public orphan branch `niakvio-guidance` contains exactly one file and 3 prior-only rows: `allanime` and `mallumv` -> `chain_terminal_extractor_v1`; `4khdhub` -> `proven_route_terminal_traversal_v1`, confidence 0.96. It retains no private content or proof/mutation authority.
 - Canonical Repair imports that minimal surface only after exact-schema, safety and source-drift validation. Provider/census/current-byte drift rejects re-scoping; workflow/test/documentation-only drift is allowed.
+
+
+### 2026-09-23 — Canonical Repair second 42/42 rematerialization removed conditionally
+
+- Repair run `35907823143` rebuilt all 42 active providers even though only 9 entered Repair; the full materialization consumed roughly three minutes and the pipeline later performed another unconditional full rebuild.
+- The post-recovery materialization now uses `select_provider_materialization_scope.py` with `none/providers/all`. Provider-local DATA/manifest changes rebuild only affected providers via `materialize_provider_v3_one.py` and reconcile manifest/materialization/PROVENANCE with `reconcile_targeted_provider_publication.py`.
+- Any changed `provider-bases/` path is explicitly global and retains `materialize_provider_v3_all.py`. The preflight full-catalogue reconstruction remains unchanged until the incremental post-recovery path is proven live.
+- This is a performance correction only. No provider is considered repaired until a fresh Repair run produces current-byte playback/identity proof.

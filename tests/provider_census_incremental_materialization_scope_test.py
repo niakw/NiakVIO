@@ -91,4 +91,12 @@ mode, providers, _ = mod.classify(
 )
 assert mode == "all" and providers == [], (mode, providers)
 
+mode, providers, reasons = mod.classify(
+    ["provider-bases/demo--base--deadbeef.js"],
+    docs(base_overrides),
+    docs(base_overrides),
+)
+assert mode == "all" and providers == [], (mode, providers)
+assert reasons == ["global-prefix:provider-bases/demo--base--deadbeef.js"], reasons
+
 print("Provider census incremental materialization scope tests passed")
