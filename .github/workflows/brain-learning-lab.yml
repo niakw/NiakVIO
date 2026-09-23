@@ -105,7 +105,7 @@ jobs:
         with:
           repository: niakw/niakvio-private
           ref: main
-          token: \${{ secrets.NIAKVIO_PRIVATE_READ_TOKEN }}
+          token: ${{ secrets.NIAKVIO_PRIVATE_READ_TOKEN }}
           path: brain-llm-private
           fetch-depth: 1
           persist-credentials: false
@@ -256,6 +256,7 @@ jobs:
           python tests/brain_historical_solution_execution_test.py
           python tests/brain_llm_guidance_contract_test.py
           python tests/brain_llm_advisor_execution_test.py
+          python tests/brain_llm_learning_workflow_contract_test.py
           python tests/brain_cross_phase_experiment_memory_test.py
           python tests/brain_learning_unexecuted_evolved_suppression_test.py
           python tests/brain_learning_repair_return_workflow_test.py
@@ -555,7 +556,7 @@ jobs:
         id: brain_llm_route
         shell: bash
         env:
-          PROVIDER_FILTER: \${{ steps.learning-slot.outputs.provider_filter }}
+          PROVIDER_FILTER: ${{ steps.learning-slot.outputs.provider_filter }}
         run: |
           set -euo pipefail
           args=(python brain-llm/scripts/route_batch_from_checkout.py
@@ -564,14 +565,14 @@ jobs:
             --mode brain
             --output brain-sandbox/brain-llm/routing.jsonl
             --summary brain-sandbox/brain-llm/routing-summary.json)
-          if [ -n "\${PROVIDER_FILTER:-}" ]; then
+          if [ -n "${PROVIDER_FILTER:-}" ]; then
             IFS=',' read -r -a ids <<< "$PROVIDER_FILTER"
-            for provider in "\${ids[@]}"; do
+            for provider in "${ids[@]}"; do
               provider="$(printf '%s' "$provider" | xargs)"
               [ -z "$provider" ] || args+=(--provider "$provider")
             done
           fi
-          "\${args[@]}"
+          "${args[@]}"
           needed="$(python -c 'import json; d=json.load(open("brain-sandbox/brain-llm/routing-summary.json")); print("true" if d.get("llm_needed") else "false")')"
           targets="$(python -c 'import json; d=json.load(open("brain-sandbox/brain-llm/routing-summary.json")); print(int(d.get("llm_targets") or 0))')"
           echo "llm_needed=$needed" >> "$GITHUB_OUTPUT"
@@ -647,14 +648,14 @@ jobs:
       - name: Produce sanitized Brain LLM advisor guidance
         shell: bash
         env:
-          PROVIDER_FILTER: \${{ steps.learning-slot.outputs.provider_filter }}
-          LLM_NEEDED: \${{ steps.brain_llm_route.outputs.llm_needed }}
-          LLM_AVAILABLE: \${{ steps.brain_llm_server.outputs.available }}
+          PROVIDER_FILTER: ${{ steps.learning-slot.outputs.provider_filter }}
+          LLM_NEEDED: ${{ steps.brain_llm_route.outputs.llm_needed }}
+          LLM_AVAILABLE: ${{ steps.brain_llm_server.outputs.available }}
         run: |
           set -euo pipefail
           batch="brain-sandbox/brain-llm/batch.jsonl"
           : > "$batch"
-          if [ "\${LLM_NEEDED:-false}" != "true" ] || [ "\${LLM_AVAILABLE:-false}" = "true" ]; then
+          if [ "${LLM_NEEDED:-false}" != "true" ] || [ "${LLM_AVAILABLE:-false}" = "true" ]; then
             args=(python brain-llm/scripts/plan_batch_from_checkout.py
               --niakvio-root .
               --experience brain-sandbox/brain-llm/public-experience.jsonl
@@ -666,14 +667,14 @@ jobs:
             if [ -s brain-sandbox/brain-llm/private-documents.jsonl ]; then
               args+=(--extra-documents brain-sandbox/brain-llm/private-documents.jsonl)
             fi
-            if [ -n "\${PROVIDER_FILTER:-}" ]; then
+            if [ -n "${PROVIDER_FILTER:-}" ]; then
               IFS=',' read -r -a ids <<< "$PROVIDER_FILTER"
-              for provider in "\${ids[@]}"; do
+              for provider in "${ids[@]}"; do
                 provider="$(printf '%s' "$provider" | xargs)"
                 [ -z "$provider" ] || args+=(--provider "$provider")
               done
             fi
-            "\${args[@]}" || true
+            "${args[@]}" || true
           else
             echo "FIELD_BRAIN_LLM_ADVISOR available=false fallback=deterministic"
           fi
