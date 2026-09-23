@@ -574,6 +574,38 @@ def persist_accepted_programs(
     return compiled, rejected
 
 
+def durable_accepted_rows(
+    accepted: list[dict[str, Any]],
+    compiled_providers: set[str],
+) -> list[dict[str, Any]]:
+    """Return one persistable accepted repair per provider.
+
+    Sandbox/Lab acceptance is exploratory evidence only. A repair becomes a
+    production candidate only after its accepted program compiled into durable
+    Provider v3 DATA. Compile-rejected rows remain useful Learning evidence but
+    must not inflate acceptedRepairCount, influence rotation, or keep a provider
+    in Repair instead of handing it to Learning.
+    """
+    # PROVIDER_BRAIN_DURABLE_ACCEPTANCE_V1
+    by_provider: dict[str, dict[str, Any]] = {}
+    for row in accepted:
+        if not isinstance(row, dict):
+            continue
+        provider = cid(row.get("provider"))
+        persistence = (
+            row.get("v3ProgramPersistence")
+            if isinstance(row.get("v3ProgramPersistence"), dict)
+            else {}
+        )
+        if (
+            provider
+            and provider in compiled_providers
+            and persistence.get("status") == "compiled"
+        ):
+            by_provider[provider] = row
+    return [by_provider[provider] for provider in sorted(by_provider)]
+
+
 def materialize(provider_ids: set[str] | list[str]) -> None:
     """Materialize only accepted Brain targets, then validate the published view."""
     # PROVIDER_BRAIN_INCREMENTAL_MATERIALIZATION_V1
@@ -668,6 +700,7 @@ def main() -> int:
     remaining = list(selected)
     wave_reports: list[dict[str, Any]] = []
     all_accepted: list[dict[str, Any]] = []
+    all_raw_lab_accepted: list[dict[str, Any]] = []
     all_fixed: set[str] = set()
     all_deferred: set[str] = set()
     all_compiled_programs: set[str] = set()
@@ -788,6 +821,14 @@ def main() -> int:
                 and isinstance(row.get("acceptedProgram"), dict)
                 and row.get("acceptedProgram")
             }
+            durable_accepted_this_wave = durable_accepted_rows(
+                accepted_this_wave,
+                compiled_this_wave,
+            )
+            compile_rejected_to_learning = (
+                accepted_program_providers - compiled_this_wave
+            )
+            deferred_this_wave.update(compile_rejected_to_learning)
             blocked_fixed = accepted_program_providers - compiled_this_wave
             effective_fixed_this_wave = fixed_this_wave - blocked_fixed
             materialize_targets_this_wave = (
@@ -795,7 +836,17 @@ def main() -> int:
                 | compiled_this_wave
             )
 
-            all_accepted.extend(accepted_this_wave)
+            all_raw_lab_accepted.extend(accepted_this_wave)
+            accepted_seen = {
+                cid(row.get("provider"))
+                for row in all_accepted
+                if isinstance(row, dict) and cid(row.get("provider"))
+            }
+            for row in durable_accepted_this_wave:
+                provider = cid(row.get("provider"))
+                if provider and provider not in accepted_seen:
+                    all_accepted.append(row)
+                    accepted_seen.add(provider)
             all_fixed.update(effective_fixed_this_wave)
             all_deferred.update(deferred_this_wave)
             remaining = [
@@ -807,13 +858,15 @@ def main() -> int:
             wave_reports.append({
                 "wave": wave,
                 "inputProviderCount": sum(row["providerCount"] for row in batch_reports),
-                "acceptedCount": len(accepted_this_wave),
+                "acceptedCount": len(durable_accepted_this_wave),
+                "rawLabAcceptedCount": len(accepted_this_wave),
                 "timeBudgetExhausted": time_budget_exhausted,
                 "fixedInLabCount": len(effective_fixed_this_wave),
                 "fixedInLab": sorted(effective_fixed_this_wave),
                 "rawFixedInLab": sorted(fixed_this_wave),
                 "acceptedProgramCompiledProviders": sorted(compiled_this_wave),
                 "acceptedProgramCompileFailures": dict(sorted(compile_failures_this_wave.items())),
+                "compileRejectedToLearning": sorted(compile_rejected_to_learning),
                 "durableMaterializeTargets": sorted(materialize_targets_this_wave),
                 "deferredToLearningCount": len(deferred_this_wave),
                 "deferredToLearning": sorted(deferred_this_wave),
@@ -828,7 +881,7 @@ def main() -> int:
                 break
 
             decision = experiment_rotation_decision(
-                accepted_count=len(accepted_this_wave),
+                accepted_count=len(durable_accepted_this_wave),
                 remaining_count=len(remaining),
                 wave=wave,
                 max_waves=waves,
@@ -896,6 +949,8 @@ def main() -> int:
             "skippedEnvironmentProviders": skipped_environment,
             "acceptedRepairCount": len(all_accepted),
             "acceptedRepairs": all_accepted,
+            "rawLabAcceptedCount": len(all_raw_lab_accepted),
+            "rawLabAcceptedRepairs": all_raw_lab_accepted,
             "acceptedProgramCompiledProviders": sorted(all_compiled_programs),
             "acceptedProgramCompileFailures": dict(sorted(all_program_compile_failures.items())),
             "fixedInLabProviders": sorted(all_fixed),
@@ -918,6 +973,7 @@ def main() -> int:
         print(
             "FIELD_PROVIDER_BRAIN_REPAIR "
             f"selected={len(selected)} accepted={len(all_accepted)} "
+            f"raw_lab_accepted={len(all_raw_lab_accepted)} "
             f"fixed_lab={len(all_fixed)} deferred_learning={len(all_deferred)} "
             f"remaining={len(remaining)} waves={len(wave_reports)} "
             f"time_budget_exhausted={str(time_budget_exhausted).lower()} "

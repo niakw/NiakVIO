@@ -87,6 +87,28 @@ assert mod.generic_unadvised_learning_handoff(
     generic_summary,[],{"y"}
 )==set()
 
+raw_accept=[
+    {
+        "provider":"mallu",
+        "acceptedProgram":{"profile":"x"},
+        "v3ProgramPersistence":{"status":"rejected","reason":"no provider-owned stream-proof recipe"},
+    },
+    {
+        "provider":"good",
+        "acceptedProgram":{"profile":"y"},
+        "v3ProgramPersistence":{"status":"compiled"},
+    },
+    {
+        "provider":"good",
+        "acceptedProgram":{"profile":"y2"},
+        "v3ProgramPersistence":{"status":"compiled"},
+    },
+]
+durable=mod.durable_accepted_rows(raw_accept,{"good"})
+assert [row["provider"] for row in durable]==["good"],durable
+assert durable[0]["acceptedProgram"]["profile"]=="y2",durable
+assert mod.durable_accepted_rows(raw_accept,set())==[]
+
 with tempfile.TemporaryDirectory() as tmp:
     old_status,old_plan,old_memory=mod.STATUS,mod.BATCH_PLAN,mod.REPAIR_MEMORY
     try:
@@ -332,6 +354,9 @@ for required in (
     "PROVIDER_BRAIN_PACKED_FAMILY_BATCHES_V1",
     "PROVIDER_BRAIN_BATCH_CONCURRENCY_V1",
     "PROVIDER_BRAIN_GENERIC_MISS_TO_LEARNING_V1",
+    "PROVIDER_BRAIN_DURABLE_ACCEPTANCE_V1",
+    "rawLabAcceptedCount",
+    "compileRejectedToLearning",
 ):
     assert required in source, required
 
