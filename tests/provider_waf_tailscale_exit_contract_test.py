@@ -40,7 +40,6 @@ required=[
     "WAF_WORKERS=4",
     "Merge targeted refresh into complete WAF evidence ledger",
     "scripts/merge_targeted_waf_refresh.py",
-    "FIELD_WAF_TARGETED_LEDGER_MERGE",
 ]
 for needle in required:
     assert needle in wf, f"missing Tailscale WAF contract: {needle}"

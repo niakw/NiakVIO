@@ -4294,3 +4294,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Targeted runs now snapshot the complete prior ledger and merge refreshed rows/replay rows back provider-by-provider. Unrelated WAF/Tailscale evidence is preserved. The merged ledger records `lastRefreshProviderFilter` without pretending the whole ledger was freshly probed.
 - Explicit targeted transport runs now use one fresh attempt per browser/direct/OkHttp profile and four workers. Negative rows can otherwise cost roughly four browser attempts plus direct/OkHttp waits per target. Full untargeted qualification retains two attempts and three workers.
 - The superseding targeted transport trigger will cancel the slower in-flight run through the existing `provider-waf-transport-main` concurrency group and rerun the same eight providers with the bounded policy.
+
+
+### 2026-09-24 — Targeted WAF bounded retry contract correction
+
+- Targeted WAF run `35928054146` stopped before network/Tailscale work because the static workflow contract incorrectly required the runtime marker `FIELD_WAF_TARGETED_LEDGER_MERGE` to appear literally in YAML. The marker is emitted by `scripts/merge_targeted_waf_refresh.py`, and that helper has its own executable unit contract.
+- The stale YAML-string assertion is removed; workflow still requires the merge step/script and the helper unit test. No transport result is inferred from the failed run.
