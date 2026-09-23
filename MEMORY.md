@@ -1,5 +1,14 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-23 21:09 Europe/Paris — Brain LLM preflight green; full-scope trigger marker found inefficient
+
+- Retry Learning run `35905201996` on SHA `ef69f95af276c0806a20ad1a29be48317859aaf5` passed the complete Brain/LLM preflight that failed in run `35904796058`; the strategy canonicalization fix is therefore CI-proven.
+- The private NiakVIO memory checkout remains successful. The run then entered weekly FULL Lab import instead of the intended repairQueue-only fast handoff.
+- Root cause is trigger-contract, not Learning selection logic: `select_fast_learning_handoff.py` recognizes versioned handoffs only when `execution_mode` starts with `targeted-fast-handoff` and `expected_scope` contains `provider-repair-handoff`. The launch trigger used `brain-llm-guided-fast-handoff-fair-share-v1`, so `fastHandoff=false` and the workflow correctly fell back to full Learning.
+- This is intentionally being superseded rather than wasting a full-catalogue run. The replacement trigger will use `targeted-fast-handoff-brain-llm-v1`, preserving the current 9-provider repairQueue intersection and the LLM-guided Learning -> canonical Repair return edge.
+- CORE gate failure observed in parallel on `273c4d194137` is unrelated to Brain LLM: `provider_hub_registry_test.py` currently fails on the expected DuckDuckGo search-engine URL shape.
+
+
 ## 2026-09-23 21:02 Europe/Paris — First live Brain LLM launch exposed strategy canonicalization bug
 
 - Push-triggered Learning run `35904796058` executed on exact SHA `16bb314ad9147c9940fe23fb7e7f82213f7830f0` and failed in preflight before provider/network/LLM execution.
