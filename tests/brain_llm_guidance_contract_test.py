@@ -102,3 +102,19 @@ assert set(mod.STRATEGY_TO_PROFILE.values())=={
 }
 
 print("Brain LLM guidance contract passed")
+
+
+workflow=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
+assert "repository: niakw/NiakVIO-Brain-LLM" in workflow
+assert "ref: c752f5c21ded26c578eaeacb492611f3fdb137a9" in workflow
+assert "repository: niakw/niakvio-private" in workflow
+assert "NIAKVIO_PRIVATE_READ_TOKEN" in workflow
+assert "g-p-6a7f1d27495c819182b4081bfccdafd8" in workflow
+assert "persist-credentials: false" in workflow
+assert "NIAKVIO_BRAIN_LLM_GUIDANCE=" in workflow
+assert "brain_llm_guidance.py" in workflow
+assert "Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M" in workflow
+# Ephemeral private documents may feed the model but must never be uploaded.
+upload_tail=workflow[workflow.find("Upload sanitized learning and proposal state"):]
+assert "private-documents.jsonl" not in upload_tail
+assert "brain-llm-private" not in upload_tail
