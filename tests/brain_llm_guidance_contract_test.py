@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import importlib.util
+import json
+import tempfile
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parents[1]
+SCRIPT=ROOT/"scripts"/"brain_llm_guidance.py"
+spec=importlib.util.spec_from_file_location("brain_llm_guidance",SCRIPT)
+assert spec and spec.loader
+mod=importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+
+rows=[
+    {
+        "ok":True,
+        "provider":"mallumv",
+        "failure_class":"chain_terminal_gap",
+        "proposal":{
+            "provider_id":"mallumv",
+            "strategy":"terminal_media_extractor_with_playback_validation",
+            "confidence":0.93,
+            "target_layer":"provider",
+            "abstain":False,
+            "diagnosis":"PRIVATE TEXT MUST NOT PERSIST",
+            "mutations":[{"content":"SECRET MUTATION MUST NOT PERSIST"}],
+            "evidence":["PRIVATE EVIDENCE MUST NOT PERSIST"],
+            "tests":["PRIVATE TEST MUST NOT PERSIST"],
+        },
+    },
+    {
+        "ok":True,
+        "provider":"allwish",
+        "failure_class":"transport_environment_gap",
+        "proposal":{
+            "provider_id":"allwish",
+            "strategy":"compare_browser_native_residential_profiles_without_provider_mutation",
+            "confidence":0.99,
+            "target_layer":"harness",
+            "abstain":False,
+        },
+    },
+    {
+        "ok":True,
+        "provider":"4khdhub",
+        "failure_class":"route_proven_gap",
+        "proposal":{
+            "provider_id":"4khdhub",
+            "strategy":"search_detail_player_terminal_traversal",
+            "confidence":0.62,
+            "target_layer":"provider",
+            "abstain":False,
+        },
+    },
+    {
+        "ok":True,
+        "provider":"animevostfr",
+        "failure_class":"candidate_replay_gap",
+        "proposal":{
+            "provider_id":"animevostfr",
+            "strategy":"same_provider_candidate_program_replay",
+            "confidence":0.94,
+            "target_layer":"provider",
+            "abstain":True,
+        },
+    },
+]
+report=mod.sanitize(
+    rows,
+    source_sha="a"*40,
+    brain_llm_sha="b"*40,
+    min_confidence=0.80,
+)
+assert report["publicationAuthority"] is False,report
+assert report["directMutationAuthority"] is False,report
+assert report["proofAuthority"] is False,report
+assert report["rawMutationContentRetained"] is False,report
+assert report["providerCount"]==1,report
+assert report["rows"]==[{
+    "providerId":"mallumv",
+    "failureClass":"chain-terminal-gap",
+    "targetLayer":"provider",
+    "strategy":"terminal-media-extractor-with-playback-validation",
+    "profile":"chain_terminal_extractor_v1",
+    "confidence":0.93,
+    "priorOnly":True,
+}],report
+encoded=json.dumps(report,sort_keys=True)
+for forbidden in ("PRIVATE TEXT","SECRET MUTATION","PRIVATE EVIDENCE","PRIVATE TEST"):
+    assert forbidden not in encoded,encoded
+
+# The public mapping vocabulary must be bounded and executable by NiakVIO.
+assert set(mod.STRATEGY_TO_PROFILE.values())=={
+    "provider_origin_failover_v1",
+    "proven_route_terminal_traversal_v1",
+    "chain_terminal_extractor_v1",
+    "retained_candidate_replay_v1",
+    "player_media_extractor_v1",
+    "search_contract_inference_v1",
+}
+
+print("Brain LLM guidance contract passed")
