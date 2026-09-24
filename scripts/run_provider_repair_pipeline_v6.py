@@ -697,15 +697,22 @@ def main() -> int:
     # lets later waves transfer trusted skills to compatible remaining providers.
     BRAIN_REPAIR.unlink(missing_ok=True)
     if args.mode in {"repair", "force"}:
+        brain_rounds_per_batch = 1 if args.mode == "repair" else 3
         brain_cmd = [
             sys.executable,
             "scripts/run_provider_brain_repair.py",
             "--waves", "3",
             "--batch-size", "48",
+            "--max-rounds-per-batch", str(brain_rounds_per_batch),
             "--time-budget-seconds", "900",
             "--min-start-batch-seconds", "150",
             "--output", str(BRAIN_REPAIR.relative_to(ROOT)),
         ]
+        print(
+            "FIELD_PROVIDER_REPAIR_BRAIN_ROUNDS "
+            f"mode={args.mode} rounds_per_batch={brain_rounds_per_batch}",
+            flush=True,
+        )
         for provider in targets:
             brain_cmd.extend(["--provider", provider])
         run(

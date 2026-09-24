@@ -4719,3 +4719,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Fast-Handoff Learning now skips llama.cpp/model startup entirely. It imports the latest sanitized `niakvio-guidance` ref through the existing current-SHA/provider-drift validator; if that cache is compatible it is used as a non-authoritative prior, and if unavailable Learning continues with an empty LLM prior plus deterministic/learned strategies instead of waiting on the model.
 - Local Qwen remains available for non-Fast/scheduled Learning and the separate Brain-LLM advisor workflow, but it is no longer a blocking dependency of provider repair.
 - The previously valid nine-provider guidance ref was restored after advisor run `36039671478` produced zero publishable rows. Brain-LLM commit `887f025...` adds a same-source coverage guard so a degraded guidance candidate cannot overwrite a more complete valid cache.
+
+
+### 2026-09-24 21:03 Europe/Paris — Learning→Repair return executes one current hypothesis first
+
+- The canonical V6 pipeline previously invoked Brain with three Deep rounds for both automatic `mode=repair` and explicit `force`. That recreated avoidable latency immediately after Learning had already selected/evolved a strategy.
+- Automatic `mode=repair` now uses `--max-rounds-per-batch 1`: execute the freshly learned/current hypothesis once, then rely on the existing strict current-byte playback/identity/non-regression gates. A miss can return to Learning instead of burning three variants in the same return pass.
+- Explicit `force` retains three rounds, so operator-requested deep exploration loses no depth. The Brain portfolio budget/gates are otherwise unchanged.
+- The currently running Learning run `36043664285` is still testing source SHA `00362d02...`; this optimization applies only to the canonical Repair it will dispatch from the newer main after Learning publishes.
