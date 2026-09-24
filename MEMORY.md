@@ -4513,3 +4513,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Fast Repair already imports the sanitized external private-informed Brain-LLM prior before running the provider-local Brain.
 - The remaining catalogue-scale false rejection was source drift caused only by persisted sharded observation files. `automation/provider-targeted-regression-recovery-*` and `automation/provider-repair-batch-refined-*` are now explicitly provider-neutral guidance drift.
 - Provider materialization drift is still checked independently and fails closed; provider DATA/bytes/manifests cannot be hidden by this whitelist.
+
+
+### 2026-09-24 — Learning pinned to current validated Brain-LLM
+
+- NiakVIO Learning was still pinned to Brain-LLM commit `c752f5c21ded26c578eaeacb492611f3fdb137a9`, while the current validated Brain-LLM planner is `84eb6ff14af60c29b59b5f0382221297ddfacb4c`.
+- Brain-LLM `84eb6ff14af6` passed both Brain LLM CI and the Private-Guided Advisor workflow; it includes the bounded two-slot Qwen planning path.
+- `brain-learning-lab.yml` now checks out exactly `84eb6ff14af60c29b59b5f0382221297ddfacb4c` and emits the same SHA in sanitized guidance metadata. The static guidance contract is updated to prevent silent fallback to the old brain.
+- A targeted Learning trigger is armed for the restored 12-provider repairQueue. Learning remains proposal/memory only; current-byte playback and identity gates remain the sole Repair publication authority.
