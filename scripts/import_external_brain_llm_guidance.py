@@ -19,7 +19,8 @@ STRATEGY_TO_PROFILE={
  "discover-api-from-current-page-and-bundles":"search_contract_inference_v1",
 }
 TOP_LEVEL_FIELDS={"schemaVersion","sourceNiakvioSha","brainLlmSha","publicationAuthority","directMutationAuthority","proofAuthority","rawMutationContentRetained","privateContentRetained","minConfidence","providerCount","rows"}
-ROW_FIELDS_V1={"providerId","failureClass","targetLayer","strategy","profile","confidence","priorOnly"}\nROW_FIELDS_V2=ROW_FIELDS_V1|{"experiment","experimentFingerprint"}
+ROW_FIELDS_V1={"providerId","failureClass","targetLayer","strategy","profile","confidence","priorOnly"}
+ROW_FIELDS_V2=ROW_FIELDS_V1|{"experiment","experimentFingerprint"}
 NEUTRAL_DRIFT_PREFIXES=(".github/workflows/",".github/triggers/","tests/","automation/provider-brain-repair-","automation/provider-targeted-regression-recovery-","automation/provider-repair-batch-refined-")
 NEUTRAL_DRIFT_FILES={"MEMORY.md","scripts/import_external_brain_llm_guidance.py","scripts/brain_repair_runtime.py","scripts/run_provider_brain_repair.py","scripts/select_provider_materialization_scope.py","scripts/run_provider_repair_pipeline_v6.py","engine_v2/scripts/plan-repairs.mjs","automation/brain-repair-memory.json","automation/brain-positive-program-memory.json"}
 MATERIALIZATION_SCOPE_SCRIPT=ROOT/"scripts/select_provider_materialization_scope.py"
