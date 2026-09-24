@@ -4695,3 +4695,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Fast Repair now calls the generic Brain with `maxRoundsPerBatch=1` by default. One current hypothesis is generated/tested per provider in Fast; any additional experiment rotation remains the responsibility of the isolated Learning lane. The generic Brain default stays at 3 rounds, so Learning/deep callers do not lose exploration depth.
 - Workflow/trigger support `max_rounds_per_batch` / `maxRoundsPerBatch`, and the report records `maxRoundsPerBatch` for auditability.
 - Learning run `36038637655` failed before sandbox execution because `brain_llm_learning_workflow_contract_test.py` incorrectly required the architecture-stage `--llm-batch ...` argument inside the earlier LLM-setup substring. The contract now validates that argument against the full workflow while keeping interpolation/schema checks scoped to the LLM setup section.
+
+
+### 2026-09-24 20:18 Europe/Paris — Fast one-round benchmark completed; Learning contract scope fixed
+
+- Fast run `36039284424` completed the five-provider LLM microbenchmark in **194.025 s** with `maxRoundsPerBatch=1`, versus the prior 420 s budget exhaustion with zero finalized providers. All five providers were visited and the run exited without time-budget exhaustion.
+- LLM execution is now proven on current bytes for 4khdhub and Animesalt (`executionObserved=true`); both failed the strict playable-category gate rather than `profile_unavailable`. MalluMV is strategy-exhausted after a real chain-terminal attempt; Moviebox and Yflix are already exhausted in Fast and correctly belong to Learning.
+- Learning run `36039730293` failed before sandbox work only because the workflow contract still scoped the v2 schema assertions to the pre-queue LLM setup substring. Schema/experiment assertions now validate the whole workflow, while interpolation/setup assertions stay local to the setup block.
+- Learning is pinned to Brain-LLM `e996ed8127cc...`, whose CI is green. This version preserves current targeted network evidence, supports non-provider architecture diagnosis, runs external guidance in advisor-only mode, and bounds model output size. A fresh handoff run is armed on the current five-provider evidence plus the existing 14-provider Learning registry.

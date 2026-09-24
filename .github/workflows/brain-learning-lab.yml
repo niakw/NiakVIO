@@ -97,7 +97,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: niakw/NiakVIO-Brain-LLM
-          ref: 48df8f0d8d7a0c860044f6294e7ef3ee13c7f061
+          ref: e996ed8127cc45db3d938e90333ed028c66e84b4
           path: brain-llm
           fetch-depth: 1
           persist-credentials: false
@@ -725,7 +725,7 @@ jobs:
             --input "$batch" \
             --output brain-sandbox/brain-llm/guidance.json \
             --source-sha "$GITHUB_SHA" \
-            --brain-llm-sha 48df8f0d8d7a0c860044f6294e7ef3ee13c7f061
+            --brain-llm-sha e996ed8127cc45db3d938e90333ed028c66e84b4
           echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/brain-sandbox/brain-llm/guidance.json" >> "$GITHUB_ENV"
           rm -f brain-sandbox/brain-llm/private-documents.jsonl brain-sandbox/brain-llm/private-memory-report.json
           rm -rf brain-llm-private
