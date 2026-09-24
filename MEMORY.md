@@ -4834,3 +4834,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - WAF preparation now intersects current WAF-eligible providers with the explicit manual `target_provider` or push-trigger `targetProviders`. Residential provider replay is intersected again with the same `/tmp/repair-waf-targets.json` cohort before any network work.
 - Schedules and non-targeted runs retain full current WAF scope. Only explicit targeted Repair is narrowed, so no diagnostic coverage is silently lost.
 - AnimeSalt itself remains functionally unresolved: direct `/series/{slug}/` now executes, but Cloudflare challenges the app-style HTTP path on both GitHub and residential egress; browser sessions can reach content. No playable/verified media has been claimed.
+
+
+### 2026-09-24 23:24 Europe/Paris — Fast Brain re-armed for the complete current repair queue
+
+- WAF qualification is now cohort-scoped on main (`832b91a...`), including residential replay scope, so a targeted Repair cannot spend minutes reproving unrelated providers.
+- The current durable repair queue still contains 14 providers: 4khdhub, allanime, allwish, anime-ultime, animesalt, animesultra, animevost-fr, animevostfr, flemmix, mallumv, moviebox, moviesmod, vidfast, yflix. Environment queue remains empty on the durable census.
+- Fast Brain is armed on all 14 with `waves=1`, `maxRoundsPerBatch=1`, `timeBudgetSeconds=600`. This is the scalable execution path: one current causal hypothesis per provider, strict Retest for any candidate, then only unresolved/exhausted cases enter Learning.
