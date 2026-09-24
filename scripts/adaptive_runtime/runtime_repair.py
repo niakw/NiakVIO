@@ -1494,7 +1494,55 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         )
         second_order_role_preferences = ["detail", "search", "api", "player", "source", "episode", "other"]
 
-    role_preferences = second_order_role_preferences or _experiment_role_preferences(
+    llm_experiment = (
+        brain_plan.get("llmAdvisorExperiment")
+        if isinstance(brain_plan.get("llmAdvisorExperiment"), dict)
+        else {}
+    )
+    llm_experiment_fingerprint = str(
+        brain_plan.get("llmAdvisorExperimentFingerprint") or ""
+    ).strip().casefold()
+    llm_roles: list[str] | None = None
+    if llm_experiment and llm_experiment_fingerprint:
+        route_policy = str(llm_experiment.get("routePolicy") or "owned_only")
+        recipe_policy = str(llm_experiment.get("recipePolicy") or "current_only")
+        owned_search = _unique_routes(configured_search, learned_search, limit=32)
+        owned_direct = _unique_routes(configured_direct, learned_direct, limit=40)
+        if route_policy == "owned_plus_peer":
+            search_paths = _unique_routes(owned_search, peer_search, limit=32)
+            direct_paths = _unique_routes(owned_direct, peer_direct, limit=40)
+        elif route_policy == "owned_plus_peer_generic":
+            search_paths = _unique_routes(owned_search, peer_search, generic_search, limit=32)
+            direct_paths = _unique_routes(owned_direct, peer_direct, generic_direct, limit=40)
+        else:
+            search_paths = owned_search
+            direct_paths = owned_direct
+
+        if recipe_policy == "current_plus_provider_peer":
+            request_recipes = _unique_request_recipes(
+                current_request_recipes, provider_request_recipes, peer_request_recipes, limit=48
+            )
+        elif recipe_policy == "current_plus_provider":
+            request_recipes = _unique_request_recipes(
+                current_request_recipes, provider_request_recipes, limit=40
+            )
+        else:
+            request_recipes = _unique_request_recipes(current_request_recipes, limit=32)
+
+        if llm_experiment.get("terminalOnly") is True:
+            direct_paths = [
+                route for route in direct_paths
+                if _route_role(route) in TERMINAL_MEDIA_ROLES | {"episode"}
+            ]
+        raw_roles = llm_experiment.get("roleOrder")
+        if isinstance(raw_roles, list):
+            allowed_roles = {"search", "detail", "episode", "player", "source", "api", "other"}
+            llm_roles = [
+                str(role) for role in raw_roles
+                if str(role) in allowed_roles
+            ] or None
+
+    role_preferences = llm_roles or second_order_role_preferences or _experiment_role_preferences(
         census_focus,
         experiment_failure,
         experiment_variant,
@@ -1563,6 +1611,58 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             alternate_index = 0 if experiment_generation <= 2 else (experiment_generation - 2) % len(alternates)
             base_url = alternates[alternate_index]
 
+    default_max_recipe_passes = (
+        3 if experiment_generation <= 2
+        else 4 if experiment_generation == 3
+        else 5 if experiment_generation == 4
+        else 6
+    )
+    default_max_pages = max(
+        int(census_focus.get("max_pages") or 10),
+        14 if experiment_variant == 1
+        else 12 if experiment_variant == 2
+        else 20 if experiment_variant == 3
+        else (
+            24 if experiment_generation <= 2
+            else 28 if experiment_generation == 3
+            else 32 if experiment_generation == 4
+            else 36
+        ) if experiment_variant == 4
+        else 10,
+    )
+    default_max_embeds = max(
+        int(census_focus.get("max_embeds") or 10),
+        (
+            24 if experiment_generation <= 2
+            else 28 if experiment_generation == 3
+            else 32 if experiment_generation == 4
+            else 36
+        ) if experiment_variant == 4
+        else 24 if experiment_variant in {1, 2, 3}
+        else 10,
+    )
+    default_max_depth = max(
+        int(census_focus.get("max_depth") or 3),
+        (
+            4 if experiment_generation <= 2
+            else 5 if experiment_generation in {3, 4}
+            else 6
+        ) if experiment_variant == 4
+        else 4 if experiment_variant in {1, 2, 3}
+        else 3,
+    )
+    max_recipe_passes = max(1, min(6, int(llm_experiment.get("maxRecipePasses") or default_max_recipe_passes)))
+    max_pages = max(6, min(36, int(llm_experiment.get("maxPages") or default_max_pages)))
+    max_embeds = max(6, min(36, int(llm_experiment.get("maxEmbeds") or default_max_embeds)))
+    max_depth = max(2, min(6, int(llm_experiment.get("maxDepth") or default_max_depth)))
+    alias_search = new_strategy_id == "identity_alias_search_traversal_v1" or llm_experiment.get("aliasSearch") is True
+    runtime_response_salvage = (
+        new_strategy_id in {"runtime_response_salvage_v1", "terminal_transition_graph_v1"}
+        or llm_experiment.get("responseSalvage") is True
+    )
+    document_request_mining = new_strategy_id == "document_request_contract_mining_v1" or llm_experiment.get("documentRequestMining") is True
+    session_bootstrap = new_strategy_id == "provider_session_bootstrap_replay_v1" or llm_experiment.get("sessionBootstrap") is True
+
     return {
         "provider_name": str(metadata.get("name") or provider_id or "Provider"),
         "base_url": base_url,
@@ -1614,13 +1714,10 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             else "learned-family-new-strategy"
         ),
         "new_strategy_id": new_strategy_id,
-        "alias_search": new_strategy_id == "identity_alias_search_traversal_v1",
-        "runtime_response_salvage": new_strategy_id in {
-            "runtime_response_salvage_v1",
-            "terminal_transition_graph_v1",
-        },
-        "document_request_mining": new_strategy_id == "document_request_contract_mining_v1",
-        "session_bootstrap": new_strategy_id == "provider_session_bootstrap_replay_v1",
+        "alias_search": alias_search,\n        "llm_experiment_fingerprint": llm_experiment_fingerprint,\n        "llm_experiment_applied": bool(llm_experiment and llm_experiment_fingerprint),
+        "runtime_response_salvage": runtime_response_salvage,
+        "document_request_mining": document_request_mining,
+        "session_bootstrap": session_bootstrap,
         "historical_strategy_profile": historical_strategy_profile,
         "historical_strategy_case": str(brain_plan.get("historicalStrategyCase") or ""),
         "post_exhaustion_strategy_profile": post_exhaustion_strategy_profile,
@@ -1628,46 +1725,10 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         "peer_route_min_variant": peer_route_min_variant,
         "peer_recipe_min_variant": peer_recipe_min_variant,
         "negative_memory_matches": max(0, int(brain_plan.get("negativeMemoryMatches") or 0)),
-        "max_recipe_passes": (
-            3 if experiment_generation <= 2
-            else 4 if experiment_generation == 3
-            else 5 if experiment_generation == 4
-            else 6
-        ),
-        "max_pages": max(
-            int(census_focus.get("max_pages") or 10),
-            14 if experiment_variant == 1
-            else 12 if experiment_variant == 2
-            else 20 if experiment_variant == 3
-            else (
-                24 if experiment_generation <= 2
-                else 28 if experiment_generation == 3
-                else 32 if experiment_generation == 4
-                else 36
-            ) if experiment_variant == 4
-            else 10,
-        ),
-        "max_embeds": max(
-            int(census_focus.get("max_embeds") or 10),
-            (
-                24 if experiment_generation <= 2
-                else 28 if experiment_generation == 3
-                else 32 if experiment_generation == 4
-                else 36
-            ) if experiment_variant == 4
-            else 24 if experiment_variant in {1, 2, 3}
-            else 10,
-        ),
-        "max_depth": max(
-            int(census_focus.get("max_depth") or 3),
-            (
-                4 if experiment_generation <= 2
-                else 5 if experiment_generation in {3, 4}
-                else 6
-            ) if experiment_variant == 4
-            else 4 if experiment_variant in {1, 2, 3}
-            else 3,
-        ),
+        "max_recipe_passes": max_recipe_passes,
+        "max_pages": max_pages,
+        "max_embeds": max_embeds,
+        "max_depth": max_depth,
         "timeout_ms": max(2000, min(int(recovery_options.get("timeout_ms") or 9000), 20000)),
         "user_agent": validated_positive_user_agent or network_hints["user_agent"],
         "blocked_hosts": sorted(blocked_hosts),

@@ -82,6 +82,7 @@ def accepted_runtime_program(candidate: dict[str, Any], result: dict[str, Any] |
         "peer_route_min_variant", "peer_recipe_min_variant", "negative_memory_matches",
         "max_pages", "max_embeds", "max_depth", "max_recipe_passes", "timeout_ms", "user_agent",
         "blocked_hosts", "blocked_path_patterns", "route_prior_counts",
+        "llm_experiment_fingerprint", "llm_experiment_applied",
     }
     for record in reversed(candidate.get("local_patches") or []):
         if not isinstance(record, dict):

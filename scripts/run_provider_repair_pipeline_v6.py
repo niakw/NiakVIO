@@ -177,6 +177,41 @@ def capture_portfolio_yield(destination: Path, providers: list[str] | None = Non
     return report
 
 
+def reapply_transport_overlay(*, phase: str) -> None:
+    """Keep durable WAF/Tailscale transport authority across internal renders."""
+    if not CENSUS_STATUS.exists() or not WAF_STATUS.exists():
+        return
+    run_id = str(os.environ.get("GITHUB_RUN_ID") or "local")
+    sha = str(os.environ.get("GITHUB_SHA") or "")
+    tmp = Path(os.environ.get("RUNNER_TEMP") or (ROOT / "automation")) / f"provider-census-transport-{phase}.json"
+    cmd = [
+        sys.executable,
+        "scripts/merge_waf_census_transport.py",
+        "--status", str(CENSUS_STATUS.relative_to(ROOT)),
+        "--waf", str(WAF_STATUS.relative_to(ROOT)),
+        "--output", str(tmp),
+        "--run-id", f"{run_id}-{phase}-transport",
+        "--sha", sha or phase,
+    ]
+    if AUTHORITY_STATUS.exists():
+        cmd.extend(["--authority-status", str(AUTHORITY_STATUS.relative_to(ROOT))])
+    run(*cmd)
+    shutil.copyfile(tmp, CENSUS_STATUS)
+    run(
+        sys.executable,
+        "scripts/render_provider_census_status_from_state.py",
+        "--status", str(CENSUS_STATUS.relative_to(ROOT)),
+        "--output", str(CENSUS_MD.relative_to(ROOT)),
+    )
+    state = load(CENSUS_STATUS)
+    print(
+        "FIELD_PROVIDER_REPAIR_TRANSPORT_OVERLAY "
+        f"phase={phase} repair={len(state.get('repairQueue') or [])} "
+        f"environment={len(state.get('environmentQueue') or [])}",
+        flush=True,
+    )
+
+
 def refresh_census(report_path: Path, *, phase: str) -> dict[str, Any]:
     """Merge a targeted current-byte report into the durable global census."""
     run_id = str(os.environ.get("GITHUB_RUN_ID") or "local")
@@ -209,6 +244,8 @@ def refresh_census(report_path: Path, *, phase: str) -> dict[str, Any]:
         "--run-id", f"{run_id}-{phase}",
         "--sha", sha or phase,
     )
+    reapply_transport_overlay(phase=phase)
+    reapply_transport_overlay(phase=phase)
     if (ROOT / "scripts/build_provider_repair_batch_plan.py").exists():
         run(
             sys.executable,
