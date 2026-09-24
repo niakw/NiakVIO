@@ -4734,3 +4734,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Repair run `36045821519` never reached provider execution. It failed in preflight because `tests/brain_exploration_chain_test.py` still required a literal `--max-rounds 3`, contradicting the new intentional automatic Repair behavior (`1` round in `mode=repair`, `3` in explicit `force`).
 - The exploration-chain contract now validates the generic Brain's configurable `--max-rounds-per-batch` argument and its propagation into Deep Repair instead of hard-coding three rounds.
 - Re-armed canonical Repair against the exact current 14-provider `repairQueue`; this retry is the first real canonical execution after the successful targeted Learning run `36043664285`.
+
+
+### 2026-09-24 22:05 Europe/Paris — Hidden Deep-round override and catalogue-wide candidate work removed
+
+- Canonical Repair run `36048403587` completed in ~25 minutes and failed closed with 0 accepted repairs, 13 Learning deferrals, 1 remaining provider, 0 playable/verified current candidate streams, and the transient historical proof loss `animevostfr:anime`. The durable census therefore correctly remained unchanged at 14 repair providers and 0 environment blockers.
+- Timing evidence isolated the main costs: route recovery ~2 min; catalogue-wide rematerialization plus broad candidate guards ~6m45; Brain ~12m47; final yield/retest ~1m30.
+- Root cause found in `run_adaptive_deep_repair.py`: it overwrote an explicit `--max-rounds 1` with 3 whenever exploration-chain mode was enabled. Explicit caller budgets are now authoritative; exploration-chain 3-round behavior is only the default when the caller omitted `--max-rounds`.
+- Automatic Repair is now truly one hypothesis once: `waves=1`, `maxRoundsPerBatch=1`, 600 s portfolio cap. Explicit Force retains 3 waves/3 rounds. Single-hypothesis Deep validation also fail-closes with at most 45 s provider timeout and 2 settings profiles, reducing worst-case blocked-provider latency without weakening positive acceptance gates.
+- Automatic Repair is non-publishing, so candidate rematerialization now narrows `all/providers` selector output to the current Repair cohort. Explicit Force retains full materialization authority. The expensive stream-output guard likewise accepts a Repair-only provider filter; its default/full CI behavior is unchanged.
+- The evidence-only commit `cde679d...` automatically started Repair `36051219488` and Learning `36051216728` on the old slow semantics; this patch supersedes those runs rather than treating them as new proof.

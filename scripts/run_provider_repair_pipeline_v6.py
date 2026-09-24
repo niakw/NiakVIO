@@ -131,9 +131,19 @@ def unresolved_target_scope(
     return targets, excluded
 
 
-def run(*args: str, timeout: int | None = None) -> None:
+def run(
+    *args: str,
+    timeout: int | None = None,
+    env: dict[str, str] | None = None,
+) -> None:
     print("FIELD_PROVIDER_REPAIR_CMD " + " ".join(args), flush=True)
-    subprocess.run(list(args), cwd=ROOT, env=os.environ.copy(), check=True, timeout=timeout)
+    subprocess.run(
+        list(args),
+        cwd=ROOT,
+        env=env or os.environ.copy(),
+        check=True,
+        timeout=timeout,
+    )
 
 
 def route_recovery_outer_timeout(
@@ -373,8 +383,46 @@ def render_persisted_byte_census(
 
 
 
-def rematerialize_repair_scope() -> dict[str, Any]:
-    """Rebuild only provider bytes whose materialization inputs changed."""
+def effective_repair_materialization_scope(
+    scope: dict[str, Any],
+    target_providers: list[str],
+    *,
+    targeted_only: bool,
+) -> dict[str, Any]:
+    """Narrow sandbox materialization to the Repair cohort when publication is off.
+
+    Route-recovery migrations can legitimately touch global/provider-map inputs in
+    the candidate worktree. Automatic Repair is non-publishing, so rebuilding the
+    entire catalogue only tests unrelated bytes and scales linearly with catalogue
+    size. Explicit Force retains the full selector authority.
+    """
+    source_mode = str(scope.get("mode") or "").strip().casefold()
+    if source_mode not in {"all", "providers", "none"}:
+        raise RuntimeError(f"invalid provider materialization mode: {source_mode!r}")
+    providers = sorted({cid(value) for value in scope.get("providers") or [] if cid(value)})
+    reasons = list(scope.get("reasons") or [])
+    narrowed = False
+    if targeted_only and source_mode in {"all", "providers"}:
+        targets = {cid(value) for value in target_providers if cid(value)}
+        providers = sorted(targets if source_mode == "all" else (set(providers) & targets))
+        source_mode = "providers" if providers else "none"
+        reasons.append("automatic-repair:nonpublishing-target-cohort-only")
+        narrowed = True
+    return {
+        "mode": source_mode,
+        "providers": providers,
+        "reasons": reasons,
+        "narrowed": narrowed,
+        "sourceMode": str(scope.get("mode") or "").strip().casefold(),
+    }
+
+
+def rematerialize_repair_scope(
+    target_providers: list[str],
+    *,
+    targeted_only: bool,
+) -> dict[str, Any]:
+    """Rebuild only candidate bytes relevant to this Repair execution."""
     run(
         sys.executable,
         "scripts/select_provider_materialization_scope.py",
@@ -382,9 +430,13 @@ def rematerialize_repair_scope() -> dict[str, Any]:
         "--head", "HEAD",
         "--output", str(REPAIR_MATERIALIZATION_SCOPE.relative_to(ROOT)),
     )
-    scope = load(REPAIR_MATERIALIZATION_SCOPE)
-    mode = str(scope.get("mode") or "").strip().casefold()
-    providers = sorted({cid(value) for value in scope.get("providers") or [] if cid(value)})
+    selected = effective_repair_materialization_scope(
+        load(REPAIR_MATERIALIZATION_SCOPE),
+        target_providers,
+        targeted_only=targeted_only,
+    )
+    mode = str(selected.get("mode") or "")
+    providers = list(selected.get("providers") or [])
     if mode == "all":
         run(sys.executable, "scripts/materialize_provider_v3_all.py")
     elif mode == "providers":
@@ -400,10 +452,12 @@ def rematerialize_repair_scope() -> dict[str, Any]:
         raise RuntimeError(f"invalid provider materialization mode: {mode!r}")
     print(
         "FIELD_PROVIDER_REPAIR_MATERIALIZATION "
-        f"mode={mode} providers={len(providers)} ids={','.join(providers) or '-'}",
+        f"mode={mode} source_mode={selected.get('sourceMode')} "
+        f"narrowed={str(bool(selected.get('narrowed'))).lower()} "
+        f"providers={len(providers)} ids={','.join(providers) or '-'}",
         flush=True,
     )
-    return {"mode": mode, "providers": providers, "reasons": scope.get("reasons") or []}
+    return selected
 
 
 def main() -> int:
@@ -674,10 +728,16 @@ def main() -> int:
     run(sys.executable, "scripts/enforce_route_proof_manifest_policy_v1.py", "--report", str(MERGED_REPORT.relative_to(ROOT)), "--manifest", "manifest.json", "--overrides", "provider-overrides.json")
 
     run(sys.executable, "scripts/materialize_provider_base_v3_store.py")
-    repair_materialization_scope = rematerialize_repair_scope()
+    repair_materialization_scope = rematerialize_repair_scope(
+        targets,
+        targeted_only=args.mode == "repair",
+    )
     run(sys.executable, "scripts/generate_language_manifests.py", "--manifest", "manifest.json", "--report", "health-report.json")
     run(sys.executable, "scripts/validate_published_provider_config.py")
 
+    candidate_guard_env = os.environ.copy()
+    if args.mode == "repair":
+        candidate_guard_env["NUVIO_PROVIDER_FILTER"] = ",".join(targets)
     for test in (
         "tests/provider_js_lego_ownership_test.py",
         "tests/global_stream_output_guard_test.py",
@@ -689,7 +749,15 @@ def main() -> int:
         "tests/global_stream_presentation_test.py",
         "tests/global_stream_presentation_pipeline_test.py",
     ):
-        run(sys.executable, test)
+        run(
+            sys.executable,
+            test,
+            env=(
+                candidate_guard_env
+                if test == "tests/global_stream_output_guard_test.py"
+                else None
+            ),
+        )
 
     # Intelligent repair is one portfolio operation, not provider-by-provider
     # maintenance. The Brain stages all unresolved targets, tests reusable
@@ -698,19 +766,22 @@ def main() -> int:
     BRAIN_REPAIR.unlink(missing_ok=True)
     if args.mode in {"repair", "force"}:
         brain_rounds_per_batch = 1 if args.mode == "repair" else 3
+        brain_waves = 1 if args.mode == "repair" else 3
+        brain_time_budget_seconds = 600 if args.mode == "repair" else 900
         brain_cmd = [
             sys.executable,
             "scripts/run_provider_brain_repair.py",
-            "--waves", "3",
+            "--waves", str(brain_waves),
             "--batch-size", "48",
             "--max-rounds-per-batch", str(brain_rounds_per_batch),
-            "--time-budget-seconds", "900",
+            "--time-budget-seconds", str(brain_time_budget_seconds),
             "--min-start-batch-seconds", "150",
             "--output", str(BRAIN_REPAIR.relative_to(ROOT)),
         ]
         print(
             "FIELD_PROVIDER_REPAIR_BRAIN_ROUNDS "
-            f"mode={args.mode} rounds_per_batch={brain_rounds_per_batch}",
+            f"mode={args.mode} rounds_per_batch={brain_rounds_per_batch} "
+            f"waves={brain_waves} time_budget_seconds={brain_time_budget_seconds}",
             flush=True,
         )
         for provider in targets:

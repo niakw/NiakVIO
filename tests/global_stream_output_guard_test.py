@@ -8,6 +8,7 @@ the 28-day retention window. No fixed provider census is a test invariant.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -25,6 +26,23 @@ if result.returncode:
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
 assert rows, "current provider publication must not be empty"
+
+provider_filter = {
+    str(value or "").strip().casefold().replace("_", "-")
+    for value in str(os.environ.get("NUVIO_PROVIDER_FILTER") or "").split(",")
+    if str(value or "").strip()
+}
+if provider_filter:
+    all_ids = {
+        str(row.get("id") or "").strip().casefold().replace("_", "-")
+        for row in rows
+    }
+    missing_filter = sorted(provider_filter - all_ids)
+    assert not missing_filter, f"unknown provider filter ids: {missing_filter}"
+    rows = [
+        row for row in rows
+        if str(row.get("id") or "").strip().casefold().replace("_", "-") in provider_filter
+    ]
 
 active_rows = [row for row in rows if row.get("enabled") is not False]
 disabled_rows = [row for row in rows if row.get("enabled") is False]
@@ -89,6 +107,7 @@ assert not missing, f"providers missing terminal sanitizer V6: {missing}"
 assert not weak, f"providers missing current V6/V7 fail-closed ownership/policy: {sorted(set(weak))}"
 print(
     "global stream output guard passed: "
+    f"scope={'targeted' if provider_filter else 'full'} "
     f"active={len(active_rows)} disabled_retained={len(disabled_rows)} visible={len(rows)} "
     f"managed_media_sanitizer={len(rows)} startfix_v3=true fail_closed_v6=true v7_extension_accepted=true final_branding_after_media=true"
 )

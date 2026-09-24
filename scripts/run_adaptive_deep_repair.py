@@ -155,12 +155,39 @@ def main() -> int:
         sys.argv[0] = str(SCRIPTS / "deep_repair_loop.py")
         exploration_chain = str(os.environ.get("NUVIO_BRAIN_EXPLORATION_CHAIN") or "").strip() == "1"
         bounded_rounds = "3" if exploration_chain else "1"
-        if "--max-rounds" in sys.argv:
-            index = sys.argv.index("--max-rounds")
-            if index + 1 < len(sys.argv):
-                sys.argv[index + 1] = bounded_rounds
-        else:
+        # An explicit caller budget is authoritative. The exploration-chain
+        # default exists only for callers that do not provide --max-rounds.
+        # Automatic Repair deliberately passes 1 after Learning; overriding it
+        # here silently turned one-hypothesis validation back into three rounds.
+        if "--max-rounds" not in sys.argv:
             sys.argv.extend(["--max-rounds", bounded_rounds])
+        explicit_rounds = None
+        if "--max-rounds" in sys.argv:
+            try:
+                explicit_rounds = int(sys.argv[sys.argv.index("--max-rounds") + 1])
+            except (ValueError, IndexError):
+                explicit_rounds = None
+        if explicit_rounds == 1:
+            # Single-hypothesis Repair is fail-closed: fewer transport/profile
+            # retries can create false negatives, never a false positive. Bound
+            # a slow provider so one dead candidate cannot hold the whole cohort.
+            deep_config["provider_timeout_ms"] = min(
+                int(deep_config.get("provider_timeout_ms") or 70000),
+                45000,
+            )
+            deep_config["max_settings_profiles"] = min(
+                int(deep_config.get("max_settings_profiles") or 4),
+                2,
+            )
+            HEALTH_CONFIG.write_text(
+                json.dumps(health_config, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            print(
+                "FIELD_BRAIN_SINGLE_HYPOTHESIS_BOUNDS "
+                f"provider_timeout_ms={deep_config['provider_timeout_ms']} "
+                f"settings_profiles={deep_config['max_settings_profiles']}"
+            )
         rc = loop.main()
         brain.annotate_and_learn(output, "deep")
         return int(rc)
