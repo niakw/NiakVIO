@@ -4744,3 +4744,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Automatic Repair is now truly one hypothesis once: `waves=1`, `maxRoundsPerBatch=1`, 600 s portfolio cap. Explicit Force retains 3 waves/3 rounds. Single-hypothesis Deep validation also fail-closes with at most 45 s provider timeout and 2 settings profiles, reducing worst-case blocked-provider latency without weakening positive acceptance gates.
 - Automatic Repair is non-publishing, so candidate rematerialization now narrows `all/providers` selector output to the current Repair cohort. Explicit Force retains full materialization authority. The expensive stream-output guard likewise accepts a Repair-only provider filter; its default/full CI behavior is unchanged.
 - The evidence-only commit `cde679d...` automatically started Repair `36051219488` and Learning `36051216728` on the old slow semantics; this patch supersedes those runs rather than treating them as new proof.
+
+
+### 2026-09-24 22:11 Europe/Paris — Static V6 contract aligned with dynamic automatic Repair budget
+
+- Optimized Repair run `36052679956` exited in ~1 minute before provider execution because `tests/provider_repair_pipeline_v6_contract_test.py` still required literal `--waves 3` / `--time-budget-seconds 900`. This was a stale static contract, not a runtime regression.
+- The V6 contract now checks the intended dynamic split: automatic `repair` = 1 wave / 600 s, explicit `force` = 3 waves / 900 s, with the existing 150 s no-new-batch floor. It also asserts targeted non-publishing materialization.
+- Re-armed the exact current 14-provider Repair queue. Run `36052679956` produced no provider proof and must not be used for status changes.
