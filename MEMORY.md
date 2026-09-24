@@ -4791,3 +4791,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Targeted Learning no longer performs an external unbounded stage delete. `build_published_provider_stage.py` owns its own stage cleanup inside the 30 s timeout, and the workflow now asserts the produced candidate cardinality exactly matches the targeted cohort.
 - Full Learning keeps its explicit `rm -rf staging` path; only targeted Fast-Handoff semantics changed.
 - Re-armed the same Animesalt-only 8-minute fixture-authority validation. The required proof is an anime fixture, never a movie fixture.
+
+
+### 2026-09-24 23:31 Europe/Paris — AnimeSalt runtime now preserves direct fixture/TMDB metadata
+
+- Targeted Learning run `36061071530` completed successfully on exactly one provider after the bounded staging fix. It used only anime fixtures (Demon Slayer, Fullmetal Alchemist: Brotherhood, Naruto, Hell Mode and Jujutsu Kaisen); the previous movie-fixture contamination is closed.
+- AnimeSalt still returned `provider_unreachable / no_provider_request_observed` across the corrected fixtures. The custom runtime hook is present before the global dispatcher and the exported `getStreams` exists before dispatcher installation, so missing hook registration/order is not the cause.
+- The worker passes `fixture.tmdbMetadata` directly in the object invocation before loading the provider. Core may rewrite the global `__nuvioMediaContext` during provider evaluation, but AnimeSalt's `req()` previously discarded direct `tmdbMetadata` and `meta()` depended on Core/global state. That permits an empty return before the first provider fetch, matching the observed failure exactly.
+- AnimeSalt now carries `tmdbMetadata/tmdb_metadata/metadata` from the object invocation into its request model and projects it before Core/global fallbacks. The patch remains provider-local and is owned by `provider_patches.animesalt.provider_lego_scripts`, so materialization scope resolves to AnimeSalt only.
+- A canonical AnimeSalt-only Repair is armed. Required first proof is provider-owned network observation > 0 on an anime fixture; playable/verified promotion remains subject to the existing strict gates.
