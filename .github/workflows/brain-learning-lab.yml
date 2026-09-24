@@ -97,7 +97,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: niakw/NiakVIO-Brain-LLM
-          ref: 84eb6ff14af60c29b59b5f0382221297ddfacb4c
+          ref: 1b3cbb5dfdde26d1c30552304807e76a3b55a2df
           path: brain-llm
           fetch-depth: 1
           persist-credentials: false
@@ -292,7 +292,9 @@ jobs:
           python tests/brain_historical_solution_execution_test.py
           python tests/brain_llm_guidance_contract_test.py
           python tests/brain_llm_advisor_execution_test.py
+          python tests/brain_llm_experiment_runtime_test.py
           python tests/brain_llm_learning_workflow_contract_test.py
+          python tests/provider_repair_transport_overlay_persistence_test.py
           python tests/brain_cross_phase_experiment_memory_test.py
           python tests/brain_learning_unexecuted_evolved_suppression_test.py
           python tests/brain_learning_repair_return_workflow_test.py
@@ -321,6 +323,7 @@ jobs:
             scripts/brain_positive_program_memory.py \
             scripts/compile_brain_accepted_program_v3.py \
             scripts/brain_repair_runtime.py \
+            scripts/brain_llm_experiment.py \
             scripts/brain_llm_guidance.py \
             scripts/adaptive_runtime/runtime_repair.py \
             scripts/build_brain_repair_proposal.py \
@@ -719,7 +722,7 @@ jobs:
             --input "$batch" \
             --output brain-sandbox/brain-llm/guidance.json \
             --source-sha "$GITHUB_SHA" \
-            --brain-llm-sha 84eb6ff14af60c29b59b5f0382221297ddfacb4c
+            --brain-llm-sha 1b3cbb5dfdde26d1c30552304807e76a3b55a2df
           echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/brain-sandbox/brain-llm/guidance.json" >> "$GITHUB_ENV"
           rm -f brain-sandbox/brain-llm/private-documents.jsonl brain-sandbox/brain-llm/private-memory-report.json
           rm -rf brain-llm-private

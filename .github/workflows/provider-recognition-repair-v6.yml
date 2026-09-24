@@ -95,6 +95,7 @@ jobs:
             scripts/run_provider_repair_pipeline_v6.py \
             scripts/run_provider_brain_repair.py \
             scripts/sanitize_brain_learning_memory.py \
+            scripts/brain_llm_experiment.py \
             scripts/import_external_brain_llm_guidance.py \
             scripts/build_brain_repair_experience.py \
             scripts/classify_provider_authority.py \
@@ -125,6 +126,11 @@ jobs:
           python tests/provider_census_incremental_materialization_scope_test.py
           python tests/provider_v3_sequential_reconstruction_contract_test.py
           python tests/brain_causal_intelligence_contract_test.py
+          python tests/brain_llm_guidance_contract_test.py
+          python tests/brain_llm_advisor_execution_test.py
+          python tests/brain_llm_experiment_runtime_test.py
+          python tests/provider_repair_transport_overlay_persistence_test.py
+          python tests/brain_external_llm_guidance_import_test.py
           python tests/brain_exploration_chain_test.py
           python tests/brain_round_plan_attribution_test.py
           python tests/brain_accepted_program_capture_test.py
