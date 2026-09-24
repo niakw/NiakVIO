@@ -57,6 +57,13 @@ assert '-f publish_proposal=true' in harness_block
 assert '-f target_providers="$HARNESS"' in harness_block
 assert "architecture_learning=true" in harness_block
 
+# Fast Repair is intentionally one bounded causal wave. Learning owns later
+# rotations; autopilot must not silently re-expand it to the old 3-wave/20m path.
+assert '-f waves=1 -f time_budget_seconds=600 -f max_rounds_per_batch=1' in autopilot
+assert '-f waves=3' not in autopilot
+assert 'default: "1"' in fast.split("waves:",1)[1].split("time_budget_seconds:",1)[0]
+assert 'default: "600"' in fast.split("time_budget_seconds:",1)[1].split("max_rounds_per_batch:",1)[0]
+
 # Autopilot itself never mutates production provider bytes.
 for forbidden in (
     "materialize_provider_v3_one.py",
