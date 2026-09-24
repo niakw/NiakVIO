@@ -1341,6 +1341,14 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             "llmAdvisorStrategy": row.get("llmAdvisorStrategy"),
             "llmAdvisorProfile": row.get("llmAdvisorProfile"),
             "llmAdvisorConfidence": row.get("llmAdvisorConfidence"),
+            "llmAdvisorSourceFailureClass": row.get("llmAdvisorSourceFailureClass"),
+            "llmAdvisorFailureCompatibility": row.get("llmAdvisorFailureCompatibility"),
+            "llmAdvisorExperimentFingerprint": row.get("llmAdvisorExperimentFingerprint"),
+            "llmAdvisorExperiment": copy.deepcopy(
+                row.get("llmAdvisorExperiment")
+                if isinstance(row.get("llmAdvisorExperiment"), dict)
+                else {}
+            ),
             "positiveProgramFingerprint": row.get("positiveProgramFingerprint"),
             "strategyImplementationFingerprint": row.get("strategyImplementationFingerprint"),
             "censusStatus": row.get("censusStatus"),
