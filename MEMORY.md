@@ -4437,3 +4437,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 
 - Lifecycle run `35940263149` proved the new static-knowledge reconciliation itself is correct: active=42, disabled=2, visible=44, static_removed=2. It then failed only because `tests/provider_route_reconstructor_test.py` still hard-coded the pre-archive value 46.
 - That test now imports `visible_provider_count()` and asserts/reports the live current-catalogue cardinality. The lifecycle workflow trigger set includes this test so future archive cardinality changes cannot leave a stale fixed-count contract behind.
+
+
+### 2026-09-24 — Sequential reconstruction contract follows lifecycle archive
+
+- Lifecycle commit `2b4207d2437022aa397a0c003e0edf1199569c58` successfully persisted the current scope: manifest=44, static knowledge=44, and every explicit providerCount in contractRecognition/routeReconstruction/routeRecovery is 44. `desiflix` and `fullanime` are absent from current structured authority and remain represented only by their archive lifecycle state/provider-old bytes.
+- The sequential reconstruction contract still assumed DesiFlix was always visible solely to test its movie fixture fan-out. That fixture assertion is now conditional on DesiFlix being current; when archived, the test instead requires explicit `archived-provider-old` proof and verifies it is absent from the reconstruction queue.

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -34,10 +35,17 @@ assert len(SEMANTIC_FIXTURE_FALLBACKS["movie"]) >= 4
 queue_rows, queue_count = build_provider_queue()
 assert queue_count == visible_provider_count(), (queue_count, visible_provider_count())
 assert {row["provider_id"] for row in queue_rows} == visible_provider_ids()
-desiflix = next(row for row in queue_rows if row["provider_id"] == "desiflix")
-desiflix_movies = [task["fixture_slug"] for task in desiflix["tasks"] if task["semantic_type"] == "movie"]
-assert "interstellar" in desiflix_movies
-assert len(desiflix_movies) >= 4, desiflix_movies
+lifecycle = json.loads((ROOT / "automation/provider-disabled-lifecycle.json").read_text(encoding="utf-8"))
+archived = lifecycle.get("archived") if isinstance(lifecycle.get("archived"), dict) else {}
+if "desiflix" in visible_provider_ids():
+    desiflix = next(row for row in queue_rows if row["provider_id"] == "desiflix")
+    desiflix_movies = [task["fixture_slug"] for task in desiflix["tasks"] if task["semantic_type"] == "movie"]
+    assert "interstellar" in desiflix_movies
+    assert len(desiflix_movies) >= 4, desiflix_movies
+else:
+    record = archived.get("desiflix") if isinstance(archived.get("desiflix"), dict) else None
+    assert record is not None and record.get("state") == "archived-provider-old", record
+    assert all(row["provider_id"] != "desiflix" for row in queue_rows)
 validator_source = (ROOT / "scripts" / "validate_provider_v3_routes_sequential.py").read_text(encoding="utf-8")
 assert '"enabled": manifest_row.get("enabled") is not False' in validator_source
 assert 'completion_state = "disabled-unqualified"' in validator_source
