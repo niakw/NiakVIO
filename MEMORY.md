@@ -4443,3 +4443,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 
 - Lifecycle commit `2b4207d2437022aa397a0c003e0edf1199569c58` successfully persisted the current scope: manifest=44, static knowledge=44, and every explicit providerCount in contractRecognition/routeReconstruction/routeRecovery is 44. `desiflix` and `fullanime` are absent from current structured authority and remain represented only by their archive lifecycle state/provider-old bytes.
 - The sequential reconstruction contract still assumed DesiFlix was always visible solely to test its movie fixture fan-out. That fixture assertion is now conditional on DesiFlix being current; when archived, the test instead requires explicit `archived-provider-old` proof and verifies it is absent from the reconstruction queue.
+
+
+### 2026-09-24 — 5.21 capability floor separates frozen history from lifecycle archive growth
+
+- Non-regression run 35940494405 proved the frozen historical reference is still exactly 50 root provider-old base identities. The extra fixture absence is DesiFlix, now explicitly archived-provider-old by lifecycle; FullAnime is also lifecycle-archived but is not part of the 5.21 fixture.
+- The capability floor now preserves the frozen-50 invariant while allowing later current-provider retirements only with explicit lifecycle archive state and provider-old byte proof. Fixture providers may never silently disappear.

@@ -25,6 +25,7 @@ FIXTURE = json.loads(
 )
 MANIFEST = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 OVERRIDES = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+LIFECYCLE = json.loads((ROOT / "automation/provider-disabled-lifecycle.json").read_text(encoding="utf-8"))
 CURRENT_IDS = visible_provider_ids()
 
 rows = {
@@ -35,11 +36,25 @@ rows = {
 }
 caps = OVERRIDES.get("provider_capabilities") or {}
 archive_dir = ROOT / "provider-old"
-archived_ids = {
+frozen_archived_ids = {
     path.name.split("--base--", 1)[0].casefold()
     for path in archive_dir.glob("*--base--*.js")
     if "--base--" in path.name
 }
+lifecycle_archived = {
+    str(provider).strip().casefold(): row
+    for provider, row in (LIFECYCLE.get("archived") or {}).items()
+    if str(provider).strip() and isinstance(row, dict)
+}
+lifecycle_archived_ids = {
+    provider for provider, row in lifecycle_archived.items()
+    if row.get("state") == "archived-provider-old"
+}
+archived_ids = frozen_archived_ids | lifecycle_archived_ids
+assert len(frozen_archived_ids) == HISTORICAL_PROVIDER_COUNT, (
+    f"frozen 5.21 historical archive drift: expected {HISTORICAL_PROVIDER_COUNT}, "
+    f"got {len(frozen_archived_ids)}"
+)
 
 
 def norm_types(values: object) -> set[str]:
@@ -73,16 +88,25 @@ current_new = current_ids - fixture_ids
 current_overlap = current_ids & fixture_ids
 
 assert int(FIXTURE.get("provider_count") or 0) == len(fixture_providers), "5.21.0 capability fixture count drift"
-assert len(fixture_archived) == HISTORICAL_PROVIDER_COUNT, (
-    f"historical split drift: expected {HISTORICAL_PROVIDER_COUNT}, got {len(fixture_archived)}"
+unexpected_archived = sorted(fixture_archived - archived_ids)
+assert not unexpected_archived, (
+    "5.21 providers disappeared from current scope without frozen/lifecycle archive proof: "
+    + ",".join(unexpected_archived)
 )
-expected_overlap = len(fixture_ids) - HISTORICAL_PROVIDER_COUNT
+expected_overlap = len(fixture_ids) - len(fixture_archived)
 assert len(current_overlap) == expected_overlap, (
     f"5.21 overlap drift: expected {expected_overlap}, got {len(current_overlap)}"
 )
 assert len(current_new) == len(CURRENT_IDS) - expected_overlap, (
     f"post-5.21 current provider count drift: {sorted(current_new)}"
 )
+for provider_id in sorted(fixture_archived & lifecycle_archived_ids):
+    base_files = list((archive_dir / "provider-bases").glob(f"{provider_id}--base--*.js"))
+    provider_files = list((archive_dir / "providers").glob(f"{provider_id}*.js"))
+    assert base_files or provider_files, (
+        provider_id,
+        "lifecycle archive state exists without provider-old bytes",
+    )
 
 for provider_id, floor in fixture_providers.items():
     provider_id = str(provider_id).strip().casefold()
@@ -141,12 +165,14 @@ if "scripts/provider_patches/native_hls_integrity_budget_v1.py" in pre + post + 
     errors.append("retired native HLS cross-mutator reappeared in Core")
 
 assert current_fixture_count == expected_overlap, current_fixture_count
-assert archived_count == HISTORICAL_PROVIDER_COUNT, archived_count
+assert archived_count == len(fixture_archived), (archived_count, len(fixture_archived))
 assert not errors, "5.21.0 production capability regressions:\n- " + "\n- ".join(errors)
 
 print(
     "5.21.0 capability/history regression gate passed: "
     f"current={len(CURRENT_IDS)} current_with_5_21_floor={current_fixture_count} "
-    f"current_post_5_21={len(current_new)} historical={archived_count} hls_current={hls_count} "
+    f"current_post_5_21={len(current_new)} historical_fixture_absent={archived_count} "
+    f"frozen_historical={HISTORICAL_PROVIDER_COUNT} lifecycle_archived={len(lifecycle_archived_ids)} "
+    f"hls_current={hls_count} "
     f"post_5_21={','.join(sorted(current_new))}"
 )
