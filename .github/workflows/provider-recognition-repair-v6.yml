@@ -35,7 +35,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: provider-repair-main-v2
+  group: provider-repair-main-v3
   # Repair owns its integrated GitHub/Tailscale transport qualification.
   # Only an explicit trigger-file push may supersede an older push-triggered
   # Repair. Manual/scheduled long runs remain serialized and non-cancellable.

@@ -4531,3 +4531,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Canonical Brain budget is reduced from 1200 to 900 seconds with a 1080-second outer wrapper; the generic-miss→Learning/LLM handoff and catalogue-scale sharding make the older 20-minute Brain allowance unnecessary for this lane.
 - The entire canonical Repair workflow step now has a hard `timeout-minutes: 30`. An individual stalled provider/process can no longer keep the Repair job alive for hours.
 - A push-triggered retry is intentionally used so the shared Repair concurrency group cancels the stale manual run before repeating expensive work.
+
+
+### 2026-09-24 — Repair concurrency epoch v3 bypasses serialized zombie
+
+- The bounded push Repair created from `7ac4972...` remained pending because the older manual workflow_dispatch run `35993556984` occupied concurrency group `provider-repair-main-v2`; manual runs were intentionally non-cancellable.
+- The stale manual run is already fail-closed against current main: canonical census/authority/WAF ledgers are persisted only when the tested SHA still equals remote main. Its eventual completion cannot overwrite the current canonical ledger.
+- Repair moves to concurrency group `provider-repair-main-v3`. This is an intentional one-time epoch cut so the bounded pipeline can start immediately instead of waiting for the obsolete manual job. New push-triggered Repairs in v3 remain supersedable.
