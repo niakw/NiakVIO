@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import importlib.util
 import json
 import subprocess
 import sys
@@ -182,5 +183,52 @@ with tempfile.TemporaryDirectory(prefix="niakvio-arch-cohort-") as tmp:
     assert all(item["productionWritesAllowed"] is False for item in blueprints)
     assert all(item["requiresHumanMerge"] is True for item in blueprints)
     assert row["evidence"]["strategyBlueprints"] == blueprints, row
+
+
+
+# A strategy already executed unsuccessfully for a provider cannot be recycled
+# as a "new" architecture blueprint for that same provider.
+spec = importlib.util.spec_from_file_location(
+    "brain_architecture_builder",
+    ROOT / "scripts" / "build_brain_architecture_proposal.py",
+)
+assert spec and spec.loader
+builder = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(builder)
+filtered = builder.build_strategy_blueprints(
+    {
+        "groups": [{
+            "groupId": "terminal-extraction|html_scraper",
+            "repairScope": "terminal-extraction",
+            "capabilityStrategy": "html_scraper",
+            "providers": ["alpha", "beta"],
+        }]
+    },
+    {"alpha", "beta"},
+    {"alpha": {"terminal_transition_graph_v1"}},
+)
+assert len(filtered) == 1, filtered
+assert filtered[0]["strategyId"] == "terminal_transition_graph_v1", filtered
+assert filtered[0]["providers"] == ["beta"], filtered
+fully_exhausted = builder.build_strategy_blueprints(
+    {
+        "groups": [{
+            "groupId": "terminal-extraction|html_scraper",
+            "repairScope": "terminal-extraction",
+            "capabilityStrategy": "html_scraper",
+            "providers": ["alpha", "beta"],
+        }]
+    },
+    {"alpha", "beta"},
+    {
+        "alpha": {"terminal_transition_graph_v1"},
+        "beta": {"terminal_transition_graph_v1"},
+    },
+)
+assert fully_exhausted == [], fully_exhausted
+
+workflow_source = (ROOT / ".github" / "workflows" / "brain-learning-lab.yml").read_text(encoding="utf-8")
+architecture_job = workflow_source.split("  publish-architecture-proposal:", 1)[1].split("  continue-learning-slot:", 1)[0]
+assert "github.event_name == 'push'" in architecture_job, architecture_job
 
 print("Brain architecture deferred repair cohort contract passed")
