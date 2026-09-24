@@ -6,7 +6,7 @@ wf=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(encod
 
 required=[
     "id-token: write",
-    "group: provider-repair-main-v2",
+    "group: provider-repair-main-v3",
     "Decide reusable Repair WAF evidence",
     "FIELD_REPAIR_WAF_REUSE",
     "select_provider_materialization_scope.py",

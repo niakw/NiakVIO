@@ -4538,3 +4538,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The bounded push Repair created from `7ac4972...` remained pending because the older manual workflow_dispatch run `35993556984` occupied concurrency group `provider-repair-main-v2`; manual runs were intentionally non-cancellable.
 - The stale manual run is already fail-closed against current main: canonical census/authority/WAF ledgers are persisted only when the tested SHA still equals remote main. Its eventual completion cannot overwrite the current canonical ledger.
 - Repair moves to concurrency group `provider-repair-main-v3`. This is an intentional one-time epoch cut so the bounded pipeline can start immediately instead of waiting for the obsolete manual job. New push-triggered Repairs in v3 remain supersedable.
+
+
+### 2026-09-24 — Repair v3 preflight fixture corrected
+
+- Bounded Repair run `35994438849` failed in under a minute before any network/Brain work because `tests/provider_repair_waf_integration_workflow_test.py` still asserted the retired concurrency group `provider-repair-main-v2`.
+- The workflow itself was intentionally moved to `provider-repair-main-v3`; the stale static fixture is updated to v3. No provider result or transport evidence is inferred from the failed preflight.
