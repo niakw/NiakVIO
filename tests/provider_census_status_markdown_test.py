@@ -384,6 +384,20 @@ carried_inconsistent = {
         },
     ]
 }
+carried_route_overrides = {
+    "provider_patches": {
+        "carried-network-green": {
+            "live_route_gate": {
+                "completion_state": "declared-types-qualified",
+                "required_types": ["anime"],
+                "validated_types": ["anime"],
+                "missing_types": [],
+                "live_validated_route_count": 1,
+                "provider_request_count": 1,
+            }
+        }
+    }
+}
 carried_rows = {
     row["provider"]: row
     for row in build_status_rows(
@@ -391,7 +405,7 @@ carried_rows = {
         {},
         carried_inconsistent,
         {},
-        {},
+        carried_route_overrides,
         {"rows": [{"provider": "carried-waf-green", "outcome": "browser_content_reached"}]},
         {},
     )

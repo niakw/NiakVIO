@@ -4765,3 +4765,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The resulting census incorrectly downgraded MalluMV to `PROVIDER NETWORK BLOCKED` even though the same row retained 4 qualified live routes and a retained chain hit, with `harnessTransportClass=not-applicable`. Root cause: the census state machine let `provider_network_exception` override stronger route/chain evidence whenever no historical playable proof existed.
 - Census precedence is now monotonic: candidate proof > historical regression > current chain > retained live route > bare network block. A network exception/HTTP error/timeout can only yield `PROVIDER NETWORK BLOCKED` when no stronger provider-side proof exists. The same rule applies when reconciling carried rows.
 - Armed a MalluMV-only current-byte Retest with `autoRepair=false` to persist the corrected classification without re-running the full 14-provider repair loop.
+
+
+### 2026-09-24 22:42 Europe/Paris — MalluMV retest preflight fixture corrected
+
+- Targeted Retest `36056329250` executed no provider probe: `provider_census_status_markdown_test.py` failed because its carried-row fixture embedded `routeProof` directly while production intentionally recomputes carried route proof from `provider-overrides`. The renderer stripped the fixture's synthetic route, so the expected `ROUTE PROVEN` assertion was invalid.
+- The contract fixture now supplies a real current `live_route_gate` through `provider-overrides`, matching production ownership. The network-proof precedence code itself is unchanged. MalluMV-only Retest is re-armed with `autoRepair=false`.
