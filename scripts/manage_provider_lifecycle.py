@@ -31,6 +31,7 @@ ARCHIVE_PROVIDER_DIR = ARCHIVE_DIR / "providers"
 ARCHIVE_BASE_DIR = ARCHIVE_DIR / "provider-bases"
 STATE_PATH = ROOT / "automation/provider-disabled-lifecycle.json"
 STATIC_KNOWLEDGE_PATH = ROOT / "automation/provider-v3-static-knowledge.json"
+MATERIALIZATION_PATH = ROOT / "provider-v3-materialization.json"
 RETENTION_DAYS = 7
 
 ROOT_MANIFEST = ROOT / "manifest.json"
@@ -281,6 +282,52 @@ def reconcile_static_knowledge(visible_ids: set[str], *, apply: bool) -> dict[st
     }
 
 
+def reconcile_materialization_report(
+    visible_ids: set[str],
+    active_ids: set[str],
+    *,
+    static_provider_count: int,
+    apply: bool,
+) -> dict[str, Any]:
+    """Project the existing deterministic byte ledger onto the current catalogue."""
+    import hashlib
+
+    doc = load_json(MATERIALIZATION_PATH)
+    raw_rows = [row for row in doc.get("providers") or [] if isinstance(row, dict)]
+    by_id = {cid(row.get("provider")): row for row in raw_rows if cid(row.get("provider"))}
+    missing = sorted(visible_ids - set(by_id))
+    if missing:
+        raise RuntimeError("visible providers missing from materialization ledger: " + ",".join(missing))
+
+    rows = [row for row in raw_rows if cid(row.get("provider")) in visible_ids]
+    row_ids = {cid(row.get("provider")) for row in rows}
+    if row_ids != visible_ids:
+        raise RuntimeError("materialization/current catalogue identity mismatch after lifecycle reconcile")
+
+    aggregate = hashlib.sha256()
+    for row in rows:
+        provider = cid(row.get("provider"))
+        digest = str(row.get("sha256") or "").strip().casefold()
+        if len(digest) != 64:
+            raise RuntimeError(f"{provider}: invalid materialization digest during lifecycle reconcile")
+        aggregate.update(provider.encode("utf-8"))
+        aggregate.update(bytes.fromhex(digest))
+
+    removed = sorted(set(by_id) - visible_ids)
+    doc["providers"] = rows
+    doc["providerCount"] = len(rows)
+    if "expectedProviderCount" in doc:
+        doc["expectedProviderCount"] = len(rows)
+    doc["activeProviderIdentityCount"] = len(active_ids)
+    doc["staticKnowledgeProviderCount"] = int(static_provider_count)
+    doc["generation"] = aggregate.hexdigest()
+    doc["lifecycleScopeReconciled"] = True
+    doc["lifecycleReconciledArchivedProviders"] = removed
+    if apply:
+        dump_json(MATERIALIZATION_PATH, doc)
+    return {"providerCount": len(rows), "removed": removed, "generation": doc["generation"]}
+
+
 def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dict[str, Any]:
     if root.resolve() != ROOT.resolve():
         raise RuntimeError("alternate root is not supported by repository lifecycle apply")
@@ -377,11 +424,23 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
             update_active_only_manifest(path, active_ids)
         update_provider_catalog(by_id, archived_now)
         static_result = reconcile_static_knowledge(active_ids | disabled_ids, apply=True)
+        materialization_result = reconcile_materialization_report(
+            active_ids | disabled_ids,
+            active_ids,
+            static_provider_count=int(static_result["providerCount"]),
+            apply=True,
+        )
         state["updatedAt"] = day.isoformat()
         dump_json(STATE_PATH, state)
 
     if not apply:
         static_result = reconcile_static_knowledge(active_ids | disabled_ids, apply=False)
+        materialization_result = reconcile_materialization_report(
+            active_ids | disabled_ids,
+            active_ids,
+            static_provider_count=int(static_result["providerCount"]),
+            apply=False,
+        )
 
     return {
         "day": day.isoformat(),
@@ -396,6 +455,9 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
         "visibleCount": len(active_ids | disabled_ids),
         "staticKnowledgeProviderCount": int(static_result["providerCount"]),
         "staticKnowledgeRemoved": list(static_result["removed"]),
+        "materializationProviderCount": int(materialization_result["providerCount"]),
+        "materializationRemoved": list(materialization_result["removed"]),
+        "materializationGeneration": str(materialization_result["generation"]),
     }
 
 
@@ -413,6 +475,7 @@ def main() -> int:
         f"visible={report['visibleCount']}",
         f"archived_now={len(report['archivedNow'])}",
         f"static_removed={len(report['staticKnowledgeRemoved'])}",
+        f"materialization_removed={len(report['materializationRemoved'])}",
         f"retention_days={RETENTION_DAYS}",
         "mode=apply" if args.apply else "mode=dry-run",
     )

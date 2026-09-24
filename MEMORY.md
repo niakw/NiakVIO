@@ -4449,3 +4449,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 
 - Non-regression run 35940494405 proved the frozen historical reference is still exactly 50 root provider-old base identities. The extra fixture absence is DesiFlix, now explicitly archived-provider-old by lifecycle; FullAnime is also lifecycle-archived but is not part of the 5.21 fixture.
 - The capability floor now preserves the frozen-50 invariant while allowing later current-provider retirements only with explicit lifecycle archive state and provider-old byte proof. Fixture providers may never silently disappear.
+
+
+### 2026-09-24 — Lifecycle now reconciles the materialization ledger without full rematerialization
+
+- Quick validation on the lifecycle-clean catalogue found the remaining split: manifest/static knowledge were 44, but provider-v3-materialization.json still contained 46 rows (DesiFlix and FullAnime).
+- Lifecycle now filters the deterministic materialization ledger to the exact visible identity set, updates visible/active/static counts, and recomputes the generation hash with the same provider-id + byte-digest algorithm as materialize_provider_v3_all.py. No provider bytes are rebuilt.
+- The lifecycle gate runs audit_provider_v3_static.py after reconciliation and persists provider-v3-materialization.json. Reverse-rebuild/documentation messages no longer print a stale literal current-provider count.

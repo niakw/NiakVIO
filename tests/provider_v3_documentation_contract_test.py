@@ -209,4 +209,4 @@ for path in (ROOT / ".github/workflows").glob("*.yml"):
     assert "run_adaptive_quick_repair.py" not in text, path.name
     assert "run_adaptive_deep_repair.py" not in text, path.name
 
-print("Provider v3 documentation and workflow ownership contract passed: current=46 historical=50")
+print(f"Provider v3 documentation and workflow ownership contract passed: current={VISIBLE_EXPECTED} historical={HISTORICAL_PROVIDER_COUNT}")

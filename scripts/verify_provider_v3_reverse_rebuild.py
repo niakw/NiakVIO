@@ -41,7 +41,7 @@ def main() -> int:
         )
     ids = [str(row.get("id") or "").strip().casefold() for row in rows]
     if any(not provider_id for provider_id in ids) or len(set(ids)) != EXPECTED_PROVIDER_COUNT:
-        raise SystemExit("Provider v3 reverse rebuild requires 46 unique non-empty provider ids")
+        raise SystemExit(f"Provider v3 reverse rebuild requires {EXPECTED_PROVIDER_COUNT} unique non-empty provider ids")
 
     archived_slugs = {
         path.name.split("--", 1)[0].casefold()
@@ -106,8 +106,9 @@ def main() -> int:
     print(
         "PROVIDER_V3_REVERSE_REBUILD_OK "
         f"providers={EXPECTED_PROVIDER_COUNT} historical={HISTORICAL_PROVIDER_COUNT} "
-        f"generation={str(expected['generation'])[:16]} workspace_byte_identical=46/46 "
-        "minimizer_fixed_point=46/46 terser=0"
+        f"generation={str(expected['generation'])[:16]} "
+        f"workspace_byte_identical={EXPECTED_PROVIDER_COUNT}/{EXPECTED_PROVIDER_COUNT} "
+        f"minimizer_fixed_point={EXPECTED_PROVIDER_COUNT}/{EXPECTED_PROVIDER_COUNT} terser=0"
     )
     return 0
 

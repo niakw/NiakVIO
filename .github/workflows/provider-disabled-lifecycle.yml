@@ -48,6 +48,7 @@ jobs:
           python tests/provider_authority_current_catalogue_test.py
           python tests/provider_domain_authority_memory_test.py
           python tests/provider_v3_local_recognition_contract_test.py
+          python scripts/audit_provider_v3_static.py
           python - <<'PY'
           import json
           import sys
@@ -69,6 +70,7 @@ jobs:
           assert disabled_provider_ids() == manifest_disabled
           assert visible_provider_count() == active_provider_count() + disabled_provider_count()
           knowledge=json.loads(Path('automation/provider-v3-static-knowledge.json').read_text(encoding='utf-8'))
+          materialization=json.loads(Path('provider-v3-materialization.json').read_text(encoding='utf-8'))
           knowledge_ids={str(value).strip().casefold().replace('_','-') for value in (knowledge.get('providers') or {})}
           visible_ids=manifest_active | manifest_disabled
           assert knowledge_ids == visible_ids, (sorted(knowledge_ids-visible_ids), sorted(visible_ids-knowledge_ids))
@@ -77,6 +79,12 @@ jobs:
               row=knowledge.get(section)
               if isinstance(row,dict) and 'providerCount' in row:
                   assert int(row.get('providerCount') or 0) == len(visible_ids), (section,row.get('providerCount'),len(visible_ids))
+          materialization_ids={str(row.get('provider') or '').strip().casefold().replace('_','-') for row in materialization.get('providers') or [] if isinstance(row,dict)}
+          assert materialization_ids == visible_ids, (sorted(materialization_ids-visible_ids), sorted(visible_ids-materialization_ids))
+          assert int(materialization.get('providerCount') or 0) == len(visible_ids)
+          assert int(materialization.get('expectedProviderCount') or len(visible_ids)) == len(visible_ids)
+          assert int(materialization.get('activeProviderIdentityCount') or 0) == len(manifest_active)
+          assert int(materialization.get('staticKnowledgeProviderCount') or 0) == len(visible_ids)
           for row in rows:
               filename=str(row.get('filename') or '')
               if row.get('enabled') is False:
@@ -97,7 +105,7 @@ jobs:
           git add manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
             manifest-hub46.json native-hub46/manifest.json provider_catalog.json \
             automation/provider-disabled-lifecycle.json automation/provider-authority-status.json \
-            automation/provider-v3-static-knowledge.json \
+            automation/provider-v3-static-knowledge.json provider-v3-materialization.json \
             provider-overrides.json provider-hubs.json providers provider-disabled provider-bases provider-old
           if git diff --cached --quiet; then
             echo PROVIDER_LIFECYCLE_NO_CHANGE
