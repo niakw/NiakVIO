@@ -4672,3 +4672,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 
 - Audit found a split pin in `.github/workflows/brain-learning-lab.yml`: checkout already used Brain-LLM `48df8f0d8d7a...`, but `brain_llm_guidance.py --brain-llm-sha` still stamped the historical `23a601...` SHA.
 - The guidance attribution now uses the exact same `48df8f0d8d7a...` SHA as the checked-out planner, and the contract test asserts both values together. This is attribution integrity only; it does not promote any provider.
+
+
+### 2026-09-24 19:49 Europe/Paris — Root cause fixed: LLM advisor profiles were planned but not materialized
+
+- The apparent Brain-LLM ineffectiveness had a concrete runtime cause. `plan-repairs.mjs` could select an LLM advisor profile such as `proven_route_terminal_traversal_v1`, but `brain_repair_runtime._plan_snapshot()` dropped `llmAdvisorApplied/Profile/Strategy` before candidate generation.
+- `scripts/adaptive_runtime/runtime_repair.py` therefore computed `new_strategy_id` only from post-exhaustion/historical/generation state. The Deep matcher was then filtered to the LLM-selected profile while the generator had not materialized that profile, producing `profile_unavailable / planned_profile_not_applicable_to_current_bytes` without executing the LLM experiment.
+- The snapshot now preserves the exact LLM advisor decision, and adaptive runtime gives a validated causal `llmAdvisorProfile` first priority when building `new_strategy_id`. The existing experiment knobs (route/recipe policy, role order, terminal-only, salvage, session bootstrap and bounded traversal budgets) are already consumed by the generator, so the LLM experiment now produces real candidate bytes and enters ordinary byte validation, identity gate and deep playback retest.
+- Added regression coverage for a pre-exhaustion route-proven LLM plan: snapshot preservation, exact strategy materialization and `matching_profiles()` inclusion must all hold. No direct LLM publication authority is introduced.

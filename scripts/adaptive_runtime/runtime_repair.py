@@ -1191,8 +1191,15 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     post_exhaustion_strategy_profile = str(
         brain_plan.get("postExhaustionStrategyProfile") or ""
     ).strip()
+    llm_advisor_profile = str(brain_plan.get("llmAdvisorProfile") or "").strip()
+    if (
+        brain_plan.get("llmAdvisorApplied") is not True
+        or not _is_causal_strategy_profile(llm_advisor_profile)
+    ):
+        llm_advisor_profile = ""
     new_strategy_id = (
-        post_exhaustion_strategy_profile
+        llm_advisor_profile
+        or post_exhaustion_strategy_profile
         or historical_strategy_profile
         or _new_strategy_id(
             experiment_failure,

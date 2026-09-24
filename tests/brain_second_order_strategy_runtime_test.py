@@ -136,6 +136,54 @@ profiles=runtime.matching_profiles(
 )
 assert "terminal_transition_graph_v1" in profiles,profiles
 
+# Regression: a pre-exhaustion Brain-LLM advisor profile must be executable, not
+# filtered into profile_unavailable. The snapshot carries the advisor decision
+# and adaptive runtime materializes that exact causal profile.
+llm_plan={
+    "providerId":"synthetic-second-order",
+    "failureClass":"route_proven_gap",
+    "signature":"sig-llm",
+    "experimentVariant":0,
+    "experimentGeneration":1,
+    "action":"probe-targeted-repair",
+    "allowedProfiles":["proven_route_terminal_traversal_v1"],
+    "llmAdvisorApplied":True,
+    "llmAdvisorStrategy":"search_detail_player_terminal_traversal",
+    "llmAdvisorProfile":"proven_route_terminal_traversal_v1",
+    "llmAdvisorSourceFailureClass":"route_proven_gap",
+    "llmAdvisorFailureCompatibility":"exact",
+    "llmAdvisorExperimentFingerprint":"a"*64,
+    "llmAdvisorExperiment":{
+        "routePolicy":"owned_only",
+        "recipePolicy":"current_only",
+        "roleOrder":["detail","player","source","api"],
+        "terminalOnly":True,
+        "aliasSearch":False,
+        "responseSalvage":False,
+        "documentRequestMining":False,
+        "sessionBootstrap":False,
+        "maxDepth":3,
+        "maxPages":10,
+        "maxEmbeds":10,
+        "maxRecipePasses":3,
+    },
+}
+llm_snapshot=brain._plan_snapshot(llm_plan)
+assert llm_snapshot["llmAdvisorApplied"] is True,llm_snapshot
+assert llm_snapshot["llmAdvisorProfile"]=="proven_route_terminal_traversal_v1",llm_snapshot
+llm_candidate=candidate("","route_proven_gap","ROUTE PROVEN")
+llm_candidate["brain_repair_plan"]=llm_snapshot
+llm_options=runtime._adaptive_runtime_options(llm_candidate,config)
+assert llm_options,llm_options
+assert llm_options["new_strategy_id"]=="proven_route_terminal_traversal_v1",llm_options
+llm_profiles=runtime.matching_profiles(
+    llm_candidate,
+    {"status":"provider_unreachable","evidence":{"streams_playable":0}},
+    "async function provider(){}",
+    config,
+)
+assert "proven_route_terminal_traversal_v1" in llm_profiles,llm_profiles
+
 positive_replay=runtime._adaptive_runtime_options(
     candidate("provider_positive_program_replay_v1","chain_terminal_gap"),
     config,
