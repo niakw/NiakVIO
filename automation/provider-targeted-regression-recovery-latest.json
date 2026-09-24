@@ -4,6 +4,20 @@
   "groupResults": [
     {
       "contradictionProviders": [],
+      "groupId": "route-to-terminal|html_scraper",
+      "playableProviders": [],
+      "providerCount": 4,
+      "providers": [
+        "4khdhub",
+        "animesalt",
+        "mallumv",
+        "moviesmod"
+      ],
+      "repairScope": "route-to-terminal",
+      "verifiedProviders": []
+    },
+    {
+      "contradictionProviders": [],
       "groupId": "route-to-terminal|mixed_embed_resolver",
       "playableProviders": [],
       "providerCount": 4,
@@ -14,31 +28,6 @@
         "yflix"
       ],
       "repairScope": "route-to-terminal",
-      "verifiedProviders": []
-    },
-    {
-      "contradictionProviders": [],
-      "groupId": "route-to-terminal|html_scraper",
-      "playableProviders": [],
-      "providerCount": 3,
-      "providers": [
-        "4khdhub",
-        "animesalt",
-        "moviesmod"
-      ],
-      "repairScope": "route-to-terminal",
-      "verifiedProviders": []
-    },
-    {
-      "contradictionProviders": [],
-      "groupId": "terminal-extraction|html_scraper",
-      "playableProviders": [],
-      "providerCount": 2,
-      "providers": [
-        "mallumv",
-        "moviebox"
-      ],
-      "repairScope": "terminal-extraction",
       "verifiedProviders": []
     },
     {
@@ -92,6 +81,17 @@
       "providerCount": 1,
       "providers": [
         "allanime"
+      ],
+      "repairScope": "terminal-extraction",
+      "verifiedProviders": []
+    },
+    {
+      "contradictionProviders": [],
+      "groupId": "terminal-extraction|html_scraper",
+      "playableProviders": [],
+      "providerCount": 1,
+      "providers": [
+        "moviebox"
       ],
       "repairScope": "terminal-extraction",
       "verifiedProviders": []
@@ -218,6 +218,18 @@
           {
             "host": "ww2.aniwatch.fit",
             "method": "GET",
+            "path": "/hazure-waku-no-jotai-ijo-skill-de-saikyo-ni-natta-ore-ga-subete-wo-jurin-suru-made-episode-1-english-subbed",
+            "status": 200
+          },
+          {
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "path": "/hazure-waku-no-jotai-ijo-skill-de-saikyo-ni-natta-ore-ga-subete-wo-jurin-suru-made-episode-1-english-dubbed",
+            "status": 200
+          },
+          {
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
             "path": "/hazure-waku-no-joutai-ijou-skill-de-saikyou-ni-natta-ore-ga-subete-wo-juurin-suru-made-episode-1-english-subbed",
             "status": 200
           },
@@ -225,18 +237,6 @@
             "host": "ww2.aniwatch.fit",
             "method": "GET",
             "path": "/hazure-waku-no-joutai-ijou-skill-de-saikyou-ni-natta-ore-ga-subete-wo-juurin-suru-made-episode-1-english-dubbed",
-            "status": 200
-          },
-          {
-            "host": "ww2.aniwatch.fit",
-            "method": "GET",
-            "path": "/hazurewaku-no-jotai-ijo-skill-de-saikyo-ni-natta-ore-ga-subete-wo-jurin-suru-made-episode-1-english-subbed",
-            "status": 200
-          },
-          {
-            "host": "ww2.aniwatch.fit",
-            "method": "GET",
-            "path": "/hazurewaku-no-jotai-ijo-skill-de-saikyo-ni-natta-ore-ga-subete-wo-jurin-suru-made-episode-1-english-dubbed",
             "status": 200
           }
         ]
@@ -266,7 +266,7 @@
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/movie/10195",
+            "path": "/3/movie/438631",
             "status": 200
           },
           {
@@ -295,22 +295,22 @@
       "sampleTitles": {
         "movie": [
           "Interstellar",
+          "Joker",
           "Inception",
-          "Django Unchained",
-          "Avengers: Infinity War",
-          "Dune",
           "The Avengers",
-          "Dune: Part Two",
-          "Thor"
+          "Thor",
+          "Spider-Man: No Way Home",
+          "The Batman",
+          "Dune"
         ],
         "tv": [
           "Breaking Bad",
-          "Squid Game",
-          "The Walking Dead",
-          "Riverdale",
-          "The Mandalorian",
-          "WandaVision",
-          "Mr. Robot",
+          "IT: Welcome to Derry",
+          "Silo",
+          "Peaky Blinders",
+          "Revenant",
+          "Black Mirror",
+          "Arrow",
           "The 100"
         ]
       },
@@ -330,7 +330,7 @@
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/tv/120089",
+            "path": "/3/tv/13916",
             "status": 200
           },
           {
@@ -345,13 +345,13 @@
       "sampleTitles": {
         "anime": [
           "Jujutsu Kaisen",
-          "Fullmetal Alchemist: Brotherhood",
+          "High School DxD",
+          "Boruto: Naruto Next Generations",
+          "One Piece",
           "Solo Leveling",
-          "High School of the Dead",
-          "Hunter x Hunter",
-          "Sword Art Online",
-          "Record of Ragnarok",
-          "SPY x FAMILY"
+          "Chainsaw Man",
+          "Demon Slayer: Kimetsu no Yaiba",
+          "Death Note"
         ]
       },
       "statuses": {
@@ -369,7 +369,7 @@
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/tv/240411",
+            "path": "/3/tv/63926",
             "status": 200
           },
           {
@@ -388,9 +388,9 @@
           "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
           "Hell Teacher: Jigoku Sensei Nube",
           "Jujutsu Kaisen",
-          "Demon Slayer: Kimetsu no Yaiba",
-          "Black Clover",
-          "Dan Da Dan"
+          "Dan Da Dan",
+          "Hunter x Hunter",
+          "One-Punch Man"
         ]
       },
       "statuses": {
@@ -408,7 +408,7 @@
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/tv/209867",
+            "path": "/3/tv/37854",
             "status": 200
           },
           {
@@ -426,10 +426,10 @@
           "Mushoku Tensei: Jobless Reincarnation",
           "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
           "Hell Teacher: Jigoku Sensei Nube",
-          "Demon Slayer: Kimetsu no Yaiba",
-          "High School of the Dead",
-          "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing",
-          "Frieren: Beyond Journey's End"
+          "DARLING in the FRANXX",
+          "Attack on Titan",
+          "Sword Art Online",
+          "One Piece"
         ]
       },
       "statuses": {
@@ -447,7 +447,7 @@
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/tv/94664",
+            "path": "/3/tv/37854",
             "status": 200
           },
           {
@@ -459,13 +459,13 @@
           {
             "host": "animevost.fr",
             "method": "GET",
-            "path": "/api/animes/mushoku-tensei-iii-isekai-ittara-honki-dasu-178789",
+            "path": "/api/animes/one-piece",
             "status": 200
           },
           {
             "host": "gupload.xyz",
             "method": "GET",
-            "path": "/data/e/5e036a93756f",
+            "path": "/data/e/befd426c49c3",
             "status": 403
           }
         ]
@@ -475,9 +475,9 @@
         "anime": [
           "Jujutsu Kaisen",
           "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing",
+          "Mushoku Tensei: Jobless Reincarnation",
           "Death Note",
-          "One Piece",
-          "Mushoku Tensei: Jobless Reincarnation"
+          "One Piece"
         ]
       },
       "statuses": {
@@ -531,7 +531,7 @@
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/movie/68721",
+            "path": "/3/movie/508442",
             "status": 200
           },
           {
@@ -545,7 +545,7 @@
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/tv/60735",
+            "path": "/3/tv/19885",
             "status": 200
           },
           {
@@ -562,21 +562,21 @@
           "Interstellar",
           "Mon ninja et moi 3",
           "The Colony",
-          "Deadpool & Wolverine",
-          "Deadpool",
-          "Tenet",
-          "Soul",
-          "Iron Man 3"
+          "Spider-Man: Homecoming",
+          "Captain America: Civil War",
+          "Avengers: Infinity War",
+          "Barbie",
+          "Soul"
         ],
         "tv": [
           "House of the Dragon",
           "Breaking Bad",
           "Revenant",
-          "Black Mirror",
-          "The Walking Dead",
-          "Cobra Kai",
-          "Shōgun",
-          "The Flash"
+          "The Queen's Gambit",
+          "Riverdale",
+          "Adolescence",
+          "Game of Thrones",
+          "Sherlock"
         ]
       },
       "statuses": {
@@ -628,7 +628,7 @@
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/movie/76341",
+            "path": "/3/movie/315635",
             "status": 200
           },
           {
@@ -652,13 +652,19 @@
           {
             "host": "cloudorchestranova.com",
             "method": "GET",
-            "path": "/embed/movie/76341",
+            "path": "/embed/movie/315635",
             "status": 200
           },
           {
             "host": "cloudorchestranova.com",
             "method": "GET",
-            "path": "/embed/player/movie/76341",
+            "path": "/embed/player/movie/315635",
+            "status": 200
+          },
+          {
+            "host": "cloudorchestranova.com",
+            "method": "GET",
+            "path": "/embed/verify.php",
             "status": 200
           },
           {
@@ -666,13 +672,19 @@
             "method": "GET",
             "path": "/embed/iframe_player/cache.php",
             "status": 400
+          },
+          {
+            "host": "cloudorchestranova.com",
+            "method": "GET",
+            "path": "/v/verify.php",
+            "status": 404
           }
         ],
         "tv": [
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/tv/66732",
+            "path": "/3/tv/60059",
             "status": 200
           },
           {
@@ -696,13 +708,19 @@
           {
             "host": "cloudorchestranova.com",
             "method": "GET",
-            "path": "/embed/tv/66732/1/1",
+            "path": "/embed/tv/60059/1/1",
             "status": 200
           },
           {
             "host": "cloudorchestranova.com",
             "method": "GET",
-            "path": "/embed/player/tv/66732/1/1",
+            "path": "/embed/player/tv/60059/1/1",
+            "status": 200
+          },
+          {
+            "host": "cloudorchestranova.com",
+            "method": "GET",
+            "path": "/embed/verify.php",
             "status": 200
           },
           {
@@ -710,6 +728,12 @@
             "method": "GET",
             "path": "/embed/iframe_player/cache.php",
             "status": 400
+          },
+          {
+            "host": "cloudorchestranova.com",
+            "method": "GET",
+            "path": "/v/verify.php",
+            "status": 404
           }
         ]
       },
@@ -719,21 +743,21 @@
           "Interstellar",
           "Mon ninja et moi 3",
           "The Colony",
-          "Spider-Man: Homecoming",
+          "Inception",
+          "Avengers: Age of Ultron",
+          "Oppenheimer",
           "Tenet",
-          "Thor",
-          "Avengers: Infinity War",
-          "Mad Max: Fury Road"
+          "Spider-Man: Homecoming"
         ],
         "tv": [
           "Revenant",
           "Breaking Bad",
-          "The Boys",
+          "Money Heist",
+          "Wednesday",
+          "IT: Welcome to Derry",
+          "Vikings",
           "Dark Desire",
-          "The Queen's Gambit",
-          "Game of Thrones",
-          "The Flash",
-          "Stranger Things"
+          "Better Call Saul"
         ]
       },
       "statuses": {
@@ -753,37 +777,37 @@
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/movie/11324",
+            "path": "/3/movie/284054",
             "status": 200
           },
           {
             "host": "moviesmod.ai.in",
             "method": "GET",
-            "path": "/search/Shutter%20Island",
+            "path": "/search/Black%20Panther",
             "status": 200
           },
           {
             "host": "moviesmod.ai.in",
             "method": "GET",
-            "path": "/download-shutter-island-2010-hindi-480p-720p-1080p/",
+            "path": "/download-black-panther-wakanda-forever-hindi-english-imax/",
             "status": 200
           },
           {
             "host": "links.modpro.blog",
             "method": "GET",
-            "path": "/archives/58784",
+            "path": "/archives/65888",
             "status": 403
           },
           {
             "host": "links.modpro.blog",
             "method": "GET",
-            "path": "/archives/58785",
+            "path": "/archives/65889",
             "status": 403
           },
           {
             "host": "links.modpro.blog",
             "method": "GET",
-            "path": "/archives/42612",
+            "path": "/archives/65890",
             "status": 403
           }
         ],
@@ -791,37 +815,37 @@
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/tv/76669",
+            "path": "/3/tv/1402",
             "status": 200
           },
           {
             "host": "moviesmod.ai.in",
             "method": "GET",
-            "path": "/search/%C3%89lite%201",
+            "path": "/search/The%20Walking%20Dead%201",
             "status": 200
           },
           {
             "host": "moviesmod.ai.in",
             "method": "GET",
-            "path": "/download-elite-force-season-1-hindi-480p-720p-1080p/",
+            "path": "/download-the-walking-dead-dead-city-season-1-2-2023-english-480p-720p-1080p/",
             "status": 200
           },
           {
             "host": "episodes.modpro.blog",
             "method": "GET",
-            "path": "/archives/132402",
+            "path": "/archives/55643",
             "status": 403
           },
           {
             "host": "episodes.modpro.blog",
             "method": "GET",
-            "path": "/archives/132403",
+            "path": "/archives/55644",
             "status": 403
           },
           {
             "host": "episodes.modpro.blog",
             "method": "GET",
-            "path": "/archives/132404",
+            "path": "/archives/55645",
             "status": 403
           }
         ]
@@ -831,22 +855,22 @@
         "movie": [
           "Interstellar",
           "Sinners",
-          "Black Panther",
-          "Avengers: Infinity War",
-          "Joker",
-          "Captain America: The First Avenger",
-          "Tenet",
-          "Shutter Island"
+          "Oppenheimer",
+          "Barbie",
+          "Thor",
+          "Spider-Man: Homecoming",
+          "Shutter Island",
+          "Black Panther"
         ],
         "tv": [
           "Breaking Bad",
-          "Shōgun",
           "House of the Dragon",
-          "Game of Thrones",
-          "The Boys",
           "Black Mirror",
-          "Adolescence",
-          "Elite"
+          "Better Call Saul",
+          "Cobra Kai",
+          "Squid Game",
+          "The Boys",
+          "The Walking Dead"
         ]
       },
       "statuses": {
@@ -866,13 +890,13 @@
           {
             "host": "vidfast.to",
             "method": "GET",
-            "path": "/embed/movie/872585",
+            "path": "/embed/movie/438631",
             "status": 403
           },
           {
             "host": "vidfast.vc",
             "method": "GET",
-            "path": "/movie/872585/",
+            "path": "/movie/438631/",
             "status": 403
           }
         ],
@@ -880,13 +904,13 @@
           {
             "host": "vidfast.to",
             "method": "GET",
-            "path": "/embed/tv/249042/1/1",
+            "path": "/embed/tv/76479/1/1",
             "status": 403
           },
           {
             "host": "vidfast.vc",
             "method": "GET",
-            "path": "/tv/249042/1/1/",
+            "path": "/tv/76479/1/1/",
             "status": 403
           }
         ]
@@ -895,23 +919,23 @@
       "sampleTitles": {
         "movie": [
           "Interstellar",
-          "Avatar",
+          "Shutter Island",
           "Deadpool & Wolverine",
-          "Mad Max: Fury Road",
-          "Soul",
-          "The Wolf of Wall Street",
-          "Dune",
-          "Oppenheimer"
+          "Avatar",
+          "Mon ninja et moi 3",
+          "Avengers: Age of Ultron",
+          "Guardians of the Galaxy Vol. 2",
+          "Dune"
         ],
         "tv": [
           "Breaking Bad",
-          "Game of Thrones",
-          "The Queen's Gambit",
-          "Stranger Things",
-          "The Boys",
-          "The Walking Dead",
           "Fallout",
-          "Adolescence"
+          "Peaky Blinders",
+          "Elite",
+          "Black Mirror",
+          "The Queen's Gambit",
+          "The Walking Dead",
+          "The Boys"
         ]
       },
       "statuses": {
@@ -1020,7 +1044,7 @@
       "verifiedLanes": []
     }
   },
-  "runId": "36034557844",
+  "runId": "36062383321",
   "schemaVersion": 3,
   "selectedProviderCount": 14,
   "selectedProviders": [
@@ -1047,8 +1071,8 @@
     "fullanime",
     "showbox"
   ],
-  "sourceCensusRunId": "36020604290-post-repair-candidate",
-  "triggerSha": "f878b4e09e8a66bc02ee6acd95a350d4af3ae6eb",
+  "sourceCensusRunId": "36058132100-post-repair-candidate",
+  "triggerSha": "660658414204eebdce104f6cdea7132750745e7d",
   "verifiedProviderCount": 0,
   "verifiedProviders": []
 }
