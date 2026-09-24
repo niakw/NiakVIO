@@ -1,14 +1,14 @@
 {
   "schemaVersion": 5,
-  "requestedAt": "2026-09-24T23:31:00+02:00",
-  "retry": 145,
+  "requestedAt": "2026-09-24T23:46:00+02:00",
+  "retry": 146,
   "mode": "repair",
-  "scope": "animesalt-direct-metadata-runtime-proof",
+  "scope": "animesalt-direct-series-before-homepage-waf",
   "targetProviders": [
     "animesalt"
   ],
-  "goal": "Rematerialize and retest only AnimeSalt after preserving harness-provided TMDB metadata inside the provider request object. Prove provider-owned network requests are observed on anime fixtures before considering any playback promotion; keep strict identity/playback/non-regression gates.",
+  "goal": "Rematerialize and retest only AnimeSalt after preferring its normal deterministic /series/{slug}/ route before homepage nonce/search. First proof: provider-owned request must target /series/ for an anime fixture; then require strict playable/identity/non-regression proof before promotion.",
   "branch": "main",
   "publication": false,
-  "sourceRef": "07ce8933aeb1bfb1737d3b1a33743e1903b9f9bf"
+  "sourceRef": "d76baaff2aa39083d0207a4eeeeed56a64c22c06"
 }

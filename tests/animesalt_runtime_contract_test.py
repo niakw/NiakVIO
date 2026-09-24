@@ -29,6 +29,8 @@ assert 'semanticLanes": ["anime"]' in src
 assert 'metadata:(o&&(o.tmdbMetadata||o.tmdb_metadata||o.metadata))||null' in src
 assert 'function projectedMeta(value)' in src
 assert 'var direct=projectedMeta(q&&q.metadata);if(direct)return direct' in src
+assert 'runtimeBase()+"/series/"+slug+"/"' in src
+assert 'var root=series&&series.page||await getText(series.url,runtimeBase()+"/")' in src
 js = src.split("WRAPPER = r'''",1)[1].split("'''",1)[0]
 assert js.count("c.base") == 2, "only runtimeBase fallback may reference legacy cfg base"
 compiled = js.replace("CONFIG_PLACEHOLDER", "{}")
