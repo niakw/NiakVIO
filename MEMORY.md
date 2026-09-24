@@ -4423,3 +4423,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - After AniKotoTV was aligned, Quick Core run 35938076231 advanced to AnimeSamaCo and found the same structured-data class of drift: published bytes use /template-php/defaut/fetch.php for the current animesama.co catalogue, while learned_routes still named legacy /catalogue/?search={query}.
 - AnimeSamaCo learned_routes now matches the exact currently published route set: current fetch.php catalogue request plus the anime / season / episode paths. The legacy catalogue search remains candidate/history only.
 - This is a structured-authority consistency fix. Playback status is still owned by the fresh census/retest that follows.
+
+
+### 2026-09-24 — Archived provider scope now reconciles durable static knowledge
+
+- Final HEAD validation exposed a lifecycle cardinality split after `desiflix` and `fullanime` passed the seven-day disabled retention window: `manifest.json` correctly contained 44 visible providers while `automation/provider-v3-static-knowledge.json` still contained 46 provider rows. The two extra identities were exactly the lifecycle records marked `archived-provider-old`.
+- `manage_provider_lifecycle.py` now reconciles the durable current-provider knowledge map on every apply, not only on the exact archive transition. It fails closed if a visible provider is missing, removes only identities outside the current visible catalogue, and updates the explicit providerCount fields used by contract recognition/route reconstruction/recovery.
+- The lifecycle workflow now tests the local-recognition contract after applying lifecycle state and persists `automation/provider-v3-static-knowledge.json` with the manifest/projection/archive transition.
+- Three Final Security Gate alerts were in test-only URL substring assertions. Domain-refresh tests now compare parsed scheme/hostname/path/query tuples, and the hub-search redirect fixture now matches its exact fixture URL. This strengthens URL-boundary validation rather than suppressing CodeQL.

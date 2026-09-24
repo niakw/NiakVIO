@@ -142,8 +142,18 @@ projected, projected_fixes = module.project_domain_owned_provider_legos(
     },
 )
 assert projected_fixes == ["PROVIDER.DEMO.RUNTIME.V1"], projected_fixes
-assert 'SITE="https://new.example/path?q=1"' in projected, projected
-assert 'CORE_SITE="https://old.example/must-stay"' in projected, projected
+projected_urls = {
+    (
+        parsed.scheme.casefold(),
+        (parsed.hostname or "").casefold(),
+        parsed.path,
+        parsed.query,
+    )
+    for value in re.findall(r"https?://[^\s\\\"'<>]+", projected)
+    for parsed in (urlparse(value),)
+}
+assert ("https", "new.example", "/path", "q=1") in projected_urls, projected_urls
+assert ("https", "old.example", "/must-stay", "") in projected_urls, projected_urls
 assert module._strip_domain_owned_blocks(
     synthetic,
     ["PROVIDER.DEMO.CONFIG.V1", "PROVIDER.DEMO.RUNTIME.V1"],
@@ -174,8 +184,18 @@ raw_projected, raw_scopes = module.project_domain_owned_provider_legos(
     },
 )
 assert "PROVIDER.DEMO.RAW.DOMAIN" in raw_scopes, raw_scopes
-assert '"base":"https://new.example"' in raw_projected, raw_projected
-assert 'CORE_SITE="https://old.example/must-stay"' in raw_projected, raw_projected
+raw_projected_urls = {
+    (
+        parsed.scheme.casefold(),
+        (parsed.hostname or "").casefold(),
+        parsed.path,
+        parsed.query,
+    )
+    for value in re.findall(r"https?://[^\s\\\"'<>]+", raw_projected)
+    for parsed in (urlparse(value),)
+}
+assert ("https", "new.example", "", "") in raw_projected_urls, raw_projected_urls
+assert ("https", "old.example", "/must-stay", "") in raw_projected_urls, raw_projected_urls
 
 # Real-catalogue regression: the old AnimeVOSTFR redirect seed may remain inside
 # CONFIG as substitution history, but executable provider bytes before Core must

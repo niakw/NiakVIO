@@ -456,10 +456,10 @@ assert direct_fresh_history['previous'][0]['url'] == 'https://old-direct.example
 _original_search_urls = resolver.search_engine_urls
 _original_fetch = resolver.fetch
 try:
-    resolver.search_engine_urls = lambda _query: [("test", "https://search.example/?q=demo")]
+    search_fixture_url = "https://search.example/?q=demo"
+    resolver.search_engine_urls = lambda _query: [("test", search_fixture_url)]
     def fake_search_redirect_fetch(url: str, timeout: float = 10.0):
-        parsed = urlparse(url)
-        if parsed.scheme == "https" and parsed.hostname == "search.example":
+        if url == search_fixture_url:
             return (200, url, '<a href="https://old.demo-provider.example/">Demo Provider</a>', {"Content-Type": "text/html"})
         if url == "https://old.demo-provider.example/":
             return (200, "https://demo-provider.example/", "<html></html>", {"Content-Type": "text/html"})

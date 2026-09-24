@@ -30,6 +30,7 @@ ARCHIVE_DIR = ROOT / "provider-old"
 ARCHIVE_PROVIDER_DIR = ARCHIVE_DIR / "providers"
 ARCHIVE_BASE_DIR = ARCHIVE_DIR / "provider-bases"
 STATE_PATH = ROOT / "automation/provider-disabled-lifecycle.json"
+STATIC_KNOWLEDGE_PATH = ROOT / "automation/provider-v3-static-knowledge.json"
 RETENTION_DAYS = 7
 
 ROOT_MANIFEST = ROOT / "manifest.json"
@@ -231,6 +232,55 @@ def update_provider_catalog(root_rows: dict[str, dict[str, Any]], archived: set[
     dump_json(path, doc)
 
 
+def reconcile_static_knowledge(visible_ids: set[str], *, apply: bool) -> dict[str, Any]:
+    """Keep durable current-provider DATA aligned with the visible catalogue.
+
+    provider-old/ is terminal archive and must not remain executable/current
+    reconstruction authority. Historical archive bytes remain under provider-old;
+    this function only removes archived identities from the current structured
+    knowledge map and updates its explicit provider cardinality fields.
+    """
+    # PROVIDER_LIFECYCLE_STATIC_KNOWLEDGE_V1
+    doc = load_json(STATIC_KNOWLEDGE_PATH)
+    providers = doc.get("providers")
+    if not isinstance(providers, dict):
+        raise RuntimeError("provider-v3 static knowledge must contain providers map")
+
+    keyed = {cid(key): key for key in providers if cid(key)}
+    missing = sorted(visible_ids - set(keyed))
+    if missing:
+        raise RuntimeError(
+            "current visible providers missing from static knowledge: " + ",".join(missing)
+        )
+
+    kept = {
+        original: value
+        for original, value in providers.items()
+        if cid(original) in visible_ids
+    }
+    kept_ids = {cid(key) for key in kept}
+    if kept_ids != visible_ids:
+        raise RuntimeError(
+            "static knowledge/current catalogue identity mismatch after lifecycle reconcile"
+        )
+
+    removed = sorted(set(keyed) - visible_ids)
+    doc["providers"] = kept
+    count = len(kept)
+    doc["providerCount"] = count
+    for section in ("contractRecognition", "routeReconstruction", "routeRecovery"):
+        row = doc.get(section)
+        if isinstance(row, dict) and "providerCount" in row:
+            row["providerCount"] = count
+
+    if apply:
+        dump_json(STATIC_KNOWLEDGE_PATH, doc)
+    return {
+        "providerCount": count,
+        "removed": removed,
+    }
+
+
 def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dict[str, Any]:
     if root.resolve() != ROOT.resolve():
         raise RuntimeError("alternate root is not supported by repository lifecycle apply")
@@ -326,8 +376,12 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
         for path in ACTIVE_ONLY_MANIFESTS:
             update_active_only_manifest(path, active_ids)
         update_provider_catalog(by_id, archived_now)
+        static_result = reconcile_static_knowledge(active_ids | disabled_ids, apply=True)
         state["updatedAt"] = day.isoformat()
         dump_json(STATE_PATH, state)
+
+    if not apply:
+        static_result = reconcile_static_knowledge(active_ids | disabled_ids, apply=False)
 
     return {
         "day": day.isoformat(),
@@ -340,6 +394,8 @@ def apply_lifecycle(root: Path = ROOT, *, day: date, apply: bool = False) -> dic
         "activeCount": len(active_ids),
         "disabledCount": len(disabled_ids),
         "visibleCount": len(active_ids | disabled_ids),
+        "staticKnowledgeProviderCount": int(static_result["providerCount"]),
+        "staticKnowledgeRemoved": list(static_result["removed"]),
     }
 
 
@@ -356,6 +412,7 @@ def main() -> int:
         f"disabled={report['disabledCount']}",
         f"visible={report['visibleCount']}",
         f"archived_now={len(report['archivedNow'])}",
+        f"static_removed={len(report['staticKnowledgeRemoved'])}",
         f"retention_days={RETENTION_DAYS}",
         "mode=apply" if args.apply else "mode=dry-run",
     )
