@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "35942671301",
-  "sourceTriggerSha": "439847e957fdec2a719b41c470ff7dc43a95604e",
+  "sourceRunId": "36013174459-post-repair-candidate",
+  "sourceTriggerSha": "e58453fa690c6ed97ff6d9fee4491316216730f7",
   "unresolvedProviderCount": 14,
   "groupCount": 9,
   "executionModel": {
@@ -27,7 +27,8 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "github-all-transports-challenged"
+        "browser-profile-only",
+        "residential-exit-all-challenged"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 3,
@@ -59,7 +60,7 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "github-all-transports-challenged"
+        "residential-exit-all-challenged"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 3,
@@ -147,7 +148,7 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|mixed_embed_resolver|browser-profile-only-both-networks",
+      "groupId": "harness-compatibility|mixed_embed_resolver|browser-profile-only",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
         "dle-full-story-sibnet"
@@ -160,9 +161,9 @@
         "network_exception"
       ],
       "harnessTransportClasses": [
-        "browser-profile-only-both-networks"
+        "browser-profile-only"
       ],
-      "transportSignature": "browser-profile-only-both-networks",
+      "transportSignature": "browser-profile-only",
       "providerCount": 1,
       "providers": [
         "animesultra"
@@ -185,7 +186,7 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "github-all-transports-challenged"
+        "residential-exit-all-challenged"
       ],
       "transportSignature": "not-applicable",
       "providerCount": 1,
