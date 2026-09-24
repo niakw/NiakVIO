@@ -4417,3 +4417,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - CORE Verify & Publish run 35936866481 failed on a real AniKotoTV structured-data drift: published Runtime V2 bytes execute TMDB mapping + MegaPlay stream route + getSources, while provider-overrides.json learned_routes still declared the retired historical AniKoto search/watch/AJAX routes. Structured route authority is now aligned to the already-published Runtime V2 contract; historical routes remain candidate/history only.
 - Provider Disabled Lifecycle run 35936868286 correctly archived expired disabled providers after the 7-day retention window, but tests/provider_authority_current_catalogue_test.py still indexed fullanime/desiflix as if every disabled provider must remain manifest-visible forever. The contract now accepts absence only when automation/provider-disabled-lifecycle.json archived explicitly records state=archived-provider-old; missing rows without archive proof still fail closed.
 - These are validation/lifecycle consistency fixes, not claims of provider playback improvement. A fresh Core gate and current-byte census on the final HEAD are still required before closing the cycle.
+
+### 2026-09-24 — AnimeSamaCo structured route drift removed
+
+- After AniKotoTV was aligned, Quick Core run 35938076231 advanced to AnimeSamaCo and found the same structured-data class of drift: published bytes use /template-php/defaut/fetch.php for the current animesama.co catalogue, while learned_routes still named legacy /catalogue/?search={query}.
+- AnimeSamaCo learned_routes now matches the exact currently published route set: current fetch.php catalogue request plus the anime / season / episode paths. The legacy catalogue search remains candidate/history only.
+- This is a structured-authority consistency fix. Playback status is still owned by the fresh census/retest that follows.

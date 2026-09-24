@@ -3340,7 +3340,7 @@
         "https://animesama.co/"
       ],
       "learned_routes": [
-        "/catalogue/?search={query}",
+        "/template-php/defaut/fetch.php",
         "/anime/{id}-{slug}.html",
         "/anime/{id}-{slug}/saison-{season}.html",
         "/anime/{id}-{slug}/saison-{season}/episode-{episode}.html"
@@ -3349,15 +3349,15 @@
         "anime-sama.store": "animesama.co"
       },
       "candidate_learned_routes": [
-        "/catalogue/?search={query}",
+        "/template-php/defaut/fetch.php",
         "/anime/{id}-{slug}.html",
         "/anime/{id}-{slug}/saison-{season}.html",
         "/anime/{id}-{slug}/saison-{season}/episode-{episode}.html",
+        "/catalogue/?search={query}",
         "/catalogue/{slug}",
         "/episode",
         "/saison-{season}/episode-{episode}.html",
         "/film/episode-{episode}.html",
-        "/template-php/defaut/fetch.php",
         "/anime/{id}-{slug}",
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json"
@@ -3544,7 +3544,8 @@
         "scripts/provider_patches/animesamaco_site_runtime_v1.py"
       ],
       "notes": [
-        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers."
+        "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
+        "2026-09-24 structured route authority aligned to the current animesama.co catalogue runtime: /template-php/defaut/fetch.php is the executable catalogue fetch; legacy /catalogue/?search remains candidate/history only."
       ],
       "source_runtime_family": "dle-search-series-season-episode",
       "reconstruction_state": "provider-local-current-site"
