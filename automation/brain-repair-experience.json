@@ -6,7 +6,6 @@
       "anikototv",
       "anime-sama",
       "animekai",
-      "animesalt",
       "animesama-co",
       "castle",
       "coflix",
@@ -18,6 +17,7 @@
       "mugiwarastream",
       "neko-sama",
       "papadustream",
+      "persianstremio",
       "playimdb",
       "purstream",
       "sekai",
@@ -1064,7 +1064,7 @@
         "/filter?keyword={query}",
         "/watch/{slug}/ep-{episode}"
       ],
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "NO PROOF",
       "strategy": "html_scraper"
     },
     "anikototv": {
@@ -1080,6 +1080,9 @@
       "operational": true,
       "peerRequestRecipes": [],
       "peerRouteTemplates": [
+        "/api/v2/tmdb?id={tmdbId}&s={season}&e={episode}",
+        "/stream/{identityKind}/{identityId}/{episode}/{mode}",
+        "/stream/getSources?id={id}",
         "/search?keyword={query}",
         "/watch/{slug}",
         "/ajax/episode/list/{id}",
@@ -1087,14 +1090,12 @@
         "/ajax/server?get={id}",
         "/v4/search?query={query}",
         "/api/v2/tmdb?id={id}",
-        "/stream/getSources?id={id}",
         "/stream/",
-        "/episodes/default?season={season}",
-        "/api/v2/tmdb?id={tmdbId}&s={season}&e={episode}",
-        "/stream/{identityKind}/{identityId}/{episode}/{mode}"
+        "/episodes/default?season={season}"
       ],
       "providerLegoScripts": [
-        "anikototv_runtime_v2.py"
+        "anikototv_runtime_v2.py",
+        "anikototv_runtime_v1.py"
       ],
       "recipeMethods": [],
       "recipeResponses": [],
@@ -1107,6 +1108,9 @@
         "search"
       ],
       "routeTemplates": [
+        "/api/v2/tmdb?id={tmdbId}&s={season}&e={episode}",
+        "/stream/{identityKind}/{identityId}/{episode}/{mode}",
+        "/stream/getSources?id={id}",
         "/search?keyword={query}",
         "/watch/{slug}",
         "/ajax/episode/list/{id}",
@@ -1114,12 +1118,9 @@
         "/ajax/server?get={id}",
         "/v4/search?query={query}",
         "/api/v2/tmdb?id={id}",
-        "/stream/getSources?id={id}",
         "/stream/",
         "/episode/",
-        "/episodes/default?season={season}",
-        "/api/v2/tmdb?id={tmdbId}&s={season}&e={episode}",
-        "/stream/{identityKind}/{identityId}/{episode}/{mode}"
+        "/episodes/default?season={season}"
       ],
       "status": "FULL OK",
       "strategy": "mixed_embed_resolver"
@@ -1687,7 +1688,7 @@
         "anime"
       ],
       "officialHost": "animesalt.cx",
-      "operational": true,
+      "operational": false,
       "peerRequestRecipes": [],
       "peerRouteTemplates": [
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
@@ -1712,7 +1713,7 @@
         "/episode/[^\\x22]*",
         "/player/index.php?data="
       ],
-      "status": "FULL OK",
+      "status": "ROUTE PROVEN",
       "strategy": "html_scraper"
     },
     "animesama-co": {
@@ -1746,10 +1747,10 @@
         }
       ],
       "peerRouteTemplates": [
-        "/catalogue/?search={query}",
         "/anime/{id}-{slug}.html",
         "/anime/{id}-{slug}/saison-{season}.html",
         "/anime/{id}-{slug}/saison-{season}/episode-{episode}.html",
+        "/catalogue/?search={query}",
         "/catalogue/{slug}",
         "/saison-{season}/episode-{episode}.html",
         "/film/episode-{episode}.html",
@@ -1840,15 +1841,15 @@
         "search"
       ],
       "routeTemplates": [
-        "/catalogue/?search={query}",
+        "/template-php/defaut/fetch.php",
         "/anime/{id}-{slug}.html",
         "/anime/{id}-{slug}/saison-{season}.html",
         "/anime/{id}-{slug}/saison-{season}/episode-{episode}.html",
+        "/catalogue/?search={query}",
         "/catalogue/{slug}",
         "/episode",
         "/saison-{season}/episode-{episode}.html",
         "/film/episode-{episode}.html",
-        "/template-php/defaut/fetch.php",
         "/anime/{id}-{slug}",
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json"
@@ -2208,7 +2209,7 @@
         "/api/animes/search?q=HOTD",
         "/api/animes/search?q=The+House+That+Dragons+Built"
       ],
-      "status": "HARNESS MISMATCH",
+      "status": "ROUTE PROVEN",
       "strategy": "api_stream_resolver"
     },
     "animevostfr": {
@@ -3054,7 +3055,10 @@
     },
     "desiflix": {
       "domainMemory": true,
-      "evidenceDepth": [],
+      "evidenceDepth": [
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
       "hasApiRecipe": false,
       "hasProviderValuePlan": false,
       "hasSearchRequestPlan": false,
@@ -3321,7 +3325,7 @@
         "/films/{slug}",
         "/api/v2/themoviedb?id={tmdbId}"
       ],
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "ROUTE PROVEN",
       "strategy": "mixed_embed_resolver"
     },
     "french-manga": {
@@ -4566,7 +4570,7 @@
         "/download-batman-and-harley-quinn-2017-english-480p-720p-1080p/",
         "/movies/latest-released/"
       ],
-      "status": "HARNESS MISMATCH",
+      "status": "ROUTE PROVEN",
       "strategy": "html_scraper"
     },
     "mugiwarastream": {
@@ -5654,7 +5658,7 @@
         "tv"
       ],
       "officialHost": "persianstremio.vercel.app",
-      "operational": false,
+      "operational": true,
       "peerRequestRecipes": [
         {
           "body": {},
@@ -5722,7 +5726,7 @@
         "/stream/series/",
         "/stream/movie/tt0816692.json"
       ],
-      "status": "CANDIDATE OK",
+      "status": "PARTIAL OK",
       "strategy": "direct_media"
     },
     "playimdb": {
@@ -7839,7 +7843,7 @@
       "strategy": "mixed_embed_resolver"
     },
     "yflix": {
-      "domainMemory": false,
+      "domainMemory": true,
       "evidenceDepth": [
         "movie=lookup_only",
         "tv=lookup_only"
@@ -7851,7 +7855,7 @@
         "movie",
         "tv"
       ],
-      "officialHost": null,
+      "officialHost": "1moviesz.to",
       "operational": false,
       "peerRequestRecipes": [
         {
@@ -8085,8 +8089,8 @@
     "requiresDeepValidation": true
   },
   "schemaVersion": 2,
-  "sourceRunId": "35680423643-retest",
-  "sourceSha": "d12ada427f02b4acb8ac4428d8dc69234cb784f3",
+  "sourceRunId": "36020604290-post-repair-candidate",
+  "sourceSha": "1eccf3aa053b23c4e6e1e8674ab473f07f5d62e1",
   "strategyPatterns": {
     "api_stream_resolver": {
       "commonRequestRecipes": [],
@@ -8104,12 +8108,12 @@
         },
         {
           "providerSupport": 1,
-          "role": "detail",
+          "role": "search",
           "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
-          "role": "search",
+          "role": "detail",
           "supportRatio": 0.5
         },
         {
@@ -8126,40 +8130,46 @@
           "providerSupport": 2,
           "role": "search",
           "route": "/?s={query}",
-          "supportRatio": 0.6667
+          "supportRatio": 0.5
         }
       ],
-      "greenProviderCount": 3,
+      "greenProviderCount": 4,
       "greenProviders": [
         "hindmoviez",
         "movieshunt",
+        "persianstremio",
         "playimdb"
       ],
       "routeFamilies": [
         {
           "providerSupport": 2,
           "role": "search",
-          "supportRatio": 0.6667
+          "supportRatio": 0.5
+        },
+        {
+          "providerSupport": 2,
+          "role": "episode",
+          "supportRatio": 0.5
         },
         {
           "providerSupport": 1,
           "role": "detail",
-          "supportRatio": 0.3333
+          "supportRatio": 0.25
+        },
+        {
+          "providerSupport": 1,
+          "role": "api",
+          "supportRatio": 0.25
         },
         {
           "providerSupport": 1,
           "role": "other",
-          "supportRatio": 0.3333
-        },
-        {
-          "providerSupport": 1,
-          "role": "episode",
-          "supportRatio": 0.3333
+          "supportRatio": 0.25
         },
         {
           "providerSupport": 1,
           "role": "player",
-          "supportRatio": 0.3333
+          "supportRatio": 0.25
         }
       ]
     },
@@ -8167,33 +8177,26 @@
       "commonRequestRecipes": [],
       "commonRouteTemplates": [
         {
-          "providerSupport": 3,
-          "role": "episode",
-          "route": "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-          "supportRatio": 0.375
-        },
-        {
           "providerSupport": 2,
           "role": "search",
           "route": "/search/{slug}/",
-          "supportRatio": 0.25
+          "supportRatio": 0.2857
         },
         {
           "providerSupport": 2,
-          "role": "other",
-          "route": "/?tmdbId={tmdbId}&type=movie",
-          "supportRatio": 0.25
+          "role": "episode",
+          "route": "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+          "supportRatio": 0.2857
         },
         {
           "providerSupport": 2,
           "role": "api",
           "route": "/api/v2/themoviedb?id={tmdbId}",
-          "supportRatio": 0.25
+          "supportRatio": 0.2857
         }
       ],
-      "greenProviderCount": 8,
+      "greenProviderCount": 7,
       "greenProviders": [
-        "animesalt",
         "kehflix",
         "kurage",
         "papadustream",
@@ -8204,34 +8207,34 @@
       ],
       "routeFamilies": [
         {
-          "providerSupport": 7,
+          "providerSupport": 6,
           "role": "episode",
-          "supportRatio": 0.875
+          "supportRatio": 0.8571
         },
         {
           "providerSupport": 5,
           "role": "api",
-          "supportRatio": 0.625
-        },
-        {
-          "providerSupport": 5,
-          "role": "other",
-          "supportRatio": 0.625
+          "supportRatio": 0.7143
         },
         {
           "providerSupport": 4,
           "role": "detail",
-          "supportRatio": 0.5
+          "supportRatio": 0.5714
         },
         {
           "providerSupport": 4,
+          "role": "other",
+          "supportRatio": 0.5714
+        },
+        {
+          "providerSupport": 3,
           "role": "player",
-          "supportRatio": 0.5
+          "supportRatio": 0.4286
         },
         {
           "providerSupport": 2,
           "role": "search",
-          "supportRatio": 0.25
+          "supportRatio": 0.2857
         }
       ]
     },
@@ -8375,12 +8378,12 @@
       "routeFamilies": [
         {
           "providerSupport": 12,
-          "role": "detail",
+          "role": "episode",
           "supportRatio": 0.8571
         },
         {
           "providerSupport": 12,
-          "role": "episode",
+          "role": "detail",
           "supportRatio": 0.8571
         },
         {
@@ -8420,17 +8423,17 @@
       "routeFamilies": [
         {
           "providerSupport": 1,
-          "role": "search",
-          "supportRatio": 1.0
-        },
-        {
-          "providerSupport": 1,
           "role": "api",
           "supportRatio": 1.0
         },
         {
           "providerSupport": 1,
           "role": "episode",
+          "supportRatio": 1.0
+        },
+        {
+          "providerSupport": 1,
+          "role": "search",
           "supportRatio": 1.0
         }
       ]
