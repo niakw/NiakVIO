@@ -4861,3 +4861,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - PR CI exposed an unrelated pre-existing canonical projection drift: `provider_catalog.json` declares UHDMovies as `movie,tv` while `manifest.json`, `no-anime/manifest.json` and `manifest-hub46.json` had only `movie`. PR #189 aligns those three general projections to `movie,tv`; the Media Type & Playback gate then passes.
 - Current durable provider state remains unresolved: the 14-provider repair queue is unchanged and no new playable provider proof was obtained in `36072231705`. Learning run `36072741834` was dispatched from `b347269...` with the pre-#189 workflow; it must not be treated as evidence that the new architecture-loop behavior is validated.
 
+
+
+### 2026-09-25 01:40 Europe/Paris — PR #189 validation: stale UHDMovies catalogue authority isolated
+
+- PR #189 (fix/learning-architecture-loop-20260925) was reduced back to Brain/control-plane scope after its first CI exposed accidental manifest drift. The three generated manifests are again byte-aligned with main; no provider capability is changed by the architecture-loop patch itself.
+- CORE - Verify & Publish on 4a91b2b exposed uhdmovies as published=[movie] vs expected=[movie,tv]. The later Media Type gate reproduced the same mismatch from provider_catalog.json.
+- Current durable evidence is movie-only: published manifest/provider bytes declare movie, census declares/verifies only movie, and the UHDMovies override explicitly states that current upstream getStreams returns before network for tv/series and episodic capability must not be published without proof.
+- Corrected the stale source-of-truth entry in provider_catalog.json to supportedTypes=[movie]. This is a catalogue authority fix, not a provider promotion/demotion.
+- The prior animekai candidate non-regression failure was not reproduced: Non-Regression run 36073824709 on d098009 passed. Treat the earlier isolated failure as transient unless it recurs.
+- CI for head 6f0a4fe is still running. Do not mark PR #189 merge-ready until Workflow, Verify & Publish, Media Type/Playback, Provider Non-Regression and security gates complete successfully.
