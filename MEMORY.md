@@ -4431,3 +4431,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - `manage_provider_lifecycle.py` now reconciles the durable current-provider knowledge map on every apply, not only on the exact archive transition. It fails closed if a visible provider is missing, removes only identities outside the current visible catalogue, and updates the explicit providerCount fields used by contract recognition/route reconstruction/recovery.
 - The lifecycle workflow now tests the local-recognition contract after applying lifecycle state and persists `automation/provider-v3-static-knowledge.json` with the manifest/projection/archive transition.
 - Three Final Security Gate alerts were in test-only URL substring assertions. Domain-refresh tests now compare parsed scheme/hostname/path/query tuples, and the hub-search redirect fixture now matches its exact fixture URL. This strengthens URL-boundary validation rather than suppressing CodeQL.
+
+
+### 2026-09-24 — Route reconstruction census cardinality made lifecycle-dynamic
+
+- Lifecycle run `35940263149` proved the new static-knowledge reconciliation itself is correct: active=42, disabled=2, visible=44, static_removed=2. It then failed only because `tests/provider_route_reconstructor_test.py` still hard-coded the pre-archive value 46.
+- That test now imports `visible_provider_count()` and asserts/reports the live current-catalogue cardinality. The lifecycle workflow trigger set includes this test so future archive cardinality changes cannot leave a stale fixed-count contract behind.

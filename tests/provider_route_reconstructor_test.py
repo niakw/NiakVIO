@@ -9,6 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from current_provider_scope import visible_provider_count
 from provider_route_reconstructor import reconstruct_all_routes, reconstruct_provider_routes
 
 
@@ -146,7 +147,7 @@ knowledge = json.loads((ROOT / "automation/provider-v3-static-knowledge.json").r
 seeds = json.loads((ROOT / "automation/provider-v3-recognition-seeds.json").read_text(encoding="utf-8"))
 overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 reconstructed, census = reconstruct_all_routes(knowledge, seeds=seeds, overrides=overrides)
-assert census["providerCount"] == 46, census
+assert census["providerCount"] == visible_provider_count(), (census, visible_provider_count())
 assert census["fullProviderReconstructionInvoked"] is False, census
 assert census["providerJavaScriptExecuted"] is False, census
 assert reconstructed["routeReconstruction"]["canonicalRouteData"] == "providers.<id>.model.routeData"
@@ -173,6 +174,6 @@ assert all(provider_id in reconstructed["providers"] for provider_id in reported
 
 print(
     "Provider route reconstructor tests passed: canonical routeData, structured object scan, "
-    f"static source proof, idempotence, unknown != quarantine, census=46 routes={census['routeCount']} "
+    f"static source proof, idempotence, unknown != quarantine, census={visible_provider_count()} routes={census['routeCount']} "
     f"httpProven={census['httpProvenRouteCount']} noDurableRoutes={len(reported_without_routes)}"
 )
