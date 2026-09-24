@@ -4544,3 +4544,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 
 - Bounded Repair run `35994438849` failed in under a minute before any network/Brain work because `tests/provider_repair_waf_integration_workflow_test.py` still asserted the retired concurrency group `provider-repair-main-v2`.
 - The workflow itself was intentionally moved to `provider-repair-main-v3`; the stale static fixture is updated to v3. No provider result or transport evidence is inferred from the failed preflight.
+
+
+### 2026-09-24 — Final concurrency-v3 static fixture corrected
+
+- Bounded Repair retry `35994664152` again stopped before network/Brain work. The WAF integration contract was already green; the remaining failure was `tests/provider_waf_tailscale_exit_contract_test.py` still asserting `provider-repair-main-v2`.
+- Repository search found no other intended v2 contract beyond the already-corrected WAF integration fixture and this Tailscale fixture. The Tailscale contract is updated to concurrency epoch v3.
