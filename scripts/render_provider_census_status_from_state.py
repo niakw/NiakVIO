@@ -22,6 +22,7 @@ STATUS_ORDER = [
     "CHAIN REACHED",
     "NO PROOF",
     "HARNESS MISMATCH",
+    "CLIENT TRANSPORT GAP",
     "HARNESS/ENV BLOCKED",
     "PROVIDER NETWORK BLOCKED",
     "PROVIDER JS BROKEN",
@@ -122,6 +123,14 @@ def render(state: dict[str, Any]) -> str:
             if str(row.get("status") or "") == "HARNESS MISMATCH"
             and row.get("authorityRepairEligible") is not False
         ]
+    client_transport_gap_queue = state.get("clientTransportGapQueue")
+    if not isinstance(client_transport_gap_queue, list):
+        client_transport_gap_queue = [
+            str(row.get("provider") or "")
+            for row in providers
+            if str(row.get("status") or "") == "CLIENT TRANSPORT GAP"
+            and row.get("authorityRepairEligible") is not False
+        ]
     environment_blocked_queue = state.get("environmentBlockedQueue")
     if not isinstance(environment_blocked_queue, list):
         environment_blocked_queue = [
@@ -146,7 +155,7 @@ def render(state: dict[str, Any]) -> str:
         "",
         "Latest provider census state: **" + " · ".join(count_parts) + f"** across **{len(providers)} providers**.",
         evidence_line + ".",
-        f"Symptomatic providers: **{len(state.get('symptomaticProviders') or [])}** · automated repair queue: **{len(state.get('repairQueue') or [])}** · lifecycle disabled: **{len(state.get('lifecycleDisabledQueue') or [])}** · authority rediscovery: **{len(state.get('authorityRediscoveryQueue') or [])}** · harness mismatch: **{len(harness_mismatch_queue)}** · environment blocked: **{len(environment_blocked_queue)}**.",
+        f"Symptomatic providers: **{len(state.get('symptomaticProviders') or [])}** · automated repair queue: **{len(state.get('repairQueue') or [])}** · lifecycle disabled: **{len(state.get('lifecycleDisabledQueue') or [])}** · authority rediscovery: **{len(state.get('authorityRediscoveryQueue') or [])}** · harness mismatch: **{len(harness_mismatch_queue)}** · client transport gap: **{len(client_transport_gap_queue)}** · environment blocked: **{len(environment_blocked_queue)}**.",
         *([residential_notice] if residential_notice else []),
         "",
         "## Status semantics",

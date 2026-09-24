@@ -23,6 +23,7 @@ STATUS_META = {
     "NO PROOF": ("🔵", "search/lookup ran but no content-specific chain was reached; keep rotating the corpus"),
     "CHAIN REACHED": ("🟣", "content/detail/episode/player chain was reached, but no terminal media is verified yet"),
     "HARNESS MISMATCH": ("🟧", "CI/Node was challenged but an ordinary browser session reached content; adapt the harness/client transport before touching provider code"),
+    "CLIENT TRANSPORT GAP": ("🟧", "browser reachability is reproduced on GitHub and residential egress while native-like/direct transports fail; provider JS is not the causal owner and Core/client transport adaptation is required"),
     "HARNESS/ENV BLOCKED": ("🟫", "the GitHub CI/browser environment is challenged; native TV/mobile compatibility is unresolved and provider breakage is not established"),
     "PROVIDER NETWORK BLOCKED": ("🟤", "last meaningful provider/upstream request failed (HTTP/DNS/TLS/timeout); JS break is not established"),
     "PROVIDER JS BROKEN": ("🟠", "technical/provider implementation failure; repair and retest"),
@@ -57,7 +58,7 @@ NETWORK_BROKEN_STAGES = {
 
 HEALTHY_STATES = {"FULL OK", "PARTIAL OK"}
 NON_ACTIONABLE_STATES = {"DISABLED"}
-ENVIRONMENT_ONLY_STATES = {"HARNESS MISMATCH", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}
+ENVIRONMENT_ONLY_STATES = {"HARNESS MISMATCH", "CLIENT TRANSPORT GAP", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}
 
 # These fields belong to one concrete WAF/residential overlay run. They must
 # never be inherited by the next canonical census merely because a provider row
@@ -364,6 +365,10 @@ def _harness_action(status: str, transport_class: str) -> str:
         "browser-profile-only": (
             "compare browser/JS challenge resolution with native fetch/TLS/IP; "
             "provider JS mutation is not justified by CI challenge"
+        ),
+        "browser-profile-only-both-networks": (
+            "browser succeeds on both GitHub and residential egress while direct/OkHttp fail; "
+            "route to Core/client transport adaptation and LLM architecture diagnosis, never provider mutation"
         ),
         "native-policy-inconclusive": (
             "probe provider-owned search/detail route with representative native transport; "

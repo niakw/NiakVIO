@@ -27,7 +27,7 @@ def action_for(status:str, depth:str, issue:str)->tuple[str,str]:
     # Final causal status is stronger than an older dominantIssue. A provider
     # that currently proves lookup/player depth must not regress to transport
     # merely because one lane also recorded an HTTP/network error earlier.
-    if "HARNESS" in s or "WAF/ANTIBOT" in s:
+    if "HARNESS" in s or "CLIENT TRANSPORT GAP" in s or "WAF/ANTIBOT" in s:
         return "harness-compatibility", "compare browser/native/residential transport and route client-owned gaps away from provider mutation"
     if "CANDIDATE OK" in s:
         return "candidate-replay", "replay/rematerialize retained candidate knowledge against current bytes before new mutation"

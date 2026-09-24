@@ -483,7 +483,7 @@ def merge_transport(
                 provider not in replay_promoted
                 and differential["classification"] == "browser-profile-only-both-networks"
             ):
-                status = "HARNESS MISMATCH"
+                status = "CLIENT TRANSPORT GAP"
                 row["status"] = status
                 row["color"] = census.STATUS_META[status][0]
                 row["harnessTransportClass"] = differential["classification"]
@@ -492,7 +492,7 @@ def merge_transport(
                 row["brainCheckRequired"] = True
                 row["statusRepairEligible"] = False
                 row["repairEligible"] = False
-                row["testedThisRun"] = False
+                row["testedThisRun"] = True
                 changed.append(provider)
                 continue
             if provider not in replay_promoted:
@@ -612,6 +612,14 @@ def merge_transport(
         for row in providers
         if isinstance(row, dict)
         and str(row.get("status") or "") == "HARNESS/ENV BLOCKED"
+        and row.get("authorityRepairEligible") is not False
+        and str(row.get("provider") or "").strip()
+    )
+    out["clientTransportGapQueue"] = sorted(
+        str(row.get("provider") or "").strip().casefold()
+        for row in providers
+        if isinstance(row, dict)
+        and str(row.get("status") or "") == "CLIENT TRANSPORT GAP"
         and row.get("authorityRepairEligible") is not False
         and str(row.get("provider") or "").strip()
     )
