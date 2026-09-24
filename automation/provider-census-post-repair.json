@@ -5,10 +5,16 @@
   "selected_providers": [
     "4khdhub",
     "allanime",
+    "allwish",
     "anime-ultime",
+    "animesalt",
+    "animesultra",
+    "animevost-fr",
     "animevostfr",
+    "flemmix",
     "mallumv",
     "moviebox",
+    "moviesmod",
     "vidfast",
     "yflix"
   ],
@@ -16,10 +22,10 @@
   "shard_index": 0,
   "environment": "node-adaptive-provider-targeted-first-real-stream-census-with-tmdb-runtime-context",
   "fixture_selection_policy": "retained-proof-first-then-provider-targeted-then-representative-then-three-corpus-rotated",
-  "provider_count": 8,
-  "task_count": 12,
-  "probe_count": 37,
-  "rotated_task_count": 9,
+  "provider_count": 14,
+  "task_count": 21,
+  "probe_count": 73,
+  "rotated_task_count": 18,
   "max_samples_per_lane": 4,
   "raw_provider_count": 0,
   "playable_provider_count": 0,
@@ -33,7 +39,7 @@
   "wrong_content_providers": [],
   "type_summary": {
     "movie": {
-      "tasks": 5,
+      "tasks": 8,
       "raw": 0,
       "playable": 0,
       "accepted_playable": 0,
@@ -41,7 +47,7 @@
       "wrong_content": 0
     },
     "tv": {
-      "tasks": 4,
+      "tasks": 7,
       "raw": 0,
       "playable": 0,
       "accepted_playable": 0,
@@ -49,7 +55,7 @@
       "wrong_content": 0
     },
     "anime": {
-      "tasks": 3,
+      "tasks": 6,
       "raw": 0,
       "playable": 0,
       "accepted_playable": 0,
@@ -58,15 +64,17 @@
     }
   },
   "status_counts": {
-    "no_streams": 12
+    "no_streams": 21
   },
   "debug_stage_counts": {
-    "provider_network_exception": 2,
+    "provider_network_exception": 3,
     "provider_network_http_error": 5,
-    "provider_network_zero_result": 5
+    "provider_network_zero_result": 5,
+    "provider_waf_challenge": 8
   },
   "debug_stage_providers": {
     "provider_network_exception": [
+      "animesultra",
       "yflix"
     ],
     "provider_network_http_error": [
@@ -79,6 +87,13 @@
       "allanime",
       "animevostfr",
       "mallumv"
+    ],
+    "provider_waf_challenge": [
+      "allwish",
+      "animesalt",
+      "animevost-fr",
+      "flemmix",
+      "moviesmod"
     ]
   },
   "rows": [
@@ -126,7 +141,7 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 70
+          "duration_ms": 186
         },
         {
           "url": "https://4khdhub.one/?s=La%20Colonie%202021",
@@ -135,7 +150,7 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 265
+          "duration_ms": 492
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -147,7 +162,7 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 2303,
+      "duration_ms": 3520,
       "sample_count": 4,
       "sample_titles": [
         "Sinners",
@@ -173,7 +188,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 646
+          "duration_ms": 778
         },
         {
           "fixture_title": "Interstellar",
@@ -191,7 +206,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 374
+          "duration_ms": 622
         },
         {
           "fixture_title": "Mon ninja et moi 3",
@@ -209,7 +224,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 432
+          "duration_ms": 584
         },
         {
           "fixture_title": "The Colony",
@@ -227,7 +242,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 356
+          "duration_ms": 727
         }
       ]
     },
@@ -277,7 +292,7 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 85
+          "duration_ms": 291
         },
         {
           "url": "https://4khdhub.one/?s=Revenant%20Season%201",
@@ -286,7 +301,7 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 256
+          "duration_ms": 331
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -298,7 +313,7 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 1324,
+      "duration_ms": 1908,
       "sample_count": 2,
       "sample_titles": [
         "Breaking Bad",
@@ -324,7 +339,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 659
+          "duration_ms": 825
         },
         {
           "fixture_title": "Revenant",
@@ -344,7 +359,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 357
+          "duration_ms": 663
         }
       ]
     },
@@ -394,7 +409,7 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 57
+          "duration_ms": 105
         },
         {
           "url": "https://api.mkissa.net/api",
@@ -403,7 +418,7 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 942
+          "duration_ms": 238
         },
         {
           "url": "https://mkissa.to/",
@@ -412,7 +427,7 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 33
+          "duration_ms": 78
         },
         {
           "url": "https://api.allanime.day/api?variables=%7B%22showId%22%3A%22EzPPDWAbAnwR2HSHA%22%2C%22translationType%22%3A%22sub%22%2C%22episodeString%22%3A%221%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22d405d0edd690624b66baba3068e0edc3ac90f1597d898a1ec8db4e5c43c00fec%22%7D%7D",
@@ -421,7 +436,7 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 299
+          "duration_ms": 373
         },
         {
           "url": "https://api.mkissa.net/api",
@@ -430,7 +445,7 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 166
+          "duration_ms": 187
         },
         {
           "url": "https://mkissa.to/",
@@ -439,7 +454,7 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 14
+          "duration_ms": 34
         },
         {
           "url": "https://api.allanime.day/api?variables=%7B%22showId%22%3A%22gqgoX5eRhxKemyGtG%22%2C%22translationType%22%3A%22dub%22%2C%22episodeString%22%3A%221%22%7D&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22d405d0edd690624b66baba3068e0edc3ac90f1597d898a1ec8db4e5c43c00fec%22%7D%7D",
@@ -448,7 +463,7 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 303
+          "duration_ms": 360
         },
         {
           "url": "https://ww2.aniwatch.fit/one-piece-episode-1-english-subbed",
@@ -457,7 +472,7 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 486
+          "duration_ms": 528
         },
         {
           "url": "https://ww2.aniwatch.fit/one-piece-episode-1-english-dubbed",
@@ -466,7 +481,7 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 435
+          "duration_ms": 504
         },
         {
           "url": "https://ww2.aniwatch.fit/ek-tukda-episode-1-english-subbed",
@@ -475,7 +490,7 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 453
+          "duration_ms": 506
         },
         {
           "url": "https://ww2.aniwatch.fit/ek-tukda-episode-1-english-dubbed",
@@ -484,7 +499,7 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 475
+          "duration_ms": 504
         },
         {
           "url": "https://ww2.aniwatch.fit/tutti-allarrembaggio-episode-1-english-subbed",
@@ -493,7 +508,7 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 454
+          "duration_ms": 470
         },
         {
           "url": "https://ww2.aniwatch.fit/tutti-allarrembaggio-episode-1-english-dubbed",
@@ -502,25 +517,25 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 460
+          "duration_ms": 485
         },
         {
-          "url": "https://ww2.aniwatch.fit/allarrembaggio-episode-1-english-subbed",
-          "response_url": "https://ww2.aniwatch.fit/allarrembaggio-episode-1-english-subbed",
+          "url": "https://ww2.aniwatch.fit/one-piece-tutti-allarrembaggio-episode-1-english-subbed",
+          "response_url": "https://ww2.aniwatch.fit/one-piece-tutti-allarrembaggio-episode-1-english-subbed",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 426
+          "duration_ms": 493
         },
         {
-          "url": "https://ww2.aniwatch.fit/allarrembaggio-episode-1-english-dubbed",
-          "response_url": "https://ww2.aniwatch.fit/allarrembaggio-episode-1-english-dubbed",
+          "url": "https://ww2.aniwatch.fit/one-piece-tutti-allarrembaggio-episode-1-english-dubbed",
+          "response_url": "https://ww2.aniwatch.fit/one-piece-tutti-allarrembaggio-episode-1-english-dubbed",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 437
+          "duration_ms": 520
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -532,7 +547,7 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 27794,
+      "duration_ms": 30403,
       "sample_count": 4,
       "sample_titles": [
         "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
@@ -560,7 +575,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 8075
+          "duration_ms": 9006
         },
         {
           "fixture_title": "Jujutsu Kaisen",
@@ -580,7 +595,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 7409
+          "duration_ms": 8275
         },
         {
           "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
@@ -600,7 +615,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 6141
+          "duration_ms": 6959
         },
         {
           "fixture_title": "One Piece",
@@ -620,7 +635,358 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 5878
+          "duration_ms": 5870
+        }
+      ]
+    },
+    {
+      "provider_id": "allwish",
+      "provider_name": "🌟 All-Wish",
+      "semantic_type": "movie",
+      "fixture_title": "Inception",
+      "fixture": {
+        "slug": "health-movie-27205",
+        "tmdbId": "27205",
+        "mediaType": "movie",
+        "title": "Inception",
+        "year": 2010
+      },
+      "status": "no_streams",
+      "debug_stage": "provider_waf_challenge",
+      "debug_model": {
+        "strategy": "mixed_embed_resolver",
+        "source_runtime_family": "tmdb-direct-api",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 2,
+        "route_kinds": [
+          "search",
+          "player"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://all-wish.me",
+        "official_hub": "https://t.me/s/allwishme",
+        "official_api": null
+      },
+      "debug_fetch_count": 4,
+      "debug_provider_fetch_count": 3,
+      "debug_progress_stage": "none",
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/movie/27205?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/movie/27205?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "duration_ms": 163
+        },
+        {
+          "url": "https://all-wish.me/filter?keyword=Inception",
+          "response_url": "https://all-wish.me/filter?keyword=Inception",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 87
+        },
+        {
+          "url": "https://all-wish.me/filter?keyword=El%20Origen",
+          "response_url": "https://all-wish.me/filter?keyword=El%20Origen",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 84
+        },
+        {
+          "url": "https://all-wish.me/filter?keyword=A%20Origem",
+          "response_url": "https://all-wish.me/filter?keyword=A%20Origem",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 85
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 2302,
+      "sample_count": 4,
+      "sample_titles": [
+        "Interstellar",
+        "Mad Max: Fury Road",
+        "The Matrix",
+        "Inception"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "Interstellar",
+          "fixture": {
+            "tmdbId": "157336",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Interstellar",
+            "year": 2014
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 609
+        },
+        {
+          "fixture_title": "Mad Max: Fury Road",
+          "fixture": {
+            "slug": "mad-max-fury-road-2015",
+            "tmdbId": "76341",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Mad Max: Fury Road",
+            "year": 2015
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 445
+        },
+        {
+          "fixture_title": "The Matrix",
+          "fixture": {
+            "slug": "health-movie-603",
+            "tmdbId": "603",
+            "mediaType": "movie",
+            "title": "The Matrix",
+            "year": 1999
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 407
+        },
+        {
+          "fixture_title": "Inception",
+          "fixture": {
+            "slug": "health-movie-27205",
+            "tmdbId": "27205",
+            "mediaType": "movie",
+            "title": "Inception",
+            "year": 2010
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 451
+        }
+      ]
+    },
+    {
+      "provider_id": "allwish",
+      "provider_name": "🌟 All-Wish",
+      "semantic_type": "tv",
+      "fixture_title": "The Walking Dead",
+      "fixture": {
+        "slug": "the-walking-dead-2010-s01e01",
+        "tmdbId": "1402",
+        "mediaType": "tv",
+        "category": "tv",
+        "title": "The Walking Dead",
+        "year": 2010,
+        "season": 1,
+        "episode": 1
+      },
+      "status": "no_streams",
+      "debug_stage": "provider_waf_challenge",
+      "debug_model": {
+        "strategy": "mixed_embed_resolver",
+        "source_runtime_family": "tmdb-direct-api",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 2,
+        "route_kinds": [
+          "search",
+          "player"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://all-wish.me",
+        "official_hub": "https://t.me/s/allwishme",
+        "official_api": null
+      },
+      "debug_fetch_count": 4,
+      "debug_provider_fetch_count": 3,
+      "debug_progress_stage": "none",
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/1402?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/1402?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "duration_ms": 176
+        },
+        {
+          "url": "https://all-wish.me/filter?keyword=The%20Walking%20Dead",
+          "response_url": "https://all-wish.me/filter?keyword=The%20Walking%20Dead",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 120
+        },
+        {
+          "url": "https://all-wish.me/filter?keyword=T%C3%AB%20vdekurit%20e%20gjall%C3%AB",
+          "response_url": "https://all-wish.me/filter?keyword=T%C3%AB%20vdekurit%20e%20gjall%C3%AB",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 81
+        },
+        {
+          "url": "https://all-wish.me/filter?keyword=Les%20morcheurs",
+          "response_url": "https://all-wish.me/filter?keyword=Les%20morcheurs",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 73
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 2242,
+      "sample_count": 4,
+      "sample_titles": [
+        "Breaking Bad",
+        "Arrow",
+        "WandaVision",
+        "The Walking Dead"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "Breaking Bad",
+          "fixture": {
+            "tmdbId": "1396",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Breaking Bad",
+            "year": 2008,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 479
+        },
+        {
+          "fixture_title": "Arrow",
+          "fixture": {
+            "slug": "arrow-2012-s01e01",
+            "tmdbId": "1412",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Arrow",
+            "year": 2012,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 432
+        },
+        {
+          "fixture_title": "WandaVision",
+          "fixture": {
+            "slug": "wandavision-2021-s01e01",
+            "tmdbId": "85271",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "WandaVision",
+            "year": 2021,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 362
+        },
+        {
+          "fixture_title": "The Walking Dead",
+          "fixture": {
+            "slug": "the-walking-dead-2010-s01e01",
+            "tmdbId": "1402",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "The Walking Dead",
+            "year": 2010,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 482
         }
       ]
     },
@@ -628,14 +994,14 @@
       "provider_id": "anime-ultime",
       "provider_name": "🔥 Anime-Ultime",
       "semantic_type": "anime",
-      "fixture_title": "SAKAMOTO DAYS",
+      "fixture_title": "Boruto: Naruto Next Generations",
       "fixture": {
-        "slug": "sakamoto-days-2025-s01e01",
-        "tmdbId": "207332",
+        "slug": "boruto-naruto-next-generations-2017-s01e01",
+        "tmdbId": "70881",
         "mediaType": "anime",
         "category": "anime",
-        "title": "SAKAMOTO DAYS",
-        "year": 2025,
+        "title": "Boruto: Naruto Next Generations",
+        "year": 2017,
         "season": 1,
         "episode": 1
       },
@@ -666,29 +1032,11 @@
       "debug_progress_stage": "none",
       "debug_fetches": [
         {
-          "url": "https://api.themoviedb.org/3/tv/207332?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/tv/207332?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "url": "https://api.themoviedb.org/3/tv/70881?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/70881?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
           "method": "GET",
           "status": 200,
           "content_type": "application/json",
-          "challenge": "",
-          "duration_ms": 67
-        },
-        {
-          "url": "https://v5.anime-ultime.net/MenuSearch.html",
-          "response_url": "https://v5.anime-ultime.net/MenuSearch.html",
-          "method": "POST",
-          "status": 403,
-          "content_type": "text/html",
-          "challenge": "",
-          "duration_ms": 310
-        },
-        {
-          "url": "https://v5.anime-ultime.net/MenuSearch.html",
-          "response_url": "https://v5.anime-ultime.net/MenuSearch.html",
-          "method": "POST",
-          "status": 403,
-          "content_type": "text/html",
           "challenge": "",
           "duration_ms": 103
         },
@@ -699,7 +1047,25 @@
           "status": 403,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 102
+          "duration_ms": 460
+        },
+        {
+          "url": "https://v5.anime-ultime.net/MenuSearch.html",
+          "response_url": "https://v5.anime-ultime.net/MenuSearch.html",
+          "method": "POST",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "",
+          "duration_ms": 131
+        },
+        {
+          "url": "https://v5.anime-ultime.net/MenuSearch.html",
+          "response_url": "https://v5.anime-ultime.net/MenuSearch.html",
+          "method": "POST",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "",
+          "duration_ms": 128
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -711,13 +1077,13 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 3796,
+      "duration_ms": 3736,
       "sample_count": 4,
       "sample_titles": [
         "Jujutsu Kaisen",
-        "High School of the Dead",
-        "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
-        "SAKAMOTO DAYS"
+        "Mushoku Tensei: Jobless Reincarnation",
+        "Golden Time",
+        "Boruto: Naruto Next Generations"
       ],
       "adaptive_rotated": true,
       "samples": [
@@ -739,17 +1105,17 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1129
+          "duration_ms": 896
         },
         {
-          "fixture_title": "High School of the Dead",
+          "fixture_title": "Mushoku Tensei: Jobless Reincarnation",
           "fixture": {
-            "slug": "high-school-of-the-dead-2010-s01e01",
-            "tmdbId": "56998",
+            "slug": "mushoku-tensei-s01e01",
+            "tmdbId": "94664",
             "mediaType": "anime",
             "category": "anime",
-            "title": "High School of the Dead",
-            "year": 2010,
+            "title": "Mushoku Tensei: Jobless Reincarnation",
+            "year": 2021,
             "season": 1,
             "episode": 1
           },
@@ -760,12 +1126,180 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 845
+          "duration_ms": 919
+        },
+        {
+          "fixture_title": "Golden Time",
+          "fixture": {
+            "slug": "golden-time-2013-s01e01",
+            "tmdbId": "67389",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Golden Time",
+            "year": 2013,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_http_error",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 821
+        },
+        {
+          "fixture_title": "Boruto: Naruto Next Generations",
+          "fixture": {
+            "slug": "boruto-naruto-next-generations-2017-s01e01",
+            "tmdbId": "70881",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Boruto: Naruto Next Generations",
+            "year": 2017,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_http_error",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 833
+        }
+      ]
+    },
+    {
+      "provider_id": "animesalt",
+      "provider_name": "🧂 AnimeSalt",
+      "semantic_type": "anime",
+      "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
+      "fixture": {
+        "tmdbId": "259544",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Hell Teacher: Jigoku Sensei Nube",
+        "year": 2025,
+        "season": 1,
+        "episode": 1
+      },
+      "status": "no_streams",
+      "debug_stage": "provider_waf_challenge",
+      "debug_model": {
+        "strategy": "html_scraper",
+        "source_runtime_family": "catalogue-html-embed",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "supported_types": [
+          "anime"
+        ],
+        "route_count": 2,
+        "route_kinds": [
+          "detail"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://animesalt.cx",
+        "official_hub": "https://animesalt.ac/",
+        "official_api": null
+      },
+      "debug_fetch_count": 3,
+      "debug_provider_fetch_count": 2,
+      "debug_progress_stage": "none",
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "duration_ms": 218
+        },
+        {
+          "url": "https://animesalt.cx/",
+          "response_url": "https://animesalt.cx/",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 98
+        },
+        {
+          "url": "https://animesalt.cx/?s=%E5%9C%B0%E7%8D%84%E5%85%88%E7%94%9F%E3%81%AC%EF%BD%9E%E3%81%B9%EF%BD%9E",
+          "response_url": "https://animesalt.cx/?s=%E5%9C%B0%E7%8D%84%E5%85%88%E7%94%9F%E3%81%AC%EF%BD%9E%E3%81%B9%EF%BD%9E",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 90
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 2536,
+      "sample_count": 4,
+      "sample_titles": [
+        "Death Note",
+        "Mushoku Tensei: Jobless Reincarnation",
+        "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+        "Hell Teacher: Jigoku Sensei Nube"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "Death Note",
+          "fixture": {
+            "tmdbId": "13916",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Death Note",
+            "year": 2006,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 612
+        },
+        {
+          "fixture_title": "Mushoku Tensei: Jobless Reincarnation",
+          "fixture": {
+            "tmdbId": "94664",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Mushoku Tensei: Jobless Reincarnation",
+            "year": 2021,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 387
         },
         {
           "fixture_title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
           "fixture": {
-            "slug": "failure-frame-s01e01",
             "tmdbId": "245285",
             "mediaType": "anime",
             "category": "anime",
@@ -775,34 +1309,387 @@
             "episode": 1
           },
           "status": "no_streams",
-          "debug_stage": "provider_network_http_error",
+          "debug_stage": "provider_waf_challenge",
           "debug_progress_stage": "none",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 755
+          "duration_ms": 424
         },
         {
-          "fixture_title": "SAKAMOTO DAYS",
+          "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
           "fixture": {
-            "slug": "sakamoto-days-2025-s01e01",
-            "tmdbId": "207332",
+            "tmdbId": "259544",
             "mediaType": "anime",
             "category": "anime",
-            "title": "SAKAMOTO DAYS",
+            "title": "Hell Teacher: Jigoku Sensei Nube",
             "year": 2025,
             "season": 1,
             "episode": 1
           },
           "status": "no_streams",
-          "debug_stage": "provider_network_http_error",
+          "debug_stage": "provider_waf_challenge",
           "debug_progress_stage": "none",
           "raw": 0,
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 592
+          "duration_ms": 442
+        }
+      ]
+    },
+    {
+      "provider_id": "animesultra",
+      "provider_name": "🚀 AnimesUltra",
+      "semantic_type": "anime",
+      "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
+      "fixture": {
+        "tmdbId": "259544",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Hell Teacher: Jigoku Sensei Nube",
+        "year": 2025,
+        "season": 1,
+        "episode": 1
+      },
+      "status": "no_streams",
+      "debug_stage": "provider_network_exception",
+      "debug_model": {
+        "strategy": "mixed_embed_resolver",
+        "source_runtime_family": "dle-full-story",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "anime"
+        ],
+        "route_count": 2,
+        "route_kinds": [
+          "search",
+          "unknown"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://v2.animesultra.org",
+        "official_hub": null,
+        "official_api": null
+      },
+      "debug_fetch_count": 4,
+      "debug_provider_fetch_count": 3,
+      "debug_progress_stage": "none",
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/259544?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "duration_ms": 135
+        },
+        {
+          "url": "https://v2.animesultra.org/index.php?do=search&subaction=search&story=%E5%9C%B0%E7%8D%84%E5%85%88%E7%94%9F%E3%81%AC%EF%BD%9E%E3%81%B9%EF%BD%9E",
+          "response_url": "",
+          "method": "GET",
+          "status": 0,
+          "duration_ms": 74,
+          "error": "TypeError"
+        },
+        {
+          "url": "https://v2.animesultra.org/index.php?do=search&subaction=search&story=Jigoku%20Sensei%20Nube%202025",
+          "response_url": "",
+          "method": "GET",
+          "status": 0,
+          "duration_ms": 246,
+          "error": "TypeError"
+        },
+        {
+          "url": "https://v2.animesultra.org/index.php?do=search&subaction=search&story=%E3%81%AC%E3%83%BC%E3%81%B9%E3%83%BC%E3%82%A2%E3%83%8B%E3%83%A1",
+          "response_url": "",
+          "method": "GET",
+          "status": 0,
+          "duration_ms": 254,
+          "error": "TypeError"
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 4878,
+      "sample_count": 4,
+      "sample_titles": [
+        "Jujutsu Kaisen",
+        "Mushoku Tensei: Jobless Reincarnation",
+        "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+        "Hell Teacher: Jigoku Sensei Nube"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "Jujutsu Kaisen",
+          "fixture": {
+            "tmdbId": "95479",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Jujutsu Kaisen",
+            "year": 2020,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_exception",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 1431
+        },
+        {
+          "fixture_title": "Mushoku Tensei: Jobless Reincarnation",
+          "fixture": {
+            "tmdbId": "94664",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Mushoku Tensei: Jobless Reincarnation",
+            "year": 2021,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_exception",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 1435
+        },
+        {
+          "fixture_title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+          "fixture": {
+            "tmdbId": "245285",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+            "year": 2024,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_exception",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 678
+        },
+        {
+          "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
+          "fixture": {
+            "tmdbId": "259544",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Hell Teacher: Jigoku Sensei Nube",
+            "year": 2025,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_exception",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 730
+        }
+      ]
+    },
+    {
+      "provider_id": "animevost-fr",
+      "provider_name": "🇫🇷 AnimeVOST.fr",
+      "semantic_type": "anime",
+      "fixture_title": "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing",
+      "fixture": {
+        "slug": "hell-mode-s01e01",
+        "tmdbId": "280049",
+        "mediaType": "anime",
+        "category": "anime",
+        "title": "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing",
+        "year": 2026,
+        "season": 1,
+        "episode": 1
+      },
+      "status": "no_streams",
+      "debug_stage": "provider_waf_challenge",
+      "debug_model": {
+        "strategy": "api_stream_resolver",
+        "source_runtime_family": "catalogue-html-embed",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "anime"
+        ],
+        "route_count": 1,
+        "route_kinds": [
+          "search"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://animevost.fr",
+        "official_hub": null,
+        "official_api": "https://animevost.fr"
+      },
+      "debug_fetch_count": 4,
+      "debug_provider_fetch_count": 3,
+      "debug_progress_stage": "lookup_only",
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/280049?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/280049?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "duration_ms": 108
+        },
+        {
+          "url": "https://animevost.fr/api/anime/search?q=Hell%20Mode%3A%20The%20Hardcore%20Gamer%20Dominates%20in%20Another%20World%20with%20Garbage%20Balancing",
+          "response_url": "https://animevost.fr/api/anime/search?q=Hell%20Mode%3A%20The%20Hardcore%20Gamer%20Dominates%20in%20Another%20World%20with%20Garbage%20Balancing",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "duration_ms": 369
+        },
+        {
+          "url": "https://animevost.fr/api/animes/hell-mode-yarikomi-zuki-no-gamer-wa-haisettei-no-isekai-de-musou-suru",
+          "response_url": "https://animevost.fr/api/animes/hell-mode-yarikomi-zuki-no-gamer-wa-haisettei-no-isekai-de-musou-suru",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "duration_ms": 187
+        },
+        {
+          "url": "https://gupload.xyz/data/e/0fb2ab04b69e?lang=fr",
+          "response_url": "https://gupload.xyz/data/e/0fb2ab04b69e?lang=fr",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 74
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 3898,
+      "sample_count": 4,
+      "sample_titles": [
+        "Jujutsu Kaisen",
+        "Death Note",
+        "Mushoku Tensei: Jobless Reincarnation",
+        "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "Jujutsu Kaisen",
+          "fixture": {
+            "tmdbId": "95479",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Jujutsu Kaisen",
+            "year": 2020,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_zero_result",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 1219
+        },
+        {
+          "fixture_title": "Death Note",
+          "fixture": {
+            "slug": "death-note-s01e01-user-positive",
+            "tmdbId": "13916",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Death Note",
+            "year": 2006,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 821
+        },
+        {
+          "fixture_title": "Mushoku Tensei: Jobless Reincarnation",
+          "fixture": {
+            "slug": "mushoku-tensei-s01e01",
+            "tmdbId": "94664",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Mushoku Tensei: Jobless Reincarnation",
+            "year": 2021,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 730
+        },
+        {
+          "fixture_title": "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing",
+          "fixture": {
+            "slug": "hell-mode-s01e01",
+            "tmdbId": "280049",
+            "mediaType": "anime",
+            "category": "anime",
+            "title": "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing",
+            "year": 2026,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 756
         }
       ]
     },
@@ -852,7 +1739,7 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 115
+          "duration_ms": 108
         },
         {
           "url": "https://animevostfr.org/?s=%E5%9C%B0%E7%8D%84%E5%85%88%E7%94%9F%E3%81%AC%EF%BD%9E%E3%81%B9%EF%BD%9E",
@@ -861,7 +1748,7 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 653
+          "duration_ms": 355
         },
         {
           "url": "https://animevostfr.org/?s=Jigoku%20Sensei%20Nube%202025",
@@ -870,7 +1757,7 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 264
+          "duration_ms": 325
         },
         {
           "url": "https://animevostfr.org/?s=%E3%81%AC%E3%83%BC%E3%81%B9%E3%83%BC%E3%82%A2%E3%83%8B%E3%83%A1",
@@ -879,7 +1766,7 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 252
+          "duration_ms": 299
         },
         {
           "url": "https://animevostfr.org/?s=%E3%81%98%E3%81%94%E3%81%8F%E3%81%9B%E3%82%93%E3%81%9B%E3%81%84%E3%81%AC%E3%83%BC%E3%81%B9%E3%83%BC",
@@ -888,7 +1775,7 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 262
+          "duration_ms": 296
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -900,7 +1787,7 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 7026,
+      "duration_ms": 8177,
       "sample_count": 4,
       "sample_titles": [
         "Jujutsu Kaisen",
@@ -928,7 +1815,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 2081
+          "duration_ms": 2424
         },
         {
           "fixture_title": "Mushoku Tensei: Jobless Reincarnation",
@@ -948,7 +1835,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1522
+          "duration_ms": 1934
         },
         {
           "fixture_title": "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
@@ -968,7 +1855,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1499
+          "duration_ms": 1905
         },
         {
           "fixture_title": "Hell Teacher: Jigoku Sensei Nube",
@@ -988,7 +1875,347 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1567
+          "duration_ms": 1402
+        }
+      ]
+    },
+    {
+      "provider_id": "flemmix",
+      "provider_name": "🔥 Flemmix",
+      "semantic_type": "movie",
+      "fixture_title": "The Dark Knight",
+      "fixture": {
+        "slug": "health-movie-155",
+        "tmdbId": "155",
+        "mediaType": "movie",
+        "title": "The Dark Knight",
+        "year": 2008
+      },
+      "status": "no_streams",
+      "debug_stage": "provider_waf_challenge",
+      "debug_model": {
+        "strategy": "mixed_embed_resolver",
+        "source_runtime_family": "catalogue-html-embed",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 0,
+        "route_kinds": [],
+        "has_api_recipe": false,
+        "official_site": "https://flemmix.party",
+        "official_hub": "https://ww1.wiflix-adresses.fun/",
+        "official_api": null
+      },
+      "debug_fetch_count": 4,
+      "debug_provider_fetch_count": 3,
+      "debug_progress_stage": "none",
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/movie/155?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/movie/155?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "duration_ms": 187
+        },
+        {
+          "url": "https://flemmix.party/search?q=The%20Dark%20Knight%20%3A%20Le%20Chevalier%20noir",
+          "response_url": "https://flemmix.party/search?q=The%20Dark%20Knight%20%3A%20Le%20Chevalier%20noir",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 117
+        },
+        {
+          "url": "https://flemmix.party/search?q=The%20Dark%20Knight",
+          "response_url": "https://flemmix.party/search?q=The%20Dark%20Knight",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 98
+        },
+        {
+          "url": "https://flemmix.party/search?q=Batman%3A%20The%20Dark%20Knight",
+          "response_url": "https://flemmix.party/search?q=Batman%3A%20The%20Dark%20Knight",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 101
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 3061,
+      "sample_count": 4,
+      "sample_titles": [
+        "Interstellar",
+        "Mon ninja et moi 3",
+        "The Colony",
+        "The Dark Knight"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "Interstellar",
+          "fixture": {
+            "tmdbId": "157336",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Interstellar",
+            "year": 2014
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 733
+        },
+        {
+          "fixture_title": "Mon ninja et moi 3",
+          "fixture": {
+            "tmdbId": "1215638",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Mon ninja et moi 3",
+            "year": 2025
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 613
+        },
+        {
+          "fixture_title": "The Colony",
+          "fixture": {
+            "tmdbId": "760873",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "The Colony",
+            "year": 2021
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 520
+        },
+        {
+          "fixture_title": "The Dark Knight",
+          "fixture": {
+            "slug": "health-movie-155",
+            "tmdbId": "155",
+            "mediaType": "movie",
+            "title": "The Dark Knight",
+            "year": 2008
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 541
+        }
+      ]
+    },
+    {
+      "provider_id": "flemmix",
+      "provider_name": "🔥 Flemmix",
+      "semantic_type": "tv",
+      "fixture_title": "Game of Thrones",
+      "fixture": {
+        "slug": "health-tv-1399-s1e1",
+        "tmdbId": "1399",
+        "mediaType": "tv",
+        "title": "Game of Thrones",
+        "year": 2011,
+        "season": 1,
+        "episode": 1
+      },
+      "status": "no_streams",
+      "debug_stage": "provider_waf_challenge",
+      "debug_model": {
+        "strategy": "mixed_embed_resolver",
+        "source_runtime_family": "catalogue-html-embed",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 0,
+        "route_kinds": [],
+        "has_api_recipe": false,
+        "official_site": "https://flemmix.party",
+        "official_hub": "https://ww1.wiflix-adresses.fun/",
+        "official_api": null
+      },
+      "debug_fetch_count": 4,
+      "debug_provider_fetch_count": 3,
+      "debug_progress_stage": "none",
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/1399?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/1399?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "duration_ms": 139
+        },
+        {
+          "url": "https://flemmix.party/search?q=Game%20of%20Thrones",
+          "response_url": "https://flemmix.party/search?q=Game%20of%20Thrones",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 115
+        },
+        {
+          "url": "https://flemmix.party/search?q=Froni%20i%20shpatave",
+          "response_url": "https://flemmix.party/search?q=Froni%20i%20shpatave",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 96
+        },
+        {
+          "url": "https://flemmix.party/search?q=%D4%B3%D5%A1%D5%B0%D5%A5%D6%80%D5%AB%20%D4%BD%D5%A1%D5%B2%D5%A8",
+          "response_url": "https://flemmix.party/search?q=%D4%B3%D5%A1%D5%B0%D5%A5%D6%80%D5%AB%20%D4%BD%D5%A1%D5%B2%D5%A8",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 95
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 2852,
+      "sample_count": 4,
+      "sample_titles": [
+        "House of the Dragon",
+        "Breaking Bad",
+        "Revenant",
+        "Game of Thrones"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "House of the Dragon",
+          "fixture": {
+            "tmdbId": "94997",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "House of the Dragon",
+            "year": 2022,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 724
+        },
+        {
+          "fixture_title": "Breaking Bad",
+          "fixture": {
+            "tmdbId": "1396",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Breaking Bad",
+            "year": 2008,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 562
+        },
+        {
+          "fixture_title": "Revenant",
+          "fixture": {
+            "tmdbId": "210702",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Revenant",
+            "year": 2023,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 499
+        },
+        {
+          "fixture_title": "Game of Thrones",
+          "fixture": {
+            "slug": "health-tv-1399-s1e1",
+            "tmdbId": "1399",
+            "mediaType": "tv",
+            "title": "Game of Thrones",
+            "year": 2011,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 459
         }
       ]
     },
@@ -1015,11 +2242,9 @@
         "supported_types": [
           "movie"
         ],
-        "route_count": 6,
+        "route_count": 1,
         "route_kinds": [
-          "search",
-          "api",
-          "unknown"
+          "search"
         ],
         "has_api_recipe": false,
         "official_site": "https://mallumv.Space",
@@ -1037,7 +2262,7 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 357
+          "duration_ms": 147
         },
         {
           "url": "https://mallumv.space/search.php?q=Interstellar",
@@ -1046,7 +2271,7 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 581
+          "duration_ms": 723
         },
         {
           "url": "https://mallumv.space/movie/1755/Interstellar_2014_English.xhtml",
@@ -1055,7 +2280,7 @@
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 145
+          "duration_ms": 192
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -1067,7 +2292,7 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 1362,
+      "duration_ms": 1188,
       "sample_count": 1,
       "sample_titles": [
         "Interstellar"
@@ -1090,7 +2315,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1135
+          "duration_ms": 1078
         }
       ]
     },
@@ -1098,14 +2323,14 @@
       "provider_id": "moviebox",
       "provider_name": "📦 MovieBox",
       "semantic_type": "movie",
-      "fixture_title": "Avengers: Infinity War",
+      "fixture_title": "Captain America: Civil War",
       "fixture": {
-        "slug": "avengers-infinity-war-2018",
-        "tmdbId": "299536",
+        "slug": "captain-america-civil-war-2016",
+        "tmdbId": "271110",
         "mediaType": "movie",
         "category": "movie",
-        "title": "Avengers: Infinity War",
-        "year": 2018
+        "title": "Captain America: Civil War",
+        "year": 2016
       },
       "status": "no_streams",
       "debug_stage": "provider_network_http_error",
@@ -1134,58 +2359,58 @@
       "debug_progress_stage": "chain_reached",
       "debug_fetches": [
         {
-          "url": "https://api.themoviedb.org/3/movie/299536?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/movie/299536?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "url": "https://api.themoviedb.org/3/movie/271110?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/movie/271110?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
           "method": "GET",
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 86
+          "duration_ms": 102
         },
         {
-          "url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/movie/tt4154756.json",
-          "response_url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/movie/tt4154756.json",
+          "url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/movie/tt3498820.json",
+          "response_url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/movie/tt3498820.json",
           "method": "GET",
           "status": 429,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 99
+          "duration_ms": 106
         },
         {
-          "url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/movie/tt4154756.json",
-          "response_url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/movie/tt4154756.json",
+          "url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/movie/tt3498820.json",
+          "response_url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/movie/tt3498820.json",
           "method": "GET",
           "status": 404,
           "content_type": "text/plain",
           "challenge": "",
-          "duration_ms": 92
+          "duration_ms": 130
         },
         {
-          "url": "https://vidsrcme.ru/vs_src.php?type=movie&id=299536",
-          "response_url": "https://vidsrcme.ru/vs_src.php?type=movie&id=299536",
+          "url": "https://vidsrcme.ru/vs_src.php?type=movie&id=271110",
+          "response_url": "https://vidsrcme.ru/vs_src.php?type=movie&id=271110",
           "method": "GET",
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 244
+          "duration_ms": 290
         },
         {
-          "url": "https://cloudorchestranova.com/embed/movie/299536?vs=rYetH9YbljRir3hEjaCjD_MipRRPWkdyBLQPqELDJ4mmu69Tez1HMtbzvkTDTO3HEHl2C7QKKLjqaLJz-Nf7R7Tn2Xo7VDBotBA",
-          "response_url": "https://cloudorchestranova.com/embed/movie/299536?vs=rYetH9YbljRir3hEjaCjD_MipRRPWkdyBLQPqELDJ4mmu69Tez1HMtbzvkTDTO3HEHl2C7QKKLjqaLJz-Nf7R7Tn2Xo7VDBotBA",
+          "url": "https://cloudorchestranova.com/embed/movie/271110?vs=jtq7uea_Z3IfvnL7uwWRDWozyo2VGPfdweyEpMW0O-MibFL26EINwWll7X2tdSO6cP0ejxvSEXiGvQuhPsy1be5PQkaTspX4Im8",
+          "response_url": "https://cloudorchestranova.com/embed/movie/271110?vs=jtq7uea_Z3IfvnL7uwWRDWozyo2VGPfdweyEpMW0O-MibFL26EINwWll7X2tdSO6cP0ejxvSEXiGvQuhPsy1be5PQkaTspX4Im8",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 140
+          "duration_ms": 197
         },
         {
-          "url": "https://cloudorchestranova.com/embed/player/movie/299536?vs=pqxUFjXFXpI-C_6R3ONddk6dQeEjWOcGZb8kusGmbO48RDTrm9kCPzcMMti2bDCIeTMn4LtRvW5i5dIbnj3k_f_9_wlklTsb6b8hZeZMnHOzTINRQQ",
-          "response_url": "https://cloudorchestranova.com/embed/player/movie/299536?vs=pqxUFjXFXpI-C_6R3ONddk6dQeEjWOcGZb8kusGmbO48RDTrm9kCPzcMMti2bDCIeTMn4LtRvW5i5dIbnj3k_f_9_wlklTsb6b8hZeZMnHOzTINRQQ",
+          "url": "https://cloudorchestranova.com/embed/player/movie/271110?vs=lNEsCWZwLGsQU6Ok2vjEIocb99mSsv6cu13oWnHkLpNt7a_Nn_y1YUHfuhLIYfKnzs0kZ3bJYZiqAq3_u5Q6sa4k5OPQ8smy0kUl8wAHCCioTud9fA",
+          "response_url": "https://cloudorchestranova.com/embed/player/movie/271110?vs=lNEsCWZwLGsQU6Ok2vjEIocb99mSsv6cu13oWnHkLpNt7a_Nn_y1YUHfuhLIYfKnzs0kZ3bJYZiqAq3_u5Q6sa4k5OPQ8smy0kUl8wAHCCioTud9fA",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 126
+          "duration_ms": 149
         },
         {
           "url": "https://cloudorchestranova.com/embed/iframe_player/cache.php",
@@ -1194,7 +2419,7 @@
           "status": 400,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 121
+          "duration_ms": 168
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -1206,13 +2431,13 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 4828,
+      "duration_ms": 6000,
       "sample_count": 4,
       "sample_titles": [
         "Interstellar",
         "Mon ninja et moi 3",
         "The Colony",
-        "Avengers: Infinity War"
+        "Captain America: Civil War"
       ],
       "adaptive_rotated": true,
       "samples": [
@@ -1232,7 +2457,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1374
+          "duration_ms": 1949
         },
         {
           "fixture_title": "Mon ninja et moi 3",
@@ -1250,7 +2475,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 955
+          "duration_ms": 1394
         },
         {
           "fixture_title": "The Colony",
@@ -1268,17 +2493,17 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1102
+          "duration_ms": 1181
         },
         {
-          "fixture_title": "Avengers: Infinity War",
+          "fixture_title": "Captain America: Civil War",
           "fixture": {
-            "slug": "avengers-infinity-war-2018",
-            "tmdbId": "299536",
+            "slug": "captain-america-civil-war-2016",
+            "tmdbId": "271110",
             "mediaType": "movie",
             "category": "movie",
-            "title": "Avengers: Infinity War",
-            "year": 2018
+            "title": "Captain America: Civil War",
+            "year": 2016
           },
           "status": "no_streams",
           "debug_stage": "provider_network_http_error",
@@ -1287,7 +2512,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 942
+          "duration_ms": 1166
         }
       ]
     },
@@ -1295,14 +2520,14 @@
       "provider_id": "moviebox",
       "provider_name": "📦 MovieBox",
       "semantic_type": "tv",
-      "fixture_title": "Stranger Things",
+      "fixture_title": "Vikings",
       "fixture": {
-        "slug": "stranger-things-2016-s01e01",
-        "tmdbId": "66732",
+        "slug": "vikings-2013-s01e01",
+        "tmdbId": "44217",
         "mediaType": "tv",
         "category": "tv",
-        "title": "Stranger Things",
-        "year": 2016,
+        "title": "Vikings",
+        "year": 2013,
         "season": 1,
         "episode": 1
       },
@@ -1333,58 +2558,58 @@
       "debug_progress_stage": "chain_reached",
       "debug_fetches": [
         {
-          "url": "https://api.themoviedb.org/3/tv/66732?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
-          "response_url": "https://api.themoviedb.org/3/tv/66732?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "url": "https://api.themoviedb.org/3/tv/44217?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/44217?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
           "method": "GET",
           "status": 200,
-          "content_type": "application/json",
-          "challenge": "",
-          "duration_ms": 74
-        },
-        {
-          "url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/series/tt4574334:1:1.json",
-          "response_url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/series/tt4574334:1:1.json",
-          "method": "GET",
-          "status": 429,
           "content_type": "application/json",
           "challenge": "",
           "duration_ms": 122
         },
         {
-          "url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/series/tt4574334:1:1.json",
-          "response_url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/series/tt4574334:1:1.json",
+          "url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/series/tt2306299:1:1.json",
+          "response_url": "https://pengu.uk/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/series/tt2306299:1:1.json",
+          "method": "GET",
+          "status": 429,
+          "content_type": "application/json",
+          "challenge": "",
+          "duration_ms": 120
+        },
+        {
+          "url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/series/tt2306299:1:1.json",
+          "response_url": "https://moviebox-cfa7.onrender.com/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmVzb2x1dGlvbn0qKiIsInRpdGxlX3RlbXBsYXRlIjoi8J-UiiB7YXVkaW99IHwg8J-SviAqe3NpemV9KlxcbvCfkqwgU3Viczoge3N1YnRpdGxlc30ifQ/stream/series/tt2306299:1:1.json",
           "method": "GET",
           "status": 404,
           "content_type": "text/plain",
           "challenge": "",
-          "duration_ms": 111
+          "duration_ms": 221
         },
         {
-          "url": "https://vidsrcme.ru/vs_src.php?type=tv&id=66732&season=1&episode=1",
-          "response_url": "https://vidsrcme.ru/vs_src.php?type=tv&id=66732&season=1&episode=1",
+          "url": "https://vidsrcme.ru/vs_src.php?type=tv&id=44217&season=1&episode=1",
+          "response_url": "https://vidsrcme.ru/vs_src.php?type=tv&id=44217&season=1&episode=1",
           "method": "GET",
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 229
+          "duration_ms": 293
         },
         {
-          "url": "https://cloudorchestranova.com/embed/tv/66732/1/1?vs=1tVzoQVSOBA-XZmX6nKfI89zCP2xg6lGYbr1V3nAsJHUzpNCXb1rNoeSe_ZWDTDQr2VtnYIJHVkdOz-7aMmbhiKY6AagniL6-NE",
-          "response_url": "https://cloudorchestranova.com/embed/tv/66732/1/1?vs=1tVzoQVSOBA-XZmX6nKfI89zCP2xg6lGYbr1V3nAsJHUzpNCXb1rNoeSe_ZWDTDQr2VtnYIJHVkdOz-7aMmbhiKY6AagniL6-NE",
+          "url": "https://cloudorchestranova.com/embed/tv/44217/1/1?vs=kcFbZv4I4Dv1vTu3qyyQbPdtUTrqKYi6xfWE-OcLJAfEXg38Tt3tflcyYnfzSbD8KRRpn56GghHu-CG7BAUGT2AGcxGAgxhh3Rk",
+          "response_url": "https://cloudorchestranova.com/embed/tv/44217/1/1?vs=kcFbZv4I4Dv1vTu3qyyQbPdtUTrqKYi6xfWE-OcLJAfEXg38Tt3tflcyYnfzSbD8KRRpn56GghHu-CG7BAUGT2AGcxGAgxhh3Rk",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 190
+          "duration_ms": 213
         },
         {
-          "url": "https://cloudorchestranova.com/embed/player/tv/66732/1/1?vs=dOtf5B7noncgZAibde9eRnPaM-2m_9s7G0gNriwv0Vix1vB6Xkg540hgk0ts0jQ3_qiiC9ysd1Yi_OC_yeFyYXl07LSL-GwtlZ85hgRdBUpjFrGbAg",
-          "response_url": "https://cloudorchestranova.com/embed/player/tv/66732/1/1?vs=dOtf5B7noncgZAibde9eRnPaM-2m_9s7G0gNriwv0Vix1vB6Xkg540hgk0ts0jQ3_qiiC9ysd1Yi_OC_yeFyYXl07LSL-GwtlZ85hgRdBUpjFrGbAg",
+          "url": "https://cloudorchestranova.com/embed/player/tv/44217/1/1?vs=jsSVzUXQBFDgraksVLxg_eH9pG1rL5uQXIXUtoCawIAaJwup4kJIg2kTbh42ZwtEDVSlHNtLiWgIn5MluCfAXQ_sz-hM-F6mQlxMuN9L39olLRkvnQ",
+          "response_url": "https://cloudorchestranova.com/embed/player/tv/44217/1/1?vs=jsSVzUXQBFDgraksVLxg_eH9pG1rL5uQXIXUtoCawIAaJwup4kJIg2kTbh42ZwtEDVSlHNtLiWgIn5MluCfAXQ_sz-hM-F6mQlxMuN9L39olLRkvnQ",
           "method": "GET",
           "status": 200,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 149
+          "duration_ms": 171
         },
         {
           "url": "https://cloudorchestranova.com/embed/iframe_player/cache.php",
@@ -1393,7 +2618,7 @@
           "status": 400,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 140
+          "duration_ms": 169
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -1405,13 +2630,13 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 5072,
+      "duration_ms": 6234,
       "sample_count": 4,
       "sample_titles": [
         "Revenant",
         "Breaking Bad",
-        "Game of Thrones",
-        "Stranger Things"
+        "IT: Welcome to Derry",
+        "Vikings"
       ],
       "adaptive_rotated": true,
       "samples": [
@@ -1433,7 +2658,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1477
+          "duration_ms": 1934
         },
         {
           "fixture_title": "Breaking Bad",
@@ -1453,17 +2678,17 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1165
+          "duration_ms": 1457
         },
         {
-          "fixture_title": "Game of Thrones",
+          "fixture_title": "IT: Welcome to Derry",
           "fixture": {
-            "slug": "game-of-thrones-2011-s01e01",
-            "tmdbId": "1399",
+            "slug": "it-welcome-to-derry-2025-s01e01",
+            "tmdbId": "200875",
             "mediaType": "tv",
             "category": "tv",
-            "title": "Game of Thrones",
-            "year": 2011,
+            "title": "IT: Welcome to Derry",
+            "year": 2025,
             "season": 1,
             "episode": 1
           },
@@ -1474,17 +2699,17 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 891
+          "duration_ms": 1194
         },
         {
-          "fixture_title": "Stranger Things",
+          "fixture_title": "Vikings",
           "fixture": {
-            "slug": "stranger-things-2016-s01e01",
-            "tmdbId": "66732",
+            "slug": "vikings-2013-s01e01",
+            "tmdbId": "44217",
             "mediaType": "tv",
             "category": "tv",
-            "title": "Stranger Things",
-            "year": 2016,
+            "title": "Vikings",
+            "year": 2013,
             "season": 1,
             "episode": 1
           },
@@ -1495,7 +2720,396 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1039
+          "duration_ms": 1330
+        }
+      ]
+    },
+    {
+      "provider_id": "moviesmod",
+      "provider_name": "🛠️ MoviesMod",
+      "semantic_type": "movie",
+      "fixture_title": "Captain America: The First Avenger",
+      "fixture": {
+        "slug": "captain-america-the-first-avenger-2011",
+        "tmdbId": "1771",
+        "mediaType": "movie",
+        "category": "movie",
+        "title": "Captain America: The First Avenger",
+        "year": 2011
+      },
+      "status": "no_streams",
+      "debug_stage": "provider_waf_challenge",
+      "debug_model": {
+        "strategy": "html_scraper",
+        "source_runtime_family": "catalogue-form-html",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 9,
+        "route_kinds": [
+          "search",
+          "unknown",
+          "detail"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://moviesmod.ai.in",
+        "official_hub": "https://modlist.in/?type=hollywood",
+        "official_api": null
+      },
+      "debug_fetch_count": 6,
+      "debug_provider_fetch_count": 5,
+      "debug_progress_stage": "lookup_only",
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/movie/1771?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/movie/1771?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Crelease_dates&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "duration_ms": 220
+        },
+        {
+          "url": "https://moviesmod.ai.in/search/Captain%20America%20%3A%20First%20Avenger",
+          "response_url": "https://moviesmod.ai.in/search/Captain%20America%20%3A%20First%20Avenger",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "duration_ms": 98
+        },
+        {
+          "url": "https://moviesmod.ai.in/download-captain-america-the-first-avenger-2011-hindi-480p-720p-1080p/",
+          "response_url": "https://moviesmod.ai.in/download-captain-america-the-first-avenger-2011-hindi-480p-720p-1080p/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "duration_ms": 37
+        },
+        {
+          "url": "https://links.modpro.blog/archives/1536",
+          "response_url": "https://links.modpro.blog/archives/1536",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 88
+        },
+        {
+          "url": "https://links.modpro.blog/archives/1537",
+          "response_url": "https://links.modpro.blog/archives/1537",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 77
+        },
+        {
+          "url": "https://links.modpro.blog/archives/1538",
+          "response_url": "https://links.modpro.blog/archives/1538",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 92
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 3650,
+      "sample_count": 4,
+      "sample_titles": [
+        "Interstellar",
+        "Sinners",
+        "Mad Max: Fury Road",
+        "Captain America: The First Avenger"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "Interstellar",
+          "fixture": {
+            "tmdbId": "157336",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Interstellar",
+            "year": 2014
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 867
+        },
+        {
+          "fixture_title": "Sinners",
+          "fixture": {
+            "tmdbId": "1233413",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Sinners",
+            "year": 2025
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 703
+        },
+        {
+          "fixture_title": "Mad Max: Fury Road",
+          "fixture": {
+            "slug": "mad-max-fury-road-2015",
+            "tmdbId": "76341",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Mad Max: Fury Road",
+            "year": 2015
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 632
+        },
+        {
+          "fixture_title": "Captain America: The First Avenger",
+          "fixture": {
+            "slug": "captain-america-the-first-avenger-2011",
+            "tmdbId": "1771",
+            "mediaType": "movie",
+            "category": "movie",
+            "title": "Captain America: The First Avenger",
+            "year": 2011
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 688
+        }
+      ]
+    },
+    {
+      "provider_id": "moviesmod",
+      "provider_name": "🛠️ MoviesMod",
+      "semantic_type": "tv",
+      "fixture_title": "Better Call Saul",
+      "fixture": {
+        "slug": "health-tv-60059-s1e1",
+        "tmdbId": "60059",
+        "mediaType": "tv",
+        "title": "Better Call Saul",
+        "year": 2015,
+        "season": 1,
+        "episode": 1
+      },
+      "status": "no_streams",
+      "debug_stage": "provider_waf_challenge",
+      "debug_model": {
+        "strategy": "html_scraper",
+        "source_runtime_family": "catalogue-form-html",
+        "reconstruction_state": "learning-clean-seed",
+        "identity_mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "supported_types": [
+          "movie",
+          "tv"
+        ],
+        "route_count": 9,
+        "route_kinds": [
+          "search",
+          "unknown",
+          "detail"
+        ],
+        "has_api_recipe": false,
+        "official_site": "https://moviesmod.ai.in",
+        "official_hub": "https://modlist.in/?type=hollywood",
+        "official_api": null
+      },
+      "debug_fetch_count": 6,
+      "debug_provider_fetch_count": 5,
+      "debug_progress_stage": "lookup_only",
+      "debug_fetches": [
+        {
+          "url": "https://api.themoviedb.org/3/tv/60059?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "response_url": "https://api.themoviedb.org/3/tv/60059?append_to_response=keywords%2Calternative_titles%2Cexternal_ids%2Ccontent_ratings&language=fr-FR&api_key=%3Credacted%3E",
+          "method": "GET",
+          "status": 200,
+          "content_type": "application/json",
+          "challenge": "",
+          "duration_ms": 183
+        },
+        {
+          "url": "https://moviesmod.ai.in/search/Better%20Call%20Saul%201",
+          "response_url": "https://moviesmod.ai.in/search/Better%20Call%20Saul%201",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "duration_ms": 97
+        },
+        {
+          "url": "https://moviesmod.ai.in/download-better-call-saul-season-1-6-hindi-480p-720p-1080p/",
+          "response_url": "https://moviesmod.ai.in/download-better-call-saul-season-1-6-hindi-480p-720p-1080p/",
+          "method": "GET",
+          "status": 200,
+          "content_type": "text/html",
+          "challenge": "",
+          "duration_ms": 48
+        },
+        {
+          "url": "https://episodes.modpro.blog/archives/78339",
+          "response_url": "https://episodes.modpro.blog/archives/78339",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 78
+        },
+        {
+          "url": "https://episodes.modpro.blog/archives/78340",
+          "response_url": "https://episodes.modpro.blog/archives/78340",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 79
+        },
+        {
+          "url": "https://episodes.modpro.blog/archives/78337",
+          "response_url": "https://episodes.modpro.blog/archives/78337",
+          "method": "GET",
+          "status": 403,
+          "content_type": "text/html",
+          "challenge": "cloudflare",
+          "duration_ms": 81
+        }
+      ],
+      "debug_provider_value_trace_v18": null,
+      "debug_provider_value_trace_history_v21": [],
+      "debug_provider_runtime_dispatch_error_v1": null,
+      "debug_identity_reasons": [],
+      "raw": 0,
+      "playable": 0,
+      "verified": 0,
+      "contradictions": 0,
+      "identity_safe": true,
+      "duration_ms": 3649,
+      "sample_count": 4,
+      "sample_titles": [
+        "Breaking Bad",
+        "The Boys",
+        "House of the Dragon",
+        "Better Call Saul"
+      ],
+      "adaptive_rotated": true,
+      "samples": [
+        {
+          "fixture_title": "Breaking Bad",
+          "fixture": {
+            "tmdbId": "1396",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "Breaking Bad",
+            "year": 2008,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 844
+        },
+        {
+          "fixture_title": "The Boys",
+          "fixture": {
+            "slug": "the-boys-2019-s01e01",
+            "tmdbId": "76479",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "The Boys",
+            "year": 2019,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 790
+        },
+        {
+          "fixture_title": "House of the Dragon",
+          "fixture": {
+            "slug": "house-of-the-dragon-2022-s01e01",
+            "tmdbId": "94997",
+            "mediaType": "tv",
+            "category": "tv",
+            "title": "House of the Dragon",
+            "year": 2022,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 639
+        },
+        {
+          "fixture_title": "Better Call Saul",
+          "fixture": {
+            "slug": "health-tv-60059-s1e1",
+            "tmdbId": "60059",
+            "mediaType": "tv",
+            "title": "Better Call Saul",
+            "year": 2015,
+            "season": 1,
+            "episode": 1
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_waf_challenge",
+          "debug_progress_stage": "lookup_only",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 623
         }
       ]
     },
@@ -1503,13 +3117,13 @@
       "provider_id": "vidfast",
       "provider_name": "⚡ VidFast",
       "semantic_type": "movie",
-      "fixture_title": "The Matrix",
+      "fixture_title": "Inception",
       "fixture": {
-        "slug": "health-movie-603",
-        "tmdbId": "603",
+        "slug": "health-movie-27205",
+        "tmdbId": "27205",
         "mediaType": "movie",
-        "title": "The Matrix",
-        "year": 1999
+        "title": "Inception",
+        "year": 2010
       },
       "status": "no_streams",
       "debug_stage": "provider_network_http_error",
@@ -1537,22 +3151,22 @@
       "debug_progress_stage": "none",
       "debug_fetches": [
         {
-          "url": "https://vidfast.to/embed/movie/603",
-          "response_url": "https://vidfast.to/embed/movie/603",
+          "url": "https://vidfast.to/embed/movie/27205",
+          "response_url": "https://vidfast.to/embed/movie/27205",
           "method": "GET",
           "status": 403,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 472
+          "duration_ms": 641
         },
         {
-          "url": "https://vidfast.vc/movie/603/",
-          "response_url": "https://vidfast.vc/movie/603/",
+          "url": "https://vidfast.vc/movie/27205/",
+          "response_url": "https://vidfast.vc/movie/27205/",
           "method": "GET",
           "status": 403,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 258
+          "duration_ms": 372
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -1564,13 +3178,13 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 4445,
+      "duration_ms": 5456,
       "sample_count": 4,
       "sample_titles": [
         "Interstellar",
-        "Deadpool & Wolverine",
-        "Avatar",
-        "The Matrix"
+        "Oppenheimer",
+        "The Batman",
+        "Inception"
       ],
       "adaptive_rotated": true,
       "samples": [
@@ -1590,17 +3204,35 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1174
+          "duration_ms": 1377
         },
         {
-          "fixture_title": "Deadpool & Wolverine",
+          "fixture_title": "Oppenheimer",
           "fixture": {
-            "slug": "deadpool-wolverine-2024",
-            "tmdbId": "533535",
+            "slug": "health-movie-872585",
+            "tmdbId": "872585",
+            "mediaType": "movie",
+            "title": "Oppenheimer",
+            "year": 2023
+          },
+          "status": "no_streams",
+          "debug_stage": "provider_network_http_error",
+          "debug_progress_stage": "none",
+          "raw": 0,
+          "playable": 0,
+          "verified": 0,
+          "contradictions": 0,
+          "duration_ms": 1315
+        },
+        {
+          "fixture_title": "The Batman",
+          "fixture": {
+            "slug": "the-batman-2022",
+            "tmdbId": "414906",
             "mediaType": "movie",
             "category": "movie",
-            "title": "Deadpool & Wolverine",
-            "year": 2024
+            "title": "The Batman",
+            "year": 2022
           },
           "status": "no_streams",
           "debug_stage": "provider_network_http_error",
@@ -1609,16 +3241,16 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 857
+          "duration_ms": 1142
         },
         {
-          "fixture_title": "Avatar",
+          "fixture_title": "Inception",
           "fixture": {
-            "slug": "health-movie-19995",
-            "tmdbId": "19995",
+            "slug": "health-movie-27205",
+            "tmdbId": "27205",
             "mediaType": "movie",
-            "title": "Avatar",
-            "year": 2009
+            "title": "Inception",
+            "year": 2010
           },
           "status": "no_streams",
           "debug_stage": "provider_network_http_error",
@@ -1627,25 +3259,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1152
-        },
-        {
-          "fixture_title": "The Matrix",
-          "fixture": {
-            "slug": "health-movie-603",
-            "tmdbId": "603",
-            "mediaType": "movie",
-            "title": "The Matrix",
-            "year": 1999
-          },
-          "status": "no_streams",
-          "debug_stage": "provider_network_http_error",
-          "debug_progress_stage": "none",
-          "raw": 0,
-          "playable": 0,
-          "verified": 0,
-          "contradictions": 0,
-          "duration_ms": 732
+          "duration_ms": 1017
         }
       ]
     },
@@ -1696,7 +3310,7 @@
           "status": 403,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 675
+          "duration_ms": 623
         },
         {
           "url": "https://vidfast.vc/tv/1399/1/1/",
@@ -1705,7 +3319,7 @@
           "status": 403,
           "content_type": "text/html",
           "challenge": "",
-          "duration_ms": 270
+          "duration_ms": 369
         }
       ],
       "debug_provider_value_trace_v18": null,
@@ -1717,12 +3331,12 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 4880,
+      "duration_ms": 5447,
       "sample_count": 4,
       "sample_titles": [
         "Breaking Bad",
-        "Fallout",
-        "Black Mirror",
+        "Stranger Things",
+        "Squid Game",
         "Game of Thrones"
       ],
       "adaptive_rotated": true,
@@ -1745,17 +3359,16 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1235
+          "duration_ms": 1395
         },
         {
-          "fixture_title": "Fallout",
+          "fixture_title": "Stranger Things",
           "fixture": {
-            "slug": "fallout-2024-s01e01",
-            "tmdbId": "106379",
+            "slug": "health-tv-66732-s1e1",
+            "tmdbId": "66732",
             "mediaType": "tv",
-            "category": "tv",
-            "title": "Fallout",
-            "year": 2024,
+            "title": "Stranger Things",
+            "year": 2016,
             "season": 1,
             "episode": 1
           },
@@ -1766,17 +3379,17 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1155
+          "duration_ms": 1229
         },
         {
-          "fixture_title": "Black Mirror",
+          "fixture_title": "Squid Game",
           "fixture": {
-            "slug": "black-mirror-2011-s01e01",
-            "tmdbId": "42009",
+            "slug": "squid-game-2021-s01e01",
+            "tmdbId": "93405",
             "mediaType": "tv",
             "category": "tv",
-            "title": "Black Mirror",
-            "year": 2011,
+            "title": "Squid Game",
+            "year": 2021,
             "season": 1,
             "episode": 1
           },
@@ -1787,7 +3400,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 1063
+          "duration_ms": 1094
         },
         {
           "fixture_title": "Game of Thrones",
@@ -1808,7 +3421,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 949
+          "duration_ms": 996
         }
       ]
     },
@@ -1857,7 +3470,7 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 298
+          "duration_ms": 704
         },
         {
           "url": "https://enc-dec.app/api/enc-movies-flix?text=e4ez9g",
@@ -1866,14 +3479,14 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 290
+          "duration_ms": 138
         },
         {
           "url": "https://yflix.to/ajax/links/list?eid=e4ez9g&_=VU7EzW-r3IptzPzkwFi43K7_MXG1W-sZXRnEjr7jYnk22y5Z",
           "response_url": "",
           "method": "GET",
           "status": 0,
-          "duration_ms": 9,
+          "duration_ms": 67,
           "error": "TypeError"
         },
         {
@@ -1883,14 +3496,14 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 105
+          "duration_ms": 139
         },
         {
           "url": "https://1moviesz.to/ajax/links/list?eid=e4ez9g&_=VU7EzW-r3IptzPzkwFi43K7_MXG1W-sZXRnEjr7jYnk22y5Z",
           "response_url": "",
           "method": "GET",
           "status": 0,
-          "duration_ms": 6,
+          "duration_ms": 51,
           "error": "TypeError"
         },
         {
@@ -1900,14 +3513,14 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 103
+          "duration_ms": 144
         },
         {
           "url": "https://1movies.bz/ajax/links/list?eid=e4ez9g&_=VU7EzW-r3IptzPzkwFi43K7_MXG1W-sZXRnEjr7jYnk22y5Z",
           "response_url": "",
           "method": "GET",
           "status": 0,
-          "duration_ms": 11,
+          "duration_ms": 179,
           "error": "TypeError"
         },
         {
@@ -1917,14 +3530,14 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 101
+          "duration_ms": 141
         },
         {
           "url": "https://solarmovie.fi/ajax/links/list?eid=e4ez9g&_=VU7EzW-r3IptzPzkwFi43K7_MXG1W-sZXRnEjr7jYnk22y5Z",
           "response_url": "",
           "method": "GET",
           "status": 0,
-          "duration_ms": 10264,
+          "duration_ms": 10161,
           "error": "TypeError"
         }
       ],
@@ -1937,7 +3550,7 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 11496,
+      "duration_ms": 11997,
       "sample_count": 1,
       "sample_titles": [
         "Interstellar"
@@ -1960,7 +3573,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 11244
+          "duration_ms": 11778
         }
       ]
     },
@@ -2011,7 +3624,7 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 268
+          "duration_ms": 574
         },
         {
           "url": "https://enc-dec.app/api/enc-movies-flix?text=c4q58K8",
@@ -2020,14 +3633,14 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 125
+          "duration_ms": 359
         },
         {
           "url": "https://yflix.to/ajax/links/list?eid=c4q58K8&_=VU7EzW-r3IptzPzkwFi43K6fMXG1W-sZXRnEc77jYoY2yy6oJZk",
           "response_url": "",
           "method": "GET",
           "status": 0,
-          "duration_ms": 69,
+          "duration_ms": 52,
           "error": "TypeError"
         },
         {
@@ -2037,14 +3650,14 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 109
+          "duration_ms": 140
         },
         {
           "url": "https://1moviesz.to/ajax/links/list?eid=c4q58K8&_=VU7EzW-r3IptzPzkwFi43K6fMXG1W-sZXRnEc77jYoY2yy6oJZk",
           "response_url": "",
           "method": "GET",
           "status": 0,
-          "duration_ms": 9,
+          "duration_ms": 42,
           "error": "TypeError"
         },
         {
@@ -2054,14 +3667,14 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 111
+          "duration_ms": 142
         },
         {
           "url": "https://1movies.bz/ajax/links/list?eid=c4q58K8&_=VU7EzW-r3IptzPzkwFi43K6fMXG1W-sZXRnEc77jYoY2yy6oJZk",
           "response_url": "",
           "method": "GET",
           "status": 0,
-          "duration_ms": 20,
+          "duration_ms": 65,
           "error": "TypeError"
         },
         {
@@ -2071,14 +3684,14 @@
           "status": 200,
           "content_type": "application/json",
           "challenge": "",
-          "duration_ms": 107
+          "duration_ms": 137
         },
         {
           "url": "https://solarmovie.fi/ajax/links/list?eid=c4q58K8&_=VU7EzW-r3IptzPzkwFi43K6fMXG1W-sZXRnEc77jYoY2yy6oJZk",
           "response_url": "",
           "method": "GET",
           "status": 0,
-          "duration_ms": 10360,
+          "duration_ms": 10489,
           "error": "TypeError"
         }
       ],
@@ -2091,7 +3704,7 @@
       "verified": 0,
       "contradictions": 0,
       "identity_safe": true,
-      "duration_ms": 11481,
+      "duration_ms": 12132,
       "sample_count": 1,
       "sample_titles": [
         "Breaking Bad"
@@ -2116,7 +3729,7 @@
           "playable": 0,
           "verified": 0,
           "contradictions": 0,
-          "duration_ms": 11255
+          "duration_ms": 12048
         }
       ]
     }

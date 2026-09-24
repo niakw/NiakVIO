@@ -5,7 +5,7 @@
   "browserExecutable": "google-chrome",
   "targetCount": 16,
   "providerFilter": [],
-  "attemptsPerTarget": 1,
+  "attemptsPerTarget": 2,
   "clientProfileMatrixEnabled": true,
   "clientProfiles": [
     {
@@ -56,8 +56,10 @@
     "exact failed provider GET replay is transport differential evidence only; it cannot grant playback proof"
   ],
   "counts": {
-    "browser_challenge_persisted": 8,
-    "browser_content_reached": 8
+    "browser_challenge_persisted": 5,
+    "browser_content_reached": 7,
+    "browser_inconclusive": 2,
+    "browser_timeout": 2
   },
   "rows": [
     {
@@ -183,7 +185,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 21234,
+      "durationMs": 17538,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -191,7 +193,7 @@
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
-            "outcome": "browser_challenge_persisted",
+            "outcome": "browser_timeout",
             "attemptCount": 2
           },
           {
@@ -336,7 +338,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 22529,
+      "durationMs": 16968,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -344,7 +346,7 @@
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
-            "outcome": "browser_challenge_persisted",
+            "outcome": "browser_timeout",
             "attemptCount": 2
           },
           {
@@ -377,7 +379,7 @@
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_content_reached",
+      "outcome": "browser_challenge_persisted",
       "attemptCount": 2,
       "attempts": [
         {
@@ -415,7 +417,7 @@
         {
           "profile": "nuvio-tv-ua-browser",
           "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          "outcome": "browser_content_reached",
+          "outcome": "browser_challenge_persisted",
           "attemptCount": 2,
           "attempts": [
             {
@@ -425,8 +427,7 @@
             },
             {
               "attempt": 2,
-              "outcome": "browser_content_reached",
-              "exitCode": 0
+              "outcome": "browser_timeout"
             }
           ],
           "ordinarySessionReused": true
@@ -487,11 +488,9 @@
         ],
         "exitCode": 0
       },
-      "contentProfiles": [
-        "nuvio-tv-ua-browser"
-      ],
+      "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 26068,
+      "durationMs": 40651,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -499,7 +498,7 @@
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
-            "outcome": "browser_challenge_persisted",
+            "outcome": "browser_timeout",
             "attemptCount": 2
           },
           {
@@ -543,7 +542,7 @@
           "exitCode": 0
         }
       ],
-      "ordinarySessionReused": false,
+      "ordinarySessionReused": true,
       "clientProfileMatrix": [
         {
           "profile": "github-default-browser",
@@ -557,7 +556,7 @@
               "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         },
         {
           "profile": "nuvio-tv-ua-browser",
@@ -571,7 +570,7 @@
               "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         }
       ],
       "directHttpProfile": {
@@ -585,16 +584,22 @@
           "httpStack": "libcurl-not-OkHttp"
         },
         "outcome": "direct_http_error",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
             "outcome": "direct_http_error",
             "status": 0,
             "exitCode": 35
+          },
+          {
+            "attempt": 2,
+            "outcome": "direct_http_error",
+            "status": 0,
+            "exitCode": 35
           }
         ],
-        "ordinarySessionReused": false
+        "ordinarySessionReused": true
       },
       "okHttpJvmProfile": {
         "profile": "nuvio-tv-okhttp-jvm",
@@ -608,10 +613,16 @@
           "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
         },
         "outcome": "okhttp_jvm_error",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
+            "outcome": "okhttp_jvm_error",
+            "status": 0,
+            "error": "SSLHandshakeException"
+          },
+          {
+            "attempt": 2,
             "outcome": "okhttp_jvm_error",
             "status": 0,
             "error": "SSLHandshakeException"
@@ -624,7 +635,7 @@
         "nuvio-tv-ua-browser"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 16383,
+      "durationMs": 4979,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -644,12 +655,12 @@
         "directHttpProfile": {
           "profile": "nuvio-tv-direct-http-approx",
           "outcome": "direct_http_error",
-          "attemptCount": 1
+          "attemptCount": 2
         },
         "okHttpJvmProfile": {
           "profile": "nuvio-tv-okhttp-jvm",
           "outcome": "okhttp_jvm_error",
-          "attemptCount": 1
+          "attemptCount": 2
         },
         "contentProfiles": [
           "github-default-browser",
@@ -668,44 +679,59 @@
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_challenge_persisted",
-      "attemptCount": 1,
+      "outcome": "browser_content_reached",
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
           "outcome": "browser_challenge_persisted",
           "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         }
       ],
-      "ordinarySessionReused": false,
+      "ordinarySessionReused": true,
       "clientProfileMatrix": [
         {
           "profile": "github-default-browser",
           "userAgent": null,
           "outcome": "browser_challenge_persisted",
-          "attemptCount": 1,
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
               "outcome": "browser_challenge_persisted",
               "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         },
         {
           "profile": "nuvio-tv-ua-browser",
           "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          "outcome": "browser_challenge_persisted",
-          "attemptCount": 1,
+          "outcome": "browser_content_reached",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
               "outcome": "browser_challenge_persisted",
               "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_content_reached",
+              "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         }
       ],
       "directHttpProfile": {
@@ -719,16 +745,22 @@
           "httpStack": "libcurl-not-OkHttp"
         },
         "outcome": "direct_http_challenge_persisted",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
             "outcome": "direct_http_challenge_persisted",
             "status": 403,
             "exitCode": 0
+          },
+          {
+            "attempt": 2,
+            "outcome": "direct_http_challenge_persisted",
+            "status": 403,
+            "exitCode": 0
           }
         ],
-        "ordinarySessionReused": false
+        "ordinarySessionReused": true
       },
       "okHttpJvmProfile": {
         "profile": "nuvio-tv-okhttp-jvm",
@@ -742,46 +774,55 @@
           "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
         },
         "outcome": "okhttp_jvm_challenge_persisted",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 200
+          },
+          {
+            "attempt": 2,
             "outcome": "okhttp_jvm_challenge_persisted",
             "status": 200
           }
         ],
         "exitCode": 0
       },
-      "contentProfiles": [],
+      "contentProfiles": [
+        "nuvio-tv-ua-browser"
+      ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 23262,
+      "durationMs": 18354,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
-        "outcome": "browser_challenge_persisted",
-        "attemptCount": 1,
+        "outcome": "browser_content_reached",
+        "attemptCount": 2,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
             "outcome": "browser_challenge_persisted",
-            "attemptCount": 1
+            "attemptCount": 2
           },
           {
             "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_challenge_persisted",
-            "attemptCount": 1
+            "outcome": "browser_content_reached",
+            "attemptCount": 2
           }
         ],
         "directHttpProfile": {
           "profile": "nuvio-tv-direct-http-approx",
           "outcome": "direct_http_challenge_persisted",
-          "attemptCount": 1
+          "attemptCount": 2
         },
         "okHttpJvmProfile": {
           "profile": "nuvio-tv-okhttp-jvm",
           "outcome": "okhttp_jvm_challenge_persisted",
-          "attemptCount": 1
+          "attemptCount": 2
         },
-        "contentProfiles": []
+        "contentProfiles": [
+          "nuvio-tv-ua-browser"
+        ]
       }
     },
     {
@@ -907,7 +948,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 10344,
+      "durationMs": 7922,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1060,7 +1101,7 @@
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 12012,
+      "durationMs": 9047,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_challenge_persisted",
@@ -1093,52 +1134,67 @@
     {
       "provider": "moviebox",
       "lane": "movie",
-      "publicUrl": "https://moviebox.yachts/",
-      "host": "moviebox.yachts",
-      "path": "/",
+      "publicUrl": "https://cloudorchestranova.com/embed/iframe_player/cache.php",
+      "host": "cloudorchestranova.com",
+      "path": "/embed/iframe_player/cache.php",
       "method": "GET",
-      "fetchStatus": 0,
-      "challenge": "network-AbortError",
+      "fetchStatus": 400,
+      "challenge": "network-http-400",
       "seedKind": "network-failure-replay",
       "seedRoute": null,
-      "outcome": "browser_content_reached",
-      "attemptCount": 1,
+      "outcome": "browser_inconclusive",
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_content_reached",
+          "outcome": "browser_inconclusive",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_inconclusive",
           "exitCode": 0
         }
       ],
-      "ordinarySessionReused": false,
+      "ordinarySessionReused": true,
       "clientProfileMatrix": [
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_content_reached",
-          "attemptCount": 1,
+          "outcome": "browser_inconclusive",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_content_reached",
+              "outcome": "browser_inconclusive",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_inconclusive",
               "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         },
         {
           "profile": "nuvio-tv-ua-browser",
           "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          "outcome": "browser_content_reached",
-          "attemptCount": 1,
+          "outcome": "browser_inconclusive",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_content_reached",
+              "outcome": "browser_inconclusive",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_inconclusive",
               "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         }
       ],
       "directHttpProfile": {
@@ -1151,17 +1207,23 @@
           "redirects": "enabled",
           "httpStack": "libcurl-not-OkHttp"
         },
-        "outcome": "direct_http_content_reached",
-        "attemptCount": 1,
+        "outcome": "direct_http_inconclusive",
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
-            "outcome": "direct_http_content_reached",
-            "status": 200,
+            "outcome": "direct_http_inconclusive",
+            "status": 400,
+            "exitCode": 0
+          },
+          {
+            "attempt": 2,
+            "outcome": "direct_http_inconclusive",
+            "status": 400,
             "exitCode": 0
           }
         ],
-        "ordinarySessionReused": false
+        "ordinarySessionReused": true
       },
       "okHttpJvmProfile": {
         "profile": "nuvio-tv-okhttp-jvm",
@@ -1174,107 +1236,118 @@
           "redirects": "HTTP+SSL enabled",
           "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
         },
-        "outcome": "okhttp_jvm_content_reached",
-        "attemptCount": 1,
+        "outcome": "okhttp_jvm_inconclusive",
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
-            "outcome": "okhttp_jvm_content_reached",
-            "status": 200
+            "outcome": "okhttp_jvm_inconclusive",
+            "status": 400
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_inconclusive",
+            "status": 400
           }
         ],
         "exitCode": 0
       },
-      "contentProfiles": [
-        "github-default-browser",
-        "nuvio-tv-ua-browser",
-        "nuvio-tv-direct-http-approx",
-        "nuvio-tv-okhttp-jvm"
-      ],
+      "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 9111,
+      "durationMs": 7156,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
-        "outcome": "browser_content_reached",
-        "attemptCount": 1,
+        "outcome": "browser_inconclusive",
+        "attemptCount": 2,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
-            "outcome": "browser_timeout",
-            "attemptCount": 1
+            "outcome": "browser_inconclusive",
+            "attemptCount": 2
           },
           {
             "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_content_reached",
-            "attemptCount": 1
+            "outcome": "browser_inconclusive",
+            "attemptCount": 2
           }
         ],
         "directHttpProfile": {
           "profile": "nuvio-tv-direct-http-approx",
-          "outcome": "direct_http_content_reached",
-          "attemptCount": 1
+          "outcome": "direct_http_inconclusive",
+          "attemptCount": 2
         },
         "okHttpJvmProfile": {
           "profile": "nuvio-tv-okhttp-jvm",
-          "outcome": "okhttp_jvm_content_reached",
-          "attemptCount": 1
+          "outcome": "okhttp_jvm_inconclusive",
+          "attemptCount": 2
         },
-        "contentProfiles": [
-          "nuvio-tv-ua-browser",
-          "nuvio-tv-direct-http-approx",
-          "nuvio-tv-okhttp-jvm"
-        ]
+        "contentProfiles": []
       }
     },
     {
       "provider": "moviebox",
       "lane": "tv",
-      "publicUrl": "https://moviebox.yachts/",
-      "host": "moviebox.yachts",
-      "path": "/",
+      "publicUrl": "https://cloudorchestranova.com/embed/iframe_player/cache.php",
+      "host": "cloudorchestranova.com",
+      "path": "/embed/iframe_player/cache.php",
       "method": "GET",
-      "fetchStatus": 0,
-      "challenge": "network-AbortError",
+      "fetchStatus": 400,
+      "challenge": "network-http-400",
       "seedKind": "network-failure-replay",
       "seedRoute": null,
-      "outcome": "browser_content_reached",
-      "attemptCount": 1,
+      "outcome": "browser_inconclusive",
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_content_reached",
+          "outcome": "browser_inconclusive",
+          "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_inconclusive",
           "exitCode": 0
         }
       ],
-      "ordinarySessionReused": false,
+      "ordinarySessionReused": true,
       "clientProfileMatrix": [
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_content_reached",
-          "attemptCount": 1,
+          "outcome": "browser_inconclusive",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_content_reached",
+              "outcome": "browser_inconclusive",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_inconclusive",
               "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         },
         {
           "profile": "nuvio-tv-ua-browser",
           "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          "outcome": "browser_content_reached",
-          "attemptCount": 1,
+          "outcome": "browser_inconclusive",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_content_reached",
+              "outcome": "browser_inconclusive",
+              "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_inconclusive",
               "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         }
       ],
       "directHttpProfile": {
@@ -1287,17 +1360,23 @@
           "redirects": "enabled",
           "httpStack": "libcurl-not-OkHttp"
         },
-        "outcome": "direct_http_content_reached",
-        "attemptCount": 1,
+        "outcome": "direct_http_inconclusive",
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
-            "outcome": "direct_http_content_reached",
-            "status": 200,
+            "outcome": "direct_http_inconclusive",
+            "status": 400,
+            "exitCode": 0
+          },
+          {
+            "attempt": 2,
+            "outcome": "direct_http_inconclusive",
+            "status": 400,
             "exitCode": 0
           }
         ],
-        "ordinarySessionReused": false
+        "ordinarySessionReused": true
       },
       "okHttpJvmProfile": {
         "profile": "nuvio-tv-okhttp-jvm",
@@ -1310,107 +1389,118 @@
           "redirects": "HTTP+SSL enabled",
           "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
         },
-        "outcome": "okhttp_jvm_content_reached",
-        "attemptCount": 1,
+        "outcome": "okhttp_jvm_inconclusive",
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
-            "outcome": "okhttp_jvm_content_reached",
-            "status": 200
+            "outcome": "okhttp_jvm_inconclusive",
+            "status": 400
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_inconclusive",
+            "status": 400
           }
         ],
         "exitCode": 0
       },
-      "contentProfiles": [
-        "github-default-browser",
-        "nuvio-tv-ua-browser",
-        "nuvio-tv-direct-http-approx",
-        "nuvio-tv-okhttp-jvm"
-      ],
+      "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 8692,
+      "durationMs": 6651,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
-        "outcome": "browser_content_reached",
-        "attemptCount": 1,
+        "outcome": "browser_inconclusive",
+        "attemptCount": 2,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
-            "outcome": "browser_timeout",
-            "attemptCount": 1
+            "outcome": "browser_inconclusive",
+            "attemptCount": 2
           },
           {
             "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_content_reached",
-            "attemptCount": 1
+            "outcome": "browser_inconclusive",
+            "attemptCount": 2
           }
         ],
         "directHttpProfile": {
           "profile": "nuvio-tv-direct-http-approx",
-          "outcome": "direct_http_content_reached",
-          "attemptCount": 1
+          "outcome": "direct_http_inconclusive",
+          "attemptCount": 2
         },
         "okHttpJvmProfile": {
           "profile": "nuvio-tv-okhttp-jvm",
-          "outcome": "okhttp_jvm_content_reached",
-          "attemptCount": 1
+          "outcome": "okhttp_jvm_inconclusive",
+          "attemptCount": 2
         },
-        "contentProfiles": [
-          "nuvio-tv-ua-browser",
-          "nuvio-tv-direct-http-approx",
-          "nuvio-tv-okhttp-jvm"
-        ]
+        "contentProfiles": []
       }
     },
     {
       "provider": "moviesmod",
       "lane": "movie",
-      "publicUrl": "https://links.modpro.blog/archives/42612",
+      "publicUrl": "https://links.modpro.blog/archives/1538",
       "host": "links.modpro.blog",
-      "path": "/archives/42612",
+      "path": "/archives/1538",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_challenge_persisted",
-      "attemptCount": 1,
+      "outcome": "browser_content_reached",
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
           "outcome": "browser_challenge_persisted",
           "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         }
       ],
-      "ordinarySessionReused": false,
+      "ordinarySessionReused": true,
       "clientProfileMatrix": [
         {
           "profile": "github-default-browser",
           "userAgent": null,
           "outcome": "browser_challenge_persisted",
-          "attemptCount": 1,
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
               "outcome": "browser_challenge_persisted",
               "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         },
         {
           "profile": "nuvio-tv-ua-browser",
           "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          "outcome": "browser_challenge_persisted",
-          "attemptCount": 1,
+          "outcome": "browser_content_reached",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
               "outcome": "browser_challenge_persisted",
               "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_content_reached",
+              "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         }
       ],
       "directHttpProfile": {
@@ -1424,16 +1514,22 @@
           "httpStack": "libcurl-not-OkHttp"
         },
         "outcome": "direct_http_challenge_persisted",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
             "outcome": "direct_http_challenge_persisted",
             "status": 403,
             "exitCode": 0
+          },
+          {
+            "attempt": 2,
+            "outcome": "direct_http_challenge_persisted",
+            "status": 403,
+            "exitCode": 0
           }
         ],
-        "ordinarySessionReused": false
+        "ordinarySessionReused": true
       },
       "okHttpJvmProfile": {
         "profile": "nuvio-tv-okhttp-jvm",
@@ -1446,98 +1542,123 @@
           "redirects": "HTTP+SSL enabled",
           "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
         },
-        "outcome": "okhttp_jvm_challenge_persisted",
-        "attemptCount": 1,
+        "outcome": "okhttp_jvm_inconclusive",
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
             "outcome": "okhttp_jvm_challenge_persisted",
             "status": 200
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_inconclusive",
+            "status": 429
           }
         ],
         "exitCode": 0
       },
-      "contentProfiles": [],
+      "contentProfiles": [
+        "nuvio-tv-ua-browser"
+      ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 19491,
+      "durationMs": 10285,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
-        "outcome": "browser_challenge_persisted",
-        "attemptCount": 1,
+        "outcome": "browser_content_reached",
+        "attemptCount": 2,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
-            "outcome": "browser_challenge_persisted",
-            "attemptCount": 1
+            "outcome": "browser_content_reached",
+            "attemptCount": 2
           },
           {
             "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_challenge_persisted",
-            "attemptCount": 1
+            "outcome": "browser_content_reached",
+            "attemptCount": 2
           }
         ],
         "directHttpProfile": {
           "profile": "nuvio-tv-direct-http-approx",
           "outcome": "direct_http_challenge_persisted",
-          "attemptCount": 1
+          "attemptCount": 2
         },
         "okHttpJvmProfile": {
           "profile": "nuvio-tv-okhttp-jvm",
-          "outcome": "okhttp_jvm_challenge_persisted",
-          "attemptCount": 1
+          "outcome": "okhttp_jvm_inconclusive",
+          "attemptCount": 2
         },
-        "contentProfiles": []
+        "contentProfiles": [
+          "github-default-browser",
+          "nuvio-tv-ua-browser"
+        ]
       }
     },
     {
       "provider": "moviesmod",
       "lane": "tv",
-      "publicUrl": "https://episodes.modpro.blog/archives/27947",
+      "publicUrl": "https://episodes.modpro.blog/archives/78337",
       "host": "episodes.modpro.blog",
-      "path": "/archives/27947",
+      "path": "/archives/78337",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "cloudflare",
       "seedKind": null,
       "seedRoute": null,
-      "outcome": "browser_challenge_persisted",
-      "attemptCount": 1,
+      "outcome": "browser_content_reached",
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
           "outcome": "browser_challenge_persisted",
           "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         }
       ],
-      "ordinarySessionReused": false,
+      "ordinarySessionReused": true,
       "clientProfileMatrix": [
         {
           "profile": "github-default-browser",
           "userAgent": null,
           "outcome": "browser_challenge_persisted",
-          "attemptCount": 1,
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
               "outcome": "browser_challenge_persisted",
               "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         },
         {
           "profile": "nuvio-tv-ua-browser",
           "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          "outcome": "browser_challenge_persisted",
-          "attemptCount": 1,
+          "outcome": "browser_content_reached",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
               "outcome": "browser_challenge_persisted",
               "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_content_reached",
+              "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         }
       ],
       "directHttpProfile": {
@@ -1551,16 +1672,22 @@
           "httpStack": "libcurl-not-OkHttp"
         },
         "outcome": "direct_http_challenge_persisted",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
             "outcome": "direct_http_challenge_persisted",
             "status": 403,
             "exitCode": 0
+          },
+          {
+            "attempt": 2,
+            "outcome": "direct_http_challenge_persisted",
+            "status": 403,
+            "exitCode": 0
           }
         ],
-        "ordinarySessionReused": false
+        "ordinarySessionReused": true
       },
       "okHttpJvmProfile": {
         "profile": "nuvio-tv-okhttp-jvm",
@@ -1573,84 +1700,104 @@
           "redirects": "HTTP+SSL enabled",
           "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
         },
-        "outcome": "okhttp_jvm_challenge_persisted",
-        "attemptCount": 1,
+        "outcome": "okhttp_jvm_inconclusive",
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
-            "outcome": "okhttp_jvm_challenge_persisted",
-            "status": 200
+            "outcome": "okhttp_jvm_inconclusive",
+            "status": 429
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_inconclusive",
+            "status": 429
           }
         ],
         "exitCode": 0
       },
-      "contentProfiles": [],
+      "contentProfiles": [
+        "nuvio-tv-ua-browser"
+      ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 19765,
+      "durationMs": 9967,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
-        "outcome": "browser_challenge_persisted",
-        "attemptCount": 1,
+        "outcome": "browser_content_reached",
+        "attemptCount": 2,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
-            "outcome": "browser_challenge_persisted",
-            "attemptCount": 1
+            "outcome": "browser_content_reached",
+            "attemptCount": 2
           },
           {
             "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_challenge_persisted",
-            "attemptCount": 1
+            "outcome": "browser_content_reached",
+            "attemptCount": 2
           }
         ],
         "directHttpProfile": {
           "profile": "nuvio-tv-direct-http-approx",
           "outcome": "direct_http_challenge_persisted",
-          "attemptCount": 1
+          "attemptCount": 2
         },
         "okHttpJvmProfile": {
           "profile": "nuvio-tv-okhttp-jvm",
-          "outcome": "okhttp_jvm_challenge_persisted",
-          "attemptCount": 1
+          "outcome": "okhttp_jvm_inconclusive",
+          "attemptCount": 2
         },
-        "contentProfiles": []
+        "contentProfiles": [
+          "github-default-browser",
+          "nuvio-tv-ua-browser"
+        ]
       }
     },
     {
       "provider": "vidfast",
       "lane": "movie",
-      "publicUrl": "https://vidfast.vc/movie/603/",
+      "publicUrl": "https://vidfast.vc/movie/27205/",
       "host": "vidfast.vc",
-      "path": "/movie/603/",
+      "path": "/movie/27205/",
       "method": "GET",
       "fetchStatus": 403,
       "challenge": "network-http-403",
       "seedKind": "network-failure-replay",
       "seedRoute": null,
       "outcome": "browser_content_reached",
-      "attemptCount": 1,
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
           "outcome": "browser_challenge_persisted",
           "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         }
       ],
-      "ordinarySessionReused": false,
+      "ordinarySessionReused": true,
       "clientProfileMatrix": [
         {
           "profile": "github-default-browser",
           "userAgent": null,
           "outcome": "browser_challenge_persisted",
-          "attemptCount": 1,
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
               "outcome": "browser_challenge_persisted",
               "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         },
         {
           "profile": "nuvio-tv-ua-browser",
@@ -1664,7 +1811,7 @@
               "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         }
       ],
       "directHttpProfile": {
@@ -1687,7 +1834,7 @@
             "exitCode": 0
           }
         ],
-        "ordinarySessionReused": false
+        "ordinarySessionReused": true
       },
       "okHttpJvmProfile": {
         "profile": "nuvio-tv-okhttp-jvm",
@@ -1717,21 +1864,21 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 12716,
+      "durationMs": 15840,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
             "outcome": "browser_challenge_persisted",
-            "attemptCount": 1
+            "attemptCount": 2
           },
           {
             "profile": "nuvio-tv-ua-browser",
             "outcome": "browser_timeout",
-            "attemptCount": 1
+            "attemptCount": 2
           }
         ],
         "directHttpProfile": {
@@ -1762,29 +1909,39 @@
       "seedKind": "network-failure-replay",
       "seedRoute": null,
       "outcome": "browser_content_reached",
-      "attemptCount": 1,
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
           "outcome": "browser_challenge_persisted",
           "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         }
       ],
-      "ordinarySessionReused": false,
+      "ordinarySessionReused": true,
       "clientProfileMatrix": [
         {
           "profile": "github-default-browser",
           "userAgent": null,
           "outcome": "browser_challenge_persisted",
-          "attemptCount": 1,
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
               "outcome": "browser_challenge_persisted",
               "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         },
         {
           "profile": "nuvio-tv-ua-browser",
@@ -1798,7 +1955,7 @@
               "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         }
       ],
       "directHttpProfile": {
@@ -1821,7 +1978,7 @@
             "exitCode": 0
           }
         ],
-        "ordinarySessionReused": false
+        "ordinarySessionReused": true
       },
       "okHttpJvmProfile": {
         "profile": "nuvio-tv-okhttp-jvm",
@@ -1851,21 +2008,21 @@
         "nuvio-tv-okhttp-jvm"
       ],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 13711,
+      "durationMs": 14203,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "clientProfileMatrix": [
           {
             "profile": "github-default-browser",
             "outcome": "browser_challenge_persisted",
-            "attemptCount": 1
+            "attemptCount": 2
           },
           {
             "profile": "nuvio-tv-ua-browser",
             "outcome": "browser_timeout",
-            "attemptCount": 1
+            "attemptCount": 2
           }
         ],
         "directHttpProfile": {
@@ -1887,52 +2044,67 @@
     {
       "provider": "vostfree",
       "lane": "anime",
-      "publicUrl": "https://ipv4.vostfree.ws/",
+      "publicUrl": "https://ipv4.vostfree.ws/niakviosearches,stoppingearly",
       "host": "ipv4.vostfree.ws",
-      "path": "/",
+      "path": "/niakviosearches,stoppingearly",
       "method": "GET",
-      "fetchStatus": 403,
-      "challenge": "cloudflare",
-      "seedKind": null,
-      "seedRoute": null,
-      "outcome": "browser_challenge_persisted",
-      "attemptCount": 1,
+      "fetchStatus": 0,
+      "challenge": "metadata-search-seed",
+      "seedKind": "metadata-search",
+      "seedRoute": "/{query}searches,stoppingearly",
+      "outcome": "browser_content_reached",
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
           "outcome": "browser_challenge_persisted",
           "exitCode": 0
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_challenge_persisted",
+          "exitCode": 0
         }
       ],
-      "ordinarySessionReused": false,
+      "ordinarySessionReused": true,
       "clientProfileMatrix": [
         {
           "profile": "github-default-browser",
           "userAgent": null,
           "outcome": "browser_challenge_persisted",
-          "attemptCount": 1,
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
               "outcome": "browser_challenge_persisted",
               "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_challenge_persisted",
+              "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         },
         {
           "profile": "nuvio-tv-ua-browser",
           "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          "outcome": "browser_challenge_persisted",
-          "attemptCount": 1,
+          "outcome": "browser_content_reached",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
               "outcome": "browser_challenge_persisted",
               "exitCode": 0
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_content_reached",
+              "exitCode": 0
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         }
       ],
       "directHttpProfile": {
@@ -1946,16 +2118,22 @@
           "httpStack": "libcurl-not-OkHttp"
         },
         "outcome": "direct_http_challenge_persisted",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
             "outcome": "direct_http_challenge_persisted",
             "status": 403,
             "exitCode": 0
+          },
+          {
+            "attempt": 2,
+            "outcome": "direct_http_challenge_persisted",
+            "status": 403,
+            "exitCode": 0
           }
         ],
-        "ordinarySessionReused": false
+        "ordinarySessionReused": true
       },
       "okHttpJvmProfile": {
         "profile": "nuvio-tv-okhttp-jvm",
@@ -1969,151 +2147,178 @@
           "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
         },
         "outcome": "okhttp_jvm_challenge_persisted",
-        "attemptCount": 1,
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
             "outcome": "okhttp_jvm_challenge_persisted",
-            "status": 200
+            "status": 404
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_challenge_persisted",
+            "status": 404
+          }
+        ],
+        "exitCode": 0
+      },
+      "contentProfiles": [
+        "nuvio-tv-ua-browser"
+      ],
+      "nativeTvTransportStillUnproven": true,
+      "durationMs": 11443,
+      "residentialExitNodeProfile": {
+        "profile": "tailscale-residential-exit",
+        "outcome": "browser_content_reached",
+        "attemptCount": 2,
+        "clientProfileMatrix": [
+          {
+            "profile": "github-default-browser",
+            "outcome": "browser_content_reached",
+            "attemptCount": 2
+          },
+          {
+            "profile": "nuvio-tv-ua-browser",
+            "outcome": "browser_content_reached",
+            "attemptCount": 2
+          }
+        ],
+        "directHttpProfile": {
+          "profile": "nuvio-tv-direct-http-approx",
+          "outcome": "direct_http_challenge_persisted",
+          "attemptCount": 2
+        },
+        "okHttpJvmProfile": {
+          "profile": "nuvio-tv-okhttp-jvm",
+          "outcome": "okhttp_jvm_challenge_persisted",
+          "attemptCount": 2
+        },
+        "contentProfiles": [
+          "github-default-browser",
+          "nuvio-tv-ua-browser"
+        ]
+      }
+    },
+    {
+      "provider": "yflix",
+      "lane": "movie",
+      "publicUrl": "https://solarmovie.fi/ajax/links/list",
+      "host": "solarmovie.fi",
+      "path": "/ajax/links/list",
+      "method": "GET",
+      "fetchStatus": 0,
+      "challenge": "network-TypeError",
+      "seedKind": "network-failure-replay",
+      "seedRoute": null,
+      "outcome": "browser_timeout",
+      "attemptCount": 2,
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "browser_timeout"
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_timeout"
+        }
+      ],
+      "ordinarySessionReused": true,
+      "clientProfileMatrix": [
+        {
+          "profile": "github-default-browser",
+          "userAgent": null,
+          "outcome": "browser_timeout",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_timeout"
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_timeout"
+            }
+          ],
+          "ordinarySessionReused": true
+        },
+        {
+          "profile": "nuvio-tv-ua-browser",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          "outcome": "browser_timeout",
+          "attemptCount": 2,
+          "attempts": [
+            {
+              "attempt": 1,
+              "outcome": "browser_timeout"
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_timeout"
+            }
+          ],
+          "ordinarySessionReused": true
+        }
+      ],
+      "directHttpProfile": {
+        "profile": "nuvio-tv-direct-http-approx",
+        "transportApproximation": "GitHub libcurl IPv4+NO_PROXY+redirects with audited NuvioTV UA",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "nativeContractApproximation": {
+          "ipv4First": true,
+          "proxyPolicy": "NO_PROXY",
+          "redirects": "enabled",
+          "httpStack": "libcurl-not-OkHttp"
+        },
+        "outcome": "direct_http_error",
+        "attemptCount": 2,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "direct_http_error",
+            "status": 0,
+            "exitCode": 28
+          },
+          {
+            "attempt": 2,
+            "outcome": "direct_http_error",
+            "status": 0,
+            "exitCode": 28
+          }
+        ],
+        "ordinarySessionReused": true
+      },
+      "okHttpJvmProfile": {
+        "profile": "nuvio-tv-okhttp-jvm",
+        "transportApproximation": "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime network policy",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "nativeContractApproximation": {
+          "httpStack": "OkHttp 4.12.0",
+          "proxyPolicy": "Proxy.NO_PROXY",
+          "dnsPolicy": "IPv4FirstDns",
+          "redirects": "HTTP+SSL enabled",
+          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
+        },
+        "outcome": "okhttp_jvm_timeout",
+        "attemptCount": 2,
+        "attempts": [
+          {
+            "attempt": 1,
+            "outcome": "okhttp_jvm_timeout",
+            "status": 0,
+            "error": "SocketTimeoutException"
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_timeout",
+            "status": 0,
+            "error": "SocketTimeoutException"
           }
         ],
         "exitCode": 0
       },
       "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 7053,
-      "residentialExitNodeProfile": {
-        "profile": "tailscale-residential-exit",
-        "outcome": "browser_challenge_persisted",
-        "attemptCount": 1,
-        "clientProfileMatrix": [
-          {
-            "profile": "github-default-browser",
-            "outcome": "browser_challenge_persisted",
-            "attemptCount": 1
-          },
-          {
-            "profile": "nuvio-tv-ua-browser",
-            "outcome": "browser_challenge_persisted",
-            "attemptCount": 1
-          }
-        ],
-        "directHttpProfile": {
-          "profile": "nuvio-tv-direct-http-approx",
-          "outcome": "direct_http_challenge_persisted",
-          "attemptCount": 1
-        },
-        "okHttpJvmProfile": {
-          "profile": "nuvio-tv-okhttp-jvm",
-          "outcome": "okhttp_jvm_challenge_persisted",
-          "attemptCount": 1
-        },
-        "contentProfiles": []
-      }
-    },
-    {
-      "provider": "yflix",
-      "lane": "movie",
-      "publicUrl": "https://enc-dec.app/db/flix/find",
-      "host": "enc-dec.app",
-      "path": "/db/flix/find",
-      "method": "GET",
-      "fetchStatus": 0,
-      "challenge": "network-AbortError",
-      "seedKind": "network-failure-replay",
-      "seedRoute": null,
-      "outcome": "browser_content_reached",
-      "attemptCount": 1,
-      "attempts": [
-        {
-          "attempt": 1,
-          "outcome": "browser_content_reached",
-          "exitCode": 0
-        }
-      ],
-      "ordinarySessionReused": false,
-      "clientProfileMatrix": [
-        {
-          "profile": "github-default-browser",
-          "userAgent": null,
-          "outcome": "browser_content_reached",
-          "attemptCount": 1,
-          "attempts": [
-            {
-              "attempt": 1,
-              "outcome": "browser_content_reached",
-              "exitCode": 0
-            }
-          ],
-          "ordinarySessionReused": false
-        },
-        {
-          "profile": "nuvio-tv-ua-browser",
-          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          "outcome": "browser_content_reached",
-          "attemptCount": 1,
-          "attempts": [
-            {
-              "attempt": 1,
-              "outcome": "browser_content_reached",
-              "exitCode": 0
-            }
-          ],
-          "ordinarySessionReused": false
-        }
-      ],
-      "directHttpProfile": {
-        "profile": "nuvio-tv-direct-http-approx",
-        "transportApproximation": "GitHub libcurl IPv4+NO_PROXY+redirects with audited NuvioTV UA",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "nativeContractApproximation": {
-          "ipv4First": true,
-          "proxyPolicy": "NO_PROXY",
-          "redirects": "enabled",
-          "httpStack": "libcurl-not-OkHttp"
-        },
-        "outcome": "direct_http_content_reached",
-        "attemptCount": 1,
-        "attempts": [
-          {
-            "attempt": 1,
-            "outcome": "direct_http_content_reached",
-            "status": 200,
-            "exitCode": 0
-          }
-        ],
-        "ordinarySessionReused": false
-      },
-      "okHttpJvmProfile": {
-        "profile": "nuvio-tv-okhttp-jvm",
-        "transportApproximation": "GitHub JVM OkHttp 4.12.0 with NuvioTV PluginRuntime network policy",
-        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "nativeContractApproximation": {
-          "httpStack": "OkHttp 4.12.0",
-          "proxyPolicy": "Proxy.NO_PROXY",
-          "dnsPolicy": "IPv4FirstDns",
-          "redirects": "HTTP+SSL enabled",
-          "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
-        },
-        "outcome": "okhttp_jvm_content_reached",
-        "attemptCount": 1,
-        "attempts": [
-          {
-            "attempt": 1,
-            "outcome": "okhttp_jvm_content_reached",
-            "status": 200
-          }
-        ],
-        "exitCode": 0
-      },
-      "contentProfiles": [
-        "github-default-browser",
-        "nuvio-tv-ua-browser",
-        "nuvio-tv-direct-http-approx",
-        "nuvio-tv-okhttp-jvm"
-      ],
-      "nativeTvTransportStillUnproven": true,
-      "durationMs": 3330,
+      "durationMs": 180593,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -2132,71 +2337,78 @@
         ],
         "directHttpProfile": {
           "profile": "nuvio-tv-direct-http-approx",
-          "outcome": "direct_http_content_reached",
-          "attemptCount": 1
+          "outcome": "direct_http_error",
+          "attemptCount": 2
         },
         "okHttpJvmProfile": {
           "profile": "nuvio-tv-okhttp-jvm",
-          "outcome": "okhttp_jvm_content_reached",
-          "attemptCount": 1
+          "outcome": "okhttp_jvm_inconclusive",
+          "attemptCount": 2
         },
         "contentProfiles": [
           "github-default-browser",
-          "nuvio-tv-ua-browser",
-          "nuvio-tv-direct-http-approx",
-          "nuvio-tv-okhttp-jvm"
+          "nuvio-tv-ua-browser"
         ]
       }
     },
     {
       "provider": "yflix",
       "lane": "tv",
-      "publicUrl": "https://enc-dec.app/db/flix/find",
-      "host": "enc-dec.app",
-      "path": "/db/flix/find",
+      "publicUrl": "https://solarmovie.fi/ajax/links/list",
+      "host": "solarmovie.fi",
+      "path": "/ajax/links/list",
       "method": "GET",
       "fetchStatus": 0,
-      "challenge": "network-AbortError",
+      "challenge": "network-TypeError",
       "seedKind": "network-failure-replay",
       "seedRoute": null,
-      "outcome": "browser_content_reached",
-      "attemptCount": 1,
+      "outcome": "browser_timeout",
+      "attemptCount": 2,
       "attempts": [
         {
           "attempt": 1,
-          "outcome": "browser_content_reached",
-          "exitCode": 0
+          "outcome": "browser_timeout"
+        },
+        {
+          "attempt": 2,
+          "outcome": "browser_timeout"
         }
       ],
-      "ordinarySessionReused": false,
+      "ordinarySessionReused": true,
       "clientProfileMatrix": [
         {
           "profile": "github-default-browser",
           "userAgent": null,
-          "outcome": "browser_content_reached",
-          "attemptCount": 1,
+          "outcome": "browser_timeout",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_content_reached",
-              "exitCode": 0
+              "outcome": "browser_timeout"
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_timeout"
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         },
         {
           "profile": "nuvio-tv-ua-browser",
           "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          "outcome": "browser_content_reached",
-          "attemptCount": 1,
+          "outcome": "browser_timeout",
+          "attemptCount": 2,
           "attempts": [
             {
               "attempt": 1,
-              "outcome": "browser_content_reached",
-              "exitCode": 0
+              "outcome": "browser_timeout"
+            },
+            {
+              "attempt": 2,
+              "outcome": "browser_timeout"
             }
           ],
-          "ordinarySessionReused": false
+          "ordinarySessionReused": true
         }
       ],
       "directHttpProfile": {
@@ -2209,17 +2421,23 @@
           "redirects": "enabled",
           "httpStack": "libcurl-not-OkHttp"
         },
-        "outcome": "direct_http_content_reached",
-        "attemptCount": 1,
+        "outcome": "direct_http_error",
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
-            "outcome": "direct_http_content_reached",
-            "status": 200,
-            "exitCode": 0
+            "outcome": "direct_http_error",
+            "status": 0,
+            "exitCode": 28
+          },
+          {
+            "attempt": 2,
+            "outcome": "direct_http_error",
+            "status": 0,
+            "exitCode": 28
           }
         ],
-        "ordinarySessionReused": false
+        "ordinarySessionReused": true
       },
       "okHttpJvmProfile": {
         "profile": "nuvio-tv-okhttp-jvm",
@@ -2232,25 +2450,27 @@
           "redirects": "HTTP+SSL enabled",
           "tlsRuntime": "GitHub JVM, not Android Conscrypt/device TLS"
         },
-        "outcome": "okhttp_jvm_content_reached",
-        "attemptCount": 1,
+        "outcome": "okhttp_jvm_timeout",
+        "attemptCount": 2,
         "attempts": [
           {
             "attempt": 1,
-            "outcome": "okhttp_jvm_content_reached",
-            "status": 200
+            "outcome": "okhttp_jvm_timeout",
+            "status": 0,
+            "error": "SocketTimeoutException"
+          },
+          {
+            "attempt": 2,
+            "outcome": "okhttp_jvm_timeout",
+            "status": 0,
+            "error": "SocketTimeoutException"
           }
         ],
         "exitCode": 0
       },
-      "contentProfiles": [
-        "github-default-browser",
-        "nuvio-tv-ua-browser",
-        "nuvio-tv-direct-http-approx",
-        "nuvio-tv-okhttp-jvm"
-      ],
+      "contentProfiles": [],
       "nativeTvTransportStillUnproven": true,
-      "durationMs": 2125,
+      "durationMs": 180694,
       "residentialExitNodeProfile": {
         "profile": "tailscale-residential-exit",
         "outcome": "browser_content_reached",
@@ -2269,19 +2489,17 @@
         ],
         "directHttpProfile": {
           "profile": "nuvio-tv-direct-http-approx",
-          "outcome": "direct_http_content_reached",
-          "attemptCount": 1
+          "outcome": "direct_http_error",
+          "attemptCount": 2
         },
         "okHttpJvmProfile": {
           "profile": "nuvio-tv-okhttp-jvm",
-          "outcome": "okhttp_jvm_content_reached",
-          "attemptCount": 1
+          "outcome": "okhttp_jvm_inconclusive",
+          "attemptCount": 2
         },
         "contentProfiles": [
           "github-default-browser",
-          "nuvio-tv-ua-browser",
-          "nuvio-tv-direct-http-approx",
-          "nuvio-tv-okhttp-jvm"
+          "nuvio-tv-ua-browser"
         ]
       }
     }
@@ -2290,7 +2508,7 @@
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 11,
+    "matchedProviderLanes": 16,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -2316,15 +2534,9 @@
       "vostfree",
       "yflix"
     ],
-    "rawProviders": [
-      "vostfree"
-    ],
-    "playableProviders": [
-      "vostfree"
-    ],
-    "verifiedProviders": [
-      "vostfree"
-    ],
+    "rawProviders": [],
+    "playableProviders": [],
+    "verifiedProviders": [],
     "wrongContentProviders": [],
     "rows": [
       {
@@ -2353,7 +2565,7 @@
         "provider": "anime-ultime",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2364,7 +2576,7 @@
         "provider": "animesalt",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2375,7 +2587,7 @@
         "provider": "animesultra",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_network_exception",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2386,7 +2598,7 @@
         "provider": "animevost-fr",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_waf_challenge",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2397,7 +2609,7 @@
         "provider": "flemmix",
         "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2408,7 +2620,7 @@
         "provider": "flemmix",
         "lane": "tv",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2441,7 +2653,7 @@
         "provider": "moviesmod",
         "lane": "movie",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2452,7 +2664,7 @@
         "provider": "moviesmod",
         "lane": "tv",
         "status": "no_streams",
-        "debugStage": "provider_network_zero_result",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2484,11 +2696,11 @@
       {
         "provider": "vostfree",
         "lane": "anime",
-        "status": "playable_verified",
-        "debugStage": "provider_returned_streams",
-        "raw": 1,
-        "playable": 1,
-        "verified": 1,
+        "status": "no_streams",
+        "debugStage": "gate_runtime_plan_missing",
+        "raw": 0,
+        "playable": 0,
+        "verified": 0,
         "contradictions": 0,
         "identitySafe": true
       },
@@ -2522,15 +2734,5 @@
       "responseBodiesPersisted": false,
       "cookiesPersisted": false
     }
-  },
-  "lastRefreshProviderFilter": [
-    "anime-ultime",
-    "animesultra",
-    "animevost-fr",
-    "moviebox",
-    "moviesmod",
-    "vidfast",
-    "vostfree",
-    "yflix"
-  ]
+  }
 }
