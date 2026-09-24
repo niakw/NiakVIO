@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse,json,re,subprocess,sys,tempfile
 from pathlib import Path
 from typing import Any
+from brain_llm_experiment import validate_public
 
 ROOT=Path(__file__).resolve().parents[1]
 SHA40=re.compile(r"^[0-9a-f]{40}$")
@@ -18,7 +19,7 @@ STRATEGY_TO_PROFILE={
  "discover-api-from-current-page-and-bundles":"search_contract_inference_v1",
 }
 TOP_LEVEL_FIELDS={"schemaVersion","sourceNiakvioSha","brainLlmSha","publicationAuthority","directMutationAuthority","proofAuthority","rawMutationContentRetained","privateContentRetained","minConfidence","providerCount","rows"}
-ROW_FIELDS={"providerId","failureClass","targetLayer","strategy","profile","confidence","priorOnly"}
+ROW_FIELDS_V1={"providerId","failureClass","targetLayer","strategy","profile","confidence","priorOnly"}\nROW_FIELDS_V2=ROW_FIELDS_V1|{"experiment","experimentFingerprint"}
 NEUTRAL_DRIFT_PREFIXES=(".github/workflows/",".github/triggers/","tests/","automation/provider-brain-repair-","automation/provider-targeted-regression-recovery-","automation/provider-repair-batch-refined-")
 NEUTRAL_DRIFT_FILES={"MEMORY.md","scripts/import_external_brain_llm_guidance.py","scripts/brain_repair_runtime.py","scripts/run_provider_brain_repair.py","scripts/select_provider_materialization_scope.py","scripts/run_provider_repair_pipeline_v6.py","engine_v2/scripts/plan-repairs.mjs","automation/brain-repair-memory.json","automation/brain-positive-program-memory.json"}
 MATERIALIZATION_SCOPE_SCRIPT=ROOT/"scripts/select_provider_materialization_scope.py"
@@ -80,8 +81,11 @@ def sanitize(value:dict[str,Any],*,current_sha:str,guidance_commit:str="")->dict
  rows=value.get("rows")
  if not isinstance(rows,list):raise ValueError("external guidance rows missing")
  safe=[];seen=set()
+ schema_version=max(1,int(value.get("schemaVersion") or 1))
+ if schema_version not in {1,2}:raise ValueError("unsupported external guidance schema")
+ expected_fields=ROW_FIELDS_V2 if schema_version>=2 else ROW_FIELDS_V1
  for raw in rows[:128]:
-  if not isinstance(raw,dict) or set(raw)!=ROW_FIELDS:raise ValueError("external guidance row shape is not exact")
+  if not isinstance(raw,dict) or set(raw)!=expected_fields:raise ValueError("external guidance row shape is not exact")
   provider=canon(raw.get("providerId"));failure=canon(raw.get("failureClass"));strategy=canon(raw.get("strategy"))
   profile=str(raw.get("profile") or "").strip().casefold();target=str(raw.get("targetLayer") or "").strip().casefold()
   try:confidence=max(0.0,min(1.0,float(raw.get("confidence") or 0.0)))
@@ -89,11 +93,16 @@ def sanitize(value:dict[str,Any],*,current_sha:str,guidance_commit:str="")->dict
   expected=STRATEGY_TO_PROFILE.get(strategy)
   if not provider or not PROVIDER_ID.fullmatch(provider) or not failure or target!="provider" or raw.get("priorOnly") is not True or confidence<minimum or expected is None or profile!=expected:
    raise ValueError(f"unsafe or inconsistent external guidance row for {provider or '<missing>'}")
-  key=(provider,profile)
+  experiment={};experiment_fingerprint=""
+  if schema_version>=2:
+   experiment,experiment_fingerprint=validate_public(raw.get("experiment"),str(raw.get("experimentFingerprint") or ""))
+  key=(provider,profile,experiment_fingerprint)
   if key in seen:continue
   seen.add(key)
-  safe.append({"providerId":provider,"failureClass":failure.replace("-","_"),"targetLayer":"provider","strategy":strategy.replace("-","_"),"profile":profile,"confidence":round(confidence,6),"priorOnly":True})
- payload={"schemaVersion":1,"sourceSha":current_sha,"sourceExternalNiakvioSha":source_sha,"sourceBrainLlmSha":brain_sha,"sourceGuidanceCommit":guidance_commit,"publicationAuthority":False,"directMutationAuthority":False,"proofAuthority":False,"rawMutationContentRetained":False,"privateContentRetained":False,"persistentExternalPrior":True,"providerCount":len({r["providerId"] for r in safe}),"rows":safe}
+  row={"providerId":provider,"failureClass":failure.replace("-","_"),"targetLayer":"provider","strategy":strategy.replace("-","_"),"profile":profile,"confidence":round(confidence,6),"priorOnly":True}
+  if experiment_fingerprint:row.update({"experiment":experiment,"experimentFingerprint":experiment_fingerprint})
+  safe.append(row)
+ payload={"schemaVersion":2,"sourceSha":current_sha,"sourceExternalNiakvioSha":source_sha,"sourceBrainLlmSha":brain_sha,"sourceGuidanceCommit":guidance_commit,"publicationAuthority":False,"directMutationAuthority":False,"proofAuthority":False,"rawMutationContentRetained":False,"privateContentRetained":False,"persistentExternalPrior":True,"providerCount":len({r["providerId"] for r in safe}),"rows":safe}
  if URLISH.search(json.dumps(payload,sort_keys=True)):raise ValueError("URL/credential-shaped text survived external guidance sanitizer")
  return payload
 
