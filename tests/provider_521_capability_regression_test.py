@@ -51,6 +51,10 @@ lifecycle_archived_ids = {
     if row.get("state") == "archived-provider-old"
 }
 archived_ids = frozen_archived_ids | lifecycle_archived_ids
+assert not (CURRENT_IDS & lifecycle_archived_ids), (
+    "lifecycle-archived providers leaked back into current catalogue",
+    sorted(CURRENT_IDS & lifecycle_archived_ids),
+)
 assert len(frozen_archived_ids) == HISTORICAL_PROVIDER_COUNT, (
     f"frozen 5.21 historical archive drift: expected {HISTORICAL_PROVIDER_COUNT}, "
     f"got {len(frozen_archived_ids)}"
