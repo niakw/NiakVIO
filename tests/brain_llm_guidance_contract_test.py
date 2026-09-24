@@ -77,16 +77,17 @@ assert report["publicationAuthority"] is False,report
 assert report["directMutationAuthority"] is False,report
 assert report["proofAuthority"] is False,report
 assert report["rawMutationContentRetained"] is False,report
+assert report["schemaVersion"]==2,report
 assert report["providerCount"]==1,report
-assert report["rows"]==[{
-    "providerId":"mallumv",
-    "failureClass":"chain-terminal-gap",
-    "targetLayer":"provider",
-    "strategy":"terminal-media-extractor-with-playback-validation",
-    "profile":"chain_terminal_extractor_v1",
-    "confidence":0.93,
-    "priorOnly":True,
-}],report
+assert len(report["rows"])==1,report
+row=report["rows"][0]
+assert row["providerId"]=="mallumv",row
+assert row["profile"]=="chain_terminal_extractor_v1",row
+assert row["experiment"]["terminalOnly"] is True,row
+assert row["experiment"]["responseSalvage"] is True,row
+assert row["experiment"]["routePolicy"]=="owned_plus_peer",row
+assert len(row["experimentFingerprint"])==64,row
+assert set(row)=={"providerId","failureClass","targetLayer","strategy","profile","confidence","priorOnly","experiment","experimentFingerprint"},row
 encoded=json.dumps(report,sort_keys=True)
 for forbidden in ("PRIVATE TEXT","SECRET MUTATION","PRIVATE EVIDENCE","PRIVATE TEST"):
     assert forbidden not in encoded,encoded
@@ -106,13 +107,13 @@ print("Brain LLM guidance contract passed")
 
 workflow=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 assert "repository: niakw/NiakVIO-Brain-LLM" in workflow
-assert "ref: 84eb6ff14af60c29b59b5f0382221297ddfacb4c" in workflow
+assert "ref: 1b3cbb5dfdde26d1c30552304807e76a3b55a2df" in workflow
 assert "repository: niakw/niakvio-private" in workflow
 assert "NIAKVIO_PRIVATE_READ_TOKEN" in workflow
 assert "g-p-6a7f1d27495c819182b4081bfccdafd8" in workflow
 assert "persist-credentials: false" in workflow
 assert "NIAKVIO_BRAIN_LLM_GUIDANCE=" in workflow
-assert "brain_llm_guidance.py" in workflow
+assert "brain_llm_guidance.py" in workflow\nassert "brain_llm_experiment.py" in workflow
 assert "Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M" in workflow
 # Ephemeral private documents may feed the model but must never be uploaded.
 upload_tail=workflow[workflow.find("Upload sanitized learning and proposal state"):]

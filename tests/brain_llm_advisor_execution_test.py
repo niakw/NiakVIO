@@ -62,6 +62,8 @@ guidance=[{
     "profile":"proven_route_terminal_traversal_v1",
     "confidence":0.94,
     "priorOnly":True,
+    "experiment":{"routePolicy":"owned_plus_peer_generic","recipePolicy":"current_plus_provider_peer","roleOrder":["search","detail","player","source","api"],"terminalOnly":False,"aliasSearch":True,"responseSalvage":False,"documentRequestMining":False,"sessionBootstrap":True,"maxDepth":5,"maxPages":24,"maxEmbeds":22,"maxRecipePasses":4},
+    "experimentFingerprint":"a"*64,
 }]
 
 def plan(mode:str,memory:list[dict]|None=None,guidance_rows:list[dict]|None=None):
@@ -93,6 +95,8 @@ assert learning["llmAdvisorProfile"]=="proven_route_terminal_traversal_v1",learn
 assert learning["llmAdvisorConfidence"]==0.94,learning
 assert learning["llmAdvisorFailureCompatibility"]=="exact",learning
 assert learning["llmAdvisorSourceFailureClass"]=="route_proven_gap",learning
+assert learning["llmAdvisorExperimentFingerprint"]=="a"*64,learning
+assert learning["llmAdvisorExperiment"]["maxDepth"]==5,learning
 assert learning["allowedProfiles"][0]=="proven_route_terminal_traversal_v1",learning
 
 family_guidance=[{**guidance[0],"failureClass":"search_gap"}]
@@ -107,9 +111,8 @@ incompatible=plan("repair",guidance_rows=incompatible_guidance)
 assert incompatible["llmAdvisorApplied"] is False,incompatible
 assert incompatible["llmAdvisorFailureCompatibility"]=="",incompatible
 
-# Exact profile debt blocks the advisor. The deterministic Brain resumes its
-# ordinary bounded profile selection instead of replaying a known failure.
-blocked=plan("learning",[{
+# Legacy profile-wide debt cannot suppress a new v2 experiment fingerprint.
+legacy_debt=[{
     "providerId":"synthetic-llm-advisor",
     "failureClass":"route_proven_gap",
     "experimentVariant":4,
@@ -118,10 +121,22 @@ blocked=plan("learning",[{
     "failures":1,
     "consecutiveFailures":1,
     "successes":0,
-}])
+}]
+legacy_fresh=plan("learning",legacy_debt)
+assert legacy_fresh["llmAdvisorApplied"] is True,legacy_fresh
+assert legacy_fresh["llmAdvisorExperimentFingerprint"]=="a"*64,legacy_fresh
+
+# Only the exact executed experiment fingerprint blocks replay.
+exact_debt=[{**legacy_debt[0],"llmAdvisorExperimentFingerprint":"a"*64}]
+blocked=plan("learning",exact_debt)
 assert blocked["llmAdvisorApplied"] is False,blocked
 assert blocked["llmAdvisorProfile"]=="",blocked
-assert blocked["allowedProfiles"][0]!="proven_route_terminal_traversal_v1",blocked
+
+# A different experiment in the same profile remains eligible.
+different=[{**guidance[0],"experimentFingerprint":"b"*64,"experiment":{**guidance[0]["experiment"],"maxDepth":6}}]
+fresh=plan("learning",exact_debt,different)
+assert fresh["llmAdvisorApplied"] is True,fresh
+assert fresh["llmAdvisorExperimentFingerprint"]=="b"*64,fresh
 
 # Production Repair consumes the same sanitized advisor only as hypothesis
 # ordering. Current-byte playback/identity gates remain the sole acceptance
@@ -180,6 +195,7 @@ rescue_failed=plan("repair",[
         "executionObserved":True,
         "lastOutcome":"rejected",
         "lastReason":"executed_candidate_failed_validation",
+        "llmAdvisorExperimentFingerprint":"a"*64,
     },
 ],rescue_guidance)
 assert rescue_failed["llmAdvisorApplied"] is False,rescue_failed
@@ -191,5 +207,7 @@ assert '"llmGuidance": planner_llm_guidance()' in brain
 assert overlay.count('"llmGuidance": _BASE.planner_llm_guidance()')==2,overlay
 assert overlay.count('"historicalSolutions": _BASE.planner_historical_solutions()')==2,overlay
 assert "rawMutationContentRetained" in brain
+assert "llmAdvisorExperimentFingerprint" in brain
+assert "llmAdvisorExperiment" in brain
 
 print("Brain LLM advisor execution contract passed")
