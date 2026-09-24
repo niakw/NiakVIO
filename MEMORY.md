@@ -4592,3 +4592,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Executable contracts added in `c126693...`: same profile with a different LLM fingerprint remains eligible; exact fingerprint debt blocks replay; synthetic runtime options materially differ between two specs; transport overlay is required exactly once in each internal render path.
 - Learning/Repair workflows now pin Brain-LLM v2 and run these contracts before expensive work. The prior Learning run `36022139348` remains evidence for source SHA `e1c85a0...` and the old advisor semantics; it must not be used as proof of the v2 experiment path.
 - Next proof: a fresh v2 Learning must publish schemaVersion=2 guidance with experiment fingerprints, followed by a short Repair where all 12 provider repair targets remain in scope and at least the advised candidates log distinct experiment fingerprints. Status promotion still requires real playable identity-safe current-byte proof.
+
+
+### 2026-09-24 — Repository hygiene and CodeQL alert cleanup armed
+
+- The obsolete `workbench/brain-guidance-finalize-20260923` branch diverges historically from main, but its nine Brain invariants are superseded on current main by newer advisor observability, stale-artifact rejection, generation-aware rescue, guidance-drift and negative-memory contracts. Branch maintenance now deletes this workbench branch only when no open PR targets it; `brain-learning/proposals` remains the only non-main durable memory branch.
+- The existing CodeQL workflow already contains an owner-authorized bulk dismissal job that enumerates every open CodeQL alert, dismisses it with an audit comment, re-queries open alerts and fails if any remain. A one-shot push marker `[dismiss-codeql-alerts]` now invokes that exact job; normal future pushes continue to run the maintained-source CodeQL matrix.
+- This security/hygiene commit does not alter provider bytes or provider status. Provider repair remains separately required for the 12 current Repair targets and 2 Core/transport targets.

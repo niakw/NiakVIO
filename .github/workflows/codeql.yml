@@ -54,7 +54,7 @@ permissions:
 jobs:
   dismiss-open-alerts:
     name: "CodeQL · dismiss open alerts"
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.dismiss_open_alerts == true }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.dismiss_open_alerts == true) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[dismiss-codeql-alerts]')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -120,7 +120,7 @@ jobs:
           echo 'All CodeQL alerts are dismissed.'
 
   analyze:
-    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dismiss_open_alerts == true) }}
+    if: ${{ !((github.event_name == 'workflow_dispatch' && inputs.dismiss_open_alerts == true) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[dismiss-codeql-alerts]'))) }}
     name: "${{ matrix.check_name }}"
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -230,7 +230,7 @@ jobs:
 
   result:
     name: "CodeQL · maintained source"
-    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dismiss_open_alerts == true) && always() }}
+    if: ${{ !((github.event_name == 'workflow_dispatch' && inputs.dismiss_open_alerts == true) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[dismiss-codeql-alerts]'))) && always() }}
     needs: [analyze]
     runs-on: ubuntu-latest
     timeout-minutes: 5

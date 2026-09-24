@@ -77,21 +77,23 @@ jobs:
           # main pushes must never rebase/mirror production code into memory.
           echo "FIELD_BRAIN_MEMORY_BRANCH action=validated mode=memory-ref-read-only sha=$(git rev-parse --short refs/remotes/origin/$BRANCH)"
 
-      - name: Remove closed repair proposal branch
+      - name: Remove obsolete non-main work branches
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          REPAIR_BRANCH="brain-repair/proposal"
-          OPEN_PR="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$REPAIR_BRANCH" --json number --jq '.[0].number // empty')"
-          if [ -n "$OPEN_PR" ]; then
-            echo "FIELD_BRAIN_REPAIR_BRANCH action=keep_open_pr pr=$OPEN_PR"
-            exit 0
-          fi
-          if git ls-remote --exit-code --heads origin "$REPAIR_BRANCH" >/dev/null 2>&1; then
-            git push origin --delete "$REPAIR_BRANCH"
-            echo "FIELD_BRAIN_REPAIR_BRANCH action=deleted_closed_branch"
-          else
-            echo "FIELD_BRAIN_REPAIR_BRANCH action=already_absent"
-          fi
+          for branch in             "brain-repair/proposal"             "workbench/brain-guidance-finalize-20260923"
+          do
+            OPEN_PR="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$branch" --json number --jq '.[0].number // empty')"
+            if [ -n "$OPEN_PR" ]; then
+              echo "FIELD_BRANCH_CLEANUP branch=$branch action=keep_open_pr pr=$OPEN_PR"
+              continue
+            fi
+            if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+              git push origin --delete "$branch"
+              echo "FIELD_BRANCH_CLEANUP branch=$branch action=deleted"
+            else
+              echo "FIELD_BRANCH_CLEANUP branch=$branch action=already_absent"
+            fi
+          done
