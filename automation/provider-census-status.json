@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "runId": "35931327486",
-  "triggerSha": "009ab62e8b0ff02bd245be944caec084339d98b3",
+  "runId": "35942671301",
+  "triggerSha": "439847e957fdec2a719b41c470ff7dc43a95604e",
   "providers": [
     {
       "provider": "4khdhub",
@@ -410,55 +410,6 @@
       "testedThisRun": true
     },
     {
-      "provider": "desiflix",
-      "status": "DISABLED",
-      "underlyingStatus": "DISABLED",
-      "color": "⚫",
-      "declaredLanes": [
-        "movie",
-        "tv"
-      ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [
-        "movie: Avengers: Infinity War / Spider-Man: Homecoming",
-        "tv: Breaking Bad"
-      ],
-      "candidateProof": [
-        "run 34323567439"
-      ],
-      "routeProof": [
-        "8 live routes / movie, tv"
-      ],
-      "latestLaneVerdicts": [
-        "movie=no_streams/provider_network_zero_result",
-        "tv=no_streams/provider_network_zero_result"
-      ],
-      "dominantIssue": "provider_network_zero_result×2",
-      "searchProgress": [
-        "movie: 8 works tested / 0 retained misses / 8 retained chain hits",
-        "tv: 8 works tested / 0 retained misses / 8 retained chain hits"
-      ],
-      "evidenceDepth": [
-        "movie=chain_reached",
-        "tv=chain_reached"
-      ],
-      "harnessTransportClass": "not-applicable",
-      "harnessTransportEvidence": [],
-      "authorityRepairEligible": false,
-      "authorityAction": "KEEP_DISABLED",
-      "authorityClass": "disabled",
-      "authorityConfidence": "terminal",
-      "authorityReasons": [
-        "manual_off_compromised_or_inappropriate_redirect"
-      ],
-      "authorityKnown": true,
-      "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": true
-    },
-    {
       "provider": "flemmix",
       "status": "ROUTE PROVEN",
       "underlyingStatus": "",
@@ -510,48 +461,6 @@
         "tv: status=no_streams, stage=provider_network_zero_result, raw=0, playable=0, verified=0, identitySafe=true"
       ],
       "residentialProviderReplayReclassified": true
-    },
-    {
-      "provider": "fullanime",
-      "status": "DISABLED",
-      "underlyingStatus": "DISABLED",
-      "color": "⚫",
-      "declaredLanes": [
-        "anime"
-      ],
-      "currentVerifiedLanes": [],
-      "historicalProof": [],
-      "candidateProof": [],
-      "routeProof": [
-        "2 live routes / anime"
-      ],
-      "latestLaneVerdicts": [
-        "anime=no_streams/provider_waf_challenge"
-      ],
-      "dominantIssue": "provider_waf_challenge",
-      "searchProgress": [
-        "anime: 8 works tested / 0 retained misses"
-      ],
-      "evidenceDepth": [
-        "anime=none"
-      ],
-      "harnessTransportClass": "github-all-transports-challenged",
-      "harnessTransportEvidence": [
-        "anime: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown"
-      ],
-      "authorityRepairEligible": false,
-      "authorityAction": "KEEP_DISABLED",
-      "authorityClass": "disabled",
-      "authorityConfidence": "terminal",
-      "authorityReasons": [
-        "manual_off_no_current_hub_authority"
-      ],
-      "authorityKnown": true,
-      "action": "provider lifecycle/authority blocks Repair; keep disabled until a new authoritative provider address/backend is qualified",
-      "brainCheckRequired": false,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": true
     },
     {
       "provider": "mallumv",
@@ -855,6 +764,93 @@
         "tv: github-browser=browser_content_reached, github-okhttp=okhttp_jvm_content_reached, github-direct=direct_http_content_reached, residential-browser=browser_content_reached, residential-okhttp=okhttp_jvm_content_reached, residential-direct=direct_http_content_reached"
       ],
       "residentialProviderReplayReclassified": true
+    },
+    {
+      "provider": "desiflix",
+      "status": "DISABLED",
+      "underlyingStatus": "DISABLED",
+      "color": "⚫",
+      "declaredLanes": [
+        "movie",
+        "tv"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [
+        "movie: Avengers: Infinity War / Spider-Man: Homecoming",
+        "tv: Breaking Bad"
+      ],
+      "candidateProof": [
+        "run 34323567439"
+      ],
+      "routeProof": [
+        "8 live routes / movie, tv"
+      ],
+      "latestLaneVerdicts": [
+        "movie=no_streams/provider_network_zero_result",
+        "tv=no_streams/provider_network_zero_result"
+      ],
+      "dominantIssue": "provider_network_zero_result×2",
+      "searchProgress": [
+        "movie: 8 works tested / 0 retained misses / 8 retained chain hits",
+        "tv: 8 works tested / 0 retained misses / 8 retained chain hits"
+      ],
+      "evidenceDepth": [
+        "movie=chain_reached",
+        "tv=chain_reached"
+      ],
+      "harnessTransportClass": "not-applicable",
+      "harnessTransportEvidence": [],
+      "authorityRepairEligible": true,
+      "authorityAction": "UNCLASSIFIED",
+      "authorityClass": "unclassified",
+      "authorityConfidence": "unknown",
+      "authorityReasons": [],
+      "authorityKnown": false,
+      "action": "lifecycle disabled; exclude from automatic Retest/Repair until authority re-enables it",
+      "brainCheckRequired": false,
+      "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": false
+    },
+    {
+      "provider": "fullanime",
+      "status": "DISABLED",
+      "underlyingStatus": "DISABLED",
+      "color": "⚫",
+      "declaredLanes": [
+        "anime"
+      ],
+      "currentVerifiedLanes": [],
+      "historicalProof": [],
+      "candidateProof": [],
+      "routeProof": [
+        "2 live routes / anime"
+      ],
+      "latestLaneVerdicts": [
+        "anime=no_streams/provider_waf_challenge"
+      ],
+      "dominantIssue": "provider_waf_challenge",
+      "searchProgress": [
+        "anime: 8 works tested / 0 retained misses"
+      ],
+      "evidenceDepth": [
+        "anime=none"
+      ],
+      "harnessTransportClass": "github-all-transports-challenged",
+      "harnessTransportEvidence": [
+        "anime: browser=browser_challenge_persisted, tv-browser=unknown, okhttp=unknown, direct=unknown"
+      ],
+      "authorityRepairEligible": true,
+      "authorityAction": "UNCLASSIFIED",
+      "authorityClass": "unclassified",
+      "authorityConfidence": "unknown",
+      "authorityReasons": [],
+      "authorityKnown": false,
+      "action": "lifecycle disabled; exclude from automatic Retest/Repair until authority re-enables it",
+      "brainCheckRequired": false,
+      "statusRepairEligible": false,
+      "repairEligible": false,
+      "testedThisRun": false
     },
     {
       "provider": "vostfree",
@@ -2113,14 +2109,10 @@
   ],
   "authorityBlockedQueue": [
     "animetsu",
-    "desiflix",
-    "fullanime",
     "showbox"
   ],
   "lifecycleDisabledQueue": [
     "animetsu",
-    "desiflix",
-    "fullanime",
     "showbox"
   ],
   "authorityRediscoveryQueue": [],
@@ -2138,8 +2130,8 @@
     "animesultra",
     "animevost-fr"
   ],
-  "harnessEvidenceRunId": "35931327486-canonical-waf",
-  "harnessEvidenceSha": "009ab62e8b0ff02bd245be944caec084339d98b3",
+  "harnessEvidenceRunId": "35942671301-canonical-waf",
+  "harnessEvidenceSha": "439847e957fdec2a719b41c470ff7dc43a95604e",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "allwish",
