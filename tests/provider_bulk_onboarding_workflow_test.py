@@ -52,5 +52,8 @@ assert "workflow_run:" in sharded
 assert "PROVIDER - Bulk Onboarding" in sharded
 for workflow in (census,targeted,domains):
     assert "provider: bulk stage " in workflow
+assert 'message.startswith("provider: bulk stage ")' in targeted
+assert 'message.startswith("provider: bulk activate ")' in targeted
+assert "if: ${{ needs.size.outputs.should_run == 'true' }}" in targeted
 assert "ci(census-sharded):" in census
 print("Bulk onboarding -> sharded census architecture passed")
