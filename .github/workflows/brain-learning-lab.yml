@@ -97,7 +97,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: niakw/NiakVIO-Brain-LLM
-          ref: e996ed8127cc45db3d938e90333ed028c66e84b4
+          ref: 7aa0c81536ecfcf7c34a48e4fa5cf09d4f233f9f
           path: brain-llm
           fetch-depth: 1
           persist-credentials: false
@@ -733,7 +733,7 @@ jobs:
                 --input "$batch" \
                 --output "$cached" \
                 --source-sha "$GITHUB_SHA" \
-                --brain-llm-sha e996ed8127cc45db3d938e90333ed028c66e84b4
+                --brain-llm-sha 7aa0c81536ecfcf7c34a48e4fa5cf09d4f233f9f
             fi
             providers="$(python -c 'import json; d=json.load(open("brain-sandbox/brain-llm/guidance.json")); print(int(d.get("providerCount") or 0))')"
             echo "FIELD_BRAIN_LLM_FAST_HANDOFF_CACHE compatible=$cache_ok providers=$providers local_qwen=false"
@@ -772,7 +772,7 @@ jobs:
             --input "$batch" \
             --output brain-sandbox/brain-llm/guidance.json \
             --source-sha "$GITHUB_SHA" \
-            --brain-llm-sha e996ed8127cc45db3d938e90333ed028c66e84b4
+            --brain-llm-sha 7aa0c81536ecfcf7c34a48e4fa5cf09d4f233f9f
           echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/brain-sandbox/brain-llm/guidance.json" >> "$GITHUB_ENV"
           rm -f brain-sandbox/brain-llm/private-documents.jsonl brain-sandbox/brain-llm/private-memory-report.json
           rm -rf brain-llm-private
