@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "sourceSha": "e936461a168ba840640fb196bd27b6cf43b791ea",
   "context": "workspace",
-  "generation": "5585d145c58eafd60239d02b1b855b76c86cb37d262d35cc899102b4f6f7d242",
-  "providerCount": 46,
-  "expectedProviderCount": 46,
+  "generation": "009fe2c6cb7e6e3006bce6e81cb839a2442f3ab370569fc0a3a565edb5ab0fb1",
+  "providerCount": 44,
+  "expectedProviderCount": 44,
   "providers": [
     {
       "provider": "anime-sama",
@@ -813,117 +813,6 @@
           "path": "scripts/provider_patches/persianstremio_runtime_v1.py",
           "phase": "discovery",
           "scope": "PROVIDER.PERSIANSTREMIO.RUNTIME.V1"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
-          "phase": "discovery",
-          "scope": "global_runtime_compat"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_facts_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_facts"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_identity_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_identity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_presentation"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_branding_v1.py",
-          "phase": "discovery",
-          "scope": "global_provider_branding"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
-          "phase": "discovery",
-          "scope": "global_terminal_stream_sanitizer"
-        }
-      ],
-      "deviceSpecificJs": false,
-      "devices": [
-        "tv",
-        "mobile",
-        "desktop"
-      ],
-      "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false,
-      "minimizer": {
-        "enabled": false,
-        "savedBytes": 0,
-        "transformedLines": 0,
-        "skippedReason": "final-stage-only"
-      }
-    },
-    {
-      "provider": "desiflix",
-      "file": "providers/desiflix-2346b740e879d126.js",
-      "sha256": "2346b740e879d126b2612d4bd3e2003785553600af444e3f749dfcb2c3b898e3",
-      "providerDataSha256": "7836d9515c6143cb3cddbdb32d956ea5b29918c4806a449d37c0a11c46dc8500",
-      "baseStrippedGeneratedCore": false,
-      "fixIds": [
-        "CORE.HLS_RUNTIME_INTEGRITY.V1",
-        "CORE.MEDIA_ENRICHMENT.V1",
-        "CORE.MEDIA_TYPE_RESOLUTION.V1",
-        "CORE.PROVIDER_BRANDING.V1",
-        "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
-        "CORE.RUNTIME_COMPAT.V1",
-        "CORE.RUNTIME_MEDIA_SAFETY.V4",
-        "CORE.STREAM_FACTS.V1",
-        "CORE.STREAM_IDENTITY.V1",
-        "CORE.STREAM_PRESENTATION.V1",
-        "CORE.STREAM_SANITIZER.V6",
-        "PROVIDER.DESIFLIX.CONFIG.V1",
-        "PROVIDER.DESIFLIX.RUNTIME.V1"
-      ],
-      "coreCount": 11,
-      "applied": [
-        {
-          "type": "provider_lego",
-          "path": "scripts/provider_patches/desiflix_runtime_v1.py",
-          "phase": "discovery",
-          "scope": "PROVIDER.DESIFLIX.RUNTIME.V1"
         },
         {
           "type": "patch_script",
@@ -4671,124 +4560,6 @@
       "domainSubstitutionReconciledProviders": []
     },
     {
-      "provider": "fullanime",
-      "file": "providers/fullanime-09cc2baa8f3302f0.js",
-      "sha256": "09cc2baa8f3302f03dad320f48bc553b2d70fd520b7ef205382cbfb03912d734",
-      "providerDataSha256": "6f514d9b962c6c20fdea57a7d7949217917212b40bb5c2355df42ae744fe1f6a",
-      "baseStrippedGeneratedCore": false,
-      "fixIds": [
-        "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
-        "CORE.HLS_RUNTIME_INTEGRITY.V1",
-        "CORE.MEDIA_ENRICHMENT.V1",
-        "CORE.MEDIA_TYPE_RESOLUTION.V1",
-        "CORE.PROVIDER_BRANDING.V1",
-        "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
-        "CORE.RUNTIME_COMPAT.V1",
-        "CORE.RUNTIME_MEDIA_SAFETY.V4",
-        "CORE.STREAM_FACTS.V1",
-        "CORE.STREAM_IDENTITY.V1",
-        "CORE.STREAM_PRESENTATION.V1",
-        "CORE.STREAM_SANITIZER.V6",
-        "PROVIDER.FULLANIME.CONFIG.V1",
-        "PROVIDER.FULLANIME.RUNTIME.V1"
-      ],
-      "coreCount": 12,
-      "applied": [
-        {
-          "type": "provider_lego",
-          "path": "scripts/provider_patches/fullanime_runtime_v1.py",
-          "phase": "discovery",
-          "scope": "PROVIDER.FULLANIME.RUNTIME.V1"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
-          "phase": "discovery",
-          "scope": "global_catalogue_resolution"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_enrichment"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
-          "phase": "discovery",
-          "scope": "global_runtime_media_safety"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
-          "phase": "discovery",
-          "scope": "global_playback_integrity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
-          "phase": "discovery",
-          "scope": "global_runtime_compat"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_facts_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_facts"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_identity_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_identity"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
-          "phase": "discovery",
-          "scope": "global_stream_presentation"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_provider_branding_v1.py",
-          "phase": "discovery",
-          "scope": "global_provider_branding"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/stream_output_sanitizer_v8.py",
-          "phase": "discovery",
-          "scope": "global_terminal_stream_sanitizer"
-        }
-      ],
-      "deviceSpecificJs": false,
-      "devices": [
-        "tv",
-        "mobile",
-        "desktop"
-      ],
-      "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false,
-      "minimizer": {
-        "enabled": false,
-        "savedBytes": 0,
-        "transformedLines": 0,
-        "skippedReason": "final-stage-only"
-      }
-    },
-    {
       "provider": "mallumv",
       "file": "providers/mallumv--nuvio--d76e8c942c582bfa.js",
       "sha256": "d76e8c942c582bfaf91dbb0ae74c61f4476c40138978491fe51232cebc82f537",
@@ -5238,7 +5009,7 @@
   "legacyProviderJsExecuted": false,
   "upstreamJsExecuted": false,
   "staticKnowledgeFile": "automation/provider-v3-static-knowledge.json",
-  "staticKnowledgeProviderCount": 46,
+  "staticKnowledgeProviderCount": 44,
   "domainAuthorityOnlyUpdate": true,
   "domainAuthorityUpdatedProviders": [
     "anime-sama",
@@ -5258,5 +5029,11 @@
     "vidfast",
     "vostfree",
     "wookafr"
+  ],
+  "activeProviderIdentityCount": 42,
+  "lifecycleScopeReconciled": true,
+  "lifecycleReconciledArchivedProviders": [
+    "desiflix",
+    "fullanime"
   ]
 }
