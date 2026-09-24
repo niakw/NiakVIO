@@ -4456,3 +4456,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Quick validation on the lifecycle-clean catalogue found the remaining split: manifest/static knowledge were 44, but provider-v3-materialization.json still contained 46 rows (DesiFlix and FullAnime).
 - Lifecycle now filters the deterministic materialization ledger to the exact visible identity set, updates visible/active/static counts, and recomputes the generation hash with the same provider-id + byte-digest algorithm as materialize_provider_v3_all.py. No provider bytes are rebuilt.
 - The lifecycle gate runs audit_provider_v3_static.py after reconciliation and persists provider-v3-materialization.json. Reverse-rebuild/documentation messages no longer print a stale literal current-provider count.
+
+
+### 2026-09-24 — Lifecycle materialization projection persisted successfully
+
+- Lifecycle run on `24e2744...` completed successfully and persisted `a74fd9568f1658a7c02d5fe884c4aa778c0696ed`.
+- Current provider materialization ledger is now exactly 44 visible providers, expectedProviderCount=44, activeProviderIdentityCount=42 and staticKnowledgeProviderCount=44. DesiFlix and FullAnime were removed from current materialization authority, while their historical/lifecycle archive bytes remain under provider-old.
+- The lifecycle recomputed generation `009fe2c6cb7e6e3006bce6e81cb839a2442f3ab370569fc0a3a565edb5ab0fb1` without rebuilding the remaining provider bundles. This exact persisted HEAD now needs the global Quick/non-regression/security gates before provider Repair resumes.
