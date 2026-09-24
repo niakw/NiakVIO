@@ -113,7 +113,8 @@ assert "NIAKVIO_PRIVATE_READ_TOKEN" in workflow
 assert "g-p-6a7f1d27495c819182b4081bfccdafd8" in workflow
 assert "persist-credentials: false" in workflow
 assert "NIAKVIO_BRAIN_LLM_GUIDANCE=" in workflow
-assert "brain_llm_guidance.py" in workflow\nassert "brain_llm_experiment.py" in workflow
+assert "brain_llm_guidance.py" in workflow
+assert "brain_llm_experiment.py" in workflow
 assert "Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M" in workflow
 # Ephemeral private documents may feed the model but must never be uploaded.
 upload_tail=workflow[workflow.find("Upload sanitized learning and proposal state"):]
