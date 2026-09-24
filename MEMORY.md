@@ -4506,3 +4506,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Canonical census/WAF/authority/batch ledgers are restored from source commit `3ed0dd323e4ddca807de787e4f982a664592f6c3`: 26 FULL OK, 2 PARTIAL OK, 1 CANDIDATE OK, 0 PROVIDER NETWORK BLOCKED, repairQueue=12, environmentQueue=2. Brain causal memory/report files from later runs are intentionally retained.
 - Subsequent commits `4fa1970...` and lifecycle persistence `144d5a4...` change control-plane/catalogue lifecycle ordering only; they do not justify discarding the accepted playback/transport ledger. Future failed canonical Repair runs are now prevented from replacing this durable state.
 - Next required sequence: regenerate private-informed Brain-LLM guidance against this exact current HEAD/catalogue, pass Learning contracts, then run the bounded 3-wave/1200s Repair on the restored 12-provider queue.
+
+
+### 2026-09-24 — Sharded observation evidence no longer invalidates fresh Brain-LLM priors
+
+- Fast Repair already imports the sanitized external private-informed Brain-LLM prior before running the provider-local Brain.
+- The remaining catalogue-scale false rejection was source drift caused only by persisted sharded observation files. `automation/provider-targeted-regression-recovery-*` and `automation/provider-repair-batch-refined-*` are now explicitly provider-neutral guidance drift.
+- Provider materialization drift is still checked independently and fails closed; provider DATA/bytes/manifests cannot be hidden by this whitelist.
