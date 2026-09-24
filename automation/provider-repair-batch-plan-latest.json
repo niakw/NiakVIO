@@ -123,31 +123,6 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|api_stream_resolver|residential-exit-all-challenged",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "api_stream_resolver"
-      ],
-      "capabilityStrategy": "api_stream_resolver",
-      "evidenceDepths": [
-        "lookup"
-      ],
-      "dominantIssues": [
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-all-challenged"
-      ],
-      "transportSignature": "residential-exit-all-challenged",
-      "providerCount": 1,
-      "providers": [
-        "animevost-fr"
-      ],
-      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
       "groupId": "harness-compatibility|html_scraper|residential-exit-all-challenged",
       "repairScope": "harness-compatibility",
       "runtimeFamilies": [
@@ -194,6 +169,31 @@
         "animesultra"
       ],
       "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "route-to-terminal|api_stream_resolver",
+      "repairScope": "route-to-terminal",
+      "runtimeFamilies": [
+        "api_stream_resolver"
+      ],
+      "capabilityStrategy": "api_stream_resolver",
+      "evidenceDepths": [
+        "lookup"
+      ],
+      "dominantIssues": [
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "residential-exit-all-challenged"
+      ],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "animevost-fr"
+      ],
+      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },

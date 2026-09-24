@@ -650,9 +650,9 @@
     },
     {
       "provider": "animevost-fr",
-      "status": "HARNESS/ENV BLOCKED",
+      "status": "ROUTE PROVEN",
       "underlyingStatus": "",
-      "color": "🟫",
+      "color": "🟪",
       "declaredLanes": [
         "anime"
       ],
@@ -684,15 +684,16 @@
         "structured_backend_authority"
       ],
       "authorityKnown": true,
-      "action": "private residential exit is also challenged; GitHub IP reputation alone does not explain the block",
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": false,
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true,
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_waf_challenge, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "showbox",
@@ -2029,10 +2030,9 @@
     "DISABLED": 4,
     "FULL OK": 26,
     "HARNESS MISMATCH": 1,
-    "HARNESS/ENV BLOCKED": 1,
     "NO PROOF": 1,
     "PARTIAL OK": 2,
-    "ROUTE PROVEN": 7
+    "ROUTE PROVEN": 8
   },
   "symptomaticProviders": [
     "4khdhub",
@@ -2072,6 +2072,7 @@
     "allwish",
     "anime-ultime",
     "animesalt",
+    "animevost-fr",
     "animevostfr",
     "flemmix",
     "mallumv",
@@ -2090,21 +2091,17 @@
   ],
   "authorityRediscoveryQueue": [],
   "environmentQueue": [
-    "animesultra",
-    "animevost-fr"
+    "animesultra"
   ],
   "harnessMismatchQueue": [
     "animesultra"
   ],
-  "environmentBlockedQueue": [
-    "animevost-fr"
-  ],
+  "environmentBlockedQueue": [],
   "harnessQueue": [
-    "animesultra",
-    "animevost-fr"
+    "animesultra"
   ],
-  "harnessEvidenceRunId": "36029418290-waf-transport",
-  "harnessEvidenceSha": "c9a7ca6dfe4db6f4159fe001fc5656ed89af49e3",
+  "harnessEvidenceRunId": "36030092534-waf-transport",
+  "harnessEvidenceSha": "43da918fad40b8edbd43da705e60ec405b04b3fb",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
     "animesultra",
@@ -2114,8 +2111,12 @@
   "residentialProviderReplayPromotedProviders": [
     "vostfree"
   ],
-  "residentialProviderReplayReclassifiedProviders": [],
-  "residentialProviderReplayRepairableProviders": [],
+  "residentialProviderReplayReclassifiedProviders": [
+    "animevost-fr"
+  ],
+  "residentialProviderReplayRepairableProviders": [
+    "animevost-fr"
+  ],
   "residentialExitNodeEvidence": {
     "enabled": true,
     "available": true,
@@ -2216,7 +2217,7 @@
         "provider": "animevost-fr",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_waf_challenge",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
