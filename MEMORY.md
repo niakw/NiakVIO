@@ -4614,3 +4614,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Targeted Brain Learning now accepts the union of current `repairQueue` and `environmentQueue`. Provider-local mutation remains forbidden for environment-owned rows.
 - Brain Autopilot now sends every HARNESS/Core-client cohort to both the targeted WAF/Tailscale differential and a targeted 20-minute Learning run with `publish_proposal=true`. Persistent divergence must therefore produce a reviewable Core/architecture proposal and Native-Lab reentry path instead of being endlessly re-probed.
 - This does not promote either provider by label. FULL/PARTIAL still requires real current-byte playable, identity-safe output in the appropriate client/runtime.
+
+
+### 2026-09-24 18:50 Europe/Paris — Brain lane preflight import regression fixed
+
+- Brain Autopilot run `36029367282` dispatched the current causal lanes correctly, including Fast Repair, targeted Learning and Core/WAF transport work.
+- WAF/Tailscale lane `36029418290` completed successfully and persisted transport evidence; durable census still has 0 PROVIDER NETWORK BLOCKED rows.
+- Fast Repair `36029411619` and Learning runs `36029414461` / `36029421520` never reached provider Brain/Qwen execution. All three failed during static contract validation because `scripts/brain_llm_guidance.py` / `scripts/import_external_brain_llm_guidance.py` imported sibling `brain_llm_experiment.py` assuming `scripts/` was already on sys.path. Direct script execution satisfied that assumption; importlib-based contract tests did not.
+- Both scripts now prepend their own directory to sys.path before importing `brain_llm_experiment`. This is a packaging/import fix only; it does not change provider bytes, status, proof authority or LLM policy.
+- Autopilot is re-armed on the current durable census after this fix. Required next proof: Fast Repair and Learning must pass preflight, actually import/publish v2 Brain-LLM guidance, and execute the 12 provider Repair + 2 Core/transport cohorts under the existing bounded/sharded budgets.

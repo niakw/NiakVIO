@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Convert Brain-LLM output into bounded, executable, non-authoritative guidance."""
 from __future__ import annotations
-import argparse,json,re
+import argparse,json,re,sys
 from pathlib import Path
 from typing import Any
+SCRIPT_DIR=Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:sys.path.insert(0,str(SCRIPT_DIR))
 from brain_llm_experiment import from_proposal,fingerprint
 STRATEGY_TO_PROFILE={
  "provider-owned-origin-header-and-domain-replay":"provider_origin_failover_v1",
