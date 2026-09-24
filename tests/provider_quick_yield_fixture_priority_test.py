@@ -14,8 +14,10 @@ assert spec and spec.loader
 audit = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(audit)
 
+from current_provider_scope import visible_provider_count
+
 tasks, provider_count = audit.build_tasks()
-assert provider_count == 46, provider_count
+assert provider_count == visible_provider_count(), (provider_count, visible_provider_count())
 by = {(row["provider_id"], row["semantic_type"]): row for row in tasks}
 
 movieshunt = by[("movieshunt", "movie")]

@@ -4463,3 +4463,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Lifecycle run on `24e2744...` completed successfully and persisted `a74fd9568f1658a7c02d5fe884c4aa778c0696ed`.
 - Current provider materialization ledger is now exactly 44 visible providers, expectedProviderCount=44, activeProviderIdentityCount=42 and staticKnowledgeProviderCount=44. DesiFlix and FullAnime were removed from current materialization authority, while their historical/lifecycle archive bytes remain under provider-old.
 - The lifecycle recomputed generation `009fe2c6cb7e6e3006bce6e81cb839a2442f3ab370569fc0a3a565edb5ab0fb1` without rebuilding the remaining provider bundles. This exact persisted HEAD now needs the global Quick/non-regression/security gates before provider Repair resumes.
+
+
+### 2026-09-24 — Lifecycle Quick gate and publication fixed-point repair
+
+- HEAD `a193b7297b58` is not release-green yet. Provider Non-Regression failed only because `tests/provider_quick_yield_fixture_priority_test.py` still hard-coded 46 current providers after the lifecycle correctly moved DesiFlix and FullAnime to `provider-old`. Current provider scope is 44 visible (42 active + 2 disabled) plus 2 lifecycle-archived.
+- The quick-yield fixture contract now compares `audit.build_tasks()` against `visible_provider_count()` instead of a historical magic number. This keeps fixture coverage tied to the physical current-provider lifecycle.
+- CORE Quick also reported `publication-contract-changed`: current provider bytes/manifest exist, but PROVENANCE publication fingerprints are stale after the recent publication/lifecycle control-plane changes. This is owned by `PROVIDERS - Projection Reconcile`, not by provider Repair.
+- A projection-reconcile trigger is issued from the same commit. The owner workflow must detect exact drift, rebuild only providers whose accepted DATA/Lego projection actually drifted, reindex `PROVENANCE.json` fingerprints, prove `reapply_published_overrides.py --check`, and dispatch exact-head census/Quick/security validation.
+- Provider Repair/Brain must remain paused until that owning fixed point is green; no provider status improvement is inferred from lifecycle/test changes.

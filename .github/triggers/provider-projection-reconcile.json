@@ -1,8 +1,12 @@
 {
   "schemaVersion": 1,
-  "reason": "validate-structural-codeql-url-fixes",
-  "expectedBaseline": "83c39d44b4afe01262a3d052ad9a35f31fb47107",
-  "previousSecurityRun": 35774876148,
-  "previousCodeqlRun": 35774873092,
-  "sourcePublishedSha": "b01f3bdc176d01ed3619585a69f053085b5e9a88"
+  "reason": "reconcile-lifecycle-publication-contract-after-44-visible-2-archived",
+  "expectedBaseline": "a193b7297b58f586a93b771ff2bb3085177ee66e",
+  "requestedAt": "2026-09-24T03:20:00+02:00",
+  "requiredChecks": [
+    "dynamic visible provider quick-yield scope",
+    "publication fingerprint fixed point",
+    "44 visible providers + 2 lifecycle archived",
+    "no provider byte mutation unless drift detector proves it"
+  ]
 }
