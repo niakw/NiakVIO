@@ -3,7 +3,7 @@
   "sourceRunId": "36020604290-post-repair-candidate",
   "sourceTriggerSha": "1eccf3aa053b23c4e6e1e8674ab473f07f5d62e1",
   "unresolvedProviderCount": 14,
-  "groupCount": 9,
+  "groupCount": 8,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -11,6 +11,41 @@
     "providerLocalRepair": "exception path only"
   },
   "groups": [
+    {
+      "groupId": "route-to-terminal|mixed_embed_resolver",
+      "repairScope": "route-to-terminal",
+      "runtimeFamilies": [
+        "dle-full-story-sibnet",
+        "menu-search-series-focus-player",
+        "mixed_embed_resolver",
+        "yflix-db-encrypted-ajax-v1"
+      ],
+      "capabilityStrategy": "mixed_embed_resolver",
+      "evidenceDepths": [
+        "lookup",
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception",
+        "network_http_error",
+        "waf_challenge"
+      ],
+      "harnessTransportClasses": [
+        "browser-profile-only",
+        "residential-exit-all-challenged"
+      ],
+      "transportSignature": "not-applicable",
+      "providerCount": 4,
+      "providers": [
+        "anime-ultime",
+        "animesultra",
+        "flemmix",
+        "yflix"
+      ],
+      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
     {
       "groupId": "route-to-terminal|html_scraper",
       "repairScope": "route-to-terminal",
@@ -36,38 +71,6 @@
         "4khdhub",
         "animesalt",
         "moviesmod"
-      ],
-      "action": "replay proven routes in batch and apply shared detail/player traversal profile",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "route-to-terminal|mixed_embed_resolver",
-      "repairScope": "route-to-terminal",
-      "runtimeFamilies": [
-        "menu-search-series-focus-player",
-        "mixed_embed_resolver",
-        "yflix-db-encrypted-ajax-v1"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "lookup",
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception",
-        "network_http_error",
-        "waf_challenge"
-      ],
-      "harnessTransportClasses": [
-        "residential-exit-all-challenged"
-      ],
-      "transportSignature": "not-applicable",
-      "providerCount": 3,
-      "providers": [
-        "anime-ultime",
-        "flemmix",
-        "yflix"
       ],
       "action": "replay proven routes in batch and apply shared detail/player traversal profile",
       "executionPolicy": "batch-first",
@@ -123,8 +126,8 @@
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
     {
-      "groupId": "harness-compatibility|html_scraper|residential-exit-all-challenged",
-      "repairScope": "harness-compatibility",
+      "groupId": "learning|html_scraper",
+      "repairScope": "learning",
       "runtimeFamilies": [
         "mixed_embed_resolver"
       ],
@@ -138,37 +141,12 @@
       "harnessTransportClasses": [
         "residential-exit-all-challenged"
       ],
-      "transportSignature": "residential-exit-all-challenged",
+      "transportSignature": "not-applicable",
       "providerCount": 1,
       "providers": [
         "allwish"
       ],
-      "action": "qualify browser/native/residential transport before any provider mutation",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "harness-compatibility|mixed_embed_resolver|browser-profile-only",
-      "repairScope": "harness-compatibility",
-      "runtimeFamilies": [
-        "dle-full-story-sibnet"
-      ],
-      "capabilityStrategy": "mixed_embed_resolver",
-      "evidenceDepths": [
-        "none"
-      ],
-      "dominantIssues": [
-        "network_exception"
-      ],
-      "harnessTransportClasses": [
-        "browser-profile-only"
-      ],
-      "transportSignature": "browser-profile-only",
-      "providerCount": 1,
-      "providers": [
-        "animesultra"
-      ],
-      "action": "compare browser/native/residential transport and route client-owned gaps away from provider mutation",
+      "action": "residential full-provider replay disproved transport ownership; learn a provider-side request/route strategy before mutation",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },

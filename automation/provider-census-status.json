@@ -564,9 +564,9 @@
     },
     {
       "provider": "animesultra",
-      "status": "HARNESS MISMATCH",
+      "status": "ROUTE PROVEN",
       "underlyingStatus": "",
-      "color": "🟧",
+      "color": "🟪",
       "declaredLanes": [
         "anime"
       ],
@@ -598,15 +598,16 @@
         "explicit_current_direct"
       ],
       "authorityKnown": true,
-      "action": "compare browser/JS challenge resolution with native fetch/TLS/IP; provider JS mutation is not justified by CI challenge",
+      "action": "replay qualified route fixtures and finish terminal extraction/validation",
       "brainCheckRequired": true,
-      "statusRepairEligible": false,
-      "repairEligible": false,
-      "testedThisRun": false,
+      "statusRepairEligible": true,
+      "repairEligible": true,
+      "testedThisRun": true,
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
-        "anime: status=no_streams, stage=provider_network_exception, raw=0, playable=0, verified=0, identitySafe=true"
-      ]
+        "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
+      ],
+      "residentialProviderReplayReclassified": true
     },
     {
       "provider": "animetsu",
@@ -692,8 +693,7 @@
       "residentialProviderReplayClass": "no-verified-media",
       "residentialProviderReplayEvidence": [
         "anime: status=no_streams, stage=provider_zero_before_provider_network, raw=0, playable=0, verified=0, identitySafe=true"
-      ],
-      "residentialProviderReplayReclassified": true
+      ]
     },
     {
       "provider": "showbox",
@@ -2029,10 +2029,9 @@
     "CHAIN REACHED": 3,
     "DISABLED": 4,
     "FULL OK": 26,
-    "HARNESS MISMATCH": 1,
     "NO PROOF": 1,
     "PARTIAL OK": 2,
-    "ROUTE PROVEN": 8
+    "ROUTE PROVEN": 9
   },
   "symptomaticProviders": [
     "4khdhub",
@@ -2072,6 +2071,7 @@
     "allwish",
     "anime-ultime",
     "animesalt",
+    "animesultra",
     "animevost-fr",
     "animevostfr",
     "flemmix",
@@ -2090,38 +2090,31 @@
     "showbox"
   ],
   "authorityRediscoveryQueue": [],
-  "environmentQueue": [
-    "animesultra"
-  ],
-  "harnessMismatchQueue": [
-    "animesultra"
-  ],
+  "environmentQueue": [],
+  "harnessMismatchQueue": [],
   "environmentBlockedQueue": [],
-  "harnessQueue": [
-    "animesultra"
-  ],
-  "harnessEvidenceRunId": "36030092534-waf-transport",
-  "harnessEvidenceSha": "43da918fad40b8edbd43da705e60ec405b04b3fb",
+  "harnessQueue": [],
+  "harnessEvidenceRunId": "36034119661-waf-transport",
+  "harnessEvidenceSha": "6c750acdfcd70ed5427d549500912fce65fb68f3",
   "authorityRefreshedProviders": [],
   "harnessTransportUpdatedProviders": [
-    "animesultra",
-    "animevost-fr"
+    "animesultra"
   ],
   "networkDifferentialUpdatedProviders": [],
   "residentialProviderReplayPromotedProviders": [
     "vostfree"
   ],
   "residentialProviderReplayReclassifiedProviders": [
-    "animevost-fr"
+    "animesultra"
   ],
   "residentialProviderReplayRepairableProviders": [
-    "animevost-fr"
+    "animesultra"
   ],
   "residentialExitNodeEvidence": {
     "enabled": true,
     "available": true,
     "profile": "tailscale-residential-exit",
-    "matchedProviderLanes": 2,
+    "matchedProviderLanes": 1,
     "privacy": {
       "exitNodeNamePersisted": false,
       "tailscaleAddressPersisted": false,
@@ -2206,7 +2199,7 @@
         "provider": "animesultra",
         "lane": "anime",
         "status": "no_streams",
-        "debugStage": "provider_network_exception",
+        "debugStage": "provider_zero_before_provider_network",
         "raw": 0,
         "playable": 0,
         "verified": 0,
@@ -2353,5 +2346,6 @@
       "responseBodiesPersisted": false,
       "cookiesPersisted": false
     }
-  }
+  },
+  "clientTransportGapQueue": []
 }
