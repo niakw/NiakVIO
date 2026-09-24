@@ -4652,3 +4652,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - NiakVIO commits `0f5336c...`, `f9b3493...`, and `ba9f962...` add a distinct client-transport causal state, keep such debt out of provider mutation, pin the new Brain-LLM, accept v2 experiment/fingerprint guidance, and feed non-provider LLM diagnoses into the review-only architecture proposal instead of discarding them.
 - Targeted-regression run `36034557844` is now SUCCESS after the workflow startup fixes; it tested the current 14-provider repair cohort with no identity contradictions and no newly verified provider. Its refined evidence splits the previous broad capability batches into provider-specific observed network signatures, which should feed the next Brain pass instead of repeating one generic profile across unlike failures.
 - The older Learning run `36032139719` started from SHA `6c46d95...` and cannot validate the new Brain pin. Re-arm Brain Autopilot on the current 14-provider queue so Fast Repair and Learning execute the new LLM experiment/diagnosis path on current bytes.
+
+
+### 2026-09-24 19:39 Europe/Paris — Brain LLM now consumes current targeted network evidence
+
+- Brain-LLM commit `48df8f0d8d7a...` adds the missing data bridge from NiakVIO targeted recovery into each LLM request. The model now receives bounded current `debugStages`, lane statuses, playable/verified lanes, sanitized method/host/path/status observations, and the exact refined batch signature/split reason for that provider.
+- Stale refined plans are rejected when their source census run differs from the current census. Raw headers and unbounded response content are not forwarded. Current-byte tests remain proof authority; these observations are context only.
+- Brain LLM CI run `36035419178` completed SUCCESS. NiakVIO Learning is now pinned to this exact code SHA so the next Fast→Learning handoff will use the refined per-provider evidence instead of only the older census/memory summary.
