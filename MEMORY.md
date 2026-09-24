@@ -4825,3 +4825,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Infrastructure-only commit `a1d173d...` changed the targeted recovery workflow/runner and the Repair trigger, but not the AnimeSalt patch file itself. The generic materialization selector therefore correctly returned `mode=none`; without a fallback that would still send this validation run through full-catalog materialization.
 - When and only when the Repair trigger file itself is part of the diff and the materialization selector is `none`, targeted recovery now adopts that trigger's explicit `targetProviders` as its cohort. `mode=all` is never narrowed by this fallback.
 - AnimeSalt is re-armed once more so the validation commit exercises the provider-only path rather than the full-catalog fallback.
+
+
+### 2026-09-24 22:02 UTC — Integrated Repair WAF qualification follows the explicit Repair cohort
+
+- Canonical AnimeSalt run `36064201530` proved the Repair/Brain scaling changes: canonical target count=1, provider materialization narrowed from source `mode=all` to AnimeSalt only, Brain executed exactly 1 wave / 1 Deep round, and the provider phase completed without budget exhaustion.
+- The same run exposed one remaining preflight cost: integrated WAF qualification still selected all 14 `brainCheckRequired` providers even though the push trigger requested only AnimeSalt, causing unnecessary GitHub-browser, Tailscale, residential-browser and residential-provider replays.
+- WAF preparation now intersects current WAF-eligible providers with the explicit manual `target_provider` or push-trigger `targetProviders`. Residential provider replay is intersected again with the same `/tmp/repair-waf-targets.json` cohort before any network work.
+- Schedules and non-targeted runs retain full current WAF scope. Only explicit targeted Repair is narrowed, so no diagnostic coverage is silently lost.
+- AnimeSalt itself remains functionally unresolved: direct `/series/{slug}/` now executes, but Cloudflare challenges the app-style HTTP path on both GitHub and residential egress; browser sessions can reach content. No playable/verified media has been claimed.

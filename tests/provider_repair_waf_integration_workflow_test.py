@@ -14,6 +14,9 @@ required=[
     "scripts/classify_provider_authority.py",
     'row.get("repairEligible") is True',
     "FIELD_REPAIR_WAF_SCOPE",
+    "DISPATCH_TARGET_PROVIDER",
+    'trigger.get("targetProviders")',
+    "FIELD_REPAIR_RESIDENTIAL_REPLAY_SCOPE",
     "audit_provider_quick_yield_targeted.py",
     "probe_waf_browser_session.py",
     "Connect optional Repair Tailscale transport",
@@ -45,6 +48,8 @@ persist=wf.index("- name: Persist Repair census state")
 assert reuse < prepare < authority < pre_render < connect < merge < canonical < final_merge < persist
 prepare_block=wf[prepare:connect]
 assert "steps.repair_waf_reuse.outputs.reuse != 'true'" in prepare_block
+assert 'providers=sorted(set(providers)&requested)' in prepare_block
+assert 'DISPATCH_TARGET_PROVIDER' in prepare_block
 reuse_block=wf[reuse:prepare]
 assert 'git log -1 --format=%H -- "$waf"' in reuse_block
 assert '--base "$source"' in reuse_block
@@ -64,6 +69,8 @@ connect_block=wf[connect:merge]
 assert "continue-on-error: true" in connect_block
 assert "timeout-minutes: 4" in connect_block
 assert "--unavailable-reason" in connect_block
+assert 'scope_path=Path("/tmp/repair-waf-targets.json")' in connect_block
+assert 'selected["providerCount"]=len(providers)' in connect_block
 assert "tailscale-not-configured" in connect_block
 assert "tailscale-offline-or-unavailable" in connect_block
 

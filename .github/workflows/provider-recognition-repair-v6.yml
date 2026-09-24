@@ -240,7 +240,7 @@ jobs:
           PY
           )"
           evidence_ok="$(python - <<'PY'
-          import json
+          import json,os
           from pathlib import Path
           d=json.loads(Path("automation/provider-waf-browser-session-latest.json").read_text(encoding="utf-8"))
           residential=d.get("residentialExitNodeEvidence") if isinstance(d.get("residentialExitNodeEvidence"),dict) else {}
@@ -260,6 +260,8 @@ jobs:
       - name: Prepare integrated Repair WAF/network qualification
         if: ${{ steps.repair_waf_reuse.outputs.reuse != 'true' }}
         shell: bash
+        env:
+          DISPATCH_TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
         run: |
           set -euo pipefail
           python scripts/classify_provider_authority.py
@@ -282,6 +284,21 @@ jobs:
               and row.get("brainCheckRequired") is True
               and str(row.get("provider") or "").strip().lower() in allowed
           })
+          requested=set()
+          direct=str(os.environ.get("DISPATCH_TARGET_PROVIDER") or "").strip().casefold().replace("_","-")
+          if direct:
+              requested.add(direct)
+          elif str(os.environ.get("GITHUB_EVENT_NAME") or "")=="push":
+              trigger_path=Path(".github/triggers/provider-recognition-repair-v6.json")
+              if trigger_path.exists():
+                  trigger=json.loads(trigger_path.read_text(encoding="utf-8"))
+                  requested.update(
+                      str(value or "").strip().casefold().replace("_","-")
+                      for value in trigger.get("targetProviders") or []
+                      if str(value or "").strip()
+                  )
+          if requested:
+              providers=sorted(set(providers)&requested)
           Path("/tmp/repair-waf-targets.json").write_text(
               json.dumps({"providers":providers},ensure_ascii=False,indent=2)+"\n",
               encoding="utf-8",
@@ -373,6 +390,24 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/select_residential_provider_replay.py             --waf automation/provider-waf-browser-session-latest.json             --status automation/provider-census-status.json             --output /tmp/repair-residential-provider-replay-targets.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          selected_path=Path("/tmp/repair-residential-provider-replay-targets.json")
+          scope_path=Path("/tmp/repair-waf-targets.json")
+          selected=json.loads(selected_path.read_text(encoding="utf-8"))
+          scope=json.loads(scope_path.read_text(encoding="utf-8"))
+          allowed={str(v or "").strip().casefold() for v in scope.get("providers") or [] if str(v or "").strip()}
+          providers=sorted({
+              str(v or "").strip().casefold()
+              for v in selected.get("providers") or []
+              if str(v or "").strip().casefold() in allowed
+          })
+          selected["providers"]=providers
+          selected["providerCount"]=len(providers)
+          selected_path.write_text(json.dumps(selected,indent=2)+"\n",encoding="utf-8")
+          print(f"FIELD_REPAIR_RESIDENTIAL_REPLAY_SCOPE providers={len(providers)} ids={','.join(providers)}")
+          PY
           count="$(python - <<'PY'
           import json
           from pathlib import Path
