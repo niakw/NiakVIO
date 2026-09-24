@@ -4659,3 +4659,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Brain-LLM commit `48df8f0d8d7a...` adds the missing data bridge from NiakVIO targeted recovery into each LLM request. The model now receives bounded current `debugStages`, lane statuses, playable/verified lanes, sanitized method/host/path/status observations, and the exact refined batch signature/split reason for that provider.
 - Stale refined plans are rejected when their source census run differs from the current census. Raw headers and unbounded response content are not forwarded. Current-byte tests remain proof authority; these observations are context only.
 - Brain LLM CI run `36035419178` completed SUCCESS. NiakVIO Learning is now pinned to this exact code SHA so the next Fast→Learning handoff will use the refined per-provider evidence instead of only the older census/memory summary.
+
+
+### 2026-09-24 19:42 Europe/Paris — Targeted recovery startup fix preserves bulk-onboarding guard
+
+- Provider Non-Regression run `36035661181` failed only in the static bulk-onboarding workflow contract: the earlier GitHub-expression simplification removed the literal `provider: bulk stage/activate` guard from targeted recovery.
+- The guard is now evaluated inside the already-valid `size.route` Python step using the checked-out commit subject. Bulk stage/activate pushes still set `should_run=false`, while the probe job retains the simple GitHub expression that already proved it can start successfully in run `36034557844`.
+- No provider bytes or repair evidence are changed by this CI fix.

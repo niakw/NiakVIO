@@ -67,12 +67,20 @@ jobs:
         run: |
           set -euo pipefail
           python - <<'PY' >> "$GITHUB_OUTPUT"
-          import json,subprocess
+          import json,os,subprocess
           d=json.load(open("manifest.json",encoding="utf-8"))
           count=len([x for x in d.get("scrapers") or [] if isinstance(x,dict)])
+          message=subprocess.check_output(["git","log","-1","--pretty=%s"],text=True).strip()
+          bulk_push=(
+              os.environ.get("GITHUB_EVENT_NAME")=="push"
+              and (
+                  message.startswith("provider: bulk stage ")
+                  or message.startswith("provider: bulk activate ")
+              )
+          )
           print(f"source_sha={subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()}")
           print(f"provider_count={count}")
-          print(f"should_run={'true' if count<=120 else 'false'}")
+          print(f"should_run={'true' if count<=120 and not bulk_push else 'false'}")
           PY
 
   probe:
