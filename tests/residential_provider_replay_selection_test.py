@@ -30,23 +30,24 @@ status={
     "providers":[
         {"provider":"yflix","status":"PROVIDER NETWORK BLOCKED"},
         {"provider":"waf-only","status":"HARNESS MISMATCH"},
+        {"provider":"client-gap","status":"CLIENT TRANSPORT GAP"},
         {"provider":"all-blocked","status":"HARNESS/ENV BLOCKED","authorityRepairEligible":True},
         {"provider":"authority-blocked","status":"HARNESS/ENV BLOCKED","authorityRepairEligible":False},
         {"provider":"green","status":"FULL OK"},
         {"provider":"route","status":"ROUTE PROVEN"},
     ],
-    "environmentQueue":["waf-only","all-blocked"],
+    "environmentQueue":["waf-only","client-gap","all-blocked"],
     "repairQueue":["yflix","route"],
 }
 selected=mod.select(report,status)
-assert selected==["all-blocked","waf-only","yflix"],selected
+assert selected==["all-blocked","client-gap","waf-only","yflix"],selected
 assert "green" not in selected and "route" not in selected
 assert "authority-blocked" not in selected
 
 unavailable={"residentialExitNodeEvidence":{"available":False}}
 assert mod.select(unavailable,status)==[]
 assert mod.ELIGIBLE_STATUSES=={
-    "HARNESS MISMATCH","HARNESS/ENV BLOCKED","PROVIDER NETWORK BLOCKED"
+    "HARNESS MISMATCH","CLIENT TRANSPORT GAP","HARNESS/ENV BLOCKED","PROVIDER NETWORK BLOCKED"
 }
 
 print("residential full-provider replay selection contract passed")
