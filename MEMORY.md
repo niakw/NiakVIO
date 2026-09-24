@@ -4489,3 +4489,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The mono current-byte census now runs `detect_provider_projection_drift.py` in its lightweight scale job **before starting the expensive census**. Any unpublished provider projection forces `should_run=false` and hands off to `provider-projection-reconcile.yml`.
 - A second identical drift check runs immediately before census evidence persistence. Even if a future workflow path bypasses the scale decision, census cannot advance `main` while provider DATA/Lego and published bytes are out of fixed point.
 - This makes publication ownership explicit: Projection Reconcile first; only the exact published HEAD may persist canonical census evidence afterwards.
+
+
+### 2026-09-24 — Failed scheduled Repair may no longer downgrade the durable census
+
+- Scheduled Repair run `35976942192` on source SHA `3ed0dd323e4d...` failed its own final gates: `preservation_gate=false`, `execution_gate=false`, active positive loss `animevostfr:anime`, final outcome `failed`. Despite that, the always-run persistence step wrote its candidate census to main as `a32a661...`.
+- This downgraded the durable state from the pre-run evidence (26 FULL, 2 PARTIAL, 1 CANDIDATE, 0 NETWORK BLOCKED; Vostfree FULL from strict residential replay) to 25 FULL plus 2 NETWORK BLOCKED and Vostfree HARNESS MISMATCH. Provider bytes were not shown to justify those regressions.
+- Canonical Repair persistence is now fail-closed: only `steps.canonical-repair.outcome == success` may replace PROVIDER_CENSUS_STATUS / census / authority / WAF canonical ledgers. Failed or skipped Repair may still persist causal Brain memory and its exact run report for Learning, but cannot overwrite the last accepted durable census.
+- The same morning Learning run `35970740811` never reached Brain-LLM inference because `brain_cron_full_coverage_test.py` caught stale provider_catalog manifestOrder entries for lifecycle-archived `desiflix` and `fullanime`. This is fixed at the lifecycle authority: `update_provider_catalog()` now reconciles general/VF manifestOrder to the current visible provider projection set, preserving relative order and appending only missing current projections.
+- External private-informed guidance was correctly rejected by Repair as source-stale after real provider/lifecycle changes. A fresh Brain-LLM guidance run on the corrected HEAD is required before the next provider Repair.

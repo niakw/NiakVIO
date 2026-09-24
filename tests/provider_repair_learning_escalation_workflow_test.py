@@ -74,3 +74,14 @@ assert 'FIELD_REPAIR_CURRENT_RUN_BRAIN_REPORT captured=false reason=canonical-re
 assert 'FIELD_REPAIR_CURRENT_RUN_BRAIN_REPORT captured=false reason=source-sha-mismatch' in persist_block
 
 print("provider Repair-to-Learning causal escalation workflow contract passed")
+
+
+# A failed canonical Repair may persist causal Brain memory/report only; it may
+# never replace the durable census/authority/WAF ledger with its rejected
+# candidate state.
+persist_block=workflow[workflow.index("- name: Persist Repair census state"):]
+assert 'canonical_ledger_publishable=0' in persist_block
+assert 'if [ "$canonical_repair_outcome" = "success" ]; then' in persist_block
+assert "FIELD_REPAIR_CANONICAL_LEDGER_FAIL_CLOSED" in persist_block
+assert persist_block.count('if [ "$canonical_ledger_current" = "1" ] && [ "$canonical_ledger_publishable" = "1" ]; then') >= 2
+assert 'FIELD_REPAIR_CANONICAL_LEDGER_SKIPPED reason=canonical-repair-$canonical_repair_outcome' in persist_block

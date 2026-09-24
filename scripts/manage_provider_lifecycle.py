@@ -230,6 +230,40 @@ def update_provider_catalog(root_rows: dict[str, dict[str, Any]], archived: set[
                 entry.pop("lifecycle", None)
         providers.append(entry)
     doc["providers"] = providers
+
+    # Keep projection order in the same current-catalogue authority boundary.
+    # Archived provider-old identities may remain in lifecycle history, but must
+    # not remain executable/projected Brain coverage targets.
+    # PROVIDER_LIFECYCLE_CATALOG_ORDER_V1
+    manifest_order = doc.get("manifestOrder")
+    if isinstance(manifest_order, dict):
+        provider_ids = [
+            cid(entry.get("canonicalId") or ((entry.get("scraper") or {}).get("id") if isinstance(entry.get("scraper"), dict) else ""))
+            for entry in providers
+        ]
+        provider_ids = [value for value in provider_ids if value]
+        by_projection: dict[str, set[str]] = {"general": set(), "vf": set()}
+        for entry in providers:
+            if not isinstance(entry, dict):
+                continue
+            pid = cid(entry.get("canonicalId") or ((entry.get("scraper") or {}).get("id") if isinstance(entry.get("scraper"), dict) else ""))
+            projections = entry.get("projections") if isinstance(entry.get("projections"), dict) else {}
+            if not pid:
+                continue
+            for projection in by_projection:
+                if projections.get(projection) is True:
+                    by_projection[projection].add(pid)
+        for projection, allowed in by_projection.items():
+            prior = [
+                cid(value)
+                for value in manifest_order.get(projection) or []
+                if cid(value) in allowed
+            ]
+            seen = set(prior)
+            prior.extend(pid for pid in provider_ids if pid in allowed and pid not in seen)
+            manifest_order[projection] = prior
+        doc["manifestOrder"] = manifest_order
+
     dump_json(path, doc)
 
 

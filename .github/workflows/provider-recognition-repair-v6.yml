@@ -660,6 +660,12 @@ jobs:
           [ ! -s automation/provider-waf-browser-session-latest.json ] || cp automation/provider-waf-browser-session-latest.json "$tmp/provider-waf-browser-session-latest.json"
           [ ! -s automation/provider-census-proof-history.json ] || cp automation/provider-census-proof-history.json "$tmp/provider-census-proof-history.json"
           canonical_repair_outcome="${{ steps.canonical-repair.outcome }}"
+          canonical_ledger_publishable=0
+          if [ "$canonical_repair_outcome" = "success" ]; then
+            canonical_ledger_publishable=1
+          else
+            echo "FIELD_REPAIR_CANONICAL_LEDGER_FAIL_CLOSED outcome=$canonical_repair_outcome"
+          fi
           if [ "$canonical_repair_outcome" != "skipped" ]; then
             if [ -s automation/brain-repair-memory.json ] && ! git diff --quiet "$GITHUB_SHA" -- automation/brain-repair-memory.json; then
               cp automation/brain-repair-memory.json "$tmp/brain-repair-memory.json"
@@ -747,7 +753,7 @@ jobs:
             cp "$tmp/provider-brain-repair-latest.json" "automation/provider-brain-repair-${GITHUB_RUN_ID}.json"
           fi
 
-          if [ "$canonical_ledger_current" = "1" ]; then
+          if [ "$canonical_ledger_current" = "1" ] && [ "$canonical_ledger_publishable" = "1" ]; then
             cp "$tmp/PROVIDER_CENSUS_STATUS.md" PROVIDER_CENSUS_STATUS.md
             cp "$tmp/provider-census-status.json" automation/provider-census-status.json
             [ ! -f "$tmp/provider-authority-status.json" ] || cp "$tmp/provider-authority-status.json" automation/provider-authority-status.json
@@ -756,13 +762,15 @@ jobs:
             [ ! -f "$tmp/provider-census-post-repair.json" ] || cp "$tmp/provider-census-post-repair.json" automation/provider-census-post-repair.json
             [ ! -f "$tmp/provider-repair-candidate-evidence.json" ] || cp "$tmp/provider-repair-candidate-evidence.json" automation/provider-repair-candidate-evidence.json
             [ ! -f "$tmp/provider-repair-batch-plan-latest.json" ] || cp "$tmp/provider-repair-batch-plan-latest.json" automation/provider-repair-batch-plan-latest.json
-          else
+          elif [ "$canonical_ledger_current" != "1" ]; then
             echo "FIELD_REPAIR_CANONICAL_LEDGER_SKIPPED reason=newer-main-requires-fresh-census"
+          else
+            echo "FIELD_REPAIR_CANONICAL_LEDGER_SKIPPED reason=canonical-repair-$canonical_repair_outcome"
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if [ "$canonical_ledger_current" = "1" ]; then
+          if [ "$canonical_ledger_current" = "1" ] && [ "$canonical_ledger_publishable" = "1" ]; then
             git add PROVIDER_CENSUS_STATUS.md automation/provider-census-status.json
             [ ! -f automation/provider-authority-status.json ] || git add automation/provider-authority-status.json
             [ ! -f automation/provider-waf-browser-session-latest.json ] || git add automation/provider-waf-browser-session-latest.json

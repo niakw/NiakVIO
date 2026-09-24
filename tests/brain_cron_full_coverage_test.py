@@ -283,6 +283,7 @@ def main() -> int:
         norm(row.get("canonicalId")) for row in providers
         if norm(row.get("canonicalId")) and bool((row.get("projections") or {}).get("vf"))
     }
+    assert "PROVIDER_LIFECYCLE_CATALOG_ORDER_V1" in (ROOT / "scripts" / "manage_provider_lifecycle.py").read_text(encoding="utf-8")
     assert projected_general == general_order, (
         "general provider projection/order mismatch",
         sorted(projected_general - general_order),
