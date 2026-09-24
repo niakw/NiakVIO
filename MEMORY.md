@@ -4751,3 +4751,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Optimized Repair run `36052679956` exited in ~1 minute before provider execution because `tests/provider_repair_pipeline_v6_contract_test.py` still required literal `--waves 3` / `--time-budget-seconds 900`. This was a stale static contract, not a runtime regression.
 - The V6 contract now checks the intended dynamic split: automatic `repair` = 1 wave / 600 s, explicit `force` = 3 waves / 900 s, with the existing 150 s no-new-batch floor. It also asserts targeted non-publishing materialization.
 - Re-armed the exact current 14-provider Repair queue. Run `36052679956` produced no provider proof and must not be used for status changes.
+
+
+### 2026-09-24 22:14 Europe/Paris — Repair V6 compatibility wrapper accepts parameterized rematerialization
+
+- Repair run `36053082361` again stopped before provider work in the static compatibility wrapper. The traceback displayed the nearby candidate-yield assertion, but the current pipeline still contains that exact call; the rewritten contract's line mapping was misleading.
+- The stale assertion was the exact zero-argument signature `def rematerialize_repair_scope()`. The compatibility wrapper now rewrites it to the parameterized targeted signature contract. No provider result from `36053082361` is authoritative.

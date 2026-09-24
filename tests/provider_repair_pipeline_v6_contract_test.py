@@ -54,6 +54,7 @@ source = source.replace(
 # providers/ = enabled, provider-disabled/ = visible but disabled.
 # Repair/off is separate route debt and must never invent provider cardinality.
 compat_replacements = {
+    "assert 'def rematerialize_repair_scope()' in pipeline": "assert 'def rematerialize_repair_scope(' in pipeline",
     "    'active-but-broken',": "    '\"activationAuthority\": \"provider-folder-lifecycle\"',",
     "    'enabled = True',": "    'enabled = provider in active_ids',",
     "    'def off_evidence_ok(patch: dict) -> bool:',": "    'def off_evidence_ok(patch: dict, expected_enabled: bool) -> bool:',",
