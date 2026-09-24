@@ -82,7 +82,21 @@ assert learning["llmAdvisorApplied"] is True,learning
 assert learning["llmAdvisorStrategy"]=="search_detail_player_terminal_traversal",learning
 assert learning["llmAdvisorProfile"]=="proven_route_terminal_traversal_v1",learning
 assert learning["llmAdvisorConfidence"]==0.94,learning
+assert learning["llmAdvisorFailureCompatibility"]=="exact",learning
+assert learning["llmAdvisorSourceFailureClass"]=="route_proven_gap",learning
 assert learning["allowedProfiles"][0]=="proven_route_terminal_traversal_v1",learning
+
+family_guidance=[{**guidance[0],"failureClass":"search_gap"}]
+family=plan("repair",guidance_rows=family_guidance)
+assert family["llmAdvisorApplied"] is True,family
+assert family["llmAdvisorFailureCompatibility"]=="family",family
+assert family["llmAdvisorSourceFailureClass"]=="search_gap",family
+assert family["allowedProfiles"][0]=="proven_route_terminal_traversal_v1",family
+
+incompatible_guidance=[{**guidance[0],"failureClass":"chain_terminal_gap"}]
+incompatible=plan("repair",guidance_rows=incompatible_guidance)
+assert incompatible["llmAdvisorApplied"] is False,incompatible
+assert incompatible["llmAdvisorFailureCompatibility"]=="",incompatible
 
 # Exact profile debt blocks the advisor. The deterministic Brain resumes its
 # ordinary bounded profile selection instead of replaying a known failure.

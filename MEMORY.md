@@ -4550,3 +4550,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 
 - Bounded Repair retry `35994664152` again stopped before network/Brain work. The WAF integration contract was already green; the remaining failure was `tests/provider_waf_tailscale_exit_contract_test.py` still asserting `provider-repair-main-v2`.
 - Repository search found no other intended v2 contract beyond the already-corrected WAF integration fixture and this Tailscale fixture. The Tailscale contract is updated to concurrency epoch v3.
+
+
+### 2026-09-24 — LLM causal-family transfer and stale-evidence race closure
+
+- Bounded Repair run `35994886858` completed its Brain stage in **155.288 seconds**, one wave, with an internal 900-second budget. This confirms the +40-minute/Yflix multi-wave pathology is no longer the Brain runtime baseline.
+- The same report proves the remaining LLM issue is semantic, not connectivity: sanitized guidance was present, but all persisted plans had `llmAdvisorApplied=false`. Exact string matching rejected compatible evolution such as `chain_terminal_gap -> media_extraction_gap` and `route_proven_gap -> provider_transport_gap / transport_blocked / search_gap`.
+- Planner guidance now supports two bounded causal families: route/search/transport and chain/media/playback-context. Exact failure matches remain preferred; family transfer requires provider identity, an allowlisted profile, priorOnly=true and confidence >=0.90. Unrelated families are rejected.
+- Exact profile negative memory remains authoritative. A profile that already failed on current evidence is not replayed just because the failure-class label moved within a compatible family.
+- External private-informed guidance treats planner code and causal-memory/report files as provider-neutral only when `select_provider_materialization_scope.py` still proves zero provider materialization drift.
+- Repair persistence is now stricter: if remote main advanced, the run may keep its Actions artifact but does not copy/add Brain memory/report and does not dispatch Learning/resume from stale evidence. This closes the evidence-only commit race that produced `bb5d426...` and `4e6309a...` while newer Repairs were running.

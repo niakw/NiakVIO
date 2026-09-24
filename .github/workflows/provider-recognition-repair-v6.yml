@@ -744,14 +744,17 @@ jobs:
 
           mkdir -p automation
 
-          # Causal Brain memory is Repair-owned and remains useful after a
-          # concurrent observational commit. Canonical census/authority/WAF,
-          # however, describe exact tested bytes and must never overwrite a
-          # newer HEAD merely because this longer Repair finished later.
-          [ ! -f "$tmp/brain-repair-memory.json" ] || cp "$tmp/brain-repair-memory.json" automation/brain-repair-memory.json
-          [ ! -f "$tmp/brain-positive-program-memory.json" ] || cp "$tmp/brain-positive-program-memory.json" automation/brain-positive-program-memory.json
-          if [ -f "$tmp/provider-brain-repair-latest.json" ]; then
-            cp "$tmp/provider-brain-repair-latest.json" "automation/provider-brain-repair-${GITHUB_RUN_ID}.json"
+          # Stale Repair output remains downloadable from Actions, but it may
+          # not move main. Even evidence-only commits can supersede the exact
+          # SHA of a newer Repair and create another avoidable cycle.
+          if [ "$canonical_ledger_current" = "1" ]; then
+            [ ! -f "$tmp/brain-repair-memory.json" ] || cp "$tmp/brain-repair-memory.json" automation/brain-repair-memory.json
+            [ ! -f "$tmp/brain-positive-program-memory.json" ] || cp "$tmp/brain-positive-program-memory.json" automation/brain-positive-program-memory.json
+            if [ -f "$tmp/provider-brain-repair-latest.json" ]; then
+              cp "$tmp/provider-brain-repair-latest.json" "automation/provider-brain-repair-${GITHUB_RUN_ID}.json"
+            fi
+          else
+            echo "FIELD_REPAIR_STALE_BRAIN_NOT_PERSISTED source=$GITHUB_SHA remote=$remote_main"
           fi
 
           if [ "$canonical_ledger_current" = "1" ] && [ "$canonical_ledger_publishable" = "1" ]; then
@@ -780,9 +783,11 @@ jobs:
             [ ! -f automation/provider-repair-candidate-evidence.json ] || git add automation/provider-repair-candidate-evidence.json
             [ ! -f automation/provider-repair-batch-plan-latest.json ] || git add automation/provider-repair-batch-plan-latest.json
           fi
-          [ ! -f automation/brain-repair-memory.json ] || git add automation/brain-repair-memory.json
-          [ ! -f automation/brain-positive-program-memory.json ] || git add automation/brain-positive-program-memory.json
-          [ ! -f "automation/provider-brain-repair-${GITHUB_RUN_ID}.json" ] || git add "automation/provider-brain-repair-${GITHUB_RUN_ID}.json"
+          if [ "$canonical_ledger_current" = "1" ]; then
+            [ ! -f automation/brain-repair-memory.json ] || git add automation/brain-repair-memory.json
+            [ ! -f automation/brain-positive-program-memory.json ] || git add automation/brain-positive-program-memory.json
+            [ ! -f "automation/provider-brain-repair-${GITHUB_RUN_ID}.json" ] || git add "automation/provider-brain-repair-${GITHUB_RUN_ID}.json"
+          fi
 
           if git diff --cached --quiet; then
             echo "Repair evidence already current"
@@ -800,7 +805,10 @@ jobs:
             echo "FIELD_REPAIR_FRESH_CENSUS_SKIPPED source_run=${GITHUB_RUN_ID} reason=provider-neutral-main-drift"
           fi
 
-          if [ -s "$tmp/provider-brain-repair-latest.json" ]; then
+          if [ "$canonical_ledger_current" != "1" ] && [ -s "$tmp/provider-brain-repair-latest.json" ]; then
+            echo "FIELD_REPAIR_STALE_ESCALATION_SKIPPED source=$GITHUB_SHA remote=$remote_main"
+          fi
+          if [ "$canonical_ledger_current" = "1" ] && [ -s "$tmp/provider-brain-repair-latest.json" ]; then
             deferred="$(python - "$tmp/provider-brain-repair-latest.json" <<'PY'
           import json,sys
           data=json.load(open(sys.argv[1],encoding='utf-8'))

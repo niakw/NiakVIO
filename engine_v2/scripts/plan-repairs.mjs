@@ -225,19 +225,54 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery) {
   return { profile: "", method: "", index: -1, strategyImplementationFingerprint: "" };
 }
 
+const LLM_FAILURE_FAMILIES = Object.freeze({
+  route_proven_gap: "route-terminal",
+  provider_transport_gap: "route-terminal",
+  transport_blocked: "route-terminal",
+  search_gap: "route-terminal",
+  chain_terminal_gap: "terminal-media",
+  media_extraction_gap: "terminal-media",
+  playback_context_gap: "terminal-media",
+});
+
+function canonicalFailureClass(value) {
+  return stringValue(value).toLowerCase().replaceAll("-", "_");
+}
+
+function llmFailureCompatibility(guidanceFailure, currentFailure) {
+  const source = canonicalFailureClass(guidanceFailure);
+  const current = canonicalFailureClass(currentFailure);
+  if (!source) return "unspecified";
+  if (source === current) return "exact";
+  const sourceFamily = LLM_FAILURE_FAMILIES[source] ?? "";
+  const currentFamily = LLM_FAILURE_FAMILIES[current] ?? "";
+  return sourceFamily && sourceFamily === currentFamily ? "family" : "";
+}
+
 function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEvery) {
   const provider = stringValue(providerId).toLowerCase();
-  const failure = stringValue(failureClass).toLowerCase();
+  const failure = canonicalFailureClass(failureClass);
   const rows = llmGuidance
-    .filter((row) => (
-      stringValue(row.providerId).toLowerCase() === provider
-      && stringValue(row.targetLayer).toLowerCase() === "provider"
-      && row.priorOnly === true
-      && finiteNumber(row.confidence, 0) >= 0.80
-      && LLM_ADVISOR_PROFILES.has(stringValue(row.profile).toLowerCase())
-      && (!stringValue(row.failureClass) || stringValue(row.failureClass).toLowerCase() === failure)
-    ))
-    .sort((a, b) => finiteNumber(b.confidence, 0) - finiteNumber(a.confidence, 0));
+    .map((row) => ({
+      ...row,
+      failureCompatibility: llmFailureCompatibility(row.failureClass, failure),
+    }))
+    .filter((row) => {
+      const confidence = finiteNumber(row.confidence, 0);
+      return (
+        stringValue(row.providerId).toLowerCase() === provider
+        && stringValue(row.targetLayer).toLowerCase() === "provider"
+        && row.priorOnly === true
+        && confidence >= 0.80
+        && LLM_ADVISOR_PROFILES.has(stringValue(row.profile).toLowerCase())
+        && Boolean(row.failureCompatibility)
+        && (row.failureCompatibility !== "family" || confidence >= 0.90)
+      );
+    })
+    .sort((a, b) => (
+      Number(b.failureCompatibility === "exact") - Number(a.failureCompatibility === "exact")
+      || finiteNumber(b.confidence, 0) - finiteNumber(a.confidence, 0)
+    ));
   for (const row of rows) {
     const profile = stringValue(row.profile).toLowerCase();
     const alreadyFailed = memoryRows.some((memory) => (
@@ -249,9 +284,17 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
       profile,
       strategy: stringValue(row.strategy).toLowerCase(),
       confidence: finiteNumber(row.confidence, 0),
+      sourceFailureClass: canonicalFailureClass(row.failureClass),
+      failureCompatibility: row.failureCompatibility,
     };
   }
-  return { profile: "", strategy: "", confidence: 0 };
+  return {
+    profile: "",
+    strategy: "",
+    confidence: 0,
+    sourceFailureClass: "",
+    failureCompatibility: "",
+  };
 }
 
 function providerPositiveProgramReplayHint(reusableSkills, memoryRows, rotateEvery) {
@@ -673,6 +716,8 @@ function buildPlan(item) {
     llmAdvisorStrategy: llmAdvisorHint.strategy,
     llmAdvisorProfile: llmAdvisorHint.profile,
     llmAdvisorConfidence: llmAdvisorHint.confidence,
+    llmAdvisorSourceFailureClass: llmAdvisorHint.sourceFailureClass,
+    llmAdvisorFailureCompatibility: llmAdvisorHint.failureCompatibility,
     historicalStrategyProfile: historicalHint.profile,
     historicalStrategyCase: historicalHint.caseId,
     historicalSolutionClass: historicalHint.solutionClass,

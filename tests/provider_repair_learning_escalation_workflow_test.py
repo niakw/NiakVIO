@@ -72,6 +72,8 @@ assert 'git diff --quiet "$GITHUB_SHA" -- automation/brain-positive-program-memo
 assert 'source != current' in persist_block
 assert 'FIELD_REPAIR_CURRENT_RUN_BRAIN_REPORT captured=false reason=canonical-repair-skipped' in persist_block
 assert 'FIELD_REPAIR_CURRENT_RUN_BRAIN_REPORT captured=false reason=source-sha-mismatch' in persist_block
+assert 'FIELD_REPAIR_STALE_BRAIN_NOT_PERSISTED' in persist_block
+assert 'FIELD_REPAIR_STALE_ESCALATION_SKIPPED' in persist_block
 
 print("provider Repair-to-Learning causal escalation workflow contract passed")
 
