@@ -3,7 +3,7 @@
   "sourceRunId": "36058132100-post-repair-candidate",
   "sourceTriggerSha": "f63c0f89f6927bb24b6b4631c3fa584c3a2b6ee8",
   "sourcePlanRunId": "36058132100-post-repair-candidate",
-  "sourceVerdictRunId": "36062383321",
+  "sourceVerdictRunId": "36063298122",
   "providerCount": 14,
   "groupCount": 14,
   "groups": [
@@ -79,15 +79,15 @@
       "providers": [
         "animevost-fr"
       ],
-      "networkSignature": "provider_waf_challenge||anime:GET:animevost.fr:200:/api/anime/search;anime:GET:animevost.fr:200:/api/animes/one-piece;anime:GET:api.themoviedb.org:200:/{id}/tv/{id};anime:GET:gupload.xyz:403:/data/e/befd426c49c3",
+      "networkSignature": "provider_waf_challenge||anime:GET:animevost.fr:200:/api/anime/search;anime:GET:animevost.fr:200:/api/animes/hell-mode-yarikomi-zuki-no-gamer-wa-haisettei-no;anime:GET:api.themoviedb.org:200:/{id}/tv/{id};anime:GET:gupload.xyz:403:/data/e/0fb2ab04b69e",
       "debugStages": [
         "provider_waf_challenge"
       ],
       "networkShape": [
         "anime:GET:animevost.fr:200:/api/anime/search",
-        "anime:GET:animevost.fr:200:/api/animes/one-piece",
+        "anime:GET:animevost.fr:200:/api/animes/hell-mode-yarikomi-zuki-no-gamer-wa-haisettei-no",
         "anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
-        "anime:GET:gupload.xyz:403:/data/e/befd426c49c3"
+        "anime:GET:gupload.xyz:403:/data/e/0fb2ab04b69e"
       ],
       "splitReason": "shared-signature",
       "executionPolicy": "batch-first"
@@ -173,12 +173,13 @@
       "providers": [
         "animesalt"
       ],
-      "networkSignature": "provider_waf_challenge||anime:GET:animesalt.cx:403:/;anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
+      "networkSignature": "provider_waf_challenge||anime:GET:animesalt.cx:403:/;anime:GET:animesalt.cx:403:/series/konosuba-sois-beni-monde-merveilleux;anime:GET:api.themoviedb.org:200:/{id}/tv/{id}",
       "debugStages": [
         "provider_waf_challenge"
       ],
       "networkShape": [
         "anime:GET:animesalt.cx:403:/",
+        "anime:GET:animesalt.cx:403:/series/konosuba-sois-beni-monde-merveilleux",
         "anime:GET:api.themoviedb.org:200:/{id}/tv/{id}"
       ],
       "splitReason": "observed-signature-divergence",
@@ -203,15 +204,15 @@
       "providers": [
         "moviesmod"
       ],
-      "networkSignature": "provider_waf_challenge||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:links.modpro.blog:403:/archives/{id};movie:GET:moviesmod.ai.in:200:/download-black-panther-wakanda-forever-hindi-eng;movie:GET:moviesmod.ai.in:200:/search/{id};tv:GET:api.themoviedb.org:200:/{id}/tv/{id};tv:GET:episodes.modpro.blog:403:/archives/{id};tv:GET:moviesmod.ai.in:200:/search/{id};tv:GET:moviesmod.ai.in:200:/{id}",
+      "networkSignature": "provider_waf_challenge||movie:GET:api.themoviedb.org:200:/{id}/movie/{id};movie:GET:links.modpro.blog:403:/archives/{id};movie:GET:moviesmod.ai.in:200:/search/Thor;movie:GET:moviesmod.ai.in:200:/{id};tv:GET:api.themoviedb.org:200:/{id}/tv/{id};tv:GET:episodes.modpro.blog:403:/archives/{id};tv:GET:moviesmod.ai.in:200:/search/{id};tv:GET:moviesmod.ai.in:200:/{id}",
       "debugStages": [
         "provider_waf_challenge"
       ],
       "networkShape": [
         "movie:GET:api.themoviedb.org:200:/{id}/movie/{id}",
         "movie:GET:links.modpro.blog:403:/archives/{id}",
-        "movie:GET:moviesmod.ai.in:200:/download-black-panther-wakanda-forever-hindi-eng",
-        "movie:GET:moviesmod.ai.in:200:/search/{id}",
+        "movie:GET:moviesmod.ai.in:200:/search/Thor",
+        "movie:GET:moviesmod.ai.in:200:/{id}",
         "tv:GET:api.themoviedb.org:200:/{id}/tv/{id}",
         "tv:GET:episodes.modpro.blog:403:/archives/{id}",
         "tv:GET:moviesmod.ai.in:200:/search/{id}",
