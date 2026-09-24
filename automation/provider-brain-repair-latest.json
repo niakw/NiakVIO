@@ -20,7 +20,7 @@
     "vidfast",
     "yflix"
   ],
-  "elapsedSeconds": 307.882,
+  "elapsedSeconds": 302.824,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 28,
@@ -253,35 +253,16 @@
                 "signature": "85142dbd270badba8d64353a"
               },
               "published:animesultra": {
-                "action": "probe-targeted-repair",
-                "allowedProfiles": [
-                  "proven_route_terminal_traversal_v1"
-                ],
-                "exitReason": null,
-                "experimentExhausted": false,
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "experiment_variants_exhausted",
+                "experimentExhausted": true,
                 "experimentGeneration": 2,
                 "experimentVariant": 4,
                 "experimentVariantCount": 5,
                 "failureClass": "route_proven_gap",
-                "hypotheses": [
-                  {
-                    "confidence": 0,
-                    "id": "complete-proven-route-chain",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  },
-                  {
-                    "confidence": 0,
-                    "id": "expand-proven-route-neighborhood",
-                    "learned": false,
-                    "maturity": null,
-                    "profile": null,
-                    "transferScore": 0
-                  }
-                ],
-                "learningDisposition": "core_repair_only",
+                "hypotheses": [],
+                "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
                 "llmAdvisorApplied": false,
                 "llmAdvisorConfidence": 0,
                 "llmAdvisorExperiment": {},
@@ -291,10 +272,10 @@
                 "llmAdvisorRescue": false,
                 "llmAdvisorSourceFailureClass": null,
                 "llmAdvisorStrategy": "",
-                "negativeMemoryMatches": 6,
+                "negativeMemoryMatches": 7,
                 "providerId": "animesultra",
-                "repairScope": "capability",
-                "repairType": "route_chain_completion",
+                "repairScope": "deferred",
+                "repairType": "experiment_strategy_exhausted",
                 "signature": "85142dbd270badba8d64353a"
               },
               "published:animevost-fr": {
@@ -383,7 +364,7 @@
                 "exitReason": null,
                 "experimentExhausted": false,
                 "experimentGeneration": 1,
-                "experimentVariant": 1,
+                "experimentVariant": 2,
                 "experimentVariantCount": 5,
                 "failureClass": "route_proven_gap",
                 "hypotheses": [
@@ -414,7 +395,7 @@
                 "llmAdvisorRescue": false,
                 "llmAdvisorSourceFailureClass": null,
                 "llmAdvisorStrategy": "",
-                "negativeMemoryMatches": 1,
+                "negativeMemoryMatches": 2,
                 "providerId": "mallumv",
                 "repairScope": "capability",
                 "repairType": "route_chain_completion",
@@ -531,6 +512,7 @@
               "allwish",
               "anime-ultime",
               "animesalt",
+              "animesultra",
               "animevost-fr",
               "animevostfr",
               "flemmix",
