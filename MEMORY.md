@@ -4818,3 +4818,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - `run_provider_targeted_recovery.py` now intersects explicit provider filters with current unresolved/repair-plan authority, so a requested green provider is not silently promoted or probed outside the current debt set.
 - Stale-run contamination was reproduced by `36063298122`: while it was still running on `a8e0f84...`, projection reconcile advanced main and the old workflow later committed `736b853...` with a stale verdict. Persistence now compares verdict `triggerSha` to current `origin/main` and refuses stale writes.
 - Canonical AnimeSalt Repair is re-armed on the current published projection. Automatic Repair remains one wave / one Deep round and internal candidate rematerialization remains target-cohort-only.
+
+
+### 2026-09-24 23:18 Europe/Paris — Repair trigger cohort is a targeted-recovery scope fallback
+
+- Infrastructure-only commit `a1d173d...` changed the targeted recovery workflow/runner and the Repair trigger, but not the AnimeSalt patch file itself. The generic materialization selector therefore correctly returned `mode=none`; without a fallback that would still send this validation run through full-catalog materialization.
+- When and only when the Repair trigger file itself is part of the diff and the materialization selector is `none`, targeted recovery now adopts that trigger's explicit `targetProviders` as its cohort. `mode=all` is never narrowed by this fallback.
+- AnimeSalt is re-armed once more so the validation commit exercises the provider-only path rather than the full-catalog fallback.

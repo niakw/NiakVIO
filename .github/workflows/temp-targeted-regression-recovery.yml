@@ -85,9 +85,22 @@ jobs:
                   or message.startswith("provider: bulk activate ")
               )
           )
+          targets=list(scope.get("providers") or []) if scope.get("mode")=="providers" else []
+          changed=set(scope.get("changedPaths") or [])
+          trigger_path=".github/triggers/provider-recognition-repair-v6.json"
+          if not targets and scope.get("mode")=="none" and trigger_path in changed:
+              try:
+                  trigger=json.load(open(trigger_path,encoding="utf-8"))
+              except Exception:
+                  trigger={}
+              targets=[
+                  str(value or "").strip().casefold().replace("_","-")
+                  for value in trigger.get("targetProviders") or []
+                  if str(value or "").strip()
+              ]
           print(f"source_sha={subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()}")
           print(f"provider_count={count}")
-          print("target_providers="+(",".join(scope.get("providers") or []) if scope.get("mode")=="providers" else ""))
+          print("target_providers="+",".join(sorted(set(targets))))
           print(f"should_run={'true' if count<=120 and not bulk_push else 'false'}")
           PY
 

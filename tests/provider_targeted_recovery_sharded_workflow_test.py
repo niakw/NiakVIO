@@ -20,6 +20,9 @@ for needle in [
     "FIELD_TARGETED_RECOVERY_MATERIALIZATION mode=providers",
     'args+=(--provider "$provider")',
     "FIELD_TARGETED_RECOVERY_STALE_NOT_PERSISTED",
+    'trigger_path=".github/triggers/provider-recognition-repair-v6.json"',
+    'trigger.get("targetProviders")',
+    'scope.get("mode")=="none"',
 ]:
     assert needle in mono, needle
 
