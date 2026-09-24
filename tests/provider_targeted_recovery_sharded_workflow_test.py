@@ -6,7 +6,9 @@ mono=(ROOT/".github/workflows/temp-targeted-regression-recovery.yml").read_text(
 sharded=(ROOT/".github/workflows/provider-targeted-recovery-sharded.yml").read_text(encoding="utf-8")
 
 for needle in [
-    "should_run={'true' if count<=120 else 'false'}",
+    "should_run={'true' if count<=120 and not bulk_push else 'false'}",
+    'message.startswith("provider: bulk stage ")',
+    'message.startswith("provider: bulk activate ")',
     "needs.size.outputs.should_run == 'true'",
     "scripts/run_provider_targeted_recovery.py",
     "--shard-count 1",
