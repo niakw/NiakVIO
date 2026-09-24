@@ -69,6 +69,7 @@ def main()->int:
     ap.add_argument("--shard-count",type=int,default=1)
     ap.add_argument("--shard-index",type=int,default=0)
     ap.add_argument("--max-workers",type=int,default=20)
+    ap.add_argument("--provider",action="append",default=[])
     ap.add_argument("--include-environment",action="store_true")
     ap.add_argument("--run-id",default="")
     ap.add_argument("--sha",default="")
@@ -97,6 +98,9 @@ def main()->int:
         if str(pid).strip()
     }
     targets=(planned if groups else unresolved)&unresolved
+    requested={str(value or "").strip().casefold().replace("_","-") for value in args.provider if str(value or "").strip()}
+    if requested:
+        targets &= requested
     skipped_environment=sorted(unresolved-targets) if groups else []
     selected_targets={
         pid for pid in targets if shard_for(pid,args.shard_count)==args.shard_index
@@ -174,6 +178,7 @@ def main()->int:
         "maxWorkers":min(max(1,args.max_workers),20),
         "selectedProviderCount":len(selected_targets),
         "selectedProviders":sorted(selected_targets),
+        "requestedProviders":sorted(requested),
         "skippedEnvironmentProviders":skipped_environment,
         "groupResults":group_results,
         "providers":summary,

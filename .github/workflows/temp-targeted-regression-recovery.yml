@@ -57,6 +57,7 @@ jobs:
       source_sha: ${{ steps.route.outputs.source_sha }}
       provider_count: ${{ steps.route.outputs.provider_count }}
       should_run: ${{ steps.route.outputs.should_run }}
+      target_providers: ${{ steps.route.outputs.target_providers }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -66,9 +67,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          base="${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}"
+          if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]; then
+            base="$(git rev-parse HEAD^)"
+          fi
+          python scripts/select_provider_materialization_scope.py --base "$base" --head HEAD --output /tmp/provider-materialization-scope.json
           python - <<'PY' >> "$GITHUB_OUTPUT"
           import json,os,subprocess
           d=json.load(open("manifest.json",encoding="utf-8"))
+          scope=json.load(open("/tmp/provider-materialization-scope.json",encoding="utf-8"))
           count=len([x for x in d.get("scrapers") or [] if isinstance(x,dict)])
           message=subprocess.check_output(["git","log","-1","--pretty=%s"],text=True).strip()
           bulk_push=(
@@ -80,6 +87,7 @@ jobs:
           )
           print(f"source_sha={subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()}")
           print(f"provider_count={count}")
+          print("target_providers="+(",".join(scope.get("providers") or []) if scope.get("mode")=="providers" else ""))
           print(f"should_run={'true' if count<=120 and not bulk_push else 'false'}")
           PY
 
@@ -96,6 +104,7 @@ jobs:
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
       NIAKVIO_QUICK_YIELD_TIMEOUT: '60'
       NIAKVIO_QUICK_YIELD_MAX_SAMPLES: '8'
+      TARGET_PROVIDERS: ${{ needs.size.outputs.target_providers }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -285,9 +294,24 @@ jobs:
         run: |
           set -euo pipefail
           python tests/provider_domain_metadata_reconcile_test.py
-          python scripts/reconcile_provider_domain_metadata.py --rebuild
-          python scripts/materialize_provider_base_v3_store.py
-          python scripts/materialize_provider_v3_all.py
+          if [ -n "${TARGET_PROVIDERS:-}" ]; then
+            IFS=',' read -r -a providers <<< "$TARGET_PROVIDERS"
+            reconcile=(python scripts/reconcile_targeted_provider_publication.py)
+            for provider in "${providers[@]}"; do
+              provider="$(printf '%s' "$provider" | xargs)"
+              [ -z "$provider" ] && continue
+              python scripts/reconcile_provider_domain_metadata.py --rebuild --provider "$provider"
+              python scripts/materialize_provider_v3_one.py "$provider"
+              reconcile+=(--provider "$provider")
+            done
+            "${reconcile[@]}"
+            echo "FIELD_TARGETED_RECOVERY_MATERIALIZATION mode=providers providers=${#providers[@]} ids=$TARGET_PROVIDERS"
+          else
+            python scripts/reconcile_provider_domain_metadata.py --rebuild
+            python scripts/materialize_provider_base_v3_store.py
+            python scripts/materialize_provider_v3_all.py
+            echo "FIELD_TARGETED_RECOVERY_MATERIALIZATION mode=all providers=dynamic"
+          fi
           python scripts/validate_published_provider_config.py
           python tests/provider_js_lego_ownership_test.py
 
@@ -296,16 +320,24 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p automation
-          python scripts/run_provider_targeted_recovery.py \
-            --status automation/provider-census-status.json \
-            --plan automation/provider-repair-batch-plan-latest.json \
-            --history automation/provider-census-proof-history.json \
-            --output automation/provider-targeted-regression-recovery-latest.json \
-            --shard-count 1 \
-            --shard-index 0 \
-            --max-workers 20 \
-            --run-id "$GITHUB_RUN_ID" \
-            --sha "${{ needs.size.outputs.source_sha }}"
+          args=(python scripts/run_provider_targeted_recovery.py
+            --status automation/provider-census-status.json
+            --plan automation/provider-repair-batch-plan-latest.json
+            --history automation/provider-census-proof-history.json
+            --output automation/provider-targeted-regression-recovery-latest.json
+            --shard-count 1
+            --shard-index 0
+            --max-workers 20
+            --run-id "$GITHUB_RUN_ID"
+            --sha "${{ needs.size.outputs.source_sha }}")
+          if [ -n "${TARGET_PROVIDERS:-}" ]; then
+            IFS=',' read -r -a providers <<< "$TARGET_PROVIDERS"
+            for provider in "${providers[@]}"; do
+              provider="$(printf '%s' "$provider" | xargs)"
+              [ -z "$provider" ] || args+=(--provider "$provider")
+            done
+          fi
+          "${args[@]}"
           python scripts/refine_provider_repair_batches.py \
             --plan automation/provider-repair-batch-plan-latest.json \
             --verdict automation/provider-targeted-regression-recovery-latest.json \
@@ -322,6 +354,12 @@ jobs:
           cp automation/provider-targeted-regression-recovery-latest.json "$verdict_tmp"
           cp automation/provider-repair-batch-refined-latest.json "$refined_tmp"
           git fetch origin main
+          remote_main="$(git rev-parse origin/main)"
+          source_sha="$(python -c 'import json; d=json.load(open("'"$verdict_tmp"'")); print(str(d.get("triggerSha") or ""))')"
+          if [ -z "$source_sha" ] || [ "$source_sha" != "$remote_main" ]; then
+            echo "FIELD_TARGETED_RECOVERY_STALE_NOT_PERSISTED source=${source_sha:-missing} remote=$remote_main"
+            exit 0
+          fi
           git reset --hard origin/main
           mkdir -p automation
           cp "$verdict_tmp" automation/provider-targeted-regression-recovery-latest.json

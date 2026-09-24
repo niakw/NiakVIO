@@ -13,6 +13,10 @@ spec=importlib.util.spec_from_file_location("targeted",ROOT/"scripts/run_provide
 mod=importlib.util.module_from_spec(spec)
 assert spec and spec.loader
 spec.loader.exec_module(mod)
+source=(ROOT/"scripts/run_provider_targeted_recovery.py").read_text(encoding="utf-8")
+assert 'ap.add_argument("--provider",action="append",default=[])' in source
+assert "targets &= requested" in source
+assert '"requestedProviders":sorted(requested)' in source
 
 providers=[f"provider-{i}" for i in range(200)]
 for count in (2,4,8,16):

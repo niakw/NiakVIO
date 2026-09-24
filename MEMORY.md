@@ -4809,3 +4809,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Current public AnimeSalt exposes deterministic normal content routes such as `/series/jujutsu-kaisen/` containing season/episode data. The provider runtime now tries `/series/{normalized-title-slug}/` first, validates that the returned page matches the requested title or exposes episode links, and reuses that fetched page in episode selection. Homepage AJAX nonce/search remains fallback only.
 - The new route is not promoted from an inferred stream URL and does not weaken playback/identity gates. It only removes an unnecessary dependency on the challenged homepage before reaching provider-owned content.
 - Targeted recovery run `36062383321` also exposed a separate scaling defect: its workflow rematerialized all 42 active providers and probed the full 14-provider repair plan after a one-provider patch. That inefficiency is confirmed and remains to be corrected independently; it does not invalidate the AnimeSalt network evidence.
+
+
+### 2026-09-24 23:18 Europe/Paris — Targeted recovery is provider-scoped and stale verdicts fail closed
+
+- Run `36062383321` proved the remaining targeted-recovery scaling bug: a one-provider AnimeSalt patch rematerialized all 42 active providers and probed the whole 14-provider repair plan.
+- The single-job targeted recovery now derives provider ownership from `select_provider_materialization_scope.py`. Provider-owned diffs reconcile/materialize only those IDs with `materialize_provider_v3_one.py` + targeted publication reconciliation, and pass the same IDs to `run_provider_targeted_recovery.py --provider`.
+- `run_provider_targeted_recovery.py` now intersects explicit provider filters with current unresolved/repair-plan authority, so a requested green provider is not silently promoted or probed outside the current debt set.
+- Stale-run contamination was reproduced by `36063298122`: while it was still running on `a8e0f84...`, projection reconcile advanced main and the old workflow later committed `736b853...` with a stale verdict. Persistence now compares verdict `triggerSha` to current `origin/main` and refuses stale writes.
+- Canonical AnimeSalt Repair is re-armed on the current published projection. Automatic Repair remains one wave / one Deep round and internal candidate rematerialization remains target-cohort-only.

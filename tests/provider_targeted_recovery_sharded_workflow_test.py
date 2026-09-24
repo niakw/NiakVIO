@@ -13,6 +13,13 @@ for needle in [
     "scripts/run_provider_targeted_recovery.py",
     "--shard-count 1",
     "--max-workers 20",
+    "target_providers: ${{ steps.route.outputs.target_providers }}",
+    "scripts/select_provider_materialization_scope.py",
+    "TARGET_PROVIDERS: ${{ needs.size.outputs.target_providers }}",
+    "scripts/materialize_provider_v3_one.py",
+    "FIELD_TARGETED_RECOVERY_MATERIALIZATION mode=providers",
+    'args+=(--provider "$provider")',
+    "FIELD_TARGETED_RECOVERY_STALE_NOT_PERSISTED",
 ]:
     assert needle in mono, needle
 
