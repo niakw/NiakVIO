@@ -16,13 +16,13 @@ on:
       waves:
         description: Brain waves
         required: true
-        default: "3"
+        default: "1"
         type: choice
         options: ["1", "2", "3", "4", "5"]
       time_budget_seconds:
         description: Provider-local Brain budget
         required: true
-        default: "1200"
+        default: "600"
         type: choice
         options: ["600", "900", "1200", "1800", "2400"]
       max_rounds_per_batch:

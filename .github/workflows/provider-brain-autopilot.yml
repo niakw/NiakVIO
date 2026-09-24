@@ -98,7 +98,7 @@ jobs:
           fi
 
           if [ -n "$FAST" ]; then
-            gh workflow run provider-fast-repair.yml               --repo "$GITHUB_REPOSITORY" --ref main               -f target_providers="$FAST"               -f waves=3 -f time_budget_seconds=1200 -f publish_validated=true
+            gh workflow run provider-fast-repair.yml               --repo "$GITHUB_REPOSITORY" --ref main               -f target_providers="$FAST"               -f waves=1 -f time_budget_seconds=600 -f max_rounds_per_batch=1 -f publish_validated=true
             echo "FIELD_PROVIDER_AUTOPILOT dispatch=FAST_REPAIR providers=$FAST"
           fi
 
