@@ -10,6 +10,9 @@ required = [
     "automation/provider-census-status.json",
     "automation/provider-repair-learn-handoff-v1.json",
     "target provider is not in current census repairQueue",
+    "environmentQueue",
+    "targeted Learning cohort escaped current repair/environment queues",
+    "autopilot-targeted-core-learning",
     "target provider is not LEARN/pending in current handoff",
     'provider_filter="$target_provider"',
     '"policy": "target-scoped-handoff"',
@@ -36,6 +39,13 @@ assert parse_index < census_index < handoff_index < filter_index < queue_index
 target_block = workflow[census_index:filter_index]
 assert "/tmp/fast-learning-handoff.json" not in target_block, target_block
 assert "repairQueue" in target_block, target_block
+
+multi_start = workflow.index('if [ -n "$target_providers" ]; then')
+multi_end = workflow.index('elif [ -n "$target_provider" ]; then', multi_start)
+multi_block = workflow[multi_start:multi_end]
+assert 'environmentQueue' in multi_block, multi_block
+assert 'eligible=repair|environment' in multi_block, multi_block
+assert 'autopilot-targeted-core-learning' in multi_block, multi_block
 assert '"policy": "target-scoped-handoff"' in workflow, workflow
 assert 'row.get("owner")' in target_block or "row.get('owner')" in target_block, target_block
 assert 'row.get("status")' in target_block or "row.get('status')" in target_block, target_block

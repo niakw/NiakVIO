@@ -4599,3 +4599,18 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The obsolete `workbench/brain-guidance-finalize-20260923` branch diverges historically from main, but its nine Brain invariants are superseded on current main by newer advisor observability, stale-artifact rejection, generation-aware rescue, guidance-drift and negative-memory contracts. Branch maintenance now deletes this workbench branch only when no open PR targets it; `brain-learning/proposals` remains the only non-main durable memory branch.
 - The existing CodeQL workflow already contains an owner-authorized bulk dismissal job that enumerates every open CodeQL alert, dismisses it with an audit comment, re-queries open alerts and fails if any remain. A one-shot push marker `[dismiss-codeql-alerts]` now invokes that exact job; normal future pushes continue to run the maintained-source CodeQL matrix.
 - This security/hygiene commit does not alter provider bytes or provider status. Provider repair remains separately required for the 12 current Repair targets and 2 Core/transport targets.
+
+
+### 2026-09-24 — Workbench branch removed and CodeQL open-alert backlog converged to zero
+
+- Branch maintenance run `36027972397` completed successfully and deleted the obsolete `workbench/brain-guidance-finalize-20260923` branch after proving there was no open PR. A subsequent branch search returned no `workbench` branch. Durable branch policy is back to `main` plus the isolated `brain-learning/proposals` memory ref.
+- CodeQL bulk-classification run `36027972197` observed **643 open CodeQL alerts** on pass 1. It dismissed 642 directly; four PATCH responses transiently returned `unexpected end of JSON input`, then passes 2/3 converged the server state to **0 open CodeQL alerts**.
+- The run ended red only because its script treated the historical transient-failure counter as fatal even when the final authoritative re-query returned `remaining=0`. The dismissal job now fails only when the final open-alert set is non-empty; transient API errors remain logged as diagnostics.
+- The next ordinary main push intentionally has no dismissal marker, so the normal Actions/Python/JS-Core/JS-ProviderBase CodeQL matrix remains enabled and must run again on the post-cleanup SHA.
+
+### 2026-09-24 — Harness statuses gain an active Core/Brain owner
+
+- Durable census still has 12 provider-local Repair targets plus two Core/client transport targets: `animesultra` (browser content succeeds on GitHub and residential exits while direct/OkHttp fails on both) and `animevost-fr` (challenge persists on both GitHub and residential paths). Tailscale therefore disproves a simple GitHub-IP explanation; neither row may be treated as an inert provider-network block.
+- Targeted Brain Learning now accepts the union of current `repairQueue` and `environmentQueue`. Provider-local mutation remains forbidden for environment-owned rows.
+- Brain Autopilot now sends every HARNESS/Core-client cohort to both the targeted WAF/Tailscale differential and a targeted 20-minute Learning run with `publish_proposal=true`. Persistent divergence must therefore produce a reviewable Core/architecture proposal and Native-Lab reentry path instead of being endlessly re-probed.
+- This does not promote either provider by label. FULL/PARTIAL still requires real current-byte playable, identity-safe output in the appropriate client/runtime.

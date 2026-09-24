@@ -19,7 +19,8 @@ for required in (
     "CORE_CLIENT_LEARNING",
     "provider-waf-browser-session.yml",
     "target_providers=\"$HARNESS\"",
-    "mutation=false",
+    "architecture_learning=true",
+    "mutation=proposal-only",
     'target_providers="$LEARNING"',
     "targeted=true",
 ):
@@ -49,6 +50,12 @@ for required in (
     assert required in learning,required
 assert "cancel-in-progress: ${{ github.event_name == 'push' }}" in learning
 assert 'if [ -n "$LEARNING" ] && [ -z "$FAST" ]' not in autopilot
+harness_block=autopilot.split('if [ -n "$HARNESS" ]; then',1)[1].split("fi",1)[0]
+assert "provider-waf-browser-session.yml" in harness_block
+assert "brain-learning-lab.yml" in harness_block
+assert '-f publish_proposal=true' in harness_block
+assert '-f target_providers="$HARNESS"' in harness_block
+assert "architecture_learning=true" in harness_block
 
 # Autopilot itself never mutates production provider bytes.
 for forbidden in (

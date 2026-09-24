@@ -112,9 +112,12 @@ jobs:
 
           echo "Dismissed=${dismissed} already_dismissed=${already} failed=${failed} remaining=${#remaining[@]}"
 
-          if (( ${#remaining[@]} > 0 || failed > 0 )); then
+          if (( ${#remaining[@]} > 0 )); then
             printf 'Still-open CodeQL alerts: %s\n' "${remaining[*]:-none}" >&2
             exit 1
+          fi
+          if (( failed > 0 )); then
+            echo "Transient dismissal API failures were observed but converged to remaining=0; final server state is authoritative." >&2
           fi
 
           echo 'All CodeQL alerts are dismissed.'

@@ -114,15 +114,21 @@ jobs:
             echo "FIELD_PROVIDER_AUTOPILOT dispatch=BRAIN_LEARNING providers=$LEARNING targeted=true"
           fi
 
-          # Harness/Core-client evidence collection is autonomous but remains
-          # non-mutating. The targeted WAF/Tailscale lane classifies
-          # browser/direct/OkHttp/residential divergence; any persistent client
-          # gap remains architecture/native-Lab work, never provider mutation.
+          # Harness/Core-client debt is never a terminal storage state.
+          # Refresh the browser/direct/OkHttp/residential proof and, in parallel,
+          # run targeted Brain Learning so persistent transport divergence must
+          # produce a reviewable Core/architecture proposal instead of looping
+          # forever in HARNESS MISMATCH / HARNESS-ENV BLOCKED.
           if [ -n "$HARNESS" ]; then
             gh workflow run provider-waf-browser-session.yml \
               --repo "$GITHUB_REPOSITORY" --ref main \
               -f target_providers="$HARNESS"
-            echo "FIELD_PROVIDER_AUTOPILOT dispatch=CORE_CLIENT_LEARNING providers=$HARNESS workflow=provider-waf-browser-session.yml mutation=false"
+            gh workflow run brain-learning-lab.yml \
+              --repo "$GITHUB_REPOSITORY" --ref main \
+              -f publish_proposal=true \
+              -f target_providers="$HARNESS" \
+              -f slot_remaining_minutes=20 -f slot_phase=1
+            echo "FIELD_PROVIDER_AUTOPILOT dispatch=CORE_CLIENT_LEARNING providers=$HARNESS waf=true architecture_learning=true mutation=proposal-only"
           fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
