@@ -823,7 +823,9 @@ jobs:
               gh workflow run brain-learning-lab.yml \
                 --repo "$GITHUB_REPOSITORY" \
                 --ref main \
-                -f publish_proposal=true
+                -f publish_proposal=true \
+                -f slot_remaining_minutes=20 \
+                -f slot_phase=1
             fi
 
             read -r resume remaining processed unvisited < <(python - "$tmp/provider-brain-repair-latest.json" <<'PY'

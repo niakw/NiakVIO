@@ -56,6 +56,8 @@ push=workflow.index("git push origin HEAD:main",persist)
 dispatch=workflow.index("gh workflow run brain-learning-lab.yml",persist)
 resume_dispatch=workflow.index("gh workflow run provider-recognition-repair-v6.yml",persist)
 assert persist < copy < push < dispatch < resume_dispatch
+assert "-f slot_remaining_minutes=20" in workflow[dispatch:resume_dispatch]
+assert "-f slot_phase=1" in workflow[dispatch:resume_dispatch]
 assert "exit 0\n          fi\n          git commit" not in workflow[persist:dispatch]
 assert 'if [ "$resume" = "1" ] && [ "$remaining" -gt 0 ]' in workflow[persist:resume_dispatch]
 persist_block=workflow[persist:dispatch]

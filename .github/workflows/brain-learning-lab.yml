@@ -739,7 +739,19 @@ jobs:
             --reserve-minutes 5
             --stream-safety-cap 2)
           if [ -n "$TARGET_PROVIDER" ]; then args+=(--provider "$TARGET_PROVIDER"); fi
-          "${args[@]}"
+          budget_minutes="${{ steps.learning-slot.outputs.budget_minutes }}"
+          hard_seconds=$((budget_minutes * 60 + 120))
+          set +e
+          timeout --signal=TERM --kill-after=30s "${hard_seconds}s" "${args[@]}"
+          queue_status=$?
+          set -e
+          if [ "$queue_status" -eq 124 ] || [ "$queue_status" -eq 137 ]; then
+            echo "FIELD_BRAIN_QUEUE_HARD_TIMEOUT budget_minutes=$budget_minutes hard_seconds=$hard_seconds" >&2
+            exit "$queue_status"
+          fi
+          if [ "$queue_status" -ne 0 ]; then
+            exit "$queue_status"
+          fi
           test -s brain-sandbox/health-output/repair-report.json
           test -s brain-sandbox/health-output/learning-queue-state.json
           test -s brain-sandbox/health-output/learning-queue-summary.json

@@ -99,6 +99,15 @@ def main() -> int:
     assert "' extra='+extraIds.length" in workflow, "Learning clean reconstruction must report discovery superset size"
     assert "--reserve-minutes 5" in workflow, "Learning finalization reserve disappeared"
     assert "--stream-safety-cap 2" in workflow, "bounded quick Learning stream cap disappeared"
+    assert 'timeout --signal=TERM --kill-after=30s "${hard_seconds}s" "${args[@]}"' in workflow, "Learning queue lost the outer hard process-tree deadline"
+    assert "FIELD_BRAIN_QUEUE_HARD_TIMEOUT" in workflow, "Learning queue hard-timeout telemetry disappeared"
+    for marker in (
+        'start_new_session=(os.name == "posix")',
+        "os.killpg(process.pid, signal.SIGTERM)",
+        "os.killpg(process.pid, signal.SIGKILL)",
+        "def terminate_process_group(",
+    ):
+        assert marker in queue_source, f"Learning subprocess tree deadline contract missing: {marker}"
     assert "TARGET_PROVIDER: ${{ inputs.target_provider || '' }}" in workflow, "manual provider override disappeared"
     assert 'args+=(--provider "$TARGET_PROVIDER")' in workflow, "manual provider override is not delegated to the canonical queue"
     assert "provider_dns_preflight.mjs" not in workflow, "DNS diagnostics belong to the daily domain observer, not Learning"

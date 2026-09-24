@@ -8,6 +8,7 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -39,6 +40,7 @@ class LearningLabSession:
             stdout=subprocess.PIPE,
             stderr=None,
             bufsize=1,
+            start_new_session=(os.name == "posix"),
         )
         self.request({"action": "ping"}, deadline=deadline)
 
@@ -75,8 +77,7 @@ class LearningLabSession:
         try:
             self.process.wait(timeout=3)
         except subprocess.TimeoutExpired:
-            self.process.kill()
-            self.process.wait(timeout=3)
+            terminate_process_group(self.process, grace_seconds=2.0)
 
 
 def ensure_learning_lab_session(
@@ -773,26 +774,71 @@ def merge_target_candidate(full_registry_path: Path, target_registry_path: Path,
 def remaining_seconds(deadline: float, reserve: float = 0.0) -> int:
     return max(1, int(deadline - time.time() - reserve))
 
+
+def terminate_process_group(
+    process: subprocess.Popen[str],
+    *,
+    grace_seconds: float = 2.0,
+) -> None:
+    """Terminate the whole spawned tree, not only its Python/Node parent."""
+    if process.poll() is not None:
+        return
+    try:
+        if os.name == "posix":
+            os.killpg(process.pid, signal.SIGTERM)
+        else:
+            process.terminate()
+    except ProcessLookupError:
+        return
+    try:
+        process.wait(timeout=grace_seconds)
+        return
+    except subprocess.TimeoutExpired:
+        pass
+    try:
+        if os.name == "posix":
+            os.killpg(process.pid, signal.SIGKILL)
+        else:
+            process.kill()
+    except ProcessLookupError:
+        return
+    try:
+        process.wait(timeout=grace_seconds)
+    except subprocess.TimeoutExpired:
+        process.kill()
+
+
 def run(cmd: list[str], *, env: dict[str, str] | None, deadline: float, cwd: Path = ROOT, allow_fail: bool = False) -> subprocess.CompletedProcess[str]:
     timeout = remaining_seconds(deadline, 1)
+    process = subprocess.Popen(
+        cmd,
+        cwd=cwd,
+        env=env,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        start_new_session=(os.name == "posix"),
+    )
     try:
-        completed = subprocess.run(
-            cmd,
-            cwd=cwd,
-            env=env,
-            text=True,
-            capture_output=True,
-            timeout=timeout,
-            check=False,
-        )
+        stdout, stderr = process.communicate(timeout=timeout)
     except subprocess.TimeoutExpired as error:
-        stdout = error.stdout.decode(errors="replace") if isinstance(error.stdout, bytes) else str(error.stdout or "")
-        stderr = error.stderr.decode(errors="replace") if isinstance(error.stderr, bytes) else str(error.stderr or "")
-        sys.stdout.write(stdout)
-        sys.stderr.write(stderr)
+        terminate_process_group(process)
+        try:
+            stdout, stderr = process.communicate(timeout=3)
+        except subprocess.TimeoutExpired:
+            terminate_process_group(process, grace_seconds=0.5)
+            stdout, stderr = process.communicate(timeout=3)
+        sys.stdout.write(stdout or "")
+        sys.stderr.write(stderr or "")
         raise BudgetExhausted(
             f"Learning work budget exhausted while running: {' '.join(cmd[:4])}"
         ) from error
+    completed = subprocess.CompletedProcess(
+        cmd,
+        int(process.returncode or 0),
+        stdout or "",
+        stderr or "",
+    )
     sys.stdout.write(completed.stdout)
     sys.stderr.write(completed.stderr)
     if completed.returncode != 0 and not allow_fail:
