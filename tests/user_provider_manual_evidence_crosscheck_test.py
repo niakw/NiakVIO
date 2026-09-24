@@ -51,7 +51,9 @@ assert any("/api/" in r for r in mugi.get("learned_routes") or [])
 # Distinct DLE identity: never collapse AnimeSama.co into Anime-Sama.
 asco=patches["animesama-co"]
 assert asco["official_site"]=="https://animesama.co"
-assert "/template-php/defaut/fetch.php" in asco["learned_routes"]
+assert "/catalogue/?search={query}" in asco["learned_routes"]
+assert "/template-php/defaut/fetch.php" not in asco["learned_routes"]
+assert "/template-php/defaut/fetch.php" in asco.get("candidate_learned_routes", [])
 assert "/anime/{id}-{slug}.html" in asco["learned_routes"]
 assert asco.get("domain_substitutions",{}).get("animesama.co") is None
 assert asco.get("runtime_domain_replacements",{}).get("animesama.co") is None

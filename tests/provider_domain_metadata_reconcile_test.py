@@ -124,7 +124,9 @@ assert "api_recipe" not in asco
 assert "candidate_api_recipe" not in asco
 assert asco["domain_substitutions"].get("animesama.co") is None
 assert asco.get("runtime_domain_replacements", {}).get("animesama.co") is None
-assert "/template-php/defaut/fetch.php" in asco["learned_routes"]
+assert "/catalogue/?search={query}" in asco["learned_routes"]
+assert "/template-php/defaut/fetch.php" not in asco["learned_routes"]
+assert "/template-php/defaut/fetch.php" in asco.get("candidate_learned_routes", [])
 assert "/anime/{id}-{slug}.html" in asco["learned_routes"]
 
 movieshunt_plan = overrides["movieshunt"]["search_request_plan"]

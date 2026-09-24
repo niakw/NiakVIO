@@ -4403,3 +4403,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 
 - No-op consolidation run 35935783160 again passed migration fixed-point and validation with changed=false. It failed only while locating the persisted consolidation commit because the generated git log --grep shell line had an unterminated single-quoted pattern.
 - The grep is now fixed-string/double-quoted. No migration or provider logic changes in this retry.
+
+### 2026-09-24 — AnimeSama.co consolidated route/runtime contradiction resolved
+
+- Explicit-base census 35935941091 failed before materialization in provider_domain_metadata_reconcile_test.py because two legacy tests still required /template-php/defaut/fetch.php in animesama-co learned_routes.
+- The failure exposed a real source contradiction rather than a test-only issue: upgrade_provider_v3_batch_routes_v2.py explicitly classifies fetch.php as stale/live-404 and consolidates the current learned route to /catalogue/?search={query}, but the provider Lego still executed fetch.php.
+- AnimeSama.co runtime now uses GET /catalogue/?search=<title>, then the already-proven /anime/{id}-{slug}.html -> season -> episode chain. fetch.php remains only in candidate_learned_routes as historical/non-executable evidence.
+- provider_animesamaco_domain_data_contract_test.py, provider_domain_metadata_reconcile_test.py and user_provider_manual_evidence_crosscheck_test.py now assert the same authority boundary. This is a runtime/data alignment fix, not a weakening of the census gate.
+- The migration fixed-point trigger is rearmed so a successful no-op consolidation dispatches the final census using the persisted consolidation commit parent as materialization base.
