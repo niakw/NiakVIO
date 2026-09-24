@@ -104,6 +104,31 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
         path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
         paths[name] = path
 
+    llm_batch = tmp / "llm.jsonl"
+    llm_batch.write_text(
+        json.dumps({
+            "provider": "tls-gap",
+            "failure_class": "transport_environment_gap",
+            "ok": True,
+            "routing": {
+                "mode": "llm_diagnose",
+                "target_layer": "harness",
+                "strategy": "native_tls_browser_differential_v1",
+                "prior_confidence": 0.99,
+            },
+            "proposal": {
+                "provider_id": "tls-gap",
+                "target_layer": "harness",
+                "strategy": "native_tls_browser_differential_v1",
+                "confidence": 0.97,
+                "mutations": [],
+                "abstain": True,
+                "diagnosis": "PRIVATE OR RAW MODEL TEXT MUST NOT BE PERSISTED",
+            },
+        }) + "\n",
+        encoding="utf-8",
+    )
+
     proposed = tmp / "policy.json"
     summary = tmp / "summary.json"
     markdown = tmp / "summary.md"
@@ -121,6 +146,7 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
             "--route-report", str(paths["route.json"]),
             "--route-fallback", str(paths["fallback.json"]),
             "--batch-plan", str(paths["batch.json"]),
+            "--llm-batch", str(llm_batch),
             "--output-policy", str(proposed),
             "--summary", str(summary),
             "--markdown", str(markdown),
@@ -138,6 +164,14 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
     assert "core_sampling_blind_spot" in kinds
     assert "route_discovery_blind_spot" in kinds
     assert "method_exhaustion" in kinds
+    assert "llm_non_provider_diagnosis" in kinds
+    assert data["llmArchitectureGuidanceCount"] == 1
+    llm_guidance = data["llmArchitectureGuidance"][0]
+    assert llm_guidance["providerId"] == "tls-gap", llm_guidance
+    assert llm_guidance["targetLayer"] == "harness", llm_guidance
+    assert llm_guidance["strategy"] == "native_tls_browser_differential_v1", llm_guidance
+    assert llm_guidance["mutationAuthority"] is False, llm_guidance
+    assert "PRIVATE OR RAW MODEL TEXT" not in json.dumps(data), data
 
     strategies={
         row.get("strategyId"): row

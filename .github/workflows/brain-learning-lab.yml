@@ -97,7 +97,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: niakw/NiakVIO-Brain-LLM
-          ref: 23a601ab9bbe9b457ea570d78c6926c935ad5531
+          ref: b64b526990a53235967521070a4a02b3e181d1bb
           path: brain-llm
           fetch-depth: 1
           persist-credentials: false
@@ -868,6 +868,7 @@ jobs:
             --queue-summary brain-sandbox/health-output/learning-queue-summary.json \
             --queue-state brain-sandbox/health-output/learning-queue-state.json \
             --batch-plan automation/provider-repair-batch-plan-latest.json \
+            --llm-batch brain-sandbox/brain-llm/batch.jsonl \
             --output-policy brain-learning-output/brain-policy.proposed.json \
             --summary brain-learning-output/brain-architecture-proposal.json \
             --markdown brain-learning-output/brain-architecture-proposal.md
@@ -938,8 +939,9 @@ jobs:
           for (const key of ['publicationAuthority','directMutationAuthority','proofAuthority','rawMutationContentRetained']) {
             if (g[key] !== false) throw new Error('unsafe persisted LLM guidance flag: '+key);
           }
+          if (g.schemaVersion !== 2) throw new Error('unexpected LLM guidance schema');
           if (!Array.isArray(g.rows)) throw new Error('LLM guidance rows missing');
-          const allowed=new Set(['providerId','failureClass','targetLayer','strategy','profile','confidence','priorOnly']);
+          const allowed=new Set(['providerId','failureClass','targetLayer','strategy','profile','confidence','priorOnly','experiment','experimentFingerprint']);
           for (const row of g.rows) {
             if (!row || row.priorOnly !== true || row.targetLayer !== 'provider') throw new Error('unsafe LLM guidance row');
             for (const key of Object.keys(row)) if (!allowed.has(key)) throw new Error('unexpected LLM guidance field: '+key);

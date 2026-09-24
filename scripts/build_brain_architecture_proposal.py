@@ -27,6 +27,22 @@ def load_optional(path: Path | None) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
+def load_jsonl(path: Path | None) -> list[dict[str, Any]]:
+    if path is None or not path.is_file():
+        return []
+    rows: list[dict[str, Any]] = []
+    try:
+        for raw in path.read_text(encoding="utf-8").splitlines():
+            if not raw.strip():
+                continue
+            value = json.loads(raw)
+            if isinstance(value, dict):
+                rows.append(value)
+    except (OSError, json.JSONDecodeError):
+        return []
+    return rows
+
+
 def write_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -235,6 +251,7 @@ def main() -> int:
     p.add_argument("--queue-summary", type=Path)
     p.add_argument("--queue-state", type=Path)
     p.add_argument("--batch-plan", type=Path)
+    p.add_argument("--llm-batch", type=Path)
     p.add_argument("--output-policy", type=Path, required=True)
     p.add_argument("--summary", type=Path, required=True)
     p.add_argument("--markdown", type=Path, required=True)
@@ -252,6 +269,7 @@ def main() -> int:
     queue_summary = load_optional(a.queue_summary)
     queue_state = load_optional(a.queue_state)
     batch_plan = load_optional(a.batch_plan)
+    llm_batch = load_jsonl(a.llm_batch)
     selection = queue_summary or load_optional(a.target_selection)
     route_report = load_optional(a.route_report)
     route_fallback = load_optional(a.route_fallback)
@@ -282,6 +300,43 @@ def main() -> int:
             "productionWritesAllowed": False,
             "publicationAllowed": False,
         })
+
+    llm_architecture_guidance: list[dict[str, Any]] = []
+    for llm_row in llm_batch:
+        if llm_row.get("ok") is not True:
+            continue
+        proposal = llm_row.get("proposal") if isinstance(llm_row.get("proposal"), dict) else {}
+        routing = llm_row.get("routing") if isinstance(llm_row.get("routing"), dict) else {}
+        layer = str(proposal.get("target_layer") or routing.get("target_layer") or "").strip().casefold()
+        mutations = proposal.get("mutations") if isinstance(proposal.get("mutations"), list) else []
+        if layer not in {"core", "harness", "network"} or mutations or proposal.get("abstain") is not True:
+            continue
+        provider = safe(llm_row.get("provider"), 80)
+        strategy = safe(proposal.get("strategy") or routing.get("strategy"), 240)
+        if not provider or not strategy:
+            continue
+        try:
+            confidence = round(float(proposal.get("confidence") or routing.get("prior_confidence") or 0.0), 4)
+        except (TypeError, ValueError):
+            confidence = 0.0
+        guidance = {
+            "providerId": provider,
+            "failureClass": safe(llm_row.get("failure_class"), 120),
+            "targetLayer": layer,
+            "strategy": strategy,
+            "confidence": confidence,
+            "mutationAuthority": False,
+            "proposalOnly": True,
+        }
+        llm_architecture_guidance.append(guidance)
+        add(
+            "llm_non_provider_diagnosis",
+            f"Brain LLM routed {provider} to {layer} architecture debt after deterministic evidence exhausted the provider-local path.",
+            ["scripts/nuvio_client_lab.cjs", "scripts/build_brain_architecture_proposal.py", ".github/workflows/brain-learning-lab.yml", "tests/brain_*"],
+            f"Evaluate the bounded {strategy} strategy against representative native-client transport; keep provider mutation disabled until the Core/client gap is independently validated.",
+            priority="critical" if layer in {"core", "harness"} else "high",
+            evidence=guidance,
+        )
 
     def patch_number(dotted: str, next_value: int, reason: str) -> None:
         current = int(get_path(proposed, dotted, 0) or 0)
@@ -518,6 +573,8 @@ def main() -> int:
         "deferredRepairProviderCount": len(deferred_repair_providers),
         "strategyBlueprintCount": len(strategy_blueprints),
         "strategyBlueprints": strategy_blueprints,
+        "llmArchitectureGuidanceCount": len(llm_architecture_guidance),
+        "llmArchitectureGuidance": llm_architecture_guidance,
         "providersObserved": int(selection.get("processedProviderCount") or 0),
         "pendingProviders": int(queue_state.get("remainingProviderCount") or 0),
         "policy": {
