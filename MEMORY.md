@@ -4521,3 +4521,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Brain-LLM `84eb6ff14af6` passed both Brain LLM CI and the Private-Guided Advisor workflow; it includes the bounded two-slot Qwen planning path.
 - `brain-learning-lab.yml` now checks out exactly `84eb6ff14af60c29b59b5f0382221297ddfacb4c` and emits the same SHA in sanitized guidance metadata. The static guidance contract is updated to prevent silent fallback to the old brain.
 - A targeted Learning trigger is armed for the restored 12-provider repairQueue. Learning remains proposal/memory only; current-byte playback and identity gates remain the sole Repair publication authority.
+
+
+### 2026-09-24 — Canonical Repair wall-clock budgets now match real concurrency
+
+- Manual Repair run `35993556984` on `a45c67af7d7fbc06c7003f8f780e55b992441e0c` remained inside the canonical Repair step for more than two hours even though Brain itself was configured for 3 waves / 1200 seconds. This exposed missing outer bounds, not an LLM inference bottleneck.
+- Route recovery used 12 workers for the 12-provider queue but its outer timeout still scaled linearly as `providers × request_timeout × attempts`: 12 × 55 × 3 = 1980 seconds. The budget now scales by concurrent worker batches and is clamped to 300–900 seconds.
+- Targeted quick-yield probes now have a bounded 180–600 second wall-clock budget. Final portfolio comparisons are capped at 300 seconds and final Repair yield at 600 seconds.
+- Canonical Brain budget is reduced from 1200 to 900 seconds with a 1080-second outer wrapper; the generic-miss→Learning/LLM handoff and catalogue-scale sharding make the older 20-minute Brain allowance unnecessary for this lane.
+- The entire canonical Repair workflow step now has a hard `timeout-minutes: 30`. An individual stalled provider/process can no longer keep the Repair job alive for hours.
+- A push-triggered retry is intentionally used so the shared Repair concurrency group cancels the stale manual run before repeating expensive work.

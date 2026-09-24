@@ -136,11 +136,31 @@ def run(*args: str, timeout: int | None = None) -> None:
     subprocess.run(list(args), cwd=ROOT, env=os.environ.copy(), check=True, timeout=timeout)
 
 
+def route_recovery_outer_timeout(
+    provider_count: int,
+    workers: int,
+    request_timeout: int,
+    attempts: int,
+) -> int:
+    """Wall-clock bound for a concurrent route-recovery cohort."""
+    workers = max(1, int(workers))
+    batches = max(1, (max(1, int(provider_count)) + workers - 1) // workers)
+    per_attempt = max(15, min(int(request_timeout), 120))
+    budget = batches * per_attempt * max(1, int(attempts)) + 120
+    return max(300, min(900, budget))
+
+
+def portfolio_probe_timeout(provider_count: int) -> int:
+    """Bound targeted quick-yield probes independently of catalogue size."""
+    batches = max(1, (max(1, int(provider_count)) + 11) // 12)
+    return max(180, min(600, batches * 90 + 120))
+
+
 def capture_portfolio_yield(destination: Path, providers: list[str] | None = None) -> dict[str, Any]:
     command = [sys.executable, "scripts/audit_provider_quick_yield.py"]
     for provider in providers or []:
         command.extend(["--provider", provider])
-    run(*command)
+    run(*command, timeout=portfolio_probe_timeout(len(providers or [])))
     if not QUICK_YIELD.exists():
         raise RuntimeError("quick-yield audit did not produce provider-v3-quick-yield.json")
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -594,7 +614,18 @@ def main() -> int:
     ]
     for provider in targets:
         cmd.extend(["--provider", provider])
-    run(*cmd, timeout=max(1200, len(targets) * max(15, args.timeout) * attempts))
+    route_timeout = route_recovery_outer_timeout(
+        len(targets),
+        repair_workers,
+        args.timeout,
+        attempts,
+    )
+    print(
+        "FIELD_PROVIDER_REPAIR_ROUTE_BUDGET "
+        f"providers={len(targets)} workers={repair_workers} timeout_seconds={route_timeout}",
+        flush=True,
+    )
+    run(*cmd, timeout=route_timeout)
 
     run(sys.executable, "scripts/merge_provider_repair_report_v6.py", "--baseline", "automation/provider-route-recovery-v5.json", "--targeted", str(TARGET_REPORT.relative_to(ROOT)), "--output", str(MERGED_REPORT.relative_to(ROOT)), "--manifest", "manifest.json")
     run(sys.executable, "scripts/apply_provider_route_recovery_report.py", str(MERGED_REPORT.relative_to(ROOT)))
@@ -634,15 +665,15 @@ def main() -> int:
             "scripts/run_provider_brain_repair.py",
             "--waves", "3",
             "--batch-size", "48",
-            "--time-budget-seconds", "1200",
-            "--min-start-batch-seconds", "180",
+            "--time-budget-seconds", "900",
+            "--min-start-batch-seconds", "150",
             "--output", str(BRAIN_REPAIR.relative_to(ROOT)),
         ]
         for provider in targets:
             brain_cmd.extend(["--provider", provider])
         run(
             *brain_cmd,
-            timeout=max(3000, len(targets) * max(90, args.timeout) * 2),
+            timeout=1080,
         )
         if not BRAIN_REPAIR.exists():
             raise RuntimeError("Brain Repair did not produce its portfolio report")
@@ -674,7 +705,13 @@ def main() -> int:
         "--candidate", str(PORTFOLIO_CANDIDATE.relative_to(ROOT)),
         "--losses-output", str(PORTFOLIO_LOSSES.relative_to(ROOT)),
     ]
-    subprocess.run(preliminary_cmd, cwd=ROOT, env=os.environ.copy(), check=False)
+    subprocess.run(
+        preliminary_cmd,
+        cwd=ROOT,
+        env=os.environ.copy(),
+        check=False,
+        timeout=300,
+    )
     losses = load(PORTFOLIO_LOSSES).get("providers") if PORTFOLIO_LOSSES.exists() else []
     losses = [cid(value) for value in losses or [] if cid(value)]
     if losses and attempts > 1:
@@ -700,12 +737,24 @@ def main() -> int:
 ]
     if PORTFOLIO_RETRY.exists():
         final_portfolio_cmd.extend(["--candidate-retry", str(PORTFOLIO_RETRY.relative_to(ROOT))])
-    portfolio_proc = subprocess.run(final_portfolio_cmd, cwd=ROOT, env=os.environ.copy(), check=False)
+    portfolio_proc = subprocess.run(
+        final_portfolio_cmd,
+        cwd=ROOT,
+        env=os.environ.copy(),
+        check=False,
+        timeout=300,
+    )
 
     yield_cmd = [sys.executable, "scripts/audit_provider_repair_yield_v6.py", "--recovery", str(TARGET_REPORT.relative_to(ROOT)), "--skip-file", str(skip_path.relative_to(ROOT) if skip_path.is_relative_to(ROOT) else skip_path), "--output", str(YIELD_REPORT.relative_to(ROOT))]
     if not args.allow_upstream_positive_loss:
         yield_cmd.append("--require-upstream-positive-preserved")
-    yield_proc = subprocess.run(yield_cmd, cwd=ROOT, env=os.environ.copy(), check=False)
+    yield_proc = subprocess.run(
+        yield_cmd,
+        cwd=ROOT,
+        env=os.environ.copy(),
+        check=False,
+        timeout=600,
+    )
 
     # The final yield audit is another current-byte observation from this same run.
     # Preserve any stronger identity-safe positive evidence before the authoritative

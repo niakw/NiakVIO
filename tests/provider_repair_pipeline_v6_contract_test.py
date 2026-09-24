@@ -65,7 +65,19 @@ for old, new in compat_replacements.items():
 
 pipeline_current = (ROOT / "scripts" / "run_provider_repair_pipeline_v6.py").read_text(encoding="utf-8")
 assert '"--waves", "3",' in pipeline_current, "canonical Repair must stay bounded after generic misses hand off to Learning/LLM"
-assert '"--time-budget-seconds", "1200",' in pipeline_current
-assert '"--min-start-batch-seconds", "180",' in pipeline_current
+assert '"--time-budget-seconds", "900",' in pipeline_current
+assert '"--min-start-batch-seconds", "150",' in pipeline_current
+assert "def route_recovery_outer_timeout(" in pipeline_current
+assert "def portfolio_probe_timeout(" in pipeline_current
+assert "timeout=1080" in pipeline_current
+assert "route_recovery_outer_timeout(" in pipeline_current
+assert "portfolio_probe_timeout(len(providers or []))" in pipeline_current
+
+workflow_current = (ROOT / ".github" / "workflows" / "provider-recognition-repair-v6.yml").read_text(encoding="utf-8")
+canonical_anchor = "- name: Run canonical recognition and correction only for unresolved providers"
+canonical_start = workflow_current.index(canonical_anchor)
+canonical_end = workflow_current.index("- name: Reapply integrated WAF qualification after canonical Repair", canonical_start)
+canonical_block = workflow_current[canonical_start:canonical_end]
+assert "timeout-minutes: 30" in canonical_block
 
 exec(compile(source, str(impl_path), "exec"), globals(), globals())
