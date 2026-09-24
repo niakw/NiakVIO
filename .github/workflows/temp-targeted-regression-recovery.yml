@@ -80,7 +80,7 @@ jobs:
     # Small catalogues use this single job. Large catalogues are routed to
     # provider-targeted-recovery-sharded.yml after the sharded census publishes
     # a current repair batch plan.
-    if: ${{ needs.size.outputs.should_run == 'true' && (github.event_name != 'push' || (startsWith(github.event.head_commit.message, 'provider: bulk stage ') == false && startsWith(github.event.head_commit.message, 'provider: bulk activate ') == false)) }}
+    if: ${{ needs.size.outputs.should_run == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
