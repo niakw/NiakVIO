@@ -4623,3 +4623,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Fast Repair `36029411619` and Learning runs `36029414461` / `36029421520` never reached provider Brain/Qwen execution. All three failed during static contract validation because `scripts/brain_llm_guidance.py` / `scripts/import_external_brain_llm_guidance.py` imported sibling `brain_llm_experiment.py` assuming `scripts/` was already on sys.path. Direct script execution satisfied that assumption; importlib-based contract tests did not.
 - Both scripts now prepend their own directory to sys.path before importing `brain_llm_experiment`. This is a packaging/import fix only; it does not change provider bytes, status, proof authority or LLM policy.
 - Autopilot is re-armed on the current durable census after this fix. Required next proof: Fast Repair and Learning must pass preflight, actually import/publish v2 Brain-LLM guidance, and execute the 12 provider Repair + 2 Core/transport cohorts under the existing bounded/sharded budgets.
+
+
+### 2026-09-24 18:54 Europe/Paris — Allwish causal-owner dead zone removed
+
+- Brain Autopilot `36030055680` built a 14-provider plan but marked one execution blocked: Allwish was in the canonical `repairQueue` while its batch group still classified as `harness-compatibility|...|residential-exit-all-challenged`, which requires environmentQueue ownership.
+- The durable Allwish row already carries stronger provider-replay evidence: both movie/tv residential full-provider replays stop at `provider_zero_before_provider_network` with zero raw/playable/verified results. That disproves the transport layer as the immediate execution owner even though the older boolean `residentialProviderReplayReclassified` field is absent.
+- `build_provider_repair_batch_plan.py` now treats that replay-stage proof itself as authoritative for NO PROOF + repairEligible rows. Such rows enter provider-strategy Learning rather than a blocked harness lane. The legacy boolean is no longer required.
+- The causal-precedence contract now proves the behavior with the flag true, false and absent, while still retaining harness ownership when the pre-network replay proof is absent.
+- This is a routing correction only. Allwish is not promoted; it still requires a new learned provider-side request/route strategy and current-byte proof.

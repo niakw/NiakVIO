@@ -53,7 +53,6 @@ def action_for_row(row:dict[str,Any], depth:str, issue:str)->tuple[str,str]:
     if (
         status.upper()=="NO PROOF"
         and row.get("repairEligible") is True
-        and row.get("residentialProviderReplayReclassified") is True
         and "provider_zero_before_provider_network" in replay
     ):
         return (

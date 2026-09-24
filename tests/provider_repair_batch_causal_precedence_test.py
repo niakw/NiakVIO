@@ -35,7 +35,11 @@ reclassified={
 }
 assert mod.action_for_row(reclassified,"none","waf_challenge")[0]=="learning"
 not_reclassified={**reclassified,"residentialProviderReplayReclassified":False}
-assert mod.action_for_row(not_reclassified,"none","waf_challenge")[0]=="harness-compatibility"
+assert mod.action_for_row(not_reclassified,"none","waf_challenge")[0]=="learning"
+missing_flag={k:v for k,v in reclassified.items() if k!="residentialProviderReplayReclassified"}
+assert mod.action_for_row(missing_flag,"none","waf_challenge")[0]=="learning"
+no_replay={**missing_flag,"residentialProviderReplayEvidence":[]}
+assert mod.action_for_row(no_replay,"none","waf_challenge")[0]=="harness-compatibility"
 
 source=SCRIPT.read_text(encoding="utf-8")
 assert "Final causal status is stronger than an older dominantIssue" in source
