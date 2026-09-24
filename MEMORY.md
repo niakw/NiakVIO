@@ -4841,3 +4841,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - WAF qualification is now cohort-scoped on main (`832b91a...`), including residential replay scope, so a targeted Repair cannot spend minutes reproving unrelated providers.
 - The current durable repair queue still contains 14 providers: 4khdhub, allanime, allwish, anime-ultime, animesalt, animesultra, animevost-fr, animevostfr, flemmix, mallumv, moviebox, moviesmod, vidfast, yflix. Environment queue remains empty on the durable census.
 - Fast Brain is armed on all 14 with `waves=1`, `maxRoundsPerBatch=1`, `timeBudgetSeconds=600`. This is the scalable execution path: one current causal hypothesis per provider, strict Retest for any candidate, then only unresolved/exhausted cases enter Learning.
+
+
+### 2026-09-24 23:32 Europe/Paris — External Brain-LLM guidance drift is provider-local
+
+- Fast run `36065618853` processed all 14 current repair providers in 307.882 s, one wave/one Deep round, without budget exhaustion, but accepted 0 candidates and handed all 14 to Learning.
+- That run did not use the latest 12-provider external Brain-LLM prior: import failed because AnimeSalt bytes changed after the guidance source SHA. The importer treated one provider-local drift as grounds to reject the entire guidance payload, causing Fast to fall back to older Learning guidance for every provider.
+- External guidance import now uses materialization ownership as a row-level safety boundary. `mode=providers` drops only rows for providers whose owned bytes changed; unaffected provider rows remain usable. `mode=all` / global drift still rejects the entire guidance fail-closed. No mutation/proof authority is granted by this change.
+- Fast is re-armed on all 14 so the unaffected cohort can actually execute the latest Brain-LLM priors; AnimeSalt remains excluded from stale external guidance until a fresh advisor row is published for its current bytes.

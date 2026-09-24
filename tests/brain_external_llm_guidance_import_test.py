@@ -31,4 +31,24 @@ for bad in [
  try:mod.sanitize(bad,current_sha="c"*40)
  except ValueError:pass
  else:raise AssertionError("unsafe guidance accepted")
+
+# Provider-local drift invalidates only the changed provider rows, not the
+# entire sanitized advisor prior. Global/all drift remains fail-closed.
+row2={**row,"providerId":"YFlix","failureClass":"search-gap","strategy":"search-detail-player-terminal-traversal","profile":"proven_route_terminal_traversal_v1"}
+base2={**base,"providerCount":2,"rows":[row,row2]}
+safe2=mod.sanitize(base2,current_sha="c"*40,guidance_commit="d"*40)
+orig_scope=mod.provider_materialization_scope
+try:
+ mod.provider_materialization_scope=lambda root,source,current:{"mode":"providers","providers":["movie-box"],"changedPaths":["providers/movie-box.js"],"reasons":["providers:providers/movie-box.js:movie-box"]}
+ neutral,drifted=mod.source_drift(ROOT,"a"*40,"c"*40)
+ assert neutral==[] and drifted=={"movie-box"}
+ kept=[r for r in safe2["rows"] if mod.canon(r.get("providerId")) not in drifted]
+ assert [r["providerId"] for r in kept]==["yflix"]
+ mod.provider_materialization_scope=lambda root,source,current:{"mode":"all","providers":[],"changedPaths":["scripts/provider_base_store.py"],"reasons":["global:scripts/provider_base_store.py"]}
+ try:mod.source_drift(ROOT,"a"*40,"c"*40)
+ except ValueError:pass
+ else:raise AssertionError("global drift must reject external guidance")
+finally:
+ mod.provider_materialization_scope=orig_scope
+
 print("external Brain LLM v1/v2 guidance import contract passed")

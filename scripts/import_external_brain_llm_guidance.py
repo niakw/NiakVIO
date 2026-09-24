@@ -57,14 +57,21 @@ def provider_materialization_scope(root:Path,source_sha:str,current_sha:str)->di
  if not isinstance(scope,dict):raise ValueError("provider drift classifier returned invalid payload")
  return scope
 
-def source_changed_paths(root:Path,source_sha:str,current_sha:str)->list[str]:
+def source_drift(root:Path,source_sha:str,current_sha:str)->tuple[list[str],set[str]]:
  scope=provider_materialization_scope(root,source_sha,current_sha)
  mode=str(scope.get("mode") or "all").strip().casefold()
- if mode!="none":
-  providers=",".join(str(x) for x in scope.get("providers") or [])
-  reasons=";".join(str(x) for x in scope.get("reasons") or [])
-  raise ValueError(f"provider-relevant drift since guidance source: mode={mode} providers={providers or '-'} reasons={reasons or '-'}")
- return sorted({str(x).strip() for x in scope.get("changedPaths") or [] if str(x).strip()})
+ changed=sorted({str(x).strip() for x in scope.get("changedPaths") or [] if str(x).strip()})
+ if mode=="none":
+  return changed,set()
+ if mode=="providers":
+  providers={canon(x) for x in scope.get("providers") or [] if canon(x)}
+  if not providers:
+   reasons=";".join(str(x) for x in scope.get("reasons") or [])
+   raise ValueError(f"provider drift classifier omitted provider ids: reasons={reasons or '-'}")
+  return [],providers
+ providers=",".join(str(x) for x in scope.get("providers") or [])
+ reasons=";".join(str(x) for x in scope.get("reasons") or [])
+ raise ValueError(f"global/provider-wide drift since guidance source: mode={mode} providers={providers or '-'} reasons={reasons or '-'}")
 
 def sanitize(value:dict[str,Any],*,current_sha:str,guidance_commit:str="")->dict[str,Any]:
  if not isinstance(value,dict):raise ValueError("external Brain-LLM guidance must be an object")
@@ -113,9 +120,16 @@ def main()->int:
  p=argparse.ArgumentParser();p.add_argument("--input",type=Path,required=True);p.add_argument("--output",type=Path,required=True);p.add_argument("--current-sha",required=True);p.add_argument("--guidance-commit",default="");p.add_argument("--repo-root",type=Path,default=ROOT);a=p.parse_args()
  value=json.loads(a.input.read_text(encoding="utf-8"))
  payload=sanitize(value,current_sha=a.current_sha,guidance_commit=a.guidance_commit)
- changed=source_changed_paths(a.repo_root,payload["sourceExternalNiakvioSha"],payload["sourceSha"])
+ changed,drifted_providers=source_drift(a.repo_root,payload["sourceExternalNiakvioSha"],payload["sourceSha"])
+ if drifted_providers:
+  before=len(payload["rows"])
+  payload["rows"]=[row for row in payload["rows"] if canon(row.get("providerId")) not in drifted_providers]
+  payload["providerCount"]=len({row["providerId"] for row in payload["rows"]})
+  dropped=before-len(payload["rows"])
+ else:
+  dropped=0
  payload["neutralDriftPaths"]=changed
  a.output.parent.mkdir(parents=True,exist_ok=True);a.output.write_text(json.dumps(payload,indent=2,sort_keys=True)+"\n",encoding="utf-8")
- print("FIELD_EXTERNAL_BRAIN_LLM_GUIDANCE "+f"providers={payload['providerCount']} source={payload['sourceExternalNiakvioSha'][:12]} current={payload['sourceSha'][:12]} neutral_drift={len(changed)} private_content=false")
+ print("FIELD_EXTERNAL_BRAIN_LLM_GUIDANCE "+f"providers={payload['providerCount']} source={payload['sourceExternalNiakvioSha'][:12]} current={payload['sourceSha'][:12]} neutral_drift={len(changed)} provider_drift={len(drifted_providers)} dropped_rows={dropped} private_content=false")
  return 0
 if __name__=="__main__":raise SystemExit(main())
