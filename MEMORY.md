@@ -4498,3 +4498,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Canonical Repair persistence is now fail-closed: only `steps.canonical-repair.outcome == success` may replace PROVIDER_CENSUS_STATUS / census / authority / WAF canonical ledgers. Failed or skipped Repair may still persist causal Brain memory and its exact run report for Learning, but cannot overwrite the last accepted durable census.
 - The same morning Learning run `35970740811` never reached Brain-LLM inference because `brain_cron_full_coverage_test.py` caught stale provider_catalog manifestOrder entries for lifecycle-archived `desiflix` and `fullanime`. This is fixed at the lifecycle authority: `update_provider_catalog()` now reconciles general/VF manifestOrder to the current visible provider projection set, preserving relative order and appending only missing current projections.
 - External private-informed guidance was correctly rejected by Repair as source-stale after real provider/lifecycle changes. A fresh Brain-LLM guidance run on the corrected HEAD is required before the next provider Repair.
+
+
+### 2026-09-24 — Last accepted census restored after rejected Repair persistence
+
+- The failed scheduled Repair candidate from run `35976942192` is rejected as canonical evidence. Its source provider bytes were the same as the immediately preceding accepted census; its own final summary had preservationGate=false and executionGate=false with an active animevostfr loss.
+- Canonical census/WAF/authority/batch ledgers are restored from source commit `3ed0dd323e4ddca807de787e4f982a664592f6c3`: 26 FULL OK, 2 PARTIAL OK, 1 CANDIDATE OK, 0 PROVIDER NETWORK BLOCKED, repairQueue=12, environmentQueue=2. Brain causal memory/report files from later runs are intentionally retained.
+- Subsequent commits `4fa1970...` and lifecycle persistence `144d5a4...` change control-plane/catalogue lifecycle ordering only; they do not justify discarding the accepted playback/transport ledger. Future failed canonical Repair runs are now prevented from replacing this durable state.
+- Next required sequence: regenerate private-informed Brain-LLM guidance against this exact current HEAD/catalogue, pass Learning contracts, then run the bounded 3-wave/1200s Repair on the restored 12-provider queue.
