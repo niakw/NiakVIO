@@ -4703,3 +4703,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - LLM execution is now proven on current bytes for 4khdhub and Animesalt (`executionObserved=true`); both failed the strict playable-category gate rather than `profile_unavailable`. MalluMV is strategy-exhausted after a real chain-terminal attempt; Moviebox and Yflix are already exhausted in Fast and correctly belong to Learning.
 - Learning run `36039730293` failed before sandbox work only because the workflow contract still scoped the v2 schema assertions to the pre-queue LLM setup substring. Schema/experiment assertions now validate the whole workflow, while interpolation/setup assertions stay local to the setup block.
 - Learning is pinned to Brain-LLM `e996ed8127cc...`, whose CI is green. This version preserves current targeted network evidence, supports non-provider architecture diagnosis, runs external guidance in advisor-only mode, and bounds model output size. A fresh handoff run is armed on the current five-provider evidence plus the existing 14-provider Learning registry.
+
+
+### 2026-09-24 20:23 Europe/Paris — Retry trigger restored to targeted Fast-Handoff contract
+
+- Learning run `36040041975` passed all preflight contracts but incorrectly entered FULL Learning: weekly FULL native Lab import ran and the provider-stage step used the unfiltered discovery branch. Root cause was the retry trigger written at `2d9299b...`: its descriptive `reason=retry-fast-handoff-after-learning-contract-scope-fix` no longer matched `select_fast_learning_handoff.py`'s stable Fast marker, and it had no versioned `execution_mode` marker.
+- The trigger is restored to `reason=fast-brain-strategy-exhaustion`, `expected_scope=current-fast-repair-handoff-only`, and also carries `execution_mode=targeted-fast-handoff-v7-provider-repair-handoff`. The selector will therefore intersect only current `repairQueue` providers with pending LEARN-owned handoff rows.
+- The same restart aligns Learning Qwen with its two planning workers: llama.cpp now runs `-c 8192 -np 2`, and the planner is explicitly bounded to `--workers 2 --max-tokens 768`. This removes the previous `2 workers -> 1 model slot` serialization without raising planning concurrency.
+- The previous FULL run is superseded by the new push under `cancel-in-progress` and must not be used as provider proof.

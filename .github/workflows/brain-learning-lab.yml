@@ -672,7 +672,7 @@ jobs:
           fi
           "$binary" \
             -hf Qwen/Qwen2.5-Coder-3B-Instruct-GGUF:Q4_K_M \
-            --host 127.0.0.1 --port 8080 -c 4096 -np 1 \
+            --host 127.0.0.1 --port 8080 -c 8192 -np 2 \
             > brain-sandbox/brain-llm/llama-server.log 2>&1 &
           for _ in $(seq 1 90); do
             if curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1; then
@@ -705,6 +705,8 @@ jobs:
               --mode brain
               --endpoint http://127.0.0.1:8080
               --model qwen2.5-coder-3b
+              --workers 2
+              --max-tokens 768
               --output "$batch")
             if [ -s brain-sandbox/brain-llm/private-documents.jsonl ]; then
               args+=(--extra-documents brain-sandbox/brain-llm/private-documents.jsonl)

@@ -25,6 +25,9 @@ for required in (
     "--llm-batch brain-sandbox/brain-llm/batch.jsonl",
     "g.schemaVersion !== 2",
     "'experiment','experimentFingerprint'",
+    "--workers 2",
+    "--max-tokens 768",
+    "-c 8192 -np 2",
 ):
     assert required in workflow, required
 
