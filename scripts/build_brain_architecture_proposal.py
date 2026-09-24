@@ -106,6 +106,7 @@ def route_evidence_count(value: Any) -> int:
 def build_strategy_blueprints(
     batch_plan: dict[str, Any],
     deferred_providers: set[str],
+    failed_profiles_by_provider: dict[str, set[str]] | None = None,
 ) -> list[dict[str, Any]]:
     """Turn census repair families into bounded, reviewable new-strategy designs.
 
@@ -151,6 +152,7 @@ def build_strategy_blueprints(
             "acceptanceProof": ["harness/client divergence classified", "browser or native transport reachability is not promoted to playback", "provider JS mutation remains forbidden without implementation evidence"],
         },
     }
+    failed_profiles_by_provider = failed_profiles_by_provider or {}
     blueprints: list[dict[str, Any]] = []
     for group in batch_plan.get("groups") or []:
         if not isinstance(group, dict):
@@ -172,6 +174,15 @@ def build_strategy_blueprints(
         if not providers:
             continue
         row = dict(template)
+        if scope != "harness-compatibility":
+            strategy_id = str(row.get("strategyId") or "").strip()
+            providers = [
+                provider
+                for provider in providers
+                if strategy_id not in failed_profiles_by_provider.get(provider, set())
+            ]
+            if not providers:
+                continue
         transport_signature = str(group.get("transportSignature") or "").strip().casefold()
         dominant_issues = {
             str(value or "").strip().casefold()
@@ -441,12 +452,24 @@ def main() -> int:
         ]
         if str(value or "").strip()
     })
+    deferred_set = set(deferred_repair_providers)
+    failed_profiles_by_provider: dict[str, set[str]] = {}
+    for row in entries:
+        provider_id = str(row.get("providerId") or "").strip().casefold()
+        profile = str(row.get("profile") or "").strip()
+        if (
+            provider_id in deferred_set
+            and profile
+            and int(row.get("successes") or 0) == 0
+            and int(row.get("consecutiveFailures") or 0) > 0
+        ):
+            failed_profiles_by_provider.setdefault(provider_id, set()).add(profile)
     strategy_blueprints = build_strategy_blueprints(
         batch_plan,
-        set(deferred_repair_providers),
+        deferred_set,
+        failed_profiles_by_provider,
     )
     if deferred_repair_providers:
-        deferred_set = set(deferred_repair_providers)
         cohort_rows = [
             row for row in entries
             if str(row.get("providerId") or "").strip().casefold() in deferred_set
