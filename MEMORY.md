@@ -4781,3 +4781,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - `choose_fixture()` no longer falls back from a missing anime/tv pool to movie, and validates that the selected fixture mediaType matches the declared provider type.
 - Added `brain_learning_fixture_type_authority_test.py` to both the main Workflow Gate and Learning preflight. A push-triggered Animesalt-only 8-minute Learning validation is armed; expected Lab fixture must be anime (Hell Mode/JJK/etc.), never a movie.
 - Investigation also confirmed that MalluMV's old positive-program memory was intentionally cleared by `b704f60...`: its prior playable acceptance came from unrelated Google gstatic marketing videos. That memory must remain cleared; it is not a regression to restore.
+
+
+### 2026-09-24 23:24 Europe/Paris — Targeted Learning stage cleanup moved inside its 30 s bound
+
+- Animesalt-only Learning run `36059592470` remained in `Build isolated current provider stage` far beyond the intended 30 s targeted bound.
+- The explicit target routing itself is correct: `target_provider: animesalt` forces `fast_handoff=true` only after verifying current `repairQueue` + LEARN/pending ownership.
+- Root cause in the workflow: `rm -rf staging` ran before the bounded targeted builder. A large/stale staging tree could therefore stall the job outside the timeout.
+- Targeted Learning no longer performs an external unbounded stage delete. `build_published_provider_stage.py` owns its own stage cleanup inside the 30 s timeout, and the workflow now asserts the produced candidate cardinality exactly matches the targeted cohort.
+- Full Learning keeps its explicit `rm -rf staging` path; only targeted Fast-Handoff semantics changed.
+- Re-armed the same Animesalt-only 8-minute fixture-authority validation. The required proof is an anime fixture, never a movie fixture.

@@ -432,17 +432,29 @@ jobs:
           FAST_HANDOFF_PROVIDER_FILTER: ${{ steps.learning-slot.outputs.provider_filter }}
         run: |
           set -euo pipefail
-          rm -rf staging
           mkdir -p brain-sandbox/health-output
           if [ "$FAST_HANDOFF" = "true" ] && [ -n "${FAST_HANDOFF_PROVIDER_FILTER:-}" ]; then
+            # The targeted builder owns cleanup of its stage. Keep all targeted
+            # stage work inside the wall-clock bound; an unbounded rm -rf here
+            # previously let stale/large staging trees stall a one-provider run.
             args=(python scripts/build_published_provider_stage.py --stage staging)
             IFS=',' read -r -a providers <<< "$FAST_HANDOFF_PROVIDER_FILTER"
             for provider in "${providers[@]}"; do
               [ -z "$provider" ] || args+=(--provider "$provider")
             done
             timeout --signal=TERM --kill-after=5s 30s "${args[@]}"
+            python - staging/candidates.json "${#providers[@]}" <<'PY'
+          import json,sys
+          path,expected=sys.argv[1],int(sys.argv[2])
+          data=json.load(open(path,encoding="utf-8"))
+          actual=len(data.get("candidates") or [])
+          if actual != expected:
+              raise SystemExit(f"targeted published stage cardinality mismatch: expected={expected} actual={actual}")
+          print(f"FIELD_FAST_LEARNING_STAGE_ASSERT expected={expected} actual={actual}")
+          PY
             echo "FIELD_FAST_LEARNING_STAGE source=published-exact providers=${#providers[@]}"
           else
+            rm -rf staging
             python scripts/normalize_provider_activation_overrides.py
             python scripts/discover_candidates.py --require-all-upstreams
             node engine_v2/scripts/validate-stage-against-catalog.mjs --catalog provider_catalog.json --stage staging/candidates.json

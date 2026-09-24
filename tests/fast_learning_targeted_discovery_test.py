@@ -27,4 +27,16 @@ for required in (
 assert "validate-stage-against-catalog.mjs" in workflow
 assert 'if [ "$FAST_HANDOFF" != "true" ]; then' in workflow
 
+stage_start = workflow.index("- name: Build isolated current provider stage")
+stage_end = workflow.index("- name: Observe the complete catalogue once for Learning", stage_start)
+stage_block = workflow[stage_start:stage_end]
+target_if = stage_block.index('if [ "$FAST_HANDOFF" = "true" ]')
+target_else = stage_block.index("else", target_if)
+target_block = stage_block[target_if:target_else]
+assert "rm -rf staging" not in target_block, target_block
+assert "timeout --signal=TERM --kill-after=5s 30s" in target_block, target_block
+assert "FIELD_FAST_LEARNING_STAGE_ASSERT" in target_block, target_block
+assert "targeted published stage cardinality mismatch" in target_block, target_block
+assert "rm -rf staging" in stage_block[target_else:], stage_block[target_else:]
+
 print("Fast-Handoff targeted discovery/reconstruction contract passed")
