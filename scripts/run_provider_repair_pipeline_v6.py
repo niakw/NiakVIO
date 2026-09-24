@@ -245,7 +245,6 @@ def refresh_census(report_path: Path, *, phase: str) -> dict[str, Any]:
         "--sha", sha or phase,
     )
     reapply_transport_overlay(phase=phase)
-    reapply_transport_overlay(phase=phase)
     if (ROOT / "scripts/build_provider_repair_batch_plan.py").exists():
         run(
             sys.executable,
@@ -353,6 +352,7 @@ def render_persisted_byte_census(
         "--run-id", f"{run_id}-{phase}",
         "--sha", sha or phase,
     )
+    reapply_transport_overlay(phase=phase)
     if (ROOT / "scripts/build_provider_repair_batch_plan.py").exists():
         run(
             sys.executable,
