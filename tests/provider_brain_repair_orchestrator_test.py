@@ -87,6 +87,52 @@ assert mod.generic_unadvised_learning_handoff(
     generic_summary,[],{"y"}
 )==set()
 
+advisor_summary={
+    "plans":{
+        "published:advisor":{
+            "providerId":"advisor",
+            "action":"probe-targeted-repair",
+            "llmAdvisorApplied":True,
+            "llmAdvisorProfile":"proven_route_terminal_traversal_v1",
+            "llmAdvisorExperimentFingerprint":"a"*64,
+        },
+        "published:future":{
+            "providerId":"future",
+            "action":"probe-targeted-repair",
+            "llmAdvisorApplied":True,
+            "llmAdvisorProfile":"proven_route_terminal_traversal_v1",
+            "llmAdvisorExperimentFingerprint":"b"*64,
+        },
+    }
+}
+advisor_memory={
+    "entries":[
+        {
+            "providerId":"advisor",
+            "profile":"proven_route_terminal_traversal_v1",
+            "llmAdvisorExperimentFingerprint":"a"*64,
+            "executionObserved":False,
+            "lastOutcome":"profile_unavailable",
+            "lastReason":"planned_profile_not_applicable_to_current_bytes",
+        },
+        {
+            "providerId":"future",
+            "profile":"proven_route_terminal_traversal_v1",
+            "llmAdvisorExperimentFingerprint":"c"*64,
+            "executionObserved":False,
+            "lastOutcome":"profile_unavailable",
+            "lastReason":"planned_profile_not_applicable_to_current_bytes",
+        },
+    ]
+}
+assert mod.unexecutable_llm_advisor_handoff(
+    advisor_summary,memory_payload=advisor_memory
+)=={"advisor"}
+executed_memory=json.loads(json.dumps(advisor_memory))
+executed_memory["entries"][0]["executionObserved"]=True
+assert mod.unexecutable_llm_advisor_handoff(
+    advisor_summary,memory_payload=executed_memory
+)==set()
 raw_accept=[
     {
         "provider":"mallu",
@@ -268,6 +314,12 @@ brain_summary=mod.sanitized_brain({
                 "experimentVariantCount":5,
                 "experimentExhausted":True,
                 "negativeMemoryMatches":4,
+                "llmAdvisorApplied":True,
+                "llmAdvisorProfile":"proven_route_terminal_traversal_v1",
+                "llmAdvisorSourceFailureClass":"route_proven_gap",
+                "llmAdvisorFailureCompatibility":"exact",
+                "llmAdvisorExperimentFingerprint":"d"*64,
+                "llmAdvisorExperiment":{"maxDepth":5},
                 "allowedProfiles":[],
                 "hypotheses":[],
             }
@@ -278,6 +330,9 @@ plan=brain_summary["plans"]["published:a"]
 assert plan["experimentExhausted"] is True,plan
 assert plan["repairScope"]=="deferred",plan
 assert plan["exitReason"]=="experiment_variants_exhausted",plan
+assert plan["llmAdvisorExperimentFingerprint"]=="d"*64,plan
+assert plan["llmAdvisorExperiment"]["maxDepth"]==5,plan
+assert plan["llmAdvisorFailureCompatibility"]=="exact",plan
 
 with tempfile.TemporaryDirectory() as tmp:
     old_memory,old_policy=mod.REPAIR_MEMORY,mod.BRAIN_POLICY
@@ -354,6 +409,7 @@ for required in (
     "PROVIDER_BRAIN_PACKED_FAMILY_BATCHES_V1",
     "PROVIDER_BRAIN_BATCH_CONCURRENCY_V1",
     "PROVIDER_BRAIN_GENERIC_MISS_TO_LEARNING_V1",
+    "PROVIDER_BRAIN_UNEXECUTABLE_LLM_TO_LEARNING_V1",
     "PROVIDER_BRAIN_DURABLE_ACCEPTANCE_V1",
     "rawLabAcceptedCount",
     "compileRejectedToLearning",

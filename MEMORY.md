@@ -4632,3 +4632,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - `build_provider_repair_batch_plan.py` now treats that replay-stage proof itself as authoritative for NO PROOF + repairEligible rows. Such rows enter provider-strategy Learning rather than a blocked harness lane. The legacy boolean is no longer required.
 - The causal-precedence contract now proves the behavior with the flag true, false and absent, while still retaining harness ownership when the pre-network replay proof is absent.
 - This is a routing correction only. Allwish is not promoted; it still requires a new learned provider-side request/route strategy and current-byte proof.
+
+### 2026-09-24 19:10 Europe/Paris — Exact unexecutable LLM experiments stop after one wave
+
+- Fast Brain runs 36030839750 (source 8f9b074...) and 36031544641 (source 482e7f8...) both completed successfully in roughly 4.5–5.5 minutes, proving the former 40+ minute Repair pathology is no longer the normal provider-local path.
+- Both runs selected the full 13-provider current repair cohort and accepted 0 production candidates. Twelve providers were handed to Learning; Animesalt alone remained for waves 2/3.
+- Raw repair memory proves why: Animesalt exact Brain-LLM advisor fingerprint 9a8d385d... was recorded as profile_unavailable / planned_profile_not_applicable_to_current_bytes with executionObserved=false. This is correctly not execution failure debt, but replaying the same exact advisor/profile/fingerprint in later waves is still useless.
+- Canonical Brain now has a separate PROVIDER_BRAIN_UNEXECUTABLE_LLM_TO_LEARNING_V1 rule: an exact advisor experiment that current bytes cannot execute is handed to Learning immediately after the first wave. It does not poison the profile globally; a future different advisor fingerprint remains eligible.
+- Brain portfolio reports now preserve llmAdvisorSourceFailureClass, llmAdvisorFailureCompatibility, llmAdvisorExperimentFingerprint and the sanitized llmAdvisorExperiment, so repeated/changed advisor experiments are directly auditable without inspecting raw memory.
+- Current durable transport state remains 0 PROVIDER NETWORK BLOCKED. Allwish has been rerouted from the owner dead-zone to provider-strategy Learning, animevost-fr has returned to provider Repair, and Animesultra remains the sole Core/client HARNESS MISMATCH.
+- Next proof: a fresh Fast run should process the current repairQueue with Animesalt leaving after wave 1 rather than repeating the same advisor through waves 2/3. No provider status promotion is expected without new playable identity-safe evidence.

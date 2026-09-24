@@ -358,6 +358,48 @@ def generic_unadvised_learning_handoff(
     return out
 
 
+def unexecutable_llm_advisor_handoff(
+    brain_summary: dict[str, Any],
+    *,
+    memory_payload: dict[str, Any] | None = None,
+) -> set[str]:
+    """Defer an exact advisor experiment that current bytes cannot execute.
+
+    profile_unavailable is deliberately not normal negative execution debt:
+    no candidate actually ran, so it must not poison the strategy globally.
+    Replaying the same provider/profile/fingerprint in the next wave is still
+    pointless. Keep those semantics separate: exact unexecutable advisor goes
+    to Learning, while a future different fingerprint remains eligible.
+    """
+    # PROVIDER_BRAIN_UNEXECUTABLE_LLM_TO_LEARNING_V1
+    memory = memory_payload if isinstance(memory_payload, dict) else load(REPAIR_MEMORY, {})
+    entries = [row for row in memory.get("entries") or [] if isinstance(row, dict)]
+    out: set[str] = set()
+    for plan in (brain_summary.get("plans") or {}).values():
+        if not isinstance(plan, dict) or plan.get("llmAdvisorApplied") is not True:
+            continue
+        provider = cid(plan.get("providerId"))
+        profile = str(plan.get("llmAdvisorProfile") or "").strip().casefold()
+        fingerprint = str(plan.get("llmAdvisorExperimentFingerprint") or "").strip().casefold()
+        if not provider or not profile or not fingerprint:
+            continue
+        for row in entries:
+            if cid(row.get("providerId")) != provider:
+                continue
+            if str(row.get("profile") or "").strip().casefold() != profile:
+                continue
+            if str(row.get("llmAdvisorExperimentFingerprint") or "").strip().casefold() != fingerprint:
+                continue
+            if row.get("executionObserved") is True:
+                continue
+            if str(row.get("lastOutcome") or "") != "profile_unavailable":
+                continue
+            if str(row.get("lastReason") or "") != "planned_profile_not_applicable_to_current_bytes":
+                continue
+            out.add(provider)
+            break
+    return out
+
 def exhausted_from_negative_memory(brain_summary: dict[str, Any]) -> set[str]:
     """Reclassify signatures that became exhausted during the just-finished wave."""
     policy = load(BRAIN_POLICY, {})
@@ -511,6 +553,14 @@ def sanitized_brain(report: dict[str, Any]) -> dict[str, Any]:
                 "llmAdvisorStrategy": row.get("llmAdvisorStrategy"),
                 "llmAdvisorProfile": row.get("llmAdvisorProfile"),
                 "llmAdvisorConfidence": row.get("llmAdvisorConfidence"),
+                "llmAdvisorSourceFailureClass": row.get("llmAdvisorSourceFailureClass"),
+                "llmAdvisorFailureCompatibility": row.get("llmAdvisorFailureCompatibility"),
+                "llmAdvisorExperimentFingerprint": row.get("llmAdvisorExperimentFingerprint"),
+                "llmAdvisorExperiment": copy.deepcopy(
+                    row.get("llmAdvisorExperiment")
+                    if isinstance(row.get("llmAdvisorExperiment"), dict)
+                    else {}
+                ),
                 "hypotheses": row.get("hypotheses") or [],
             }
             for key, row in plans.items()
@@ -790,7 +840,11 @@ def main() -> int:
                     accepted,
                     fixed,
                 )
+                unexecutable_llm_handoff = unexecutable_llm_advisor_handoff(
+                    brain_summary,
+                )
                 deferred.update(generic_learning_handoff)
+                deferred.update(unexecutable_llm_handoff)
                 accepted_this_wave.extend(accepted)
                 fixed_this_wave.update(fixed)
                 deferred_this_wave.update(deferred)
@@ -808,6 +862,7 @@ def main() -> int:
                     "fixedInLab": sorted(fixed),
                     "deferredToLearning": sorted(deferred),
                     "genericLearningHandoff": sorted(generic_learning_handoff),
+                    "unexecutableLlmHandoff": sorted(unexecutable_llm_handoff),
                     "brain": brain_summary,
                 })
 
