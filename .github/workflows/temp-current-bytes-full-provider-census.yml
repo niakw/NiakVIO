@@ -83,10 +83,13 @@ concurrency:
 jobs:
   scale:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     outputs:
       provider_count: ${{ steps.decide.outputs.provider_count }}
       use_sharded: ${{ steps.decide.outputs.use_sharded }}
       should_run: ${{ steps.decide.outputs.should_run }}
+      projection_drift: ${{ steps.decide.outputs.projection_drift }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -106,9 +109,23 @@ jobs:
           message="$(git log -1 --pretty=%B)"
           use_sharded=false
           should_run=true
+          projection_drift=0
           if [ "$count" -gt 120 ]; then
             use_sharded=true
             should_run=false
+          else
+            python scripts/detect_provider_projection_drift.py               --output "$RUNNER_TEMP/provider-projection-drift-pre-census.json"
+            projection_drift="$(python - <<'PY'
+          import json, os
+          from pathlib import Path
+          p=Path(os.environ["RUNNER_TEMP"])/"provider-projection-drift-pre-census.json"
+          d=json.loads(p.read_text(encoding="utf-8"))
+          print(int(d.get("providerCount") or 0))
+          PY
+            )"
+            if [ "$projection_drift" -gt 0 ]; then
+              should_run=false
+            fi
           fi
           if [ "$GITHUB_EVENT_NAME" = "push" ]; then
             case "$message" in
@@ -119,7 +136,12 @@ jobs:
           fi
           echo "use_sharded=$use_sharded" >> "$GITHUB_OUTPUT"
           echo "should_run=$should_run" >> "$GITHUB_OUTPUT"
-          echo "FIELD_CENSUS_SCALE providers=$count use_sharded=$use_sharded should_run=$should_run"
+          echo "projection_drift=$projection_drift" >> "$GITHUB_OUTPUT"
+          echo "FIELD_CENSUS_SCALE providers=$count use_sharded=$use_sharded should_run=$should_run projection_drift=$projection_drift"
+          if [ "$projection_drift" -gt 0 ] && [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            gh workflow run provider-projection-reconcile.yml               --repo "$GITHUB_REPOSITORY"               --ref main
+            echo "FIELD_CENSUS_PROJECTION_HANDOFF drift=$projection_drift workflow=provider-projection-reconcile.yml"
+          fi
 
   census:
     needs: scale
@@ -186,6 +208,7 @@ jobs:
           python tests/provider_census_scope_history_test.py
           python tests/provider_materialization_byte_validation_contract_test.py
           python tests/provider_census_incremental_materialization_scope_test.py
+          python tests/provider_census_projection_race_test.py
           python tests/provider_shared_player_fanout_contract_test.py
           python tests/provider_repair_batch_plan_test.py
           python tests/provider_repair_batch_runner_test.py
@@ -422,6 +445,21 @@ jobs:
           remote_main="$(git rev-parse origin/main)"
           if [ "$remote_main" != "$GITHUB_SHA" ]; then
             echo "FIELD_CURRENT_BYTES_CENSUS_STALE source=$GITHUB_SHA remote=$remote_main"
+            exit 0
+          fi
+
+          python scripts/detect_provider_projection_drift.py             --output "$RUNNER_TEMP/provider-projection-drift-at-persist.json"
+          projection_drift="$(python - <<'PY'
+          import json, os
+          from pathlib import Path
+          p=Path(os.environ["RUNNER_TEMP"])/"provider-projection-drift-at-persist.json"
+          d=json.loads(p.read_text(encoding="utf-8"))
+          print(int(d.get("providerCount") or 0))
+          PY
+          )"
+          if [ "$projection_drift" -gt 0 ]; then
+            echo "FIELD_CURRENT_BYTES_CENSUS_DEFERRED reason=unpublished-provider-projection drift=$projection_drift"
+            gh workflow run provider-projection-reconcile.yml               --repo "$GITHUB_REPOSITORY"               --ref main
             exit 0
           fi
 

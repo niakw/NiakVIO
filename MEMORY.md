@@ -4480,3 +4480,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The owned runtime Lego `animesamaco_site_runtime_v1.py`, `upgrade_provider_v3_batch_routes_v2.py`, domain reconciliation tests and user-evidence crosscheck all agree that `/catalogue/?search={query}` is the executable catalogue route and `/template-php/defaut/fetch.php` is stale/candidate history.
 - Current `provider-overrides.json` had those authorities inverted: `/template-php/defaut/fetch.php` in `learned_routes` while `/catalogue/?search={query}` was candidate-only. This is a true structured-DATA regression, not a stale test.
 - The DATA is restored to the canonical v2 migration contract. The in-flight Projection Reconcile from the inconsistent baseline must not publish; main advancement intentionally invalidates its atomic baseline and a fresh projection reconcile is triggered from the corrected DATA.
+
+
+### 2026-09-24 — Census/Projection Reconcile publication race closed
+
+- AnimeSama.co projection run `35942671277` proved the provider correction itself was sound: targeted rebuild, projection fixed point and atomic publication build all passed. The run failed only at the final push because concurrent full census `35942671301` persisted evidence commit `277f4079b63b` on top of the same source SHA.
+- This race was systemic: a census triggered by provider-impact DATA could ephemerally materialize candidate bytes, then persist only evidence and advance `main` before the owning Projection Reconcile published those bytes. The exact-head publication guard then correctly refused the otherwise-valid provider publication.
+- The mono current-byte census now runs `detect_provider_projection_drift.py` in its lightweight scale job **before starting the expensive census**. Any unpublished provider projection forces `should_run=false` and hands off to `provider-projection-reconcile.yml`.
+- A second identical drift check runs immediately before census evidence persistence. Even if a future workflow path bypasses the scale decision, census cannot advance `main` while provider DATA/Lego and published bytes are out of fixed point.
+- This makes publication ownership explicit: Projection Reconcile first; only the exact published HEAD may persist canonical census evidence afterwards.
