@@ -4757,3 +4757,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 
 - Repair run `36053082361` again stopped before provider work in the static compatibility wrapper. The traceback displayed the nearby candidate-yield assertion, but the current pipeline still contains that exact call; the rewritten contract's line mapping was misleading.
 - The stale assertion was the exact zero-argument signature `def rematerialize_repair_scope()`. The compatibility wrapper now rewrites it to the parameterized targeted signature contract. No provider result from `36053082361` is authoritative.
+
+
+### 2026-09-24 22:28 Europe/Paris — Network failures no longer erase stronger route/chain proof
+
+- Optimized Repair run `36053416693` completed successfully on `0f896ce...` with targeted materialization and the bounded automatic Repair path, then persisted evidence at `9c793473...`. The 14 providers remain unresolved and are correctly owned by Learning; the run did not produce a current playable/verified repair.
+- The resulting census incorrectly downgraded MalluMV to `PROVIDER NETWORK BLOCKED` even though the same row retained 4 qualified live routes and a retained chain hit, with `harnessTransportClass=not-applicable`. Root cause: the census state machine let `provider_network_exception` override stronger route/chain evidence whenever no historical playable proof existed.
+- Census precedence is now monotonic: candidate proof > historical regression > current chain > retained live route > bare network block. A network exception/HTTP error/timeout can only yield `PROVIDER NETWORK BLOCKED` when no stronger provider-side proof exists. The same rule applies when reconciling carried rows.
+- Armed a MalluMV-only current-byte Retest with `autoRepair=false` to persist the corrected classification without re-running the full 14-provider repair loop.

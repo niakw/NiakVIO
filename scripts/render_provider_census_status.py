@@ -504,9 +504,15 @@ def provider_state(
     if stages & NETWORK_BROKEN_STAGES:
         if has_history:
             return "REGRESSION PROVIDER"
-        # HTTP/DNS/timeout proves only that the current transport path failed.
-        # Without a retained positive proof it does not establish a Provider JS
-        # defect, even after repeated censuses.
+        # A transport failure is weaker than already-qualified provider evidence.
+        # Do not regress a provider with a current content-chain or retained live
+        # route back to NETWORK BLOCKED merely because one probe hit HTTP/DNS/TLS
+        # or timeout. NETWORK BLOCKED is reserved for providers with no stronger
+        # current/retained provider-side proof.
+        if any(str(row.get("debug_progress_stage") or "") == "chain_reached" for row in rows):
+            return "CHAIN REACHED"
+        if retained_route:
+            return "ROUTE PROVEN"
         return "PROVIDER NETWORK BLOCKED"
 
     # Wrong content, unplayable output and other post-runtime failures are
@@ -645,7 +651,15 @@ def _carried_non_green_status(carried: dict[str, Any], provider: str, waf_browse
     if "provider_waf_challenge" in issue:
         return browser_harness_status(waf_browser_evidence, provider)
     if any(value in issue for value in ("provider_network_http_error", "provider_network_exception", "timeout")):
-        return "REGRESSION PROVIDER" if historical else "PROVIDER NETWORK BLOCKED"
+        if historical:
+            return "REGRESSION PROVIDER"
+        if candidate:
+            return "CANDIDATE OK"
+        if any("chain_reached" in value for value in depth):
+            return "CHAIN REACHED"
+        if route:
+            return "ROUTE PROVEN"
+        return "PROVIDER NETWORK BLOCKED"
     if "provider_network_zero_result" in issue:
         if candidate:
             return "CANDIDATE OK"

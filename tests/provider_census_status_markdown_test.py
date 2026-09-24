@@ -88,6 +88,45 @@ assert rows["route"]["routeProof"] == ["3 live routes / movie"]
 assert rows["waf"]["status"] == "HARNESS MISMATCH"
 assert rows["network-blocked"]["status"] == "PROVIDER NETWORK BLOCKED"
 assert rows["broken"]["status"] == "PROVIDER JS BROKEN"
+
+# A transient provider-network failure must not erase stronger retained route
+# authority. This is the MalluMV-class regression: live routes remain qualified
+# even when the latest current-byte probe reports a network exception.
+network_route_report = {
+    "provider_count": 1,
+    "rows": [{
+        "provider_id": "network-route",
+        "semantic_type": "movie",
+        "status": "no_streams",
+        "verified": 0,
+        "contradictions": 0,
+        "debug_stage": "provider_network_exception",
+        "debug_progress_stage": "lookup_only",
+        "sample_count": 1,
+        "samples": [],
+    }],
+}
+network_route_overrides = {
+    "provider_patches": {
+        "network-route": {
+            "live_route_gate": {
+                "completion_state": "declared-types-qualified",
+                "required_types": ["movie"],
+                "validated_types": ["movie"],
+                "missing_types": [],
+                "live_validated_route_count": 4,
+                "provider_request_count": 4,
+            }
+        }
+    }
+}
+network_route_row = build_status_rows(
+    network_route_report,
+    {},
+    provider_overrides=network_route_overrides,
+)[0]
+assert network_route_row["status"] == "ROUTE PROVEN", network_route_row
+assert network_route_row["routeProof"] == ["4 live routes / movie"], network_route_row
 assert rows["full"]["brainCheckRequired"] is False
 assert rows["partial"]["brainCheckRequired"] is False
 assert rows["waf"]["brainCheckRequired"] is True
@@ -357,7 +396,7 @@ carried_rows = {
         {},
     )
 }
-assert carried_rows["carried-network-green"]["status"] == "PROVIDER NETWORK BLOCKED", carried_rows
+assert carried_rows["carried-network-green"]["status"] == "ROUTE PROVEN", carried_rows
 assert carried_rows["carried-network-green"]["currentVerifiedLanes"] == [], carried_rows
 assert carried_rows["carried-network-green"]["reconciledFromCarriedGreen"] is True, carried_rows
 assert carried_rows["carried-waf-green"]["status"] == "HARNESS MISMATCH", carried_rows

@@ -1,12 +1,14 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-22T04:15:00+02:00",
-  "scope": "non-full",
-  "targetProviders": [],
-  "autoRepair": true,
-  "goal": "Authoritative split Retest after stale census writer guard; current non-FULL bytes -> transport differential -> persisted census -> Fast Brain Repair.",
-  "retry": 5,
-  "reason": "authoritative-causal-autopilot-proof-after-history-execution-and-active-context-isolation",
-  "sourceExpectation": "current-main-post-retailored-harness-batching",
-  "executionExpectation": "RETEST -> causal Brain Autopilot -> owner lanes, never direct raw repairQueue -> Fast Repair"
+  "requestedAt": "2026-09-24T22:28:00+02:00",
+  "scope": "repair",
+  "targetProviders": [
+    "mallumv"
+  ],
+  "autoRepair": false,
+  "goal": "Targeted current-byte MalluMV retest after census precedence fix: retain qualified live route/chain evidence across transient provider_network_exception and persist the corrected durable census without launching another repair cycle.",
+  "retry": 6,
+  "reason": "mallumv-network-status-proof-precedence-reconciliation",
+  "sourceExpectation": "current-main-after-network-proof-precedence-fix",
+  "executionExpectation": "RETEST mallumv only -> persist census; no autopilot"
 }
