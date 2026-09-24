@@ -385,7 +385,7 @@ def planner_learned_skills(mode: str) -> dict[str, Any]:
     return out
 
 
-def _memory_entry_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str, str, int, int]:
+def _memory_entry_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str, str, str, int, int]:
     return (
         _clip_text(row.get("providerId"), 160).casefold(),
         _clip_text(row.get("providerVersion") or "*", 64),
@@ -394,6 +394,7 @@ def _memory_entry_key(row: dict[str, Any]) -> tuple[str, str, str, str, str, str
         _clip_text(row.get("profile"), 96),
         _clip_text(row.get("positiveProgramFingerprint"), 256).casefold(),
         _clip_text(row.get("strategyImplementationFingerprint"), 256).casefold(),
+        _clip_text(row.get("llmAdvisorExperimentFingerprint"), 64).casefold(),
         max(0, int(row.get("experimentVariant") or 0)),
         max(1, int(row.get("experimentGeneration") or 1)),
     )
@@ -442,6 +443,9 @@ def _learning_experiment_entries() -> list[dict[str, Any]]:
             "strategyImplementationFingerprint": _clip_text(
                 raw.get("strategyImplementationFingerprint"), 256
             ).casefold(),
+            "llmAdvisorExperimentFingerprint": _clip_text(
+                raw.get("llmAdvisorExperimentFingerprint"), 64
+            ).casefold(),
             "experimentVariant": max(0, int(raw.get("experimentVariant") or 0)),
             "experimentGeneration": max(1, int(raw.get("experimentGeneration") or 1)),
             "capabilityStrategy": _clip_text(raw.get("capabilityStrategy"), 96).casefold(),
@@ -468,7 +472,7 @@ def repair_memory() -> dict[str, Any]:
     # Only the isolated Learning planner may overlay the read-only sanitized
     # experiment memory published by the previous Learning phase.
     if str(os.environ.get("NUVIO_BRAIN_PLANNER_MODE") or "").strip().casefold() == "learning":
-        merged: dict[tuple[str, str, str, str, str, str, str, int, int], dict[str, Any]] = {
+        merged: dict[tuple[str, str, str, str, str, str, str, str, int, int], dict[str, Any]] = {
             _memory_entry_key(row): copy.deepcopy(row)
             for row in entries
         }
@@ -544,6 +548,10 @@ def planner_llm_guidance() -> list[dict[str, Any]]:
             or raw.get("priorOnly") is not True
         ):
             continue
+        experiment = raw.get("experiment") if isinstance(raw.get("experiment"), dict) else {}
+        experiment_fingerprint = _clip_text(raw.get("experimentFingerprint"), 64).casefold()
+        if experiment_fingerprint and not re.fullmatch(r"[0-9a-f]{64}", experiment_fingerprint):
+            continue
         out.append({
             "providerId": provider,
             "failureClass": failure,
@@ -552,6 +560,8 @@ def planner_llm_guidance() -> list[dict[str, Any]]:
             "profile": profile,
             "confidence": confidence,
             "priorOnly": True,
+            "experiment": copy.deepcopy(experiment),
+            "experimentFingerprint": experiment_fingerprint,
         })
         if len(out) >= 128:
             break
@@ -626,6 +636,9 @@ def planner_negative_memory(_mode: str) -> list[dict[str, Any]]:
             ).casefold(),
             "strategyImplementationFingerprint": _clip_text(
                 raw.get("strategyImplementationFingerprint"), 256
+            ).casefold(),
+            "llmAdvisorExperimentFingerprint": _clip_text(
+                raw.get("llmAdvisorExperimentFingerprint"), 64
             ).casefold(),
             "experimentVariant": max(0, int(raw.get("experimentVariant") or 0)),
             "experimentGeneration": max(1, int(raw.get("experimentGeneration") or 1)),
@@ -895,6 +908,8 @@ def _plan_snapshot(plan: dict[str, Any]) -> dict[str, Any]:
         "negativeMemoryMatches": max(0, int(plan.get("negativeMemoryMatches") or 0)),
         "positiveProgramFingerprint": str(plan.get("positiveProgramFingerprint") or "").casefold(),
         "strategyImplementationFingerprint": str(plan.get("strategyImplementationFingerprint") or "").casefold(),
+        "llmAdvisorExperimentFingerprint": str(plan.get("llmAdvisorExperimentFingerprint") or "").casefold(),
+        "llmAdvisorExperiment": copy.deepcopy(plan.get("llmAdvisorExperiment") if isinstance(plan.get("llmAdvisorExperiment"), dict) else {}),
         "observedPipelineStage": str(plan.get("observedPipelineStage") or ""),
         "censusStatus": str(plan.get("censusStatus") or ""),
         "capabilityStrategy": str(plan.get("capabilityStrategy") or ""),
@@ -1002,6 +1017,9 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
         strategy_implementation_fingerprint = str(
             plan.get("strategyImplementationFingerprint") or ""
         ).strip().casefold()
+        llm_experiment_fingerprint = str(
+            plan.get("llmAdvisorExperimentFingerprint") or ""
+        ).strip().casefold()
         for row in memory_entries:
             if not isinstance(row, dict):
                 continue
@@ -1011,6 +1029,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                 and str(row.get("profile") or "") == profile
                 and str(row.get("positiveProgramFingerprint") or "").casefold() == positive_program_fingerprint
                 and str(row.get("strategyImplementationFingerprint") or "").casefold() == strategy_implementation_fingerprint
+                and str(row.get("llmAdvisorExperimentFingerprint") or "").casefold() == llm_experiment_fingerprint
                 and int(row.get("experimentVariant") or 0) == max(0, int(plan.get("experimentVariant") or 0))
                 and max(1, int(row.get("experimentGeneration") or 1)) == max(1, int(plan.get("experimentGeneration") or 1))
             ):
@@ -1023,6 +1042,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
             "profile": profile,
             "positiveProgramFingerprint": positive_program_fingerprint,
             "strategyImplementationFingerprint": strategy_implementation_fingerprint,
+            "llmAdvisorExperimentFingerprint": llm_experiment_fingerprint,
             "experimentVariant": max(0, int(plan.get("experimentVariant") or 0)),
             "experimentGeneration": max(1, int(plan.get("experimentGeneration") or 1)),
             "capabilityStrategy": str(plan.get("capabilityStrategy") or "").casefold(),

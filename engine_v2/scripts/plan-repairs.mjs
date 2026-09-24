@@ -275,10 +275,16 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
     ));
   for (const row of rows) {
     const profile = stringValue(row.profile).toLowerCase();
-    const alreadyFailed = memoryRows.some((memory) => (
-      stringValue(memory.profile).toLowerCase() === profile
-      && Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) >= rotateEvery
-    ));
+    const fingerprintRaw = stringValue(row.experimentFingerprint).toLowerCase();
+    const experimentFingerprint = /^[0-9a-f]{64}$/.test(fingerprintRaw) ? fingerprintRaw : "";
+    const alreadyFailed = memoryRows.some((memory) => {
+      if (
+        stringValue(memory.profile).toLowerCase() !== profile
+        || Math.max(0, finiteNumber(memory.consecutiveFailures, 0)) < rotateEvery
+      ) return false;
+      const remembered = stringValue(memory.llmAdvisorExperimentFingerprint).toLowerCase();
+      return experimentFingerprint ? remembered === experimentFingerprint : !remembered;
+    });
     if (alreadyFailed) continue;
     return {
       profile,
@@ -286,6 +292,8 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
       confidence: finiteNumber(row.confidence, 0),
       sourceFailureClass: canonicalFailureClass(row.failureClass),
       failureCompatibility: row.failureCompatibility,
+      experiment: asRecord(row.experiment),
+      experimentFingerprint,
     };
   }
   return {
@@ -294,6 +302,8 @@ function llmAdvisorStrategyHint(providerId, failureClass, memoryRows, rotateEver
     confidence: 0,
     sourceFailureClass: "",
     failureCompatibility: "",
+    experiment: {},
+    experimentFingerprint: "",
   };
 }
 
@@ -622,7 +632,7 @@ function buildPlan(item) {
         allMemoryMatches,
         rotateEvery,
       )
-    : { profile: "", strategy: "", confidence: 0 };
+    : { profile: "", strategy: "", confidence: 0, experiment: {}, experimentFingerprint: "" };
   const llmAdvisorProductionRescue = (
     !learningMode
     && experimentExhausted
@@ -718,6 +728,8 @@ function buildPlan(item) {
     llmAdvisorConfidence: llmAdvisorHint.confidence,
     llmAdvisorSourceFailureClass: llmAdvisorHint.sourceFailureClass,
     llmAdvisorFailureCompatibility: llmAdvisorHint.failureCompatibility,
+    llmAdvisorExperiment: llmAdvisorHint.experiment,
+    llmAdvisorExperimentFingerprint: llmAdvisorHint.experimentFingerprint,
     historicalStrategyProfile: historicalHint.profile,
     historicalStrategyCase: historicalHint.caseId,
     historicalSolutionClass: historicalHint.solutionClass,
