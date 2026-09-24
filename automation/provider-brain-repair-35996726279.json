@@ -1,0 +1,383 @@
+{
+  "acceptedProgramCompileFailures": {},
+  "acceptedProgramCompiledProviders": [],
+  "acceptedRepairCount": 0,
+  "acceptedRepairs": [],
+  "batchSize": 48,
+  "deferredLearningProviders": [],
+  "elapsedSeconds": 119.389,
+  "executionModel": "family-batched-multi-wave-brain-repair",
+  "experienceMemory": {
+    "operationalProviderCount": 27,
+    "providerCount": 46,
+    "schemaVersion": 2,
+    "sourceRunId": "35996726279-pre-repair",
+    "sourceSha": "cbab994a3cddf78779074a757b38870c9392da9a",
+    "strategyCount": 5
+  },
+  "fixedInLabProviders": [],
+  "healthConcurrency": 0,
+  "healthConcurrencyMode": "auto-per-batch",
+  "initialStatuses": {
+    "4khdhub": "ROUTE PROVEN",
+    "allanime": "CHAIN REACHED",
+    "anime-ultime": "PROVIDER NETWORK BLOCKED",
+    "animevostfr": "CANDIDATE OK",
+    "mallumv": "CHAIN REACHED",
+    "moviebox": "PROVIDER NETWORK BLOCKED",
+    "vidfast": "PROVIDER NETWORK BLOCKED",
+    "yflix": "PROVIDER NETWORK BLOCKED"
+  },
+  "maxWaves": 3,
+  "noProgressReason": "no_new_repair_experiment",
+  "processedProviderCount": 8,
+  "processedProviders": [
+    "4khdhub",
+    "allanime",
+    "anime-ultime",
+    "animevostfr",
+    "mallumv",
+    "moviebox",
+    "vidfast",
+    "yflix"
+  ],
+  "providerSpecificRules": false,
+  "rawLabAcceptedCount": 0,
+  "rawLabAcceptedRepairs": [],
+  "remainingProviders": [
+    "4khdhub",
+    "allanime",
+    "anime-ultime",
+    "animevostfr",
+    "mallumv",
+    "moviebox",
+    "vidfast",
+    "yflix"
+  ],
+  "resumeRecommended": false,
+  "safety": {
+    "acceptedMutationRequiresStrictImprovement": true,
+    "currentByteRetestRequired": true,
+    "directSkillApplication": false,
+    "experienceMemoryRole": "prior-only-no-acceptance-authority",
+    "identityGateRequired": true,
+    "learnedSkillRole": "hypothesis-ordering-only",
+    "wafEnvironmentExcludedByDefault": true
+  },
+  "schemaVersion": 1,
+  "selectedProviderCount": 8,
+  "selectedProviders": [
+    "4khdhub",
+    "allanime",
+    "anime-ultime",
+    "animevostfr",
+    "mallumv",
+    "moviebox",
+    "vidfast",
+    "yflix"
+  ],
+  "selectionSource": "automation/provider-census-status.json:repairQueue",
+  "shardCount": 1,
+  "shardIndex": 0,
+  "skippedEnvironmentProviders": [],
+  "sourceCensusRunId": "35996726279-pre-repair",
+  "timeBudgetExhausted": false,
+  "timeBudgetSeconds": 900,
+  "unvisitedProviders": [],
+  "waves": [
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "batch": 1,
+          "brain": {
+            "learnedEvents": 0,
+            "plans": {
+              "published:4khdhub": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "planner_item_error",
+                "experimentExhausted": false,
+                "experimentGeneration": null,
+                "experimentVariant": null,
+                "experimentVariantCount": null,
+                "failureClass": "unknown_failure",
+                "hypotheses": [],
+                "learningDisposition": "queue_for_independent_learning",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": null,
+                "llmAdvisorProfile": null,
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": null,
+                "negativeMemoryMatches": null,
+                "providerId": "4khdhub",
+                "repairScope": "deferred",
+                "repairType": "architecture_gap",
+                "signature": null
+              },
+              "published:allanime": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "planner_item_error",
+                "experimentExhausted": false,
+                "experimentGeneration": null,
+                "experimentVariant": null,
+                "experimentVariantCount": null,
+                "failureClass": "unknown_failure",
+                "hypotheses": [],
+                "learningDisposition": "queue_for_independent_learning",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": null,
+                "llmAdvisorProfile": null,
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": null,
+                "negativeMemoryMatches": null,
+                "providerId": "allanime",
+                "repairScope": "deferred",
+                "repairType": "architecture_gap",
+                "signature": null
+              },
+              "published:anime-ultime": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "planner_item_error",
+                "experimentExhausted": false,
+                "experimentGeneration": null,
+                "experimentVariant": null,
+                "experimentVariantCount": null,
+                "failureClass": "unknown_failure",
+                "hypotheses": [],
+                "learningDisposition": "queue_for_independent_learning",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": null,
+                "llmAdvisorProfile": null,
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": null,
+                "negativeMemoryMatches": null,
+                "providerId": "anime-ultime",
+                "repairScope": "deferred",
+                "repairType": "architecture_gap",
+                "signature": null
+              },
+              "published:animevostfr": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "planner_item_error",
+                "experimentExhausted": false,
+                "experimentGeneration": null,
+                "experimentVariant": null,
+                "experimentVariantCount": null,
+                "failureClass": "unknown_failure",
+                "hypotheses": [],
+                "learningDisposition": "queue_for_independent_learning",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": null,
+                "llmAdvisorProfile": null,
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": null,
+                "negativeMemoryMatches": null,
+                "providerId": "animevostfr",
+                "repairScope": "deferred",
+                "repairType": "architecture_gap",
+                "signature": null
+              },
+              "published:mallumv": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "planner_item_error",
+                "experimentExhausted": false,
+                "experimentGeneration": null,
+                "experimentVariant": null,
+                "experimentVariantCount": null,
+                "failureClass": "unknown_failure",
+                "hypotheses": [],
+                "learningDisposition": "queue_for_independent_learning",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": null,
+                "llmAdvisorProfile": null,
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": null,
+                "negativeMemoryMatches": null,
+                "providerId": "mallumv",
+                "repairScope": "deferred",
+                "repairType": "architecture_gap",
+                "signature": null
+              },
+              "published:moviebox": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "planner_item_error",
+                "experimentExhausted": false,
+                "experimentGeneration": null,
+                "experimentVariant": null,
+                "experimentVariantCount": null,
+                "failureClass": "unknown_failure",
+                "hypotheses": [],
+                "learningDisposition": "queue_for_independent_learning",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": null,
+                "llmAdvisorProfile": null,
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": null,
+                "negativeMemoryMatches": null,
+                "providerId": "moviebox",
+                "repairScope": "deferred",
+                "repairType": "architecture_gap",
+                "signature": null
+              },
+              "published:vidfast": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "planner_item_error",
+                "experimentExhausted": false,
+                "experimentGeneration": null,
+                "experimentVariant": null,
+                "experimentVariantCount": null,
+                "failureClass": "unknown_failure",
+                "hypotheses": [],
+                "learningDisposition": "queue_for_independent_learning",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": null,
+                "llmAdvisorProfile": null,
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": null,
+                "negativeMemoryMatches": null,
+                "providerId": "vidfast",
+                "repairScope": "deferred",
+                "repairType": "architecture_gap",
+                "signature": null
+              },
+              "published:yflix": {
+                "action": "deferred_retry",
+                "allowedProfiles": [],
+                "exitReason": "planner_item_error",
+                "experimentExhausted": false,
+                "experimentGeneration": null,
+                "experimentVariant": null,
+                "experimentVariantCount": null,
+                "failureClass": "unknown_failure",
+                "hypotheses": [],
+                "learningDisposition": "queue_for_independent_learning",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": null,
+                "llmAdvisorProfile": null,
+                "llmAdvisorRescue": false,
+                "llmAdvisorStrategy": null,
+                "negativeMemoryMatches": null,
+                "providerId": "yflix",
+                "repairScope": "deferred",
+                "repairType": "architecture_gap",
+                "signature": null
+              }
+            },
+            "queuedForLearning": [
+              "4khdhub",
+              "allanime",
+              "anime-ultime",
+              "animevostfr",
+              "mallumv",
+              "moviebox",
+              "vidfast",
+              "yflix"
+            ],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "mixed",
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "candidate-replay|mixed_embed_resolver",
+              "providers": [
+                "animevostfr"
+              ],
+              "repairScope": "candidate-replay"
+            },
+            {
+              "capabilityStrategy": "direct_media",
+              "groupId": "terminal-extraction|direct_media",
+              "providers": [
+                "allanime"
+              ],
+              "repairScope": "terminal-extraction"
+            },
+            {
+              "capabilityStrategy": "iframe_player",
+              "groupId": "transport|iframe_player",
+              "providers": [
+                "vidfast"
+              ],
+              "repairScope": "transport"
+            },
+            {
+              "capabilityStrategy": "html_scraper",
+              "groupId": "transport|html_scraper",
+              "providers": [
+                "moviebox"
+              ],
+              "repairScope": "transport"
+            },
+            {
+              "capabilityStrategy": "mixed_embed_resolver",
+              "groupId": "transport|mixed_embed_resolver",
+              "providers": [
+                "yflix",
+                "anime-ultime"
+              ],
+              "repairScope": "transport"
+            },
+            {
+              "capabilityStrategy": "html_scraper",
+              "groupId": "route-to-terminal|html_scraper",
+              "providers": [
+                "4khdhub"
+              ],
+              "repairScope": "route-to-terminal"
+            },
+            {
+              "capabilityStrategy": "html_scraper",
+              "groupId": "terminal-extraction|html_scraper",
+              "providers": [
+                "mallumv"
+              ],
+              "repairScope": "terminal-extraction"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [],
+          "groupId": "packed",
+          "healthConcurrency": 8,
+          "providerCount": 8,
+          "providers": [
+            "animevostfr",
+            "allanime",
+            "vidfast",
+            "moviebox",
+            "yflix",
+            "anime-ultime",
+            "4khdhub",
+            "mallumv"
+          ],
+          "repairScope": "mixed"
+        }
+      ],
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": false,
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 8,
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 8,
+      "timeBudgetExhausted": false,
+      "wave": 1
+    }
+  ]
+}
