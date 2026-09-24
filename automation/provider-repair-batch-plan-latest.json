@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "sourceRunId": "36020604290-post-repair-candidate",
-  "sourceTriggerSha": "1eccf3aa053b23c4e6e1e8674ab473f07f5d62e1",
+  "sourceRunId": "36053416693-post-repair-candidate",
+  "sourceTriggerSha": "0f896ceff57d84b31303fd3b02fee70a282bc324",
   "unresolvedProviderCount": 14,
-  "groupCount": 8,
+  "groupCount": 9,
   "executionModel": {
     "default": "family/signature batch",
     "liveProbeConcurrency": "audit_provider_quick_yield ThreadPool",
@@ -31,7 +31,6 @@
         "waf_challenge"
       ],
       "harnessTransportClasses": [
-        "browser-profile-only",
         "residential-exit-all-challenged"
       ],
       "transportSignature": "not-applicable",
@@ -73,32 +72,6 @@
         "moviesmod"
       ],
       "action": "replay proven routes in batch and apply shared detail/player traversal profile",
-      "executionPolicy": "batch-first",
-      "providerLocalFallback": "only-after-shared-profile-failure"
-    },
-    {
-      "groupId": "terminal-extraction|html_scraper",
-      "repairScope": "terminal-extraction",
-      "runtimeFamilies": [
-        "api_stream_resolver",
-        "mallumv-catalogue-confirm-internal-v1"
-      ],
-      "capabilityStrategy": "html_scraper",
-      "evidenceDepths": [
-        "chain"
-      ],
-      "dominantIssues": [
-        "network_http_error",
-        "network_zero_result"
-      ],
-      "harnessTransportClasses": [],
-      "transportSignature": "not-applicable",
-      "providerCount": 2,
-      "providers": [
-        "mallumv",
-        "moviebox"
-      ],
-      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     },
@@ -218,6 +191,52 @@
         "allanime"
       ],
       "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "terminal-extraction|html_scraper",
+      "repairScope": "terminal-extraction",
+      "runtimeFamilies": [
+        "api_stream_resolver"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "chain"
+      ],
+      "dominantIssues": [
+        "network_http_error"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "moviebox"
+      ],
+      "action": "apply/test shared terminal-player extraction profile to the whole capability family",
+      "executionPolicy": "batch-first",
+      "providerLocalFallback": "only-after-shared-profile-failure"
+    },
+    {
+      "groupId": "transport|html_scraper",
+      "repairScope": "transport",
+      "runtimeFamilies": [
+        "mallumv-catalogue-confirm-internal-v1"
+      ],
+      "capabilityStrategy": "html_scraper",
+      "evidenceDepths": [
+        "none"
+      ],
+      "dominantIssues": [
+        "network_exception"
+      ],
+      "harnessTransportClasses": [],
+      "transportSignature": "not-applicable",
+      "providerCount": 1,
+      "providers": [
+        "mallumv"
+      ],
+      "action": "refresh domain/upstream transport and residential/native evidence before provider-local code changes",
       "executionPolicy": "batch-first",
       "providerLocalFallback": "only-after-shared-profile-failure"
     }
