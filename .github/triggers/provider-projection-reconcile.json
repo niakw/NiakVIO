@@ -1,12 +1,15 @@
 {
   "schemaVersion": 1,
-  "reason": "reconcile-lifecycle-publication-contract-after-44-visible-2-archived",
-  "expectedBaseline": "a193b7297b58f586a93b771ff2bb3085177ee66e",
-  "requestedAt": "2026-09-24T03:20:00+02:00",
+  "reason": "reconcile-animesamaco-current-route-and-lifecycle-publication-fixed-point",
+  "expectedBaseline": "313cd0f35077ab186e42f8f64b2d48253b66c37d",
+  "requestedAt": "2026-09-24T03:24:00+02:00",
+  "providerScope": [
+    "animesama-co"
+  ],
   "requiredChecks": [
-    "dynamic visible provider quick-yield scope",
-    "publication fingerprint fixed point",
-    "44 visible providers + 2 lifecycle archived",
-    "no provider byte mutation unless drift detector proves it"
+    "catalogue search executable route restored",
+    "template fetch remains candidate only",
+    "dynamic 44-visible lifecycle scope",
+    "publication fingerprint fixed point"
   ]
 }

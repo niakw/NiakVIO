@@ -3340,7 +3340,7 @@
         "https://animesama.co/"
       ],
       "learned_routes": [
-        "/template-php/defaut/fetch.php",
+        "/catalogue/?search={query}",
         "/anime/{id}-{slug}.html",
         "/anime/{id}-{slug}/saison-{season}.html",
         "/anime/{id}-{slug}/saison-{season}/episode-{episode}.html"
@@ -3545,7 +3545,7 @@
       ],
       "notes": [
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
-        "2026-09-24 structured route authority aligned to the current animesama.co catalogue runtime: /template-php/defaut/fetch.php is the executable catalogue fetch; legacy /catalogue/?search remains candidate/history only."
+        "2026-09-24 route authority reconciled with the current provider runtime and v2 migration contract: /catalogue/?search={query} is the executable catalogue search; /template-php/defaut/fetch.php remains candidate/history only."
       ],
       "source_runtime_family": "dle-search-series-season-episode",
       "reconstruction_state": "provider-local-current-site"

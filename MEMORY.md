@@ -4472,3 +4472,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - CORE Quick also reported `publication-contract-changed`: current provider bytes/manifest exist, but PROVENANCE publication fingerprints are stale after the recent publication/lifecycle control-plane changes. This is owned by `PROVIDERS - Projection Reconcile`, not by provider Repair.
 - A projection-reconcile trigger is issued from the same commit. The owner workflow must detect exact drift, rebuild only providers whose accepted DATA/Lego projection actually drifted, reindex `PROVENANCE.json` fingerprints, prove `reapply_published_overrides.py --check`, and dispatch exact-head census/Quick/security validation.
 - Provider Repair/Brain must remain paused until that owning fixed point is green; no provider status improvement is inferred from lifecycle/test changes.
+
+
+### 2026-09-24 — AnimeSama.co DATA regression found before projection publication
+
+- Non-regression on `313cd0f...` moved past the lifecycle count fix and exposed a real provider-DATA contradiction for `animesama-co`.
+- The owned runtime Lego `animesamaco_site_runtime_v1.py`, `upgrade_provider_v3_batch_routes_v2.py`, domain reconciliation tests and user-evidence crosscheck all agree that `/catalogue/?search={query}` is the executable catalogue route and `/template-php/defaut/fetch.php` is stale/candidate history.
+- Current `provider-overrides.json` had those authorities inverted: `/template-php/defaut/fetch.php` in `learned_routes` while `/catalogue/?search={query}` was candidate-only. This is a true structured-DATA regression, not a stale test.
+- The DATA is restored to the canonical v2 migration contract. The in-flight Projection Reconcile from the inconsistent baseline must not publish; main advancement intentionally invalidates its atomic baseline and a fresh projection reconcile is triggered from the corrected DATA.
