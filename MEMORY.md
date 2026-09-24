@@ -4680,3 +4680,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - `scripts/adaptive_runtime/runtime_repair.py` therefore computed `new_strategy_id` only from post-exhaustion/historical/generation state. The Deep matcher was then filtered to the LLM-selected profile while the generator had not materialized that profile, producing `profile_unavailable / planned_profile_not_applicable_to_current_bytes` without executing the LLM experiment.
 - The snapshot now preserves the exact LLM advisor decision, and adaptive runtime gives a validated causal `llmAdvisorProfile` first priority when building `new_strategy_id`. The existing experiment knobs (route/recipe policy, role order, terminal-only, salvage, session bootstrap and bounded traversal budgets) are already consumed by the generator, so the LLM experiment now produces real candidate bytes and enters ordinary byte validation, identity gate and deep playback retest.
 - Added regression coverage for a pre-exhaustion route-proven LLM plan: snapshot preservation, exact strategy materialization and `matching_profiles()` inclusion must all hold. No direct LLM publication authority is introduced.
+
+
+### 2026-09-24 20:00 Europe/Paris — Fast Repair drops stale queued work instead of serializing it
+
+- `provider-fast-repair-main` previously had `cancel-in-progress: false` even though the persistence step rejects any run whose source SHA is no longer current. Multiple 4–5 minute runs were therefore allowed to finish only to emit `FIELD_PROVIDER_FAST_REPAIR_STALE` and requeue again.
+- Fast Repair concurrency is now newest-wins (`cancel-in-progress: true`). A newer current-byte repair run cancels obsolete queued/in-progress Fast work in the same lane; validated publication still requires the existing current-HEAD and retest gates.
+- Re-armed the 5-provider LLM execution microbenchmark on the runtime fix, so it does not wait behind the already-obsolete pre-fix Fast run.
