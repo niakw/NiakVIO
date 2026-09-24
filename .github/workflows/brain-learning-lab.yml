@@ -1213,7 +1213,7 @@ jobs:
 
   publish-architecture-proposal:
     name: LEARNING - Open Brain architecture evolution PR
-    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true')
+    if: github.event_name == 'schedule' || github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true')
     needs: experiment
     concurrency:
       group: niakvio-brain-architecture-proposal-publish
