@@ -4771,3 +4771,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 
 - Targeted Retest `36056329250` executed no provider probe: `provider_census_status_markdown_test.py` failed because its carried-row fixture embedded `routeProof` directly while production intentionally recomputes carried route proof from `provider-overrides`. The renderer stripped the fixture's synthetic route, so the expected `ROUTE PROVEN` assertion was invalid.
 - The contract fixture now supplies a real current `live_route_gate` through `provider-overrides`, matching production ownership. The network-proof precedence code itself is unchanged. MalluMV-only Retest is re-armed with `autoRepair=false`.
+
+
+### 2026-09-24 22:56 Europe/Paris — Learning fixture authority bug: anime providers were tested as movies
+
+- Learning run `36054895886` processed the 14-provider Fast handoff but produced no provider proposal. Its targeted Lab evidence exposed a systemic fixture bug: anime providers including AllAnime, AnimeSalt and AnimeSultra were exercised with movie fixtures such as Oppenheimer/The Matrix even though current `manifest.json` declares them `anime,tv`.
+- Root cause: `run_brain_learning_queue.py::declared_type()` trusted staged candidate metadata only and silently defaulted to `movie` whenever `metadata.supportedTypes` was absent. That poisoned Learning evidence and negative memory with out-of-capability tests.
+- Learning fixture type resolution is now fail-closed and catalogue-authoritative: `manifest.json` first, durable census `declaredLanes` second, candidate metadata only as final fallback. `anime+tv` without `movie` resolves to `anime`; unknown type raises instead of defaulting to movie.
+- `choose_fixture()` no longer falls back from a missing anime/tv pool to movie, and validates that the selected fixture mediaType matches the declared provider type.
+- Added `brain_learning_fixture_type_authority_test.py` to both the main Workflow Gate and Learning preflight. A push-triggered Animesalt-only 8-minute Learning validation is armed; expected Lab fixture must be anime (Hell Mode/JJK/etc.), never a movie.
+- Investigation also confirmed that MalluMV's old positive-program memory was intentionally cleared by `b704f60...`: its prior playable acceptance came from unrelated Google gstatic marketing videos. That memory must remain cleared; it is not a regression to restore.

@@ -914,28 +914,95 @@ def refresh_stage_routes(stage: Path, deadline: float, provider_id: str) -> dict
             return result
     return {"ok": True, "provider": provider_id, "step": "complete", "returncode": 0}
 
-def declared_type(candidate: dict[str, Any]) -> str:
-    metadata = candidate.get("metadata") if isinstance(candidate.get("metadata"), dict) else {}
-    values = metadata.get("supportedTypes") or []
-    if isinstance(values, str):
-        values = [values]
-    first = norm(values[0] if values else "movie")
-    if "anime" in first or "anim" in first:
+def _semantic_type(value: Any) -> str:
+    value = norm(value)
+    if value == "anime" or value.startswith("anim"):
         return "anime"
-    if first in {"tv", "series", "serie", "show"}:
+    if value in {"tv", "series", "serie", "show"}:
         return "tv"
-    return "movie"
+    if value in {"movie", "film"}:
+        return "movie"
+    return ""
+
+
+def authoritative_declared_types(
+    provider_id: str,
+    candidate: dict[str, Any],
+    *,
+    manifest: dict[str, Any] | None = None,
+    census: dict[str, Any] | None = None,
+) -> list[str]:
+    """Resolve Learning fixture types from catalogue authority, never a movie default."""
+    wanted = norm(provider_id)
+    manifest = manifest if isinstance(manifest, dict) else load_json(ROOT / "manifest.json", {})
+    for row in manifest.get("scrapers") or []:
+        if not isinstance(row, dict) or norm(row.get("id")) != wanted:
+            continue
+        raw = row.get("types") or row.get("supportedTypes") or row.get("supported_types") or []
+        if isinstance(raw, str):
+            raw = [raw]
+        values = unique([_semantic_type(value) for value in raw if _semantic_type(value)])
+        if values:
+            return values
+
+    census = census if isinstance(census, dict) else load_json(
+        ROOT / "automation" / "provider-census-status.json",
+        {},
+    )
+    for row in census.get("providers") or []:
+        if not isinstance(row, dict) or norm(row.get("provider")) != wanted:
+            continue
+        raw = row.get("declaredLanes") or []
+        if isinstance(raw, str):
+            raw = [raw]
+        values = unique([_semantic_type(value) for value in raw if _semantic_type(value)])
+        if values:
+            return values
+
+    metadata = candidate.get("metadata") if isinstance(candidate.get("metadata"), dict) else {}
+    raw = metadata.get("supportedTypes") or metadata.get("types") or []
+    if isinstance(raw, str):
+        raw = [raw]
+    return unique([_semantic_type(value) for value in raw if _semantic_type(value)])
+
+
+def declared_type(
+    provider_id: str,
+    candidate: dict[str, Any],
+    *,
+    manifest: dict[str, Any] | None = None,
+    census: dict[str, Any] | None = None,
+) -> str:
+    values = authoritative_declared_types(
+        provider_id,
+        candidate,
+        manifest=manifest,
+        census=census,
+    )
+    if not values:
+        raise ValueError(
+            f"Learning provider {norm(provider_id) or '<unknown>'} has no authoritative declared media type"
+        )
+    # Providers that explicitly support anime + episodic TV but not ordinary
+    # movies must be exercised with anime identity/season semantics.
+    if "anime" in values and "movie" not in values:
+        return "anime"
+    return values[0]
+
 
 def choose_fixture(config: dict[str, Any], provider_state: dict[str, Any], media_type: str) -> dict[str, Any]:
     fixtures = config.get("fixtures") if isinstance(config.get("fixtures"), dict) else {}
     pool = fixtures.get(media_type) if isinstance(fixtures.get(media_type), list) else []
     if not pool:
-        pool = fixtures.get("movie") if isinstance(fixtures.get("movie"), list) else []
-    if not pool:
-        raise ValueError("health-config contains no Learning fixtures")
+        raise ValueError(f"health-config contains no Learning fixtures for declared type: {media_type}")
     cursors = provider_state.setdefault("fixtureCursor", {})
     index = int(cursors.get(media_type) or 0) % len(pool)
     fixture = copy.deepcopy(pool[index])
+    fixture_type = _semantic_type(fixture.get("mediaType"))
+    if fixture_type != media_type:
+        raise ValueError(
+            f"Learning fixture type mismatch: declared={media_type} fixture={fixture_type or '<missing>'}"
+        )
     cursors[media_type] = (index + 1) % len(pool)
     return fixture
 
@@ -1121,6 +1188,8 @@ def main() -> int:
     previous = load_json(args.previous_state.resolve(), {})
     health = load_json(args.health.resolve(), {})
     health_config = load_json(ROOT / "health-config.json", {})
+    manifest_authority = load_json(ROOT / "manifest.json", {})
+    census_authority = load_json(ROOT / "automation" / "provider-census-status.json", {})
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
 
@@ -1341,7 +1410,12 @@ def main() -> int:
     
                 full_registry = load_json(full_registry_path, {})
                 candidate = candidate_map(full_registry).get(provider_id) or {}
-                media_type = declared_type(candidate)
+                media_type = declared_type(
+                    provider_id,
+                    candidate,
+                    manifest=manifest_authority,
+                    census=census_authority,
+                )
                 fixture = choose_fixture(health_config, state, media_type)
                 try:
                     lab_session = ensure_learning_lab_session(
