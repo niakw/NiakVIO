@@ -25,6 +25,12 @@ on:
         default: "1200"
         type: choice
         options: ["600", "900", "1200", "1800", "2400"]
+      max_rounds_per_batch:
+        description: Fast lane Deep rounds per batch; Learning owns further rotations
+        required: true
+        default: "1"
+        type: choice
+        options: ["1", "2", "3"]
       publish_validated:
         description: Persist provider-local DATA/bytes only when every accepted candidate passes current-byte Retest
         required: false
@@ -150,6 +156,7 @@ jobs:
           DISPATCH_PROVIDERS: ${{ inputs.target_providers || '' }}
           DISPATCH_WAVES: ${{ inputs.waves || '3' }}
           DISPATCH_BUDGET: ${{ inputs.time_budget_seconds || '1200' }}
+          DISPATCH_MAX_ROUNDS: ${{ inputs.max_rounds_per_batch || '1' }}
           DISPATCH_PUBLISH: ${{ inputs.publish_validated || 'true' }}
         run: |
           set -euo pipefail
@@ -157,6 +164,7 @@ jobs:
           providers_csv="${DISPATCH_PROVIDERS:-}"
           waves="${DISPATCH_WAVES:-3}"
           budget="${DISPATCH_BUDGET:-1200}"
+          max_rounds="${DISPATCH_MAX_ROUNDS:-1}"
           publish="${DISPATCH_PUBLISH:-true}"
           providers=()
           if [ "${{ github.event_name }}" = "push" ]; then
@@ -166,6 +174,7 @@ jobs:
           d=json.loads(Path('.github/triggers/provider-fast-repair.json').read_text())
           print(str(int(d.get('waves') or 3)))
           print(str(int(d.get('timeBudgetSeconds') or 1200)))
+          print(str(int(d.get('maxRoundsPerBatch') or 1)))
           print('true' if d.get('publishValidated', True) is True else 'false')
           for p in d.get('targetProviders') or []:
               p=str(p or '').strip().lower()
@@ -175,8 +184,9 @@ jobs:
             )
             waves="${vals[0]:-3}"
             budget="${vals[1]:-1200}"
-            publish="${vals[2]:-true}"
-            providers=("${vals[@]:3}")
+            max_rounds="${vals[2]:-1}"
+            publish="${vals[3]:-true}"
+            providers=("${vals[@]:4}")
           else
             if [ -n "$providers_csv" ]; then
               IFS=',' read -r -a raw_providers <<< "$providers_csv"
@@ -188,7 +198,7 @@ jobs:
               [ -z "$provider" ] || providers+=("$provider")
             fi
           fi
-          args=(python scripts/run_provider_fast_repair.py --waves "$waves" --time-budget-seconds "$budget")
+          args=(python scripts/run_provider_fast_repair.py --waves "$waves" --time-budget-seconds "$budget" --max-rounds-per-batch "$max_rounds")
           for p in "${providers[@]}"; do args+=(--provider "$p"); done
           printf 'PROVIDER_FAST_REPAIR_ARGS %q ' "${args[@]}"; echo
           "${args[@]}"

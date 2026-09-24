@@ -34,6 +34,8 @@ for required in (
     "run_provider_retest.py",
     "acceptedProgramCompiledProviders",
     "fixedInLabProviders",
+    "--max-rounds-per-batch",
+    "default=1",
 ):
     assert required in source, required
 for forbidden in (
@@ -61,6 +63,8 @@ for required in (
     "NiakVIO-Brain-LLM.git",
     "NIAKVIO_BRAIN_LLM_GUIDANCE=",
     "FIELD_PROVIDER_FAST_REPAIR_EXTERNAL_LLM_GUIDANCE",
+    "max_rounds_per_batch",
+    "maxRoundsPerBatch",
 ):
     assert required in workflow, required
 assert "workflow_run" not in workflow

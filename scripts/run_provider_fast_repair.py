@@ -65,6 +65,7 @@ def main() -> int:
     parser.add_argument("--time-budget-seconds", type=int, default=1200)
     parser.add_argument("--min-start-batch-seconds", type=int, default=120)
     parser.add_argument("--health-concurrency", type=int, default=0)
+    parser.add_argument("--max-rounds-per-batch", type=int, default=1)
     args = parser.parse_args()
 
     if not STATUS.is_file():
@@ -92,6 +93,7 @@ def main() -> int:
         "--batch-size", str(max(4, min(args.batch_size, 96))),
         "--time-budget-seconds", str(max(300, min(args.time_budget_seconds, 14400))),
         "--min-start-batch-seconds", str(max(120, min(args.min_start_batch_seconds, args.time_budget_seconds))),
+        "--max-rounds-per-batch", str(max(1, min(args.max_rounds_per_batch, 3))),
         "--output", str(BRAIN.relative_to(ROOT)),
     ]
     if args.health_concurrency > 0:

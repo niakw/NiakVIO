@@ -18,10 +18,11 @@ for required in (
     'if [ "${LLM_NEEDED:-false}" != "true" ] || [ "${LLM_AVAILABLE:-false}" = "true" ]; then',
     '"${args[@]}"',
     "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/brain-sandbox/brain-llm/guidance.json",
-    "--llm-batch brain-sandbox/brain-llm/batch.jsonl",
     "g.schemaVersion !== 2",
     "'experiment','experimentFingerprint'",
 ):
     assert required in llm, required
+
+assert "--llm-batch brain-sandbox/brain-llm/batch.jsonl" in workflow
 
 print("Brain LLM Learning workflow interpolation contract passed")

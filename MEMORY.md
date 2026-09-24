@@ -4687,3 +4687,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - `provider-fast-repair-main` previously had `cancel-in-progress: false` even though the persistence step rejects any run whose source SHA is no longer current. Multiple 4–5 minute runs were therefore allowed to finish only to emit `FIELD_PROVIDER_FAST_REPAIR_STALE` and requeue again.
 - Fast Repair concurrency is now newest-wins (`cancel-in-progress: true`). A newer current-byte repair run cancels obsolete queued/in-progress Fast work in the same lane; validated publication still requires the existing current-HEAD and retest gates.
 - Re-armed the 5-provider LLM execution microbenchmark on the runtime fix, so it does not wait behind the already-obsolete pre-fix Fast run.
+
+
+### 2026-09-24 20:12 Europe/Paris — Fast LLM repair is single-round; Learning owns hypothesis rotation
+
+- Fast run `36037779477` on the corrected LLM runtime proved real advisor execution but exhausted its 420 s budget inside the first packed 5-provider Deep batch before finalizing any provider (`processedProviderCount=0`). The artifact still recorded `executionObserved=true` for advisor experiments that ran before timeout, including 4khdhub and MalluMV.
+- Fast Repair now calls the generic Brain with `maxRoundsPerBatch=1` by default. One current hypothesis is generated/tested per provider in Fast; any additional experiment rotation remains the responsibility of the isolated Learning lane. The generic Brain default stays at 3 rounds, so Learning/deep callers do not lose exploration depth.
+- Workflow/trigger support `max_rounds_per_batch` / `maxRoundsPerBatch`, and the report records `maxRoundsPerBatch` for auditability.
+- Learning run `36038637655` failed before sandbox execution because `brain_llm_learning_workflow_contract_test.py` incorrectly required the architecture-stage `--llm-batch ...` argument inside the earlier LLM-setup substring. The contract now validates that argument against the full workflow while keeping interpolation/schema checks scoped to the LLM setup section.

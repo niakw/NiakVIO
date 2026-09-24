@@ -688,6 +688,7 @@ def main() -> int:
     parser.add_argument("--waves", type=int, default=5)
     parser.add_argument("--batch-size", type=int, default=48)
     parser.add_argument("--health-concurrency", type=int, default=0, help="0 = auto per packed batch (1..8)")
+    parser.add_argument("--max-rounds-per-batch", type=int, default=3, help="Deep repair rounds per packed batch. Fast Repair sets 1; Learning/deep lanes keep the multi-round default.")
     parser.add_argument("--include-environment", action="store_true", help="Include harness/environment-blocked cases in diagnostic staging; provider-code mutation still requires implementation evidence.")
     parser.add_argument("--shard-count", type=int, default=1)
     parser.add_argument("--shard-index", type=int, default=0)
@@ -706,6 +707,7 @@ def main() -> int:
     batch_size = max(4, min(int(args.batch_size), 96))
     time_budget_seconds = max(300, min(int(args.time_budget_seconds), 14400))
     min_start_batch_seconds = max(120, min(int(args.min_start_batch_seconds), time_budget_seconds))
+    max_rounds_per_batch = max(1, min(int(args.max_rounds_per_batch), 5))
 
     # Rebuild structural prior memory from the exact current repo/census before
     # selecting experiments. This memory never grants acceptance authority; it
@@ -812,7 +814,7 @@ def main() -> int:
                         "--stage", str(stage),
                         "--registry", str(stage / "candidates.json"),
                         "--output", str(output),
-                        "--max-rounds", "3",
+                        "--max-rounds", str(max_rounds_per_batch),
                         env=env,
                         timeout=batch_timeout,
                     )
@@ -980,6 +982,7 @@ def main() -> int:
             "healthConcurrency": health_concurrency_setting,
             "healthConcurrencyMode": "fixed" if health_concurrency_setting else "auto-per-batch",
             "batchSize": batch_size,
+            "maxRoundsPerBatch": max_rounds_per_batch,
             "maxWaves": waves,
             "timeBudgetSeconds": time_budget_seconds,
             "elapsedSeconds": round(time.monotonic() - started_monotonic, 3),

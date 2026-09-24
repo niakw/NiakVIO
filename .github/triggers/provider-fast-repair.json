@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-24T20:00:00+02:00",
+  "requestedAt": "2026-09-24T20:12:00+02:00",
   "targetProviders": [
     "4khdhub",
     "animesalt",
@@ -9,10 +9,11 @@
     "yflix"
   ],
   "waves": 1,
-  "timeBudgetSeconds": 420,
+  "timeBudgetSeconds": 600,
   "publishValidated": true,
-  "reason": "newest-only microbenchmark of executable LLM advisor profiles; cancel stale Fast runs",
+  "reason": "bounded one-round Fast microbenchmark after LLM profile materialization fix; further hypothesis rotation belongs to Learning",
   "sourceCensusRunId": "36034119661-waf-transport",
   "runtimeFixSha": "4081d03133ecc3ac25aef1f60079d6c2a2bcc43d",
-  "retry": 2
+  "retry": 3,
+  "maxRoundsPerBatch": 1
 }
