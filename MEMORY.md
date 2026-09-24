@@ -4711,3 +4711,11 @@ This ledger is not complete merely because provider yield improves. Final comple
 - The trigger is restored to `reason=fast-brain-strategy-exhaustion`, `expected_scope=current-fast-repair-handoff-only`, and also carries `execution_mode=targeted-fast-handoff-v7-provider-repair-handoff`. The selector will therefore intersect only current `repairQueue` providers with pending LEARN-owned handoff rows.
 - The same restart aligns Learning Qwen with its two planning workers: llama.cpp now runs `-c 8192 -np 2`, and the planner is explicitly bounded to `--workers 2 --max-tokens 768`. This removes the previous `2 workers -> 1 model slot` serialization without raising planning concurrency.
 - The previous FULL run is superseded by the new push under `cancel-in-progress` and must not be used as provider proof.
+
+
+### 2026-09-24 20:48 Europe/Paris — Fast-Handoff Learning no longer blocks on local Qwen
+
+- Targeted Learning run `36040850096` reached the correct five-provider handoff but then spent the critical path inside local Qwen guidance generation. This is not acceptable for a catalogue expected to grow to hundreds of providers.
+- Fast-Handoff Learning now skips llama.cpp/model startup entirely. It imports the latest sanitized `niakvio-guidance` ref through the existing current-SHA/provider-drift validator; if that cache is compatible it is used as a non-authoritative prior, and if unavailable Learning continues with an empty LLM prior plus deterministic/learned strategies instead of waiting on the model.
+- Local Qwen remains available for non-Fast/scheduled Learning and the separate Brain-LLM advisor workflow, but it is no longer a blocking dependency of provider repair.
+- The previously valid nine-provider guidance ref was restored after advisor run `36039671478` produced zero publishable rows. Brain-LLM commit `887f025...` adds a same-source coverage guard so a degraded guidance candidate cannot overwrite a more complete valid cache.
