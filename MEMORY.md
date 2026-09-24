@@ -4560,3 +4560,12 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Exact profile negative memory remains authoritative. A profile that already failed on current evidence is not replayed just because the failure-class label moved within a compatible family.
 - External private-informed guidance treats planner code and causal-memory/report files as provider-neutral only when `select_provider_materialization_scope.py` still proves zero provider materialization drift.
 - Repair persistence is now stricter: if remote main advanced, the run may keep its Actions artifact but does not copy/add Brain memory/report and does not dispatch Learning/resume from stale evidence. This closes the evidence-only commit race that produced `bb5d426...` and `4e6309a...` while newer Repairs were running.
+
+
+### 2026-09-24 — Brain LLM planner TDZ regression isolated and fixed
+
+- Canonical Repair run `35996726279` imported the sanitized private-informed Brain-LLM guidance successfully (`providers=8`) and completed the provider health batch in one bounded wave, but every one of the eight selected plans was persisted as `exitReason=planner_item_error`, `failureClass=unknown_failure`, `allowedProfiles=[]`. This is not eight provider failures.
+- Root cause is JavaScript initialization order introduced by the causal-family transfer change: `LLM_FAILURE_FAMILIES` was declared with `const` after the top-level loop that immediately invokes `buildPlan()`. Function declarations are hoisted, but the lexical constant remains in the temporal dead zone until its declaration executes; the first call through `llmFailureCompatibility()` therefore throws before any provider-specific LLM profile can be selected.
+- The failure-family constant is moved before the top-level planner execution loop. A static regression assertion now requires the family table to be initialized before `for (const rawItem of asArray(input.items))`, in addition to the existing executable advisor tests.
+- The durable census remains the last accepted state: 26 FULL OK, 2 PARTIAL OK, 1 CANDIDATE OK, 0 PROVIDER NETWORK BLOCKED, repairQueue=12, environmentQueue=2. No provider is promoted from the failed run.
+- Next proof is a fresh bounded canonical Repair on the current 12-provider queue. Required markers: no `planner_item_error`; provider-specific `llmAdvisorApplied`/family compatibility where guidance exists; current-byte playback/identity/non-regression remains the only acceptance authority.

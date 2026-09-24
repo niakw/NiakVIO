@@ -122,6 +122,16 @@ function strategyImplementationFingerprint(profile) {
   return hash.digest("hex");
 }
 
+const LLM_FAILURE_FAMILIES = Object.freeze({
+  route_proven_gap: "route-terminal",
+  provider_transport_gap: "route-terminal",
+  transport_blocked: "route-terminal",
+  search_gap: "route-terminal",
+  chain_terminal_gap: "terminal-media",
+  media_extraction_gap: "terminal-media",
+  playback_context_gap: "terminal-media",
+});
+
 const output = {
   schemaVersion: 2,
   brainVersion: BRAIN_CONTROL_PLANE_VERSION,
@@ -224,16 +234,6 @@ function postExhaustionStrategyHint(failureClass, memoryRows, rotateEvery) {
   }
   return { profile: "", method: "", index: -1, strategyImplementationFingerprint: "" };
 }
-
-const LLM_FAILURE_FAMILIES = Object.freeze({
-  route_proven_gap: "route-terminal",
-  provider_transport_gap: "route-terminal",
-  transport_blocked: "route-terminal",
-  search_gap: "route-terminal",
-  chain_terminal_gap: "terminal-media",
-  media_extraction_gap: "terminal-media",
-  playback_context_gap: "terminal-media",
-});
 
 function canonicalFailureClass(value) {
   return stringValue(value).toLowerCase().replaceAll("-", "_");

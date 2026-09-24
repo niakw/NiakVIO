@@ -8,6 +8,15 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 PLANNER=ROOT/"engine_v2/scripts/plan-repairs.mjs"
 
+planner_source=PLANNER.read_text(encoding="utf-8")
+families_index=planner_source.index("const LLM_FAILURE_FAMILIES = Object.freeze({")
+execution_index=planner_source.index("for (const rawItem of asArray(input.items))")
+assert families_index < execution_index, (
+    "LLM failure-family table must be initialized before top-level planner execution "
+    "or every real item falls into planner_item_error via JavaScript TDZ"
+)
+
+
 candidate={
     "canonical_id":"synthetic-llm-advisor",
     "censusPrior":{
