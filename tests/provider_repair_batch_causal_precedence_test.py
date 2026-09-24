@@ -19,6 +19,7 @@ assert mod.action_for("CANDIDATE OK","lookup","network_zero_result")[0]=="candid
 # Final causal network/harness status still owns its lane.
 assert mod.action_for("PROVIDER NETWORK BLOCKED","none","network_http_error")[0]=="transport"
 assert mod.action_for("HARNESS MISMATCH","lookup","waf_challenge")[0]=="harness-compatibility"
+assert mod.action_for("CLIENT TRANSPORT GAP","none","network_exception")[0]=="harness-compatibility"
 assert mod.action_for("HARNESS/ENV BLOCKED","none","network_exception")[0]=="harness-compatibility"
 
 # Only proof-less issue fallback may route an otherwise unclassified row.

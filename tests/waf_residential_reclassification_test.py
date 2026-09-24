@@ -152,10 +152,12 @@ tls_waf={
 }
 tls=mod.merge_transport(tls_baseline,tls_waf)
 row=tls["providers"][0]
-assert row["status"]=="HARNESS MISMATCH",row
+assert row["status"]=="CLIENT TRANSPORT GAP",row
 assert row["harnessTransportClass"]=="browser-profile-only-both-networks",row
 assert row["repairEligible"] is False,row
+assert row["testedThisRun"] is True,row
 assert tls["repairQueue"]==[],tls
 assert tls["environmentQueue"]==["tls-browser-only"],tls
+assert tls["clientTransportGapQueue"]==["tls-browser-only"],tls
 
 print("residential zero-result and browser-only transport reclassification tests passed")

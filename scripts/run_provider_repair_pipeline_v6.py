@@ -38,7 +38,7 @@ REPAIR_MATERIALIZATION_SCOPE = ROOT / "automation" / "provider-repair-materializ
 AUTHORITY_STATUS = ROOT / "automation" / "provider-authority-status.json"
 WAF_STATUS = ROOT / "automation" / "provider-waf-browser-session-latest.json"
 CURRENT_OVERRIDES_SNAPSHOT = RUNTIME_PLAN_LKG.parent / "provider-overrides-pre-repair.json"
-CENSUS_ENVIRONMENT_ONLY = {"HARNESS MISMATCH", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}
+CENSUS_ENVIRONMENT_ONLY = {"HARNESS MISMATCH", "CLIENT TRANSPORT GAP", "HARNESS/ENV BLOCKED", "PROVIDER WAF/ANTIBOT"}
 
 
 def load(path: Path) -> dict[str, Any]:
