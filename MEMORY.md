@@ -4666,3 +4666,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Provider Non-Regression run `36035661181` failed only in the static bulk-onboarding workflow contract: the earlier GitHub-expression simplification removed the literal `provider: bulk stage/activate` guard from targeted recovery.
 - The guard is now evaluated inside the already-valid `size.route` Python step using the checked-out commit subject. Bulk stage/activate pushes still set `should_run=false`, while the probe job retains the simple GitHub expression that already proved it can start successfully in run `36034557844`.
 - No provider bytes or repair evidence are changed by this CI fix.
+
+
+### 2026-09-24 19:45 Europe/Paris — Learning guidance attribution pinned to executed Brain LLM
+
+- Audit found a split pin in `.github/workflows/brain-learning-lab.yml`: checkout already used Brain-LLM `48df8f0d8d7a...`, but `brain_llm_guidance.py --brain-llm-sha` still stamped the historical `23a601...` SHA.
+- The guidance attribution now uses the exact same `48df8f0d8d7a...` SHA as the checked-out planner, and the contract test asserts both values together. This is attribution integrity only; it does not promote any provider.

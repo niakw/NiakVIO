@@ -725,7 +725,7 @@ jobs:
             --input "$batch" \
             --output brain-sandbox/brain-llm/guidance.json \
             --source-sha "$GITHUB_SHA" \
-            --brain-llm-sha 23a601ab9bbe9b457ea570d78c6926c935ad5531
+            --brain-llm-sha 48df8f0d8d7a0c860044f6294e7ef3ee13c7f061
           echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$GITHUB_WORKSPACE/brain-sandbox/brain-llm/guidance.json" >> "$GITHUB_ENV"
           rm -f brain-sandbox/brain-llm/private-documents.jsonl brain-sandbox/brain-llm/private-memory-report.json
           rm -rf brain-llm-private
