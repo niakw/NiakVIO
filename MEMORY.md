@@ -4727,3 +4727,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Automatic `mode=repair` now uses `--max-rounds-per-batch 1`: execute the freshly learned/current hypothesis once, then rely on the existing strict current-byte playback/identity/non-regression gates. A miss can return to Learning instead of burning three variants in the same return pass.
 - Explicit `force` retains three rounds, so operator-requested deep exploration loses no depth. The Brain portfolio budget/gates are otherwise unchanged.
 - The currently running Learning run `36043664285` is still testing source SHA `00362d02...`; this optimization applies only to the canonical Repair it will dispatch from the newer main after Learning publishes.
+
+
+### 2026-09-24 21:10 Europe/Paris — Canonical Repair preflight contract aligned with one-round automatic return
+
+- Repair run `36045821519` never reached provider execution. It failed in preflight because `tests/brain_exploration_chain_test.py` still required a literal `--max-rounds 3`, contradicting the new intentional automatic Repair behavior (`1` round in `mode=repair`, `3` in explicit `force`).
+- The exploration-chain contract now validates the generic Brain's configurable `--max-rounds-per-batch` argument and its propagation into Deep Repair instead of hard-coding three rounds.
+- Re-armed canonical Repair against the exact current 14-provider `repairQueue`; this retry is the first real canonical execution after the successful targeted Learning run `36043664285`.

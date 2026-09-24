@@ -97,6 +97,7 @@ assert 'exploration_is_non_publishable' in deep
 assert 'brain.replan_observation(candidate, result' in adaptive
 assert 'bounded_rounds = "3" if exploration_chain else "1"' in adaptive
 assert 'env["NUVIO_BRAIN_EXPLORATION_CHAIN"] = "1"' in orchestrator
-assert '"--max-rounds", "3"' in orchestrator
+assert 'parser.add_argument("--max-rounds-per-batch", type=int, default=3' in orchestrator
+assert '"--max-rounds", str(max_rounds_per_batch)' in orchestrator
 
 print("Brain bounded causal exploration-chain contract passed")
