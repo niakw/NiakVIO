@@ -2663,11 +2663,9 @@
         "anime"
       ],
       "learned_routes": [
-        "/search?keyword={query}",
-        "/watch/{slug}",
-        "/ajax/episode/list/{id}",
-        "/ajax/server/list?servers={id}",
-        "/ajax/server?get={id}"
+        "/api/v2/tmdb?id={tmdbId}&s={season}&e={episode}",
+        "/stream/{identityKind}/{identityId}/{episode}/{mode}",
+        "/stream/getSources?id={id}"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/anikototv_runtime_v2.py",
@@ -2693,6 +2691,9 @@
         }
       },
       "candidate_learned_routes": [
+        "/api/v2/tmdb?id={tmdbId}&s={season}&e={episode}",
+        "/stream/{identityKind}/{identityId}/{episode}/{mode}",
+        "/stream/getSources?id={id}",
         "/search?keyword={query}",
         "/watch/{slug}",
         "/ajax/episode/list/{id}",
@@ -2700,7 +2701,6 @@
         "/ajax/server?get={id}",
         "/v4/search?query={query}",
         "/api/v2/tmdb?id={id}",
-        "/stream/getSources?id={id}",
         "/stream/",
         "/episode/",
         "/episodes/default?season={season}"
@@ -2735,14 +2735,14 @@
         "provenRouteCount": 0,
         "genericExecutionRouteCount": 0,
         "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 5,
+        "runtimePlanRouteCount": 3,
         "lastRepairProbe": {
           "status": "no-proven-route",
           "positiveExecutionEvidence": false
         },
         "normalRuntimeEntryPlanTarget": 3,
         "runtimeEntryPlanOptimization": "compact-simple-alternatives-preserve-complex-graphs",
-        "runtimePlanRouteCountBeforeOptimization": 5,
+        "runtimePlanRouteCountBeforeOptimization": 3,
         "runtimePlanSemanticLanes": [],
         "runtimePlanTargetExceeded": true,
         "runtimePlanExceptionReason": "insufficient-proof-to-collapse",
@@ -2788,36 +2788,33 @@
         },
         "canonicalExecutionAuthorityPolicy": "preferred-order-only-preserve-all-proven-authorities",
         "canonicalExecutionAuthority": {
-          "candidateCount": 5,
+          "candidateCount": 3,
           "preferredCount": 1,
           "selectedCount": 1,
           "supportedLanes": [
-            "anime",
-            "movie"
+            "anime"
           ],
           "coveredLanes": [
-            "anime",
-            "movie"
+            "anime"
           ],
           "missingLanes": [],
           "preferredOwners": [
-            "route"
+            "runtime-v2"
           ],
           "owners": [
-            "route"
+            "runtime-v2"
           ],
           "destructiveFiltering": false,
           "allEvidenceBackedAuthoritiesPreserved": true
         },
         "canonicalExecutionPreference": [
           {
-            "owner": "route",
+            "owner": "runtime-v2",
             "index": 0,
             "lanes": [
-              "anime",
-              "movie"
+              "anime"
             ],
-            "route": "/search?keyword={query}"
+            "route": "/stream/{identityKind}/{identityId}/{episode}/{mode}"
           }
         ]
       },
@@ -2891,7 +2888,8 @@
         "Authoritative semantic contract is anime-only; tv is transport compatibility and movie must never be manufactured for anime-first providers.",
         "2026-09-19 upstream architecture migration: historical AniKoto /search, /watch and /ajax routes retired from execution authority. Current provider maps TMDB to MAL/AniList then resolves MegaPlay /stream/{mal|ani}/{id}/{absoluteEpisode}/{sub|dub} and /stream/getSources.",
         "Authoritative semantic contract remains anime-only; Core TMDB identity and season/episode are converted to a provider identity without executing upstream JavaScript.",
-        "2026-09-19 provider identity remains AniKotoTV; MegaPlay is transport only and must not replace official_site authority."
+        "2026-09-19 provider identity remains AniKotoTV; MegaPlay is transport only and must not replace official_site authority.",
+        "2026-09-24 structured route authority aligned to Runtime V2: TMDB mapping -> MegaPlay stream page -> getSources; historical AniKoto search/watch/ajax routes remain candidate/history only and are no longer executable learned_routes."
       ]
     },
     "animekai": {

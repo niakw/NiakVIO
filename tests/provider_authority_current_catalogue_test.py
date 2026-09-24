@@ -16,6 +16,7 @@ manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 hubs = json.loads((ROOT / "provider-hubs.json").read_text(encoding="utf-8"))
 overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 history = json.loads((ROOT / "provider-domain-history.json").read_text(encoding="utf-8"))
+lifecycle = json.loads((ROOT / "automation/provider-disabled-lifecycle.json").read_text(encoding="utf-8"))
 
 rows = {
     str(row.get("id") or "").strip().casefold(): row
@@ -52,7 +53,14 @@ expected = {
     "fullanime": "KEEP_DISABLED",
     "desiflix": "KEEP_DISABLED",
 }
+archived = lifecycle.get("archived") if isinstance(lifecycle.get("archived"), dict) else {}
 for provider, action in expected.items():
+    if provider not in rows:
+        record = archived.get(provider) if isinstance(archived.get(provider), dict) else None
+        assert record is not None, (provider, "missing-from-current-manifest-without-archive-state")
+        assert record.get("state") == "archived-provider-old", (provider, record)
+        assert action == "KEEP_DISABLED", (provider, action, record)
+        continue
     result = classify(provider)
     assert result["action"] == action, (provider, result)
     if action.startswith("KEEP_") and action != "KEEP_DISABLED":

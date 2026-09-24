@@ -4411,3 +4411,9 @@ This ledger is not complete merely because provider yield improves. Final comple
 - AnimeSama.co runtime now uses GET /catalogue/?search=<title>, then the already-proven /anime/{id}-{slug}.html -> season -> episode chain. fetch.php remains only in candidate_learned_routes as historical/non-executable evidence.
 - provider_animesamaco_domain_data_contract_test.py, provider_domain_metadata_reconcile_test.py and user_provider_manual_evidence_crosscheck_test.py now assert the same authority boundary. This is a runtime/data alignment fix, not a weakening of the census gate.
 - The migration fixed-point trigger is rearmed so a successful no-op consolidation dispatches the final census using the persisted consolidation commit parent as materialization base.
+
+### 2026-09-24 — Final gate cleanup after domain transaction
+
+- CORE Verify & Publish run 35936866481 failed on a real AniKotoTV structured-data drift: published Runtime V2 bytes execute TMDB mapping + MegaPlay stream route + getSources, while provider-overrides.json learned_routes still declared the retired historical AniKoto search/watch/AJAX routes. Structured route authority is now aligned to the already-published Runtime V2 contract; historical routes remain candidate/history only.
+- Provider Disabled Lifecycle run 35936868286 correctly archived expired disabled providers after the 7-day retention window, but tests/provider_authority_current_catalogue_test.py still indexed fullanime/desiflix as if every disabled provider must remain manifest-visible forever. The contract now accepts absence only when automation/provider-disabled-lifecycle.json archived explicitly records state=archived-provider-old; missing rows without archive proof still fail closed.
+- These are validation/lifecycle consistency fixes, not claims of provider playback improvement. A fresh Core gate and current-byte census on the final HEAD are still required before closing the cycle.
