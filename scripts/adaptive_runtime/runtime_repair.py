@@ -1714,7 +1714,9 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             else "learned-family-new-strategy"
         ),
         "new_strategy_id": new_strategy_id,
-        "alias_search": alias_search,\n        "llm_experiment_fingerprint": llm_experiment_fingerprint,\n        "llm_experiment_applied": bool(llm_experiment and llm_experiment_fingerprint),
+        "alias_search": alias_search,
+        "llm_experiment_fingerprint": llm_experiment_fingerprint,
+        "llm_experiment_applied": bool(llm_experiment and llm_experiment_fingerprint),
         "runtime_response_salvage": runtime_response_salvage,
         "document_request_mining": document_request_mining,
         "session_bootstrap": session_bootstrap,
