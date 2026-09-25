@@ -42,7 +42,8 @@ on:
         default: false
 
 concurrency:
-  group: niakvio-codeql
+  # Keep cancellation local to the same ref. A main push must never cancel a PR scan.
+  group: niakvio-codeql-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
