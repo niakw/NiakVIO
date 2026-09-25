@@ -360,7 +360,32 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/probe_waf_browser_session.py             /tmp/provider-repair-waf-github.json             --output /tmp/provider-repair-waf-residential.json             --attempts 2             --client-profile-matrix             --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*'             --status automation/provider-census-status.json             --overrides provider-overrides.json             --network-report /tmp/provider-repair-waf-network.json             --workers 3             --max-targets 32             --timeout 25             --virtual-time-ms 8000
+          rm -f /tmp/provider-repair-waf-residential.json
+          # Residential qualification is an enhancement, never the critical path.
+          # Bound the whole browser/profile matrix so a slow exit node or a set of
+          # hanging WAF targets cannot cancel/consume the canonical Repair slot.
+          if timeout --signal=TERM --kill-after=10s 240s \
+            python scripts/probe_waf_browser_session.py \
+              /tmp/provider-repair-waf-github.json \
+              --output /tmp/provider-repair-waf-residential.json \
+              --attempts 1 \
+              --client-profile-matrix \
+              --okhttp-classpath 'tools/waf-okhttp-probe/target/classes:tools/waf-okhttp-probe/target/dependency/*' \
+              --status automation/provider-census-status.json \
+              --overrides provider-overrides.json \
+              --network-report /tmp/provider-repair-waf-network.json \
+              --workers 4 \
+              --max-targets 16 \
+              --timeout 20 \
+              --virtual-time-ms 6000
+          then
+            echo "FIELD_REPAIR_RESIDENTIAL_PROBE bounded=true outcome=completed"
+          else
+            rc=$?
+            rm -f /tmp/provider-repair-waf-residential.json
+            echo "FIELD_REPAIR_RESIDENTIAL_PROBE bounded=true outcome=soft-fail rc=$rc"
+            exit 0
+          fi
 
       - name: Merge Repair WAF profiles with offline-safe Tailscale fallback
         if: ${{ steps.repair_waf_reuse.outputs.reuse != 'true' }}
