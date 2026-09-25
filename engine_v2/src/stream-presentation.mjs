@@ -349,10 +349,12 @@ function rawTrackRows(stream) {
 }
 
 function subtitleTrackRows(stream) {
-  for (const value of [stream.subtitles, stream.extCaptions, stream.captions]) {
-    if (Array.isArray(value) && value.length) return value;
+  const out = [];
+  for (const value of [stream.subtitles, stream.extCaptions, stream.captions, stream.hlsMasterSubtitleTracks, stream.subtitleTracks]) {
+    if (!Array.isArray(value)) continue;
+    for (const row of value) if (!out.includes(row)) out.push(row);
   }
-  return [];
+  return out;
 }
 
 export function normalizeLanguageTracks(stream = {}, metadata = {}, provider = {}) {
@@ -603,7 +605,7 @@ function normalizeFormat(value, url) {
 }
 
 function normalizeSubtitles(stream) {
-  const explicit = Array.isArray(stream.subtitles) ? stream.subtitles : Array.isArray(stream.extCaptions) ? stream.extCaptions : Array.isArray(stream.captions) ? stream.captions : [];
+  const explicit = subtitleTrackRows(stream);
   const text = [stream.description, stream.title, stream.filename, typeof stream.subtitles === "string" ? stream.subtitles : null].map(clean).filter(Boolean).join(" ");
   const out = [];
   const addCode = (value) => {
