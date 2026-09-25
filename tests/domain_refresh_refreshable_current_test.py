@@ -54,6 +54,16 @@ assert fresh["official_site"] == "https://demo.style", fresh
 assert fresh["reason"] == "authoritative_hub_primary_domain_observed_no_terminal_probe", fresh
 assert fresh["registry_explicit_current_superseded"] is True, fresh
 
+cta_redirect = run_with_candidates(base, [{
+    "url": "https://demo.style",
+    "label": "Acceder maintenant",
+    "score": 100,
+    "source_type": "redirect",
+    "source": "https://address-redirector.example/",
+}])
+assert cta_redirect["official_site"] == "https://demo.style", cta_redirect
+assert cta_redirect["registry_explicit_current_superseded"] is True, cta_redirect
+
 redirect = run_with_candidates(base, [{
     "url": "https://demo.next",
     "label": "validated redirect destination",
