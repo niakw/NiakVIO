@@ -1,5 +1,18 @@
 # NiakVIO — Recovery Memory
 
+## 2026-09-25 18:25 Europe/Paris — Force failure isolated; empty external mutations + stale Learning contract fixed
+
+- Explicit Force run `36158364309` executed on tested SHA `e5be47850abd` after the stale-SHA guard and full canonical preflight both passed. WAF/Tailscale qualification also completed successfully, including residential exit/replay.
+- The run **did not validate Brain-LLM Force mutation**. The imported public Force artifact reported `selected=14 applied=0 skipped=0 changed_files=0`; the external advisor prior was also filtered to zero rows by current negative experiment memory. Canonical Brain therefore ran without a new external provider mutation.
+- Canonical Repair processed all 14 repair providers but accepted **0** repairs. Deep output was 11 `provider_unreachable/no_provider_request_observed`, 2 `no_streams`, 1 blocked; final quick-yield remained 0 playable/0 verified. `animevostfr:anime` was the one upstream-positive loss, so preservation failed and the candidate census/provider bytes were correctly not published.
+- The run persisted only the current-run Brain report (`automation/provider-brain-repair-36158364309.json`) after rebasing over provider-neutral documentation changes. Durable provider/census state remained fail-closed.
+- Root cause upstream of that run is confirmed in NiakVIO-Brain-LLM run `36153005599`: routing requested 13 Force LLM repairs, **all 13 timed out**, then the workflow incorrectly published a successful `niakvio-force-mutations.json` with `providerCount=0`.
+- NiakVIO-Brain-LLM was changed to stop this false-green behavior: `ba722bedfcad` bounds the advisor/Force cohort to the 4 highest-evidence providers and hard-fails whenever Force routing requires LLM work but produces zero executable mutations; `01eb9ad5374f` updates/locks regression coverage and is CI-green; `30e9eca86bb4` isolates the bounded guidance concurrency lane. Bounded guidance runs `36159395247` / `36159555158` were still running at this checkpoint; no non-empty Force artifact is claimed yet.
+- Repair auto-escalated workflow-dispatch Learning run `36160062199`, which failed in preflight because `tests/brain_llm_learning_workflow_contract_test.py` still required obsolete executable-binary cache key `llama-cpp-b11140-ubuntu-x64`. Security policy explicitly forbids restoring llama.cpp executables from Actions cache.
+- The temporary binary-cache attempt `6ce1ef1230e` was rejected by the security gate and is superseded. `07d9f814ac09` restores cache-free verified llama.cpp download; `43a3fb52fbc2` updates the stale Learning contract to require the pinned archive, SHA-256 verification and absence of executable binary cache. Workflow-gate validation is pending at this checkpoint.
+- Next acceptance chain: require a **non-empty sanitized Force mutation artifact** for the bounded high-evidence cohort, then trigger canonical Force only on that cohort; require mutation applied -> materialized provider bytes changed -> provider request actually observed -> playable/identity proof -> preservation/non-regression -> census persistence. Do not relaunch the 14-provider Force with an empty artifact.
+
+
 ## 2026-09-23 21:16 Europe/Paris — Canonical Repair now consumes sanitized Learning priors
 
 - While targeted Brain LLM Learning run `35905378275` was progressing, the Learning -> Repair return edge was audited end-to-end.
