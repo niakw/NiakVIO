@@ -111,7 +111,9 @@ assert "ref: 7aa0c81536ecfcf7c34a48e4fa5cf09d4f233f9f" in workflow
 assert "--brain-llm-sha 7aa0c81536ecfcf7c34a48e4fa5cf09d4f233f9f" in workflow
 assert "repository: niakw/niakvio-private" in workflow
 assert "NIAKVIO_PRIVATE_READ_TOKEN" in workflow
-assert "g-p-6a7f1d27495c819182b4081bfccdafd8" in workflow
+assert "raw/chatgpt-project" in workflow
+assert "g-p-" not in workflow
+assert "Expected at most one private ChatGPT project directory" in workflow
 assert "persist-credentials: false" in workflow
 assert "NIAKVIO_BRAIN_LLM_GUIDANCE=" in workflow
 assert "brain_llm_guidance.py" in workflow
