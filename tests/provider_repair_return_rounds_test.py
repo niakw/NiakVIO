@@ -13,7 +13,7 @@ pipeline = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(pipeline)
 
 for required in (
-    'brain_rounds_per_batch = 1 if args.mode == "repair" else 3',
+    'brain_rounds_per_batch = 1',
     '"--max-rounds-per-batch", str(brain_rounds_per_batch)',
     'brain_waves = 1 if args.mode == "repair" else 3',
     '"--waves", str(brain_waves)',
