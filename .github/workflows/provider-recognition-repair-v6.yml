@@ -902,9 +902,11 @@ jobs:
           fi
           git rebase origin/main
 
-          # Observation-only main drift must not create a census -> Repair -> census loop.
-          # Canonical ledger overwrite stays forbidden whenever main advanced, but a fresh
-          # census is needed only when actual provider byte inputs changed.
+          # Observation-only main drift must not invalidate provider-local proof.
+          # After rebasing, a provider-neutral main advance (docs/badges/UI only)
+          # keeps the tested provider bytes identical, so validated Force/census
+          # evidence may be persisted on top of the newer main. Actual provider
+          # input drift remains fail-closed and requires a fresh census.
           if [ "$canonical_ledger_current" != "1" ]; then
             python scripts/select_provider_materialization_scope.py \
               --base "$GITHUB_SHA" \
@@ -917,7 +919,9 @@ jobs:
           PY
             )"
             if [ "$provider_drift_mode" = "none" ]; then
+              canonical_ledger_current=1
               echo "FIELD_REPAIR_CONCURRENT_PROVIDER_DRIFT neutral=true source=$GITHUB_SHA remote=$remote_main"
+              echo "FIELD_REPAIR_CANONICAL_LEDGER_REBASED_NEUTRAL tested_sha=$GITHUB_SHA current_sha=$remote_main"
             else
               provider_input_drift=1
               echo "FIELD_REPAIR_CONCURRENT_PROVIDER_DRIFT neutral=false mode=$provider_drift_mode source=$GITHUB_SHA remote=$remote_main"
