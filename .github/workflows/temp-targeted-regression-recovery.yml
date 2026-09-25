@@ -44,7 +44,7 @@ on:
       - 'provider-overrides.json'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: niakvio-targeted-regression-recovery
@@ -111,6 +111,8 @@ jobs:
     # a current repair batch plan.
     if: ${{ needs.size.outputs.should_run == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: ${{ github.event_name == 'push' && 'write' || 'read' }}
     timeout-minutes: 25
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
