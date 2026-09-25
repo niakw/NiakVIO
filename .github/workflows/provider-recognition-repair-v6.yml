@@ -24,6 +24,11 @@ on:
         required: false
         default: false
         type: boolean
+      require_external_brain_guidance:
+        description: Fail before Repair unless fresh complete external Brain guidance is available for the requested cohort
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - workbench/route-recognition-v6
@@ -499,8 +504,20 @@ jobs:
 
       - name: Import sanitized Brain Learning priors for canonical Repair
         shell: bash
+        env:
+          REQUIRE_EXTERNAL_BRAIN_GUIDANCE: ${{ inputs.require_external_brain_guidance || 'false' }}
         run: |
           set -euo pipefail
+          require_external_guidance="${REQUIRE_EXTERNAL_BRAIN_GUIDANCE:-false}"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            require_external_guidance="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          print("true" if data.get("requireExternalBrainGuidance") is True else "false")
+          PY
+            )"
+          fi
           git fetch --quiet origin brain-learning/proposals:refs/remotes/origin/brain-learning/proposals || true
           if git cat-file -e refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json 2>/dev/null; then
             git show refs/remotes/origin/brain-learning/proposals:engine_v2/learning/latest.json > "$RUNNER_TEMP/brain-learning-latest.json"
@@ -536,6 +553,26 @@ jobs:
           print("FIELD_EXTERNAL_BRAIN_LLM_GUIDANCE_STATE complete=true providers="+str(len(state.get("completedProviders") or [])))
           PY
             then
+              if [ "${{ github.event_name }}" = "push" ] && [ "$require_external_guidance" = "true" ]; then
+                python - "$RUNNER_TEMP/external-brain-llm-guidance-state.json" <<'PY'
+          import json,sys
+          from pathlib import Path
+          state=json.load(open(sys.argv[1],encoding="utf-8"))
+          trigger=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          canon=lambda value: str(value or "").strip().casefold().replace("_","-")
+          expected=[canon(v) for v in trigger.get("targetProviders") or [] if canon(v)]
+          requested=[canon(v) for v in state.get("requestedProviders") or [] if canon(v)]
+          if requested != expected:
+              raise SystemExit("external Brain guidance cohort does not match canonical Repair trigger")
+          expected_source=str(trigger.get("brainGuidanceSourceSha") or "").strip().casefold()
+          expected_brain=str(trigger.get("brainLlmGuidanceSha") or "").strip().casefold()
+          if not expected_source or str(state.get("sourceNiakvioSha") or "").strip().casefold()!=expected_source:
+              raise SystemExit("external Brain guidance source SHA does not match canonical Repair trigger")
+          if not expected_brain or str(state.get("brainLlmSha") or "").strip().casefold()!=expected_brain:
+              raise SystemExit("external Brain guidance Brain SHA does not match canonical Repair trigger")
+          print("FIELD_EXTERNAL_BRAIN_LLM_GUIDANCE_PIN verified=true providers="+str(len(requested)))
+          PY
+              fi
               if python scripts/import_external_brain_llm_guidance.py --input "$RUNNER_TEMP/external-brain-llm-guidance.json" --output "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" --current-sha "$GITHUB_SHA" --guidance-commit "$guidance_commit" --negative-memory automation/brain-repair-memory.json --negative-memory "$RUNNER_TEMP/brain-learning-latest.json"; then
                 external_count="$(python -c 'import json; d=json.load(open("'"$RUNNER_TEMP"'/external-brain-llm-guidance-repair.json")); print(int(d.get("providerCount") or 0))')"
                 if [ "$external_count" -gt 0 ]; then
@@ -553,6 +590,11 @@ jobs:
             fi
           else
             echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=no-complete-public-guidance-ref"
+          fi
+
+          if [ "$require_external_guidance" = "true" ] && [ "$external_imported" != "true" ]; then
+            echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE_REQUIRED satisfied=false" >&2
+            exit 1
           fi
 
           if [ "$external_imported" != "true" ]; then
