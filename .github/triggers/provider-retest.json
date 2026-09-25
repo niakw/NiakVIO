@@ -1,14 +1,28 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-24T22:42:00+02:00",
+  "requestedAt": "2026-09-25T11:55:00+02:00",
   "scope": "repair",
   "targetProviders": [
-    "mallumv"
+    "4khdhub",
+    "allanime",
+    "allwish",
+    "anime-ultime",
+    "animesalt",
+    "animesultra",
+    "animevost-fr",
+    "animevostfr",
+    "flemmix",
+    "mallumv",
+    "moviebox",
+    "moviesmod",
+    "vidfast",
+    "vostfree",
+    "yflix"
   ],
   "autoRepair": false,
-  "goal": "Targeted MalluMV retest after fixing the census contract fixture to source carried live routes from provider-overrides, matching production renderer authority. Persist corrected route/chain precedence without auto-repair.",
-  "retry": 7,
-  "reason": "mallumv-network-status-proof-precedence-reconciliation-v2",
-  "sourceExpectation": "current-main-after-network-proof-precedence-fix",
-  "executionExpectation": "RETEST mallumv only -> persist census; no autopilot"
+  "goal": "Refresh and persist the exact current-byte census for the full symptomatic cohort measured by successful full census 36119603462 after PR/branch cleanup. No repair in this run; next Force must consume the resulting fresh repairQueue/environmentQueue.",
+  "retry": 8,
+  "reason": "post-clean-current-byte-15-provider-census-refresh",
+  "sourceExpectation": "bd65c5d1b7288ea91298bbf7e10e9fdff2cad9ab",
+  "executionExpectation": "RETEST exact 15 -> persist census -> no autopilot"
 }
