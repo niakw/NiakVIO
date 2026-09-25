@@ -183,6 +183,15 @@ Acheter un disque physique donne normalement à l'acheteur la possession et le c
 
 Pour une vidéothèque, le physique possède donc un avantage pratique important : l'exemplaire ne disparaît normalement pas parce qu'un catalogue de streaming change, qu'un compte ferme ou qu'un accord de licence entre une plateforme et un ayant droit expire. Les droits précis de revente, prêt, copie privée ou contournement de mesures techniques dépendent de la juridiction et sortent du cadre de ce guide technique.
 
+### Un mot de soutien au support physique
+
+NiakVIO est un outil numérique, mais ce guide **soutient clairement le support physique comme le moyen pratique le plus solide de conserver une vidéothèque personnelle durable et sous le contrôle de l'utilisateur**. Un disque peut rester disponible lorsqu'un catalogue tourne, qu'une plateforme disparaît, qu'une licence change, qu'un compte devient inaccessible ou qu'une œuvre est remplacée par un autre master.
+
+Acheter une édition physique soutient aussi directement la continuité de cet écosystème : mastering, authoring, fabrication, restauration, bonus, éditions collector et signal commercial montrant qu'un public valorise encore des éditions permanentes de haute qualité. Cela ne signifie pas que chaque disque est techniquement supérieur, et cela ne change évidemment pas le droit d'auteur ; cela signifie simplement que le physique réunit particulièrement bien **pérennité, potentiel technique élevé et contrôle pratique à long terme**.
+
+> [!TIP]
+> Si une œuvre compte pour vous et qu'une bonne édition physique existe, **conserver un exemplaire physique légitime reste le moyen le plus robuste de préserver dans le temps votre propre accès à cette édition précise**. Le streaming reste excellent pour la praticité et la découverte ; le physique est le choix le plus orienté conservation.
+
 > [!CAUTION]
 > **NiakVIO ne transforme jamais une disponibilité technique en autorisation de regarder une œuvre.** Le projet n'héberge aucun contenu audiovisuel et n'accorde aucun droit sur les médias ou services tiers. NiakVIO doit être utilisé uniquement avec des contenus que l'utilisateur **possède, contrôle, a créés, pour lesquels il dispose d'une licence ou auxquels il est autrement autorisé à accéder**. Rien dans NiakVIO n'autorise le contournement d'une authentification, d'un paywall, d'un chiffrement, d'un DRM ou d'un autre contrôle d'accès. Chaque utilisateur reste responsable du respect de la loi applicable, des conditions des services et des droits des tiers. Voir [`DISCLAIMER.md`](../../DISCLAIMER.md) et [`TESTING_NOTICE.md`](../../TESTING_NOTICE.md).
 
@@ -239,6 +248,64 @@ Les autres informations vont dans les badges et la description. Si un flux Kehfl
 5. une information absente reste absente.
 
 Cette séparation évite « l'inflation de badges » et rend réellement les données utiles aux utilisateurs qui s'intéressent à la qualité média.
+
+## FAQ — comprendre rapidement la qualité d'un flux
+
+### Un flux 720p peut-il paraître aussi bon, voire meilleur, qu'un 1080p ?
+
+Oui. `1080p` décrit seulement les dimensions de l'image. Un bon encode 720p issu d'une bonne source, avec un codec efficace et un bitrate généreux, peut paraître aussi bon — voire plus propre — qu'un 1080p fortement compressé. C'est particulièrement fréquent en animation et sur les écrans disposant d'un bon upscale.
+
+À bitrate identique, le 1080p possède environ **2,25× plus de pixels** que le 720p : les mêmes bits doivent donc être répartis sur beaucoup plus de pixels. La résolution n'est qu'une partie de l'équation.
+
+### Le Mbps est-il le meilleur indicateur unique de qualité ?
+
+C'est l'un des **indices techniques simples les plus utiles**, mais pas une note universelle de qualité. Plus de bitrate donne généralement davantage de marge pour préserver détails, grain et mouvements, mais `6 Mbps AVC`, `6 Mbps HEVC` et `6 Mbps AV1` ne sont pas équivalents.
+
+Pour une lecture rapide, regarde plutôt : **source → codec → résolution → bitrate**. Si tout le reste est comparable, le bitrate le plus élevé est généralement le choix le plus rassurant.
+
+### La 4K est-elle toujours meilleure que le 1080p ?
+
+Non. Un très bon Blu-ray ou encode 1080p peut battre une 4K faible, très compressée ou simplement upscalée. `4K` décrit la taille raster, pas la qualité du master, le détail natif de la source ni la qualité de compression.
+
+### HEVC/H.265 est-il automatiquement meilleur qu'AVC/H.264 ?
+
+Non. HEVC est généralement plus efficace en compression et peut donc atteindre une qualité comparable avec moins de débit, mais la source et les réglages de l'encodeur restent déterminants. Un excellent AVC peut battre un mauvais HEVC.
+
+### AV1 est-il automatiquement le codec avec la meilleure image ?
+
+Non. AV1 offre une excellente efficacité de compression, mais efficacité du codec ne signifie pas qualité visuelle garantie. Source, implémentation de l'encodeur, réglages et bitrate comptent toujours.
+
+### 10-bit signifie-t-il HDR ?
+
+Non. Profondeur de couleur et plage dynamique sont deux informations différentes. Une vidéo peut être `10-bit SDR`, ce qui est courant dans les bons encodes anime. Le HDR demande une preuve distincte : HDR10, HDR10+, Dolby Vision, HLG, etc.
+
+### Dolby Vision est-il automatiquement meilleur que HDR10 ?
+
+Non. Dolby Vision peut apporter des métadonnées dynamiques et une chaîne de restitution plus riche, mais le résultat dépend du master, de l'écran, du lecteur et de l'implémentation. Un excellent HDR10 peut battre une mauvaise présentation Dolby Vision.
+
+### 60 fps est-il meilleur que 24 fps ?
+
+Pas en général. Le framerate est un choix de présentation. Le cinéma et beaucoup d'animations sont conçus autour de 23,976/24 fps. Un framerate supérieur peut améliorer la lisibilité du mouvement pour certains contenus, mais ce n'est pas une amélioration universelle.
+
+### MKV est-il meilleur que MP4 ?
+
+Non. Ce sont des conteneurs. MKV est très souple pour les multiples pistes audio/sous-titres et les releases complexes ; MP4 est extrêmement compatible. La qualité dépend des flux vidéo et audio contenus dedans.
+
+### HLS signifie-t-il mauvaise qualité ?
+
+Non. HLS décrit une livraison HTTP adaptative, pas la qualité d'image. Un master HLS peut contenir aussi bien de faibles résolutions que d'excellents flux 4K HDR. Si NiakVIO ne prouve que `HLS`, il n'invente volontairement ni résolution ni codec.
+
+### Pourquoi un Blu-ray 1080p peut-il être meilleur qu'un streaming 4K ?
+
+Parce que le disque peut utiliser beaucoup plus de bitrate, préserver davantage de détails fins et de grain, éviter les baisses adaptatives liées au réseau et proposer de meilleures pistes audio. Le flux 4K possède davantage de pixels, mais ceux-ci peuvent être beaucoup plus compressés.
+
+### Le support physique est-il toujours le meilleur choix ?
+
+Pour **le contrôle à long terme et la conservation d'une édition précise**, le physique est généralement le choix pratique le plus robuste. Pour la commodité, la mobilité et l'accès immédiat, le streaming ou un fichier numérique autorisé peuvent être plus pratiques. La qualité technique dépend toujours du master et de l'encode précis.
+
+### Si NiakVIO trouve une source lisible, cela signifie-t-il que j'ai le droit de la regarder ?
+
+Non. Une disponibilité technique n'est pas une autorisation. NiakVIO ne détermine ni la propriété des droits, ni la licence, ni la légalité d'une source tierce. Il doit être utilisé uniquement avec des contenus que vous possédez, contrôlez, avez créés, pour lesquels vous disposez d'une licence ou auxquels vous êtes autrement autorisé à accéder, dans le respect de la loi applicable et des conditions des services.
 
 ## Version des feeds
 
