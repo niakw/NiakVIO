@@ -149,7 +149,7 @@ The public surface stays simple; most of the complexity lives behind explicit co
 2. **Runtime behavior is gated and validated** without turning a zero result into fabricated success.
 3. **Accepted bytes are published atomically** with synchronized manifests, versions and integrity metadata.
 
-**Deep dive:** [`ARCHITECTURE.md`](ARCHITECTURE.md) · [`INSTALL.md`](INSTALL.md) · [`VALIDATION.md`](VALIDATION.md)
+**Deep dive:** [`ARCHITECTURE.md`](ARCHITECTURE.md) · [`BRAIN_REPAIR_ARCHITECTURE.md`](BRAIN_REPAIR_ARCHITECTURE.md) · [`INSTALL.md`](INSTALL.md) · [`VALIDATION.md`](VALIDATION.md)
 
 <details>
 <summary><strong>Provider v3, DATA and runtime contracts</strong></summary>
