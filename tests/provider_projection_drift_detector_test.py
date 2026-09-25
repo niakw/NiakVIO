@@ -37,11 +37,11 @@ with tempfile.TemporaryDirectory() as td:
         "providers":{"alpha":{"model":{}}},
     })+"\n",encoding="utf-8")
     (root/"PROVENANCE.json").write_text(json.dumps({
-        "provider_publication_contract":{"schema_version":3,"sha256":"c"*64},
+        "provider_publication_contract":{"schema_version":4,"sha256":"c"*64},
         "providers":{"alpha":{
             "base_filename":"provider-bases/alpha.js",
             "base_sha256":"b"*64,
-            "build_contract_schema":3,
+            "build_contract_schema":4,
             "provider_policy_sha256":"p"*64,
             "build_input_sha256":"i"*64,
         }},
