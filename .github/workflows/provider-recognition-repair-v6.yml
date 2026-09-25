@@ -267,6 +267,7 @@ jobs:
           python scripts/classify_provider_authority.py
           python - <<'PY'
           import json
+          import os
           from pathlib import Path
           state=json.loads(Path("automation/provider-census-status.json").read_text(encoding="utf-8"))
           authority=json.loads(Path("automation/provider-authority-status.json").read_text(encoding="utf-8"))
@@ -467,10 +468,15 @@ jobs:
              && git cat-file -e "$external_ref:guidance/niakvio-guidance.json" 2>/dev/null; then
             git show "$external_ref:guidance/niakvio-guidance.json" > "$RUNNER_TEMP/external-brain-llm-guidance.json"
             guidance_commit="$(git rev-parse "$external_ref")"
-            if python scripts/import_external_brain_llm_guidance.py --input "$RUNNER_TEMP/external-brain-llm-guidance.json" --output "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" --current-sha "$GITHUB_SHA" --guidance-commit "$guidance_commit"; then
-              echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/external-brain-llm-guidance-repair.json" >> "$GITHUB_ENV"
-              external_imported=true
-              echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=true commit=$guidance_commit"
+            if python scripts/import_external_brain_llm_guidance.py --input "$RUNNER_TEMP/external-brain-llm-guidance.json" --output "$RUNNER_TEMP/external-brain-llm-guidance-repair.json" --current-sha "$GITHUB_SHA" --guidance-commit "$guidance_commit" --negative-memory automation/brain-repair-memory.json; then
+              external_count="$(python -c 'import json; d=json.load(open("'"$RUNNER_TEMP"'/external-brain-llm-guidance-repair.json")); print(int(d.get("providerCount") or 0))')"
+              if [ "$external_count" -gt 0 ]; then
+                echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/external-brain-llm-guidance-repair.json" >> "$GITHUB_ENV"
+                external_imported=true
+                echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=true providers=$external_count commit=$guidance_commit"
+              else
+                echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=empty-after-negative-memory-filter"
+              fi
             else
               echo "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=source-drift-or-safety-gate"
             fi
@@ -484,6 +490,8 @@ jobs:
               python - "$RUNNER_TEMP/brain-learning-llm-guidance.json" "$RUNNER_TEMP/brain-learning-llm-guidance-repair.json" "$GITHUB_SHA" <<'PY'
           import json,re,sys
           from pathlib import Path
+          sys.path.insert(0,str(Path.cwd()/"scripts"))
+          from brain_llm_experiment import validate_public
           source=Path(sys.argv[1]);destination=Path(sys.argv[2]);current_sha=sys.argv[3].strip().lower()
           data=json.loads(source.read_text(encoding="utf-8"))
           for key in ("publicationAuthority","directMutationAuthority","proofAuthority","rawMutationContentRetained"):
@@ -491,10 +499,23 @@ jobs:
           if not re.fullmatch(r"[0-9a-f]{40}",current_sha): raise SystemExit("canonical Repair SHA is invalid")
           rows=data.get("rows")
           if not isinstance(rows,list): raise SystemExit("persistent LLM guidance rows missing")
-          allowed={"providerId","failureClass","targetLayer","strategy","profile","confidence","priorOnly"}
+          schema=max(1,int(data.get("schemaVersion") or 1))
+          if schema not in {1,2}: raise SystemExit("unsupported persistent LLM guidance schema")
+          allowed_v1={"providerId","failureClass","targetLayer","strategy","profile","confidence","priorOnly"}
+          allowed_v2=allowed_v1|{"experiment","experimentFingerprint"}
+          safe=[]
           for row in rows:
-              if not isinstance(row,dict) or row.get("priorOnly") is not True or row.get("targetLayer")!="provider" or set(row)-allowed:
+              allowed=allowed_v2 if schema>=2 else allowed_v1
+              if not isinstance(row,dict) or row.get("priorOnly") is not True or row.get("targetLayer")!="provider" or set(row)!=allowed:
                   raise SystemExit("unsafe persistent LLM guidance row")
+              normalized=dict(row)
+              if schema>=2:
+                  experiment,fingerprint=validate_public(row.get("experiment"),str(row.get("experimentFingerprint") or ""))
+                  normalized["experiment"]=experiment
+                  normalized["experimentFingerprint"]=fingerprint
+              safe.append(normalized)
+          data["rows"]=safe
+          data["providerCount"]=len({str(row.get("providerId") or "") for row in safe if str(row.get("providerId") or "")})
           data["sourceLearningSha"]=str(data.get("sourceSha") or "");data["sourceSha"]=current_sha;data["persistentLearningPrior"]=True
           destination.write_text(json.dumps(data,indent=2,sort_keys=True)+"\n",encoding="utf-8")
           PY
@@ -521,7 +542,16 @@ jobs:
           if [ "${{ github.event_name }}" = "schedule" ]; then
             MODE=learn
           elif [ "${{ github.event_name }}" = "push" ]; then
-            MODE=repair
+            MODE="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          mode=str(data.get("mode") or "repair").strip().casefold()
+          if mode not in {"repair","force"}:
+              raise SystemExit(f"push Repair trigger mode must be repair|force, got {mode!r}")
+          print(mode)
+          PY
+            )"
           else
             MODE="${DISPATCH_MODE:-force}"
           fi
@@ -582,6 +612,7 @@ jobs:
           PY
 
       - name: Enforce four-version floor on repair candidate
+        id: candidate-gate
         if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode != 'learn') }}
         shell: bash
         run: |
@@ -673,6 +704,8 @@ jobs:
         if: ${{ always() && github.ref == 'refs/heads/main' }}
         env:
           GH_TOKEN: ${{ github.token }}
+          DISPATCH_MODE: ${{ inputs.mode || '' }}
+          CANDIDATE_GATE_OUTCOME: ${{ steps.candidate-gate.outcome }}
         shell: bash
         run: |
           set -euo pipefail
@@ -748,7 +781,99 @@ jobs:
           PY
           )"
 
-          # Candidate provider/Core bytes are never published by this evidence commit.
+          # Explicit operator Force is the only mode allowed to publish validated
+          # provider-local candidate bytes directly. Learning remains proposal-only,
+          # and automatic Repair keeps its evidence/current-hypothesis semantics.
+          direct_force_apply=0
+          force_candidate_applied=0
+          force_requested=0
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${DISPATCH_MODE:-}" = "force" ]; then
+            force_requested=1
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            force_requested="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
+          enabled=(
+              str(data.get("mode") or "").strip().casefold()=="force"
+              and data.get("directApplyValidated") is True
+          )
+          print("1" if enabled else "0")
+          PY
+            )"
+          fi
+          if [ "$force_requested" = "1" ]              && [ "$canonical_repair_outcome" = "success" ]              && [ "${CANDIDATE_GATE_OUTCOME:-}" = "success" ]; then
+            direct_force_apply=1
+            mapfile -t force_paths < <(python - <<'PY'
+          import os
+          import subprocess
+          from pathlib import Path
+
+          allowed_exact={
+              "provider-overrides.json","provider-hubs.json","provider_catalog.json","sources.json",
+              "manifest.json","manifest-hub46.json","PROVENANCE.json","provider-v3-materialization.json",
+              "FILE-HASHES.json","PATCH-SHA256SUMS.txt","SHA256SUMS.json",
+              "automation/provider-v3-static-knowledge.json",
+              "automation/provider-v3-recognition-seeds.json",
+          }
+          allowed_prefixes=(
+              "providers/","provider-bases/","provider-disabled/","provider-old/",
+              "vf/","no-anime/","vf-no-anime/","native-hub46/",
+              "scripts/provider_patches/",
+          )
+          evidence_exact={
+              "PROVIDER_CENSUS_STATUS.md","provider-v3-quick-yield.json",
+              "availability-history.json","availability-report.json",
+          }
+          evidence_prefixes=("automation/",)
+          changed=set(
+              line.strip()
+              for line in subprocess.check_output(
+                  ["git","diff","--name-only",os.environ["GITHUB_SHA"]],
+                  text=True,
+              ).splitlines()
+              if line.strip()
+          )
+          changed.update(
+              line.strip()
+              for line in subprocess.check_output(
+                  ["git","ls-files","--others","--exclude-standard"],
+                  text=True,
+              ).splitlines()
+              if line.strip()
+          )
+          candidate=[]
+          unexpected=[]
+          for path in sorted(changed):
+              if path in allowed_exact or path.startswith(allowed_prefixes):
+                  candidate.append(path)
+              elif path in evidence_exact or path.startswith(evidence_prefixes):
+                  continue
+              else:
+                  unexpected.append(path)
+          if unexpected:
+              raise SystemExit("Force Repair candidate crossed direct-apply boundary: "+",".join(unexpected))
+          for path in candidate:
+              print(path)
+          PY
+            )
+            if [ "${#force_paths[@]}" -gt 0 ]; then
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git add -- "${force_paths[@]}"
+              git commit -m "tmp(force-repair): validated provider candidate ${GITHUB_RUN_ID}"
+              git rev-parse HEAD > "$tmp/force-candidate-sha.txt"
+              printf '%s\n' "${force_paths[@]}" > "$tmp/force-candidate-paths.txt"
+              echo "FIELD_FORCE_REPAIR_DIRECT_APPLY captured=true files=${#force_paths[@]}"
+            else
+              echo "FIELD_FORCE_REPAIR_DIRECT_APPLY captured=false reason=no-provider-byte-diff"
+            fi
+          else
+            echo "FIELD_FORCE_REPAIR_DIRECT_APPLY enabled=false requested=$force_requested mode=${DISPATCH_MODE:-automatic}"
+          fi
+
+          # Reset the sandbox after preserving evidence and, for explicit Force,
+          # a temporary commit containing only validated provider-local bytes.
           git reset --hard "$GITHUB_SHA"
           git clean -fd
           git fetch origin main
@@ -784,6 +909,17 @@ jobs:
           fi
 
           mkdir -p automation
+
+          if [ "$direct_force_apply" = "1" ] && [ -f "$tmp/force-candidate-sha.txt" ]; then
+            if [ "$canonical_ledger_current" = "1" ]; then
+              force_candidate_sha="$(cat "$tmp/force-candidate-sha.txt")"
+              git cherry-pick --no-commit "$force_candidate_sha"
+              force_candidate_applied=1
+              echo "FIELD_FORCE_REPAIR_DIRECT_APPLY restored=true sha=$force_candidate_sha"
+            else
+              echo "FIELD_FORCE_REPAIR_DIRECT_APPLY restored=false reason=newer-main"
+            fi
+          fi
 
           # Stale Repair output remains downloadable from Actions, but it may
           # not move main. Even evidence-only commits can supersede the exact
@@ -833,7 +969,11 @@ jobs:
           if git diff --cached --quiet; then
             echo "Repair evidence already current"
           else
-            git commit -m "ci(repair): persist evidence ${counts} from ${GITHUB_SHA::12}"
+            if [ "$force_candidate_applied" = "1" ]; then
+              git commit -m "fix(force-repair): apply validated provider corrections + evidence from ${GITHUB_SHA::12}"
+            else
+              git commit -m "ci(repair): persist evidence ${counts} from ${GITHUB_SHA::12}"
+            fi
             git push origin HEAD:main
           fi
 
