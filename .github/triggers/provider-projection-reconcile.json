@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-25T08:50:00+02:00",
-  "reason": "reconcile shared Core publication fingerprint v4 and stream presentation v27",
+  "requestedAt": "2026-09-25T08:52:00+02:00",
+  "reason": "retry shared Core v27 rematerialization after contract-v4 drift fixture fix",
   "target": "all drifted active providers",
   "expectedChecks": [
-    "shared Core source change is detected as publication drift",
-    "rebuild only drifted providers",
-    "Kehflix published bytes contain technical-badges-v27",
-    "Kehflix Unknown/Inconnue/N/A quality produces no title suffix",
-    "Kehflix proven FHD/1080p quality produces title Kehflix - 1080p"
+    "detect shared Core publication drift under schema v4",
+    "rebuild drifted providers",
+    "publish stream presentation technical-badges-v27",
+    "Kehflix unknown quality title remains Kehflix",
+    "Kehflix proven 1080p title becomes Kehflix - 1080p"
   ]
 }
