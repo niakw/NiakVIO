@@ -1285,10 +1285,10 @@ jobs:
           python -m json.tool engine_v2/learning/architecture-proposal.json >/dev/null
           python -m json.tool engine_v2/config/brain-policy.json >/dev/null
           python tests/brain_cron_full_coverage_test.py
-          if git diff --quiet -- engine_v2/learning/architecture-proposal.json engine_v2/learning/architecture-proposal.md engine_v2/config/brain-policy.json; then
-            echo "has_diff=false" >> "$GITHUB_OUTPUT"
-          else
+          if [ -n "$(git status --porcelain --untracked-files=all -- engine_v2/learning/architecture-proposal.json engine_v2/learning/architecture-proposal.md engine_v2/config/brain-policy.json)" ]; then
             echo "has_diff=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_diff=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Open or refresh Brain architecture PR
@@ -1311,6 +1311,7 @@ jobs:
           git switch -C "$BRANCH" "$GITHUB_SHA"
           mkdir -p engine_v2/learning
           cp brain-learning-output/brain-architecture-proposal.json engine_v2/learning/architecture-proposal.json
+          cp brain-learning-output/brain-architecture-proposal.md engine_v2/learning/architecture-proposal.md
           if [ "$(node -e "const x=require('./$SUMMARY');process.stdout.write(x.policyChanged===true?'true':'false')")" = "true" ]; then
             cp brain-learning-output/brain-policy.proposed.json engine_v2/config/brain-policy.json
           fi
