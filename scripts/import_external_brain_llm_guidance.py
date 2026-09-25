@@ -23,8 +23,8 @@ STRATEGY_TO_PROFILE={
 TOP_LEVEL_FIELDS={"schemaVersion","sourceNiakvioSha","brainLlmSha","publicationAuthority","directMutationAuthority","proofAuthority","rawMutationContentRetained","privateContentRetained","minConfidence","providerCount","rows"}
 ROW_FIELDS_V1={"providerId","failureClass","targetLayer","strategy","profile","confidence","priorOnly"}
 ROW_FIELDS_V2=ROW_FIELDS_V1|{"experiment","experimentFingerprint"}
-NEUTRAL_DRIFT_PREFIXES=(".github/workflows/",".github/triggers/","tests/","automation/provider-brain-repair-","automation/provider-targeted-regression-recovery-","automation/provider-repair-batch-refined-")
-NEUTRAL_DRIFT_FILES={"MEMORY.md","scripts/import_external_brain_llm_guidance.py","scripts/brain_repair_runtime.py","scripts/run_provider_brain_repair.py","scripts/select_provider_materialization_scope.py","scripts/run_provider_repair_pipeline_v6.py","engine_v2/scripts/plan-repairs.mjs","automation/brain-repair-memory.json","automation/brain-positive-program-memory.json"}
+NEUTRAL_DRIFT_PREFIXES=(".github/workflows/",".github/triggers/","tests/","assets/","docs/","automation/provider-brain-repair-","automation/provider-targeted-regression-recovery-","automation/provider-repair-batch-refined-")
+NEUTRAL_DRIFT_FILES={"MEMORY.md","README.md","README.fr.md","scripts/import_external_brain_llm_guidance.py","scripts/brain_repair_runtime.py","scripts/run_provider_brain_repair.py","scripts/select_provider_materialization_scope.py","scripts/run_provider_repair_pipeline_v6.py","scripts/provider_patches/global_stream_presentation_v1.py","scripts/normalize_stream_presentation_v12.py","scripts/upgrade_stream_language_roles_v1.py","scripts/fix_global_stream_presentation_v23_tests.py","scripts/fix_stream_language_role_proof_v1.py","engine_v2/src/stream-presentation.mjs","engine_v2/scripts/plan-repairs.mjs","automation/brain-repair-memory.json","automation/brain-positive-program-memory.json"}
 MATERIALIZATION_SCOPE_SCRIPT=ROOT/"scripts/select_provider_materialization_scope.py"
 
 def canon(value:object)->str:
@@ -89,17 +89,43 @@ def source_drift(root:Path,source_sha:str,current_sha:str)->tuple[list[str],set[
  scope=provider_materialization_scope(root,source_sha,current_sha)
  mode=str(scope.get("mode") or "all").strip().casefold()
  changed=sorted({str(x).strip() for x in scope.get("changedPaths") or [] if str(x).strip()})
+ reasons=[str(x).strip() for x in scope.get("reasons") or [] if str(x).strip()]
  if mode=="none":
   return changed,set()
  if mode=="providers":
   providers={canon(x) for x in scope.get("providers") or [] if canon(x)}
   if not providers:
-   reasons=";".join(str(x) for x in scope.get("reasons") or [])
-   raise ValueError(f"provider drift classifier omitted provider ids: reasons={reasons or '-'}")
+   raise ValueError(f"provider drift classifier omitted provider ids: reasons={';'.join(reasons) or '-'}")
   return [],providers
+ if mode=="all":
+  # A global classifier result can be caused by one unowned but network-neutral
+  # presentation/docs patch plus ordinary provider-local drift. Preserve the
+  # unaffected advisor rows instead of discarding the whole prior.
+  providers:set[str]=set()
+  blockers:list[str]=[]
+  for reason in reasons:
+   parts=reason.split(":",2)
+   kind=parts[0] if parts else ""
+   if kind in {"providers","patch"} and len(parts)==3:
+    providers.update(canon(v) for v in parts[2].split(",") if canon(v))
+    continue
+   if kind in {"global","unowned-patch"} and len(parts)>=2:
+    path=reason.split(":",1)[1]
+    ok,_=neutral_source_drift([path])
+    if ok:continue
+   blockers.append(reason)
+  if not blockers:
+   if providers:return [],providers
+   ok,blocked=neutral_source_drift(changed)
+   if ok:return changed,set()
+   blockers.extend(blocked)
+  raise ValueError(
+   "global/provider-wide drift since guidance source: "
+   f"mode={mode} providers={','.join(sorted(providers)) or '-'} "
+   f"reasons={';'.join(blockers or reasons) or '-'}"
+  )
  providers=",".join(str(x) for x in scope.get("providers") or [])
- reasons=";".join(str(x) for x in scope.get("reasons") or [])
- raise ValueError(f"global/provider-wide drift since guidance source: mode={mode} providers={providers or '-'} reasons={reasons or '-'}")
+ raise ValueError(f"global/provider-wide drift since guidance source: mode={mode} providers={providers or '-'} reasons={';'.join(reasons) or '-'}")
 
 def sanitize(value:dict[str,Any],*,current_sha:str,guidance_commit:str="")->dict[str,Any]:
  if not isinstance(value,dict):raise ValueError("external Brain-LLM guidance must be an object")
