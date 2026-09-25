@@ -212,7 +212,9 @@ global.fetch = async function(rawUrl) {
     return jsonResponse(url, {
       urls: [
         {url:"https://embed.example/watch/p-movie"},
-        {url:"https://free.finepulfe.xyz/movies/157336-test/master.m3u8"}
+        {name:"Lecteur 1",url:"https://free.finepulfe.xyz/movies/157336-test/master.m3u8"},
+        {name:"Lecteur 2",url:"https://cdn-two.example/movies/157336/master.m3u8"},
+        {name:"Lecteur 3",url:"https://cdn-three.example/movies/157336/master.m3u8"}
       ]
     });
   }
@@ -242,8 +244,8 @@ const provider = require(providerPath);
 
 (async () => {
   const movie = await provider.getStreams("157336", "movie");
-  if (!movie.length || !movie[0].url.includes("/movies/157336-test/") || movie.some(row => row.url.includes("embed.example"))) {
-    throw new Error("Purstream movie route/direct-source regression: " + JSON.stringify(movie));
+  if (movie.length !== 3 || !movie.some(row => row.url.includes("/movies/157336-test/")) || !movie.some(row => row.url.includes("cdn-two.example")) || !movie.some(row => row.url.includes("cdn-three.example")) || movie.some(row => row.url.includes("embed.example"))) {
+    throw new Error("Purstream multiflux movie route/direct-source regression: " + JSON.stringify(movie));
   }
 
   const series = await provider.getStreams("1396", "series", 1, 1);
