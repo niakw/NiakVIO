@@ -52,9 +52,10 @@ assert module.apply(
     context={"provider_id": "future-provider-never-seen-before"},
 ) == future_source
 
-# V8 lossless visible-label contract: STREAM_FACTS already preserved the
-# provider/player-owned values before presentation. Branding must expose the
-# richest source label again while keeping the established ` - quality` suffix.
+# V9 safety-uniform visible-label contract: STREAM_FACTS preserves provider/player
+# metadata under source* fields, while final branding keeps the user-facing label
+# deterministic as provider + strongest proven quality. Source metadata must not
+# be lost, but it is no longer re-injected into the visible title.
 source = (
     'globalThis.getStreams=async function(){return [{'
     'url:"https://example.com/video.m3u8",'
@@ -65,10 +66,10 @@ source = (
 )
 output = module.apply(source, context={"provider_id": "peachify"})
 assert "NUVIO_GLOBAL_PROVIDER_BRANDING_V1" in output
-assert "post-presentation-lossless-source-label-v8" in output
+assert "post-safety-uniform-final-label-v9" in output
 assert "🍑" in output and "Peachify" in output
 assert module.apply(output, context={"provider_id": "peachify"}) == output
-expected = "🍑 Peachify • StreamWish Server 2 VFF WEB-DL HEVC - 1080p"
+expected = "🍑 Peachify - 1080p"
 
 with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as handle:
     handle.write(output)
