@@ -70,11 +70,17 @@ with tempfile.TemporaryDirectory() as tmp:
                 "providerId": "demo",
                 "mutations": mutations,
                 "mutationFingerprint": mod._fingerprint(mutations),
+                "mutationContextFingerprint": mod._mutation_context_fingerprint(
+                    "demo", overrides["provider_patches"]["demo"], mutations
+                ),
             },
             {
                 "providerId": "healthy",
                 "mutations": mutations,
                 "mutationFingerprint": mod._fingerprint(mutations),
+                "mutationContextFingerprint": mod._mutation_context_fingerprint(
+                    "healthy", overrides["provider_patches"]["healthy"], mutations
+                ),
             },
         ],
     }
@@ -152,6 +158,16 @@ with tempfile.TemporaryDirectory() as tmp:
                         "value": "alternate-candidate",
                     }
                 ]),
+                "mutationContextFingerprint": mod._mutation_context_fingerprint(
+                    "demo",
+                    updated["provider_patches"]["demo"],
+                    [{
+                        "scope": "provider_data",
+                        "operation": "set",
+                        "path": "notes",
+                        "value": "alternate-candidate",
+                    }],
+                ),
                 "mutations": [
                     {
                         "scope": "provider_data",
