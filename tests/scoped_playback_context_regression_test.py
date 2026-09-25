@@ -108,9 +108,10 @@ assert result.returncode == 0, result.stderr
 assert "COUNT=1" in result.stdout, result.stdout
 print("scoped playback context regression tests passed")
 
-# Integration contract: global media enrichment is scoped only to providers
-# that actually need browser/player recovery context. StreamZo receives it;
-# unrelated providers such as Cineby do not.
+# Integration contract: the shared media-enrichment Block applies to eligible
+# provider capabilities with neutral defaults. Provider-specific recovery context
+# may add scoped options (StreamZo User-Agent), while ordinary providers such as
+# Cineby must receive only the shared neutral policy.
 sys.path.insert(0, str(ROOT / 'scripts'))
 spec = importlib.util.spec_from_file_location('apply_provider_overrides_scoped_test', ROOT/'scripts/apply_provider_overrides.py')
 assert spec and spec.loader
@@ -131,7 +132,9 @@ assert streamzo_media[-1].get('default_user_agent','').startswith('Mozilla/5.0')
 captured.clear()
 apply_mod.apply_overrides('cineby', b'module.exports={getStreams:async()=>[]};\n', phase='discovery')
 ordinary_media = [opts for pid,path,opts in captured if pid == 'cineby' and path.endswith('global_media_enrichment_v1.py')]
-assert not ordinary_media, ordinary_media
+assert ordinary_media, captured
+assert ordinary_media[-1].get('preserve_original') is True, ordinary_media[-1]
+assert not ordinary_media[-1].get('default_user_agent'), ordinary_media[-1]
 
 captured.clear()
 apply_mod.apply_overrides('moviebox', b'module.exports={getStreams:async()=>[]};\n', phase='discovery')
