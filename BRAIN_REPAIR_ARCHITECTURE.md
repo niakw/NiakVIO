@@ -210,6 +210,44 @@ It must not be written for:
 
 Variant/generation memory exists to stop identical retries, not to make every future method impossible.
 
+### 5.3 Positive program memory is durable
+
+A strictly accepted provider-local runtime program is not merely a historical
+counter. When a sandbox experiment satisfies strict playable improvement and its
+accepted program compiles into Provider v3 DATA, its sanitized executable
+program is persisted in `automation/brain-positive-program-memory.json`.
+
+Required invariants:
+
+- positive program memory is prior-only and never publication authority;
+- a same-provider positive program may survive diagnostic failure-label drift;
+- it may be replayed in canonical Repair for that **same provider** after the
+  ordinary deterministic family is exhausted;
+- same-provider replay is bounded by its aggregate positive-program fingerprint;
+- a failed exact fingerprint is remembered and cannot loop forever;
+- it may never jump to another provider as an untrusted peer transfer;
+- every replay must still pass current-byte playback, identity and
+  non-regression gates;
+- evidence-only commits and orchestration cleanups must never reset validated
+  positive memory to an older or empty state.
+
+`scripts/recover_brain_positive_program_memory.py` is the fail-safe for accidental
+state loss. It only reconstructs rows from historical Brain reports that:
+
+1. were accepted as `strict_playable_stream_improvement`;
+2. improved playable count;
+3. were recorded as compiled by the accepted-program pipeline; and
+4. still compile under the current Provider v3 compiler.
+
+Recovery is idempotent and does **not** make the historical route/media current
+proof. It merely restores the bounded candidate program so current bytes can
+retest it.
+
+`tests/brain_positive_program_repository_continuity_test.py` requires the
+committed memory to already be a superset of every currently recoverable strict
+historical positive. A silent `entries: []` regression is therefore a CI
+failure.
+
 ## 6. Brain LLM boundary
 
 The LLM is useful for inventing a bounded method or mutation that deterministic Repair does not already know. It does not decide whether the repair is accepted.
@@ -411,6 +449,10 @@ The repairer is considered operationally validated only after all of the followi
 - at least one provider-local candidate, when needed, survives sandbox → canonical materialization → current-byte Retest;
 - no already-green provider regresses;
 - census and durable memory reflect the proven result;
-- broad portfolio expansion occurs only after representative family proof.
+- broad portfolio expansion occurs only after representative family proof;
+- durable positive-program memory contains every strict historical positive that
+  the current compiler can still recover;
+- an exhausted same-provider Repair can replay an exact positive-program
+  fingerprint without routing that replay through Learning first.
 
 Until those runtime proofs exist, code-level architecture may be complete while provider repair remains **not yet fully validated**.
