@@ -50,6 +50,7 @@ prepare_block=wf[prepare:connect]
 assert "steps.repair_waf_reuse.outputs.reuse != 'true'" in prepare_block
 assert 'providers=sorted(set(providers)&requested)' in prepare_block
 assert 'DISPATCH_TARGET_PROVIDER' in prepare_block
+assert "import os" in prepare_block
 reuse_block=wf[reuse:prepare]
 assert 'git log -1 --format=%H -- "$waf"' in reuse_block
 assert '--base "$source"' in reuse_block
