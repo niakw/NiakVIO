@@ -28,6 +28,7 @@ MASTER = """#EXTM3U
 """
 MEDIA = """#EXTM3U
 #EXT-X-MEDIA-SEQUENCE:1
+#EXT-X-PROGRAM-DATE-TIME:2026-09-25T00:00:00Z
 #EXT-X-TARGETDURATION:10
 #EXTINF:10.0,
 seg.ts
@@ -88,8 +89,10 @@ require(process.argv[2]);
   if(row.language!=='ko')throw new Error('single HLS language not normalized '+JSON.stringify(row));
   const langs=(row.audioTracks||[]).map(x=>x.language).sort().join(',');
   if(langs!=='ko')throw new Error('audio tracks missing '+JSON.stringify(row));
-  const subs=(row.subtitles||[]).map(x=>x.language||x.lang||x.code).filter(Boolean).sort().join(',');
-  if(subs!=='fr')throw new Error('subtitle tracks missing '+JSON.stringify(row));
+  const externalSubs=(row.subtitles||[]).filter(x=>x&&x.url);
+  if(externalSubs.length)throw new Error('integrated HLS subtitle leaked into external subtitles '+JSON.stringify(row));
+  const subs=(row.hlsMasterSubtitleTracks||[]).map(x=>x.language||x.lang||x.code).filter(Boolean).sort().join(',');
+  if(subs!=='fr')throw new Error('integrated HLS subtitle metadata missing '+JSON.stringify(row));
   console.log('HLS_MASTER_FACTS_OK mode='+mode+' quality='+row.quality+' audio='+langs+' subs='+subs);
 })().catch(e=>{console.error(e);process.exit(1)});
 '''
