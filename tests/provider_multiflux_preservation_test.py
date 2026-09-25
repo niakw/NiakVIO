@@ -43,6 +43,7 @@ streamzo_bundle = streamzo.apply("module.exports={};\n", options={"base": "https
 
 streamzo_runner = r"""
 const fs=require("fs"),vm=require("vm");
+global.module={exports:{}};global.exports=global.module.exports;
 const source=fs.readFileSync(process.argv[2],"utf8");
 global.__nuvioCoreGetTmdbDataV1=async()=>({metadata:{name:"Example Show",first_air_date:"2026-01-01"}});
 global._crawlDirectMedia=async function(urls){return (urls||[]).map(url=>({url}));};
@@ -77,6 +78,7 @@ papadustream = load_module("papadustream_runtime_multiflux", ROOT / "scripts/pro
 papa_bundle = papadustream.apply("module.exports={};\n", options={"base": "https://papa.test"})
 papa_runner = r"""
 const fs=require("fs"),vm=require("vm");
+global.module={exports:{}};global.exports=global.module.exports;
 const source=fs.readFileSync(process.argv[2],"utf8");
 global.__nuvioCoreGetTmdbDataV1=async()=>({metadata:{title:"Example Movie"}});
 global._crawlDirectMedia=async function(urls){
