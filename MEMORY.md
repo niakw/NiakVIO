@@ -4871,3 +4871,10 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Corrected the stale source-of-truth entry in provider_catalog.json to supportedTypes=[movie]. This is a catalogue authority fix, not a provider promotion/demotion.
 - The prior animekai candidate non-regression failure was not reproduced: Non-Regression run 36073824709 on d098009 passed. Treat the earlier isolated failure as transient unless it recurs.
 - CI for head 6f0a4fe is still running. Do not mark PR #189 merge-ready until Workflow, Verify & Publish, Media Type/Playback, Provider Non-Regression and security gates complete successfully.
+
+### 2026-09-25 02:01 Europe/Paris — post-PR189 validation trigger accidentally disabled Fast handoff
+
+- The first post-merge validation trigger commit `f339bd9...` changed the trigger `reason` to a descriptive validation label. `select_fast_learning_handoff.py` treats the original `reason: fast-brain-strategy-exhaustion` plus `expected_scope: current-fast-repair-handoff-only` as the backward-compatible Fast-handoff contract (or requires a versioned `execution_mode`).
+- Because that marker was lost, Learning run `36074954307` selected `fastHandoff=false` and entered full discovery instead of the bounded 14-provider handoff. The abnormal duration of the stage-build step exposed the mistake before its result was used as proof.
+- Main commit `5f7677b...` restores `reason: fast-brain-strategy-exhaustion`, adds `execution_mode: targeted-fast-handoff-v1`, retains the post-PR189 purpose in `validation_reason`, and preserves the current handoff scope. The replacement Learning run is `36075471070`.
+- Do not use `36074954307` as validation of PR #189. The valid post-PR189 proof must come from the replacement targeted run and must demonstrate provider-local suppression of already-failed architecture strategies.
