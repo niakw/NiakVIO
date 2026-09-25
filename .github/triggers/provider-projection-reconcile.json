@@ -1,20 +1,8 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-25T10:26:30+02:00",
-  "reason": "publish validated HLS safety/master-facts Blocks after short-suite success",
-  "target": "all drifted active providers",
-  "sourceValidation": {
-    "workflow": "SHORT - HLS Master Facts",
-    "runId": 36112842338,
-    "testedSha": "6e5a1ef041a20466efb64ce86a35a0d2c00f122b",
-    "conclusion": "success"
-  },
-  "expectedChecks": [
-    "shared Core publication fingerprint v4 detects HLS/safety Block drift",
-    "rematerialize only drifted active providers",
-    "Neko-Sama published bytes contain tiny-placeholder rejection + native-master-facts-v11",
-    "Kehflix published bytes contain native-master-facts-v11 and HLS master enrichment",
-    "Kehflix master 1440x720 normalizes title to Kehflix - 720p",
-    "Unknown/Inconnue/N/A/Auto never become title suffixes"
-  ]
+  "requestedAt": "2026-09-25T13:02:00+02:00",
+  "reason": "global Core HLS v12 + stream presentation v29: reject tiny MEDIA-SEQUENCE placeholders and keep integrated HLS subtitles out of external SubSense caption contract while retaining technical badges",
+  "sourceSha": "dcfc8b176c547988287cf8466e0c3b27fed74291",
+  "scope": "detect-and-reconcile-all-projection-drift",
+  "previous": "2026-09-25T10:26:30+02:00"
 }
