@@ -131,10 +131,16 @@ jobs:
                  --input "$RUNNER_TEMP/external-brain-llm-guidance.json" \
                  --output "$RUNNER_TEMP/external-brain-llm-guidance-fast-repair.json" \
                  --current-sha "$GITHUB_SHA" \
-                 --guidance-commit "$guidance_commit"; then
-              echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/external-brain-llm-guidance-fast-repair.json" >> "$GITHUB_ENV"
-              external_imported=true
-              echo "FIELD_PROVIDER_FAST_REPAIR_EXTERNAL_LLM_GUIDANCE imported=true commit=$guidance_commit"
+                 --guidance-commit "$guidance_commit" \
+                 --negative-memory automation/brain-repair-memory.json; then
+              external_count="$(python -c 'import json; d=json.load(open("'"$RUNNER_TEMP"'/external-brain-llm-guidance-fast-repair.json")); print(int(d.get("providerCount") or 0))')"
+              if [ "$external_count" -gt 0 ]; then
+                echo "NIAKVIO_BRAIN_LLM_GUIDANCE=$RUNNER_TEMP/external-brain-llm-guidance-fast-repair.json" >> "$GITHUB_ENV"
+                external_imported=true
+                echo "FIELD_PROVIDER_FAST_REPAIR_EXTERNAL_LLM_GUIDANCE imported=true providers=$external_count commit=$guidance_commit"
+              else
+                echo "FIELD_PROVIDER_FAST_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=empty-after-negative-memory-filter"
+              fi
             else
               echo "FIELD_PROVIDER_FAST_REPAIR_EXTERNAL_LLM_GUIDANCE imported=false reason=provider-byte-drift-or-safety-gate"
             fi
@@ -304,12 +310,12 @@ jobs:
           Explicit trigger for isolated Brain strategy learning after Fast Repair.
           last_repair_run: ${GITHUB_RUN_ID}
           source_sha: ${GITHUB_SHA}
-          budget_minutes: 20
+          budget_minutes: 12
           reason: fast-brain-strategy-exhaustion
           expected_scope: current-fast-repair-handoff-only
           publication_policy: proposal-only-until-current-byte-playback-identity-and-non-regression-proof
           EOF
-            echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_ARM current=${learn_handoff_count} budget_minutes=20"
+            echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_ARM current=${learn_handoff_count} budget_minutes=12"
           }
           dispatch_learning() {
             if [ "${learn_handoff_count:-0}" -le 0 ]; then
@@ -320,9 +326,9 @@ jobs:
               --repo "$GITHUB_REPOSITORY" \
               --ref main \
               -f publish_proposal=false \
-              -f slot_remaining_minutes=20 \
+              -f slot_remaining_minutes=12 \
               -f slot_phase=1
-            echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_DISPATCH current=${learn_handoff_count} budget_minutes=20"
+            echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_DISPATCH current=${learn_handoff_count} budget_minutes=12"
           }
           git fetch --quiet origin main
           remote_main="$(git rev-parse origin/main)"
