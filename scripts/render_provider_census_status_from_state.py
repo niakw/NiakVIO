@@ -154,7 +154,7 @@ def render(state: dict[str, Any]) -> str:
             + str(len(attempt.get("candidateProviders") or []))
             + "** · validated **"
             + str(len(attempt.get("validatedProviders") or []))
-            + "** · deferred to scheduled Learning **"
+            + "** · Learning debt recorded **"
             + str(len(attempt.get("deferredToLearningSlotProviders") or []))
             + "** · result **"
             + str(attempt.get("noProgressReason") or ("validated" if attempt.get("publicationAllowed") is True else "no validated publication"))
