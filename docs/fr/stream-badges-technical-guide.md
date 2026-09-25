@@ -154,6 +154,38 @@ Ordres de grandeur indicatifs :
 
 Ce ne sont pas des seuils de qualité. 6 Mbps en AVC et 6 Mbps en AV1 ne sont pas équivalents : source, codec, réglages encodeur, grain et mouvement comptent.
 
+## Support physique vs livraison numérique
+
+« Numérique » recouvre plusieurs réalités très différentes : streaming par abonnement, achat numérique lié à une plateforme et fichier numérique local acquis légalement ne sont pas équivalents. De même, **le support physique n'est pas automatiquement meilleur**, mais le Blu-ray et surtout l'UHD Blu-ray disposent souvent d'avantages techniques et pratiques importants.
+
+| Critère | Blu-ray / UHD Blu-ray | Streaming / plateforme | Fichier numérique local acquis légalement |
+| --- | --- | --- | --- |
+| Bitrate vidéo | 🏆 Généralement beaucoup plus de marge | 🟡 Généralement plus compressé pour limiter la bande passante | 🟢 à 🏆 Dépend entièrement du fichier et de sa source |
+| Audio | 🏆 Souvent lossless ou à très haut débit (TrueHD, DTS-HD MA, LPCM) | 🟡 Souvent compressé avec pertes, même lorsque des métadonnées Atmos sont présentes | 🟢 à 🏆 Dépend des pistes incluses |
+| Stabilité de l'image | 🏆 Encode fixe ; pas de baisse adaptative liée au réseau | 🟡 Le bitrate adaptatif peut varier selon connexion, appareil et politique du service | 🏆 Fichier local fixe |
+| Dépendance au réseau | 🏆 Aucune pour une lecture normale du disque | 🔴 Dépend du service et de la connexion | 🏆 Aucune une fois le fichier autorisé disponible localement |
+| Dépendance au catalogue/service | 🏆 L'exemplaire physique reste en possession de l'utilisateur | 🟠 L'accès peut dépendre du compte, du catalogue, du territoire et des conditions du service | 🟢 Dépend du DRM, de la licence et du format |
+| Bonus / pistes alternatives | 🟢 Souvent riches : commentaires, pistes lossless, montages alternatifs, suppléments | 🟡 Très variable selon les services | 🟢 Dépend de l'édition et du fichier |
+| Praticité | 🟡 Nécessite le disque et un matériel compatible | 🏆 Accès immédiat sur plusieurs appareils | 🟢 Très pratique une fois configuré |
+| Contrôle pratique à long terme | 🏆 Fort : l'utilisateur conserve son exemplaire physique | 🟠 Généralement plus dépendant d'une plateforme tierce | 🟢 à 🏆 Fort pour un fichier autorisé sans DRM ; sinon dépendant de la licence |
+
+### Pourquoi le physique peut être meilleur en image et en son
+
+L'avantage principal n'est généralement **pas la résolution seule**. Un UHD Blu-ray et un service de streaming peuvent tous deux afficher `4K`, `HEVC`, `HDR10` ou `Dolby Vision`, alors que le disque peut conserver nettement plus de données vidéo et subir une compression moins agressive. Les éditions physiques proposent aussi fréquemment des pistes audio lossless que les services de streaming remplacent par des alternatives à débit plus faible.
+
+C'est pourquoi un **Blu-ray 1080p bien masterisé peut parfois paraître plus propre qu'un flux 4K très compressé**, et pourquoi deux éditions possédant les mêmes badges de résolution/HDR peuvent malgré tout avoir un rendu différent.
+
+Le support physique n'est pas infaillible : mauvais master, filtrage excessif, encode médiocre ou authoring raté peuvent rendre un disque inférieur à un meilleur master numérique. Les badges décrivent des faits techniques, pas un gagnant automatique.
+
+### Propriété, possession et accès autorisé
+
+Acheter un disque physique donne normalement à l'acheteur la possession et le contrôle pratique de **cet exemplaire** ; cela ne transfère pas les droits d'auteur ou autres droits de propriété intellectuelle sur l'œuvre elle-même. Un « achat » numérique, une location ou un abonnement peuvent donner des formes différentes d'accès sous licence, souvent dépendantes d'une plateforme, d'un compte, d'un territoire, d'un DRM et de conditions de service.
+
+Pour une vidéothèque, le physique possède donc un avantage pratique important : l'exemplaire ne disparaît normalement pas parce qu'un catalogue de streaming change, qu'un compte ferme ou qu'un accord de licence entre une plateforme et un ayant droit expire. Les droits précis de revente, prêt, copie privée ou contournement de mesures techniques dépendent de la juridiction et sortent du cadre de ce guide technique.
+
+> [!CAUTION]
+> **NiakVIO ne transforme jamais une disponibilité technique en autorisation de regarder une œuvre.** Le projet n'héberge aucun contenu audiovisuel et n'accorde aucun droit sur les médias ou services tiers. NiakVIO doit être utilisé uniquement avec des contenus que l'utilisateur **possède, contrôle, a créés, pour lesquels il dispose d'une licence ou auxquels il est autrement autorisé à accéder**. Rien dans NiakVIO n'autorise le contournement d'une authentification, d'un paywall, d'un chiffrement, d'un DRM ou d'un autre contrôle d'accès. Chaque utilisateur reste responsable du respect de la loi applicable, des conditions des services et des droits des tiers. Voir [`DISCLAIMER.md`](../../DISCLAIMER.md) et [`TESTING_NOTICE.md`](../../TESTING_NOTICE.md).
+
 ## Audio : codec, technologie, canaux et fréquence
 
 NiakVIO garde ces faits séparés.
