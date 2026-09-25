@@ -27,6 +27,7 @@ MASTER = """#EXTM3U
 720.m3u8
 """
 MEDIA = """#EXTM3U
+#EXT-X-MEDIA-SEQUENCE:1
 #EXT-X-TARGETDURATION:10
 #EXTINF:10.0,
 seg.ts
@@ -57,7 +58,7 @@ if(mode==='browser'||mode==='native'){
   globalThis.fetch=async(url)=>{
     url=String(url);
     if(url.endsWith('/master.m3u8'))return textResponse(url,master);
-    if(url.endsWith('/720.m3u8')||url.endsWith('/720.m3u8')||url.endsWith('/audio-ko.m3u8')||url.endsWith('/sub-fr.m3u8'))return textResponse(url,media);
+    if(url.endsWith('/540.m3u8')||url.endsWith('/720.m3u8')||url.endsWith('/audio-ko.m3u8')||url.endsWith('/sub-fr.m3u8'))return textResponse(url,media);
     if(url.endsWith('/seg.ts'))return tsResponse(url);
     throw new Error('unexpected fetch '+url);
   };
@@ -104,6 +105,7 @@ with tempfile.TemporaryDirectory() as tmp:
 
     facts_provider = root / "facts.cjs"
     facts_provider.write_text(generated({
+        "inspect_master_facts": True,
         "probe_first_segment_native": True,
         "native_probe_max_rows": 2,
         "native_probe_timeout_ms": 1200,
