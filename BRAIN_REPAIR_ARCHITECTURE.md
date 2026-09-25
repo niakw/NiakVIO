@@ -456,3 +456,16 @@ The repairer is considered operationally validated only after all of the followi
   fingerprint without routing that replay through Learning first.
 
 Until those runtime proofs exist, code-level architecture may be complete while provider repair remains **not yet fully validated**.
+
+## FORCE ownership versus Learning slot
+
+`mode=force` is the operator-owned recovery lane for providers that remain unresolved after ordinary Repair. Its contract is deliberately different from Learning:
+
+- FORCE first evaluates current sanitized Brain-LLM provider-local mutations in isolated sandboxes.
+- A mutation may be applied automatically only after current-byte improvement, identity/playback validation and the normal non-regression/publication gates.
+- A FORCE execution must not dispatch `brain-learning-lab.yml` for its unresolved cohort. The unresolved debt may be persisted for later analysis, but ownership of the current execution remains FORCE.
+- If a bounded FORCE run must resume because providers were not visited, the continuation remains `mode=force`.
+- Learning remains an independent scheduled/manual research slot. It may consume persisted debt, evolve hypotheses and open reviewable PRs, but it does not directly apply provider fixes to production.
+
+This separation prevents a FORCE request from silently degrading into proposal-only Learning while preserving Learning as the long-horizon hypothesis/evolution lane.
+
