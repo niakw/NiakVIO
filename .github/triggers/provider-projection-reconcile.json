@@ -1,14 +1,17 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-25T09:06:00+02:00",
-  "reason": "rematerialize shared Core stream presentation v28 after quality/disc-source expansion",
-  "target": "all drifted active providers",
+  "requestedAt": "2026-09-25T09:51:00+02:00",
+  "reason": "publish validated multiflux preservation for StreamZo and PapaDuStream",
+  "providerScope": [
+    "streamzo",
+    "papadustream"
+  ],
   "expectedChecks": [
-    "publication fingerprint v4 detects shared Core v28 drift automatically",
-    "rebuild only drifted providers",
-    "Kehflix published bytes contain technical-badges-v28",
-    "Kehflix proven 1080p/1080i/4K/8K quality appears in title",
-    "Kehflix Unknown/Inconnue/N/A/Auto quality never appears as a title suffix",
-    "HLS badge remains present for proven m3u8 delivery"
+    "projection detector selects only streamzo and papadustream",
+    "StreamZo preserves distinct movie and episodic player embeds up to sanitizer ceiling",
+    "StreamZo same-language Lecteur 1/2/3 remain distinct until exact final-URL dedupe",
+    "PapaDuStream preserves up to eight distinct player resolutions/hosts with source labels",
+    "Purstream runtime bytes remain unchanged; its generic sources[] multiflux is regression-tested only",
+    "media-type pre-network gate and no-duplicate-load architecture remain unchanged"
   ]
 }
