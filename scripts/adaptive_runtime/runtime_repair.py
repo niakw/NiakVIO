@@ -19,6 +19,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 from brain_positive_program_memory import (
+    provider_program_fingerprint as positive_program_fingerprint,
     provider_request_recipes as positive_program_request_recipes,
     provider_routes as positive_program_routes,
     provider_user_agent as positive_program_user_agent,
@@ -1134,6 +1135,10 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     strategy = str(capability.get("strategy") or patch.get("capability") or "unknown").strip().casefold()
     census_focus = _census_runtime_focus(provider_id)
     brain_plan = candidate.get("brain_repair_plan") if isinstance(candidate.get("brain_repair_plan"), dict) else {}
+    expected_positive_program_fingerprint = str(
+        brain_plan.get("positiveProgramFingerprint") or ""
+    ).strip().casefold()
+    current_positive_program_fingerprint = positive_program_fingerprint(provider_id)
     experiment_variant = max(0, min(int(brain_plan.get("experimentVariant") or 0), 4))
     experiment_generation = max(1, int(brain_plan.get("experimentGeneration") or 1))
     experiment_failure = str(brain_plan.get("failureClass") or "").strip()
@@ -1207,6 +1212,15 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             experiment_generation,
         )
     )
+    strict_positive_replay = new_strategy_id == "provider_positive_program_replay_v1"
+    if strict_positive_replay and (
+        not expected_positive_program_fingerprint
+        or expected_positive_program_fingerprint != current_positive_program_fingerprint
+    ):
+        # A replay is valid only for the exact positive-program set selected by
+        # the planner. Memory drift must fail closed rather than silently
+        # executing a different historical program under the old fingerprint.
+        return None
     if experiment_variant == 4 and experiment_failure in {"candidate_replay_gap", "media_extraction_gap"}:
         # Production g2 stays conservative and prioritizes current/provider-owned
         # terminal evidence. Learning g3+ deliberately fuses peer recipes again:
@@ -1362,7 +1376,28 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
     # bounded g2..g5 family is exhausted.
     second_order_role_preferences: list[str] | None = None
     transition_prefixes: list[str] = []
-    if new_strategy_id == "route_transition_graph_v1":
+    if new_strategy_id == "provider_positive_program_replay_v1":
+        # This is an exact same-provider replay, not a generic recovery wave.
+        # Do not mix peer/generic routes or recipes into the same bounded
+        # experiment: the selected positive-program fingerprint owns the trial.
+        positive_routes = _unique_routes(positive_program_routes(provider_id), limit=64)
+        search_paths = [
+            route for route in positive_routes
+            if _route_role(route) == "search"
+        ][:24]
+        direct_paths = [
+            route for route in positive_routes
+            if _route_role(route) != "search"
+        ][:32]
+        request_recipes = _unique_request_recipes(
+            positive_request_recipes,
+            limit=32,
+        )
+        transition_prefixes = _owned_transition_prefixes(direct_paths)
+        second_order_role_preferences = [
+            "player", "source", "api", "episode", "detail", "other", "search"
+        ]
+    elif new_strategy_id == "route_transition_graph_v1":
         search_paths = _unique_routes(configured_search, learned_search, limit=12)
         direct_paths = _unique_routes(
             learned_direct,
@@ -1590,15 +1625,23 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
         if str(recipe.get("origin") or "").startswith(("http://", "https://"))
     ]
     fixed_endpoint = patch.get("fixed_endpoint") if isinstance(patch.get("fixed_endpoint"), dict) else {}
-    origin_inputs = [
-        base_url,
-        patch.get("official_site"),
-        patch.get("official_api"),
-        fixed_endpoint.get("api"),
-        *observed,
-        *network_hints["bases"],
-        *recipe_origins,
-    ]
+    origin_inputs = (
+        [
+            base_url,
+            patch.get("official_site"),
+            *recipe_origins,
+        ]
+        if strict_positive_replay
+        else [
+            base_url,
+            patch.get("official_site"),
+            patch.get("official_api"),
+            fixed_endpoint.get("api"),
+            *observed,
+            *network_hints["bases"],
+            *recipe_origins,
+        ]
+    )
     for raw in origin_inputs:
         peer = _origin(raw)
         if not peer:
@@ -1721,6 +1764,10 @@ def _adaptive_runtime_options(candidate: dict[str, Any], config: dict[str, Any])
             else "learned-family-new-strategy"
         ),
         "new_strategy_id": new_strategy_id,
+        "positive_program_replay": strict_positive_replay,
+        "positive_program_fingerprint": (
+            expected_positive_program_fingerprint if strict_positive_replay else ""
+        ),
         "alias_search": alias_search,
         "llm_experiment_fingerprint": llm_experiment_fingerprint,
         "llm_experiment_applied": bool(llm_experiment and llm_experiment_fingerprint),
