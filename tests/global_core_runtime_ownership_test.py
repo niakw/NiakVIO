@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Global runtime/client adaptations must stay Core-owned across all 96 bundles."""
+"""Global runtime/client adaptations must stay Core-owned across the dynamic active provider scope."""
 from __future__ import annotations
 
 import json
@@ -16,18 +16,21 @@ APPLY = (ROOT / "scripts/apply_provider_overrides.py").read_text(encoding="utf-8
 RUNTIME = (ROOT / "scripts/provider_patches/global_runtime_compat_v1.py").read_text(encoding="utf-8")
 DESKTOP = (ROOT / "scripts/provider_patches/desktop_runtime_compat_v1.py").read_text(encoding="utf-8")
 SANITIZER_BASE = (ROOT / "scripts/provider_patches/stream_output_sanitizer.py").read_text(encoding="utf-8")
-SANITIZER_V8 = (ROOT / "scripts/provider_patches/stream_output_sanitizer_v8.py").read_text(encoding="utf-8")
+SANITIZER_V10 = (ROOT / "scripts/provider_patches/stream_output_sanitizer_v10.py").read_text(encoding="utf-8")
+STREAM_SCORE = (ROOT / "scripts/provider_patches/global_stream_score_v1.py").read_text(encoding="utf-8")
 
 CORE_RUNTIME = "scripts/provider_patches/global_runtime_compat_v1.py"
 CORE_DESKTOP = "scripts/provider_patches/desktop_runtime_compat_v1.py"
-CORE_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v8.py"
+CORE_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v10.py"
+CORE_STREAM_SCORE = "scripts/provider_patches/global_stream_score_v1.py"
 CORE_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 
 # Architecture ownership: these are Core-managed bricks. Provider rows may pass
 # data/options but may never own/materialize them in provider patch_scripts.
 assert 'GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_v1.py"' in APPLY
 assert 'GLOBAL_DESKTOP_RUNTIME_COMPAT = "scripts/provider_patches/desktop_runtime_compat_v1.py"' in APPLY
-assert 'GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v8.py"' in APPLY
+assert 'GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v10.py"' in APPLY
+assert 'GLOBAL_STREAM_SCORE = "scripts/provider_patches/global_stream_score_v1.py"' in APPLY
 assert 'GLOBAL_RUNTIME_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"' in APPLY
 assert "provider_patches.{provider_id}.patch_scripts contains Core-global modules" in APPLY
 
@@ -36,7 +39,7 @@ for provider_id, row in patches.items():
     if not isinstance(row, dict):
         continue
     scripts = [str(value) for value in row.get("patch_scripts") or []]
-    leaked = sorted(set(scripts) & {CORE_RUNTIME, CORE_DESKTOP, CORE_SANITIZER, CORE_MEDIA_SAFETY})
+    leaked = sorted(set(scripts) & {CORE_RUNTIME, CORE_DESKTOP, CORE_SANITIZER, CORE_MEDIA_SAFETY, CORE_STREAM_SCORE})
     assert not leaked, (provider_id, leaked)
 
 # Timers/URL/fetch portability are global Core behavior, never a named provider fix.
@@ -48,14 +51,19 @@ assert 'forbidden = {"domain_replacements", "domain_failover"}' in DESKTOP
 
 # Terminal returned-media rejection is likewise Core-global. HTTP 403/404/410
 # are conclusive invalidity; V8 also converts unknown/opaque ordinary probes to
-# fail-closed rather than leaking them to official clients.
+# fail-closed rather than leaking them to official clients. V10 preserves only
+# bounded terminal-probe network evidence for the outer Stream Score Bloc.
 assert 'status===403||status===404||status===410' in SANITIZER_BASE
-assert 'MANAGED_FIX_ID = "CORE.STREAM_SANITIZER.V6"' in SANITIZER_V8
-assert 'return verdict===true?clearPrivateProofs(item.stream):null;' in SANITIZER_V8
+assert 'MANAGED_FIX_ID = "CORE.STREAM_SANITIZER.V6"' in SANITIZER_V10
+assert "NUVIO_STREAM_OUTPUT_NETWORK_EVIDENCE_V10" in SANITIZER_V10
+assert "__nuvioStreamNetworkEvidenceV1" in SANITIZER_V10
+assert 'MANAGED_FIX_ID = "CORE.STREAM_SCORE.V1"' in STREAM_SCORE
+assert "NUVIO_GLOBAL_STREAM_SCORE_V1" in STREAM_SCORE
+assert '[id].concat(clean)' in STREAM_SCORE
 for forbidden in ("streamflix", "movix", "vidrock", "cineby", "coflix"):
-    assert forbidden not in SANITIZER_V8.casefold(), forbidden
+    assert forbidden not in SANITIZER_V10.casefold(), forbidden
 
-rows = MANIFEST.get("scrapers") or []
+rows = [row for row in (MANIFEST.get("scrapers") or []) if row.get("enabled") is not False]
 assert len(rows) == active_provider_count()
 for row in rows:
     provider_id = str(row.get("id") or "")
@@ -66,11 +74,15 @@ for row in rows:
     assert boundary >= 0, provider_id
     runtime_at = text.find("/* STARTFIX:CORE.RUNTIME_COMPAT.V1 */")
     sanitizer_at = text.find("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */")
+    score_at = text.find("/* STARTFIX:CORE.STREAM_SCORE.V1 */")
     assert runtime_at > boundary, provider_id
     assert sanitizer_at > boundary, provider_id
+    assert score_at > sanitizer_at, provider_id
     assert text.count("/* STARTFIX:CORE.RUNTIME_COMPAT.V1 */") == 1, provider_id
     assert text.count("/* CLOSEFIX:CORE.RUNTIME_COMPAT.V1 */") == 1, provider_id
     assert text.count("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */") == 1, provider_id
     assert text.count("/* CLOSEFIX:CORE.STREAM_SANITIZER.V6 */") == 1, provider_id
+    assert text.count("/* STARTFIX:CORE.STREAM_SCORE.V1 */") == 1, provider_id
+    assert text.count("/* CLOSEFIX:CORE.STREAM_SCORE.V1 */") == 1, provider_id
 
-print("GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers=96 timers=core 403=core sanitizer_v8=strict provider_specific_runtime_hacks=forbidden")
+print(f"GLOBAL_CORE_RUNTIME_OWNERSHIP_OK providers={len(rows)} timers=core 403=core sanitizer_v10=network-evidence stream_score=core provider_specific_runtime_hacks=forbidden")

@@ -185,7 +185,7 @@ Les sources des Blocs communs `CORE.*` sont des **inputs de build** au même tit
 - `.github/workflows/provider-projection-reconcile.yml` ne reconstruit que les providers réellement en dérive, prouve le fixed-point, puis publie atomiquement ;
 - Brain/Repair ne peut jamais publier un provider amputé d'un Bloc commun : toute sortie acceptée repasse par la composition canonique et le fingerprint partagé.
 
-Ainsi, un Repair provider-local ne peut pas « oublier » le garde-fou HLS, la présentation, le sanitizer ou le branding lors d'une nouvelle matérialisation.
+Ainsi, un Repair provider-local ne peut pas « oublier » le garde-fou HLS, la présentation, le sanitizer, le branding ou le **Stream Score** lors d'une nouvelle matérialisation.
 
 Les anciens comptes de plans/quarantaines restent des **snapshots historiques**, jamais une vérité opérationnelle courante.
 
@@ -208,11 +208,13 @@ Le chemin HLS commun est volontairement séparé en Blocs :
 2. sur runtime natif, son probe borné peut lire le master/variant via le bridge officiel sans dépendre d'un fetch navigateur ;
 3. un VOD fini ou un faux media playlist statique dont la durée est anormalement courte est rejeté avant exposition au player — le contrat couvre explicitement le cas d'un placeholder d'environ **4,5 s** ;
 4. un master HLS exploitable enrichit le stream avec les faits prouvés : `RESOLUTION`, `AVERAGE-BANDWIDTH/BANDWIDTH`, `CODECS`, `FRAME-RATE`, `VIDEO-RANGE`, audio `LANGUAGE/CHANNELS` et sous-titres ;
-5. **Stream Presentation** transforme ensuite ces faits en qualité/titre, description technique et `badgeIds`.
+5. **Stream Presentation** transforme ensuite ces faits en qualité/titre, description technique et `badgeIds` ;
+6. le **sanitizer terminal v10** conserve une preuve réseau bornée issue du probe réellement exécuté ;
+7. **Stream Score**, Bloc Core externe final, combine les faits média et cette preuve réseau, supprime les données privées de probe puis préfixe au besoin un unique badge `S+`…`E` en tête de `badgeIds`.
 
 Exemple contractuel : `RESOLUTION=1440x720` doit produire **720p**, et un placeholder `Inconnue/Unknown/N/A/Auto` ne doit jamais devenir un suffixe visible. Un flux HLS sans résolution prouvée garde le nom du provider et peut afficher seulement les faits certains, par exemple `HLS`.
 
-Le catalogue StreamBadge public actuel est **v4** : les quatre snapshots Fusion/Dark/Light/Transparent sont versionnés ensemble et restent immuables après publication.
+Le catalogue StreamBadge public actuel est **v7** : les quatre snapshots Fusion/Dark/Light/Transparent sont versionnés ensemble et restent immuables après publication. Les huit badges Stream Score sont placés en premier dans l’ordre public. Les versions antérieures restent disponibles pour compatibilité.
 
 ### Finalisation d’une release acceptée
 
@@ -222,7 +224,7 @@ Contrat :
 
 - en lancement manuel, l’entrée obligatoire est `expected_sha` ; sur push de son trigger permanent, le SHA d’événement joue le même rôle ;
 - le checkout doit correspondre exactement au SHA accepté et une baseline de génération de release est exportée avant toute mutation ;
-- les patches providers durables sont réappliqués sur les **46 providers courants**, puis le minimizer NiakVIO est amené à son fixed-point et vérifié ; les projections de manifests sont reconstruites et les générations non référencées sont prunées ;
+- les patches providers durables sont réappliqués sur le **scope actif courant dérivé dynamiquement** (`current_provider_scope.py`) — 42 actifs lors de la publication Stream Score, tandis que le census suivait alors 46 providers dont 4 désactivés — puis le minimizer NiakVIO est amené à son fixed-point et vérifié ; les projections de manifests sont reconstruites et les générations non référencées sont prunées ;
 - les versions provider/manifest/cache/release ne sont synchronisées qu’après stabilisation de cette génération exacte ;
 - le transport Hub-46 épinglé, les hashes et l’intégrité de release sont ensuite reconstruits et validés ;
 - les commits de génération et de pinning sont préparés localement, puis publiés atomiquement uniquement si `origin/main` pointe toujours sur le SHA de base accepté ; tout mouvement concurrent de `main` fait échouer la transaction ;
@@ -350,6 +352,7 @@ Voir [`SECURITY.md`](SECURITY.md).
 19. Toute modification d'un Bloc Core partagé invalide les publications qui embarquent l'ancienne révision et doit passer par Projection Reconcile/fixed-point.
 20. Un HLS court/placeholder prouvé ne doit jamais être exposé comme stream jouable.
 21. Une qualité inconnue ne doit jamais apparaître dans le titre ; seule la meilleure qualité réellement prouvée peut suffixer le nom provider.
+22. Stream Score est Core-global, provider-agnostic et evidence-gated : aucun grade sans preuve réseau suffisante ; le badge de score, lorsqu’il existe, reste le premier badge visible.
 
 ## Références
 
