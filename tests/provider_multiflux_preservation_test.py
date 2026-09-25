@@ -89,7 +89,7 @@ global.fetch=async function(url){
  url=String(url);
  if(url.includes("/search/Example%20Movie/"))return response(url,'<a href="/movie/example-movie">Example Movie</a>');
  if(url.includes("/movie/example-movie"))return response(url,
-   '"link":"https://filemoon.test/e/1" "link":"https://vidzy.test/e/2" "link":"https://uqload.test/e/3" '+
+   '<h1>Example Movie</h1> "link":"https://filemoon.test/e/1" "link":"https://vidzy.test/e/2" "link":"https://uqload.test/e/3" '+
    '"link":"https://doply.test/e/4" "link":"https://sandratableother.test/e/5" "link":"https://multiup.test/e/6"');
  throw new Error("unexpected "+url);
 };
