@@ -184,11 +184,63 @@ llm_profiles=runtime.matching_profiles(
 )
 assert "proven_route_terminal_traversal_v1" in llm_profiles,llm_profiles
 
-positive_replay=runtime._adaptive_runtime_options(
-    candidate("provider_positive_program_replay_v1","chain_terminal_gap"),
-    config,
-)
-assert positive_replay,positive_replay
-assert positive_replay["new_strategy_id"]=="provider_positive_program_replay_v1",positive_replay
+old_positive_routes=runtime.positive_program_routes
+old_positive_recipes=runtime.positive_program_request_recipes
+old_positive_user_agent=runtime.positive_program_user_agent
+old_positive_fingerprint=runtime.positive_program_fingerprint
+try:
+    runtime.positive_program_routes=lambda provider_id:[
+        "/search.php?q={query}",
+        "/api/file/{id}",
+    ]
+    runtime.positive_program_request_recipes=lambda provider_id:[{
+        "route":"/search.php?q={query}",
+        "origin":"https://provider.example",
+        "role":"search",
+        "method":"GET",
+        "bodyKind":"none",
+        "body":{},
+        "headerNames":["accept","user-agent"],
+        "response":"html-or-text",
+        "semanticType":"anime",
+        "streamProof":False,
+        "requiredBindings":[],
+        "executable":True,
+        "source":"positive-program-memory",
+    }]
+    runtime.positive_program_user_agent=lambda provider_id:"Positive-Replay-Test/1.0"
+    runtime.positive_program_fingerprint=lambda provider_id:"f"*64
+
+    positive_candidate=candidate(
+        "provider_positive_program_replay_v1",
+        "chain_terminal_gap",
+    )
+    positive_candidate["brain_repair_plan"]["positiveProgramFingerprint"]="f"*64
+    positive_replay=runtime._adaptive_runtime_options(
+        positive_candidate,
+        config,
+    )
+    assert positive_replay,positive_replay
+    assert positive_replay["new_strategy_id"]=="provider_positive_program_replay_v1",positive_replay
+    assert positive_replay["positive_program_replay"] is True,positive_replay
+    assert positive_replay["positive_program_fingerprint"]=="f"*64,positive_replay
+    assert positive_replay["search_paths"]==["/search.php?q={query}"],positive_replay
+    assert positive_replay["direct_paths"]==["/api/file/{id}"],positive_replay
+    assert len(positive_replay["request_recipes"])==1,positive_replay
+    assert positive_replay["request_recipes"][0]["source"]=="positive-program-memory",positive_replay
+    assert "/film/{slug}" not in positive_replay["direct_paths"],positive_replay
+    assert "/api/search?q={query}" not in positive_replay["search_paths"],positive_replay
+
+    stale_candidate=candidate(
+        "provider_positive_program_replay_v1",
+        "chain_terminal_gap",
+    )
+    stale_candidate["brain_repair_plan"]["positiveProgramFingerprint"]="e"*64
+    assert runtime._adaptive_runtime_options(stale_candidate,config) is None
+finally:
+    runtime.positive_program_routes=old_positive_routes
+    runtime.positive_program_request_recipes=old_positive_recipes
+    runtime.positive_program_user_agent=old_positive_user_agent
+    runtime.positive_program_fingerprint=old_positive_fingerprint
 
 print("Brain second-order runtime strategy contract passed")
