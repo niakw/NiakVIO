@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import subprocess
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -98,5 +101,34 @@ mode, providers, reasons = mod.classify(
 )
 assert mode == "all" and providers == [], (mode, providers)
 assert reasons == ["global-prefix:provider-bases/demo--base--deadbeef.js"], reasons
+
+# Brain-LLM guidance must compare committed provider state, not transient
+# sandbox mutations in the current checkout. Reproduce that exact failure mode
+# by dirtying provider-overrides.json while base=head=HEAD.
+overrides_path = ROOT / "provider-overrides.json"
+original = overrides_path.read_text(encoding="utf-8")
+try:
+    dirty = json.loads(original)
+    dirty["_transient_learning_test"] = {"sandboxOnly": True}
+    overrides_path.write_text(json.dumps(dirty, indent=2) + "\n", encoding="utf-8")
+    with tempfile.TemporaryDirectory(prefix="provider-scope-committed-") as td:
+        out = Path(td) / "scope.json"
+        subprocess.run(
+            [
+                "python3", str(SCRIPT),
+                "--base", "HEAD",
+                "--head", "HEAD",
+                "--committed-only",
+                "--output", str(out),
+            ],
+            cwd=ROOT,
+            check=True,
+        )
+        payload = json.loads(out.read_text(encoding="utf-8"))
+        assert payload["mode"] == "none", payload
+        assert payload["changedPaths"] == [], payload
+        assert payload["committedOnly"] is True, payload
+finally:
+    overrides_path.write_text(original, encoding="utf-8")
 
 print("Provider census incremental materialization scope tests passed")
