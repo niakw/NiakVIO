@@ -142,6 +142,24 @@ def render(state: dict[str, Any]) -> str:
 
     residential = state.get("residentialExitNodeEvidence") if isinstance(state.get("residentialExitNodeEvidence"), dict) else {}
     residential_notice = ""
+    attempt = state.get("lastRepairAttempt") if isinstance(state.get("lastRepairAttempt"), dict) else {}
+    attempt_notice = ""
+    if attempt:
+        attempt_notice = (
+            "Latest Repair/FORCE attempt: **run "
+            + str(attempt.get("runId") or "unknown")
+            + "** · selected **"
+            + str(len(attempt.get("selectedProviders") or []))
+            + "** · candidates **"
+            + str(len(attempt.get("candidateProviders") or []))
+            + "** · validated **"
+            + str(len(attempt.get("validatedProviders") or []))
+            + "** · deferred to scheduled Learning **"
+            + str(len(attempt.get("deferredToLearningSlotProviders") or []))
+            + "** · result **"
+            + str(attempt.get("noProgressReason") or ("validated" if attempt.get("publicationAllowed") is True else "no validated publication"))
+            + "**."
+        )
     if residential.get("enabled") is True:
         if residential.get("available") is True:
             residential_notice = "Residential harness: **available** · private exit compared where matched."
@@ -155,6 +173,7 @@ def render(state: dict[str, Any]) -> str:
         "",
         "Latest provider census state: **" + " · ".join(count_parts) + f"** across **{len(providers)} providers**.",
         evidence_line + ".",
+        *([attempt_notice] if attempt_notice else []),
         f"Symptomatic providers: **{len(state.get('symptomaticProviders') or [])}** · automated repair queue: **{len(state.get('repairQueue') or [])}** · lifecycle disabled: **{len(state.get('lifecycleDisabledQueue') or [])}** · authority rediscovery: **{len(state.get('authorityRediscoveryQueue') or [])}** · harness mismatch: **{len(harness_mismatch_queue)}** · client transport gap: **{len(client_transport_gap_queue)}** · environment blocked: **{len(environment_blocked_queue)}**.",
         *([residential_notice] if residential_notice else []),
         "",
