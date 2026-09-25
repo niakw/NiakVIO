@@ -80,6 +80,7 @@ jobs:
           python tests/provider_retest_scope_test.py
           python tests/provider_remat_test_separation_test.py
           python tests/provider_repair_learn_handoff_v1_test.py
+          python tests/provider_learning_dispatch_gate_test.py
           python tests/brain_historical_solution_execution_test.py
           python tests/brain_cross_phase_experiment_memory_test.py
           python tests/brain_learning_queue_experiment_ledger_test.py
@@ -292,43 +293,55 @@ jobs:
           PY
           )"
           publish="${{ steps.repair.outputs.publish }}"
-          learn_handoff_count="$(python - <<'PY'
+          read -r learn_handoff_count learn_handoff_csv < <(python - <<'PY'
           import json
           from pathlib import Path
           p=Path('automation/provider-fast-repair-summary.json')
           d=json.loads(p.read_text()) if p.exists() else {}
-          print(len([x for x in d.get('learnHandoffProviders') or [] if str(x or '').strip()]))
+          rows=sorted({
+              str(x or '').strip().lower().replace('_','-')
+              for x in d.get('learnHandoffProviders') or []
+              if str(x or '').strip()
+          })
+          print(len(rows), ','.join(rows))
           PY
-          )"
-          arm_learning_trigger() {
-            if [ "${learn_handoff_count:-0}" -le 0 ]; then
-              echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_ARM skipped=true current=0"
-              return 0
-            fi
-            mkdir -p .github/triggers
-            cat > .github/triggers/brain-learning-reconstruction <<EOF
-          Explicit trigger for isolated Brain strategy learning after Fast Repair.
-          last_repair_run: ${GITHUB_RUN_ID}
-          source_sha: ${GITHUB_SHA}
-          budget_minutes: 12
-          reason: fast-brain-strategy-exhaustion
-          expected_scope: current-fast-repair-handoff-only
-          publication_policy: proposal-only-until-current-byte-playback-identity-and-non-regression-proof
-          EOF
-            echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_ARM current=${learn_handoff_count} budget_minutes=12"
-          }
+          )
+          learning_count=0
+          learning_provider_csv=""
+          dispatch_selection="$RUNNER_TEMP/provider-learning-dispatch-selection.json"
+          if [ "${learn_handoff_count:-0}" -gt 0 ]; then
+            python scripts/provider_learning_dispatch_gate.py select \
+              --brain automation/provider-brain-repair-latest.json \
+              --ledger automation/provider-learning-dispatch-ledger.json \
+              --providers "$learn_handoff_csv" \
+              --output "$dispatch_selection"
+            learning_count="$(python -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); print(int(d.get("eligibleProviderCount") or 0))' "$dispatch_selection")"
+            learning_provider_csv="$(python -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); print(d.get("providerFilter") or "")' "$dispatch_selection")"
+          fi
           dispatch_learning() {
-            if [ "${learn_handoff_count:-0}" -le 0 ]; then
-              echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_DISPATCH skipped=true current=0"
+            if [ "${learning_count:-0}" -le 0 ]; then
+              echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_DISPATCH skipped=true handoff=${learn_handoff_count:-0} reason=no-new-causal-fingerprint"
               return 0
             fi
+            test -n "$learning_provider_csv" || { echo "Learning gate returned empty provider filter" >&2; exit 1; }
             gh workflow run brain-learning-lab.yml \
               --repo "$GITHUB_REPOSITORY" \
               --ref main \
               -f publish_proposal=false \
+              -f target_providers="$learning_provider_csv" \
               -f slot_remaining_minutes=12 \
               -f slot_phase=1
-            echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_DISPATCH current=${learn_handoff_count} budget_minutes=12"
+            echo "FIELD_PROVIDER_FAST_REPAIR_LEARN_DISPATCH eligible=$learning_count providers=$learning_provider_csv budget_minutes=12"
+            python scripts/provider_learning_dispatch_gate.py mark \
+              --ledger automation/provider-learning-dispatch-ledger.json \
+              --selection "$dispatch_selection" \
+              --repair-run-id "$GITHUB_RUN_ID"
+            git add automation/provider-learning-dispatch-ledger.json
+            if ! git diff --cached --quiet; then
+              git commit -m "data(brain): record Fast causal Learning dispatch from ${GITHUB_RUN_ID}"
+              git pull --rebase origin main
+              git push origin HEAD:main
+            fi
           }
           git fetch --quiet origin main
           remote_main="$(git rev-parse origin/main)"
@@ -342,8 +355,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           if [ "$publish" = "true" ] && [ "$publication_allowed" = "true" ]; then
-            arm_learning_trigger
-            git add               provider-overrides.json               providers               provider-bases               provider-v3-materialization.json               PROVIDER_CENSUS_STATUS.md               automation/provider-fast-repair-summary.json               automation/provider-repair-learn-handoff-v1.json               automation/provider-brain-repair-latest.json               .github/triggers/brain-learning-reconstruction               automation/brain-repair-experience.json               automation/brain-repair-memory.json               automation/brain-positive-program-memory.json               automation/provider-retest-latest.json               automation/provider-retest-targets-latest.json               automation/provider-census-status.json               automation/provider-census-proof-history.json               automation/provider-repair-batch-plan-latest.json               automation/provider-v3-static-knowledge.json               provider-v3-quick-yield.json
+            git add               provider-overrides.json               providers               provider-bases               provider-v3-materialization.json               PROVIDER_CENSUS_STATUS.md               automation/provider-fast-repair-summary.json               automation/provider-repair-learn-handoff-v1.json               automation/provider-brain-repair-latest.json               automation/brain-repair-experience.json               automation/brain-repair-memory.json               automation/brain-positive-program-memory.json               automation/provider-retest-latest.json               automation/provider-retest-targets-latest.json               automation/provider-census-status.json               automation/provider-census-proof-history.json               automation/provider-repair-batch-plan-latest.json               automation/provider-v3-static-knowledge.json               provider-v3-quick-yield.json
             if git diff --cached --quiet; then
               echo "Validated repair already current"
             else
@@ -365,8 +377,7 @@ jobs:
             do
               [ ! -f "$tmp/$f" ] || { mkdir -p "$(dirname "$f")"; cp "$tmp/$f" "$f"; }
             done
-            arm_learning_trigger
-            git add PROVIDER_CENSUS_STATUS.md automation .github/triggers/brain-learning-reconstruction
+            git add PROVIDER_CENSUS_STATUS.md automation
             if git diff --cached --quiet; then
               echo "Brain evidence already current"
             else
