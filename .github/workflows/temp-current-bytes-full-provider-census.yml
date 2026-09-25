@@ -455,6 +455,14 @@ jobs:
             exit 0
           fi
 
+          # The census may create candidate/rematerialized workspace state while
+          # probing. Projection authority is the immutable published GITHUB_SHA,
+          # not those ephemeral candidate files. Evidence was copied to /tmp above,
+          # so restore the exact tested tree before deciding whether publication
+          # drift is real.
+          git reset --hard "${GITHUB_SHA}"
+          git clean -fd
+
           python scripts/detect_provider_projection_drift.py             --output "$RUNNER_TEMP/provider-projection-drift-at-persist.json"
           projection_drift="$(python - <<'PY'
           import json, os
@@ -470,11 +478,8 @@ jobs:
             exit 0
           fi
 
-          # Rematerialization intentionally mutates the workspace. Evidence publication
-          # must not accidentally publish those candidate bytes or fail because they
-          # are unstaged.
-          git reset --hard "${GITHUB_SHA}"
-          git clean -fd
+          # The exact published tree was already restored before the drift check.
+          # Rehydrate only the saved census evidence onto that clean baseline.
           mkdir -p automation
           cp "/tmp/census-summary-${run_id}.json" "automation/current-bytes-full-provider-census-${run_id}-summary.json"
           cp "/tmp/census-full-${run_id}.json" "automation/current-bytes-full-provider-census-${run_id}.json"

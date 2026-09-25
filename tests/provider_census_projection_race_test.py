@@ -18,7 +18,14 @@ assert "needs.scale.outputs.should_run == 'true'" in census_header
 persist=wf.split("- name: Persist exact census evidence",1)[1]
 assert "scripts/detect_provider_projection_drift.py" in persist
 assert "FIELD_CURRENT_BYTES_CENSUS_DEFERRED reason=unpublished-provider-projection" in persist
-assert persist.index("FIELD_CURRENT_BYTES_CENSUS_DEFERRED") < persist.index("git reset --hard")
+# Census probing may mutate candidate workspace files. The publication race
+# guard must evaluate the immutable GITHUB_SHA, not those ephemeral candidates.
+reset_at=persist.index('git reset --hard "${GITHUB_SHA}"')
+clean_at=persist.index("git clean -fd", reset_at)
+detect_at=persist.index("scripts/detect_provider_projection_drift.py")
+defer_at=persist.index("FIELD_CURRENT_BYTES_CENSUS_DEFERRED")
+assert reset_at < clean_at < detect_at < defer_at
+assert persist.count('git reset --hard "${GITHUB_SHA}"') == 1
 assert "gh workflow run provider-projection-reconcile.yml" in persist
 
 print("current-byte census projection race guard passed")
