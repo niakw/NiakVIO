@@ -1,10 +1,10 @@
 {
   "schemaVersion": 6,
-  "requestedAt": "2026-09-25T12:22:00+02:00",
+  "requestedAt": "2026-09-25T12:34:00+02:00",
   "retry": 153,
   "mode": "force",
   "directApplyValidated": true,
-  "scope": "one-shot-post-pipeline-clean-14-provider-cohort",
+  "scope": "one-shot-post-green-preflight-14-provider-cohort",
   "targetProviders": [
     "4khdhub",
     "allanime",
@@ -21,13 +21,14 @@
     "vidfast",
     "yflix"
   ],
-  "goal": "One-shot Force after fixing the preflight NameError, invalid targeted-recovery workflow, provider-neutral targeted-recovery waste, and Repair self-resume loop. Consume the current 14-provider Brain-LLM guidance with zero negative-memory collisions. Apply provider-local corrections only after canonical Repair plus playable/identity/non-regression proof; persist census. Do not self-resume Repair when no provider is unvisited.",
+  "goal": "Final one-shot Force after full green preflight: Workflow Gate, Verify/Publish, Non-Regression, targeted recovery neutral-skip. Consume fresh 14-provider Brain-LLM guidance with zero negative-memory collisions. Apply provider-local corrections only after canonical Repair and playable/identity/non-regression proof. Persist census. Never self-resume Repair when unvisited=0.",
   "branch": "main",
   "publication": true,
   "sourceRef": "ce559d7129883062abea0c05067b9cc6159cfd11",
   "sourceCensusRun": "36120999320-retest",
   "brainLlmGuidanceSha": "9bf5fe72e917b5ac57bb6b95ba64402b459fe180",
   "branchPolicy": "main-plus-brain-learning-proposals-only",
-  "rerunReason": "same retry id; pipeline faults removed; no blind retry increment",
-  "attemptPolicy": "one-shot-no-repair-self-loop"
+  "rerunReason": "same retry id 153; all pipeline/preflight faults removed and validated",
+  "attemptPolicy": "one-shot-no-auto-identical-retry",
+  "preflightValidatedSha": "a1a54a1f1735465f8e607e16334725e04150169c"
 }
