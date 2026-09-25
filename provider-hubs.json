@@ -2877,11 +2877,13 @@
       ],
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "direct_candidates": [
+        "https://purstream.club/",
         "https://purstream.mx/",
         "https://purstream.ad/",
         "https://purstream.id/"
       ],
       "allowed_terminal_hosts": [
+        "purstream.club",
         "purstream.mx",
         "purstream.ad",
         "purstream.id"
@@ -2905,7 +2907,7 @@
       "validation_scope": "site_plus_api",
       "require_api_validation": true,
       "persist_official_site_without_api": false,
-      "direct": "https://purstream.mx/",
+      "direct": "https://purstream.club/",
       "allowed_terminal_host_patterns": [
         "^purstream\\.[a-z0-9-]{2,20}$"
       ],
