@@ -25,7 +25,7 @@ NiakVIO sépare trois responsabilités :
 - **NiakVIO** : reconnaissance, composition, vérification, Learning et publication ;
 - **clients Nuvio officiels** : surfaces d’exécution et de preuve par plateforme.
 
-Le catalogue exécutable couvre **46 Provider Objects Hub**. Les providers hors Hub ne sont plus des lignes OFF : seuls leurs ProviderBase historiques restent archivés sous `provider-old/`. Un zéro flux, une route inconnue ou un stream cassé ne suffit jamais à déclarer un provider mort.
+Le scope exécutable courant est dérivé de `scripts/current_provider_scope.py` et des manifests/catalogues publiés ; il ne doit pas être figé par un nombre dans l'architecture. Les providers hors scope courant restent archivés sous `provider-old/`. Un zéro flux, une route inconnue ou un stream cassé ne suffit jamais à déclarer un provider mort.
 
 ## 2. Source de vérité Provider v3
 
@@ -33,8 +33,8 @@ Un bundle publié est reconstruit depuis :
 
 1. ProviderBase v3 propre ;
 2. DATA structurée appartenant au provider ;
-3. Lego `PROVIDER.*` ;
-4. Lego `CORE.*` ;
+3. Bloc `PROVIDER.*` ;
+4. Bloc `CORE.*` ;
 5. minimizer NiakVIO conservateur avant hash.
 
 Sources principales :
@@ -66,9 +66,9 @@ Forme attendue :
 <DATA>
 /* CLOSEFIX:PROVIDER.<ID>.CONFIG.V1 */
 
-<Lego PROVIDER.*>
+<Bloc PROVIDER.*>
 /* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */
-<Lego CORE.*>
+<Bloc CORE.*>
 /* END NIAKVIO_PROVIDER */
 ```
 
@@ -164,7 +164,7 @@ Règles :
 
 ## 7. Reconstruction complète
 
-La reconstruction courante **46/46** appartient à `.github/workflows/provider-v3-reconstruct-all.yml`. Elle travaille sur le SHA sélectionné et, lorsqu’un commit de reconstruction est demandé, **refuse toute écriture directe sur `main`** : la cible doit être une branche non-main explicite. Les 50 providers historiques restent des connaissances archivées, jamais des sorties de la reconstruction courante.
+La reconstruction courante de **tous les providers actifs du scope exact** appartient à `.github/workflows/provider-v3-reconstruct-all.yml`. Le scope vient de `scripts/current_provider_scope.py`. Elle travaille sur le SHA sélectionné et, lorsqu’un commit de reconstruction est demandé, **refuse toute écriture directe sur `main`** : la cible doit être une branche non-main explicite. Les 50 providers historiques restent des connaissances archivées, jamais des sorties de la reconstruction courante.
 
 Interdictions :
 
@@ -174,6 +174,18 @@ Interdictions :
 - reconstruction cachée dans Quick, Deep ou un Native Lab.
 
 La preuve finale doit inclure la reconstruction reverse byte-identical via `scripts/verify_provider_v3_reverse_rebuild.py`.
+
+### Blocs communs et dérive de publication
+
+Les sources des Blocs communs `CORE.*` sont des **inputs de build** au même titre que ProviderBase, DATA et Blocs `PROVIDER.*`.
+
+- le fingerprint de publication est en **schéma v4** ;
+- il hash les Blocs Core partagés et les hooks globaux référencés ;
+- une modification d'un Bloc commun invalide automatiquement les bytes providers qui embarquent l'ancienne révision ;
+- `.github/workflows/provider-projection-reconcile.yml` ne reconstruit que les providers réellement en dérive, prouve le fixed-point, puis publie atomiquement ;
+- Brain/Repair ne peut jamais publier un provider amputé d'un Bloc commun : toute sortie acceptée repasse par la composition canonique et le fingerprint partagé.
+
+Ainsi, un Repair provider-local ne peut pas « oublier » le garde-fou HLS, la présentation, le sanitizer ou le branding lors d'une nouvelle matérialisation.
 
 Les anciens comptes de plans/quarantaines restent des **snapshots historiques**, jamais une vérité opérationnelle courante.
 
@@ -187,6 +199,20 @@ Le workflow routine est `.github/workflows/sync.yml` : **CORE - Verify & Publish
 | **Deep** | Quick + observations réseau/hubs read-only, health, diagnostics, projections manifests, hashes et intégrité release |
 
 **Quick/Deep ne réparent ni ne reconstruisent les providers et ne réalisent pas le bump release de routine.**
+
+### HLS, validation média et faits techniques
+
+Le chemin HLS commun est volontairement séparé en Blocs :
+
+1. **HLS Runtime Integrity** reconnaît le master/media playlist et valide sa structure ;
+2. sur runtime natif, son probe borné peut lire le master/variant via le bridge officiel sans dépendre d'un fetch navigateur ;
+3. un VOD fini ou un faux media playlist statique dont la durée est anormalement courte est rejeté avant exposition au player — le contrat couvre explicitement le cas d'un placeholder d'environ **4,5 s** ;
+4. un master HLS exploitable enrichit le stream avec les faits prouvés : `RESOLUTION`, `AVERAGE-BANDWIDTH/BANDWIDTH`, `CODECS`, `FRAME-RATE`, `VIDEO-RANGE`, audio `LANGUAGE/CHANNELS` et sous-titres ;
+5. **Stream Presentation** transforme ensuite ces faits en qualité/titre, description technique et `badgeIds`.
+
+Exemple contractuel : `RESOLUTION=1440x720` doit produire **720p**, et un placeholder `Inconnue/Unknown/N/A/Auto` ne doit jamais devenir un suffixe visible. Un flux HLS sans résolution prouvée garde le nom du provider et peut afficher seulement les faits certains, par exemple `HLS`.
+
+Le catalogue StreamBadge public actuel est **v4** : les quatre snapshots Fusion/Dark/Light/Transparent sont versionnés ensemble et restent immuables après publication.
 
 ### Finalisation d’une release acceptée
 
@@ -225,7 +251,7 @@ Un échec appartenant au client Nuvio/OS ne doit jamais devenir une réparation 
 - `official_site`, le registre `provider-hubs.json` et l’historique de domaines sont synchronisés avec la nouvelle autorité ;
 - seules les substitutions/remplacements de domaine connectés à l’ancien terminal peuvent suivre la rotation ; une route/API métier indépendante reste inchangée ;
 - le **CONFIG Provider complet** est reconstruit depuis la DATA structurée pour les providers modifiés ; l’ancien updater partiel `officialSite`-only n’est pas une autorité de publication ;
-- ProviderBase, Lego `PROVIDER.*` hors CONFIG et Lego `CORE.*` doivent rester byte-identical ;
+- ProviderBase, Bloc `PROVIDER.*` hors CONFIG et Bloc `CORE.*` doivent rester byte-identical ;
 - le filename garde son namespace source-qualified et tourne uniquement par content hash lorsque les bytes CONFIG changent ;
 - activation, projections, versions cache-safe, hashes et release integrity sont resynchronisés ;
 - DNS/HTTP terminal est une observation postérieure à la résolution autoritative : un 403, anti-bot ou timeout CI ne rétablit pas silencieusement l’ancien domaine ;
@@ -303,8 +329,8 @@ Voir [`SECURITY.md`](SECURITY.md).
 
 ## 15. Invariants non négociables
 
-1. Les 96 Provider Objects restent dans le census.
-2. ProviderBase v3 + DATA + Lego recréent les bundles sans seed JS publiée/upstream.
+1. Le scope provider courant est dérivé des sources d'autorité (`current_provider_scope.py`, manifest/catalogue) et tous les providers visibles restent auditables dans le census ; aucun nombre historique n'est un invariant courant.
+2. ProviderBase v3 + DATA + Blocs recréent les bundles sans seed JS publiée/upstream.
 3. `provider.model.routeData` est la source route canonique.
 4. Reconnaissance vide ≠ quarantaine.
 5. `canonicalSupportedTypes` ≠ `supportedTypes`.
@@ -321,6 +347,9 @@ Voir [`SECURITY.md`](SECURITY.md).
 16. Terser interdit ; minimizer conservateur uniquement.
 17. HTML stripping générique par regexp interdit.
 18. Les métriques/run IDs historiques restent dans les rapports, pas dans les invariants.
+19. Toute modification d'un Bloc Core partagé invalide les publications qui embarquent l'ancienne révision et doit passer par Projection Reconcile/fixed-point.
+20. Un HLS court/placeholder prouvé ne doit jamais être exposé comme stream jouable.
+21. Une qualité inconnue ne doit jamais apparaître dans le titre ; seule la meilleure qualité réellement prouvée peut suffixer le nom provider.
 
 ## Références
 

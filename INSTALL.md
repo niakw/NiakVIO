@@ -93,7 +93,7 @@ npm run diagnostics
 
 Ne modifiez pas manuellement `manifest.json` et `vf/manifest.json` comme deux sources autonomes. La source publiée canonique de métadonnées/projections est `provider_catalog.json` ; les manifests sont des projections rendues et revalidées dans la transaction autorisée.
 
-Les bundles providers hashés sont immuables et adressés par contenu. Le code durable reste **ProviderBase v3 + DATA/CONFIG + Lego `PROVIDER.*` / `CORE.*`**.
+Les bundles providers hashés sont immuables et adressés par contenu. Le code durable reste **ProviderBase v3 + DATA/CONFIG + Bloc `PROVIDER.*` / `CORE.*`**.
 
 ---
 

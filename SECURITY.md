@@ -52,7 +52,7 @@ route-regressions.json
 
 Published provider code is not treated as trusted source. Generated or provenance-preserving snapshots under `providers/` and `upstream-lkg/providers/` remain untrusted inputs.
 
-They are regenerated deterministically from **ProviderBase v3 + structured DATA + owned Lego** through the manual non-main reconstruction workflow rather than hand-edited or seeded from published/upstream JS.
+They are regenerated deterministically from **ProviderBase v3 + structured DATA + owned Bloc** through the manual non-main reconstruction workflow rather than hand-edited or seeded from published/upstream JS.
 
 > [!IMPORTANT]
 > A static-analysis dismissal for vendored/generated snapshot code does **not** make that provider trusted. Sandboxing, network guards, identity checks and media validation remain the runtime boundary.

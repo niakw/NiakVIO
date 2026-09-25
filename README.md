@@ -108,7 +108,7 @@ A standalone provider or manifest can be perfectly useful. NiakVIO becomes valua
 | --- | --- | --- |
 | Installation | One or several provider manifests | One maintained layer with several projections |
 | Catalogue maintenance | Mostly manual | Hub-46 retained and audited |
-| Durable source | Often the published JS itself | ProviderBase v3 + structured DATA + owned Provider/Core Lego |
+| Durable source | Often the published JS itself | ProviderBase v3 + structured DATA + owned Provider/Core Bloc |
 | Route knowledge | Usually embedded in provider code | Structured route/request/provenance data |
 | Domain rotation | Manual/static URL changes | Official-hub discovery + bounded `official_site` refresh |
 | Media types | Launch type and semantic capability may be mixed | Canonical capability separated from Nuvio transport compatibility |
@@ -145,7 +145,7 @@ A standalone provider or manifest can be perfectly useful. NiakVIO becomes valua
 
 The public surface stays simple; most of the complexity lives behind explicit contracts.
 
-1. **Provider knowledge is normalized** into ProviderBase v3, structured DATA and owned Provider/Core Lego.
+1. **Provider knowledge is normalized** into ProviderBase v3, structured DATA and owned Provider/Core Bloc.
 2. **Runtime behavior is gated and validated** without turning a zero result into fabricated success.
 3. **Accepted bytes are published atomically** with synchronized manifests, versions and integrity metadata.
 
@@ -161,8 +161,8 @@ Published provider bundles are reconstructed from:
 ```text
 ProviderBase v3
 + structured provider DATA/static knowledge
-+ PROVIDER.* Lego
-+ CORE.* Lego
++ PROVIDER.* Bloc
++ CORE.* Bloc
 + NiakVIO-safe minimizer
 ```
 

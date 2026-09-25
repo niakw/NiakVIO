@@ -41,6 +41,9 @@ for required in (
     "DesktopMACOS",
     "DesktopWindows",
     "Quick/Deep ne réparent ni ne reconstruisent les providers",
+    "fingerprint de publication est en **schéma v4**",
+    "placeholder d'environ **4,5 s**",
+    "StreamBadge public actuel est **v4**",
 ):
     assert required in architecture, required
 
@@ -56,6 +59,8 @@ for text, label in (
     (upstreams, "UPSTREAMS"),
     (engine, "engine_v2/README"),
 ):
+    for banned_term in ("Lego", "LEGO"):
+        assert banned_term not in text, f"{label}: terminology must use Bloc, found {banned_term}"
     for forbidden in (
         "NIAKVIO_PROVIDER_BASE_OWNED_V2",
         "core-media-finalize-main.yml",
@@ -197,7 +202,7 @@ for text, label in ((architecture, "ARCHITECTURE"), (readme, "README"), (readme_
 
 assert "exactement cinq Labs" in install
 assert "8 jours" in install
-assert "ProviderBase v3 + structured DATA + owned Lego" in security
+assert "ProviderBase v3 + structured DATA + owned Bloc" in security
 assert "ne sont **pas** rafraîchis par CORE Deep" in upstreams
 assert "jamais une seed JavaScript exécutable" in upstreams
 assert not (ROOT / ".github/triggers/deep-provider-repair").exists()

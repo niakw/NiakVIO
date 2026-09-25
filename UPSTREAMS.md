@@ -67,11 +67,11 @@ La reconstruction exécutable part exclusivement de :
 ```text
 ProviderBase v3
 + DATA/CONFIG structurées
-+ Lego PROVIDER.*
-+ Lego CORE.*
++ Bloc PROVIDER.*
++ Bloc CORE.*
 ```
 
-Une observation upstream peut inspirer Learning ou une modification reviewable de DATA/Lego, mais son JavaScript n’est jamais copié comme base canonique.
+Une observation upstream peut inspirer Learning ou une modification reviewable de DATA/Bloc, mais son JavaScript n’est jamais copié comme base canonique.
 
 ### Ce que NiakVIO peut apprendre d’un upstream
 

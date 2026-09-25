@@ -8,14 +8,14 @@ Last audited against current `main`: 2026-09-16.
 1. Provider yield first: resolve current `REGRESSION` cases in batches by shared root cause, then widen `ZERO` sampling and repair every newly proven upstream-positive/local-zero case.
 2. Do not manufacture green by shrinking the 96-provider catalogue or by accepting wrong title/type/season/episode media. Wrong media is worse than zero; keep fail-closed identity and media integrity.
 3. Secondary tasks below remain mandatory and must not be silently dropped while provider repair is active.
-4. Runtime/client compatibility adaptations are **Core-global Lego**, never provider-by-provider hacks: timers (`setTimeout`/`clearTimeout`), HTTP/403 fail-closed policy, stale-generation suppression, execution budgets and client-runtime portability belong after the global Core boundary. Provider Lego may supply provider-specific transport/data/options only.
+4. Runtime/client compatibility adaptations are **Core-global Bloc**, never provider-by-provider hacks: timers (`setTimeout`/`clearTimeout`), HTTP/403 fail-closed policy, stale-generation suppression, execution budgets and client-runtime portability belong after the global Core boundary. Provider Bloc may supply provider-specific transport/data/options only.
 
 ## Secondary tasks — mandatory
 
 - **JavaScript minimization/minification — FINAL STAGE only**
   - Do **not** use minification as a routine provider-repair or intermediate runtime gate. Stabilize provider yield, global Core/runtime behavior and the candidate first; run minimization near the very end, before final fixed-point/release certification.
   - Production bundles must go through the NiakVIO Provider v3 minimizer (`scripts/provider_v3_minimizer.py`), not Terser.
-  - Preserve managed Lego markers/comments/structure and deterministic reverse reconstruction.
+  - Preserve managed Bloc markers/comments/structure and deterministic reverse reconstruction.
   - Re-run minimizer/fixed-point/byte-stability tests after batch provider changes and before the final Hub-46 freeze/publication candidate.
   - Measure resulting bundle sizes and ensure minimization does not change runtime semantics, provider identity evidence, headers, routes, timers, or Core/Provider ownership.
   - Keep source-qualified/content-hashed filenames synchronized with manifests/projections after minimization.
@@ -73,7 +73,7 @@ Last audited against current `main`: 2026-09-16.
   - Re-run parity after each repair batch and again on the final frozen SHA.
 
 - **Domain Refresh**
-  - Keep full-CONFIG transaction semantics, source authority, source-qualified filenames/content hashes, Core/Lego invariance, cycle/rollback safety and idempotence.
+  - Keep full-CONFIG transaction semantics, source authority, source-qualified filenames/content hashes, Core/Bloc invariance, cycle/rollback safety and idempotence.
   - Maintain synthetic A→B domain-change proof, including generic logo/icon/favicon old-host -> new-host reconciliation where applicable, and projection/version synchronization.
   - Prove domain-only refresh leaves ProviderBase/Core bytes unchanged.
   - Do not regress to official-site-only mutation.

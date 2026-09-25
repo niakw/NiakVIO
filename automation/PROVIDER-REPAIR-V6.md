@@ -29,7 +29,7 @@ For unresolved providers only:
 5. Generalize fixture/provider response values into reusable placeholders.
 6. Build reusable request recipes, including terminal POST search APIs when the live search request itself returned streams.
 7. Merge targeted proof rows with the last accepted rows for providers deliberately not re-probed.
-8. Apply proof DATA and materialize ProviderBase + DATA + managed Core/Provider Lego deterministically.
+8. Apply proof DATA and materialize ProviderBase + DATA + managed Core/Provider Bloc deterministically.
 9. Run global non-network runtime/identity/presentation/cancellation contracts.
 10. Run representative post-reconstruction yield only for the targeted providers.
 11. Hard-fail when a representative upstream-positive provider/type becomes reconstructed-zero (`upstream-positive -> reconstructed-positive`).

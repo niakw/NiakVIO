@@ -92,7 +92,7 @@ Le gate final doit agréger ces essais successifs par provider/lane : `FULL`, `P
 Le code durable est :
 
 ```text
-ProviderBase v3 + structured DATA + owned Lego + NiakVIO-safe minimizer
+ProviderBase v3 + structured DATA + owned Bloc + NiakVIO-safe minimizer
 ```
 
 Une reconstruction complète :
@@ -145,7 +145,7 @@ Un échec Nuvio/OS n’est pas une cause Provider v3 et ne doit pas générer de
 - seules les dérivées de domaine réellement reliées à l’ancien terminal sont réconciliées ; les routes/protocoles métier et API non liées au déplacement de domaine ne sont pas réécrits ;
 - pour chaque provider modifié, le bloc `PROVIDER.<ID>.CONFIG.V1` complet est reconstruit depuis la DATA structurée courante ; l’ancien updater partiel `officialSite`-only n’est pas une autorité de publication ;
 - le namespace source-qualified du filename provider est conservé et seul le hash de contenu tourne lorsque le CONFIG change ;
-- tous les bytes hors CONFIG, y compris ProviderBase et Lego `CORE.*`, doivent rester identiques ;
+- tous les bytes hors CONFIG, y compris ProviderBase et Bloc `CORE.*`, doivent rester identiques ;
 - DNS/HTTP après résolution est une observation et ne peut pas annuler une adresse annoncée par une source autoritative uniquement parce qu’un runner reçoit 403/anti-bot/timeout ;
 - scope courant 46, archive historique 50, projections, versions cache-safe, hashes et release integrity restent correctement séparés et synchronisés ;
 - la transaction est fail-closed sur rollback, cycle de remplacement, terminal template/social et mutation hors CONFIG, puis Quick est relancé après publication.

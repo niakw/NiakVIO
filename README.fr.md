@@ -108,7 +108,7 @@ Un provider ou manifest autonome peut très bien convenir. NiakVIO prend surtout
 | --- | --- | --- |
 | Installation | Un ou plusieurs manifests | Une couche maintenue avec plusieurs projections |
 | Maintenance catalogue | Principalement manuelle | Hub-46 conservé et audité |
-| Source durable | Souvent le JS publié lui-même | ProviderBase v3 + DATA structurée + Lego Provider/Core détenus |
+| Source durable | Souvent le JS publié lui-même | ProviderBase v3 + DATA structurée + Bloc Provider/Core détenus |
 | Connaissance routes | Souvent enfouie dans le code | Routes/requêtes/provenance structurées |
 | Rotation domaines | Changement manuel/statique | Découverte hub officiel + refresh `official_site` borné |
 | Types média | Type de lancement et capacité parfois mélangés | Capacité canonique séparée de la compatibilité transport Nuvio |
@@ -145,7 +145,7 @@ Un provider ou manifest autonome peut très bien convenir. NiakVIO prend surtout
 
 La surface publique reste simple ; la complexité est repoussée derrière des contrats explicites.
 
-1. **La connaissance provider est normalisée** dans ProviderBase v3, DATA structurée et Lego Provider/Core détenus.
+1. **La connaissance provider est normalisée** dans ProviderBase v3, DATA structurée et Bloc Provider/Core détenus.
 2. **Le runtime est gaté et validé** sans transformer un zéro résultat en faux succès.
 3. **Les bytes acceptés sont publiés atomiquement** avec manifests, versions et métadonnées d’intégrité synchronisés.
 
@@ -161,8 +161,8 @@ Les bundles providers publiés sont reconstruits depuis :
 ```text
 ProviderBase v3
 + DATA/connaissance statique provider structurée
-+ Lego PROVIDER.*
-+ Lego CORE.*
++ Bloc PROVIDER.*
++ Bloc CORE.*
 + minimizer NiakVIO sécurisé
 ```
 

@@ -5,7 +5,7 @@
 The current production boundaries are:
 
 ```text
-ProviderBase v3 + DATA + owned Lego
+ProviderBase v3 + DATA + owned Bloc
         |
         v
 manual deterministic reconstruction when code bytes change
@@ -128,8 +128,8 @@ Provider v3 reconstruction is based on:
 
 - clean `provider-bases/`;
 - structured DATA/config;
-- owned `PROVIDER.*` Lego;
-- owned `CORE.*` Lego;
+- owned `PROVIDER.*` Bloc;
+- owned `CORE.*` Bloc;
 - deterministic materialization + reverse byte proof.
 
 Engine V2 may help learn or propose better structured knowledge, but it never replaces that source-of-truth contract with generated or upstream JavaScript.

@@ -20,7 +20,7 @@ A change must not:
 Durable provider code is reconstructed from:
 
 ```text
-ProviderBase v3 + structured DATA/static knowledge + owned PROVIDER.* / CORE.* Lego
+ProviderBase v3 + structured DATA/static knowledge + owned PROVIDER.* / CORE.* Bloc
 ```
 
 The canonical ProviderBase marker is `NIAKVIO_PROVIDER_BASE_OWNED_V3`.

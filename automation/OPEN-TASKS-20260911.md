@@ -10,7 +10,7 @@ This is the operational recovery list for current `main`. Exact repository state
 - Current physical manifest has **46 rows**, of which **44 are active** and **2 disabled-retained**; active Native execution is defined by `automation/evidence/hub-lab-matrix-46.json`.
 - Wrong title/type/season/episode is worse than zero. Identity/media integrity remains fail-closed.
 - Hub/registry presence is discovery knowledge, never execution proof. Telegram remains discovery-only.
-- Runtime/client portability is Core-global Lego. Timer shims, fetch/URL portability, stale-generation suppression, HTTP 403/media fail-closed and terminal sanitation must never become provider-specific runtime patches.
+- Runtime/client portability is Core-global Bloc. Timer shims, fetch/URL portability, stale-generation suppression, HTTP 403/media fail-closed and terminal sanitation must never become provider-specific runtime patches.
 - Provider timeout remains **25 s**. Preserve A→B→C latest-generation isolation even if fetch ignores `AbortSignal`.
 - Terser is forbidden. Provider v3 uses `scripts/provider_v3_minimizer.py` and must preserve managed boundaries, deterministic reverse rebuild and byte fixed point.
 
@@ -68,7 +68,7 @@ Trigger SHA: `6b28f3b2c53f5ca6cfb4bc11a3af139c21d6dee1`.
 ## Domain Refresh
 
 - [x] Domain Refresh is the full-CONFIG transaction v2, not the obsolete `officialSite`-only updater.
-- [x] Source authority, CONFIG rebuild, source-qualified/content-hashed filenames, projections/versioning, cycle/rollback safety, idempotence and Core/Lego invariance are covered by current contracts.
+- [x] Source authority, CONFIG rebuild, source-qualified/content-hashed filenames, projections/versioning, cycle/rollback safety, idempotence and Core/Bloc invariance are covered by current contracts.
 - [ ] Keep generic old-host → new-host derivative reconciliation and synthetic A→B proof covered if this subsystem changes again.
 
 ## Brain / Learning / discovery
