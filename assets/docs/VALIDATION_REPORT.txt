@@ -2,20 +2,28 @@ NIAKVIO BADGE SYSTEM V2 — VALIDATION REPORT
 ============================================
 
 STATUS: PASS
-Catalog badges: 73
-Expected asset variants per badge: 6 (transparent/dark/light × 72x32/96x40)
-Expected total WebP assets: 438
-Actual checked WebP assets: 438
+Canonical commit: 77c13db388d91f1eefd055c78927791f1fd8c491
+Validation-contract fix: 4e6b96d9d24285a905f869be1f85447947372aba
+Materialized asset commit: 5b8f1717aad5ca67510d76ffc0362dc25815ef93
+Successful workflow run: 36079388616
 
-Checks performed:
-- unique badge IDs
-- every badge exists in all 6 asset folders
-- exact 72x32 / 96x40 dimensions
-- each file decodes as WebP
-- every path in badge_catalog_v2_complete.json exists
-- every badge used by the single-flow mockup exists in the catalog
-- dark and light mockups generated
-- dark and light full-catalog QA sheets generated
+Catalog badges: 122
+Badge groups: 15
+Asset variants per badge: 6 (transparent/dark/light × 72x32/96x40)
+Total checked WebP assets: 732
+Newly materialized WebP assets in this expansion: 288
 
-Issues:
-- none
+Checks passed:
+- 122 WebP files in each of the six theme/size folders
+- exact 72x32 and 96x40 dimensions
+- WebP decoding and non-empty assets
+- lossless deterministic generation with Pillow 11.3.0
+- fixed-point regeneration check
+- 122 filters and 15 groups in Dark, Light and Fusion feeds
+- recommended Fusion v2 is byte-identical to canonical Fusion
+- sample coverage verified for AVC, 1080p, bitrate, AAC, Stereo/2.0, 48 kHz and Korean
+- provider non-regression gate remained green on the initial catalog expansion
+
+Notes:
+- The first materialization run 36079239674 generated all 288 new WebPs but failed afterward on a stale v4 revision assertion. The validator and badge asset contract test were updated to v5; replacement run 36079388616 passed every materialization, validation and deterministic fixed-point step.
+- Exact bitrate values remain technical text because bitrate is continuous; the static BITRATE badge signals the presence of the measurement without inventing a finite value vocabulary.

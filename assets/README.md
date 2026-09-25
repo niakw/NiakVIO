@@ -64,3 +64,11 @@ Les tests NiakVIO interdisent désormais les patterns double-échappés qui rend
 - `stream-badges-light.json` : feed Light.
 
 Les assets sont générés et validés de façon déterministe par les scripts/tests du dépôt. Évitez de modifier uniquement un feed généré à la main : la source canonique doit rester cohérente avec les trois variantes.
+
+## Couverture technique v2.2
+
+Le catalogue canonique couvre désormais 122 badges répartis dans 15 groupes. Il inclut les sources vidéo usuelles, les résolutions de 240p à 8K/4320p, les conteneurs courants, codecs vidéo, HDR/bit depth, fréquences d'image usuelles, débit vidéo, technologies/codecs/canaux audio, fréquences d'échantillonnage, langues normalisées du Core, sous-titres et classifications d'âge.
+
+Les mesures continues restent exactes dans la ligne technique : par exemple `6.0 Mbps` reste la valeur affichée, tandis que le badge `BITRATE` indique la présence fiable de cette donnée. Les fréquences d'image et d'échantillonnage utilisent des badges pour les valeurs usuelles normalisées.
+
+`stream-badges-fusion-v2.json`, le feed recommandé, est désormais régénéré et validé depuis la même source canonique que Dark, Light et Fusion afin d'empêcher toute dérive.
