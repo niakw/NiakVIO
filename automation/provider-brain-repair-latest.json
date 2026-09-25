@@ -7,7 +7,7 @@
   "batchSize": 48,
   "deferredLearningProviders": [],
   "effectiveWaves": 3,
-  "elapsedSeconds": 107.446,
+  "elapsedSeconds": 114.22,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 28,
@@ -98,8 +98,6 @@
               "published:mallumv": {
                 "action": "probe-targeted-repair",
                 "allowedProfiles": [
-                  "adaptive_runtime_recovery",
-                  "player_media_extractor_v1",
                   "provider_positive_program_replay_v1"
                 ],
                 "exitReason": null,
@@ -134,37 +132,17 @@
                     "transferScore": 0
                   }
                 ],
-                "learningDisposition": "core_repair_only",
-                "llmAdvisorApplied": true,
-                "llmAdvisorConfidence": 0.96,
-                "llmAdvisorExperiment": {
-                  "aliasSearch": true,
-                  "documentRequestMining": true,
-                  "maxDepth": 5,
-                  "maxEmbeds": 28,
-                  "maxPages": 28,
-                  "maxRecipePasses": 4,
-                  "recipePolicy": "current_plus_provider_peer",
-                  "responseSalvage": true,
-                  "roleOrder": [
-                    "player",
-                    "source",
-                    "api",
-                    "episode",
-                    "detail",
-                    "other"
-                  ],
-                  "routePolicy": "owned_plus_peer_generic",
-                  "sessionBootstrap": false,
-                  "terminalOnly": true
-                },
-                "llmAdvisorExperimentFingerprint": "7e83f036fc71d4e352905d0d1d54ba8b2921fa13699ba23781f1fe519839c79e",
-                "llmAdvisorFailureCompatibility": "exact",
-                "llmAdvisorProfile": "chain_terminal_extractor_v1",
-                "llmAdvisorRescue": true,
-                "llmAdvisorSourceFailureClass": "chain_terminal_gap",
-                "llmAdvisorStrategy": "terminal_media_extractor_with_playback_validation",
-                "negativeMemoryMatches": 16,
+                "learningDisposition": "replay_strict_same_provider_positive_program",
+                "llmAdvisorApplied": false,
+                "llmAdvisorConfidence": 0,
+                "llmAdvisorExperiment": {},
+                "llmAdvisorExperimentFingerprint": "",
+                "llmAdvisorFailureCompatibility": null,
+                "llmAdvisorProfile": "",
+                "llmAdvisorRescue": false,
+                "llmAdvisorSourceFailureClass": null,
+                "llmAdvisorStrategy": "",
+                "negativeMemoryMatches": 19,
                 "positiveProgramFingerprint": "a0bd3d9dc0e743c9554f0e10ea3c471cea71167423b6469e1fc7d6e5571273f5",
                 "postExhaustionStrategyMethod": "strict-same-provider-positive-program-replay",
                 "postExhaustionStrategyProfile": "provider_positive_program_replay_v1",
@@ -230,7 +208,7 @@
           "accepted": [],
           "acceptedCount": 0,
           "advisorRemainingFingerprintCounts": {
-            "mallumv": 3
+            "mallumv": 2
           },
           "advisorRotationPending": [
             "mallumv"
@@ -245,7 +223,7 @@
                 "allowedProfiles": [
                   "adaptive_runtime_recovery",
                   "player_media_extractor_v1",
-                  "provider_positive_program_replay_v1"
+                  "chain_terminal_extractor_v1"
                 ],
                 "exitReason": null,
                 "experimentExhausted": false,
@@ -309,13 +287,13 @@
                 "llmAdvisorRescue": true,
                 "llmAdvisorSourceFailureClass": "chain_terminal_gap",
                 "llmAdvisorStrategy": "terminal_media_extractor_with_playback_validation",
-                "negativeMemoryMatches": 17,
-                "positiveProgramFingerprint": "a0bd3d9dc0e743c9554f0e10ea3c471cea71167423b6469e1fc7d6e5571273f5",
-                "postExhaustionStrategyMethod": "strict-same-provider-positive-program-replay",
-                "postExhaustionStrategyProfile": "provider_positive_program_replay_v1",
+                "negativeMemoryMatches": 20,
+                "positiveProgramFingerprint": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
                 "providerId": "mallumv",
-                "providerPositiveProgramProductionRescue": true,
-                "providerPositiveProgramReplay": true,
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
                 "repairScope": "capability",
                 "repairType": "terminal_media_resolution",
                 "signature": "4e8d92b8a8961450d87b63b2"
@@ -375,7 +353,7 @@
           "accepted": [],
           "acceptedCount": 0,
           "advisorRemainingFingerprintCounts": {
-            "mallumv": 3
+            "mallumv": 1
           },
           "advisorRotationPending": [
             "mallumv"
@@ -390,7 +368,7 @@
                 "allowedProfiles": [
                   "adaptive_runtime_recovery",
                   "player_media_extractor_v1",
-                  "provider_positive_program_replay_v1"
+                  "chain_terminal_extractor_v1"
                 ],
                 "exitReason": null,
                 "experimentExhausted": false,
@@ -428,12 +406,12 @@
                 "llmAdvisorApplied": true,
                 "llmAdvisorConfidence": 0.96,
                 "llmAdvisorExperiment": {
-                  "aliasSearch": true,
+                  "aliasSearch": false,
                   "documentRequestMining": true,
                   "maxDepth": 5,
-                  "maxEmbeds": 28,
-                  "maxPages": 28,
-                  "maxRecipePasses": 4,
+                  "maxEmbeds": 34,
+                  "maxPages": 20,
+                  "maxRecipePasses": 5,
                   "recipePolicy": "current_plus_provider_peer",
                   "responseSalvage": true,
                   "roleOrder": [
@@ -442,25 +420,26 @@
                     "api",
                     "episode",
                     "detail",
+                    "search",
                     "other"
                   ],
-                  "routePolicy": "owned_plus_peer_generic",
+                  "routePolicy": "owned_plus_peer",
                   "sessionBootstrap": false,
                   "terminalOnly": true
                 },
-                "llmAdvisorExperimentFingerprint": "7e83f036fc71d4e352905d0d1d54ba8b2921fa13699ba23781f1fe519839c79e",
+                "llmAdvisorExperimentFingerprint": "a149c7311570e801dfbc4311429aa2897ea20a012cb4946c362763662244ec40",
                 "llmAdvisorFailureCompatibility": "exact",
                 "llmAdvisorProfile": "chain_terminal_extractor_v1",
                 "llmAdvisorRescue": true,
                 "llmAdvisorSourceFailureClass": "chain_terminal_gap",
                 "llmAdvisorStrategy": "terminal_media_extractor_with_playback_validation",
-                "negativeMemoryMatches": 18,
-                "positiveProgramFingerprint": "a0bd3d9dc0e743c9554f0e10ea3c471cea71167423b6469e1fc7d6e5571273f5",
-                "postExhaustionStrategyMethod": "strict-same-provider-positive-program-replay",
-                "postExhaustionStrategyProfile": "provider_positive_program_replay_v1",
+                "negativeMemoryMatches": 22,
+                "positiveProgramFingerprint": "",
+                "postExhaustionStrategyMethod": "",
+                "postExhaustionStrategyProfile": "",
                 "providerId": "mallumv",
-                "providerPositiveProgramProductionRescue": true,
-                "providerPositiveProgramReplay": true,
+                "providerPositiveProgramProductionRescue": false,
+                "providerPositiveProgramReplay": false,
                 "repairScope": "capability",
                 "repairType": "terminal_media_resolution",
                 "signature": "4e8d92b8a8961450d87b63b2"
