@@ -135,7 +135,7 @@ p.getStreams('157336','movie',undefined,undefined).then(function(rows){
     assert native["row"]["duration"] == 169, native
     assert "Interstellar • 2014" in native["row"]["description"], native
     assert "⏱ 2h49" in native["row"]["description"], native
-    assert "🔞 -12" in native["row"]["description"], native
+    assert "🔞 12+" in native["row"]["description"], native
     assert native["row"]["size"] == native["row"]["description"], native
     assert {"1080p-full-hd", "webdl", "hevc", "dolby-digital-plus", "5.1"}.issubset(
         set(native["row"]["badgeIds"])

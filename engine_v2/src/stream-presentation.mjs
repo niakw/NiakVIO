@@ -548,7 +548,7 @@ function normalizeFormat(value, url) {
 
 function normalizeSubtitles(stream) {
   const explicit = Array.isArray(stream.subtitles) ? stream.subtitles : Array.isArray(stream.extCaptions) ? stream.extCaptions : Array.isArray(stream.captions) ? stream.captions : [];
-  const text = [stream.description, stream.title, stream.filename].map(clean).filter(Boolean).join(" ");
+  const text = [stream.description, stream.title, stream.filename, typeof stream.subtitles === "string" ? stream.subtitles : null].map(clean).filter(Boolean).join(" ");
   const out = [];
   const addCode = (value) => {
     const code = normalizeLanguageCode(value);
@@ -591,9 +591,20 @@ function durationAgeLine(facts) {
 }
 
 function languageLine(facts) {
-  const tracks = (facts.languageTracks ?? []).map(fullTrackLabel).filter(Boolean);
-  if (tracks.length) return `🌐 ${tracks.join(" • ")}`;
-  const subtitles = (facts.subtitles ?? []).filter(Boolean);
+  const rawTracks = facts.languageTracks ?? [];
+  const tracks = rawTracks.map(fullTrackLabel).filter(Boolean);
+  const representedSubCodes = new Set(
+    rawTracks
+      .filter((track) => String(track?.role ?? "").toLowerCase() === "sub")
+      .map((track) => normalizeLanguageCode(track?.code ?? track?.tag ?? track?.label))
+      .filter(Boolean),
+  );
+  const subtitles = (facts.subtitles ?? []).filter((value) => {
+    const match = String(value ?? "").match(/^SUB\s+([A-Z]{2,3}(?:-[A-Z0-9]{2,3})?)$/i);
+    const code = match ? normalizeLanguageCode(match[1]) : null;
+    return !code || !representedSubCodes.has(code);
+  });
+  if (tracks.length) return `🌐 ${tracks.join(" • ")}${subtitles.length ? ` • 💬 ${subtitles.join(" • ")}` : ""}`;
   const code = normalizeLanguageCode(facts.language);
   const language = code ? (LANGUAGE_NAMES[code] ?? code.toUpperCase()) : null;
   if (!language && !subtitles.length) return "";

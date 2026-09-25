@@ -95,6 +95,18 @@ def apply_replacements(path: Path, replacements: tuple[tuple[str, str], ...]) ->
 def main() -> int:
     engine_test = ROOT / "engine_v2/tests/stream-presentation.test.mjs"
     if engine_test.is_file() and "lang-fr-ca" in engine_test.read_text(encoding="utf-8"):
+        global_text = GLOBAL_TEST.read_text(encoding="utf-8")
+        fallback_text = FALLBACK_TEST.read_text(encoding="utf-8")
+        required = ('"lang-fr"', '"sub-fr"', '"lang-fr-ca"')
+        for token in required:
+            if token not in global_text:
+                raise AssertionError(f"universal v3 presentation test missing {token}")
+        stale_assertions = ('"vf" in vf["badgeIds"]', '"vfq" in vfq["badgeIds"]', '"vostfr"')
+        for token in stale_assertions:
+            if token in global_text:
+                raise AssertionError(f"legacy public badge assertion remains: {token}")
+        if '"vf" in row["badgeIds"]' in fallback_text or '"vf" in tv_row["badgeIds"]' in fallback_text:
+            raise AssertionError("legacy VF badge assertion remains in metadata fallback test")
         print("GLOBAL_STREAM_PRESENTATION_V23_TESTS_OK", "universal_v3=true", "changed=false")
         return 0
     global_changed = apply_replacements(GLOBAL_TEST, GLOBAL_REPLACEMENTS)
