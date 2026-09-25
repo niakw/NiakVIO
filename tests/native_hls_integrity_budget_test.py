@@ -41,7 +41,7 @@ native_patched = module.apply(base, native_options)
 assert '"probeFirstSegmentNative":true' in native_patched
 assert '"nativeProbeMaxRows":3' in native_patched
 assert '"nativeProbeTimeoutMs":1500' in native_patched
-assert '"implementationRevision":"native-master-facts-v11"' in native_patched
+assert '"implementationRevision":"native-master-facts-v12"' in native_patched
 assert module.apply(native_patched, native_options) == native_patched
 
 cfg = json.loads(OVERRIDES.read_text(encoding="utf-8"))
@@ -97,7 +97,7 @@ function response(url,contentType,text,bytes){
 const ts=new Uint8Array(376);ts[0]=0x47;ts[188]=0x47;
 globalThis.fetch=async function(url,init){
   calls.push({url,headers:Object.assign({},init&&init.headers||{})});
-  if(url.endsWith("media.m3u8"))return response(url,"application/vnd.apple.mpegurl","#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXTINF:6,\nseg-1.ts\n");
+  if(url.endsWith("media.m3u8"))return response(url,"application/vnd.apple.mpegurl","#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXT-X-PROGRAM-DATE-TIME:2026-09-25T00:00:00Z\n#EXTINF:6,\nseg-1.ts\n");
   if(url.endsWith("seg-1.ts"))return response(url,"video/mp2t","",ts);
   throw new Error("unexpected "+url);
 };
@@ -132,7 +132,7 @@ function response(url,contentType,text,bytes){
 }
 globalThis.fetch=async function(url){
   calls++;
-  if(url.endsWith("media.m3u8"))return response(url,"application/vnd.apple.mpegurl","#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXTINF:6,\nseg-1.ts\n");
+  if(url.endsWith("media.m3u8"))return response(url,"application/vnd.apple.mpegurl","#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXT-X-PROGRAM-DATE-TIME:2026-09-25T00:00:00Z\n#EXTINF:6,\nseg-1.ts\n");
   if(url.endsWith("seg-1.ts"))return response(url,"text/html","<!doctype html><html>blocked</html>");
   throw new Error("unexpected "+url);
 };
@@ -159,7 +159,7 @@ globalThis.fetch=async function(url){
   if(url.endsWith("media.m3u8"))return {
     ok:true,status:200,url,
     headers:{get:function(){return "application/vnd.apple.mpegurl";}},
-    text:async function(){return "#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXTINF:6,\nseg-1.ts\n";},
+    text:async function(){return "#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXT-X-PROGRAM-DATE-TIME:2026-09-25T00:00:00Z\n#EXTINF:6,\nseg-1.ts\n";},
     json:async function(){return null;}
   };
   if(url.endsWith("seg-1.ts"))return {
@@ -189,7 +189,7 @@ globalThis.fetch=async function(url){
   if(url.endsWith("media.m3u8"))return {
     ok:true,status:200,url,
     headers:{get:function(){return "application/vnd.apple.mpegurl";}},
-    text:async function(){return "#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXTINF:6,\nseg-1.ts\n";}
+    text:async function(){return "#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXT-X-PROGRAM-DATE-TIME:2026-09-25T00:00:00Z\n#EXTINF:6,\nseg-1.ts\n";}
   };
   throw new Error("temporary network failure");
 };
@@ -223,7 +223,7 @@ globalThis.__native_fetch=function(){};
 function response(url,text,bytes){return {ok:true,status:200,url,headers:{get:()=>url.endsWith('.ts')?'video/mp2t':'application/vnd.apple.mpegurl'},text:async()=>text||'',arrayBuffer:async()=>{const b=bytes||new Uint8Array(0);return b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)}}}
 const ts=new Uint8Array(376);ts[0]=0x47;ts[188]=0x47;
 globalThis.fetch=async function(url){
- if(/\/[ab]\.m3u8$/.test(url))return response(url,'#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXTINF:6,\nseg.ts\n');
+ if(/\/[ab]\.m3u8$/.test(url))return response(url,'#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXT-X-PROGRAM-DATE-TIME:2026-09-25T00:00:00Z\n#EXTINF:6,\nseg.ts\n');
  if(url.endsWith('/seg.ts'))return response(url,'',ts);
  throw new Error('third unprobed HLS row must be dropped before fetch: '+url);
 };
