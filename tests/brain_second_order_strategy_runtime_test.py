@@ -216,6 +216,11 @@ try:
         "chain_terminal_gap",
     )
     positive_candidate["brain_repair_plan"]["positiveProgramFingerprint"]="f"*64
+    # Simulate a stale/mixed plan from an older orchestration layer: strict
+    # positive replay must still outrank an attached LLM advisor at runtime.
+    positive_candidate["brain_repair_plan"]["providerPositiveProgramReplay"]=True
+    positive_candidate["brain_repair_plan"]["llmAdvisorApplied"]=True
+    positive_candidate["brain_repair_plan"]["llmAdvisorProfile"]="chain_terminal_extractor_v1"
     positive_replay=runtime._adaptive_runtime_options(
         positive_candidate,
         config,
