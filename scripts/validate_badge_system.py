@@ -39,7 +39,7 @@ for badge_id, row in by_id.items():
 assert checked == len(badges) * 3 * 2, checked
 
 report = json.loads(REPORT.read_text(encoding="utf-8"))
-assert report["revision"] == "full-surface-v4-native-chip"
+assert report["revision"] == "full-surface-v5-technical-metadata"
 assert report["catalogBadges"] == len(badges)
 assert report["assetCount"] == len(badges) * 3 * 2
 assert report["nativeChipChrome"] is True

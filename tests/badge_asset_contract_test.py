@@ -36,7 +36,7 @@ for badge_id, row in by_id.items():
             assert payload[:4] == b"RIFF" and payload[8:12] == b"WEBP", rel
 
 assert light_qa.get("schemaVersion") == 2
-assert light_qa.get("revision") == "full-surface-v4-native-chip"
+assert light_qa.get("revision") == "full-surface-v5-technical-metadata"
 assert light_qa.get("catalogBadges") == len(badges)
 assert light_qa.get("assetCount") == len(badges) * 2
 assert light_qa.get("idempotent") is True
