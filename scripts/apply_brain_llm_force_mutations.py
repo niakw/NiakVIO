@@ -94,6 +94,37 @@ def _provider_entry(patches: dict[str, Any], provider: str) -> tuple[str, dict[s
     raise ValueError(f"provider override missing for {provider}")
 
 
+def _mutation_context_fingerprint(
+    provider: str,
+    entry: dict[str, Any],
+    mutations: list[dict[str, Any]],
+) -> str:
+    surfaces: list[dict[str, Any]] = []
+    override_needed = False
+    for mutation in mutations:
+        scope = str(mutation.get("scope") or "")
+        path = str(mutation.get("path") or "")
+        if scope == "provider_data":
+            override_needed = True
+            continue
+        if scope in {"provider_patch", "provider_js"}:
+            target = ROOT / path
+            if not target.is_file():
+                raise ValueError(f"{provider}: mutation context path missing: {path}")
+            surfaces.append({
+                "scope": scope,
+                "path": path,
+                "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+            })
+    if override_needed:
+        surfaces.append({
+            "scope": "provider_data",
+            "path": "provider-overrides.json:provider_patches",
+            "value": entry,
+        })
+    return _fingerprint(surfaces)
+
+
 def _registered_patch_scripts(entry: dict[str, Any]) -> set[str]:
     # Compatibility field name is retained in the repository schema. User-facing
     # terminology is Bloc.
@@ -330,6 +361,14 @@ def apply_payload(
             raise ValueError(f"{provider}: Force mutation fingerprint mismatch")
 
         key, entry = _provider_entry(patches, provider)
+        expected_context_fp = str(raw.get("mutationContextFingerprint") or "").strip().casefold()
+        actual_context_fp = _mutation_context_fingerprint(provider, entry, mutations)
+        if (
+            not FP64.fullmatch(expected_context_fp)
+            or actual_context_fp != expected_context_fp
+        ):
+            raise ValueError(f"{provider}: Force mutation context fingerprint mismatch")
+
         before_entry = json.dumps(entry, sort_keys=True, separators=(",", ":"))
         row_changed_files: set[str] = set()
         for mutation in mutations[:8]:
@@ -352,6 +391,7 @@ def apply_payload(
             {
                 "provider": provider,
                 "mutationFingerprint": expected_fp,
+                "mutationContextFingerprint": expected_context_fp,
                 "mutationCount": len(mutations),
                 "changedFiles": sorted(row_changed_files),
             }
