@@ -324,7 +324,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     if(facts.audioChannels&&weakFact(row.audioChannels))row.audioChannels=facts.audioChannels;
     if(facts.frameRate&&weakFact(row.frameRate))row.frameRate=facts.frameRate;
     if(facts.hdr&&weakFact(row.hdr))row.hdr=facts.hdr;
-    if(tracks.length){row.audioTracks=tracks.map(function(t){return{language:t.language,name:t.name,channels:t.channels||""}});row.hlsMasterAudioTracks=row.audioTracks;if(tracks.length===1&&weakFact(row.language))row.language=tracks[0].language}
+    if(tracks.length){row.audioTracks=tracks.map(function(t){return{language:t.language,name:t.name,channels:t.channels||""}});row.hlsMasterAudioTracks=row.audioTracks;if(tracks.length===1){var actual=tracks[0].language;if(!weakFact(row.language)&&clean(row.language).toLowerCase()!==actual&&!clean(row.sourceLanguage))row.sourceLanguage=clean(row.language);row.language=actual}}
     if(subs.length){var existing=Array.isArray(row.subtitles)?row.subtitles.slice():[];subs.forEach(function(t){if(!existing.some(function(x){return hlsLang(x&&typeof x==="object"?(x.language||x.lang||x.code||x.name):x)===t.language}))existing.push({language:t.language,name:t.name})});row.subtitles=existing;row.hlsMasterSubtitleTracks=subs}
     return row;
   }
