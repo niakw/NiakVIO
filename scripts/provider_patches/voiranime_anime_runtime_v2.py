@@ -55,7 +55,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     cfg = dict(options or {})
     payload = {
         "base": str(cfg.get("base") or "https://voir-anime.to").rstrip("/"),
-        "maxStreams": max(1, min(6, int(cfg.get("maxStreams") or 4))),
+        "maxStreams": max(1, min(12, int(cfg.get("maxStreams") or 12))),
         "userAgent": str(cfg.get("userAgent") or "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145 Safari/537.36"),
     }
     js = WRAPPER.replace("CONFIG_PLACEHOLDER", json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
