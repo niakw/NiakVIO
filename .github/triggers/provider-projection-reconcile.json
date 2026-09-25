@@ -1,13 +1,14 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-25T08:52:00+02:00",
-  "reason": "retry shared Core v27 rematerialization after contract-v4 drift fixture fix",
+  "requestedAt": "2026-09-25T09:06:00+02:00",
+  "reason": "rematerialize shared Core stream presentation v28 after quality/disc-source expansion",
   "target": "all drifted active providers",
   "expectedChecks": [
-    "detect shared Core publication drift under schema v4",
-    "rebuild drifted providers",
-    "publish stream presentation technical-badges-v27",
-    "Kehflix unknown quality title remains Kehflix",
-    "Kehflix proven 1080p title becomes Kehflix - 1080p"
+    "publication fingerprint v4 detects shared Core v28 drift automatically",
+    "rebuild only drifted providers",
+    "Kehflix published bytes contain technical-badges-v28",
+    "Kehflix proven 1080p/1080i/4K/8K quality appears in title",
+    "Kehflix Unknown/Inconnue/N/A/Auto quality never appears as a title suffix",
+    "HLS badge remains present for proven m3u8 delivery"
   ]
 }
