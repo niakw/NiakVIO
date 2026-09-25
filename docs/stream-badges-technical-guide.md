@@ -154,6 +154,38 @@ Rough orientation ranges:
 
 These are not quality thresholds. A 6 Mbps AVC encode and a 6 Mbps AV1 encode are not equivalent; source, codec, encoder settings, grain and motion matter.
 
+## Physical media vs digital delivery
+
+“Digital” covers several very different situations: subscription streaming, a platform-bound digital purchase, and a lawfully acquired local digital file are not the same thing. Likewise, **physical media is not automatically better**, but Blu-ray and especially UHD Blu-ray commonly have important technical and practical advantages.
+
+| Criterion | Blu-ray / UHD Blu-ray | Subscription / platform streaming | Lawfully acquired local digital file |
+| --- | --- | --- | --- |
+| Video bitrate | 🏆 Usually much more headroom | 🟡 Usually more compressed to reduce delivery bandwidth | 🟢 to 🏆 Depends entirely on the file/source |
+| Audio | 🏆 Frequently lossless or very high bitrate (TrueHD, DTS-HD MA, LPCM) | 🟡 Commonly lossy/compressed, even when Atmos metadata is present | 🟢 to 🏆 Depends on included tracks |
+| Image consistency | 🏆 Fixed encode; no adaptive quality drop caused by network conditions | 🟡 Adaptive bitrate may change with connection/device/service policy | 🏆 Fixed local file |
+| Network dependency | 🏆 None for normal disc playback | 🔴 Requires the service and network availability | 🏆 None once the authorized file is locally available |
+| Service/catalog dependency | 🏆 The physical copy remains in the user's possession | 🟠 Access may depend on account, catalogue, territory and service terms | 🟢 Depends on DRM/licence/file format |
+| Extras / alternate tracks | 🟢 Often rich: commentaries, lossless tracks, multiple cuts, supplements | 🟡 Varies widely by service | 🟢 Depends on the release/file |
+| Convenience | 🟡 Requires compatible hardware and the disc | 🏆 Immediate multi-device access | 🟢 Very convenient once configured |
+| Long-term practical control | 🏆 Strong: the user keeps the physical copy | 🟠 Usually more dependent on a third-party platform | 🟢 to 🏆 Strong for DRM-free authorized files; otherwise licence-dependent |
+
+### Why physical media can look and sound better
+
+The main advantage is usually **not resolution alone**. A UHD Blu-ray and a streaming service may both say `4K`, `HEVC`, `HDR10` or `Dolby Vision`, yet the disc can retain substantially more video data and less aggressive compression. Physical releases also commonly carry lossless audio tracks that streaming services may replace with lower-bitrate alternatives.
+
+This is why a well-authored **1080p Blu-ray can sometimes look cleaner than a heavily compressed 4K stream**, and why two releases carrying the same resolution/HDR badges can still look different.
+
+Physical media is not infallible: a poor master, excessive filtering, weak encode or bad authoring can still make a disc release inferior to a better digital master. The badges describe technical facts, not an automatic winner.
+
+### Ownership, possession and authorized access
+
+Buying a physical disc normally gives the buyer possession and practical control of **that copy**; it does **not** transfer the copyright or other intellectual-property rights in the underlying work. Digital “purchase”, rental and subscription models can grant different forms of licensed access, often subject to platform, account, territory, DRM and service terms.
+
+For a media library, physical copies therefore have a practical advantage: they are not normally removed because a streaming catalogue changes, an account closes or a licence between a platform and a rights holder expires. Exact legal rights such as resale, lending, private copying or circumvention vary by jurisdiction and are outside this technical guide.
+
+> [!CAUTION]
+> **NiakVIO does not turn technical availability into permission to watch a work.** It does not host audiovisual content and does not grant rights to third-party media or services. NiakVIO should be used only with content the user **owns, controls, created, licensed or is otherwise authorized to access**. Nothing in NiakVIO authorizes bypassing authentication, paywalls, encryption, DRM or other access controls. Users remain responsible for applicable law, service terms and third-party rights. See [`DISCLAIMER.md`](../DISCLAIMER.md) and [`TESTING_NOTICE.md`](../TESTING_NOTICE.md).
+
 ## Audio: codec, technology, channels and sample rate
 
 NiakVIO keeps these as separate facts.
