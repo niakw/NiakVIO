@@ -207,8 +207,8 @@ def _validate_diff_path(diff: str, expected_path: str) -> None:
 
 def _git_apply(diff: str, path: str) -> None:
     for args in (
-        ["git", "apply", "--check", "--whitespace=error-all", "--", "-"],
-        ["git", "apply", "--whitespace=error-all", "--", "-"],
+        ["git", "apply", "--check", "--whitespace=error-all", "-"],
+        ["git", "apply", "--whitespace=error-all", "-"],
     ):
         proc = subprocess.run(
             args,
