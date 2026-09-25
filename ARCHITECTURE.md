@@ -13,7 +13,7 @@
 | **Publication** | bytes Provider v3 acceptés + projections + versions/hashes synchronisés |
 | **Preuve native** | 5 Labs indépendants : TV Android, Mobile Android, Mobile iOS, macOS, Windows |
 
-**Navigation :** [modèle](#1-modèle) · [source de vérité](#2-source-de-vérité-provider-v3) · [routes](#4-routes-et-protocoles) · [types média](#5-type-canonique--transport-nuvio) · [runtime](#6-contrat-runtime) · [CORE](#8-core--verify--publish) · [Learning](#9-learning) · [Domain Refresh](#10-domain-refresh) · [Native Labs](#11-cinq-native-labs) · [sécurité](#13-sécurité) · [invariants](#15-invariants-non-négociables)
+**Navigation :** [modèle](#1-modèle) · [source de vérité](#2-source-de-vérité-provider-v3) · [routes](#4-routes-et-protocoles) · [types média](#5-type-canonique--transport-nuvio) · [runtime](#6-contrat-runtime) · [CORE](#8-core--verify--publish) · [Learning](#9-learning) · [Domain Refresh](#10-domain-refresh) · [Native Labs](#11-cinq-native-labs) · [sécurité](#13-sécurité) · [invariants](#15-invariants-non-négociables) · [Brain Repair](BRAIN_REPAIR_ARCHITECTURE.md)
 
 ---
 
@@ -242,6 +242,10 @@ Le finalizer n’est ni une autorité de découverte, ni un moteur Learning, ni 
 - les mutations deviennent des propositions reviewables ;
 - `brain-learning/proposals` n’est pas une autorité de publication ;
 - aucune mutation ne contourne les gates d’identité, sécurité, reconstruction et release.
+- Repair → Learning est borné par une empreinte causale durable : même provider + même signature + même méthode déjà dispatchés ne relancent pas automatiquement Learning ; toute cohorte automatique est explicite et ciblée.
+- un différentiel same-byte où le probe Nuvio observe une requête provider mais le worker Deep n’en observe aucune appartient au harness et est exclu de la mémoire négative/provider Learning.
+
+Le contrat détaillé est défini dans [`BRAIN_REPAIR_ARCHITECTURE.md`](BRAIN_REPAIR_ARCHITECTURE.md).
 
 Un échec appartenant au client Nuvio/OS ne doit jamais devenir une réparation Provider v3.
 
@@ -250,6 +254,7 @@ Un échec appartenant au client Nuvio/OS ne doit jamais devenir une réparation 
 `.github/workflows/domain-refresh.yml` est une exception de maintenance d’adresse très bornée. Son autorité transactionnelle est `scripts/domain_refresh_transaction_v2.py` :
 
 - les hubs/channels/redirects officiels servent à découvrir le terminal courant ; un hub reste une source d’adresse et ne devient jamais un backend d’exécution provider ;
+- `direct_authority=explicit_current` est un LKG fort mais **refreshable** lorsqu’une source officielle annonce explicitement un nouveau domaine principal/current/actif ou redirige déterministiquement vers lui ; seul `direct_authority=operator_pin` interdit une rotation automatique ;
 - `official_site`, le registre `provider-hubs.json` et l’historique de domaines sont synchronisés avec la nouvelle autorité ;
 - seules les substitutions/remplacements de domaine connectés à l’ancien terminal peuvent suivre la rotation ; une route/API métier indépendante reste inchangée ;
 - le **CONFIG Provider complet** est reconstruit depuis la DATA structurée pour les providers modifiés ; l’ancien updater partiel `officialSite`-only n’est pas une autorité de publication ;
