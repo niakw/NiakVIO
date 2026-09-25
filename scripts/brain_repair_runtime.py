@@ -353,14 +353,12 @@ def learned_skills() -> dict[str, Any]:
 
 
 def planner_learned_skills(mode: str) -> dict[str, Any]:
-    """Expose all skills to Learning, trusted transferable skills to Repair."""
+    """Expose all skills to Learning; trusted transfer + strict same-provider positives to Repair."""
     skills = learned_skills()
     if str(mode).casefold() == "learning":
         return skills
     cfg = policy()
     production = cfg.get("production") if isinstance(cfg.get("production"), dict) else {}
-    if production.get("learnedSkillInputAllowed") is not True:
-        return {}
     maturity = cfg.get("skillMaturity") if isinstance(cfg.get("skillMaturity"), dict) else {}
     transfer = production.get("learnedSkillTransferPolicy") if isinstance(production.get("learnedSkillTransferPolicy"), dict) else {}
     required_maturity = str(transfer.get("maturity") or "trusted")
@@ -370,15 +368,28 @@ def planner_learned_skills(mode: str) -> dict[str, Any]:
     for key, raw in skills.items():
         if not isinstance(raw, dict) or raw.get("validated") is not True:
             continue
-        if str(raw.get("maturity") or "experimental") != required_maturity:
-            continue
-        if float(raw.get("confidence") or 0.0) < min_confidence:
-            continue
         providers = {
             str(value or "").strip().casefold()
             for value in raw.get("providers") or []
             if str(value or "").strip()
         }
+        strict_same_provider_positive = (
+            raw.get("sameProviderPositiveProgram") is True
+            and bool(providers)
+            and isinstance(raw.get("positiveProgramFingerprintsByProvider"), dict)
+        )
+        if strict_same_provider_positive:
+            # This is not learned-skill transfer. The JS planner will expose it
+            # only to the provider listed in this row and current-byte gates
+            # remain mandatory.
+            out[str(key)] = raw
+            continue
+        if production.get("learnedSkillInputAllowed") is not True:
+            continue
+        if str(raw.get("maturity") or "experimental") != required_maturity:
+            continue
+        if float(raw.get("confidence") or 0.0) < min_confidence:
+            continue
         if len(providers) < min_providers:
             continue
         out[str(key)] = raw
