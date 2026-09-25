@@ -30,12 +30,18 @@ const negativeMemoryPolicy = asRecord(production.negativeExperimentMemory);
 const negativeMemory = asArray(input.negativeMemory).filter(isRecord);
 const historicalSolutions = asArray(input.historicalSolutions).filter(isRecord);
 const llmGuidance = asArray(input.llmGuidance).filter(isRecord);
-const learnedSkills = learnedSkillInputAllowed
-  ? [
-      ...normalizeLearnedSkills(input.learnedSkills),
-      ...(learningMode ? normalizeLearnedSkills(asRecord(globalSkillConfig).skills) : []),
-    ]
-  : [];
+const inputLearnedSkills = normalizeLearnedSkills(input.learnedSkills);
+const learnedSkills = [
+  ...(
+    learnedSkillInputAllowed
+      ? inputLearnedSkills
+      : inputLearnedSkills.filter((skill) => (
+          skill.validated === true
+          && skill.sameProviderPositiveProgram === true
+        ))
+  ),
+  ...(learningMode ? normalizeLearnedSkills(asRecord(globalSkillConfig).skills) : []),
+];
 const runtimeCompatibility = buildRuntimeCompatibility(
   readJsonFile("automation/nuvio-client-compatibility-matrix.json", {}),
 );
