@@ -220,7 +220,9 @@ global.fetch = async function(rawUrl) {
     return jsonResponse(url, {
       sources:[
         {stream_url:"https://embed.example/watch/p-tv"},
-        {stream_url:"https://free.finepulfe.xyz/tv/1396-test/S01/E01/master.m3u8"}
+        {source_name:"Lecteur 1",stream_url:"https://free.finepulfe.xyz/tv/1396-test/S01/E01/master.m3u8"},
+        {source_name:"Lecteur 2",stream_url:"https://cdn-two.example/tv/1396/S01/E01/master.m3u8"},
+        {source_name:"Lecteur 3",stream_url:"https://cdn-three.example/tv/1396/S01/E01/master.m3u8"}
       ]
     });
   }
@@ -245,8 +247,8 @@ const provider = require(providerPath);
   }
 
   const series = await provider.getStreams("1396", "series", 1, 1);
-  if (!series.length || !series[0].url.includes("/tv/1396-test/S01/E01/") || series.some(row => row.url.includes("embed.example"))) {
-    throw new Error("Purstream series->tv route/direct-source regression: " + JSON.stringify(series));
+  if (series.length !== 3 || !series.some(row => row.url.includes("/tv/1396-test/S01/E01/")) || !series.some(row => row.url.includes("cdn-two.example")) || !series.some(row => row.url.includes("cdn-three.example")) || series.some(row => row.url.includes("embed.example"))) {
+    throw new Error("Purstream multiflux series->tv route/direct-source regression: " + JSON.stringify(series));
   }
 
   // This is the key historical regression: Nuvio can describe an anime episode

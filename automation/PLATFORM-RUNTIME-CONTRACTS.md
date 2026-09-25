@@ -163,3 +163,12 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - TV late-result/stale symptoms must not be generalized to Desktop: the 2026-09-16 macOS user test observed correct reset after changing work.
 - Quality shown to the client must be the final post-sanitizer quality; source/declaration quality cannot remain in title when media proof changes it.
 - Language/badges require stream-level evidence. Provider catalogue language is a capability hint, not proof that a returned media track is French/VO/VF.
+
+
+## 2026-09-25 — Next-episode provider affinity and duplicate-load audit
+
+- NuvioTV already assigns local plugin streams a provider-specific `behaviorHints.bingeGroup = "local-plugin-${scraper.id}"`. Its next-episode autoplay path preserves the current stream binge group and preferentially selects a next-episode stream with the same group when the user enables the binge-group preference.
+- Nuvio Mobile/Desktop already implement the same next-episode selector and persist/read `StreamItem.behaviorHints.bingeGroup`, but their current QuickJS plugin bridge converts `PluginRuntimeResult -> StreamItem` without carrying any binge-group field. Therefore **same-provider next episode works host-side on TV today but cannot be made universal on Mobile/Desktop by a NiakVIO provider-only change**. The minimal host fix is to assign a stable plugin scraper group (for example `local-plugin-${scraper.id}`) while building the plugin StreamItem.
+- Mobile/Desktop duplicate-load guard: unchanged request keys short-circuit, and a changed request cancels the prior active job. Enabled plugin scrapers are filtered once by `supportsType(type)`.
+- TV duplicate-load guard: same stream-search sessions are reused; force refresh cancels/replaces the old session. Local plugin scraper execution also has an in-flight key containing scraper id + TMDB + media type + season + episode, so simultaneous consumers share one execution.
+- NiakVIO Core media-type pre-network gate remains authoritative and is covered by `tests/global_media_type_pre_network_gate_test.py`: unsupported movie/tv/anime lanes must stop before provider network. TV transport may be an alias for semantic anime where explicitly configured; movie must never be synthesized for anime-only providers.
