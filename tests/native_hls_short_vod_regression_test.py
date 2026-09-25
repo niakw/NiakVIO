@@ -22,7 +22,7 @@ base = r'''globalThis.getStreams=async function(){
 patched = module.apply(base, {"timeout_ms": 2000})
 assert '"probeFirstSegmentNative":true' in patched
 assert '"minimumVodDurationSeconds":90' in patched
-assert '"implementationRevision":"native-master-facts-v11"' in patched
+assert '"implementationRevision":"native-master-facts-v12"' in patched
 
 
 def run_node(source: str) -> None:
@@ -65,16 +65,31 @@ PATCHED
 (async()=>{const rows=await globalThis.getStreams('1','anime',1,1);assert.equal(rows.length,0,JSON.stringify(rows));assert.equal(calls,1)})().catch(e=>{console.error(e);process.exit(1)});
 '''.replace('PATCHED', patched))
 
-# A genuine sliding live window with MEDIA-SEQUENCE remains allowed.
+# MEDIA-SEQUENCE alone is not reliable live proof for NiakVIO's VOD catalogue.
+# A tiny offline/maintenance loop must still be rejected.
 run_node(r'''
 const assert=require('assert');
 let calls=0;
 globalThis.__native_fetch=function(){};
-function response(url,contentType,text,bytes){return {ok:true,status:200,url,headers:{get:n=>String(n).toLowerCase()==='content-type'?contentType:''},text:async()=>text||'',arrayBuffer:async()=>{const b=bytes||new Uint8Array(0);return b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)}}}
+globalThis.fetch=async function(url){
+ calls++;
+ if(url.endsWith('media.m3u8'))return {ok:true,status:200,url,headers:{get:()=> 'application/vnd.apple.mpegurl'},text:async()=> '#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:100\n#EXT-X-TARGETDURATION:5\n#EXTINF:4.5,\noffline.ts\n'};
+ throw new Error('tiny media-sequence placeholder must stop before segment fetch');
+};
+PATCHED
+(async()=>{const rows=await globalThis.getStreams('1','anime',1,1);assert.equal(rows.length,0,JSON.stringify(rows));assert.equal(calls,1)})().catch(e=>{console.error(e);process.exit(1)});
+'''.replace('PATCHED', patched))
+
+# Strong live/LL-HLS control evidence remains allowed.
+run_node(r'''
+const assert=require('assert');
+let calls=0;
+globalThis.__native_fetch=function(){};
+function response(url,contentType,text,bytes){return {ok:true,status:200,url,headers:{get:n=>String(n).toLowerCase()==='content-type'?contentType:''},text:async()=>text||'',arrayBuffer:async()=>{const b=bytes||new Uint8Array(0);return b.buffer.slice(b.byteOffset,b.byteLength)}}}
 const ts=new Uint8Array(376);ts[0]=0x47;ts[188]=0x47;
 globalThis.fetch=async function(url){
  calls++;
- if(url.endsWith('media.m3u8'))return response(url,'application/vnd.apple.mpegurl','#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:100\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\na.ts\n#EXTINF:6,\nb.ts\n#EXTINF:6,\nc.ts\n');
+ if(url.endsWith('media.m3u8'))return response(url,'application/vnd.apple.mpegurl','#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:100\n#EXT-X-SERVER-CONTROL:CAN-BLOCK-RELOAD=YES\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\na.ts\n#EXTINF:6,\nb.ts\n#EXTINF:6,\nc.ts\n');
  if(url.endsWith('a.ts'))return response(url,'video/mp2t','',ts);
  throw new Error('unexpected '+url);
 };
@@ -99,4 +114,4 @@ PATCHED
 (async()=>{const rows=await globalThis.getStreams('1','movie');assert.equal(rows.length,1,JSON.stringify(rows));assert.equal(calls,2,'full VOD should probe playlist + first segment')})().catch(e=>{console.error(e);process.exit(1)});
 '''.replace('PATCHED', patched))
 
-print('native HLS rejects tiny finite/static placeholders and preserves sliding live + full VOD')
+print('native HLS rejects tiny finite/static/media-sequence placeholders and preserves strong live + full VOD')
