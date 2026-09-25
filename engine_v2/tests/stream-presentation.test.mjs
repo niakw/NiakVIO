@@ -42,15 +42,15 @@ assert.equal(presented.duration, 169);
 assert.equal(presented.sourceType, "BLU-RAY");
 assert.deepEqual(presented.description.split("\n"), [
   "🎬 Interstellar • 2014",
-  "⏱ 2h49 • 🔞 -12",
-  "🇫🇷 VF",
+  "⏱ 2h49 • 🔞 12+",
+  "🌐 French · Dub",
   "🎞️ BLU-RAY • HEVC • HLS  |  🔊 E-AC3 5.1",
 ]);
 assert.doesNotMatch(presented.description, /2160p|\b4K\b/i);
 assert.ok(presented.badgeIds.includes("4k-ultra-hd"));
 assert.ok(presented.badgeIds.includes("blu-ray-disc"));
 assert.ok(presented.badgeIds.includes("hevc"));
-assert.ok(presented.badgeIds.includes("vf"));
+assert.ok(presented.badgeIds.includes("lang-fr"));
 assert.ok(presented.badgeIds.includes("age-12"));
 
 const multiVf = presentStreamCandidate({
@@ -58,16 +58,17 @@ const multiVf = presentStreamCandidate({
   url: "https://media.example/multi.m3u8",
   language: "Dual Audio",
 }, { title: "Film", year: 2026, mediaType: "movie" }, vfProvider);
-assert.match(multiVf.description, /^🎬 Film • 2026\n🇫🇷 MULTI \(VF\/VO\)/m);
+assert.match(multiVf.description, /^🎬 Film • 2026\n🌐 French · Dub/m);
 assert.equal(multiVf.language, "MULTI (VF/VO)");
-assert.ok(multiVf.badgeIds.includes("multi"));
+assert.ok(multiVf.badgeIds.includes("lang-fr"));
+assert.ok(!multiVf.badgeIds.includes("multi"));
 
 const multiVo = presentStreamCandidate({
   name: "Cineby",
   url: "https://media.example/multi.m3u8",
   language: "MULTI",
 }, { title: "Film", year: 2026, mediaType: "movie" }, voProvider);
-assert.match(multiVo.description, /🌐 MULTI/);
+assert.doesNotMatch(multiVo.description, /🌐 MULTI/);
 assert.equal(multiVo.language, "MULTI");
 
 const vostfr = presentStreamCandidate({
@@ -76,7 +77,8 @@ const vostfr = presentStreamCandidate({
   language: "VOSTFR",
 }, { title: "Film", year: 2026, mediaType: "movie" }, vfProvider);
 assert.equal(vostfr.language, "VOSTFR");
-assert.match(vostfr.description, /🌐🇫🇷 VOSTFR/);
+assert.match(vostfr.description, /🌐 French · Sub/);
+assert.ok(vostfr.badgeIds.includes("sub-fr"));
 
 const vfq = presentStreamCandidate({
   name: "Purstream",
@@ -84,7 +86,8 @@ const vfq = presentStreamCandidate({
   language: "fr-CA",
 }, { title: "Film", year: 2026, mediaType: "movie" }, vfProvider);
 assert.equal(vfq.language, "VFQ");
-assert.match(vfq.description, /🇫🇷 VFQ/);
+assert.match(vfq.description, /🌐 French \(Canada\) · Dub/);
+assert.ok(vfq.badgeIds.includes("lang-fr-ca"));
 
 const vfPlusVost = presentStreamCandidate({
   name: "Purstream",
@@ -93,7 +96,8 @@ const vfPlusVost = presentStreamCandidate({
   description: "VOSTFR available",
 }, { title: "Film", year: 2026, mediaType: "movie" }, vfProvider);
 assert.equal(vfPlusVost.language, "VF");
-assert.match(vfPlusVost.description, /🇫🇷 VF/);
+assert.match(vfPlusVost.description, /French · Dub/);
+assert.match(vfPlusVost.description, /French · Sub/);
 assert.doesNotMatch(vfPlusVost.description, /VOSTFR available|MULTI/);
 
 const series = presentStreamCandidate({
@@ -102,7 +106,7 @@ const series = presentStreamCandidate({
   language: "VF",
 }, { title: "Jujutsu Kaisen", year: 2020, runtime: 24, certification: "-12", mediaType: "anime", season: 1, episode: 1 }, vfProvider);
 assert.equal(series.description.split("\n")[0], "📺 Jujutsu Kaisen • 2020 • S01E01");
-assert.equal(series.description.split("\n")[1], "⏱ 24min • 🔞 -12");
+assert.equal(series.description.split("\n")[1], "⏱ 24min • 🔞 12+");
 
 const tmdbFallback = presentStreamCandidate({
   name: "Cineby",
@@ -147,8 +151,8 @@ assert.equal(kehflix4k.name, "Kehflix - 4K");
 assert.equal(normalizeLanguage({ language: "fr" }, vfProvider), "VF");
 assert.equal(normalizeLanguage({ language: "VFQ" }, vfProvider), "VFQ");
 assert.equal(normalizeLanguage({ language: "MULTI" }, voProvider), "MULTI");
-assert.deepEqual(buildBadges({ quality: "2160p", language: "VFQ", codec: "AVC" }), ["4K", "AVC", "VFQ"]);
-assert.deepEqual(buildBadgeIds({ quality: "2160p", language: "VFQ", codec: "AVC", subtitles: [] }), ["4k-ultra-hd", "avc", "vfq"]);
+assert.deepEqual(buildBadges({ quality: "2160p", language: "VFQ", codec: "AVC" }), ["4K", "AVC", "FR-CA"]);
+assert.deepEqual(buildBadgeIds({ quality: "2160p", language: "VFQ", codec: "AVC", subtitles: [] }), ["4k-ultra-hd", "avc", "lang-fr-ca"]);
 
 
 const indianTracks = presentStreamCandidate({

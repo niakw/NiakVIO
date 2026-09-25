@@ -58,8 +58,10 @@ assert mapping["display"]["hideUnknownBadges"] is True
 assert mapping["display"]["alwaysReplaceProviderDescription"] is True
 assert mapping["display"]["fallbackWhenNativeBadgesDisabled"] == "emojiTechnicalLine"
 assert mapping["display"]["nativeBadgeFeeds"] == {
-    "dark_app_background": "assets/stream-badges-dark.json",
-    "light_app_background": "assets/stream-badges-light.json",
+    "dark_app_background": "assets/stream-badges-dark-v3.json",
+    "light_app_background": "assets/stream-badges-light-v3.json",
+    "transparent": "assets/stream-badges-transparent-v3.json",
+    "fusion": "assets/stream-badges-fusion-v3.json",
 }
 assert "Use assets/dark when the Nuvio application background is gray/dark." in readme
 assert "Use assets/light when the Nuvio application background is white/light." in readme
@@ -80,6 +82,9 @@ for theme in ("dark", "light", "transparent", "fusion"):
     assert versioned.read_bytes() == latest.read_bytes(), f"{theme} v3 must equal latest at v3 publication"
 
 assert (ROOT / "assets/stream-badges-fusion-v2.json").is_file(), "historical fusion-v2 must be preserved"
+assert '"lang-"+' in core and '"sub-"+' in core, "provider presentation generator must emit universal language/subtitle badge IDs"
+for stale_mapping in ('"VF":"vf"', '"VFQ":"vfq"', '"VO":"vo"', '"VOSTFR":"vostfr"'):
+    assert stale_mapping not in core, f"legacy public badge mapping leaked from provider presentation generator: {stale_mapping}"
 
 rules = "\n".join(mapping.get("rules") or [])
 assert "Never infer Blu-ray or Ultra HD Blu-ray from 1080p/2160p alone." in rules
@@ -113,6 +118,6 @@ for theme in ("dark", "light", "transparent", "fusion"):
 
 print(
     "badge asset contract passed: "
-    f"catalog={len(badges)} themes=3 sizes=2 core_ids={len(core_badge_ids)} "
+    f"catalog={len(badges)} themes=4 sizes=2 universal_language_ids=true "
     f"light_qa_rows={len(qa_rows)} native_streambadge_feeds=bordered emoji_fallback=true"
 )

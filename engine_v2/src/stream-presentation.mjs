@@ -96,7 +96,10 @@ export function buildBadges(facts = {}) {
   if (facts.audioCodec) out.push(facts.audioCodec);
   if (facts.audioChannels) out.push(facts.audioChannels);
   const trackBadges = (facts.languageTracks ?? []).map(compactTrackLabel).filter(Boolean);
-  if (trackBadges.length) out.push(...trackBadges); else if (facts.language) out.push(facts.language);
+  if (trackBadges.length) out.push(...trackBadges); else {
+    const fallbackCode = normalizeLanguageCode(facts.language);
+    if (fallbackCode) out.push(fallbackCode.toUpperCase());
+  }
   out.push(...(facts.subtitles ?? []));
   if (facts.ageRating) out.push(facts.ageRating);
   return uniq(out);
@@ -127,12 +130,25 @@ export function buildBadgeIds(facts = {}) {
   if (audioCodec) ids.push(audioCodec);
   const channels = { "7.1": "7.1", "5.1": "5.1", "2.0": "2.0", "1.0": "1.0" }[facts.audioChannels];
   if (channels) ids.push(channels);
-  const language = {
-    "MULTI (VF/VO)": "multi", MULTI: "multi", VF: "vf", VFQ: "vfq", VO: "vo", VOSTFR: "vostfr",
-  }[facts.language];
-  if (language) ids.push(language);
-  const subtitleIds = { VOSTFR: "vostfr", "SUB FR": "sub-fr", "SUB EN": "sub-en", FORCED: "forced", SDH: "sdh-cc" };
-  for (const value of facts.subtitles ?? []) if (subtitleIds[value]) ids.push(subtitleIds[value]);
+  const tracks = Array.isArray(facts.languageTracks) ? facts.languageTracks : [];
+  for (const track of tracks) {
+    const code = normalizeLanguageCode(track?.code ?? track?.tag ?? track?.label);
+    if (!code) continue;
+    ids.push(String(track?.role ?? "").toLowerCase() === "sub" ? `sub-${code}` : `lang-${code}`);
+  }
+  if (!tracks.length) {
+    const code = normalizeLanguageCode(facts.language);
+    if (code) ids.push(`lang-${code}`);
+  }
+  for (const value of facts.subtitles ?? []) {
+    const text = String(value ?? "").trim();
+    if (/^VOSTFR$/i.test(text)) { ids.push("sub-fr"); continue; }
+    if (/^FORCED$/i.test(text)) { ids.push("forced"); continue; }
+    if (/^(?:SDH|CC|SDH\/CC)$/i.test(text)) { ids.push("sdh-cc"); continue; }
+    const match = text.match(/^SUB\s+([A-Z]{2,3}(?:-[A-Z0-9]{2,3})?)$/i);
+    const code = match ? normalizeLanguageCode(match[1]) : null;
+    if (code) ids.push(`sub-${code}`);
+  }
   const age = ageBadgeId(facts.ageRating);
   if (age) ids.push(age);
   return uniq(ids);
@@ -207,47 +223,86 @@ function naturalLanguageLabel(value) {
 
 const LANGUAGE_CODE_ALIASES = Object.freeze({
   en: "en", eng: "en", english: "en",
-  fr: "fr", fra: "fr", fre: "fr", french: "fr", francais: "fr", français: "fr",
+  fr: "fr", fra: "fr", fre: "fr", french: "fr", francais: "fr", français: "fr", vf: "fr", vff: "fr",
+  de: "de", deu: "de", ger: "de", german: "de",
+  es: "es", spa: "es", spanish: "es",
+  bn: "bn", ben: "bn", bengali: "bn",
+  pt: "pt", por: "pt", portuguese: "pt",
+  bg: "bg", bul: "bg", bulgarian: "bg",
+  zh: "zh", zho: "zh", chi: "zh", chinese: "zh", mandarin: "zh",
+  ko: "ko", kor: "ko", korean: "ko",
+  ar: "ar", ara: "ar", arabic: "ar",
+  fi: "fi", fin: "fi", finnish: "fi",
+  el: "el", ell: "el", gre: "el", greek: "el",
+  hu: "hu", hun: "hu", hungarian: "hu",
   hi: "hi", hin: "hi", hindi: "hi",
+  id: "id", ind: "id", indonesian: "id",
+  fa: "fa", fas: "fa", per: "fa", persian: "fa", farsi: "fa",
+  he: "he", heb: "he", hebrew: "he",
+  it: "it", ita: "it", italian: "it",
   ja: "ja", jpn: "ja", japanese: "ja",
+  ku: "ku", kur: "ku", kurdish: "ku",
+  uz: "uz", uzb: "uz", uzbek: "uz",
+  fil: "fil", filipino: "fil", tagalog: "fil", tgl: "fil",
+  pl: "pl", pol: "pl", polish: "pl",
+  ro: "ro", ron: "ro", rum: "ro", romanian: "ro",
+  ru: "ru", rus: "ru", russian: "ru",
+  sk: "sk", slk: "sk", slo: "sk", slovak: "sk",
+  sv: "sv", swe: "sv", swedish: "sv",
+  cs: "cs", ces: "cs", cze: "cs", czech: "cs",
+  vi: "vi", vie: "vi", vietnamese: "vi",
+  tr: "tr", tur: "tr", turkish: "tr",
   ta: "ta", tam: "ta", tamil: "ta",
   te: "te", tel: "te", telugu: "te",
-  bn: "bn", ben: "bn", bengali: "bn",
   ml: "ml", mal: "ml", malayalam: "ml",
   kn: "kn", kan: "kn", kannada: "kn",
   pa: "pa", pan: "pa", punjabi: "pa",
   gu: "gu", guj: "gu", gujarati: "gu",
   mr: "mr", mar: "mr", marathi: "mr",
   ur: "ur", urd: "ur", urdu: "ur",
-  ko: "ko", kor: "ko", korean: "ko",
-  es: "es", spa: "es", spanish: "es",
-  de: "de", deu: "de", ger: "de", german: "de",
-  it: "it", ita: "it", italian: "it",
-  pt: "pt", por: "pt", portuguese: "pt",
-  ar: "ar", ara: "ar", arabic: "ar",
-  tr: "tr", tur: "tr", turkish: "tr",
-  ru: "ru", rus: "ru", russian: "ru",
-  zh: "zh", zho: "zh", chi: "zh", chinese: "zh",
+  yue: "yue", cantonese: "yue",
+});
+
+const LANGUAGE_LOCALE_ALIASES = Object.freeze({
+  "fr-ca": "fr-ca", vfq: "fr-ca", "canadian french": "fr-ca", "french canada": "fr-ca", "french canadian": "fr-ca",
+  "fr-ch": "fr-ch", "swiss french": "fr-ch", "french swiss": "fr-ch",
+  "pt-br": "pt-br", "brazilian portuguese": "pt-br", "portuguese brazil": "pt-br",
+  "pt-pt": "pt-pt", "european portuguese": "pt-pt", "portuguese portugal": "pt-pt",
+  "es-419": "es-419", "latin american spanish": "es-419", "latam spanish": "es-419", "spanish latam": "es-419",
+  "es-mx": "es-mx", "mexican spanish": "es-mx", "spanish mexico": "es-mx",
+  "zh-hk": "zh-hk", "hong kong chinese": "zh-hk",
+  "zh-tw": "zh-tw", "traditional chinese": "zh-tw", "taiwanese chinese": "zh-tw", "taiwanese mandarin": "zh-tw",
 });
 
 const LANGUAGE_NAMES = Object.freeze({
-  en: "English", fr: "French", hi: "Hindi", ja: "Japanese", ta: "Tamil", te: "Telugu",
-  bn: "Bengali", ml: "Malayalam", kn: "Kannada", pa: "Punjabi", gu: "Gujarati", mr: "Marathi",
-  ur: "Urdu", ko: "Korean", es: "Spanish", de: "German", it: "Italian", pt: "Portuguese",
-  ar: "Arabic", tr: "Turkish", ru: "Russian", zh: "Chinese",
+  en: "English", fr: "French", de: "German", es: "Spanish", bn: "Bengali", pt: "Portuguese",
+  bg: "Bulgarian", zh: "Chinese", ko: "Korean", ar: "Arabic", fi: "Finnish", el: "Greek",
+  hu: "Hungarian", hi: "Hindi", id: "Indonesian", fa: "Persian", he: "Hebrew", it: "Italian",
+  ja: "Japanese", ku: "Kurdish", uz: "Uzbek", fil: "Filipino", pl: "Polish", ro: "Romanian",
+  ru: "Russian", sk: "Slovak", sv: "Swedish", cs: "Czech", vi: "Vietnamese", tr: "Turkish",
+  ta: "Tamil", te: "Telugu", ml: "Malayalam", kn: "Kannada", pa: "Punjabi", gu: "Gujarati",
+  mr: "Marathi", ur: "Urdu", yue: "Cantonese",
+  "fr-ca": "French (Canada)", "fr-ch": "French (Switzerland)", "pt-br": "Portuguese (Brazil)",
+  "pt-pt": "Portuguese (Portugal)", "es-419": "Spanish (Latin America)", "es-mx": "Spanish (Mexico)",
+  "zh-hk": "Chinese (Hong Kong)", "zh-tw": "Chinese (Taiwan)",
 });
 
 export function normalizeLanguageCode(value) {
   const raw = useful(value);
   if (!raw) return null;
+  const localeKey = raw.toLowerCase().replace(/_/g, "-").replace(/\s+/g, " ").trim();
+  if (LANGUAGE_LOCALE_ALIASES[localeKey]) return LANGUAGE_LOCALE_ALIASES[localeKey];
   const normalized = raw.toLowerCase().replace(/[_-]+/g, " ").replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
+  if (LANGUAGE_LOCALE_ALIASES[normalized]) return LANGUAGE_LOCALE_ALIASES[normalized];
   if (LANGUAGE_CODE_ALIASES[normalized]) return LANGUAGE_CODE_ALIASES[normalized];
   const first = normalized.split(" ")[0];
   if (LANGUAGE_CODE_ALIASES[first]) return LANGUAGE_CODE_ALIASES[first];
-  const locale = raw.toLowerCase().replace(/_/g, "-").match(/^([a-z]{2,3})(?:-[a-z]{2,4})?$/i)?.[1];
-  return locale && LANGUAGE_CODE_ALIASES[locale] ? LANGUAGE_CODE_ALIASES[locale] : null;
+  const locale = raw.toLowerCase().replace(/_/g, "-").match(/^([a-z]{2,3})(?:-([a-z0-9]{2,3}))?$/i);
+  if (!locale) return null;
+  const exact = locale[2] ? `${locale[1]}-${locale[2]}` : locale[1];
+  if (LANGUAGE_LOCALE_ALIASES[exact]) return LANGUAGE_LOCALE_ALIASES[exact];
+  return LANGUAGE_CODE_ALIASES[locale[1]] ?? null;
 }
-
 function roleFrom(value) {
   const text = clean(value)?.toLowerCase() ?? "";
   if (/\b(?:original|original audio|native|vo)\b/.test(text)) return "Original";
@@ -300,14 +355,17 @@ export function normalizeLanguageTracks(stream = {}, metadata = {}, provider = {
   const upper = explicit?.toUpperCase() ?? "";
   if (!rows.length && explicit) {
     if (/\bVOSTFR\b/.test(upper)) {
-      if (original) { add(original, "Original"); add("fr", "Sub"); }
+      if (original) add(original, "Original");
+      add("fr", "Sub");
     } else if (/^(?:VO|ORIGINAL(?:[ ._-]?(?:AUDIO|LANG(?:UAGE)?))?)$/i.test(explicit)) {
       if (original) add(original, "Original");
-    } else if (/^(?:VF|VFF|VFQ|FR|FRA|FRE|FRENCH|FRANCAIS|FRANÇAIS|FR-CA)$/i.test(explicit)) {
-      if (original) add("fr", original === "fr" ? "Original" : "Dub");
+    } else if (/^(?:VFQ|FR[ ._-]?CA)$/i.test(explicit)) {
+      add("fr-ca", original === "fr-ca" ? "Original" : "Dub");
+    } else if (/^(?:VF|VFF|FR|FRA|FRE|FRENCH|FRANCAIS|FRANÇAIS)$/i.test(explicit)) {
+      add("fr", original === "fr" ? "Original" : "Dub");
     } else if (/\bMULTI\b|\bDUAL(?:[- ]?AUDIO)?\b/i.test(explicit)) {
       if (original) add(original, "Original");
-      if (original && isVfProvider(provider) && original !== "fr") add("fr", "Dub");
+      if (isVfProvider(provider) && original !== "fr") add("fr", "Dub");
     } else {
       const parts = explicit.split(/\s*(?:\/|,|\+|\||;)\s*/).map((value) => value.trim()).filter(Boolean);
       for (const part of parts) {
@@ -322,7 +380,7 @@ export function normalizeLanguageTracks(stream = {}, metadata = {}, provider = {
     const code = normalizeLanguageCode(value);
     if (code) add(code, "Sub");
   }
-  if (original && /\bVOSTFR\b/i.test([stream.language, stream.description, stream.title].map(clean).filter(Boolean).join(" "))) add("fr", "Sub");
+  if (/\bVOSTFR\b/i.test([stream.language, stream.description, stream.title].map(clean).filter(Boolean).join(" "))) add("fr", "Sub");
   return out;
 }
 
@@ -422,15 +480,14 @@ export function normalizeDuration(value) {
 export function normalizeAgeRating(value) {
   const text = useful(value);
   if (!text) return null;
-  const upper = text.toUpperCase();
-  const france = upper.match(/(?:-|INTERDIT\s+MOINS\s+DE\s+)(10|12|16|18)\b/);
-  if (france) return `-${france[1]}`;
-  const plus = upper.match(/(?:^|\b)(7|10|12|13|14|15|16|17|18)\+(?:$|\s)/);
-  if (plus) return `${plus[1]}+`;
+  const upper = text.toUpperCase().replace(/\s+/g, " ").trim();
+  const frenchRestricted = upper.match(/(?:^-|INTERDIT\s+(?:AUX\s+)?MOINS\s+DE\s+)(10|12|16|18)\b/);
+  if (frenchRestricted) return `${frenchRestricted[1]}+`;
+  const numeric = upper.match(/^(?:AGE[ ._-]*)?(0|6|7|10|12|13|14|15|16|17|18|19|21)\+?$/);
+  if (numeric) return `${numeric[1]}+`;
   if (/^(?:U|G|PG|PG-13|R|NC-17|TV-Y|TV-Y7|TV-G|TV-PG|TV-14|TV-MA)$/i.test(text)) return upper;
   return text;
 }
-
 function normalizeAudioCodec(value) {
   const upper = useful(value)?.toUpperCase() ?? "";
   if (/TRUE[ ._-]?HD/.test(upper)) return "TrueHD";
@@ -491,17 +548,19 @@ function normalizeFormat(value, url) {
 
 function normalizeSubtitles(stream) {
   const explicit = Array.isArray(stream.subtitles) ? stream.subtitles : Array.isArray(stream.extCaptions) ? stream.extCaptions : Array.isArray(stream.captions) ? stream.captions : [];
-  const explicitLanguages = explicit.map((row) => useful(row?.language ?? row?.lanName ?? row?.langName ?? row?.lan ?? row?.lang)).filter(Boolean);
-  const text = [stream.description, stream.title, stream.filename, ...explicitLanguages].map(clean).filter(Boolean).join(" ").toUpperCase();
+  const text = [stream.description, stream.title, stream.filename].map(clean).filter(Boolean).join(" ");
   const out = [];
-  if (/\bVOSTFR\b/.test(text)) out.push("VOSTFR");
-  if (/\bSUB[ ._-]?FR\b|\bFRENCH\b|\bFRAN[CÇ]AIS\b/.test(text)) out.push("SUB FR");
-  if (/\bSUB[ ._-]?EN\b|\bENGLISH\b/.test(text)) out.push("SUB EN");
-  if (/\bFORCED\b/.test(text)) out.push("FORCED");
-  if (/\bSDH\b|\bCLOSED[ ]?CAPTION\b/.test(text)) out.push("SDH");
+  const addCode = (value) => {
+    const code = normalizeLanguageCode(value);
+    if (code) out.push(`SUB ${code.toUpperCase()}`);
+  };
+  for (const row of explicit) addCode(row?.language ?? row?.lanName ?? row?.langName ?? row?.lan ?? row?.lang ?? row?.code ?? row?.name ?? row?.label ?? row);
+  if (/\bVOSTFR\b/i.test(text)) out.push("SUB FR");
+  for (const match of text.matchAll(/\bSUB(?:TITLE)?S?[ ._-]?([A-Z]{2,3}(?:-[A-Z0-9]{2,3})?)\b/gi)) addCode(match[1]);
+  if (/\bFORCED\b/i.test(text)) out.push("FORCED");
+  if (/\bSDH\b|\bCLOSED[ ]?CAPTION\b|\bCC\b/i.test(text)) out.push("SDH");
   return uniq(out);
 }
-
 function cleanProviderDisplayName(value) {
   const raw = clean(value);
   if (!raw) return null;
@@ -534,12 +593,12 @@ function durationAgeLine(facts) {
 function languageLine(facts) {
   const tracks = (facts.languageTracks ?? []).map(fullTrackLabel).filter(Boolean);
   if (tracks.length) return `🌐 ${tracks.join(" • ")}`;
-  if (!facts.language) return "";
-  const prefix = ["VF", "VFQ", "MULTI (VF/VO)"].includes(facts.language) ? "🇫🇷" : facts.language === "VOSTFR" ? "🌐🇫🇷" : "🌐";
-  const subtitles = (facts.subtitles ?? []).filter((value) => value !== "VOSTFR");
-  return `${prefix} ${facts.language}${subtitles.length ? ` • 💬 ${subtitles.join(" • ")}` : ""}`;
+  const subtitles = (facts.subtitles ?? []).filter(Boolean);
+  const code = normalizeLanguageCode(facts.language);
+  const language = code ? (LANGUAGE_NAMES[code] ?? code.toUpperCase()) : null;
+  if (!language && !subtitles.length) return "";
+  return `🌐 ${[language, subtitles.length ? `💬 ${subtitles.join(" • ")}` : null].filter(Boolean).join(" • ")}`;
 }
-
 function technicalLine(facts) {
   const groups = [];
   const video = [];
@@ -560,16 +619,22 @@ function technicalLine(facts) {
 }
 
 function ageBadgeId(value) {
-  const upper = useful(value)?.toUpperCase() ?? "";
-  if (/^(?:U|G|TOUS|TOUS PUBLICS)$/.test(upper)) return "age-all";
-  if (/^-?12$|^12\+$/.test(upper)) return "age-12";
-  if (/^-?16$|^16\+$/.test(upper)) return "age-16";
-  if (/^-?18$|^18\+$|^NC-17$/.test(upper)) return "age-18";
-  if (/^PG-?13$/.test(upper)) return "pg-13";
-  if (/^TV-?MA$/.test(upper)) return "tv-ma";
+  const upper = useful(value)?.toUpperCase().replace(/\s+/g, " ").trim() ?? "";
+  if (/^(?:ALL|ALL AGES|UNRESTRICTED|U|G)$/.test(upper)) return "age-all";
+  const numeric = upper.match(/^(0|6|7|10|12|13|14|15|16|17|18|19|21)\+?$/);
+  if (numeric) return `age-${numeric[1]}`;
+  const named = {
+    "PG-13": "age-us-pg13", "PG13": "age-us-pg13", "TV-Y": "age-us-tv-y", "TV-Y7": "age-us-tv-y7",
+    "TV-G": "age-us-tv-g", "TV-PG": "age-us-tv-pg", "TV-14": "age-us-tv14", "TV-MA": "age-us-tv-ma",
+    "NC-17": "age-us-nc17", "R15+": "age-jp-r15", "R18+": "age-jp-r18", "PG12": "age-jp-pg12",
+  }[upper];
+  if (named) return named;
+  let match = upper.match(/^FSK[ .:_-]?(0|6|12|16|18)$/); if (match) return `age-de-fsk${match[1]}`;
+  match = upper.match(/^KR[ .:_-]?(12|15|19)$/); if (match) return `age-kr${match[1]}`;
+  if (/^KR[ .:_-]?(?:ALL|0)$/.test(upper)) return "age-kr-all";
+  match = upper.match(/^UA[ ._-]?(7|13|16)\+?$/); if (match) return `age-in-ua${match[1]}`;
   return null;
 }
-
 function isVfProvider(provider) {
   if (String(provider.languageMode ?? "").toLowerCase() === "vf") return true;
   if (provider.projections?.vf === true) return true;
