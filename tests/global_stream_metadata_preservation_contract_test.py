@@ -10,9 +10,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from current_provider_scope import active_provider_count
+from current_provider_scope import visible_provider_count
 
-EXPECTED = active_provider_count()
+EXPECTED = visible_provider_count()
 
 materialization = json.loads((ROOT / "provider-v3-materialization.json").read_text(encoding="utf-8"))
 rows = [row for row in materialization.get("providers") or [] if isinstance(row, dict)]
