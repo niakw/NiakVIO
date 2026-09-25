@@ -164,7 +164,7 @@ assert production_replay["action"] == "probe-targeted-repair", production_replay
 assert production_replay["providerPositiveProgramReplay"] is True, production_replay
 assert production_replay["providerPositiveProgramProductionRescue"] is True, production_replay
 assert production_replay["postExhaustionStrategyProfile"] == "provider_positive_program_replay_v1", production_replay
-assert production_replay["allowedProfiles"][0] == "provider_positive_program_replay_v1", production_replay
+assert production_replay["allowedProfiles"] == ["provider_positive_program_replay_v1"], production_replay
 assert production_replay["positiveProgramFingerprint"] == "a" * 64, production_replay
 assert production_replay["repairScope"] not in {"learning", "deferred"}, production_replay
 assert production_replay["repairEngine"] != "brain_learning_lab", production_replay
