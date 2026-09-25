@@ -130,3 +130,8 @@ assert "max_tokens=512" in workflow
 upload_tail=workflow[workflow.find("Upload sanitized learning and proposal state"):]
 assert "private-documents.jsonl" not in upload_tail
 assert "brain-llm-private" not in upload_tail
+
+assert "niakvio-guidance-state.json" in workflow
+assert "guidance pagination is incomplete" in workflow
+assert "guidance cohort is incomplete" in workflow
+assert "guidance source/state mismatch" in workflow
