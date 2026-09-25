@@ -318,7 +318,15 @@ jobs:
           cp /tmp/provider-census-proof-history.json automation/provider-census-proof-history.json
           cp /tmp/provider-authority-status.json automation/provider-authority-status.json
           cp /tmp/provider-waf-browser-session-sharded.json "automation/provider-waf-browser-session-${run_id}.json"
-          cp /tmp/provider-waf-browser-session-sharded.json automation/provider-waf-browser-session-latest.json
+          if [ -s automation/provider-waf-browser-session-latest.json ]; then
+            python scripts/merge_waf_latest_evidence.py \
+              --previous automation/provider-waf-browser-session-latest.json \
+              --current /tmp/provider-waf-browser-session-sharded.json \
+              --output /tmp/provider-waf-browser-session-latest-merged.json
+            mv /tmp/provider-waf-browser-session-latest-merged.json automation/provider-waf-browser-session-latest.json
+          else
+            cp /tmp/provider-waf-browser-session-sharded.json automation/provider-waf-browser-session-latest.json
+          fi
           cp /tmp/PROVIDER_CENSUS_STATUS.md PROVIDER_CENSUS_STATUS.md
           verified="$(python - <<'PY'
           import json
