@@ -87,6 +87,8 @@ assert "FIELD_REPAIR_CONCURRENT_PROVIDER_DRIFT" in persist_block
 assert "FIELD_REPAIR_FRESH_CENSUS_SKIPPED" in persist_block
 assert "select_provider_materialization_scope.py" in persist_block
 assert "provider_input_drift=0" in persist_block
+assert "FIELD_REPAIR_CANONICAL_LEDGER_REBASED_NEUTRAL" in persist_block
+assert 'canonical_ledger_current=1' in persist_block
 assert '[ "$provider_input_drift" = "1" ]' in persist_block
 
 print("Repair-integrated WAF/Tailscale qualification workflow contract passed")
