@@ -6,16 +6,359 @@
       "contradictionProviders": [],
       "groupId": "route-to-terminal|html_scraper",
       "playableProviders": [],
-      "providerCount": 1,
+      "providerCount": 4,
       "providers": [
-        "animesalt"
+        "4khdhub",
+        "animesalt",
+        "mallumv",
+        "moviesmod"
       ],
       "repairScope": "route-to-terminal",
+      "verifiedProviders": []
+    },
+    {
+      "contradictionProviders": [],
+      "groupId": "route-to-terminal|mixed_embed_resolver",
+      "playableProviders": [],
+      "providerCount": 4,
+      "providers": [
+        "anime-ultime",
+        "animesultra",
+        "flemmix",
+        "yflix"
+      ],
+      "repairScope": "route-to-terminal",
+      "verifiedProviders": []
+    },
+    {
+      "contradictionProviders": [],
+      "groupId": "candidate-replay|mixed_embed_resolver",
+      "playableProviders": [],
+      "providerCount": 1,
+      "providers": [
+        "animevostfr"
+      ],
+      "repairScope": "candidate-replay",
+      "verifiedProviders": []
+    },
+    {
+      "contradictionProviders": [],
+      "groupId": "learning|html_scraper",
+      "playableProviders": [],
+      "providerCount": 1,
+      "providers": [
+        "allwish"
+      ],
+      "repairScope": "learning",
+      "verifiedProviders": []
+    },
+    {
+      "contradictionProviders": [],
+      "groupId": "route-to-terminal|api_stream_resolver",
+      "playableProviders": [],
+      "providerCount": 1,
+      "providers": [
+        "animevost-fr"
+      ],
+      "repairScope": "route-to-terminal",
+      "verifiedProviders": []
+    },
+    {
+      "contradictionProviders": [],
+      "groupId": "route-to-terminal|iframe_player",
+      "playableProviders": [],
+      "providerCount": 1,
+      "providers": [
+        "vidfast"
+      ],
+      "repairScope": "route-to-terminal",
+      "verifiedProviders": []
+    },
+    {
+      "contradictionProviders": [],
+      "groupId": "terminal-extraction|direct_media",
+      "playableProviders": [],
+      "providerCount": 1,
+      "providers": [
+        "allanime"
+      ],
+      "repairScope": "terminal-extraction",
+      "verifiedProviders": []
+    },
+    {
+      "contradictionProviders": [],
+      "groupId": "terminal-extraction|html_scraper",
+      "playableProviders": [],
+      "providerCount": 1,
+      "providers": [
+        "moviebox"
+      ],
+      "repairScope": "terminal-extraction",
       "verifiedProviders": []
     }
   ],
   "maxWorkers": 20,
   "providers": {
+    "4khdhub": {
+      "contradictions": 0,
+      "debugStages": {
+        "movie": "provider_network_zero_result",
+        "tv": "provider_network_zero_result"
+      },
+      "network": {
+        "movie": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/movie/760873",
+            "status": 200
+          },
+          {
+            "host": "4khdhub.one",
+            "method": "GET",
+            "path": "/",
+            "status": 200
+          }
+        ],
+        "tv": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/210702",
+            "status": 200
+          },
+          {
+            "host": "4khdhub.one",
+            "method": "GET",
+            "path": "/",
+            "status": 200
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "movie": [
+          "Sinners",
+          "Interstellar",
+          "Mon ninja et moi 3",
+          "The Colony"
+        ],
+        "tv": [
+          "Breaking Bad",
+          "Revenant"
+        ]
+      },
+      "statuses": {
+        "movie": "no_streams",
+        "tv": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "allanime": {
+      "contradictions": 0,
+      "debugStages": {
+        "anime": "provider_network_zero_result"
+      },
+      "network": {
+        "anime": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/245285",
+            "status": 200
+          },
+          {
+            "host": "api.mkissa.net",
+            "method": "POST",
+            "path": "/api",
+            "status": 200
+          },
+          {
+            "host": "api.allanime.day",
+            "method": "POST",
+            "path": "/api",
+            "status": 200
+          },
+          {
+            "host": "mkissa.to",
+            "method": "GET",
+            "path": "/",
+            "status": 200
+          },
+          {
+            "host": "api.allanime.day",
+            "method": "GET",
+            "path": "/api",
+            "status": 200
+          },
+          {
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "path": "/failure-frame-i-became-the-strongest-and-annihilated-everything-with-low-level-spells-episode-1-english-subbed",
+            "status": 200
+          },
+          {
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "path": "/failure-frame-i-became-the-strongest-and-annihilated-everything-with-low-level-spells-episode-1-english-dubbed",
+            "status": 200
+          },
+          {
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "path": "/failure-frame-episode-1-english-subbed",
+            "status": 200
+          },
+          {
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "path": "/failure-frame-episode-1-english-dubbed",
+            "status": 200
+          },
+          {
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "path": "/hazure-waku-no-jotai-ijo-skill-de-saikyo-ni-natta-ore-ga-subete-wo-jurin-suru-made-episode-1-english-subbed",
+            "status": 200
+          },
+          {
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "path": "/hazure-waku-no-jotai-ijo-skill-de-saikyo-ni-natta-ore-ga-subete-wo-jurin-suru-made-episode-1-english-dubbed",
+            "status": 200
+          },
+          {
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "path": "/hazure-waku-episode-1-english-subbed",
+            "status": 200
+          },
+          {
+            "host": "ww2.aniwatch.fit",
+            "method": "GET",
+            "path": "/hazure-waku-episode-1-english-dubbed",
+            "status": 200
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "anime": [
+          "One Piece",
+          "Hell Teacher: Jigoku Sensei Nube",
+          "Jujutsu Kaisen",
+          "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells"
+        ]
+      },
+      "statuses": {
+        "anime": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "allwish": {
+      "contradictions": 0,
+      "debugStages": {
+        "movie": "provider_waf_challenge",
+        "tv": "provider_waf_challenge"
+      },
+      "network": {
+        "movie": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/movie/284054",
+            "status": 200
+          },
+          {
+            "host": "all-wish.me",
+            "method": "GET",
+            "path": "/filter",
+            "status": 403
+          }
+        ],
+        "tv": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/93405",
+            "status": 200
+          },
+          {
+            "host": "all-wish.me",
+            "method": "GET",
+            "path": "/filter",
+            "status": 403
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "movie": [
+          "Interstellar",
+          "Django Unchained",
+          "Superman",
+          "Soul",
+          "The Wolf of Wall Street",
+          "Guardians of the Galaxy Vol. 2",
+          "Inception",
+          "Black Panther"
+        ],
+        "tv": [
+          "Breaking Bad",
+          "Game of Thrones",
+          "Vikings",
+          "Riverdale",
+          "Stranger Things",
+          "The 100",
+          "IT: Welcome to Derry",
+          "Squid Game"
+        ]
+      },
+      "statuses": {
+        "movie": "no_streams",
+        "tv": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "anime-ultime": {
+      "contradictions": 0,
+      "debugStages": {
+        "anime": "provider_network_http_error"
+      },
+      "network": {
+        "anime": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/65930",
+            "status": 200
+          },
+          {
+            "host": "v5.anime-ultime.net",
+            "method": "POST",
+            "path": "/MenuSearch.html",
+            "status": 403
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "anime": [
+          "Jujutsu Kaisen",
+          "Super Dragon Ball Heroes",
+          "Tokyo Ghoul",
+          "Demon Slayer: Kimetsu no Yaiba",
+          "One Piece",
+          "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+          "Attack on Titan",
+          "My Hero Academia"
+        ]
+      },
+      "statuses": {
+        "anime": "no_streams"
+      },
+      "verifiedLanes": []
+    },
     "animesalt": {
       "contradictions": 0,
       "debugStages": {
@@ -26,13 +369,13 @@
           {
             "host": "api.themoviedb.org",
             "method": "GET",
-            "path": "/3/tv/114410",
+            "path": "/3/tv/120089",
             "status": 200
           },
           {
             "host": "animesalt.cx",
             "method": "GET",
-            "path": "/series/chainsaw-man/",
+            "path": "/series/spy-x-family/",
             "status": 403
           },
           {
@@ -51,49 +394,668 @@
           "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
           "Hell Teacher: Jigoku Sensei Nube",
           "Jujutsu Kaisen",
-          "Black Clover",
-          "Gachiakuta",
-          "Chainsaw Man"
+          "Record of Ragnarok",
+          "One-Punch Man",
+          "SPY x FAMILY"
         ]
       },
       "statuses": {
         "anime": "no_streams"
       },
       "verifiedLanes": []
+    },
+    "animesultra": {
+      "contradictions": 0,
+      "debugStages": {
+        "anime": "provider_network_exception"
+      },
+      "network": {
+        "anime": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/280049",
+            "status": 200
+          },
+          {
+            "host": "v2.animesultra.org",
+            "method": "GET",
+            "path": "/index.php",
+            "status": 0
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "anime": [
+          "Jujutsu Kaisen",
+          "Mushoku Tensei: Jobless Reincarnation",
+          "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+          "Hell Teacher: Jigoku Sensei Nube",
+          "The Seven Deadly Sins",
+          "DARLING in the FRANXX",
+          "Boruto: Naruto Next Generations",
+          "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing"
+        ]
+      },
+      "statuses": {
+        "anime": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "animevost-fr": {
+      "contradictions": 0,
+      "debugStages": {
+        "anime": "provider_waf_challenge"
+      },
+      "network": {
+        "anime": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/37854",
+            "status": 200
+          },
+          {
+            "host": "animevost.fr",
+            "method": "GET",
+            "path": "/api/anime/search",
+            "status": 200
+          },
+          {
+            "host": "animevost.fr",
+            "method": "GET",
+            "path": "/api/animes/one-piece",
+            "status": 200
+          },
+          {
+            "host": "gupload.xyz",
+            "method": "GET",
+            "path": "/data/e/befd426c49c3",
+            "status": 403
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "anime": [
+          "Jujutsu Kaisen",
+          "Hell Mode: The Hardcore Gamer Dominates in Another World with Garbage Balancing",
+          "Death Note",
+          "Mushoku Tensei: Jobless Reincarnation",
+          "One Piece"
+        ]
+      },
+      "statuses": {
+        "anime": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "animevostfr": {
+      "contradictions": 0,
+      "debugStages": {
+        "anime": "provider_network_zero_result"
+      },
+      "network": {
+        "anime": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/259544",
+            "status": 200
+          },
+          {
+            "host": "animevostfr.org",
+            "method": "GET",
+            "path": "/",
+            "status": 200
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "anime": [
+          "Jujutsu Kaisen",
+          "Mushoku Tensei: Jobless Reincarnation",
+          "Failure Frame: I Became the Strongest and Annihilated Everything with Low-Level Spells",
+          "Hell Teacher: Jigoku Sensei Nube"
+        ]
+      },
+      "statuses": {
+        "anime": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "flemmix": {
+      "contradictions": 0,
+      "debugStages": {
+        "movie": "provider_waf_challenge",
+        "tv": "provider_waf_challenge"
+      },
+      "network": {
+        "movie": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/movie/634649",
+            "status": 200
+          },
+          {
+            "host": "flemmix.party",
+            "method": "GET",
+            "path": "/search",
+            "status": 403
+          }
+        ],
+        "tv": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/82856",
+            "status": 200
+          },
+          {
+            "host": "flemmix.party",
+            "method": "GET",
+            "path": "/search",
+            "status": 403
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "movie": [
+          "Interstellar",
+          "Mon ninja et moi 3",
+          "The Colony",
+          "Deadpool & Wolverine",
+          "Avatar: The Way of Water",
+          "The Batman",
+          "Dune",
+          "Spider-Man: No Way Home"
+        ],
+        "tv": [
+          "House of the Dragon",
+          "Breaking Bad",
+          "Revenant",
+          "Better Call Saul",
+          "Riverdale",
+          "Arrow",
+          "Money Heist",
+          "The Mandalorian"
+        ]
+      },
+      "statuses": {
+        "movie": "no_streams",
+        "tv": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "mallumv": {
+      "contradictions": 0,
+      "debugStages": {
+        "movie": "provider_network_http_error"
+      },
+      "network": {
+        "movie": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/movie/157336",
+            "status": 200
+          },
+          {
+            "host": "mallumv.space",
+            "method": "GET",
+            "path": "/search.php",
+            "status": 500
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "movie": [
+          "Interstellar"
+        ]
+      },
+      "statuses": {
+        "movie": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "moviebox": {
+      "contradictions": 0,
+      "debugStages": {
+        "movie": "provider_network_http_error",
+        "tv": "provider_network_http_error"
+      },
+      "network": {
+        "movie": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/movie/346698",
+            "status": 200
+          },
+          {
+            "host": "pengu.uk",
+            "method": "GET",
+            "path": "/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/",
+            "status": 429
+          },
+          {
+            "host": "moviebox-cfa7.onrender.com",
+            "method": "GET",
+            "path": "/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmV",
+            "status": 404
+          },
+          {
+            "host": "vidsrcme.ru",
+            "method": "GET",
+            "path": "/vs_src.php",
+            "status": 200
+          },
+          {
+            "host": "cloudorchestranova.com",
+            "method": "GET",
+            "path": "/embed/movie/346698",
+            "status": 200
+          },
+          {
+            "host": "cloudorchestranova.com",
+            "method": "GET",
+            "path": "/embed/player/movie/346698",
+            "status": 200
+          },
+          {
+            "host": "cloudorchestranova.com",
+            "method": "GET",
+            "path": "/embed/iframe_player/cache.php",
+            "status": 400
+          }
+        ],
+        "tv": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/200875",
+            "status": 200
+          },
+          {
+            "host": "pengu.uk",
+            "method": "GET",
+            "path": "/%7B%22source_moviebox%22%3A%22on%22%2C%22res_1080%22%3A%22on%22%2C%22disable_direct%22%3A%22on%22%2C%22auth_token%22%3A%22XwZg2rLkLlbjXBeDVCyxgfHXjxN1ijLMkUuToW8KaKc%22%7D/stream/",
+            "status": 429
+          },
+          {
+            "host": "moviebox-cfa7.onrender.com",
+            "method": "GET",
+            "path": "/eyJyZXNvbHV0aW9uIjpbIjEwODBwIl0sImxhbmd1YWdlIjpbImVuIiwiaGkiLCJvcmlnIl0sInByb3h5X3VybCI6IiIsInByb3ZpZGVycyI6WyJtb2JpbGUiLCJ3ZWIiLCJsZWdhY3kiXSwibmFtZV90ZW1wbGF0ZSI6IvCfjqUgKip7cmV",
+            "status": 404
+          },
+          {
+            "host": "vidsrcme.ru",
+            "method": "GET",
+            "path": "/vs_src.php",
+            "status": 200
+          },
+          {
+            "host": "cloudorchestranova.com",
+            "method": "GET",
+            "path": "/embed/tv/200875/1/1",
+            "status": 200
+          },
+          {
+            "host": "cloudorchestranova.com",
+            "method": "GET",
+            "path": "/embed/player/tv/200875/1/1",
+            "status": 200
+          },
+          {
+            "host": "cloudorchestranova.com",
+            "method": "GET",
+            "path": "/embed/iframe_player/cache.php",
+            "status": 400
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "movie": [
+          "Interstellar",
+          "Mon ninja et moi 3",
+          "The Colony",
+          "Avengers: Age of Ultron",
+          "Tenet",
+          "Jujutsu Kaisen 0",
+          "The Matrix",
+          "Barbie"
+        ],
+        "tv": [
+          "Revenant",
+          "Breaking Bad",
+          "Dark Desire",
+          "Vikings",
+          "The Boys",
+          "The Flash",
+          "Better Call Saul",
+          "IT: Welcome to Derry"
+        ]
+      },
+      "statuses": {
+        "movie": "no_streams",
+        "tv": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "moviesmod": {
+      "contradictions": 0,
+      "debugStages": {
+        "movie": "provider_waf_challenge",
+        "tv": "provider_waf_challenge"
+      },
+      "network": {
+        "movie": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/movie/68718",
+            "status": 200
+          },
+          {
+            "host": "moviesmod.ai.in",
+            "method": "GET",
+            "path": "/search/Django%20Unchained",
+            "status": 200
+          },
+          {
+            "host": "moviesmod.ai.in",
+            "method": "GET",
+            "path": "/download-django-unchained-2012-hindi-480p-720p-1080p/",
+            "status": 200
+          },
+          {
+            "host": "links.modpro.blog",
+            "method": "GET",
+            "path": "/archives/7426",
+            "status": 403
+          },
+          {
+            "host": "links.modpro.blog",
+            "method": "GET",
+            "path": "/archives/7427",
+            "status": 403
+          },
+          {
+            "host": "links.modpro.blog",
+            "method": "GET",
+            "path": "/archives/7428",
+            "status": 403
+          }
+        ],
+        "tv": [
+          {
+            "host": "api.themoviedb.org",
+            "method": "GET",
+            "path": "/3/tv/1402",
+            "status": 200
+          },
+          {
+            "host": "moviesmod.ai.in",
+            "method": "GET",
+            "path": "/search/The%20Walking%20Dead%201",
+            "status": 200
+          },
+          {
+            "host": "moviesmod.ai.in",
+            "method": "GET",
+            "path": "/download-the-walking-dead-dead-city-season-1-2-2023-english-480p-720p-1080p/",
+            "status": 200
+          },
+          {
+            "host": "episodes.modpro.blog",
+            "method": "GET",
+            "path": "/archives/55643",
+            "status": 403
+          },
+          {
+            "host": "episodes.modpro.blog",
+            "method": "GET",
+            "path": "/archives/55644",
+            "status": 403
+          },
+          {
+            "host": "episodes.modpro.blog",
+            "method": "GET",
+            "path": "/archives/55645",
+            "status": 403
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "movie": [
+          "Interstellar",
+          "Sinners",
+          "Shutter Island",
+          "Avengers: Infinity War",
+          "Captain America: Civil War",
+          "Thor",
+          "Black Panther",
+          "Django Unchained"
+        ],
+        "tv": [
+          "Breaking Bad",
+          "Shōgun",
+          "Game of Thrones",
+          "The Boys",
+          "House of the Dragon",
+          "Mr. Robot",
+          "Revenant",
+          "The Walking Dead"
+        ]
+      },
+      "statuses": {
+        "movie": "no_streams",
+        "tv": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "vidfast": {
+      "contradictions": 0,
+      "debugStages": {
+        "movie": "provider_network_http_error",
+        "tv": "provider_network_http_error"
+      },
+      "network": {
+        "movie": [
+          {
+            "host": "vidfast.to",
+            "method": "GET",
+            "path": "/embed/movie/508442",
+            "status": 403
+          },
+          {
+            "host": "vidfast.vc",
+            "method": "GET",
+            "path": "/movie/508442/",
+            "status": 403
+          }
+        ],
+        "tv": [
+          {
+            "host": "vidfast.to",
+            "method": "GET",
+            "path": "/embed/tv/93405/1/1",
+            "status": 403
+          },
+          {
+            "host": "vidfast.vc",
+            "method": "GET",
+            "path": "/tv/93405/1/1/",
+            "status": 403
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "movie": [
+          "Interstellar",
+          "The Wolf of Wall Street",
+          "Shutter Island",
+          "The Matrix",
+          "Mon ninja et moi 3",
+          "Inception",
+          "The Batman",
+          "Soul"
+        ],
+        "tv": [
+          "Breaking Bad",
+          "The Boys",
+          "Elite",
+          "Adolescence",
+          "Shōgun",
+          "The Queen's Gambit",
+          "Cobra Kai",
+          "Squid Game"
+        ]
+      },
+      "statuses": {
+        "movie": "no_streams",
+        "tv": "no_streams"
+      },
+      "verifiedLanes": []
+    },
+    "yflix": {
+      "contradictions": 0,
+      "debugStages": {
+        "movie": "provider_network_exception",
+        "tv": "provider_network_exception"
+      },
+      "network": {
+        "movie": [
+          {
+            "host": "enc-dec.app",
+            "method": "GET",
+            "path": "/db/flix/find",
+            "status": 200
+          },
+          {
+            "host": "enc-dec.app",
+            "method": "GET",
+            "path": "/api/enc-movies-flix",
+            "status": 200
+          },
+          {
+            "host": "yflix.to",
+            "method": "GET",
+            "path": "/ajax/links/list",
+            "status": 0
+          },
+          {
+            "host": "1moviesz.to",
+            "method": "GET",
+            "path": "/ajax/links/list",
+            "status": 0
+          },
+          {
+            "host": "1movies.bz",
+            "method": "GET",
+            "path": "/ajax/links/list",
+            "status": 0
+          },
+          {
+            "host": "solarmovie.fi",
+            "method": "GET",
+            "path": "/ajax/links/list",
+            "status": 0
+          }
+        ],
+        "tv": [
+          {
+            "host": "enc-dec.app",
+            "method": "GET",
+            "path": "/db/flix/find",
+            "status": 200
+          },
+          {
+            "host": "enc-dec.app",
+            "method": "GET",
+            "path": "/api/enc-movies-flix",
+            "status": 200
+          },
+          {
+            "host": "yflix.to",
+            "method": "GET",
+            "path": "/ajax/links/list",
+            "status": 0
+          },
+          {
+            "host": "1moviesz.to",
+            "method": "GET",
+            "path": "/ajax/links/list",
+            "status": 0
+          },
+          {
+            "host": "1movies.bz",
+            "method": "GET",
+            "path": "/ajax/links/list",
+            "status": 0
+          },
+          {
+            "host": "solarmovie.fi",
+            "method": "GET",
+            "path": "/ajax/links/list",
+            "status": 0
+          }
+        ]
+      },
+      "playableLanes": [],
+      "sampleTitles": {
+        "movie": [
+          "Interstellar"
+        ],
+        "tv": [
+          "Breaking Bad"
+        ]
+      },
+      "statuses": {
+        "movie": "no_streams",
+        "tv": "no_streams"
+      },
+      "verifiedLanes": []
     }
   },
-  "requestedProviders": [
-    "animesalt"
-  ],
-  "runId": "36064201542",
+  "requestedProviders": [],
+  "runId": "36105440284",
   "schemaVersion": 3,
-  "selectedProviderCount": 1,
+  "selectedProviderCount": 14,
   "selectedProviders": [
-    "animesalt"
-  ],
-  "shardCount": 1,
-  "shardIndex": 0,
-  "skippedEnvironmentProviders": [
     "4khdhub",
     "allanime",
     "allwish",
     "anime-ultime",
+    "animesalt",
     "animesultra",
-    "animetsu",
     "animevost-fr",
     "animevostfr",
-    "desiflix",
     "flemmix",
-    "fullanime",
     "mallumv",
     "moviebox",
     "moviesmod",
-    "showbox",
     "vidfast",
     "yflix"
   ],
+  "shardCount": 1,
+  "shardIndex": 0,
+  "skippedEnvironmentProviders": [
+    "animetsu",
+    "desiflix",
+    "fullanime",
+    "showbox"
+  ],
   "sourceCensusRunId": "36058132100-post-repair-candidate",
-  "triggerSha": "0ac551f287c2068221a72e64c2ff360eebf84d4d",
+  "triggerSha": "9425e73f22768110f242bc6f281322e6e4d99f9f",
   "verifiedProviderCount": 0,
   "verifiedProviders": []
 }
