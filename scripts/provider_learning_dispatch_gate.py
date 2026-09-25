@@ -20,7 +20,6 @@ from typing import Any
 
 PROVIDER_ID = re.compile(r"^[a-z0-9][a-z0-9-]{0,95}$")
 FINGERPRINT = re.compile(r"^[0-9a-f]{64}$")
-MAX_FINGERPRINT_HISTORY = 32
 
 
 def cid(value: object) -> str:
@@ -103,7 +102,7 @@ def dispatched_fingerprints(prior: dict[str, Any]) -> list[str]:
         value = str(raw or "").strip().casefold()
         if FINGERPRINT.fullmatch(value) and value not in values:
             values.append(value)
-    return values[-MAX_FINGERPRINT_HISTORY:]
+    return values
 
 
 def _execution_plan_payload(provider: str, row: dict[str, Any]) -> dict[str, Any]:
@@ -320,7 +319,6 @@ def mark_dispatched(
         history = dispatched_fingerprints(prior)
         if fingerprint not in history:
             history.append(fingerprint)
-        history = history[-MAX_FINGERPRINT_HISTORY:]
         dispatches = max(0, min(int(prior.get("dispatchCount") or 0) + 1, 9999))
         providers[provider] = {
             "lastDispatchedFingerprint": fingerprint,
@@ -333,8 +331,8 @@ def mark_dispatched(
     return {
         "schemaVersion": 2,
         "policy": (
-            "sanitized automatic Learning dispatch ledger; bounded per-provider fingerprint "
-            "history prevents any previously dispatched causal method from automatic replay"
+            "sanitized automatic Learning dispatch ledger; complete deduplicated per-provider "
+            "fingerprint history prevents any previously dispatched causal method from automatic replay"
         ),
         "providerCount": len(providers),
         "providers": dict(sorted(providers.items())),
