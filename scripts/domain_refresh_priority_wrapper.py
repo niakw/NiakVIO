@@ -40,6 +40,8 @@ PRIMARY_TOKENS = (
     "current",
     "actuel",
     "actuelle",
+    "actif",
+    "active",
 )
 BACKUP_TOKENS = (
     "backup",
@@ -50,6 +52,13 @@ BACKUP_TOKENS = (
     "fallback",
     "secondaire",
     "secondary",
+    "ancien",
+    "ancienne",
+    "old",
+    "bloque",
+    "blocked",
+    "ferme",
+    "closed",
 )
 
 
