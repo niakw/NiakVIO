@@ -2,109 +2,122 @@
 
 Ce dossier contient les assets visuels et les feeds **StreamBadge** utilisés avec les clients Nuvio compatibles.
 
+**Guide technique et cinéphile :** [comprendre les badges et les données média](../docs/fr/stream-badges-technical-guide.md)
+
 ## Feeds StreamBadge
 
 | Feed | Usage | URL brute |
 | --- | --- | --- |
-| **Fusion v3** | **Recommandé** pour un réglage unique, lisible sur fonds sombres et clairs | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v3.json` |
-| Dark v3 | Variante pour interfaces sombres | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark-v3.json` |
-| Light v3 | Variante pour interfaces claires | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light-v3.json` |
-| Transparent v3 | Artwork transparent / intégrations dédiées | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-transparent-v3.json` |
+| **Fusion v4** | **Recommandé** pour un réglage unique, lisible sur fonds sombres et clairs | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v4.json` |
+| Dark v4 | Variante pour interfaces sombres | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark-v4.json` |
+| Light v4 | Variante pour interfaces claires | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light-v4.json` |
+| Transparent v4 | Artwork transparent / intégrations dédiées | `https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-transparent-v4.json` |
 
-Les fichiers sans numéro restent des alias mobiles `latest`. Pour tout nouvel import ou toute documentation publique, utilisez une URL **v3** explicite.
+Les fichiers sans numéro restent des alias mobiles `latest`. Pour tout nouvel import et toute documentation publique, utilisez une URL **v4** explicite.
 
 ## Feed badges et manifest providers sont séparés
 
 Le manifest NiakVIO charge les providers. Les règles StreamBadge sont une configuration distincte du client Nuvio.
 
-Réinstaller ou rafraîchir le manifest **ne recharge donc pas automatiquement les règles de badges**.
+Actualiser ou réinstaller le manifest **ne recharge donc pas automatiquement les règles de badges**. Si le plugin est récent mais que les badges restent anciens, réimportez le feed StreamBadge versionné.
 
-## Cache / réimport NuvioTV
+## Cache / réimport StreamBadge
 
-NuvioTV enregistre localement les règles d'un feed au moment de son import. Une URL déjà importée peut donc continuer à utiliser l'ancienne copie des filtres même si le JSON distant a été corrigé.
+Nuvio peut conserver localement les règles d'un feed au moment de son import. Une URL déjà importée peut donc continuer à utiliser une ancienne copie.
 
 Symptôme typique :
 
 - l'aperçu des badges/images fonctionne ;
 - les streams réels n'affichent pourtant aucun badge ;
-- le même feed fonctionne avec une URL différente ou sur un profil propre.
+- le même feed fonctionne avec une URL versionnée différente ou sur un profil propre.
 
 Dans ce cas :
 
 1. supprimez l'ancien import StreamBadge ;
-2. importez **Fusion v3** avec l'URL versionnée ci-dessus ;
-3. vérifiez que Fusion v3 est l'import actif ;
+2. importez **Fusion v4** avec l'URL versionnée ci-dessus ;
+3. vérifiez que Fusion v4 est l'import actif ;
 4. revenez à l'écran des streams.
-
-L'URL versionnée permet de forcer un import neuf et évite de dépendre de l'ancienne copie locale de `stream-badges-fusion.json`.
 
 ## Comment le matching fonctionne
 
-NuvioTV compile directement le champ `pattern` de chaque filtre comme expression régulière. Le matcher cherche ces motifs dans plusieurs champs du stream, notamment :
+Nuvio compile le champ `pattern` de chaque filtre comme expression régulière et cherche les faits dans plusieurs champs du stream, notamment :
 
 - `filename` et `behaviorHints.filename` ;
-- `name` ;
-- `title` ;
+- `name` et `title` ;
 - `description` ;
-- les informations techniques parsées quand elles existent.
+- les informations techniques structurées lorsque le provider ou le Core les connaît.
 
-NiakVIO veille donc à faire survivre les faits utiles dans la présentation des streams : qualité, source, codec, HDR, audio, langue, etc. C'est ce qui permet aux règles de reconnaître des tokens comme `2160p`, `WEB-DL`, `HEVC`, `HDR10+`, `FR`, `FR-CA`, `SUB FR`, etc. Les anciens tokens comme `VF/VFF/VFQ/VO/VOSTFR` restent uniquement des alias d'entrée de compatibilité.
+NiakVIO fait survivre les faits utiles jusqu'à la présentation : qualité, source, livraison HLS/DASH, conteneur, codec, HDR, bit depth, framerate, bitrate, audio, langue, sous-titres et classification.
+
+Un fait inconnu reste inconnu : le système ne doit pas fabriquer `1080p`, `HEVC`, `HDR` ou une langue à partir d'une simple supposition. Les placeholders `Unknown`, `Inconnue`, `N/A` ou `Auto` ne doivent pas devenir des badges ou des suffixes de titre.
 
 ## Regex
 
 Après décodage JSON, Nuvio attend **un seul antislash runtime** pour les séquences regex telles que `\b`.
 
-Les tests NiakVIO interdisent désormais les patterns double-échappés qui rendaient les badges invisibles dans les streams réels.
+Les tests NiakVIO interdisent les patterns double-échappés qui rendraient les badges invisibles dans les streams réels.
 
 ## Sources et mapping
 
 - `badge_catalog_v2_complete.json` : catalogue canonique ;
 - `mapping_core_brain_ui_v2_complete.json` : mapping Core / Brain / UI ;
-- `stream-badges-fusion-v3.json` : feed Fusion stable recommandé ;
-- `stream-badges-dark-v3.json` : feed Dark stable ;
-- `stream-badges-light-v3.json` : feed Light stable ;
-- `stream-badges-transparent-v3.json` : feed Transparent stable.
+- `stream-badges-fusion-v4.json` : feed Fusion stable recommandé ;
+- `stream-badges-dark-v4.json` : feed Dark stable ;
+- `stream-badges-light-v4.json` : feed Light stable ;
+- `stream-badges-transparent-v4.json` : feed Transparent stable.
 
-Les assets sont générés et validés de façon déterministe par les scripts/tests du dépôt. Évitez de modifier uniquement un feed généré à la main : la source canonique doit rester cohérente avec les quatre variantes.
+Les assets sont générés et validés de façon déterministe. Ne modifiez pas uniquement un feed généré à la main : la source canonique doit rester cohérente avec les quatre variantes.
 
-## Couverture technique v3
+## Couverture technique v4
 
-Le catalogue canonique v3 couvre désormais **299 badges répartis dans 15 groupes**, dont **47 langues**, **49 variantes de sous-titres** et **118 classifications d'âge**. Il couvre aussi les sources vidéo usuelles, les résolutions de 240p à 8K/4320p, les conteneurs courants, codecs vidéo, HDR/bit depth, fréquences d'image usuelles, débit vidéo, technologies/codecs/canaux audio et fréquences d'échantillonnage.
+Le catalogue canonique v4 couvre **301 badges répartis dans 16 groupes**.
 
-Les mesures continues restent exactes dans la ligne technique : par exemple `6.0 Mbps` reste la valeur affichée, tandis que le badge `BITRATE` indique la présence fiable de cette donnée. Les fréquences d'image et d'échantillonnage utilisent des badges pour les valeurs usuelles normalisées.
+La surface comprend notamment :
 
-Les quatre feeds v3 (`fusion`, `dark`, `light`, `transparent`) sont générés et validés depuis la même source canonique afin d'empêcher toute dérive de version.
+- sources : CAM, TS/Telesync, TC/Telecine, WEBRip, WEB-DL, HDTV, DVD, Blu-ray, BDMV, BD REMUX, UHD Blu-ray, UHD REMUX ;
+- résolutions : 240p, 360p, 480p, 576p, 720p, **1080i**, 1080p, 1440p, 2160p/4K et 4320p/8K ;
+- livraison / conteneurs : **HLS**, **MPEG-DASH**, MKV, MP4, WebM, MPEG-TS, M2TS ;
+- vidéo : AVC/H.264, HEVC/H.265, AV1, VP9, MPEG-2, VC-1, MPEG-4 Part 2, 8/10/12-bit, SDR/HDR/HDR10/HDR10+/Dolby Vision/HLG, IMAX et 3D ;
+- framerate : 23.976, 24, 25, 29.97, 30, 50, 59.94 et 60 fps ;
+- audio : AAC, AC-3, E-AC-3, TrueHD, Atmos, DTS/DTS-HD/DTS:X, FLAC, PCM/LPCM, Opus, MP3, ALAC, 1.0 à 7.1 et 44.1 à 192 kHz ;
+- **47 langues**, **49 variantes de sous-titres** et **118 classifications d'âge**.
+
+Les mesures continues restent exactes dans la description : par exemple `6.0 Mbps` reste la valeur affichée, tandis que le badge `BITRATE` signale que cette donnée est réellement connue.
 
 ## Politique de version des feeds publics
 
-**Règle obligatoire : toute modification matérielle du système de badges impose un bump de version public.** Cela inclut l'ajout, le retrait ou le renommage d'un badge, une modification de pattern, de groupe, de style, d'asset, de sémantique de langue/sous-titre/classification ou de chemin public.
+**Règle obligatoire : toute modification matérielle du système de badges impose un bump de version public.**
 
-À chaque bump `vN → vN+1`, les quatre snapshots immuables doivent être publiés ensemble :
+Cela inclut l'ajout, le retrait ou le renommage d'un badge, une modification de pattern, de groupe, de style, d'asset, de sémantique de langue/sous-titre/classification ou de chemin public.
+
+À chaque bump `vN → vN+1`, les quatre snapshots immuables sont publiés ensemble :
 
 - `stream-badges-fusion-vN.json`
 - `stream-badges-dark-vN.json`
 - `stream-badges-light-vN.json`
 - `stream-badges-transparent-vN.json`
 
-Les fichiers sans numéro (`stream-badges-fusion.json`, `stream-badges-dark.json`, `stream-badges-light.json`, `stream-badges-transparent.json`) sont uniquement des alias **latest**. Les README et guides publics doivent toujours pointer vers la nouvelle version numérotée, jamais vers `latest`.
+Les fichiers sans numéro sont uniquement des alias **latest**. Les README et guides publics doivent toujours pointer vers la nouvelle version numérotée.
 
-Une version publiée est immuable. Le générateur refuse désormais de réécrire un `vN` existant avec un contenu différent : il faut d'abord incrémenter `PUBLIC_FEED_VERSION`. Les anciennes versions et leurs anciens assets restent disponibles pour les utilisateurs qui les ont épinglés.
+Une version publiée est immuable. Le générateur refuse de réécrire un `vN` existant avec un contenu différent : il faut d'abord incrémenter `PUBLIC_FEED_VERSION`.
 
-### Version publique actuelle : v3
+### Version publique actuelle : v4
 
 | Variante | Fichier stable |
 | --- | --- |
-| Fusion | `stream-badges-fusion-v3.json` |
-| Dark | `stream-badges-dark-v3.json` |
-| Light | `stream-badges-light-v3.json` |
-| Transparent | `stream-badges-transparent-v3.json` |
+| Fusion | `stream-badges-fusion-v4.json` |
+| Dark | `stream-badges-dark-v4.json` |
+| Light | `stream-badges-light-v4.json` |
+| Transparent | `stream-badges-transparent-v4.json` |
 
 ### Compatibilité historique
 
-`stream-badges-fusion-v2.json` reste publié tel quel pour les installations existantes. Les anciens WebP qu'il référence sont volontairement conservés même lorsqu'ils ne font plus partie du catalogue v3.
+Les quatre snapshots **v3** restent publiés et immuables pour les installations épinglées. `stream-badges-fusion-v2.json` reste également disponible pour les anciens utilisateurs, avec les anciens WebP qu'il référence.
 
-## Langues et classifications v3
+## Langues et classifications
 
-Les badges publics de langue utilisent désormais des identifiants universels de type ISO/BCP-47 (`FR`, `FR-CA`, `EN`, `KO`, `JA`, `ES-419`, `PT-BR`, `ZH-TW`, etc.). `VF`, `VFF`, `VFQ`, `VO`, `MULTI` et `VOSTFR` ne sont plus des IDs publics v3. Ils peuvent rester reconnus dans les patterns comme alias d'entrée historiques afin de convertir les données anciennes vers le badge universel correspondant.
+Les badges publics de langue utilisent des identifiants universels de type ISO/BCP-47 (`FR`, `FR-CA`, `EN`, `KO`, `JA`, `ES-419`, `PT-BR`, `ZH-TW`, etc.).
 
-Les sous-titres suivent exactement la même logique (`SUB FR`, `SUB KO`, `SUB JA`, etc.). Les classifications d'âge distinguent les systèmes régionaux lorsqu'ils sont explicites (`US PG-13`, `KR 19`, `FSK 16`, `IN UA 16+`, etc.) et utilisent des âges numériques universels lorsque seule une limite d'âge est disponible.
+`VF`, `VFF`, `VFQ`, `VO`, `MULTI` et `VOSTFR` ne sont pas des IDs publics actuels. Ils peuvent rester reconnus comme **alias d'entrée historiques** afin de convertir les anciennes données vers des faits universels.
+
+Les sous-titres suivent la même logique (`SUB FR`, `SUB KO`, `SUB JA`, etc.). Les classifications d'âge distinguent les systèmes régionaux lorsqu'ils sont explicites (`US PG-13`, `KR 19`, `FSK 16`, `IN UA 16+`, etc.) et utilisent un âge numérique générique uniquement lorsque seule une limite d'âge est connue.

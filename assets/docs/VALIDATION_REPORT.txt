@@ -1,32 +1,35 @@
-NIAKVIO BADGE SYSTEM V3 — VALIDATION REPORT
+NIAKVIO BADGE SYSTEM V4 — VALIDATION REPORT
 ============================================
 
 STATUS: PASS
-Canonical v3 commit: 0aa0bea915f4182f1d10e28635bd44f3ce7f57d2
-Materialized asset commit: 00e22c446222d1085d23f51df82815aefbe0d058
-Successful badge workflow run: 36081710814
+Canonical v4 commit: 7a3bea525dc4b16896e56d42330b1d953b3c0dca
+Materialized asset commit: 58f446690f12edcfc3c6d75ac7f76d355a3af76d
+Successful badge workflow run: 36087763873
 
-Catalog badges: 299
-Badge groups: 15
+Catalog badges: 301
+Badge groups: 16
 Language badges: 47
 Subtitle badges: 49
 Age-rating badges: 118
-Current asset variants: 1794 (299 × transparent/dark/light × 72x32/96x40)
-New/changed WebP assets in v3 materialization: 1116
+Current asset variants: 1806 (301 × transparent/dark/light × 72x32/96x40)
+New/changed WebP assets in v4 materialization: 12
 
-Public feed version: 3
+Public feed version: 4
 Stable feeds:
-- stream-badges-fusion-v3.json
-- stream-badges-dark-v3.json
-- stream-badges-light-v3.json
-- stream-badges-transparent-v3.json
+- stream-badges-fusion-v4.json
+- stream-badges-dark-v4.json
+- stream-badges-light-v4.json
+- stream-badges-transparent-v4.json
 
 Validated properties:
-- all four latest feeds contain exactly 299 filters and 15 groups
-- each latest feed is byte-identical to its v3 snapshot at publication
-- no public v3 IDs remain for VF/VFF/VFQ/VO/MULTI/VOSTFR/legacy PG-13/TV-MA IDs
-- legacy French/provider vocabulary is accepted only as input aliases where required
-- Korean 19, US MPA/TV, German FSK, Indian CBFC and broad numeric ratings are covered
+- all four latest feeds contain exactly 301 filters and 16 groups
+- each latest feed is byte-identical to its immutable v4 snapshot at publication
+- HLS and MPEG-DASH delivery badges are present in catalogue, assets and feeds
+- 1080i, BDMV, BD REMUX, UHD REMUX and 8K assets remain covered
+- no public IDs return for VF/VFF/VFQ/VO/MULTI/VOSTFR
+- universal ISO/BCP-47-style audio/subtitle language badges remain the public contract
+- regional age-rating systems remain covered alongside generic numeric minimum ages
 - lossless WebP generation is deterministic and idempotent
-- historical stream-badges-fusion-v2.json remains present with its prior 122-filter contract
-- public v3 snapshots are protected against in-place mutation; future material changes require PUBLIC_FEED_VERSION > 3
+- v3 dark/light/transparent/fusion snapshots remain present and immutable
+- historical stream-badges-fusion-v2.json remains present
+- future material changes require PUBLIC_FEED_VERSION > 4

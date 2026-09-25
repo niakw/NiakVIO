@@ -126,6 +126,8 @@ Typical symptoms include:
 
 Do **not** repeatedly add the same manifest. Use the dedicated recovery procedure instead:
 
+First try **Settings → Content & Discovery → Plugins → NiakVIO → Refresh**. If the repository still looks stale:
+
 ➡️ **[Update, refresh, reinstall and clear Nuvio cache](niakvio-update-reinstall-cache.md)**
 
-The preferred recovery order is **Desktop/Mobile first, TV second**, followed by a clean plugin reinstall from Desktop/Mobile and a TV synchronization check.
+The preferred recovery order is **repository Refresh first**, then close/reopen and account resync, then repository reinstall, then cache cleanup. Reinstalling the whole Nuvio application is the last resort.

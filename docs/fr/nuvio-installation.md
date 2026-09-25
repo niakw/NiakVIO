@@ -126,6 +126,8 @@ Symptômes typiques :
 
 N’ajoutez **pas** plusieurs fois le même manifest. Utilisez plutôt la procédure de récupération dédiée :
 
-➡️ **[Mettre à jour, réinstaller NiakVIO et vider le cache Nuvio](niakvio-update-reinstall-cache.md)**
+Commencez par **Paramètres → Content & Discovery → Plugins → NiakVIO → Refresh / Actualiser**. Si le repository reste obsolète :
 
-L’ordre recommandé est **Desktop/Mobile d’abord, TV ensuite**, puis réinstallation propre du plugin depuis Desktop/Mobile et contrôle de la synchronisation TV.
+➡️ **[Mettre à jour, actualiser, réinstaller NiakVIO et vider le cache Nuvio](niakvio-update-reinstall-cache.md)**
+
+L’ordre recommandé est **Refresh du repository d’abord**, puis fermeture/réouverture et resynchronisation, ensuite réinstallation du repository, puis nettoyage du cache. La réinstallation complète de Nuvio reste le dernier recours.

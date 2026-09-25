@@ -1,0 +1,190 @@
+# NiakVIO StreamBadges — technical media guide
+
+[Français](fr/stream-badges-technical-guide.md) · [Install StreamBadges](how-to-add-stream-badges.md) · [Back to README](../README.md)
+
+NiakVIO StreamBadges are not a quality score. They are a compact vocabulary for **facts about a stream**: source, resolution, delivery format, container, video codec, HDR, frame rate, bitrate, audio, languages, subtitles and content rating.
+
+> **Rule:** show what is known, keep what is unknown unknown. A truthful `HLS` badge is better than inventing `1080p`, `HEVC` or `HDR`.
+
+Current stable feed: `assets/stream-badges-fusion-v4.json` — **301 badges / 16 groups**.
+
+## Read one stream like a media sheet
+
+Example:
+
+`AVC · 1920×1080 · 6.0 Mbps · 23.976 fps · AAC · Stereo · 48 kHz · Korean`
+
+| Fact | What it means |
+| --- | --- |
+| AVC / H.264 | Very widely supported video codec. At similar visual quality it normally needs more bitrate than HEVC or AV1. |
+| 1920×1080 | Full HD / 1080p frame size. It does **not** tell you whether the source is Blu-ray or WEB-DL. |
+| 6.0 Mbps | Video bitrate. A plausible 1080p streaming bitrate, but not a quality grade by itself. |
+| 23.976 fps | Extremely common film/anime cadence derived from 24 fps. |
+| AAC | Lossy audio codec widely used by streaming services. |
+| Stereo / 2.0 | Two audio channels. |
+| 48 kHz | Standard sample rate for film, TV and anime delivery. |
+| Korean | Audio-language fact, normalized to the universal `KO` badge. |
+
+<img src="../assets/transparent/96x40/1080p-full-hd.webp" height="30" alt="1080p"> <img src="../assets/transparent/96x40/avc.webp" height="30" alt="AVC"> <img src="../assets/transparent/96x40/video-bitrate.webp" height="30" alt="Bitrate"> <img src="../assets/transparent/96x40/23.976fps.webp" height="30" alt="23.976 fps"> <img src="../assets/transparent/96x40/aac.webp" height="30" alt="AAC"> <img src="../assets/transparent/96x40/2.0.webp" height="30" alt="2.0"> <img src="../assets/transparent/96x40/48khz.webp" height="30" alt="48 kHz"> <img src="../assets/transparent/96x40/lang-ko.webp" height="30" alt="KO">
+
+## Source ≠ resolution ≠ delivery ≠ container
+
+These four families describe different things.
+
+### Source / release provenance
+
+| Badge family | Practical meaning |
+| --- | --- |
+| WEB-DL | Direct web-service delivery, usually without a screen/video recapture step. |
+| WEBRip | Capture or re-encode from a web source; quality can vary widely. |
+| Blu-ray / BDMV | Optical-disc-derived source/structure. |
+| BD REMUX / UHD REMUX | Disc tracks repackaged without re-encoding the encoded essence. Usually large files. |
+| UHD Blu-ray | Ultra HD optical-disc source, commonly 2160p with HDR-capable video. |
+| HDTV | Broadcast-derived source. |
+| DVD / DVD Rip | Standard-definition optical-disc source. |
+| CAM / TS / TC | Cinema capture provenance. Useful information, not an endorsement of quality. |
+
+<img src="../assets/transparent/96x40/webdl.webp" height="30" alt="WEB-DL"> <img src="../assets/transparent/96x40/blu-ray-disc.webp" height="30" alt="Blu-ray"> <img src="../assets/transparent/96x40/bdmv.webp" height="30" alt="BDMV"> <img src="../assets/transparent/96x40/blu-ray-remux.webp" height="30" alt="BD REMUX"> <img src="../assets/transparent/96x40/uhd-remux.webp" height="30" alt="UHD REMUX">
+
+### Resolution and scan mode
+
+Common classes include 240p, 360p, 480p, 576p, 720p, **1080i**, 1080p, 1440p, 2160p/4K and 4320p/8K.
+
+- **1080p** is progressive Full HD.
+- **1080i** is interlaced Full HD, still encountered in broadcast-derived material.
+- A cropped 1080p movie may not literally be 1920×1080 after black bars are removed; the delivery class can still be 1080p.
+- Resolution alone says nothing about source quality, codec efficiency or compression artifacts.
+
+<img src="../assets/transparent/96x40/720p-hd.webp" height="30" alt="720p"> <img src="../assets/transparent/96x40/1080i.webp" height="30" alt="1080i"> <img src="../assets/transparent/96x40/1080p-full-hd.webp" height="30" alt="1080p"> <img src="../assets/transparent/96x40/4k-ultra-hd.webp" height="30" alt="4K"> <img src="../assets/transparent/96x40/8k-ultra-hd.webp" height="30" alt="8K">
+
+### Delivery format and container
+
+**HLS** and **MPEG-DASH** describe adaptive HTTP delivery. **MKV, MP4, WebM, MPEG-TS and M2TS** are containers/file formats.
+
+| Badge | Meaning |
+| --- | --- |
+| HLS / M3U8 | Adaptive HTTP streaming. A master playlist may advertise several variants, codecs and language renditions. |
+| MPEG-DASH / MPD | Adaptive HTTP delivery based on an MPD manifest. |
+| MKV / Matroska | Flexible multi-track container common for Blu-ray/anime releases. |
+| MP4 | Highly compatible container. |
+| MPEG-TS / M2TS | Transport-stream families common in broadcast, HLS segments and Blu-ray structures. |
+
+<img src="../assets/transparent/96x40/hls.webp" height="30" alt="HLS"> <img src="../assets/transparent/96x40/dash.webp" height="30" alt="DASH"> <img src="../assets/transparent/96x40/mkv.webp" height="30" alt="MKV"> <img src="../assets/transparent/96x40/mp4.webp" height="30" alt="MP4">
+
+A provider can legitimately expose **only HLS** when the URL proves `.m3u8` delivery but no reliable quality/codec fact is available.
+
+## Video codecs
+
+| Codec | Typical context | What to know |
+| --- | --- | --- |
+| AVC / H.264 | Blu-ray and very broad streaming | Excellent compatibility; less compression-efficient than HEVC/AV1. |
+| HEVC / H.265 | UHD Blu-ray, 4K streaming, 10-bit anime encodes | High efficiency; common with HDR and 10-bit. |
+| AV1 | Modern streaming | Very efficient; hardware support is newer. |
+| VP9 | Web streaming | Strong web codec historically common on Google platforms. |
+| MPEG-2 / VC-1 / MPEG-4 Part 2 | Legacy broadcast/disc/encodes | Useful compatibility and provenance information. |
+
+<img src="../assets/transparent/96x40/avc.webp" height="30" alt="AVC"> <img src="../assets/transparent/96x40/hevc.webp" height="30" alt="HEVC"> <img src="../assets/transparent/96x40/av1.webp" height="30" alt="AV1"> <img src="../assets/transparent/96x40/vp9.webp" height="30" alt="VP9">
+
+**x264/x265 are encoders**, while AVC/H.264 and HEVC/H.265 are codec standards. NiakVIO normalizes common aliases to the codec fact.
+
+## Bit depth, HDR and presentation formats
+
+NiakVIO distinguishes 8-bit, 10-bit and 12-bit from dynamic range.
+
+- **10-bit does not automatically mean HDR.** High-quality anime encodes are often 10-bit SDR.
+- HDR families include SDR, generic HDR, HDR10, HDR10+, Dolby Vision and HLG.
+- IMAX, IMAX Enhanced and 3D are separate presentation facts.
+
+<img src="../assets/transparent/96x40/10bit.webp" height="30" alt="10-bit"> <img src="../assets/transparent/96x40/hdr10.webp" height="30" alt="HDR10"> <img src="../assets/transparent/96x40/hdr10-plus.webp" height="30" alt="HDR10+"> <img src="../assets/transparent/96x40/dolby-vision.webp" height="30" alt="Dolby Vision">
+
+## Frame rate
+
+Normalized values include 23.976, 24, 25, 29.97, 30, 50, 59.94 and 60 fps.
+
+- 23.976/24 fps dominates cinema and much anime.
+- 25/50 fps is common in PAL-derived broadcast environments.
+- 29.97/59.94 derives from NTSC-era timing.
+- A higher number is not automatically “better” or “more cinematic”; frame rate is a creative and delivery choice.
+
+## Bitrate
+
+NiakVIO keeps the **exact value** in the technical description and uses the generic BITRATE badge only to show that the measurement exists.
+
+Rough orientation ranges:
+
+| Delivery | Common ballpark |
+| --- | --- |
+| 1080p H.264 streaming | ~3–10 Mbps |
+| 1080p HEVC streaming | ~1.5–6 Mbps |
+| Blu-ray AVC | often ~15–35+ Mbps |
+| 4K HEVC streaming | often ~10–25 Mbps |
+| UHD Blu-ray | commonly tens of Mbps, sometimes much higher |
+
+These are not quality thresholds. A 6 Mbps AVC encode and a 6 Mbps AV1 encode are not equivalent; source, codec, encoder settings, grain and motion matter.
+
+## Audio: codec, technology, channels and sample rate
+
+NiakVIO keeps these as separate facts.
+
+- codecs: AAC, AC-3, E-AC-3, TrueHD, DTS/DTS-HD, FLAC, PCM/LPCM, Opus, MP3, ALAC;
+- technologies: Dolby Atmos, DTS:X;
+- channels: 1.0, 2.0, 2.1, 5.1, 7.1;
+- sample rates: 44.1, 48, 88.2, 96 and 192 kHz.
+
+<img src="../assets/transparent/96x40/aac.webp" height="30" alt="AAC"> <img src="../assets/transparent/96x40/dolby-atmos.webp" height="30" alt="Atmos"> <img src="../assets/transparent/96x40/truehd.webp" height="30" alt="TrueHD"> <img src="../assets/transparent/96x40/5.1.webp" height="30" alt="5.1"> <img src="../assets/transparent/96x40/48khz.webp" height="30" alt="48 kHz">
+
+48 kHz is the normal baseline for film/TV/video. 96 or 192 kHz by itself is not proof of better audible quality.
+
+## Languages and subtitles
+
+Public badges use an ISO/BCP-47-style model such as `FR`, `FR-CA`, `EN`, `KO`, `JA`, `PT-BR`, `ES-419`, `ZH-HK` and `ZH-TW`.
+
+Legacy words such as `VF`, `VFF`, `VFQ`, `VO`, `MULTI` and `VOSTFR` are **input aliases only**.
+
+- VF/VFF can normalize to French audio when evidence supports it.
+- VFQ can normalize to French (Canada).
+- VOSTFR becomes original-language audio + French subtitles when original-language context is known.
+- **VO does not become English automatically.**
+
+## Content ratings are regional
+
+Age systems are not globally interchangeable. NiakVIO keeps explicit regional systems when known: US MPA/TV, Korean ALL/12/15/19, German FSK, Japanese G/PG12/R15+/R18+, Indian CBFC, Brazilian, Québec, Spanish, French, Hong Kong, Finnish, Greek, Portuguese, Philippine, Indonesian, Russian, Polish, Swedish, Taiwanese and LATAM families.
+
+A generic numeric badge is used when the only reliable fact is a minimum age.
+
+## What appears in the stream title?
+
+The title stays deliberately simple: **provider identity + strongest proven quality**.
+
+Examples:
+
+- proven 1080p → `Kehflix - 1080p`
+- proven 1080i → `Kehflix - 1080i`
+- proven 2160p → `Kehflix - 4K`
+- proven 4320p → `Kehflix - 8K`
+- `Unknown`, `Inconnue`, `N/A`, `Auto` → simply `Kehflix`
+
+Other facts belong in badges/description. If a sparse Kehflix stream only proves a `.m3u8` URL, the truthful presentation is **Kehflix + HLS**, not “Kehflix - Inconnue” and not a guessed resolution.
+
+## How NiakVIO decides to show a badge
+
+1. provider returns raw stream facts;
+2. Core preserves and normalizes the strongest evidence;
+3. presentation emits structured `badgeIds` plus a readable technical description;
+4. Nuvio StreamBadge rules match those facts;
+5. missing evidence remains missing.
+
+This distinction prevents “badge inflation” and makes the UI useful to users who actually care about media quality.
+
+## Feed versioning
+
+Every material badge/rule change creates a new immutable version of **all four** public feeds.
+
+Current version:
+
+- `assets/stream-badges-fusion-v4.json`
+- `assets/stream-badges-dark-v4.json`
+- `assets/stream-badges-light-v4.json`
+- `assets/stream-badges-transparent-v4.json`
+
+Older versioned feeds remain available for pinned installations.

@@ -61,15 +61,15 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/mani
 
 **Manifest guide:** [`docs/how-to-add-manifest.md`](docs/how-to-add-manifest.md)
 
-**Plugin update / reinstall / cache recovery:** [`docs/niakvio-update-reinstall-cache.md`](docs/niakvio-update-reinstall-cache.md)
+**Plugin update / refresh / reinstall / cache recovery:** [`docs/niakvio-update-reinstall-cache.md`](docs/niakvio-update-reinstall-cache.md)
 
 ### StreamBadge feed
 
 ```text
-https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v3.json
+https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v4.json
 ```
 
-**StreamBadge guide:** [`docs/how-to-add-stream-badges.md`](docs/how-to-add-stream-badges.md)
+**StreamBadge guide:** [`docs/how-to-add-stream-badges.md`](docs/how-to-add-stream-badges.md) · **Understand the technical badges:** [`docs/stream-badges-technical-guide.md`](docs/stream-badges-technical-guide.md)
 
 > [!NOTE]
 > NiakVIO does not host video. It maintains provider metadata, structured protocol knowledge, compatibility rules, manifests and client-side provider bundles.

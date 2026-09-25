@@ -1,132 +1,121 @@
-# Mettre à jour, réinstaller NiakVIO et vider le cache Nuvio
+# Mettre à jour / actualiser NiakVIO, réinstaller et nettoyer le cache Nuvio
 
 [English](../niakvio-update-reinstall-cache.md) · [Retour au README](../../README.fr.md)
 
-Utilisez cette procédure lorsque NiakVIO se comporte de façon incohérente après une mise à jour ou lorsque Nuvio semble conserver un ancien état du plugin.
+Utilisez ce guide lorsque NiakVIO semble conserver un ancien état après une mise à jour : ancienne liste de providers, différences Desktop/Mobile/TV ou disparition de sources après un changement du repository.
 
-Symptômes typiques :
+> [!TIP]
+> **Commencez par l'action native Actualiser / Refresh du repository dans Nuvio.** Le cache et la réinstallation de l'application sont des étapes d'escalade, pas la procédure normale de mise à jour de NiakVIO.
 
-- le nombre de providers ne correspond plus au dépôt actuel ;
-- Desktop/Mobile et TV affichent des listes de providers différentes ;
-- des providers disparaissent puis reviennent entre deux lancements ;
-- d’anciens noms de providers ou métadonnées de repository restent visibles ;
-- le refresh du repository ne met pas le client à jour ;
-- le plugin est installé mais les sources n’apparaissent plus comme prévu.
+## 1. Option la plus simple — actualiser NiakVIO depuis les paramètres Nuvio
 
-> [!IMPORTANT]
-> Suivez la séquence ci-dessous avant de réinstaller complètement l’application Nuvio. Le but est de réinitialiser **le plugin + le cache** tout en conservant autant que possible le compte, les profils et les données normales de l’application.
+Sur les builds Desktop/Mobile compatibles plugins :
 
-## Ordre de récupération recommandé
+1. ouvrez **Paramètres → Content & Discovery → Plugins** ;
+2. ouvrez le repository installé **NiakVIO** ;
+3. utilisez l'action / l'icône **Refresh / Actualiser** du repository ;
+4. laissez Nuvio retélécharger le manifest et les définitions des providers ;
+5. vérifiez que **Enable plugin providers globally** reste activé ;
+6. retestez un contenu.
 
-Si plusieurs appareils sont concernés, gardez cet ordre :
+Sur NuvioTV lorsque les réglages plugins sont disponibles, ouvrez **Paramètres → Plugins** (ou **Content Discovery → Plugins** selon l'interface), sélectionnez NiakVIO et utilisez **Refresh repository / Actualiser**.
 
-1. **Supprimer NiakVIO sur Desktop/Mobile en premier.**
-2. Supprimer NiakVIO sur la TV s’il y est encore présent ou si la suppression ne s’est pas synchronisée.
-3. **Forcer l’arrêt complet de Nuvio** sur chaque appareil concerné.
-4. **Vider le cache Nuvio** sur chaque appareil concerné.
-5. Rouvrir **Desktop ou Mobile en premier**.
-6. Réinstaller NiakVIO depuis Desktop/Mobile avec le manifest actuel.
-7. Vérifier le repository et la liste des providers sur Desktop/Mobile.
-8. Ouvrir ensuite seulement NuvioTV.
-9. Vérifier que la TV a bien récupéré l’état synchronisé du plugin et que sa liste correspond au dépôt actuel.
+L'implémentation Nuvio traite explicitement Refresh comme un retéléchargement du manifest et des scrapers/providers. C'est donc la première action à essayer.
 
-Cet ordre évite de prendre un état TV obsolète comme référence pendant la resynchronisation du compte.
+### Arrêtez-vous ici si cela fonctionne
 
-## 1. Supprimer le repository du plugin
+Si la liste des providers est à jour et que les streams reviennent, **n'allez pas plus loin**. Inutile de vider le cache ou de réinstaller l'application « par sécurité ».
 
-Sur Desktop/Mobile :
+> [!NOTE]
+> Le repository NiakVIO et les feeds StreamBadge sont séparés. Actualiser le plugin met à jour les providers, mais un ancien feed de badges importé peut encore nécessiter une suppression/réimport avec l'URL StreamBadge versionnée actuelle.
 
-1. Ouvrez **Settings → Content & Discovery → Plugins**.
-2. Repérez **NiakVIO** dans les repositories installés.
-3. Supprimez/désinstallez le repository NiakVIO.
-4. Si plusieurs appareils Desktop/Mobile utilisent le même compte, laissez le compte se synchroniser avant de poursuivre.
+## 2. Le repository est à jour mais l'interface semble encore ancienne
 
-Sur TV :
+1. fermez complètement Nuvio sur l'appareil concerné ;
+2. rouvrez l'application ;
+3. revenez dans **Plugins** et vérifiez le repository/la liste NiakVIO ;
+4. relancez une recherche de streams neuve.
 
-1. Ouvrez **Settings → Content Discovery → Plugins**.
-2. Supprimez NiakVIO s’il apparaît encore.
-3. Si la TV propose **Manage from phone**, vous pouvez également supprimer le repository depuis le téléphone puis confirmer la modification sur la TV.
+Un repository peut déjà être récent alors qu'un écran existant conserve encore une ancienne requête/réponse.
 
-N’installez pas une deuxième copie du même manifest par-dessus un état obsolète.
+Avec plusieurs appareils, rendez Desktop/Mobile correct en premier, laissez la synchronisation se stabiliser, puis rouvrez la TV.
 
-## 2. Forcer l’arrêt de Nuvio et vider son cache
+## 3. Réinstaller uniquement le repository NiakVIO
+
+Si Refresh échoue ou si le repository reste obsolète :
+
+1. supprimez **NiakVIO** dans **Paramètres → Content & Discovery → Plugins** ;
+2. fermez puis rouvrez complètement Nuvio ;
+3. ajoutez de nouveau le manifest courant :
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
+```
+
+4. activez **Enable plugin providers globally** ;
+5. vérifiez que NiakVIO apparaît **une seule fois** ;
+6. laissez la synchronisation du compte se propager avant de vérifier la TV.
+
+Si vous utilisez volontairement une autre projection NiakVIO, réinstallez cette même projection. N'empilez pas plusieurs projections pour tenter de résoudre un bug.
+
+## 4. Nettoyer le cache uniquement après échec de Refresh + réinstallation du repository
 
 ### Android / Android TV / Google TV
 
-Passez par les paramètres système :
-
-1. Ouvrez **Paramètres → Applications → Nuvio / NuvioTV**.
-2. Choisissez **Forcer l’arrêt**.
-3. Ouvrez **Stockage et cache**.
-4. Choisissez **Vider le cache**.
+1. ouvrez les **Paramètres système → Applications → Nuvio / NuvioTV** ;
+2. choisissez **Forcer l'arrêt** ;
+3. ouvrez **Stockage et cache** ;
+4. choisissez **Vider le cache** ;
+5. rouvrez Nuvio puis actualisez de nouveau NiakVIO.
 
 > [!CAUTION]
-> N’utilisez **pas** **Effacer les données / Effacer le stockage** comme étape normale de dépannage. Cette action est beaucoup plus destructive et peut supprimer l’état local, des profils ou des identifiants. Gardez-la uniquement comme reset complet volontaire en dernier recours.
+> **Effacer les données / le stockage** est beaucoup plus destructeur : état local et identifiants peuvent disparaître. Ne l'utilisez pas pour une mise à jour normale du plugin.
 
-Un simple redémarrage de l’appareil ne vide pas forcément le cache applicatif. Utilisez bien l’action **Vider le cache**.
+### macOS
 
-### macOS — Terminal
-
-Le client Desktop officiel utilise actuellement l’identifiant d’application `com.nuvio.media`. Les commandes ci-dessous ferment d’abord Nuvio, affichent les chemins de cache détectés, puis suppriment uniquement ces caches.
-
-**1. Fermer complètement Nuvio :**
+Fermez Nuvio :
 
 ```bash
 osascript -e 'quit app "Nuvio"' 2>/dev/null || true
 pkill -x Nuvio 2>/dev/null || true
 ```
 
-**2. Prévisualiser les dossiers de cache correspondant à Nuvio :**
+Prévisualisez les caches correspondants :
 
 ```bash
-for p in \
-  "$HOME/Library/Caches/"*Nuvio* \
-  "$HOME/Library/Caches/"*nuvio* \
-  "$HOME/Library/Caches/com.nuvio.media"; do
+for p in   "$HOME/Library/Caches/"*Nuvio*   "$HOME/Library/Caches/"*nuvio*   "$HOME/Library/Caches/com.nuvio.media"; do
   [ -e "$p" ] && printf '%s\n' "$p"
 done
 ```
 
-**3. Supprimer uniquement ces dossiers de cache :**
+Supprimez uniquement ces caches :
 
 ```bash
-for p in \
-  "$HOME/Library/Caches/"*Nuvio* \
-  "$HOME/Library/Caches/"*nuvio* \
-  "$HOME/Library/Caches/com.nuvio.media"; do
+for p in   "$HOME/Library/Caches/"*Nuvio*   "$HOME/Library/Caches/"*nuvio*   "$HOME/Library/Caches/com.nuvio.media"; do
   [ -e "$p" ] && rm -rf -- "$p"
 done
 ```
 
-**4. Optionnel : supprimer les sous-dossiers de cache présents dans Application Support sans supprimer le dossier de données principal :**
+Nettoyage optionnel des sous-dossiers de cache d'Application Support :
 
 ```bash
-for root in \
-  "$HOME/Library/Application Support/Nuvio" \
-  "$HOME/Library/Application Support/com.nuvio.media"; do
+for root in   "$HOME/Library/Application Support/Nuvio"   "$HOME/Library/Application Support/com.nuvio.media"; do
   [ -d "$root" ] || continue
-  find "$root" -type d \( \
-    -name Cache -o \
-    -name Caches -o \
-    -name GPUCache -o \
-    -name 'Code Cache' \
-  \) -prune -exec rm -rf -- {} +
+  find "$root" -type d \( -name Cache -o -name Caches -o -name GPUCache -o -name 'Code Cache' \) -prune -exec rm -rf -- {} +
 done
 ```
 
-Ces commandes laissent volontairement intact le dossier principal de données Nuvio dans Application Support.
+Le dossier principal Application Support reste volontairement intact.
 
 ### Windows — PowerShell
 
-Ouvrez **PowerShell**. Les commandes suivantes ferment Nuvio, détectent les racines de données Nuvio existantes, affichent les dossiers de cache puis suppriment uniquement ces caches.
-
-**1. Fermer Nuvio :**
+Fermez Nuvio :
 
 ```powershell
 Get-Process Nuvio -ErrorAction SilentlyContinue | Stop-Process -Force
 ```
 
-**2. Construire la liste des chemins Nuvio réellement présents :**
+Repérez les racines existantes :
 
 ```powershell
 $roots = @(
@@ -137,11 +126,10 @@ $roots = @(
 ) | Where-Object { Test-Path $_ }
 ```
 
-**3. Prévisualiser les dossiers de cache :**
+Prévisualisez les dossiers de cache :
 
 ```powershell
 $cacheNames = @('Cache', 'Caches', 'Code Cache', 'GPUCache')
-
 if ($roots) {
   Get-ChildItem -Path $roots -Directory -Recurse -Force -ErrorAction SilentlyContinue |
     Where-Object { $cacheNames -contains $_.Name } |
@@ -149,7 +137,7 @@ if ($roots) {
 }
 ```
 
-**4. Supprimer uniquement ces dossiers de cache :**
+Supprimez uniquement ces dossiers :
 
 ```powershell
 if ($roots) {
@@ -159,77 +147,48 @@ if ($roots) {
 }
 ```
 
-Cette procédure ne supprime **pas volontairement** tout le profil Nuvio ni la racine complète des données applicatives.
-
 ### iPhone / iPad
 
-iOS ne propose pas de bouton standard **Vider le cache** comparable à Android.
+iOS ne propose pas le même bouton Vider le cache qu'Android. Utilisez cet ordre :
 
-Utilisez cet ordre :
+1. actualisez NiakVIO dans Plugins ;
+2. fermez complètement Nuvio ;
+3. rouvrez et retestez ;
+4. supprimez/réinstallez le repository NiakVIO si nécessaire ;
+5. ne réinstallez l'application Nuvio entière qu'en dernier recours.
 
-1. supprimez le repository NiakVIO ;
-2. fermez complètement Nuvio depuis le sélecteur d’applications ;
-3. rouvrez Nuvio et laissez le compte se synchroniser ;
-4. réinstallez NiakVIO depuis Mobile/Desktop.
+## 5. La TV reste différente de Desktop/Mobile
 
-Ne réinstallez toute l’application Nuvio que si la suppression/réinstallation du plugin et la resynchronisation du compte ne corrigent pas l’état obsolète.
+Utilisez Desktop/Mobile comme surface de gestion la plus simple :
 
-## 3. Réinstaller NiakVIO depuis Desktop ou Mobile
+1. actualisez ou réinstallez NiakVIO là en premier ;
+2. laissez la synchronisation compte/plugin se stabiliser ;
+3. fermez complètement NuvioTV ;
+4. rouvrez la TV ;
+5. vérifiez **Paramètres → Plugins** et l'activation globale des providers.
 
-Rouvrez **Desktop ou Mobile en premier** puis installez le manifest général actuel :
+Si seule la TV reste obsolète, forcez l'arrêt de NuvioTV et videz **uniquement le cache**, puis rouvrez. N'ajoutez pas une deuxième copie du repository.
 
-```text
-https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
-```
+## 6. Réinitialisation complète de l'application — dernier recours
 
-Dans Nuvio :
+Ne réinstallez Nuvio ou n'effacez son stockage que lorsque :
 
-1. ouvrez **Settings → Content & Discovery → Plugins** ;
-2. choisissez **Add repository / ADD REPOSITORY** ;
-3. collez le manifest dans **Plugin manifest URL** ;
-4. choisissez **Install Plugin Repository** ;
-5. activez **Enable plugin providers globally** ;
-6. vérifiez que NiakVIO apparaît **une seule fois**.
+- Refresh du repository échoue plusieurs fois ;
+- supprimer/réinstaller NiakVIO ne corrige rien ;
+- le nettoyage du cache ne change rien ;
+- le problème concerne largement Nuvio et pas un seul provider upstream.
 
-Si vous utilisez volontairement une autre projection NiakVIO, réinstallez cette projection à la place du manifest général. N’empilez pas plusieurs projections NiakVIO qui se recouvrent sauf si vous les testez volontairement.
+La panne d'un seul provider ne signifie pas que le repository NiakVIO ou le cache Nuvio est cassé.
 
-## 4. Rouvrir la TV en dernier
+## Vérification finale
 
-Quand Desktop/Mobile est correct :
+Après récupération :
 
-1. rouvrez NuvioTV ;
-2. laissez l’état du compte/plugin se synchroniser ;
-3. ouvrez **Settings → Content Discovery → Plugins** ;
-4. vérifiez que NiakVIO apparaît **une seule fois** ;
-5. vérifiez que les plugin providers sont activés globalement ;
-6. comparez la liste des providers au dépôt actuel.
-
-Si la TV affiche encore l’ancien état, forcez à nouveau l’arrêt de NuvioTV et videz son cache Android, puis rouvrez-la **sans réinstaller une deuxième copie du repository**.
-
-## 5. Vérifier la récupération
-
-Contrôlez les points suivants :
-
-- NiakVIO apparaît une seule fois sur Desktop/Mobile ;
-- NiakVIO apparaît une seule fois sur TV ;
-- le même compte est utilisé sur tous les appareils ;
-- les listes providers sont cohérentes avec le manifest actuel ;
+- NiakVIO apparaît une seule fois ;
+- la bonne projection/manifest est installée ;
 - les plugin providers sont activés globalement ;
-- les contenus compatibles affichent des sources NiakVIO une fois la recherche terminée.
+- la liste courante des providers est visible ;
+- un contenu compatible retourne des sources NiakVIO ;
+- les autres appareils convergent après synchronisation.
 
-> [!TIP]
-> Ne vous fiez pas à un ancien nombre figé de providers. Le catalogue maintenu NiakVIO peut évoluer. Le repository/manifest actuel fait foi.
-
-## 6. Toujours cassé ?
-
-Avant de réinstaller complètement le client Nuvio, vérifiez :
-
-- que l’URL du manifest est correcte et accessible ;
-- que vous n’avez pas installé plusieurs projections NiakVIO qui se recouvrent ;
-- que le même compte Nuvio est utilisé sur Desktop/Mobile/TV ;
-- que TMDB est configuré si Nuvio signale une clé TMDB manquante ;
-- que le problème ne concerne pas seulement un provider alors que le reste de NiakVIO fonctionne.
-
-Un provider upstream peut tomber temporairement en panne même si l’installation du plugin est parfaitement saine.
-
-Pour une première installation, voir **[Installer Nuvio et NiakVIO](nuvio-installation.md)**.
+Pour une première installation : **[Installer Nuvio et NiakVIO](nuvio-installation.md)**.
