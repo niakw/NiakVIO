@@ -649,7 +649,13 @@ function buildPlan(item) {
               }
       )
     : baseRepairTarget;
-  const llmAdvisorHint = (!experimentExhausted || !learningMode)
+  // A strict same-provider positive program is stronger evidence than an
+  // advisory hypothesis. Once selected as the production rescue, it owns the
+  // bounded attempt and the LLM advisor must not re-open a mixed execution set.
+  const llmAdvisorHint = (
+    !providerPositiveProgramProductionRescue
+    && (!experimentExhausted || !learningMode)
+  )
     ? llmAdvisorStrategyHint(
         providerId,
         evidence.failureClass,
