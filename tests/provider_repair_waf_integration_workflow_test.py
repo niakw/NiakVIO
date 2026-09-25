@@ -25,6 +25,8 @@ required=[
     "FIELD_REPAIR_TAILSCALE_FALLBACK",
     "Replay Repair providers through residential exit when available",
     "merge_residential_provider_replay.py",
+    "Merge Repair transport refresh into durable latest",
+    "merge_waf_latest_evidence.py",
     "Apply integrated WAF qualification to Repair census",
     "merge_waf_census_transport.py",
     "--authority-status automation/provider-authority-status.json",
@@ -41,17 +43,19 @@ prepare=wf.index("- name: Prepare integrated Repair WAF/network qualification")
 authority=wf.index("scripts/classify_provider_authority.py",prepare)
 pre_render=wf.index("scripts/render_provider_census_status.py /tmp/provider-repair-waf-network.json",prepare)
 connect=wf.index("- name: Connect optional Repair Tailscale transport")
+latest_merge=wf.index("- name: Merge Repair transport refresh into durable latest")
 merge=wf.index("- name: Apply integrated WAF qualification to Repair census")
 canonical=wf.index("- name: Run canonical recognition and correction only for unresolved providers")
 final_merge=wf.index("- name: Reapply integrated WAF qualification after canonical Repair")
 persist=wf.index("- name: Persist Repair census state")
-assert reuse < prepare < authority < pre_render < connect < merge < canonical < final_merge < persist
+assert reuse < prepare < authority < pre_render < connect < latest_merge < merge < canonical < final_merge < persist
 prepare_block=wf[prepare:connect]
 assert "steps.repair_waf_reuse.outputs.reuse != 'true'" in prepare_block
 assert 'providers=sorted(set(providers)&requested)' in prepare_block
 assert 'DISPATCH_TARGET_PROVIDER' in prepare_block
 assert "import os" in prepare_block
 reuse_block=wf[reuse:prepare]
+assert 'cp "$waf" "$RUNNER_TEMP/provider-repair-waf-prior.json"' in reuse_block
 assert 'git log -1 --format=%H -- "$waf"' in reuse_block
 assert '--base "$source"' in reuse_block
 assert '"mode") or "all"' in reuse_block
