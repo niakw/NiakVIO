@@ -48,7 +48,7 @@ def provider_materialization_scope(root:Path,source_sha:str,current_sha:str)->di
  with tempfile.TemporaryDirectory(prefix="niakvio-guidance-scope-") as tmp:
   output=Path(tmp)/"scope.json"
   p=subprocess.run(
-   [sys.executable,str(script),"--base",source_sha,"--head",current_sha,"--output",str(output)],
+   [sys.executable,str(script),"--base",source_sha,"--head",current_sha,"--committed-only","--output",str(output)],
    cwd=root,text=True,capture_output=True,check=False,
   )
   if p.returncode!=0 or not output.is_file():
