@@ -3,13 +3,11 @@
   "acceptedProgramCompiledProviders": [],
   "acceptedRepairCount": 0,
   "acceptedRepairs": [],
-  "advisorHypothesisWaveBudget": 1,
+  "advisorHypothesisWaveBudget": 3,
   "batchSize": 48,
-  "deferredLearningProviders": [
-    "mallumv"
-  ],
-  "effectiveWaves": 1,
-  "elapsedSeconds": 34.965,
+  "deferredLearningProviders": [],
+  "effectiveWaves": 3,
+  "elapsedSeconds": 115.655,
   "executionModel": "family-batched-multi-wave-brain-repair",
   "experienceMemory": {
     "operationalProviderCount": 28,
@@ -28,8 +26,16 @@
     "mallumv": "CHAIN REACHED"
   },
   "maxRoundsPerBatch": 1,
-  "maxWaves": 1,
-  "noProgressReason": "no_new_repair_experiment",
+  "maxWaves": 3,
+  "noProgressReason": "experiment_variants_exhausted",
+  "positiveProgramRecovery": {
+    "durableProviders": [
+      "mallumv"
+    ],
+    "durableRecordCount": 2,
+    "recoveredRecordCount": 0,
+    "reportCount": 26
+  },
   "processedProviderCount": 1,
   "processedProviders": [
     "mallumv"
@@ -37,7 +43,9 @@
   "providerSpecificRules": false,
   "rawLabAcceptedCount": 0,
   "rawLabAcceptedRepairs": [],
-  "remainingProviders": [],
+  "remainingProviders": [
+    "mallumv"
+  ],
   "requestedWaves": 1,
   "resumeRecommended": false,
   "safety": {
@@ -69,54 +77,110 @@
       "acceptedCount": 0,
       "acceptedProgramCompileFailures": {},
       "acceptedProgramCompiledProviders": [],
-      "advisorRotationPending": [],
+      "advisorRotationPending": [
+        "mallumv"
+      ],
       "batches": [
         {
           "accepted": [],
           "acceptedCount": 0,
-          "advisorRemainingFingerprintCounts": {},
-          "advisorRotationPending": [],
+          "advisorRemainingFingerprintCounts": {
+            "mallumv": 3
+          },
+          "advisorRotationPending": [
+            "mallumv"
+          ],
           "batch": 1,
           "brain": {
             "harnessDifferentialProviders": [],
             "learnedEvents": 0,
             "plans": {
               "published:mallumv": {
-                "action": "deferred_retry",
-                "allowedProfiles": [],
-                "exitReason": "experiment_variants_exhausted",
-                "experimentExhausted": true,
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery",
+                  "player_media_extractor_v1",
+                  "provider_positive_program_replay_v1"
+                ],
+                "exitReason": null,
+                "experimentExhausted": false,
                 "experimentGeneration": 2,
                 "experimentVariant": 4,
                 "experimentVariantCount": 5,
                 "failureClass": "chain_terminal_gap",
-                "hypotheses": [],
-                "learningDisposition": "queue_new_strategy_after_variant_exhaustion",
-                "llmAdvisorApplied": false,
-                "llmAdvisorConfidence": 0,
-                "llmAdvisorExperiment": {},
-                "llmAdvisorExperimentFingerprint": "",
-                "llmAdvisorFailureCompatibility": "",
-                "llmAdvisorProfile": "",
-                "llmAdvisorRescue": false,
-                "llmAdvisorSourceFailureClass": "",
-                "llmAdvisorStrategy": "",
+                "hypotheses": [
+                  {
+                    "confidence": 1,
+                    "id": "media_extraction_gap:adaptive_runtime_recovery",
+                    "learned": true,
+                    "maturity": "experimental",
+                    "profile": "adaptive_runtime_recovery",
+                    "transferScore": 1047
+                  },
+                  {
+                    "confidence": 1,
+                    "id": "media_extraction_gap:player_media_extractor_v1",
+                    "learned": true,
+                    "maturity": "experimental",
+                    "profile": "player_media_extractor_v1",
+                    "transferScore": 1047
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "finish-reached-terminal-chain",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.96,
+                "llmAdvisorExperiment": {
+                  "aliasSearch": true,
+                  "documentRequestMining": true,
+                  "maxDepth": 5,
+                  "maxEmbeds": 28,
+                  "maxPages": 28,
+                  "maxRecipePasses": 4,
+                  "recipePolicy": "current_plus_provider_peer",
+                  "responseSalvage": true,
+                  "roleOrder": [
+                    "player",
+                    "source",
+                    "api",
+                    "episode",
+                    "detail",
+                    "other"
+                  ],
+                  "routePolicy": "owned_plus_peer_generic",
+                  "sessionBootstrap": false,
+                  "terminalOnly": true
+                },
+                "llmAdvisorExperimentFingerprint": "7e83f036fc71d4e352905d0d1d54ba8b2921fa13699ba23781f1fe519839c79e",
+                "llmAdvisorFailureCompatibility": "exact",
+                "llmAdvisorProfile": "chain_terminal_extractor_v1",
+                "llmAdvisorRescue": true,
+                "llmAdvisorSourceFailureClass": "chain_terminal_gap",
+                "llmAdvisorStrategy": "terminal_media_extractor_with_playback_validation",
                 "negativeMemoryMatches": 13,
+                "positiveProgramFingerprint": "a0bd3d9dc0e743c9554f0e10ea3c471cea71167423b6469e1fc7d6e5571273f5",
+                "postExhaustionStrategyMethod": "strict-same-provider-positive-program-replay",
+                "postExhaustionStrategyProfile": "provider_positive_program_replay_v1",
                 "providerId": "mallumv",
-                "repairScope": "deferred",
-                "repairType": "experiment_strategy_exhausted",
+                "providerPositiveProgramProductionRescue": true,
+                "providerPositiveProgramReplay": true,
+                "repairScope": "capability",
+                "repairType": "terminal_media_resolution",
                 "signature": "4e8d92b8a8961450d87b63b2"
               }
             },
-            "queuedForLearning": [
-              "mallumv"
-            ],
+            "queuedForLearning": [],
             "validatedRepairLearningExecuted": true
           },
           "capabilityStrategy": "html_scraper",
-          "deferredToLearning": [
-            "mallumv"
-          ],
+          "deferredToLearning": [],
           "familyGroups": [
             {
               "capabilityStrategy": "html_scraper",
@@ -141,20 +205,308 @@
         }
       ],
       "compileRejectedToLearning": [],
-      "deferredToLearning": [
-        "mallumv"
-      ],
-      "deferredToLearningCount": 1,
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
       "durableMaterializeTargets": [],
-      "experimentMemoryAdvanced": false,
+      "experimentMemoryAdvanced": true,
       "fixedInLab": [],
       "fixedInLabCount": 0,
       "inputProviderCount": 1,
       "rawFixedInLab": [],
       "rawLabAcceptedCount": 0,
-      "remainingProviderCount": 0,
+      "remainingProviderCount": 1,
       "timeBudgetExhausted": false,
       "wave": 1
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [
+        "mallumv"
+      ],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {
+            "mallumv": 3
+          },
+          "advisorRotationPending": [
+            "mallumv"
+          ],
+          "batch": 1,
+          "brain": {
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:mallumv": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery",
+                  "player_media_extractor_v1",
+                  "provider_positive_program_replay_v1"
+                ],
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "failureClass": "chain_terminal_gap",
+                "hypotheses": [
+                  {
+                    "confidence": 1,
+                    "id": "media_extraction_gap:adaptive_runtime_recovery",
+                    "learned": true,
+                    "maturity": "experimental",
+                    "profile": "adaptive_runtime_recovery",
+                    "transferScore": 1047
+                  },
+                  {
+                    "confidence": 1,
+                    "id": "media_extraction_gap:player_media_extractor_v1",
+                    "learned": true,
+                    "maturity": "experimental",
+                    "profile": "player_media_extractor_v1",
+                    "transferScore": 1047
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "finish-reached-terminal-chain",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.96,
+                "llmAdvisorExperiment": {
+                  "aliasSearch": true,
+                  "documentRequestMining": true,
+                  "maxDepth": 5,
+                  "maxEmbeds": 28,
+                  "maxPages": 28,
+                  "maxRecipePasses": 4,
+                  "recipePolicy": "current_plus_provider_peer",
+                  "responseSalvage": true,
+                  "roleOrder": [
+                    "player",
+                    "source",
+                    "api",
+                    "episode",
+                    "detail",
+                    "other"
+                  ],
+                  "routePolicy": "owned_plus_peer_generic",
+                  "sessionBootstrap": false,
+                  "terminalOnly": true
+                },
+                "llmAdvisorExperimentFingerprint": "7e83f036fc71d4e352905d0d1d54ba8b2921fa13699ba23781f1fe519839c79e",
+                "llmAdvisorFailureCompatibility": "exact",
+                "llmAdvisorProfile": "chain_terminal_extractor_v1",
+                "llmAdvisorRescue": true,
+                "llmAdvisorSourceFailureClass": "chain_terminal_gap",
+                "llmAdvisorStrategy": "terminal_media_extractor_with_playback_validation",
+                "negativeMemoryMatches": 14,
+                "positiveProgramFingerprint": "a0bd3d9dc0e743c9554f0e10ea3c471cea71167423b6469e1fc7d6e5571273f5",
+                "postExhaustionStrategyMethod": "strict-same-provider-positive-program-replay",
+                "postExhaustionStrategyProfile": "provider_positive_program_replay_v1",
+                "providerId": "mallumv",
+                "providerPositiveProgramProductionRescue": true,
+                "providerPositiveProgramReplay": true,
+                "repairScope": "capability",
+                "repairType": "terminal_media_resolution",
+                "signature": "4e8d92b8a8961450d87b63b2"
+              }
+            },
+            "queuedForLearning": [],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "html_scraper",
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "html_scraper",
+              "groupId": "terminal-extraction|html_scraper",
+              "providers": [
+                "mallumv"
+              ],
+              "repairScope": "terminal-extraction"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [],
+          "groupId": "terminal-extraction|html_scraper",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 1,
+          "providerCount": 1,
+          "providers": [
+            "mallumv"
+          ],
+          "repairScope": "terminal-extraction",
+          "unexecutableLlmHandoff": []
+        }
+      ],
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": true,
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 1,
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 1,
+      "timeBudgetExhausted": false,
+      "wave": 2
+    },
+    {
+      "acceptedCount": 0,
+      "acceptedProgramCompileFailures": {},
+      "acceptedProgramCompiledProviders": [],
+      "advisorRotationPending": [
+        "mallumv"
+      ],
+      "batches": [
+        {
+          "accepted": [],
+          "acceptedCount": 0,
+          "advisorRemainingFingerprintCounts": {
+            "mallumv": 3
+          },
+          "advisorRotationPending": [
+            "mallumv"
+          ],
+          "batch": 1,
+          "brain": {
+            "harnessDifferentialProviders": [],
+            "learnedEvents": 0,
+            "plans": {
+              "published:mallumv": {
+                "action": "probe-targeted-repair",
+                "allowedProfiles": [
+                  "adaptive_runtime_recovery",
+                  "player_media_extractor_v1",
+                  "provider_positive_program_replay_v1"
+                ],
+                "exitReason": null,
+                "experimentExhausted": false,
+                "experimentGeneration": 2,
+                "experimentVariant": 4,
+                "experimentVariantCount": 5,
+                "failureClass": "chain_terminal_gap",
+                "hypotheses": [
+                  {
+                    "confidence": 1,
+                    "id": "media_extraction_gap:adaptive_runtime_recovery",
+                    "learned": true,
+                    "maturity": "experimental",
+                    "profile": "adaptive_runtime_recovery",
+                    "transferScore": 1047
+                  },
+                  {
+                    "confidence": 1,
+                    "id": "media_extraction_gap:player_media_extractor_v1",
+                    "learned": true,
+                    "maturity": "experimental",
+                    "profile": "player_media_extractor_v1",
+                    "transferScore": 1047
+                  },
+                  {
+                    "confidence": 0,
+                    "id": "finish-reached-terminal-chain",
+                    "learned": false,
+                    "maturity": null,
+                    "profile": null,
+                    "transferScore": 0
+                  }
+                ],
+                "learningDisposition": "core_repair_only",
+                "llmAdvisorApplied": true,
+                "llmAdvisorConfidence": 0.96,
+                "llmAdvisorExperiment": {
+                  "aliasSearch": true,
+                  "documentRequestMining": true,
+                  "maxDepth": 5,
+                  "maxEmbeds": 28,
+                  "maxPages": 28,
+                  "maxRecipePasses": 4,
+                  "recipePolicy": "current_plus_provider_peer",
+                  "responseSalvage": true,
+                  "roleOrder": [
+                    "player",
+                    "source",
+                    "api",
+                    "episode",
+                    "detail",
+                    "other"
+                  ],
+                  "routePolicy": "owned_plus_peer_generic",
+                  "sessionBootstrap": false,
+                  "terminalOnly": true
+                },
+                "llmAdvisorExperimentFingerprint": "7e83f036fc71d4e352905d0d1d54ba8b2921fa13699ba23781f1fe519839c79e",
+                "llmAdvisorFailureCompatibility": "exact",
+                "llmAdvisorProfile": "chain_terminal_extractor_v1",
+                "llmAdvisorRescue": true,
+                "llmAdvisorSourceFailureClass": "chain_terminal_gap",
+                "llmAdvisorStrategy": "terminal_media_extractor_with_playback_validation",
+                "negativeMemoryMatches": 15,
+                "positiveProgramFingerprint": "a0bd3d9dc0e743c9554f0e10ea3c471cea71167423b6469e1fc7d6e5571273f5",
+                "postExhaustionStrategyMethod": "strict-same-provider-positive-program-replay",
+                "postExhaustionStrategyProfile": "provider_positive_program_replay_v1",
+                "providerId": "mallumv",
+                "providerPositiveProgramProductionRescue": true,
+                "providerPositiveProgramReplay": true,
+                "repairScope": "capability",
+                "repairType": "terminal_media_resolution",
+                "signature": "4e8d92b8a8961450d87b63b2"
+              }
+            },
+            "queuedForLearning": [],
+            "validatedRepairLearningExecuted": true
+          },
+          "capabilityStrategy": "html_scraper",
+          "deferredToLearning": [],
+          "familyGroups": [
+            {
+              "capabilityStrategy": "html_scraper",
+              "groupId": "terminal-extraction|html_scraper",
+              "providers": [
+                "mallumv"
+              ],
+              "repairScope": "terminal-extraction"
+            }
+          ],
+          "fixedInLab": [],
+          "genericLearningHandoff": [],
+          "groupId": "terminal-extraction|html_scraper",
+          "harnessDifferentialProviders": [],
+          "healthConcurrency": 1,
+          "providerCount": 1,
+          "providers": [
+            "mallumv"
+          ],
+          "repairScope": "terminal-extraction",
+          "unexecutableLlmHandoff": []
+        }
+      ],
+      "compileRejectedToLearning": [],
+      "deferredToLearning": [],
+      "deferredToLearningCount": 0,
+      "durableMaterializeTargets": [],
+      "experimentMemoryAdvanced": true,
+      "fixedInLab": [],
+      "fixedInLabCount": 0,
+      "inputProviderCount": 1,
+      "rawFixedInLab": [],
+      "rawLabAcceptedCount": 0,
+      "remainingProviderCount": 1,
+      "timeBudgetExhausted": false,
+      "wave": 3
     }
   ]
 }
