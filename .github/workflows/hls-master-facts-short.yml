@@ -6,6 +6,8 @@ on:
     paths:
       - 'scripts/upgrade_hls_master_facts_v1.py'
       - 'scripts/provider_patches/hls_runtime_integrity_v1.py'
+      - 'scripts/provider_patches/stream_output_sanitizer_v10.py'
+      - 'scripts/provider_patches/global_stream_score_v1.py'
       - 'scripts/provider_patches/runtime_capability_media_safety_v4.py'
       - 'provider-overrides.json'
       - 'tests/hls_master_facts_short_test.py'
@@ -14,6 +16,8 @@ on:
       - 'tests/native_hls_integrity_budget_test.py'
       - 'tests/runtime_capability_media_safety_v4_test.py'
       - 'tests/hls_playback_integrity_test.py'
+      - 'tests/global_playback_integrity_policy_test.py'
+      - 'tests/stream_score_contract_test.py'
       - 'tests/scoped_playback_context_regression_test.py'
       - '.github/workflows/hls-master-facts-short.yml'
   workflow_dispatch:
