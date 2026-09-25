@@ -43,7 +43,7 @@ for required in (
     "Quick/Deep ne réparent ni ne reconstruisent les providers",
     "fingerprint de publication est en **schéma v4**",
     "placeholder d'environ **4,5 s**",
-    "StreamBadge public actuel est **v4**",
+    "StreamBadge public actuel est **v7**",
 ):
     assert required in architecture, required
 
