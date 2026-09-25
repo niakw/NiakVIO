@@ -36,12 +36,14 @@ native_options = {
     "probe_first_segment_native": True,
     "native_probe_max_rows": 3,
     "native_probe_timeout_ms": 1500,
+    "network_sample_bytes": 65536,
 }
 native_patched = module.apply(base, native_options)
 assert '"probeFirstSegmentNative":true' in native_patched
 assert '"nativeProbeMaxRows":3' in native_patched
 assert '"nativeProbeTimeoutMs":1500' in native_patched
-assert '"implementationRevision":"native-master-facts-v12"' in native_patched
+assert '"networkSampleBytes":65536' in native_patched
+assert '"implementationRevision":"native-master-facts-network-v13"' in native_patched
 assert module.apply(native_patched, native_options) == native_patched
 
 cfg = json.loads(OVERRIDES.read_text(encoding="utf-8"))

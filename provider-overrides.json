@@ -13153,7 +13153,7 @@
     "provider_backend_isolation": true
   },
   "playback_integrity_policy": {
-    "version": 5,
+    "version": 6,
     "enabled": true,
     "provider_disabling_is_not_a_repair": true,
     "global_discovery_hooks": [
@@ -13169,7 +13169,8 @@
       "minimum_vod_duration_seconds": 90,
       "short_static_media_seconds": 30,
       "inspect_master_facts": true,
-      "drop_unprobed_hls_after_budget": true
+      "drop_unprobed_hls_after_budget": true,
+      "network_sample_bytes": 65536
     },
     "hls_master_external_audio": "preserve_master_playlist",
     "hls_payload_validation": "top_level_plus_bounded_child_audio_and_segment_health",

@@ -24,6 +24,7 @@ POLICY = {
     "short_static_media_seconds": 30,
     "inspect_master_facts": True,
     "drop_unprobed_hls_after_budget": True,
+    "network_sample_bytes": 65536,
 }
 
 
@@ -31,8 +32,8 @@ def patch_overrides() -> bool:
     data = json.loads(OVERRIDES.read_text(encoding="utf-8"))
     playback = data.setdefault("playback_integrity_policy", {})
     changed = False
-    if playback.get("version") != 5:
-        playback["version"] = 5
+    if playback.get("version") != 6:
+        playback["version"] = 6
         changed = True
     options = playback.setdefault("hls_runtime_options", {})
     for key, value in POLICY.items():
@@ -76,13 +77,16 @@ def verify_source() -> None:
     source = HLS.read_text(encoding="utf-8")
     for needle in (
         'cfg.get("inspect_master_facts", True)',
-        '"implementationRevision": "native-master-facts-v12"',
+        '"implementationRevision": "native-master-facts-network-v13"',
         "function masterFacts(body)",
         "AVERAGE-BANDWIDTH",
         "FRAME-RATE",
         "VIDEO-RANGE",
         "dropUnprobedHlsAfterBudget",
         "shortStaticMedia",
+        "networkSampleBytes",
+        "segmentSuccessRatio",
+        "hls-first-segment-probe-v13",
     ):
         if needle not in source:
             raise AssertionError(f"HLS universal Block missing {needle}")

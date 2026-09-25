@@ -22,7 +22,7 @@ base = r'''globalThis.getStreams=async function(){
 patched = module.apply(base, {"timeout_ms": 2000})
 assert '"probeFirstSegmentNative":true' in patched
 assert '"minimumVodDurationSeconds":90' in patched
-assert '"implementationRevision":"native-master-facts-v12"' in patched
+assert '"implementationRevision":"native-master-facts-network-v13"' in patched
 
 
 def run_node(source: str) -> None:
@@ -90,11 +90,11 @@ const ts=new Uint8Array(376);ts[0]=0x47;ts[188]=0x47;
 globalThis.fetch=async function(url){
  calls++;
  if(url.endsWith('media.m3u8'))return response(url,'application/vnd.apple.mpegurl','#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:100\n#EXT-X-SERVER-CONTROL:CAN-BLOCK-RELOAD=YES\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\na.ts\n#EXTINF:6,\nb.ts\n#EXTINF:6,\nc.ts\n');
- if(url.endsWith('a.ts'))return response(url,'video/mp2t','',ts);
+ if(url.endsWith('a.ts')||url.endsWith('b.ts')||url.endsWith('c.ts'))return response(url,'video/mp2t','',ts);
  throw new Error('unexpected '+url);
 };
 PATCHED
-(async()=>{const rows=await globalThis.getStreams('1','movie');assert.equal(rows.length,1,JSON.stringify(rows));assert.equal(calls,2)})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{const rows=await globalThis.getStreams('1','movie');assert.equal(rows.length,1,JSON.stringify(rows));assert.equal(calls,3)})().catch(e=>{console.error(e);process.exit(1)});
 '''.replace('PATCHED', patched))
 
 # 120-second finite VOD remains valid and receives a bounded first-segment probe.
@@ -111,7 +111,7 @@ globalThis.fetch=async function(url){
  throw new Error('unexpected '+url);
 };
 PATCHED
-(async()=>{const rows=await globalThis.getStreams('1','movie');assert.equal(rows.length,1,JSON.stringify(rows));assert.equal(calls,2,'full VOD should probe playlist + first segment')})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{const rows=await globalThis.getStreams('1','movie');assert.equal(rows.length,1,JSON.stringify(rows));assert.equal(calls,3,'full VOD should probe playlist + two media segments')})().catch(e=>{console.error(e);process.exit(1)});
 '''.replace('PATCHED', patched))
 
 print('native HLS rejects tiny finite/static/media-sequence placeholders and preserves strong live + full VOD')
