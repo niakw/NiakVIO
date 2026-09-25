@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -330,3 +331,34 @@ live_safety = (ROOT / "scripts/apply_live_safety_repair.py").read_text(encoding=
 assert "niakvio-live-safety-prestate.json" in live_safety
 assert "Path('/tmp/niakvio-live-safety-prestate.json')" not in live_safety
 assert "path.parent.mkdir(parents=True, exist_ok=True)" in live_safety
+
+
+# Public repository privacy contract: private ChatGPT identifiers, conversation
+# URLs, local-user paths and credential-shaped literals must never be committed.
+PRIVACY_PATTERNS = {
+    "chatgpt-project-id": re.compile(r"g-p-[0-9a-f]{24,}", re.I),
+    "chatgpt-conversation-url": re.compile(r"https?://chatgpt\.com/[^\s\"']*/c/[0-9a-f-]{20,}", re.I),
+    "github-token": re.compile(r"\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{30,})\b"),
+    "tailscale-auth-key": re.compile(r"\btskey-[A-Za-z0-9_-]{20,}\b"),
+    "openai-api-key": re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b"),
+    "mac-local-user-path": re.compile(r"/Users/[A-Za-z0-9._-]+/"),
+}
+privacy_hits = []
+text_suffixes = {
+    "", ".cjs", ".css", ".html", ".js", ".json", ".md", ".mjs", ".py", ".sh",
+    ".txt", ".yaml", ".yml",
+}
+for path in ROOT.rglob("*"):
+    if not path.is_file() or path.suffix.lower() not in text_suffixes:
+        continue
+    rel = path.relative_to(ROOT).as_posix()
+    if rel.startswith(".git/"):
+        continue
+    try:
+        source = path.read_text(encoding="utf-8")
+    except (UnicodeDecodeError, OSError):
+        continue
+    for label, pattern in PRIVACY_PATTERNS.items():
+        if pattern.search(source):
+            privacy_hits.append((label, rel))
+assert not privacy_hits, f"privacy-sensitive literal committed: {privacy_hits[:20]}"
