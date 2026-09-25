@@ -56,16 +56,16 @@ def run_node(source: str, fetch_impl: str, expression: str, prelude: str = "") -
 
 streamzo = patched("streamzo")
 assert streamzo.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
-assert '"implementationRevision":"field-safety-v9-correlated-player-fallback"' in streamzo
+assert '"implementationRevision":"field-safety-v10-short-vod-and-correlated-player"' in streamzo
 assert "routeIdentity(" not in streamzo
 assert "wrong_release_year" not in streamzo
 assert "season_episode_identity_mismatch" not in streamzo
 assert "collisionFixtures" not in streamzo
 # Any old published wrapper is replaced, never stacked.
-legacy = streamzo.replace('"implementationRevision":"field-safety-v9-correlated-player-fallback"', '"implementationRevision":"field-safety-v2"')
+legacy = streamzo.replace('"implementationRevision":"field-safety-v10-short-vod-and-correlated-player"', '"implementationRevision":"field-safety-v2"')
 upgraded = patched("streamzo", legacy)
 assert upgraded.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
-assert '"implementationRevision":"field-safety-v9-correlated-player-fallback"' in upgraded
+assert '"implementationRevision":"field-safety-v10-short-vod-and-correlated-player"' in upgraded
 assert '"implementationRevision":"field-safety-v2"' not in upgraded
 assert patched("streamzo", upgraded) == upgraded
 
@@ -179,6 +179,25 @@ assert value == {"rows": 1, "seenType": "tv"}, value
 assert '"requestTypeAliases":{"anime":"tv"}' in alias_patched
 assert '"durationIdentity":true' in alias_patched
 
+
+
+# A complete tiny VOD is authoritative short-media evidence even without TMDB
+# duration metadata; it must not survive as an "offline" placeholder clip.
+tiny_vod_fetch = r"""async function(url){
+  global.__fetchCalls++;
+  url=String(url);
+  if(url.includes('master.m3u8')) {
+    return {ok:true,status:200,url,headers:{get:()=> 'application/vnd.apple.mpegurl'},text:async()=> '#EXTM3U\n#EXT-X-TARGETDURATION:5\n#EXTINF:4.5,\noffline.ts\n#EXT-X-ENDLIST\n'};
+  }
+  return {ok:false,status:404,url,headers:{get:()=> 'text/plain'},text:async()=>''};
+}"""
+value = run_node(
+    module.apply(BASE, context={"provider_id": "generic-provider"}),
+    tiny_vod_fetch,
+    "p.getStreams('280049','anime',1,1).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    "global.__fetchCalls=0;global.navigator={userAgent:'web-like-test'};",
+)
+assert value["rows"] == 0 and value["calls"] >= 1, value
 
 # Duration identity is stream-scoped and only authoritative for complete VOD HLS.
 # A live/sliding playlist without ENDLIST is a window, not the work duration.

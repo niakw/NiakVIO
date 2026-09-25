@@ -5,7 +5,14 @@ on:
     branches: [main]
     paths:
       - 'scripts/upgrade_hls_master_facts_v1.py'
+      - 'scripts/provider_patches/hls_runtime_integrity_v1.py'
+      - 'scripts/provider_patches/runtime_capability_media_safety_v4.py'
+      - 'provider-overrides.json'
       - 'tests/hls_master_facts_short_test.py'
+      - 'tests/hls_presentation_badge_integration_test.py'
+      - 'tests/native_hls_short_vod_regression_test.py'
+      - 'tests/native_hls_integrity_budget_test.py'
+      - 'tests/runtime_capability_media_safety_v4_test.py'
       - 'tests/hls_playback_integrity_test.py'
       - 'tests/scoped_playback_context_regression_test.py'
       - '.github/workflows/hls-master-facts-short.yml'
@@ -40,9 +47,17 @@ jobs:
       - name: Apply bounded HLS master facts migration
         run: python3 scripts/upgrade_hls_master_facts_v1.py
       - name: Compile
-        run: python3 -m py_compile scripts/upgrade_hls_master_facts_v1.py scripts/provider_patches/hls_runtime_integrity_v1.py tests/hls_master_facts_short_test.py
+        run: python3 -m py_compile scripts/upgrade_hls_master_facts_v1.py scripts/provider_patches/hls_runtime_integrity_v1.py scripts/provider_patches/runtime_capability_media_safety_v4.py tests/hls_master_facts_short_test.py tests/hls_presentation_badge_integration_test.py tests/native_hls_short_vod_regression_test.py tests/native_hls_integrity_budget_test.py tests/runtime_capability_media_safety_v4_test.py
       - name: Master quality audio and native 403 contract
         run: python3 tests/hls_master_facts_short_test.py
+      - name: HLS presentation / badges integration
+        run: python3 tests/hls_presentation_badge_integration_test.py
+      - name: Native short-placeholder rejection
+        run: python3 tests/native_hls_short_vod_regression_test.py
+      - name: Native HLS budget contract
+        run: python3 tests/native_hls_integrity_budget_test.py
+      - name: Runtime media safety short-VOD contract
+        run: python3 tests/runtime_capability_media_safety_v4_test.py
       - name: Existing HLS playback integrity contract
         run: python3 tests/hls_playback_integrity_test.py
       - name: Playback architecture contract

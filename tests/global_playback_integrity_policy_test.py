@@ -35,7 +35,7 @@ def clean_v3_fixture(source: bytes) -> bytes:
 
 cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 policy = cfg.get("playback_integrity_policy") or {}
-assert policy.get("version") == 4
+assert policy.get("version") == 5
 assert policy.get("enabled") is True
 assert policy.get("provider_disabling_is_not_a_repair") is True
 assert policy.get("global_discovery_hooks") == [
@@ -43,10 +43,14 @@ assert policy.get("global_discovery_hooks") == [
     "scripts/provider_patches/global_provider_security_hardening_v1.py",
 ]
 assert policy.get("pre_media_discovery_hooks") == []
-assert policy.get("native_hls_probe_policy") == "skip_additional_integrity_network_probes_on_native_host_bridge"
+assert policy.get("native_hls_probe_policy") == "bounded_native_hls_playlist_segment_validation_and_master_fact_enrichment"
 assert policy.get("post_media_discovery_hooks") == [
     "scripts/provider_patches/hls_runtime_integrity_v1.py",
 ]
+hls_global = policy.get("hls_runtime_options") or {}
+assert hls_global.get("inspect_master_facts") is True, hls_global
+assert hls_global.get("drop_unprobed_hls_after_budget") is True, hls_global
+assert int(hls_global.get("native_probe_max_rows") or 0) == 8, hls_global
 
 for provider_id, row in (cfg.get("provider_patches") or {}).items():
     if not isinstance(row, dict):
@@ -147,7 +151,7 @@ if reapplied != patched:
 reapplied_text = reapplied.decode("utf-8")
 assert reapplied_text.count("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") == 1
 assert reapplied_text.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1") == 1
-assert '"implementationRevision":"field-safety-v9-correlated-player-fallback"' in reapplied_text
+assert '"implementationRevision":"field-safety-v10-short-vod-and-correlated-player"' in reapplied_text
 assert '"implementationRevision":"field-safety-v8-media-only-p2p-vod-duration"' not in reapplied_text
 assert '"implementationRevision":"field-safety-v7-stream-scoped-p2p-vod-duration"' not in reapplied_text
 assert '"implementationRevision":"field-safety-v6-core-repair-types"' not in reapplied_text

@@ -36,7 +36,7 @@ for row in rows:
     text = path.read_text(encoding="utf-8")
 
     # Published Provider v3 composition is strictly:
-    # common ProviderBase + structured CONFIG/DATA + Provider Lego + Core Lego.
+    # common ProviderBase + structured CONFIG/DATA + Provider Block + Core Lego.
     assert text.count("NIAKVIO_PROVIDER_BASE_OWNED_V3") == 1, provider_id
     assert text.count("const NIAKVIO_PROVIDER_MODEL = Object.freeze(") == 1, provider_id
     assert text.count("/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */") == 1, provider_id
@@ -71,7 +71,7 @@ for token in (
     "collisionFixtures",
 ):
     assert token not in safety, token
-assert "field-safety-v9-correlated-player-fallback" in safety
+assert "field-safety-v10-short-vod-and-correlated-player" in safety
 assert "field-safety-v8-media-only-p2p-vod-duration" not in safety
 
 # ProviderBase can transport identity evidence, but it delegates all acceptance
@@ -81,4 +81,4 @@ assert "__nuvioIdentityPolicyV1" in base
 assert "Math.abs(Number(year) - Number(expectedYear))" not in base
 assert 'if (year && expectedYear && year !== expectedYear) return -1;' not in base
 
-print(f"Provider JS Lego ownership tests passed: providers={EXPECTED} identity_owner=CORE.STREAM_IDENTITY.V1 media_safety=v9")
+print(f"Provider JS Block ownership tests passed: providers={EXPECTED} identity_owner=CORE.STREAM_IDENTITY.V1 media_safety=v10")

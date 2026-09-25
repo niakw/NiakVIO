@@ -41,13 +41,14 @@ native_patched = module.apply(base, native_options)
 assert '"probeFirstSegmentNative":true' in native_patched
 assert '"nativeProbeMaxRows":3' in native_patched
 assert '"nativeProbeTimeoutMs":1500' in native_patched
-assert '"implementationRevision":"native-vod-duration-proof-v9"' in native_patched
+assert '"implementationRevision":"native-master-facts-v11"' in native_patched
 assert module.apply(native_patched, native_options) == native_patched
 
 cfg = json.loads(OVERRIDES.read_text(encoding="utf-8"))
 kehflix = cfg["provider_patches"]["kehflix"]["core_options"]["hls_runtime_integrity"]
 assert kehflix["probe_first_segment_native"] is True
-assert 1 <= int(kehflix["native_probe_max_rows"]) <= 8
+assert int(kehflix["native_probe_max_rows"]) == 8
+assert kehflix["inspect_master_facts"] is True
 assert 900 <= int(kehflix["native_probe_timeout_ms"]) <= 5000
 
 
@@ -201,4 +202,34 @@ PATCHED
 '''.replace("PATCHED", native_patched)
 )
 
-print("native HLS first-segment container proof is bounded, opt-in and fail-closed only on positive invalid evidence")
+# HLS rows beyond the native validation budget must not bypass the guard.
+budget_base = r'''globalThis.getStreams=async function(){
+  return [
+    {url:"https://media.example/a.m3u8",type:"hls"},
+    {url:"https://media.example/b.m3u8",type:"hls"},
+    {url:"https://media.example/c.m3u8",type:"hls"}
+  ];
+};'''
+budget_patched = module.apply(budget_base, {
+    "timeout_ms": 2000,
+    "probe_first_segment_native": True,
+    "native_probe_max_rows": 2,
+    "native_probe_timeout_ms": 1200,
+    "drop_unprobed_hls_after_budget": True,
+})
+run_node(r'''
+const assert=require('assert');
+globalThis.__native_fetch=function(){};
+function response(url,text,bytes){return {ok:true,status:200,url,headers:{get:()=>url.endsWith('.ts')?'video/mp2t':'application/vnd.apple.mpegurl'},text:async()=>text||'',arrayBuffer:async()=>{const b=bytes||new Uint8Array(0);return b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)}}}
+const ts=new Uint8Array(376);ts[0]=0x47;ts[188]=0x47;
+globalThis.fetch=async function(url){
+ if(/\/[ab]\.m3u8$/.test(url))return response(url,'#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXTINF:6,\nseg.ts\n');
+ if(url.endsWith('/seg.ts'))return response(url,'',ts);
+ throw new Error('third unprobed HLS row must be dropped before fetch: '+url);
+};
+PATCHED
+(async()=>{const rows=await globalThis.getStreams('1','movie');assert.equal(rows.length,2,JSON.stringify(rows));assert.ok(rows.every(x=>!/c\.m3u8$/.test(x.url)))})().catch(e=>{console.error(e);process.exit(1)});
+'''.replace('PATCHED', budget_patched))
+
+print("native HLS first-segment proof is bounded, enrichable and never passes unprobed HLS rows after budget")
+

@@ -66,7 +66,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     native_probe_max_rows = max(1, min(int(cfg.get("native_probe_max_rows", 8)), 16))
     native_probe_timeout_ms = max(900, min(int(cfg.get("native_probe_timeout_ms", 2500)), 5000))
     minimum_vod_duration_seconds = max(30, min(int(cfg.get("minimum_vod_duration_seconds", 90)), 600))
-    inspect_master_facts = bool(cfg.get("inspect_master_facts", False))
+    inspect_master_facts = bool(cfg.get("inspect_master_facts", True))
+    drop_unprobed_hls_after_budget = bool(cfg.get("drop_unprobed_hls_after_budget", True))
+    short_static_media_seconds = max(5, min(int(cfg.get("short_static_media_seconds", 30)), 60))
     payload_config = {
         "timeoutMs": timeout_ms,
         "maxChildren": max_children,
@@ -92,14 +94,16 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
                 "nativeProbeMaxRows": native_probe_max_rows,
                 "nativeProbeTimeoutMs": native_probe_timeout_ms,
                 "minimumVodDurationSeconds": minimum_vod_duration_seconds,
-                "implementationRevision": "native-vod-duration-proof-v9",
+                "dropUnprobedHlsAfterBudget": drop_unprobed_hls_after_budget,
+                "shortStaticMediaSeconds": short_static_media_seconds,
+                "implementationRevision": "native-vod-duration-proof-v10",
             }
         )
     if inspect_master_facts:
         payload_config.update(
             {
                 "inspectMasterFacts": True,
-                "implementationRevision": "native-master-facts-v10",
+                "implementationRevision": "native-master-facts-v11",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
@@ -231,16 +235,26 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       if(kind==="invalid"||kind==="header_only")return {state:"invalid",reason:"variant_"+kind};
       if(kind==="master")return {state:"unknown",reason:"nested_master"};
     }
-    var tiny=shortFiniteVod(body);if(tiny)return {state:"invalid",reason:"vod_duration_too_short",durationSeconds:tiny};
+    var tiny=shortMediaDuration(body);if(tiny)return {state:"invalid",reason:"vod_duration_too_short",durationSeconds:tiny};
     var proof=await proveMediaPlaylist(body,base,stream,referer);if(facts)proof.facts=facts;return proof;
   }
-  function finiteVodDurationSeconds(body){
-    var text=clean(body);if(!/#EXT-X-ENDLIST(?:\s|$)/i.test(text))return 0;
-    var re=/#EXTINF\s*:\s*([0-9]+(?:\.[0-9]+)?)/gi,m,total=0,count=0;
+  function segmentDuration(body){
+    var text=clean(body),re=/#EXTINF\s*:\s*([0-9]+(?:\.[0-9]+)?)/gi,m,total=0,count=0;
     while((m=re.exec(text))!==null){var value=Number(m[1]);if(Number.isFinite(value)&&value>0){total+=value;count++}}
-    return count?total:0;
+    return {total:total,count:count};
+  }
+  function finiteVodDurationSeconds(body){
+    var text=clean(body);if(!/#EXT-X-ENDLIST(?:\s|$)/i.test(text)&&!/#EXT-X-PLAYLIST-TYPE\s*:\s*VOD\b/i.test(text))return 0;
+    var stats=segmentDuration(text);return stats.count?stats.total:0;
   }
   function shortFiniteVod(body){var d=finiteVodDurationSeconds(body),floor=Number(config.minimumVodDurationSeconds||90)||90;return d>0&&d<floor?d:0}
+  function shortStaticMedia(body){
+    var text=clean(body);if(!text||/#EXT-X-ENDLIST(?:\s|$)/i.test(text)||/#EXT-X-PLAYLIST-TYPE\s*:\s*(?:VOD|EVENT)\b/i.test(text))return 0;
+    if(/#EXT-X-(?:MEDIA-SEQUENCE|PROGRAM-DATE-TIME|SERVER-CONTROL|PART|SKIP)\s*:/i.test(text))return 0;
+    var stats=segmentDuration(text),cap=Number(config.shortStaticMediaSeconds||30)||30;
+    return stats.count>0&&stats.count<=3&&stats.total>0&&stats.total<cap?stats.total:0;
+  }
+  function shortMediaDuration(body){return shortFiniteVod(body)||shortStaticMedia(body)}
   function playlistKind(body){
     var text=clean(body);if(!/^#EXTM3U(?:\s|$)/i.test(text))return "invalid";
     if(/#EXT-X-STREAM-INF\s*:/i.test(text))return "master";
@@ -271,14 +285,52 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     });
     return out.slice(0,config.maxChildren);
   }
-  function masterQuality(height){var h=Number(height||0);if(h>=2000)return"2160p";if(h>=1350)return"1440p";if(h>=900)return"1080p";if(h>=650)return"720p";if(h>=550)return"576p";if(h>=450)return"480p";if(h>=300)return"360p";return""}
-  function hlsAttr(line,name){var key=String(name||"").replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),q=new RegExp("(?:^|,)\\s*"+key+"\\s*=\\s*\\\"([^\\\"]*)\\\"","i").exec(String(line||""));if(q)return clean(q[1]);var b=new RegExp("(?:^|,)\\s*"+key+"\\s*=\\s*([^,\\s]+)","i").exec(String(line||""));return clean(b&&b[1])}
-  function hlsLang(value){var raw=clean(value).toLowerCase().replace(/_/g,"-"),first=raw.split("-")[0],a={eng:"en",english:"en",fra:"fr",fre:"fr",french:"fr",hin:"hi",hindi:"hi",jpn:"ja",japanese:"ja",tam:"ta",tamil:"ta",tel:"te",telugu:"te",ben:"bn",bengali:"bn",mal:"ml",malayalam:"ml",kan:"kn",kannada:"kn",pan:"pa",punjabi:"pa",guj:"gu",gujarati:"gu",mar:"mr",marathi:"mr",urd:"ur",urdu:"ur",kor:"ko",korean:"ko",spa:"es",spanish:"es",deu:"de",ger:"de",german:"de",ita:"it",italian:"it",por:"pt",portuguese:"pt",ara:"ar",arabic:"ar",tur:"tr",turkish:"tr",rus:"ru",russian:"ru",zho:"zh",chi:"zh",chinese:"zh"};if(a[raw])return a[raw];if(a[first])return a[first];return /^[a-z]{2}$/.test(first)?first:""}
-  function masterFacts(body){var lines=clean(body).split(/\r?\n/),height=0,tracks=[],seen={};for(var i=0;i<lines.length;i++){var line=lines[i];if(/^#EXT-X-STREAM-INF\s*:/i.test(line)){var rm=/\bRESOLUTION\s*=\s*\d{2,5}\s*[xX]\s*(\d{2,5})/i.exec(line);if(rm)height=Math.max(height,Number(rm[1]||0));continue}if(!/^#EXT-X-MEDIA\s*:/i.test(line)||!/\bTYPE\s*=\s*AUDIO\b/i.test(line))continue;var code=hlsLang(hlsAttr(line,"LANGUAGE")),name=hlsAttr(line,"NAME");if(!code)code=hlsLang(name);if(!code||seen[code])continue;seen[code]=1;tracks.push({language:code,name:name||code.toUpperCase()})}return{height:height,quality:masterQuality(height),audioTracks:tracks}}
-  function enrichMasterFacts(stream,facts){if(!stream||!facts)return stream;var row=Object.assign({},stream),tracks=Array.isArray(facts.audioTracks)?facts.audioTracks:[];if(facts.quality){if(clean(row.quality)&&!clean(row.sourceQuality))row.sourceQuality=clean(row.quality);if(clean(row.resolution)&&!clean(row.sourceResolution))row.sourceResolution=clean(row.resolution);row.quality=facts.quality;row.height=Number(facts.height)||row.height;row.hlsMasterQuality=facts.quality}if(tracks.length){row.audioTracks=tracks.map(function(t){return{language:t.language,name:t.name}});row.hlsMasterAudioTracks=row.audioTracks;if(tracks.length>1){if(clean(row.language)&&!clean(row.sourceLanguage))row.sourceLanguage=clean(row.language);row.language="MULTI"}}return row}
+  function masterQuality(height){var h=Number(height||0);if(h>=4000)return"4320p";if(h>=2000)return"2160p";if(h>=1350)return"1440p";if(h>=900)return"1080p";if(h>=650)return"720p";if(h>=550)return"576p";if(h>=450)return"480p";if(h>=300)return"360p";return""}
+  function hlsAttr(line,name){var key=String(name||""),q=new RegExp("(?:^|[:,])\\s*"+key+"\\s*=\\s*\\\"([^\\\"]*)\\\"","i").exec(String(line||""));if(q)return clean(q[1]);var b=new RegExp("(?:^|[:,])\\s*"+key+"\\s*=\\s*([^,\\s]+)","i").exec(String(line||""));return clean(b&&b[1])}
+  function hlsLang(value){var raw=clean(value).toLowerCase().replace(/_/g,"-"),first=raw.split("-")[0],a={eng:"en",english:"en",fra:"fr",fre:"fr",french:"fr",hin:"hi",hindi:"hi",jpn:"ja",japanese:"ja",tam:"ta",tamil:"ta",tel:"te",telugu:"te",ben:"bn",bengali:"bn",mal:"ml",malayalam:"ml",kan:"kn",kannada:"kn",pan:"pa",punjabi:"pa",guj:"gu",gujarati:"gu",mar:"mr",marathi:"mr",urd:"ur",urdu:"ur",kor:"ko",korean:"ko",spa:"es",spanish:"es",deu:"de",ger:"de",german:"de",ita:"it",italian:"it",por:"pt",portuguese:"pt",ara:"ar",arabic:"ar",tur:"tr",turkish:"tr",rus:"ru",russian:"ru",zho:"zh",chi:"zh",chinese:"zh",bul:"bg",bulgarian:"bg",fin:"fi",finnish:"fi",ell:"el",gre:"el",greek:"el",hun:"hu",hungarian:"hu",ind:"id",indonesian:"id",fas:"fa",per:"fa",persian:"fa",heb:"he",hebrew:"he",kur:"ku",kurdish:"ku",uzb:"uz",uzbek:"uz",pol:"pl",polish:"pl",ron:"ro",rum:"ro",romanian:"ro",slk:"sk",slo:"sk",slovak:"sk",swe:"sv",swedish:"sv",ces:"cs",cze:"cs",czech:"cs",vie:"vi",vietnamese:"vi"};if(a[raw])return a[raw];if(a[first])return a[first];return /^[a-z]{2,3}$/.test(first)?first:""}
+  function codecFacts(value){var parts=clean(value).split(",").map(function(v){return clean(v).toLowerCase()}).filter(Boolean),video="",audio="",hdr="";for(var i=0;i<parts.length;i++){var p=parts[i];if(/^(?:dvhe|dvh1)/.test(p)){video="HEVC";hdr="Dolby Vision"}else if(!video&&/^(?:hvc1|hev1)/.test(p))video="HEVC";else if(!video&&/^(?:avc1|avc3)/.test(p))video="AVC";else if(!video&&/^av01/.test(p))video="AV1";else if(!video&&/^vp09/.test(p))video="VP9";if(!audio&&/^mp4a/.test(p))audio="AAC";else if(!audio&&/^ec-3/.test(p))audio="E-AC3";else if(!audio&&/^ac-3/.test(p))audio="AC3";else if(!audio&&/^opus/.test(p))audio="Opus";else if(!audio&&/^flac/.test(p))audio="FLAC";else if(!audio&&/^alac/.test(p))audio="ALAC"}return{video:video,audio:audio,hdr:hdr}}
+  function channelLabel(value){var v=clean(value).split("/")[0];if(v==="1")return"1.0";if(v==="2")return"2.0";if(v==="6")return"5.1";if(v==="8")return"7.1";return/^(?:1\.0|2\.0|2\.1|5\.1|7\.1)$/.test(v)?v:""}
+  function bandwidthLabel(value){var n=Number(value||0);if(!Number.isFinite(n)||n<=0)return"";if(n>=1000000){var mb=Math.round(n/100000)/10;return String(mb).replace(/\.0$/,"")+" Mbps max"}var kb=Math.round(n/1000);return kb?kb+" kbps max":""}
+  function frameLabel(value){var n=Number(String(value||"").replace(",","."));if(!Number.isFinite(n)||n<=0)return"";var rounded=Math.round(n*1000)/1000;return String(rounded).replace(/\.0+$/,"")+" fps"}
+  function rangeLabel(value){var v=clean(value).toUpperCase();return v==="HLG"?"HLG":v==="PQ"?"HDR":v==="SDR"?"SDR":""}
+  function masterFacts(body){
+    var lines=clean(body).split(/\r?\n/),best={width:0,height:0,bandwidth:0,codecs:"",frameRate:"",videoRange:""},audioTracks=[],subtitleTracks=[],audioSeen={},subSeen={};
+    for(var i=0;i<lines.length;i++){
+      var line=lines[i];
+      if(/^#EXT-X-STREAM-INF\s*:/i.test(line)){
+        var rm=/\bRESOLUTION\s*=\s*(\d{2,5})\s*[xX]\s*(\d{2,5})/i.exec(line),width=Number(rm&&rm[1]||0),height=Number(rm&&rm[2]||0);
+        var bandwidth=Number(hlsAttr(line,"AVERAGE-BANDWIDTH")||hlsAttr(line,"BANDWIDTH")||0)||0;
+        if(height>best.height||(height===best.height&&bandwidth>best.bandwidth))best={width:width,height:height,bandwidth:bandwidth,codecs:hlsAttr(line,"CODECS"),frameRate:hlsAttr(line,"FRAME-RATE"),videoRange:hlsAttr(line,"VIDEO-RANGE")};
+        continue;
+      }
+      if(!/^#EXT-X-MEDIA\s*:/i.test(line))continue;
+      var type=clean(hlsAttr(line,"TYPE")).toUpperCase(),code=hlsLang(hlsAttr(line,"LANGUAGE")),name=hlsAttr(line,"NAME"),channels=channelLabel(hlsAttr(line,"CHANNELS"));
+      if(!code)code=hlsLang(name);
+      if(type==="AUDIO"&&code&&!audioSeen[code+"|"+channels]){audioSeen[code+"|"+channels]=1;audioTracks.push({language:code,name:name||code.toUpperCase(),channels:channels})}
+      if(type==="SUBTITLES"&&code&&!subSeen[code]){subSeen[code]=1;subtitleTracks.push({language:code,name:name||code.toUpperCase()})}
+    }
+    var codecs=codecFacts(best.codecs),hdr=codecs.hdr||rangeLabel(best.videoRange),channelValues=audioTracks.map(function(t){return t.channels}).filter(Boolean),audioChannels=channelValues.length&&channelValues.every(function(v){return v===channelValues[0]})?channelValues[0]:"";
+    return{width:best.width,height:best.height,resolution:best.width&&best.height?best.width+"x"+best.height:"",quality:masterQuality(best.height),bandwidth:best.bandwidth,bitrate:bandwidthLabel(best.bandwidth),codec:codecs.video,audioCodec:codecs.audio,frameRate:frameLabel(best.frameRate),hdr:hdr,audioChannels:audioChannels,audioTracks:audioTracks,subtitleTracks:subtitleTracks,rawCodecs:best.codecs};
+  }
+  function weakFact(value){return !clean(value)||/^(?:unknown|inconnu(?:e)?|n\/?a|none|null|undefined|auto|-+)$/i.test(clean(value))}
+  function enrichMasterFacts(stream,facts){
+    if(!stream||!facts)return stream;
+    var row=Object.assign({},stream),tracks=Array.isArray(facts.audioTracks)?facts.audioTracks:[],subs=Array.isArray(facts.subtitleTracks)?facts.subtitleTracks:[];
+    if(facts.quality){if(!weakFact(row.quality)&&!clean(row.sourceQuality))row.sourceQuality=clean(row.quality);if(!weakFact(row.resolution)&&!clean(row.sourceResolution))row.sourceResolution=clean(row.resolution);row.quality=facts.quality;row.hlsMasterQuality=facts.quality}
+    if(facts.width)row.width=Number(facts.width)||row.width;if(facts.height)row.height=Number(facts.height)||row.height;if(facts.resolution)row.resolution=facts.resolution;
+    if(facts.bitrate&&weakFact(row.bitrate)){row.bitrate=facts.bitrate;row.hlsMasterBandwidth=Number(facts.bandwidth)||0}
+    if(facts.codec&&weakFact(row.codec)){row.codec=facts.codec;row.hlsMasterCodecs=facts.rawCodecs||""}
+    if(facts.audioCodec&&weakFact(row.audioCodec))row.audioCodec=facts.audioCodec;
+    if(facts.audioChannels&&weakFact(row.audioChannels))row.audioChannels=facts.audioChannels;
+    if(facts.frameRate&&weakFact(row.frameRate))row.frameRate=facts.frameRate;
+    if(facts.hdr&&weakFact(row.hdr))row.hdr=facts.hdr;
+    if(tracks.length){row.audioTracks=tracks.map(function(t){return{language:t.language,name:t.name,channels:t.channels||""}});row.hlsMasterAudioTracks=row.audioTracks;if(tracks.length===1&&weakFact(row.language))row.language=tracks[0].language}
+    if(subs.length){var existing=Array.isArray(row.subtitles)?row.subtitles.slice():[];subs.forEach(function(t){if(!existing.some(function(x){return hlsLang(x&&typeof x==="object"?(x.language||x.lang||x.code||x.name):x)===t.language}))existing.push({language:t.language,name:t.name})});row.subtitles=existing;row.hlsMasterSubtitleTracks=subs}
+    return row;
+  }
   async function validateChild(url,stream,referer){
     var result=await fetchBounded(url,stream,referer,false);if(result.state!=="ok")return result.state;
-    var body=await responseText(result),kind=playlistKind(body);return kind==="media"||kind==="master"?"valid":"invalid";
+    var body=await responseText(result),kind=playlistKind(body);if(kind==="media"&&shortMediaDuration(body))return"invalid";return kind==="media"||kind==="master"?"valid":"invalid";
   }
   async function inspectHls(url,stream,referer){
     var result=await fetchBounded(url,stream,referer,false);
@@ -287,7 +339,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     if(/^video\//i.test(ct))return {state:"direct",format:ct.indexOf("webm")>=0?"webm":"mp4",url:result.url,result:result};
     var body=await responseText(result),kind=playlistKind(body);
     if(kind==="invalid"||kind==="header_only")return {state:"invalid",kind:kind,body:body,result:result};
-    if(kind==="media"){var tiny=shortFiniteVod(body);if(tiny)return {state:"invalid",kind:"vod_duration_too_short",durationSeconds:tiny,body:body,result:result};return {state:"valid",kind:kind,url:result.url,body:body,result:result}}
+    if(kind==="media"){var tiny=shortMediaDuration(body);if(tiny)return {state:"invalid",kind:"vod_duration_too_short",durationSeconds:tiny,body:body,result:result};return {state:"valid",kind:kind,url:result.url,body:body,result:result}}
 
     var facts=config.inspectMasterFacts?masterFacts(body):null,variants=variantUris(body,result.url||url),audio=audioUris(body,result.url||url);
     if(!variants.length)return {state:"invalid",kind:"master_without_variants",body:body,result:result};
@@ -397,7 +449,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       if(!config.probeFirstSegmentNative||!rows||!rows.length)return value;
       var remaining=Math.max(1,Number(config.nativeProbeMaxRows||1)||1);
       var checks=await Promise.all(rows.map(async function(stream){
-        if(remaining<=0)return stream;
+        if(remaining<=0)return hlsHint(stream)&&config.dropUnprobedHlsAfterBudget?null:stream;
         if(!hlsHint(stream)){
           if(!config.probeAllUrls)return stream;
           remaining-=1;

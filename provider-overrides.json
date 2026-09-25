@@ -2414,8 +2414,9 @@
       "core_options": {
         "hls_runtime_integrity": {
           "probe_first_segment_native": true,
-          "native_probe_max_rows": 3,
-          "native_probe_timeout_ms": 2500
+          "native_probe_max_rows": 8,
+          "native_probe_timeout_ms": 2500,
+          "inspect_master_facts": true
         }
       },
       "candidate_learned_routes": [
@@ -13152,7 +13153,7 @@
     "provider_backend_isolation": true
   },
   "playback_integrity_policy": {
-    "version": 4,
+    "version": 5,
     "enabled": true,
     "provider_disabling_is_not_a_repair": true,
     "global_discovery_hooks": [
@@ -13161,7 +13162,14 @@
     ],
     "hls_runtime_options": {
       "timeout_ms": 6500,
-      "max_children": 2
+      "max_children": 2,
+      "probe_first_segment_native": true,
+      "native_probe_max_rows": 8,
+      "native_probe_timeout_ms": 2500,
+      "minimum_vod_duration_seconds": 90,
+      "short_static_media_seconds": 30,
+      "inspect_master_facts": true,
+      "drop_unprobed_hls_after_budget": true
     },
     "hls_master_external_audio": "preserve_master_playlist",
     "hls_payload_validation": "top_level_plus_bounded_child_audio_and_segment_health",
@@ -13173,7 +13181,7 @@
     "post_media_discovery_hooks": [
       "scripts/provider_patches/hls_runtime_integrity_v1.py"
     ],
-    "native_hls_probe_policy": "skip_additional_integrity_network_probes_on_native_host_bridge",
+    "native_hls_probe_policy": "bounded_native_hls_playlist_segment_validation_and_master_fact_enrichment",
     "terminal_stream_sanitizer": {
       "enabled": true,
       "patch": "scripts/provider_patches/stream_output_sanitizer_v6.py",
@@ -13187,7 +13195,8 @@
       }
     },
     "unprobed_stream_action": "drop_stream",
-    "zero_validated_stream_action": "return_empty_array"
+    "zero_validated_stream_action": "return_empty_array",
+    "hls_master_fact_policy": "reuse_already_fetched_master_resolution_bandwidth_codecs_framerate_range_audio_subtitles"
   },
   "catalogue_resolution_policy": {
     "version": 3,
@@ -13284,7 +13293,8 @@
     "options": {
       "duration_identity": true,
       "min_duration_ratio": 0.55,
-      "max_duration_ratio": 1.8
+      "max_duration_ratio": 1.8,
+      "min_vod_duration_seconds": 60
     },
     "hls_capability_provider_count": 76,
     "identity_owner": "CORE.STREAM_IDENTITY.V1"

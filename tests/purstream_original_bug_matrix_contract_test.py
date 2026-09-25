@@ -38,7 +38,7 @@ assert capability.get("request_type_aliases") == {}
 assert capability.get("identity_request_source") == "original_nuvio_request"
 
 # HLS has one post-media owner. Native no-probe behavior is intrinsic to that
-# brick, so no secondary mutator may re-open or reorder it.
+# Block, so no secondary mutator may re-open or reorder it.
 pre_hooks = playback.get("pre_media_discovery_hooks") or []
 post_hooks = playback.get("post_media_discovery_hooks") or []
 global_hooks = playback.get("global_discovery_hooks") or []
@@ -46,10 +46,12 @@ assert pre_hooks == [], pre_hooks
 assert post_hooks == ["scripts/provider_patches/hls_runtime_integrity_v1.py"], post_hooks
 assert "scripts/provider_patches/native_hls_integrity_budget_v1.py" not in pre_hooks + post_hooks + global_hooks
 assert "scripts/provider_patches/hls_master_audio_preserver_v1.py" not in pre_hooks + post_hooks + global_hooks
-assert playback.get("native_hls_probe_policy") == "skip_additional_integrity_network_probes_on_native_host_bridge"
+assert playback.get("native_hls_probe_policy") == "bounded_native_hls_playlist_segment_validation_and_master_fact_enrichment"
 hls_source = (SCRIPTS / "provider_patches" / "hls_runtime_integrity_v1.py").read_text(encoding="utf-8")
 assert 'function nativeHlsHost(){try{return typeof g.__native_fetch==="function"}' in hls_source
-assert "if(nativeHlsHost())return value;" in hls_source
+assert "if(nativeHlsHost())" in hls_source
+assert "dropUnprobedHlsAfterBudget" in hls_source
+assert "function masterFacts(body)" in hls_source
 
 base_store = (SCRIPTS / "provider_base_store.py").read_text(encoding="utf-8")
 assert "function _collectionMediaType" in base_store

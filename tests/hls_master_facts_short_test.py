@@ -19,12 +19,12 @@ spec.loader.exec_module(mod)
 
 MASTER = """#EXTM3U
 #EXT-X-VERSION:6
-#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"aud\",NAME=\"English\",LANGUAGE=\"en\",DEFAULT=YES,AUTOSELECT=YES,URI=\"audio-en.m3u8\"
-#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"aud\",NAME=\"French\",LANGUAGE=\"fr\",DEFAULT=NO,AUTOSELECT=YES,URI=\"audio-fr.m3u8\"
-#EXT-X-STREAM-INF:BANDWIDTH=2200000,RESOLUTION=1280x720,AUDIO=\"aud\"
+#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID=\"aud\",NAME=\"Korean\",LANGUAGE=\"ko\",CHANNELS=\"2\",DEFAULT=YES,AUTOSELECT=YES,URI=\"audio-ko.m3u8\"
+#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"French\",LANGUAGE=\"fr\",DEFAULT=NO,AUTOSELECT=YES,URI=\"sub-fr.m3u8\"
+#EXT-X-STREAM-INF:BANDWIDTH=2200000,AVERAGE-BANDWIDTH=1800000,RESOLUTION=960x540,CODECS=\"avc1.4d401f,mp4a.40.2\",FRAME-RATE=23.976,VIDEO-RANGE=SDR,AUDIO=\"aud\",SUBTITLES=\"subs\"
+540.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=6200000,AVERAGE-BANDWIDTH=5800000,RESOLUTION=1440x720,CODECS=\"avc1.64001f,mp4a.40.2\",FRAME-RATE=23.976,VIDEO-RANGE=SDR,AUDIO=\"aud\",SUBTITLES=\"subs\"
 720.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=5200000,RESOLUTION=1920x1080,AUDIO=\"aud\"
-1080.m3u8
 """
 MEDIA = """#EXTM3U
 #EXT-X-TARGETDURATION:10
@@ -57,7 +57,7 @@ if(mode==='browser'||mode==='native'){
   globalThis.fetch=async(url)=>{
     url=String(url);
     if(url.endsWith('/master.m3u8'))return textResponse(url,master);
-    if(url.endsWith('/720.m3u8')||url.endsWith('/1080.m3u8')||url.endsWith('/audio-en.m3u8')||url.endsWith('/audio-fr.m3u8'))return textResponse(url,media);
+    if(url.endsWith('/720.m3u8')||url.endsWith('/720.m3u8')||url.endsWith('/audio-ko.m3u8')||url.endsWith('/sub-fr.m3u8'))return textResponse(url,media);
     if(url.endsWith('/seg.ts'))return tsResponse(url);
     throw new Error('unexpected fetch '+url);
   };
@@ -76,15 +76,20 @@ require(process.argv[2]);
   }
   if(!Array.isArray(out)||out.length!==1)throw new Error('unexpected rows '+JSON.stringify(out));
   const row=out[0];
-  if(row.quality!=='1080p')throw new Error('quality not upgraded '+JSON.stringify(row));
-  if(Number(row.height)!==1080)throw new Error('height missing '+JSON.stringify(row));
-  if(row.sourceQuality!=='720p')throw new Error('provider quality not preserved '+JSON.stringify(row));
-  if(row.sourceResolution!=='1280x720')throw new Error('provider resolution not preserved '+JSON.stringify(row));
-  if(row.language!=='MULTI')throw new Error('multi language not derived '+JSON.stringify(row));
-  if(row.sourceLanguage!=='VF')throw new Error('provider language not preserved '+JSON.stringify(row));
+  if(row.quality!=='720p')throw new Error('quality not upgraded '+JSON.stringify(row));
+  if(Number(row.width)!==1440||Number(row.height)!==720)throw new Error('dimensions missing '+JSON.stringify(row));
+  if(row.resolution!=='1440x720')throw new Error('resolution missing '+JSON.stringify(row));
+  if(row.codec!=='AVC'||row.audioCodec!=='AAC')throw new Error('codec facts missing '+JSON.stringify(row));
+  if(row.frameRate!=='23.976 fps')throw new Error('frame rate missing '+JSON.stringify(row));
+  if(row.bitrate!=='5.8 Mbps max')throw new Error('bandwidth missing '+JSON.stringify(row));
+  if(row.hdr!=='SDR')throw new Error('video range missing '+JSON.stringify(row));
+  if(row.audioChannels!=='2.0')throw new Error('channels missing '+JSON.stringify(row));
+  if(row.language!=='ko')throw new Error('single HLS language not normalized '+JSON.stringify(row));
   const langs=(row.audioTracks||[]).map(x=>x.language).sort().join(',');
-  if(langs!=='en,fr')throw new Error('audio tracks missing '+JSON.stringify(row));
-  console.log('HLS_MASTER_FACTS_OK mode='+mode+' quality='+row.quality+' audio='+langs);
+  if(langs!=='ko')throw new Error('audio tracks missing '+JSON.stringify(row));
+  const subs=(row.subtitles||[]).map(x=>x.language||x.lang||x.code).filter(Boolean).sort().join(',');
+  if(subs!=='fr')throw new Error('subtitle tracks missing '+JSON.stringify(row));
+  console.log('HLS_MASTER_FACTS_OK mode='+mode+' quality='+row.quality+' audio='+langs+' subs='+subs);
 })().catch(e=>{console.error(e);process.exit(1)});
 '''
 
@@ -99,7 +104,6 @@ with tempfile.TemporaryDirectory() as tmp:
 
     facts_provider = root / "facts.cjs"
     facts_provider.write_text(generated({
-        "inspect_master_facts": True,
         "probe_first_segment_native": True,
         "native_probe_max_rows": 2,
         "native_probe_timeout_ms": 1200,
@@ -132,10 +136,11 @@ with tempfile.TemporaryDirectory() as tmp:
 
 cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 providers = cfg["provider_patches"]
-for provider_id in ("purstream", "streamzo", "castle"):
-    hls = providers[provider_id]["core_options"]["hls_runtime_integrity"]
-    assert hls["inspect_master_facts"] is True, (provider_id, hls)
+global_hls = cfg["playback_integrity_policy"]["hls_runtime_options"]
+assert global_hls["inspect_master_facts"] is True, global_hls
+assert global_hls["drop_unprobed_hls_after_budget"] is True, global_hls
+assert int(global_hls["native_probe_max_rows"]) == 8, global_hls
 play = providers["playimdb"]["core_options"]["hls_runtime_integrity"]
 assert play["probe_all_urls"] is True and play["fail_closed_unknown"] is True, play
 
-print("bounded HLS master facts + PlayIMDb strict 403 tests passed")
+print("universal HLS master technical facts + PlayIMDb strict 403 tests passed")

@@ -62,7 +62,8 @@ playback = overrides.get("playback_integrity_policy") or {}
 assert playback.get("pre_media_discovery_hooks") == [], playback
 assert playback.get("post_media_discovery_hooks") == ["scripts/provider_patches/hls_runtime_integrity_v1.py"], playback
 assert "scripts/provider_patches/native_hls_integrity_budget_v1.py" not in (playback.get("pre_media_discovery_hooks") or []), playback
-assert playback.get("native_hls_probe_policy") == "skip_additional_integrity_network_probes_on_native_host_bridge"
+assert playback.get("native_hls_probe_policy") == "bounded_native_hls_playlist_segment_validation_and_master_fact_enrichment"
+assert (playback.get("hls_runtime_options") or {}).get("inspect_master_facts") is True, playback
 worker_source = (ROOT / "scripts/provider_worker.cjs").read_text(encoding="utf-8")
 assert "fixture.tmdbMetadata = fixtureMetadata" in worker_source
 assert "globalThis.__nuvioMediaContext" in worker_source
