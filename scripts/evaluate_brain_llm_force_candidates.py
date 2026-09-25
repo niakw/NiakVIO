@@ -263,6 +263,7 @@ def main() -> int:
                         {
                             "provider": provider,
                             "mutationFingerprint": fingerprint,
+                            "mutationContextFingerprint": str(row.get("mutationContextFingerprint") or "").strip().casefold(),
                             "accepted": False,
                             "reason": "force_candidate_not_applied",
                             "baseline": result_summary(baseline),
@@ -286,6 +287,7 @@ def main() -> int:
                 result = {
                     "provider": provider,
                     "mutationFingerprint": fingerprint,
+                    "mutationContextFingerprint": str(row.get("mutationContextFingerprint") or "").strip().casefold(),
                     "accepted": bool(accepted),
                     "reason": reason,
                     "baseline": result_summary(baseline),
@@ -325,6 +327,8 @@ def main() -> int:
                 {
                     "schemaVersion": 1,
                     "currentSha": current_sha,
+                    "sourceNiakvioSha": str(payload.get("sourceNiakvioSha") or "").strip().casefold(),
+                    "sourceBrainLlmSha": str(payload.get("brainLlmSha") or "").strip().casefold(),
                     "candidateCount": len(eligible),
                     "acceptedProviderCount": len(accepted_rows),
                     "acceptedProviders": [
