@@ -73,5 +73,8 @@ workflow=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text
 assert "FIELD_PROVIDER_BRAIN_ESCALATE" in workflow
 assert "gh workflow run brain-learning-lab.yml" in workflow
 assert "-f publish_proposal=true" in workflow
+assert "FIELD_PROVIDER_BRAIN_FORCE_DEBT" in workflow
+assert "learning_dispatch=false owner=force" in workflow
+assert "resume_mode=force" in workflow
 
 print("causal Brain intelligence contract passed")
