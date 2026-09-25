@@ -531,6 +531,9 @@ def sanitized_brain(report: dict[str, Any]) -> dict[str, Any]:
     return {
         "learnedEvents": int(brain.get("learnedEvents") or 0),
         "validatedRepairLearningExecuted": bool(brain.get("validatedRepairLearningExecuted")),
+        "harnessDifferentialProviders": sorted({
+            cid(x) for x in brain.get("harnessDifferentialProviders") or [] if cid(x)
+        }),
         "queuedForLearning": sorted({cid(x) for x in brain.get("queuedForLearning") or [] if cid(x)}),
         "plans": {
             str(key): {
@@ -755,6 +758,7 @@ def main() -> int:
     all_raw_lab_accepted: list[dict[str, Any]] = []
     all_fixed: set[str] = set()
     all_deferred: set[str] = set()
+    all_harness_differential: set[str] = set()
     all_compiled_programs: set[str] = set()
     all_program_compile_failures: dict[str, str] = {}
     no_progress_reason: str | None = None
@@ -829,14 +833,23 @@ def main() -> int:
                 accepted = accepted_rows(repair_report)
                 fixed = fixed_providers(health)
                 brain_summary = sanitized_brain(repair_report)
+                harness_differential = {
+                    cid(value)
+                    for value in brain_summary.get("harnessDifferentialProviders") or []
+                    if cid(value)
+                }
+                all_harness_differential.update(harness_differential)
                 deferred = {
                     cid(row.get("providerId"))
                     for row in (brain_summary.get("plans") or {}).values()
                     if isinstance(row, dict)
                     and row.get("experimentExhausted") is True
                     and cid(row.get("providerId"))
+                    and cid(row.get("providerId")) not in harness_differential
                 }
-                deferred.update(exhausted_from_negative_memory(brain_summary))
+                deferred.update(
+                    exhausted_from_negative_memory(brain_summary) - harness_differential
+                )
                 generic_learning_handoff = generic_unadvised_learning_handoff(
                     brain_summary,
                     accepted,
@@ -845,8 +858,11 @@ def main() -> int:
                 unexecutable_llm_handoff = unexecutable_llm_advisor_handoff(
                     brain_summary,
                 )
+                generic_learning_handoff.difference_update(harness_differential)
+                unexecutable_llm_handoff.difference_update(harness_differential)
                 deferred.update(generic_learning_handoff)
                 deferred.update(unexecutable_llm_handoff)
+                deferred.difference_update(harness_differential)
                 accepted_this_wave.extend(accepted)
                 fixed_this_wave.update(fixed)
                 deferred_this_wave.update(deferred)
@@ -862,6 +878,7 @@ def main() -> int:
                     "acceptedCount": len(accepted),
                     "accepted": accepted,
                     "fixedInLab": sorted(fixed),
+                    "harnessDifferentialProviders": sorted(harness_differential),
                     "deferredToLearning": sorted(deferred),
                     "genericLearningHandoff": sorted(generic_learning_handoff),
                     "unexecutableLlmHandoff": sorted(unexecutable_llm_handoff),
@@ -908,7 +925,11 @@ def main() -> int:
             all_deferred.update(deferred_this_wave)
             remaining = [
                 provider for provider in remaining
-                if provider not in effective_fixed_this_wave and provider not in deferred_this_wave
+                if (
+                    provider not in effective_fixed_this_wave
+                    and provider not in deferred_this_wave
+                    and provider not in all_harness_differential
+                )
             ]
             memory_after = repair_memory_fingerprint()
             experiment_memory_advanced = memory_after != memory_before
@@ -1012,7 +1033,9 @@ def main() -> int:
             "acceptedProgramCompiledProviders": sorted(all_compiled_programs),
             "acceptedProgramCompileFailures": dict(sorted(all_program_compile_failures.items())),
             "fixedInLabProviders": sorted(all_fixed),
-            "deferredLearningProviders": sorted(all_deferred),
+            "harnessDifferentialProviders": sorted(all_harness_differential),
+            "harnessDifferentialProviderCount": len(all_harness_differential),
+            "deferredLearningProviders": sorted(all_deferred - all_harness_differential),
             "remainingProviders": remaining,
             "noProgressReason": no_progress_reason,
             "waves": wave_reports,
@@ -1023,6 +1046,8 @@ def main() -> int:
                 "identityGateRequired": True,
                 "currentByteRetestRequired": True,
                 "wafEnvironmentExcludedByDefault": True,
+                "sameByteHarnessDifferentialBlocksProviderMutation": True,
+                "harnessDifferentialExcludedFromLearningDebt": True,
                 "experienceMemoryRole": "prior-only-no-acceptance-authority",
             },
         }
@@ -1032,7 +1057,8 @@ def main() -> int:
             "FIELD_PROVIDER_BRAIN_REPAIR "
             f"selected={len(selected)} accepted={len(all_accepted)} "
             f"raw_lab_accepted={len(all_raw_lab_accepted)} "
-            f"fixed_lab={len(all_fixed)} deferred_learning={len(all_deferred)} "
+            f"fixed_lab={len(all_fixed)} harness_differential={len(all_harness_differential)} "
+            f"deferred_learning={len(all_deferred - all_harness_differential)} "
             f"remaining={len(remaining)} waves={len(wave_reports)} "
             f"time_budget_exhausted={str(time_budget_exhausted).lower()} "
             f"processed={len(processed_providers)}"
