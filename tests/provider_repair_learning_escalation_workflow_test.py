@@ -45,6 +45,9 @@ assert "NIAKVIO_BRAIN_LEARNING_MEMORY=" in learning_block
 assert "engine_v2/learning/llm-guidance.json" in learning_block
 assert "NIAKVIO_BRAIN_LLM_GUIDANCE=" in learning_block
 assert 'data["persistentLearningPrior"]=True' in learning_block
+assert 'allowed_v2=allowed_v1|{"experiment","experimentFingerprint"}' in learning_block
+assert "validate_public" in learning_block
+assert 'schema not in {1,2}' in learning_block
 assert "import_external_brain_llm_guidance.py" in learning_block
 assert "external-brain-llm-guidance-repair.json" in learning_block
 assert "external_imported=true" in learning_block
