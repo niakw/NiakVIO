@@ -163,7 +163,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "movieServerOrder": movie_order,
         "movieExcludedServers": movie_excluded,
         "excludedServers": excluded_all,
-        "maxStreams": int(cfg.get("max_streams") or 5),
+        "maxStreams": max(1, min(12, int(cfg.get("max_streams") or 12))),
     }
     wrapper = WRAPPER.replace(
         "CONFIG_PLACEHOLDER",
