@@ -179,7 +179,7 @@ source_language_evidence = run(
 assert source_language_evidence["language"] == "Hindi", source_language_evidence
 assert "Hindi" in source_language_evidence["description"], source_language_evidence
 assert source_language_evidence["presentationFacts"]["language"] == "Hindi", source_language_evidence
-assert "Hindi" in source_language_evidence["displayBadges"], source_language_evidence
+assert "HI" in source_language_evidence["displayBadges"], source_language_evidence
 assert "lang-hi" in source_language_evidence["badgeIds"], source_language_evidence
 assert "vo" not in source_language_evidence["badgeIds"], source_language_evidence
 
