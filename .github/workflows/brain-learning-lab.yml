@@ -653,6 +653,7 @@ jobs:
                 --current-sha "$GITHUB_SHA" \
                 --guidance-commit "$guidance_commit" \
                 --negative-memory brain-learning-input/previous.json \
+                --negative-memory automation/brain-repair-memory.json \
                 > "$RUNNER_TEMP/brain-llm-cache-import.log" 2>&1 || true
             fi
           fi
