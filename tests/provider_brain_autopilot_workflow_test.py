@@ -12,16 +12,23 @@ learning=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="u
 
 for required in (
     "scripts/build_provider_execution_plan.py",
+    "scripts/provider_learning_dispatch_gate.py",
     "provider-remat-test.yml",
     "provider-fast-repair.yml",
     "domain-refresh.yml",
     "brain-learning-lab.yml",
     "CORE_CLIENT_LEARNING",
     "provider-waf-browser-session.yml",
-    "target_providers=\"$HARNESS\"",
+    "select-plan",
+    "--lane BRAIN_LEARNING",
+    "--lane CORE_CLIENT_LEARNING",
+    "automation/provider-learning-dispatch-ledger.json",
+    'target_providers="$learning_csv"',
+    'target_providers="$harness_learning_csv"',
+    "no-new-causal-fingerprint",
+    "fingerprint=new",
     "architecture_learning=true",
     "mutation=proposal-only",
-    'target_providers="$LEARNING"',
     "targeted=true",
 ):
     assert required in autopilot,required
@@ -50,12 +57,37 @@ for required in (
     assert required in learning,required
 assert "cancel-in-progress: ${{ github.event_name == 'push' }}" in learning
 assert 'if [ -n "$LEARNING" ] && [ -z "$FAST" ]' not in autopilot
-harness_block=autopilot.split('if [ -n "$HARNESS" ]; then',1)[1].split("fi",1)[0]
+
+# Harness transport refresh is independent from architecture Learning. The latter
+# is gated and targets only the newly eligible cohort.
+harness_start=autopilot.index('if [ -n "$HARNESS" ]; then')
+harness_block=autopilot[harness_start:autopilot.index("      - uses: actions/upload-artifact@",harness_start)]
 assert "provider-waf-browser-session.yml" in harness_block
+assert "provider_learning_dispatch_gate.py select-plan" in harness_block
 assert "brain-learning-lab.yml" in harness_block
 assert '-f publish_proposal=true' in harness_block
-assert '-f target_providers="$HARNESS"' in harness_block
+assert '-f target_providers="$harness_learning_csv"' in harness_block
 assert "architecture_learning=true" in harness_block
+
+learning_start=autopilot.index('if [ -n "$LEARNING" ]; then')
+learning_block=autopilot[learning_start:harness_start]
+assert "provider_learning_dispatch_gate.py select-plan" in learning_block
+assert '-f target_providers="$learning_csv"' in learning_block
+assert '-f target_providers="$LEARNING"' not in learning_block
+
+# The only contents-write use is the sanitized dispatch ledger transaction.
+assert "contents: write" in autopilot
+assert 'git add automation/provider-learning-dispatch-ledger.json' in autopilot
+assert autopilot.count("git add ") == 1, autopilot
+assert autopilot.count("git push origin HEAD:main") == 1, autopilot
+for forbidden_write in (
+    "git add provider-overrides.json",
+    "git add providers",
+    "git add provider-bases",
+    "git add engine_v2",
+    "git add scripts",
+):
+    assert forbidden_write not in autopilot,forbidden_write
 
 # Fast Repair is intentionally one bounded causal wave. Learning owns later
 # rotations; autopilot must not silently re-expand it to the old 3-wave/20m path.
@@ -68,7 +100,6 @@ assert 'default: "600"' in fast.split("time_budget_seconds:",1)[1].split("max_ro
 for forbidden in (
     "materialize_provider_v3_one.py",
     "run_provider_brain_repair.py",
-    "git push",
     "provider-overrides.json provider",
 ):
     assert forbidden not in autopilot,forbidden
