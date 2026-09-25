@@ -20,6 +20,17 @@ legacy={**base,"schemaVersion":1,"rows":[{k:v for k,v in row.items() if k not in
 legacy_safe=mod.sanitize(legacy,current_sha="c"*40)
 assert legacy_safe["schemaVersion"]==2
 assert "experiment" not in legacy_safe["rows"][0]
+
+memory={"experimentMemory":{"entries":[
+ {"providerId":"movie-box","profile":"player_media_extractor_v1","llmAdvisorExperimentFingerprint":fp,"consecutiveFailures":1,"failures":1,"successes":0},
+]}}
+filtered,dropped=mod.filter_failed_guidance(mod.sanitize(base,current_sha="c"*40),memory)
+assert dropped==1,(filtered,dropped)
+assert filtered["providerCount"]==0 and filtered["rows"]==[],filtered
+not_failed,dropped=mod.filter_failed_guidance(mod.sanitize(base,current_sha="c"*40),{"experimentMemory":{"entries":[
+ {"providerId":"movie-box","profile":"player_media_extractor_v1","llmAdvisorExperimentFingerprint":"e"*64,"consecutiveFailures":1}
+]}})
+assert dropped==0 and not_failed["providerCount"]==1,not_failed
 ok,blocked=mod.neutral_source_drift([".github/workflows/provider-recognition-repair-v6.yml",".github/triggers/provider-recognition-repair-v6.json","tests/x.py","scripts/import_external_brain_llm_guidance.py","scripts/brain_repair_runtime.py","scripts/run_provider_brain_repair.py","scripts/select_provider_materialization_scope.py","scripts/run_provider_repair_pipeline_v6.py","engine_v2/scripts/plan-repairs.mjs","automation/brain-repair-memory.json","automation/brain-positive-program-memory.json","automation/provider-brain-repair-123.json","automation/provider-targeted-regression-recovery-latest.json","automation/provider-repair-batch-refined-latest.json","MEMORY.md"]);assert ok and not blocked
 ok,blocked=mod.neutral_source_drift(["provider-overrides.json","providers/demo.js"]);assert not ok and blocked==["provider-overrides.json","providers/demo.js"]
 for bad in [
