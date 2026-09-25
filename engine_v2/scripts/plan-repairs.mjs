@@ -551,7 +551,11 @@ function buildPlan(item) {
       };
     })
     .filter((skill) => skill.id && skill.profile)
-    .filter((skill) => learningMode || learnedSkillTransferEligible(skill))
+    .filter((skill) => (
+      learningMode
+      || skill.sameProviderPositiveProgram === true
+      || learnedSkillTransferEligible(skill)
+    ))
     .sort((a, b) => b.transferScore - a.transferScore || b.confidence - a.confidence || b.successCount - a.successCount || a.id.localeCompare(b.id));
 
   const signatureCounts = asRecord(state.signatureCounts);
@@ -583,27 +587,41 @@ function buildPlan(item) {
   });
   const hypotheses = asArray(plan.hypotheses).filter(isRecord);
   const baseRepairTarget = resolveRepairTarget(plan.failureClass, capabilityStrategy, evidence.observedPipelineStage, stringValue(input.mode, "quick"));
-  const positiveProgramReplayHint = (learningMode && experimentExhausted)
+  const positiveProgramReplayHint = experimentExhausted
     ? providerPositiveProgramReplayHint(reusable, allMemoryMatches, rotateEvery)
-    : { profile: "", method: "", index: -1 };
+    : { profile: "", method: "", index: -1, positiveProgramFingerprint: "" };
   const postExhaustionHint = positiveProgramReplayHint.profile
     ? positiveProgramReplayHint
     : (learningMode && experimentExhausted)
       ? postExhaustionStrategyHint(evidence.failureClass, allMemoryMatches, rotateEvery)
       : { profile: "", method: "", index: -1 };
   const strategyEscalated = Boolean(postExhaustionHint.profile);
+  const providerPositiveProgramProductionRescue = (
+    !learningMode
+    && experimentExhausted
+    && postExhaustionHint.profile === "provider_positive_program_replay_v1"
+    && /^[0-9a-f]{64}$/.test(stringValue(postExhaustionHint.positiveProgramFingerprint).toLowerCase())
+  );
   const repairTarget = experimentExhausted
     ? (
         strategyEscalated
-          ? {
-              ...baseRepairTarget,
-              scope: "learning",
-              repairType: "evolved_strategy",
-              engine: "brain_learning_lab",
-              pipelineStage: "learning",
-              profiles: [postExhaustionHint.profile],
-              learningDisposition: "execute_bounded_evolved_strategy",
-            }
+          ? (
+              providerPositiveProgramProductionRescue
+                ? {
+                    ...baseRepairTarget,
+                    profiles: [postExhaustionHint.profile],
+                    learningDisposition: "replay_strict_same_provider_positive_program",
+                  }
+                : {
+                    ...baseRepairTarget,
+                    scope: "learning",
+                    repairType: "evolved_strategy",
+                    engine: "brain_learning_lab",
+                    pipelineStage: "learning",
+                    profiles: [postExhaustionHint.profile],
+                    learningDisposition: "execute_bounded_evolved_strategy",
+                  }
+            )
           : learningMode
             ? {
                 ...baseRepairTarget,
@@ -651,7 +669,7 @@ function buildPlan(item) {
         rotateEvery,
       )
     : { profile: "", caseId: "", solutionClass: "" };
-  const effectiveRepairTarget = llmAdvisorProductionRescue ? baseRepairTarget : repairTarget;
+  const effectiveRepairTarget = repairTarget;
   const causalProfile = strategyEscalated
     ? postExhaustionHint.profile
     : (
@@ -723,6 +741,7 @@ function buildPlan(item) {
     experimentGenerationLimit: learningMode ? maxLearningGenerations : finalVariantGeneration,
     llmAdvisorApplied: Boolean(llmAdvisorHint.profile),
     llmAdvisorRescue: llmAdvisorProductionRescue,
+    providerPositiveProgramProductionRescue,
     llmAdvisorStrategy: llmAdvisorHint.strategy,
     llmAdvisorProfile: llmAdvisorHint.profile,
     llmAdvisorConfidence: llmAdvisorHint.confidence,
@@ -858,8 +877,9 @@ function learnedSkillTransferScore({
 }) {
   let score = finiteNumber(skillTransfer.genericFailureClassBase, 15);
   if (sameProviderPositiveProgram) {
-    // Provider-local strict positive proof outranks exploratory/global priors,
-    // but only in Learning and only for that provider. It never grants success.
+    // Provider-local strict positive proof outranks exploratory/global priors
+    // for that same provider in Repair or Learning. It remains a candidate only:
+    // current-byte playback, identity and non-regression gates still decide.
     score += finiteNumber(skillTransfer.sameProviderPositiveProgramBonus, 1000);
   }
   if (signature && signatures.includes(signature)) score += finiteNumber(skillTransfer.exactSignatureBonus, 100);
