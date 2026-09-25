@@ -58,6 +58,9 @@ try:
  assert neutral==[] and drifted=={"movie-box"}
  kept=[r for r in safe2["rows"] if mod.canon(r.get("providerId")) not in drifted]
  assert [r["providerId"] for r in kept]==["yflix"]
+ mod.provider_materialization_scope=lambda root,source,current:{"mode":"all","providers":[],"changedPaths":["manifest.json","scripts/provider_patches/animesalt_runtime_v1.py","scripts/provider_patches/global_stream_presentation_v1.py","assets/README.md"],"reasons":["providers:manifest.json:animesalt","patch:scripts/provider_patches/animesalt_runtime_v1.py:animesalt","unowned-patch:scripts/provider_patches/global_stream_presentation_v1.py"]}
+ neutral,drifted=mod.source_drift(ROOT,"a"*40,"c"*40)
+ assert neutral==[] and drifted=={"animesalt"},(neutral,drifted)
  mod.provider_materialization_scope=lambda root,source,current:{"mode":"all","providers":[],"changedPaths":["scripts/provider_base_store.py"],"reasons":["global:scripts/provider_base_store.py"]}
  try:mod.source_drift(ROOT,"a"*40,"c"*40)
  except ValueError:pass
