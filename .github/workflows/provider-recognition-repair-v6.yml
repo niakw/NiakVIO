@@ -19,6 +19,11 @@ on:
         required: false
         default: false
         type: boolean
+      require_external_force_mutations:
+        description: Explicit Force guard; fail before canonical Repair when no external Brain mutation is applied
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - workbench/route-recognition-v6
@@ -576,13 +581,15 @@ jobs:
         env:
           DISPATCH_MODE: ${{ inputs.mode || '' }}
           TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
+          REQUIRE_EXTERNAL_FORCE_MUTATIONS: ${{ inputs.require_external_force_mutations || 'false' }}
         run: |
           set -euo pipefail
           force_requested=false
+          require_external="${REQUIRE_EXTERNAL_FORCE_MUTATIONS:-false}"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${DISPATCH_MODE:-}" = "force" ]; then
             force_requested=true
           elif [ "${{ github.event_name }}" = "push" ]; then
-            force_requested="$(python - <<'PY'
+            read -r force_requested require_external < <(python - <<'PY'
           import json
           from pathlib import Path
           data=json.loads(Path(".github/triggers/provider-recognition-repair-v6.json").read_text(encoding="utf-8"))
@@ -590,9 +597,10 @@ jobs:
               str(data.get("mode") or "").strip().casefold()=="force"
               and data.get("directApplyValidated") is True
           )
-          print("true" if enabled else "false")
+          required=bool(data.get("requireExternalForceMutations"))
+          print("true" if enabled else "false", "true" if required else "false")
           PY
-            )"
+            )
           fi
           if [ "$force_requested" != "true" ]; then
             echo "FIELD_BRAIN_LLM_FORCE_MUTATIONS skipped=true reason=not-explicit-force"
@@ -601,7 +609,11 @@ jobs:
 
           external_ref="refs/remotes/niakvio-brain-llm/niakvio-guidance"
           if ! git cat-file -e "$external_ref:guidance/niakvio-force-mutations.json" 2>/dev/null; then
-            echo "FIELD_BRAIN_LLM_FORCE_MUTATIONS skipped=true reason=no-public-force-mutation-artifact"
+            echo "FIELD_BRAIN_LLM_FORCE_MUTATIONS skipped=true reason=no-public-force-mutation-artifact required=$require_external"
+            if [ "$require_external" = "true" ]; then
+              echo "Explicit Force requires a non-empty external Brain mutation artifact" >&2
+              exit 1
+            fi
             exit 0
           fi
           git show "$external_ref:guidance/niakvio-force-mutations.json" > "$RUNNER_TEMP/external-brain-llm-force-mutations.json"
@@ -627,6 +639,19 @@ jobs:
             for provider in "${FORCE_TARGETS[@]}"; do args+=(--provider "$provider"); done
           fi
           "${args[@]}"
+          applied_count="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("automation/brain-llm-force-mutation-application.json")
+          data=json.loads(p.read_text(encoding="utf-8")) if p.is_file() else {}
+          print(int(data.get("appliedProviderCount") or 0))
+          PY
+          )"
+          echo "FIELD_BRAIN_LLM_FORCE_REQUIREMENT required=$require_external applied=$applied_count"
+          if [ "$require_external" = "true" ] && [ "$applied_count" -le 0 ]; then
+            echo "Explicit Force required external Brain mutations but none were applied" >&2
+            exit 1
+          fi
 
       - name: Run canonical recognition and correction only for unresolved providers
         id: canonical-repair
