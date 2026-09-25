@@ -1,10 +1,10 @@
 {
   "schemaVersion": 6,
-  "requestedAt": "2026-09-25T04:44:00+02:00",
-  "retry": 150,
+  "requestedAt": "2026-09-25T05:03:00+02:00",
+  "retry": 151,
   "mode": "force",
   "directApplyValidated": true,
-  "scope": "current-repair-queue-fresh-rotated-llm-guidance",
+  "scope": "current-repair-queue-fresh-rotated-llm-guidance-retry-after-runner-shutdown",
   "targetProviders": [
     "4khdhub",
     "allanime",
@@ -21,10 +21,10 @@
     "vidfast",
     "yflix"
   ],
-  "goal": "Consume fresh Brain-LLM guidance generated from NiakVIO 5c7b38e with zero negative-memory fingerprint collisions. Apply provider-local corrections directly only after canonical Repair and candidate/non-regression gates succeed. Persist current census even if concurrent main drift is provider-neutral.",
+  "goal": "Retry the exact fresh 14-provider Force after GitHub runner shutdown in 36087457494. External Brain-LLM guidance source 5c7b38e is unchanged and current intervening changes are stream-presentation/assets/tests only. Require canonical Repair success, candidate/non-regression proof, direct validated application, and durable census persistence.",
   "branch": "main",
   "publication": true,
-  "sourceRef": "5c7b38e3c2a0f2413c97d1864eee3839da8c7ff0",
+  "sourceRef": "8c6b6f43f36e8c868d8fe653ab87601889b35f3c",
   "brainLlmGuidanceSha": "dcbb14abbc26095d18feb57cd1d535b418a5824d",
-  "priorFailedForceRun": 36085407669
+  "interruptedForceRun": 36087457494
 }
