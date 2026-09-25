@@ -16,7 +16,7 @@ assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
-assert module.PUBLICATION_CONTRACT_SCHEMA == 3
+assert module.PUBLICATION_CONTRACT_SCHEMA == 4
 assert module.LEGACY_PUBLICATION_CONTRACT_SCHEMA == 2
 
 # The stored per-provider build fingerprint must describe the final provenance
@@ -93,6 +93,33 @@ assert (
     != module.publication_contract_sha(config_a, static_global_changed)
 )
 
+# Shared Core Lego source is part of the global publication fingerprint.
+# A Core source change must invalidate already-published provider bytes instead
+# of passing projection reconcile as a false fixed point.
+captured_contract_files = []
+original_contract_file_hashes = module._contract_file_hashes
+try:
+    def capture_contract_files(relatives):
+        relatives = set(relatives)
+        captured_contract_files.append(relatives)
+        return {relative: "0" * 64 for relative in relatives}
+
+    module._contract_file_hashes = capture_contract_files
+    config_global_hook = json.loads(json.dumps(config_a))
+    config_global_hook["global_fixture_policy"] = {
+        "global_discovery_hook": "scripts/provider_patches/global_media_enrichment_v1.py"
+    }
+    module.publication_contract_sha(config_global_hook, static_a)
+finally:
+    module._contract_file_hashes = original_contract_file_hashes
+
+assert captured_contract_files
+contract_files = captured_contract_files[-1]
+assert module.GLOBAL_STREAM_PRESENTATION in contract_files, contract_files
+assert module.GLOBAL_STREAM_FACTS in contract_files, contract_files
+assert module.GLOBAL_STREAM_SANITIZER in contract_files, contract_files
+assert "scripts/provider_patches/global_media_enrichment_v1.py" in contract_files, contract_files
+
 base = {
     "name": "fixture",
     "version": "5.21.8",
@@ -132,4 +159,4 @@ with tempfile.TemporaryDirectory() as raw:
     third = module._publication_file_sha("package-lock.json", path)
     assert third != first, (first, third)
 
-print("publication contract fingerprint v3 provider-scoped tests passed")
+print("publication contract fingerprint v4 shared-core + provider-scoped tests passed")

@@ -24,7 +24,20 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from apply_provider_overrides import apply_overrides, load_overrides
+from apply_provider_overrides import (
+    GLOBAL_DESKTOP_RUNTIME_COMPAT,
+    GLOBAL_MEDIA_TYPE_RESOLUTION,
+    GLOBAL_PROVIDER_BRANDING,
+    GLOBAL_PROVIDER_RUNTIME_DISPATCH,
+    GLOBAL_RUNTIME_COMPAT,
+    GLOBAL_RUNTIME_MEDIA_SAFETY,
+    GLOBAL_STREAM_FACTS,
+    GLOBAL_STREAM_IDENTITY,
+    GLOBAL_STREAM_PRESENTATION,
+    GLOBAL_STREAM_SANITIZER,
+    apply_overrides,
+    load_overrides,
+)
 from provider_byte_stability import BYTE_STABILITY_VERSION, verify_bytes
 from provider_security_hardening import assert_hardened, harden_bytes
 from provider_engine_normalizer import (
@@ -699,7 +712,7 @@ def merge_patch_records(existing: Any, records: list[dict[str, Any]]) -> list[An
     return merged
 
 
-PUBLICATION_CONTRACT_SCHEMA = 3
+PUBLICATION_CONTRACT_SCHEMA = 4
 LEGACY_PUBLICATION_CONTRACT_SCHEMA = 2
 PUBLICATION_CONTRACT_FILES = (
     "scripts/reapply_published_overrides.py",
@@ -714,6 +727,42 @@ PUBLICATION_CONTRACT_FILES = (
     "package-lock.json",
     "provider-version-floors.json",
 )
+
+SHARED_CORE_PUBLICATION_FILES = (
+    GLOBAL_DESKTOP_RUNTIME_COMPAT,
+    GLOBAL_RUNTIME_COMPAT,
+    GLOBAL_PROVIDER_RUNTIME_DISPATCH,
+    GLOBAL_STREAM_FACTS,
+    GLOBAL_STREAM_IDENTITY,
+    GLOBAL_MEDIA_TYPE_RESOLUTION,
+    GLOBAL_STREAM_PRESENTATION,
+    GLOBAL_STREAM_SANITIZER,
+    GLOBAL_RUNTIME_MEDIA_SAFETY,
+    GLOBAL_PROVIDER_BRANDING,
+)
+
+
+def _global_patch_script_paths(value: Any) -> set[str]:
+    """Collect globally referenced Provider/Core Lego source files.
+
+    Provider-local rows are excluded by publication_contract_sha before this
+    helper runs. Any scripts/provider_patches/*.py reference left in the global
+    configuration is therefore a shared build input and must invalidate every
+    published provider when its source changes.
+    """
+    paths: set[str] = set()
+    if isinstance(value, dict):
+        for nested in value.values():
+            paths.update(_global_patch_script_paths(nested))
+    elif isinstance(value, (list, tuple, set)):
+        for nested in value:
+            paths.update(_global_patch_script_paths(nested))
+    elif isinstance(value, str):
+        relative = value.strip()
+        if relative.startswith("scripts/provider_patches/") and relative.endswith(".py"):
+            paths.add(relative)
+    return paths
+
 
 
 def _canonical_sha(value: Any) -> str:
@@ -829,11 +878,16 @@ def publication_contract_sha(
         if key not in {"provider_patches", "provider_capabilities"}
     }
     global_static, _providers = _static_knowledge_contract(static_knowledge)
+    shared_files = (
+        set(PUBLICATION_CONTRACT_FILES)
+        | set(SHARED_CORE_PUBLICATION_FILES)
+        | _global_patch_script_paths(global_config)
+    )
     return _canonical_sha({
         "schema_version": PUBLICATION_CONTRACT_SCHEMA,
         "config": global_config,
         "static": global_static,
-        "files": _contract_file_hashes(set(PUBLICATION_CONTRACT_FILES)),
+        "files": _contract_file_hashes(shared_files),
     })
 
 
