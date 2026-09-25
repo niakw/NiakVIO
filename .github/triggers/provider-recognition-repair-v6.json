@@ -1,10 +1,10 @@
 {
   "schemaVersion": 6,
-  "requestedAt": "2026-09-25T12:01:00+02:00",
+  "requestedAt": "2026-09-25T12:22:00+02:00",
   "retry": 153,
   "mode": "force",
   "directApplyValidated": true,
-  "scope": "fresh-post-clean-canonical-repair-queue",
+  "scope": "one-shot-post-pipeline-clean-14-provider-cohort",
   "targetProviders": [
     "4khdhub",
     "allanime",
@@ -21,11 +21,13 @@
     "vidfast",
     "yflix"
   ],
-  "goal": "Apply the fresh 14-provider Brain-LLM guidance after filtering against both canonical Repair negative memory and persistent Learning experiment memory. Use the persisted retest census 36120999320-retest as authority. Force may publish provider-local corrections only after canonical Repair, playable/identity preservation and candidate/non-regression gates all succeed; persist the resulting census.",
+  "goal": "One-shot Force after fixing the preflight NameError, invalid targeted-recovery workflow, provider-neutral targeted-recovery waste, and Repair self-resume loop. Consume the current 14-provider Brain-LLM guidance with zero negative-memory collisions. Apply provider-local corrections only after canonical Repair plus playable/identity/non-regression proof; persist census. Do not self-resume Repair when no provider is unvisited.",
   "branch": "main",
   "publication": true,
   "sourceRef": "ce559d7129883062abea0c05067b9cc6159cfd11",
   "sourceCensusRun": "36120999320-retest",
   "brainLlmGuidanceSha": "9bf5fe72e917b5ac57bb6b95ba64402b459fe180",
-  "branchPolicy": "main-plus-brain-learning-proposals-only"
+  "branchPolicy": "main-plus-brain-learning-proposals-only",
+  "rerunReason": "same retry id; pipeline faults removed; no blind retry increment",
+  "attemptPolicy": "one-shot-no-repair-self-loop"
 }
