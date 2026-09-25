@@ -171,4 +171,12 @@ assert "provider_learning_dispatch_gate.py mark" in workflow
 assert "niakvio-guidance-state.json" in workflow
 assert "external Brain guidance paging is incomplete" in workflow
 assert "incomplete-or-inconsistent-guidance-state" in workflow
+assert "require_external_brain_guidance" in workflow
+assert "requireExternalBrainGuidance" in workflow
+assert "brainGuidanceSourceSha" in workflow
+assert "FIELD_EXTERNAL_BRAIN_LLM_GUIDANCE_PIN verified=true" in workflow
+assert "external Brain guidance cohort does not match canonical Repair trigger" in workflow
+assert "external Brain guidance source SHA does not match canonical Repair trigger" in workflow
+assert "external Brain guidance Brain SHA does not match canonical Repair trigger" in workflow
+assert "FIELD_CANONICAL_REPAIR_EXTERNAL_LLM_GUIDANCE_REQUIRED satisfied=false" in workflow
 assert "Force guidance paging incomplete" in workflow
