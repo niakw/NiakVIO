@@ -8,6 +8,21 @@ NiakVIO StreamBadges are not a quality score. They are a compact vocabulary for 
 
 Current stable feed: `assets/stream-badges-fusion-v4.json` — **301 badges / 16 groups**.
 
+## Quick visual ranking
+
+The markers below are a **reading aid, not a universal quality score**. They only rank the dimension named by the table; they must not be combined blindly.
+
+| Marker | Reading |
+| --- | --- |
+| 🏆 | Top / highest potential in this dimension |
+| 🟢 | Strong / modern / high potential |
+| 🟡 | Solid, variable or context-dependent |
+| 🟠 | Limited, older or lower potential |
+| 🔴 | Weak / heavily compromised |
+| ⚪ | Neutral fact — not meaningfully rankable |
+
+For actual picture quality, read several facts together: **source + codec + resolution + bitrate**.
+
 ## Read one stream like a media sheet
 
 Example:
@@ -33,22 +48,33 @@ These four families describe different things.
 
 ### Source / release provenance
 
-| Badge family | Practical meaning |
-| --- | --- |
-| WEB-DL | Direct web-service delivery, usually without a screen/video recapture step. |
-| WEBRip | Capture or re-encode from a web source; quality can vary widely. |
-| Blu-ray / BDMV | Optical-disc-derived source/structure. |
-| BD REMUX / UHD REMUX | Disc tracks repackaged without re-encoding the encoded essence. Usually large files. |
-| UHD Blu-ray | Ultra HD optical-disc source, commonly 2160p with HDR-capable video. |
-| HDTV | Broadcast-derived source. |
-| DVD / DVD Rip | Standard-definition optical-disc source. |
-| CAM / TS / TC | Cinema capture provenance. Useful information, not an endorsement of quality. |
+| Badge family | Quality potential | Practical meaning |
+| --- | --- | --- |
+| BD REMUX / UHD REMUX | 🏆 Top | Disc tracks repackaged without re-encoding the encoded essence. Usually large files. |
+| UHD Blu-ray | 🏆 Top | Ultra HD optical-disc source, commonly 2160p with HDR-capable video. |
+| Blu-ray / BDMV | 🟢 Very high | Optical-disc-derived source/structure. |
+| WEB-DL | 🟢 High | Direct web-service delivery, usually without a screen/video recapture step. |
+| HDTV | 🟡 Variable | Broadcast-derived source; quality depends heavily on channel, generation and bitrate. |
+| WEBRip | 🟡 Variable | Capture or re-encode from a web source; quality can vary widely. |
+| DVD / DVD Rip | 🟠 Limited | Standard-definition optical-disc source. |
+| CAM / TS / TC | 🔴 Low | Cinema capture provenance. Useful information, but usually heavily compromised versus direct digital sources. |
 
 <img src="../assets/transparent/96x40/webdl.webp" height="30" alt="WEB-DL"> <img src="../assets/transparent/96x40/blu-ray-disc.webp" height="30" alt="Blu-ray"> <img src="../assets/transparent/96x40/bdmv.webp" height="30" alt="BDMV"> <img src="../assets/transparent/96x40/blu-ray-remux.webp" height="30" alt="BD REMUX"> <img src="../assets/transparent/96x40/uhd-remux.webp" height="30" alt="UHD REMUX">
 
 ### Resolution and scan mode
 
 Common classes include 240p, 360p, 480p, 576p, 720p, **1080i**, 1080p, 1440p, 2160p/4K and 4320p/8K.
+
+| Resolution class | Detail potential | Practical reading |
+| --- | --- | --- |
+| 4320p / 8K | 🏆 Top | Highest raster detail potential listed here; useful only when the source and encode actually preserve that detail. |
+| 2160p / 4K | 🟢 Very high | Excellent large-screen detail potential; often paired with HEVC/AV1 and HDR. |
+| 1440p | 🟢 High | Clear step above 1080p, less common for film/TV delivery. |
+| 1080p | 🟢 Strong | Full HD baseline for high-quality modern streaming. |
+| 1080i | 🟡 Contextual | Full HD raster but interlaced; deinterlacing quality matters. |
+| 720p | 🟡 Good | Can look excellent with a strong source and bitrate, especially for animation. |
+| 576p / 480p | 🟠 Limited | Standard definition; visibly softer on modern large displays. |
+| 360p / 240p | 🔴 Low | Low-detail delivery, mainly useful when bandwidth is constrained. |
 
 - **1080p** is progressive Full HD.
 - **1080i** is interlaced Full HD, still encountered in broadcast-derived material.
@@ -61,13 +87,15 @@ Common classes include 240p, 360p, 480p, 576p, 720p, **1080i**, 1080p, 1440p, 21
 
 **HLS** and **MPEG-DASH** describe adaptive HTTP delivery. **MKV, MP4, WebM, MPEG-TS and M2TS** are containers/file formats.
 
-| Badge | Meaning |
-| --- | --- |
-| HLS / M3U8 | Adaptive HTTP streaming. A master playlist may advertise several variants, codecs and language renditions. |
-| MPEG-DASH / MPD | Adaptive HTTP delivery based on an MPD manifest. |
-| MKV / Matroska | Flexible multi-track container common for Blu-ray/anime releases. |
-| MP4 | Highly compatible container. |
-| MPEG-TS / M2TS | Transport-stream families common in broadcast, HLS segments and Blu-ray structures. |
+| Badge | Rank | Meaning |
+| --- | --- | --- |
+| HLS / M3U8 | ⚪ Context | Adaptive HTTP streaming. A master playlist may advertise several variants, codecs and language renditions. |
+| MPEG-DASH / MPD | ⚪ Context | Adaptive HTTP delivery based on an MPD manifest. |
+| MKV / Matroska | ⚪ Context | Flexible multi-track container common for Blu-ray/anime releases. |
+| MP4 | ⚪ Context | Highly compatible container. |
+| MPEG-TS / M2TS | ⚪ Context | Transport-stream families common in broadcast, HLS segments and Blu-ray structures. |
+
+**No winner here:** delivery/container format does not determine picture quality by itself.
 
 <img src="../assets/transparent/96x40/hls.webp" height="30" alt="HLS"> <img src="../assets/transparent/96x40/dash.webp" height="30" alt="DASH"> <img src="../assets/transparent/96x40/mkv.webp" height="30" alt="MKV"> <img src="../assets/transparent/96x40/mp4.webp" height="30" alt="MP4">
 
@@ -75,13 +103,15 @@ A provider can legitimately expose **only HLS** when the URL proves `.m3u8` deli
 
 ## Video codecs
 
-| Codec | Typical context | What to know |
-| --- | --- | --- |
-| AVC / H.264 | Blu-ray and very broad streaming | Excellent compatibility; less compression-efficient than HEVC/AV1. |
-| HEVC / H.265 | UHD Blu-ray, 4K streaming, 10-bit anime encodes | High efficiency; common with HDR and 10-bit. |
-| AV1 | Modern streaming | Very efficient; hardware support is newer. |
-| VP9 | Web streaming | Strong web codec historically common on Google platforms. |
-| MPEG-2 / VC-1 / MPEG-4 Part 2 | Legacy broadcast/disc/encodes | Useful compatibility and provenance information. |
+| Codec | Compression efficiency | Typical context | What to know |
+| --- | --- | --- | --- |
+| AV1 | 🏆 Top | Modern streaming | Very high compression efficiency; hardware support is newer. |
+| HEVC / H.265 | 🟢 Very high | UHD Blu-ray, 4K streaming, 10-bit anime encodes | High efficiency; common with HDR and 10-bit. |
+| VP9 | 🟢 High | Web streaming | Strong web codec historically common on Google platforms. |
+| AVC / H.264 | 🟡 Solid | Blu-ray and very broad streaming | Excellent compatibility; normally needs more bitrate than HEVC/AV1 for similar visual quality. |
+| MPEG-2 / VC-1 / MPEG-4 Part 2 | 🟠 Legacy | Legacy broadcast/disc/encodes | Useful compatibility and provenance information; generally less efficient than modern codecs. |
+
+These markers compare **compression efficiency in broad terms**, not the quality of every individual encode. A carefully encoded AVC stream can still beat a poor AV1/HEVC encode.
 
 <img src="../assets/transparent/96x40/avc.webp" height="30" alt="AVC"> <img src="../assets/transparent/96x40/hevc.webp" height="30" alt="HEVC"> <img src="../assets/transparent/96x40/av1.webp" height="30" alt="AV1"> <img src="../assets/transparent/96x40/vp9.webp" height="30" alt="VP9">
 
@@ -112,13 +142,15 @@ NiakVIO keeps the **exact value** in the technical description and uses the gene
 
 Rough orientation ranges:
 
-| Delivery | Common ballpark |
-| --- | --- |
-| 1080p H.264 streaming | ~3–10 Mbps |
-| 1080p HEVC streaming | ~1.5–6 Mbps |
-| Blu-ray AVC | often ~15–35+ Mbps |
-| 4K HEVC streaming | often ~10–25 Mbps |
-| UHD Blu-ray | commonly tens of Mbps, sometimes much higher |
+| Delivery | Common ballpark | Raw bitrate headroom |
+| --- | --- | --- |
+| UHD Blu-ray | commonly tens of Mbps, sometimes much higher | 🏆 Very high |
+| Blu-ray AVC | often ~15–35+ Mbps | 🟢 High |
+| 4K HEVC streaming | often ~10–25 Mbps | 🟢 High |
+| 1080p H.264 streaming | ~3–10 Mbps | 🟡 Contextual |
+| 1080p HEVC streaming | ~1.5–6 Mbps | 🟡 Contextual |
+
+**Headroom is not a quality score.** Higher Mbps usually means more encoded data, but resolution, codec efficiency, source quality, encoder settings, grain and motion determine how effectively those bits are used.
 
 These are not quality thresholds. A 6 Mbps AVC encode and a 6 Mbps AV1 encode are not equivalent; source, codec, encoder settings, grain and motion matter.
 
