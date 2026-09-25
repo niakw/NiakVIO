@@ -143,6 +143,7 @@ with tempfile.TemporaryDirectory() as directory:
     assert set(fingerprints)=={"demo"},fingerprints
     assert len(fingerprints["demo"])==64,fingerprints
     assert all(ch in "0123456789abcdef" for ch in fingerprints["demo"]),fingerprints
+    assert memory.provider_program_fingerprint("demo",path=path)==fingerprints["demo"],fingerprints
     assert skill["source"]=="brain-positive-program-memory"
 
 adaptive=(ROOT/"scripts/adaptive_runtime/runtime_repair.py").read_text(encoding="utf-8")
