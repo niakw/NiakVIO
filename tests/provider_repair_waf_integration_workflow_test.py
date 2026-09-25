@@ -74,6 +74,9 @@ assert 'scope_path=Path("/tmp/repair-waf-targets.json")' in connect_block
 assert 'selected["providerCount"]=len(providers)' in connect_block
 assert "tailscale-not-configured" in connect_block
 assert "tailscale-offline-or-unavailable" in connect_block
+assert "timeout --signal=TERM --kill-after=10s 240s" in connect_block
+assert "--attempts 1" in connect_block
+assert "FIELD_REPAIR_RESIDENTIAL_PROBE bounded=true" in connect_block
 
 # WAF evidence must be part of the durable Repair evidence commit.
 persist_block=wf[persist:]
