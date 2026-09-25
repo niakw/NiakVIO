@@ -1,10 +1,10 @@
 {
   "schemaVersion": 6,
-  "requestedAt": "2026-09-25T03:27:00+02:00",
+  "requestedAt": "2026-09-25T04:13:00+02:00",
   "retry": 149,
   "mode": "force",
   "directApplyValidated": true,
-  "scope": "current-repair-queue-force-after-final-learning",
+  "scope": "current-repair-queue-after-final-targeted-learning",
   "targetProviders": [
     "4khdhub",
     "allanime",
@@ -21,8 +21,9 @@
     "vidfast",
     "yflix"
   ],
-  "goal": "Execute explicit Force Repair on the complete current repairQueue using the just-published targeted Learning/LLM memory. Apply provider-local corrections directly only when canonical Repair and candidate/non-regression proof both pass. Persist fresh census and repair evidence; do not promote unresolved providers.",
+  "goal": "Consume the freshly published Brain Learning memory and external Brain-LLM guidance for the complete current 14-provider repair queue. Force may apply provider-local corrections directly only after canonical Repair succeeds and the candidate/non-regression gate is green. Persist a fresh census from current bytes.",
   "branch": "main",
   "publication": true,
-  "sourceRef": "ee68ff89457c4d8ccb007c37a5838992f153d32a"
+  "sourceRef": "1e6c24a939b083281a434b0154f752abef295977",
+  "learningRun": 36081170479
 }
