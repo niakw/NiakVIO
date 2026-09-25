@@ -19,6 +19,8 @@ from pathlib import Path
 from typing import Any
 
 PROVIDER_ID = re.compile(r"^[a-z0-9][a-z0-9-]{0,95}$")
+FINGERPRINT = re.compile(r"^[0-9a-f]{64}$")
+MAX_FINGERPRINT_HISTORY = 32
 
 
 def cid(value: object) -> str:
@@ -91,6 +93,133 @@ def plan_fingerprint(provider: str, plan: dict[str, Any]) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
+def dispatched_fingerprints(prior: dict[str, Any]) -> list[str]:
+    """Return bounded unique dispatch history, including legacy last-only ledgers."""
+    values: list[str] = []
+    for raw in [
+        *(prior.get("dispatchedFingerprints") or []),
+        prior.get("lastDispatchedFingerprint"),
+    ]:
+        value = str(raw or "").strip().casefold()
+        if FINGERPRINT.fullmatch(value) and value not in values:
+            values.append(value)
+    return values[-MAX_FINGERPRINT_HISTORY:]
+
+
+def _execution_plan_payload(provider: str, row: dict[str, Any]) -> dict[str, Any]:
+    lane = _stable_text(row.get("lane"), 64)
+    strategy = _stable_text(row.get("strategyBlueprint"), 160)
+    if not strategy and lane == "BRAIN_LEARNING":
+        strategy = "brain_learning_strategy_discovery_v1"
+    return {
+        "source": "execution-plan",
+        "provider": provider,
+        "lane": lane,
+        "owner": _stable_text(row.get("owner"), 96),
+        "repairScope": _stable_text(row.get("repairScope"), 96),
+        "capabilityStrategy": _stable_text(row.get("capabilityStrategy"), 120),
+        "transportSignature": _stable_text(row.get("transportSignature"), 160),
+        "strategyBlueprint": strategy,
+        "fallbackLane": _stable_text(row.get("fallbackLane"), 64),
+    }
+
+
+def execution_plan_fingerprint(provider: str, row: dict[str, Any]) -> str:
+    payload = _execution_plan_payload(provider, row)
+    if payload["lane"] not in {"BRAIN_LEARNING", "CORE_CLIENT_LEARNING"}:
+        return ""
+    has_cause = bool(
+        payload["repairScope"]
+        or payload["capabilityStrategy"]
+        or (
+            payload["transportSignature"]
+            and payload["transportSignature"] != "not-applicable"
+        )
+    )
+    if not (has_cause and payload["strategyBlueprint"]):
+        return ""
+    raw = json.dumps(payload, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def select_execution_plan(
+    plan: dict[str, Any],
+    ledger: dict[str, Any],
+    *,
+    lane: str,
+    requested: list[str] | None = None,
+) -> dict[str, Any]:
+    wanted = {
+        safe_provider(value)
+        for value in (requested or [])
+        if safe_provider(value)
+    }
+    rows = ledger.get("providers") if isinstance(ledger.get("providers"), dict) else {}
+    eligible: list[dict[str, str]] = []
+    repeats: list[str] = []
+    missing: list[str] = []
+
+    for execution in plan.get("executions") or []:
+        if not isinstance(execution, dict):
+            continue
+        if str(execution.get("lane") or "") != lane:
+            continue
+        if execution.get("dispatchAllowed") is not True:
+            continue
+        for raw_provider in execution.get("providers") or []:
+            provider = safe_provider(raw_provider)
+            if not provider or (wanted and provider not in wanted):
+                continue
+            fingerprint = execution_plan_fingerprint(provider, execution)
+            if not fingerprint:
+                missing.append(provider)
+                continue
+            prior = rows.get(provider) if isinstance(rows.get(provider), dict) else {}
+            if fingerprint in dispatched_fingerprints(prior):
+                repeats.append(provider)
+                continue
+            eligible.append({
+                "provider": provider,
+                "fingerprint": fingerprint,
+                "signatureHash": hashlib.sha256(
+                    json.dumps(
+                        _execution_plan_payload(provider, execution),
+                        ensure_ascii=True,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    ).encode("utf-8")
+                ).hexdigest()[:20],
+            })
+
+    # A provider can belong to only one causal lane by execution-plan contract,
+    # but de-duplicate defensively without losing stable order.
+    seen: set[str] = set()
+    deduped: list[dict[str, str]] = []
+    for row in eligible:
+        provider = row["provider"]
+        if provider in seen:
+            continue
+        seen.add(provider)
+        deduped.append(row)
+    providers = [row["provider"] for row in deduped]
+    return {
+        "schemaVersion": 1,
+        "source": "execution-plan",
+        "lane": lane,
+        "eligibleProviderCount": len(providers),
+        "eligibleProviders": providers,
+        "providerFilter": ",".join(providers),
+        "eligible": deduped,
+        "suppressedRepeatProviders": sorted(set(repeats)),
+        "suppressedMissingFingerprintProviders": sorted(set(missing)),
+        "harnessDifferentialExcludedProviders": [],
+        "policy": (
+            "autopilot Learning requires a new stable execution-plan cause/method fingerprint; "
+            "historically dispatched fingerprints are suppressed"
+        ),
+    }
+
+
 def latest_plans(brain: dict[str, Any]) -> dict[str, dict[str, Any]]:
     """Return the last sanitized plan observed for each provider."""
     out: dict[str, dict[str, Any]] = {}
@@ -139,7 +268,7 @@ def select(
             missing.append(provider)
             continue
         prior = rows.get(provider) if isinstance(rows.get(provider), dict) else {}
-        if str(prior.get("lastDispatchedFingerprint") or "").strip().casefold() == fingerprint:
+        if fingerprint in dispatched_fingerprints(prior):
             repeats.append(provider)
             continue
         eligible.append({
@@ -188,19 +317,24 @@ def mark_dispatched(
         if not provider or not re.fullmatch(r"[0-9a-f]{64}", fingerprint):
             continue
         prior = providers.get(provider, {})
+        history = dispatched_fingerprints(prior)
+        if fingerprint not in history:
+            history.append(fingerprint)
+        history = history[-MAX_FINGERPRINT_HISTORY:]
         dispatches = max(0, min(int(prior.get("dispatchCount") or 0) + 1, 9999))
         providers[provider] = {
             "lastDispatchedFingerprint": fingerprint,
+            "dispatchedFingerprints": history,
             "lastSignatureHash": str(row.get("signatureHash") or "")[:20],
             "lastRepairRunId": str(repair_run_id or "")[:32],
             "lastLearningRunId": str(learning_run_id or "")[:32],
             "dispatchCount": dispatches,
         }
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "policy": (
-            "sanitized automatic Learning dispatch ledger; identical provider causal "
-            "fingerprints are never auto-dispatched twice"
+            "sanitized automatic Learning dispatch ledger; bounded per-provider fingerprint "
+            "history prevents any previously dispatched causal method from automatic replay"
         ),
         "providerCount": len(providers),
         "providers": dict(sorted(providers.items())),
@@ -230,6 +364,17 @@ def main() -> int:
     choose.add_argument("--providers", default="")
     choose.add_argument("--output", type=Path, required=True)
 
+    choose_plan = sub.add_parser("select-plan")
+    choose_plan.add_argument("--plan", type=Path, required=True)
+    choose_plan.add_argument("--ledger", type=Path, required=True)
+    choose_plan.add_argument(
+        "--lane",
+        choices=["BRAIN_LEARNING", "CORE_CLIENT_LEARNING"],
+        required=True,
+    )
+    choose_plan.add_argument("--providers", default="")
+    choose_plan.add_argument("--output", type=Path, required=True)
+
     mark = sub.add_parser("mark")
     mark.add_argument("--ledger", type=Path, required=True)
     mark.add_argument("--selection", type=Path, required=True)
@@ -251,6 +396,24 @@ def main() -> int:
             f"repeat={len(payload['suppressedRepeatProviders'])} "
             f"missing={len(payload['suppressedMissingFingerprintProviders'])} "
             f"harness={len(payload['harnessDifferentialExcludedProviders'])} "
+            f"providers={payload['providerFilter'] or 'none'}"
+        )
+        return 0
+
+    if args.command == "select-plan":
+        requested = [safe_provider(value) for value in str(args.providers or "").split(",")]
+        payload = select_execution_plan(
+            load(args.plan),
+            load(args.ledger, {"schemaVersion": 2, "providers": {}}),
+            lane=args.lane,
+            requested=[value for value in requested if value],
+        )
+        write(args.output, payload)
+        print(
+            "FIELD_PROVIDER_AUTOPILOT_LEARNING_GATE "
+            f"lane={args.lane} eligible={payload['eligibleProviderCount']} "
+            f"repeat={len(payload['suppressedRepeatProviders'])} "
+            f"missing={len(payload['suppressedMissingFingerprintProviders'])} "
             f"providers={payload['providerFilter'] or 'none'}"
         )
         return 0
