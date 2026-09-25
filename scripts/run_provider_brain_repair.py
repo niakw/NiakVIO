@@ -64,6 +64,49 @@ def cid(value: object) -> str:
     return str(value or "").strip().casefold().replace("_", "-")
 
 
+def advisor_wave_budget(
+    provider_ids: list[str] | set[str],
+    guidance_path: Path | None = None,
+) -> int:
+    """Return same-run advisor hypothesis budget, bounded to 3.
+
+    External guidance is already sanitized and negative-memory filtered before
+    reaching Repair. Distinct experiment fingerprints therefore represent
+    genuinely untried advisor hypotheses. Generic providers without advisor
+    hypotheses remain at the caller's normal wave budget.
+    """
+    path = guidance_path
+    if path is None:
+        raw = str(os.environ.get("NIAKVIO_BRAIN_LLM_GUIDANCE") or "").strip()
+        path = Path(raw).resolve() if raw else None
+    if path is None or not path.is_file():
+        return 1
+    payload = load(path, {})
+    selected = {cid(value) for value in provider_ids if cid(value)}
+    by_provider: dict[str, set[str]] = {}
+    for row in payload.get("rows") or []:
+        if not isinstance(row, dict):
+            continue
+        provider = cid(row.get("providerId"))
+        fingerprint = str(row.get("experimentFingerprint") or "").strip().casefold()
+        if (
+            provider not in selected
+            or str(row.get("targetLayer") or "").strip().casefold() != "provider"
+            or row.get("priorOnly") is not True
+            or len(fingerprint) != 64
+            or any(ch not in "0123456789abcdef" for ch in fingerprint)
+        ):
+            continue
+        by_provider.setdefault(provider, set()).add(fingerprint)
+    return max(
+        1,
+        min(
+            3,
+            max((len(values) for values in by_provider.values()), default=0),
+        ),
+    )
+
+
 def run(*args: str, env: dict[str, str] | None = None, timeout: int | None = None) -> None:
     print("FIELD_PROVIDER_BRAIN_REPAIR_CMD " + " ".join(args), flush=True)
     subprocess.run(
@@ -706,7 +749,8 @@ def main() -> int:
     shard_index = int(args.shard_index)
     if not 0 <= shard_index < shard_count:
         raise SystemExit("invalid shard index")
-    waves = max(1, min(int(args.waves), 6))
+    requested_waves = max(1, min(int(args.waves), 6))
+    waves = requested_waves
     batch_size = max(4, min(int(args.batch_size), 96))
     time_budget_seconds = max(300, min(int(args.time_budget_seconds), 14400))
     min_start_batch_seconds = max(120, min(int(args.min_start_batch_seconds), time_budget_seconds))
@@ -728,6 +772,17 @@ def main() -> int:
         shard_count=shard_count,
         shard_index=shard_index,
     )
+    advisor_hypotheses = advisor_wave_budget(selected)
+    waves = max(requested_waves, advisor_hypotheses)
+    if advisor_hypotheses > requested_waves:
+        print(
+            "FIELD_PROVIDER_BRAIN_ADVISOR_ROTATION "
+            f"requested_waves={requested_waves} effective_waves={waves} "
+            f"advisor_hypotheses={advisor_hypotheses} "
+            f"providers={','.join(selected)}",
+            flush=True,
+        )
+
     if not selected:
         payload = {
             "schemaVersion": 1,
@@ -1021,6 +1076,9 @@ def main() -> int:
             "processedProviderCount": len(processed_providers),
             "selectedProviderCount": len(selected),
             "selectedProviders": selected,
+            "requestedWaves": requested_waves,
+            "advisorHypothesisWaveBudget": advisor_hypotheses,
+            "effectiveWaves": waves,
             "initialStatuses": {
                 provider: str((rows.get(provider) or {}).get("status") or "unknown")
                 for provider in selected
