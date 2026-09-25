@@ -28,16 +28,35 @@ function execute(source) {
 
 const positional = execute(`module.exports={getStreams:async function(id,type){if(typeof id!=='string')throw new Error('bad positional id');return [];}};`);
 assert.equal(positional.ok, true);
-assert.equal(positional.invocation_diagnostics.length, 1);
+assert.equal(positional.invocation_diagnostics.length, 2);
 assert.equal(positional.invocation_diagnostics[0].name, 'positional_with_settings');
 assert.equal(positional.invocation_diagnostics[0].result, 'empty');
+assert.equal(positional.invocation_diagnostics[1].name, 'object');
 assert.ok(!JSON.stringify(positional).includes('[object Object]'));
 
 const objectMode = execute(`module.exports={getStreams:async function({tmdbId,mediaType}){if(tmdbId!=='157336'||mediaType!=='movie')throw new Error('bad object input');return [];}};`);
 assert.equal(objectMode.ok, true);
-assert.equal(objectMode.invocation_diagnostics.length, 1);
+assert.equal(objectMode.invocation_diagnostics.length, 2);
 assert.equal(objectMode.invocation_diagnostics[0].name, 'object');
 assert.equal(objectMode.invocation_diagnostics[0].result, 'empty');
+assert.equal(objectMode.invocation_diagnostics[1].name, 'positional_with_settings');
+
+const wrappedObject = execute(`
+const native=async function(arg){
+  if(!arg || typeof arg!=='object') return [];
+  if(arg.tmdbId!=='157336'||arg.mediaType!=='movie') return [];
+  return [{url:'https://media.invalid/video.mp4',name:'wrapped-object'}];
+};
+module.exports={getStreams:async function(){return native.apply(this,arguments);}};
+`);
+assert.equal(wrappedObject.ok, true);
+assert.equal(wrappedObject.stream_count, 1);
+assert.equal(wrappedObject.invocation_diagnostics.length, 2);
+assert.equal(wrappedObject.invocation_diagnostics[0].name, 'positional_with_settings');
+assert.equal(wrappedObject.invocation_diagnostics[0].result, 'empty');
+assert.equal(wrappedObject.invocation_diagnostics[0].provider_observations, 0);
+assert.equal(wrappedObject.invocation_diagnostics[1].name, 'object');
+assert.equal(wrappedObject.invocation_diagnostics[1].result, 'streams');
 
 const broken = execute(`module.exports={getStreams:async function(id,type){const e=new Error('provider exploded');e.code='SAMPLE_RUNTIME';throw e;}};`);
 assert.equal(broken.ok, false);
