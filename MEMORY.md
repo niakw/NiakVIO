@@ -4965,3 +4965,13 @@ This ledger is not complete merely because provider yield improves. Final comple
 - Repository branch policy is strict: keep only main and brain-learning/proposals once no PR is open. A dedicated .github/triggers/repository-hygiene file now allows the existing Repository Hygiene workflow to delete all other closed/non-PR branches without editing the workflow itself.
 - Preserve the authority boundary: Learning remains proposal-only/PR; explicit Force may apply provider-local corrections directly only after canonical Repair and candidate/non-regression proof.
 - Preserve current parallel-work state from the other NiakVIO conversation: StreamBadge v4, shared-Core publication fingerprint schema v4, HLS tiny-placeholder rejection/master-facts enrichment, Bloc terminology, StreamZo/PapaDuStream multiflux changes, provider disabled retention lifecycle, and current domain/projection reconciliation.
+
+
+### 2026-09-25 11:46 Europe/Paris — fix dead workflow trigger paths blocking branch cleanup
+
+- Repository Hygiene run `36120137630` correctly refused to delete branches because three exact workflow trigger paths referenced files absent from current main: `automation/provider-census-sharded-latest-summary.json`, `.github/provider-onboarding/batch.json`, and `automation/provider-bulk-activation-latest.json`.
+- This was a real workflow topology bug, not a reason to weaken hygiene validation.
+- Bulk Activation now watches canonical `automation/provider-census-status.json`, which is durable and exists before activation.
+- Bulk Onboarding is explicit/workflow-dispatch only; it no longer pretends that an optional batch request file must permanently exist.
+- Sharded Census now watches durable `provider_catalog.json` for bulk-activation publication changes. A `provider: bulk activate …` commit forces `should_run=true` even below the normal >120-provider automatic sharding threshold, while the same commit still carries `automation/provider-bulk-activation-latest.json` for exact activated-provider scoping.
+- Updated bulk activation/onboarding/sharded-census contract tests lock the new topology. Repository Hygiene is retriggered after this fix; branch deletion remains limited to branches with no open PR, while `main` and `brain-learning/proposals` are always retained.

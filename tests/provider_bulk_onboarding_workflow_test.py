@@ -22,10 +22,10 @@ for token in (
 ):
     assert token in bulk, token
 
-push_block=bulk.split("  push:",1)[1].split("\n\npermissions:",1)[0]
-assert ".github/provider-onboarding/batch.json" in push_block
-assert ".github/workflows/provider-bulk-onboarding.yml" not in push_block
-assert "scripts/stage_provider_batch.py" not in push_block
+event_block=bulk.split("\npermissions:",1)[0]
+assert "workflow_dispatch:" in event_block
+assert "\n  push:" not in event_block
+assert ".github/provider-onboarding/batch.json" in event_block
 
 # High-volume stage is deliberately local/offline and proof-neutral.
 for forbidden in (

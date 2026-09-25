@@ -11,7 +11,7 @@ script=(ROOT/"scripts/activate_bulk_proven_providers.py").read_text(encoding="ut
 onboard=(ROOT/"scripts/add_provider.py").read_text(encoding="utf-8")
 
 for token in (
-    "automation/provider-census-sharded-latest-summary.json",
+    "automation/provider-census-status.json",
     "scripts/activate_bulk_proven_providers.py",
     "automation/provider-bulk-activation-latest.json",
     "provider: bulk activate $ACTIVATION_COUNT full-ok",
@@ -36,9 +36,12 @@ for token in (
     assert token in script, token
 
 assert "automation/provider-bulk-activation-latest.json" in sharded
+assert "'provider_catalog.json'" in sharded
 assert "provider: bulk activate " in sharded
 assert 'args+=(--provider "$providers")' in sharded
 assert '"$count" -gt 120' in sharded
+assert 'head_message="$(git log -1 --pretty=%s)"' in sharded
+assert '[[ "$head_message" == provider:\\ bulk\\ activate\\ * ]]' in sharded
 assert '"$count" -gt 120' in mono
 for workflow in (targeted,domains):
     assert "provider: bulk activate " in workflow

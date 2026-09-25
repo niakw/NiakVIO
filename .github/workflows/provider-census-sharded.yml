@@ -29,7 +29,7 @@ on:
       - 'scripts/render_provider_census_status.py'
       - 'scripts/classify_provider_authority.py'
       - 'scripts/probe_waf_browser_session.py'
-      - 'automation/provider-bulk-activation-latest.json'
+      - 'provider_catalog.json'
 
 permissions:
   contents: write
@@ -68,7 +68,8 @@ jobs:
           PY
           )"
           echo "provider_count=$count" >> "$GITHUB_OUTPUT"
-          if [ "$GITHUB_EVENT_NAME" != "push" ] || [ "$count" -gt 120 ]; then
+          head_message="$(git log -1 --pretty=%s)"
+          if [ "$GITHUB_EVENT_NAME" != "push" ] || [ "$count" -gt 120 ] || [[ "$head_message" == provider:\ bulk\ activate\ * ]]; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
           else
             echo "should_run=false" >> "$GITHUB_OUTPUT"
