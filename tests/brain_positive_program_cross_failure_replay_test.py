@@ -78,7 +78,13 @@ generic = {
     "actions": ["generic chain repair"],
 }
 
-def plan_for(provider: str, negative_memory: list[dict] | None = None, *, mode: str = "learning") -> dict:
+def plan_for(
+    provider: str,
+    negative_memory: list[dict] | None = None,
+    *,
+    mode: str = "learning",
+    llm_guidance: list[dict] | None = None,
+) -> dict:
     item_candidate = copy.deepcopy(candidate)
     item_candidate["canonical_id"] = provider
     payload = {
@@ -89,6 +95,7 @@ def plan_for(provider: str, negative_memory: list[dict] | None = None, *, mode: 
             generic["id"]: generic,
         },
         "historicalSolutions": [],
+        "llmGuidance": llm_guidance or [],
         "negativeMemory": negative_memory or [],
         "items": [{
             "key": f"published:{provider}",
@@ -168,6 +175,34 @@ assert production_replay["allowedProfiles"] == ["provider_positive_program_repla
 assert production_replay["positiveProgramFingerprint"] == "a" * 64, production_replay
 assert production_replay["repairScope"] not in {"learning", "deferred"}, production_replay
 assert production_replay["repairEngine"] != "brain_learning_lab", production_replay
+
+# A valid LLM advisor may coexist in persistent guidance, but it must not
+# override or widen an exact same-provider positive-program production rescue.
+conflicting_advisor = {
+    "providerId": "mallumv-like",
+    "failureClass": "chain_terminal_gap",
+    "targetLayer": "provider",
+    "priorOnly": True,
+    "confidence": 0.99,
+    "profile": "chain_terminal_extractor_v1",
+    "strategy": "terminal_media_extractor_with_playback_validation",
+    "experimentFingerprint": "c" * 64,
+    "experiment": {
+        "routePolicy": "owned_plus_peer_generic",
+        "recipePolicy": "current_plus_provider_peer",
+        "terminalOnly": True,
+    },
+}
+production_replay_with_advisor = plan_for(
+    "mallumv-like",
+    exhausted_memory,
+    mode="repair",
+    llm_guidance=[conflicting_advisor],
+)
+assert production_replay_with_advisor["providerPositiveProgramProductionRescue"] is True, production_replay_with_advisor
+assert production_replay_with_advisor["llmAdvisorApplied"] is False, production_replay_with_advisor
+assert production_replay_with_advisor["llmAdvisorRescue"] is False, production_replay_with_advisor
+assert production_replay_with_advisor["allowedProfiles"] == ["provider_positive_program_replay_v1"], production_replay_with_advisor
 
 # Before exhaustion, the same-provider positive prior may participate in Repair
 # hypothesis ordering, but it still cannot grant acceptance by itself.
