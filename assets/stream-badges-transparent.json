@@ -373,6 +373,30 @@
       "borderColor": "#7B8794"
     },
     {
+      "id": "hls",
+      "groupId": "delivery-format",
+      "name": "HLS",
+      "pattern": "(?i)\\b(?:hls|m3u8)\\b",
+      "imageURL": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/transparent/96x40/hls.webp",
+      "isEnabled": true,
+      "tagColor": "#11151C",
+      "tagStyle": "bordered",
+      "textColor": "#FFFFFF",
+      "borderColor": "#5A91C8"
+    },
+    {
+      "id": "dash",
+      "groupId": "delivery-format",
+      "name": "MPEG-DASH",
+      "pattern": "(?i)\\b(?:mpeg[ ._-]?dash|dash|mpd)\\b",
+      "imageURL": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/transparent/96x40/dash.webp",
+      "isEnabled": true,
+      "tagColor": "#11151C",
+      "tagStyle": "bordered",
+      "textColor": "#FFFFFF",
+      "borderColor": "#5A91C8"
+    },
+    {
       "id": "dolby-vision",
       "groupId": "video-tech",
       "name": "Dolby Vision",
@@ -3609,6 +3633,13 @@
       "name": "Container",
       "color": "#7B8794",
       "borderColor": "#7B8794",
+      "isExpanded": true
+    },
+    {
+      "id": "delivery-format",
+      "name": "Delivery / Streaming",
+      "color": "#5A91C8",
+      "borderColor": "#5A91C8",
       "isExpanded": true
     },
     {
