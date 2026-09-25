@@ -674,6 +674,7 @@ jobs:
         if: ${{ always() && github.ref == 'refs/heads/main' }}
         env:
           GH_TOKEN: ${{ github.token }}
+          DISPATCH_MODE: ${{ inputs.mode || '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -749,7 +750,82 @@ jobs:
           PY
           )"
 
-          # Candidate provider/Core bytes are never published by this evidence commit.
+          # Explicit operator Force is the only mode allowed to publish validated
+          # provider-local candidate bytes directly. Learning remains proposal-only,
+          # and automatic Repair keeps its evidence/current-hypothesis semantics.
+          direct_force_apply=0
+          force_candidate_applied=0
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]              && [ "${DISPATCH_MODE:-}" = "force" ]              && [ "$canonical_repair_outcome" = "success" ]; then
+            direct_force_apply=1
+            mapfile -t force_paths < <(python - <<'PY'
+          import subprocess
+          from pathlib import Path
+
+          allowed_exact={
+              "provider-overrides.json","provider-hubs.json","provider_catalog.json","sources.json",
+              "manifest.json","manifest-hub46.json","PROVENANCE.json","provider-v3-materialization.json",
+              "FILE-HASHES.json","PATCH-SHA256SUMS.txt","SHA256SUMS.json",
+              "automation/provider-v3-static-knowledge.json",
+              "automation/provider-v3-recognition-seeds.json",
+          }
+          allowed_prefixes=(
+              "providers/","provider-bases/","provider-disabled/","provider-old/",
+              "vf/","no-anime/","vf-no-anime/","native-hub46/",
+              "scripts/provider_patches/",
+          )
+          evidence_exact={
+              "PROVIDER_CENSUS_STATUS.md","provider-v3-quick-yield.json",
+              "availability-history.json","availability-report.json",
+          }
+          evidence_prefixes=("automation/",)
+          changed=set(
+              line.strip()
+              for line in subprocess.check_output(
+                  ["git","diff","--name-only",Path().resolve().as_posix() and __import__("os").environ["GITHUB_SHA"]],
+                  text=True,
+              ).splitlines()
+              if line.strip()
+          )
+          changed.update(
+              line.strip()
+              for line in subprocess.check_output(
+                  ["git","ls-files","--others","--exclude-standard"],
+                  text=True,
+              ).splitlines()
+              if line.strip()
+          )
+          candidate=[]
+          unexpected=[]
+          for path in sorted(changed):
+              if path in allowed_exact or path.startswith(allowed_prefixes):
+                  candidate.append(path)
+              elif path in evidence_exact or path.startswith(evidence_prefixes):
+                  continue
+              else:
+                  unexpected.append(path)
+          if unexpected:
+              raise SystemExit("Force Repair candidate crossed direct-apply boundary: "+",".join(unexpected))
+          for path in candidate:
+              print(path)
+          PY
+            )
+            if [ "${#force_paths[@]}" -gt 0 ]; then
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git add -- "${force_paths[@]}"
+              git commit -m "tmp(force-repair): validated provider candidate ${GITHUB_RUN_ID}"
+              git rev-parse HEAD > "$tmp/force-candidate-sha.txt"
+              printf '%s\n' "${force_paths[@]}" > "$tmp/force-candidate-paths.txt"
+              echo "FIELD_FORCE_REPAIR_DIRECT_APPLY captured=true files=${#force_paths[@]}"
+            else
+              echo "FIELD_FORCE_REPAIR_DIRECT_APPLY captured=false reason=no-provider-byte-diff"
+            fi
+          else
+            echo "FIELD_FORCE_REPAIR_DIRECT_APPLY enabled=false mode=${DISPATCH_MODE:-automatic}"
+          fi
+
+          # Reset the sandbox after preserving evidence and, for explicit Force,
+          # a temporary commit containing only validated provider-local bytes.
           git reset --hard "$GITHUB_SHA"
           git clean -fd
           git fetch origin main
@@ -785,6 +861,17 @@ jobs:
           fi
 
           mkdir -p automation
+
+          if [ "$direct_force_apply" = "1" ] && [ -f "$tmp/force-candidate-sha.txt" ]; then
+            if [ "$canonical_ledger_current" = "1" ]; then
+              force_candidate_sha="$(cat "$tmp/force-candidate-sha.txt")"
+              git cherry-pick --no-commit "$force_candidate_sha"
+              force_candidate_applied=1
+              echo "FIELD_FORCE_REPAIR_DIRECT_APPLY restored=true sha=$force_candidate_sha"
+            else
+              echo "FIELD_FORCE_REPAIR_DIRECT_APPLY restored=false reason=newer-main"
+            fi
+          fi
 
           # Stale Repair output remains downloadable from Actions, but it may
           # not move main. Even evidence-only commits can supersede the exact
@@ -834,7 +921,11 @@ jobs:
           if git diff --cached --quiet; then
             echo "Repair evidence already current"
           else
-            git commit -m "ci(repair): persist evidence ${counts} from ${GITHUB_SHA::12}"
+            if [ "$force_candidate_applied" = "1" ]; then
+              git commit -m "fix(force-repair): apply validated provider corrections + evidence from ${GITHUB_SHA::12}"
+            else
+              git commit -m "ci(repair): persist evidence ${counts} from ${GITHUB_SHA::12}"
+            fi
             git push origin HEAD:main
           fi
 
