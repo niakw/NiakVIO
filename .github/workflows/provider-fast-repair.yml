@@ -75,7 +75,7 @@ jobs:
       - name: Validate fast lane contracts
         run: |
           set -euo pipefail
-          python -m py_compile             scripts/run_provider_fast_repair.py             scripts/run_provider_retest.py             scripts/run_provider_brain_repair.py             scripts/brain_repair_runtime.py             scripts/sanitize_brain_learning_memory.py             scripts/import_external_brain_llm_guidance.py             scripts/compile_brain_accepted_program_v3.py
+          python -m py_compile             scripts/run_provider_fast_repair.py             scripts/run_provider_retest.py             scripts/run_provider_brain_repair.py             scripts/brain_repair_runtime.py             scripts/sanitize_brain_learning_memory.py             scripts/import_external_brain_llm_guidance.py             scripts/compile_brain_accepted_program_v3.py             scripts/recover_brain_positive_program_memory.py
           python tests/provider_fast_repair_separation_test.py
           python tests/provider_retest_scope_test.py
           python tests/provider_remat_test_separation_test.py
@@ -88,6 +88,8 @@ jobs:
           python tests/brain_cross_phase_experiment_memory_test.py
           python tests/brain_learning_queue_experiment_ledger_test.py
           python tests/brain_learning_causal_wave_merge_test.py
+          python tests/brain_positive_program_memory_test.py
+          python tests/brain_positive_program_recovery_test.py
           python tests/brain_positive_program_cross_failure_replay_test.py
           python tests/brain_learning_lab_session_recovery_test.py
           python tests/brain_fast_handoff_active_context_test.py
