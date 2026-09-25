@@ -398,7 +398,8 @@ def _anchor_context_label(document: str, match: re.Match[str], anchor_text: str)
     folded = compact(plain)
     positive = (
         "accesprincipal", "adresseverifiee", "adresseverifie", "verifiedaddress",
-        "verifiedonline", "enligne", "plateformeprincipale", "versionprincipale",
+        "verifiedonline", "enligne", "actif", "active", "adresseactive", "domaineactif",
+        "plateformeprincipale", "versionprincipale",
         "principal", "primary", "current", "actuel", "officiel", "official",
     )
     negative = (
@@ -667,7 +668,8 @@ def candidate_score(provider_id: str, cfg: dict[str, Any], url: str, label: str,
     )
     negative_markers = (
         "backup", "secours", "miroir", "mirror", "alternative", "fallback",
-        "ancien", "indisponible", "indisponibilite",
+        "ancien", "ancienne", "old", "bloque", "blocked", "ferme", "closed",
+        "indisponible", "indisponibilite",
     )
     if any(token in normalized for token in positive_markers):
         score += 15
@@ -1060,13 +1062,13 @@ def _curated_direct_redirect_candidates(
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Follow curated direct addresses only to learn deterministic moves.
 
-    This is address discovery, not terminal health validation. It is disabled for
-    direct_authority=explicit_current because that is an operator pin. For ordinary
-    curated direct/LKG registry entries, a real cross-host redirect to the same
-    provider brand is stronger current-address evidence than yesterday's URL.
+    This is address discovery, not terminal health validation. Only
+    direct_authority=operator_pin is immutable. A refreshable explicit_current may
+    itself redirect to the provider's next same-brand terminal; that deterministic
+    move is stronger current-address evidence than yesterday's URL.
     """
     # DOMAIN_CURATED_DIRECT_REDIRECT_V1
-    if str(cfg.get("direct_authority") or "").strip().casefold() == "explicit_current":
+    if str(cfg.get("direct_authority") or "").strip().casefold() == "operator_pin":
         return [], []
     output: list[dict[str, Any]] = []
     observations: list[dict[str, Any]] = []
