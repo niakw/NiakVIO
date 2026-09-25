@@ -202,6 +202,8 @@ url_quality = run(
 assert url_quality["quality"] == "1080p", url_quality
 assert " - 1080p" in url_quality["title"], url_quality
 assert "1080p-full-hd" in url_quality["badgeIds"], url_quality
+assert "hls" in url_quality["badgeIds"], url_quality
+assert "HLS" in url_quality["description"], url_quality
 
 numeric_height = run(
     "module.exports={getStreams:async()=>[{name:'Source',url:'https://cdn.example/master.m3u8',height:2160}]};\n",
@@ -211,6 +213,16 @@ numeric_height = run(
 assert numeric_height["quality"] == "2160p", numeric_height
 assert " - 4K" in numeric_height["title"], numeric_height
 
+rich_technical = run(
+    "module.exports={getStreams:async()=>[{name:'Anime CDN',url:'https://cdn.example/master.m3u8',resolution:'1920x1080',codec:'AVC',bitrate:'6.0 Mbps',frameRate:'23.976 fps',audioCodec:'AAC',audioChannels:'Stereo',audioSampleRate:'48 kHz',language:'Korean'}]};\\n",
+    "generic",
+    "p.getStreams({mediaType:'anime',title:'Example Anime',year:2026,originalLanguage:'ko'}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+for badge_id in ("1080p-full-hd","hls","avc","23.976fps","video-bitrate","aac","2.0","48khz","lang-ko"):
+    assert badge_id in rich_technical["badgeIds"], (badge_id, rich_technical)
+assert "Korean" in rich_technical["description"], rich_technical
+assert "23.976 fps" in rich_technical["description"] and "AAC" in rich_technical["description"] and "2.0" in rich_technical["description"] and "48 kHz" in rich_technical["description"], rich_technical
+assert "6.0 Mbps" in rich_technical["description"], rich_technical
 # Native Desktop bridge: optional TMDB enrichment is skipped when the client does
 # not expose a runtime-owned TMDB_API_KEY. Provider streams must return immediately.
 desktop_native = run(

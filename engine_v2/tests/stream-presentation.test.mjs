@@ -140,14 +140,26 @@ for (const placeholder of ["Inconnue", "Unknown", "N/A"]) {
   assert.equal(row.title, "Kehflix", row.title);
   assert.equal(row.name, "Kehflix", row.name);
   assert.equal(row.quality, null, JSON.stringify(row));
+  assert.ok(row.badgeIds.includes("hls"), JSON.stringify(row));
+  assert.ok(row.displayBadges.includes("HLS"), JSON.stringify(row));
+  assert.match(row.description, /HLS/);
 }
 const kehflix1080 = presentStreamCandidate({ name: "Kehflix", url: "https://media.example/a.mp4", quality: "1080p" }, { mediaType: "movie" }, kehflixProvider);
 assert.equal(kehflix1080.title, "Kehflix - 1080p");
 assert.equal(kehflix1080.name, "Kehflix - 1080p");
+assert.ok(kehflix1080.badgeIds.includes("mp4"));
 const kehflix4k = presentStreamCandidate({ name: "Kehflix", url: "https://media.example/a.mp4", quality: "2160p" }, { mediaType: "movie" }, kehflixProvider);
 assert.equal(kehflix4k.title, "Kehflix - 4K");
 assert.equal(kehflix4k.name, "Kehflix - 4K");
 
+const richTechnical = presentStreamCandidate({
+  name: "Anime CDN", url: "https://media.example/master.m3u8", resolution: "1920x1080", codec: "AVC",
+  bitrate: "6.0 Mbps", frameRate: "23.976 fps", audioCodec: "AAC", audioChannels: "Stereo", audioSampleRate: "48 kHz", language: "Korean",
+}, { title: "Example Anime", year: 2026, mediaType: "anime", originalLanguage: "ko" }, { id: "example", name: "Example" });
+for (const id of ["1080p-full-hd","hls","avc","23.976fps","video-bitrate","aac","2.0","48khz","lang-ko"]) assert.ok(richTechnical.badgeIds.includes(id), [id, richTechnical.badgeIds]);
+assert.match(richTechnical.description, /Korean · Original/);
+assert.match(richTechnical.description, /AVC/); assert.match(richTechnical.description, /23\.976 fps/); assert.match(richTechnical.description, /HLS/);
+assert.match(richTechnical.description, /AAC • 2\.0 • 48 kHz/); assert.match(richTechnical.description, /6\.0 Mbps/);
 assert.equal(normalizeLanguage({ language: "fr" }, vfProvider), "VF");
 assert.equal(normalizeLanguage({ language: "VFQ" }, vfProvider), "VFQ");
 assert.equal(normalizeLanguage({ language: "MULTI" }, voProvider), "MULTI");

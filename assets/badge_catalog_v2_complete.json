@@ -1,5 +1,5 @@
 {
-  "version": "3.0-universal-media-badges",
+  "version": "4.0-technical-delivery",
   "groups": [
     {
       "id": "source",
@@ -12,6 +12,10 @@
     {
       "id": "container",
       "name": "Container"
+    },
+    {
+      "id": "delivery-format",
+      "name": "Delivery / Streaming"
     },
     {
       "id": "video-tech",
@@ -839,6 +843,56 @@
       }
     },
     {
+      "id": "hls",
+      "group": "delivery-format",
+      "name": "HLS",
+      "text": "HLS",
+      "brand": false,
+      "pattern": "(?i)\\b(?:hls|m3u8)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "HLS",
+      "order": 32,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/hls.webp",
+          "96x40": "assets/transparent/96x40/hls.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/hls.webp",
+          "96x40": "assets/dark/96x40/hls.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/hls.webp",
+          "96x40": "assets/light/96x40/hls.webp"
+        }
+      }
+    },
+    {
+      "id": "dash",
+      "group": "delivery-format",
+      "name": "MPEG-DASH",
+      "text": "DASH",
+      "brand": false,
+      "pattern": "(?i)\\b(?:mpeg[ ._-]?dash|dash|mpd)\\b",
+      "assetBasis": "niakvio_generated_generic",
+      "fallbackText": "DASH",
+      "order": 33,
+      "assets": {
+        "transparent": {
+          "72x32": "assets/transparent/72x32/dash.webp",
+          "96x40": "assets/transparent/96x40/dash.webp"
+        },
+        "dark": {
+          "72x32": "assets/dark/72x32/dash.webp",
+          "96x40": "assets/dark/96x40/dash.webp"
+        },
+        "light": {
+          "72x32": "assets/light/72x32/dash.webp",
+          "96x40": "assets/light/96x40/dash.webp"
+        }
+      }
+    },
+    {
       "id": "dolby-vision",
       "group": "video-tech",
       "name": "Dolby Vision",
@@ -846,7 +900,7 @@
       "brand": true,
       "pattern": "(?i)\\b(dolby[ ]?vision|dovi|dv)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 32,
+      "order": 34,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dolby-vision.webp",
@@ -871,7 +925,7 @@
       "brand": true,
       "pattern": "(?i)\\b(hdr10\\+|hdr10[ ]?plus|hdr[ ]?10[ ]?\\+)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 33,
+      "order": 35,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/hdr10-plus.webp",
@@ -896,7 +950,7 @@
       "brand": false,
       "pattern": "(?i)\\bhdr[ ]?10\\b(?![ ]?\\+|[ ]?plus)",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 34,
+      "order": 36,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/hdr10.webp",
@@ -921,7 +975,7 @@
       "brand": false,
       "pattern": "(?i)\\bhdr\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 35,
+      "order": 37,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/hdr.webp",
@@ -946,7 +1000,7 @@
       "brand": false,
       "pattern": "(?i)\\bhlg\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 36,
+      "order": 38,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/hlg.webp",
@@ -971,7 +1025,7 @@
       "brand": false,
       "pattern": "(?i)\\bsdr\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 37,
+      "order": 39,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sdr.webp",
@@ -996,7 +1050,7 @@
       "brand": true,
       "pattern": "(?i)\\bimax[ ._-]?enhanced\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 38,
+      "order": 40,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/imax-enhanced.webp",
@@ -1021,7 +1075,7 @@
       "brand": true,
       "pattern": "(?i)\\bimax\\b(?![ ._-]?enhanced)",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 39,
+      "order": 41,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/imax.webp",
@@ -1046,7 +1100,7 @@
       "brand": false,
       "pattern": "(?i)\\b(3d|sbs|hsbs|ou|hou)\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 40,
+      "order": 42,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/3d.webp",
@@ -1071,7 +1125,7 @@
       "brand": false,
       "pattern": "(?i)\\bav1\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 41,
+      "order": 43,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/av1.webp",
@@ -1096,7 +1150,7 @@
       "brand": false,
       "pattern": "(?i)\\b(hevc|h[ ._-]?265|x265)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 42,
+      "order": 44,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/hevc.webp",
@@ -1121,7 +1175,7 @@
       "brand": false,
       "pattern": "(?i)\\b(avc|h[ ._-]?264|x264)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 43,
+      "order": 45,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/avc.webp",
@@ -1146,7 +1200,7 @@
       "brand": false,
       "pattern": "(?i)\\bvp9\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 44,
+      "order": 46,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/vp9.webp",
@@ -1171,7 +1225,7 @@
       "brand": false,
       "pattern": "(?i)\\bmpeg[ ._-]?2\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 45,
+      "order": 47,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/mpeg2.webp",
@@ -1196,7 +1250,7 @@
       "brand": false,
       "pattern": "(?i)\\bvc[ ._-]?1\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 46,
+      "order": 48,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/vc1.webp",
@@ -1222,7 +1276,7 @@
       "pattern": "(?i)\\b(?:mpeg[ ._-]?4[ ._-]?(?:part[ ._-]?2|asp)|xvid|divx)\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "MPEG-4",
-      "order": 47,
+      "order": 49,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/mpeg4-part2.webp",
@@ -1246,7 +1300,7 @@
       "brand": false,
       "pattern": "(?i)\\b12[ ._-]?bit\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 48,
+      "order": 50,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/12bit.webp",
@@ -1271,7 +1325,7 @@
       "brand": false,
       "pattern": "(?i)\\b(10[ ._-]?bit|10b|hi10p)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 49,
+      "order": 51,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/10bit.webp",
@@ -1296,7 +1350,7 @@
       "brand": false,
       "pattern": "(?i)\\b8[ ._-]?bit\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 50,
+      "order": 52,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/8bit.webp",
@@ -1322,7 +1376,7 @@
       "pattern": "(?i)\\b23[.,]976\\s*fps\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "23.976FPS",
-      "order": 51,
+      "order": 53,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/23.976fps.webp",
@@ -1347,7 +1401,7 @@
       "pattern": "(?i)\\b24(?:[.,]0+)?\\s*fps\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "24FPS",
-      "order": 52,
+      "order": 54,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/24fps.webp",
@@ -1372,7 +1426,7 @@
       "pattern": "(?i)\\b25(?:[.,]0+)?\\s*fps\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "25FPS",
-      "order": 53,
+      "order": 55,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/25fps.webp",
@@ -1397,7 +1451,7 @@
       "pattern": "(?i)\\b29[.,]97\\s*fps\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "29.97FPS",
-      "order": 54,
+      "order": 56,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/29.97fps.webp",
@@ -1422,7 +1476,7 @@
       "pattern": "(?i)\\b30(?:[.,]0+)?\\s*fps\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "30FPS",
-      "order": 55,
+      "order": 57,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/30fps.webp",
@@ -1447,7 +1501,7 @@
       "pattern": "(?i)\\b50(?:[.,]0+)?\\s*fps\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "50FPS",
-      "order": 56,
+      "order": 58,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/50fps.webp",
@@ -1472,7 +1526,7 @@
       "pattern": "(?i)\\b59[.,]94\\s*fps\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "59.94FPS",
-      "order": 57,
+      "order": 59,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/59.94fps.webp",
@@ -1497,7 +1551,7 @@
       "pattern": "(?i)\\b60(?:[.,]0+)?\\s*fps\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "60FPS",
-      "order": 58,
+      "order": 60,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/60fps.webp",
@@ -1522,7 +1576,7 @@
       "pattern": "(?i)(?:📶\\s*)?\\b\\d+(?:[.,]\\d+)?\\s*(?:mbps|mbit/s|mb/s)\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "BITRATE",
-      "order": 59,
+      "order": 61,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/video-bitrate.webp",
@@ -1546,7 +1600,7 @@
       "brand": true,
       "pattern": "(?i)\\b(dolby[ ]?atmos|atmos)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 60,
+      "order": 62,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dolby-atmos.webp",
@@ -1571,7 +1625,7 @@
       "brand": true,
       "pattern": "(?i)\\b(truehd|true[ ]?hd|dolby[ ]?truehd)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 61,
+      "order": 63,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/truehd.webp",
@@ -1596,7 +1650,7 @@
       "brand": true,
       "pattern": "(?i)\\b(ddp|dd\\+|dolby[ ._-]?digital[ ._-]?plus|e-?ac-?3)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 62,
+      "order": 64,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dolby-digital-plus.webp",
@@ -1621,7 +1675,7 @@
       "brand": true,
       "pattern": "(?i)\\b(dolby[ ._-]?digital|ac-?3|dd)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 63,
+      "order": 65,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dolby-digital.webp",
@@ -1646,7 +1700,7 @@
       "brand": true,
       "pattern": "(?i)\\bdts[: ._-]?x\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 64,
+      "order": 66,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dts-x.webp",
@@ -1671,7 +1725,7 @@
       "brand": true,
       "pattern": "(?i)\\b(dts[ ._-]?hd[ ._-]?ma|dts[ ._-]?hd[ ._-]?master)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 65,
+      "order": 67,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dts-hd-master-audio.webp",
@@ -1696,7 +1750,7 @@
       "brand": true,
       "pattern": "(?i)\\b(dts[ ._-]?hd[ ._-]?(hra|high[ ._-]?resolution))\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 66,
+      "order": 68,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dts-hd-hra.webp",
@@ -1721,7 +1775,7 @@
       "brand": true,
       "pattern": "(?i)\\bdts[ ._-]?hd\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 67,
+      "order": 69,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dts-hd.webp",
@@ -1746,7 +1800,7 @@
       "brand": true,
       "pattern": "(?i)\\bdts\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 68,
+      "order": 70,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/dts.webp",
@@ -1771,7 +1825,7 @@
       "brand": false,
       "pattern": "(?i)\\baac\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 69,
+      "order": 71,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/aac.webp",
@@ -1796,7 +1850,7 @@
       "brand": false,
       "pattern": "(?i)\\bflac\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 70,
+      "order": 72,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/flac.webp",
@@ -1821,7 +1875,7 @@
       "brand": false,
       "pattern": "(?i)\\blpcm\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 71,
+      "order": 73,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lpcm.webp",
@@ -1846,7 +1900,7 @@
       "brand": false,
       "pattern": "(?i)\\bpcm\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 72,
+      "order": 74,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/pcm.webp",
@@ -1871,7 +1925,7 @@
       "brand": false,
       "pattern": "(?i)\\bopus\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 73,
+      "order": 75,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/opus.webp",
@@ -1896,7 +1950,7 @@
       "brand": false,
       "pattern": "(?i)\\bmp3\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 74,
+      "order": 76,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/mp3.webp",
@@ -1921,7 +1975,7 @@
       "brand": false,
       "pattern": "(?i)\\balac\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 75,
+      "order": 77,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/alac.webp",
@@ -1946,7 +2000,7 @@
       "brand": false,
       "pattern": "(?i)\\b(7\\.1|8ch|8[ ]?channel)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 76,
+      "order": 78,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/7.1.webp",
@@ -1971,7 +2025,7 @@
       "brand": false,
       "pattern": "(?i)\\b(5\\.1|6ch|6[ ]?channel)\\b",
       "assetBasis": "user_supplied_brand_or_technical_asset",
-      "order": 77,
+      "order": 79,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/5.1.webp",
@@ -1996,7 +2050,7 @@
       "brand": false,
       "pattern": "(?i)\\b2\\.1\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 78,
+      "order": 80,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/2.1.webp",
@@ -2021,7 +2075,7 @@
       "brand": false,
       "pattern": "(?i)\\b(2\\.0|stereo|2ch)\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 79,
+      "order": 81,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/2.0.webp",
@@ -2046,7 +2100,7 @@
       "brand": false,
       "pattern": "(?i)\\b(1\\.0|mono|1ch)\\b",
       "assetBasis": "niakvio_generated_generic",
-      "order": 80,
+      "order": 82,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/1.0.webp",
@@ -2072,7 +2126,7 @@
       "pattern": "(?i)\\b44[.,]1\\s*khz\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "44.1KHZ",
-      "order": 81,
+      "order": 83,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/44.1khz.webp",
@@ -2097,7 +2151,7 @@
       "pattern": "(?i)\\b48(?:[.,]0+)?\\s*khz\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "48KHZ",
-      "order": 82,
+      "order": 84,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/48khz.webp",
@@ -2122,7 +2176,7 @@
       "pattern": "(?i)\\b88[.,]2\\s*khz\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "88.2KHZ",
-      "order": 83,
+      "order": 85,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/88.2khz.webp",
@@ -2147,7 +2201,7 @@
       "pattern": "(?i)\\b96(?:[.,]0+)?\\s*khz\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "96KHZ",
-      "order": 84,
+      "order": 86,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/96khz.webp",
@@ -2172,7 +2226,7 @@
       "pattern": "(?i)\\b192(?:[.,]0+)?\\s*khz\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "192KHZ",
-      "order": 85,
+      "order": 87,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/192khz.webp",
@@ -2197,7 +2251,7 @@
       "pattern": "(?i)(?:\\b(?:english|eng)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bEN[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "EN",
-      "order": 86,
+      "order": 88,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-en.webp",
@@ -2222,7 +2276,7 @@
       "pattern": "(?i)(?:\\b(?:french|fra|fre|fran[cç]ais)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bFR[ ._-]?(?:original|dub|audio)\\b|\\bVF\\b(?!Q)|\\bVFF\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FR",
-      "order": 87,
+      "order": 89,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-fr.webp",
@@ -2247,7 +2301,7 @@
       "pattern": "(?i)(?:\\b(?:german|deu|ger)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bDE[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "DE",
-      "order": 88,
+      "order": 90,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-de.webp",
@@ -2272,7 +2326,7 @@
       "pattern": "(?i)(?:\\b(?:spanish|spa)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bES[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ES",
-      "order": 89,
+      "order": 91,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-es.webp",
@@ -2297,7 +2351,7 @@
       "pattern": "(?i)(?:\\b(?:bengali|ben)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bBN[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "BN",
-      "order": 90,
+      "order": 92,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-bn.webp",
@@ -2322,7 +2376,7 @@
       "pattern": "(?i)(?:\\b(?:portuguese|por)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bPT[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PT",
-      "order": 91,
+      "order": 93,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-pt.webp",
@@ -2347,7 +2401,7 @@
       "pattern": "(?i)(?:\\b(?:bulgarian|bul)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bBG[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "BG",
-      "order": 92,
+      "order": 94,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-bg.webp",
@@ -2372,7 +2426,7 @@
       "pattern": "(?i)(?:\\b(?:chinese|zho|chi|mandarin)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bZH[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ZH",
-      "order": 93,
+      "order": 95,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-zh.webp",
@@ -2397,7 +2451,7 @@
       "pattern": "(?i)(?:\\b(?:korean|kor)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bKO[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "KO",
-      "order": 94,
+      "order": 96,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-ko.webp",
@@ -2422,7 +2476,7 @@
       "pattern": "(?i)(?:\\b(?:arabic|ara)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bAR[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "AR",
-      "order": 95,
+      "order": 97,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-ar.webp",
@@ -2447,7 +2501,7 @@
       "pattern": "(?i)(?:\\b(?:finnish|fin)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bFI[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FI",
-      "order": 96,
+      "order": 98,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-fi.webp",
@@ -2472,7 +2526,7 @@
       "pattern": "(?i)(?:\\b(?:greek|ell|gre)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bEL[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "EL",
-      "order": 97,
+      "order": 99,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-el.webp",
@@ -2497,7 +2551,7 @@
       "pattern": "(?i)(?:\\b(?:hungarian|hun)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bHU[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "HU",
-      "order": 98,
+      "order": 100,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-hu.webp",
@@ -2522,7 +2576,7 @@
       "pattern": "(?i)(?:\\b(?:hindi|hin)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bHI[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "HI",
-      "order": 99,
+      "order": 101,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-hi.webp",
@@ -2547,7 +2601,7 @@
       "pattern": "(?i)(?:\\b(?:indonesian|ind)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bID[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ID",
-      "order": 100,
+      "order": 102,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-id.webp",
@@ -2572,7 +2626,7 @@
       "pattern": "(?i)(?:\\b(?:persian|fas|per|farsi)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bFA[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FA",
-      "order": 101,
+      "order": 103,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-fa.webp",
@@ -2597,7 +2651,7 @@
       "pattern": "(?i)(?:\\b(?:hebrew|heb)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bHE[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "HE",
-      "order": 102,
+      "order": 104,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-he.webp",
@@ -2622,7 +2676,7 @@
       "pattern": "(?i)(?:\\b(?:italian|ita)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bIT[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "IT",
-      "order": 103,
+      "order": 105,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-it.webp",
@@ -2647,7 +2701,7 @@
       "pattern": "(?i)(?:\\b(?:japanese|jpn)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bJA[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "JA",
-      "order": 104,
+      "order": 106,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-ja.webp",
@@ -2672,7 +2726,7 @@
       "pattern": "(?i)(?:\\b(?:kurdish|kur)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bKU[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "KU",
-      "order": 105,
+      "order": 107,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-ku.webp",
@@ -2697,7 +2751,7 @@
       "pattern": "(?i)(?:\\b(?:uzbek|uzb)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bUZ[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "UZ",
-      "order": 106,
+      "order": 108,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-uz.webp",
@@ -2722,7 +2776,7 @@
       "pattern": "(?i)(?:\\b(?:filipino|tagalog|tgl)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bFIL[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FIL",
-      "order": 107,
+      "order": 109,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-fil.webp",
@@ -2747,7 +2801,7 @@
       "pattern": "(?i)(?:\\b(?:polish|pol)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bPL[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PL",
-      "order": 108,
+      "order": 110,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-pl.webp",
@@ -2772,7 +2826,7 @@
       "pattern": "(?i)(?:\\b(?:romanian|ron|rum)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bRO[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "RO",
-      "order": 109,
+      "order": 111,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-ro.webp",
@@ -2797,7 +2851,7 @@
       "pattern": "(?i)(?:\\b(?:russian|rus)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bRU[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "RU",
-      "order": 110,
+      "order": 112,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-ru.webp",
@@ -2822,7 +2876,7 @@
       "pattern": "(?i)(?:\\b(?:slovak|slk|slo)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bSK[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SK",
-      "order": 111,
+      "order": 113,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-sk.webp",
@@ -2847,7 +2901,7 @@
       "pattern": "(?i)(?:\\b(?:swedish|swe)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bSV[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SV",
-      "order": 112,
+      "order": 114,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-sv.webp",
@@ -2872,7 +2926,7 @@
       "pattern": "(?i)(?:\\b(?:czech|ces|cze)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bCS[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "CS",
-      "order": 113,
+      "order": 115,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-cs.webp",
@@ -2897,7 +2951,7 @@
       "pattern": "(?i)(?:\\b(?:vietnamese|vie)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bVI[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "VI",
-      "order": 114,
+      "order": 116,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-vi.webp",
@@ -2922,7 +2976,7 @@
       "pattern": "(?i)(?:\\b(?:turkish|tur)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bTR[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "TR",
-      "order": 115,
+      "order": 117,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-tr.webp",
@@ -2947,7 +3001,7 @@
       "pattern": "(?i)(?:\\b(?:tamil|tam)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bTA[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "TA",
-      "order": 116,
+      "order": 118,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-ta.webp",
@@ -2972,7 +3026,7 @@
       "pattern": "(?i)(?:\\b(?:telugu|tel)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bTE[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "TE",
-      "order": 117,
+      "order": 119,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-te.webp",
@@ -2997,7 +3051,7 @@
       "pattern": "(?i)(?:\\b(?:malayalam|mal)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bML[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ML",
-      "order": 118,
+      "order": 120,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-ml.webp",
@@ -3022,7 +3076,7 @@
       "pattern": "(?i)(?:\\b(?:kannada|kan)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bKN[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "KN",
-      "order": 119,
+      "order": 121,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-kn.webp",
@@ -3047,7 +3101,7 @@
       "pattern": "(?i)(?:\\b(?:punjabi|pan)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bPA[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PA",
-      "order": 120,
+      "order": 122,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-pa.webp",
@@ -3072,7 +3126,7 @@
       "pattern": "(?i)(?:\\b(?:gujarati|guj)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bGU[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "GU",
-      "order": 121,
+      "order": 123,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-gu.webp",
@@ -3097,7 +3151,7 @@
       "pattern": "(?i)(?:\\b(?:marathi|mar)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bMR[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "MR",
-      "order": 122,
+      "order": 124,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-mr.webp",
@@ -3122,7 +3176,7 @@
       "pattern": "(?i)(?:\\b(?:urdu|urd)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bUR[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "UR",
-      "order": 123,
+      "order": 125,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-ur.webp",
@@ -3147,7 +3201,7 @@
       "pattern": "(?i)(?:\\b(?:cantonese|cantonese)\\b(?!\\s*(?:·|[-_:])?\\s*(?:sub|subtitle))|\\bYUE[ ._-]?(?:original|dub|audio)\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "YUE",
-      "order": 124,
+      "order": 126,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-yue.webp",
@@ -3172,7 +3226,7 @@
       "pattern": "(?i)(?:fr[-_ ]?ca|canadian[ ._-]?french|french[ ._-]?(?:canada|canadian|qu[eé]bec)|qu[eé]b[eé]cois|vfq)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FR-CA",
-      "order": 125,
+      "order": 127,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-fr-ca.webp",
@@ -3197,7 +3251,7 @@
       "pattern": "(?i)(?:fr[-_ ]?ch|swiss[ ._-]?french|french[ ._-]?swiss)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FR-CH",
-      "order": 126,
+      "order": 128,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-fr-ch.webp",
@@ -3222,7 +3276,7 @@
       "pattern": "(?i)(?:pt[-_ ]?br|brazilian[ ._-]?portuguese|portuguese[ ._-]?brazil)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PT-BR",
-      "order": 127,
+      "order": 129,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-pt-br.webp",
@@ -3247,7 +3301,7 @@
       "pattern": "(?i)(?:pt[-_ ]?pt|european[ ._-]?portuguese|portuguese[ ._-]?portugal)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PT-PT",
-      "order": 128,
+      "order": 130,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-pt-pt.webp",
@@ -3272,7 +3326,7 @@
       "pattern": "(?i)(?:es[-_ ]?419|latin[ ._-]?american[ ._-]?spanish|latam[ ._-]?spanish|spanish[ ._-]?latam)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ES-419",
-      "order": 129,
+      "order": 131,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-es-419.webp",
@@ -3297,7 +3351,7 @@
       "pattern": "(?i)(?:es[-_ ]?mx|mexican[ ._-]?spanish|spanish[ ._-]?mexico)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ES-MX",
-      "order": 130,
+      "order": 132,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-es-mx.webp",
@@ -3322,7 +3376,7 @@
       "pattern": "(?i)(?:zh[-_ ]?hk|hong[ ._-]?kong[ ._-]?chinese)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ZH-HK",
-      "order": 131,
+      "order": 133,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-zh-hk.webp",
@@ -3347,7 +3401,7 @@
       "pattern": "(?i)(?:zh[-_ ]?tw|traditional[ ._-]?chinese|taiwan(?:ese)?[ ._-]?(?:chinese|mandarin))",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ZH-TW",
-      "order": 132,
+      "order": 134,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/lang-zh-tw.webp",
@@ -3372,7 +3426,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:en|english|eng)\\b|\\b(?:en|english|eng)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB EN",
-      "order": 133,
+      "order": 135,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-en.webp",
@@ -3397,7 +3451,7 @@
       "pattern": "(?i)(?:\\bVOSTFR\\b|\\bSUB(?:TITLE)?S?[ ._·:-]?(?:FR|FRA|FRE|FRENCH|FRAN[CÇ]AIS)\\b|\\b(?:FR|FRA|FRE|FRENCH|FRAN[CÇ]AIS)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB FR",
-      "order": 134,
+      "order": 136,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-fr.webp",
@@ -3422,7 +3476,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:de|german|deu|ger)\\b|\\b(?:de|german|deu|ger)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB DE",
-      "order": 135,
+      "order": 137,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-de.webp",
@@ -3447,7 +3501,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:es|spanish|spa)\\b|\\b(?:es|spanish|spa)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB ES",
-      "order": 136,
+      "order": 138,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-es.webp",
@@ -3472,7 +3526,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:bn|bengali|ben)\\b|\\b(?:bn|bengali|ben)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB BN",
-      "order": 137,
+      "order": 139,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-bn.webp",
@@ -3497,7 +3551,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:pt|portuguese|por)\\b|\\b(?:pt|portuguese|por)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB PT",
-      "order": 138,
+      "order": 140,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-pt.webp",
@@ -3522,7 +3576,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:bg|bulgarian|bul)\\b|\\b(?:bg|bulgarian|bul)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB BG",
-      "order": 139,
+      "order": 141,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-bg.webp",
@@ -3547,7 +3601,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:zh|chinese|zho|chi|mandarin)\\b|\\b(?:zh|chinese|zho|chi|mandarin)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB ZH",
-      "order": 140,
+      "order": 142,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-zh.webp",
@@ -3572,7 +3626,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:ko|korean|kor)\\b|\\b(?:ko|korean|kor)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB KO",
-      "order": 141,
+      "order": 143,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-ko.webp",
@@ -3597,7 +3651,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:ar|arabic|ara)\\b|\\b(?:ar|arabic|ara)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB AR",
-      "order": 142,
+      "order": 144,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-ar.webp",
@@ -3622,7 +3676,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:fi|finnish|fin)\\b|\\b(?:fi|finnish|fin)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB FI",
-      "order": 143,
+      "order": 145,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-fi.webp",
@@ -3647,7 +3701,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:el|greek|ell|gre)\\b|\\b(?:el|greek|ell|gre)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB EL",
-      "order": 144,
+      "order": 146,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-el.webp",
@@ -3672,7 +3726,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:hu|hungarian|hun)\\b|\\b(?:hu|hungarian|hun)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB HU",
-      "order": 145,
+      "order": 147,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-hu.webp",
@@ -3697,7 +3751,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:hi|hindi|hin)\\b|\\b(?:hi|hindi|hin)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB HI",
-      "order": 146,
+      "order": 148,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-hi.webp",
@@ -3722,7 +3776,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:id|indonesian|ind)\\b|\\b(?:id|indonesian|ind)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB ID",
-      "order": 147,
+      "order": 149,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-id.webp",
@@ -3747,7 +3801,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:fa|persian|fas|per|farsi)\\b|\\b(?:fa|persian|fas|per|farsi)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB FA",
-      "order": 148,
+      "order": 150,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-fa.webp",
@@ -3772,7 +3826,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:he|hebrew|heb)\\b|\\b(?:he|hebrew|heb)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB HE",
-      "order": 149,
+      "order": 151,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-he.webp",
@@ -3797,7 +3851,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:it|italian|ita)\\b|\\b(?:it|italian|ita)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB IT",
-      "order": 150,
+      "order": 152,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-it.webp",
@@ -3822,7 +3876,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:ja|japanese|jpn)\\b|\\b(?:ja|japanese|jpn)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB JA",
-      "order": 151,
+      "order": 153,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-ja.webp",
@@ -3847,7 +3901,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:ku|kurdish|kur)\\b|\\b(?:ku|kurdish|kur)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB KU",
-      "order": 152,
+      "order": 154,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-ku.webp",
@@ -3872,7 +3926,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:uz|uzbek|uzb)\\b|\\b(?:uz|uzbek|uzb)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB UZ",
-      "order": 153,
+      "order": 155,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-uz.webp",
@@ -3897,7 +3951,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:fil|filipino|tagalog|tgl)\\b|\\b(?:fil|filipino|tagalog|tgl)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB FIL",
-      "order": 154,
+      "order": 156,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-fil.webp",
@@ -3922,7 +3976,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:pl|polish|pol)\\b|\\b(?:pl|polish|pol)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB PL",
-      "order": 155,
+      "order": 157,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-pl.webp",
@@ -3947,7 +4001,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:ro|romanian|ron|rum)\\b|\\b(?:ro|romanian|ron|rum)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB RO",
-      "order": 156,
+      "order": 158,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-ro.webp",
@@ -3972,7 +4026,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:ru|russian|rus)\\b|\\b(?:ru|russian|rus)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB RU",
-      "order": 157,
+      "order": 159,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-ru.webp",
@@ -3997,7 +4051,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:sk|slovak|slk|slo)\\b|\\b(?:sk|slovak|slk|slo)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB SK",
-      "order": 158,
+      "order": 160,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-sk.webp",
@@ -4022,7 +4076,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:sv|swedish|swe)\\b|\\b(?:sv|swedish|swe)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB SV",
-      "order": 159,
+      "order": 161,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-sv.webp",
@@ -4047,7 +4101,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:cs|czech|ces|cze)\\b|\\b(?:cs|czech|ces|cze)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB CS",
-      "order": 160,
+      "order": 162,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-cs.webp",
@@ -4072,7 +4126,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:vi|vietnamese|vie)\\b|\\b(?:vi|vietnamese|vie)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB VI",
-      "order": 161,
+      "order": 163,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-vi.webp",
@@ -4097,7 +4151,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:tr|turkish|tur)\\b|\\b(?:tr|turkish|tur)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB TR",
-      "order": 162,
+      "order": 164,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-tr.webp",
@@ -4122,7 +4176,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:ta|tamil|tam)\\b|\\b(?:ta|tamil|tam)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB TA",
-      "order": 163,
+      "order": 165,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-ta.webp",
@@ -4147,7 +4201,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:te|telugu|tel)\\b|\\b(?:te|telugu|tel)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB TE",
-      "order": 164,
+      "order": 166,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-te.webp",
@@ -4172,7 +4226,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:ml|malayalam|mal)\\b|\\b(?:ml|malayalam|mal)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB ML",
-      "order": 165,
+      "order": 167,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-ml.webp",
@@ -4197,7 +4251,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:kn|kannada|kan)\\b|\\b(?:kn|kannada|kan)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB KN",
-      "order": 166,
+      "order": 168,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-kn.webp",
@@ -4222,7 +4276,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:pa|punjabi|pan)\\b|\\b(?:pa|punjabi|pan)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB PA",
-      "order": 167,
+      "order": 169,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-pa.webp",
@@ -4247,7 +4301,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:gu|gujarati|guj)\\b|\\b(?:gu|gujarati|guj)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB GU",
-      "order": 168,
+      "order": 170,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-gu.webp",
@@ -4272,7 +4326,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:mr|marathi|mar)\\b|\\b(?:mr|marathi|mar)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB MR",
-      "order": 169,
+      "order": 171,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-mr.webp",
@@ -4297,7 +4351,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:ur|urdu|urd)\\b|\\b(?:ur|urdu|urd)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB UR",
-      "order": 170,
+      "order": 172,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-ur.webp",
@@ -4322,7 +4376,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:yue|cantonese|cantonese)\\b|\\b(?:yue|cantonese|cantonese)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB YUE",
-      "order": 171,
+      "order": 173,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-yue.webp",
@@ -4347,7 +4401,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:fr[-_ ]?ca|canadian[ ._-]?french|french[ ._-]?(?:canada|canadian|qu[eé]bec)|qu[eé]b[eé]cois|vfq)\\b|\\b(?:fr[-_ ]?ca|canadian[ ._-]?french|french[ ._-]?(?:canada|canadian|qu[eé]bec)|qu[eé]b[eé]cois|vfq)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB FR-CA",
-      "order": 172,
+      "order": 174,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-fr-ca.webp",
@@ -4372,7 +4426,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:fr[-_ ]?ch|swiss[ ._-]?french|french[ ._-]?swiss)\\b|\\b(?:fr[-_ ]?ch|swiss[ ._-]?french|french[ ._-]?swiss)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB FR-CH",
-      "order": 173,
+      "order": 175,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-fr-ch.webp",
@@ -4397,7 +4451,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:pt[-_ ]?br|brazilian[ ._-]?portuguese|portuguese[ ._-]?brazil)\\b|\\b(?:pt[-_ ]?br|brazilian[ ._-]?portuguese|portuguese[ ._-]?brazil)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB PT-BR",
-      "order": 174,
+      "order": 176,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-pt-br.webp",
@@ -4422,7 +4476,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:pt[-_ ]?pt|european[ ._-]?portuguese|portuguese[ ._-]?portugal)\\b|\\b(?:pt[-_ ]?pt|european[ ._-]?portuguese|portuguese[ ._-]?portugal)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB PT-PT",
-      "order": 175,
+      "order": 177,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-pt-pt.webp",
@@ -4447,7 +4501,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:es[-_ ]?419|latin[ ._-]?american[ ._-]?spanish|latam[ ._-]?spanish|spanish[ ._-]?latam)\\b|\\b(?:es[-_ ]?419|latin[ ._-]?american[ ._-]?spanish|latam[ ._-]?spanish|spanish[ ._-]?latam)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB ES-419",
-      "order": 176,
+      "order": 178,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-es-419.webp",
@@ -4472,7 +4526,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:es[-_ ]?mx|mexican[ ._-]?spanish|spanish[ ._-]?mexico)\\b|\\b(?:es[-_ ]?mx|mexican[ ._-]?spanish|spanish[ ._-]?mexico)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB ES-MX",
-      "order": 177,
+      "order": 179,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-es-mx.webp",
@@ -4497,7 +4551,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:zh[-_ ]?hk|hong[ ._-]?kong[ ._-]?chinese)\\b|\\b(?:zh[-_ ]?hk|hong[ ._-]?kong[ ._-]?chinese)\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB ZH-HK",
-      "order": 178,
+      "order": 180,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-zh-hk.webp",
@@ -4522,7 +4576,7 @@
       "pattern": "(?i)(?:\\bSUB(?:TITLE)?S?[ ._·:-]?(?:zh[-_ ]?tw|traditional[ ._-]?chinese|taiwan(?:ese)?[ ._-]?(?:chinese|mandarin))\\b|\\b(?:zh[-_ ]?tw|traditional[ ._-]?chinese|taiwan(?:ese)?[ ._-]?(?:chinese|mandarin))\\b\\s*(?:·|[-_:])?\\s*SUB(?:TITLE)?S?\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SUB ZH-TW",
-      "order": 179,
+      "order": 181,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sub-zh-tw.webp",
@@ -4547,7 +4601,7 @@
       "pattern": "(?i)\\bforced\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FORCED",
-      "order": 180,
+      "order": 182,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/forced.webp",
@@ -4572,7 +4626,7 @@
       "pattern": "(?i)\\b(?:sdh|closed[ ]?caption|cc)\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SDH/CC",
-      "order": 181,
+      "order": 183,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/sdh-cc.webp",
@@ -4597,7 +4651,7 @@
       "pattern": "(?i)\\b(?:all[ ]?ages|unrestricted|general[ ]?audiences|tous[ ]?publics|livre)\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ALL",
-      "order": 182,
+      "order": 184,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-all.webp",
@@ -4622,7 +4676,7 @@
       "pattern": "(?i)(?:^|[\\s|•])(?:age[ ._-]*)?0\\+(?=$|[\\s|•])",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "0+",
-      "order": 183,
+      "order": 185,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-0.webp",
@@ -4647,7 +4701,7 @@
       "pattern": "(?i)(?:^|[\\s|•])(?:age[ ._-]*)?6\\+(?=$|[\\s|•])",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "6+",
-      "order": 184,
+      "order": 186,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-6.webp",
@@ -4672,7 +4726,7 @@
       "pattern": "(?i)(?:^|[\\s|•])(?:age[ ._-]*)?7\\+(?=$|[\\s|•])",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "7+",
-      "order": 185,
+      "order": 187,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-7.webp",
@@ -4697,7 +4751,7 @@
       "pattern": "(?i)(?:^|[\\s|•])(?:age[ ._-]*)?10\\+(?=$|[\\s|•])",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "10+",
-      "order": 186,
+      "order": 188,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-10.webp",
@@ -4722,7 +4776,7 @@
       "pattern": "(?i)(?:^|[\\s|•])(?:age[ ._-]*)?12\\+(?=$|[\\s|•])",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "12+",
-      "order": 187,
+      "order": 189,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-12.webp",
@@ -4747,7 +4801,7 @@
       "pattern": "(?i)(?:^|[\\s|•])(?:age[ ._-]*)?13\\+(?=$|[\\s|•])",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "13+",
-      "order": 188,
+      "order": 190,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-13.webp",
@@ -4772,7 +4826,7 @@
       "pattern": "(?i)(?:^|[\\s|•])(?:age[ ._-]*)?14\\+(?=$|[\\s|•])",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "14+",
-      "order": 189,
+      "order": 191,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-14.webp",
@@ -4797,7 +4851,7 @@
       "pattern": "(?i)(?:^|[\\s|•])(?:age[ ._-]*)?15\\+(?=$|[\\s|•])",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "15+",
-      "order": 190,
+      "order": 192,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-15.webp",
@@ -4822,7 +4876,7 @@
       "pattern": "(?i)(?:^|[\\s|•])(?:age[ ._-]*)?16\\+(?=$|[\\s|•])",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "16+",
-      "order": 191,
+      "order": 193,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-16.webp",
@@ -4847,7 +4901,7 @@
       "pattern": "(?i)(?:^|[\\s|•])(?:age[ ._-]*)?17\\+(?=$|[\\s|•])",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "17+",
-      "order": 192,
+      "order": 194,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-17.webp",
@@ -4872,7 +4926,7 @@
       "pattern": "(?i)(?:^|[\\s|•])(?:age[ ._-]*)?18\\+(?=$|[\\s|•])",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "18+",
-      "order": 193,
+      "order": 195,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-18.webp",
@@ -4897,7 +4951,7 @@
       "pattern": "(?i)(?:^|[\\s|•])(?:age[ ._-]*)?19\\+(?=$|[\\s|•])",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "19+",
-      "order": 194,
+      "order": 196,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-19.webp",
@@ -4922,7 +4976,7 @@
       "pattern": "(?i)(?:^|[\\s|•])(?:age[ ._-]*)?21\\+(?=$|[\\s|•])",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "21+",
-      "order": 195,
+      "order": 197,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-21.webp",
@@ -4947,7 +5001,7 @@
       "pattern": "(?i)\\b(?:US|MPA[A]?)[ .:_-]?G\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "US G",
-      "order": 196,
+      "order": 198,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-us-g.webp",
@@ -4972,7 +5026,7 @@
       "pattern": "(?i)\\b(?:US|MPA[A]?)[ .:_-]?PG\\b(?![ ._-]?13)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "US PG",
-      "order": 197,
+      "order": 199,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-us-pg.webp",
@@ -4997,7 +5051,7 @@
       "pattern": "(?i)\\b(?:US[ .:_-]?)?PG[ ._-]?13\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "US PG-13",
-      "order": 198,
+      "order": 200,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-us-pg13.webp",
@@ -5022,7 +5076,7 @@
       "pattern": "(?i)\\b(?:US|MPA[A]?)[ .:_-]?R\\b(?![ ._-]?18)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "US R",
-      "order": 199,
+      "order": 201,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-us-r.webp",
@@ -5047,7 +5101,7 @@
       "pattern": "(?i)\\bNC[ ._-]?17\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "US NC-17",
-      "order": 200,
+      "order": 202,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-us-nc17.webp",
@@ -5072,7 +5126,7 @@
       "pattern": "(?i)\\bTV[ ._-]?Y\\b(?!7)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "TV-Y",
-      "order": 201,
+      "order": 203,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-us-tv-y.webp",
@@ -5097,7 +5151,7 @@
       "pattern": "(?i)\\bTV[ ._-]?Y7\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "TV-Y7",
-      "order": 202,
+      "order": 204,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-us-tv-y7.webp",
@@ -5122,7 +5176,7 @@
       "pattern": "(?i)\\bTV[ ._-]?G\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "TV-G",
-      "order": 203,
+      "order": 205,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-us-tv-g.webp",
@@ -5147,7 +5201,7 @@
       "pattern": "(?i)\\bTV[ ._-]?PG\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "TV-PG",
-      "order": 204,
+      "order": 206,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-us-tv-pg.webp",
@@ -5172,7 +5226,7 @@
       "pattern": "(?i)\\bTV[ ._-]?14\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "TV-14",
-      "order": 205,
+      "order": 207,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-us-tv14.webp",
@@ -5197,7 +5251,7 @@
       "pattern": "(?i)\\bTV[ ._-]?MA\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "TV-MA",
-      "order": 206,
+      "order": 208,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-us-tv-ma.webp",
@@ -5222,7 +5276,7 @@
       "pattern": "(?i)(?:\\bKR[ .:_-]?(?:ALL|0)\\b|전체\\s*관람가)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "KR ALL",
-      "order": 207,
+      "order": 209,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-kr-all.webp",
@@ -5247,7 +5301,7 @@
       "pattern": "(?i)(?:\\bKR[ .:_-]?12\\b|12세\\s*이상\\s*관람가)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "KR 12",
-      "order": 208,
+      "order": 210,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-kr12.webp",
@@ -5272,7 +5326,7 @@
       "pattern": "(?i)(?:\\bKR[ .:_-]?15\\b|15세\\s*이상\\s*관람가)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "KR 15",
-      "order": 209,
+      "order": 211,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-kr15.webp",
@@ -5297,7 +5351,7 @@
       "pattern": "(?i)(?:\\bKR[ .:_-]?19\\b|청소년\\s*관람불가)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "KR 19",
-      "order": 210,
+      "order": 212,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-kr19.webp",
@@ -5322,7 +5376,7 @@
       "pattern": "(?i)\\bFSK[ .:_-]?0\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FSK 0",
-      "order": 211,
+      "order": 213,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-de-fsk0.webp",
@@ -5347,7 +5401,7 @@
       "pattern": "(?i)\\bFSK[ .:_-]?6\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FSK 6",
-      "order": 212,
+      "order": 214,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-de-fsk6.webp",
@@ -5372,7 +5426,7 @@
       "pattern": "(?i)\\bFSK[ .:_-]?12\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FSK 12",
-      "order": 213,
+      "order": 215,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-de-fsk12.webp",
@@ -5397,7 +5451,7 @@
       "pattern": "(?i)\\bFSK[ .:_-]?16\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FSK 16",
-      "order": 214,
+      "order": 216,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-de-fsk16.webp",
@@ -5422,7 +5476,7 @@
       "pattern": "(?i)\\bFSK[ .:_-]?18\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FSK 18",
-      "order": 215,
+      "order": 217,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-de-fsk18.webp",
@@ -5447,7 +5501,7 @@
       "pattern": "(?i)\\b(?:JP[ .:_-]?)?G\\b(?=\\s*(?:JP|JAPAN|RATING)?(?:$|[|•]))",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "JP G",
-      "order": 216,
+      "order": 218,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-jp-g.webp",
@@ -5472,7 +5526,7 @@
       "pattern": "(?i)\\bPG[ ._-]?12\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "JP PG12",
-      "order": 217,
+      "order": 219,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-jp-pg12.webp",
@@ -5497,7 +5551,7 @@
       "pattern": "(?i)\\bR[ ._-]?15\\+\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "JP R15+",
-      "order": 218,
+      "order": 220,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-jp-r15.webp",
@@ -5522,7 +5576,7 @@
       "pattern": "(?i)\\bR[ ._-]?18\\+\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "JP R18+",
-      "order": 219,
+      "order": 221,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-jp-r18.webp",
@@ -5547,7 +5601,7 @@
       "pattern": "(?i)\\b(?:BR|CLASSIND)[ .:_-]?L\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "BR L",
-      "order": 220,
+      "order": 222,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-br-l.webp",
@@ -5572,7 +5626,7 @@
       "pattern": "(?i)\\b(?:BR|CLASSIND)[ .:_-]?10\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "BR 10",
-      "order": 221,
+      "order": 223,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-br-10.webp",
@@ -5597,7 +5651,7 @@
       "pattern": "(?i)\\b(?:BR|CLASSIND)[ .:_-]?12\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "BR 12",
-      "order": 222,
+      "order": 224,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-br-12.webp",
@@ -5622,7 +5676,7 @@
       "pattern": "(?i)\\b(?:BR|CLASSIND)[ .:_-]?14\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "BR 14",
-      "order": 223,
+      "order": 225,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-br-14.webp",
@@ -5647,7 +5701,7 @@
       "pattern": "(?i)\\b(?:BR|CLASSIND)[ .:_-]?16\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "BR 16",
-      "order": 224,
+      "order": 226,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-br-16.webp",
@@ -5672,7 +5726,7 @@
       "pattern": "(?i)\\b(?:BR|CLASSIND)[ .:_-]?18\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "BR 18",
-      "order": 225,
+      "order": 227,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-br-18.webp",
@@ -5697,7 +5751,7 @@
       "pattern": "(?i)\\b(?:QC|QUEBEC)[ .:_-]?G\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "QC G",
-      "order": 226,
+      "order": 228,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-ca-qc-g.webp",
@@ -5722,7 +5776,7 @@
       "pattern": "(?i)\\b(?:QC|QUEBEC)[ .:_-]?13\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "QC 13+",
-      "order": 227,
+      "order": 229,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-ca-qc-13.webp",
@@ -5747,7 +5801,7 @@
       "pattern": "(?i)\\b(?:QC|QUEBEC)[ .:_-]?16\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "QC 16+",
-      "order": 228,
+      "order": 230,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-ca-qc-16.webp",
@@ -5772,7 +5826,7 @@
       "pattern": "(?i)\\b(?:QC|QUEBEC)[ .:_-]?18\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "QC 18+",
-      "order": 229,
+      "order": 231,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-ca-qc-18.webp",
@@ -5797,7 +5851,7 @@
       "pattern": "(?i)\\b(?:ES|ICAA)[ .:_-]?(?:APTA|TP)\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ES APTA",
-      "order": 230,
+      "order": 232,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-es-apta.webp",
@@ -5822,7 +5876,7 @@
       "pattern": "(?i)\\b(?:ES|ICAA)[ .:_-]?7\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ES 7",
-      "order": 231,
+      "order": 233,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-es-7.webp",
@@ -5847,7 +5901,7 @@
       "pattern": "(?i)\\b(?:ES|ICAA)[ .:_-]?12\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ES 12",
-      "order": 232,
+      "order": 234,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-es-12.webp",
@@ -5872,7 +5926,7 @@
       "pattern": "(?i)\\b(?:ES|ICAA)[ .:_-]?16\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ES 16",
-      "order": 233,
+      "order": 235,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-es-16.webp",
@@ -5897,7 +5951,7 @@
       "pattern": "(?i)\\b(?:ES|ICAA)[ .:_-]?18\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ES 18",
-      "order": 234,
+      "order": 236,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-es-18.webp",
@@ -5922,7 +5976,7 @@
       "pattern": "(?i)\\b(?:ES|ICAA)[ .:_-]?X\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ES X",
-      "order": 235,
+      "order": 237,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-es-x.webp",
@@ -5947,7 +6001,7 @@
       "pattern": "(?i)\\bFR[ .:_-]?(?:ALL|TP)\\b|\\bTOUS[ ]?PUBLICS\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FR ALL",
-      "order": 236,
+      "order": 238,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-fr-all.webp",
@@ -5972,7 +6026,7 @@
       "pattern": "(?i)(?:\\bFR[ .:_-]?10\\+?\\b|\\bINTERDIT\\s+(?:AUX\\s+)?MOINS\\s+DE\\s+10\\b|(?:^|\\s)-10\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FR 10+",
-      "order": 237,
+      "order": 239,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-fr-10.webp",
@@ -5997,7 +6051,7 @@
       "pattern": "(?i)(?:\\bFR[ .:_-]?12\\+?\\b|\\bINTERDIT\\s+(?:AUX\\s+)?MOINS\\s+DE\\s+12\\b|(?:^|\\s)-12\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FR 12+",
-      "order": 238,
+      "order": 240,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-fr-12.webp",
@@ -6022,7 +6076,7 @@
       "pattern": "(?i)(?:\\bFR[ .:_-]?16\\+?\\b|\\bINTERDIT\\s+(?:AUX\\s+)?MOINS\\s+DE\\s+16\\b|(?:^|\\s)-16\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FR 16+",
-      "order": 239,
+      "order": 241,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-fr-16.webp",
@@ -6047,7 +6101,7 @@
       "pattern": "(?i)(?:\\bFR[ .:_-]?18\\+?\\b|\\bINTERDIT\\s+(?:AUX\\s+)?MOINS\\s+DE\\s+18\\b|(?:^|\\s)-18\\b)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FR 18+",
-      "order": 240,
+      "order": 242,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-fr-18.webp",
@@ -6072,7 +6126,7 @@
       "pattern": "(?i)\\bHK[ .:_-]?I\\b(?!I)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "HK I",
-      "order": 241,
+      "order": 243,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-hk-i.webp",
@@ -6097,7 +6151,7 @@
       "pattern": "(?i)\\bHK[ .:_-]?IIA\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "HK IIA",
-      "order": 242,
+      "order": 244,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-hk-iia.webp",
@@ -6122,7 +6176,7 @@
       "pattern": "(?i)\\bHK[ .:_-]?IIB\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "HK IIB",
-      "order": 243,
+      "order": 245,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-hk-iib.webp",
@@ -6147,7 +6201,7 @@
       "pattern": "(?i)\\bHK[ .:_-]?III\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "HK III",
-      "order": 244,
+      "order": 246,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-hk-iii.webp",
@@ -6172,7 +6226,7 @@
       "pattern": "(?i)\\b(?:IN|CBFC)[ .:_-]?U\\b(?!A)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "IN U",
-      "order": 245,
+      "order": 247,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-in-u.webp",
@@ -6197,7 +6251,7 @@
       "pattern": "(?i)\\bUA[ ._-]?7\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "UA 7+",
-      "order": 246,
+      "order": 248,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-in-ua7.webp",
@@ -6222,7 +6276,7 @@
       "pattern": "(?i)\\bUA[ ._-]?13\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "UA 13+",
-      "order": 247,
+      "order": 249,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-in-ua13.webp",
@@ -6247,7 +6301,7 @@
       "pattern": "(?i)\\bUA[ ._-]?16\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "UA 16+",
-      "order": 248,
+      "order": 250,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-in-ua16.webp",
@@ -6272,7 +6326,7 @@
       "pattern": "(?i)\\b(?:IN|CBFC)[ .:_-]?A\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "IN A",
-      "order": 249,
+      "order": 251,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-in-a.webp",
@@ -6297,7 +6351,7 @@
       "pattern": "(?i)\\b(?:IN|CBFC)[ .:_-]?S\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "IN S",
-      "order": 250,
+      "order": 252,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-in-s.webp",
@@ -6322,7 +6376,7 @@
       "pattern": "(?i)\\bFI[ .:_-]?S\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FI S",
-      "order": 251,
+      "order": 253,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-fi-s.webp",
@@ -6347,7 +6401,7 @@
       "pattern": "(?i)\\bK7\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FI K7",
-      "order": 252,
+      "order": 254,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-fi-k7.webp",
@@ -6372,7 +6426,7 @@
       "pattern": "(?i)\\bK12\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FI K12",
-      "order": 253,
+      "order": 255,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-fi-k12.webp",
@@ -6397,7 +6451,7 @@
       "pattern": "(?i)\\bK16\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FI K16",
-      "order": 254,
+      "order": 256,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-fi-k16.webp",
@@ -6422,7 +6476,7 @@
       "pattern": "(?i)\\bK18\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "FI K18",
-      "order": 255,
+      "order": 257,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-fi-k18.webp",
@@ -6447,7 +6501,7 @@
       "pattern": "(?i)\\bGR[ .:_-]?K\\b(?!\\d)",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "GR K",
-      "order": 256,
+      "order": 258,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-gr-k.webp",
@@ -6472,7 +6526,7 @@
       "pattern": "(?i)\\bGR[ .:_-]?K8\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "GR K8",
-      "order": 257,
+      "order": 259,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-gr-k8.webp",
@@ -6497,7 +6551,7 @@
       "pattern": "(?i)\\bGR[ .:_-]?K12\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "GR K12",
-      "order": 258,
+      "order": 260,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-gr-k12.webp",
@@ -6522,7 +6576,7 @@
       "pattern": "(?i)\\bGR[ .:_-]?K16\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "GR K16",
-      "order": 259,
+      "order": 261,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-gr-k16.webp",
@@ -6547,7 +6601,7 @@
       "pattern": "(?i)\\bGR[ .:_-]?K18\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "GR K18",
-      "order": 260,
+      "order": 262,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-gr-k18.webp",
@@ -6572,7 +6626,7 @@
       "pattern": "(?i)\\bM[ /._-]?3\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PT M/3",
-      "order": 261,
+      "order": 263,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-pt-m3.webp",
@@ -6597,7 +6651,7 @@
       "pattern": "(?i)\\bM[ /._-]?6\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PT M/6",
-      "order": 262,
+      "order": 264,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-pt-m6.webp",
@@ -6622,7 +6676,7 @@
       "pattern": "(?i)\\bM[ /._-]?12\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PT M/12",
-      "order": 263,
+      "order": 265,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-pt-m12.webp",
@@ -6647,7 +6701,7 @@
       "pattern": "(?i)\\bM[ /._-]?14\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PT M/14",
-      "order": 264,
+      "order": 266,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-pt-m14.webp",
@@ -6672,7 +6726,7 @@
       "pattern": "(?i)\\bM[ /._-]?16\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PT M/16",
-      "order": 265,
+      "order": 267,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-pt-m16.webp",
@@ -6697,7 +6751,7 @@
       "pattern": "(?i)\\bM[ /._-]?18\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PT M/18",
-      "order": 266,
+      "order": 268,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-pt-m18.webp",
@@ -6722,7 +6776,7 @@
       "pattern": "(?i)\\bPH[ .:_-]?G\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PH G",
-      "order": 267,
+      "order": 269,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-ph-g.webp",
@@ -6747,7 +6801,7 @@
       "pattern": "(?i)\\bPH[ .:_-]?PG\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PH PG",
-      "order": 268,
+      "order": 270,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-ph-pg.webp",
@@ -6772,7 +6826,7 @@
       "pattern": "(?i)\\bR[ ._-]?13\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PH R-13",
-      "order": 269,
+      "order": 271,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-ph-r13.webp",
@@ -6797,7 +6851,7 @@
       "pattern": "(?i)\\bR[ ._-]?16\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PH R-16",
-      "order": 270,
+      "order": 272,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-ph-r16.webp",
@@ -6822,7 +6876,7 @@
       "pattern": "(?i)\\bR[ ._-]?18\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PH R-18",
-      "order": 271,
+      "order": 273,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-ph-r18.webp",
@@ -6847,7 +6901,7 @@
       "pattern": "(?i)\\bPH[ .:_-]?X\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PH X",
-      "order": 272,
+      "order": 274,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-ph-x.webp",
@@ -6872,7 +6926,7 @@
       "pattern": "(?i)\\bID[ .:_-]?SU\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ID SU",
-      "order": 273,
+      "order": 275,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-id-su.webp",
@@ -6897,7 +6951,7 @@
       "pattern": "(?i)\\bID[ .:_-]?13\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ID 13+",
-      "order": 274,
+      "order": 276,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-id-13.webp",
@@ -6922,7 +6976,7 @@
       "pattern": "(?i)\\bID[ .:_-]?17\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ID 17+",
-      "order": 275,
+      "order": 277,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-id-17.webp",
@@ -6947,7 +7001,7 @@
       "pattern": "(?i)\\bID[ .:_-]?21\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "ID 21+",
-      "order": 276,
+      "order": 278,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-id-21.webp",
@@ -6972,7 +7026,7 @@
       "pattern": "(?i)\\bRU[ .:_-]?0\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "RU 0+",
-      "order": 277,
+      "order": 279,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-ru-0.webp",
@@ -6997,7 +7051,7 @@
       "pattern": "(?i)\\bRU[ .:_-]?6\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "RU 6+",
-      "order": 278,
+      "order": 280,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-ru-6.webp",
@@ -7022,7 +7076,7 @@
       "pattern": "(?i)\\bRU[ .:_-]?12\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "RU 12+",
-      "order": 279,
+      "order": 281,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-ru-12.webp",
@@ -7047,7 +7101,7 @@
       "pattern": "(?i)\\bRU[ .:_-]?16\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "RU 16+",
-      "order": 280,
+      "order": 282,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-ru-16.webp",
@@ -7072,7 +7126,7 @@
       "pattern": "(?i)\\bRU[ .:_-]?18\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "RU 18+",
-      "order": 281,
+      "order": 283,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-ru-18.webp",
@@ -7097,7 +7151,7 @@
       "pattern": "(?i)\\bPL[ .:_-]?0\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PL 0+",
-      "order": 282,
+      "order": 284,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-pl-0.webp",
@@ -7122,7 +7176,7 @@
       "pattern": "(?i)\\bPL[ .:_-]?7\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PL 7+",
-      "order": 283,
+      "order": 285,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-pl-7.webp",
@@ -7147,7 +7201,7 @@
       "pattern": "(?i)\\bPL[ .:_-]?12\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PL 12+",
-      "order": 284,
+      "order": 286,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-pl-12.webp",
@@ -7172,7 +7226,7 @@
       "pattern": "(?i)\\bPL[ .:_-]?16\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PL 16+",
-      "order": 285,
+      "order": 287,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-pl-16.webp",
@@ -7197,7 +7251,7 @@
       "pattern": "(?i)\\bPL[ .:_-]?18\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "PL 18+",
-      "order": 286,
+      "order": 288,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-pl-18.webp",
@@ -7222,7 +7276,7 @@
       "pattern": "(?i)\\bSE[ .:_-]?0\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SE 0+",
-      "order": 287,
+      "order": 289,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-se-0.webp",
@@ -7247,7 +7301,7 @@
       "pattern": "(?i)\\bSE[ .:_-]?7\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SE 7+",
-      "order": 288,
+      "order": 290,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-se-7.webp",
@@ -7272,7 +7326,7 @@
       "pattern": "(?i)\\bSE[ .:_-]?11\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SE 11+",
-      "order": 289,
+      "order": 291,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-se-11.webp",
@@ -7297,7 +7351,7 @@
       "pattern": "(?i)\\bSE[ .:_-]?15\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "SE 15+",
-      "order": 290,
+      "order": 292,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-se-15.webp",
@@ -7322,7 +7376,7 @@
       "pattern": "(?i)\\bTW[ .:_-]?0\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "TW 0+",
-      "order": 291,
+      "order": 293,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-tw-0.webp",
@@ -7347,7 +7401,7 @@
       "pattern": "(?i)\\bTW[ .:_-]?6\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "TW 6+",
-      "order": 292,
+      "order": 294,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-tw-6.webp",
@@ -7372,7 +7426,7 @@
       "pattern": "(?i)\\bTW[ .:_-]?12\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "TW 12+",
-      "order": 293,
+      "order": 295,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-tw-12.webp",
@@ -7397,7 +7451,7 @@
       "pattern": "(?i)\\bTW[ .:_-]?15\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "TW 15+",
-      "order": 294,
+      "order": 296,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-tw-15.webp",
@@ -7422,7 +7476,7 @@
       "pattern": "(?i)\\bTW[ .:_-]?18\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "TW 18+",
-      "order": 295,
+      "order": 297,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-tw-18.webp",
@@ -7447,7 +7501,7 @@
       "pattern": "(?i)\\b(?:LATAM[ .:_-]?)?ATP\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "LATAM ATP",
-      "order": 296,
+      "order": 298,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-latam-atp.webp",
@@ -7472,7 +7526,7 @@
       "pattern": "(?i)\\bLATAM[ .:_-]?13\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "LATAM 13+",
-      "order": 297,
+      "order": 299,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-latam-13.webp",
@@ -7497,7 +7551,7 @@
       "pattern": "(?i)\\bLATAM[ .:_-]?16\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "LATAM 16+",
-      "order": 298,
+      "order": 300,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-latam-16.webp",
@@ -7522,7 +7576,7 @@
       "pattern": "(?i)\\bLATAM[ .:_-]?18\\+?\\b",
       "assetBasis": "niakvio_generated_generic",
       "fallbackText": "LATAM 18+",
-      "order": 299,
+      "order": 301,
       "assets": {
         "transparent": {
           "72x32": "assets/transparent/72x32/age-latam-18.webp",
@@ -7539,5 +7593,5 @@
       }
     }
   ],
-  "publicFeedVersion": 3
+  "publicFeedVersion": 4
 }

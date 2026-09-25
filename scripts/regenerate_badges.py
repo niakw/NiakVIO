@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "assets" / "badge_catalog_v2_complete.json"
 REPORT = ROOT / "assets" / "docs" / "BADGE_QA.json"
 LEGACY_LIGHT_REPORT = ROOT / "assets" / "docs" / "LIGHT_BADGE_QA.json"
-REVISION = "full-surface-v6-universal-v3"
+REVISION = "full-surface-v7-delivery-v4"
 PILLOW_VERSION = "11.3.0"
 SIZES = ("72x32", "96x40")
 THEMES = ("transparent", "dark", "light")
@@ -69,8 +69,8 @@ def _normalize_catalog(catalog: dict[str, Any]) -> tuple[dict[str, Any], bool]:
                     themed[size] = rel
                     changed = True
     catalog["badges"] = rows
-    catalog["version"] = "3.0-universal-media-badges"
-    catalog["publicFeedVersion"] = 3
+    catalog["version"] = "4.0-technical-delivery"
+    catalog["publicFeedVersion"] = 4
     return catalog, changed
 
 def _label(row: dict[str, Any]) -> str:
@@ -220,8 +220,8 @@ def build(*, apply: bool) -> dict[str, Any]:
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
     catalog, catalog_changed = _normalize_catalog(catalog)
     rows = catalog.get("badges") or []
-    if len(rows) < 150:
-        raise RuntimeError(f"universal v3 badge catalog unexpectedly small: got {len(rows)}")
+    if len(rows) < 301:
+        raise RuntimeError(f"universal v4 badge catalog unexpectedly small: got {len(rows)}")
     if apply and catalog_changed:
         CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     changed = 0

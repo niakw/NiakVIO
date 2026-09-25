@@ -16,6 +16,7 @@ by_id = {str(row.get("id") or ""): row for row in badges}
 assert len(by_id) == len(badges)
 legacy_public_ids = {"vf", "vff", "vfq", "vo", "multi", "vostfr", "pg-13", "tv-ma"}
 assert not (legacy_public_ids & set(by_id)), sorted(legacy_public_ids & set(by_id))
+assert {"hls", "dash"} <= set(by_id), sorted({"hls", "dash"} - set(by_id))
 required_v3 = {"lang-fr", "lang-fr-ca", "lang-ko", "lang-ja", "lang-de", "lang-bg", "lang-bn", "lang-pt-br", "lang-fi", "lang-el", "lang-hu", "lang-id", "lang-fa", "lang-he", "lang-ku", "lang-uz", "lang-fil", "lang-pl", "lang-ro", "lang-sk", "lang-sv", "lang-cs", "lang-vi", "lang-zh-hk", "lang-zh-tw", "sub-fr", "sub-ko", "age-19", "age-kr19", "age-us-pg13"}
 assert required_v3 <= set(by_id), sorted(required_v3 - set(by_id))
 
@@ -41,7 +42,7 @@ for badge_id, row in by_id.items():
 assert checked == len(badges) * 3 * 2, checked
 
 report = json.loads(REPORT.read_text(encoding="utf-8"))
-assert report["revision"] == "full-surface-v6-universal-v3"
+assert report["revision"] == "full-surface-v7-delivery-v4"
 assert report["catalogBadges"] == len(badges)
 assert report["assetCount"] == len(badges) * 3 * 2
 assert report["nativeChipChrome"] is True
@@ -77,9 +78,11 @@ for theme in ("dark", "light", "transparent", "fusion"):
 
 for theme in ("dark", "light", "transparent", "fusion"):
     latest = (ROOT / f"assets/stream-badges-{theme}.json").read_text(encoding="utf-8")
-    versioned = (ROOT / f"assets/stream-badges-{theme}-v3.json").read_text(encoding="utf-8")
-    assert latest == versioned, f"{theme} latest feed drifted from immutable v3 snapshot"
+    versioned = (ROOT / f"assets/stream-badges-{theme}-v4.json").read_text(encoding="utf-8")
+    assert latest == versioned, f"{theme} latest feed drifted from immutable v4 snapshot"
 
+for theme in ("dark", "light", "transparent", "fusion"):
+    assert (ROOT / f"assets/stream-badges-{theme}-v3.json").is_file(), f"historical {theme} v3 must remain available"
 assert (ROOT / "assets/stream-badges-fusion-v2.json").is_file(), "historical fusion v2 must remain available"
 
-print(f"badge asset contract passed: badges={len(badges)} assets={checked} themes=3 sizes=2 feeds=4 public_v3=true legacy_v2_preserved=true")
+print(f"badge asset contract passed: badges={len(badges)} assets={checked} themes=3 sizes=2 feeds=4 public_v4=true legacy_v2_v3_preserved=true")

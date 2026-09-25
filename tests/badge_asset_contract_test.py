@@ -33,7 +33,7 @@ for badge_id, row in by_id.items():
             assert payload[:4] == b"RIFF" and payload[8:12] == b"WEBP", rel
 
 assert light_qa.get("schemaVersion") == 2
-assert light_qa.get("revision") == "full-surface-v6-universal-v3"
+assert light_qa.get("revision") == "full-surface-v7-delivery-v4"
 assert light_qa.get("catalogBadges") == len(badges)
 assert light_qa.get("assetCount") == len(badges) * 2
 assert light_qa.get("idempotent") is True
@@ -58,10 +58,10 @@ assert mapping["display"]["hideUnknownBadges"] is True
 assert mapping["display"]["alwaysReplaceProviderDescription"] is True
 assert mapping["display"]["fallbackWhenNativeBadgesDisabled"] == "emojiTechnicalLine"
 assert mapping["display"]["nativeBadgeFeeds"] == {
-    "dark_app_background": "assets/stream-badges-dark-v3.json",
-    "light_app_background": "assets/stream-badges-light-v3.json",
-    "transparent": "assets/stream-badges-transparent-v3.json",
-    "fusion": "assets/stream-badges-fusion-v3.json",
+    "dark_app_background": "assets/stream-badges-dark-v4.json",
+    "light_app_background": "assets/stream-badges-light-v4.json",
+    "transparent": "assets/stream-badges-transparent-v4.json",
+    "fusion": "assets/stream-badges-fusion-v4.json",
 }
 assert "Use assets/dark when the Nuvio application background is gray/dark." in readme
 assert "Use assets/light when the Nuvio application background is white/light." in readme
@@ -69,18 +69,20 @@ assert "DUAL-MODE RUNTIME RULE" in readme
 
 required_universal_ids = {
     "lang-fr", "lang-fr-ca", "lang-en", "lang-ko", "lang-ja", "lang-de",
-    "sub-fr", "sub-en", "sub-ko", "age-19", "age-kr19", "age-us-pg13",
+    "sub-fr", "sub-en", "sub-ko", "age-19", "age-kr19", "age-us-pg13", "hls", "dash",
 }
 assert required_universal_ids <= set(by_id), sorted(required_universal_ids - set(by_id))
 for legacy_id in ("vf", "vff", "vfq", "vo", "multi", "vostfr"):
     assert legacy_id not in by_id, f"legacy locale-specific badge leaked into v3 catalog: {legacy_id}"
 
 for theme in ("dark", "light", "transparent", "fusion"):
-    versioned = ROOT / f"assets/stream-badges-{theme}-v3.json"
+    versioned = ROOT / f"assets/stream-badges-{theme}-v4.json"
     latest = ROOT / f"assets/stream-badges-{theme}.json"
     assert versioned.is_file(), versioned
-    assert versioned.read_bytes() == latest.read_bytes(), f"{theme} v3 must equal latest at v3 publication"
+    assert versioned.read_bytes() == latest.read_bytes(), f"{theme} v4 must equal latest at v4 publication"
 
+for theme in ("dark", "light", "transparent", "fusion"):
+    assert (ROOT / f"assets/stream-badges-{theme}-v3.json").is_file(), f"historical {theme} v3 must be preserved"
 assert (ROOT / "assets/stream-badges-fusion-v2.json").is_file(), "historical fusion-v2 must be preserved"
 assert '"lang-"+' in core and '"sub-"+' in core, "provider presentation generator must emit universal language/subtitle badge IDs"
 for stale_mapping in ('"VF":"vf"', '"VFQ":"vfq"', '"VO":"vo"', '"VOSTFR":"vostfr"'):

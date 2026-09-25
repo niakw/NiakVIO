@@ -1,11 +1,12 @@
 {
-  "version": "3.0-universal-badges",
+  "version": "4.0-technical-delivery",
   "display": {
     "singleRowOrder": [
       "source",
       "resolution",
       "sourceType",
       "container",
+      "deliveryFormat",
       "dynamicRange",
       "premiumVideo",
       "videoCodec",
@@ -32,17 +33,17 @@
     "hideUnknownBadges": true,
     "alwaysReplaceProviderDescription": true,
     "nativeBadgeFeeds": {
-      "dark_app_background": "assets/stream-badges-dark-v3.json",
-      "light_app_background": "assets/stream-badges-light-v3.json",
-      "transparent": "assets/stream-badges-transparent-v3.json",
-      "fusion": "assets/stream-badges-fusion-v3.json"
+      "dark_app_background": "assets/stream-badges-dark-v4.json",
+      "light_app_background": "assets/stream-badges-light-v4.json",
+      "transparent": "assets/stream-badges-transparent-v4.json",
+      "fusion": "assets/stream-badges-fusion-v4.json"
     },
     "fallbackWhenNativeBadgesDisabled": "emojiTechnicalLine",
     "presentationSources": {
       "technicalTruth": "provider/stream facts",
       "mediaContextFallback": "TMDB"
     },
-    "publicFeedVersion": 3
+    "publicFeedVersion": 4
   },
   "rules": [
     "Never infer Blu-ray or Ultra HD Blu-ray from 1080p/2160p alone.",
@@ -60,7 +61,8 @@
     "Public language badges use ISO/BCP-47 style language identifiers; legacy provider tokens such as VF, VFF, VFQ, VO and VOSTFR are input aliases only and must never be public v3 badge IDs.",
     "Subtitle badges mirror the same universal language-code model as audio-language badges.",
     "Age-rating badges preserve recognized regional rating systems when explicit and otherwise fall back to universal numeric age badges.",
-    "Every material public badge/feed change requires incrementing PUBLIC_FEED_VERSION and publishing new immutable dark/light/transparent/fusion versioned JSON files; previously published versioned feeds remain untouched."
+    "Every material public badge/feed change requires incrementing PUBLIC_FEED_VERSION and publishing new immutable dark/light/transparent/fusion versioned JSON files; previously published versioned feeds remain untouched.",
+    "HLS/DASH describe delivery, not visual quality; expose them when the stream URL/type proves the format."
   ],
   "bestCaseExample": {
     "title": "ECLIPSE RISING",

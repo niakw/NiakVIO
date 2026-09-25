@@ -1,6 +1,6 @@
 const UNKNOWN = /^(?:unknown|inconnue?|n\/a|na|none|null|undefined|-)$/i;
 const QUALITY_PLACEHOLDER = /^(?:0|auto|automatic|source|original|default|unknown|inconnue?|n\/a|na|none|null|undefined|-)$/i;
-const QUALITY_RANK = Object.freeze({ "240p": 240, "360p": 360, "480p": 480, "576p": 576, "720p": 720, "1080p": 1080, "1440p": 1440, "2160p": 2160 });
+const QUALITY_RANK = Object.freeze({ "240p": 240, "360p": 360, "480p": 480, "576p": 576, "720p": 720, "1080p": 1080, "1440p": 1440, "2160p": 2160, "4320p": 4320 });
 
 export function presentStreamCandidates(streams, metadata = {}, provider = {}) {
   return (Array.isArray(streams) ? streams : []).map((stream) => presentStreamCandidate(stream, metadata, provider));
@@ -31,6 +31,12 @@ export function presentStreamCandidate(stream = {}, metadata = {}, provider = {}
     languageTracks: facts.languageTracks,
     codec: facts.codec,
     audio: facts.audio,
+    audioTech: facts.audioTech,
+    audioCodec: facts.audioCodec,
+    audioChannels: facts.audioChannels,
+    audioSampleRate: facts.audioSampleRate,
+    frameRate: facts.frameRate,
+    bitrate: facts.bitrate,
     duration: facts.duration,
     sourceType: facts.sourceType,
     releaseType: facts.releaseType,
@@ -46,7 +52,7 @@ export function presentStreamCandidate(stream = {}, metadata = {}, provider = {}
 }
 
 export function collectFacts(stream = {}, metadata = {}, provider = {}) {
-  const audio = normalizeAudio(stream.audio ?? stream.audioCodec ?? stream.audio_codec);
+  const audio = normalizeAudio([stream.audio, stream.audioCodec, stream.audio_codec, stream.audioChannels, stream.audio_channels, stream.channels, stream.channelLayout, stream.audioSampleRate, stream.audio_sample_rate, stream.sampleRate, stream.sample_rate].filter(Boolean).join(" "));
   const language = normalizeLanguage(stream, provider);
   const originalLanguage = normalizeLanguageCode(metadata.originalLanguage ?? metadata.original_language);
   const languageTracks = normalizeLanguageTracks(stream, metadata, provider);
@@ -60,15 +66,18 @@ export function collectFacts(stream = {}, metadata = {}, provider = {}) {
     languageTracks,
     codec: normalizeCodec(stream.codec ?? stream.codecName ?? stream.videoCodec ?? stream.video_codec),
     audio,
-    audioCodec: normalizeAudioCodec(audio),
-    audioChannels: normalizeAudioChannels(audio),
+    audioTech: normalizeAudioTech(stream.audioTech ?? stream.audio_tech ?? audio),
+    audioCodec: normalizeAudioCodec(stream.audioCodec ?? stream.audio_codec ?? audio),
+    audioChannels: normalizeAudioChannels(stream.audioChannels ?? stream.audio_channels ?? stream.channels ?? stream.channelLayout ?? audio),
+    audioSampleRate: normalizeAudioSampleRate(stream.audioSampleRate ?? stream.audio_sample_rate ?? stream.sampleRate ?? stream.sample_rate ?? audio),
+    frameRate: normalizeFrameRate(stream.frameRate ?? stream.frame_rate ?? stream.fps ?? stream.videoFrameRate ?? stream.video_frame_rate ?? stream.description),
     duration: normalizeDuration(
       stream.duration ?? stream.durationMinutes ?? stream.duration_minutes ?? stream.runtime ??
       metadata.duration ?? metadata.durationMinutes ?? metadata.runtime,
     ),
     sourceType,
     releaseType,
-    format: normalizeFormat(stream.format ?? stream.container, stream.url),
+    format: normalizeFormat(stream.format ?? stream.container ?? stream.type ?? stream.mimeType ?? stream.contentType, stream.url),
     ageRating: normalizeAgeRating(
       stream.ageRating ?? stream.age_rating ?? stream.certification ??
       metadata.ageRating ?? metadata.age_rating ?? metadata.certification ?? metadata.contentRating ?? metadata.content_rating,
@@ -79,7 +88,7 @@ export function collectFacts(stream = {}, metadata = {}, provider = {}) {
     subtitles: normalizeSubtitles(stream),
     edition: useful(stream.edition ?? stream.editions),
     releaseGroup: useful(stream.releaseGroup ?? stream.release_group),
-    bitrate: useful(stream.bitrate ?? stream.bitRate ?? stream.bit_rate),
+    bitrate: useful(stream.videoBitrate ?? stream.video_bitrate ?? stream.bitrate ?? stream.bitRate ?? stream.bit_rate),
     size: useful(stream.size),
   };
 }
@@ -89,12 +98,17 @@ export function buildBadges(facts = {}) {
   if (facts.quality) out.push(qualityLabel(facts.quality));
   if (facts.sourceType) out.push(facts.sourceType);
   if (facts.releaseType) out.push(facts.releaseType);
+  if (facts.format) out.push(facts.format);
   if (facts.edition) out.push(facts.edition);
   out.push(...(facts.videoTech ?? []));
   if (facts.codec) out.push(facts.codec);
   if (facts.bitDepth) out.push(facts.bitDepth);
+  if (facts.frameRate) out.push(facts.frameRate);
+  if (facts.bitrate) out.push(facts.bitrate);
+  out.push(...(facts.audioTech ?? []));
   if (facts.audioCodec) out.push(facts.audioCodec);
   if (facts.audioChannels) out.push(facts.audioChannels);
+  if (facts.audioSampleRate) out.push(facts.audioSampleRate);
   const trackBadges = (facts.languageTracks ?? []).map(compactTrackLabel).filter(Boolean);
   if (trackBadges.length) out.push(...trackBadges); else {
     const fallbackCode = normalizeLanguageCode(facts.language);
@@ -107,39 +121,36 @@ export function buildBadges(facts = {}) {
 
 export function buildBadgeIds(facts = {}) {
   const ids = [];
-  const quality = { "2160p": "4k-ultra-hd", "1080p": "1080p-full-hd", "720p": "720p-hd", "480p": "480p-sd" }[facts.quality];
+  const quality = { "4320p": "8k-ultra-hd", "2160p": "4k-ultra-hd", "1440p": "1440p", "1080p": "1080p-full-hd", "720p": "720p-hd", "576p": "576p", "480p": "480p-sd", "360p": "360p", "240p": "240p" }[facts.quality];
   if (quality) ids.push(quality);
-  const source = {
-    "ULTRA HD BLU-RAY": "uhd-blu-ray", "BLU-RAY": "blu-ray-disc", "WEB-DL": "webdl",
-    WEBRIP: "webrip", HDTV: "hdtv", "DVD RIP": "dvd-rip",
-  }[facts.sourceType];
+  const source = { "ULTRA HD BLU-RAY": "uhd-blu-ray", "BLU-RAY": "blu-ray-disc", "WEB-DL": "webdl", WEBRIP: "webrip", HDTV: "hdtv", "DVD RIP": "dvd-rip", DVD: "dvd", CAM: "cam", TELESYNC: "telesync", TELECINE: "telecine" }[facts.sourceType];
   if (source) ids.push(source);
   if (facts.releaseType === "REMUX") ids.push("remux");
-  const videoIds = {
-    "Dolby Vision": "dolby-vision", "HDR10+": "hdr10-plus", HDR10: "hdr10",
-    "IMAX Enhanced": "imax-enhanced", IMAX: "imax",
-  };
+  const format = { HLS: "hls", DASH: "dash", MKV: "mkv", MP4: "mp4", WEBM: "webm", "MPEG-TS": "mpeg-ts", M2TS: "m2ts" }[facts.format];
+  if (format) ids.push(format);
+  const videoIds = { "Dolby Vision": "dolby-vision", "HDR10+": "hdr10-plus", HDR10: "hdr10", HDR: "hdr", HLG: "hlg", SDR: "sdr", "IMAX Enhanced": "imax-enhanced", IMAX: "imax", "3D": "3d" };
   for (const value of facts.videoTech ?? []) if (videoIds[value]) ids.push(videoIds[value]);
-  const codec = { HEVC: "hevc", AVC: "avc" }[facts.codec];
+  const codec = { HEVC: "hevc", AVC: "avc", AV1: "av1", VP9: "vp9", "MPEG-2": "mpeg2", "VC-1": "vc1", "MPEG-4 Part 2": "mpeg4-part2" }[facts.codec];
   if (codec) ids.push(codec);
-  if (facts.bitDepth === "10bit") ids.push("10bit");
-  const audioCodec = {
-    TrueHD: "truehd", "E-AC3": "dolby-digital-plus", AC3: "dolby-digital",
-    "DTS-HD": "dts-hd-master-audio",
-  }[facts.audioCodec];
+  if (["8bit", "10bit", "12bit"].includes(facts.bitDepth)) ids.push(facts.bitDepth);
+  const frame = { "23.976 fps": "23.976fps", "24 fps": "24fps", "25 fps": "25fps", "29.97 fps": "29.97fps", "30 fps": "30fps", "50 fps": "50fps", "59.94 fps": "59.94fps", "60 fps": "60fps" }[facts.frameRate];
+  if (frame) ids.push(frame);
+  if (facts.bitrate) ids.push("video-bitrate");
+  const audioTech = { "Dolby Atmos": "dolby-atmos", "DTS:X": "dts-x" };
+  for (const value of facts.audioTech ?? []) if (audioTech[value]) ids.push(audioTech[value]);
+  const audioCodec = { TrueHD: "truehd", "E-AC3": "dolby-digital-plus", AC3: "dolby-digital", "DTS-HD MA": "dts-hd-master-audio", "DTS-HD HRA": "dts-hd-hra", "DTS-HD": "dts-hd", DTS: "dts", AAC: "aac", FLAC: "flac", LPCM: "lpcm", PCM: "pcm", Opus: "opus", MP3: "mp3", ALAC: "alac" }[facts.audioCodec];
   if (audioCodec) ids.push(audioCodec);
-  const channels = { "7.1": "7.1", "5.1": "5.1", "2.0": "2.0", "1.0": "1.0" }[facts.audioChannels];
+  const channels = { "7.1": "7.1", "5.1": "5.1", "2.1": "2.1", "2.0": "2.0", "1.0": "1.0" }[facts.audioChannels];
   if (channels) ids.push(channels);
+  const sampleRate = { "44.1 kHz": "44.1khz", "48 kHz": "48khz", "88.2 kHz": "88.2khz", "96 kHz": "96khz", "192 kHz": "192khz" }[facts.audioSampleRate];
+  if (sampleRate) ids.push(sampleRate);
   const tracks = Array.isArray(facts.languageTracks) ? facts.languageTracks : [];
   for (const track of tracks) {
     const code = normalizeLanguageCode(track?.code ?? track?.tag ?? track?.label);
     if (!code) continue;
-    ids.push(String(track?.role ?? "").toLowerCase() === "sub" ? `sub-${code}` : `lang-${code}`);
+    ids.push(String(track?.role ?? "").toLowerCase() === "sub" ? "sub-" + code : "lang-" + code);
   }
-  if (!tracks.length) {
-    const code = normalizeLanguageCode(facts.language);
-    if (code) ids.push(`lang-${code}`);
-  }
+  if (!tracks.length) { const code = normalizeLanguageCode(facts.language); if (code) ids.push("lang-" + code); }
   for (const value of facts.subtitles ?? []) {
     const text = String(value ?? "").trim();
     if (/^VOSTFR$/i.test(text)) { ids.push("sub-fr"); continue; }
@@ -147,7 +158,7 @@ export function buildBadgeIds(facts = {}) {
     if (/^(?:SDH|CC|SDH\/CC)$/i.test(text)) { ids.push("sdh-cc"); continue; }
     const match = text.match(/^SUB\s+([A-Z]{2,3}(?:-[A-Z0-9]{2,3})?)$/i);
     const code = match ? normalizeLanguageCode(match[1]) : null;
-    if (code) ids.push(`sub-${code}`);
+    if (code) ids.push("sub-" + code);
   }
   const age = ageBadgeId(facts.ageRating);
   if (age) ids.push(age);
@@ -161,19 +172,19 @@ function preciseQuality(value, allowBare = true) {
   }
   if (typeof value === "number") {
     const height = Math.round(value);
-    return [2160, 1440, 1080, 720, 576, 480, 360, 240].includes(height) ? `${height}p` : null;
+    return [4320, 2160, 1440, 1080, 720, 576, 480, 360, 240].includes(height) ? `${height}p` : null;
   }
   const text = useful(value);
   if (!text || QUALITY_PLACEHOLDER.test(text)) return null;
   if (/\b(?:4K|UHD)\b/i.test(text)) return "2160p";
   if (/\b(?:QHD|2K)\b/i.test(text)) return "1440p";
   if (/\b(?:FHD|FULL[ ._-]?HD)\b/i.test(text)) return "1080p";
-  const dimensions = text.match(/(?:^|[^0-9])(\d{3,4})\s*[x×]\s*(2160|1440|1080|720|576|480|360|240)(?:[^0-9]|$)/i);
+  const dimensions = text.match(/(?:^|[^0-9])(\d{3,4})\s*[x×]\s*(4320|2160|1440|1080|720|576|480|360|240)(?:[^0-9]|$)/i);
   if (dimensions) return `${dimensions[2]}p`;
-  const tagged = text.match(/(?:^|[^0-9])(2160|1440|1080|720|576|480|360|240)\s*p(?:[^0-9]|$)/i);
+  const tagged = text.match(/(?:^|[^0-9])(4320|2160|1440|1080|720|576|480|360|240)\s*p(?:[^0-9]|$)/i);
   if (tagged) return `${tagged[1]}p`;
   if (allowBare) {
-    const bare = text.match(/^\s*(2160|1440|1080|720|576|480|360|240)\s*$/i);
+    const bare = text.match(/^\s*(4320|2160|1440|1080|720|576|480|360|240)\s*$/i);
     if (bare) return `${bare[1]}p`;
   }
   return null;
@@ -445,6 +456,10 @@ export function normalizeSourceType(value) {
   if (/WEB-?RIP/.test(compact)) return "WEBRIP";
   if (/HDTV/.test(compact)) return "HDTV";
   if (/DVD-?RIP|DVDRIP/.test(compact)) return "DVD RIP";
+  if (/\bDVD\b/.test(text.toUpperCase())) return "DVD";
+  if (/\bHD[ ._-]?CAM\b|\bCAM(?:RIP)?\b/i.test(text)) return "CAM";
+  if (/\bTELE[ ._-]?SYNC\b|\bTSRIP\b/i.test(text)) return "TELESYNC";
+  if (/\bTELECINE\b|\bTCRIP\b/i.test(text)) return "TELECINE";
   return null;
 }
 
@@ -455,13 +470,14 @@ export function normalizeReleaseType(value) {
 }
 
 export function normalizeCodec(value) {
-  const text = useful(value);
-  if (!text) return null;
-  const upper = text.toUpperCase();
-  if (/H\.?265|X265|HEVC/.test(upper)) return "HEVC";
-  if (/H\.?264|X264|AVC/.test(upper)) return "AVC";
-  if (/AV1/.test(upper)) return "AV1";
-  if (/VP9/.test(upper)) return "VP9";
+  const text = useful(value); if (!text) return null; const upper = text.toUpperCase();
+  if (/H\.?265|X265|HEVC|HVC1|HEV1/.test(upper)) return "HEVC";
+  if (/H\.?264|X264|AVC|AVC1/.test(upper)) return "AVC";
+  if (/\bAV1\b|AV01/.test(upper)) return "AV1";
+  if (/\bVP9\b|VP09/.test(upper)) return "VP9";
+  if (/MPEG[ ._-]?2|MPEG2/.test(upper)) return "MPEG-2";
+  if (/VC[ ._-]?1|WVC1/.test(upper)) return "VC-1";
+  if (/MPEG[ ._-]?4[ ._-]?(?:PART[ ._-]?2|ASP)|XVID|DIVX/.test(upper)) return "MPEG-4 Part 2";
   return text;
 }
 
@@ -493,21 +509,46 @@ export function normalizeAgeRating(value) {
   if (/^(?:U|G|PG|PG-13|R|NC-17|TV-Y|TV-Y7|TV-G|TV-PG|TV-14|TV-MA)$/i.test(text)) return upper;
   return text;
 }
+function normalizeAudioTech(value) {
+  const upper = useful(value)?.toUpperCase() ?? ""; const out = [];
+  if (/ATMOS|E-?AC-?3[ ._-]?JOC/.test(upper)) out.push("Dolby Atmos");
+  if (/DTS[: ._-]?X/.test(upper)) out.push("DTS:X");
+  return uniq(out);
+}
+
 function normalizeAudioCodec(value) {
   const upper = useful(value)?.toUpperCase() ?? "";
   if (/TRUE[ ._-]?HD/.test(upper)) return "TrueHD";
   if (/E-?AC-?3|DDP|DD\+/.test(upper)) return "E-AC3";
   if (/AC-?3/.test(upper)) return "AC3";
-  if (/DTS[- ]?HD/.test(upper)) return "DTS-HD";
+  if (/DTS[- ._]?HD[ ._-]?(?:MA|MASTER)/.test(upper)) return "DTS-HD MA";
+  if (/DTS[- ._]?HD[ ._-]?(?:HRA|HIGH[ ._-]?RES)/.test(upper)) return "DTS-HD HRA";
+  if (/DTS[- ._]?HD/.test(upper)) return "DTS-HD";
   if (/\bDTS\b/.test(upper)) return "DTS";
-  if (/AAC/.test(upper)) return "AAC";
-  if (/FLAC/.test(upper)) return "FLAC";
-  if (/OPUS/.test(upper)) return "Opus";
+  if (/\bAAC\b/.test(upper)) return "AAC"; if (/\bFLAC\b/.test(upper)) return "FLAC";
+  if (/\bLPCM\b/.test(upper)) return "LPCM"; if (/\bPCM\b/.test(upper)) return "PCM";
+  if (/\bOPUS\b/.test(upper)) return "Opus"; if (/\bMP3\b/.test(upper)) return "MP3"; if (/\bALAC\b/.test(upper)) return "ALAC";
   return null;
 }
 
 function normalizeAudioChannels(value) {
-  return useful(value)?.match(/\b(7\.1|5\.1|2\.1|2\.0|1\.0)\b/)?.[1] ?? null;
+  const text = useful(value); if (!text) return null;
+  const exact = text.match(/\b(7\.1|5\.1|2\.1|2\.0|1\.0)\b/)?.[1]; if (exact) return exact;
+  if (/\b(?:STEREO|2[ ._-]?CH(?:ANNELS?)?)\b/i.test(text)) return "2.0";
+  if (/\b(?:MONO|1[ ._-]?CH(?:ANNEL)?)\b/i.test(text)) return "1.0"; return null;
+}
+
+function normalizeFrameRate(value) {
+  if (value == null || value === "") return null; const text = String(value).replace(",", ".");
+  const match = text.match(/(23\.976|24(?:\.0+)?|25(?:\.0+)?|29\.97|30(?:\.0+)?|50(?:\.0+)?|59\.94|60(?:\.0+)?)/); if (!match) return null;
+  const n = Number(match[1]); if (Math.abs(n - 23.976) < 0.01) return "23.976 fps"; if (Math.abs(n - 29.97) < 0.01) return "29.97 fps"; if (Math.abs(n - 59.94) < 0.01) return "59.94 fps";
+  const rounded = Math.round(n); return [24,25,30,50,60].includes(rounded) ? rounded + " fps" : null;
+}
+
+function normalizeAudioSampleRate(value) {
+  if (value == null || value === "") return null; const text = String(value).replace(",", ".").trim(); let n = Number(text.match(/\d+(?:\.\d+)?/)?.[0] ?? NaN);
+  if (!Number.isFinite(n)) return null; if ((/\bhz\b/i.test(text) && !/khz/i.test(text) && n >= 1000) || (!/khz|hz/i.test(text) && n >= 1000)) n /= 1000;
+  const common = [44.1,48,88.2,96,192]; const hit = common.find((x) => Math.abs(x - n) < 0.05); return hit == null ? null : hit + " kHz";
 }
 
 function normalizeVideoTech(value) {
@@ -515,7 +556,9 @@ function normalizeVideoTech(value) {
   const out = [];
   if (/DOLBY VISION|DOVI/.test(upper)) out.push("Dolby Vision");
   if (/HDR10\+|HDR10 PLUS/.test(upper)) out.push("HDR10+"); else if (/HDR10/.test(upper)) out.push("HDR10"); else if (/\bHDR\b/.test(upper)) out.push("HDR");
+  if (/\bHLG\b/.test(upper)) out.push("HLG"); if (/\bSDR\b/.test(upper)) out.push("SDR");
   if (/IMAX[ ._-]?ENHANCED/.test(upper)) out.push("IMAX Enhanced"); else if (/\bIMAX\b/.test(upper)) out.push("IMAX");
+  if (/\b3D\b|SBS|TAB/.test(upper)) out.push("3D");
   return uniq(out);
 }
 
@@ -532,6 +575,7 @@ function normalizeHdr(value) {
 function normalizeBitDepth(value) {
   const text = useful(value);
   if (!text) return null;
+  if (/\b12[ ._-]?BIT\b/i.test(text)) return "12bit";
   if (/\b10[ ._-]?BIT\b|\bHI10P\b/i.test(text)) return "10bit";
   if (/\b8[ ._-]?BIT\b/i.test(text)) return "8bit";
   return null;
@@ -539,15 +583,12 @@ function normalizeBitDepth(value) {
 
 function normalizeFormat(value, url) {
   const text = useful(value)?.toUpperCase() ?? "";
-  if (/M3U8|HLS/.test(text)) return "HLS";
-  if (/MPD|DASH/.test(text)) return "DASH";
-  if (/MKV/.test(text)) return "MKV";
-  if (/MP4/.test(text)) return "MP4";
+  if (/M3U8|HLS|MPEGURL/.test(text)) return "HLS"; if (/MPD|DASH/.test(text)) return "DASH";
+  if (/MATROSKA|\bMKV\b/.test(text)) return "MKV"; if (/\bMP4\b|M4V/.test(text)) return "MP4"; if (/\bWEBM\b/.test(text)) return "WEBM";
+  if (/M2TS/.test(text)) return "M2TS"; if (/MPEG[ ._-]?TS|MPEGTS|MP2T|\bTS\b/.test(text)) return "MPEG-TS";
   const path = clean(typeof url === "object" ? url?.url : url)?.split(/[?#]/)[0].toLowerCase() ?? "";
-  if (path.endsWith(".m3u8")) return "HLS";
-  if (path.endsWith(".mpd")) return "DASH";
-  if (path.endsWith(".mkv")) return "MKV";
-  if (path.endsWith(".mp4")) return "MP4";
+  if (path.endsWith(".m3u8")) return "HLS"; if (path.endsWith(".mpd")) return "DASH"; if (path.endsWith(".mkv")) return "MKV";
+  if (path.endsWith(".mp4") || path.endsWith(".m4v")) return "MP4"; if (path.endsWith(".webm")) return "WEBM"; if (path.endsWith(".m2ts")) return "M2TS"; if (path.endsWith(".ts")) return "MPEG-TS";
   return null;
 }
 
@@ -623,9 +664,10 @@ function technicalLine(facts) {
   if (facts.edition) video.push(facts.edition);
   if (facts.codec) video.push(`${facts.codec}${facts.bitDepth ? ` ${facts.bitDepth}` : ""}`); else if (facts.bitDepth) video.push(facts.bitDepth);
   video.push(...(facts.videoTech ?? []));
+  if (facts.frameRate) video.push(facts.frameRate);
   if (facts.format) video.push(facts.format);
   if (video.length) groups.push(`🎞️ ${uniq(video).join(" • ")}`);
-  if (facts.audio) groups.push(`🔊 ${facts.audio}`);
+  const audio = [...(facts.audioTech ?? [])]; if (facts.audioCodec) audio.push(facts.audioCodec); if (facts.audioChannels) audio.push(facts.audioChannels); if (facts.audioSampleRate) audio.push(facts.audioSampleRate); if (audio.length) groups.push(`🔊 ${uniq(audio).join(" • ")}`);
   const misc = [];
   if (facts.size) misc.push(`💾 ${facts.size}`);
   if (facts.bitrate) misc.push(`📶 ${facts.bitrate}`);

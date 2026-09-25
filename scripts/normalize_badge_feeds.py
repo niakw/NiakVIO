@@ -10,7 +10,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "assets/badge_catalog_v2_complete.json"
 RAW_BASE = "https://raw.githubusercontent.com/niakw/NiakVIO/main/"
-PUBLIC_FEED_VERSION = 3
+PUBLIC_FEED_VERSION = 4
 OUTPUTS = {
     "dark": ROOT / "assets/stream-badges-dark.json",
     "light": ROOT / "assets/stream-badges-light.json",
@@ -25,6 +25,7 @@ ACCENTS = {
     "source": "#49B46D",
     "resolution": "#F3C43F",
     "container": "#7B8794",
+    "delivery-format": "#5A91C8",
     "video-tech": "#28B7E4",
     "video-codec": "#559EFF",
     "bit-depth": "#A87BE8",
