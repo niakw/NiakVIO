@@ -5102,3 +5102,14 @@ This ledger is not complete merely because provider yield improves. Final comple
 - `BRAIN_REPAIR_ARCHITECTURE.md` now declares positive-program continuity as a production invariant and explicitly forbids evidence-only commits from clearing validated positive memory.
 - Current status: architecture changes are **not yet declared green** until the latest CORE Workflow Gate passes. After that, the justified representative proof is another MalluMV-only Fast Repair: require the restored positive-program replay to execute as a provider-local candidate and either survive current-byte Retest or fail with a newly attributed exact fingerprint. No broad 14-provider run before this representative proof.
 
+## 2026-09-26 Europe/Paris — FORCE ownership restored; census attempt visibility fixed
+
+- Revalidated current durable census: run `36156497756` still has exactly 14 providers in `repairQueue`.
+- Fast Repair run `36199786760` selected all 14, produced 0 accepted/current-byte candidates, exhausted its batch budget and recorded all 14 as unresolved debt. This was not provider progress and is now exposed explicitly in the public census instead of leaving the page apparently frozen.
+- `PROVIDER_CENSUS_STATUS.md` and `automation/provider-census-status.json` now carry `lastRepairAttempt` metadata without changing provider status authority.
+- Confirmed Brain-LLM public guidance is complete for the exact 14-provider cohort from source NiakVIO SHA `9f5a6c17913e6515f409ddc328c1b6786fa707b4` / Brain-LLM SHA `c9fd585217cfc405256d4cda1342d4b3a0e0f4d6`.
+- Concrete Force mutation artifact currently contains provider-local candidates for 9/14: 4khdhub, allanime, allwish, anime-ultime, animesultra, flemmix, mallumv, moviebox, moviesmod. The remaining five still rely on canonical FORCE exploration; do not claim 14 concrete Force patches.
+- Fixed canonical Repair orchestration so explicit FORCE does not dispatch Learning for deferred providers. Learning remains independent/scheduled/manual and proposal/PR-oriented.
+- FORCE resumes now preserve `mode=force` instead of silently resuming as ordinary Repair.
+- Next execution: update the canonical Force trigger to the current 14-provider cohort and current Brain-LLM revision, then inspect isolated Force candidate evaluation, current-byte Retest, automatic direct apply, remaining FORCE cohort, census persistence and non-regression.
+
