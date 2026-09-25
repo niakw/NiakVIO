@@ -35,8 +35,16 @@ for needle in required:
     assert needle in workflow, f"missing causal Learning escalation contract: {needle}"
 
 learning_import=workflow.index("- name: Import sanitized Brain Learning priors for canonical Repair")
+force_mutation=workflow.index("- name: Apply bounded Brain LLM Force mutations to sandbox")
 canonical=workflow.index("- name: Run canonical recognition and correction only for unresolved providers")
-assert learning_import < canonical
+assert learning_import < force_mutation < canonical
+force_mutation_block=workflow[force_mutation:canonical]
+assert "scripts/apply_brain_llm_force_mutations.py" in force_mutation_block
+assert "niakvio-force-mutations.json" in force_mutation_block
+assert "directApplyValidated" in force_mutation_block
+assert "not-explicit-force" in force_mutation_block
+assert "--current-sha \"$GITHUB_SHA\"" in force_mutation_block
+assert "automation/brain-llm-force-mutation-application.json" in force_mutation_block
 learning_block=workflow[learning_import:canonical]
 assert "brain-learning/proposals" in learning_block
 assert "engine_v2/learning/latest.json" in learning_block
@@ -128,3 +136,4 @@ assert "publicationAllowed!==false" in learning_workflow
 assert "pullRequestOnly!==true" in learning_workflow
 assert "requiresHumanMerge!==true" in learning_workflow
 assert "Open or refresh Brain architecture PR" in learning_workflow
+assert "apply_brain_llm_force_mutations.py" not in learning_workflow
