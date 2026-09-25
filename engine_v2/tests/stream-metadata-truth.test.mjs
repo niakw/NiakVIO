@@ -32,4 +32,15 @@ const captions = normalizeStreamCandidate({ name: "Reader", url: "https://media.
 assert.equal(captions.subtitles[0].language, "French");
 assert.match(presentStreamCandidate(captions, movie, provider).description, /SUB FR/);
 
+{
+  const integrated = normalizeStreamCandidate(
+    { name: "Neko-Sama - Inconnue", url: "https://media.example/master.m3u8", type: "hls", hlsMasterSubtitleTracks: [{ language: "fr", name: "French" }] },
+    { providerId: "neko-sama", providerName: "Neko-Sama" },
+  );
+  const presented = presentStreamCandidate(integrated, { mediaType: "anime", title: "Fixture", originalLanguage: "ja" }, { id: "neko-sama", name: "Neko-Sama" });
+  assert.ok(presented.badgeIds.includes("sub-fr"), JSON.stringify(presented.badgeIds));
+  assert.ok(presented.languageTracks.some((row) => row.code === "fr" && row.role === "Sub"), JSON.stringify(presented.languageTracks));
+  assert.equal(presented.subtitles, undefined, "integrated HLS metadata must not manufacture external subtitle rows");
+}
+
 console.log("stream metadata truth contract passed");
