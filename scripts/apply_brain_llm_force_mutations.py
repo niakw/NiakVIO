@@ -236,7 +236,24 @@ def _validate_diff_path(diff: str, expected_path: str) -> None:
         raise ValueError("unified diff has no hunk")
 
 
+def _canonical_git_diff(diff: str, path: str) -> str:
+    """Normalize validated patch headers to standard git a/ and b/ paths."""
+    lines = diff.splitlines()
+    output: list[str] = []
+    for line in lines:
+        if line.startswith("--- "):
+            suffix = "\t" + line.split("\t", 1)[1] if "\t" in line else ""
+            output.append(f"--- a/{path}{suffix}")
+        elif line.startswith("+++ "):
+            suffix = "\t" + line.split("\t", 1)[1] if "\t" in line else ""
+            output.append(f"+++ b/{path}{suffix}")
+        else:
+            output.append(line)
+    return "\n".join(output) + ("\n" if diff.endswith("\n") else "")
+
+
 def _git_apply(diff: str, path: str) -> None:
+    normalized = _canonical_git_diff(diff, path)
     for args in (
         ["git", "apply", "--check", "--whitespace=error-all", "-"],
         ["git", "apply", "--whitespace=error-all", "-"],
@@ -244,7 +261,7 @@ def _git_apply(diff: str, path: str) -> None:
         proc = subprocess.run(
             args,
             cwd=ROOT,
-            input=diff,
+            input=normalized,
             text=True,
             capture_output=True,
             check=False,
