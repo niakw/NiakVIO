@@ -87,6 +87,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+          git fetch --quiet origin main
+          remote_main="$(git rev-parse origin/main)"
+          if [ "$remote_main" != "$GITHUB_SHA" ]; then
+            echo "FIELD_PROVIDER_AUTOPILOT_STALE source=$GITHUB_SHA remote=$remote_main"
+            gh workflow run provider-brain-autopilot.yml               --repo "$GITHUB_REPOSITORY" --ref main -f dry_run=false
+            exit 0
+          fi
+
           mark_learning_dispatch() {
             selection="$1"
             python scripts/provider_learning_dispatch_gate.py mark \
