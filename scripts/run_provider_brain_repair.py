@@ -34,6 +34,7 @@ if str(SCRIPTS) not in sys.path:
 from repair_identity_gate import automatic_repair_identity_gate
 from compile_brain_accepted_program_v3 import apply_compiled, compile_program
 from brain_positive_program_memory import MEMORY_PATH as DEFAULT_POSITIVE_MEMORY, merge_records as merge_positive_program_records
+from recover_brain_positive_program_memory import recover as recover_positive_program_memory
 STATUS = ROOT / "automation" / "provider-census-status.json"
 DEFAULT_OUTPUT = ROOT / "automation" / "provider-brain-repair-latest.json"
 DEFAULT_WORK = ROOT / "automation" / ".provider-brain-repair-work"
@@ -815,6 +816,26 @@ def main() -> int:
     min_start_batch_seconds = max(120, min(int(args.min_start_batch_seconds), time_budget_seconds))
     max_rounds_per_batch = max(1, min(int(args.max_rounds_per_batch), 5))
 
+    # Recover any strict positive program prior lost by an evidence-only commit or
+    # state-reset accident. Historical rows are recompiled under the current
+    # compiler and remain priors only; they never bypass current-byte gates.
+    historical_reports = sorted(
+        path for path in (ROOT / "automation").glob("provider-brain-repair-*.json")
+        if path.is_file() and path.name != "provider-brain-repair-latest.json"
+    )
+    positive_recovery = recover_positive_program_memory(
+        historical_reports,
+        memory_path=POSITIVE_MEMORY,
+    )
+    print(
+        "FIELD_PROVIDER_BRAIN_POSITIVE_RECOVERY "
+        f"reports={positive_recovery['reportCount']} "
+        f"recovered={positive_recovery['recoveredRecordCount']} "
+        f"durable={positive_recovery['durableRecordCount']} "
+        f"providers={','.join(positive_recovery['durableProviders']) or 'none'}",
+        flush=True,
+    )
+
     # Rebuild structural prior memory from the exact current repo/census before
     # selecting experiments. This memory never grants acceptance authority; it
     # only supplies route/strategy priors to the adaptive sandbox.
@@ -852,6 +873,12 @@ def main() -> int:
             "remainingProviders": [],
             "message": "no repairable providers selected from current census queue",
             "selectionSource": "automation/provider-census-status.json:repairQueue",
+            "positiveProgramRecovery": {
+                "reportCount": int(positive_recovery.get("reportCount") or 0),
+                "recoveredRecordCount": int(positive_recovery.get("recoveredRecordCount") or 0),
+                "durableRecordCount": int(positive_recovery.get("durableRecordCount") or 0),
+                "durableProviders": list(positive_recovery.get("durableProviders") or []),
+            },
             "experienceMemory": {
                 "providerCount": int(experience.get("providerCount") or 0),
                 "operationalProviderCount": int(experience.get("operationalProviderCount") or 0),
@@ -1126,6 +1153,12 @@ def main() -> int:
             "providerSpecificRules": False,
             "sourceCensusRunId": status_payload().get("runId"),
             "selectionSource": "automation/provider-census-status.json:repairQueue",
+            "positiveProgramRecovery": {
+                "reportCount": int(positive_recovery.get("reportCount") or 0),
+                "recoveredRecordCount": int(positive_recovery.get("recoveredRecordCount") or 0),
+                "durableRecordCount": int(positive_recovery.get("durableRecordCount") or 0),
+                "durableProviders": list(positive_recovery.get("durableProviders") or []),
+            },
             "experienceMemory": {
                 "schemaVersion": experience.get("schemaVersion"),
                 "sourceRunId": experience.get("sourceRunId"),
