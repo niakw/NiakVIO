@@ -101,21 +101,35 @@ jobs:
           tmp="$(mktemp -d)"
           git -C "$tmp" init -q
           git -C "$tmp" remote add origin https://github.com/niakw/NiakVIO-Brain-LLM.git
-          git -C "$tmp" fetch --quiet --depth=1 origin refs/heads/niakvio-guidance refs/heads/main
-          git -C "$tmp" show FETCH_HEAD:guidance/niakvio-guidance.json > "$RUNNER_TEMP/niakvio-guidance-pin.json" || {
+          git -C "$tmp" fetch --quiet --depth=1 origin \
+            refs/heads/niakvio-guidance:refs/remotes/origin/niakvio-guidance \
+            refs/heads/main:refs/remotes/origin/main
+          git -C "$tmp" show refs/remotes/origin/niakvio-guidance:guidance/niakvio-guidance.json > "$RUNNER_TEMP/niakvio-guidance-pin.json" || {
             echo "Brain LLM guidance branch does not expose a revision pin" >&2
             exit 1
           }
-          guidance_sha="$(python - "$RUNNER_TEMP/niakvio-guidance-pin.json" <<'PY'
+          git -C "$tmp" show refs/remotes/origin/niakvio-guidance:guidance/niakvio-guidance-state.json > "$RUNNER_TEMP/niakvio-guidance-state-pin.json" || {
+            echo "Brain LLM guidance branch is incomplete: missing paging state" >&2
+            exit 1
+          }
+          guidance_sha="$(python - "$RUNNER_TEMP/niakvio-guidance-pin.json" "$RUNNER_TEMP/niakvio-guidance-state-pin.json" <<'PY'
           import json,re,sys
-          data=json.load(open(sys.argv[1],encoding='utf-8'))
-          sha=str(data.get('brainLlmSha') or '').strip().lower()
-          if not re.fullmatch(r'[0-9a-f]{40}',sha):
-              raise SystemExit('invalid Brain LLM guidance revision')
+          guidance=json.load(open(sys.argv[1],encoding='utf-8'))
+          state=json.load(open(sys.argv[2],encoding='utf-8'))
+          sha=str(guidance.get('brainLlmSha') or '').strip().lower()
+          state_sha=str(state.get('brainLlmSha') or '').strip().lower()
+          if not re.fullmatch(r'[0-9a-f]{40}',sha) or state_sha != sha:
+              raise SystemExit('invalid/inconsistent Brain LLM guidance revision')
+          if state.get('complete') is not True or list(state.get('remainingProviders') or []):
+              raise SystemExit('Brain LLM guidance pagination is incomplete')
+          if list(state.get('completedProviders') or []) != list(state.get('requestedProviders') or []):
+              raise SystemExit('Brain LLM guidance cohort is incomplete')
+          if str(state.get('sourceNiakvioSha') or '').strip().lower() != str(guidance.get('sourceNiakvioSha') or '').strip().lower():
+              raise SystemExit('Brain LLM guidance source/state mismatch')
           print(sha)
           PY
           )"
-          main_sha="$(git ls-remote https://github.com/niakw/NiakVIO-Brain-LLM.git refs/heads/main | awk '{print $1}')"
+          main_sha="$(git -C "$tmp" rev-parse refs/remotes/origin/main)"
           test "$guidance_sha" = "$main_sha" || {
             echo "Brain LLM split-brain: guidance=$guidance_sha main=$main_sha" >&2
             exit 1
