@@ -583,6 +583,7 @@ jobs:
           PY
 
       - name: Enforce four-version floor on repair candidate
+        id: candidate-gate
         if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode != 'learn') }}
         shell: bash
         run: |
@@ -675,6 +676,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           DISPATCH_MODE: ${{ inputs.mode || '' }}
+          CANDIDATE_GATE_OUTCOME: ${{ steps.candidate-gate.outcome }}
         shell: bash
         run: |
           set -euo pipefail
@@ -755,9 +757,10 @@ jobs:
           # and automatic Repair keeps its evidence/current-hypothesis semantics.
           direct_force_apply=0
           force_candidate_applied=0
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]              && [ "${DISPATCH_MODE:-}" = "force" ]              && [ "$canonical_repair_outcome" = "success" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]              && [ "${DISPATCH_MODE:-}" = "force" ]              && [ "$canonical_repair_outcome" = "success" ]              && [ "${CANDIDATE_GATE_OUTCOME:-}" = "success" ]; then
             direct_force_apply=1
             mapfile -t force_paths < <(python - <<'PY'
+          import os
           import subprocess
           from pathlib import Path
 
@@ -781,7 +784,7 @@ jobs:
           changed=set(
               line.strip()
               for line in subprocess.check_output(
-                  ["git","diff","--name-only",Path().resolve().as_posix() and __import__("os").environ["GITHUB_SHA"]],
+                  ["git","diff","--name-only",os.environ["GITHUB_SHA"]],
                   text=True,
               ).splitlines()
               if line.strip()
