@@ -159,7 +159,14 @@ assert "requiresHumanMerge!==true" in learning_workflow
 assert "Open or refresh Brain architecture PR" in learning_workflow
 assert "apply_brain_llm_force_mutations.py" not in learning_workflow
 
-assert '-f target_providers="$deferred_csv"' in workflow
+assert "scripts/provider_learning_dispatch_gate.py" in workflow
+assert "automation/provider-learning-dispatch-ledger.json" in workflow
+assert '--providers "$deferred_csv"' in workflow
+assert '-f target_providers="$learning_csv"' in workflow
+assert '-f target_providers="$deferred_csv"' not in workflow
+assert "FIELD_PROVIDER_BRAIN_ESCALATE_SKIPPED" in workflow
+assert "reason=no-new-causal-fingerprint" in workflow
+assert "provider_learning_dispatch_gate.py mark" in workflow
 
 assert "niakvio-guidance-state.json" in workflow
 assert "external Brain guidance paging is incomplete" in workflow
