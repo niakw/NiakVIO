@@ -30,6 +30,7 @@ on:
       - 'scripts/audit_provider_v3_static.py'
       - 'tests/domain_refresh_transaction_guard_test.py'
       - 'tests/domain_refresh_priority_wrapper_test.py'
+      - 'tests/domain_refresh_refreshable_current_test.py'
       - 'tests/domain_refresh_guard_wrapper_test.py'
       - 'tests/provider_domain_metadata_reconcile_test.py'
       - 'tests/priority_tv_year_domain_refresh_test.py'
@@ -137,6 +138,7 @@ jobs:
           set -euo pipefail
           python tests/domain_refresh_transaction_guard_test.py
           python tests/domain_refresh_priority_wrapper_test.py
+          python tests/domain_refresh_refreshable_current_test.py
           python tests/domain_refresh_guard_wrapper_test.py
           python scripts/domain_refresh_guard_wrapper.py \
             --before-overrides "$RUNNER_TEMP/provider-overrides.before.json" \
