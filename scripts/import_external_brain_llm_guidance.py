@@ -48,7 +48,7 @@ def provider_materialization_scope(root:Path,source_sha:str,current_sha:str)->di
  with tempfile.TemporaryDirectory(prefix="niakvio-guidance-scope-") as tmp:
   output=Path(tmp)/"scope.json"
   p=subprocess.run(
-   [sys.executable,str(script),"--base",source_sha,"--head",current_sha,"--output",str(output)],
+   [sys.executable,str(script),"--base",source_sha,"--head",current_sha,"--committed-only","--output",str(output)],
    cwd=root,text=True,capture_output=True,check=False,
   )
   if p.returncode!=0 or not output.is_file():
@@ -56,6 +56,34 @@ def provider_materialization_scope(root:Path,source_sha:str,current_sha:str)->di
   scope=json.loads(output.read_text(encoding="utf-8"))
  if not isinstance(scope,dict):raise ValueError("provider drift classifier returned invalid payload")
  return scope
+
+def failed_llm_experiments(memory:dict[str,Any])->set[tuple[str,str,str]]:
+ rows=[]
+ experiment_memory=memory.get("experimentMemory") if isinstance(memory.get("experimentMemory"),dict) else {}
+ if isinstance(experiment_memory.get("entries"),list):rows.extend(experiment_memory.get("entries") or [])
+ if isinstance(memory.get("entries"),list):rows.extend(memory.get("entries") or [])
+ failed=set()
+ for row in rows:
+  if not isinstance(row,dict) or int(row.get("consecutiveFailures") or 0)<1:continue
+  provider=canon(row.get("providerId"));profile=str(row.get("profile") or "").strip().casefold()
+  fp=str(row.get("llmAdvisorExperimentFingerprint") or "").strip().casefold()
+  if provider and profile and re.fullmatch(r"[0-9a-f]{64}",fp):failed.add((provider,profile,fp))
+ return failed
+
+def filter_failed_guidance(payload:dict[str,Any],memory:dict[str,Any])->tuple[dict[str,Any],int]:
+ failed=failed_llm_experiments(memory)
+ if not failed:return payload,0
+ before=len(payload.get("rows") or [])
+ payload["rows"]=[
+  row for row in payload.get("rows") or []
+  if (
+   canon(row.get("providerId")),
+   str(row.get("profile") or "").strip().casefold(),
+   str(row.get("experimentFingerprint") or "").strip().casefold(),
+  ) not in failed
+ ]
+ payload["providerCount"]=len({row["providerId"] for row in payload["rows"]})
+ return payload,before-len(payload["rows"])
 
 def source_drift(root:Path,source_sha:str,current_sha:str)->tuple[list[str],set[str]]:
  scope=provider_materialization_scope(root,source_sha,current_sha)
@@ -117,7 +145,7 @@ def sanitize(value:dict[str,Any],*,current_sha:str,guidance_commit:str="")->dict
  return payload
 
 def main()->int:
- p=argparse.ArgumentParser();p.add_argument("--input",type=Path,required=True);p.add_argument("--output",type=Path,required=True);p.add_argument("--current-sha",required=True);p.add_argument("--guidance-commit",default="");p.add_argument("--repo-root",type=Path,default=ROOT);a=p.parse_args()
+ p=argparse.ArgumentParser();p.add_argument("--input",type=Path,required=True);p.add_argument("--output",type=Path,required=True);p.add_argument("--current-sha",required=True);p.add_argument("--guidance-commit",default="");p.add_argument("--negative-memory",type=Path);p.add_argument("--repo-root",type=Path,default=ROOT);a=p.parse_args()
  value=json.loads(a.input.read_text(encoding="utf-8"))
  payload=sanitize(value,current_sha=a.current_sha,guidance_commit=a.guidance_commit)
  changed,drifted_providers=source_drift(a.repo_root,payload["sourceExternalNiakvioSha"],payload["sourceSha"])
@@ -128,8 +156,13 @@ def main()->int:
   dropped=before-len(payload["rows"])
  else:
   dropped=0
+ failed_dropped=0
+ if a.negative_memory and a.negative_memory.is_file():
+  memory=json.loads(a.negative_memory.read_text(encoding="utf-8"))
+  if isinstance(memory,dict):payload,failed_dropped=filter_failed_guidance(payload,memory)
  payload["neutralDriftPaths"]=changed
+ payload["droppedFailedExperimentRows"]=failed_dropped
  a.output.parent.mkdir(parents=True,exist_ok=True);a.output.write_text(json.dumps(payload,indent=2,sort_keys=True)+"\n",encoding="utf-8")
- print("FIELD_EXTERNAL_BRAIN_LLM_GUIDANCE "+f"providers={payload['providerCount']} source={payload['sourceExternalNiakvioSha'][:12]} current={payload['sourceSha'][:12]} neutral_drift={len(changed)} provider_drift={len(drifted_providers)} dropped_rows={dropped} private_content=false")
+ print("FIELD_EXTERNAL_BRAIN_LLM_GUIDANCE "+f"providers={payload['providerCount']} source={payload['sourceExternalNiakvioSha'][:12]} current={payload['sourceSha'][:12]} neutral_drift={len(changed)} provider_drift={len(drifted_providers)} dropped_rows={dropped} failed_fingerprints={failed_dropped} private_content=false")
  return 0
 if __name__=="__main__":raise SystemExit(main())
