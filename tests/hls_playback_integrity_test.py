@@ -46,7 +46,7 @@ assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in wrapped
 # Native first-segment/VOD proof is enabled by default and is the current
 # strongest revision for the default HLS guard. Older v5 was only the base
 # recovery layer before native proof was added.
-assert "native-master-facts-v11" in wrapped
+assert "native-master-facts-v12" in wrapped
 assert '"probeFirstSegmentNative":true' in wrapped
 assert 'typeof setTimeout==="function"' in wrapped
 assert 'typeof clearTimeout==="function"' in wrapped
@@ -76,7 +76,7 @@ recovery_wrapped = integrity.apply(recovery_provider, {
     "max_recovery_candidates": 12,
 })
 run_node(r'''
-const media="#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n";
+const media="#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXT-X-PROGRAM-DATE-TIME:2026-09-25T00:00:00Z\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n";
 globalThis.fetch=async function(url,init){var u=String(url),h=(init&&init.headers)||{};
  if(u==="https://broken.example/header.m3u8")return {ok:true,status:200,url:u,headers:{get:function(){return "application/vnd.apple.mpegurl"}},text:async function(){return "#EXTM3U\n#EXT-X-VERSION:3\n"}};
  if(u==="https://catalog.example/title")return {ok:true,status:200,url:u,headers:{get:function(){return "text/html"}},text:async function(){return '<iframe src="https://player.example/e/abc"></iframe>'}};
@@ -134,11 +134,11 @@ assert ordered.count(hls_end) == 1
 assert ordered.rfind(hls_begin) > ordered.rfind("streamzo #1")
 # Strict final-output flags must survive even though the implementation revision
 # is then upgraded by the default native first-segment proof layer.
-assert "native-master-facts-v11" in ordered
+assert "native-master-facts-v12" in ordered
 assert '"probeAllUrls":true' in ordered
 assert '"failClosedUnknown":true' in ordered
 run_node(r'''
-const media="#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n";
+const media="#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:1\n#EXT-X-PROGRAM-DATE-TIME:2026-09-25T00:00:00Z\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n";
 globalThis.fetch=async function(url){var u=String(url);
  if(u==="https://catalog.example/embed/player")return {ok:true,status:200,url:u,headers:{get:function(){return "text/html"}},text:async function(){return '<script>const source="https://cdn.example/final.m3u8";</script>'}};
  if(u==="https://cdn.example/final.m3u8")return {ok:true,status:200,url:u,headers:{get:function(){return "application/vnd.apple.mpegurl"}},text:async function(){return media}};
