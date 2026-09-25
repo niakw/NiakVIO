@@ -143,3 +143,5 @@ assert "pullRequestOnly!==true" in learning_workflow
 assert "requiresHumanMerge!==true" in learning_workflow
 assert "Open or refresh Brain architecture PR" in learning_workflow
 assert "apply_brain_llm_force_mutations.py" not in learning_workflow
+
+assert '-f target_providers="$deferred_csv"' in workflow
