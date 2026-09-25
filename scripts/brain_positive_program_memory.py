@@ -142,6 +142,23 @@ def provider_entries(provider_id: str, *, path: Path = MEMORY_PATH) -> list[dict
     ]
 
 
+def provider_program_fingerprint(provider_id: str, *, path: Path = MEMORY_PATH) -> str:
+    """Fingerprint the complete validated positive-program set for one provider."""
+    fingerprints = sorted({
+        str(row.get("fingerprint") or _fingerprint(row)).strip().casefold()
+        for row in provider_entries(provider_id, path=path)
+        if isinstance(row, dict)
+    })
+    fingerprints = [
+        value for value in fingerprints
+        if re.fullmatch(r"[0-9a-f]{64}", value)
+    ]
+    if not fingerprints:
+        return ""
+    raw = json.dumps(fingerprints, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(raw.encode("ascii")).hexdigest()
+
+
 def _recipe(
     *,
     base: object,
