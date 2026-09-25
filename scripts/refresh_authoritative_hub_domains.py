@@ -139,6 +139,16 @@ def _fresh_authoritative_move_candidate(
     source_type = str(row.get("source_type") or "").strip().casefold()
     if row.get("source_redirect") is True and source_type in ALLOWED_SOURCE_TYPES:
         return True
+    # A configured redirect source is itself an address authority. Some stable
+    # redirector pages return HTTP 200 and expose the current same-brand target as
+    # an outbound CTA instead of issuing a 30x response. Treat only a high-score,
+    # same-brand terminal from that source as fresh authority.
+    if (
+        source_type == "redirect"
+        and int(row.get("score") or 0) >= 90
+        and hubresolver.same_brand(provider_id, url, cfg)
+    ):
+        return True
     label = hubresolver.compact(row.get("label") or "")
     if not label:
         return False
