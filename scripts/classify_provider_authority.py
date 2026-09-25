@@ -176,7 +176,7 @@ def classify(
     strong_sources = active_authority_sources(registry)
     removed_sources = removed_authority_sources(registry)
     direct = str(registry.get("direct") or "").strip()
-    explicit_current = str(registry.get("direct_authority") or "").strip().casefold() == "explicit_current"
+    direct_current_authority = str(registry.get("direct_authority") or "").strip().casefold() in {"explicit_current", "operator_pin"}
     failures = authority_failures(history)
     search = has_search(registry)
     legacy_search = registry.get("legacy_search_refresh") is True
@@ -266,8 +266,8 @@ def classify(
             and current_url == direct_url
         )
 
-        if explicit_current and failures < 2:
-            reasons.append("explicit_current_direct")
+        if direct_current_authority and failures < 2:
+            reasons.append("current_authority_direct")
             return {
                 "provider": provider,
                 "action": "KEEP_DIRECT",
@@ -277,7 +277,7 @@ def classify(
                 "failureCount": failures,
                 "reasons": reasons,
             }
-        if not explicit_current and failures < 2 and direct_route_proven:
+        if not direct_current_authority and failures < 2 and direct_route_proven:
             reasons.extend(["curated_direct", "existing_positive_route_prior"])
             return {
                 "provider": provider,
@@ -288,7 +288,7 @@ def classify(
                 "failureCount": failures,
                 "reasons": reasons,
             }
-        if not explicit_current and fresh_direct_observation:
+        if not direct_current_authority and fresh_direct_observation:
             reasons.append("fresh_curated_candidate_runtime_observation")
             return {
                 "provider": provider,
