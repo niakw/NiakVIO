@@ -37,6 +37,9 @@ for bad in [
 row2={**row,"providerId":"YFlix","failureClass":"search-gap","strategy":"search-detail-player-terminal-traversal","profile":"proven_route_terminal_traversal_v1"}
 base2={**base,"providerCount":2,"rows":[row,row2]}
 safe2=mod.sanitize(base2,current_sha="c"*40,guidance_commit="d"*40)
+importer_source=SCRIPT.read_text(encoding="utf-8")
+assert '"--committed-only"' in importer_source, "external guidance drift must ignore sandbox working-tree mutations"
+
 orig_scope=mod.provider_materialization_scope
 try:
  mod.provider_materialization_scope=lambda root,source,current:{"mode":"providers","providers":["movie-box"],"changedPaths":["providers/movie-box.js"],"reasons":["providers:providers/movie-box.js:movie-box"]}
