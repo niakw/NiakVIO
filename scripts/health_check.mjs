@@ -1207,6 +1207,12 @@ function runWorker(candidate, fixture) {
         HOME: process.env.HOME || '',
         NODE_PATH: path.join(ROOT, 'node_modules'),
         NODE_NO_WARNINGS: '1',
+        // The worker consumes these bootstrap-only names before provider module
+        // initialization, removes them from process.env, exposes the canonical
+        // TMDB globals only long enough for Core to capture its private closure,
+        // then removes those globals before getStreams.
+        NIAKVIO_TMDB_BOOTSTRAP_KEY: process.env.TMDB_API_KEY || '',
+        NIAKVIO_TMDB_BOOTSTRAP_TOKEN: process.env.TMDB_ACCESS_TOKEN || '',
       },
       stdio: ['ignore', 'pipe', 'pipe'],
     });
