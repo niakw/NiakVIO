@@ -57,7 +57,8 @@ assert repair.startswith("name: LEARN/FORCE - Provider Recognition Repair V6")
 assert repair.count('scripts/run_provider_repair_pipeline_v6.py --mode "$MODE"') == 1
 for required in (
     "MODE=learn",
-    "MODE=repair",
+    'mode not in {"repair","force"}',
+    'str(data.get("mode") or "repair").strip().casefold()',
     "DISPATCH_MODE:-force",
     "Verify only census symptoms were network re-probed",
     "Persist Repair census state",
