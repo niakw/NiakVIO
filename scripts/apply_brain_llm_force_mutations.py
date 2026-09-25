@@ -334,6 +334,10 @@ def apply_payload(
     if not isinstance(rows, list):
         raise ValueError("Force mutation rows missing")
 
+    # Fail closed before touching provider state when an artifact stacks
+    # multiple concrete hypotheses for the same provider. Detecting this only
+    # inside the application loop could partially apply the first candidate
+    # before the second one is rejected.
     seen_force_providers: set[str] = set()
     for raw in rows[:128]:
         if not isinstance(raw, dict):
@@ -345,6 +349,9 @@ def apply_payload(
             )
         if provider:
             seen_force_providers.add(provider)
+
+    for raw in rows[:128]:
+        provider = canon(raw.get("providerId"))
         if provider not in selected:
             skipped.append({"provider": provider or "<missing>", "reason": "outside-current-repair-scope"})
             continue
