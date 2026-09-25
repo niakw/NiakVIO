@@ -1,29 +1,19 @@
 #!/usr/bin/env python3
-"""Build the account-level Fusion StreamBadge feed from the canonical badge generator.
+"""Compatibility entry point for the canonical version-aware StreamBadge generator.
 
-Fusion is not a second styling implementation. It delegates to normalize_badge_feeds
-so Dark, Light and Fusion always share the exact same group palette, native bordered
-chrome and validation rules. Fusion uses transparent 96x40 artwork with a dark neutral
-native chip, making the same account-level feed readable on light and dark app themes.
+This helper must never implement an independent Fusion writer. Public feed versioning
+is owned by normalize_badge_feeds.py, which updates latest aliases, creates the four
+version-aligned immutable snapshots, and refuses to mutate an already-published vN.
 """
 from __future__ import annotations
 
 import argparse
-import json
-from pathlib import Path
-from typing import Any
 
-from normalize_badge_feeds import build as build_theme
-
-ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "assets/stream-badges-fusion.json"
-RAW_BASE = "https://raw.githubusercontent.com/niakw/NiakVIO/main/"
-ASSET_THEME = "transparent"
-ASSET_SIZE = "96x40"
+from normalize_badge_feeds import PUBLIC_FEED_VERSION, build, normalize
 
 
-def build() -> dict[str, Any]:
-    payload = build_theme("fusion")
+def validate_fusion() -> None:
+    payload = build("fusion")
     filters = payload.get("filters") or []
     groups = payload.get("groups") or []
     if not filters or not groups:
@@ -33,19 +23,6 @@ def build() -> dict[str, Any]:
             raise ValueError(f"Fusion badge style drift: {row.get('id')}")
         if "/assets/transparent/96x40/" not in str(row.get("imageURL") or ""):
             raise ValueError(f"Fusion badge must use transparent 96x40 artwork: {row.get('id')}")
-        for key in ("tagColor", "textColor", "borderColor"):
-            if not str(row.get(key) or "").startswith("#"):
-                raise ValueError(f"Fusion badge {key} missing: {row.get('id')}")
-    return payload
-
-
-def normalize(*, apply: bool) -> bool:
-    wanted = json.dumps(build(), ensure_ascii=False, indent=2) + "\n"
-    current = OUTPUT.read_text(encoding="utf-8") if OUTPUT.is_file() else ""
-    changed = current != wanted
-    if changed and apply:
-        OUTPUT.write_text(wanted, encoding="utf-8")
-    return changed
 
 
 def main() -> int:
@@ -55,14 +32,17 @@ def main() -> int:
     args = parser.parse_args()
     if args.apply and args.check:
         raise SystemExit("choose --apply or --check")
+
     changed = normalize(apply=args.apply)
+    validate_fusion()
     if args.check and changed:
-        raise SystemExit("Fusion badge feed normalization required")
+        raise SystemExit("canonical StreamBadge normalization required: " + ",".join(changed))
+
     print(
         "FIELD_FUSION_BADGE_FEED "
-        f"changed={int(changed)} theme={ASSET_THEME} size={ASSET_SIZE} "
-        "native_style=bordered canonical_generator=normalize_badge_feeds "
-        f"url={RAW_BASE}assets/stream-badges-fusion.json"
+        f"changed={len(changed)} public_v={PUBLIC_FEED_VERSION} "
+        "canonical_generator=normalize_badge_feeds "
+        f"stable=assets/stream-badges-fusion-v{PUBLIC_FEED_VERSION}.json"
     )
     return 0
 

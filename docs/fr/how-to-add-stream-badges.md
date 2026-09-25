@@ -8,7 +8,7 @@
 ## ⚡ Feed recommandé
 
 ```text
-https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v2.json
+https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v3.json
 ```
 
 NiakVIO fournit des règles StreamBadge au format Fusion pour enrichir les cartes de streams.
@@ -79,3 +79,14 @@ Ouvrez un contenu disposant de streams. Les cartes compatibles doivent afficher 
 - gardez en tête qu'un badge ne s'affiche que si les métadonnées du stream correspondent à sa règle.
 
 </details>
+
+## Variantes de thème v3
+
+Le contrat public v3 est maintenant aligné sur les quatre feeds :
+
+- `assets/stream-badges-fusion-v3.json` — feed recommandé multi-thème ;
+- `assets/stream-badges-dark-v3.json` — fonds d'application sombres ;
+- `assets/stream-badges-light-v3.json` — fonds d'application clairs ;
+- `assets/stream-badges-transparent-v3.json` — artwork transparent.
+
+Les fichiers non versionnés sont des alias `latest` mobiles. Une intégration qui veut un contrat stable doit épingler un feed versionné.

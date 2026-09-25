@@ -8,7 +8,7 @@
 ## ⚡ Recommended feed
 
 ```text
-https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v2.json
+https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v3.json
 ```
 
 NiakVIO provides Fusion-style StreamBadge rules for stream cards.
@@ -79,3 +79,14 @@ Open a title with available streams. Compatible stream cards should display the 
 - remember that a badge only appears when the stream metadata matches its rule.
 
 </details>
+
+## v3 theme variants
+
+The public v3 contract is version-aligned across all four feeds:
+
+- `assets/stream-badges-fusion-v3.json` — recommended cross-theme feed;
+- `assets/stream-badges-dark-v3.json` — dark app backgrounds;
+- `assets/stream-badges-light-v3.json` — light app backgrounds;
+- `assets/stream-badges-transparent-v3.json` — transparent artwork feed.
+
+Unversioned files are moving `latest` aliases. Integrations that need a stable contract should pin a versioned feed.

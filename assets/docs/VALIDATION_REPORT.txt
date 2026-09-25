@@ -1,29 +1,32 @@
-NIAKVIO BADGE SYSTEM V2 — VALIDATION REPORT
+NIAKVIO BADGE SYSTEM V3 — VALIDATION REPORT
 ============================================
 
 STATUS: PASS
-Canonical commit: 77c13db388d91f1eefd055c78927791f1fd8c491
-Validation-contract fix: 4e6b96d9d24285a905f869be1f85447947372aba
-Materialized asset commit: 5b8f1717aad5ca67510d76ffc0362dc25815ef93
-Successful workflow run: 36079388616
+Canonical v3 commit: 0aa0bea915f4182f1d10e28635bd44f3ce7f57d2
+Materialized asset commit: 00e22c446222d1085d23f51df82815aefbe0d058
+Successful badge workflow run: 36081710814
 
-Catalog badges: 122
+Catalog badges: 299
 Badge groups: 15
-Asset variants per badge: 6 (transparent/dark/light × 72x32/96x40)
-Total checked WebP assets: 732
-Newly materialized WebP assets in this expansion: 288
+Language badges: 47
+Subtitle badges: 49
+Age-rating badges: 118
+Current asset variants: 1794 (299 × transparent/dark/light × 72x32/96x40)
+New/changed WebP assets in v3 materialization: 1116
 
-Checks passed:
-- 122 WebP files in each of the six theme/size folders
-- exact 72x32 and 96x40 dimensions
-- WebP decoding and non-empty assets
-- lossless deterministic generation with Pillow 11.3.0
-- fixed-point regeneration check
-- 122 filters and 15 groups in Dark, Light and Fusion feeds
-- recommended Fusion v2 is byte-identical to canonical Fusion
-- sample coverage verified for AVC, 1080p, bitrate, AAC, Stereo/2.0, 48 kHz and Korean
-- provider non-regression gate remained green on the initial catalog expansion
+Public feed version: 3
+Stable feeds:
+- stream-badges-fusion-v3.json
+- stream-badges-dark-v3.json
+- stream-badges-light-v3.json
+- stream-badges-transparent-v3.json
 
-Notes:
-- The first materialization run 36079239674 generated all 288 new WebPs but failed afterward on a stale v4 revision assertion. The validator and badge asset contract test were updated to v5; replacement run 36079388616 passed every materialization, validation and deterministic fixed-point step.
-- Exact bitrate values remain technical text because bitrate is continuous; the static BITRATE badge signals the presence of the measurement without inventing a finite value vocabulary.
+Validated properties:
+- all four latest feeds contain exactly 299 filters and 15 groups
+- each latest feed is byte-identical to its v3 snapshot at publication
+- no public v3 IDs remain for VF/VFF/VFQ/VO/MULTI/VOSTFR/legacy PG-13/TV-MA IDs
+- legacy French/provider vocabulary is accepted only as input aliases where required
+- Korean 19, US MPA/TV, German FSK, Indian CBFC and broad numeric ratings are covered
+- lossless WebP generation is deterministic and idempotent
+- historical stream-badges-fusion-v2.json remains present with its prior 122-filter contract
+- public v3 snapshots are protected against in-place mutation; future material changes require PUBLIC_FEED_VERSION > 3

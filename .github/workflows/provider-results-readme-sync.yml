@@ -119,7 +119,7 @@ jobs:
           grep -Fq 'fixtures de test' README.fr.md
           grep -Fq 'TESTING_NOTICE.md' README.fr.md
           grep -Fq 'DISCLAIMER.md' README.fr.md
-          grep -Fq 'https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v2.json' README.fr.md
+          grep -Fq 'https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v3.json' README.fr.md
           if grep -q '| TV | Mobile | Desktop macOS | Desktop Windows |' README.fr.md; then
             echo 'legacy sparse per-device matrix unexpectedly returned' >&2
             exit 1
