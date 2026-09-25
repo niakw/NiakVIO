@@ -1065,13 +1065,15 @@ jobs:
           print(resume,remaining,processed,unvisited)
           PY
             )
-            if [ "$resume" = "1" ] && [ "$remaining" -gt 0 ]; then
+            if [ "$resume" = "1" ] && [ "$remaining" -gt 0 ] && [ "$unvisited" -gt 0 ]; then
               echo "FIELD_PROVIDER_BRAIN_RESUME remaining=$remaining processed=$processed unvisited=$unvisited target=provider-recognition-repair-v6"
-              # This is deliberately the final action of the persistence step.
-              # The successor starts from main after the just-persisted memory/census.
+              # Only unfinished work may resume Repair. Providers already visited
+              # and deferred to Learning must not create a Repair -> Repair loop.
               gh workflow run provider-recognition-repair-v6.yml \
                 --repo "$GITHUB_REPOSITORY" \
                 --ref main \
                 -f mode=repair
+            elif [ "$resume" = "1" ] && [ "$remaining" -gt 0 ]; then
+              echo "FIELD_PROVIDER_BRAIN_RESUME_SKIPPED reason=no-unvisited-provider remaining=$remaining processed=$processed unvisited=$unvisited"
             fi
           fi
